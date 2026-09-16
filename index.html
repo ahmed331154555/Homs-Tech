@@ -1,53 +1,523 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="nl" dir="ltr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Home | HOMS TECH</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HOMS TECH | Telefoonreparatie aan huis</title>
 
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,Tahoma,sans-serif;background:#f5f7fa;color:#111827;line-height:1.7}
-header{background:#111827;color:#fff;padding:12px 5%;display:flex;justify-content:space-between;align-items:center;gap:20px;position:sticky;top:0;z-index:10}
-.brand img{width:145px;height:auto;display:block}
-nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-nav a{color:#fff;text-decoration:none;font-weight:700;padding:9px 12px;border-radius:8px}
-nav a:hover,nav a.active{background:#26354d}
-.btn{display:inline-block;padding:12px 20px;border-radius:11px;font-weight:800;text-decoration:none;border:0;cursor:pointer}
-.green{background:#25d366;color:#fff}
-.white{background:#fff;color:#111827}
-.dark{background:#111827;color:#fff}
-.hero{background:linear-gradient(135deg,#111827,#30425c);color:#fff;text-align:center;padding:80px 6%}
-.hero h1{font-size:clamp(36px,7vw,62px);line-height:1.2;margin:0 0 16px}
-.hero p{font-size:20px;max-width:760px;margin:0 auto 25px;color:#e5e7eb}
-main{min-height:calc(100vh - 150px)}
-section{max-width:1100px;margin:auto;padding:55px 6%}
-h1.page-title,h2{text-align:center;font-size:34px}
-.intro{text-align:center;max-width:800px;margin:auto;font-size:19px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}
-.card,.about{background:#fff;border-radius:18px;padding:24px;box-shadow:0 7px 25px #0000000c;text-align:center}
-.icon{font-size:40px}
-.card h3{margin:8px 0}
-.card p{color:#6b7280;margin:0}
-.banner{background:#25d366;color:#fff;border-radius:22px;padding:34px;text-align:center}
-.banner h2{margin:0 0 5px}
-.prices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.price{background:#f3f4f6;border-radius:9px;padding:9px;text-align:left}
-.price b{display:block}
-footer{background:#111827;color:#ddd;text-align:center;padding:28px}
-.small{color:#9ca3af;font-size:14px}
 
-@media(max-width:850px){
-header{position:relative;flex-wrap:wrap;justify-content:center}
-nav{order:3;width:100%}
-nav a{font-size:14px}
-.brand img{width:130px}
+html{scroll-behavior:smooth}
+
+body{
+margin:0;
+font-family:Arial,Helvetica,sans-serif;
+background:#f5f7fa;
+color:#111827;
+line-height:1.6
 }
 
-@media(max-width:500px){
-nav a{padding:7px 8px;font-size:13px}
-.hero{padding:55px 5%}
-.prices{grid-template-columns:1fr}
+a{text-decoration:none}
+
+header{
+background:#111827;
+color:#fff;
+padding:13px 5%;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:20px;
+position:sticky;
+top:0;
+z-index:100;
+box-shadow:0 4px 20px rgba(0,0,0,.15)
+}
+
+.brand img{
+width:170px;
+height:auto;
+display:block
+}
+
+nav{
+display:flex;
+gap:7px;
+flex-wrap:wrap;
+justify-content:center
+}
+
+nav a{
+color:#fff;
+font-weight:700;
+padding:10px 14px;
+border-radius:9px
+}
+
+nav a:hover,
+nav a.active{
+background:#2563eb
+}
+
+.btn{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+gap:8px;
+padding:13px 21px;
+border-radius:12px;
+font-weight:800;
+border:0;
+cursor:pointer;
+transition:.2s
+}
+
+.btn:hover{
+transform:translateY(-2px)
+}
+
+.green{
+background:#16c766;
+color:#fff
+}
+
+.green:hover{
+background:#0eae56
+}
+
+.white{
+background:#fff;
+color:#2563eb;
+border:2px solid #2563eb
+}
+
+/* HERO */
+
+.hero{
+background:
+radial-gradient(circle at 75% 35%,rgba(37,99,235,.35),transparent 35%),
+linear-gradient(135deg,#07101f,#1b2b43);
+color:#fff;
+padding:75px 6%;
+overflow:hidden
+}
+
+.hero-inner{
+max-width:1200px;
+margin:auto;
+display:grid;
+grid-template-columns:1.2fr .8fr;
+align-items:center;
+gap:40px
+}
+
+.hero h1{
+font-size:clamp(40px,6vw,67px);
+line-height:1.08;
+margin:0 0 20px;
+font-weight:900
+}
+
+.hero h1 span{
+color:#60a5fa
+}
+
+.hero p{
+font-size:20px;
+max-width:720px;
+color:#e5e7eb;
+margin:0 0 28px
+}
+
+.hero-buttons{
+display:flex;
+gap:13px;
+flex-wrap:wrap
+}
+
+.checks{
+display:flex;
+gap:25px;
+flex-wrap:wrap;
+margin-top:27px
+}
+
+.check{
+display:flex;
+align-items:center;
+gap:7px;
+font-weight:700
+}
+
+.check-icon{
+width:24px;
+height:24px;
+border-radius:50%;
+background:#fff;
+color:#111827;
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:bold
+}
+
+/* PHONE VISUAL */
+
+.hero-phone{
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:350px
+}
+
+.phone{
+width:190px;
+height:365px;
+background:#111827;
+border:7px solid #374151;
+border-radius:32px;
+box-shadow:0 25px 50px rgba(0,0,0,.5);
+position:relative;
+transform:rotate(7deg)
+}
+
+.phone:before{
+content:"";
+position:absolute;
+top:8px;
+left:50%;
+transform:translateX(-50%);
+width:70px;
+height:20px;
+background:#000;
+border-radius:15px;
+z-index:2
+}
+
+.screen{
+position:absolute;
+inset:8px;
+border-radius:24px;
+background:
+radial-gradient(circle at 60% 30%,#8b5cf6,transparent 30%),
+linear-gradient(145deg,#111827,#312e81,#020617);
+overflow:hidden
+}
+
+.screen:after{
+content:"";
+position:absolute;
+width:120px;
+height:250px;
+background:rgba(255,255,255,.08);
+transform:rotate(30deg);
+right:-55px;
+top:30px
+}
+
+.phone-text{
+position:absolute;
+right:-135px;
+top:60px;
+font-size:24px;
+font-weight:800;
+font-style:italic;
+line-height:1.1;
+transform:rotate(-5deg);
+color:#fff
+}
+
+/* SECTIONS */
+
+section{
+max-width:1200px;
+margin:auto;
+padding:60px 5%
+}
+
+.section-title{
+text-align:center;
+font-size:35px;
+margin:0 0 38px;
+font-weight:900
+}
+
+.section-title:after{
+content:"";
+display:block;
+width:42px;
+height:5px;
+background:#2563eb;
+border-radius:5px;
+margin:11px auto 0
+}
+
+/* SERVICES */
+
+.grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:18px
+}
+
+.card{
+background:#fff;
+border-radius:18px;
+padding:27px 20px;
+text-align:center;
+box-shadow:0 8px 28px rgba(0,0,0,.06);
+transition:.2s
+}
+
+.card:hover{
+transform:translateY(-4px);
+box-shadow:0 14px 35px rgba(0,0,0,.1)
+}
+
+.icon{
+font-size:45px;
+margin-bottom:8px
+}
+
+.card h3{
+margin:8px 0;
+font-size:20px
+}
+
+.card p{
+margin:0;
+color:#64748b
+}
+
+/* BANNER */
+
+.home-banner{
+max-width:1140px;
+margin:5px auto 0;
+background:linear-gradient(135deg,#162438,#25364d);
+color:#fff;
+border-radius:22px;
+padding:28px 38px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:20px
+}
+
+.banner-left{
+display:flex;
+align-items:center;
+gap:18px
+}
+
+.banner-icon{
+font-size:52px
+}
+
+.banner h2{
+margin:0;
+font-size:29px
+}
+
+.banner p{
+margin:3px 0 0;
+color:#dbeafe
+}
+
+/* DEVICES */
+
+.devices{
+display:grid;
+grid-template-columns:repeat(6,1fr);
+gap:15px
+}
+
+.device{
+background:#fff;
+border-radius:16px;
+padding:22px 10px;
+text-align:center;
+box-shadow:0 7px 25px rgba(0,0,0,.05)
+}
+
+.device-icon{
+font-size:45px;
+margin-bottom:8px
+}
+
+.device strong{
+display:block;
+font-size:17px
+}
+
+/* WHY */
+
+.why{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:18px
+}
+
+.why .icon{
+color:#2563eb
+}
+
+/* CONTACT */
+
+.contact-box{
+background:#111827;
+color:#fff;
+border-radius:22px;
+padding:42px 25px;
+text-align:center
+}
+
+.contact-box h2{
+font-size:32px;
+margin:0 0 8px
+}
+
+.contact-box p{
+color:#cbd5e1;
+margin:0 0 22px
+}
+
+/* FOOTER */
+
+footer{
+background:#0b1422;
+color:#fff;
+padding:38px 5%
+}
+
+.footer-inner{
+max-width:1200px;
+margin:auto;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:25px
+}
+
+.footer-logo img{
+width:165px
+}
+
+.footer-center{
+text-align:center;
+color:#cbd5e1
+}
+
+.admin-btn{
+border:1px solid #fff;
+color:#fff;
+padding:11px 19px;
+border-radius:10px;
+font-weight:bold
+}
+
+/* MOBILE */
+
+@media(max-width:900px){
+
+header{
+flex-wrap:wrap;
+justify-content:center
+}
+
+nav{
+order:3;
+width:100%
+}
+
+.hero-inner{
+grid-template-columns:1fr;
+text-align:center
+}
+
+.hero p{
+margin-left:auto;
+margin-right:auto
+}
+
+.hero-buttons,
+.checks{
+justify-content:center
+}
+
+.hero-phone{
+min-height:300px
+}
+
+.grid,
+.why{
+grid-template-columns:repeat(2,1fr)
+}
+
+.devices{
+grid-template-columns:repeat(3,1fr)
+}
+
+.home-banner{
+margin-left:5%;
+margin-right:5%
+}
+
+.phone-text{
+display:none
+}
+}
+
+@media(max-width:550px){
+
+.brand img{
+width:150px
+}
+
+header>.btn{
+display:none
+}
+
+nav a{
+font-size:13px;
+padding:8px 9px
+}
+
+.hero{
+padding:55px 5%
+}
+
+.hero h1{
+font-size:40px
+}
+
+.hero p{
+font-size:18px
+}
+
+.grid,
+.why{
+grid-template-columns:1fr
+}
+
+.devices{
+grid-template-columns:repeat(2,1fr)
+}
+
+.home-banner{
+flex-direction:column;
+text-align:center;
+padding:28px 20px
+}
+
+.banner-left{
+flex-direction:column
+}
+
+.footer-inner{
+flex-direction:column;
+text-align:center
+}
 }
 </style>
 </head>
@@ -55,69 +525,289 @@ nav a{padding:7px 8px;font-size:13px}
 <body>
 
 <header>
+
 <a class="brand" href="index.html">
 <img src="assets/homs-tech-logo.png" alt="HOMS TECH">
 </a>
 
 <nav>
-<a href="index.html">Home</a>
+<a href="index.html" class="active">Home</a>
 <a href="about.html">Over ons</a>
 <a href="repair.html">Reparaties</a>
 <a href="devices.html">Apparaten</a>
 <a href="prices.html">Prijzen</a>
 </nav>
 
-<a class="btn green" data-wa>WhatsApp</a>
+<a class="btn green" data-wa>💬 WhatsApp</a>
+
 </header>
+
 
 <main>
 
-<div class="hero">
-<h1 id="heroTitle"></h1>
-<p id="heroText"></p>
+<section class="hero">
 
-<a class="btn green" data-wa>💬 Afspraak via WhatsApp</a>
-<a class="btn white" data-phone>📞 Bel nu</a>
+<div class="hero-inner">
+
+<div>
+
+<h1>
+<span id="heroTitleTop">Is uw telefoon kapot?</span><br>
+<span>Wij komen naar u toe!</span>
+</h1>
+
+<p id="heroText">
+Reparatie van alle soorten telefoons bij u thuis —
+snelle service, professioneel werk en betaalbare prijzen.
+</p>
+
+<div class="hero-buttons">
+
+<a class="btn green" data-wa>
+💬 Afspraak via WhatsApp
+</a>
+
+<a class="btn white" data-phone>
+📞 Bel nu
+</a>
+
 </div>
 
-<section>
-<div class="banner">
-<h2>🚗 Wij komen bij u thuis!</h2>
-<p id="areas"></p>
+<div class="checks">
+
+<div class="check">
+<span class="check-icon">✓</span>
+Snel
 </div>
+
+<div class="check">
+<span class="check-icon">✓</span>
+Betrouwbaar
+</div>
+
+<div class="check">
+<span class="check-icon">✓</span>
+Aan huis
+</div>
+
+<div class="check">
+<span class="check-icon">✓</span>
+Betaalbare prijzen
+</div>
+
+</div>
+
+</div>
+
+
+<div class="hero-phone">
+
+<div class="phone">
+<div class="screen"></div>
+</div>
+
+<div class="phone-text">
+Uw<br>
+telefoon<br>
+in goede<br>
+handen
+</div>
+
+</div>
+
+</div>
+
 </section>
 
+
+<!-- SERVICES -->
+
 <section>
-<h2>Onze diensten</h2>
+
+<h2 class="section-title">
+Onze diensten
+</h2>
+
 <div id="services" class="grid"></div>
+
+</section>
+
+
+<!-- HOME SERVICE -->
+
+<div class="home-banner">
+
+<div class="banner-left">
+
+<div class="banner-icon">📍</div>
+
+<div>
+
+<h2>Wij komen bij u thuis!</h2>
+
+<p id="areas">
+🚗 Rotterdam en omgeving
+</p>
+
+</div>
+
+</div>
+
+<a class="btn green" data-wa>
+💬 WhatsApp
+</a>
+
+</div>
+
+
+<!-- DEVICES -->
+
+<section>
+
+<h2 class="section-title">
+Populaire apparaten
+</h2>
+
+<div class="devices">
+
+<div class="device">
+<div class="device-icon">📱</div>
+<strong>iPhone</strong>
+</div>
+
+<div class="device">
+<div class="device-icon">📱</div>
+<strong>Samsung</strong>
+</div>
+
+<div class="device">
+<div class="device-icon">📱</div>
+<strong>Xiaomi</strong>
+</div>
+
+<div class="device">
+<div class="device-icon">📱</div>
+<strong>OPPO</strong>
+</div>
+
+<div class="device">
+<div class="device-icon">📱</div>
+<strong>OnePlus</strong>
+</div>
+
+<div class="device">
+<div class="device-icon">📱</div>
+<strong>Andere merken</strong>
+</div>
+
+</div>
+
+</section>
+
+
+<!-- WHY -->
+
+<section>
+
+<h2 class="section-title">
+Waarom HOMS TECH?
+</h2>
+
+<div id="why" class="why"></div>
+
+</section>
+
+
+<!-- CONTACT -->
+
+<section>
+
+<div class="contact-box">
+
+<h2>
+Heeft u een probleem met uw telefoon?
+</h2>
+
+<p>
+Neem direct contact met ons op voor informatie of een afspraak.
+</p>
+
+<div class="hero-buttons" style="justify-content:center">
+
+<a class="btn green" data-wa>
+💬 WhatsApp
+</a>
+
+<a class="btn white" data-phone>
+📞 Bel ons
+</a>
+
+</div>
+
+</div>
+
 </section>
 
 </main>
 
+
 <footer>
+
+<div class="footer-inner">
+
+<div class="footer-logo">
+<img src="assets/homs-tech-logo.png" alt="HOMS TECH">
+</div>
+
+<div class="footer-center">
+
 <strong data-name>HOMS TECH</strong>
-<p data-tag>Telefoonreparatie bij u thuis</p>
-<p class="small">© HOMS TECH</p>
-<a class="btn white" href="admin/index.html">⚙️ Admin</a>
+
+<br>
+
+<span data-tag>
+Telefoonreparatie aan huis
+</span>
+
+<br><br>
+
+© HOMS TECH — Alle rechten voorbehouden.
+
+</div>
+
+<a class="admin-btn" href="admin/index.html">
+⚙️ Admin
+</a>
+
+</div>
+
 </footer>
+
 
 <script>
 
-const KEY="homsTechData";
+const KEY = "homsTechData";
 
-const defaults={
+const defaults = {
+
 businessName:"HOMS TECH",
-tagline:"Telefoonreparatie bij u thuis",
+
+tagline:"Telefoonreparatie aan huis",
+
 heroTitle:"Is uw telefoon kapot? Wij komen naar u toe! 🚗📱",
-heroText:"Reparatie van alle soorten telefoons bij u thuis — snelle service, professioneel werk en scherpe prijzen.",
+
+heroText:"Reparatie van alle soorten telefoons bij u thuis — snelle service, professioneel werk en betaalbare prijzen.",
+
 whatsapp:"31612345678",
+
 phone:"+31 6 12345678",
+
 areas:"Rotterdam en omgeving",
 
 services:[
-["🖥️","Scherm vervangen","Gebarsten of defect scherm?"],
-["🔋","Batterij vervangen","Loopt uw batterij snel leeg?"],
-["🔌","Laadproblemen","Laadt uw telefoon niet goed op?"],
+["🖥️","Scherm vervangen","Gebarsten of defect scherm? Wij vervangen het snel."],
+["🔋","Batterij vervangen","Loopt uw batterij snel leeg? Wij plaatsen een nieuwe."],
+["🔌","Laadproblemen","Laadt uw telefoon niet goed op? Wij lossen het voor u op."],
 ["⚙️","Hardware & software","Diagnose en reparatie van verschillende problemen."]
 ],
 
@@ -136,130 +826,197 @@ phones:[
 {name:"iPhone 16",brand:"Apple",screen:"",software:"",hardware:"",camera:""},
 {name:"iPhone 17",brand:"Apple",screen:"",software:"",hardware:"",camera:""}
 ]
+
 };
 
-let data=JSON.parse(localStorage.getItem(KEY)||"null")||structuredClone(defaults);
 
-if(!Array.isArray(data.phones))
-data.phones=structuredClone(defaults.phones);
+/*
+   Gebruik bestaande gegevens van de Admin.
+   Daardoor blijven wijzigingen uit het Admin-paneel behouden.
+*/
 
-function saveData(){
+let data;
+
+try{
+data = JSON.parse(localStorage.getItem(KEY) || "null");
+}catch(e){
+data = null;
+}
+
+if(!data){
+data = JSON.parse(JSON.stringify(defaults));
 localStorage.setItem(KEY,JSON.stringify(data));
 }
 
-function wa(){
-return "https://wa.me/"+data.whatsapp+
-"?text="+encodeURIComponent("Hallo, ik wil graag informeren naar een telefoonreparatie.");
+if(!Array.isArray(data.services)){
+data.services = JSON.parse(JSON.stringify(defaults.services));
 }
+
+if(!Array.isArray(data.why)){
+data.why = JSON.parse(JSON.stringify(defaults.why));
+}
+
+if(!Array.isArray(data.phones)){
+data.phones = JSON.parse(JSON.stringify(defaults.phones));
+}
+
+
+/* WhatsApp */
+
+function wa(){
+
+let number = data.whatsapp || defaults.whatsapp;
+
+return "https://wa.me/" +
+number.replace(/\D/g,"") +
+"?text=" +
+encodeURIComponent(
+"Hallo, ik wil graag informeren over een telefoonreparatie."
+);
+
+}
+
+
+/* Algemene gegevens */
 
 function common(){
 
-document.querySelectorAll("[data-name]").forEach(e=>{
-e.textContent=data.businessName;
+document.querySelectorAll("[data-name]").forEach(function(el){
+
+el.textContent = data.businessName || "HOMS TECH";
+
 });
 
-document.querySelectorAll("[data-tag]").forEach(e=>{
-e.textContent=data.tagline;
+document.querySelectorAll("[data-tag]").forEach(function(el){
+
+el.textContent = data.tagline || "Telefoonreparatie aan huis";
+
 });
 
-document.querySelectorAll("[data-wa]").forEach(e=>{
-e.href=wa();
+document.querySelectorAll("[data-wa]").forEach(function(el){
+
+el.href = wa();
+
 });
 
-document.querySelectorAll("[data-phone]").forEach(e=>{
-e.href="tel:"+data.phone.replace(/\s/g,"");
+document.querySelectorAll("[data-phone]").forEach(function(el){
+
+let phone = data.phone || defaults.phone;
+
+el.href = "tel:" + phone.replace(/\s/g,"");
+
 });
 
 }
 
-function renderServices(id="services"){
-let e=document.getElementById(id);
 
-if(e)
-e.innerHTML=data.services.map(x=>`
-<div class="card">
-<div class="icon">${x[0]}</div>
-<h3>${x[1]}</h3>
-<p>${x[2]}</p>
-</div>
-`).join("");
+/* Hero */
+
+function renderHero(){
+
+let title = data.heroTitle ||
+"Is uw telefoon kapot? Wij komen naar u toe! 🚗📱";
+
+let parts = title.split("!");
+
+if(parts.length > 1){
+
+document.getElementById("heroTitleTop").textContent =
+parts[0] + "!";
+
+}else{
+
+document.getElementById("heroTitleTop").textContent =
+title;
+
 }
 
-function renderWhy(id="why"){
-let e=document.getElementById(id);
+document.getElementById("heroText").textContent =
+data.heroText ||
+defaults.heroText;
 
-if(e)
-e.innerHTML=data.why.map(x=>`
-<div class="card">
-<div class="icon">${x[0]}</div>
-<h3>${x[1]}</h3>
-<p>${x[2]}</p>
-</div>
-`).join("");
+document.getElementById("areas").textContent =
+"🚗 " + (data.areas || defaults.areas);
+
 }
 
-function renderPrices(list=data.phones,id="priceList"){
 
-let e=document.getElementById(id);
+/* Services */
 
-if(!e)return;
+function renderServices(){
 
-e.innerHTML=list.map(p=>`
-<div class="card">
-<h3>${p.name}</h3>
+let container = document.getElementById("services");
 
-<div class="prices">
+container.innerHTML = "";
 
-<div class="price">
-<b>🖥️ Scherm</b>
-${p.screen||"Bel voor prijs"}
-</div>
+data.services.forEach(function(item){
 
-<div class="price">
-<b>💻 Software</b>
-${p.software||"Bel voor prijs"}
-</div>
+let card = document.createElement("div");
+card.className = "card";
 
-<div class="price">
-<b>🔧 Hardware</b>
-${p.hardware||"Bel voor prijs"}
-</div>
+let icon = document.createElement("div");
+icon.className = "icon";
+icon.textContent = item[0] || "🔧";
 
-<div class="price">
-<b>📷 Camera</b>
-${p.camera||"Bel voor prijs"}
-</div>
+let title = document.createElement("h3");
+title.textContent = item[1] || "";
 
-</div>
+let text = document.createElement("p");
+text.textContent = item[2] || "";
 
-<br>
+card.appendChild(icon);
+card.appendChild(title);
+card.appendChild(text);
 
-<a class="btn green" href="${wa()}">
-Afspraak via WhatsApp
-</a>
+container.appendChild(card);
 
-</div>
-`).join("");
+});
+
 }
+
+
+/* Waarom */
+
+function renderWhy(){
+
+let container = document.getElementById("why");
+
+container.innerHTML = "";
+
+data.why.forEach(function(item){
+
+let card = document.createElement("div");
+card.className = "card";
+
+let icon = document.createElement("div");
+icon.className = "icon";
+icon.textContent = item[0] || "⭐";
+
+let title = document.createElement("h3");
+title.textContent = item[1] || "";
+
+let text = document.createElement("p");
+text.textContent = item[2] || "";
+
+card.appendChild(icon);
+card.appendChild(title);
+card.appendChild(text);
+
+container.appendChild(card);
+
+});
+
+}
+
+
+/* Start */
 
 common();
-
-document.getElementById("heroTitle").textContent=data.heroTitle;
-document.getElementById("heroText").textContent=data.heroText;
-document.getElementById("areas").textContent="📍 "+data.areas;
-
+renderHero();
 renderServices();
+renderWhy();
 
 </script>
 
 </body>
-</html> document.querySelectorAll("[data-name]").forEach(e=>e.textContent=data.businessName);
- document.querySelectorAll("[data-tag]").forEach(e=>e.textContent=data.tagline);
- document.querySelectorAll("[data-wa]").forEach(e=>e.href=wa());
- document.querySelectorAll("[data-phone]").forEach(e=>e.href="tel:"+data.phone.replace(/\s/g,""));
-}
-function renderServices(id="services"){let e=document.getElementById(id);if(e)e.innerHTML=data.services.map(x=>`<div class="card"><div class="icon">${x[0]}</div><h3>${x[1]}</h3><p>${x[2]}</p></div>`).join("")}
-function renderWhy(id="why"){let e=document.getElementById(id);if(e)e.innerHTML=data.why.map(x=>`<div class="card"><div class="icon">${x[0]}</div><h3>${x[1]}</h3><p>${x[2]}</p></div>`).join("")}
-function renderPrices(list=data.phones,id="priceList"){let e=document.getElementById(id);if(!e)return;e.innerHTML=list.map(p=>`<div class="card"><h3>${p.name}</h3><div class="prices"><div class="price"><b>🖥️ الشاشة</b>${p.screen||"اتصل للسعر"}</div><div class="price"><b>💻 السوفتوير</b>${p.software||"اتصل للسعر"}</div><div class="price"><b>🔧 الهاردوير</b>${p.hardware||"اتصل للسعر"}</div><div class="price"><b>📷 الكاميرا</b>${p.camera||"اتصل للسعر"}</div></div><br><a class="btn green" href="${wa()}">احجز عبر واتساب</a></div>`).join("")}
-common();
-document.getElementById("heroTitle").textContent=data.heroTitle;document.getElementById("heroText").textContent=data.heroText;document.getElementById("areas").textContent="📍 "+data.areas;renderServices();</script></body></html>
+</html>
