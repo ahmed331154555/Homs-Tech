@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="nl" dir="ltr">
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Tweedehands telefoons | HOMS TECH</title>
+
+<style>
+
+*{
+box-sizing:border-box
+}
+
+body{
+margin:0;
+font-family:Arial,Helvetica,sans-serif;
+background:#f5f7fa;
+color:#111827
+}
+
+header{
+background:#111827;
+color:#fff;
+padding:15px 5%;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:20px;
+position:sticky;
+top:0;
+z-index:10
+}
+
+.logo{
+width:170px;
+height:auto
+}
+
+nav{
+display:flex;
+gap:8px;
+align-items:center;
+flex-wrap:wrap
+}
+
+nav a{
+color:#fff;
+text-decoration:none;
+padding:10px 13px;
+border-radius:10px;
+font-weight:700
+}
+
+nav a:hover{
+background:#2563eb
+}
+
+nav a.active{
+background:#2563eb
+}
+
+.btn{
+display:inline-block;
+padding:12px 18px;
+border-radius:11px;
+text-decoration:none;
+font-weight:800;
+border:0;
+cursor:pointer
+}
+
+.btn.green{
+background:#16c766;
+color:#fff
+}
+
+.btn.green:hover{
+background:#0eae56
+}
+
+.container{
+max-width:1150px;
+margin:auto;
+padding:55px 20px
+}
+
+.hero{
+background:
+radial-gradient(
+circle at 75% 35%,
+rgba(37,99,235,.35),
+transparent 35%
+),
+linear-gradient(
+135deg,
+#07101f,
+#1b2b43
+);
+
+color:#fff;
+border-radius:25px;
+padding:55px 35px;
+text-align:center;
+margin-bottom:45px
+}
+
+.hero h1{
+font-size:42px;
+margin:0 0 15px
+}
+
+.hero p{
+font-size:18px;
+line-height:1.7;
+max-width:750px;
+margin:0 auto 25px;
+color:#e5e7eb
+}
+
+.section-title{
+text-align:center;
+font-size:32px;
+margin:0 0 35px;
+position:relative
+}
+
+.section-title:after{
+content:"";
+display:block;
+width:60px;
+height:4px;
+background:#2563eb;
+border-radius:5px;
+margin:12px auto 0
+}
+
+.used-grid{
+display:grid;
+grid-template-columns:
+repeat(3,minmax(0,1fr));
+gap:22px
+}
+
+.card{
+background:#fff;
+border-radius:18px;
+overflow:hidden;
+box-shadow:
+0 8px 30px rgba(0,0,0,.08);
+border:1px solid #eef0f3;
+transition:.2s
+}
+
+.card:hover{
+transform:translateY(-3px);
+box-shadow:
+0 12px 35px rgba(0,0,0,.12)
+}
+
+.photo{
+width:100%;
+height:230px;
+background:#eef2f7;
+display:flex;
+align-items:center;
+justify-content:center;
+overflow:hidden
+}
+
+.photo img{
+width:100%;
+height:100%;
+object-fit:cover
+}
+
+.no-photo{
+font-size:70px
+}
+
+.content{
+padding:20px
+}
+
+.name{
+font-size:22px;
+font-weight:800;
+margin-bottom:5px
+}
+
+.brand{
+color:#6b7280;
+font-size:14px;
+margin-bottom:15px
+}
+
+.price{
+font-size:26px;
+font-weight:900;
+color:#2563eb;
+margin:12px 0
+}
+
+.info{
+display:flex;
+flex-wrap:wrap;
+gap:7px;
+margin:12px 0
+}
+
+.badge{
+background:#eef2ff;
+color:#1d4ed8;
+padding:7px 10px;
+border-radius:8px;
+font-size:13px;
+font-weight:700
+}
+
+.description{
+color:#4b5563;
+line-height:1.6;
+font-size:15px;
+min-height:48px;
+margin:15px 0
+}
+
+.contact{
+width:100%;
+text-align:center;
+margin-top:12px
+}
+
+.empty{
+background:#fff;
+border-radius:18px;
+padding:45px 20px;
+text-align:center;
+box-shadow:0 8px 25px rgba(0,0,0,.06)
+}
+
+.empty-icon{
+font-size:55px;
+margin-bottom:10px
+}
+
+.empty h2{
+margin:5px 0 10px
+}
+
+.empty p{
+color:#6b7280
+}
+
+.contact-box{
+margin-top:55px;
+background:#111827;
+color:#fff;
+border-radius:22px;
+padding:35px 25px;
+text-align:center
+}
+
+.contact-box h2{
+margin-top:0
+}
+
+.contact-box p{
+color:#d1d5db;
+line-height:1.6
+}
+
+footer{
+background:#0b1422;
+color:#fff;
+text-align:center;
+padding:30px 20px;
+margin-top:50px
+}
+
+footer p{
+margin:7px 0;
+color:#cbd5e1
+}
+
+@media(max-width:900px){
+
+.used-grid{
+grid-template-columns:
+repeat(2,minmax(0,1fr))
+}
+
+.hero h1{
+font-size:34px
+}
+
+}
+
+@media(max-width:600px){
+
+header{
+flex-direction:column;
+padding:15px 4%
+}
+
+.logo{
+width:150px
+}
+
+nav{
+justify-content:center
+}
+
+nav a{
+font-size:14px;
+padding:8px 9px
+}
+
+.container{
+padding:35px 15px
+}
+
+.hero{
+padding:40px 20px
+}
+
+.hero h1{
+font-size:29px
+}
+
+.used-grid{
+grid-template-columns:1fr
+}
+
+}
+</style>
+</head>
+
+
+<body>
+
+
+<header>
+
+<a href="/">
+<img
+class="logo"
+src="assets/homs-tech-logo.png"
+alt="HOMS TECH"
+onerror="this.style.display='none'">
+</a>
+
+<nav>
+
+<a href="/">Home</a>
+
+<a href="/about.html">Over ons</a>
+
+<a href="/repair.html">Reparaties</a>
+
+<a href="/devices.html">Apparaten</a>
+
+<a href="/prices.html">Prijzen</a>
+
+<a
+href="/used.html"
+class="active">
+Tweedehands
+</a>
+
+</nav>
+
+</header>
+
+
+
+<main class="container">
+
+
+<section class="hero">
+
+<h1>♻️ Tweedehands telefoons</h1>
+
+<p>
+Bekijk onze beschikbare tweedehands telefoons.
+Alle apparaten worden duidelijk beschreven met
+prijs, conditie en opslag.
+</p>
+
+<a
+id="heroWhatsApp"
+class="btn green"
+target="_blank">
+💬 Vraag via WhatsApp
+</a>
+
+</section>
+
+
+
+<h2 class="section-title">
+Beschikbare apparaten
+</h2>
+
+
+<div
+id="usedGrid"
+class="used-grid">
+</div>
+
+
+
+<div
+id="empty"
+class="empty"
+style="display:none">
+
+<div class="empty-icon">
+📱
+</div>
+
+<h2>
+Momenteel geen apparaten beschikbaar
+</h2>
+
+<p>
+Kom later terug of neem contact met ons op
+voor beschikbare toestellen.
+</p>
+
+</div>
+
+
+
+<section class="contact-box">
+
+<h2>
+📱 Interesse in een apparaat?
+</h2>
+
+<p>
+Neem direct contact met ons op via WhatsApp
+voor meer informatie of om een afspraak te maken.
+</p>
+
+<a
+id="contactWhatsApp"
+class="btn green"
+target="_blank">
+💬 Contact via WhatsApp
+</a>
+
+</section>
+
+
+</main>
+
+
+
+<footer>
+
+<p>
+<strong>HOMS TECH</strong>
+</p>
+
+<p>
+Telefoonreparatie aan huis
+</p>
+
+<p>
+© HOMS TECH
+</p>
+
+</footer>
+
+
+
+<script>
+
+let data={};
+
+const defaultData={
+businessName:"HOMS TECH",
+tagline:"Telefoonreparatie aan huis",
+whatsapp:"",
+phone:"",
+areas:"",
+usedPhones:[]
+};
+
+
+function waLink(number,message){
+
+const clean=
+String(number||"")
+.replace(/\D/g,"");
+
+if(!clean){
+return "#";
+}
+
+return(
+"https://wa.me/"
++
+clean
++
+"?text="
++
+encodeURIComponent(message||"")
+);
+
+}
+
+
+function escapeHtml(value){
+
+return String(value??"")
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;");
+
+}
+
+
+function render(){
+
+const grid=
+document.getElementById("usedGrid");
+
+const empty=
+document.getElementById("empty");
+
+
+const phones=
+Array.isArray(data.usedPhones)
+?data.usedPhones
+:[];
+
+
+if(phones.length===0){
+
+grid.innerHTML="";
+
+empty.style.display="block";
+
+return;
+
+}
+
+
+empty.style.display="none";
+
+
+grid.innerHTML=
+phones.map((p)=>{
+
+const image=
+String(p.image||"").trim();
+
+
+const photo=
+image
+?
+`
+<div class="photo">
+
+<img
+src="${escapeHtml(image)}"
+alt="${escapeHtml(p.name||"Telefoon")}"
+onerror="this.parentElement.innerHTML='<div class=&quot;no-photo&quot;>📱</div>'">
+
+</div>
+`
+:
+`
+<div class="photo">
+
+<div class="no-photo">
+📱
+</div>
+
+</div>
+`;
+
+
+const number=
+p.whatsapp||data.whatsapp;
+
+
+const message=
+"Hallo HOMS TECH, ik heb interesse in "
++
+(p.name||"dit apparaat")
++
+".";
+
+
+const whatsapp=
+number
+?
+`
+<a
+class="btn green contact"
+href="${waLink(number,message)}"
+target="_blank">
+
+💬 Interesse? WhatsApp ons
+
+</a>
+`
+:
+"";
+
+
+return`
+
+<article class="card">
+
+${photo}
+
+<div class="content">
+
+<div class="name">
+${escapeHtml(p.name||"Onbekend apparaat")}
+</div>
+
+<div class="brand">
+${escapeHtml(p.brand||"")}
+</div>
+
+
+<div class="price">
+€ ${escapeHtml(p.price||"Prijs op aanvraag")}
+</div>
+
+
+<div class="info">
+
+${
+p.condition
+?
+`
+<span class="badge">
+Conditie: ${escapeHtml(p.condition)}
+</span>
+`
+:
+""
+}
+
+
+${
+p.storage
+?
+`
+<span class="badge">
+💾 ${escapeHtml(p.storage)}
+</span>
+`
+:
+""
+}
+
+
+${
+p.ram
+?
+`
+<span class="badge">
+RAM: ${escapeHtml(p.ram)}
+</span>
+`
+:
+""
+}
+
+</div>
+
+
+<div class="description">
+
+${escapeHtml(
+p.description||
+"Neem contact met ons op voor meer informatie."
+)}
+
+</div>
+
+
+${whatsapp}
+
+</div>
+
+</article>
+
+`;
+
+}).join("");
+
+}
+
+
+
+async function load(){
+
+try{
+
+const r=
+await fetch("/api/site");
+
+
+if(r.ok){
+
+data=
+await r.json();
+
+}else{
+
+data={
+...defaultData
+};
+
+}
+
+}catch(error){
+
+data={
+...defaultData
+};
+
+}
+
+
+document.title=
+(data.businessName||"HOMS TECH")
++
+" | Tweedehands";
+
+
+const heroWhatsApp=
+document.getElementById("heroWhatsApp");
+
+const contactWhatsApp=
+document.getElementById("contactWhatsApp");
+
+
+if(data.whatsapp){
+
+heroWhatsApp.href=
+waLink(
+data.whatsapp,
+"Hallo HOMS TECH, ik heb interesse in een tweedehands telefoon."
+);
+
+contactWhatsApp.href=
+waLink(
+data.whatsapp,
+"Hallo HOMS TECH, ik wil graag informatie over tweedehands telefoons."
+);
+
+}else{
+
+heroWhatsApp.style.display="none";
+
+contactWhatsApp.style.display="none";
+
+}
+
+
+render();
+
+}
+
+
+load();
+
+</script>
+
+</body>
+</html>
