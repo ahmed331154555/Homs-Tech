@@ -13,52 +13,30 @@
       navDevices: "Apparaten",
       navPrices: "Prijzen",
       whatsapp: "WhatsApp",
-
       aboutTitle: "👋 Over ons",
-      aboutText1:
-        "Wij zijn gespecialiseerd in telefoonreparatie en bieden een snelle en gemakkelijke service bij jou aan de deur.",
-      aboutText2:
-        "Neem contact met ons op via WhatsApp, vertel ons het model van je telefoon en het probleem. Wij geven je de prijs en plannen een afspraak.",
-
+      aboutText1: "Wij zijn gespecialiseerd in telefoonreparatie en bieden een snelle en gemakkelijke service bij jou aan de deur.",
+      aboutText2: "Neem contact met ons op via WhatsApp, vertel ons het model van je telefoon en het probleem. Wij geven je de prijs en plannen een afspraak.",
       aboutBannerTitle: "🚗 Je hoeft niet naar de winkel",
-      aboutBannerText:
-        "Wij komen naar jou binnen ons servicegebied.",
+      aboutBannerText: "Wij komen naar jou binnen ons servicegebied.",
       contactNow: "Neem nu contact op",
-
       repairTitle: "🔧 Wat repareren wij?",
-      repairIntro:
-        "Wij bieden verschillende reparatiediensten voor telefoons.",
-
+      repairIntro: "Wij bieden verschillende reparatiediensten voor telefoons.",
       whyTitle: "Waarom kiezen voor HOMS TECH?",
-
       devicesTitle: "📱 Apparaten",
-      devicesIntro:
-        "Kies een merk om de modellen en prijzen te bekijken.",
-      devicesView:
-        "Klik om modellen en prijzen te bekijken",
-
+      devicesIntro: "Kies een merk om de modellen en prijzen te bekijken.",
+      devicesView: "Klik om modellen en prijzen te bekijken",
       pricesTitle: "💰 Prijzen",
-      pricesIntro:
-        "Reparatieprijzen afhankelijk van het model en de service.",
-
+      pricesIntro: "Reparatieprijzen afhankelijk van het model en de service.",
       allDevices: "Alle apparaten",
       screen: "🖥️ Scherm",
       software: "💻 Software",
       hardware: "🔧 Hardware",
       camera: "📷 Camera",
-
-      contactPrice:
-        "Neem contact op voor de prijs",
-
-      bookWhatsapp:
-        "Boek via WhatsApp",
-
-      footerTag:
-        "Telefoonreparatie bij jou aan de deur",
-
+      contactPrice: "Neem contact op voor de prijs",
+      bookWhatsapp: "Boek via WhatsApp",
+      footerTag: "Telefoonreparatie bij jou aan de deur",
       admin: "⚙️ Admin"
     },
-
 
     ar: {
       dir: "rtl",
@@ -68,74 +46,30 @@
       navDevices: "أنواع الأجهزة",
       navPrices: "الأسعار",
       whatsapp: "واتساب",
-
       aboutTitle: "👋 مين نحن؟",
-      aboutText1:
-        "نحن متخصصون بتصليح الهواتف، ونوفر لك خدمة مريحة وسريعة عند باب بيتك.",
-      aboutText2:
-        "تواصل معنا على واتساب، أخبرنا بموديل جهازك والعطل، ونخبرك بالسعر وننسّق معك الموعد.",
-
-      aboutBannerTitle:
-        "🚗 ما تتعب حالك وتروح للمحل",
-
-      aboutBannerText:
-        "نجي لعندك ضمن مناطق الخدمة.",
-
-      contactNow:
-        "تواصل معنا الآن",
-
-      repairTitle:
-        "🔧 شو منصلّح؟",
-
-      repairIntro:
-        "منقدملك خدمات تصليح متنوعة للهواتف.",
-
-      whyTitle:
-        "ليش تختار HOMS TECH؟",
-
-      devicesTitle:
-        "📱 أنواع الأجهزة",
-
-      devicesIntro:
-        "اختار الشركة لمشاهدة الأجهزة والأسعار.",
-
-      devicesView:
-        "اضغط لعرض الموديلات والأسعار",
-
-      pricesTitle:
-        "💰 الأسعار",
-
-      pricesIntro:
-        "أسعار تصليح الأجهزة حسب الموديل والخدمة.",
-
-      allDevices:
-        "كل الأجهزة",
-
-      screen:
-        "🖥️ الشاشة",
-
-      software:
-        "💻 السوفتوير",
-
-      hardware:
-        "🔧 الهاردوير",
-
-      camera:
-        "📷 الكاميرا",
-
-      contactPrice:
-        "اتصل للسعر",
-
-      bookWhatsapp:
-        "احجز عبر واتساب",
-
-      footerTag:
-        "تصليح هواتف عند باب بيتك",
-
-      admin:
-        "⚙️ لوحة التحكم"
+      aboutText1: "نحن متخصصون بتصليح الهواتف، ونوفر لك خدمة مريحة وسريعة عند باب بيتك.",
+      aboutText2: "تواصل معنا على واتساب، أخبرنا بموديل جهازك والعطل، ونخبرك بالسعر وننسّق معك الموعد.",
+      aboutBannerTitle: "🚗 ما تتعب حالك وتروح للمحل",
+      aboutBannerText: "نجي لعندك ضمن مناطق الخدمة.",
+      contactNow: "تواصل معنا الآن",
+      repairTitle: "🔧 شو منصلّح؟",
+      repairIntro: "منقدملك خدمات تصليح متنوعة للهواتف.",
+      whyTitle: "ليش تختار HOMS TECH؟",
+      devicesTitle: "📱 أنواع الأجهزة",
+      devicesIntro: "اختار الشركة لمشاهدة الأجهزة والأسعار.",
+      devicesView: "اضغط لعرض الموديلات والأسعار",
+      pricesTitle: "💰 الأسعار",
+      pricesIntro: "أسعار تصليح الأجهزة حسب الموديل والخدمة.",
+      allDevices: "كل الأجهزة",
+      screen: "🖥️ الشاشة",
+      software: "💻 السوفتوير",
+      hardware: "🔧 الهاردوير",
+      camera: "📷 الكاميرا",
+      contactPrice: "اتصل للسعر",
+      bookWhatsapp: "احجز عبر واتساب",
+      footerTag: "تصليح هواتف عند باب بيتك",
+      admin: "⚙️ لوحة التحكم"
     },
-
 
     en: {
       dir: "ltr",
@@ -145,84 +79,36 @@
       navDevices: "Devices",
       navPrices: "Prices",
       whatsapp: "WhatsApp",
-
-      aboutTitle:
-        "👋 About us",
-
-      aboutText1:
-        "We specialize in phone repair and provide a fast and convenient service at your doorstep.",
-
-      aboutText2:
-        "Contact us on WhatsApp, tell us your phone model and the problem. We will give you the price and arrange an appointment.",
-
-      aboutBannerTitle:
-        "🚗 You don't need to go to the shop",
-
-      aboutBannerText:
-        "We come to you within our service area.",
-
-      contactNow:
-        "Contact us now",
-
-      repairTitle:
-        "🔧 What do we repair?",
-
-      repairIntro:
-        "We provide a variety of phone repair services.",
-
-      whyTitle:
-        "Why choose HOMS TECH?",
-
-      devicesTitle:
-        "📱 Devices",
-
-      devicesIntro:
-        "Choose a brand to view the available models and prices.",
-
-      devicesView:
-        "Click to view models and prices",
-
-      pricesTitle:
-        "💰 Prices",
-
-      pricesIntro:
-        "Repair prices depend on the device model and service.",
-
-      allDevices:
-        "All devices",
-
-      screen:
-        "🖥️ Screen",
-
-      software:
-        "💻 Software",
-
-      hardware:
-        "🔧 Hardware",
-
-      camera:
-        "📷 Camera",
-
-      contactPrice:
-        "Contact us for the price",
-
-      bookWhatsapp:
-        "Book via WhatsApp",
-
-      footerTag:
-        "Phone repair at your doorstep",
-
-      admin:
-        "⚙️ Admin"
+      aboutTitle: "👋 About us",
+      aboutText1: "We specialize in phone repair and provide a fast and convenient service at your doorstep.",
+      aboutText2: "Contact us on WhatsApp, tell us your phone model and the problem. We will give you the price and arrange an appointment.",
+      aboutBannerTitle: "🚗 You don't need to go to the shop",
+      aboutBannerText: "We come to you within our service area.",
+      contactNow: "Contact us now",
+      repairTitle: "🔧 What do we repair?",
+      repairIntro: "We provide a variety of phone repair services.",
+      whyTitle: "Why choose HOMS TECH?",
+      devicesTitle: "📱 Devices",
+      devicesIntro: "Choose a brand to view the available models and prices.",
+      devicesView: "Click to view models and prices",
+      pricesTitle: "💰 Prices",
+      pricesIntro: "Repair prices depend on the device model and service.",
+      allDevices: "All devices",
+      screen: "🖥️ Screen",
+      software: "💻 Software",
+      hardware: "🔧 Hardware",
+      camera: "📷 Camera",
+      contactPrice: "Contact us for the price",
+      bookWhatsapp: "Book via WhatsApp",
+      footerTag: "Phone repair at your doorstep",
+      admin: "⚙️ Admin"
     }
 
   };
 
 
   function getLanguage() {
-
     return localStorage.getItem(LANGUAGE_KEY) || "nl";
-
   }
 
 
@@ -231,8 +117,7 @@
     const lang = getLanguage();
 
     return (
-      (translations[lang] &&
-        translations[lang][key]) ||
+      (translations[lang] && translations[lang][key]) ||
       translations.nl[key] ||
       key
     );
@@ -240,7 +125,7 @@
   }
 
 
-  function applyLanguage(lang) {
+  function setLanguage(lang) {
 
     if (!translations[lang]) {
       lang = "nl";
@@ -252,10 +137,7 @@
     );
 
     document.documentElement.lang = lang;
-
-    document.documentElement.dir =
-      translations[lang].dir;
-
+    document.documentElement.dir = translations[lang].dir;
 
     document
       .querySelectorAll("[data-i18n]")
@@ -265,42 +147,15 @@
           element.getAttribute("data-i18n");
 
         if (translations[lang][key]) {
-
           element.textContent =
             translations[lang][key];
-
         }
 
       });
 
 
-    document
-      .querySelectorAll("[data-i18n-title]")
-      .forEach(function (element) {
+    updateLanguageMenu();
 
-        const key =
-          element.getAttribute("data-i18n-title");
-
-        if (translations[lang][key]) {
-
-          element.setAttribute(
-            "title",
-            translations[lang][key]
-          );
-
-        }
-
-      });
-
-
-    updateLanguageButtons();
-
-  }
-
-
-  function setLanguage(lang) {
-
-    applyLanguage(lang);
 
     if (
       typeof window.renderCurrentPage ===
@@ -314,7 +169,7 @@
   }
 
 
-  function updateLanguageButtons() {
+  function updateLanguageMenu() {
 
     const container =
       document.querySelector(".languages");
@@ -339,107 +194,86 @@
     };
 
 
-    container.innerHTML = `
-
-      <div class="language-dropdown">
-
-        <button
-          type="button"
-          class="language-main"
-        >
-          ${names[current] || names.nl}
-          <span class="language-arrow">▼</span>
-        </button>
+    container.innerHTML = "";
 
 
-        <div class="language-menu">
+    const wrapper =
+      document.createElement("div");
 
-          <button
-            type="button"
-            data-lang-button="nl"
-          >
-            🇳🇱 Nederlands
-          </button>
-
-
-          <button
-            type="button"
-            data-lang-button="ar"
-          >
-            🇸🇦 العربية
-          </button>
-
-
-          <button
-            type="button"
-            data-lang-button="en"
-          >
-            🇬🇧 English
-          </button>
-
-        </div>
-
-      </div>
-
-    `;
+    wrapper.className =
+      "language-dropdown";
 
 
     const mainButton =
-      container.querySelector(
-        ".language-main"
-      );
+      document.createElement("button");
+
+    mainButton.type = "button";
+
+    mainButton.className =
+      "language-main";
+
+    mainButton.innerHTML =
+      (names[current] || names.nl) +
+      ' <span>▼</span>';
 
 
     const menu =
-      container.querySelector(
-        ".language-menu"
-      );
+      document.createElement("div");
+
+    menu.className =
+      "language-menu";
 
 
-    mainButton.addEventListener(
-      "click",
+    ["nl", "ar", "en"].forEach(function (lang) {
+
+      const button =
+        document.createElement("button");
+
+      button.type = "button";
+
+      button.textContent =
+        names[lang];
+
+      button.onclick =
+        function (event) {
+
+          event.stopPropagation();
+
+          setLanguage(lang);
+
+          menu.classList.remove("show");
+
+        };
+
+
+      menu.appendChild(button);
+
+    });
+
+
+    mainButton.onclick =
       function (event) {
 
         event.stopPropagation();
 
-        menu.classList.toggle("open");
+        menu.classList.toggle("show");
 
-      }
-    );
-
-
-    container
-      .querySelectorAll(
-        "[data-lang-button]"
-      )
-      .forEach(function (button) {
-
-        button.addEventListener(
-          "click",
-          function () {
-
-            const lang =
-              button.getAttribute(
-                "data-lang-button"
-              );
-
-            setLanguage(lang);
-
-          }
-        );
-
-      });
+      };
 
 
-    document.addEventListener(
-      "click",
+    wrapper.appendChild(mainButton);
+
+    wrapper.appendChild(menu);
+
+    container.appendChild(wrapper);
+
+
+    document.onclick =
       function () {
 
-        menu.classList.remove("open");
+        menu.classList.remove("show");
 
-      },
-      { once: true }
-    );
+      };
 
   }
 
@@ -455,10 +289,8 @@
       .forEach(function (element) {
 
         if (data.businessName) {
-
           element.textContent =
             data.businessName;
-
         }
 
       });
@@ -469,10 +301,8 @@
       .forEach(function (element) {
 
         if (data.tagline) {
-
           element.textContent =
             data.tagline;
-
         }
 
       });
@@ -480,23 +310,19 @@
 
     if (data.whatsapp) {
 
+      const message =
+        getLanguage() === "ar"
+          ? "مرحبا، أريد الاستفسار عن تصليح هاتفي"
+          : getLanguage() === "en"
+          ? "Hello, I would like to ask about phone repair."
+          : "Hallo, ik wil graag informeren over telefoonreparatie.";
+
+
       const whatsappUrl =
         "https://wa.me/" +
         data.whatsapp +
         "?text=" +
-        encodeURIComponent(
-
-          getLanguage() === "ar"
-
-            ? "مرحبا، أريد الاستفسار عن تصليح هاتفي"
-
-            : getLanguage() === "en"
-
-            ? "Hello, I would like to ask about phone repair."
-
-            : "Hallo, ik wil graag informeren over telefoonreparatie."
-
-        );
+        encodeURIComponent(message);
 
 
       document
@@ -519,10 +345,7 @@
 
           element.href =
             "tel:" +
-            data.phone.replace(
-              /\s/g,
-              ""
-            );
+            data.phone.replace(/\s/g, "");
 
         });
 
@@ -531,11 +354,11 @@
   }
 
 
-  function addDropdownStyles() {
+  function addStyles() {
 
     if (
       document.getElementById(
-        "homs-language-styles"
+        "homs-language-style"
       )
     ) {
 
@@ -549,94 +372,93 @@
 
 
     style.id =
-      "homs-language-styles";
+      "homs-language-style";
 
 
     style.textContent = `
 
-      .languages{
-        position:relative;
-        display:flex;
-        justify-content:center;
-        align-items:center;
+      .languages {
+        position: relative;
+        z-index: 9999;
       }
 
-      .language-dropdown{
-        position:relative;
+      .language-dropdown {
+        position: relative;
+        display: inline-block;
       }
 
-      .language-main{
-        background:#26354d;
-        color:#fff;
-        border:0;
-        border-radius:8px;
-        padding:8px 11px;
-        cursor:pointer;
-        font-weight:700;
-        white-space:nowrap;
+      .language-main {
+        display: block;
+        background: #26354d;
+        color: #fff;
+        border: 0;
+        border-radius: 8px;
+        padding: 9px 12px;
+        cursor: pointer;
+        font-weight: 700;
+        white-space: nowrap;
       }
 
-      .language-main:hover{
-        background:#fff;
-        color:#111827;
+      .language-main:hover {
+        background: #fff;
+        color: #111827;
       }
 
-      .language-arrow{
-        font-size:10px;
-        margin-left:5px;
+      .language-main span {
+        font-size: 10px;
+        margin-left: 5px;
       }
 
-      [dir="rtl"] .language-arrow{
-        margin-left:0;
-        margin-right:5px;
+      .language-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%);
+        width: 165px;
+        background: #111827;
+        border-radius: 10px;
+        padding: 6px;
+        display: none;
+        flex-direction: column;
+        gap: 5px;
+        box-shadow: 0 8px 25px rgba(0,0,0,.30);
       }
 
-      .language-menu{
-        position:absolute;
-        top:calc(100% + 6px);
-        left:50%;
-        transform:translateX(-50%);
-        display:none;
-        flex-direction:column;
-        gap:4px;
-        min-width:150px;
-        background:#111827;
-        padding:6px;
-        border-radius:10px;
-        box-shadow:0 8px 25px #00000030;
-        z-index:1000;
+      .language-menu.show {
+        display: flex !important;
       }
 
-      .language-menu.open{
-        display:flex;
+      .language-menu button {
+        width: 100%;
+        display: block;
+        background: #26354d;
+        color: #fff;
+        border: 0;
+        border-radius: 7px;
+        padding: 10px 8px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 14px;
       }
 
-      .language-menu button{
-        width:100%;
-        background:#26354d;
-        color:#fff;
-        border:0;
-        border-radius:7px;
-        padding:8px 10px;
-        cursor:pointer;
-        font-weight:700;
-        text-align:center;
+      .language-menu button:hover {
+        background: #fff;
+        color: #111827;
       }
 
-      .language-menu button:hover{
-        background:#fff;
-        color:#111827;
-      }
+      @media(max-width:500px) {
 
-      @media(max-width:500px){
-
-        .language-main{
-          font-size:12px;
-          padding:7px 9px;
+        .language-main {
+          font-size: 12px;
+          padding: 8px 9px;
         }
 
-        .language-menu{
-          min-width:140px;
+        .language-menu {
+          width: 150px;
+        }
+
+        .language-menu button {
+          font-size: 13px;
         }
 
       }
@@ -651,15 +473,13 @@
 
   function init() {
 
-    addDropdownStyles();
+    addStyles();
+
+    updateLanguageMenu();
 
     updateCommonElements();
 
-    applyLanguage(
-      getLanguage()
-    );
-
-    updateCommonElements();
+    setLanguage(getLanguage());
 
   }
 
@@ -668,7 +488,7 @@
     setLanguage;
 
   window.applyLanguage =
-    applyLanguage;
+    setLanguage;
 
   window.getLanguage =
     getLanguage;
@@ -681,8 +501,7 @@
 
 
   if (
-    document.readyState ===
-    "loading"
+    document.readyState === "loading"
   ) {
 
     document.addEventListener(
@@ -690,9 +509,7 @@
       init
     );
 
-  }
-
-  else {
+  } else {
 
     init();
 
