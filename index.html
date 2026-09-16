@@ -1,13 +1,19 @@
 ```html
 <!doctype html>
 <html lang="nl" dir="ltr">
+
 <head>
+
 <meta charset="utf-8">
+
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Home | HOMS TECH</title>
 
 <style>
+
 *{box-sizing:border-box}
+
 body{
   margin:0;
   font-family:Arial,Tahoma,sans-serif;
@@ -15,6 +21,7 @@ body{
   color:#111827;
   line-height:1.7
 }
+
 header{
   background:#111827;
   color:#fff;
@@ -27,17 +34,20 @@ header{
   top:0;
   z-index:10
 }
+
 .brand img{
   width:145px;
   height:auto;
   display:block
 }
+
 nav{
   display:flex;
   gap:8px;
   flex-wrap:wrap;
   justify-content:center
 }
+
 nav a{
   color:#fff;
   text-decoration:none;
@@ -45,10 +55,12 @@ nav a{
   padding:9px 12px;
   border-radius:8px
 }
+
 nav a:hover,
 nav a.active{
   background:#26354d
 }
+
 .btn{
   display:inline-block;
   padding:12px 20px;
@@ -58,24 +70,29 @@ nav a.active{
   border:0;
   cursor:pointer
 }
+
 .green{
   background:#25d366;
   color:#fff
 }
+
 .white{
   background:#fff;
   color:#111827
 }
+
 .dark{
   background:#111827;
   color:#fff
 }
+
 .languages{
   display:flex;
   gap:5px;
   flex-wrap:wrap;
   justify-content:center
 }
+
 .languages button{
   background:#26354d;
   color:#fff;
@@ -85,52 +102,62 @@ nav a.active{
   cursor:pointer;
   font-weight:700
 }
+
 .languages button:hover,
 .languages button.active{
   background:#fff;
   color:#111827
 }
+
 .hero{
   background:linear-gradient(135deg,#111827,#30425c);
   color:#fff;
   text-align:center;
   padding:80px 6%
 }
+
 .hero h1{
   font-size:clamp(36px,7vw,62px);
   line-height:1.2;
   margin:0 0 16px
 }
+
 .hero p{
   font-size:20px;
   max-width:760px;
   margin:0 auto 25px;
   color:#e5e7eb
 }
+
 main{
   min-height:calc(100vh - 150px)
 }
+
 section{
   max-width:1100px;
   margin:auto;
   padding:55px 6%
 }
+
 h1.page-title,
 h2{
   text-align:center;
   font-size:34px
 }
+
 .intro{
   text-align:center;
   max-width:800px;
   margin:auto;
   font-size:19px
 }
+
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
   gap:18px
 }
+
 .card,
 .about{
   background:#fff;
@@ -139,16 +166,20 @@ h2{
   box-shadow:0 7px 25px #0000000c;
   text-align:center
 }
+
 .icon{
   font-size:40px
 }
+
 .card h3{
   margin:8px 0
 }
+
 .card p{
   color:#6b7280;
   margin:0
 }
+
 .banner{
   background:#25d366;
   color:#fff;
@@ -156,29 +187,35 @@ h2{
   padding:34px;
   text-align:center
 }
+
 .banner h2{
   margin:0 0 5px
 }
+
 .prices{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:8px
 }
+
 .price{
   background:#f3f4f6;
   border-radius:9px;
   padding:9px;
   text-align:left
 }
+
 .price b{
   display:block
 }
+
 footer{
   background:#111827;
   color:#ddd;
   text-align:center;
   padding:28px
 }
+
 .small{
   color:#9ca3af;
   font-size:14px
@@ -193,6 +230,7 @@ footer{
 }
 
 @media(max-width:850px){
+
   header{
     position:relative;
     flex-wrap:wrap;
@@ -215,9 +253,11 @@ footer{
   .languages{
     order:2
   }
+
 }
 
 @media(max-width:500px){
+
   nav a{
     padding:7px 8px;
     font-size:13px
@@ -235,137 +275,211 @@ footer{
     font-size:12px;
     padding:6px 7px
   }
+
 }
+
 </style>
+
 </head>
+
 
 <body>
 
+
 <header>
 
+
 <a class="brand" href="index.html">
-<img src="assets/homs-tech-logo.png" alt="HOMS TECH">
+
+<img
+  src="assets/homs-tech-logo.png"
+  alt="HOMS TECH"
+>
+
 </a>
 
+
 <nav>
-<a href="index.html" data-i18n="navHome">Home</a>
-<a href="about.html" data-i18n="navAbout">Over ons</a>
-<a href="repair.html" data-i18n="navRepair">Reparaties</a>
-<a href="devices.html" data-i18n="navDevices">Apparaten</a>
-<a href="prices.html" data-i18n="navPrices">Prijzen</a>
+
+<a href="index.html" data-i18n="navHome">
+Home
+</a>
+
+<a href="about.html" data-i18n="navAbout">
+Over ons
+</a>
+
+<a href="repair.html" data-i18n="navRepair">
+Reparaties
+</a>
+
+<a href="devices.html" data-i18n="navDevices">
+Apparaten
+</a>
+
+<a href="prices.html" data-i18n="navPrices">
+Prijzen
+</a>
+
 </nav>
+
 
 <div class="languages"></div>
 
-<a class="btn green" data-wa data-i18n="whatsapp">
+
+<a
+  class="btn green"
+  data-wa
+  data-i18n="whatsapp"
+>
 WhatsApp
 </a>
 
+
 </header>
+
 
 <main>
 
+
 <div class="hero">
+
 
 <h1 id="heroTitle"></h1>
 
+
 <p id="heroText"></p>
+
 
 <a
   class="btn green"
   data-wa
   data-i18n="bookWhatsapp"
-  id="bookWhatsapp">
+  id="bookWhatsapp"
+>
 💬 Boek via WhatsApp
 </a>
+
 
 <a
   class="btn white"
   data-phone
   data-i18n="callNow"
-  id="callNow">
+  id="callNow"
+>
 📞 Bel nu
 </a>
 
+
 </div>
 
+
 <section>
+
 
 <div class="banner">
 
+
 <h2 id="bannerTitle"></h2>
+
 
 <p id="areas"></p>
 
+
 </div>
+
 
 </section>
 
+
 <section>
+
 
 <h2 data-i18n="servicesTitle">
 Onze diensten
 </h2>
 
-<div id="services" class="grid"></div>
+
+<div
+  id="services"
+  class="grid"
+></div>
+
 
 </section>
 
+
 </main>
+
 
 <footer>
 
-<strong data-name>HOMS TECH</strong>
 
-<p data-tag>Telefoonreparatie bij jou aan de deur</p>
+<strong data-name>
+HOMS TECH
+</strong>
 
-<p class="small">© HOMS TECH</p>
+
+<p data-tag>
+Telefoonreparatie bij jou aan de deur
+</p>
+
+
+<p class="small">
+© HOMS TECH
+</p>
+
 
 <a
   class="btn white"
   href="admin/index.html"
-  data-i18n="admin">
+  data-i18n="admin"
+>
 ⚙️ Admin
 </a>
 
+
 </footer>
+
 
 <script>
 
 const KEY = "homsTechData";
 
+
 const defaults = {
 
-  businessName: "HOMS TECH",
+  businessName:"HOMS TECH",
 
-  tagline: "Telefoonreparatie bij jou aan de deur",
+  tagline:"Telefoonreparatie bij jou aan de deur",
 
-  heroTitle: "Telefoon kapot? Wij komen naar jou! 🚗📱",
+  heroTitle:
+    "Telefoon kapot? Wij komen naar jou! 🚗📱",
 
   heroText:
     "Reparatie van alle soorten telefoons bij jou aan de deur — snelle service, netjes werk en betaalbare prijzen.",
 
-  whatsapp: "31612345678",
+  whatsapp:"31612345678",
 
-  phone: "+31 6 12345678",
+  phone:"+31 6 12345678",
 
-  areas: "Rotterdam en omgeving",
+  areas:"Rotterdam en omgeving",
 
-  services: [
+  services:[
     ["🖥️","Scherm vervangen","Gebroken of defect scherm?"],
     ["🔋","Batterij vervangen","Batterij snel leeg of zwak?"],
     ["🔌","Laadproblemen","Telefoon laadt niet of valt uit?"],
     ["⚙️","Hardware & software","Diagnose en reparatie van verschillende problemen."]
   ],
 
-  why: [
+  why:[
     ["⚡","Snelle service","We proberen de reparatie zo snel mogelijk uit te voeren."],
     ["🛠️","Professioneel","Nauwkeurige diagnose en netjes werk."],
     ["🚗","Wij komen naar jou","Mobiele service, zodat je niet hoeft te reizen."],
     ["💰","Betaalbare prijs","Vraag de prijs voordat we repareren."]
   ],
 
-  phones: [
+  phones:[
     {
       name:"iPhone 12",
       brand:"Apple",
@@ -418,17 +532,21 @@ const defaults = {
 
 };
 
+
 let data =
-  JSON.parse(localStorage.getItem(KEY) || "null") ||
+  JSON.parse(
+    localStorage.getItem(KEY) || "null"
+  ) ||
   structuredClone(defaults);
 
+
 if(!Array.isArray(data.phones)){
-  data.phones = structuredClone(defaults.phones);
+
+  data.phones =
+    structuredClone(defaults.phones);
+
 }
 
-function saveData(){
-  localStorage.setItem(KEY,JSON.stringify(data));
-}
 
 function wa(){
 
@@ -437,134 +555,95 @@ function wa(){
 
   let message;
 
+
   if(lang === "ar"){
-    message = "مرحبا، أريد الاستفسار عن تصليح هاتفي";
+
+    message =
+      "مرحبا، أريد الاستفسار عن تصليح هاتفي";
+
   }
+
   else if(lang === "en"){
-    message = "Hello, I would like to ask about phone repair.";
+
+    message =
+      "Hello, I would like to ask about phone repair.";
+
   }
+
   else{
-    message = "Hallo, ik wil graag informeren over telefoonreparatie.";
+
+    message =
+      "Hallo, ik wil graag informeren over telefoonreparatie.";
+
   }
+
 
   return "https://wa.me/" +
     data.whatsapp +
     "?text=" +
     encodeURIComponent(message);
+
 }
+
 
 function common(){
 
-  document.querySelectorAll("[data-name]").forEach(function(e){
-    e.textContent = data.businessName;
-  });
+  document
+    .querySelectorAll("[data-name]")
+    .forEach(function(e){
 
-  document.querySelectorAll("[data-tag]").forEach(function(e){
-    e.textContent = data.tagline;
-  });
+      e.textContent =
+        data.businessName;
 
-  document.querySelectorAll("[data-wa]").forEach(function(e){
-    e.href = wa();
-  });
+    });
 
-  document.querySelectorAll("[data-phone]").forEach(function(e){
-    e.href =
-      "tel:" +
-      data.phone.replace(/\s/g,"");
-  });
+
+  document
+    .querySelectorAll("[data-tag]")
+    .forEach(function(e){
+
+      e.textContent =
+        data.tagline;
+
+    });
+
+
+  document
+    .querySelectorAll("[data-wa]")
+    .forEach(function(e){
+
+      e.href =
+        wa();
+
+    });
+
+
+  document
+    .querySelectorAll("[data-phone]")
+    .forEach(function(e){
+
+      e.href =
+        "tel:" +
+        data.phone.replace(/\s/g,"");
+
+    });
 
 }
+
 
 function renderServices(){
 
   const element =
     document.getElementById("services");
 
-  if(!element) return;
+  if(!element){
+    return;
+  }
 
-  element.innerHTML =
-    data.services.map(function(x){
-
-      return `
-        <div class="card">
-
-          <div class="icon">${x[0]}</div>
-
-          <h3>${x[1]}</h3>
-
-          <p>${x[2]}</p>
-
-        </div>
-      `;
-
-    }).join("");
-
-}
-
-function updateHomeContent(){
 
   const lang =
     localStorage.getItem("homsTechLanguage") || "nl";
 
-  const translations =
-    window.homsTechTranslations;
 
-  if(!translations || !translations[lang]){
-    return;
-  }
-
-  const t = translations[lang];
-
-  const heroTitle =
-    document.getElementById("heroTitle");
-
-  const heroText =
-    document.getElementById("heroText");
-
-  const bannerTitle =
-    document.getElementById("bannerTitle");
-
-  const areas =
-    document.getElementById("areas");
-
-  if(heroTitle){
-    heroTitle.textContent = t.heroTitle || data.heroTitle;
-  }
-
-  if(heroText){
-    heroText.textContent = t.heroText || data.heroText;
-  }
-
-  if(bannerTitle){
-    bannerTitle.textContent =
-      t.bannerTitle || "";
-  }
-
-  if(areas){
-    areas.textContent =
-      "📍 " + data.areas;
-  }
-
-}
-
-window.renderCurrentPage = function(){
-
-  common();
-
-  renderServices();
-
-  updateHomeContent();
-
-};
-
-window.homsTechData = data;
-
-window.renderCurrentPage();
-
-</script>
-
-<script src="language.js"></script>
-
-</body>
-</html>
+  cons
 ```
