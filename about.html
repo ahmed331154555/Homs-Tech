@@ -1,45 +1,853 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>مين نحن | HOMS TECH</title><style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,Tahoma,sans-serif;background:#f5f7fa;color:#111827;line-height:1.7}
-header{background:#111827;color:#fff;padding:12px 5%;display:flex;justify-content:space-between;align-items:center;gap:20px;position:sticky;top:0;z-index:10}.brand img{width:145px;height:auto;display:block}
-nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}nav a{color:#fff;text-decoration:none;font-weight:700;padding:9px 12px;border-radius:8px}nav a:hover,nav a.active{background:#26354d}
-.btn{display:inline-block;padding:12px 20px;border-radius:11px;font-weight:800;text-decoration:none;border:0;cursor:pointer}.green{background:#25d366;color:#fff}.white{background:#fff;color:#111827}.dark{background:#111827;color:#fff}
-.hero{background:linear-gradient(135deg,#111827,#30425c);color:#fff;text-align:center;padding:80px 6%}.hero h1{font-size:clamp(36px,7vw,62px);line-height:1.2;margin:0 0 16px}.hero p{font-size:20px;max-width:760px;margin:0 auto 25px;color:#e5e7eb}
-main{min-height:calc(100vh - 150px)}section{max-width:1100px;margin:auto;padding:55px 6%}h1.page-title,h2{text-align:center;font-size:34px}.intro{text-align:center;max-width:800px;margin:auto;font-size:19px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}.card,.about{background:#fff;border-radius:18px;padding:24px;box-shadow:0 7px 25px #0000000c;text-align:center}.icon{font-size:40px}.card h3{margin:8px 0}.card p{color:#6b7280;margin:0}.banner{background:#25d366;color:#fff;border-radius:22px;padding:34px;text-align:center}.banner h2{margin:0 0 5px}
-.prices{display:grid;grid-template-columns:1fr 1fr;gap:8px}.price{background:#f3f4f6;border-radius:9px;padding:9px;text-align:right}.price b{display:block}
-footer{background:#111827;color:#ddd;text-align:center;padding:28px}.small{color:#9ca3af;font-size:14px}
-@media(max-width:850px){header{position:relative;flex-wrap:wrap;justify-content:center}nav{order:3;width:100%}nav a{font-size:14px}.brand img{width:130px}}
-@media(max-width:500px){nav a{padding:7px 8px;font-size:13px}.hero{padding:55px 5%}.prices{grid-template-columns:1fr}}
-</style></head><body>
-<header><a class="brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>
-<nav><a href="index.html">الرئيسية</a><a href="about.html">مين نحن</a><a href="repair.html">شو منصلّح</a><a href="devices.html">أنواع الأجهزة</a><a href="prices.html">الأسعار</a></nav>
-<a class="btn green" data-wa>واتساب</a></header><main>
-<section><h1 class="page-title">👋 مين نحن؟</h1><div class="about"><p class="intro">نحن <strong data-name>HOMS TECH</strong> متخصصون بتصليح الهواتف، ونوفر لك خدمة مريحة وسريعة <strong>عند باب بيتك</strong>.</p><p class="intro">تواصل معنا على واتساب، أخبرنا بموديل جهازك والعطل، ونخبرك بالسعر وننسّق معك الموعد.</p></div></section>
-<section><div class="banner"><h2>ما تتعب حالك وتروح للمحل</h2><p>نجي لعندك ضمن مناطق الخدمة.</p><a class="btn white" data-wa>تواصل معنا الآن</a></div></section></main>
-<footer><strong data-name>HOMS TECH</strong><p data-tag>تصليح هواتف عند باب بيتك</p><p class="small">© HOMS TECH</p><a class="btn white" href="admin/index.html">⚙️ لوحة التحكم</a></footer>
+<!DOCTYPE html>
+<html lang="nl" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Over ons - HOMS TECH</title>
+
+  <style>
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+    }
+
+    body{
+      font-family:Arial,Helvetica,sans-serif;
+      background:#f5f7fa;
+      color:#111827;
+      line-height:1.6;
+    }
+
+    a{
+      text-decoration:none;
+      color:inherit;
+    }
+
+    header{
+      position:sticky;
+      top:0;
+      z-index:1000;
+      background:#111827;
+      color:white;
+      box-shadow:0 2px 10px rgba(0,0,0,.15);
+    }
+
+    .nav{
+      max-width:1200px;
+      margin:auto;
+      min-height:72px;
+      padding:0 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+    }
+
+    .logo{
+      width:170px;
+      height:auto;
+      display:block;
+    }
+
+    nav{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+
+    nav a{
+      padding:10px 14px;
+      border-radius:10px;
+      color:#fff;
+      font-weight:600;
+      font-size:15px;
+      transition:.2s;
+    }
+
+    nav a:hover,
+    nav a.active{
+      background:#2563eb;
+    }
+
+    .hero{
+      background:
+        radial-gradient(
+          circle at 75% 35%,
+          rgba(37,99,235,.35),
+          transparent 35%
+        ),
+        linear-gradient(135deg,#07101f,#1b2b43);
+      color:white;
+      padding:75px 20px;
+    }
+
+    .hero-inner{
+      max-width:1200px;
+      margin:auto;
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      align-items:center;
+      gap:50px;
+    }
+
+    .hero h1{
+      font-size:48px;
+      line-height:1.15;
+      margin-bottom:20px;
+    }
+
+    .hero h1 span{
+      color:#60a5fa;
+    }
+
+    .hero p{
+      color:#dbe4f0;
+      font-size:18px;
+      max-width:680px;
+      margin-bottom:28px;
+    }
+
+    .buttons{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:13px 22px;
+      border-radius:10px;
+      font-weight:700;
+      border:2px solid transparent;
+      transition:.2s;
+    }
+
+    .green{
+      background:#16c766;
+      color:white;
+    }
+
+    .green:hover{
+      background:#0eae56;
+    }
+
+    .white{
+      background:white;
+      color:#2563eb;
+    }
+
+    .white:hover{
+      background:#eff6ff;
+    }
+
+    .section{
+      max-width:1200px;
+      margin:auto;
+      padding:70px 20px;
+    }
+
+    .section-title{
+      text-align:center;
+      margin-bottom:45px;
+    }
+
+    .section-title h2{
+      font-size:34px;
+      margin-bottom:10px;
+    }
+
+    .section-title p{
+      color:#6b7280;
+      max-width:700px;
+      margin:auto;
+    }
+
+    .line{
+      width:65px;
+      height:4px;
+      background:#2563eb;
+      border-radius:10px;
+      margin:14px auto 0;
+    }
+
+    .about-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:28px;
+    }
+
+    .card{
+      background:white;
+      border-radius:18px;
+      padding:30px;
+      box-shadow:0 8px 25px rgba(15,23,42,.07);
+    }
+
+    .card h3{
+      font-size:24px;
+      margin-bottom:15px;
+    }
+
+    .card p{
+      color:#4b5563;
+      margin-bottom:12px;
+    }
+
+    .icon{
+      width:55px;
+      height:55px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#eff6ff;
+      border-radius:14px;
+      font-size:27px;
+      margin-bottom:18px;
+    }
+
+    .area-box{
+      margin-top:28px;
+      background:linear-gradient(135deg,#162438,#25364d);
+      color:white;
+      border-radius:22px;
+      padding:35px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:25px;
+    }
+
+    .area-box h3{
+      font-size:25px;
+      margin-bottom:8px;
+    }
+
+    .area-box p{
+      color:#dbe4f0;
+    }
+
+    .why-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:22px;
+    }
+
+    .why-card{
+      background:white;
+      border-radius:18px;
+      padding:25px;
+      box-shadow:0 8px 25px rgba(15,23,42,.07);
+    }
+
+    .why-card .emoji{
+      font-size:34px;
+      margin-bottom:14px;
+    }
+
+    .why-card h3{
+      margin-bottom:8px;
+      font-size:20px;
+    }
+
+    .why-card p{
+      color:#6b7280;
+    }
+
+    .contact{
+      background:#111827;
+      color:white;
+      border-radius:22px;
+      padding:40px;
+      text-align:center;
+    }
+
+    .contact h2{
+      font-size:30px;
+      margin-bottom:10px;
+    }
+
+    .contact p{
+      color:#d1d5db;
+      margin-bottom:22px;
+    }
+
+    footer{
+      background:#0b1422;
+      color:#cbd5e1;
+      padding:35px 20px;
+      margin-top:20px;
+    }
+
+    .footer-inner{
+      max-width:1200px;
+      margin:auto;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:20px;
+      flex-wrap:wrap;
+    }
+
+    .footer-name{
+      color:white;
+      font-size:20px;
+      font-weight:800;
+    }
+
+    .footer-links{
+      display:flex;
+      gap:18px;
+      flex-wrap:wrap;
+    }
+
+    .footer-links a:hover{
+      color:white;
+    }
+
+    @media(max-width:900px){
+      .hero-inner{
+        grid-template-columns:1fr;
+      }
+
+      .hero h1{
+        font-size:40px;
+      }
+
+      .about-grid{
+        grid-template-columns:1fr;
+      }
+
+      .why-grid{
+        grid-template-columns:1fr 1fr;
+      }
+
+      nav a{
+        padding:8px 9px;
+        font-size:14px;
+      }
+    }
+
+    @media(max-width:550px){
+      .nav{
+        flex-direction:column;
+        padding:12px 15px;
+      }
+
+      nav{
+        justify-content:center;
+      }
+
+      .hero{
+        padding:55px 18px;
+      }
+
+      .hero h1{
+        font-size:32px;
+      }
+
+      .hero p{
+        font-size:16px;
+      }
+
+      .section{
+        padding:50px 16px;
+      }
+
+      .section-title h2{
+        font-size:28px;
+      }
+
+      .why-grid{
+        grid-template-columns:1fr;
+      }
+
+      .area-box{
+        padding:28px 22px;
+        flex-direction:column;
+        align-items:flex-start;
+      }
+
+      .contact{
+        padding:30px 20px;
+      }
+
+      .footer-inner{
+        flex-direction:column;
+        text-align:center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="nav">
+
+    <a href="index.html">
+      <img
+        src="assets/homs-tech-logo.png"
+        class="logo"
+        alt="HOMS TECH"
+      >
+    </a>
+
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="about.html" class="active">Over ons</a>
+      <a href="repair.html">Reparaties</a>
+      <a href="devices.html">Apparaten</a>
+      <a href="prices.html">Prijzen</a>
+    </nav>
+
+  </div>
+</header>
+
+
+<section class="hero">
+
+  <div class="hero-inner">
+
+    <div>
+
+      <h1>
+        Over <span data-name>HOMS TECH</span>
+      </h1>
+
+      <p data-tag>
+        Professionele telefoonreparatie aan huis
+      </p>
+
+      <p>
+        Wij helpen u snel en professioneel met het repareren
+        van uw telefoon. U hoeft niet naar een winkel te komen —
+        wij komen naar u toe.
+      </p>
+
+      <div class="buttons">
+
+        <a
+          class="btn green"
+          data-wa
+          href="#"
+          target="_blank"
+        >
+          💬 WhatsApp
+        </a>
+
+        <a
+          class="btn white"
+          data-phone
+          href="#"
+        >
+          📞 Bel ons
+        </a>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<section class="section">
+
+  <div class="section-title">
+
+    <h2>Wie zijn wij?</h2>
+
+    <p>
+      Betrouwbare telefoonreparatie met service bij u thuis.
+    </p>
+
+    <div class="line"></div>
+
+  </div>
+
+
+  <div class="about-grid">
+
+    <div class="card">
+
+      <div class="icon">📱</div>
+
+      <h3>HOMS TECH</h3>
+
+      <p>
+        Bij HOMS TECH richten wij ons op snelle en professionele
+        reparaties van smartphones.
+      </p>
+
+      <p>
+        Van een kapot scherm tot problemen met software,
+        batterij, camera of andere onderdelen.
+      </p>
+
+      <p>
+        Ons doel is om u een eenvoudige en betrouwbare
+        reparatieservice te bieden.
+      </p>
+
+    </div>
+
+
+    <div class="card">
+
+      <div class="icon">🚗</div>
+
+      <h3>Reparatie aan huis</h3>
+
+      <p>
+        Waarom tijd verliezen met naar een winkel gaan?
+      </p>
+
+      <p>
+        Wij bieden reparatieservice aan huis in
+        Rotterdam en omgeving.
+      </p>
+
+      <p>
+        Neem contact met ons op en bespreek uw reparatie.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="area-box">
+
+    <div>
+
+      <h3>📍 Ons werkgebied</h3>
+
+      <p>
+        Wij zijn actief in:
+        <strong data-area>Rotterdam en omgeving</strong>
+      </p>
+
+    </div>
+
+    <a
+      class="btn green"
+      data-wa
+      href="#"
+      target="_blank"
+    >
+      💬 Neem contact op
+    </a>
+
+  </div>
+
+</section>
+
+
+<section class="section">
+
+  <div class="section-title">
+
+    <h2>Waarom HOMS TECH?</h2>
+
+    <p>
+      Service waarop u kunt rekenen.
+    </p>
+
+    <div class="line"></div>
+
+  </div>
+
+
+  <div id="whyGrid" class="why-grid"></div>
+
+</section>
+
+
+<section class="section">
+
+  <div class="contact">
+
+    <h2>Heeft u een reparatie nodig?</h2>
+
+    <p>
+      Neem vandaag nog contact met ons op.
+    </p>
+
+    <div class="buttons" style="justify-content:center;">
+
+      <a
+        class="btn green"
+        data-wa
+        href="#"
+        target="_blank"
+      >
+        💬 WhatsApp
+      </a>
+
+      <a
+        class="btn white"
+        data-phone
+        href="#"
+      >
+        📞 Bel nu
+      </a>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<footer>
+
+  <div class="footer-inner">
+
+    <div>
+
+      <div class="footer-name" data-name>
+        HOMS TECH
+      </div>
+
+      <div data-tag>
+        Telefoonreparatie aan huis
+      </div>
+
+    </div>
+
+    <div class="footer-links">
+
+      <a href="index.html">Home</a>
+      <a href="about.html">Over ons</a>
+      <a href="repair.html">Reparaties</a>
+      <a href="devices.html">Apparaten</a>
+      <a href="prices.html">Prijzen</a>
+
+    </div>
+
+  </div>
+
+</footer>
+
+
 <script>
-const KEY="homsTechData";
-const defaults={businessName:"HOMS TECH",tagline:"تصليح هواتف عند باب بيتك",heroTitle:"موبايلك خربان؟ نحن منجي لعندك! 🚗📱",heroText:"تصليح جميع أنواع الهواتف عند باب بيتك — خدمة سريعة، شغل نظيف وأسعار مناسبة.",whatsapp:"31612345678",phone:"+31 6 12345678",areas:"Rotterdam والمناطق القريبة",
-services:[["🖥️","تبديل الشاشات","شاشة مكسورة أو لا تعمل؟"],["🔋","تبديل البطاريات","بطارية ضعيفة أو تفرغ بسرعة؟"],["🔌","أعطال الشحن","الجهاز لا يشحن أو يفصل؟"],["⚙️","هاردوير وسوفتوير","تشخيص وإصلاح مختلف الأعطال."]],
-why:[["⚡","سريع","نحاول ننجز التصليح بأسرع وقت ممكن."],["🛠️","احترافي","تشخيص دقيق وشغل مرتب."],["🚗","نجي لعندك","خدمة متنقلة بدل ما تتعب وتطلع."],["💰","سعر مناسب","اسألنا عن السعر قبل التصليح."]],
-phones:[
-{name:"iPhone 12",brand:"Apple",screen:"",software:"",hardware:"",camera:""},
-{name:"iPhone 13",brand:"Apple",screen:"",software:"",hardware:"",camera:""},
-{name:"iPhone 14",brand:"Apple",screen:"",software:"",hardware:"",camera:""},
-{name:"iPhone 15",brand:"Apple",screen:"",software:"",hardware:"",camera:""},
-{name:"iPhone 16",brand:"Apple",screen:"",software:"",hardware:"",camera:""},
-{name:"iPhone 17",brand:"Apple",screen:"",software:"",hardware:"",camera:""}]};
-let data=JSON.parse(localStorage.getItem(KEY)||"null")||structuredClone(defaults);
-if(!Array.isArray(data.phones)) data.phones=structuredClone(defaults.phones);
-function saveData(){localStorage.setItem(KEY,JSON.stringify(data))}
-function wa(){return "https://wa.me/"+data.whatsapp+"?text="+encodeURIComponent("مرحبا، أريد الاستفسار عن تصليح هاتفي");}
-function common(){
- document.querySelectorAll("[data-name]").forEach(e=>e.textContent=data.businessName);
- document.querySelectorAll("[data-tag]").forEach(e=>e.textContent=data.tagline);
- document.querySelectorAll("[data-wa]").forEach(e=>e.href=wa());
- document.querySelectorAll("[data-phone]").forEach(e=>e.href="tel:"+data.phone.replace(/\s/g,""));
-}
-function renderServices(id="services"){let e=document.getElementById(id);if(e)e.innerHTML=data.services.map(x=>`<div class="card"><div class="icon">${x[0]}</div><h3>${x[1]}</h3><p>${x[2]}</p></div>`).join("")}
-function renderWhy(id="why"){let e=document.getElementById(id);if(e)e.innerHTML=data.why.map(x=>`<div class="card"><div class="icon">${x[0]}</div><h3>${x[1]}</h3><p>${x[2]}</p></div>`).join("")}
-function renderPrices(list=data.phones,id="priceList"){let e=document.getElementById(id);if(!e)return;e.innerHTML=list.map(p=>`<div class="card"><h3>${p.name}</h3><div class="prices"><div class="price"><b>🖥️ الشاشة</b>${p.screen||"اتصل للسعر"}</div><div class="price"><b>💻 السوفتوير</b>${p.software||"اتصل للسعر"}</div><div class="price"><b>🔧 الهاردوير</b>${p.hardware||"اتصل للسعر"}</div><div class="price"><b>📷 الكاميرا</b>${p.camera||"اتصل للسعر"}</div></div><br><a class="btn green" href="${wa()}">احجز عبر واتساب</a></div>`).join("")}
-common();
-</script></body></html>
+
+  const defaultWhy = [
+    ["⚡","Snel","Snelle service zonder onnodig wachten."],
+    ["🏠","Aan huis","Wij komen naar u toe voor reparatie."],
+    ["🛠️","Professioneel","Zorgvuldige reparatie met aandacht voor kwaliteit."]
+  ];
+
+
+  function escapeHtml(value){
+
+    return String(value ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+
+  }
+
+
+  function whatsappLink(number){
+
+    let n = String(number || "").replace(/\D/g,"");
+
+    if(!n) return "#";
+
+    return "https://wa.me/" + n;
+
+  }
+
+
+  function phoneLink(number){
+
+    let n = String(number || "").trim();
+
+    if(!n) return "#";
+
+    return "tel:" + n.replace(/[^\d+]/g,"");
+
+  }
+
+
+  async function loadSite(){
+
+    try{
+
+      const response = await fetch("/api/site");
+
+      if(!response.ok){
+        throw new Error("API error");
+      }
+
+      const data = await response.json();
+
+
+      /*
+        Algemene gegevens
+      */
+
+      document.querySelectorAll("[data-name]").forEach(el=>{
+        el.textContent = data.businessName || "HOMS TECH";
+      });
+
+
+      document.querySelectorAll("[data-tag]").forEach(el=>{
+        el.textContent =
+          data.tagline ||
+          "Telefoonreparatie aan huis";
+      });
+
+
+      /*
+        Werkgebied
+      */
+
+      document.querySelectorAll("[data-area]").forEach(el=>{
+        el.textContent =
+          data.areas ||
+          "Rotterdam en omgeving";
+      });
+
+
+      /*
+        WhatsApp
+      */
+
+      document.querySelectorAll("[data-wa]").forEach(el=>{
+
+        el.href = whatsappLink(data.whatsapp);
+
+      });
+
+
+      /*
+        Telefoon
+      */
+
+      document.querySelectorAll("[data-phone]").forEach(el=>{
+
+        el.href = phoneLink(data.phone);
+
+      });
+
+
+      /*
+        Waarom HOMS TECH
+      */
+
+      let why = Array.isArray(data.why)
+        ? data.why
+        : [];
+
+
+      /*
+        Oude gegevens ondersteunen
+      */
+
+      if(!why.length && Array.isArray(data.features)){
+
+        why = data.features.map(item=>{
+
+          if(Array.isArray(item)){
+            return item;
+          }
+
+          return ["⭐",String(item),""];
+        });
+
+      }
+
+
+      if(!why.length){
+        why = defaultWhy;
+      }
+
+
+      const grid = document.getElementById("whyGrid");
+
+      grid.innerHTML = why.map(item=>{
+
+        const emoji =
+          Array.isArray(item) ? item[0] : "⭐";
+
+        const title =
+          Array.isArray(item)
+            ? item[1]
+            : String(item);
+
+        const description =
+          Array.isArray(item)
+            ? item[2]
+            : "";
+
+        return `
+          <div class="why-card">
+
+            <div class="emoji">
+              ${escapeHtml(emoji)}
+            </div>
+
+            <h3>
+              ${escapeHtml(title)}
+            </h3>
+
+            <p>
+              ${escapeHtml(description)}
+            </p>
+
+          </div>
+        `;
+
+      }).join("");
+
+
+    }catch(error){
+
+      console.error("HOMS TECH:",error);
+
+      /*
+        إذا تعذر الاتصال بالـAPI،
+        تبقى الصفحة قابلة للعرض.
+      */
+
+      document.querySelectorAll("[data-name]").forEach(el=>{
+        el.textContent="HOMS TECH";
+      });
+
+      document.querySelectorAll("[data-tag]").forEach(el=>{
+        el.textContent="Telefoonreparatie aan huis";
+      });
+
+      document.querySelectorAll("[data-area]").forEach(el=>{
+        el.textContent="Rotterdam en omgeving";
+      });
+
+      document.getElementById("whyGrid").innerHTML =
+        defaultWhy.map(item=>`
+          <div class="why-card">
+            <div class="emoji">${item[0]}</div>
+            <h3>${item[1]}</h3>
+            <p>${item[2]}</p>
+          </div>
+        `).join("");
+
+    }
+
+  }
+
+
+  loadSite();
+
+</script>
+
+</body>
+</html>
