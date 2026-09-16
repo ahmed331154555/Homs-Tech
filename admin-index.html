@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin | HOMS TECH</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb;color:#111827}
+header{background:#111827;color:#fff;padding:16px 5%;display:flex;align-items:center;justify-content:space-between;gap:15px}
+header a{color:#fff;text-decoration:none}
+.logo{font-weight:800;font-size:21px}
+.container{max-width:1100px;margin:auto;padding:22px 16px 50px}
+.panel{background:#fff;border-radius:18px;padding:22px;margin:16px 0;box-shadow:0 7px 25px #0000000c}
+h1,h2{margin-top:0}
+label{display:block;font-weight:700;margin:12px 0 6px}
+input,textarea,select{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;font:inherit}
+textarea{min-height:75px;resize:vertical}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.item{border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin:12px 0}
+.item-grid{display:grid;grid-template-columns:90px 1fr 1fr;gap:8px}
+.phone-grid{display:grid;grid-template-columns:1.2fr .8fr 1fr 1fr 1fr 1fr;gap:8px}
+button,.btn{border:0;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}
+.primary{background:#111827;color:#fff}.green{background:#16a34a;color:#fff}.red{background:#dc2626;color:#fff}.light{background:#eef2f7;color:#111827}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.msg{padding:12px;border-radius:10px;margin-top:12px}
+.ok{background:#dcfce7;color:#166534}.err{background:#fee2e2;color:#991b1b}
+.muted{color:#6b7280;font-size:14px}
+.login{max-width:430px;margin:60px auto}
+.hidden{display:none}
+@media(max-width:800px){
+ .grid,.item-grid,.phone-grid{grid-template-columns:1fr}
+ header{padding:14px 4%}
+}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="/">📱 HOMS TECH</a>
+  <div class="actions" style="margin:0">
+    <a class="btn light" href="/" style="color:#111827">Website</a>
+    <button id="logoutBtn" class="btn light hidden" onclick="logout()">Uitloggen</button>
+  </div>
+</header>
+
+<div class="container">
+  <div id="loginBox" class="panel login">
+    <h1>🔐 Admin</h1>
+    <p class="muted">Log in om prijzen en websitegegevens te beheren.</p>
+    <label>Gebruikersnaam</label>
+    <input id="username" value="admin" autocomplete="username">
+    <label>Wachtwoord</label>
+    <input id="password" type="password" autocomplete="current-password">
+    <div class="actions"><button class="btn primary" onclick="login()">Inloggen</button></div>
+    <div id="loginMsg"></div>
+  </div>
+
+  <div id="dashboard" class="hidden">
+    <div class="panel">
+      <h1>⚙️ HOMS TECH Admin</h1>
+      <p class="muted">Wijzigingen worden op de server opgeslagen en kunnen daarna op alle apparaten worden weergegeven.</p>
+    </div>
+
+    <div class="panel">
+      <h2>🏢 Algemene gegevens</h2>
+      <div class="grid">
+        <div><label>Bedrijfsnaam</label><input id="businessName"></div>
+        <div><label>Korte slogan</label><input id="tagline"></div>
+      </div>
+      <label>Hoofdtitel</label><input id="heroTitle">
+      <label>Introductietekst</label><textarea id="heroText"></textarea>
+      <div class="grid">
+        <div><label>WhatsApp nummer (zonder + of spaties)</label><input id="whatsapp" placeholder="31612345678"></div>
+        <div><label>Telefoonnummer</label><input id="phone" placeholder="+31 6 12345678"></div>
+      </div>
+      <label>Werkgebied</label><input id="areas" placeholder="Rotterdam en omgeving">
+    </div>
+
+    <div class="panel">
+      <h2>🔧 Diensten</h2>
+      <div id="servicesEdit"></div>
+      <button class="btn light" onclick="addService()">+ Dienst toevoegen</button>
+    </div>
+
+    <div class="panel">
+      <h2>📱 Apparaten & prijzen</h2>
+      <p class="muted">Vul per toestel de prijs in voor scherm, software, hardware en camera.</p>
+      <div id="phonesEdit"></div>
+      <button class="btn light" onclick="addPhone()">+ Apparaat toevoegen</button>
+    </div>
+
+    <div class="panel">
+      <h2>⭐ Waarom HOMS TECH?</h2>
+      <div id="whyEdit"></div>
+      <button class="btn light" onclick="addWhy()">+ Voordeel toevoegen</button>
+    </div>
+
+    <div class="panel">
+      <div class="actions">
+        <button class="btn green" onclick="save()">💾 Wijzigingen opslaan</button>
+        <a class="btn light" href="/prices.html" target="_blank">Prijzen bekijken</a>
+      </div>
+      <div id="saveMsg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let data=null;
+const $=id=>document.getElementById(id);
+
+function esc(v){
+  return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll('"',"&quot;");
+}
+
+async function login(){
+  const r=await fetch("/api/login",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({username:$("username").value,password:$("password").value})
+  });
+  if(r.ok){
+    $("loginBox").classList.add("hidden");
+    $("dashboard").classList.remove("hidden");
+    $("logoutBtn").classList.remove("hidden");
+    $("loginMsg").innerHTML="";
+    load();
+  }else{
+    $("loginMsg").innerHTML='<div class="msg err">Onjuiste gebruikersnaam of wachtwoord.</div>';
+  }
+}
+
+async function load(){
+  const r=await fetch("/api/site");
+  if(!r.ok){$("saveMsg").innerHTML='<div class="msg err">Kan de gegevens niet laden.</div>';return;}
+  data=await r.json();
+  ["businessName","heroTitle","heroText","tagline","whatsapp","phone","areas"].forEach(k=>$(k).value=data[k]||"");
+  render();
+}
+
+function render(){
+  $("servicesEdit").innerHTML=(data.services||[]).map((x,i)=>`
+    <div class="item">
+      <div class="item-grid">
+        <input data-a="services" data-i="${i}" data-k="0" value="${esc(x[0])}" placeholder="Emoji">
+        <input data-a="services" data-i="${i}" data-k="1" value="${esc(x[1])}" placeholder="Naam dienst">
+        <textarea data-a="services" data-i="${i}" data-k="2" placeholder="Beschrijving">${esc(x[2])}</textarea>
+      </div>
+      <div class="actions"><button class="btn red" onclick="delService(${i})">🗑 Verwijderen</button></div>
+    </div>`).join("");
+
+  $("phonesEdit").innerHTML=(data.phones||[]).map((p,i)=>`
+    <div class="item">
+      <div class="phone-grid">
+        <input data-p="1" data-i="${i}" data-k="name" value="${esc(p.name)}" placeholder="Model">
+        <input data-p="1" data-i="${i}" data-k="brand" value="${esc(p.brand)}" placeholder="Merk">
+        <input data-p="1" data-i="${i}" data-k="screen" value="${esc(p.screen)}" placeholder="Scherm €">
+        <input data-p="1" data-i="${i}" data-k="software" value="${esc(p.software)}" placeholder="Software €">
+        <input data-p="1" data-i="${i}" data-k="hardware" value="${esc(p.hardware)}" placeholder="Hardware €">
+        <input data-p="1" data-i="${i}" data-k="camera" value="${esc(p.camera)}" placeholder="Camera €">
+      </div>
+      <div class="actions"><button class="btn red" onclick="delPhone(${i})">🗑 Verwijderen</button></div>
+    </div>`).join("");
+
+  $("whyEdit").innerHTML=(data.why||[]).map((x,i)=>`
+    <div class="item">
+      <div class="item-grid">
+        <input data-a="why" data-i="${i}" data-k="0" value="${esc(x[0])}" placeholder="Emoji">
+        <input data-a="why" data-i="${i}" data-k="1" value="${esc(x[1])}" placeholder="Titel">
+        <textarea data-a="why" data-i="${i}" data-k="2" placeholder="Beschrijving">${esc(x[2])}</textarea>
+      </div>
+      <div class="actions"><button class="btn red" onclick="delWhy(${i})">🗑 Verwijderen</button></div>
+    </div>`).join("");
+}
+
+function sync(){
+  document.querySelectorAll("[data-a]").forEach(e=>{
+    data[e.dataset.a][+e.dataset.i][+e.dataset.k]=e.value;
+  });
+  document.querySelectorAll("[data-p]").forEach(e=>{
+    data.phones[+e.dataset.i][e.dataset.k]=e.value;
+  });
+  ["businessName","heroTitle","heroText","tagline","whatsapp","phone","areas"].forEach(k=>data[k]=$(k).value);
+}
+
+function addService(){sync();data.services.push(["🔧","Nieuwe dienst","Beschrijving van de dienst"]);render();}
+function delService(i){sync();data.services.splice(i,1);render();}
+function addPhone(){sync();data.phones.push({name:"iPhone nieuw",brand:"Apple",screen:"",software:"",hardware:"",camera:""});render();}
+function delPhone(i){sync();data.phones.splice(i,1);render();}
+function addWhy(){sync();data.why.push(["⭐","Nieuw voordeel","Beschrijving"]);render();}
+function delWhy(i){sync();data.why.splice(i,1);render();}
+
+async function save(){
+  sync();
+  data.whatsapp=String(data.whatsapp||"").replace(/\D/g,"");
+  const r=await fetch("/api/site",{
+    method:"PUT",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(data)
+  });
+  $("saveMsg").innerHTML=r.ok
+    ? '<div class="msg ok">✅ Opgeslagen. De gegevens staan nu op de server.</div>'
+    : '<div class="msg err">❌ Opslaan mislukt.</div>';
+}
+
+async function logout(){
+  await fetch("/api/logout",{method:"POST"});
+  location.reload();
+}
+
+fetch("/api/me").then(r=>{
+  if(r.ok){
+    $("loginBox").classList.add("hidden");
+    $("dashboard").classList.remove("hidden");
+    $("logoutBtn").classList.remove("hidden");
+    load();
+  }
+});
+</script>
+</body>
+</html>
