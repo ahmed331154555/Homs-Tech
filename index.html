@@ -1,3 +1,4 @@
+```html
 <!doctype html>
 <html lang="nl" dir="ltr">
 <head>
@@ -197,16 +198,20 @@ footer{
     flex-wrap:wrap;
     justify-content:center
   }
+
   nav{
     order:3;
     width:100%
   }
+
   nav a{
     font-size:14px
   }
+
   .brand img{
     width:130px
   }
+
   .languages{
     order:2
   }
@@ -217,12 +222,15 @@ footer{
     padding:7px 8px;
     font-size:13px
   }
+
   .hero{
     padding:55px 5%
   }
+
   .prices{
     grid-template-columns:1fr
   }
+
   .languages button{
     font-size:12px;
     padding:6px 7px
@@ -240,48 +248,67 @@ footer{
 </a>
 
 <nav>
-<a href="index.html" id="navHome">Home</a>
-<a href="about.html" id="navAbout">Over ons</a>
-<a href="repair.html" id="navRepair">Reparaties</a>
-<a href="devices.html" id="navDevices">Apparaten</a>
-<a href="prices.html" id="navPrices">Prijzen</a>
+<a href="index.html" data-i18n="navHome">Home</a>
+<a href="about.html" data-i18n="navAbout">Over ons</a>
+<a href="repair.html" data-i18n="navRepair">Reparaties</a>
+<a href="devices.html" data-i18n="navDevices">Apparaten</a>
+<a href="prices.html" data-i18n="navPrices">Prijzen</a>
 </nav>
 
-<div class="languages">
-<button id="langNl" onclick="setLanguage('nl')">🇳🇱 Nederlands</button>
-<button id="langAr" onclick="setLanguage('ar')">🇸🇦 العربية</button>
-<button id="langEn" onclick="setLanguage('en')">🇬🇧 English</button>
-</div>
+<div class="languages"></div>
 
-<a class="btn green" data-wa id="whatsappTop">WhatsApp</a>
+<a class="btn green" data-wa data-i18n="whatsapp">
+WhatsApp
+</a>
 
 </header>
 
 <main>
 
 <div class="hero">
+
 <h1 id="heroTitle"></h1>
+
 <p id="heroText"></p>
 
-<a class="btn green" data-wa id="bookWhatsapp">
+<a
+  class="btn green"
+  data-wa
+  data-i18n="bookWhatsapp"
+  id="bookWhatsapp">
 💬 Boek via WhatsApp
 </a>
 
-<a class="btn white" data-phone id="callNow">
+<a
+  class="btn white"
+  data-phone
+  data-i18n="callNow"
+  id="callNow">
 📞 Bel nu
 </a>
+
 </div>
 
 <section>
+
 <div class="banner">
+
 <h2 id="bannerTitle"></h2>
+
 <p id="areas"></p>
+
 </div>
+
 </section>
 
 <section>
-<h2 id="servicesTitle"></h2>
+
+<h2 data-i18n="servicesTitle">
+Onze diensten
+</h2>
+
 <div id="services" class="grid"></div>
+
 </section>
 
 </main>
@@ -290,11 +317,14 @@ footer{
 
 <strong data-name>HOMS TECH</strong>
 
-<p data-tag></p>
+<p data-tag>Telefoonreparatie bij jou aan de deur</p>
 
 <p class="small">© HOMS TECH</p>
 
-<a class="btn white" href="admin/index.html" id="adminButton">
+<a
+  class="btn white"
+  href="admin/index.html"
+  data-i18n="admin">
 ⚙️ Admin
 </a>
 
@@ -302,345 +332,239 @@ footer{
 
 <script>
 
-const KEY="homsTechData";
+const KEY = "homsTechData";
 
-const defaults={
-businessName:"HOMS TECH",
+const defaults = {
 
-tagline:"Telefoonreparatie bij jou aan de deur",
+  businessName: "HOMS TECH",
 
-heroTitle:"Telefoon kapot? Wij komen naar jou! 🚗📱",
+  tagline: "Telefoonreparatie bij jou aan de deur",
 
-heroText:"Reparatie van alle soorten telefoons bij jou aan de deur — snelle service, netjes werk en betaalbare prijzen.",
+  heroTitle: "Telefoon kapot? Wij komen naar jou! 🚗📱",
 
-whatsapp:"31612345678",
+  heroText:
+    "Reparatie van alle soorten telefoons bij jou aan de deur — snelle service, netjes werk en betaalbare prijzen.",
 
-phone:"+31 6 12345678",
+  whatsapp: "31612345678",
 
-areas:"Rotterdam en omgeving",
+  phone: "+31 6 12345678",
 
-services:[
-["🖥️","Scherm vervangen","Gebroken of defect scherm?"],
-["🔋","Batterij vervangen","Batterij snel leeg of zwak?"],
-["🔌","Laadproblemen","Telefoon laadt niet of valt uit?"],
-["⚙️","Hardware & software","Diagnose en reparatie van verschillende problemen."]
-],
+  areas: "Rotterdam en omgeving",
 
-why:[
-["⚡","Snelle service","We proberen de reparatie zo snel mogelijk uit te voeren."],
-["🛠️","Professioneel","Nauwkeurige diagnose en netjes werk."],
-["🚗","Wij komen naar jou","Mobiele service, zodat je niet hoeft te reizen."],
-["💰","Betaalbare prijs","Vraag de prijs voordat we repareren."]
-],
+  services: [
+    ["🖥️","Scherm vervangen","Gebroken of defect scherm?"],
+    ["🔋","Batterij vervangen","Batterij snel leeg of zwak?"],
+    ["🔌","Laadproblemen","Telefoon laadt niet of valt uit?"],
+    ["⚙️","Hardware & software","Diagnose en reparatie van verschillende problemen."]
+  ],
 
-phones:[
-{name:"iPhone 12",brand:"Apple",screen:"",software:"",hardware:"",camera:""},
-{name:"iPhone 13",brand:"Apple",screen:"",software:"",hardware:"",camera:""},
-{name:"iPhone 14",brand:"Apple",screen:"",software:"",hardware:"",camera:""},
-{name:"iPhone 15",brand:"Apple",screen:"",software:"",hardware:"",camera:""},
-{name:"iPhone 16",brand:"Apple",screen:"",software:"",hardware:"",camera:""},
-{name:"iPhone 17",brand:"Apple",screen:"",software:"",hardware:"",camera:""}
-]
+  why: [
+    ["⚡","Snelle service","We proberen de reparatie zo snel mogelijk uit te voeren."],
+    ["🛠️","Professioneel","Nauwkeurige diagnose en netjes werk."],
+    ["🚗","Wij komen naar jou","Mobiele service, zodat je niet hoeft te reizen."],
+    ["💰","Betaalbare prijs","Vraag de prijs voordat we repareren."]
+  ],
+
+  phones: [
+    {
+      name:"iPhone 12",
+      brand:"Apple",
+      screen:"",
+      software:"",
+      hardware:"",
+      camera:""
+    },
+    {
+      name:"iPhone 13",
+      brand:"Apple",
+      screen:"",
+      software:"",
+      hardware:"",
+      camera:""
+    },
+    {
+      name:"iPhone 14",
+      brand:"Apple",
+      screen:"",
+      software:"",
+      hardware:"",
+      camera:""
+    },
+    {
+      name:"iPhone 15",
+      brand:"Apple",
+      screen:"",
+      software:"",
+      hardware:"",
+      camera:""
+    },
+    {
+      name:"iPhone 16",
+      brand:"Apple",
+      screen:"",
+      software:"",
+      hardware:"",
+      camera:""
+    },
+    {
+      name:"iPhone 17",
+      brand:"Apple",
+      screen:"",
+      software:"",
+      hardware:"",
+      camera:""
+    }
+  ]
+
 };
 
-let data=JSON.parse(localStorage.getItem(KEY)||"null")||structuredClone(defaults);
+let data =
+  JSON.parse(localStorage.getItem(KEY) || "null") ||
+  structuredClone(defaults);
 
 if(!Array.isArray(data.phones)){
-data.phones=structuredClone(defaults.phones)
+  data.phones = structuredClone(defaults.phones);
 }
 
 function saveData(){
-localStorage.setItem(KEY,JSON.stringify(data))
+  localStorage.setItem(KEY,JSON.stringify(data));
 }
 
 function wa(){
-return "https://wa.me/"+data.whatsapp+
-"?text="+encodeURIComponent(
-"Hallo, ik wil graag informeren over telefoonreparatie."
-);
+
+  const lang =
+    localStorage.getItem("homsTechLanguage") || "nl";
+
+  let message;
+
+  if(lang === "ar"){
+    message = "مرحبا، أريد الاستفسار عن تصليح هاتفي";
+  }
+  else if(lang === "en"){
+    message = "Hello, I would like to ask about phone repair.";
+  }
+  else{
+    message = "Hallo, ik wil graag informeren over telefoonreparatie.";
+  }
+
+  return "https://wa.me/" +
+    data.whatsapp +
+    "?text=" +
+    encodeURIComponent(message);
 }
 
 function common(){
 
-document.querySelectorAll("[data-name]").forEach(e=>{
-e.textContent=data.businessName
-});
+  document.querySelectorAll("[data-name]").forEach(function(e){
+    e.textContent = data.businessName;
+  });
 
-document.querySelectorAll("[data-tag]").forEach(e=>{
-e.textContent=data.tagline
-});
+  document.querySelectorAll("[data-tag]").forEach(function(e){
+    e.textContent = data.tagline;
+  });
 
-document.querySelectorAll("[data-wa]").forEach(e=>{
-e.href=wa()
-});
+  document.querySelectorAll("[data-wa]").forEach(function(e){
+    e.href = wa();
+  });
 
-document.querySelectorAll("[data-phone]").forEach(e=>{
-e.href="tel:"+data.phone.replace(/\s/g,"")
-});
-
-}
-
-function renderServices(id="services"){
-
-let e=document.getElementById(id);
-
-if(e){
-
-e.innerHTML=data.services.map(x=>`
-
-<div class="card">
-
-<div class="icon">${x[0]}</div>
-
-<h3>${x[1]}</h3>
-
-<p>${x[2]}</p>
-
-</div>
-
-`).join("");
+  document.querySelectorAll("[data-phone]").forEach(function(e){
+    e.href =
+      "tel:" +
+      data.phone.replace(/\s/g,"");
+  });
 
 }
 
-}
+function renderServices(){
 
-function renderWhy(id="why"){
+  const element =
+    document.getElementById("services");
 
-let e=document.getElementById(id);
+  if(!element) return;
 
-if(e){
+  element.innerHTML =
+    data.services.map(function(x){
 
-e.innerHTML=data.why.map(x=>`
+      return `
+        <div class="card">
 
-<div class="card">
+          <div class="icon">${x[0]}</div>
 
-<div class="icon">${x[0]}</div>
+          <h3>${x[1]}</h3>
 
-<h3>${x[1]}</h3>
+          <p>${x[2]}</p>
 
-<p>${x[2]}</p>
+        </div>
+      `;
 
-</div>
-
-`).join("");
-
-}
-
-}
-
-function renderPrices(list=data.phones,id="priceList"){
-
-let e=document.getElementById(id);
-
-if(!e)return;
-
-e.innerHTML=list.map(p=>`
-
-<div class="card">
-
-<h3>${p.name}</h3>
-
-<div class="prices">
-
-<div class="price">
-<b>🖥️ Screen</b>
-${p.screen||"Contact us"}
-</div>
-
-<div class="price">
-<b>💻 Software</b>
-${p.software||"Contact us"}
-</div>
-
-<div class="price">
-<b>🔧 Hardware</b>
-${p.hardware||"Contact us"}
-</div>
-
-<div class="price">
-<b>📷 Camera</b>
-${p.camera||"Contact us"}
-</div>
-
-</div>
-
-<br>
-
-<a class="btn green" href="${wa()}">
-Book via WhatsApp
-</a>
-
-</div>
-
-`).join("");
+    }).join("");
 
 }
 
+function updateHomeContent(){
 
-/* =========================
-   LANGUAGES
-========================= */
+  const lang =
+    localStorage.getItem("homsTechLanguage") || "nl";
 
-const translations={
+  const translations =
+    window.homsTechTranslations;
 
-nl:{
-title:"Home | HOMS TECH",
+  if(!translations || !translations[lang]){
+    return;
+  }
 
-navHome:"Home",
-navAbout:"Over ons",
-navRepair:"Reparaties",
-navDevices:"Apparaten",
-navPrices:"Prijzen",
+  const t = translations[lang];
 
-whatsapp:"WhatsApp",
+  const heroTitle =
+    document.getElementById("heroTitle");
 
-heroTitle:"Telefoon kapot? Wij komen naar jou! 🚗📱",
+  const heroText =
+    document.getElementById("heroText");
 
-heroText:"Reparatie van alle soorten telefoons bij jou aan de deur — snelle service, netjes werk en betaalbare prijzen.",
+  const bannerTitle =
+    document.getElementById("bannerTitle");
 
-bookWhatsapp:"💬 Boek via WhatsApp",
-callNow:"📞 Bel nu",
+  const areas =
+    document.getElementById("areas");
 
-bannerTitle:"🚗 Wij komen bij jou aan de deur!",
+  if(heroTitle){
+    heroTitle.textContent = t.heroTitle || data.heroTitle;
+  }
 
-servicesTitle:"Onze diensten",
+  if(heroText){
+    heroText.textContent = t.heroText || data.heroText;
+  }
 
-adminButton:"⚙️ Admin"
-},
+  if(bannerTitle){
+    bannerTitle.textContent =
+      t.bannerTitle || "";
+  }
 
-ar:{
-title:"الرئيسية | HOMS TECH",
+  if(areas){
+    areas.textContent =
+      "📍 " + data.areas;
+  }
 
-navHome:"الرئيسية",
-navAbout:"مين نحن",
-navRepair:"شو منصلّح",
-navDevices:"أنواع الأجهزة",
-navPrices:"الأسعار",
-
-whatsapp:"واتساب",
-
-heroTitle:"موبايلك خربان؟ نحن منجي لعندك! 🚗📱",
-
-heroText:"تصليح جميع أنواع الهواتف عند باب بيتك — خدمة سريعة، شغل نظيف وأسعار مناسبة.",
-
-bookWhatsapp:"💬 احجز عبر واتساب",
-callNow:"📞 اتصل الآن",
-
-bannerTitle:"🚗 نحن منجي لعند باب بيتك!",
-
-servicesTitle:"خدماتنا",
-
-adminButton:"⚙️ لوحة التحكم"
-},
-
-en:{
-title:"Home | HOMS TECH",
-
-navHome:"Home",
-navAbout:"About us",
-navRepair:"Repairs",
-navDevices:"Devices",
-navPrices:"Prices",
-
-whatsapp:"WhatsApp",
-
-heroTitle:"Phone broken? We come to you! 🚗📱",
-
-heroText:"We repair all types of phones at your doorstep — fast service, clean work and affordable prices.",
-
-bookWhatsapp:"💬 Book via WhatsApp",
-callNow:"📞 Call now",
-
-bannerTitle:"🚗 We come to your doorstep!",
-
-servicesTitle:"Our services",
-
-adminButton:"⚙️ Admin"
 }
+
+window.renderCurrentPage = function(){
+
+  common();
+
+  renderServices();
+
+  updateHomeContent();
 
 };
 
+window.homsTechData = data;
 
-function setLanguage(lang){
-
-const t=translations[lang]||translations.nl;
-
-document.documentElement.lang=lang;
-
-document.documentElement.dir=lang==="ar"?"rtl":"ltr";
-
-document.title=t.title;
-
-document.getElementById("navHome").textContent=t.navHome;
-document.getElementById("navAbout").textContent=t.navAbout;
-document.getElementById("navRepair").textContent=t.navRepair;
-document.getElementById("navDevices").textContent=t.navDevices;
-document.getElementById("navPrices").textContent=t.navPrices;
-
-document.getElementById("whatsappTop").textContent=t.whatsapp;
-
-document.getElementById("heroTitle").textContent=t.heroTitle;
-document.getElementById("heroText").textContent=t.heroText;
-
-document.getElementById("bookWhatsapp").textContent=t.bookWhatsapp;
-document.getElementById("callNow").textContent=t.callNow;
-
-document.getElementById("bannerTitle").textContent=t.bannerTitle;
-
-document.getElementById("servicesTitle").textContent=t.servicesTitle;
-
-document.getElementById("adminButton").textContent=t.adminButton;
-
-
-/* language buttons */
-
-document.getElementById("langNl").classList.remove("active");
-document.getElementById("langAr").classList.remove("active");
-document.getElementById("langEn").classList.remove("active");
-
-if(lang==="nl"){
-document.getElementById("langNl").classList.add("active");
-}
-
-if(lang==="ar"){
-document.getElementById("langAr").classList.add("active");
-}
-
-if(lang==="en"){
-document.getElementById("langEn").classList.add("active");
-}
-
-
-/* save selected language */
-
-localStorage.setItem("homsTechLanguage",lang);
-
-}
-
-
-/* =========================
-   START
-========================= */
-
-common();
-
-document.getElementById("areas").textContent="📍 "+data.areas;
-
-renderServices();
-
-
-/*
-   Dutch is the default language.
-   If visitor previously selected another language,
-   remember it.
-*/
-
-const savedLanguage=
-localStorage.getItem("homsTechLanguage")||"nl";
-
-setLanguage(savedLanguage);
+window.renderCurrentPage();
 
 </script>
 
+<script src="language.js"></script>
+
 </body>
 </html>
+```
