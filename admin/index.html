@@ -103,6 +103,20 @@ textarea{
   gap:14px
 }
 
+.used-photos-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-top:12px
+}
+
+.photo-item{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:10px
+}
+
 button,.btn{
   border:0;
   border-radius:10px;
@@ -192,7 +206,8 @@ button,.btn{
 
 .photo-preview{
   display:block;
-  width:180px;
+  width:100%;
+  max-width:180px;
   height:180px;
   object-fit:cover;
   border-radius:14px;
@@ -202,7 +217,8 @@ button,.btn{
 }
 
 .photo-empty{
-  width:180px;
+  width:100%;
+  max-width:180px;
   height:180px;
   border-radius:14px;
   margin-top:12px;
@@ -215,7 +231,8 @@ button,.btn{
 
 .file-input{
   background:#fff;
-  padding:10px
+  padding:10px;
+  font-size:13px
 }
 
 .small-note{
@@ -223,6 +240,22 @@ button,.btn{
   font-size:13px;
   margin-top:8px;
   line-height:1.5
+}
+
+.photo-number{
+  font-weight:800;
+  color:#2563eb;
+  margin-bottom:8px
+}
+
+.photo-item .actions{
+  margin-top:10px
+}
+
+.photo-item .btn{
+  width:100%;
+  padding:9px 8px;
+  font-size:12px
 }
 
 @media(max-width:800px){
@@ -234,15 +267,28 @@ button,.btn{
     grid-template-columns:1fr
   }
 
+  .used-photos-grid{
+    grid-template-columns:repeat(2,1fr)
+  }
+
   header{
     padding:14px 4%
   }
 
   .photo-preview,
   .photo-empty{
-    width:150px;
+    max-width:150px;
     height:150px
   }
+
+}
+
+@media(max-width:450px){
+
+  .used-photos-grid{
+    grid-template-columns:1fr
+  }
+
 }
 </style>
 </head>
@@ -455,7 +501,7 @@ button,.btn{
       <p class="muted">
         Voeg hier gebruikte telefoons toe die je wilt verkopen.
         Je kunt model, merk, prijs, conditie, opslag, RAM,
-        beschrijving, WhatsApp en een foto toevoegen.
+        beschrijving, WhatsApp en maximaal 4 foto's toevoegen.
       </p>
 
       <div id="usedEdit"></div>
@@ -646,6 +692,46 @@ async function load(){
     }
 
 
+    /*
+      Zorg dat ieder gebruikt apparaat
+      altijd 4 afbeeldingsvelden heeft.
+    */
+
+    data.usedPhones=data.usedPhones.map(p=>{
+
+      if(!Array.isArray(p.images)){
+
+        p.images=["","","",""];
+
+        /*
+          Oude enkele foto behouden
+        */
+
+        if(p.image){
+
+          p.images[0]=p.image;
+
+        }
+
+      }
+
+      while(p.images.length<4){
+
+        p.images.push("");
+
+      }
+
+      if(p.images.length>4){
+
+        p.images=p.images.slice(0,4);
+
+      }
+
+      return p;
+
+    });
+
+
     [
 
       "businessName",
@@ -666,6 +752,8 @@ async function load(){
     render();
 
   }catch(error){
+
+    console.error(error);
 
     $("saveMsg").innerHTML=
       '<div class="msg err">Fout bij laden van gegevens.</div>';
@@ -814,7 +902,21 @@ function render(){
   ========================= */
 
   $("usedEdit").innerHTML=
-    (data.usedPhones||[]).map((p,i)=>`
+    (data.usedPhones||[]).map((p,i)=>{
+
+      if(!Array.isArray(p.images)){
+
+        p.images=["","","",""];
+
+      }
+
+      while(p.images.length<4){
+
+        p.images.push("");
+
+      }
+
+      return `
 
       <div class="item">
 
@@ -950,70 +1052,69 @@ function render(){
         </div>
 
 
-        <!-- PHOTO -->
+        <!-- 4 PHOTOS -->
 
         <div class="photo-box">
 
-          <label>📷 Foto van het apparaat</label>
+          <label>📷 Foto's van het apparaat</label>
 
-          <input
-            class="file-input"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onchange="chooseImage(${i},this)">
+          <div class="used-photos-grid">
 
-          <div class="small-note">
-            Kies een foto vanaf je telefoon of computer.
-            De foto wordt automatisch kleiner gemaakt voordat
-            je opslaat.
+            ${[0,1,2,3].map(photoIndex=>`
+
+              <div class="photo-item">
+
+                <div class="photo-number">
+                  Foto ${photoIndex+1}
+                </div>
+
+                <input
+                  class="file-input"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onchange="chooseImage(${i},${photoIndex},this)">
+
+                ${
+                  p.images[photoIndex]
+                  ?
+                  `
+                  <img
+                    class="photo-preview"
+                    src="${esc(p.images[photoIndex])}"
+                    alt="Foto ${photoIndex+1}"
+                    onerror="this.style.display='none'">
+
+                  <div class="actions">
+
+                    <button
+                      type="button"
+                      class="btn red"
+                      onclick="removeImage(${i},${photoIndex})">
+                      🗑 Verwijderen
+                    </button>
+
+                  </div>
+                  `
+                  :
+                  `
+                  <div class="photo-empty">
+                    📱
+                  </div>
+                  `
+                }
+
+              </div>
+
+            `).join("")}
+
           </div>
 
+          <div class="small-note">
+            Je kunt maximaal 4 foto's per apparaat toevoegen.
+            Elke foto wordt automatisch kleiner gemaakt voordat
+            je de wijzigingen opslaat.
+          </div>
 
-          ${
-            p.image
-            ?
-            `
-            <img
-              class="photo-preview"
-              src="${esc(p.image)}"
-              alt="Voorbeeld"
-              onerror="this.style.display='none'">
-
-            <div class="actions">
-
-              <button
-                type="button"
-                class="btn red"
-                onclick="removeImage(${i})">
-                🗑 Foto verwijderen
-              </button>
-
-            </div>
-            `
-            :
-            `
-            <div class="photo-empty">
-              📱
-            </div>
-            `
-          }
-
-        </div>
-
-
-        <!-- OLD PHOTO URL -->
-
-        <label>Foto URL (optioneel)</label>
-
-        <input
-          data-u="1"
-          data-i="${i}"
-          data-k="image"
-          value="${esc(p.image)}"
-          placeholder="https://...">
-
-        <div class="small-note">
-          Je kunt ook nog steeds een directe foto-link gebruiken.
         </div>
 
 
@@ -1038,7 +1139,9 @@ function render(){
 
       </div>
 
-    `).join("");
+      `;
+
+    }).join("");
 
 
   /* WHY */
@@ -1254,11 +1357,6 @@ function resizeImage(file){
         );
 
 
-        /*
-          JPEG quality 0.65
-          لتصغير حجم الصورة
-        */
-
         const result=
           canvas.toDataURL(
             "image/jpeg",
@@ -1305,7 +1403,7 @@ function resizeImage(file){
    CHOOSE IMAGE
 ========================= */
 
-async function chooseImage(index,input){
+async function chooseImage(index,photoIndex,input){
 
   const file=input.files && input.files[0];
 
@@ -1329,10 +1427,6 @@ async function chooseImage(index,input){
 
   try{
 
-    /*
-      نحفظ أي تعديلات مكتوبة قبل إعادة الرسم
-    */
-
     sync();
 
 
@@ -1344,7 +1438,33 @@ async function chooseImage(index,input){
       await resizeImage(file);
 
 
-    data.usedPhones[index].image=compressed;
+    if(!data.usedPhones[index]){
+
+      data.usedPhones[index]={};
+
+    }
+
+
+    if(!Array.isArray(data.usedPhones[index].images)){
+
+      data.usedPhones[index].images=["","","",""];
+
+    }
+
+
+    while(data.usedPhones[index].images.length<4){
+
+      data.usedPhones[index].images.push("");
+
+    }
+
+
+    /*
+      Nieuwe foto vervangt alleen
+      de gekozen fotopositie.
+    */
+
+    data.usedPhones[index].images[photoIndex]=compressed;
 
 
     render();
@@ -1369,14 +1489,28 @@ async function chooseImage(index,input){
    REMOVE IMAGE
 ========================= */
 
-function removeImage(index){
+function removeImage(index,photoIndex){
 
   sync();
 
 
   if(data.usedPhones[index]){
 
-    data.usedPhones[index].image="";
+    if(!Array.isArray(data.usedPhones[index].images)){
+
+      data.usedPhones[index].images=["","","",""];
+
+    }
+
+
+    while(data.usedPhones[index].images.length<4){
+
+      data.usedPhones[index].images.push("");
+
+    }
+
+
+    data.usedPhones[index].images[photoIndex]="";
 
   }
 
@@ -1385,7 +1519,7 @@ function removeImage(index){
 
 
   $("saveMsg").innerHTML=
-    '<div class="msg ok">🗑 Foto verwijderd. Klik op "Wijzigingen opslaan" om te bevestigen.</div>';
+    '<div class="msg ok">🗑 Foto verwijderd. Klik op "Wijzigingen opslaan".</div>';
 
 }
 
@@ -1486,7 +1620,7 @@ function addUsedPhone(){
 
     description:"",
 
-    image:"",
+    images:["","","",""],
 
     whatsapp:""
 
@@ -1555,15 +1689,48 @@ async function save(){
 
 
   data.usedPhones=
-    (data.usedPhones||[]).map(p=>({
+    (data.usedPhones||[]).map(p=>{
 
-      ...p,
+      if(!Array.isArray(p.images)){
 
-      whatsapp:
-        String(p.whatsapp||"")
-        .replace(/\D/g,"")
+        p.images=["","","",""];
 
-    }));
+        if(p.image){
+
+          p.images[0]=p.image;
+
+        }
+
+      }
+
+
+      while(p.images.length<4){
+
+        p.images.push("");
+
+      }
+
+
+      if(p.images.length>4){
+
+        p.images=p.images.slice(0,4);
+
+      }
+
+
+      return {
+
+        ...p,
+
+        whatsapp:
+          String(p.whatsapp||"")
+          .replace(/\D/g,""),
+
+        images:p.images
+
+      };
+
+    });
 
 
   try{
