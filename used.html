@@ -150,7 +150,8 @@ overflow:hidden;
 box-shadow:
 0 8px 30px rgba(0,0,0,.08);
 border:1px solid #eef0f3;
-transition:.2s
+transition:.2s;
+cursor:pointer
 }
 
 .card:hover{
@@ -284,6 +285,103 @@ margin:7px 0;
 color:#cbd5e1
 }
 
+
+/* =========================
+   نافذة تفاصيل الجهاز
+   ========================= */
+
+.modal{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.72);
+z-index:1000;
+padding:20px;
+align-items:center;
+justify-content:center
+}
+
+.modal-box{
+background:#fff;
+width:100%;
+max-width:650px;
+max-height:90vh;
+overflow:auto;
+border-radius:22px;
+padding:25px;
+position:relative;
+box-shadow:0 20px 60px rgba(0,0,0,.3)
+}
+
+.modal-close{
+position:absolute;
+right:15px;
+top:15px;
+width:40px;
+height:40px;
+border:0;
+border-radius:50%;
+background:#eef2f7;
+color:#111827;
+font-size:25px;
+font-weight:700;
+cursor:pointer;
+z-index:2
+}
+
+.modal-close:hover{
+background:#e5e7eb
+}
+
+.modal-image{
+width:100%;
+height:350px;
+object-fit:contain;
+border-radius:16px;
+background:#f1f3f6;
+margin-bottom:20px
+}
+
+.modal-title{
+font-size:28px;
+font-weight:900;
+margin:5px 45px 5px 0
+}
+
+.modal-brand{
+color:#6b7280;
+margin-bottom:15px
+}
+
+.modal-price{
+font-size:30px;
+font-weight:900;
+color:#2563eb;
+margin:15px 0
+}
+
+.modal-info{
+display:flex;
+flex-wrap:wrap;
+gap:8px;
+margin:15px 0
+}
+
+.modal-description{
+color:#4b5563;
+line-height:1.7;
+margin:18px 0
+}
+
+.modal-whatsapp{
+width:100%;
+text-align:center;
+margin-top:20px
+}
+
+
+/* MOBILE */
+
 @media(max-width:900px){
 
 .used-grid{
@@ -333,7 +431,25 @@ font-size:29px
 grid-template-columns:1fr
 }
 
+.modal{
+padding:10px
 }
+
+.modal-box{
+padding:20px;
+max-height:92vh
+}
+
+.modal-image{
+height:260px
+}
+
+.modal-title{
+font-size:24px
+}
+
+}
+
 </style>
 </head>
 
@@ -433,6 +549,29 @@ voor beschikbare toestellen.
 
 
 
+<!-- DETAILS MODAL -->
+
+<div
+id="modal"
+class="modal">
+
+<div
+class="modal-box">
+
+<button
+class="modal-close"
+onclick="closeModal()">
+×
+</button>
+
+<div id="modalContent"></div>
+
+</div>
+
+</div>
+
+
+
 <section class="contact-box">
 
 <h2>
@@ -490,6 +629,8 @@ usedPhones:[]
 };
 
 
+/* WhatsApp link */
+
 function waLink(number,message){
 
 const clean=
@@ -513,16 +654,21 @@ encodeURIComponent(message||"")
 }
 
 
+/* HTML veilig maken */
+
 function escapeHtml(value){
 
 return String(value??"")
 .replaceAll("&","&amp;")
 .replaceAll("<","&lt;")
 .replaceAll(">","&gt;")
-.replaceAll('"',"&quot;");
+.replaceAll('"',"&quot;")
+.replaceAll("'","&#039;");
 
 }
 
+
+/* Toon apparaten */
 
 function render(){
 
@@ -531,7 +677,6 @@ document.getElementById("usedGrid");
 
 const empty=
 document.getElementById("empty");
-
 
 const phones=
 Array.isArray(data.usedPhones)
@@ -554,7 +699,7 @@ empty.style.display="none";
 
 
 grid.innerHTML=
-phones.map((p)=>{
+phones.map((p,index)=>{
 
 const image=
 String(p.image||"").trim();
@@ -604,7 +749,8 @@ number
 <a
 class="btn green contact"
 href="${waLink(number,message)}"
-target="_blank">
+target="_blank"
+onclick="event.stopPropagation()">
 
 💬 Interesse? WhatsApp ons
 
@@ -616,7 +762,9 @@ target="_blank">
 
 return`
 
-<article class="card">
+<article
+class="card"
+onclick="openPhone(${index})">
 
 ${photo}
 
@@ -630,11 +778,9 @@ ${escapeHtml(p.name||"Onbekend apparaat")}
 ${escapeHtml(p.brand||"")}
 </div>
 
-
 <div class="price">
 € ${escapeHtml(p.price||"Prijs op aanvraag")}
 </div>
-
 
 <div class="info">
 
@@ -650,7 +796,6 @@ Conditie: ${escapeHtml(p.condition)}
 ""
 }
 
-
 ${
 p.storage
 ?
@@ -662,7 +807,6 @@ p.storage
 :
 ""
 }
-
 
 ${
 p.ram
@@ -678,16 +822,14 @@ RAM: ${escapeHtml(p.ram)}
 
 </div>
 
-
 <div class="description">
 
 ${escapeHtml(
 p.description||
-"Neem contact met ons op voor meer informatie."
+"Klik voor meer informatie."
 )}
 
 </div>
-
 
 ${whatsapp}
 
@@ -702,6 +844,232 @@ ${whatsapp}
 }
 
 
+/* Open details */
+
+function openPhone(index){
+
+const phones=
+Array.isArray(data.usedPhones)
+?data.usedPhones
+:[];
+
+const p=phones[index];
+
+if(!p){
+return;
+}
+
+
+const image=
+String(p.image||"").trim();
+
+
+const number=
+p.whatsapp||data.whatsapp;
+
+
+const message=
+"Hallo HOMS TECH, ik heb interesse in "
++
+(p.name||"dit apparaat")
++
+".";
+
+
+let imageHtml;
+
+
+if(image){
+
+imageHtml=`
+
+<img
+class="modal-image"
+src="${escapeHtml(image)}"
+alt="${escapeHtml(p.name||"Telefoon")}"
+onerror="this.style.display='none'">
+
+`;
+
+}else{
+
+imageHtml=`
+
+<div
+class="modal-image"
+style="
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:100px;">
+
+📱
+
+</div>
+
+`;
+
+}
+
+
+const whatsapp=
+number
+?
+`
+<a
+class="btn green modal-whatsapp"
+href="${waLink(number,message)}"
+target="_blank">
+
+💬 Interesse? WhatsApp ons
+
+</a>
+`
+:
+"";
+
+
+document.getElementById("modalContent").innerHTML=`
+
+${imageHtml}
+
+
+<div class="modal-title">
+
+${escapeHtml(
+p.name||"Onbekend apparaat"
+)}
+
+</div>
+
+
+<div class="modal-brand">
+
+${escapeHtml(
+p.brand||""
+)}
+
+</div>
+
+
+<div class="modal-price">
+
+€ ${escapeHtml(
+p.price||"Prijs op aanvraag"
+)}
+
+</div>
+
+
+<div class="modal-info">
+
+${
+p.condition
+?
+`
+<span class="badge">
+⭐ Conditie: ${escapeHtml(p.condition)}
+</span>
+`
+:
+""
+}
+
+
+${
+p.storage
+?
+`
+<span class="badge">
+💾 Opslag: ${escapeHtml(p.storage)}
+</span>
+`
+:
+""
+}
+
+
+${
+p.ram
+?
+`
+<span class="badge">
+🧠 RAM: ${escapeHtml(p.ram)}
+</span>
+`
+:
+""
+}
+
+</div>
+
+
+<h3>
+Beschrijving
+</h3>
+
+
+<div class="modal-description">
+
+${escapeHtml(
+p.description||
+"Geen beschrijving beschikbaar."
+)}
+
+</div>
+
+
+${whatsapp}
+
+`;
+
+
+document.getElementById("modal").style.display="flex";
+
+document.body.style.overflow="hidden";
+
+}
+
+
+/* Close details */
+
+function closeModal(){
+
+document.getElementById("modal").style.display="none";
+
+document.body.style.overflow="";
+
+}
+
+
+/* Close by clicking outside */
+
+document.getElementById("modal")
+.addEventListener("click",function(e){
+
+if(e.target===this){
+
+closeModal();
+
+}
+
+});
+
+
+/* Close with ESC */
+
+document.addEventListener("keydown",function(e){
+
+if(e.key==="Escape"){
+
+closeModal();
+
+}
+
+});
+
+
+/* Load data */
 
 async function load(){
 
