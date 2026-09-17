@@ -527,6 +527,27 @@ function requireAuth(req, res, next) {
   }
 }
 
+
+// Admin: list registered customers (passwords are never returned)
+app.get("/api/admin/customers", requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, name, email, phone, address, created_at
+       FROM customers
+       ORDER BY created_at DESC`
+    );
+
+    res.json({
+      customers: result.rows
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "Kan klanten niet laden"
+    });
+  }
+});
+
 // Update website settings
 app.put("/api/site", requireAuth, async (req, res) => {
   try {
