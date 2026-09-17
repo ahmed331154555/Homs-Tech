@@ -276,7 +276,7 @@ color:#cbd5e1
 
 
 /* =========================
-   نافذة التفاصيل
+   MODAL
 ========================= */
 
 .modal{
@@ -297,8 +297,8 @@ display:flex
 .modal-box{
 background:#fff;
 width:100%;
-max-width:650px;
-max-height:90vh;
+max-width:750px;
+max-height:92vh;
 overflow:auto;
 border-radius:22px;
 padding:25px;
@@ -326,25 +326,56 @@ z-index:5
 background:#e5e7eb
 }
 
-.modal-image{
+
+/* =========================
+   FOTO GALLERY
+========================= */
+
+.modal-main-image{
 width:100%;
-height:350px;
+height:360px;
 object-fit:contain;
 border-radius:16px;
 background:#f1f3f6;
-margin-bottom:20px
+margin-bottom:12px
 }
 
 .modal-no-photo{
 width:100%;
-height:350px;
+height:360px;
 border-radius:16px;
 background:#f1f3f6;
 display:flex;
 align-items:center;
 justify-content:center;
 font-size:100px;
-margin-bottom:20px
+margin-bottom:12px
+}
+
+.gallery{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:10px;
+margin-bottom:22px
+}
+
+.gallery-thumb{
+width:100%;
+height:90px;
+object-fit:cover;
+border-radius:12px;
+background:#f1f3f6;
+border:2px solid transparent;
+cursor:pointer;
+transition:.15s
+}
+
+.gallery-thumb:hover{
+transform:scale(1.02)
+}
+
+.gallery-thumb.active{
+border-color:#2563eb
 }
 
 .modal-title{
@@ -441,16 +472,25 @@ padding:10px
 
 .modal-box{
 padding:20px;
-max-height:92vh
+max-height:94vh
 }
 
-.modal-image,
+.modal-main-image,
 .modal-no-photo{
 height:260px
 }
 
 .modal-title{
 font-size:24px
+}
+
+.gallery{
+grid-template-columns:repeat(4,1fr);
+gap:6px
+}
+
+.gallery-thumb{
+height:65px
 }
 
 }
@@ -599,7 +639,7 @@ usedPhones:[]
 
 
 /* =========================
-   HTML veilig maken
+   HTML VEILIG MAKEN
 ========================= */
 
 function escapeHtml(value){
@@ -615,7 +655,7 @@ return String(value ?? "")
 
 
 /* =========================
-   WhatsApp
+   WHATSAPP
 ========================= */
 
 function waLink(number,message){
@@ -635,7 +675,57 @@ encodeURIComponent(message || "");
 
 
 /* =========================
-   Apparaten tonen
+   FOTO'S NORMALISEREN
+========================= */
+
+function getImages(phone){
+
+let images=[];
+
+
+/*
+  Nieuw systeem:
+  images = [foto1,foto2,foto3,foto4]
+*/
+
+if(Array.isArray(phone.images)){
+
+images=phone.images.slice(0,4);
+
+}
+
+
+/*
+  Oud systeem:
+  image = één foto
+
+  We behouden die als foto 1.
+*/
+
+else if(phone.image){
+
+images=[phone.image];
+
+}
+
+
+/*
+  Altijd maximaal 4 en lege waarden verwijderen.
+*/
+
+images=images
+.map(x=>String(x || "").trim())
+.filter(Boolean)
+.slice(0,4);
+
+
+return images;
+
+}
+
+
+/* =========================
+   APPARATEN TONEN
 ========================= */
 
 function render(){
@@ -664,18 +754,23 @@ empty.style.display="none";
 
 grid.innerHTML=phones.map((p,index)=>{
 
-const image=String(p.image || "").trim();
+const images=getImages(p);
+
+const image=images[0] || "";
 
 let photo="";
+
 
 if(image){
 
 photo=`
 <div class="photo">
+
 <img
 src="${escapeHtml(image)}"
 alt="${escapeHtml(p.name || "Telefoon")}"
 onerror="this.style.display='none';this.parentElement.innerHTML='<div class=&quot;no-photo&quot;>📱</div>'">
+
 </div>
 `;
 
@@ -683,7 +778,11 @@ onerror="this.style.display='none';this.parentElement.innerHTML='<div class=&quo
 
 photo=`
 <div class="photo">
-<div class="no-photo">📱</div>
+
+<div class="no-photo">
+📱
+</div>
+
 </div>
 `;
 
@@ -699,6 +798,7 @@ const message=
 
 
 let whatsapp="";
+
 
 if(number){
 
@@ -797,9 +897,7 @@ ${whatsapp}
 
 
 /*
-   Belangrijk:
-   click wordt hier pas toegevoegd
-   nadat de kaarten gemaakt zijn.
+  Klik op kaart
 */
 
 document.querySelectorAll(".card[data-phone-index]")
@@ -819,7 +917,8 @@ openPhone(index);
 
 
 /*
-   WhatsApp knop mag modal niet openen
+  WhatsApp knop niet laten
+  zorgen dat de modal opent.
 */
 
 document.querySelectorAll("[data-whatsapp]")
@@ -837,7 +936,7 @@ event.stopPropagation();
 
 
 /* =========================
-   Details openen
+   DETAILS OPENEN
 ========================= */
 
 function openPhone(index){
@@ -850,40 +949,81 @@ Array.isArray(data.usedPhones)
 
 const p=phones[index];
 
-if(!p){
 
-console.log("Geen apparaat gevonden:",index);
+if(!p){
 
 return;
 
 }
 
 
-const image=String(p.image || "").trim();
-
-let imageHtml="";
+const images=getImages(p);
 
 
-if(image){
+/*
+  Hoofdafbeelding
+*/
 
-imageHtml=`
+let mainImage="";
+
+
+if(images.length){
+
+mainImage=`
 <img
-class="modal-image"
-src="${escapeHtml(image)}"
+id="modalMainImage"
+class="modal-main-image"
+src="${escapeHtml(images[0])}"
 alt="${escapeHtml(p.name || "Telefoon")}"
 onerror="this.outerHTML='<div class=&quot;modal-no-photo&quot;>📱</div>'">
 `;
 
 }else{
 
-imageHtml=`
-<div class="modal-no-photo">
+mainImage=`
+<div
+id="modalMainImage"
+class="modal-no-photo">
+
 📱
+
 </div>
 `;
 
 }
 
+
+/*
+  Miniaturen
+*/
+
+let gallery="";
+
+
+if(images.length>1){
+
+gallery=`
+<div class="gallery">
+
+${images.map((image,imageIndex)=>`
+
+<img
+class="gallery-thumb ${imageIndex===0?"active":""}"
+src="${escapeHtml(image)}"
+alt="Foto ${imageIndex+1}"
+data-gallery-index="${imageIndex}">
+
+`).join("")}
+
+</div>
+`;
+
+}
+
+
+/*
+  WhatsApp
+*/
 
 const number=p.whatsapp || data.whatsapp;
 
@@ -912,9 +1052,15 @@ target="_blank">
 }
 
 
+/*
+  Modal inhoud
+*/
+
 document.getElementById("modalContent").innerHTML=`
 
-${imageHtml}
+${mainImage}
+
+${gallery}
 
 <div class="modal-title">
 
@@ -924,6 +1070,7 @@ p.name || "Onbekend apparaat"
 
 </div>
 
+
 <div class="modal-brand">
 
 ${escapeHtml(
@@ -931,6 +1078,7 @@ p.brand || ""
 )}
 
 </div>
+
 
 <div class="modal-price">
 
@@ -999,6 +1147,56 @@ ${whatsapp}
 `;
 
 
+/*
+  Foto's laten wisselen
+*/
+
+document.querySelectorAll(".gallery-thumb")
+.forEach(thumb=>{
+
+thumb.addEventListener("click",function(event){
+
+event.stopPropagation();
+
+const imageIndex=
+Number(
+this.getAttribute("data-gallery-index")
+);
+
+const selectedImage=
+images[imageIndex];
+
+
+const main=
+document.getElementById("modalMainImage");
+
+
+if(main && main.tagName==="IMG"){
+
+main.src=selectedImage;
+
+}
+
+
+document.querySelectorAll(".gallery-thumb")
+.forEach(t=>{
+
+t.classList.remove("active");
+
+});
+
+
+this.classList.add("active");
+
+});
+
+});
+
+
+/*
+  Modal openen
+*/
+
 const modal=document.getElementById("modal");
 
 modal.classList.add("show");
@@ -1009,7 +1207,7 @@ document.body.style.overflow="hidden";
 
 
 /* =========================
-   Modal sluiten
+   MODAL SLUITEN
 ========================= */
 
 function closeModal(){
@@ -1024,7 +1222,7 @@ document.body.style.overflow="";
 
 
 /* =========================
-   Klik buiten modal
+   KLIK BUITEN MODAL
 ========================= */
 
 document.getElementById("modal")
@@ -1040,7 +1238,7 @@ closeModal();
 
 
 /* =========================
-   X knop
+   X KNOP
 ========================= */
 
 document.getElementById("modalClose")
@@ -1067,7 +1265,7 @@ closeModal();
 
 
 /* =========================
-   Data laden
+   DATA LADEN
 ========================= */
 
 async function load(){
@@ -1075,6 +1273,7 @@ async function load(){
 try{
 
 const response=await fetch("/api/site");
+
 
 if(response.ok){
 
@@ -1115,6 +1314,7 @@ data.whatsapp,
 "Hallo HOMS TECH, ik heb interesse in een tweedehands telefoon."
 );
 
+
 contactWhatsApp.href=
 waLink(
 data.whatsapp,
@@ -1135,7 +1335,9 @@ render();
 }
 
 
-/* START */
+/* =========================
+   START
+========================= */
 
 load();
 
