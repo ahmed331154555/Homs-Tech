@@ -27,18 +27,91 @@
 <div class="save-bar"><div><div id="saveStatus" class="status">Wijzigingen nog niet opgeslagen</div><div class="small">Klik op Opslaan nadat je iets hebt gewijzigd.</div></div><button class="btn btn-green" onclick="save()" style="font-size:16px;padding:13px 25px">💾 Wijzigingen opslaan</button></div>
 </div></div>
 <script>
-let data={},loading=false,currentPage="general",selectedUsedPhone=0,selectedPhone=0;
+let data={},loading=false,currentPage="general",selectedUsedPhone=0,selectedPhone=0,selectedService=0;
 function showPage(page){currentPage=page;document.querySelectorAll('.admin-page').forEach(s=>s.classList.remove('active'));const t=document.getElementById('page-'+page);if(t)t.classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>{b.classList.toggle('active',b.dataset.page===page)})}
 async function checkLogin(){try{const r=await fetch('/api/me');if(r.ok){showDashboard();await loadData()}else showLogin()}catch(e){showLogin()}}
 function showLogin(){document.getElementById('loginBox').style.display='block';document.getElementById('dashboard').style.display='none';document.getElementById('logoutBtn').style.display='none';document.getElementById('adminNav').style.display='none'}
 function showDashboard(){document.getElementById('loginBox').style.display='none';document.getElementById('dashboard').style.display='block';document.getElementById('logoutBtn').style.display='block';document.getElementById('adminNav').style.display='block';showPage(currentPage)}
 async function login(){const username=document.getElementById('username').value.trim(),password=document.getElementById('password').value,status=document.getElementById('loginStatus');status.className='status info';status.textContent='Inloggen...';try{const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});const result=await r.json();if(!r.ok)throw new Error(result.error||'Login mislukt');status.className='status success';status.textContent='✓ Inloggen gelukt';showDashboard();await loadData()}catch(e){status.className='status error';status.textContent='✕ '+e.message}}
 async function logout(){await fetch('/api/logout',{method:'POST'});location.reload()}
-function normalizeData(){if(!data||typeof data!=='object')data={};if(!Array.isArray(data.services))data.services=[];data.services=data.services.map(x=>Array.isArray(x)?[x[0]||'🔧',x[1]||'',x[2]||'']:['🔧',String(x||''),'']);if(!Array.isArray(data.phones)){data.phones=Array.isArray(data.devices)?data.devices.map(x=>({name:x.name||'',brand:x.brand||'Apple',screen:x.screen||x.price||'',software:x.software||'',hardware:x.hardware||'',camera:x.camera||''})):[]}data.phones=data.phones.map(x=>({name:x.name||'',brand:x.brand||'Apple',screen:x.screen||'',software:x.software||'',hardware:x.hardware||'',camera:x.camera||''}));if(!Array.isArray(data.usedPhones))data.usedPhones=[];data.usedPhones=data.usedPhones.map(x=>{let images=Array.isArray(x.images)?x.images.slice(0,4):[];while(images.length<4)images.push('');if(x.image&&!images[0])images[0]=x.image;return{name:x.name||'',brand:x.brand||'',price:x.price||'',condition:x.condition||'Goed',storage:x.storage||'',ram:x.ram||'',whatsapp:x.whatsapp||'',description:x.description||'',images}});if(!Array.isArray(data.why))data.why=Array.isArray(data.features)?data.features.map(x=>['⭐',String(x||''),'']):[];data.why=data.why.map(x=>Array.isArray(x)?[x[0]||'⭐',x[1]||'',x[2]||'']:['⭐',String(x||''),'']);if(selectedUsedPhone>=data.usedPhones.length)selectedUsedPhone=Math.max(0,data.usedPhones.length-1);if(selectedPhone>=data.phones.length)selectedPhone=Math.max(0,data.phones.length-1)}
+function normalizeData(){if(!data||typeof data!=='object')data={};if(!Array.isArray(data.services))data.services=[];data.services=data.services.map(x=>Array.isArray(x)?[x[0]||'🔧',x[1]||'',x[2]||'']:['🔧',String(x||''),'']);if(!Array.isArray(data.phones)){data.phones=Array.isArray(data.devices)?data.devices.map(x=>({name:x.name||'',brand:x.brand||'Apple',screen:x.screen||x.price||'',software:x.software||'',hardware:x.hardware||'',camera:x.camera||''})):[]}data.phones=data.phones.map(x=>({name:x.name||'',brand:x.brand||'Apple',screen:x.screen||'',software:x.software||'',hardware:x.hardware||'',camera:x.camera||''}));if(!Array.isArray(data.usedPhones))data.usedPhones=[];data.usedPhones=data.usedPhones.map(x=>{let images=Array.isArray(x.images)?x.images.slice(0,4):[];while(images.length<4)images.push('');if(x.image&&!images[0])images[0]=x.image;return{name:x.name||'',brand:x.brand||'',price:x.price||'',condition:x.condition||'Goed',storage:x.storage||'',ram:x.ram||'',whatsapp:x.whatsapp||'',description:x.description||'',images}});if(!Array.isArray(data.why))data.why=Array.isArray(data.features)?data.features.map(x=>['⭐',String(x||''),'']):[];data.why=data.why.map(x=>Array.isArray(x)?[x[0]||'⭐',x[1]||'',x[2]||'']:['⭐',String(x||''),'']);if(selectedUsedPhone>=data.usedPhones.length)selectedUsedPhone=Math.max(0,data.usedPhones.length-1);if(selectedPhone>=data.phones.length)selectedPhone=Math.max(0,data.phones.length-1);if(selectedService>=data.services.length)selectedService=Math.max(0,data.services.length-1)}
 async function loadData(){loading=true;setStatus('Gegevens laden...','info');try{const r=await fetch('/api/site');if(!r.ok)throw new Error('Websitegegevens konden niet worden geladen');data=await r.json();normalizeData();renderAll();setStatus('✓ Gegevens geladen','success')}catch(e){setStatus('✕ '+e.message,'error')}loading=false}
 function renderGeneral(){document.querySelectorAll('[data-u]').forEach(el=>{const k=el.dataset.u;el.value=data[k]??'';el.oninput=()=>{data[k]=el.value;markChanged()}})}
-function renderServices(){const b=document.getElementById('servicesList');b.innerHTML='';data.services.forEach((s,i)=>{b.innerHTML+=`<div class="card"><div class="card-head"><div class="card-title">Dienst ${i+1}</div><button class="btn btn-red" onclick="deleteService(${i})">Verwijderen</button></div><div class="grid"><div class="field"><label>Icoon / emoji</label><input value="${esc(s[0])}" oninput="data.services[${i}][0]=this.value;markChanged()"></div><div class="field"><label>Naam dienst</label><input value="${esc(s[1])}" oninput="data.services[${i}][1]=this.value;markChanged()"></div><div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.services[${i}][2]=this.value;markChanged()">${esc(s[2])}</textarea></div></div></div>`});if(!data.services.length)b.innerHTML='<div class="small">Nog geen diensten toegevoegd.</div>'}
-function addService(){data.services.push(['🔧','Nieuwe dienst','']);renderServices();markChanged()}function deleteService(i){if(confirm('Deze dienst verwijderen?')){data.services.splice(i,1);renderServices();markChanged()}}
+function renderServices(){
+const m=document.getElementById('servicesList');
+m.innerHTML='';
+m.style.display='grid';
+m.style.gridTemplateColumns='230px minmax(0,1fr)';
+m.style.gap='20px';
+m.style.alignItems='start';
+
+if(!data.services.length){
+m.style.display='block';
+m.innerHTML='<div class="phones-empty"><div><div style="font-size:40px">🔧</div><h3>Nog geen diensten</h3><p>Klik op "+ Dienst toevoegen" om een dienst toe te voegen.</p></div></div>';
+return;
+}
+
+if(selectedService>=data.services.length) selectedService=Math.max(0,data.services.length-1);
+
+const side=document.createElement('aside');
+side.className='phones-sidebar';
+side.style.position='sticky';
+side.style.top='145px';
+side.innerHTML='<div class="phones-sidebar-title">🔧 Diensten</div><div id="servicesMenu"></div>';
+
+const menu=side.querySelector('#servicesMenu');
+data.services.forEach((s,i)=>{
+const x=document.createElement('button');
+x.className='phones-item'+(i===selectedService?' active':'');
+x.textContent=(s[0]||'🔧')+' '+(s[1]||'Nieuwe dienst');
+x.onclick=()=>{selectedService=i;renderServices()};
+menu.appendChild(x);
+});
+
+const main=document.createElement('div');
+main.className='phones-main';
+const s=data.services[selectedService];
+const i=selectedService;
+
+main.innerHTML=`<div class="phones-editor"><div class="card-head">
+<div><div class="card-title" style="font-size:20px">🔧 ${esc(s[1]||'Nieuwe dienst')}</div>
+<div class="small">Bewerk hier de gegevens van deze dienst.</div></div>
+<button class="btn btn-red" onclick="deleteService(${i})">Verwijderen</button>
+</div>
+<div class="grid">
+<div class="field"><label>Icoon / emoji</label>
+<input value="${esc(s[0])}" oninput="data.services[${i}][0]=this.value;markChanged();updateServiceName(${i},this.value)"></div>
+<div class="field"><label>Naam dienst</label>
+<input value="${esc(s[1])}" oninput="data.services[${i}][1]=this.value;markChanged();updateServiceName(${i},this.value)"></div>
+<div class="field" style="grid-column:1/-1"><label>Beschrijving</label>
+<textarea oninput="data.services[${i}][2]=this.value;markChanged()">${esc(s[2])}</textarea></div>
+</div></div>`;
+
+m.appendChild(side);
+m.appendChild(main);
+}
+
+function updateServiceName(i,value){
+const b=document.querySelectorAll('#servicesMenu .phones-item')[i];
+if(b)b.textContent=(data.services[i][0]||'🔧')+' '+(value||'Nieuwe dienst');
+}
+
+function addService(){
+data.services.push(['🔧','Nieuwe dienst','']);
+selectedService=data.services.length-1;
+renderServices();
+markChanged();
+}
+
+function deleteService(i){
+if(confirm('Deze dienst verwijderen?')){
+data.services.splice(i,1);
+if(selectedService>=data.services.length)selectedService=Math.max(0,data.services.length-1);
+renderServices();
+markChanged();
+}
+}
+
 function renderPhones(){const m=document.getElementById('phonesMenu'),b=document.getElementById('phonesEditor');m.innerHTML='';data.phones.forEach((p,i)=>{const x=document.createElement('button');x.className='phones-item'+(i===selectedPhone?' active':'');x.textContent='📱 '+(p.name||'Nieuwe telefoon');x.onclick=()=>{selectedPhone=i;renderPhones()};m.appendChild(x)});if(!data.phones.length){m.innerHTML='<div class="small" style="padding:10px">Nog geen telefoons.</div>';b.innerHTML='<div class="phones-empty"><div><div style="font-size:40px">📱</div><h3>Nog geen telefoons</h3><p>Klik op "+ Telefoon toevoegen" om een telefoon toe te voegen.</p></div></div>';return}const i=selectedPhone,p=data.phones[i];b.innerHTML=`<div class="phones-editor"><div class="card-head"><div><div class="card-title" style="font-size:20px">📱 ${esc(p.name||'Nieuwe telefoon')}</div><div class="small">Bewerk hier de gegevens en reparatieprijzen van deze telefoon.</div></div><button class="btn btn-red" onclick="deletePhone(${i})">Verwijderen</button></div><div class="grid"><div class="field"><label>Model</label><input value="${esc(p.name)}" oninput="data.phones[${i}].name=this.value;markChanged();updatePhoneName(${i},this.value)"></div><div class="field"><label>Merk</label><input value="${esc(p.brand)}" oninput="data.phones[${i}].brand=this.value;markChanged()"></div><div class="field"><label>Scherm vervangen (€)</label><input value="${esc(p.screen)}" oninput="data.phones[${i}].screen=this.value;markChanged()"></div><div class="field"><label>Software (€)</label><input value="${esc(p.software)}" oninput="data.phones[${i}].software=this.value;markChanged()"></div><div class="field"><label>Hardware (€)</label><input value="${esc(p.hardware)}" oninput="data.phones[${i}].hardware=this.value;markChanged()"></div><div class="field"><label>Camera (€)</label><input value="${esc(p.camera)}" oninput="data.phones[${i}].camera=this.value;markChanged()"></div></div></div>`}
 function updatePhoneName(i,name){const b=document.querySelectorAll('.phones-item')[i];if(b)b.textContent='📱 '+(name||'Nieuwe telefoon')}
 function addPhone(){data.phones.push({name:'Nieuwe iPhone',brand:'Apple',screen:'',software:'',hardware:'',camera:''});selectedPhone=data.phones.length-1;renderPhones();markChanged()}function deletePhone(i){if(confirm('Deze telefoon verwijderen?')){data.phones.splice(i,1);if(selectedPhone>=data.phones.length)selectedPhone=Math.max(0,data.phones.length-1);renderPhones();markChanged()}}
