@@ -157,8 +157,7 @@ ${price ? `<div class="price">${euro(esc(price))}</div>` : ""}
 ${specs ? `<div class="meta">${specs}</div>` : ""}
 ${description ? `<div class="description">${esc(description)}</div>` : ""}
 <div class="buttons">
-<a class="btn green" href="${esc(whatsapp)}" target="_blank">💬 Vraag via WhatsApp</a>
-<a class="btn blue" href="repair.html">🔧 Reparatie</a>
+<a class="btn green" id="orderBtn" href="#" target="_blank" rel="noopener">🛒 Bestel deze telefoon</a>
 <a class="btn gray" href="devices.html">← Apparaten</a>
 </div>
 ${!price ? `<div class="status">Neem contact met ons op voor de actuele prijs.</div>` : ""}
@@ -192,6 +191,15 @@ if(!list.length && Array.isArray(data.devices)) list=data.devices;
 
 const product=Number.isInteger(id) && id>=0 ? list[id] : null;
 render(product,data);
+const orderBtn = document.getElementById("orderBtn");
+if(orderBtn){
+const orderName = product.name || "deze telefoon";
+const orderPrice = product.price || product.salePrice || product.sellPrice || product.verkoopprijs || "";
+const message = `Hallo HOMS TECH, ik wil deze telefoon bestellen: ${orderName}${orderPrice ? ` - €${orderPrice}` : ""}.`;
+const number = String(data.whatsapp || "").replace(/\D/g,"");
+orderBtn.href = number ? `https://wa.me/${number}?text=${encodeURIComponent(message)}` : "#";
+}
+
 }catch(e){
 console.error("HOMS TECH:",e);
 document.getElementById("productArea").innerHTML=
