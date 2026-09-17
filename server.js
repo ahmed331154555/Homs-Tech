@@ -4,6 +4,7 @@ const express = require("express");
 const { Pool } = require("pg");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const crypto = require("crypto");
 const path = require("path");
 
 const app = express();
@@ -24,12 +25,60 @@ app.use(cookieParser());
 // Website files
 app.use(express.static(__dirname));
 
-// Create database table and default settings
+// Password hashing helpers
+function hashPassword(password) {
+  return new Promise((resolve, reject) => {
+    const salt = crypto.randomBytes(16).toString("hex");
+
+    crypto.scrypt(password, salt, 64, (error, derivedKey) => {
+      if (error) return reject(error);
+
+      resolve(`${salt}:${derivedKey.toString("hex")}`);
+    });
+  });
+}
+
+function verifyPassword(password, storedHash) {
+  return new Promise((resolve, reject) => {
+    const parts = String(storedHash || "").split(":");
+
+    if (parts.length !== 2) {
+      return resolve(false);
+    }
+
+    const salt = parts[0];
+    const storedKey = Buffer.from(parts[1], "hex");
+
+    crypto.scrypt(password, salt, 64, (error, derivedKey) => {
+      if (error) return reject(error);
+
+      if (storedKey.length !== derivedKey.length) {
+        return resolve(false);
+      }
+
+      resolve(crypto.timingSafeEqual(storedKey, derivedKey));
+    });
+  });
+}
+
+// Create database tables and default settings
 async function initDatabase() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS site_settings (
       id INTEGER PRIMARY KEY,
       data JSONB NOT NULL
+    )
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS customers (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      phone TEXT DEFAULT '',
+      address TEXT DEFAULT '',
+      password_hash TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
 
@@ -177,9 +226,221 @@ app.get("/api/me", (req, res) => {
   }
 });
 
-// Logout
+// Admin logout
 app.post("/api/logout", (req, res) => {
   res.clearCookie("token");
+
+  res.json({
+    success: true
+  });
+});
+
+// Customer registration
+app.post("/api/customer/register", async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      phone = "",
+      address = "",
+      password
+    } = req.body || {};
+
+    const cleanName = String(name || "").trim();
+    const cleanEmail = String(email || "").trim().toLowerCase();
+    const cleanPhone = String(phone || "").trim();
+    const cleanAddress = String(address || "").trim();
+
+    if (!cleanName || !cleanEmail || !password) {
+      return res.status(400).json({
+        error: "Vul naam, e-mail en wachtwoord in."
+      });
+    }
+
+    if (String(password).length < 8) {
+      return res.status(400).json({
+        error: "Het wachtwoord moet minimaal 8 tekens bevatten."
+      });
+    }
+
+    const existing = await pool.query(
+      "SELECT id FROM customers WHERE email = $1",
+      [cleanEmail]
+    );
+
+    if (existing.rows.length > 0) {
+      return res.status(409).json({
+        error: "Er bestaat al een account met dit e-mailadres."
+      });
+    }
+
+    const passwordHash = await hashPassword(String(password));
+
+    const result = await pool.query(
+      `INSERT INTO customers
+        (name, email, phone, address, password_hash)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, name, email, phone, address`,
+      [
+        cleanName,
+        cleanEmail,
+        cleanPhone,
+        cleanAddress,
+        passwordHash
+      ]
+    );
+
+    const customer = result.rows[0];
+
+    const customerToken = jwt.sign(
+      {
+        customerId: customer.id,
+        email: customer.email
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "30d"
+      }
+    );
+
+    res.cookie("customerToken", customerToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60 * 1000
+    });
+
+    res.status(201).json({
+      success: true,
+      customer
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Account aanmaken mislukt."
+    });
+  }
+});
+
+// Customer login
+app.post("/api/customer/login", async (req, res) => {
+  try {
+    const {
+      email,
+      password
+    } = req.body || {};
+
+    const cleanEmail = String(email || "").trim().toLowerCase();
+
+    if (!cleanEmail || !password) {
+      return res.status(400).json({
+        error: "Vul e-mail en wachtwoord in."
+      });
+    }
+
+    const result = await pool.query(
+      `SELECT id, name, email, phone, address, password_hash
+       FROM customers
+       WHERE email = $1`,
+      [cleanEmail]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({
+        error: "Ongeldig e-mailadres of wachtwoord."
+      });
+    }
+
+    const customer = result.rows[0];
+
+    const valid = await verifyPassword(
+      String(password),
+      customer.password_hash
+    );
+
+    if (!valid) {
+      return res.status(401).json({
+        error: "Ongeldig e-mailadres of wachtwoord."
+      });
+    }
+
+    delete customer.password_hash;
+
+    const customerToken = jwt.sign(
+      {
+        customerId: customer.id,
+        email: customer.email
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "30d"
+      }
+    );
+
+    res.cookie("customerToken", customerToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60 * 1000
+    });
+
+    res.json({
+      success: true,
+      customer
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Inloggen mislukt."
+    });
+  }
+});
+
+// Check customer login
+app.get("/api/customer/me", async (req, res) => {
+  try {
+    const token = req.cookies.customerToken;
+
+    if (!token) {
+      return res.status(401).json({
+        authenticated: false
+      });
+    }
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    const result = await pool.query(
+      `SELECT id, name, email, phone, address
+       FROM customers
+       WHERE id = $1`,
+      [decoded.customerId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({
+        authenticated: false
+      });
+    }
+
+    res.json({
+      authenticated: true,
+      customer: result.rows[0]
+    });
+  } catch (error) {
+    res.status(401).json({
+      authenticated: false
+    });
+  }
+});
+
+// Customer logout
+app.post("/api/customer/logout", (req, res) => {
+  res.clearCookie("customerToken");
 
   res.json({
     success: true
