@@ -61,6 +61,57 @@ function verifyPassword(password, storedHash) {
   });
 }
 
+// Send a welcome email through Resend
+async function sendWelcomeEmail(customer) {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) {
+    console.log("RESEND_API_KEY is not configured; welcome email skipped.");
+    return;
+  }
+
+  const from = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      from,
+      to: [customer.email],
+      subject: "Welkom bij HOMS TECH",
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#222">
+          <h1 style="margin-bottom:8px">Welkom bij HOMS TECH 👋</h1>
+          <p>Hallo ${escapeHtml(customer.name)},</p>
+          <p>Je account is succesvol aangemaakt.</p>
+          <p>Je kunt nu smartphones bekijken en later je bestellingen vanuit je account volgen.</p>
+          <p style="margin-top:28px"><strong>HOMS TECH</strong><br>Telefoonservice & smartphones</p>
+        </div>
+      `
+    })
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(`Resend error ${response.status}: ${JSON.stringify(data)}`);
+  }
+
+  console.log("Welcome email sent:", data.id || "ok");
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // Create database tables and default settings
 async function initDatabase() {
   await pool.query(`
@@ -291,6 +342,11 @@ app.post("/api/customer/register", async (req, res) => {
     );
 
     const customer = result.rows[0];
+
+    // Do not block account creation if the email provider has a temporary error.
+    sendWelcomeEmail(customer).catch((error) => {
+      console.error("Welcome email failed:", error.message);
+    });
 
     const customerToken = jwt.sign(
       {
