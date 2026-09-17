@@ -845,16 +845,19 @@ data.phones
 if(Array.isArray(data.phones)){
 
 devices = data.phones.map((phone, index) => ({
-
-_index: index,
-name: phone.name || "Smartphone",
-brand: phone.brand || "",
-screen: phone.screen || "",
-software: phone.software || "",
-hardware: phone.hardware || "",
-camera: phone.camera || ""
-
-}));
+        _index: index,
+        name: phone.name || "Smartphone",
+        brand: phone.brand || "",
+        price: phone.price || phone.salePrice || phone.sellPrice || phone.verkoopprijs || "",
+        salePrice: phone.salePrice || phone.price || phone.sellPrice || phone.verkoopprijs || "",
+        storage: phone.storage || phone.geheugen || "",
+        color: phone.color || phone.kleur || "",
+        condition: phone.condition || phone.conditie || "",
+        warranty: phone.warranty || phone.garantie || "",
+        description: phone.description || "",
+        image: phone.image || phone.imageUrl || "",
+        images: Array.isArray(phone.images) ? phone.images : []
+      }));
 
 }
 
