@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>HOMS TECH — Product</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#172033}
+a{text-decoration:none;color:inherit}.top{background:#111827;color:#fff;padding:16px 22px}.topin{max-width:1180px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:20px}.logo{font-size:24px;font-weight:800}.logo span{color:#25d366}.back{background:#fff;color:#111827;padding:10px 14px;border-radius:10px;font-weight:700}
+.wrap{max-width:1180px;margin:30px auto;padding:0 18px}.crumb{color:#64748b;font-size:14px;margin-bottom:18px}
+.product{background:#fff;border-radius:20px;padding:25px;box-shadow:0 8px 30px rgba(0,0,0,.07);display:grid;grid-template-columns:1.05fr .95fr;gap:35px}
+.gallery{min-width:0}.mainimg{height:470px;background:#f8fafc;border-radius:16px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #e5eaf1}.mainimg img{width:100%;height:100%;object-fit:contain}.placeholder{font-size:90px}.thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}.thumb{height:90px;border:2px solid #e5eaf1;background:#fff;border-radius:10px;overflow:hidden;padding:3px;cursor:pointer}.thumb.active{border-color:#25d366}.thumb img{width:100%;height:100%;object-fit:cover}
+.info h1{font-size:34px;margin:0 0 8px}.sub{color:#64748b;font-size:16px;margin-bottom:20px}.price{font-size:34px;font-weight:800;margin:15px 0 22px}.label{font-weight:800;margin:18px 0 9px}.options{display:flex;flex-wrap:wrap;gap:9px}.opt{border:1px solid #cbd5e1;background:#fff;padding:11px 14px;border-radius:10px;font-weight:700;cursor:pointer}.opt.active{border-color:#25d366;background:#25d366;color:#fff}
+.buy{display:flex;gap:10px;margin-top:24px}.buy button{border:0;border-radius:11px;padding:14px 18px;font-weight:800;font-size:16px;cursor:pointer}.wa{background:#25d366;color:#fff;flex:1}.cart{background:#111827;color:#fff;flex:1}.notice{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px;margin-top:15px;color:#475569;font-size:14px;line-height:1.5}
+.details{margin-top:22px;background:#fff;border-radius:20px;padding:25px;box-shadow:0 8px 30px rgba(0,0,0,.06)}.details h2{margin-top:0}.specs{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.spec{border:1px solid #e5eaf1;border-radius:12px;padding:14px}.spec b{display:block;margin-bottom:5px}.muted{color:#64748b}.loading{text-align:center;padding:80px;color:#64748b}.error{text-align:center;padding:60px;color:#dc2626}
+@media(max-width:800px){.product{grid-template-columns:1fr;padding:16px;gap:20px}.mainimg{height:330px}.info h1{font-size:27px}.price{font-size:29px}.specs{grid-template-columns:1fr}.wrap{padding:0 12px;margin:20px auto}.topin{padding:0 2px}.logo{font-size:20px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="topin"><div class="logo">HOMS <span>TECH</span></div><a class="back" href="devices.html">← Telefoons</a></div></header>
+<main class="wrap"><div id="app" class="loading">Product laden...</div></main>
+<script>
+let products=[],product=null,selectedCondition='',selectedStorage='',images=[],activeImage=0;
+
+async function init(){
+ try{
+  const r=await fetch('/api/site');
+  if(!r.ok)throw new Error('Productgegevens konden niet worden geladen.');
+  const d=await r.json();
+  const used=Array.isArray(d.usedPhones)?d.usedPhones:[];
+  const phones=Array.isArray(d.phones)?d.phones:[];
+  products=[...used.map(x=>({...x,_type:'used'})),...phones.map(x=>({...x,_type:'phone'}))];
+  const q=new URLSearchParams(location.search);
+  const index=q.get('id');
+  const name=q.get('name');
+  product=index!==null?products[Number(index)]:products.find(x=>x.name===name);
+  if(!product)throw new Error('Dit product bestaat niet of is niet gevonden.');
+  render();
+ }catch(e){document.getElementById('app').innerHTML='<div class="error"><h2>Product niet gevonden</h2><p>'+esc(e.message)+'</p></div>'}
+}
+function render(){
+ images=(product.images||[]).filter(Boolean);
+ if(!images.length&&product.image)images=[product.image];
+ activeImage=0;
+ const title=product.name||'Telefoon';
+ const subtitle=[product.brand,product.storage].filter(Boolean).join(' · ');
+ const price=product.price||product.screen||'';
+ document.title='HOMS TECH — '+title;
+ document.getElementById('app').innerHTML=`
+ <div class="crumb">Home / Telefoons / ${esc(title)}</div>
+ <section class="product">
+  <div class="gallery">
+   <div class="mainimg" id="mainImg">${images[0]?'<img src="'+esc(images[0])+'">':'<div class="placeholder">📱</div>'}</div>
+   <div class="thumbs">${images.map((x,i)=>'<button class="thumb '+(i===0?'active':'')+'" onclick="setImage('+i+')"><img src="'+esc(x)+'"></button>').join('')}</div>
+  </div>
+  <div class="info">
+   <div class="sub">${esc(product.brand||'HOMS TECH')}</div>
+   <h1>${esc(title)}</h1>
+   <div class="sub">${esc(subtitle||'Refurbished / gebruikte telefoon')}</div>
+   <div class="price" id="price">${price?'€ '+esc(price):'Prijs op aanvraag'}</div>
+   ${product.condition?'<div class="label">Conditie</div><div class="options"><button class="opt active">'+esc(product.condition)+'</button></div>':''}
+   ${product.storage?'<div class="label">Opslag</div><div class="options"><button class="opt active">'+esc(product.storage)+'</button></div>':''}
+   <div class="buy"><button class="wa" onclick="whatsapp()">WhatsApp</button><button class="cart" onclick="contact()">Bestellen</button></div>
+   <div class="notice">✓ Persoonlijk gecontroleerd door HOMS TECH<br>✓ Garantie volgens de voorwaarden van HOMS TECH<br>✓ Snelle levering of ophalen mogelijk</div>
+  </div>
+ </section>
+ <section class="details">
+  <h2>Specificaties</h2>
+  <div class="specs">
+   ${spec('Merk',product.brand)}${spec('Model',product.name)}${spec('Opslag',product.storage)}
+   ${spec('RAM',product.ram)}${spec('Conditie',product.condition)}
+   ${spec('Scherm reparatie',product.screen?('€ '+product.screen):'')}${spec('Software',product.software?('€ '+product.software):'')}
+   ${spec('Hardware',product.hardware?('€ '+product.hardware):'')}${spec('Camera',product.camera?('€ '+product.camera):'')}
+  </div>
+  ${product.description?'<h2 style="margin-top:28px">Beschrijving</h2><p class="muted" style="line-height:1.7;white-space:pre-line">'+esc(product.description)+'</p>':''}
+ </section>`;
+}
+function spec(a,b){return '<div class="spec"><b>'+esc(a)+'</b><span class="muted">'+esc(b||'—')+'</span></div>'}
+function setImage(i){activeImage=i;document.getElementById('mainImg').innerHTML='<img src="'+esc(images[i])+'">';document.querySelectorAll('.thumb').forEach((x,n)=>x.classList.toggle('active',n===i))}
+function whatsapp(){const msg='Hallo HOMS TECH, ik heb interesse in '+(product.name||'deze telefoon')+'.';window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank')}
+function contact(){window.location.href='repair.html'}
+function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
+init();
+</script>
+</body>
+</html>
