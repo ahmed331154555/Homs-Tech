@@ -4,218 +4,1673 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Admin | HOMS TECH</title>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb;color:#111827}
-header{background:#111827;color:#fff;padding:16px 5%;display:flex;align-items:center;justify-content:space-between;gap:15px}
-header a{color:#fff;text-decoration:none}
-.logo{font-weight:800;font-size:21px}
-.container{max-width:1100px;margin:auto;padding:22px 16px 50px}
-.panel{background:#fff;border-radius:18px;padding:22px;margin:16px 0;box-shadow:0 7px 25px #0000000c}
-h1,h2{margin-top:0}
-label{display:block;font-weight:700;margin:12px 0 6px}
-input,textarea,select{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;font:inherit}
-textarea{min-height:75px;resize:vertical}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.item{border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin:12px 0}
-.item-grid{display:grid;grid-template-columns:90px 1fr 1fr;gap:8px}
-.phone-grid{display:grid;grid-template-columns:1.2fr .8fr 1fr 1fr 1fr 1fr;gap:8px}
-button,.btn{border:0;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}
-.primary{background:#111827;color:#fff}.green{background:#16a34a;color:#fff}.red{background:#dc2626;color:#fff}.light{background:#eef2f7;color:#111827}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
-.msg{padding:12px;border-radius:10px;margin-top:12px}
-.ok{background:#dcfce7;color:#166534}.err{background:#fee2e2;color:#991b1b}
-.muted{color:#6b7280;font-size:14px}
-.login{max-width:430px;margin:60px auto}
-.hidden{display:none}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f5f7fb;
+  color:#111827
+}
+
+header{
+  background:#111827;
+  color:#fff;
+  padding:16px 5%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px
+}
+
+header a{
+  color:#fff;
+  text-decoration:none
+}
+
+.logo{
+  font-weight:800;
+  font-size:21px
+}
+
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:22px 16px 50px
+}
+
+.panel{
+  background:#fff;
+  border-radius:18px;
+  padding:22px;
+  margin:16px 0;
+  box-shadow:0 7px 25px #0000000c
+}
+
+h1,h2{
+  margin-top:0
+}
+
+label{
+  display:block;
+  font-weight:700;
+  margin:12px 0 6px
+}
+
+input,textarea,select{
+  width:100%;
+  padding:12px;
+  border:1px solid #d1d5db;
+  border-radius:10px;
+  font:inherit
+}
+
+textarea{
+  min-height:75px;
+  resize:vertical
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px
+}
+
+.item{
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  padding:14px;
+  margin:12px 0
+}
+
+.item-grid{
+  display:grid;
+  grid-template-columns:90px 1fr 1fr;
+  gap:8px
+}
+
+.phone-grid{
+  display:grid;
+  grid-template-columns:1.2fr .8fr 1fr 1fr 1fr 1fr;
+  gap:8px
+}
+
+.used-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px
+}
+
+button,.btn{
+  border:0;
+  border-radius:10px;
+  padding:11px 16px;
+  font-weight:700;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-block
+}
+
+.primary{
+  background:#111827;
+  color:#fff
+}
+
+.green{
+  background:#16a34a;
+  color:#fff
+}
+
+.red{
+  background:#dc2626;
+  color:#fff
+}
+
+.light{
+  background:#eef2f7;
+  color:#111827
+}
+
+.blue{
+  background:#2563eb;
+  color:#fff
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:16px
+}
+
+.msg{
+  padding:12px;
+  border-radius:10px;
+  margin-top:12px
+}
+
+.ok{
+  background:#dcfce7;
+  color:#166534
+}
+
+.err{
+  background:#fee2e2;
+  color:#991b1b
+}
+
+.muted{
+  color:#6b7280;
+  font-size:14px
+}
+
+.login{
+  max-width:430px;
+  margin:60px auto
+}
+
+.hidden{
+  display:none
+}
+
+.used-title{
+  color:#2563eb;
+  font-size:18px;
+  font-weight:800;
+  margin-bottom:10px
+}
+
+.photo-box{
+  margin-top:15px;
+  padding:15px;
+  background:#f8fafc;
+  border:1px dashed #cbd5e1;
+  border-radius:14px
+}
+
+.photo-preview{
+  display:block;
+  width:180px;
+  height:180px;
+  object-fit:cover;
+  border-radius:14px;
+  margin-top:12px;
+  border:1px solid #e5e7eb;
+  background:#eef2f7
+}
+
+.photo-empty{
+  width:180px;
+  height:180px;
+  border-radius:14px;
+  margin-top:12px;
+  background:#eef2f7;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:60px
+}
+
+.file-input{
+  background:#fff;
+  padding:10px
+}
+
+.small-note{
+  color:#6b7280;
+  font-size:13px;
+  margin-top:8px;
+  line-height:1.5
+}
+
 @media(max-width:800px){
- .grid,.item-grid,.phone-grid{grid-template-columns:1fr}
- header{padding:14px 4%}
+
+  .grid,
+  .item-grid,
+  .phone-grid,
+  .used-grid{
+    grid-template-columns:1fr
+  }
+
+  header{
+    padding:14px 4%
+  }
+
+  .photo-preview,
+  .photo-empty{
+    width:150px;
+    height:150px
+  }
 }
 </style>
 </head>
+
 <body>
+
 <header>
-  <a class="logo" href="/">📱 HOMS TECH</a>
+
+  <a class="logo" href="/">
+    📱 HOMS TECH
+  </a>
+
   <div class="actions" style="margin:0">
-    <a class="btn light" href="/" style="color:#111827">Website</a>
-    <button id="logoutBtn" class="btn light hidden" onclick="logout()">Uitloggen</button>
+
+    <a class="btn light"
+       href="/"
+       style="color:#111827">
+       Website
+    </a>
+
+    <button
+      id="logoutBtn"
+      class="btn light hidden"
+      onclick="logout()">
+      Uitloggen
+    </button>
+
   </div>
+
 </header>
 
+
 <div class="container">
+
+
+  <!-- LOGIN -->
+
   <div id="loginBox" class="panel login">
+
     <h1>🔐 Admin</h1>
-    <p class="muted">Log in om prijzen en websitegegevens te beheren.</p>
+
+    <p class="muted">
+      Log in om prijzen en websitegegevens te beheren.
+    </p>
+
     <label>Gebruikersnaam</label>
-    <input id="username" value="admin" autocomplete="username">
+
+    <input
+      id="username"
+      value="admin"
+      autocomplete="username">
+
     <label>Wachtwoord</label>
-    <input id="password" type="password" autocomplete="current-password">
-    <div class="actions"><button class="btn primary" onclick="login()">Inloggen</button></div>
+
+    <input
+      id="password"
+      type="password"
+      autocomplete="current-password">
+
+    <div class="actions">
+
+      <button
+        class="btn primary"
+        onclick="login()">
+        Inloggen
+      </button>
+
+    </div>
+
     <div id="loginMsg"></div>
+
   </div>
+
+
+  <!-- DASHBOARD -->
 
   <div id="dashboard" class="hidden">
+
     <div class="panel">
+
       <h1>⚙️ HOMS TECH Admin</h1>
-      <p class="muted">Wijzigingen worden op de server opgeslagen en kunnen daarna op alle apparaten worden weergegeven.</p>
+
+      <p class="muted">
+        Wijzigingen worden op de server opgeslagen en kunnen daarna
+        op alle apparaten worden weergegeven.
+      </p>
+
     </div>
 
+
+    <!-- GENERAL -->
+
     <div class="panel">
+
       <h2>🏢 Algemene gegevens</h2>
+
       <div class="grid">
-        <div><label>Bedrijfsnaam</label><input id="businessName"></div>
-        <div><label>Korte slogan</label><input id="tagline"></div>
+
+        <div>
+
+          <label>Bedrijfsnaam</label>
+
+          <input id="businessName">
+
+        </div>
+
+
+        <div>
+
+          <label>Korte slogan</label>
+
+          <input id="tagline">
+
+        </div>
+
       </div>
-      <label>Hoofdtitel</label><input id="heroTitle">
-      <label>Introductietekst</label><textarea id="heroText"></textarea>
+
+
+      <label>Hoofdtitel</label>
+
+      <input id="heroTitle">
+
+
+      <label>Introductietekst</label>
+
+      <textarea id="heroText"></textarea>
+
+
       <div class="grid">
-        <div><label>WhatsApp nummer (zonder + of spaties)</label><input id="whatsapp" placeholder="31612345678"></div>
-        <div><label>Telefoonnummer</label><input id="phone" placeholder="+31 6 12345678"></div>
+
+        <div>
+
+          <label>
+            WhatsApp nummer (zonder + of spaties)
+          </label>
+
+          <input
+            id="whatsapp"
+            placeholder="31612345678">
+
+        </div>
+
+
+        <div>
+
+          <label>Telefoonnummer</label>
+
+          <input
+            id="phone"
+            placeholder="+31 6 12345678">
+
+        </div>
+
       </div>
-      <label>Werkgebied</label><input id="areas" placeholder="Rotterdam en omgeving">
+
+
+      <label>Werkgebied</label>
+
+      <input
+        id="areas"
+        placeholder="Rotterdam en omgeving">
+
     </div>
 
+
+    <!-- SERVICES -->
+
     <div class="panel">
+
       <h2>🔧 Diensten</h2>
+
       <div id="servicesEdit"></div>
-      <button class="btn light" onclick="addService()">+ Dienst toevoegen</button>
+
+      <button
+        class="btn light"
+        onclick="addService()">
+        + Dienst toevoegen
+      </button>
+
     </div>
 
+
+    <!-- PHONES -->
+
     <div class="panel">
+
       <h2>📱 Apparaten & prijzen</h2>
-      <p class="muted">Vul per toestel de prijs in voor scherm, software, hardware en camera.</p>
+
+      <p class="muted">
+        Je kunt hier ook de merknaam en het model aanpassen.
+      </p>
+
       <div id="phonesEdit"></div>
-      <button class="btn light" onclick="addPhone()">+ Apparaat toevoegen</button>
+
+      <button
+        class="btn light"
+        onclick="addPhone()">
+        + Apparaat toevoegen
+      </button>
+
     </div>
 
+
+    <!-- USED PHONES -->
+
     <div class="panel">
+
+      <h2>♻️ Tweedehands apparaten</h2>
+
+      <p class="muted">
+        Voeg hier gebruikte telefoons toe die je wilt verkopen.
+        Je kunt model, merk, prijs, conditie, opslag, RAM,
+        beschrijving, WhatsApp en een foto toevoegen.
+      </p>
+
+      <div id="usedEdit"></div>
+
+      <button
+        class="btn light"
+        onclick="addUsedPhone()">
+        + Tweedehands apparaat toevoegen
+      </button>
+
+    </div>
+
+
+    <!-- WHY -->
+
+    <div class="panel">
+
       <h2>⭐ Waarom HOMS TECH?</h2>
+
       <div id="whyEdit"></div>
-      <button class="btn light" onclick="addWhy()">+ Voordeel toevoegen</button>
+
+      <button
+        class="btn light"
+        onclick="addWhy()">
+        + Voordeel toevoegen
+      </button>
+
     </div>
 
+
+    <!-- SAVE -->
+
     <div class="panel">
+
       <div class="actions">
-        <button class="btn green" onclick="save()">💾 Wijzigingen opslaan</button>
-        <a class="btn light" href="/prices.html" target="_blank">Prijzen bekijken</a>
+
+        <button
+          class="btn green"
+          onclick="save()">
+          💾 Wijzigingen opslaan
+        </button>
+
+        <a
+          class="btn light"
+          href="/prices.html"
+          target="_blank">
+          Prijzen bekijken
+        </a>
+
       </div>
+
       <div id="saveMsg"></div>
+
     </div>
+
   </div>
+
 </div>
 
+
 <script>
+
 let data=null;
+
 const $=id=>document.getElementById(id);
 
+
+/* =========================
+   ESCAPE
+========================= */
+
 function esc(v){
-  return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll('"',"&quot;");
+
+  return String(v??"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+
 }
+
+
+/* =========================
+   LOGIN
+========================= */
 
 async function login(){
-  const r=await fetch("/api/login",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({username:$("username").value,password:$("password").value})
-  });
-  if(r.ok){
-    $("loginBox").classList.add("hidden");
-    $("dashboard").classList.remove("hidden");
-    $("logoutBtn").classList.remove("hidden");
-    $("loginMsg").innerHTML="";
-    load();
-  }else{
-    $("loginMsg").innerHTML='<div class="msg err">Onjuiste gebruikersnaam of wachtwoord.</div>';
+
+  try{
+
+    const r=await fetch("/api/login",{
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify({
+
+        username:$("username").value,
+
+        password:$("password").value
+
+      })
+
+    });
+
+
+    if(r.ok){
+
+      $("loginBox").classList.add("hidden");
+
+      $("dashboard").classList.remove("hidden");
+
+      $("logoutBtn").classList.remove("hidden");
+
+      $("loginMsg").innerHTML="";
+
+      load();
+
+    }else{
+
+      $("loginMsg").innerHTML=
+        '<div class="msg err">Onjuiste gebruikersnaam of wachtwoord.</div>';
+
+    }
+
+  }catch(error){
+
+    $("loginMsg").innerHTML=
+      '<div class="msg err">Verbindingsfout.</div>';
+
   }
+
 }
+
+
+/* =========================
+   LOAD
+========================= */
 
 async function load(){
-  const r=await fetch("/api/site");
-  if(!r.ok){$("saveMsg").innerHTML='<div class="msg err">Kan de gegevens niet laden.</div>';return;}
-  data=await r.json();
-  ["businessName","heroTitle","heroText","tagline","whatsapp","phone","areas"].forEach(k=>$(k).value=data[k]||"");
-  render();
+
+  try{
+
+    const r=await fetch("/api/site");
+
+    if(!r.ok){
+
+      $("saveMsg").innerHTML=
+        '<div class="msg err">Kan de gegevens niet laden.</div>';
+
+      return;
+
+    }
+
+
+    data=await r.json();
+
+
+    if(!Array.isArray(data.usedPhones)){
+
+      data.usedPhones=[];
+
+    }
+
+
+    if(!Array.isArray(data.services)){
+
+      data.services=[];
+
+    }
+
+
+    if(!Array.isArray(data.phones)){
+
+      data.phones=[];
+
+    }
+
+
+    if(!Array.isArray(data.why)){
+
+      data.why=[];
+
+    }
+
+
+    [
+
+      "businessName",
+      "heroTitle",
+      "heroText",
+      "tagline",
+      "whatsapp",
+      "phone",
+      "areas"
+
+    ].forEach(k=>{
+
+      $(k).value=data[k]||"";
+
+    });
+
+
+    render();
+
+  }catch(error){
+
+    $("saveMsg").innerHTML=
+      '<div class="msg err">Fout bij laden van gegevens.</div>';
+
+  }
+
 }
+
+
+/* =========================
+   RENDER
+========================= */
 
 function render(){
-  $("servicesEdit").innerHTML=(data.services||[]).map((x,i)=>`
-    <div class="item">
-      <div class="item-grid">
-        <input data-a="services" data-i="${i}" data-k="0" value="${esc(x[0])}" placeholder="Emoji">
-        <input data-a="services" data-i="${i}" data-k="1" value="${esc(x[1])}" placeholder="Naam dienst">
-        <textarea data-a="services" data-i="${i}" data-k="2" placeholder="Beschrijving">${esc(x[2])}</textarea>
-      </div>
-      <div class="actions"><button class="btn red" onclick="delService(${i})">🗑 Verwijderen</button></div>
-    </div>`).join("");
 
-  $("phonesEdit").innerHTML=(data.phones||[]).map((p,i)=>`
-    <div class="item">
-      <div class="phone-grid">
-        <input data-p="1" data-i="${i}" data-k="name" value="${esc(p.name)}" placeholder="Model">
-        <input data-p="1" data-i="${i}" data-k="brand" value="${esc(p.brand)}" placeholder="Merk">
-        <input data-p="1" data-i="${i}" data-k="screen" value="${esc(p.screen)}" placeholder="Scherm €">
-        <input data-p="1" data-i="${i}" data-k="software" value="${esc(p.software)}" placeholder="Software €">
-        <input data-p="1" data-i="${i}" data-k="hardware" value="${esc(p.hardware)}" placeholder="Hardware €">
-        <input data-p="1" data-i="${i}" data-k="camera" value="${esc(p.camera)}" placeholder="Camera €">
-      </div>
-      <div class="actions"><button class="btn red" onclick="delPhone(${i})">🗑 Verwijderen</button></div>
-    </div>`).join("");
 
-  $("whyEdit").innerHTML=(data.why||[]).map((x,i)=>`
-    <div class="item">
-      <div class="item-grid">
-        <input data-a="why" data-i="${i}" data-k="0" value="${esc(x[0])}" placeholder="Emoji">
-        <input data-a="why" data-i="${i}" data-k="1" value="${esc(x[1])}" placeholder="Titel">
-        <textarea data-a="why" data-i="${i}" data-k="2" placeholder="Beschrijving">${esc(x[2])}</textarea>
+  /* SERVICES */
+
+  $("servicesEdit").innerHTML=
+    (data.services||[]).map((x,i)=>{
+
+      if(!Array.isArray(x)){
+
+        x=["🔧",String(x),""];
+
+      }
+
+
+      return `
+
+      <div class="item">
+
+        <div class="item-grid">
+
+          <input
+            data-a="services"
+            data-i="${i}"
+            data-k="0"
+            value="${esc(x[0])}"
+            placeholder="Emoji">
+
+          <input
+            data-a="services"
+            data-i="${i}"
+            data-k="1"
+            value="${esc(x[1])}"
+            placeholder="Naam dienst">
+
+          <textarea
+            data-a="services"
+            data-i="${i}"
+            data-k="2"
+            placeholder="Beschrijving">${esc(x[2])}</textarea>
+
+        </div>
+
+
+        <div class="actions">
+
+          <button
+            class="btn red"
+            onclick="delService(${i})">
+            🗑 Verwijderen
+          </button>
+
+        </div>
+
       </div>
-      <div class="actions"><button class="btn red" onclick="delWhy(${i})">🗑 Verwijderen</button></div>
-    </div>`).join("");
+
+      `;
+
+    }).join("");
+
+
+  /* PHONES */
+
+  $("phonesEdit").innerHTML=
+    (data.phones||[]).map((p,i)=>`
+
+      <div class="item">
+
+        <div class="phone-grid">
+
+          <input
+            data-p="1"
+            data-i="${i}"
+            data-k="name"
+            value="${esc(p.name)}"
+            placeholder="Model">
+
+          <input
+            data-p="1"
+            data-i="${i}"
+            data-k="brand"
+            value="${esc(p.brand)}"
+            placeholder="Merk">
+
+          <input
+            data-p="1"
+            data-i="${i}"
+            data-k="screen"
+            value="${esc(p.screen)}"
+            placeholder="Scherm €">
+
+          <input
+            data-p="1"
+            data-i="${i}"
+            data-k="software"
+            value="${esc(p.software)}"
+            placeholder="Software €">
+
+          <input
+            data-p="1"
+            data-i="${i}"
+            data-k="hardware"
+            value="${esc(p.hardware)}"
+            placeholder="Hardware €">
+
+          <input
+            data-p="1"
+            data-i="${i}"
+            data-k="camera"
+            value="${esc(p.camera)}"
+            placeholder="Camera €">
+
+        </div>
+
+
+        <div class="actions">
+
+          <button
+            class="btn red"
+            onclick="delPhone(${i})">
+            🗑 Verwijderen
+          </button>
+
+        </div>
+
+      </div>
+
+    `).join("");
+
+
+  /* =========================
+     USED PHONES
+  ========================= */
+
+  $("usedEdit").innerHTML=
+    (data.usedPhones||[]).map((p,i)=>`
+
+      <div class="item">
+
+        <div class="used-title">
+          ♻️ ${esc(p.name || "Nieuw apparaat")}
+        </div>
+
+
+        <div class="used-grid">
+
+
+          <div>
+
+            <label>Model</label>
+
+            <input
+              data-u="1"
+              data-i="${i}"
+              data-k="name"
+              value="${esc(p.name)}"
+              placeholder="iPhone 13">
+
+          </div>
+
+
+          <div>
+
+            <label>Merk</label>
+
+            <input
+              data-u="1"
+              data-i="${i}"
+              data-k="brand"
+              value="${esc(p.brand)}"
+              placeholder="Apple">
+
+          </div>
+
+
+          <div>
+
+            <label>Prijs €</label>
+
+            <input
+              data-u="1"
+              data-i="${i}"
+              data-k="price"
+              value="${esc(p.price)}"
+              placeholder="299">
+
+          </div>
+
+
+          <div>
+
+            <label>Conditie</label>
+
+            <select
+              data-u="1"
+              data-i="${i}"
+              data-k="condition">
+
+              <option
+                value="Als nieuw"
+                ${p.condition==="Als nieuw"?"selected":""}>
+                Als nieuw
+              </option>
+
+              <option
+                value="Zeer goed"
+                ${p.condition==="Zeer goed"?"selected":""}>
+                Zeer goed
+              </option>
+
+              <option
+                value="Goed"
+                ${p.condition==="Goed"?"selected":""}>
+                Goed
+              </option>
+
+              <option
+                value="Gebruikt"
+                ${p.condition==="Gebruikt"?"selected":""}>
+                Gebruikt
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div>
+
+            <label>Opslag</label>
+
+            <input
+              data-u="1"
+              data-i="${i}"
+              data-k="storage"
+              value="${esc(p.storage)}"
+              placeholder="128 GB">
+
+          </div>
+
+
+          <div>
+
+            <label>RAM</label>
+
+            <input
+              data-u="1"
+              data-i="${i}"
+              data-k="ram"
+              value="${esc(p.ram)}"
+              placeholder="6 GB">
+
+          </div>
+
+
+          <div>
+
+            <label>WhatsApp voor dit apparaat</label>
+
+            <input
+              data-u="1"
+              data-i="${i}"
+              data-k="whatsapp"
+              value="${esc(p.whatsapp)}"
+              placeholder="31612345678">
+
+          </div>
+
+        </div>
+
+
+        <!-- PHOTO -->
+
+        <div class="photo-box">
+
+          <label>📷 Foto van het apparaat</label>
+
+          <input
+            class="file-input"
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+            onchange="chooseImage(${i},this)">
+
+          <div class="small-note">
+            Kies een foto vanaf je telefoon of computer.
+            De foto wordt automatisch kleiner gemaakt voordat
+            je opslaat.
+          </div>
+
+
+          ${
+            p.image
+            ?
+            `
+            <img
+              class="photo-preview"
+              src="${esc(p.image)}"
+              alt="Voorbeeld"
+              onerror="this.style.display='none'">
+
+            <div class="actions">
+
+              <button
+                type="button"
+                class="btn red"
+                onclick="removeImage(${i})">
+                🗑 Foto verwijderen
+              </button>
+
+            </div>
+            `
+            :
+            `
+            <div class="photo-empty">
+              📱
+            </div>
+            `
+          }
+
+        </div>
+
+
+        <!-- OLD PHOTO URL -->
+
+        <label>Foto URL (optioneel)</label>
+
+        <input
+          data-u="1"
+          data-i="${i}"
+          data-k="image"
+          value="${esc(p.image)}"
+          placeholder="https://...">
+
+        <div class="small-note">
+          Je kunt ook nog steeds een directe foto-link gebruiken.
+        </div>
+
+
+        <label>Beschrijving</label>
+
+        <textarea
+          data-u="1"
+          data-i="${i}"
+          data-k="description"
+          placeholder="Beschrijving van het gebruikte apparaat...">${esc(p.description)}</textarea>
+
+
+        <div class="actions">
+
+          <button
+            class="btn red"
+            onclick="delUsedPhone(${i})">
+            🗑 Verwijderen
+          </button>
+
+        </div>
+
+      </div>
+
+    `).join("");
+
+
+  /* WHY */
+
+  $("whyEdit").innerHTML=
+    (data.why||[]).map((x,i)=>{
+
+      if(!Array.isArray(x)){
+
+        x=["⭐",String(x),""];
+
+      }
+
+
+      return `
+
+      <div class="item">
+
+        <div class="item-grid">
+
+          <input
+            data-a="why"
+            data-i="${i}"
+            data-k="0"
+            value="${esc(x[0])}"
+            placeholder="Emoji">
+
+          <input
+            data-a="why"
+            data-i="${i}"
+            data-k="1"
+            value="${esc(x[1])}"
+            placeholder="Titel">
+
+          <textarea
+            data-a="why"
+            data-i="${i}"
+            data-k="2"
+            placeholder="Beschrijving">${esc(x[2])}</textarea>
+
+        </div>
+
+
+        <div class="actions">
+
+          <button
+            class="btn red"
+            onclick="delWhy(${i})">
+            🗑 Verwijderen
+          </button>
+
+        </div>
+
+      </div>
+
+      `;
+
+    }).join("");
+
 }
+
+
+/* =========================
+   SYNC
+========================= */
 
 function sync(){
+
+
   document.querySelectorAll("[data-a]").forEach(e=>{
-    data[e.dataset.a][+e.dataset.i][+e.dataset.k]=e.value;
+
+    const a=e.dataset.a;
+
+    const i=Number(e.dataset.i);
+
+    const k=Number(e.dataset.k);
+
+
+    if(!Array.isArray(data[a][i])){
+
+      data[a][i]=["","",""];
+
+    }
+
+
+    data[a][i][k]=e.value;
+
   });
+
+
   document.querySelectorAll("[data-p]").forEach(e=>{
-    data.phones[+e.dataset.i][e.dataset.k]=e.value;
+
+    const i=Number(e.dataset.i);
+
+    const k=e.dataset.k;
+
+
+    if(!data.phones[i]){
+
+      data.phones[i]={};
+
+    }
+
+
+    data.phones[i][k]=e.value;
+
   });
-  ["businessName","heroTitle","heroText","tagline","whatsapp","phone","areas"].forEach(k=>data[k]=$(k).value);
+
+
+  document.querySelectorAll("[data-u]").forEach(e=>{
+
+    const i=Number(e.dataset.i);
+
+    const k=e.dataset.k;
+
+
+    if(!data.usedPhones[i]){
+
+      data.usedPhones[i]={};
+
+    }
+
+
+    data.usedPhones[i][k]=e.value;
+
+  });
+
+
+  [
+
+    "businessName",
+    "heroTitle",
+    "heroText",
+    "tagline",
+    "whatsapp",
+    "phone",
+    "areas"
+
+  ].forEach(k=>{
+
+    data[k]=$(k).value;
+
+  });
+
 }
 
-function addService(){sync();data.services.push(["🔧","Nieuwe dienst","Beschrijving van de dienst"]);render();}
-function delService(i){sync();data.services.splice(i,1);render();}
-function addPhone(){sync();data.phones.push({name:"iPhone nieuw",brand:"Apple",screen:"",software:"",hardware:"",camera:""});render();}
-function delPhone(i){sync();data.phones.splice(i,1);render();}
-function addWhy(){sync();data.why.push(["⭐","Nieuw voordeel","Beschrijving"]);render();}
-function delWhy(i){sync();data.why.splice(i,1);render();}
+
+/* =========================
+   IMAGE RESIZE
+========================= */
+
+function resizeImage(file){
+
+  return new Promise((resolve,reject)=>{
+
+    const reader=new FileReader();
+
+
+    reader.onload=function(event){
+
+      const img=new Image();
+
+
+      img.onload=function(){
+
+        const maxSize=900;
+
+        let width=img.width;
+
+        let height=img.height;
+
+
+        if(width>maxSize || height>maxSize){
+
+          if(width>height){
+
+            height=
+              Math.round(
+                height*(maxSize/width)
+              );
+
+            width=maxSize;
+
+          }else{
+
+            width=
+              Math.round(
+                width*(maxSize/height)
+              );
+
+            height=maxSize;
+
+          }
+
+        }
+
+
+        const canvas=document.createElement("canvas");
+
+        canvas.width=width;
+
+        canvas.height=height;
+
+
+        const ctx=canvas.getContext("2d");
+
+        ctx.drawImage(
+          img,
+          0,
+          0,
+          width,
+          height
+        );
+
+
+        /*
+          JPEG quality 0.65
+          لتصغير حجم الصورة
+        */
+
+        const result=
+          canvas.toDataURL(
+            "image/jpeg",
+            0.65
+          );
+
+
+        resolve(result);
+
+      };
+
+
+      img.onerror=function(){
+
+        reject(
+          new Error("Ongeldige afbeelding")
+        );
+
+      };
+
+
+      img.src=event.target.result;
+
+    };
+
+
+    reader.onerror=function(){
+
+      reject(
+        new Error("Foto kon niet worden gelezen")
+      );
+
+    };
+
+
+    reader.readAsDataURL(file);
+
+  });
+
+}
+
+
+/* =========================
+   CHOOSE IMAGE
+========================= */
+
+async function chooseImage(index,input){
+
+  const file=input.files && input.files[0];
+
+  if(!file){
+
+    return;
+
+  }
+
+
+  if(!file.type.startsWith("image/")){
+
+    alert("Kies een afbeelding.");
+
+    input.value="";
+
+    return;
+
+  }
+
+
+  try{
+
+    /*
+      نحفظ أي تعديلات مكتوبة قبل إعادة الرسم
+    */
+
+    sync();
+
+
+    $("saveMsg").innerHTML=
+      '<div class="msg">⏳ Foto wordt verwerkt...</div>';
+
+
+    const compressed=
+      await resizeImage(file);
+
+
+    data.usedPhones[index].image=compressed;
+
+
+    render();
+
+
+    $("saveMsg").innerHTML=
+      '<div class="msg ok">📷 Foto toegevoegd. Klik daarna op "Wijzigingen opslaan".</div>';
+
+  }catch(error){
+
+    console.error(error);
+
+    $("saveMsg").innerHTML=
+      '<div class="msg err">❌ De foto kon niet worden verwerkt.</div>';
+
+  }
+
+}
+
+
+/* =========================
+   REMOVE IMAGE
+========================= */
+
+function removeImage(index){
+
+  sync();
+
+
+  if(data.usedPhones[index]){
+
+    data.usedPhones[index].image="";
+
+  }
+
+
+  render();
+
+
+  $("saveMsg").innerHTML=
+    '<div class="msg ok">🗑 Foto verwijderd. Klik op "Wijzigingen opslaan" om te bevestigen.</div>';
+
+}
+
+
+/* =========================
+   SERVICE
+========================= */
+
+function addService(){
+
+  sync();
+
+  data.services.push([
+
+    "🔧",
+    "Nieuwe dienst",
+    "Beschrijving van de dienst"
+
+  ]);
+
+  render();
+
+}
+
+
+function delService(i){
+
+  sync();
+
+  data.services.splice(i,1);
+
+  render();
+
+}
+
+
+/* =========================
+   PHONE
+========================= */
+
+function addPhone(){
+
+  sync();
+
+  data.phones.push({
+
+    name:"iPhone nieuw",
+
+    brand:"Apple",
+
+    screen:"",
+
+    software:"",
+
+    hardware:"",
+
+    camera:""
+
+  });
+
+  render();
+
+}
+
+
+function delPhone(i){
+
+  sync();
+
+  data.phones.splice(i,1);
+
+  render();
+
+}
+
+
+/* =========================
+   USED PHONE
+========================= */
+
+function addUsedPhone(){
+
+  sync();
+
+  data.usedPhones.push({
+
+    name:"iPhone 13",
+
+    brand:"Apple",
+
+    price:"",
+
+    condition:"Goed",
+
+    storage:"128 GB",
+
+    ram:"",
+
+    description:"",
+
+    image:"",
+
+    whatsapp:""
+
+  });
+
+  render();
+
+}
+
+
+function delUsedPhone(i){
+
+  sync();
+
+  data.usedPhones.splice(i,1);
+
+  render();
+
+}
+
+
+/* =========================
+   WHY
+========================= */
+
+function addWhy(){
+
+  sync();
+
+  data.why.push([
+
+    "⭐",
+    "Nieuw voordeel",
+    "Beschrijving"
+
+  ]);
+
+  render();
+
+}
+
+
+function delWhy(i){
+
+  sync();
+
+  data.why.splice(i,1);
+
+  render();
+
+}
+
+
+/* =========================
+   SAVE
+========================= */
 
 async function save(){
+
   sync();
-  data.whatsapp=String(data.whatsapp||"").replace(/\D/g,"");
-  const r=await fetch("/api/site",{
-    method:"PUT",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(data)
-  });
-  $("saveMsg").innerHTML=r.ok
-    ? '<div class="msg ok">✅ Opgeslagen. De gegevens staan nu op de server.</div>'
-    : '<div class="msg err">❌ Opslaan mislukt.</div>';
+
+
+  data.whatsapp=
+    String(data.whatsapp||"")
+    .replace(/\D/g,"");
+
+
+  data.usedPhones=
+    (data.usedPhones||[]).map(p=>({
+
+      ...p,
+
+      whatsapp:
+        String(p.whatsapp||"")
+        .replace(/\D/g,"")
+
+    }));
+
+
+  try{
+
+    $("saveMsg").innerHTML=
+      '<div class="msg">⏳ Opslaan...</div>';
+
+
+    const r=await fetch("/api/site",{
+
+      method:"PUT",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify(data)
+
+    });
+
+
+    if(r.ok){
+
+      const result=await r.json();
+
+      data=result.data||data;
+
+
+      $("saveMsg").innerHTML=
+        '<div class="msg ok">✅ Opgeslagen. De gegevens staan nu op de server.</div>';
+
+
+      render();
+
+    }else{
+
+      let message="Opslaan mislukt.";
+
+      try{
+
+        const errorData=await r.json();
+
+        if(errorData.error){
+
+          message=errorData.error;
+
+        }
+
+      }catch(e){}
+
+
+      $("saveMsg").innerHTML=
+        '<div class="msg err">❌ '+esc(message)+'</div>';
+
+    }
+
+  }catch(error){
+
+    console.error(error);
+
+    $("saveMsg").innerHTML=
+      '<div class="msg err">❌ Verbindingsfout bij opslaan.</div>';
+
+  }
+
 }
+
+
+/* =========================
+   LOGOUT
+========================= */
 
 async function logout(){
-  await fetch("/api/logout",{method:"POST"});
+
+  await fetch("/api/logout",{
+
+    method:"POST"
+
+  });
+
   location.reload();
+
 }
 
-fetch("/api/me").then(r=>{
+
+/* =========================
+   AUTO LOGIN
+========================= */
+
+fetch("/api/me")
+.then(r=>{
+
   if(r.ok){
+
     $("loginBox").classList.add("hidden");
+
     $("dashboard").classList.remove("hidden");
+
     $("logoutBtn").classList.remove("hidden");
+
     load();
+
   }
+
 });
+
 </script>
+
 </body>
 </html>
