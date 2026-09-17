@@ -157,11 +157,18 @@ gap:22px
 }
 
 .device-card{
+display:block;
 background:white;
 border-radius:18px;
 padding:28px;
 box-shadow:0 8px 25px rgba(15,23,42,.07);
-transition:.2s
+transition:.2s;
+color:inherit
+}
+
+.device-card:focus{
+outline:3px solid rgba(37,99,235,.35);
+outline-offset:3px
 }
 
 .device-card:hover{
@@ -645,8 +652,10 @@ prices.push(
 }
 
 
+const productUrl = "product.html?type=phone&id=" + encodeURIComponent(device._index);
+
 return `
-<div class="device-card">
+<a class="device-card" href="${productUrl}" aria-label="Bekijk ${escapeHtml(device.name)}">
 
 <div class="device-icon">
 📱
@@ -676,7 +685,11 @@ Neem contact met ons op voor de reparatieprijs.
 `
 }
 
+<div style="margin-top:16px;font-weight:700;color:#2563eb;">
+Bekijk product →
 </div>
+
+</a>
 `;
 
 }).join("");
@@ -740,8 +753,9 @@ data.phones
 
 if(Array.isArray(data.phones)){
 
-devices = data.phones.map(phone => ({
+devices = data.phones.map((phone, index) => ({
 
+_index: index,
 name: phone.name || "Smartphone",
 brand: phone.brand || "",
 screen: phone.screen || "",
