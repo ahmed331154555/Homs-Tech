@@ -8,10 +8,7 @@
 <title>Tweedehands telefoons | HOMS TECH</title>
 
 <style>
-
-*{
-box-sizing:border-box
-}
+*{box-sizing:border-box}
 
 body{
 margin:0;
@@ -53,10 +50,7 @@ border-radius:10px;
 font-weight:700
 }
 
-nav a:hover{
-background:#2563eb
-}
-
+nav a:hover,
 nav a.active{
 background:#2563eb
 }
@@ -98,7 +92,6 @@ linear-gradient(
 #07101f,
 #1b2b43
 );
-
 color:#fff;
 border-radius:25px;
 padding:55px 35px;
@@ -122,8 +115,7 @@ color:#e5e7eb
 .section-title{
 text-align:center;
 font-size:32px;
-margin:0 0 35px;
-position:relative
+margin:0 0 35px
 }
 
 .section-title:after{
@@ -138,8 +130,7 @@ margin:12px auto 0
 
 .used-grid{
 display:grid;
-grid-template-columns:
-repeat(3,minmax(0,1fr));
+grid-template-columns:repeat(3,minmax(0,1fr));
 gap:22px
 }
 
@@ -147,8 +138,7 @@ gap:22px
 background:#fff;
 border-radius:18px;
 overflow:hidden;
-box-shadow:
-0 8px 30px rgba(0,0,0,.08);
+box-shadow:0 8px 30px rgba(0,0,0,.08);
 border:1px solid #eef0f3;
 transition:.2s;
 cursor:pointer
@@ -156,8 +146,7 @@ cursor:pointer
 
 .card:hover{
 transform:translateY(-3px);
-box-shadow:
-0 12px 35px rgba(0,0,0,.12)
+box-shadow:0 12px 35px rgba(0,0,0,.12)
 }
 
 .photo{
@@ -287,18 +276,22 @@ color:#cbd5e1
 
 
 /* =========================
-   نافذة تفاصيل الجهاز
-   ========================= */
+   نافذة التفاصيل
+========================= */
 
 .modal{
 display:none;
 position:fixed;
 inset:0;
 background:rgba(0,0,0,.72);
-z-index:1000;
+z-index:9999;
 padding:20px;
 align-items:center;
 justify-content:center
+}
+
+.modal.show{
+display:flex
 }
 
 .modal-box{
@@ -326,7 +319,7 @@ color:#111827;
 font-size:25px;
 font-weight:700;
 cursor:pointer;
-z-index:2
+z-index:5
 }
 
 .modal-close:hover{
@@ -339,6 +332,18 @@ height:350px;
 object-fit:contain;
 border-radius:16px;
 background:#f1f3f6;
+margin-bottom:20px
+}
+
+.modal-no-photo{
+width:100%;
+height:350px;
+border-radius:16px;
+background:#f1f3f6;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:100px;
 margin-bottom:20px
 }
 
@@ -385,8 +390,7 @@ margin-top:20px
 @media(max-width:900px){
 
 .used-grid{
-grid-template-columns:
-repeat(2,minmax(0,1fr))
+grid-template-columns:repeat(2,minmax(0,1fr))
 }
 
 .hero h1{
@@ -440,7 +444,8 @@ padding:20px;
 max-height:92vh
 }
 
-.modal-image{
+.modal-image,
+.modal-no-photo{
 height:260px
 }
 
@@ -449,13 +454,11 @@ font-size:24px
 }
 
 }
-
 </style>
 </head>
 
 
 <body>
-
 
 <header>
 
@@ -470,29 +473,18 @@ onerror="this.style.display='none'">
 <nav>
 
 <a href="/">Home</a>
-
 <a href="/about.html">Over ons</a>
-
 <a href="/repair.html">Reparaties</a>
-
 <a href="/devices.html">Apparaten</a>
-
 <a href="/prices.html">Prijzen</a>
-
-<a
-href="/used.html"
-class="active">
-Tweedehands
-</a>
+<a href="/used.html" class="active">Tweedehands</a>
 
 </nav>
 
 </header>
 
 
-
 <main class="container">
-
 
 <section class="hero">
 
@@ -514,27 +506,17 @@ target="_blank">
 </section>
 
 
-
 <h2 class="section-title">
 Beschikbare apparaten
 </h2>
 
 
-<div
-id="usedGrid"
-class="used-grid">
-</div>
+<div id="usedGrid" class="used-grid"></div>
 
 
+<div id="empty" class="empty" style="display:none">
 
-<div
-id="empty"
-class="empty"
-style="display:none">
-
-<div class="empty-icon">
-📱
-</div>
+<div class="empty-icon">📱</div>
 
 <h2>
 Momenteel geen apparaten beschikbaar
@@ -548,19 +530,16 @@ voor beschikbare toestellen.
 </div>
 
 
+<!-- MODAL -->
 
-<!-- DETAILS MODAL -->
+<div id="modal" class="modal">
 
-<div
-id="modal"
-class="modal">
-
-<div
-class="modal-box">
+<div class="modal-box">
 
 <button
+id="modalClose"
 class="modal-close"
-onclick="closeModal()">
+type="button">
 ×
 </button>
 
@@ -569,7 +548,6 @@ onclick="closeModal()">
 </div>
 
 </div>
-
 
 
 <section class="contact-box">
@@ -592,27 +570,18 @@ target="_blank">
 
 </section>
 
-
 </main>
-
 
 
 <footer>
 
-<p>
-<strong>HOMS TECH</strong>
-</p>
+<p><strong>HOMS TECH</strong></p>
 
-<p>
-Telefoonreparatie aan huis
-</p>
+<p>Telefoonreparatie aan huis</p>
 
-<p>
-© HOMS TECH
-</p>
+<p>© HOMS TECH</p>
 
 </footer>
-
 
 
 <script>
@@ -629,36 +598,13 @@ usedPhones:[]
 };
 
 
-/* WhatsApp link */
-
-function waLink(number,message){
-
-const clean=
-String(number||"")
-.replace(/\D/g,"");
-
-if(!clean){
-return "#";
-}
-
-return(
-"https://wa.me/"
-+
-clean
-+
-"?text="
-+
-encodeURIComponent(message||"")
-);
-
-}
-
-
-/* HTML veilig maken */
+/* =========================
+   HTML veilig maken
+========================= */
 
 function escapeHtml(value){
 
-return String(value??"")
+return String(value ?? "")
 .replaceAll("&","&amp;")
 .replaceAll("<","&lt;")
 .replaceAll(">","&gt;")
@@ -668,15 +614,34 @@ return String(value??"")
 }
 
 
-/* Toon apparaten */
+/* =========================
+   WhatsApp
+========================= */
+
+function waLink(number,message){
+
+const clean=String(number || "").replace(/\D/g,"");
+
+if(!clean){
+return "#";
+}
+
+return "https://wa.me/" +
+clean +
+"?text=" +
+encodeURIComponent(message || "");
+
+}
+
+
+/* =========================
+   Apparaten tonen
+========================= */
 
 function render(){
 
-const grid=
-document.getElementById("usedGrid");
-
-const empty=
-document.getElementById("empty");
+const grid=document.getElementById("usedGrid");
+const empty=document.getElementById("empty");
 
 const phones=
 Array.isArray(data.usedPhones)
@@ -687,7 +652,6 @@ Array.isArray(data.usedPhones)
 if(phones.length===0){
 
 grid.innerHTML="";
-
 empty.style.display="block";
 
 return;
@@ -698,88 +662,81 @@ return;
 empty.style.display="none";
 
 
-grid.innerHTML=
-phones.map((p,index)=>{
+grid.innerHTML=phones.map((p,index)=>{
 
-const image=
-String(p.image||"").trim();
+const image=String(p.image || "").trim();
 
+let photo="";
 
-const photo=
-image
-?
-`
+if(image){
+
+photo=`
 <div class="photo">
-
 <img
 src="${escapeHtml(image)}"
-alt="${escapeHtml(p.name||"Telefoon")}"
-onerror="this.parentElement.innerHTML='<div class=&quot;no-photo&quot;>📱</div>'">
-
-</div>
-`
-:
-`
-<div class="photo">
-
-<div class="no-photo">
-📱
-</div>
-
+alt="${escapeHtml(p.name || "Telefoon")}"
+onerror="this.style.display='none';this.parentElement.innerHTML='<div class=&quot;no-photo&quot;>📱</div>'">
 </div>
 `;
 
+}else{
 
-const number=
-p.whatsapp||data.whatsapp;
+photo=`
+<div class="photo">
+<div class="no-photo">📱</div>
+</div>
+`;
 
+}
+
+
+const number=p.whatsapp || data.whatsapp;
 
 const message=
-"Hallo HOMS TECH, ik heb interesse in "
-+
-(p.name||"dit apparaat")
-+
+"Hallo HOMS TECH, ik heb interesse in " +
+(p.name || "dit apparaat") +
 ".";
 
 
-const whatsapp=
-number
-?
-`
+let whatsapp="";
+
+if(number){
+
+whatsapp=`
 <a
 class="btn green contact"
 href="${waLink(number,message)}"
 target="_blank"
-onclick="event.stopPropagation()">
+data-whatsapp="true">
 
 💬 Interesse? WhatsApp ons
 
 </a>
-`
-:
-"";
+`;
+
+}
 
 
 return`
 
 <article
 class="card"
-onclick="openPhone(${index})">
+data-phone-index="${index}">
 
 ${photo}
 
 <div class="content">
 
 <div class="name">
-${escapeHtml(p.name||"Onbekend apparaat")}
+${escapeHtml(p.name || "Onbekend apparaat")}
 </div>
 
 <div class="brand">
-${escapeHtml(p.brand||"")}
+${escapeHtml(p.brand || "")}
 </div>
 
 <div class="price">
-€ ${escapeHtml(p.price||"Prijs op aanvraag")}
+€ ${escapeHtml(p.price || "Prijs op aanvraag")}
 </div>
 
 <div class="info">
@@ -789,11 +746,10 @@ p.condition
 ?
 `
 <span class="badge">
-Conditie: ${escapeHtml(p.condition)}
+⭐ ${escapeHtml(p.condition)}
 </span>
 `
-:
-""
+:""
 }
 
 ${
@@ -804,8 +760,7 @@ p.storage
 💾 ${escapeHtml(p.storage)}
 </span>
 `
-:
-""
+:""
 }
 
 ${
@@ -813,11 +768,10 @@ p.ram
 ?
 `
 <span class="badge">
-RAM: ${escapeHtml(p.ram)}
+🧠 RAM: ${escapeHtml(p.ram)}
 </span>
 `
-:
-""
+:""
 }
 
 </div>
@@ -825,8 +779,8 @@ RAM: ${escapeHtml(p.ram)}
 <div class="description">
 
 ${escapeHtml(
-p.description||
-"Klik voor meer informatie."
+p.description ||
+"Klik op dit apparaat voor meer informatie."
 )}
 
 </div>
@@ -841,10 +795,50 @@ ${whatsapp}
 
 }).join("");
 
+
+/*
+   Belangrijk:
+   click wordt hier pas toegevoegd
+   nadat de kaarten gemaakt zijn.
+*/
+
+document.querySelectorAll(".card[data-phone-index]")
+.forEach(card=>{
+
+card.addEventListener("click",function(){
+
+const index=Number(
+this.getAttribute("data-phone-index")
+);
+
+openPhone(index);
+
+});
+
+});
+
+
+/*
+   WhatsApp knop mag modal niet openen
+*/
+
+document.querySelectorAll("[data-whatsapp]")
+.forEach(button=>{
+
+button.addEventListener("click",function(event){
+
+event.stopPropagation();
+
+});
+
+});
+
 }
 
 
-/* Open details */
+/* =========================
+   Details openen
+========================= */
 
 function openPhone(index){
 
@@ -853,69 +847,58 @@ Array.isArray(data.usedPhones)
 ?data.usedPhones
 :[];
 
+
 const p=phones[index];
 
 if(!p){
+
+console.log("Geen apparaat gevonden:",index);
+
 return;
+
 }
 
 
-const image=
-String(p.image||"").trim();
+const image=String(p.image || "").trim();
 
-
-const number=
-p.whatsapp||data.whatsapp;
-
-
-const message=
-"Hallo HOMS TECH, ik heb interesse in "
-+
-(p.name||"dit apparaat")
-+
-".";
-
-
-let imageHtml;
+let imageHtml="";
 
 
 if(image){
 
 imageHtml=`
-
 <img
 class="modal-image"
 src="${escapeHtml(image)}"
-alt="${escapeHtml(p.name||"Telefoon")}"
-onerror="this.style.display='none'">
-
+alt="${escapeHtml(p.name || "Telefoon")}"
+onerror="this.outerHTML='<div class=&quot;modal-no-photo&quot;>📱</div>'">
 `;
 
 }else{
 
 imageHtml=`
-
-<div
-class="modal-image"
-style="
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:100px;">
-
+<div class="modal-no-photo">
 📱
-
 </div>
-
 `;
 
 }
 
 
-const whatsapp=
-number
-?
-`
+const number=p.whatsapp || data.whatsapp;
+
+const message=
+"Hallo HOMS TECH, ik heb interesse in " +
+(p.name || "dit apparaat") +
+".";
+
+
+let whatsapp="";
+
+
+if(number){
+
+whatsapp=`
 <a
 class="btn green modal-whatsapp"
 href="${waLink(number,message)}"
@@ -924,38 +907,35 @@ target="_blank">
 💬 Interesse? WhatsApp ons
 
 </a>
-`
-:
-"";
+`;
+
+}
 
 
 document.getElementById("modalContent").innerHTML=`
 
 ${imageHtml}
 
-
 <div class="modal-title">
 
 ${escapeHtml(
-p.name||"Onbekend apparaat"
+p.name || "Onbekend apparaat"
 )}
 
 </div>
-
 
 <div class="modal-brand">
 
 ${escapeHtml(
-p.brand||""
+p.brand || ""
 )}
 
 </div>
 
-
 <div class="modal-price">
 
 € ${escapeHtml(
-p.price||"Prijs op aanvraag"
+p.price || "Prijs op aanvraag"
 )}
 
 </div>
@@ -971,10 +951,8 @@ p.condition
 ⭐ Conditie: ${escapeHtml(p.condition)}
 </span>
 `
-:
-""
+:""
 }
-
 
 ${
 p.storage
@@ -984,10 +962,8 @@ p.storage
 💾 Opslag: ${escapeHtml(p.storage)}
 </span>
 `
-:
-""
+:""
 }
-
 
 ${
 p.ram
@@ -997,8 +973,7 @@ p.ram
 🧠 RAM: ${escapeHtml(p.ram)}
 </span>
 `
-:
-""
+:""
 }
 
 </div>
@@ -1012,7 +987,7 @@ Beschrijving
 <div class="modal-description">
 
 ${escapeHtml(
-p.description||
+p.description ||
 "Geen beschrijving beschikbaar."
 )}
 
@@ -1024,43 +999,38 @@ ${whatsapp}
 `;
 
 
-document.getElementById("modal").style.display="flex";
+const modal=document.getElementById("modal");
+
+modal.classList.add("show");
 
 document.body.style.overflow="hidden";
 
 }
 
 
-/* Close details */
+/* =========================
+   Modal sluiten
+========================= */
 
 function closeModal(){
 
-document.getElementById("modal").style.display="none";
+const modal=document.getElementById("modal");
+
+modal.classList.remove("show");
 
 document.body.style.overflow="";
 
 }
 
 
-/* Close by clicking outside */
+/* =========================
+   Klik buiten modal
+========================= */
 
 document.getElementById("modal")
-.addEventListener("click",function(e){
+.addEventListener("click",function(event){
 
-if(e.target===this){
-
-closeModal();
-
-}
-
-});
-
-
-/* Close with ESC */
-
-document.addEventListener("keydown",function(e){
-
-if(e.key==="Escape"){
+if(event.target===this){
 
 closeModal();
 
@@ -1069,41 +1039,64 @@ closeModal();
 });
 
 
-/* Load data */
+/* =========================
+   X knop
+========================= */
+
+document.getElementById("modalClose")
+.addEventListener("click",function(){
+
+closeModal();
+
+});
+
+
+/* =========================
+   ESC
+========================= */
+
+document.addEventListener("keydown",function(event){
+
+if(event.key==="Escape"){
+
+closeModal();
+
+}
+
+});
+
+
+/* =========================
+   Data laden
+========================= */
 
 async function load(){
 
 try{
 
-const r=
-await fetch("/api/site");
+const response=await fetch("/api/site");
 
+if(response.ok){
 
-if(r.ok){
-
-data=
-await r.json();
+data=await response.json();
 
 }else{
 
-data={
-...defaultData
-};
+data={...defaultData};
 
 }
 
 }catch(error){
 
-data={
-...defaultData
-};
+console.error(error);
+
+data={...defaultData};
 
 }
 
 
 document.title=
-(data.businessName||"HOMS TECH")
-+
+(data.businessName || "HOMS TECH") +
 " | Tweedehands";
 
 
@@ -1141,6 +1134,8 @@ render();
 
 }
 
+
+/* START */
 
 load();
 
