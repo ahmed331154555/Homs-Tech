@@ -3,374 +3,363 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Prijzen - HOMS TECH</title>
 
 <style>
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-}
+*{box-sizing:border-box;margin:0;padding:0}
 
 body{
-  font-family:Arial,Helvetica,sans-serif;
-  background:#f5f7fa;
-  color:#111827;
-  line-height:1.6;
+font-family:Arial,Helvetica,sans-serif;
+background:#f5f7fa;
+color:#111827;
+line-height:1.6
 }
 
-a{
-  text-decoration:none;
-  color:inherit;
-}
+a{text-decoration:none;color:inherit}
 
 header{
-  position:sticky;
-  top:0;
-  z-index:1000;
-  background:#111827;
-  color:white;
-  box-shadow:0 2px 10px rgba(0,0,0,.15);
+position:sticky;
+top:0;
+z-index:1000;
+background:#111827;
+color:white;
+box-shadow:0 2px 10px rgba(0,0,0,.15)
 }
 
 .nav{
-  max-width:1200px;
-  margin:auto;
-  min-height:72px;
-  padding:0 20px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:20px;
+max-width:1200px;
+margin:auto;
+min-height:72px;
+padding:0 20px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:20px
 }
 
 .logo{
-  width:170px;
-  height:auto;
-  display:block;
+width:170px;
+height:auto;
+display:block
 }
 
 nav{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  flex-wrap:wrap;
+display:flex;
+align-items:center;
+gap:6px;
+flex-wrap:wrap
 }
 
 nav a{
-  padding:10px 14px;
-  border-radius:10px;
-  color:#fff;
-  font-weight:600;
-  font-size:15px;
-  transition:.2s;
+padding:10px 14px;
+border-radius:10px;
+color:#fff;
+font-weight:600;
+font-size:15px;
+transition:.2s
 }
 
 nav a:hover,
 nav a.active{
-  background:#2563eb;
+background:#2563eb
 }
 
 .hero{
-  background:
-    radial-gradient(
-      circle at 75% 35%,
-      rgba(37,99,235,.35),
-      transparent 35%
-    ),
-    linear-gradient(135deg,#07101f,#1b2b43);
-
-  color:white;
-  padding:75px 20px;
+background:
+radial-gradient(circle at 75% 35%,rgba(37,99,235,.35),transparent 35%),
+linear-gradient(135deg,#07101f,#1b2b43);
+color:white;
+padding:75px 20px
 }
 
 .hero-inner{
-  max-width:1200px;
-  margin:auto;
+max-width:1200px;
+margin:auto
 }
 
 .hero h1{
-  font-size:48px;
-  line-height:1.15;
-  margin-bottom:20px;
+font-size:48px;
+line-height:1.15;
+margin-bottom:20px
 }
 
 .hero h1 span{
-  color:#60a5fa;
+color:#60a5fa
 }
 
 .hero p{
-  color:#dbe4f0;
-  font-size:18px;
-  max-width:700px;
-  margin-bottom:25px;
+color:#dbe4f0;
+font-size:18px;
+max-width:700px;
+margin-bottom:25px
 }
 
 .buttons{
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap;
+display:flex;
+gap:12px;
+flex-wrap:wrap
 }
 
 .btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:13px 22px;
-  border-radius:10px;
-  font-weight:700;
-  border:2px solid transparent;
-  transition:.2s;
+display:inline-flex;
+align-items:center;
+justify-content:center;
+padding:13px 22px;
+border-radius:10px;
+font-weight:700;
+border:2px solid transparent;
+transition:.2s
 }
 
 .green{
-  background:#16c766;
-  color:white;
+background:#16c766;
+color:white
 }
 
 .green:hover{
-  background:#0eae56;
+background:#0eae56
 }
 
 .white{
-  background:white;
-  color:#2563eb;
+background:white;
+color:#2563eb
 }
 
 .white:hover{
-  background:#eff6ff;
+background:#eff6ff
 }
 
 .section{
-  max-width:1200px;
-  margin:auto;
-  padding:70px 20px;
+max-width:1200px;
+margin:auto;
+padding:70px 20px
 }
 
 .section-title{
-  text-align:center;
-  margin-bottom:45px;
+text-align:center;
+margin-bottom:45px
 }
 
 .section-title h2{
-  font-size:34px;
-  margin-bottom:10px;
+font-size:34px;
+margin-bottom:10px
 }
 
 .section-title p{
-  color:#6b7280;
-  max-width:700px;
-  margin:auto;
+color:#6b7280;
+max-width:700px;
+margin:auto
 }
 
 .line{
-  width:65px;
-  height:4px;
-  background:#2563eb;
-  border-radius:10px;
-  margin:14px auto 0;
+width:65px;
+height:4px;
+background:#2563eb;
+border-radius:10px;
+margin:14px auto 0
 }
 
 .table-wrap{
-  background:white;
-  border-radius:18px;
-  box-shadow:0 8px 25px rgba(15,23,42,.07);
-  overflow:hidden;
+background:white;
+border-radius:18px;
+box-shadow:0 8px 25px rgba(15,23,42,.07);
+overflow:hidden
 }
 
 .price-table{
-  width:100%;
-  border-collapse:collapse;
+width:100%;
+border-collapse:collapse
 }
 
 .price-table th{
-  background:#111827;
-  color:white;
-  text-align:left;
-  padding:18px;
-  font-size:15px;
+background:#111827;
+color:white;
+text-align:left;
+padding:18px;
+font-size:15px
 }
 
 .price-table td{
-  padding:18px;
-  border-bottom:1px solid #e5e7eb;
-  color:#4b5563;
+padding:18px;
+border-bottom:1px solid #e5e7eb;
+color:#4b5563
 }
 
 .price-table tr:last-child td{
-  border-bottom:none;
+border-bottom:none
 }
 
 .price-table tr:hover td{
-  background:#f8fafc;
+background:#f8fafc
 }
 
 .device-name{
-  color:#111827;
-  font-weight:700;
+color:#111827;
+font-weight:700
 }
 
 .brand{
-  color:#2563eb;
-  font-weight:600;
+color:#2563eb;
+font-weight:600
 }
 
 .price-cell{
-  font-weight:700;
-  color:#111827;
+font-weight:700;
+color:#111827
 }
 
 .no-price{
-  color:#9ca3af;
-  font-weight:500;
+color:#9ca3af;
+font-weight:500
 }
 
 .empty{
-  background:white;
-  border-radius:18px;
-  padding:40px;
-  text-align:center;
-  color:#6b7280;
-  box-shadow:0 8px 25px rgba(15,23,42,.07);
+background:white;
+border-radius:18px;
+padding:40px;
+text-align:center;
+color:#6b7280;
+box-shadow:0 8px 25px rgba(15,23,42,.07)
 }
 
 .banner{
-  background:linear-gradient(135deg,#162438,#25364d);
-  color:white;
-  border-radius:22px;
-  padding:40px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:25px;
+background:linear-gradient(135deg,#162438,#25364d);
+color:white;
+border-radius:22px;
+padding:40px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:25px
 }
 
 .banner h2{
-  font-size:30px;
-  margin-bottom:8px;
+font-size:30px;
+margin-bottom:8px
 }
 
 .banner p{
-  color:#dbe4f0;
+color:#dbe4f0
 }
 
 .contact{
-  background:#111827;
-  color:white;
-  border-radius:22px;
-  padding:40px;
-  text-align:center;
+background:#111827;
+color:white;
+border-radius:22px;
+padding:40px;
+text-align:center
 }
 
 .contact h2{
-  font-size:30px;
-  margin-bottom:10px;
+font-size:30px;
+margin-bottom:10px
 }
 
 .contact p{
-  color:#d1d5db;
-  margin-bottom:22px;
+color:#d1d5db;
+margin-bottom:22px
 }
 
 footer{
-  background:#0b1422;
-  color:#cbd5e1;
-  padding:35px 20px;
-  margin-top:20px;
+background:#0b1422;
+color:#cbd5e1;
+padding:35px 20px;
+margin-top:20px
 }
 
 .footer-inner{
-  max-width:1200px;
-  margin:auto;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:20px;
-  flex-wrap:wrap;
+max-width:1200px;
+margin:auto;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:20px;
+flex-wrap:wrap
 }
 
 .footer-name{
-  color:white;
-  font-size:20px;
-  font-weight:800;
+color:white;
+font-size:20px;
+font-weight:800
 }
 
 .footer-links{
-  display:flex;
-  gap:18px;
-  flex-wrap:wrap;
+display:flex;
+gap:18px;
+flex-wrap:wrap
 }
 
 .footer-links a:hover{
-  color:white;
+color:white
 }
 
 @media(max-width:900px){
 
-  .hero h1{
-    font-size:40px;
-  }
+.hero h1{
+font-size:40px
+}
 
-  nav a{
-    padding:8px 9px;
-    font-size:14px;
-  }
+nav a{
+padding:8px 9px;
+font-size:14px
+}
 
-  .table-wrap{
-    overflow-x:auto;
-  }
+.table-wrap{
+overflow-x:auto
+}
 
-  .price-table{
-    min-width:750px;
-  }
+.price-table{
+min-width:750px
+}
+
 }
 
 @media(max-width:550px){
 
-  .nav{
-    flex-direction:column;
-    padding:12px 15px;
-  }
+.nav{
+flex-direction:column;
+padding:12px 15px
+}
 
-  nav{
-    justify-content:center;
-  }
+nav{
+justify-content:center
+}
 
-  .hero{
-    padding:55px 18px;
-  }
+.hero{
+padding:55px 18px
+}
 
-  .hero h1{
-    font-size:32px;
-  }
+.hero h1{
+font-size:32px
+}
 
-  .hero p{
-    font-size:16px;
-  }
+.hero p{
+font-size:16px
+}
 
-  .section{
-    padding:50px 16px;
-  }
+.section{
+padding:50px 16px
+}
 
-  .section-title h2{
-    font-size:28px;
-  }
+.section-title h2{
+font-size:28px
+}
 
-  .banner{
-    padding:28px 22px;
-    flex-direction:column;
-    align-items:flex-start;
-  }
+.banner{
+padding:28px 22px;
+flex-direction:column;
+align-items:flex-start
+}
 
-  .contact{
-    padding:30px 20px;
-  }
+.contact{
+padding:30px 20px
+}
 
-  .footer-inner{
-    flex-direction:column;
-    text-align:center;
-  }
+.footer-inner{
+flex-direction:column;
+text-align:center
+}
+
 }
 </style>
 </head>
@@ -378,14 +367,13 @@ footer{
 <body>
 
 <header>
-
 <div class="nav">
 
 <a href="index.html">
 <img
-  src="assets/homs-tech-logo.png"
-  class="logo"
-  alt="HOMS TECH"
+src="assets/homs-tech-logo.png"
+class="logo"
+alt="HOMS TECH"
 >
 </a>
 
@@ -398,7 +386,6 @@ footer{
 </nav>
 
 </div>
-
 </header>
 
 
@@ -418,18 +405,18 @@ De prijzen worden beheerd via onze Admin omgeving.
 <div class="buttons">
 
 <a
-  class="btn green"
-  data-wa
-  href="#"
-  target="_blank"
+class="btn green"
+data-wa
+href="#"
+target="_blank"
 >
 💬 WhatsApp
 </a>
 
 <a
-  class="btn white"
-  data-phone
-  href="#"
+class="btn white"
+data-phone
+href="#"
 >
 📞 Bel ons
 </a>
@@ -456,7 +443,6 @@ Neem contact met ons op voor meer informatie.
 
 </div>
 
-
 <div id="priceContainer"></div>
 
 </section>
@@ -479,10 +465,10 @@ Neem contact met ons op voor de actuele prijs van uw reparatie.
 </div>
 
 <a
-  class="btn green"
-  data-wa
-  href="#"
-  target="_blank"
+class="btn green"
+data-wa
+href="#"
+target="_blank"
 >
 💬 Vraag de prijs
 </a>
@@ -505,23 +491,23 @@ Neem vandaag nog contact op met HOMS TECH.
 </p>
 
 <div
-  class="buttons"
-  style="justify-content:center;"
+class="buttons"
+style="justify-content:center;"
 >
 
 <a
-  class="btn green"
-  data-wa
-  href="#"
-  target="_blank"
+class="btn green"
+data-wa
+href="#"
+target="_blank"
 >
 💬 WhatsApp
 </a>
 
 <a
-  class="btn white"
-  data-phone
-  href="#"
+class="btn white"
+data-phone
+href="#"
 >
 📞 Bel nu
 </a>
@@ -540,8 +526,8 @@ Neem vandaag nog contact op met HOMS TECH.
 <div>
 
 <div
-  class="footer-name"
-  data-name
+class="footer-name"
+data-name
 >
 HOMS TECH
 </div>
@@ -571,316 +557,296 @@ Telefoonreparatie aan huis
 
 function escapeHtml(value){
 
-  return String(value ?? "")
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
+return String(value ?? "")
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
 
 }
 
 
 function whatsappLink(number){
 
-  let n = String(number || "")
-    .replace(/\D/g,"");
+const n = String(number || "")
+.replace(/\D/g,"");
 
-  if(!n){
-    return "#";
-  }
+if(!n){
+return "#";
+}
 
-  return "https://wa.me/" + n;
+return "https://wa.me/" + n;
 
 }
 
 
 function phoneLink(number){
 
-  let n = String(number || "")
-    .trim();
+const n = String(number || "")
+.trim();
 
-  if(!n){
-    return "#";
-  }
+if(!n){
+return "#";
+}
 
-  return "tel:" + n.replace(/[^\d+]/g,"");
+return "tel:" + n.replace(/[^\d+]/g,"");
 
 }
 
 
 function price(value){
 
-  if(
-    value === undefined ||
-    value === null ||
-    String(value).trim() === ""
-  ){
-    return `
-      <span class="no-price">
-        Op aanvraag
-      </span>
-    `;
-  }
+if(
+value === undefined ||
+value === null ||
+String(value).trim() === ""
+){
 
-  return "€" + escapeHtml(value);
+return `
+<span class="no-price">
+Op aanvraag
+</span>
+`;
+
+}
+
+return "€" + escapeHtml(value);
 
 }
 
 
 async function loadSite(){
 
-  try{
+try{
 
-    const response =
-      await fetch("/api/site");
+const response = await fetch("/api/site");
 
-    if(!response.ok){
-      throw new Error("API error");
-    }
+if(!response.ok){
+throw new Error("API error");
+}
 
-    const data =
-      await response.json();
+const data = await response.json();
 
 
-    /*
-      Algemene gegevens
-    */
+/* Algemene gegevens */
 
-    document
-      .querySelectorAll("[data-name]")
-      .forEach(el=>{
+document
+.querySelectorAll("[data-name]")
+.forEach(el=>{
 
-        el.textContent =
-          data.businessName ||
-          data.siteName ||
-          "HOMS TECH";
+el.textContent =
+data.businessName ||
+data.siteName ||
+"HOMS TECH";
 
-      });
+});
 
 
-    document
-      .querySelectorAll("[data-tag]")
-      .forEach(el=>{
+document
+.querySelectorAll("[data-tag]")
+.forEach(el=>{
 
-        el.textContent =
-          data.tagline ||
-          "Telefoonreparatie aan huis";
+el.textContent =
+data.tagline ||
+"Telefoonreparatie aan huis";
 
-      });
+});
 
 
-    document
-      .querySelectorAll("[data-wa]")
-      .forEach(el=>{
+document
+.querySelectorAll("[data-wa]")
+.forEach(el=>{
 
-        el.href =
-          whatsappLink(data.whatsapp);
+el.href =
+whatsappLink(data.whatsapp);
 
-      });
+});
 
 
-    document
-      .querySelectorAll("[data-phone]")
-      .forEach(el=>{
+document
+.querySelectorAll("[data-phone]")
+.forEach(el=>{
 
-        el.href =
-          phoneLink(data.phone);
+el.href =
+phoneLink(data.phone);
 
-      });
+});
 
 
-    /*
-      Apparaten uit Admin
-    */
+/* Apparaten uit Admin */
 
-    let devices = [];
+let devices = [];
 
 
-    if(Array.isArray(data.phones)){
+if(Array.isArray(data.phones)){
 
-      devices =
-        data.phones.map(phone=>({
+devices = data.phones.map(phone=>({
 
-          name:
-            phone.name || "Smartphone",
+name:
+phone.name || "Smartphone",
 
-          brand:
-            phone.brand || "",
+brand:
+phone.brand || "",
 
-          screen:
-            phone.screen || "",
+screen:
+phone.screen || "",
 
-          software:
-            phone.software || "",
+software:
+phone.software || "",
 
-          hardware:
-            phone.hardware || "",
+hardware:
+phone.hardware || "",
 
-          camera:
-            phone.camera || ""
+camera:
+phone.camera || ""
 
-        }));
+}));
 
-    }
+}
 
 
-    /*
-      Oude structuur ondersteunen
-    */
+/* Oude structuur ondersteunen */
 
-    else if(Array.isArray(data.devices)){
+else if(Array.isArray(data.devices)){
 
-      devices =
-        data.devices.map(device=>({
+devices = data.devices.map(device=>({
 
-          name:
-            device.name || "Smartphone",
+name:
+device.name || "Smartphone",
 
-          brand:
-            device.brand || "",
+brand:
+device.brand || "",
 
-          screen:
-            device.price || "",
+screen:
+device.price || "",
 
-          software:"",
-          hardware:"",
-          camera:""
+software:"",
+hardware:"",
+camera:""
 
-        }));
+}));
 
-    }
+}
 
 
-    const container =
-      document.getElementById(
-        "priceContainer"
-      );
+const container =
+document.getElementById("priceContainer");
 
 
-    if(!devices.length){
+if(!devices.length){
 
-      container.innerHTML = `
+container.innerHTML = `
 
-        <div class="empty">
+<div class="empty">
 
-          <h3>
-            Nog geen prijzen beschikbaar
-          </h3>
+<h3>
+Nog geen prijzen beschikbaar
+</h3>
 
-          <p>
-            Neem contact met ons op voor de actuele prijzen.
-          </p>
+<p>
+Neem contact met ons op voor de actuele prijzen.
+</p>
 
-        </div>
+</div>
 
-      `;
+`;
 
-      return;
+return;
 
-    }
+}
 
 
-    /*
-      Prijstabel
-    */
+/* Prijstabel */
 
-    container.innerHTML = `
+container.innerHTML = `
 
-      <div class="table-wrap">
+<div class="table-wrap">
 
-        <table class="price-table">
+<table class="price-table">
 
-          <thead>
+<thead>
 
-            <tr>
+<tr>
 
-              <th>Apparaat</th>
+<th>Apparaat</th>
+<th>Merk</th>
+<th>Scherm</th>
+<th>Software</th>
+<th>Hardware</th>
+<th>Camera</th>
 
-              <th>Merk</th>
+</tr>
 
-              <th>Scherm</th>
+</thead>
 
-              <th>Software</th>
+<tbody>
 
-              <th>Hardware</th>
+${devices.map(device=>`
 
-              <th>Camera</th>
+<tr>
 
-            </tr>
+<td class="device-name">
+${escapeHtml(device.name)}
+</td>
 
-          </thead>
+<td class="brand">
+${escapeHtml(device.brand)}
+</td>
 
-          <tbody>
+<td class="price-cell">
+${price(device.screen)}
+</td>
 
-            ${devices.map(device=>`
+<td class="price-cell">
+${price(device.software)}
+</td>
 
-              <tr>
+<td class="price-cell">
+${price(device.hardware)}
+</td>
 
-                <td class="device-name">
-                  ${escapeHtml(device.name)}
-                </td>
+<td class="price-cell">
+${price(device.camera)}
+</td>
 
-                <td class="brand">
-                  ${escapeHtml(device.brand)}
-                </td>
+</tr>
 
-                <td class="price-cell">
-                  ${price(device.screen)}
-                </td>
+`).join("")}
 
-                <td class="price-cell">
-                  ${price(device.software)}
-                </td>
+</tbody>
 
-                <td class="price-cell">
-                  ${price(device.hardware)}
-                </td>
+</table>
 
-                <td class="price-cell">
-                  ${price(device.camera)}
-                </td>
+</div>
 
-              </tr>
+`;
 
-            `).join("")}
+}
 
-          </tbody>
+catch(error){
 
-        </table>
+console.error("HOMS TECH:",error);
 
-      </div>
+document
+.getElementById("priceContainer")
+.innerHTML = `
 
-    `;
+<div class="empty">
 
+<h3>
+Prijzen kunnen momenteel niet worden geladen
+</h3>
 
-  }catch(error){
+<p>
+Neem contact met ons op voor de actuele prijzen.
+</p>
 
-    console.error(
-      "HOMS TECH:",
-      error
-    );
+</div>
 
+`;
 
-    document
-      .getElementById("priceContainer")
-      .innerHTML = `
-
-        <div class="empty">
-
-          <h3>
-            Prijzen kunnen momenteel niet worden geladen
-          </h3>
-
-          <p>
-            Neem contact met ons op voor de actuele prijzen.
-          </p>
-
-        </div>
-
-      `;
-
-  }
+}
 
 }
 
