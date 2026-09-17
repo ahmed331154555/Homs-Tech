@@ -175,8 +175,6 @@ textarea{
   display:none;
 }
 
-/* ================= PAGINA'S ================= */
-
 .admin-page{
   display:none;
 }
@@ -240,47 +238,90 @@ textarea{
   font-size:16px;
 }
 
-.actions{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-}
-
-.service-card,
-.why-card,
-.device-card,
-.used-card{
-  background:#fff;
-}
-
-/* kaarten naast elkaar */
-
 #servicesList,
 #phonesList,
-#usedPhonesList,
 #whyList{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:18px;
 }
 
-#servicesList .card,
-#phonesList .card,
-#usedPhonesList .card,
-#whyList .card{
-  margin:0;
+/* ================= GEBRUIKTE TELEFOONS ================= */
+
+.used-layout{
+  display:grid;
+  grid-template-columns:230px minmax(0,1fr);
+  gap:20px;
+  align-items:start;
+}
+
+.used-sidebar{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:14px;
+  padding:10px;
+  position:sticky;
+  top:145px;
+}
+
+.used-sidebar-title{
+  font-weight:800;
+  font-size:15px;
+  padding:8px 10px 12px;
+  border-bottom:1px solid #e2e8f0;
+  margin-bottom:8px;
+}
+
+.used-phone-item{
+  width:100%;
+  border:0;
+  background:transparent;
+  text-align:left;
+  padding:11px 12px;
+  border-radius:9px;
+  font-weight:700;
+  color:#334155;
+  margin-bottom:4px;
+  transition:.2s;
+}
+
+.used-phone-item:hover{
+  background:#e2e8f0;
+}
+
+.used-phone-item.active{
+  background:#25d366;
+  color:white;
+}
+
+.used-main{
   min-width:0;
+}
+
+.used-editor{
+  background:white;
+  border:1px solid #e5eaf1;
+  border-radius:14px;
+  padding:18px;
+}
+
+.used-empty{
+  min-height:300px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:#718096;
+  border:1px dashed #cbd5e1;
+  border-radius:14px;
+  background:#f8fafc;
 }
 
 /* ================= FOTO'S ================= */
 
-/* ================= صور الهواتف ================= */
-
-/* ================= صور الهواتف ================= */
-
 .images-grid{
   display:grid;
-  grid-template-columns:repeat(4, 1fr);
+  grid-template-columns:repeat(4,1fr);
   gap:10px;
   width:100%;
   margin-top:10px;
@@ -345,40 +386,6 @@ textarea{
   text-overflow:ellipsis;
 }
 
-@media(max-width:750px){
-
-  .images-grid{
-    grid-template-columns:repeat(4, 1fr);
-    gap:5px;
-  }
-
-  .image-box{
-    padding:4px;
-  }
-
-  .image-preview,
-  .empty-preview{
-    height:50px;
-  }
-
-  .image-box input[type="file"]{
-    font-size:7px;
-  }
-
-  .image-box .btn{
-    font-size:7px;
-    padding:4px 1px;
-  }
-}
-.empty-preview{
-  height:100px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#94a3b8;
-  font-size:13px;
-}
-
 /* ================= SAVE ================= */
 
 .save-bar{
@@ -410,10 +417,6 @@ textarea{
 
 .status.info{
   color:#2563eb;
-}
-
-.hidden{
-  display:none!important;
 }
 
 .small{
@@ -457,13 +460,45 @@ textarea{
 
   #servicesList,
   #phonesList,
-  #usedPhonesList,
   #whyList{
     grid-template-columns:1fr;
   }
 
+  .used-layout{
+    grid-template-columns:1fr;
+  }
+
+  .used-sidebar{
+    position:static;
+  }
+
+  .used-phone-item{
+    display:inline-block;
+    width:auto;
+    margin-right:5px;
+  }
+
   .images-grid{
-    grid-template-columns:repeat(2,1fr);
+    grid-template-columns:repeat(4,1fr);
+    gap:5px;
+  }
+
+  .image-box{
+    padding:4px;
+  }
+
+  .image-preview,
+  .empty-preview{
+    height:50px;
+  }
+
+  .image-box input[type="file"]{
+    font-size:7px;
+  }
+
+  .image-box .btn{
+    font-size:7px;
+    padding:4px 1px;
   }
 
   .section{
@@ -514,36 +549,31 @@ textarea{
 
   <div class="admin-nav-inner">
 
-    <button
-      class="nav-btn active"
+    <button class="nav-btn active"
       data-page="general"
       onclick="showPage('general')">
       ⚙️ Algemeen
     </button>
 
-    <button
-      class="nav-btn"
+    <button class="nav-btn"
       data-page="services"
       onclick="showPage('services')">
       🔧 Diensten
     </button>
 
-    <button
-      class="nav-btn"
+    <button class="nav-btn"
       data-page="phones"
       onclick="showPage('phones')">
       📱 Telefoons & prijzen
     </button>
 
-    <button
-      class="nav-btn"
+    <button class="nav-btn"
       data-page="used"
       onclick="showPage('used')">
       ♻️ Gebruikte telefoons
     </button>
 
-    <button
-      class="nav-btn"
+    <button class="nav-btn"
       data-page="why"
       onclick="showPage('why')">
       ⭐ Waarom HOMS TECH
@@ -566,18 +596,12 @@ textarea{
 
   <div class="field">
     <label>Gebruikersnaam</label>
-    <input
-      id="username"
-      type="text"
-      autocomplete="username">
+    <input id="username" type="text" autocomplete="username">
   </div>
 
   <div class="field">
     <label>Wachtwoord</label>
-    <input
-      id="password"
-      type="password"
-      autocomplete="current-password">
+    <input id="password" type="password" autocomplete="current-password">
   </div>
 
   <button
@@ -599,22 +623,15 @@ textarea{
 <div class="container">
 
 
-<!-- ===================================================== -->
-<!-- ALGEMEEN -->
-<!-- ===================================================== -->
+<!-- ================= ALGEMEEN ================= -->
 
-<section
-  class="section admin-page active"
-  id="page-general">
+<section class="section admin-page active" id="page-general">
 
   <div class="section-head">
 
     <div>
       <h2>⚙️ Algemene informatie</h2>
-
-      <p>
-        Deze gegevens worden gebruikt op de website.
-      </p>
+      <p>Deze gegevens worden gebruikt op de website.</p>
     </div>
 
   </div>
@@ -651,14 +668,9 @@ textarea{
       <input data-u="areas">
     </div>
 
-    <div
-      class="field"
-      style="grid-column:1/-1">
-
+    <div class="field" style="grid-column:1/-1">
       <label>Tekst homepage</label>
-
       <textarea data-u="heroText"></textarea>
-
     </div>
 
   </div>
@@ -666,29 +678,18 @@ textarea{
 </section>
 
 
-<!-- ===================================================== -->
-<!-- DIENSTEN -->
-<!-- ===================================================== -->
+<!-- ================= DIENSTEN ================= -->
 
-<section
-  class="section admin-page"
-  id="page-services">
+<section class="section admin-page" id="page-services">
 
   <div class="section-head">
 
     <div>
-
       <h2>🔧 Diensten</h2>
-
-      <p>
-        Beheer de reparatiediensten die op de website verschijnen.
-      </p>
-
+      <p>Beheer de reparatiediensten.</p>
     </div>
 
-    <button
-      class="btn btn-green"
-      onclick="addService()">
+    <button class="btn btn-green" onclick="addService()">
       + Dienst toevoegen
     </button>
 
@@ -699,29 +700,18 @@ textarea{
 </section>
 
 
-<!-- ===================================================== -->
-<!-- TELEFOONS EN PRIJZEN -->
-<!-- ===================================================== -->
+<!-- ================= TELEFOONS ================= -->
 
-<section
-  class="section admin-page"
-  id="page-phones">
+<section class="section admin-page" id="page-phones">
 
   <div class="section-head">
 
     <div>
-
       <h2>📱 Telefoons & prijzen</h2>
-
-      <p>
-        Pas hier de prijzen per reparatie aan.
-      </p>
-
+      <p>Pas hier de prijzen per reparatie aan.</p>
     </div>
 
-    <button
-      class="btn btn-green"
-      onclick="addPhone()">
+    <button class="btn btn-green" onclick="addPhone()">
       + Telefoon toevoegen
     </button>
 
@@ -732,62 +722,64 @@ textarea{
 </section>
 
 
-<!-- ===================================================== -->
-<!-- GEBRUIKTE TELEFOONS -->
-<!-- ===================================================== -->
+<!-- ================= GEBRUIKTE TELEFOONS ================= -->
 
-<section
-  class="section admin-page"
-  id="page-used">
+<section class="section admin-page" id="page-used">
 
   <div class="section-head">
 
     <div>
-
       <h2>♻️ Gebruikte telefoons</h2>
-
-      <p>
-        Telefoons die je tweedehands verkoopt.
-      </p>
-
+      <p>Kies links een telefoon om de gegevens te bewerken.</p>
     </div>
 
-    <button
-      class="btn btn-green"
-      onclick="addUsedPhone()">
+    <button class="btn btn-green" onclick="addUsedPhone()">
       + Telefoon toevoegen
     </button>
 
   </div>
 
-  <div id="usedPhonesList"></div>
+
+  <div class="used-layout">
+
+    <!-- LINKER LIJST -->
+
+    <aside class="used-sidebar">
+
+      <div class="used-sidebar-title">
+        📱 Telefoons
+      </div>
+
+      <div id="usedPhonesMenu"></div>
+
+    </aside>
+
+
+    <!-- RECHTER INHOUD -->
+
+    <div class="used-main">
+
+      <div id="usedPhoneEditor"></div>
+
+    </div>
+
+  </div>
 
 </section>
 
 
-<!-- ===================================================== -->
-<!-- WAAROM HOMS TECH -->
-<!-- ===================================================== -->
+<!-- ================= WHY ================= -->
 
-<section
-  class="section admin-page"
-  id="page-why">
+<section class="section admin-page" id="page-why">
 
   <div class="section-head">
 
     <div>
-
       <h2>⭐ Waarom HOMS TECH?</h2>
-
-      <p>
-        Beheer de voordelen die op de homepage verschijnen.
-      </p>
-
+      <p>Beheer de voordelen.</p>
     </div>
 
-    <button
-      class="btn btn-green"
-      onclick="addWhy()">
+    <button class="btn btn-green" onclick="addWhy()">
       + Voordeel toevoegen
     </button>
 
@@ -798,17 +790,13 @@ textarea{
 </section>
 
 
-<!-- ===================================================== -->
-<!-- SAVE -->
-<!-- ===================================================== -->
+<!-- ================= SAVE ================= -->
 
 <div class="save-bar">
 
   <div>
 
-    <div
-      id="saveStatus"
-      class="status">
+    <div id="saveStatus" class="status">
       Wijzigingen nog niet opgeslagen
     </div>
 
@@ -822,13 +810,10 @@ textarea{
     class="btn btn-green"
     onclick="save()"
     style="font-size:16px;padding:13px 25px">
-
     💾 Wijzigingen opslaan
-
   </button>
 
 </div>
-
 
 </div>
 </div>
@@ -839,28 +824,23 @@ textarea{
 let data = {};
 let loading = false;
 let currentPage = "general";
+let selectedUsedPhone = 0;
 
 
-/* =====================================================
-   PAGINA NAVIGATIE
-===================================================== */
+/* ================= PAGINA NAVIGATIE ================= */
 
 function showPage(page){
 
   currentPage = page;
 
   document.querySelectorAll(".admin-page").forEach(section => {
-
     section.classList.remove("active");
-
   });
 
   const target = document.getElementById("page-" + page);
 
   if(target){
-
     target.classList.add("active");
-
   }
 
   document.querySelectorAll(".nav-btn").forEach(button => {
@@ -868,9 +848,7 @@ function showPage(page){
     button.classList.remove("active");
 
     if(button.dataset.page === page){
-
       button.classList.add("active");
-
     }
 
   });
@@ -878,9 +856,7 @@ function showPage(page){
 }
 
 
-/* =====================================================
-   LOGIN
-===================================================== */
+/* ================= LOGIN ================= */
 
 async function checkLogin(){
 
@@ -891,7 +867,6 @@ async function checkLogin(){
     if(r.ok){
 
       showDashboard();
-
       await loadData();
 
     }else{
@@ -912,11 +887,8 @@ async function checkLogin(){
 function showLogin(){
 
   document.getElementById("loginBox").style.display = "block";
-
   document.getElementById("dashboard").style.display = "none";
-
   document.getElementById("logoutBtn").style.display = "none";
-
   document.getElementById("adminNav").style.display = "none";
 
 }
@@ -925,11 +897,8 @@ function showLogin(){
 function showDashboard(){
 
   document.getElementById("loginBox").style.display = "none";
-
   document.getElementById("dashboard").style.display = "block";
-
   document.getElementById("logoutBtn").style.display = "block";
-
   document.getElementById("adminNav").style.display = "block";
 
   showPage(currentPage);
@@ -949,7 +918,6 @@ async function login(){
     document.getElementById("loginStatus");
 
   status.className = "status info";
-
   status.textContent = "Inloggen...";
 
   try{
@@ -963,10 +931,8 @@ async function login(){
       },
 
       body:JSON.stringify({
-
         username,
         password
-
       })
 
     });
@@ -974,15 +940,10 @@ async function login(){
     const result = await r.json();
 
     if(!r.ok){
-
-      throw new Error(
-        result.error || "Login mislukt"
-      );
-
+      throw new Error(result.error || "Login mislukt");
     }
 
     status.className = "status success";
-
     status.textContent = "✓ Inloggen gelukt";
 
     showDashboard();
@@ -992,7 +953,6 @@ async function login(){
   }catch(e){
 
     status.className = "status error";
-
     status.textContent = "✕ " + e.message;
 
   }
@@ -1003,9 +963,7 @@ async function login(){
 async function logout(){
 
   await fetch("/api/logout",{
-
     method:"POST"
-
   });
 
   location.reload();
@@ -1013,25 +971,17 @@ async function logout(){
 }
 
 
-/* =====================================================
-   DATA NORMALISEREN
-===================================================== */
+/* ================= DATA NORMALISEREN ================= */
 
 function normalizeData(){
 
   if(!data || typeof data !== "object"){
-
     data = {};
-
   }
 
 
-  /* SERVICES */
-
   if(!Array.isArray(data.services)){
-
     data.services = [];
-
   }
 
   data.services = data.services.map(x => {
@@ -1039,31 +989,21 @@ function normalizeData(){
     if(Array.isArray(x)){
 
       return [
-
         x[0] || "🔧",
-
         x[1] || "",
-
         x[2] || ""
-
       ];
 
     }
 
     return [
-
       "🔧",
-
       String(x || ""),
-
       ""
-
     ];
 
   });
 
-
-  /* TELEFOONS */
 
   if(!Array.isArray(data.phones)){
 
@@ -1071,17 +1011,12 @@ function normalizeData(){
 
       data.phones = data.devices.map(x => ({
 
-        name: x.name || "",
-
-        brand: x.brand || "Apple",
-
-        screen: x.screen || x.price || "",
-
-        software: x.software || "",
-
-        hardware: x.hardware || "",
-
-        camera: x.camera || ""
+        name:x.name || "",
+        brand:x.brand || "Apple",
+        screen:x.screen || x.price || "",
+        software:x.software || "",
+        hardware:x.hardware || "",
+        camera:x.camera || ""
 
       }));
 
@@ -1093,92 +1028,65 @@ function normalizeData(){
 
   }
 
+
   data.phones = data.phones.map(x => ({
 
-    name: x.name || "",
-
-    brand: x.brand || "Apple",
-
-    screen: x.screen || "",
-
-    software: x.software || "",
-
-    hardware: x.hardware || "",
-
-    camera: x.camera || ""
+    name:x.name || "",
+    brand:x.brand || "Apple",
+    screen:x.screen || "",
+    software:x.software || "",
+    hardware:x.hardware || "",
+    camera:x.camera || ""
 
   }));
 
 
-  /* GEBRUIKTE TELEFOONS */
-
   if(!Array.isArray(data.usedPhones)){
-
     data.usedPhones = [];
-
   }
+
 
   data.usedPhones = data.usedPhones.map(x => {
 
     let images = [];
 
     if(Array.isArray(x.images)){
-
       images = x.images.slice(0,4);
-
     }
 
     while(images.length < 4){
-
       images.push("");
-
     }
 
     if(x.image && !images[0]){
-
       images[0] = x.image;
-
     }
 
     return {
 
-      name: x.name || "",
-
-      brand: x.brand || "",
-
-      price: x.price || "",
-
-      condition: x.condition || "Goed",
-
-      storage: x.storage || "",
-
-      ram: x.ram || "",
-
-      whatsapp: x.whatsapp || "",
-
-      description: x.description || "",
-
-      images: images
+      name:x.name || "",
+      brand:x.brand || "",
+      price:x.price || "",
+      condition:x.condition || "Goed",
+      storage:x.storage || "",
+      ram:x.ram || "",
+      whatsapp:x.whatsapp || "",
+      description:x.description || "",
+      images:images
 
     };
 
   });
 
 
-  /* WHY */
-
   if(!Array.isArray(data.why)){
 
     if(Array.isArray(data.features)){
 
       data.why = data.features.map(x => [
-
         "⭐",
-
         String(x || ""),
-
         ""
-
       ]);
 
     }else{
@@ -1189,60 +1097,56 @@ function normalizeData(){
 
   }
 
+
   data.why = data.why.map(x => {
 
     if(Array.isArray(x)){
 
       return [
-
         x[0] || "⭐",
-
         x[1] || "",
-
         x[2] || ""
-
       ];
 
     }
 
     return [
-
       "⭐",
-
       String(x || ""),
-
       ""
-
     ];
 
   });
 
+
+  if(
+    selectedUsedPhone >= data.usedPhones.length
+  ){
+
+    selectedUsedPhone =
+      Math.max(0,data.usedPhones.length - 1);
+
+  }
+
 }
 
 
-/* =====================================================
-   DATA LADEN
-===================================================== */
+/* ================= DATA LADEN ================= */
 
 async function loadData(){
 
   loading = true;
 
-  setStatus(
-    "Gegevens laden...",
-    "info"
-  );
+  setStatus("Gegevens laden...","info");
 
   try{
 
     const r = await fetch("/api/site");
 
     if(!r.ok){
-
       throw new Error(
         "Websitegegevens konden niet worden geladen"
       );
-
     }
 
     data = await r.json();
@@ -1251,17 +1155,11 @@ async function loadData(){
 
     renderAll();
 
-    setStatus(
-      "✓ Gegevens geladen",
-      "success"
-    );
+    setStatus("✓ Gegevens geladen","success");
 
   }catch(e){
 
-    setStatus(
-      "✕ " + e.message,
-      "error"
-    );
+    setStatus("✕ " + e.message,"error");
 
   }
 
@@ -1270,17 +1168,13 @@ async function loadData(){
 }
 
 
-/* =====================================================
-   ALGEMENE INFORMATIE
-===================================================== */
+/* ================= ALGEMEEN ================= */
 
 function renderGeneral(){
 
   document.querySelectorAll("[data-u]").forEach(el => {
 
     const key = el.dataset.u;
-
-    if(key === "usedPhones") return;
 
     el.value = data[key] ?? "";
 
@@ -1297,9 +1191,7 @@ function renderGeneral(){
 }
 
 
-/* =====================================================
-   SERVICES
-===================================================== */
+/* ================= SERVICES ================= */
 
 function renderServices(){
 
@@ -1310,15 +1202,9 @@ function renderServices(){
 
   data.services.forEach((service,i) => {
 
-    const emoji = service[0] || "🔧";
-
-    const name = service[1] || "";
-
-    const desc = service[2] || "";
-
     box.innerHTML += `
 
-      <div class="card service-card">
+      <div class="card">
 
         <div class="card-head">
 
@@ -1329,9 +1215,7 @@ function renderServices(){
           <button
             class="btn btn-red"
             onclick="deleteService(${i})">
-
             Verwijderen
-
           </button>
 
         </div>
@@ -1343,8 +1227,11 @@ function renderServices(){
             <label>Icoon / emoji</label>
 
             <input
-              value="${esc(emoji)}"
-              oninput="data.services[${i}][0]=this.value;markChanged()">
+              value="${esc(service[0])}"
+              oninput="
+                data.services[${i}][0]=this.value;
+                markChanged()
+              ">
 
           </div>
 
@@ -1353,19 +1240,23 @@ function renderServices(){
             <label>Naam dienst</label>
 
             <input
-              value="${esc(name)}"
-              oninput="data.services[${i}][1]=this.value;markChanged()">
+              value="${esc(service[1])}"
+              oninput="
+                data.services[${i}][1]=this.value;
+                markChanged()
+              ">
 
           </div>
 
-          <div
-            class="field"
-            style="grid-column:1/-1">
+          <div class="field" style="grid-column:1/-1">
 
             <label>Beschrijving</label>
 
             <textarea
-              oninput="data.services[${i}][2]=this.value;markChanged()">${esc(desc)}</textarea>
+              oninput="
+                data.services[${i}][2]=this.value;
+                markChanged()
+              ">${esc(service[2])}</textarea>
 
           </div>
 
@@ -1379,13 +1270,8 @@ function renderServices(){
 
   if(!data.services.length){
 
-    box.innerHTML = `
-
-      <div class="small">
-        Nog geen diensten toegevoegd.
-      </div>
-
-    `;
+    box.innerHTML =
+      `<div class="small">Nog geen diensten toegevoegd.</div>`;
 
   }
 
@@ -1395,17 +1281,12 @@ function renderServices(){
 function addService(){
 
   data.services.push([
-
     "🔧",
-
     "Nieuwe dienst",
-
     ""
-
   ]);
 
   renderServices();
-
   markChanged();
 
 }
@@ -1418,7 +1299,6 @@ function deleteService(i){
     data.services.splice(i,1);
 
     renderServices();
-
     markChanged();
 
   }
@@ -1426,9 +1306,7 @@ function deleteService(i){
 }
 
 
-/* =====================================================
-   TELEFOONS
-===================================================== */
+/* ================= TELEFOONS & PRIJZEN ================= */
 
 function renderPhones(){
 
@@ -1441,24 +1319,18 @@ function renderPhones(){
 
     box.innerHTML += `
 
-      <div class="card device-card">
+      <div class="card">
 
         <div class="card-head">
 
           <div class="card-title">
-
-            📱 ${esc(
-              phone.name || "Nieuwe telefoon"
-            )}
-
+            📱 ${esc(phone.name || "Nieuwe telefoon")}
           </div>
 
           <button
             class="btn btn-red"
             onclick="deletePhone(${i})">
-
             Verwijderen
-
           </button>
 
         </div>
@@ -1466,21 +1338,17 @@ function renderPhones(){
         <div class="grid">
 
           <div class="field">
-
             <label>Model</label>
 
             <input
               value="${esc(phone.name)}"
               oninput="
                 data.phones[${i}].name=this.value;
-                markChanged();
-                renderPhoneTitle(${i})
+                markChanged()
               ">
-
           </div>
 
           <div class="field">
-
             <label>Merk</label>
 
             <input
@@ -1489,11 +1357,9 @@ function renderPhones(){
                 data.phones[${i}].brand=this.value;
                 markChanged()
               ">
-
           </div>
 
           <div class="field">
-
             <label>Scherm vervangen (€)</label>
 
             <input
@@ -1502,11 +1368,9 @@ function renderPhones(){
                 data.phones[${i}].screen=this.value;
                 markChanged()
               ">
-
           </div>
 
           <div class="field">
-
             <label>Software (€)</label>
 
             <input
@@ -1515,11 +1379,9 @@ function renderPhones(){
                 data.phones[${i}].software=this.value;
                 markChanged()
               ">
-
           </div>
 
           <div class="field">
-
             <label>Hardware (€)</label>
 
             <input
@@ -1528,11 +1390,9 @@ function renderPhones(){
                 data.phones[${i}].hardware=this.value;
                 markChanged()
               ">
-
           </div>
 
           <div class="field">
-
             <label>Camera (€)</label>
 
             <input
@@ -1541,7 +1401,6 @@ function renderPhones(){
                 data.phones[${i}].camera=this.value;
                 markChanged()
               ">
-
           </div>
 
         </div>
@@ -1554,22 +1413,10 @@ function renderPhones(){
 
   if(!data.phones.length){
 
-    box.innerHTML = `
-
-      <div class="small">
-        Nog geen telefoons toegevoegd.
-      </div>
-
-    `;
+    box.innerHTML =
+      `<div class="small">Nog geen telefoons toegevoegd.</div>`;
 
   }
-
-}
-
-
-function renderPhoneTitle(i){
-
-  renderPhones();
 
 }
 
@@ -1579,21 +1426,15 @@ function addPhone(){
   data.phones.push({
 
     name:"Nieuwe iPhone",
-
     brand:"Apple",
-
     screen:"",
-
     software:"",
-
     hardware:"",
-
     camera:""
 
   });
 
   renderPhones();
-
   markChanged();
 
 }
@@ -1606,7 +1447,6 @@ function deletePhone(i){
     data.phones.splice(i,1);
 
     renderPhones();
-
     markChanged();
 
   }
@@ -1615,241 +1455,92 @@ function deletePhone(i){
 
 
 /* =====================================================
-   GEBRUIKTE TELEFOONS
+   GEBRUIKTE TELEFOONS - LIJST LINKS
 ===================================================== */
 
 function renderUsedPhones(){
 
-  const box =
-    document.getElementById("usedPhonesList");
+  renderUsedPhonesMenu();
+  renderUsedPhoneEditor();
 
-  box.innerHTML = "";
+}
+
+
+/* ================= LINKER MENU ================= */
+
+function renderUsedPhonesMenu(){
+
+  const menu =
+    document.getElementById("usedPhonesMenu");
+
+  menu.innerHTML = "";
 
   data.usedPhones.forEach((phone,i) => {
 
-    const images =
-      phone.images || ["","","",""];
+    const button =
+      document.createElement("button");
 
-    box.innerHTML += `
+    button.className =
+      "used-phone-item" +
+      (i === selectedUsedPhone ? " active" : "");
 
-      <div class="card used-card">
+    button.textContent =
+      "📱 " +
+      (phone.name || "Nieuwe telefoon");
 
-        <div class="card-head">
+    button.onclick = () => {
 
-          <div class="card-title">
+      selectedUsedPhone = i;
 
-            ♻️ ${esc(
-              phone.name ||
-              "Nieuwe gebruikte telefoon"
-            )}
+      renderUsedPhones();
 
+    };
+
+    menu.appendChild(button);
+
+  });
+
+
+  if(!data.usedPhones.length){
+
+    menu.innerHTML = `
+      <div class="small" style="padding:10px">
+        Nog geen telefoons.
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* ================= RECHTER EDITOR ================= */
+
+function renderUsedPhoneEditor(){
+
+  const box =
+    document.getElementById("usedPhoneEditor");
+
+  box.innerHTML = "";
+
+
+  if(!data.usedPhones.length){
+
+    box.innerHTML = `
+
+      <div class="used-empty">
+
+        <div>
+
+          <div style="font-size:40px">
+            📱
           </div>
 
-          <button
-            class="btn btn-red"
-            onclick="deleteUsedPhone(${i})">
+          <h3>Nog geen gebruikte telefoons</h3>
 
-            Verwijderen
-
-          </button>
-
-        </div>
-
-        <div class="grid">
-
-          <div class="field">
-
-            <label>Model</label>
-
-            <input
-              value="${esc(phone.name)}"
-              oninput="
-                data.usedPhones[${i}].name=this.value;
-                markChanged()
-              ">
-
-          </div>
-
-          <div class="field">
-
-            <label>Merk</label>
-
-            <input
-              value="${esc(phone.brand)}"
-              oninput="
-                data.usedPhones[${i}].brand=this.value;
-                markChanged()
-              ">
-
-          </div>
-
-          <div class="field">
-
-            <label>Prijs (€)</label>
-
-            <input
-              value="${esc(phone.price)}"
-              oninput="
-                data.usedPhones[${i}].price=this.value;
-                markChanged()
-              ">
-
-          </div>
-
-          <div class="field">
-
-            <label>Conditie</label>
-
-            <select
-              onchange="
-                data.usedPhones[${i}].condition=this.value;
-                markChanged()
-              ">
-
-              <option
-                value="Als nieuw"
-                ${phone.condition==="Als nieuw"?"selected":""}>
-                Als nieuw
-              </option>
-
-              <option
-                value="Zeer goed"
-                ${phone.condition==="Zeer goed"?"selected":""}>
-                Zeer goed
-              </option>
-
-              <option
-                value="Goed"
-                ${phone.condition==="Goed"?"selected":""}>
-                Goed
-              </option>
-
-              <option
-                value="Gebruikt"
-                ${phone.condition==="Gebruikt"?"selected":""}>
-                Gebruikt
-              </option>
-
-            </select>
-
-          </div>
-
-          <div class="field">
-
-            <label>Opslag</label>
-
-            <input
-              value="${esc(phone.storage)}"
-              oninput="
-                data.usedPhones[${i}].storage=this.value;
-                markChanged()
-              ">
-
-          </div>
-
-          <div class="field">
-
-            <label>RAM</label>
-
-            <input
-              value="${esc(phone.ram)}"
-              oninput="
-                data.usedPhones[${i}].ram=this.value;
-                markChanged()
-              ">
-
-          </div>
-
-          <div class="field">
-
-            <label>WhatsApp</label>
-
-            <input
-              value="${esc(phone.whatsapp)}"
-              oninput="
-                data.usedPhones[${i}].whatsapp=this.value;
-                markChanged()
-              ">
-
-          </div>
-
-          <div
-            class="field"
-            style="grid-column:1/-1">
-
-            <label>Beschrijving</label>
-
-            <textarea
-              oninput="
-                data.usedPhones[${i}].description=this.value;
-                markChanged()
-              ">${esc(phone.description)}</textarea>
-
-          </div>
-
-        </div>
-
-
-        <div style="margin-top:15px">
-
-          <label style="font-weight:700">
-            📷 Foto's
-          </label>
-
-          <div class="images-grid">
-
-            ${images.map((img,j) => `
-
-              <div class="image-box">
-
-                ${
-                  img
-                  ?
-                  `<img
-                    src="${esc(img)}"
-                    class="image-preview">`
-
-                  :
-
-                  `<div class="empty-preview">
-                    Geen foto
-                  </div>`
-                }
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  onchange="
-                    handleImage(event,${i},${j})
-                  ">
-
-                ${
-                  img
-                  ?
-                  `<button
-                    class="btn btn-light"
-                    style="margin-top:7px"
-                    onclick="
-                      removeImage(${i},${j})
-                    ">
-
-                    Verwijder foto
-
-                  </button>`
-
-                  :
-
-                  ""
-                }
-
-              </div>
-
-            `).join("")}
-
-          </div>
-
-          <p class="small">
-            Je kunt maximaal 4 foto's per telefoon toevoegen.
+          <p>
+            Klik op "+ Telefoon toevoegen"
+            om een telefoon toe te voegen.
           </p>
 
         </div>
@@ -1858,22 +1549,300 @@ function renderUsedPhones(){
 
     `;
 
-  });
+    return;
 
-  if(!data.usedPhones.length){
+  }
 
-    box.innerHTML = `
 
-      <div class="small">
-        Nog geen gebruikte telefoons toegevoegd.
+  const phone =
+    data.usedPhones[selectedUsedPhone];
+
+  if(!phone) return;
+
+
+  const images =
+    phone.images || ["","","",""];
+
+
+  box.innerHTML = `
+
+    <div class="used-editor">
+
+      <div class="card-head">
+
+        <div>
+
+          <div class="card-title" style="font-size:20px">
+
+            ♻️ ${esc(
+              phone.name ||
+              "Nieuwe gebruikte telefoon"
+            )}
+
+          </div>
+
+          <div class="small">
+            Bewerk hier de gegevens van deze telefoon.
+          </div>
+
+        </div>
+
+        <button
+          class="btn btn-red"
+          onclick="deleteUsedPhone(${selectedUsedPhone})">
+
+          Verwijderen
+
+        </button>
+
       </div>
 
-    `;
+
+      <div class="grid">
+
+        <div class="field">
+
+          <label>Model</label>
+
+          <input
+            value="${esc(phone.name)}"
+            oninput="
+              data.usedPhones[${selectedUsedPhone}].name=this.value;
+              markChanged();
+              updateUsedPhoneName(${selectedUsedPhone},this.value)
+            ">
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Merk</label>
+
+          <input
+            value="${esc(phone.brand)}"
+            oninput="
+              data.usedPhones[${selectedUsedPhone}].brand=this.value;
+              markChanged()
+            ">
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Prijs (€)</label>
+
+          <input
+            value="${esc(phone.price)}"
+            oninput="
+              data.usedPhones[${selectedUsedPhone}].price=this.value;
+              markChanged()
+            ">
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Conditie</label>
+
+          <select
+            onchange="
+              data.usedPhones[${selectedUsedPhone}].condition=this.value;
+              markChanged()
+            ">
+
+            <option
+              value="Als nieuw"
+              ${phone.condition==="Als nieuw"?"selected":""}>
+              Als nieuw
+            </option>
+
+            <option
+              value="Zeer goed"
+              ${phone.condition==="Zeer goed"?"selected":""}>
+              Zeer goed
+            </option>
+
+            <option
+              value="Goed"
+              ${phone.condition==="Goed"?"selected":""}>
+              Goed
+            </option>
+
+            <option
+              value="Gebruikt"
+              ${phone.condition==="Gebruikt"?"selected":""}>
+              Gebruikt
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Opslag</label>
+
+          <input
+            value="${esc(phone.storage)}"
+            oninput="
+              data.usedPhones[${selectedUsedPhone}].storage=this.value;
+              markChanged()
+            ">
+
+        </div>
+
+
+        <div class="field">
+
+          <label>RAM</label>
+
+          <input
+            value="${esc(phone.ram)}"
+            oninput="
+              data.usedPhones[${selectedUsedPhone}].ram=this.value;
+              markChanged()
+            ">
+
+        </div>
+
+
+        <div class="field">
+
+          <label>WhatsApp</label>
+
+          <input
+            value="${esc(phone.whatsapp)}"
+            oninput="
+              data.usedPhones[${selectedUsedPhone}].whatsapp=this.value;
+              markChanged()
+            ">
+
+        </div>
+
+
+        <div
+          class="field"
+          style="grid-column:1/-1">
+
+          <label>Beschrijving</label>
+
+          <textarea
+            oninput="
+              data.usedPhones[${selectedUsedPhone}].description=this.value;
+              markChanged()
+            ">${esc(phone.description)}</textarea>
+
+        </div>
+
+      </div>
+
+
+      <!-- FOTO'S -->
+
+      <div style="margin-top:15px">
+
+        <label style="font-weight:700">
+          📷 Foto's
+        </label>
+
+        <div class="images-grid">
+
+          ${images.map((img,j) => `
+
+            <div class="image-box">
+
+              ${
+                img
+                ?
+                `<img
+                  src="${esc(img)}"
+                  class="image-preview">`
+
+                :
+
+                `<div class="empty-preview">
+                  Geen foto
+                </div>`
+              }
+
+
+              <input
+                type="file"
+                accept="image/*"
+                onchange="
+                  handleImage(
+                    event,
+                    ${selectedUsedPhone},
+                    ${j}
+                  )
+                ">
+
+
+              ${
+                img
+                ?
+
+                `<button
+                  class="btn btn-light"
+                  onclick="
+                    removeImage(
+                      ${selectedUsedPhone},
+                      ${j}
+                    )
+                  ">
+
+                  Verwijder foto
+
+                </button>`
+
+                :
+
+                ""
+
+              }
+
+            </div>
+
+          `).join("")}
+
+        </div>
+
+
+        <p class="small">
+          Je kunt maximaal 4 foto's per telefoon toevoegen.
+        </p>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+/* تحديث اسم الهاتف بالقائمة */
+
+function updateUsedPhoneName(i,name){
+
+  const buttons =
+    document.querySelectorAll(".used-phone-item");
+
+  if(buttons[i]){
+
+    buttons[i].textContent =
+      "📱 " + (name || "Nieuwe telefoon");
 
   }
 
 }
 
+
+/* ================= ADD USED PHONE ================= */
 
 function addUsedPhone(){
 
@@ -1899,6 +1868,10 @@ function addUsedPhone(){
 
   });
 
+
+  selectedUsedPhone =
+    data.usedPhones.length - 1;
+
   renderUsedPhones();
 
   markChanged();
@@ -1906,26 +1879,36 @@ function addUsedPhone(){
 }
 
 
+/* ================= DELETE USED PHONE ================= */
+
 function deleteUsedPhone(i){
 
-  if(confirm(
+  if(!confirm(
     "Deze gebruikte telefoon verwijderen?"
   )){
+    return;
+  }
 
-    data.usedPhones.splice(i,1);
 
-    renderUsedPhones();
+  data.usedPhones.splice(i,1);
 
-    markChanged();
+
+  if(selectedUsedPhone >= data.usedPhones.length){
+
+    selectedUsedPhone =
+      Math.max(0,data.usedPhones.length - 1);
 
   }
+
+
+  renderUsedPhones();
+
+  markChanged();
 
 }
 
 
-/* =====================================================
-   FOTO'S
-===================================================== */
+/* ================= FOTO'S ================= */
 
 function handleImage(
   event,
@@ -1938,8 +1921,10 @@ function handleImage(
 
   if(!file) return;
 
+
   const reader =
     new FileReader();
+
 
   reader.onload = () => {
 
@@ -1961,6 +1946,7 @@ function handleImage(
 
   };
 
+
   reader.readAsDataURL(file);
 
 }
@@ -1976,11 +1962,12 @@ function resizeImage(
 
     const img = new Image();
 
+
     img.onload = () => {
 
       let width = img.width;
-
       let height = img.height;
+
 
       if(
         width > maxSize ||
@@ -2001,15 +1988,17 @@ function resizeImage(
 
       }
 
+
       const canvas =
         document.createElement("canvas");
 
       canvas.width = width;
-
       canvas.height = height;
+
 
       const ctx =
         canvas.getContext("2d");
+
 
       ctx.drawImage(
         img,
@@ -2019,6 +2008,7 @@ function resizeImage(
         height
       );
 
+
       resolve(
         canvas.toDataURL(
           "image/jpeg",
@@ -2027,6 +2017,7 @@ function resizeImage(
       );
 
     };
+
 
     img.src = src;
 
@@ -2046,9 +2037,7 @@ function removeImage(i,j){
 }
 
 
-/* =====================================================
-   WHY HOMS TECH
-===================================================== */
+/* ================= WHY ================= */
 
 function renderWhy(){
 
@@ -2061,7 +2050,7 @@ function renderWhy(){
 
     box.innerHTML += `
 
-      <div class="card why-card">
+      <div class="card">
 
         <div class="card-head">
 
@@ -2072,12 +2061,11 @@ function renderWhy(){
           <button
             class="btn btn-red"
             onclick="deleteWhy(${i})">
-
             Verwijderen
-
           </button>
 
         </div>
+
 
         <div class="grid">
 
@@ -2094,6 +2082,7 @@ function renderWhy(){
 
           </div>
 
+
           <div class="field">
 
             <label>Titel</label>
@@ -2106,6 +2095,7 @@ function renderWhy(){
               ">
 
           </div>
+
 
           <div
             class="field"
@@ -2129,15 +2119,11 @@ function renderWhy(){
 
   });
 
+
   if(!data.why.length){
 
-    box.innerHTML = `
-
-      <div class="small">
-        Nog geen voordelen toegevoegd.
-      </div>
-
-    `;
+    box.innerHTML =
+      `<div class="small">Nog geen voordelen toegevoegd.</div>`;
 
   }
 
@@ -2147,17 +2133,12 @@ function renderWhy(){
 function addWhy(){
 
   data.why.push([
-
     "⭐",
-
     "Nieuw voordeel",
-
     ""
-
   ]);
 
   renderWhy();
-
   markChanged();
 
 }
@@ -2165,14 +2146,11 @@ function addWhy(){
 
 function deleteWhy(i){
 
-  if(confirm(
-    "Dit voordeel verwijderen?"
-  )){
+  if(confirm("Dit voordeel verwijderen?")){
 
     data.why.splice(i,1);
 
     renderWhy();
-
     markChanged();
 
   }
@@ -2180,9 +2158,7 @@ function deleteWhy(i){
 }
 
 
-/* =====================================================
-   OPSLAAN
-===================================================== */
+/* ================= OPSLAAN ================= */
 
 async function save(){
 
@@ -2195,9 +2171,11 @@ async function save(){
     "info"
   );
 
+
   try{
 
     normalizeData();
+
 
     const r =
       await fetch("/api/site",{
@@ -2212,8 +2190,10 @@ async function save(){
 
       });
 
+
     const result =
       await r.json();
+
 
     if(!r.ok){
 
@@ -2224,17 +2204,21 @@ async function save(){
 
     }
 
+
     data =
       result.data || data;
+
 
     normalizeData();
 
     renderAll();
 
+
     setStatus(
       "✓ Alle wijzigingen zijn succesvol opgeslagen",
       "success"
     );
+
 
   }catch(e){
 
@@ -2246,35 +2230,27 @@ async function save(){
 
   }
 
+
   loading = false;
 
 }
 
 
-/* =====================================================
-   RENDER ALLES
-===================================================== */
+/* ================= RENDER ALLES ================= */
 
 function renderAll(){
 
   renderGeneral();
-
   renderServices();
-
   renderPhones();
-
   renderUsedPhones();
-
   renderWhy();
-
   showPage(currentPage);
 
 }
 
 
-/* =====================================================
-   STATUS
-===================================================== */
+/* ================= STATUS ================= */
 
 function markChanged(){
 
@@ -2292,9 +2268,7 @@ function setStatus(
 ){
 
   const el =
-    document.getElementById(
-      "saveStatus"
-    );
+    document.getElementById("saveStatus");
 
   if(!el) return;
 
@@ -2306,9 +2280,7 @@ function setStatus(
 }
 
 
-/* =====================================================
-   HTML ESCAPE
-===================================================== */
+/* ================= ESCAPE ================= */
 
 function esc(value){
 
@@ -2322,9 +2294,7 @@ function esc(value){
 }
 
 
-/* =====================================================
-   START
-===================================================== */
+/* ================= START ================= */
 
 checkLogin();
 
