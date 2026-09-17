@@ -1,247 +1,201 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin | HOMS TECH</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HOMS TECH Admin</title>
 
 <style>
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+}
 
 body{
   margin:0;
   font-family:Arial,sans-serif;
   background:#f5f7fb;
-  color:#111827
+  color:#172033;
 }
 
 header{
-  background:#111827;
-  color:#fff;
-  padding:16px 5%;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:15px
+  background:#071b33;
+  color:white;
+  padding:22px;
 }
 
-header a{
-  color:#fff;
-  text-decoration:none
+header h1{
+  margin:0;
+  font-size:25px;
 }
 
-.logo{
-  font-weight:800;
-  font-size:21px
+header p{
+  margin:6px 0 0;
+  opacity:.8;
 }
 
 .container{
   max-width:1100px;
-  margin:auto;
-  padding:22px 16px 50px
+  margin:30px auto;
+  padding:0 18px;
 }
 
-.panel{
-  background:#fff;
+.card{
+  background:white;
   border-radius:18px;
   padding:22px;
-  margin:16px 0;
-  box-shadow:0 7px 25px #0000000c
+  margin-bottom:22px;
+  box-shadow:0 8px 25px rgba(0,0,0,.06);
 }
 
-h1,h2{
-  margin-top:0
+.card h2{
+  margin-top:0;
+  color:#071b33;
 }
 
 label{
   display:block;
-  font-weight:700;
-  margin:12px 0 6px
+  font-weight:bold;
+  margin:14px 0 6px;
 }
 
-input,textarea,select{
+input,
+textarea,
+select{
   width:100%;
   padding:12px;
-  border:1px solid #d1d5db;
+  border:1px solid #d8dee8;
   border-radius:10px;
-  font:inherit
+  font-size:15px;
+  background:white;
 }
 
 textarea{
-  min-height:75px;
-  resize:vertical
+  min-height:90px;
+  resize:vertical;
+}
+
+button{
+  border:0;
+  border-radius:10px;
+  padding:11px 17px;
+  cursor:pointer;
+  font-size:15px;
+  font-weight:bold;
+}
+
+.save{
+  background:#071b33;
+  color:white;
+  padding:14px 24px;
+}
+
+.add{
+  background:#0b7cff;
+  color:white;
+  margin-top:15px;
+}
+
+.delete{
+  background:#dc3545;
+  color:white;
+  margin-top:10px;
+}
+
+.remove-photo{
+  background:#dc3545;
+  color:white;
+  margin-top:8px;
+}
+
+.item{
+  border:1px solid #e0e5ec;
+  border-radius:15px;
+  padding:18px;
+  margin-bottom:15px;
+  background:#fafbfd;
 }
 
 .grid{
   display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:14px
-}
-
-.item{
-  border:1px solid #e5e7eb;
-  border-radius:14px;
-  padding:14px;
-  margin:12px 0
-}
-
-.item-grid{
-  display:grid;
-  grid-template-columns:90px 1fr 1fr;
-  gap:8px
-}
-
-.phone-grid{
-  display:grid;
-  grid-template-columns:1.2fr .8fr 1fr 1fr 1fr 1fr;
-  gap:8px
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
 }
 
 .used-grid{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px
-}
-
-button,.btn{
-  border:0;
-  border-radius:10px;
-  padding:11px 16px;
-  font-weight:700;
-  cursor:pointer;
-  text-decoration:none;
-  display:inline-block
-}
-
-.primary{
-  background:#111827;
-  color:#fff
-}
-
-.green{
-  background:#16a34a;
-  color:#fff
-}
-
-.red{
-  background:#dc2626;
-  color:#fff
-}
-
-.light{
-  background:#eef2f7;
-  color:#111827
-}
-
-.blue{
-  background:#2563eb;
-  color:#fff
-}
-
-.actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top:16px
-}
-
-.msg{
-  padding:12px;
-  border-radius:10px;
-  margin-top:12px
-}
-
-.ok{
-  background:#dcfce7;
-  color:#166534
-}
-
-.err{
-  background:#fee2e2;
-  color:#991b1b
-}
-
-.muted{
-  color:#6b7280;
-  font-size:14px
-}
-
-.login{
-  max-width:430px;
-  margin:60px auto
-}
-
-.hidden{
-  display:none
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
 }
 
 .used-title{
-  color:#2563eb;
-  font-size:18px;
-  font-weight:800;
-  margin-bottom:10px
+  font-size:19px;
+  font-weight:bold;
+  margin-bottom:15px;
+  color:#071b33;
 }
 
 .photo-box{
-  margin-top:15px;
-  padding:15px;
+  border:2px dashed #ccd5e2;
+  border-radius:14px;
+  padding:12px;
+  text-align:center;
   background:#f8fafc;
-  border:1px dashed #cbd5e1;
-  border-radius:14px
+  margin-top:10px;
 }
 
 .photo-preview{
+  width:100%;
+  max-width:280px;
+  max-height:280px;
+  object-fit:contain;
+  border-radius:12px;
   display:block;
-  width:180px;
-  height:180px;
-  object-fit:cover;
-  border-radius:14px;
-  margin-top:12px;
-  border:1px solid #e5e7eb;
-  background:#eef2f7
+  margin:0 auto 10px;
 }
 
 .photo-empty{
-  width:180px;
-  height:180px;
-  border-radius:14px;
-  margin-top:12px;
-  background:#eef2f7;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:60px
+  padding:30px 10px;
+  color:#7b8798;
 }
 
 .file-input{
-  background:#fff;
-  padding:10px
+  width:100%;
+  margin-top:10px;
 }
 
 .small-note{
-  color:#6b7280;
   font-size:13px;
-  margin-top:8px;
-  line-height:1.5
+  color:#6d7785;
+  margin-top:7px;
 }
 
-@media(max-width:800px){
+.blue{
+  color:#0b7cff;
+}
 
+.status{
+  margin-top:15px;
+  padding:12px;
+  border-radius:10px;
+  display:none;
+}
+
+.status.ok{
+  display:block;
+  background:#e8f7ee;
+  color:#176b3a;
+}
+
+.status.error{
+  display:block;
+  background:#fdeaea;
+  color:#a51d1d;
+}
+
+@media(max-width:700px){
   .grid,
-  .item-grid,
-  .phone-grid,
   .used-grid{
-    grid-template-columns:1fr
-  }
-
-  header{
-    padding:14px 4%
-  }
-
-  .photo-preview,
-  .photo-empty{
-    width:150px;
-    height:150px
+    grid-template-columns:1fr;
   }
 }
 </style>
@@ -250,267 +204,85 @@ button,.btn{
 <body>
 
 <header>
-
-  <a class="logo" href="/">
-    📱 HOMS TECH
-  </a>
-
-  <div class="actions" style="margin:0">
-
-    <a class="btn light"
-       href="/"
-       style="color:#111827">
-       Website
-    </a>
-
-    <button
-      id="logoutBtn"
-      class="btn light hidden"
-      onclick="logout()">
-      Uitloggen
-    </button>
-
-  </div>
-
+  <h1>HOMS TECH – Admin</h1>
+  <p>Beheer je website, diensten, prijzen en gebruikte telefoons.</p>
 </header>
-
 
 <div class="container">
 
+  <!-- ALGEMENE INFO -->
+  <div class="card">
+    <h2>Algemene informatie</h2>
 
-  <!-- LOGIN -->
+    <label>Bedrijfsnaam</label>
+    <input data-field="businessName">
 
-  <div id="loginBox" class="panel login">
+    <label>Slogan</label>
+    <input data-field="tagline">
 
-    <h1>🔐 Admin</h1>
+    <label>Hoofdtitel</label>
+    <input data-field="heroTitle">
 
-    <p class="muted">
-      Log in om prijzen en websitegegevens te beheren.
-    </p>
+    <label>Beschrijving</label>
+    <textarea data-field="heroText"></textarea>
 
-    <label>Gebruikersnaam</label>
+    <label>WhatsApp</label>
+    <input data-field="whatsapp">
 
-    <input
-      id="username"
-      value="admin"
-      autocomplete="username">
+    <label>Telefoon</label>
+    <input data-field="phone">
 
-    <label>Wachtwoord</label>
-
-    <input
-      id="password"
-      type="password"
-      autocomplete="current-password">
-
-    <div class="actions">
-
-      <button
-        class="btn primary"
-        onclick="login()">
-        Inloggen
-      </button>
-
-    </div>
-
-    <div id="loginMsg"></div>
-
+    <label>Werkgebied</label>
+    <input data-field="areas">
   </div>
 
 
-  <!-- DASHBOARD -->
+  <!-- DIENSTEN -->
+  <div class="card">
+    <h2>Diensten</h2>
 
-  <div id="dashboard" class="hidden">
+    <div id="services"></div>
 
-    <div class="panel">
+    <button class="add" onclick="addService()">+ Dienst toevoegen</button>
+  </div>
 
-      <h1>⚙️ HOMS TECH Admin</h1>
 
-      <p class="muted">
-        Wijzigingen worden op de server opgeslagen en kunnen daarna
-        op alle apparaten worden weergegeven.
-      </p>
+  <!-- TELEFOONS EN PRIJZEN -->
+  <div class="card">
+    <h2>Telefoons & prijzen</h2>
 
-    </div>
+    <div id="phones"></div>
 
+    <button class="add" onclick="addPhone()">+ Telefoon toevoegen</button>
+  </div>
 
-    <!-- GENERAL -->
 
-    <div class="panel">
+  <!-- GEBRUIKTE TELEFOONS -->
+  <div class="card">
+    <h2>Gebruikte telefoons</h2>
 
-      <h2>🏢 Algemene gegevens</h2>
+    <div id="usedPhones"></div>
 
-      <div class="grid">
+    <button class="add" onclick="addUsedPhone()">
+      + Gebruikte telefoon toevoegen
+    </button>
+  </div>
 
-        <div>
 
-          <label>Bedrijfsnaam</label>
+  <!-- WAAROM ONS -->
+  <div class="card">
+    <h2>Waarom HOMS TECH?</h2>
 
-          <input id="businessName">
+    <div id="why"></div>
 
-        </div>
+    <button class="add" onclick="addWhy()">+ Voordeel toevoegen</button>
+  </div>
 
 
-        <div>
+  <div class="card">
+    <button class="save" onclick="save()">💾 Wijzigingen opslaan</button>
 
-          <label>Korte slogan</label>
-
-          <input id="tagline">
-
-        </div>
-
-      </div>
-
-
-      <label>Hoofdtitel</label>
-
-      <input id="heroTitle">
-
-
-      <label>Introductietekst</label>
-
-      <textarea id="heroText"></textarea>
-
-
-      <div class="grid">
-
-        <div>
-
-          <label>
-            WhatsApp nummer (zonder + of spaties)
-          </label>
-
-          <input
-            id="whatsapp"
-            placeholder="31612345678">
-
-        </div>
-
-
-        <div>
-
-          <label>Telefoonnummer</label>
-
-          <input
-            id="phone"
-            placeholder="+31 6 12345678">
-
-        </div>
-
-      </div>
-
-
-      <label>Werkgebied</label>
-
-      <input
-        id="areas"
-        placeholder="Rotterdam en omgeving">
-
-    </div>
-
-
-    <!-- SERVICES -->
-
-    <div class="panel">
-
-      <h2>🔧 Diensten</h2>
-
-      <div id="servicesEdit"></div>
-
-      <button
-        class="btn light"
-        onclick="addService()">
-        + Dienst toevoegen
-      </button>
-
-    </div>
-
-
-    <!-- PHONES -->
-
-    <div class="panel">
-
-      <h2>📱 Apparaten & prijzen</h2>
-
-      <p class="muted">
-        Je kunt hier ook de merknaam en het model aanpassen.
-      </p>
-
-      <div id="phonesEdit"></div>
-
-      <button
-        class="btn light"
-        onclick="addPhone()">
-        + Apparaat toevoegen
-      </button>
-
-    </div>
-
-
-    <!-- USED PHONES -->
-
-    <div class="panel">
-
-      <h2>♻️ Tweedehands apparaten</h2>
-
-      <p class="muted">
-        Voeg hier gebruikte telefoons toe die je wilt verkopen.
-        Je kunt model, merk, prijs, conditie, opslag, RAM,
-        beschrijving, WhatsApp en een foto toevoegen.
-      </p>
-
-      <div id="usedEdit"></div>
-
-      <button
-        class="btn light"
-        onclick="addUsedPhone()">
-        + Tweedehands apparaat toevoegen
-      </button>
-
-    </div>
-
-
-    <!-- WHY -->
-
-    <div class="panel">
-
-      <h2>⭐ Waarom HOMS TECH?</h2>
-
-      <div id="whyEdit"></div>
-
-      <button
-        class="btn light"
-        onclick="addWhy()">
-        + Voordeel toevoegen
-      </button>
-
-    </div>
-
-
-    <!-- SAVE -->
-
-    <div class="panel">
-
-      <div class="actions">
-
-        <button
-          class="btn green"
-          onclick="save()">
-          💾 Wijzigingen opslaan
-        </button>
-
-        <a
-          class="btn light"
-          href="/prices.html"
-          target="_blank">
-          Prijzen bekijken
-        </a>
-
-      </div>
-
-      <div id="saveMsg"></div>
-
-    </div>
-
+    <div id="status" class="status"></div>
   </div>
 
 </div>
@@ -518,159 +290,113 @@ button,.btn{
 
 <script>
 
-let data=null;
-
-const $=id=>document.getElementById(id);
+let data = {};
 
 
 /* =========================
-   ESCAPE
-========================= */
-
-function esc(v){
-
-  return String(v??"")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-
-}
-
-
-/* =========================
-   LOGIN
-========================= */
-
-async function login(){
-
-  try{
-
-    const r=await fetch("/api/login",{
-
-      method:"POST",
-
-      headers:{
-        "Content-Type":"application/json"
-      },
-
-      body:JSON.stringify({
-
-        username:$("username").value,
-
-        password:$("password").value
-
-      })
-
-    });
-
-
-    if(r.ok){
-
-      $("loginBox").classList.add("hidden");
-
-      $("dashboard").classList.remove("hidden");
-
-      $("logoutBtn").classList.remove("hidden");
-
-      $("loginMsg").innerHTML="";
-
-      load();
-
-    }else{
-
-      $("loginMsg").innerHTML=
-        '<div class="msg err">Onjuiste gebruikersnaam of wachtwoord.</div>';
-
-    }
-
-  }catch(error){
-
-    $("loginMsg").innerHTML=
-      '<div class="msg err">Verbindingsfout.</div>';
-
-  }
-
-}
-
-
-/* =========================
-   LOAD
+   DATA LADEN
 ========================= */
 
 async function load(){
 
   try{
 
-    const r=await fetch("/api/site");
+    const response = await fetch("/api/site");
 
-    if(!r.ok){
-
-      $("saveMsg").innerHTML=
-        '<div class="msg err">Kan de gegevens niet laden.</div>';
-
-      return;
-
+    if(!response.ok){
+      throw new Error("Kan websitegegevens niet laden.");
     }
 
-
-    data=await r.json();
-
-
-    if(!Array.isArray(data.usedPhones)){
-
-      data.usedPhones=[];
-
-    }
-
+    data = await response.json();
 
     if(!Array.isArray(data.services)){
-
-      data.services=[];
-
+      data.services = [];
     }
-
 
     if(!Array.isArray(data.phones)){
-
-      data.phones=[];
-
+      data.phones = [];
     }
 
+    if(!Array.isArray(data.usedPhones)){
+      data.usedPhones = [];
+    }
 
     if(!Array.isArray(data.why)){
-
-      data.why=[];
-
+      data.why = [];
     }
 
-
-    [
-
-      "businessName",
-      "heroTitle",
-      "heroText",
-      "tagline",
-      "whatsapp",
-      "phone",
-      "areas"
-
-    ].forEach(k=>{
-
-      $(k).value=data[k]||"";
-
-    });
-
+    normalizeData();
 
     render();
 
   }catch(error){
 
-    $("saveMsg").innerHTML=
-      '<div class="msg err">Fout bij laden van gegevens.</div>';
+    showStatus(error.message,"error");
 
   }
+
+}
+
+
+/* =========================
+   DATA NORMALISEREN
+========================= */
+
+function normalizeData(){
+
+  data.services = data.services.map(function(x){
+
+    if(Array.isArray(x)){
+      return [
+        x[0] || "🔧",
+        x[1] || "",
+        x[2] || ""
+      ];
+    }
+
+    return [
+      "🔧",
+      String(x || ""),
+      ""
+    ];
+
+  });
+
+
+  data.why = data.why.map(function(x){
+
+    if(Array.isArray(x)){
+      return [
+        x[0] || "✓",
+        x[1] || "",
+        x[2] || ""
+      ];
+    }
+
+    return [
+      "✓",
+      String(x || ""),
+      ""
+    ];
+
+  });
+
+
+  data.usedPhones = data.usedPhones.map(function(x){
+
+    return {
+      name: x.name || "",
+      brand: x.brand || "",
+      price: x.price || "",
+      condition: x.condition || "Goed",
+      storage: x.storage || "",
+      ram: x.ram || "",
+      description: x.description || "",
+      image: x.image || "",
+      whatsapp: x.whatsapp || ""
+    };
+
+  });
 
 }
 
@@ -681,161 +407,247 @@ async function load(){
 
 function render(){
 
+  document.querySelectorAll("[data-field]").forEach(function(el){
 
-  /* SERVICES */
+    const key = el.dataset.field;
 
-  $("servicesEdit").innerHTML=
-    (data.services||[]).map((x,i)=>{
+    el.value = data[key] || "";
 
-      if(!Array.isArray(x)){
-
-        x=["🔧",String(x),""];
-
-      }
+  });
 
 
-      return `
+  renderServices();
+  renderPhones();
+  renderUsedPhones();
+  renderWhy();
 
-      <div class="item">
-
-        <div class="item-grid">
-
-          <input
-            data-a="services"
-            data-i="${i}"
-            data-k="0"
-            value="${esc(x[0])}"
-            placeholder="Emoji">
-
-          <input
-            data-a="services"
-            data-i="${i}"
-            data-k="1"
-            value="${esc(x[1])}"
-            placeholder="Naam dienst">
-
-          <textarea
-            data-a="services"
-            data-i="${i}"
-            data-k="2"
-            placeholder="Beschrijving">${esc(x[2])}</textarea>
-
-        </div>
+}
 
 
-        <div class="actions">
+/* =========================
+   DIENSTEN
+========================= */
 
-          <button
-            class="btn red"
-            onclick="delService(${i})">
-            🗑 Verwijderen
-          </button>
+function renderServices(){
 
-        </div>
+  const box = document.getElementById("services");
 
-      </div>
+  box.innerHTML = "";
 
-      `;
+  data.services.forEach(function(x,i){
 
-    }).join("");
-
-
-  /* PHONES */
-
-  $("phonesEdit").innerHTML=
-    (data.phones||[]).map((p,i)=>`
+    box.innerHTML += `
 
       <div class="item">
 
-        <div class="phone-grid">
+        <label>Icoon</label>
+        <input
+          value="${esc(x[0])}"
+          onchange="data.services[${i}][0]=this.value"
+        >
 
-          <input
-            data-p="1"
-            data-i="${i}"
-            data-k="name"
-            value="${esc(p.name)}"
-            placeholder="Model">
+        <label>Naam dienst</label>
+        <input
+          value="${esc(x[1])}"
+          onchange="data.services[${i}][1]=this.value"
+        >
 
-          <input
-            data-p="1"
-            data-i="${i}"
-            data-k="brand"
-            value="${esc(p.brand)}"
-            placeholder="Merk">
+        <label>Beschrijving</label>
+        <textarea
+          onchange="data.services[${i}][2]=this.value"
+        >${esc(x[2])}</textarea>
 
-          <input
-            data-p="1"
-            data-i="${i}"
-            data-k="screen"
-            value="${esc(p.screen)}"
-            placeholder="Scherm €">
-
-          <input
-            data-p="1"
-            data-i="${i}"
-            data-k="software"
-            value="${esc(p.software)}"
-            placeholder="Software €">
-
-          <input
-            data-p="1"
-            data-i="${i}"
-            data-k="hardware"
-            value="${esc(p.hardware)}"
-            placeholder="Hardware €">
-
-          <input
-            data-p="1"
-            data-i="${i}"
-            data-k="camera"
-            value="${esc(p.camera)}"
-            placeholder="Camera €">
-
-        </div>
-
-
-        <div class="actions">
-
-          <button
-            class="btn red"
-            onclick="delPhone(${i})">
-            🗑 Verwijderen
-          </button>
-
-        </div>
+        <button
+          class="delete"
+          onclick="deleteService(${i})"
+        >
+          Verwijderen
+        </button>
 
       </div>
 
-    `).join("");
+    `;
+
+  });
+
+}
 
 
-  /* =========================
-     USED PHONES
-  ========================= */
+function addService(){
 
-  $("usedEdit").innerHTML=
-    (data.usedPhones||[]).map((p,i)=>`
+  data.services.push([
+    "🔧",
+    "Nieuwe dienst",
+    ""
+  ]);
+
+  renderServices();
+
+}
+
+
+function deleteService(i){
+
+  data.services.splice(i,1);
+
+  renderServices();
+
+}
+
+
+/* =========================
+   TELEFOONS & PRIJZEN
+========================= */
+
+function renderPhones(){
+
+  const box = document.getElementById("phones");
+
+  box.innerHTML = "";
+
+  data.phones.forEach(function(p,i){
+
+    if(typeof p === "string"){
+
+      p = {
+        name:p,
+        brand:"",
+        screen:"",
+        software:"",
+        hardware:"",
+        camera:""
+      };
+
+      data.phones[i] = p;
+
+    }
+
+    box.innerHTML += `
+
+      <div class="item">
+
+        <label>Model</label>
+        <input
+          value="${esc(p.name)}"
+          onchange="data.phones[${i}].name=this.value"
+        >
+
+        <div class="grid">
+
+          <div>
+            <label>Merk</label>
+            <input
+              value="${esc(p.brand)}"
+              onchange="data.phones[${i}].brand=this.value"
+            >
+          </div>
+
+          <div>
+            <label>Scherm prijs</label>
+            <input
+              value="${esc(p.screen)}"
+              onchange="data.phones[${i}].screen=this.value"
+            >
+          </div>
+
+          <div>
+            <label>Software prijs</label>
+            <input
+              value="${esc(p.software)}"
+              onchange="data.phones[${i}].software=this.value"
+            >
+          </div>
+
+          <div>
+            <label>Hardware prijs</label>
+            <input
+              value="${esc(p.hardware)}"
+              onchange="data.phones[${i}].hardware=this.value"
+            >
+          </div>
+
+          <div>
+            <label>Camera prijs</label>
+            <input
+              value="${esc(p.camera)}"
+              onchange="data.phones[${i}].camera=this.value"
+            >
+          </div>
+
+        </div>
+
+        <button
+          class="delete"
+          onclick="deletePhone(${i})"
+        >
+          Verwijderen
+        </button>
+
+      </div>
+
+    `;
+
+  });
+
+}
+
+
+function addPhone(){
+
+  data.phones.push({
+    name:"Nieuwe telefoon",
+    brand:"",
+    screen:"",
+    software:"",
+    hardware:"",
+    camera:""
+  });
+
+  renderPhones();
+
+}
+
+
+function deletePhone(i){
+
+  data.phones.splice(i,1);
+
+  renderPhones();
+
+}
+
+
+/* =========================
+   GEBRUIKTE TELEFOONS
+========================= */
+
+function renderUsedPhones(){
+
+  const box = document.getElementById("usedPhones");
+
+  box.innerHTML = "";
+
+  data.usedPhones.forEach(function(p,i){
+
+    box.innerHTML += `
 
       <div class="item">
 
         <div class="used-title">
-          ♻️ ${esc(p.name || "Nieuw apparaat")}
+          ${esc(p.name || "Nieuwe telefoon")}
         </div>
 
-
         <div class="used-grid">
-
 
           <div>
 
             <label>Model</label>
 
             <input
-              data-u="1"
-              data-i="${i}"
-              data-k="name"
               value="${esc(p.name)}"
-              placeholder="iPhone 13">
+              data-u="${i}-name"
+              onchange="syncUsed(${i},'name',this.value)"
+            >
 
           </div>
 
@@ -845,25 +657,24 @@ function render(){
             <label>Merk</label>
 
             <input
-              data-u="1"
-              data-i="${i}"
-              data-k="brand"
               value="${esc(p.brand)}"
-              placeholder="Apple">
+              data-u="${i}-brand"
+              onchange="syncUsed(${i},'brand',this.value)"
+            >
 
           </div>
 
 
           <div>
 
-            <label>Prijs €</label>
+            <label>Prijs</label>
 
             <input
-              data-u="1"
-              data-i="${i}"
-              data-k="price"
               value="${esc(p.price)}"
-              placeholder="299">
+              data-u="${i}-price"
+              placeholder="Bijv. €249"
+              onchange="syncUsed(${i},'price',this.value)"
+            >
 
           </div>
 
@@ -873,31 +684,26 @@ function render(){
             <label>Conditie</label>
 
             <select
-              data-u="1"
-              data-i="${i}"
-              data-k="condition">
+              onchange="syncUsed(${i},'condition',this.value)"
+            >
 
-              <option
-                value="Als nieuw"
-                ${p.condition==="Als nieuw"?"selected":""}>
+              <option value="Als nieuw"
+                ${p.condition==="Als nieuw" ? "selected" : ""}>
                 Als nieuw
               </option>
 
-              <option
-                value="Zeer goed"
-                ${p.condition==="Zeer goed"?"selected":""}>
+              <option value="Zeer goed"
+                ${p.condition==="Zeer goed" ? "selected" : ""}>
                 Zeer goed
               </option>
 
-              <option
-                value="Goed"
-                ${p.condition==="Goed"?"selected":""}>
+              <option value="Goed"
+                ${p.condition==="Goed" ? "selected" : ""}>
                 Goed
               </option>
 
-              <option
-                value="Gebruikt"
-                ${p.condition==="Gebruikt"?"selected":""}>
+              <option value="Gebruikt"
+                ${p.condition==="Gebruikt" ? "selected" : ""}>
                 Gebruikt
               </option>
 
@@ -911,11 +717,10 @@ function render(){
             <label>Opslag</label>
 
             <input
-              data-u="1"
-              data-i="${i}"
-              data-k="storage"
               value="${esc(p.storage)}"
-              placeholder="128 GB">
+              placeholder="Bijv. 128 GB"
+              onchange="syncUsed(${i},'storage',this.value)"
+            >
 
           </div>
 
@@ -925,550 +730,106 @@ function render(){
             <label>RAM</label>
 
             <input
-              data-u="1"
-              data-i="${i}"
-              data-k="ram"
               value="${esc(p.ram)}"
-              placeholder="6 GB">
-
-          </div>
-
-
-          <div>
-
-            <label>WhatsApp voor dit apparaat</label>
-
-            <input
-              data-u="1"
-              data-i="${i}"
-              data-k="whatsapp"
-              value="${esc(p.whatsapp)}"
-              placeholder="31612345678">
+              placeholder="Bijv. 6 GB"
+              onchange="syncUsed(${i},'ram',this.value)"
+            >
 
           </div>
 
         </div>
 
 
-        <!-- PHOTO -->
+        <!-- FOTO -->
+
+        <label>Foto</label>
 
         <div class="photo-box">
-
-          <label>📷 Foto van het apparaat</label>
-
-          <input
-            class="file-input"
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
-            onchange="chooseImage(${i},this)">
-
-          <div class="small-note">
-            Kies een foto vanaf je telefoon of computer.
-            De foto wordt automatisch kleiner gemaakt voordat
-            je opslaat.
-          </div>
-
 
           ${
             p.image
             ?
             `
-            <img
-              class="photo-preview"
-              src="${esc(p.image)}"
-              alt="Voorbeeld"
-              onerror="this.style.display='none'">
-
-            <div class="actions">
+              <img
+                class="photo-preview"
+                src="${esc(p.image)}"
+                alt="Foto"
+              >
 
               <button
-                type="button"
-                class="btn red"
-                onclick="removeImage(${i})">
-                🗑 Foto verwijderen
+                class="remove-photo"
+                onclick="removeImage(${i})"
+              >
+                Foto verwijderen
               </button>
-
-            </div>
             `
             :
             `
-            <div class="photo-empty">
-              📱
-            </div>
+              <div class="photo-empty">
+                Nog geen foto gekozen
+              </div>
             `
           }
 
+          <input
+            class="file-input"
+            type="file"
+            accept="image/*"
+            onchange="chooseImage(${i},this)"
+          >
+
+          <div class="small-note">
+            Kies één foto vanaf je telefoon of computer.
+            De foto wordt automatisch verkleind.
+          </div>
+
         </div>
 
 
-        <!-- OLD PHOTO URL -->
-
-        <label>Foto URL (optioneel)</label>
+        <label>WhatsApp voor dit toestel</label>
 
         <input
-          data-u="1"
-          data-i="${i}"
-          data-k="image"
-          value="${esc(p.image)}"
-          placeholder="https://...">
-
-        <div class="small-note">
-          Je kunt ook nog steeds een directe foto-link gebruiken.
-        </div>
+          value="${esc(p.whatsapp)}"
+          placeholder="31612345678"
+          onchange="syncUsed(${i},'whatsapp',cleanWhatsApp(this.value))"
+        >
 
 
         <label>Beschrijving</label>
 
         <textarea
-          data-u="1"
-          data-i="${i}"
-          data-k="description"
-          placeholder="Beschrijving van het gebruikte apparaat...">${esc(p.description)}</textarea>
+          onchange="syncUsed(${i},'description',this.value)"
+        >${esc(p.description)}</textarea>
 
 
-        <div class="actions">
-
-          <button
-            class="btn red"
-            onclick="delUsedPhone(${i})">
-            🗑 Verwijderen
-          </button>
-
-        </div>
+        <button
+          class="delete"
+          onclick="deleteUsedPhone(${i})"
+        >
+          Verwijderen
+        </button>
 
       </div>
 
-    `).join("");
-
-
-  /* WHY */
-
-  $("whyEdit").innerHTML=
-    (data.why||[]).map((x,i)=>{
-
-      if(!Array.isArray(x)){
-
-        x=["⭐",String(x),""];
-
-      }
-
-
-      return `
-
-      <div class="item">
-
-        <div class="item-grid">
-
-          <input
-            data-a="why"
-            data-i="${i}"
-            data-k="0"
-            value="${esc(x[0])}"
-            placeholder="Emoji">
-
-          <input
-            data-a="why"
-            data-i="${i}"
-            data-k="1"
-            value="${esc(x[1])}"
-            placeholder="Titel">
-
-          <textarea
-            data-a="why"
-            data-i="${i}"
-            data-k="2"
-            placeholder="Beschrijving">${esc(x[2])}</textarea>
-
-        </div>
-
-
-        <div class="actions">
-
-          <button
-            class="btn red"
-            onclick="delWhy(${i})">
-            🗑 Verwijderen
-          </button>
-
-        </div>
-
-      </div>
-
-      `;
-
-    }).join("");
-
-}
-
-
-/* =========================
-   SYNC
-========================= */
-
-function sync(){
-
-
-  document.querySelectorAll("[data-a]").forEach(e=>{
-
-    const a=e.dataset.a;
-
-    const i=Number(e.dataset.i);
-
-    const k=Number(e.dataset.k);
-
-
-    if(!Array.isArray(data[a][i])){
-
-      data[a][i]=["","",""];
-
-    }
-
-
-    data[a][i][k]=e.value;
+    `;
 
   });
 
-
-  document.querySelectorAll("[data-p]").forEach(e=>{
-
-    const i=Number(e.dataset.i);
-
-    const k=e.dataset.k;
-
-
-    if(!data.phones[i]){
-
-      data.phones[i]={};
-
-    }
-
-
-    data.phones[i][k]=e.value;
-
-  });
-
-
-  document.querySelectorAll("[data-u]").forEach(e=>{
-
-    const i=Number(e.dataset.i);
-
-    const k=e.dataset.k;
-
-
-    if(!data.usedPhones[i]){
-
-      data.usedPhones[i]={};
-
-    }
-
-
-    data.usedPhones[i][k]=e.value;
-
-  });
-
-
-  [
-
-    "businessName",
-    "heroTitle",
-    "heroText",
-    "tagline",
-    "whatsapp",
-    "phone",
-    "areas"
-
-  ].forEach(k=>{
-
-    data[k]=$(k).value;
-
-  });
-
 }
 
 
 /* =========================
-   IMAGE RESIZE
+   USED PHONE DATA
 ========================= */
 
-function resizeImage(file){
+function syncUsed(i,key,value){
 
-  return new Promise((resolve,reject)=>{
-
-    const reader=new FileReader();
-
-
-    reader.onload=function(event){
-
-      const img=new Image();
-
-
-      img.onload=function(){
-
-        const maxSize=900;
-
-        let width=img.width;
-
-        let height=img.height;
-
-
-        if(width>maxSize || height>maxSize){
-
-          if(width>height){
-
-            height=
-              Math.round(
-                height*(maxSize/width)
-              );
-
-            width=maxSize;
-
-          }else{
-
-            width=
-              Math.round(
-                width*(maxSize/height)
-              );
-
-            height=maxSize;
-
-          }
-
-        }
-
-
-        const canvas=document.createElement("canvas");
-
-        canvas.width=width;
-
-        canvas.height=height;
-
-
-        const ctx=canvas.getContext("2d");
-
-        ctx.drawImage(
-          img,
-          0,
-          0,
-          width,
-          height
-        );
-
-
-        /*
-          JPEG quality 0.65
-          لتصغير حجم الصورة
-        */
-
-        const result=
-          canvas.toDataURL(
-            "image/jpeg",
-            0.65
-          );
-
-
-        resolve(result);
-
-      };
-
-
-      img.onerror=function(){
-
-        reject(
-          new Error("Ongeldige afbeelding")
-        );
-
-      };
-
-
-      img.src=event.target.result;
-
-    };
-
-
-    reader.onerror=function(){
-
-      reject(
-        new Error("Foto kon niet worden gelezen")
-      );
-
-    };
-
-
-    reader.readAsDataURL(file);
-
-  });
+  data.usedPhones[i][key] = value;
 
 }
 
-
-/* =========================
-   CHOOSE IMAGE
-========================= */
-
-async function chooseImage(index,input){
-
-  const file=input.files && input.files[0];
-
-  if(!file){
-
-    return;
-
-  }
-
-
-  if(!file.type.startsWith("image/")){
-
-    alert("Kies een afbeelding.");
-
-    input.value="";
-
-    return;
-
-  }
-
-
-  try{
-
-    /*
-      نحفظ أي تعديلات مكتوبة قبل إعادة الرسم
-    */
-
-    sync();
-
-
-    $("saveMsg").innerHTML=
-      '<div class="msg">⏳ Foto wordt verwerkt...</div>';
-
-
-    const compressed=
-      await resizeImage(file);
-
-
-    data.usedPhones[index].image=compressed;
-
-
-    render();
-
-
-    $("saveMsg").innerHTML=
-      '<div class="msg ok">📷 Foto toegevoegd. Klik daarna op "Wijzigingen opslaan".</div>';
-
-  }catch(error){
-
-    console.error(error);
-
-    $("saveMsg").innerHTML=
-      '<div class="msg err">❌ De foto kon niet worden verwerkt.</div>';
-
-  }
-
-}
-
-
-/* =========================
-   REMOVE IMAGE
-========================= */
-
-function removeImage(index){
-
-  sync();
-
-
-  if(data.usedPhones[index]){
-
-    data.usedPhones[index].image="";
-
-  }
-
-
-  render();
-
-
-  $("saveMsg").innerHTML=
-    '<div class="msg ok">🗑 Foto verwijderd. Klik op "Wijzigingen opslaan" om te bevestigen.</div>';
-
-}
-
-
-/* =========================
-   SERVICE
-========================= */
-
-function addService(){
-
-  sync();
-
-  data.services.push([
-
-    "🔧",
-    "Nieuwe dienst",
-    "Beschrijving van de dienst"
-
-  ]);
-
-  render();
-
-}
-
-
-function delService(i){
-
-  sync();
-
-  data.services.splice(i,1);
-
-  render();
-
-}
-
-
-/* =========================
-   PHONE
-========================= */
-
-function addPhone(){
-
-  sync();
-
-  data.phones.push({
-
-    name:"iPhone nieuw",
-
-    brand:"Apple",
-
-    screen:"",
-
-    software:"",
-
-    hardware:"",
-
-    camera:""
-
-  });
-
-  render();
-
-}
-
-
-function delPhone(i){
-
-  sync();
-
-  data.phones.splice(i,1);
-
-  render();
-
-}
-
-
-/* =========================
-   USED PHONE
-========================= */
 
 function addUsedPhone(){
-
-  sync();
 
   data.usedPhones.push({
 
@@ -1492,18 +853,241 @@ function addUsedPhone(){
 
   });
 
-  render();
+  renderUsedPhones();
 
 }
 
 
-function delUsedPhone(i){
+function deleteUsedPhone(i){
 
-  sync();
+  if(!confirm("Deze gebruikte telefoon verwijderen?")){
+    return;
+  }
 
   data.usedPhones.splice(i,1);
 
-  render();
+  renderUsedPhones();
+
+}
+
+
+/* =========================
+   FOTO KIEZEN
+========================= */
+
+async function chooseImage(index,input){
+
+  const file = input.files && input.files[0];
+
+  if(!file){
+    return;
+  }
+
+  try{
+
+    showStatus("Foto wordt verwerkt...","ok");
+
+    const compressed = await compressImage(file);
+
+    data.usedPhones[index].image = compressed;
+
+    renderUsedPhones();
+
+    showStatus("Foto toegevoegd. Klik daarna op Wijzigingen opslaan.","ok");
+
+  }catch(error){
+
+    console.error(error);
+
+    showStatus(
+      "Deze foto kan niet worden verwerkt. Kies JPG, PNG of WEBP.",
+      "error"
+    );
+
+  }
+
+}
+
+
+/* =========================
+   FOTO VERWIJDEREN
+========================= */
+
+function removeImage(index){
+
+  data.usedPhones[index].image = "";
+
+  renderUsedPhones();
+
+}
+
+
+/* =========================
+   FOTO VERKLEINEN
+========================= */
+
+function compressImage(file){
+
+  return new Promise(function(resolve,reject){
+
+    const reader = new FileReader();
+
+    reader.onload = function(){
+
+      const img = new Image();
+
+      img.onload = function(){
+
+        let maxSide = 800;
+
+        let width = img.width;
+        let height = img.height;
+
+        if(width > maxSide || height > maxSide){
+
+          if(width > height){
+
+            height = Math.round(height * maxSide / width);
+            width = maxSide;
+
+          }else{
+
+            width = Math.round(width * maxSide / height);
+            height = maxSide;
+
+          }
+
+        }
+
+
+        const canvas = document.createElement("canvas");
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0,0,width,height);
+
+        ctx.drawImage(img,0,0,width,height);
+
+
+        const qualities = [
+          0.70,
+          0.60,
+          0.50,
+          0.42,
+          0.35
+        ];
+
+
+        let result = "";
+
+        for(const quality of qualities){
+
+          result = canvas.toDataURL("image/jpeg",quality);
+
+          if(result.length <= 260000){
+            break;
+          }
+
+        }
+
+
+        /* إذا بقيت الصورة كبيرة نصغرها أكثر */
+
+        if(result.length > 260000){
+
+          const smallCanvas = document.createElement("canvas");
+
+          let smallWidth = width;
+          let smallHeight = height;
+
+          const smallMax = 650;
+
+          if(smallWidth > smallMax || smallHeight > smallMax){
+
+            if(smallWidth > smallHeight){
+
+              smallHeight = Math.round(
+                smallHeight * smallMax / smallWidth
+              );
+
+              smallWidth = smallMax;
+
+            }else{
+
+              smallWidth = Math.round(
+                smallWidth * smallMax / smallHeight
+              );
+
+              smallHeight = smallMax;
+
+            }
+
+          }
+
+          smallCanvas.width = smallWidth;
+          smallCanvas.height = smallHeight;
+
+          const smallCtx = smallCanvas.getContext("2d");
+
+          smallCtx.fillStyle = "#ffffff";
+          smallCtx.fillRect(
+            0,
+            0,
+            smallWidth,
+            smallHeight
+          );
+
+          smallCtx.drawImage(
+            img,
+            0,
+            0,
+            smallWidth,
+            smallHeight
+          );
+
+          result = smallCanvas.toDataURL(
+            "image/jpeg",
+            0.50
+          );
+
+        }
+
+
+        resolve(result);
+
+      };
+
+
+      img.onerror = function(){
+
+        reject(
+          new Error("Image format not supported")
+        );
+
+      };
+
+
+      img.src = reader.result;
+
+    };
+
+
+    reader.onerror = function(){
+
+      reject(
+        new Error("File could not be read")
+      );
+
+    };
+
+
+    reader.readAsDataURL(file);
+
+  });
 
 }
 
@@ -1512,67 +1096,140 @@ function delUsedPhone(i){
    WHY
 ========================= */
 
-function addWhy(){
+function renderWhy(){
 
-  sync();
+  const box = document.getElementById("why");
 
-  data.why.push([
+  box.innerHTML = "";
 
-    "⭐",
-    "Nieuw voordeel",
-    "Beschrijving"
+  data.why.forEach(function(x,i){
 
-  ]);
+    box.innerHTML += `
 
-  render();
+      <div class="item">
+
+        <label>Icoon</label>
+
+        <input
+          value="${esc(x[0])}"
+          onchange="data.why[${i}][0]=this.value"
+        >
+
+        <label>Titel</label>
+
+        <input
+          value="${esc(x[1])}"
+          onchange="data.why[${i}][1]=this.value"
+        >
+
+        <label>Beschrijving</label>
+
+        <textarea
+          onchange="data.why[${i}][2]=this.value"
+        >${esc(x[2])}</textarea>
+
+        <button
+          class="delete"
+          onclick="deleteWhy(${i})"
+        >
+          Verwijderen
+        </button>
+
+      </div>
+
+    `;
+
+  });
 
 }
 
 
-function delWhy(i){
+function addWhy(){
 
-  sync();
+  data.why.push([
+    "✓",
+    "Nieuw voordeel",
+    ""
+  ]);
+
+  renderWhy();
+
+}
+
+
+function deleteWhy(i){
 
   data.why.splice(i,1);
 
-  render();
+  renderWhy();
 
 }
 
 
 /* =========================
-   SAVE
+   WHATSAPP
+========================= */
+
+function cleanWhatsApp(value){
+
+  return String(value || "")
+    .replace(/[^\d+]/g,"");
+
+}
+
+
+/* =========================
+   OPSLAAN
 ========================= */
 
 async function save(){
 
-  sync();
-
-
-  data.whatsapp=
-    String(data.whatsapp||"")
-    .replace(/\D/g,"");
-
-
-  data.usedPhones=
-    (data.usedPhones||[]).map(p=>({
-
-      ...p,
-
-      whatsapp:
-        String(p.whatsapp||"")
-        .replace(/\D/g,"")
-
-    }));
-
-
   try{
 
-    $("saveMsg").innerHTML=
-      '<div class="msg">⏳ Opslaan...</div>';
+    /* velden algemene info ophalen */
+
+    document.querySelectorAll("[data-field]").forEach(function(el){
+
+      data[el.dataset.field] = el.value;
+
+    });
 
 
-    const r=await fetch("/api/site",{
+    /* WhatsApp opschonen */
+
+    data.whatsapp = cleanWhatsApp(data.whatsapp);
+
+    data.phone = cleanWhatsApp(data.phone);
+
+    data.usedPhones.forEach(function(p){
+
+      p.whatsapp = cleanWhatsApp(p.whatsapp);
+
+    });
+
+
+    /* Controle totale grootte */
+
+    const payload = JSON.stringify(data);
+
+    const maxPayload = 1800000;
+
+    if(payload.length > maxPayload){
+
+      showStatus(
+        "De gegevens zijn te groot. Verwijder een paar grote foto's en probeer opnieuw.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    showStatus("Opslaan...","ok");
+
+
+    const response = await fetch("/api/site",{
 
       method:"PUT",
 
@@ -1580,52 +1237,45 @@ async function save(){
         "Content-Type":"application/json"
       },
 
-      body:JSON.stringify(data)
+      credentials:"include",
+
+      body:payload
 
     });
 
 
-    if(r.ok){
-
-      const result=await r.json();
-
-      data=result.data||data;
+    const result = await response.json();
 
 
-      $("saveMsg").innerHTML=
-        '<div class="msg ok">✅ Opgeslagen. De gegevens staan nu op de server.</div>';
+    if(!response.ok){
 
-
-      render();
-
-    }else{
-
-      let message="Opslaan mislukt.";
-
-      try{
-
-        const errorData=await r.json();
-
-        if(errorData.error){
-
-          message=errorData.error;
-
-        }
-
-      }catch(e){}
-
-
-      $("saveMsg").innerHTML=
-        '<div class="msg err">❌ '+esc(message)+'</div>';
+      throw new Error(
+        result.error || "Opslaan mislukt."
+      );
 
     }
+
+
+    data = result.data || data;
+
+    normalizeData();
+
+    render();
+
+    showStatus(
+      "✓ Wijzigingen succesvol opgeslagen.",
+      "ok"
+    );
+
 
   }catch(error){
 
     console.error(error);
 
-    $("saveMsg").innerHTML=
-      '<div class="msg err">❌ Verbindingsfout bij opslaan.</div>';
+    showStatus(
+      error.message || "Opslaan mislukt.",
+      "error"
+    );
 
   }
 
@@ -1633,42 +1283,39 @@ async function save(){
 
 
 /* =========================
-   LOGOUT
+   STATUS
 ========================= */
 
-async function logout(){
+function showStatus(message,type){
 
-  await fetch("/api/logout",{
+  const box = document.getElementById("status");
 
-    method:"POST"
+  box.textContent = message;
 
-  });
-
-  location.reload();
+  box.className = "status " + type;
 
 }
 
 
 /* =========================
-   AUTO LOGIN
+   HTML VEILIG MAKEN
 ========================= */
 
-fetch("/api/me")
-.then(r=>{
+function esc(value){
 
-  if(r.ok){
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 
-    $("loginBox").classList.add("hidden");
+}
 
-    $("dashboard").classList.remove("hidden");
 
-    $("logoutBtn").classList.remove("hidden");
+/* START */
 
-    load();
-
-  }
-
-});
+load();
 
 </script>
 
