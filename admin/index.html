@@ -626,6 +626,19 @@ textarea{
 </div>
 </div>
 
+
+<section class="section admin-page" id="page-customers">
+  <div class="section-head">
+    <div>
+      <h2>👥 Klanten</h2>
+      <p>Bekijk de geregistreerde klanten van HOMS TECH.</p>
+    </div>
+    <button class="btn btn-light" onclick="loadCustomers()">↻ Vernieuwen</button>
+  </div>
+  <div id="customersStatus" class="status info" style="margin-bottom:15px">Klanten laden...</div>
+  <div id="customersList"></div>
+</section>
+
 <script>
 
 let data = {};
@@ -642,6 +655,10 @@ function showPage(page){
   const target = document.getElementById("page-" + page);
   if(target){
     target.classList.add("active");
+  }
+
+  if(page === "customers"){
+    loadCustomers();
   }
 
   document.querySelectorAll(".nav-btn").forEach(button=>{
@@ -1491,6 +1508,81 @@ function deleteWhy(i){
   }
 }
 
+
+
+/* ---------------- CUSTOMERS ---------------- */
+
+async function loadCustomers(){
+  const status = document.getElementById("customersStatus");
+  const list = document.getElementById("customersList");
+
+  if(!status || !list) return;
+
+  status.className = "status info";
+  status.textContent = "Klanten laden...";
+  list.innerHTML = "";
+
+  try{
+    const r = await fetch("/api/admin/customers");
+
+    if(!r.ok){
+      const result = await r.json().catch(()=>({}));
+      throw new Error(result.error || "Klanten konden niet worden geladen");
+    }
+
+    const result = await r.json();
+    const customers = Array.isArray(result.customers) ? result.customers : [];
+
+    status.className = "status success";
+    status.textContent = `✓ ${customers.length} klant(en) gevonden`;
+
+    if(!customers.length){
+      list.innerHTML = `
+        <div class="card">
+          <p class="small">Er zijn nog geen geregistreerde klanten.</p>
+        </div>
+      `;
+      return;
+    }
+
+    list.innerHTML = customers.map(customer => {
+      const created = customer.created_at
+        ? new Date(customer.created_at).toLocaleString("nl-NL")
+        : "-";
+
+      return `
+        <div class="card" style="margin-bottom:15px">
+          <div class="grid">
+            <div class="field">
+              <label>Naam</label>
+              <div>${esc(customer.name)}</div>
+            </div>
+            <div class="field">
+              <label>E-mail</label>
+              <div>${esc(customer.email)}</div>
+            </div>
+            <div class="field">
+              <label>Telefoon</label>
+              <div>${esc(customer.phone || "-")}</div>
+            </div>
+            <div class="field">
+              <label>Adres</label>
+              <div>${esc(customer.address || "-")}</div>
+            </div>
+            <div class="field">
+              <label>Geregistreerd</label>
+              <div>${esc(created)}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+  }catch(e){
+    status.className = "status error";
+    status.textContent = "✕ " + e.message;
+  }
+}
 
 /* ---------------- SAVE ---------------- */
 
