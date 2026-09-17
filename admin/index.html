@@ -191,16 +191,58 @@ textarea{
 }
 
 .service-card,
-.why-card{
+.why-card,
+.device-card,
+.used-card{
+  background:#fff;
   position:relative;
 }
 
-.device-card{
-  background:#fff;
+/* ترتيب البطاقات جنب بعض */
+#servicesList,
+#phonesList,
+#usedPhonesList,
+#whyList{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;
 }
 
-.used-card{
-  background:#fff;
+/* البطاقة */
+#servicesList .card,
+#phonesList .card,
+#usedPhonesList .card,
+#whyList .card{
+  margin-bottom:0;
+  min-width:0;
+}
+
+/* الهاتف المستعمل يحتاج مساحة أكبر للصور */
+#usedPhonesList .used-card{
+  grid-column:span 2;
+}
+
+/* على الشاشات الصغيرة */
+@media(max-width:750px){
+
+  #servicesList,
+  #phonesList,
+  #usedPhonesList,
+  #whyList{
+    grid-template-columns:1fr;
+  }
+
+  #usedPhonesList .used-card{
+    grid-column:span 1;
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .images-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
 }
 
 .images-grid{
