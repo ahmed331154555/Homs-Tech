@@ -166,6 +166,99 @@ transition:.2s;
 color:inherit
 }
 
+.sales-card{
+padding:0;
+overflow:hidden;
+border:1px solid #eef2f7;
+}
+
+.product-image{
+height:270px;
+background:#f8fafc;
+display:flex;
+align-items:center;
+justify-content:center;
+overflow:hidden;
+}
+
+.product-image img{
+width:100%;
+height:100%;
+object-fit:contain;
+padding:24px;
+display:block;
+}
+
+.device-placeholder{
+width:100%;
+height:100%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:82px;
+background:#eff6ff;
+}
+
+.product-info{
+padding:22px 24px 24px;
+}
+
+.sales-card .brand{
+margin-bottom:7px;
+font-size:14px;
+}
+
+.sales-card h3{
+font-size:21px;
+margin-bottom:12px;
+}
+
+.product-meta{
+display:flex;
+gap:7px;
+flex-wrap:wrap;
+margin-bottom:14px;
+}
+
+.product-meta span{
+background:#f1f5f9;
+border-radius:999px;
+padding:6px 10px;
+font-size:13px;
+color:#475569;
+}
+
+.sale-price{
+font-size:25px;
+font-weight:800;
+color:#111827;
+margin:12px 0 18px;
+}
+
+.contact-price{
+font-size:17px;
+color:#64748b;
+}
+
+.product-action{
+border-top:1px solid #e5e7eb;
+padding-top:15px;
+font-weight:800;
+color:#2563eb;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.product-action span{
+font-size:20px;
+transition:.2s;
+}
+
+.sales-card:hover .product-action span{
+transform:translateX(4px);
+}
+
 .device-card:focus{
 outline:3px solid rgba(37,99,235,.35);
 outline-offset:3px
@@ -384,12 +477,12 @@ text-align:center
 <div class="hero-inner">
 
 <h1>
-Ondersteunde <span>apparaten</span>
+Ontdek onze <span>smartphones</span>
 </h1>
 
 <p>
-Wij repareren verschillende smartphones en merken.
-Bekijk hieronder de apparaten waarvoor wij reparaties aanbieden.
+Bekijk de smartphones die HOMS TECH te koop aanbiedt.
+Kies een telefoon en bekijk alle details en beschikbare opties.
 </p>
 
 <div class="buttons">
@@ -413,10 +506,10 @@ Bekijk hieronder de apparaten waarvoor wij reparaties aanbieden.
 
 <div class="section-title">
 
-<h2>Onze apparaten</h2>
+<h2>Onze telefoons</h2>
 
 <p>
-Bekijk de smartphones die door HOMS TECH worden ondersteund.
+Bekijk de smartphones die momenteel te koop zijn bij HOMS TECH.
 </p>
 
 <div class="line"></div>
@@ -435,11 +528,11 @@ Bekijk de smartphones die door HOMS TECH worden ondersteund.
 <div>
 
 <h2>
-Uw apparaat staat er niet bij?
+Uw gewenste telefoon staat er niet bij?
 </h2>
 
 <p>
-Neem contact met ons op. Wij bekijken graag wat we voor u kunnen doen.
+Neem contact met ons op. Wij helpen u graag met het vinden van de juiste telefoon.
 </p>
 
 </div>
@@ -458,7 +551,7 @@ Neem contact met ons op. Wij bekijken graag wat we voor u kunnen doen.
 <div class="contact">
 
 <h2>
-Hulp nodig met uw telefoon?
+Op zoek naar een nieuwe telefoon?
 </h2>
 
 <p>
@@ -613,80 +706,79 @@ if(!devices.length){
 
 grid.innerHTML = `
 <div class="empty">
-<h3>Geen apparaten beschikbaar</h3>
-<p>Neem contact met ons op voor meer informatie.</p>
+<h3>Geen telefoons beschikbaar</h3>
+<p>Neem contact met ons op voor het actuele aanbod.</p>
 </div>
 `;
 
 return;
-
 }
-
 
 grid.innerHTML = devices.map(device => {
 
-const prices = [];
+const image =
+device.image ||
+device.imageUrl ||
+(Array.isArray(device.images) && device.images[0]) ||
+"";
 
-if(device.screen){
-prices.push(
-"Scherm: €" + escapeHtml(device.screen)
-);
-}
+const storage = device.storage || device.geheugen || "";
+const color = device.color || device.kleur || "";
+const condition = device.condition || device.conditie || "";
+const salePrice =
+device.price ||
+device.salePrice ||
+device.sellPrice ||
+device.verkoopprijs ||
+"";
 
-if(device.software){
-prices.push(
-"Software: €" + escapeHtml(device.software)
-);
-}
-
-if(device.hardware){
-prices.push(
-"Hardware: €" + escapeHtml(device.hardware)
-);
-}
-
-if(device.camera){
-prices.push(
-"Camera: €" + escapeHtml(device.camera)
-);
-}
-
-
-const productUrl = "product.html?type=phone&id=" + encodeURIComponent(device._index);
+const productUrl =
+"product.html?type=phone&id=" +
+encodeURIComponent(device._index);
 
 return `
-<a class="device-card" href="${productUrl}" aria-label="Bekijk ${escapeHtml(device.name)}">
+<a class="device-card sales-card"
+   href="${productUrl}"
+   aria-label="Bekijk ${escapeHtml(device.name)}">
 
-<div class="device-icon">
-📱
+<div class="product-image">
+${
+image
+?
+`<img src="${escapeHtml(image)}" alt="${escapeHtml(device.name)}">`
+:
+`<div class="device-placeholder">📱</div>`
+}
+</div>
+
+<div class="product-info">
+
+<div class="brand">
+${escapeHtml(device.brand)}
 </div>
 
 <h3>
 ${escapeHtml(device.name)}
 </h3>
 
-<div class="brand">
-${escapeHtml(device.brand)}
+<div class="product-meta">
+${storage ? `<span>${escapeHtml(storage)}</span>` : ""}
+${color ? `<span>${escapeHtml(color)}</span>` : ""}
+${condition ? `<span>${escapeHtml(condition)}</span>` : ""}
 </div>
 
 ${
-prices.length
+salePrice
 ?
-`
-<div class="price">
-${prices.join("<br>")}
-</div>
-`
+`<div class="sale-price">€${escapeHtml(salePrice)}</div>`
 :
-`
-<p>
-Neem contact met ons op voor de reparatieprijs.
-</p>
-`
+`<div class="sale-price contact-price">Prijs op aanvraag</div>`
 }
 
-<div style="margin-top:16px;font-weight:700;color:#2563eb;">
-Bekijk product →
+<div class="product-action">
+Bekijk product <span>→</span>
+</div>
+
 </div>
 
 </a>
@@ -695,7 +787,6 @@ Bekijk product →
 }).join("");
 
 }
-
 
 async function loadSite(){
 
