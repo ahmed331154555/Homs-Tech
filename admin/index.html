@@ -190,32 +190,58 @@ button,.btn{
   border-radius:14px
 }
 
-.photo-preview{
+.photo-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-top:14px
+}
+
+.photo-item{
+  position:relative;
+  width:150px
+}
+
+.photo-item img{
   display:block;
-  width:180px;
-  height:180px;
+  width:150px;
+  height:150px;
   object-fit:cover;
   border-radius:14px;
-  margin-top:12px;
   border:1px solid #e5e7eb;
   background:#eef2f7
 }
 
-.photo-empty{
-  width:180px;
-  height:180px;
-  border-radius:14px;
-  margin-top:12px;
-  background:#eef2f7;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:60px
+.photo-number{
+  position:absolute;
+  top:7px;
+  left:7px;
+  background:#111827;
+  color:#fff;
+  padding:5px 8px;
+  border-radius:7px;
+  font-size:12px;
+  font-weight:700
 }
 
-.file-input{
-  background:#fff;
-  padding:10px
+.photo-delete{
+  margin-top:6px;
+  width:100%;
+  background:#fee2e2;
+  color:#991b1b;
+  padding:8px;
+  border:0;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:700
+}
+
+.photo-empty{
+  padding:18px;
+  border-radius:12px;
+  background:#eef2f7;
+  color:#6b7280;
+  margin-top:12px
 }
 
 .small-note{
@@ -238,10 +264,13 @@ button,.btn{
     padding:14px 4%
   }
 
-  .photo-preview,
-  .photo-empty{
-    width:150px;
-    height:150px
+  .photo-item{
+    width:130px
+  }
+
+  .photo-item img{
+    width:130px;
+    height:130px
   }
 }
 </style>
@@ -274,9 +303,7 @@ button,.btn{
 
 </header>
 
-
 <div class="container">
-
 
   <!-- LOGIN -->
 
@@ -349,7 +376,6 @@ button,.btn{
 
         </div>
 
-
         <div>
 
           <label>Korte slogan</label>
@@ -360,16 +386,13 @@ button,.btn{
 
       </div>
 
-
       <label>Hoofdtitel</label>
 
       <input id="heroTitle">
 
-
       <label>Introductietekst</label>
 
       <textarea id="heroText"></textarea>
-
 
       <div class="grid">
 
@@ -385,7 +408,6 @@ button,.btn{
 
         </div>
 
-
         <div>
 
           <label>Telefoonnummer</label>
@@ -397,7 +419,6 @@ button,.btn{
         </div>
 
       </div>
-
 
       <label>Werkgebied</label>
 
@@ -453,9 +474,8 @@ button,.btn{
       <h2>♻️ Tweedehands apparaten</h2>
 
       <p class="muted">
-        Voeg hier gebruikte telefoons toe die je wilt verkopen.
-        Je kunt model, merk, prijs, conditie, opslag, RAM,
-        beschrijving, WhatsApp en een foto toevoegen.
+        Voeg hier gebruikte telefoons toe. Je kunt maximaal
+        5 foto's per apparaat toevoegen.
       </p>
 
       <div id="usedEdit"></div>
@@ -722,7 +742,6 @@ function render(){
 
         </div>
 
-
         <div class="actions">
 
           <button
@@ -793,7 +812,6 @@ function render(){
 
         </div>
 
-
         <div class="actions">
 
           <button
@@ -814,7 +832,24 @@ function render(){
   ========================= */
 
   $("usedEdit").innerHTML=
-    (data.usedPhones||[]).map((p,i)=>`
+    (data.usedPhones||[]).map((p,i)=>{
+
+      /* دعم الصور القديمة */
+
+      let images=[];
+
+      if(Array.isArray(p.images)){
+
+        images=[...p.images];
+
+      }else if(p.image){
+
+        images=[p.image];
+
+      }
+
+
+      return `
 
       <div class="item">
 
@@ -824,7 +859,6 @@ function render(){
 
 
         <div class="used-grid">
-
 
           <div>
 
@@ -950,50 +984,61 @@ function render(){
         </div>
 
 
-        <!-- PHOTO -->
+        <!-- PHOTOS -->
 
         <div class="photo-box">
 
-          <label>📷 Foto van het apparaat</label>
+          <label>📷 Foto's van het apparaat</label>
 
           <input
             class="file-input"
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
-            onchange="chooseImage(${i},this)">
+            accept="image/*"
+            multiple
+            onchange="chooseImages(${i},this)">
 
           <div class="small-note">
-            Kies een foto vanaf je telefoon of computer.
-            De foto wordt automatisch kleiner gemaakt voordat
-            je opslaat.
+            Je kunt maximaal 5 foto's selecteren.
+            De foto's worden automatisch verkleind en gecomprimeerd.
           </div>
 
 
           ${
-            p.image
+            images.length
             ?
             `
-            <img
-              class="photo-preview"
-              src="${esc(p.image)}"
-              alt="Voorbeeld"
-              onerror="this.style.display='none'">
+            <div class="photo-list">
 
-            <div class="actions">
+              ${images.map((img,j)=>`
 
-              <button
-                type="button"
-                class="btn red"
-                onclick="removeImage(${i})">
-                🗑 Foto verwijderen
-              </button>
+                <div class="photo-item">
+
+                  <div class="photo-number">
+                    Foto ${j+1}
+                  </div>
+
+                  <img
+                    src="${esc(img)}"
+                    alt="Foto ${j+1}"
+                    onerror="this.style.display='none'">
+
+                  <button
+                    type="button"
+                    class="photo-delete"
+                    onclick="removeImage(${i},${j})">
+                    🗑 Verwijderen
+                  </button>
+
+                </div>
+
+              `).join("")}
 
             </div>
             `
             :
             `
             <div class="photo-empty">
-              📱
+              📱 Nog geen foto's toegevoegd.
             </div>
             `
           }
@@ -1001,21 +1046,7 @@ function render(){
         </div>
 
 
-        <!-- OLD PHOTO URL -->
-
-        <label>Foto URL (optioneel)</label>
-
-        <input
-          data-u="1"
-          data-i="${i}"
-          data-k="image"
-          value="${esc(p.image)}"
-          placeholder="https://...">
-
-        <div class="small-note">
-          Je kunt ook nog steeds een directe foto-link gebruiken.
-        </div>
-
+        <!-- DESCRIPTION -->
 
         <label>Beschrijving</label>
 
@@ -1038,7 +1069,9 @@ function render(){
 
       </div>
 
-    `).join("");
+      `;
+
+    }).join("");
 
 
   /* WHY */
@@ -1081,7 +1114,6 @@ function render(){
 
         </div>
 
-
         <div class="actions">
 
           <button
@@ -1106,7 +1138,6 @@ function render(){
 ========================= */
 
 function sync(){
-
 
   document.querySelectorAll("[data-a]").forEach(e=>{
 
@@ -1187,47 +1218,39 @@ function sync(){
 
 
 /* =========================
-   IMAGE RESIZE
+   IMAGE COMPRESSION
 ========================= */
 
-function resizeImage(file){
+function compressImage(file){
 
   return new Promise((resolve,reject)=>{
 
     const reader=new FileReader();
 
-
-    reader.onload=function(event){
+    reader.onload=function(e){
 
       const img=new Image();
 
-
       img.onload=function(){
-
-        const maxSize=900;
 
         let width=img.width;
 
         let height=img.height;
+
+        const maxSize=900;
 
 
         if(width>maxSize || height>maxSize){
 
           if(width>height){
 
-            height=
-              Math.round(
-                height*(maxSize/width)
-              );
+            height=Math.round(height*maxSize/width);
 
             width=maxSize;
 
           }else{
 
-            width=
-              Math.round(
-                width*(maxSize/height)
-              );
+            width=Math.round(width*maxSize/height);
 
             height=maxSize;
 
@@ -1245,6 +1268,19 @@ function resizeImage(file){
 
         const ctx=canvas.getContext("2d");
 
+
+        /* خلفية بيضاء للـ PNG */
+
+        ctx.fillStyle="#ffffff";
+
+        ctx.fillRect(
+          0,
+          0,
+          width,
+          height
+        );
+
+
         ctx.drawImage(
           img,
           0,
@@ -1254,16 +1290,29 @@ function resizeImage(file){
         );
 
 
+        let quality=0.70;
+
+        let result;
+
+
         /*
-          JPEG quality 0.65
-          لتصغير حجم الصورة
+          نحاول إبقاء الصورة صغيرة
         */
 
-        const result=
-          canvas.toDataURL(
-            "image/jpeg",
-            0.65
-          );
+        do{
+
+          result=
+            canvas.toDataURL(
+              "image/jpeg",
+              quality
+            );
+
+          quality-=0.05;
+
+        }while(
+          result.length>350000 &&
+          quality>=0.35
+        );
 
 
         resolve(result);
@@ -1280,7 +1329,7 @@ function resizeImage(file){
       };
 
 
-      img.src=event.target.result;
+      img.src=e.target.result;
 
     };
 
@@ -1302,23 +1351,58 @@ function resizeImage(file){
 
 
 /* =========================
-   CHOOSE IMAGE
+   CHOOSE MULTIPLE IMAGES
 ========================= */
 
-async function chooseImage(index,input){
+async function chooseImages(index,input){
 
-  const file=input.files && input.files[0];
+  const files=Array.from(input.files||[]);
 
-  if(!file){
+
+  if(!files.length){
 
     return;
 
   }
 
 
-  if(!file.type.startsWith("image/")){
+  sync();
 
-    alert("Kies een afbeelding.");
+
+  if(!data.usedPhones[index]){
+
+    data.usedPhones[index]={};
+
+  }
+
+
+  if(!Array.isArray(data.usedPhones[index].images)){
+
+    data.usedPhones[index].images=[];
+
+
+    /*
+      تحويل الصورة القديمة إلى مصفوفة
+    */
+
+    if(data.usedPhones[index].image){
+
+      data.usedPhones[index].images.push(
+        data.usedPhones[index].image
+      );
+
+    }
+
+  }
+
+
+  const current=
+    data.usedPhones[index].images;
+
+
+  if(current.length>=5){
+
+    alert("Je kunt maximaal 5 foto's per apparaat toevoegen.");
 
     input.value="";
 
@@ -1327,65 +1411,111 @@ async function chooseImage(index,input){
   }
 
 
+  const available=5-current.length;
+
+  const selected=files.slice(0,available);
+
+
   try{
 
+    $("saveMsg").innerHTML=
+      '<div class="msg">⏳ Foto\'s worden verwerkt...</div>';
+
+
+    for(const file of selected){
+
+      if(!file.type.startsWith("image/")){
+
+        continue;
+
+      }
+
+
+      const compressed=
+        await compressImage(file);
+
+
+      data.usedPhones[index].images.push(
+        compressed
+      );
+
+    }
+
+
     /*
-      نحفظ أي تعديلات مكتوبة قبل إعادة الرسم
+      الصورة الأولى تبقى في image
+      للتوافق مع used.html القديم
     */
 
-    sync();
-
-
-    $("saveMsg").innerHTML=
-      '<div class="msg">⏳ Foto wordt verwerkt...</div>';
-
-
-    const compressed=
-      await resizeImage(file);
-
-
-    data.usedPhones[index].image=compressed;
+    data.usedPhones[index].image=
+      data.usedPhones[index].images[0] || "";
 
 
     render();
 
 
     $("saveMsg").innerHTML=
-      '<div class="msg ok">📷 Foto toegevoegd. Klik daarna op "Wijzigingen opslaan".</div>';
+      '<div class="msg ok">📷 Foto\'s toegevoegd. Klik op "Wijzigingen opslaan".</div>';
 
   }catch(error){
 
     console.error(error);
 
     $("saveMsg").innerHTML=
-      '<div class="msg err">❌ De foto kon niet worden verwerkt.</div>';
+      '<div class="msg err">❌ Een of meer foto's konden niet worden verwerkt.</div>';
 
   }
+
+
+  input.value="";
 
 }
 
 
 /* =========================
-   REMOVE IMAGE
+   REMOVE ONE IMAGE
 ========================= */
 
-function removeImage(index){
+function removeImage(phoneIndex,imageIndex){
 
   sync();
 
 
-  if(data.usedPhones[index]){
+  const phone=data.usedPhones[phoneIndex];
 
-    data.usedPhones[index].image="";
+
+  if(!phone){
+
+    return;
 
   }
+
+
+  if(!Array.isArray(phone.images)){
+
+    phone.images=[];
+
+    if(phone.image){
+
+      phone.images.push(phone.image);
+
+    }
+
+  }
+
+
+  phone.images.splice(imageIndex,1);
+
+
+  phone.image=
+    phone.images[0] || "";
 
 
   render();
 
 
   $("saveMsg").innerHTML=
-    '<div class="msg ok">🗑 Foto verwijderd. Klik op "Wijzigingen opslaan" om te bevestigen.</div>';
+    '<div class="msg ok">🗑 Foto verwijderd. Klik op "Wijzigingen opslaan".</div>';
 
 }
 
@@ -1488,6 +1618,8 @@ function addUsedPhone(){
 
     image:"",
 
+    images:[],
+
     whatsapp:""
 
   });
@@ -1555,15 +1687,70 @@ async function save(){
 
 
   data.usedPhones=
-    (data.usedPhones||[]).map(p=>({
+    (data.usedPhones||[]).map(p=>{
 
-      ...p,
+      /*
+        تأكيد وجود images
+      */
 
-      whatsapp:
-        String(p.whatsapp||"")
-        .replace(/\D/g,"")
+      if(!Array.isArray(p.images)){
 
-    }));
+        p.images=[];
+
+        if(p.image){
+
+          p.images.push(p.image);
+
+        }
+
+      }
+
+
+      /*
+        maximum 5
+      */
+
+      p.images=
+        p.images.slice(0,5);
+
+
+      /*
+        أول صورة للتوافق
+      */
+
+      p.image=
+        p.images[0] || "";
+
+
+      return {
+
+        ...p,
+
+        whatsapp:
+          String(p.whatsapp||"")
+          .replace(/\D/g,"")
+
+      };
+
+    });
+
+
+  /*
+    فحص حجم البيانات قبل إرسالها
+  */
+
+  const payload=
+    JSON.stringify(data);
+
+
+  if(payload.length>1800000){
+
+    $("saveMsg").innerHTML=
+      '<div class="msg err">❌ De gegevens zijn te groot. Verwijder een paar foto\'s of gebruik minder foto\'s per apparaat.</div>';
+
+    return;
+
+  }
 
 
   try{
@@ -1580,7 +1767,7 @@ async function save(){
         "Content-Type":"application/json"
       },
 
-      body:JSON.stringify(data)
+      body:payload
 
     });
 
@@ -1601,6 +1788,7 @@ async function save(){
     }else{
 
       let message="Opslaan mislukt.";
+
 
       try{
 
