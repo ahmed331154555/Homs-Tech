@@ -133,6 +133,11 @@ button,.btn{
   color:#111827
 }
 
+.blue{
+  background:#2563eb;
+  color:#fff
+}
+
 .actions{
   display:flex;
   gap:10px;
@@ -177,13 +182,47 @@ button,.btn{
   margin-bottom:10px
 }
 
-.preview{
-  max-width:140px;
-  max-height:140px;
-  border-radius:12px;
+.photo-box{
+  margin-top:15px;
+  padding:15px;
+  background:#f8fafc;
+  border:1px dashed #cbd5e1;
+  border-radius:14px
+}
+
+.photo-preview{
+  display:block;
+  width:180px;
+  height:180px;
   object-fit:cover;
-  margin-top:10px;
-  border:1px solid #e5e7eb
+  border-radius:14px;
+  margin-top:12px;
+  border:1px solid #e5e7eb;
+  background:#eef2f7
+}
+
+.photo-empty{
+  width:180px;
+  height:180px;
+  border-radius:14px;
+  margin-top:12px;
+  background:#eef2f7;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:60px
+}
+
+.file-input{
+  background:#fff;
+  padding:10px
+}
+
+.small-note{
+  color:#6b7280;
+  font-size:13px;
+  margin-top:8px;
+  line-height:1.5
 }
 
 @media(max-width:800px){
@@ -197,6 +236,12 @@ button,.btn{
 
   header{
     padding:14px 4%
+  }
+
+  .photo-preview,
+  .photo-empty{
+    width:150px;
+    height:150px
   }
 }
 </style>
@@ -231,6 +276,7 @@ button,.btn{
 
 
 <div class="container">
+
 
   <!-- LOGIN -->
 
@@ -408,8 +454,8 @@ button,.btn{
 
       <p class="muted">
         Voeg hier gebruikte telefoons toe die je wilt verkopen.
-        Je kunt model, merk, prijs, conditie, opslag, beschrijving
-        en een foto-link invullen.
+        Je kunt model, merk, prijs, conditie, opslag, RAM,
+        beschrijving, WhatsApp en een foto toevoegen.
       </p>
 
       <div id="usedEdit"></div>
@@ -477,19 +523,25 @@ let data=null;
 const $=id=>document.getElementById(id);
 
 
-/* ESCAPE */
+/* =========================
+   ESCAPE
+========================= */
 
 function esc(v){
 
   return String(v??"")
     .replaceAll("&","&amp;")
     .replaceAll("<","&lt;")
-    .replaceAll('"',"&quot;");
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 
 }
 
 
-/* LOGIN */
+/* =========================
+   LOGIN
+========================= */
 
 async function login(){
 
@@ -543,7 +595,9 @@ async function login(){
 }
 
 
-/* LOAD */
+/* =========================
+   LOAD
+========================= */
 
 async function load(){
 
@@ -564,8 +618,6 @@ async function load(){
     data=await r.json();
 
 
-    /* Maak gebruikte apparaten aan als ze nog niet bestaan */
-
     if(!Array.isArray(data.usedPhones)){
 
       data.usedPhones=[];
@@ -573,19 +625,19 @@ async function load(){
     }
 
 
-    /* Zorg dat bestaande velden arrays zijn */
-
     if(!Array.isArray(data.services)){
 
       data.services=[];
 
     }
 
+
     if(!Array.isArray(data.phones)){
 
       data.phones=[];
 
     }
+
 
     if(!Array.isArray(data.why)){
 
@@ -623,7 +675,9 @@ async function load(){
 }
 
 
-/* RENDER */
+/* =========================
+   RENDER
+========================= */
 
 function render(){
 
@@ -632,8 +686,6 @@ function render(){
 
   $("servicesEdit").innerHTML=
     (data.services||[]).map((x,i)=>{
-
-      /* ondersteuning voor oude tekst */
 
       if(!Array.isArray(x)){
 
@@ -757,7 +809,9 @@ function render(){
     `).join("");
 
 
-  /* USED PHONES */
+  /* =========================
+     USED PHONES
+  ========================= */
 
   $("usedEdit").innerHTML=
     (data.usedPhones||[]).map((p,i)=>`
@@ -882,20 +936,6 @@ function render(){
 
           <div>
 
-            <label>Foto URL</label>
-
-            <input
-              data-u="1"
-              data-i="${i}"
-              data-k="image"
-              value="${esc(p.image)}"
-              placeholder="https://...">
-
-          </div>
-
-
-          <div>
-
             <label>WhatsApp voor dit apparaat</label>
 
             <input
@@ -910,6 +950,73 @@ function render(){
         </div>
 
 
+        <!-- PHOTO -->
+
+        <div class="photo-box">
+
+          <label>📷 Foto van het apparaat</label>
+
+          <input
+            class="file-input"
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+            onchange="chooseImage(${i},this)">
+
+          <div class="small-note">
+            Kies een foto vanaf je telefoon of computer.
+            De foto wordt automatisch kleiner gemaakt voordat
+            je opslaat.
+          </div>
+
+
+          ${
+            p.image
+            ?
+            `
+            <img
+              class="photo-preview"
+              src="${esc(p.image)}"
+              alt="Voorbeeld"
+              onerror="this.style.display='none'">
+
+            <div class="actions">
+
+              <button
+                type="button"
+                class="btn red"
+                onclick="removeImage(${i})">
+                🗑 Foto verwijderen
+              </button>
+
+            </div>
+            `
+            :
+            `
+            <div class="photo-empty">
+              📱
+            </div>
+            `
+          }
+
+        </div>
+
+
+        <!-- OLD PHOTO URL -->
+
+        <label>Foto URL (optioneel)</label>
+
+        <input
+          data-u="1"
+          data-i="${i}"
+          data-k="image"
+          value="${esc(p.image)}"
+          placeholder="https://...">
+
+        <div class="small-note">
+          Je kunt ook nog steeds een directe foto-link gebruiken.
+        </div>
+
+
         <label>Beschrijving</label>
 
         <textarea
@@ -917,19 +1024,6 @@ function render(){
           data-i="${i}"
           data-k="description"
           placeholder="Beschrijving van het gebruikte apparaat...">${esc(p.description)}</textarea>
-
-
-        ${
-          p.image
-          ?
-          `<img
-             class="preview"
-             src="${esc(p.image)}"
-             alt="Voorbeeld"
-             onerror="this.style.display='none'">`
-          :
-          ""
-        }
 
 
         <div class="actions">
@@ -1007,7 +1101,9 @@ function render(){
 }
 
 
-/* SYNC */
+/* =========================
+   SYNC
+========================= */
 
 function sync(){
 
@@ -1090,7 +1186,213 @@ function sync(){
 }
 
 
-/* SERVICE */
+/* =========================
+   IMAGE RESIZE
+========================= */
+
+function resizeImage(file){
+
+  return new Promise((resolve,reject)=>{
+
+    const reader=new FileReader();
+
+
+    reader.onload=function(event){
+
+      const img=new Image();
+
+
+      img.onload=function(){
+
+        const maxSize=900;
+
+        let width=img.width;
+
+        let height=img.height;
+
+
+        if(width>maxSize || height>maxSize){
+
+          if(width>height){
+
+            height=
+              Math.round(
+                height*(maxSize/width)
+              );
+
+            width=maxSize;
+
+          }else{
+
+            width=
+              Math.round(
+                width*(maxSize/height)
+              );
+
+            height=maxSize;
+
+          }
+
+        }
+
+
+        const canvas=document.createElement("canvas");
+
+        canvas.width=width;
+
+        canvas.height=height;
+
+
+        const ctx=canvas.getContext("2d");
+
+        ctx.drawImage(
+          img,
+          0,
+          0,
+          width,
+          height
+        );
+
+
+        /*
+          JPEG quality 0.65
+          لتصغير حجم الصورة
+        */
+
+        const result=
+          canvas.toDataURL(
+            "image/jpeg",
+            0.65
+          );
+
+
+        resolve(result);
+
+      };
+
+
+      img.onerror=function(){
+
+        reject(
+          new Error("Ongeldige afbeelding")
+        );
+
+      };
+
+
+      img.src=event.target.result;
+
+    };
+
+
+    reader.onerror=function(){
+
+      reject(
+        new Error("Foto kon niet worden gelezen")
+      );
+
+    };
+
+
+    reader.readAsDataURL(file);
+
+  });
+
+}
+
+
+/* =========================
+   CHOOSE IMAGE
+========================= */
+
+async function chooseImage(index,input){
+
+  const file=input.files && input.files[0];
+
+  if(!file){
+
+    return;
+
+  }
+
+
+  if(!file.type.startsWith("image/")){
+
+    alert("Kies een afbeelding.");
+
+    input.value="";
+
+    return;
+
+  }
+
+
+  try{
+
+    /*
+      نحفظ أي تعديلات مكتوبة قبل إعادة الرسم
+    */
+
+    sync();
+
+
+    $("saveMsg").innerHTML=
+      '<div class="msg">⏳ Foto wordt verwerkt...</div>';
+
+
+    const compressed=
+      await resizeImage(file);
+
+
+    data.usedPhones[index].image=compressed;
+
+
+    render();
+
+
+    $("saveMsg").innerHTML=
+      '<div class="msg ok">📷 Foto toegevoegd. Klik daarna op "Wijzigingen opslaan".</div>';
+
+  }catch(error){
+
+    console.error(error);
+
+    $("saveMsg").innerHTML=
+      '<div class="msg err">❌ De foto kon niet worden verwerkt.</div>';
+
+  }
+
+}
+
+
+/* =========================
+   REMOVE IMAGE
+========================= */
+
+function removeImage(index){
+
+  sync();
+
+
+  if(data.usedPhones[index]){
+
+    data.usedPhones[index].image="";
+
+  }
+
+
+  render();
+
+
+  $("saveMsg").innerHTML=
+    '<div class="msg ok">🗑 Foto verwijderd. Klik op "Wijzigingen opslaan" om te bevestigen.</div>';
+
+}
+
+
+/* =========================
+   SERVICE
+========================= */
 
 function addService(){
 
@@ -1120,7 +1422,9 @@ function delService(i){
 }
 
 
-/* PHONE */
+/* =========================
+   PHONE
+========================= */
 
 function addPhone(){
 
@@ -1158,7 +1462,9 @@ function delPhone(i){
 }
 
 
-/* USED PHONE */
+/* =========================
+   USED PHONE
+========================= */
 
 function addUsedPhone(){
 
@@ -1202,7 +1508,9 @@ function delUsedPhone(i){
 }
 
 
-/* WHY */
+/* =========================
+   WHY
+========================= */
 
 function addWhy(){
 
@@ -1232,21 +1540,19 @@ function delWhy(i){
 }
 
 
-/* SAVE */
+/* =========================
+   SAVE
+========================= */
 
 async function save(){
 
   sync();
 
 
-  /* تنظيف رقم WhatsApp */
-
   data.whatsapp=
     String(data.whatsapp||"")
     .replace(/\D/g,"");
 
-
-  /* تنظيف أرقام WhatsApp للأجهزة المستعملة */
 
   data.usedPhones=
     (data.usedPhones||[]).map(p=>({
@@ -1261,6 +1567,10 @@ async function save(){
 
 
   try{
+
+    $("saveMsg").innerHTML=
+      '<div class="msg">⏳ Opslaan...</div>';
+
 
     const r=await fetch("/api/site",{
 
@@ -1281,19 +1591,38 @@ async function save(){
 
       data=result.data||data;
 
+
       $("saveMsg").innerHTML=
         '<div class="msg ok">✅ Opgeslagen. De gegevens staan nu op de server.</div>';
+
 
       render();
 
     }else{
 
+      let message="Opslaan mislukt.";
+
+      try{
+
+        const errorData=await r.json();
+
+        if(errorData.error){
+
+          message=errorData.error;
+
+        }
+
+      }catch(e){}
+
+
       $("saveMsg").innerHTML=
-        '<div class="msg err">❌ Opslaan mislukt.</div>';
+        '<div class="msg err">❌ '+esc(message)+'</div>';
 
     }
 
   }catch(error){
+
+    console.error(error);
 
     $("saveMsg").innerHTML=
       '<div class="msg err">❌ Verbindingsfout bij opslaan.</div>';
@@ -1303,7 +1632,9 @@ async function save(){
 }
 
 
-/* LOGOUT */
+/* =========================
+   LOGOUT
+========================= */
 
 async function logout(){
 
@@ -1318,7 +1649,9 @@ async function logout(){
 }
 
 
-/* AUTO LOGIN */
+/* =========================
+   AUTO LOGIN
+========================= */
 
 fetch("/api/me")
 .then(r=>{
