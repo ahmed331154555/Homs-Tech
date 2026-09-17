@@ -9,328 +9,344 @@
 *{box-sizing:border-box;margin:0;padding:0}
 
 body{
-  font-family:Arial,Helvetica,sans-serif;
-  background:#f5f7fa;
-  color:#111827;
-  line-height:1.6
+font-family:Arial,Helvetica,sans-serif;
+background:#f5f7fa;
+color:#111827;
+line-height:1.6
 }
 
 a{text-decoration:none;color:inherit}
 
 header{
-  position:sticky;
-  top:0;
-  z-index:1000;
-  background:#111827;
-  color:white;
-  box-shadow:0 2px 10px rgba(0,0,0,.15)
+position:sticky;
+top:0;
+z-index:1000;
+background:#111827;
+color:white;
+box-shadow:0 2px 10px rgba(0,0,0,.15)
 }
 
 .nav{
-  max-width:1200px;
-  margin:auto;
-  min-height:72px;
-  padding:0 20px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:20px
+max-width:1200px;
+margin:auto;
+min-height:72px;
+padding:0 20px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:20px
 }
 
 .logo{
-  width:170px;
-  display:block
+width:170px;
+display:block
 }
 
 nav{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  flex-wrap:wrap
+display:flex;
+align-items:center;
+gap:6px;
+flex-wrap:wrap
 }
 
 nav a{
-  padding:10px 14px;
-  border-radius:10px;
-  color:#fff;
-  font-weight:600;
-  font-size:15px
+padding:10px 14px;
+border-radius:10px;
+color:#fff;
+font-weight:600;
+font-size:15px
 }
 
 nav a:hover,
 nav a.active{
-  background:#2563eb
+background:#2563eb
 }
 
 .hero{
-  background:
-    radial-gradient(circle at 75% 35%,rgba(37,99,235,.35),transparent 35%),
-    linear-gradient(135deg,#07101f,#1b2b43);
-  color:white;
-  padding:75px 20px
+background:
+radial-gradient(circle at 75% 35%,rgba(37,99,235,.35),transparent 35%),
+linear-gradient(135deg,#07101f,#1b2b43);
+color:white;
+padding:75px 20px
 }
 
 .hero-inner{
-  max-width:1200px;
-  margin:auto
+max-width:1200px;
+margin:auto
 }
 
 .hero h1{
-  font-size:48px;
-  line-height:1.15;
-  margin-bottom:20px
+font-size:48px;
+line-height:1.15;
+margin-bottom:20px
 }
 
 .hero h1 span{color:#60a5fa}
 
 .hero p{
-  color:#dbe4f0;
-  font-size:18px;
-  max-width:700px;
-  margin-bottom:25px
+color:#dbe4f0;
+font-size:18px;
+max-width:700px;
+margin-bottom:25px
 }
 
 .buttons{
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap
+display:flex;
+gap:12px;
+flex-wrap:wrap
 }
 
 .btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:13px 22px;
-  border-radius:10px;
-  font-weight:700;
-  border:2px solid transparent
+display:inline-flex;
+align-items:center;
+justify-content:center;
+padding:13px 22px;
+border-radius:10px;
+font-weight:700;
+border:2px solid transparent
 }
 
 .green{
-  background:#16c766;
-  color:white
+background:#16c766;
+color:white
 }
 
 .green:hover{background:#0eae56}
 
 .white{
-  background:white;
-  color:#2563eb
+background:white;
+color:#2563eb
 }
 
 .white:hover{background:#eff6ff}
 
 .section{
-  max-width:1200px;
-  margin:auto;
-  padding:70px 20px
+max-width:1200px;
+margin:auto;
+padding:70px 20px
 }
 
 .section-title{
-  text-align:center;
-  margin-bottom:45px
+text-align:center;
+margin-bottom:45px
 }
 
 .section-title h2{
-  font-size:34px;
-  margin-bottom:10px
+font-size:34px;
+margin-bottom:10px
 }
 
 .section-title p{
-  color:#6b7280;
-  max-width:700px;
-  margin:auto
+color:#6b7280;
+max-width:700px;
+margin:auto
 }
 
 .line{
-  width:65px;
-  height:4px;
-  background:#2563eb;
-  border-radius:10px;
-  margin:14px auto 0
+width:65px;
+height:4px;
+background:#2563eb;
+border-radius:10px;
+margin:14px auto 0
 }
 
 .devices-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:22px
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:22px
 }
 
 .device-card{
-  background:white;
-  border-radius:18px;
-  padding:28px;
-  box-shadow:0 8px 25px rgba(15,23,42,.07);
-  transition:.2s
+background:white;
+border-radius:18px;
+padding:28px;
+box-shadow:0 8px 25px rgba(15,23,42,.07);
+transition:.2s
 }
 
 .device-card:hover{
-  transform:translateY(-4px)
+transform:translateY(-4px);
+box-shadow:0 12px 30px rgba(15,23,42,.12)
 }
 
 .device-icon{
-  width:58px;
-  height:58px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:#eff6ff;
-  border-radius:15px;
-  font-size:30px;
-  margin-bottom:18px
+width:58px;
+height:58px;
+display:flex;
+align-items:center;
+justify-content:center;
+background:#eff6ff;
+border-radius:15px;
+font-size:30px;
+margin-bottom:18px
 }
 
 .device-card h3{
-  font-size:21px;
-  margin-bottom:5px
+font-size:21px;
+margin-bottom:5px
 }
 
 .brand{
-  color:#2563eb;
-  font-weight:700;
-  margin-bottom:12px
+color:#2563eb;
+font-weight:700;
+margin-bottom:12px
 }
 
 .device-card p{
-  color:#6b7280;
-  margin-bottom:6px
+color:#6b7280;
+margin-bottom:6px
 }
 
 .price{
-  margin-top:15px;
-  padding-top:15px;
-  border-top:1px solid #e5e7eb;
-  font-weight:700;
-  color:#111827
+margin-top:15px;
+padding-top:15px;
+border-top:1px solid #e5e7eb;
+font-weight:700;
+color:#111827;
+line-height:1.9
 }
 
 .empty{
-  grid-column:1/-1;
-  background:white;
-  border-radius:18px;
-  padding:40px;
-  text-align:center;
-  color:#6b7280
+grid-column:1/-1;
+background:white;
+border-radius:18px;
+padding:40px;
+text-align:center;
+color:#6b7280
 }
 
 .banner{
-  background:linear-gradient(135deg,#162438,#25364d);
-  color:white;
-  border-radius:22px;
-  padding:40px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:25px
+background:linear-gradient(135deg,#162438,#25364d);
+color:white;
+border-radius:22px;
+padding:40px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:25px
 }
 
 .banner h2{
-  font-size:30px;
-  margin-bottom:8px
+font-size:30px;
+margin-bottom:8px
 }
 
 .banner p{color:#dbe4f0}
 
 .contact{
-  background:#111827;
-  color:white;
-  border-radius:22px;
-  padding:40px;
-  text-align:center
+background:#111827;
+color:white;
+border-radius:22px;
+padding:40px;
+text-align:center
 }
 
 .contact h2{
-  font-size:30px;
-  margin-bottom:10px
+font-size:30px;
+margin-bottom:10px
 }
 
 .contact p{
-  color:#d1d5db;
-  margin-bottom:22px
+color:#d1d5db;
+margin-bottom:22px
 }
 
 footer{
-  background:#0b1422;
-  color:#cbd5e1;
-  padding:35px 20px;
-  margin-top:20px
+background:#0b1422;
+color:#cbd5e1;
+padding:35px 20px;
+margin-top:20px
 }
 
 .footer-inner{
-  max-width:1200px;
-  margin:auto;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:20px;
-  flex-wrap:wrap
+max-width:1200px;
+margin:auto;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:20px;
+flex-wrap:wrap
 }
 
 .footer-name{
-  color:white;
-  font-size:20px;
-  font-weight:800
+color:white;
+font-size:20px;
+font-weight:800
 }
 
 .footer-links{
-  display:flex;
-  gap:18px;
-  flex-wrap:wrap
+display:flex;
+gap:18px;
+flex-wrap:wrap
 }
 
 .footer-links a:hover{color:white}
 
 @media(max-width:900px){
-  .hero h1{font-size:40px}
 
-  .devices-grid{
-    grid-template-columns:1fr 1fr
-  }
+.hero h1{font-size:40px}
 
-  nav a{
-    padding:8px 9px;
-    font-size:14px
-  }
+.devices-grid{
+grid-template-columns:1fr 1fr
+}
+
+nav a{
+padding:8px 9px;
+font-size:14px
+}
+
 }
 
 @media(max-width:550px){
-  .nav{
-    flex-direction:column;
-    padding:12px 15px
-  }
 
-  nav{justify-content:center}
+.nav{
+flex-direction:column;
+padding:12px 15px
+}
 
-  .hero{
-    padding:55px 18px
-  }
+nav{
+justify-content:center
+}
 
-  .hero h1{font-size:32px}
+.hero{
+padding:55px 18px
+}
 
-  .hero p{font-size:16px}
+.hero h1{
+font-size:32px
+}
 
-  .section{
-    padding:50px 16px
-  }
+.hero p{
+font-size:16px
+}
 
-  .section-title h2{font-size:28px}
+.section{
+padding:50px 16px
+}
 
-  .devices-grid{
-    grid-template-columns:1fr
-  }
+.section-title h2{
+font-size:28px
+}
 
-  .banner{
-    padding:28px 22px;
-    flex-direction:column;
-    align-items:flex-start
-  }
+.devices-grid{
+grid-template-columns:1fr
+}
 
-  .contact{padding:30px 20px}
+.banner{
+padding:28px 22px;
+flex-direction:column;
+align-items:flex-start
+}
 
-  .footer-inner{
-    flex-direction:column;
-    text-align:center
-  }
+.contact{
+padding:30px 20px
+}
+
+.footer-inner{
+flex-direction:column;
+text-align:center
+}
+
 }
 </style>
 </head>
@@ -399,7 +415,6 @@ Bekijk de smartphones die door HOMS TECH worden ondersteund.
 <div class="line"></div>
 
 </div>
-
 
 <div id="devicesGrid" class="devices-grid"></div>
 
@@ -494,295 +509,304 @@ Telefoonreparatie aan huis
 <script>
 
 const defaultDevices = [
-  {
-    name:"iPhone 12",
-    brand:"Apple",
-    screen:"",
-    software:"",
-    hardware:"",
-    camera:""
-  },
-  {
-    name:"iPhone 13",
-    brand:"Apple",
-    screen:"",
-    software:"",
-    hardware:"",
-    camera:""
-  },
-  {
-    name:"iPhone 14",
-    brand:"Apple",
-    screen:"",
-    software:"",
-    hardware:"",
-    camera:""
-  },
-  {
-    name:"iPhone 15",
-    brand:"Apple",
-    screen:"",
-    software:"",
-    hardware:"",
-    camera:""
-  },
-  {
-    name:"iPhone 16",
-    brand:"Apple",
-    screen:"",
-    software:"",
-    hardware:"",
-    camera:""
-  },
-  {
-    name:"iPhone 17",
-    brand:"Apple",
-    screen:"",
-    software:"",
-    hardware:"",
-    camera:""
-  }
+{
+name:"iPhone 12",
+brand:"Apple",
+screen:"",
+software:"",
+hardware:"",
+camera:""
+},
+{
+name:"iPhone 13",
+brand:"Apple",
+screen:"",
+software:"",
+hardware:"",
+camera:""
+},
+{
+name:"iPhone 14",
+brand:"Apple",
+screen:"",
+software:"",
+hardware:"",
+camera:""
+},
+{
+name:"iPhone 15",
+brand:"Apple",
+screen:"",
+software:"",
+hardware:"",
+camera:""
+},
+{
+name:"iPhone 16",
+brand:"Apple",
+screen:"",
+software:"",
+hardware:"",
+camera:""
+},
+{
+name:"iPhone 17",
+brand:"Apple",
+screen:"",
+software:"",
+hardware:"",
+camera:""
+}
 ];
 
 
 function escapeHtml(value){
-  return String(value ?? "")
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
+
+return String(value ?? "")
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+
 }
 
 
 function whatsappLink(number){
 
-  let n = String(number || "").replace(/\D/g,"");
+const n = String(number || "").replace(/\D/g,"");
 
-  if(!n) return "#";
+if(!n){
+return "#";
+}
 
-  return "https://wa.me/" + n;
+return "https://wa.me/" + n;
+
 }
 
 
 function phoneLink(number){
 
-  let n = String(number || "").trim();
+const n = String(number || "").trim();
 
-  if(!n) return "#";
+if(!n){
+return "#";
+}
 
-  return "tel:" + n.replace(/[^\d+]/g,"");
+return "tel:" + n.replace(/[^\d+]/g,"");
+
+}
+
+
+function renderDevices(devices){
+
+const grid = document.getElementById("devicesGrid");
+
+if(!devices.length){
+
+grid.innerHTML = `
+<div class="empty">
+<h3>Geen apparaten beschikbaar</h3>
+<p>Neem contact met ons op voor meer informatie.</p>
+</div>
+`;
+
+return;
+
+}
+
+
+grid.innerHTML = devices.map(device => {
+
+const prices = [];
+
+if(device.screen){
+prices.push(
+"Scherm: €" + escapeHtml(device.screen)
+);
+}
+
+if(device.software){
+prices.push(
+"Software: €" + escapeHtml(device.software)
+);
+}
+
+if(device.hardware){
+prices.push(
+"Hardware: €" + escapeHtml(device.hardware)
+);
+}
+
+if(device.camera){
+prices.push(
+"Camera: €" + escapeHtml(device.camera)
+);
+}
+
+
+return `
+<div class="device-card">
+
+<div class="device-icon">
+📱
+</div>
+
+<h3>
+${escapeHtml(device.name)}
+</h3>
+
+<div class="brand">
+${escapeHtml(device.brand)}
+</div>
+
+${
+prices.length
+?
+`
+<div class="price">
+${prices.join("<br>")}
+</div>
+`
+:
+`
+<p>
+Neem contact met ons op voor de reparatieprijs.
+</p>
+`
+}
+
+</div>
+`;
+
+}).join("");
+
 }
 
 
 async function loadSite(){
 
-  try{
+try{
 
-    const response = await fetch("/api/site");
+const response = await fetch("/api/site");
 
-    if(!response.ok){
-      throw new Error("API error");
-    }
+if(!response.ok){
+throw new Error("API error");
+}
 
-    const data = await response.json();
+const data = await response.json();
 
 
-    document.querySelectorAll("[data-name]").forEach(el=>{
-      el.textContent =
-        data.businessName ||
-        data.siteName ||
-        "HOMS TECH";
-    });
+document.querySelectorAll("[data-name]").forEach(el => {
 
+el.textContent =
+data.businessName ||
+data.siteName ||
+"HOMS TECH";
 
-    document.querySelectorAll("[data-tag]").forEach(el=>{
-      el.textContent =
-        data.tagline ||
-        "Telefoonreparatie aan huis";
-    });
+});
 
 
-    document.querySelectorAll("[data-wa]").forEach(el=>{
-      el.href = whatsappLink(data.whatsapp);
-    });
+document.querySelectorAll("[data-tag]").forEach(el => {
 
+el.textContent =
+data.tagline ||
+"Telefoonreparatie aan huis";
 
-    document.querySelectorAll("[data-phone]").forEach(el=>{
-      el.href = phoneLink(data.phone);
-    });
+});
 
 
-    let devices = [];
+document.querySelectorAll("[data-wa]").forEach(el => {
 
+el.href = whatsappLink(data.whatsapp);
 
-    /*
-      Nieuwe Admin-structuur:
-      data.phones
-    */
+});
 
-    if(Array.isArray(data.phones)){
 
-      devices = data.phones.map(phone=>({
+document.querySelectorAll("[data-phone]").forEach(el => {
 
-        name:phone.name || "Smartphone",
+el.href = phoneLink(data.phone);
 
-        brand:phone.brand || "",
+});
 
-        screen:phone.screen || "",
 
-        software:phone.software || "",
+let devices = [];
 
-        hardware:phone.hardware || "",
 
-        camera:phone.camera || ""
+/*
+Nieuwe Admin-structuur:
+data.phones
+*/
 
-      }));
+if(Array.isArray(data.phones)){
 
-    }
+devices = data.phones.map(phone => ({
 
+name: phone.name || "Smartphone",
+brand: phone.brand || "",
+screen: phone.screen || "",
+software: phone.software || "",
+hardware: phone.hardware || "",
+camera: phone.camera || ""
 
-    /*
-      Ondersteuning voor oude database:
-      data.devices
-    */
+}));
 
-    else if(Array.isArray(data.devices)){
+}
 
-      devices = data.devices.map(device=>({
 
-        name:device.name || "Smartphone",
+/*
+Oude database:
+data.devices
+*/
 
-        brand:device.brand || "",
+else if(Array.isArray(data.devices)){
 
-        screen:device.price || "",
+devices = data.devices.map(device => ({
 
-        software:"",
-        hardware:"",
-        camera:""
+name: device.name || "Smartphone",
+brand: device.brand || "",
+screen: device.price || "",
+software: "",
+hardware: "",
+camera: ""
 
-      }));
+}));
 
-    }
+}
 
 
-    if(!devices.length){
-      devices = defaultDevices;
-    }
+if(!devices.length){
+devices = defaultDevices;
+}
 
 
-    const grid =
-      document.getElementById("devicesGrid");
+renderDevices(devices);
 
+}
 
-    grid.innerHTML = devices.map(device=>{
+catch(error){
 
-      const prices = [];
+console.error("HOMS TECH:", error);
 
-      if(device.screen)
-        prices.push(
-          "Scherm: €" +
-          escapeHtml(device.screen)
-        );
+document.querySelectorAll("[data-name]").forEach(el => {
+el.textContent = "HOMS TECH";
+});
 
-      if(device.software)
-        prices.push(
-          "Software: €" +
-          escapeHtml(device.software)
-        );
+document.querySelectorAll("[data-tag]").forEach(el => {
+el.textContent = "Telefoonreparatie aan huis";
+});
 
-      if(device.hardware)
-        prices.push(
-          "Hardware: €" +
-          escapeHtml(device.hardware)
-        );
+document.querySelectorAll("[data-wa]").forEach(el => {
+el.href = "#";
+});
 
-      if(device.camera)
-        prices.push(
-          "Camera: €" +
-          escapeHtml(device.camera)
-        );
+document.querySelectorAll("[data-phone]").forEach(el => {
+el.href = "#";
+});
 
+renderDevices(defaultDevices);
 
-      return `
-
-        <div class="device-card">
-
-          <div class="device-icon">
-            📱
-          </div>
-
-          <h3>
-            ${escapeHtml(device.name)}
-          </h3>
-
-          <div class="brand">
-            ${escapeHtml(device.brand)}
-          </div>
-
-          ${
-            prices.length
-            ?
-            `<div class="price">
-              ${prices.join("<br>")}
-            </div>`
-            :
-            `<p>
-              Neem contact met ons op voor de reparatieprijs.
-            </p>`
-          }
-
-        </div>
-
-      `;
-
-    }).join("");
-
-
-  }catch(error){
-
-    console.error("HOMS TECH:",error);
-
-
-    document.querySelectorAll("[data-name]").forEach(el=>{
-      el.textContent="HOMS TECH";
-    });
-
-
-    document.querySelectorAll("[data-tag]").forEach(el=>{
-      el.textContent="Telefoonreparatie aan huis";
-    });
-
-
-    const grid =
-      document.getElementById("devicesGrid");
-
-
-    grid.innerHTML = defaultDevices.map(device=>`
-
-      <div class="device-card">
-
-        <div class="device-icon">
-          📱
-        </div>
-
-        <h3>
-          ${escapeHtml(device.name)}
-        </h3>
-
-        <div class="brand">
-          ${escapeHtml(device.brand)}
-        </div>
-
-        <p>
-          Neem contact met ons op voor de reparatieprijs.
-        </p>
-
-      </div>
-
-    `).join("");
-
-  }
+}
 
 }
 
