@@ -1469,11 +1469,11 @@ function openGsmServiceEditor(category,i){
   renderGsmServices();
 }
 
-function saveGsmServiceEditor(category,i){
+async function saveGsmServiceEditor(category,i){
   gsmActiveCategory=category;
   selectedGsmServiceIndex=i;
   renderGsmServices();
-  markChanged();
+  await save();
 }
 
 function addGsmService(key){
