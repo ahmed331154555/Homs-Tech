@@ -1,259 +1,204 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="nl" dir="ltr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mijn account - HOMS TECH</title>
-  <style>
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Arial,sans-serif;background:#f5f7f8;color:#17212b}
-    header{background:#111;color:#fff;padding:18px 20px}
-    .nav{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px}
-    .logo{font-size:24px;font-weight:800}
-    nav a{color:#fff;text-decoration:none;margin-left:18px;font-size:14px}
-    nav a:hover{opacity:.8}
-    .wrap{max-width:1000px;margin:45px auto;padding:0 18px}
-    h1{margin-bottom:8px}
-    .sub{color:#66717a;margin-top:0;margin-bottom:28px}
-    .card{background:#fff;border-radius:18px;padding:28px;box-shadow:0 8px 30px rgba(0,0,0,.08)}
-    .tabs{display:flex;gap:10px;margin-bottom:24px}
-    .tab{border:0;border-radius:10px;padding:12px 20px;background:#e9eef1;cursor:pointer;font-weight:700}
-    .tab.active{background:#19b85b;color:#fff}
-    .form{display:none}
-    .form.active{display:block}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    label{display:block;font-weight:700;font-size:14px;margin-bottom:7px}
-    input{width:100%;padding:13px 14px;border:1px solid #d5dce0;border-radius:10px;font-size:15px}
-    .full{grid-column:1/-1}
-    button.primary{margin-top:20px;background:#19b85b;color:#fff;border:0;border-radius:10px;padding:13px 22px;font-size:15px;font-weight:700;cursor:pointer}
-    button.secondary{background:#e9eef1;border:0;border-radius:10px;padding:11px 18px;font-weight:700;cursor:pointer}
-    .message{display:none;padding:13px 15px;border-radius:10px;margin-bottom:18px}
-    .message.error{display:block;background:#fde8e8;color:#a51d1d}
-    .message.success{display:block;background:#e5f8eb;color:#137333}
-    #accountBox{display:none}
-    .info{background:#f7f9fa;border-radius:12px;padding:18px;margin:12px 0}
-    .info p{margin:8px 0}
-    @media(max-width:700px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.nav{flex-direction:column;align-items:flex-start}nav a{margin:0 12px 0 0}}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mijn account - HOMS TECH</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;background:#f5f7fa;color:#111827;line-height:1.6}
+a{text-decoration:none;color:inherit}
+header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.nav{max-width:1200px;margin:auto;min-height:72px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.logo{width:170px;display:block}
+nav{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+nav a{padding:10px 14px;border-radius:10px;color:#fff;font-weight:600;font-size:15px}
+nav a:hover,nav a.active{background:#2563eb}
+.section{max-width:1200px;margin:auto;padding:65px 20px}
+.card{background:#fff;border-radius:20px;padding:30px;box-shadow:0 8px 25px rgba(15,23,42,.08)}
+h1{font-size:38px;margin-bottom:10px}
+.subtitle{color:#6b7280;margin-bottom:28px}
+.tabs{display:flex;gap:8px;margin-bottom:25px}
+.tab{border:0;background:#eef2f7;padding:11px 18px;border-radius:10px;font-weight:700;cursor:pointer}
+.tab.active{background:#16c766;color:#fff}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{display:flex;flex-direction:column;gap:7px}
+.field.full{grid-column:1/-1}
+label{font-weight:700}
+input{width:100%;padding:13px 14px;border:1px solid #dbe2ea;border-radius:10px;font-size:16px}
+input:focus{outline:3px solid rgba(37,99,235,.12);border-color:#2563eb}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 20px;border:0;border-radius:10px;font-weight:800;cursor:pointer}
+.green{background:#16c766;color:#fff}.blue{background:#2563eb;color:#fff}.gray{background:#eef2f7;color:#111827}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.message{padding:12px 14px;border-radius:10px;margin-bottom:18px;display:none}
+.message.error{display:block;background:#fee2e2;color:#991b1b}
+.message.success{display:block;background:#dcfce7;color:#166534}
+.account{display:none}
+.account-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.info{background:#f8fafc;padding:18px;border-radius:12px}
+.info strong{display:block;margin-bottom:4px}
+.orders{margin-top:20px}.orders h2{margin-bottom:12px}.order-list{display:flex;flex-direction:column;gap:10px}.order-item{border:1px solid #e5e7eb;border-radius:12px;padding:14px;background:#f8fafc}.order-item-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.order-name{font-weight:900}.order-date{font-size:12px;color:#64748b}.order-status{padding:5px 9px;border-radius:999px;background:#e2e8f0;font-size:12px;font-weight:800}.order-detail{margin-top:8px;font-size:13px;color:#475569}.orders-empty{color:#64748b;padding:15px;background:#f8fafc;border-radius:10px}
+@media(max-width:650px){.nav{flex-direction:column;padding:12px 15px}.form,.account-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.section{padding:45px 16px}h1{font-size:31px}}
+</style>
 </head>
 <body>
-
 <header>
-  <div class="nav">
-    <div class="logo">HOMS TECH</div>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="devices.html">Apparaten</a>
-      <a href="prices.html">Prijzen</a>
-      <a href="repair.html">Reparaties</a>
-    </nav>
-  </div>
+<div class="nav">
+<a href="index.html"><img src="assets/homs-tech-logo.png" class="logo" alt="HOMS TECH"></a>
+<nav>
+<a href="index.html">Home</a>
+<a href="about.html">Over ons</a>
+<a href="repair.html">Reparaties</a>
+<a href="devices.html">Apparaten</a>
+<a href="prices.html">Prijzen</a>
+<a href="gsm-services.html">GSM Services</a>
+<a href="account.html" class="active">Mijn account</a>
+</nav>
+</div>
 </header>
 
-<main class="wrap">
-  <h1>Mijn account</h1>
-  <p class="sub">Maak een account aan om telefoons te bestellen en je bestellingen te bekijken.</p>
+<section class="section">
+<div class="card" id="authCard">
+<h1>Mijn account</h1>
+<p class="subtitle">Maak een account aan om eenvoudig telefoons te bestellen en uw gegevens te bewaren.</p>
 
-  <div id="message" class="message"></div>
+<div id="message" class="message"></div>
 
-  <section id="authBox" class="card">
-    <div class="tabs">
-      <button id="loginTab" class="tab active" type="button">Inloggen</button>
-      <button id="registerTab" class="tab" type="button">Account maken</button>
-    </div>
+<div class="tabs">
+<button class="tab active" id="loginTab" type="button">Inloggen</button>
+<button class="tab" id="registerTab" type="button">Account maken</button>
+</div>
 
-    <form id="loginForm" class="form active">
-      <div class="grid">
-        <div class="full">
-          <label for="loginEmail">E-mailadres</label>
-          <input id="loginEmail" type="email" autocomplete="email" required>
-        </div>
-        <div class="full">
-          <label for="loginPassword">Wachtwoord</label>
-          <input id="loginPassword" type="password" autocomplete="current-password" required>
-        </div>
-      </div>
-      <button class="primary" type="submit">Inloggen</button>
-    </form>
+<form id="loginForm">
+<div class="form">
+<div class="field full"><label for="loginEmail">E-mail</label><input id="loginEmail" type="email" required autocomplete="email"></div>
+<div class="field full"><label for="loginPassword">Wachtwoord</label><input id="loginPassword" type="password" required autocomplete="current-password"></div>
+</div>
+<div class="actions"><button class="btn green" type="submit">Inloggen</button></div>
+</form>
 
-    <form id="registerForm" class="form">
-      <div class="grid">
-        <div>
-          <label for="registerName">Naam</label>
-          <input id="registerName" type="text" autocomplete="name" required>
-        </div>
-        <div>
-          <label for="registerEmail">E-mailadres</label>
-          <input id="registerEmail" type="email" autocomplete="email" required>
-        </div>
-        <div>
-          <label for="registerPhone">Telefoon</label>
-          <input id="registerPhone" type="tel" autocomplete="tel">
-        </div>
-        <div>
-          <label for="registerAddress">Adres</label>
-          <input id="registerAddress" type="text" autocomplete="street-address">
-        </div>
-        <div class="full">
-          <label for="registerPassword">Wachtwoord (minimaal 8 tekens)</label>
-          <input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required>
-        </div>
-      </div>
-      <button class="primary" type="submit">Account maken</button>
-    </form>
-  </section>
+<form id="registerForm" style="display:none">
+<div class="form">
+<div class="field"><label for="name">Naam</label><input id="name" required autocomplete="name"></div>
+<div class="field"><label for="email">E-mail</label><input id="email" type="email" required autocomplete="email"></div>
+<div class="field"><label for="phone">Telefoon</label><input id="phone" autocomplete="tel"></div>
+<div class="field"><label for="address">Adres</label><input id="address" autocomplete="street-address"></div>
+<div class="field full"><label for="password">Wachtwoord (minimaal 8 tekens)</label><input id="password" type="password" minlength="8" required autocomplete="new-password"></div>
+</div>
+<div class="actions"><button class="btn green" type="submit">Account maken</button></div>
+</form>
+</div>
 
-  <section id="accountBox" class="card">
-    <h2>Welkom, <span id="customerName"></span>!</h2>
-    <div class="info">
-      <p><strong>E-mail:</strong> <span id="customerEmail"></span></p>
-      <p><strong>Telefoon:</strong> <span id="customerPhone"></span></p>
-      <p><strong>Adres:</strong> <span id="customerAddress"></span></p>
-    </div>
-    <a href="devices.html"><button class="primary" type="button">Telefoons bekijken</button></a>
-    <button id="logoutButton" class="secondary" type="button">Uitloggen</button>
-  </section>
-</main>
+<div class="card account" id="accountCard">
+<h1>Welkom, <span id="customerName"></span>!</h1>
+<p class="subtitle">Uw HOMS TECH-account</p>
+<div class="account-grid">
+<div class="info"><strong>E-mail</strong><span id="customerEmail"></span></div>
+<div class="info"><strong>Telefoon</strong><span id="customerPhone"></span></div>
+<div class="info"><strong>Adres</strong><span id="customerAddress"></span></div>
+</div>
+<div class="orders">
+<h2>📋 Mijn GSM-service bestellingen</h2>
+<div id="myOrders" class="order-list"><div class="orders-empty">Bestellingen laden...</div></div>
+</div>
+<div class="actions">
+<a class="btn blue" href="devices.html">📱 Bekijk telefoons</a>
+<button class="btn gray" id="logoutBtn" type="button">Uitloggen</button>
+</div>
+</div>
+</section>
 
 <script>
-  const messageBox = document.getElementById("message");
-  const authBox = document.getElementById("authBox");
-  const accountBox = document.getElementById("accountBox");
-  const loginTab = document.getElementById("loginTab");
-  const registerTab = document.getElementById("registerTab");
-  const loginForm = document.getElementById("loginForm");
-  const registerForm = document.getElementById("registerForm");
+const message=document.getElementById("message");
+const authCard=document.getElementById("authCard");
+const accountCard=document.getElementById("accountCard");
+const loginTab=document.getElementById("loginTab");
+const registerTab=document.getElementById("registerTab");
+const loginForm=document.getElementById("loginForm");
+const registerForm=document.getElementById("registerForm");
 
-  function showMessage(text, type) {
-    messageBox.textContent = text || "";
-    messageBox.className = "message" + (text ? " " + type : "");
-  }
+function showMessage(text,type="error"){
+message.textContent=text;
+message.className="message "+type;
+}
 
-  function showTab(tab) {
-    const login = tab === "login";
-    loginTab.classList.toggle("active", login);
-    registerTab.classList.toggle("active", !login);
-    loginForm.classList.toggle("active", login);
-    registerForm.classList.toggle("active", !login);
-    showMessage("", "");
-  }
+function showLogin(){
+loginTab.classList.add("active");registerTab.classList.remove("active");
+loginForm.style.display="block";registerForm.style.display="none";message.className="message";
+}
+function showRegister(){
+registerTab.classList.add("active");loginTab.classList.remove("active");
+loginForm.style.display="none";registerForm.style.display="block";message.className="message";
+}
+loginTab.onclick=showLogin;
+registerTab.onclick=showRegister;
 
-  function showCustomer(customer) {
-    document.getElementById("customerName").textContent = customer.name || "";
-    document.getElementById("customerEmail").textContent = customer.email || "";
-    document.getElementById("customerPhone").textContent = customer.phone || "-";
-    document.getElementById("customerAddress").textContent = customer.address || "-";
-    authBox.style.display = "none";
-    accountBox.style.display = "block";
-  }
+function showAccount(c){
+authCard.style.display="none";
+accountCard.style.display="block";
+document.getElementById("customerName").textContent=c.name||"";
+document.getElementById("customerEmail").textContent=c.email||"";
+document.getElementById("customerPhone").textContent=c.phone||"—";
+document.getElementById("customerAddress").textContent=c.address||"—";
+loadMyOrders();
+}
 
-  loginTab.addEventListener("click", () => showTab("login"));
-  registerTab.addEventListener("click", () => showTab("register"));
+async function api(url,options={}){
+const response=await fetch(url,{credentials:"same-origin",headers:{"Content-Type":"application/json"},...options});
+const data=await response.json().catch(()=>({}));
+if(!response.ok)throw new Error(data.error||"Er is iets misgegaan.");
+return data;
+}
 
-  loginForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    showMessage("", "");
+async function loadMyOrders(){
+const box=document.getElementById("myOrders");
+if(!box)return;
+try{
+const data=await api("/api/customer/orders");
+const orders=data.orders||[];
+if(!orders.length){box.innerHTML='<div class="orders-empty">Nog geen GSM-service bestellingen.</div>';return;}
+box.innerHTML=orders.map(order=>{
+const date=order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"";
+const price=order.price?"€ "+order.price:"Op aanvraag";
+return `<div class="order-item"><div class="order-item-head"><div><div class="order-name">#${order.id} — ${escapeHtml(order.service_name||"GSM Service")}</div><div class="order-date">${escapeHtml(date)}</div></div><span class="order-status">${escapeHtml(order.status||"Nieuw")}</span></div><div class="order-detail">Prijs: <strong>${escapeHtml(price)}</strong>${order.imei?` · IMEI: ${escapeHtml(order.imei)}`:""}</div>${order.notes?`<div class="order-detail">${escapeHtml(order.notes)}</div>`:""}</div>`;
+}).join("");
+}catch(e){box.innerHTML='<div class="orders-empty">Bestellingen konden niet worden geladen.</div>';}
+}
 
-    const email = document.getElementById("loginEmail").value.trim().toLowerCase();
-    const password = document.getElementById("loginPassword").value;
+function escapeHtml(value){return String(value??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
 
-    try {
-      const response = await fetch("/api/customer/login", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        credentials: "same-origin",
-        body: JSON.stringify({email, password})
-      });
+loginForm.addEventListener("submit",async e=>{
+e.preventDefault();
+try{
+const data=await api("/api/customer/login",{method:"POST",body:JSON.stringify({
+email:loginEmail.value,password:loginPassword.value
+})});
+showMessage("Welkom terug!","success");
+showAccount(data.customer);
+}catch(err){showMessage(err.message);}
+});
 
-      const data = await response.json().catch(() => ({}));
+registerForm.addEventListener("submit",async e=>{
+e.preventDefault();
+try{
+const data=await api("/api/customer/register",{method:"POST",body:JSON.stringify({
+name:name.value,email:email.value,phone:phone.value,address:address.value,password:password.value
+})});
+showAccount(data.customer);
+}catch(err){showMessage(err.message);}
+});
 
-      if (!response.ok) {
-        throw new Error(data.error || "Inloggen mislukt.");
-      }
+document.getElementById("logoutBtn").onclick=async()=>{
+try{await api("/api/customer/logout",{method:"POST"});}catch{}
+accountCard.style.display="none";authCard.style.display="block";showLogin();
+};
 
-      showCustomer(data.customer);
-      showMessage("Je bent succesvol ingelogd.", "success");
-    } catch (error) {
-      showMessage(error.message, "error");
-    }
-  });
-
-  registerForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    showMessage("", "");
-
-    const name = document.getElementById("registerName").value.trim();
-    const email = document.getElementById("registerEmail").value.trim().toLowerCase();
-    const phone = document.getElementById("registerPhone").value.trim();
-    const address = document.getElementById("registerAddress").value.trim();
-    const password = document.getElementById("registerPassword").value;
-
-    if (!name || !email || !password) {
-      showMessage("Vul naam, e-mailadres en wachtwoord in.", "error");
-      return;
-    }
-
-    if (password.length < 8) {
-      showMessage("Het wachtwoord moet minimaal 8 tekens bevatten.", "error");
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/customer/register", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        credentials: "same-origin",
-        body: JSON.stringify({name, email, phone, address, password})
-      });
-
-      const data = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        throw new Error(data.error || "Account aanmaken mislukt.");
-      }
-
-      showCustomer(data.customer);
-      showMessage("Account succesvol aangemaakt.", "success");
-      registerForm.reset();
-    } catch (error) {
-      showMessage(error.message, "error");
-    }
-  });
-
-  document.getElementById("logoutButton").addEventListener("click", async () => {
-    try {
-      await fetch("/api/customer/logout", {
-        method: "POST",
-        credentials: "same-origin"
-      });
-    } finally {
-      accountBox.style.display = "none";
-      authBox.style.display = "block";
-      showTab("login");
-      showMessage("Je bent uitgelogd.", "success");
-    }
-  });
-
-  async function loadCurrentCustomer() {
-    try {
-      const response = await fetch("/api/customer/me", {
-        credentials: "same-origin"
-      });
-
-      if (!response.ok) return;
-
-      const data = await response.json();
-
-      if (data.authenticated && data.customer) {
-        showCustomer(data.customer);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  loadCurrentCustomer();
+(async()=>{
+try{
+const data=await api("/api/customer/me");
+if(data.authenticated)showAccount(data.customer);
+}catch{}
+})();
 </script>
-
 </body>
 </html>
