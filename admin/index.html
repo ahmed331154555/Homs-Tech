@@ -485,36 +485,6 @@ textarea{
 .gsm-admin-tab.active{background:#2563eb;color:#fff;border-color:#2563eb}
 .gsm-service-row{display:flex;align-items:center;gap:12px;border-bottom:1px solid #e5e7eb;padding:14px 4px}
 .gsm-service-row:last-child{border-bottom:0}
-.gsm-check-row{display:flex;align-items:center;gap:9px;margin:12px 0;font-weight:700;cursor:pointer}.gsm-check-row input{width:18px;height:18px;accent-color:#16a34a}
-.gsm-group-block{
-  border:1px solid #e5eaf1;
-  border-radius:14px;
-  margin:12px 0;
-  overflow:hidden;
-  background:#fff;
-}
-.gsm-group-title{
-  padding:13px 16px;
-  font-size:15px;
-  font-weight:900;
-  color:#172033;
-  background:linear-gradient(90deg,#f0fdf4,#ffffff);
-  border-bottom:1px solid #e5eaf1;
-}
-.gsm-service-details{
-  margin-top:3px;
-  font-size:12px;
-  font-weight:500;
-  color:#718096;
-}
-.gsm-group-block .gsm-service-row{
-  padding:13px 14px;
-  margin:0;
-  border-bottom:1px solid #eef2f7;
-}
-.gsm-group-block .gsm-service-row:last-child{
-  border-bottom:0;
-}
 .gsm-service-icon{width:36px;text-align:center;font-size:22px}
 .gsm-service-name{font-weight:800;flex:1}
 .gsm-edit-btn,.gsm-delete-btn{border:0;border-radius:8px;padding:8px 11px;font-weight:700;cursor:pointer}
@@ -529,140 +499,151 @@ textarea{
 .gsm-editor .btn{margin-top:16px}
 .gsm-editor-close{position:absolute;right:14px;top:12px;border:0;background:#eef2f7;width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer}
 
-/* HOMS TECH: phone lists stay as full-width rows/cards */
-#servicesList,#phonesList,#usedPhonesList,#whyList{
-  display:grid !important;
-  grid-template-columns:1fr !important;
-  gap:18px !important;
+/* HOMS TECH — editor layout: list left, editor right */
+.editor-layout{
+  display:grid;
+  grid-template-columns:280px minmax(0,1fr);
+  gap:18px;
+  align-items:stretch;
 }
-#phonesList > .card,#usedPhonesList > .card,#servicesList > .card,#whyList > .card{
+.editor-list{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:16px;
+  padding:10px;
+  min-height:240px;
+}
+.editor-list-title{
+  font-size:13px;
+  font-weight:800;
+  color:#64748b;
+  padding:8px 10px 10px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.editor-list-item{
   width:100%;
-}
-
-
-/* ===== HOMS TECH ADMIN — SIDEBAR LAYOUT ===== */
-body{background:#f4f7fb;}
-.topbar{
-  position:fixed;
-  top:0;
-  left:0;
-  right:0;
-  height:69px;
-  z-index:100;
-}
-.admin-nav{
-  display:none;
-  position:fixed;
-  left:0;
-  top:69px;
-  bottom:0;
-  width:245px;
-  height:auto;
-  background:#111827;
-  border-right:1px solid #243044;
-  border-bottom:0;
-  box-shadow:4px 0 18px rgba(0,0,0,.08);
-  overflow-y:auto;
-  overflow-x:hidden;
-  z-index:90;
-}
-.admin-nav-inner{
-  width:100%;
-  max-width:none;
-  margin:0;
-  padding:18px 12px 24px;
-  display:flex;
-  flex-direction:column;
-  gap:7px;
-  overflow:visible;
-}
-.nav-btn{
-  width:100%;
-  min-height:46px;
-  display:flex;
-  align-items:center;
-  justify-content:flex-start;
-  gap:10px;
-  border:1px solid transparent;
+  border:0;
   background:transparent;
-  color:#d7deea;
-  padding:12px 14px;
-  border-radius:10px;
-  font-weight:700;
-  white-space:normal;
+  color:#172033;
   text-align:left;
+  padding:12px 13px;
+  border-radius:11px;
+  font-weight:700;
+  margin-bottom:5px;
   transition:.15s ease;
 }
-.nav-btn:hover{
-  background:#1b2638;
-  color:#fff;
-}
-.nav-btn.active{
+.editor-list-item:hover{background:#eef7f1}
+.editor-list-item.active{
   background:#25d366;
   color:#fff;
-  box-shadow:0 5px 14px rgba(37,211,102,.18);
 }
-#dashboard{
-  padding-top:69px;
+.editor-list-item small{
+  display:block;
+  font-weight:500;
+  opacity:.75;
+  margin-top:3px;
 }
-#dashboard .container{
-  max-width:none;
-  width:auto;
-  margin:0;
-  margin-left:245px;
-  padding:28px 30px 50px;
+.editor-panel{
+  border:1px solid #e2e8f0;
+  border-radius:16px;
+  background:#fff;
+  padding:20px;
+  min-width:0;
+  box-shadow:0 5px 20px rgba(15,23,42,.05);
 }
-.admin-page.active{display:block;}
-.section{
-  width:100%;
-  max-width:none;
-  margin-bottom:22px;
+.editor-panel .grid{
+  margin-top:4px;
+}
+.editor-panel .field:last-child{margin-bottom:0}
+.editor-empty{
+  min-height:240px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:#64748b;
+  padding:30px;
+}
+.gsm-editor-layout{
+  display:grid;
+  grid-template-columns:1fr 1.35fr;
+  gap:18px;
+}
+.gsm-editor-layout .editor-list{min-height:500px}
+.gsm-editor-layout .editor-panel{min-height:500px}
+@media(max-width:900px){
+  .editor-layout,.gsm-editor-layout{grid-template-columns:1fr}
+  .gsm-editor-layout .editor-list,.gsm-editor-layout .editor-panel{min-height:0}
 }
 
-/* Keep all editable lists stacked cleanly, one under another. */
-#servicesList,
-#phonesList,
-#usedPhonesList,
-#whyList{
-  display:flex !important;
-  flex-direction:column !important;
-  gap:18px !important;
-  width:100%;
-}
-#servicesList > .card,
-#phonesList > .card,
-#usedPhonesList > .card,
-#whyList > .card{
-  width:100%;
-  margin:0 !important;
+/* HOMS TECH — FINAL DESKTOP SIDEBAR LAYOUT */
+@media (min-width: 901px){
+  body{overflow-x:hidden}
+  .topbar{
+    position:sticky;
+    top:0;
+    min-height:68px;
+    padding:14px 24px;
+    z-index:100;
+  }
+  .admin-nav{
+    position:fixed;
+    left:0;
+    top:68px;
+    bottom:0;
+    width:235px;
+    height:auto;
+    display:none;
+    overflow-y:auto;
+    overflow-x:hidden;
+    background:#111827;
+    border:0;
+    box-shadow:none;
+    z-index:90;
+  }
+  .admin-nav-inner{
+    max-width:none;
+    margin:0;
+    padding:18px 12px 30px;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:7px;
+    overflow:visible;
+  }
+  .nav-btn{
+    width:100%;
+    text-align:left;
+    border:0;
+    background:transparent;
+    color:#e5e7eb;
+    padding:13px 16px;
+    border-radius:10px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+  .nav-btn:hover{background:#1f2937;color:#fff}
+  .nav-btn.active{background:#25d366;color:#fff}
+  #dashboard{margin-left:235px}
+  #dashboard > .container{
+    max-width:none;
+    width:100%;
+    margin:0;
+    padding:28px 28px 110px;
+  }
+  .section{width:100%;}
+  .editor-layout{grid-template-columns:280px minmax(0,1fr)}
+  .gsm-editor-layout{grid-template-columns:minmax(320px,1fr) minmax(420px,1.35fr)}
 }
 
 @media (max-width:900px){
-  .admin-nav{
-    width:205px;
-  }
-  #dashboard .container{
-    margin-left:205px;
-    padding-left:18px;
-    padding-right:18px;
-  }
+  .admin-nav{position:static;top:auto;width:100%;height:auto;}
+  .admin-nav-inner{overflow-x:auto;flex-direction:row;}
+  #dashboard{margin-left:0}
+  .container{max-width:none;margin:18px auto;padding:0 14px 90px}
 }
 
-@media (max-width:700px){
-  .topbar{height:62px;padding:12px 14px;}
-  .logo{font-size:18px;}
-  .admin-nav{
-    top:62px;
-    width:190px;
-  }
-  #dashboard{padding-top:62px;}
-  #dashboard .container{
-    margin-left:190px;
-    padding:18px 12px 35px;
-  }
-  .nav-btn{font-size:13px;padding:10px 11px;}
-  .section{padding:17px;}
-}
 </style>
 </head>
 
@@ -1033,10 +1014,10 @@ function normalizeGsmService(x){
   return {
     icon:x.icon || "🔧",
     name:x.name || "",
-    group:x.group || x.serviceGroup || "",
-    requiresUsername: x.requiresUsername === true || x.usernameRequired === true,
+    shortDescription:x.shortDescription || "",
     details:x.details || x.description || "",
-    price:x.price || ""
+    price:x.price || "",
+    active:x.active !== false
   };
 }
 
@@ -1263,93 +1244,59 @@ function renderGeneral(){
 }
 
 
+/* Editor selections */
+let selectedServiceIndex=0;
+let selectedPhoneIndex=0;
+let selectedUsedPhoneIndex=0;
+let selectedWhyIndex=0;
+let selectedGsmServiceIndex=0;
+let gsmActiveCategory="imei";
+
 /* ---------------- SERVICES ---------------- */
 
 function renderServices(){
-
   const box=document.getElementById("servicesList");
-
-  box.innerHTML="";
-
-  data.services.forEach((service,i)=>{
-
-    const emoji=service[0] || "🔧";
-    const name=service[1] || "";
-    const desc=service[2] || "";
-
-    box.innerHTML+=`
-
-      <div class="card service-card">
-
-        <div class="card-head">
-
-          <div class="card-title">
-            Dienst ${i+1}
-          </div>
-
-          <button class="btn btn-red"
-            onclick="deleteService(${i})">
-            Verwijderen
-          </button>
-
-        </div>
-
-        <div class="grid">
-
-          <div class="field">
-            <label>Icoon / emoji</label>
-            <input value="${esc(emoji)}"
-              oninput="data.services[${i}][0]=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Naam dienst</label>
-            <input value="${esc(name)}"
-              oninput="data.services[${i}][1]=this.value;markChanged()">
-          </div>
-
-          <div class="field" style="grid-column:1/-1">
-            <label>Beschrijving</label>
-            <textarea
-              oninput="data.services[${i}][2]=this.value;markChanged()">${esc(desc)}</textarea>
-          </div>
-
-        </div>
-
-      </div>
-    `;
-  });
-
+  if(!box) return;
   if(!data.services.length){
-    box.innerHTML=`
-      <div class="small">
-        Nog geen diensten toegevoegd.
-      </div>
-    `;
+    box.innerHTML=`<div class="editor-layout"><div class="editor-list"><div class="editor-list-title">Diensten</div><div class="small" style="padding:10px">Nog geen diensten toegevoegd.</div></div><div class="editor-panel editor-empty">Nog geen dienst toegevoegd.</div></div>`;
+    return;
   }
+  if(selectedServiceIndex>=data.services.length) selectedServiceIndex=data.services.length-1;
+  const service=data.services[selectedServiceIndex];
+  const list=data.services.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedServiceIndex?'active':''}" onclick="selectedServiceIndex=${i};renderServices()">🔧 ${esc(x[1]||'Nieuwe dienst')}<small>${esc(x[2]||'')}</small></button>`).join('');
+  box.innerHTML=`
+    <div class="editor-layout">
+      <div class="editor-list">
+        <div class="editor-list-title">Diensten</div>
+        ${list}
+      </div>
+      <div class="editor-panel">
+        <div class="card-head">
+          <div><div class="card-title" style="font-size:20px">🔧 ${esc(service[1]||'Nieuwe dienst')}</div><div class="small">Bewerk hier de gegevens van deze dienst.</div></div>
+          <button class="btn btn-red" onclick="deleteService(${selectedServiceIndex})">Verwijderen</button>
+        </div>
+        <div class="grid">
+          <div class="field"><label>Icoon / emoji</label><input value="${esc(service[0]||'🔧')}" oninput="data.services[${selectedServiceIndex}][0]=this.value;markChanged()"></div>
+          <div class="field"><label>Naam dienst</label><input value="${esc(service[1]||'')}" oninput="data.services[${selectedServiceIndex}][1]=this.value;markChanged();renderServices()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.services[${selectedServiceIndex}][2]=this.value;markChanged()">${esc(service[2]||'')}</textarea></div>
+        </div>
+      </div>
+    </div>`;
 }
 
 function addService(){
-
-  data.services.push([
-    "🔧",
-    "Nieuwe dienst",
-    ""
-  ]);
-
+  data.services.push(["🔧","Nieuwe dienst",""]);
+  selectedServiceIndex=data.services.length-1;
   renderServices();
   markChanged();
 }
 
 function deleteService(i){
-
   if(confirm("Deze dienst verwijderen?")){
-
     data.services.splice(i,1);
-
+    selectedServiceIndex=Math.max(0,Math.min(selectedServiceIndex,data.services.length-1));
     renderServices();
     markChanged();
-
   }
 }
 
@@ -1357,148 +1304,57 @@ function deleteService(i){
 /* ---------------- PHONES ---------------- */
 
 function renderPhones(){
-
   const box=document.getElementById("phonesList");
-
-  box.innerHTML="";
-
-  data.phones.forEach((phone,i)=>{
-
-    const images=phone.images || ["","","",""];
-
-    box.innerHTML+=`
-
-      <div class="card device-card">
-
-        <div class="card-head">
-
-          <div>
-            <div class="card-title" style="font-size:20px">
-              📱 ${esc(phone.name || "Nieuwe telefoon")}
-            </div>
-            <div class="small">Verkoopgegevens van deze telefoon.</div>
-          </div>
-
-          <button class="btn btn-red"
-            onclick="deletePhone(${i})">
-            Verwijderen
-          </button>
-
-        </div>
-
-        <div class="grid">
-
-          <div class="field">
-            <label>Model</label>
-            <input value="${esc(phone.name)}"
-              oninput="data.phones[${i}].name=this.value;markChanged();renderPhoneTitle(${i})">
-          </div>
-
-          <div class="field">
-            <label>Merk</label>
-            <input value="${esc(phone.brand)}"
-              oninput="data.phones[${i}].brand=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Verkoopprijs (€)</label>
-            <input value="${esc(phone.price)}"
-              oninput="data.phones[${i}].price=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Opslag</label>
-            <input value="${esc(phone.storage)}" placeholder="128 GB"
-              oninput="data.phones[${i}].storage=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Kleur</label>
-            <input value="${esc(phone.color)}" placeholder="Black"
-              oninput="data.phones[${i}].color=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Conditie</label>
-            <select onchange="data.phones[${i}].condition=this.value;markChanged()">
-              <option value="Nieuw" ${phone.condition==="Nieuw"?"selected":""}>Nieuw</option>
-              <option value="Als nieuw" ${phone.condition==="Als nieuw"?"selected":""}>Als nieuw</option>
-              <option value="Zeer goed" ${phone.condition==="Zeer goed"?"selected":""}>Zeer goed</option>
-              <option value="Goed" ${phone.condition==="Goed"?"selected":""}>Goed</option>
-              <option value="Gebruikt" ${phone.condition==="Gebruikt"?"selected":""}>Gebruikt</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label>Garantie</label>
-            <input value="${esc(phone.warranty)}" placeholder="12 maanden"
-              oninput="data.phones[${i}].warranty=this.value;markChanged()">
-          </div>
-
-          <div class="field" style="grid-column:1/-1">
-            <label>Beschrijving</label>
-            <textarea
-              oninput="data.phones[${i}].description=this.value;markChanged()">${esc(phone.description)}</textarea>
-          </div>
-
-        </div>
-
-        <div style="margin-top:15px">
-          <label style="font-weight:700">📷 Foto's</label>
-          <div class="images-grid">
-            ${images.map((img,j)=>`
-              <div class="image-box">
-                ${img ? `<img src="${esc(img)}" class="image-preview">` : `<div class="empty-preview">Geen foto</div>`}
-                <input type="file" accept="image/*" onchange="handlePhoneImage(event,${i},${j})">
-                ${img ? `<button class="btn btn-light" style="margin-top:7px" onclick="removePhoneImage(${i},${j})">Verwijder foto</button>` : ""}
-              </div>
-            `).join("")}
-          </div>
-          <p class="small">Maximaal 4 foto's per telefoon.</p>
-        </div>
-
-      </div>
-    `;
-  });
-
+  if(!box) return;
   if(!data.phones.length){
-    box.innerHTML=`
-      <div class="small">Nog geen telefoons toegevoegd.</div>
-    `;
+    box.innerHTML=`<div class="editor-layout"><div class="editor-list"><div class="editor-list-title">Telefoons</div><div class="small" style="padding:10px">Nog geen telefoons toegevoegd.</div></div><div class="editor-panel editor-empty">Nog geen telefoon toegevoegd.</div></div>`;
+    return;
   }
+  if(selectedPhoneIndex>=data.phones.length) selectedPhoneIndex=data.phones.length-1;
+  const phone=data.phones[selectedPhoneIndex];
+  const images=phone.images || ["","","",""];
+  const list=data.phones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">📱 ${esc(x.name||'Nieuwe telefoon')}<small>${esc(x.brand||'')}</small></button>`).join('');
+  box.innerHTML=`
+    <div class="editor-layout">
+      <div class="editor-list">
+        <div class="editor-list-title">Telefoons</div>
+        ${list}
+      </div>
+      <div class="editor-panel">
+        <div class="card-head">
+          <div><div class="card-title" style="font-size:20px">📱 ${esc(phone.name||'Nieuwe telefoon')}</div><div class="small">Beheer de gegevens van de telefoon die HOMS TECH verkoopt.</div></div>
+          <button class="btn btn-red" onclick="deletePhone(${selectedPhoneIndex})">Verwijderen</button>
+        </div>
+        <div class="grid">
+          <div class="field"><label>Model</label><input value="${esc(phone.name||'')}" oninput="data.phones[${selectedPhoneIndex}].name=this.value;markChanged();renderPhones()"></div>
+          <div class="field"><label>Merk</label><input value="${esc(phone.brand||'')}" oninput="data.phones[${selectedPhoneIndex}].brand=this.value;markChanged()"></div>
+          <div class="field"><label>Verkoopprijs (€)</label><input value="${esc(phone.price||'')}" oninput="data.phones[${selectedPhoneIndex}].price=this.value;markChanged()"></div>
+          <div class="field"><label>Opslag</label><input value="${esc(phone.storage||'')}" placeholder="128 GB" oninput="data.phones[${selectedPhoneIndex}].storage=this.value;markChanged()"></div>
+          <div class="field"><label>Kleur</label><input value="${esc(phone.color||'')}" placeholder="Black" oninput="data.phones[${selectedPhoneIndex}].color=this.value;markChanged()"></div>
+          <div class="field"><label>Conditie</label><select onchange="data.phones[${selectedPhoneIndex}].condition=this.value;markChanged()"><option value="Nieuw" ${phone.condition==="Nieuw"?"selected":""}>Nieuw</option><option value="Als nieuw" ${phone.condition==="Als nieuw"?"selected":""}>Als nieuw</option><option value="Zeer goed" ${phone.condition==="Zeer goed"?"selected":""}>Zeer goed</option><option value="Goed" ${phone.condition==="Goed"?"selected":""}>Goed</option><option value="Gebruikt" ${phone.condition==="Gebruikt"?"selected":""}>Gebruikt</option></select></div>
+          <div class="field"><label>Garantie</label><input value="${esc(phone.warranty||'')}" placeholder="12 maanden" oninput="data.phones[${selectedPhoneIndex}].warranty=this.value;markChanged()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.phones[${selectedPhoneIndex}].description=this.value;markChanged()">${esc(phone.description||'')}</textarea></div>
+        </div>
+        <div style="margin-top:15px"><label style="font-weight:700">📷 Foto's</label><div class="images-grid">${images.map((img,j)=>`<div class="image-box">${img?`<img src="${esc(img)}" class="image-preview">`:`<div class="empty-preview">Geen foto</div>`}<input type="file" accept="image/*" onchange="handlePhoneImage(event,${selectedPhoneIndex},${j})">${img?`<button class="btn btn-light" style="margin-top:7px" onclick="removePhoneImage(${selectedPhoneIndex},${j})">Verwijder foto</button>`:""}</div>`).join('')}</div><p class="small">Maximaal 4 foto's per telefoon.</p></div>
+      </div>
+    </div>`;
 }
 
-function renderPhoneTitle(i){
-  renderPhones();
-}
+function renderPhoneTitle(i){ renderPhones(); }
 
 function addPhone(){
-
-  data.phones.push({
-    name:"Nieuwe iPhone",
-    brand:"Apple",
-    price:"",
-    storage:"128 GB",
-    color:"",
-    condition:"Nieuw",
-    warranty:"",
-    description:"",
-    images:["","","",""]
-  });
-
+  data.phones.push({name:"Nieuwe iPhone",brand:"Apple",price:"",storage:"128 GB",color:"",condition:"Nieuw",warranty:"",description:"",images:["","","",""]});
+  selectedPhoneIndex=data.phones.length-1;
   renderPhones();
   markChanged();
 }
 
 function deletePhone(i){
-
   if(confirm("Deze telefoon verwijderen?")){
-
     data.phones.splice(i,1);
-
+    selectedPhoneIndex=Math.max(0,Math.min(selectedPhoneIndex,data.phones.length-1));
     renderPhones();
     markChanged();
-
   }
 }
 
@@ -1506,291 +1362,50 @@ function deletePhone(i){
 /* ---------------- USED PHONES ---------------- */
 
 function renderUsedPhones(){
-
   const box=document.getElementById("usedPhonesList");
-
-  box.innerHTML="";
-
-  data.usedPhones.forEach((phone,i)=>{
-
-    const images=phone.images || ["","","",""];
-
-    box.innerHTML+=`
-
-      <div class="card used-card">
-
-        <div class="card-head">
-
-          <div class="card-title">
-            ♻️ ${esc(phone.name || "Nieuwe gebruikte telefoon")}
-          </div>
-
-          <button class="btn btn-red"
-            onclick="deleteUsedPhone(${i})">
-            Verwijderen
-          </button>
-
-        </div>
-
-        <div class="grid">
-
-          <div class="field">
-            <label>Model</label>
-            <input value="${esc(phone.name)}"
-              oninput="data.usedPhones[${i}].name=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Merk</label>
-            <input value="${esc(phone.brand)}"
-              oninput="data.usedPhones[${i}].brand=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Prijs (€)</label>
-            <input value="${esc(phone.price)}"
-              oninput="data.usedPhones[${i}].price=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Conditie</label>
-
-            <select
-              onchange="data.usedPhones[${i}].condition=this.value;markChanged()">
-
-              <option ${phone.condition==="Als nieuw"?"selected":""}>
-                Als nieuw
-              </option>
-
-              <option ${phone.condition==="Zeer goed"?"selected":""}>
-                Zeer goed
-              </option>
-
-              <option ${phone.condition==="Goed"?"selected":""}>
-                Goed
-              </option>
-
-              <option ${phone.condition==="Gebruikt"?"selected":""}>
-                Gebruikt
-              </option>
-
-            </select>
-          </div>
-
-          <div class="field">
-            <label>Opslag</label>
-            <input value="${esc(phone.storage)}"
-              oninput="data.usedPhones[${i}].storage=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>RAM</label>
-            <input value="${esc(phone.ram)}"
-              oninput="data.usedPhones[${i}].ram=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>WhatsApp</label>
-            <input value="${esc(phone.whatsapp)}"
-              oninput="data.usedPhones[${i}].whatsapp=this.value;markChanged()">
-          </div>
-
-          <div class="field" style="grid-column:1/-1">
-            <label>Beschrijving</label>
-
-            <textarea
-              oninput="data.usedPhones[${i}].description=this.value;markChanged()">${esc(phone.description)}</textarea>
-          </div>
-
-        </div>
-
-        <div style="margin-top:15px">
-
-          <label style="font-weight:700">
-            📷 Foto's
-          </label>
-
-          <div class="images-grid">
-
-            ${images.map((img,j)=>`
-
-              <div class="image-box">
-
-                ${
-                  img
-                  ?
-                  `<img src="${esc(img)}" class="image-preview">`
-                  :
-                  `<div class="empty-preview">Geen foto</div>`
-                }
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  onchange="handleImage(event,${i},${j})">
-
-                ${
-                  img
-                  ?
-                  `<button class="btn btn-light"
-                    style="margin-top:7px"
-                    onclick="removeImage(${i},${j})">
-                    Verwijder foto
-                  </button>`
-                  :
-                  ""
-                }
-
-              </div>
-
-            `).join("")}
-
-          </div>
-
-          <p class="small">
-            Je kunt maximaal 4 foto's per telefoon toevoegen.
-          </p>
-
-        </div>
-
-      </div>
-    `;
-  });
-
+  if(!box) return;
   if(!data.usedPhones.length){
-    box.innerHTML=`
-      <div class="small">
-        Nog geen gebruikte telefoons toegevoegd.
-      </div>
-    `;
+    box.innerHTML=`<div class="editor-layout"><div class="editor-list"><div class="editor-list-title">Telefoons</div><div class="small" style="padding:10px">Nog geen gebruikte telefoons toegevoegd.</div></div><div class="editor-panel editor-empty">Nog geen telefoon toegevoegd.</div></div>`;
+    return;
   }
+  if(selectedUsedPhoneIndex>=data.usedPhones.length) selectedUsedPhoneIndex=data.usedPhones.length-1;
+  const phone=data.usedPhones[selectedUsedPhoneIndex];
+  const images=phone.images || ["","","",""];
+  const list=data.usedPhones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedUsedPhoneIndex?'active':''}" onclick="selectedUsedPhoneIndex=${i};renderUsedPhones()">♻️ ${esc(x.name||'Nieuwe gebruikte telefoon')}<small>${esc(x.brand||'')}</small></button>`).join('');
+  box.innerHTML=`
+    <div class="editor-layout">
+      <div class="editor-list"><div class="editor-list-title">Telefoons</div>${list}</div>
+      <div class="editor-panel">
+        <div class="card-head"><div><div class="card-title" style="font-size:20px">♻️ ${esc(phone.name||'Nieuwe gebruikte telefoon')}</div><div class="small">Bewerk hier de gegevens van deze telefoon.</div></div><button class="btn btn-red" onclick="deleteUsedPhone(${selectedUsedPhoneIndex})">Verwijderen</button></div>
+        <div class="grid">
+          <div class="field"><label>Model</label><input value="${esc(phone.name||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].name=this.value;markChanged();renderUsedPhones()"></div>
+          <div class="field"><label>Merk</label><input value="${esc(phone.brand||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].brand=this.value;markChanged()"></div>
+          <div class="field"><label>Prijs (€)</label><input value="${esc(phone.price||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].price=this.value;markChanged()"></div>
+          <div class="field"><label>Conditie</label><select onchange="data.usedPhones[${selectedUsedPhoneIndex}].condition=this.value;markChanged()"><option ${phone.condition==="Als nieuw"?"selected":""}>Als nieuw</option><option ${phone.condition==="Zeer goed"?"selected":""}>Zeer goed</option><option ${phone.condition==="Goed"?"selected":""}>Goed</option><option ${phone.condition==="Gebruikt"?"selected":""}>Gebruikt</option></select></div>
+          <div class="field"><label>Opslag</label><input value="${esc(phone.storage||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].storage=this.value;markChanged()"></div>
+          <div class="field"><label>RAM</label><input value="${esc(phone.ram||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].ram=this.value;markChanged()"></div>
+          <div class="field"><label>WhatsApp</label><input value="${esc(phone.whatsapp||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].whatsapp=this.value;markChanged()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.usedPhones[${selectedUsedPhoneIndex}].description=this.value;markChanged()">${esc(phone.description||'')}</textarea></div>
+        </div>
+        <div style="margin-top:15px"><label style="font-weight:700">📷 Foto's</label><div class="images-grid">${images.map((img,j)=>`<div class="image-box">${img?`<img src="${esc(img)}" class="image-preview">`:`<div class="empty-preview">Geen foto</div>`}<input type="file" accept="image/*" onchange="handleImage(event,${selectedUsedPhoneIndex},${j})">${img?`<button class="btn btn-light" style="margin-top:7px" onclick="removeImage(${selectedUsedPhoneIndex},${j})">Verwijder foto</button>`:""}</div>`).join('')}</div><p class="small">Je kunt maximaal 4 foto's per telefoon toevoegen.</p></div>
+      </div>
+    </div>`;
 }
 
 function addUsedPhone(){
-
-  data.usedPhones.push({
-
-    name:"iPhone 13",
-    brand:"Apple",
-    price:"",
-    condition:"Goed",
-    storage:"128 GB",
-    ram:"",
-    whatsapp:"",
-    description:"",
-    images:["","","",""]
-
-  });
-
+  data.usedPhones.push({name:"iPhone 13",brand:"Apple",price:"",condition:"Goed",storage:"128 GB",ram:"",whatsapp:"",description:"",images:["","","",""]});
+  selectedUsedPhoneIndex=data.usedPhones.length-1;
   renderUsedPhones();
   markChanged();
 }
 
 function deleteUsedPhone(i){
-
   if(confirm("Deze gebruikte telefoon verwijderen?")){
-
     data.usedPhones.splice(i,1);
-
+    selectedUsedPhoneIndex=Math.max(0,Math.min(selectedUsedPhoneIndex,data.usedPhones.length-1));
     renderUsedPhones();
     markChanged();
-
   }
-}
-
-
-/* ---------------- IMAGE ---------------- */
-
-function handlePhoneImage(event,i,j){
-  const file=event.target.files[0];
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=()=>resizeImage(reader.result,1200,.8).then(result=>{
-    data.phones[i].images[j]=result;
-    renderPhones();
-    markChanged();
-  });
-  reader.readAsDataURL(file);
-}
-
-function removePhoneImage(i,j){
-  data.phones[i].images[j]="";
-  renderPhones();
-  markChanged();
-}
-
-function handleImage(event,phoneIndex,imageIndex){
-
-  const file=event.target.files[0];
-
-  if(!file) return;
-
-  const reader=new FileReader();
-
-  reader.onload=()=>{
-
-    resizeImage(reader.result,1200,0.8).then(result=>{
-
-      data.usedPhones[phoneIndex].images[imageIndex]=result;
-
-      renderUsedPhones();
-      markChanged();
-
-    });
-
-  };
-
-  reader.readAsDataURL(file);
-}
-
-function resizeImage(src,maxSize,quality){
-
-  return new Promise(resolve=>{
-
-    const img=new Image();
-
-    img.onload=()=>{
-
-      let width=img.width;
-      let height=img.height;
-
-      if(width>maxSize || height>maxSize){
-
-        const ratio=Math.min(
-          maxSize/width,
-          maxSize/height
-        );
-
-        width=Math.round(width*ratio);
-        height=Math.round(height*ratio);
-      }
-
-      const canvas=document.createElement("canvas");
-
-      canvas.width=width;
-      canvas.height=height;
-
-      const ctx=canvas.getContext("2d");
-
-      ctx.drawImage(img,0,0,width,height);
-
-      resolve(
-        canvas.toDataURL("image/jpeg",quality)
-      );
-
-    };
-
-    img.src=src;
-
-  });
-}
-
-function removeImage(i,j){
-
-  data.usedPhones[i].images[j]="";
-
-  renderUsedPhones();
-  markChanged();
 }
 
 
@@ -1807,130 +1422,68 @@ const gsmServiceCategories=[
 function renderGsmServices(){
   const box=document.getElementById("gsmServicesList");
   if(!box) return;
-
-  const activeKey=window.gsmActiveCategory || "imei";
-
-  let tabs=gsmServiceCategories.map(category=>`
-    <button type="button"
-      class="gsm-admin-tab ${category[0]===activeKey?"active":""}"
-      onclick="gsmActiveCategory='${category[0]}';renderGsmServices()">
-      ${category[1]}
-    </button>
-  `).join("");
-
+  const activeKey=gsmActiveCategory || "imei";
   const category=gsmServiceCategories.find(x=>x[0]===activeKey) || gsmServiceCategories[0];
   const list=data.gsmServices[category[0]] || [];
+  if(selectedGsmServiceIndex>=list.length) selectedGsmServiceIndex=Math.max(0,list.length-1);
 
-  let content=`
-    <div class="gsm-admin-tabs">${tabs}</div>
-    <div class="card">
-      <div class="card-head">
-        <div class="card-title">${category[1]}</div>
-        <button class="btn btn-green" onclick="addGsmService('${category[0]}')">+ Toevoegen</button>
-      </div>
-  `;
+  const tabs=gsmServiceCategories.map(c=>`<button type="button" class="gsm-admin-tab ${c[0]===activeKey?"active":""}" onclick="gsmActiveCategory='${c[0]}';selectedGsmServiceIndex=0;renderGsmServices()">${c[1]}</button>`).join('');
+  const rows=list.length ? list.map((service,i)=>`<button type="button" class="editor-list-item ${i===selectedGsmServiceIndex?'active':''}" onclick="selectedGsmServiceIndex=${i};renderGsmServices()">${esc(service.icon||'🔧')} ${esc(service.name||'Nieuwe GSM Service')}<small>${service.price?('€ '+esc(service.price)):'Op aanvraag'}</small></button>`).join('') : '<div class="small" style="padding:10px">Nog geen services in deze categorie.</div>';
+  const service=list[selectedGsmServiceIndex];
 
-  if(!list.length){
-    content+=`<div class="small">Nog geen services in deze categorie.</div>`;
+  let editor='';
+  if(service){
+    editor=`
+      <div class="editor-panel">
+        <div class="card-head">
+          <div><div class="card-title" style="font-size:20px">🛠️ Service bewerken</div><div class="small">Vul de servicegegevens in en bewaar ze samen met de websitegegevens.</div></div>
+          <button class="btn btn-red" onclick="deleteGsmService('${category[0]}',${selectedGsmServiceIndex})">Verwijderen</button>
+        </div>
+        <div class="grid">
+          <div class="field"><label>Groep</label><input value="${esc(category[1].replace(/^[^ ]+ /,''))}" readonly></div>
+          <div class="field"><label>Status</label><select onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].active=this.value==='Actief';markChanged()"><option value="Actief" ${service.active!==false?'selected':''}>Actief</option><option value="Inactief" ${service.active===false?'selected':''}>Inactief</option></select></div>
+          <div class="field"><label>Naam service</label><input value="${esc(service.name||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].name=this.value;markChanged();renderGsmServices()"></div>
+          <div class="field"><label>Prijs (€)</label><input value="${esc(service.price||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].price=this.value;markChanged()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Korte beschrijving</label><input value="${esc(service.shortDescription||'')}" placeholder="Bijv. Xiaomi / Redmi / Poco" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].shortDescription=this.value;markChanged()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Volledige beschrijving</label><textarea oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].details=this.value;markChanged()">${esc(service.details||'')}</textarea></div>
+          <div class="field"><label>Service icon</label><input value="${esc(service.icon||'🔧')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].icon=this.value;markChanged();renderGsmServices()"></div>
+        </div>
+        <div class="actions" style="margin-top:8px"><button type="button" class="btn btn-green" onclick="saveGsmServiceEditor('${category[0]}',${selectedGsmServiceIndex})">Opslaan</button></div>
+      </div>`;
   }else{
-    const groups={};
-    list.forEach((service,i)=>{
-      const group=String(service.group || "Algemeen").trim() || "Algemeen";
-      if(!groups[group]) groups[group]=[];
-      groups[group].push({service,i});
-    });
-
-    Object.keys(groups).forEach(groupName=>{
-      content+=`
-        <div class="gsm-group-block">
-          <div class="gsm-group-title">${esc(groupName)}</div>
-      `;
-
-      groups[groupName].forEach(({service,i})=>{
-        content+=`
-          <div class="gsm-service-row">
-            <div class="gsm-service-icon">${esc(service.icon||"🔧")}</div>
-            <div class="gsm-service-name">
-              <div>${esc(service.name||"Nieuwe GSM Service")}</div>
-              ${service.details ? `<div class="gsm-service-details">${esc(service.details)}</div>` : ""}
-            </div>
-            <button type="button" class="gsm-edit-btn" onclick="openGsmServiceEditor('${category[0]}',${i})">Bewerken</button>
-            <button type="button" class="gsm-delete-btn" onclick="deleteGsmService('${category[0]}',${i})">Verwijderen</button>
-          </div>
-        `;
-      });
-
-      content+=`</div>`;
-    });
+    editor='<div class="editor-panel editor-empty">Kies links een service of klik op + Nieuwe service.</div>';
   }
 
-  content+=`</div>`;
-  box.innerHTML=content;
+  box.innerHTML=`<div class="gsm-admin-tabs">${tabs}</div><div class="gsm-editor-layout"><div class="editor-list"><div class="card-head" style="margin-bottom:8px"><div class="editor-list-title" style="padding:0">${esc(category[1])}</div><button class="btn btn-green" type="button" onclick="addGsmService('${category[0]}')">+ Nieuwe service</button></div>${rows}</div>${editor}</div>`;
 }
 
 function openGsmServiceEditor(category,i){
-  const service=data.gsmServices[category][i];
-  const old=document.getElementById("gsmServiceEditor");
-  if(old) old.remove();
-
-  const editor=document.createElement("div");
-  editor.id="gsmServiceEditor";
-  editor.className="gsm-editor-overlay";
-  editor.innerHTML=`
-    <div class="gsm-editor">
-      <button type="button" class="gsm-editor-close" onclick="document.getElementById('gsmServiceEditor').remove()">×</button>
-      <h3>Service bewerken</h3>
-      <label>Naam service</label>
-      <input id="gsmEditName" value="${esc(service.name)}">
-      <label>Groep / bestandsnaam</label>
-      <input id="gsmEditGroup" value="${esc(service.group||"")}" placeholder="Bijv. IPRO RAMDISK A12/A13">
-      <label class="gsm-check-row"><input id="gsmEditRequiresUsername" type="checkbox" ${service.requiresUsername===true?"checked":""}> Deze service vereist gebruikersnaam</label>
-      <label>Icoon / emoji</label>
-      <input id="gsmEditIcon" value="${esc(service.icon||"🔧")}">
-      <label>Prijs (€)</label>
-      <input id="gsmEditPrice" value="${esc(service.price)}">
-      <label>Details</label>
-      <textarea id="gsmEditDetails">${esc(service.details)}</textarea>
-      <button type="button" class="btn btn-green" onclick="saveGsmServiceEditor('${category}',${i})">Opslaan</button>
-    </div>
-  `;
-  document.body.appendChild(editor);
+  gsmActiveCategory=category;
+  selectedGsmServiceIndex=i;
+  renderGsmServices();
 }
 
 function saveGsmServiceEditor(category,i){
-  const oldService=data.gsmServices[category][i] || {};
-  data.gsmServices[category][i]={
-    ...oldService,
-    icon:document.getElementById("gsmEditIcon").value,
-    name:document.getElementById("gsmEditName").value,
-    group:document.getElementById("gsmEditGroup").value.trim(),
-    requiresUsername:document.getElementById("gsmEditRequiresUsername").checked,
-    price:document.getElementById("gsmEditPrice").value,
-    details:document.getElementById("gsmEditDetails").value
-  };
-  document.getElementById("gsmServiceEditor").remove();
+  gsmActiveCategory=category;
+  selectedGsmServiceIndex=i;
   renderGsmServices();
   markChanged();
 }
 
-
 function addGsmService(key){
-  data.gsmServices[key].push({
-    icon:"🔧",
-    name:"Nieuwe service",
-    group:"",
-    requiresUsername:false,
-    details:"",
-    price:""
-  });
+  if(!data.gsmServices[key]) data.gsmServices[key]=[];
+  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",shortDescription:"",details:"",price:"",active:true});
+  gsmActiveCategory=key;
+  selectedGsmServiceIndex=data.gsmServices[key].length-1;
   renderGsmServices();
   markChanged();
-  openGsmServiceEditor(key,data.gsmServices[key].length-1);
 }
 
 function deleteGsmService(key,i){
   if(confirm("Deze GSM-service verwijderen?")){
     data.gsmServices[key].splice(i,1);
+    gsmActiveCategory=key;
+    selectedGsmServiceIndex=Math.max(0,Math.min(selectedGsmServiceIndex,data.gsmServices[key].length-1));
     renderGsmServices();
     markChanged();
   }
@@ -1974,7 +1527,6 @@ async function loadOrders(){
             <div class="order-info"><strong>Klant</strong>${esc(order.name||"-")}</div>
             <div class="order-info"><strong>E-mail</strong>${esc(order.email||"-")}</div>
             <div class="order-info"><strong>Telefoon</strong>${esc(order.phone||"-")}</div>
-            <div class="order-info"><strong>Gebruikersnaam</strong>${esc(order.username||"-")}</div>
             <div class="order-info"><strong>Prijs</strong>${esc(price)}</div>
             <div class="order-info"><strong>IMEI / Serienummer</strong>${esc(order.imei||"-")}</div>
             <div class="order-info"><strong>Categorie</strong>${esc(order.service_category||"-")}</div>
@@ -2049,86 +1601,42 @@ async function loadCustomers(){
 /* ---------------- WHY ---------------- */
 
 function renderWhy(){
-
   const box=document.getElementById("whyList");
-
-  box.innerHTML="";
-
-  data.why.forEach((item,i)=>{
-
-    box.innerHTML+=`
-
-      <div class="card why-card">
-
-        <div class="card-head">
-
-          <div class="card-title">
-            Voordeel ${i+1}
-          </div>
-
-          <button class="btn btn-red"
-            onclick="deleteWhy(${i})">
-            Verwijderen
-          </button>
-
-        </div>
-
-        <div class="grid">
-
-          <div class="field">
-            <label>Icoon / emoji</label>
-            <input value="${esc(item[0])}"
-              oninput="data.why[${i}][0]=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Titel</label>
-            <input value="${esc(item[1])}"
-              oninput="data.why[${i}][1]=this.value;markChanged()">
-          </div>
-
-          <div class="field" style="grid-column:1/-1">
-            <label>Beschrijving</label>
-            <textarea
-              oninput="data.why[${i}][2]=this.value;markChanged()">${esc(item[2])}</textarea>
-          </div>
-
-        </div>
-
-      </div>
-    `;
-  });
-
+  if(!box) return;
   if(!data.why.length){
-    box.innerHTML=`
-      <div class="small">
-        Nog geen voordelen toegevoegd.
-      </div>
-    `;
+    box.innerHTML=`<div class="editor-layout"><div class="editor-list"><div class="editor-list-title">Voordelen</div><div class="small" style="padding:10px">Nog geen voordelen toegevoegd.</div></div><div class="editor-panel editor-empty">Nog geen voordeel toegevoegd.</div></div>`;
+    return;
   }
+  if(selectedWhyIndex>=data.why.length) selectedWhyIndex=data.why.length-1;
+  const item=data.why[selectedWhyIndex];
+  const list=data.why.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedWhyIndex?'active':''}" onclick="selectedWhyIndex=${i};renderWhy()">${esc(x[0]||'⭐')} ${esc(x[1]||'Nieuw voordeel')}<small>${esc(x[2]||'')}</small></button>`).join('');
+  box.innerHTML=`
+    <div class="editor-layout">
+      <div class="editor-list"><div class="editor-list-title">Waarom HOMS TECH</div>${list}</div>
+      <div class="editor-panel">
+        <div class="card-head"><div><div class="card-title" style="font-size:20px">⭐ ${esc(item[1]||'Nieuw voordeel')}</div><div class="small">Bewerk hier het voordeel.</div></div><button class="btn btn-red" onclick="deleteWhy(${selectedWhyIndex})">Verwijderen</button></div>
+        <div class="grid">
+          <div class="field"><label>Icoon / emoji</label><input value="${esc(item[0]||'⭐')}" oninput="data.why[${selectedWhyIndex}][0]=this.value;markChanged()"></div>
+          <div class="field"><label>Titel</label><input value="${esc(item[1]||'')}" oninput="data.why[${selectedWhyIndex}][1]=this.value;markChanged();renderWhy()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.why[${selectedWhyIndex}][2]=this.value;markChanged()">${esc(item[2]||'')}</textarea></div>
+        </div>
+      </div>
+    </div>`;
 }
 
 function addWhy(){
-
-  data.why.push([
-    "⭐",
-    "Nieuw voordeel",
-    ""
-  ]);
-
+  data.why.push(["⭐","Nieuw voordeel",""]);
+  selectedWhyIndex=data.why.length-1;
   renderWhy();
   markChanged();
 }
 
 function deleteWhy(i){
-
   if(confirm("Dit voordeel verwijderen?")){
-
     data.why.splice(i,1);
-
+    selectedWhyIndex=Math.max(0,Math.min(selectedWhyIndex,data.why.length-1));
     renderWhy();
     markChanged();
-
   }
 }
 
