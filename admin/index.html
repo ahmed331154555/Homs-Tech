@@ -483,6 +483,16 @@ textarea{
 .gsm-editor textarea{min-height:120px;resize:vertical}
 .gsm-editor .btn{margin-top:16px}
 .gsm-editor-close{position:absolute;right:14px;top:12px;border:0;background:#eef2f7;width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer}
+
+/* HOMS TECH: phone lists stay as full-width rows/cards */
+#servicesList,#phonesList,#usedPhonesList,#whyList{
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:18px !important;
+}
+#phonesList > .card,#usedPhonesList > .card,#servicesList > .card,#whyList > .card{
+  width:100%;
+}
 </style>
 </head>
 
@@ -1552,23 +1562,23 @@ function renderGsmServices(){
 
   const activeKey=window.gsmActiveCategory || "imei";
 
-  let tabs=gsmCategories.map(category=>`
+  let tabs=gsmServiceCategories.map(category=>`
     <button type="button"
-      class="gsm-admin-tab ${category.key===activeKey?"active":""}"
-      onclick="gsmActiveCategory='${category.key}';renderGsmServices()">
-      ${category.label}
+      class="gsm-admin-tab ${category[0]===activeKey?"active":""}"
+      onclick="gsmActiveCategory='${category[0]}';renderGsmServices()">
+      ${category[1]}
     </button>
   `).join("");
 
-  const category=gsmCategories.find(x=>x.key===activeKey) || gsmCategories[0];
-  const list=data.gsmServices[category.key] || [];
+  const category=gsmServiceCategories.find(x=>x[0]===activeKey) || gsmServiceCategories[0];
+  const list=data.gsmServices[category[0]] || [];
 
   let content=`
     <div class="gsm-admin-tabs">${tabs}</div>
     <div class="card">
       <div class="card-head">
-        <div class="card-title">${category.label}</div>
-        <button class="btn btn-green" onclick="addGsmService('${category.key}')">+ Toevoegen</button>
+        <div class="card-title">${category[1]}</div>
+        <button class="btn btn-green" onclick="addGsmService('${category[0]}')">+ Toevoegen</button>
       </div>
   `;
 
@@ -1580,8 +1590,8 @@ function renderGsmServices(){
         <div class="gsm-service-row">
           <div class="gsm-service-icon">${esc(service.icon||"🔧")}</div>
           <div class="gsm-service-name">${esc(service.name||"Nieuwe GSM Service")}</div>
-          <button type="button" class="gsm-edit-btn" onclick="openGsmServiceEditor('${category.key}',${i})">Bewerken</button>
-          <button type="button" class="gsm-delete-btn" onclick="deleteGsmService('${category.key}',${i})">Verwijderen</button>
+          <button type="button" class="gsm-edit-btn" onclick="openGsmServiceEditor('${category[0]}',${i})">Bewerken</button>
+          <button type="button" class="gsm-delete-btn" onclick="deleteGsmService('${category[0]}',${i})">Verwijderen</button>
         </div>
       `;
     });
