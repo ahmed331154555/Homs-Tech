@@ -246,7 +246,7 @@ textarea{
 #usedPhonesList,
 #whyList{
   display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-columns:1fr;
   gap:18px;
 }
 
@@ -503,6 +503,7 @@ textarea{
     <button class="nav-btn" data-page="phones" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
     <button class="nav-btn" data-page="used" onclick="showPage('used')">♻️ Gebruikte telefoons</button>
     <button class="nav-btn" data-page="why" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
+    <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
     <button class="nav-btn" data-page="gsm" onclick="showPage('gsm')">🛠️ GSM Services</button>
   </div>
 </div>
@@ -628,6 +629,19 @@ textarea{
     <div id="usedPhonesList"></div>
   </section>
 
+  <!-- KLANTEN -->
+  <section class="section admin-page" id="page-customers">
+    <div class="section-head">
+      <div>
+        <h2>👥 Klanten</h2>
+        <p>Bekijk de geregistreerde klanten van HOMS TECH.</p>
+      </div>
+      <button class="btn btn-light" onclick="loadCustomers()">↻ Vernieuwen</button>
+    </div>
+    <div id="customersStatus" class="status info" style="margin-bottom:15px"></div>
+    <div id="customersList"></div>
+  </section>
+
   <!-- GSM SERVICES -->
   <section class="section admin-page" id="page-gsm">
     <div class="section-head">
@@ -637,7 +651,7 @@ textarea{
       </div>
     </div>
 
-    <div id="gsmServicesAdminList"></div>
+    <div id="gsmServicesList"></div>
   </section>
 
   <!-- WAAROM HOMS TECH -->
@@ -724,6 +738,7 @@ function showPage(page){
   const target = document.getElementById("page-" + page);
   if(target){
     target.classList.add("active");
+    if(page==="customers") loadCustomers();
   }
 
   document.querySelectorAll(".nav-btn").forEach(button=>{
@@ -1635,6 +1650,48 @@ function deleteGsmService(key,i){
   }
 }
 
+
+/* ---------------- CUSTOMERS ---------------- */
+async function loadCustomers(){
+  const box=document.getElementById("customersList");
+  const status=document.getElementById("customersStatus");
+  if(!box) return;
+
+  status.className="status info";
+  status.textContent="Klanten laden...";
+  box.innerHTML="";
+
+  try{
+    const r=await fetch("/api/admin/customers");
+    const result=await r.json();
+    if(!r.ok) throw new Error(result.error || "Kan klanten niet laden");
+
+    const customers=result.customers || [];
+    status.className="status success";
+    status.textContent=customers.length+" klant(en) gevonden";
+
+    if(!customers.length){
+      box.innerHTML='<div class="small">Nog geen geregistreerde klanten.</div>';
+      return;
+    }
+
+    box.innerHTML=customers.map(customer=>`
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-head">
+          <div class="card-title">👤 ${esc(customer.name || "Klant")}</div>
+          <div class="small">${esc(customer.created_at || "")}</div>
+        </div>
+        <div class="grid">
+          <div><strong>E-mail</strong><br>${esc(customer.email || "-")}</div>
+          <div><strong>Telefoon</strong><br>${esc(customer.phone || "-")}</div>
+          <div style="grid-column:1/-1"><strong>Adres</strong><br>${esc(customer.address || "-")}</div>
+        </div>
+      </div>`).join("");
+  }catch(e){
+    status.className="status error";
+    status.textContent="✕ "+e.message;
+  }
+}
 
 /* ---------------- WHY ---------------- */
 
