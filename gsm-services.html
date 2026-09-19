@@ -72,6 +72,20 @@ footer{background:#0b1422;color:#fff;padding:38px 5%}
 .modal-price{font-size:25px;font-weight:900;margin:8px 0 18px;color:#0f172a}
 .modal-actions{display:flex;gap:10px}.modal-actions .btn{flex:1}
 
+
+.order-form{display:grid;grid-template-columns:1fr 1fr;gap:13px;text-align:left;margin-top:18px}
+.order-form .field{display:flex;flex-direction:column;gap:6px}
+.order-form .field.full{grid-column:1/-1}
+.order-form label{font-size:13px;font-weight:800;color:#e5e7eb}
+.order-form input,.order-form textarea{width:100%;padding:12px 13px;border:1px solid #334155;border-radius:10px;background:#0f172a;color:#fff;outline:none;font:inherit}
+.order-form input:focus,.order-form textarea:focus{border-color:#60a5fa}
+.order-form textarea{min-height:95px;resize:vertical}
+.order-submit{margin-top:2px;width:100%;background:#16c766;color:#fff}
+.order-status{grid-column:1/-1;padding:11px 13px;border-radius:10px;font-size:13px;display:none}
+.order-status.success{display:block;background:#dcfce7;color:#166534}
+.order-status.error{display:block;background:#fee2e2;color:#991b1b}
+@media(max-width:550px){.order-form{grid-template-columns:1fr}.order-form .field.full{grid-column:auto}}
+
 @media(max-width:750px){
   header{flex-wrap:wrap;justify-content:center}nav{order:3;width:100%}
   .toolbar{grid-template-columns:1fr}
@@ -167,6 +181,15 @@ footer{background:#0b1422;color:#fff;padding:38px 5%}
     </div>
     <div class="detail" id="modalDetails"></div>
     <div class="modal-price" id="modalPrice"></div>
+    <form class="order-form" id="serviceOrderForm">
+      <div class="field"><label>Naam *</label><input id="orderName" required autocomplete="name"></div>
+      <div class="field"><label>E-mail *</label><input id="orderEmail" type="email" required autocomplete="email"></div>
+      <div class="field"><label>Telefoon *</label><input id="orderPhone" required autocomplete="tel"></div>
+      <div class="field"><label>IMEI / Serienummer</label><input id="orderImei" autocomplete="off"></div>
+      <div class="field full"><label>Opmerking</label><textarea id="orderNotes" placeholder="Vertel ons wat we voor u moeten doen..."></textarea></div>
+      <div id="orderStatus" class="order-status"></div>
+      <div class="field full"><button class="btn order-submit" type="submit">📤 Aanvraag versturen</button></div>
+    </form>
     <div class="modal-actions">
       <a class="btn green" id="modalWhatsApp" href="#">💬 Bestellen via WhatsApp</a>
       <button class="btn" type="button" style="background:#e5e7eb;color:#111827" onclick="closeModal()">Sluiten</button>
@@ -283,17 +306,81 @@ function renderServices(){
     return `<div class="group"><div class="group-head"><span>${esc(groupName)}</span><span class="group-count">${list.length}</span></div>${rows}</div>`;
   }).join("");
 }
+let selectedServiceForOrder=null;
+
+async function prefillCustomerOrder(){
+  try{
+    const r=await fetch("/api/customer/me",{credentials:"same-origin"});
+    if(!r.ok)return;
+    const result=await r.json();
+    if(!result.authenticated || !result.customer)return;
+    const c=result.customer;
+    if(!document.getElementById("orderName").value)document.getElementById("orderName").value=c.name||"";
+    if(!document.getElementById("orderEmail").value)document.getElementById("orderEmail").value=c.email||"";
+    if(!document.getElementById("orderPhone").value)document.getElementById("orderPhone").value=c.phone||"";
+  }catch{}
+}
+
 function openService(category,index){
   const service=siteData.gsmServices?.[category]?.[index];
   if(!service || service.active===false)return;
+  selectedServiceForOrder={category,index};
   document.getElementById("modalIcon").textContent=service.icon||"🔧";
   document.getElementById("modalName").textContent=service.name||"Service";
   document.getElementById("modalGroup").textContent=(service.group||"General")+" • "+categoryLabel(category);
   document.getElementById("modalDetails").textContent=service.details||"Meer informatie over deze service is op aanvraag beschikbaar.";
   document.getElementById("modalPrice").textContent=(service.price!=="" && service.price!=null)?"€ "+service.price:"Prijs op aanvraag";
   document.getElementById("modalWhatsApp").href=whatsappLink(service);
+  document.getElementById("orderStatus").className="order-status";
+  document.getElementById("orderStatus").textContent="";
+  document.getElementById("serviceOrderForm").reset();
   document.getElementById("serviceModal").classList.add("open");
+  prefillCustomerOrder();
 }
+
+async function submitServiceOrder(event){
+  event.preventDefault();
+  const status=document.getElementById("orderStatus");
+  const button=document.querySelector("#serviceOrderForm .order-submit");
+  const selected=selectedServiceForOrder;
+  if(!selected)return;
+  const service=siteData.gsmServices?.[selected.category]?.[selected.index];
+  if(!service)return;
+  status.className="order-status";
+  status.textContent="Verzenden...";
+  status.style.display="block";
+  button.disabled=true;
+  try{
+    const r=await fetch("/api/orders",{
+      method:"POST",
+      credentials:"same-origin",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        serviceCategory:selected.category,
+        serviceName:service.name||"Service",
+        serviceGroup:service.group||"General",
+        price:service.price||"",
+        name:document.getElementById("orderName").value.trim(),
+        email:document.getElementById("orderEmail").value.trim(),
+        phone:document.getElementById("orderPhone").value.trim(),
+        imei:document.getElementById("orderImei").value.trim(),
+        notes:document.getElementById("orderNotes").value.trim()
+      })
+    });
+    const result=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(result.error||"Aanvraag kon niet worden verzonden.");
+    status.className="order-status success";
+    status.textContent="✓ Aanvraag ontvangen. Uw ordernummer is #"+(result.order?.id||"")+". We nemen zo snel mogelijk contact met u op.";
+    document.getElementById("serviceOrderForm").reset();
+  }catch(error){
+    status.className="order-status error";
+    status.textContent="✕ "+error.message;
+  }finally{
+    button.disabled=false;
+  }
+}
+
+document.getElementById("serviceOrderForm").addEventListener("submit",submitServiceOrder);
 function closeModal(){document.getElementById("serviceModal").classList.remove("open")}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
 
