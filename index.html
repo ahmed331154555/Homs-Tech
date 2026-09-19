@@ -1029,7 +1029,22 @@ document.createElement("div");
 
 icon.className = "device-icon";
 
-icon.textContent = "📱";
+let images = Array.isArray(phone.images)
+? phone.images.filter(Boolean)
+: [];
+
+if(images.length > 0){
+  let img = document.createElement("img");
+  img.src = images[0];
+  img.alt = phone.name || "Apparaat";
+  img.style.width = "100%";
+  img.style.height = "100%";
+  img.style.objectFit = "contain";
+  img.style.display = "block";
+  icon.appendChild(img);
+}else{
+  icon.textContent = "📱";
+}
 
 let name =
 document.createElement("strong");
