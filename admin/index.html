@@ -499,15 +499,13 @@ textarea{
 .gsm-editor .btn{margin-top:16px}
 .gsm-editor-close{position:absolute;right:14px;top:12px;border:0;background:#eef2f7;width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer}
 
-/* HOMS TECH: phone lists stay as full-width rows/cards */
-#servicesList,#phonesList,#usedPhonesList,#whyList{
-  display:grid !important;
-  grid-template-columns:1fr !important;
-  gap:18px !important;
-}
-#phonesList > .card,#usedPhonesList > .card,#servicesList > .card,#whyList > .card{
-  width:100%;
-}
+/* HOMS TECH editor layout: list left, editor right */
+.editor-split{display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px;align-items:start}
+.editor-sidebar{background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:10px;position:sticky;top:145px}
+.editor-sidebar-title{font-weight:800;font-size:15px;padding:8px 10px 12px;border-bottom:1px solid #e2e8f0;margin-bottom:8px}
+.editor-item{width:100%;border:0;background:transparent;text-align:left;padding:11px 12px;border-radius:9px;font-weight:700;color:#334155;margin-bottom:4px}
+.editor-item:hover{background:#e2e8f0}.editor-item.active{background:#25d366;color:#fff}.editor-panel{min-width:0}.editor-panel > .card{width:100%;margin-bottom:0}
+@media(max-width:750px){.editor-split{grid-template-columns:1fr}.editor-sidebar{position:static}.editor-item{display:inline-block;width:auto;margin-right:5px}}
 </style>
 </head>
 
@@ -1048,6 +1046,12 @@ function normalizeData(){
       ""
     ];
   });
+
+
+  if(selectedService>=data.services.length) selectedService=Math.max(0,data.services.length-1);
+  if(selectedPhone>=data.phones.length) selectedPhone=Math.max(0,data.phones.length-1);
+  if(selectedUsedPhone>=data.usedPhones.length) selectedUsedPhone=Math.max(0,data.usedPhones.length-1);
+  if(selectedWhy>=data.why.length) selectedWhy=Math.max(0,data.why.length-1);
 }
 
 
@@ -1109,67 +1113,12 @@ function renderGeneral(){
 /* ---------------- SERVICES ---------------- */
 
 function renderServices(){
-
   const box=document.getElementById("servicesList");
-
-  box.innerHTML="";
-
-  data.services.forEach((service,i)=>{
-
-    const emoji=service[0] || "🔧";
-    const name=service[1] || "";
-    const desc=service[2] || "";
-
-    box.innerHTML+=`
-
-      <div class="card service-card">
-
-        <div class="card-head">
-
-          <div class="card-title">
-            Dienst ${i+1}
-          </div>
-
-          <button class="btn btn-red"
-            onclick="deleteService(${i})">
-            Verwijderen
-          </button>
-
-        </div>
-
-        <div class="grid">
-
-          <div class="field">
-            <label>Icoon / emoji</label>
-            <input value="${esc(emoji)}"
-              oninput="data.services[${i}][0]=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Naam dienst</label>
-            <input value="${esc(name)}"
-              oninput="data.services[${i}][1]=this.value;markChanged()">
-          </div>
-
-          <div class="field" style="grid-column:1/-1">
-            <label>Beschrijving</label>
-            <textarea
-              oninput="data.services[${i}][2]=this.value;markChanged()">${esc(desc)}</textarea>
-          </div>
-
-        </div>
-
-      </div>
-    `;
-  });
-
-  if(!data.services.length){
-    box.innerHTML=`
-      <div class="small">
-        Nog geen diensten toegevoegd.
-      </div>
-    `;
-  }
+  if(!data.services.length){box.innerHTML=`<div class="small">Nog geen diensten toegevoegd.</div>`;return;}
+  if(selectedService>=data.services.length) selectedService=data.services.length-1;
+  const service=data.services[selectedService] || ["🔧","Nieuwe dienst",""];
+  const emoji=service[0]||"🔧", name=service[1]||"", desc=service[2]||"";
+  box.innerHTML=`<div class="editor-split"><div class="editor-sidebar"><div class="editor-sidebar-title">🔧 Diensten</div>${data.services.map((x,i)=>`<button class="editor-item ${i===selectedService?'active':''}" onclick="selectedService=${i};renderServices()">${esc(x[0]||"🔧")} ${esc(x[1]||"Nieuwe dienst")}</button>`).join("")}</div><div class="editor-panel"><div class="card service-card"><div class="card-head"><div><div class="card-title" style="font-size:20px">${esc(emoji)} ${esc(name||"Nieuwe dienst")}</div><div class="small">Bewerk hier de gegevens van deze dienst.</div></div><button class="btn btn-red" onclick="deleteService(${selectedService})">Verwijderen</button></div><div class="grid"><div class="field"><label>Icoon / emoji</label><input value="${esc(emoji)}" oninput="data.services[${selectedService}][0]=this.value;markChanged()"></div><div class="field"><label>Naam dienst</label><input value="${esc(name)}" oninput="data.services[${selectedService}][1]=this.value;markChanged()"></div><div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.services[${selectedService}][2]=this.value;markChanged()">${esc(desc)}</textarea></div></div></div></div></div>`;
 }
 
 function addService(){
@@ -1200,115 +1149,11 @@ function deleteService(i){
 /* ---------------- PHONES ---------------- */
 
 function renderPhones(){
-
   const box=document.getElementById("phonesList");
-
-  box.innerHTML="";
-
-  data.phones.forEach((phone,i)=>{
-
-    const images=phone.images || ["","","",""];
-
-    box.innerHTML+=`
-
-      <div class="card device-card">
-
-        <div class="card-head">
-
-          <div>
-            <div class="card-title" style="font-size:20px">
-              📱 ${esc(phone.name || "Nieuwe telefoon")}
-            </div>
-            <div class="small">Verkoopgegevens van deze telefoon.</div>
-          </div>
-
-          <button class="btn btn-red"
-            onclick="deletePhone(${i})">
-            Verwijderen
-          </button>
-
-        </div>
-
-        <div class="grid">
-
-          <div class="field">
-            <label>Model</label>
-            <input value="${esc(phone.name)}"
-              oninput="data.phones[${i}].name=this.value;markChanged();renderPhoneTitle(${i})">
-          </div>
-
-          <div class="field">
-            <label>Merk</label>
-            <input value="${esc(phone.brand)}"
-              oninput="data.phones[${i}].brand=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Verkoopprijs (€)</label>
-            <input value="${esc(phone.price)}"
-              oninput="data.phones[${i}].price=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Opslag</label>
-            <input value="${esc(phone.storage)}" placeholder="128 GB"
-              oninput="data.phones[${i}].storage=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Kleur</label>
-            <input value="${esc(phone.color)}" placeholder="Black"
-              oninput="data.phones[${i}].color=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Conditie</label>
-            <select onchange="data.phones[${i}].condition=this.value;markChanged()">
-              <option value="Nieuw" ${phone.condition==="Nieuw"?"selected":""}>Nieuw</option>
-              <option value="Als nieuw" ${phone.condition==="Als nieuw"?"selected":""}>Als nieuw</option>
-              <option value="Zeer goed" ${phone.condition==="Zeer goed"?"selected":""}>Zeer goed</option>
-              <option value="Goed" ${phone.condition==="Goed"?"selected":""}>Goed</option>
-              <option value="Gebruikt" ${phone.condition==="Gebruikt"?"selected":""}>Gebruikt</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label>Garantie</label>
-            <input value="${esc(phone.warranty)}" placeholder="12 maanden"
-              oninput="data.phones[${i}].warranty=this.value;markChanged()">
-          </div>
-
-          <div class="field" style="grid-column:1/-1">
-            <label>Beschrijving</label>
-            <textarea
-              oninput="data.phones[${i}].description=this.value;markChanged()">${esc(phone.description)}</textarea>
-          </div>
-
-        </div>
-
-        <div style="margin-top:15px">
-          <label style="font-weight:700">📷 Foto's</label>
-          <div class="images-grid">
-            ${images.map((img,j)=>`
-              <div class="image-box">
-                ${img ? `<img src="${esc(img)}" class="image-preview">` : `<div class="empty-preview">Geen foto</div>`}
-                <input type="file" accept="image/*" onchange="handlePhoneImage(event,${i},${j})">
-                ${img ? `<button class="btn btn-light" style="margin-top:7px" onclick="removePhoneImage(${i},${j})">Verwijder foto</button>` : ""}
-              </div>
-            `).join("")}
-          </div>
-          <p class="small">Maximaal 4 foto's per telefoon.</p>
-        </div>
-
-      </div>
-    `;
-  });
-
-  if(!data.phones.length){
-    box.innerHTML=`
-      <div class="small">Nog geen telefoons toegevoegd.</div>
-    `;
-  }
+  if(!data.phones.length){box.innerHTML=`<div class="small">Nog geen telefoons toegevoegd.</div>`;return;}
+  if(selectedPhone>=data.phones.length) selectedPhone=data.phones.length-1;
+  const phone=data.phones[selectedPhone]||{}, images=phone.images||["","","",""];
+  box.innerHTML=`<div class="editor-split"><div class="editor-sidebar"><div class="editor-sidebar-title">📱 Telefoons</div>${data.phones.map((x,i)=>`<button class="editor-item ${i===selectedPhone?'active':''}" onclick="selectedPhone=${i};renderPhones()">📱 ${esc(x.name||"Nieuwe telefoon")}</button>`).join("")}</div><div class="editor-panel"><div class="card device-card"><div class="card-head"><div><div class="card-title" style="font-size:20px">📱 ${esc(phone.name||"Nieuwe telefoon")}</div><div class="small">Beheer de gegevens van de telefoon die HOMS TECH verkoopt.</div></div><button class="btn btn-red" onclick="deletePhone(${selectedPhone})">Verwijderen</button></div><div class="grid"><div class="field"><label>Model</label><input value="${esc(phone.name||"")}" oninput="data.phones[${selectedPhone}].name=this.value;markChanged()"></div><div class="field"><label>Merk</label><input value="${esc(phone.brand||"")}" oninput="data.phones[${selectedPhone}].brand=this.value;markChanged()"></div><div class="field"><label>Verkoopprijs (€)</label><input value="${esc(phone.price||"")}" oninput="data.phones[${selectedPhone}].price=this.value;markChanged()"></div><div class="field"><label>Opslag</label><input value="${esc(phone.storage||"")}" placeholder="128 GB" oninput="data.phones[${selectedPhone}].storage=this.value;markChanged()"></div><div class="field"><label>Kleur</label><input value="${esc(phone.color||"")}" placeholder="Black" oninput="data.phones[${selectedPhone}].color=this.value;markChanged()"></div><div class="field"><label>Conditie</label><select onchange="data.phones[${selectedPhone}].condition=this.value;markChanged()"><option value="Nieuw" ${phone.condition==="Nieuw"?"selected":""}>Nieuw</option><option value="Als nieuw" ${phone.condition==="Als nieuw"?"selected":""}>Als nieuw</option><option value="Zeer goed" ${phone.condition==="Zeer goed"?"selected":""}>Zeer goed</option><option value="Goed" ${phone.condition==="Goed"?"selected":""}>Goed</option><option value="Gebruikt" ${phone.condition==="Gebruikt"?"selected":""}>Gebruikt</option></select></div><div class="field"><label>Garantie</label><input value="${esc(phone.warranty||"")}" placeholder="12 maanden" oninput="data.phones[${selectedPhone}].warranty=this.value;markChanged()"></div><div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.phones[${selectedPhone}].description=this.value;markChanged()">${esc(phone.description||"")}</textarea></div></div><div style="margin-top:15px"><label style="font-weight:700">📷 Foto's</label><div class="images-grid">${images.map((img,j)=>`<div class="image-box">${img?`<img src="${esc(img)}" class="image-preview">`:`<div class="empty-preview">Geen foto</div>`}<input type="file" accept="image/*" onchange="handlePhoneImage(event,${selectedPhone},${j})">${img?`<button class="btn btn-light" style="margin-top:7px" onclick="removePhoneImage(${selectedPhone},${j})">Verwijder foto</button>`:""}</div>`).join("")}</div><p class="small">Maximaal 4 foto's per telefoon.</p></div></div></div></div>`;
 }
 
 function renderPhoneTitle(i){
@@ -1349,164 +1194,11 @@ function deletePhone(i){
 /* ---------------- USED PHONES ---------------- */
 
 function renderUsedPhones(){
-
   const box=document.getElementById("usedPhonesList");
-
-  box.innerHTML="";
-
-  data.usedPhones.forEach((phone,i)=>{
-
-    const images=phone.images || ["","","",""];
-
-    box.innerHTML+=`
-
-      <div class="card used-card">
-
-        <div class="card-head">
-
-          <div class="card-title">
-            ♻️ ${esc(phone.name || "Nieuwe gebruikte telefoon")}
-          </div>
-
-          <button class="btn btn-red"
-            onclick="deleteUsedPhone(${i})">
-            Verwijderen
-          </button>
-
-        </div>
-
-        <div class="grid">
-
-          <div class="field">
-            <label>Model</label>
-            <input value="${esc(phone.name)}"
-              oninput="data.usedPhones[${i}].name=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Merk</label>
-            <input value="${esc(phone.brand)}"
-              oninput="data.usedPhones[${i}].brand=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Prijs (€)</label>
-            <input value="${esc(phone.price)}"
-              oninput="data.usedPhones[${i}].price=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Conditie</label>
-
-            <select
-              onchange="data.usedPhones[${i}].condition=this.value;markChanged()">
-
-              <option ${phone.condition==="Als nieuw"?"selected":""}>
-                Als nieuw
-              </option>
-
-              <option ${phone.condition==="Zeer goed"?"selected":""}>
-                Zeer goed
-              </option>
-
-              <option ${phone.condition==="Goed"?"selected":""}>
-                Goed
-              </option>
-
-              <option ${phone.condition==="Gebruikt"?"selected":""}>
-                Gebruikt
-              </option>
-
-            </select>
-          </div>
-
-          <div class="field">
-            <label>Opslag</label>
-            <input value="${esc(phone.storage)}"
-              oninput="data.usedPhones[${i}].storage=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>RAM</label>
-            <input value="${esc(phone.ram)}"
-              oninput="data.usedPhones[${i}].ram=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>WhatsApp</label>
-            <input value="${esc(phone.whatsapp)}"
-              oninput="data.usedPhones[${i}].whatsapp=this.value;markChanged()">
-          </div>
-
-          <div class="field" style="grid-column:1/-1">
-            <label>Beschrijving</label>
-
-            <textarea
-              oninput="data.usedPhones[${i}].description=this.value;markChanged()">${esc(phone.description)}</textarea>
-          </div>
-
-        </div>
-
-        <div style="margin-top:15px">
-
-          <label style="font-weight:700">
-            📷 Foto's
-          </label>
-
-          <div class="images-grid">
-
-            ${images.map((img,j)=>`
-
-              <div class="image-box">
-
-                ${
-                  img
-                  ?
-                  `<img src="${esc(img)}" class="image-preview">`
-                  :
-                  `<div class="empty-preview">Geen foto</div>`
-                }
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  onchange="handleImage(event,${i},${j})">
-
-                ${
-                  img
-                  ?
-                  `<button class="btn btn-light"
-                    style="margin-top:7px"
-                    onclick="removeImage(${i},${j})">
-                    Verwijder foto
-                  </button>`
-                  :
-                  ""
-                }
-
-              </div>
-
-            `).join("")}
-
-          </div>
-
-          <p class="small">
-            Je kunt maximaal 4 foto's per telefoon toevoegen.
-          </p>
-
-        </div>
-
-      </div>
-    `;
-  });
-
-  if(!data.usedPhones.length){
-    box.innerHTML=`
-      <div class="small">
-        Nog geen gebruikte telefoons toegevoegd.
-      </div>
-    `;
-  }
+  if(!data.usedPhones.length){box.innerHTML=`<div class="small">Nog geen gebruikte telefoons toegevoegd.</div>`;return;}
+  if(selectedUsedPhone>=data.usedPhones.length) selectedUsedPhone=data.usedPhones.length-1;
+  const phone=data.usedPhones[selectedUsedPhone]||{}, images=phone.images||["","","",""];
+  box.innerHTML=`<div class="editor-split"><div class="editor-sidebar"><div class="editor-sidebar-title">♻️ Telefoons</div>${data.usedPhones.map((x,i)=>`<button class="editor-item ${i===selectedUsedPhone?'active':''}" onclick="selectedUsedPhone=${i};renderUsedPhones()">📱 ${esc(x.name||"Nieuwe gebruikte telefoon")}</button>`).join("")}</div><div class="editor-panel"><div class="card used-card"><div class="card-head"><div><div class="card-title" style="font-size:20px">♻️ ${esc(phone.name||"Nieuwe gebruikte telefoon")}</div><div class="small">Bewerk hier de gegevens van deze telefoon.</div></div><button class="btn btn-red" onclick="deleteUsedPhone(${selectedUsedPhone})">Verwijderen</button></div><div class="grid"><div class="field"><label>Model</label><input value="${esc(phone.name||"")}" oninput="data.usedPhones[${selectedUsedPhone}].name=this.value;markChanged()"></div><div class="field"><label>Merk</label><input value="${esc(phone.brand||"")}" oninput="data.usedPhones[${selectedUsedPhone}].brand=this.value;markChanged()"></div><div class="field"><label>Prijs (€)</label><input value="${esc(phone.price||"")}" oninput="data.usedPhones[${selectedUsedPhone}].price=this.value;markChanged()"></div><div class="field"><label>Conditie</label><select onchange="data.usedPhones[${selectedUsedPhone}].condition=this.value;markChanged()"><option value="Als nieuw" ${phone.condition==="Als nieuw"?"selected":""}>Als nieuw</option><option value="Zeer goed" ${phone.condition==="Zeer goed"?"selected":""}>Zeer goed</option><option value="Goed" ${phone.condition==="Goed"?"selected":""}>Goed</option><option value="Gebruikt" ${phone.condition==="Gebruikt"?"selected":""}>Gebruikt</option></select></div><div class="field"><label>Opslag</label><input value="${esc(phone.storage||"")}" oninput="data.usedPhones[${selectedUsedPhone}].storage=this.value;markChanged()"></div><div class="field"><label>RAM</label><input value="${esc(phone.ram||"")}" oninput="data.usedPhones[${selectedUsedPhone}].ram=this.value;markChanged()"></div><div class="field"><label>WhatsApp</label><input value="${esc(phone.whatsapp||"")}" oninput="data.usedPhones[${selectedUsedPhone}].whatsapp=this.value;markChanged()"></div><div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.usedPhones[${selectedUsedPhone}].description=this.value;markChanged()">${esc(phone.description||"")}</textarea></div></div><div style="margin-top:15px"><label style="font-weight:700">📷 Foto's</label><div class="images-grid">${images.map((img,j)=>`<div class="image-box">${img?`<img src="${esc(img)}" class="image-preview">`:`<div class="empty-preview">Geen foto</div>`}<input type="file" accept="image/*" onchange="handleImage(event,${selectedUsedPhone},${j})">${img?`<button class="btn btn-light" style="margin-top:7px" onclick="removeImage(${selectedUsedPhone},${j})">Verwijder foto</button>`:""}</div>`).join("")}</div><p class="small">Je kunt maximaal 4 foto's per telefoon toevoegen.</p></div></div></div></div>`;
 }
 
 function addUsedPhone(){
@@ -1863,63 +1555,11 @@ async function loadCustomers(){
 /* ---------------- WHY ---------------- */
 
 function renderWhy(){
-
   const box=document.getElementById("whyList");
-
-  box.innerHTML="";
-
-  data.why.forEach((item,i)=>{
-
-    box.innerHTML+=`
-
-      <div class="card why-card">
-
-        <div class="card-head">
-
-          <div class="card-title">
-            Voordeel ${i+1}
-          </div>
-
-          <button class="btn btn-red"
-            onclick="deleteWhy(${i})">
-            Verwijderen
-          </button>
-
-        </div>
-
-        <div class="grid">
-
-          <div class="field">
-            <label>Icoon / emoji</label>
-            <input value="${esc(item[0])}"
-              oninput="data.why[${i}][0]=this.value;markChanged()">
-          </div>
-
-          <div class="field">
-            <label>Titel</label>
-            <input value="${esc(item[1])}"
-              oninput="data.why[${i}][1]=this.value;markChanged()">
-          </div>
-
-          <div class="field" style="grid-column:1/-1">
-            <label>Beschrijving</label>
-            <textarea
-              oninput="data.why[${i}][2]=this.value;markChanged()">${esc(item[2])}</textarea>
-          </div>
-
-        </div>
-
-      </div>
-    `;
-  });
-
-  if(!data.why.length){
-    box.innerHTML=`
-      <div class="small">
-        Nog geen voordelen toegevoegd.
-      </div>
-    `;
-  }
+  if(!data.why.length){box.innerHTML=`<div class="small">Nog geen voordelen toegevoegd.</div>`;return;}
+  if(selectedWhy>=data.why.length) selectedWhy=data.why.length-1;
+  const item=data.why[selectedWhy]||["⭐","",""];
+  box.innerHTML=`<div class="editor-split"><div class="editor-sidebar"><div class="editor-sidebar-title">⭐ Waarom HOMS TECH</div>${data.why.map((x,i)=>`<button class="editor-item ${i===selectedWhy?'active':''}" onclick="selectedWhy=${i};renderWhy()">${esc(x[0]||"⭐")} ${esc(x[1]||"Voordeel "+(i+1))}</button>`).join("")}</div><div class="editor-panel"><div class="card why-card"><div class="card-head"><div><div class="card-title" style="font-size:20px">${esc(item[0]||"⭐")} ${esc(item[1]||"Voordeel "+(selectedWhy+1))}</div><div class="small">Bewerk hier dit voordeel.</div></div><button class="btn btn-red" onclick="deleteWhy(${selectedWhy})">Verwijderen</button></div><div class="grid"><div class="field"><label>Icoon / emoji</label><input value="${esc(item[0]||"⭐")}" oninput="data.why[${selectedWhy}][0]=this.value;markChanged()"></div><div class="field"><label>Titel</label><input value="${esc(item[1]||"")}" oninput="data.why[${selectedWhy}][1]=this.value;markChanged()"></div><div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.why[${selectedWhy}][2]=this.value;markChanged()">${esc(item[2]||"")}</textarea></div></div></div></div></div>`;
 }
 
 function addWhy(){
@@ -1929,7 +1569,7 @@ function addWhy(){
     "Nieuw voordeel",
     ""
   ]);
-
+  selectedWhy=data.why.length-1;
   renderWhy();
   markChanged();
 }
@@ -1939,7 +1579,7 @@ function deleteWhy(i){
   if(confirm("Dit voordeel verwijderen?")){
 
     data.why.splice(i,1);
-
+    if(selectedWhy>=data.why.length) selectedWhy=Math.max(0,data.why.length-1);
     renderWhy();
     markChanged();
 
