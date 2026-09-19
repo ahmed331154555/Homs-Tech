@@ -1017,7 +1017,9 @@ function normalizeGsmService(x){
     shortDescription:x.shortDescription || "",
     details:x.details || x.description || "",
     price:x.price || "",
-    active:x.active !== false
+    active:x.active !== false,
+    requiresUsername:x.requiresUsername === true,
+    requiresImei:x.requiresImei === true
   };
 }
 
@@ -1447,6 +1449,10 @@ function renderGsmServices(){
           <div class="field" style="grid-column:1/-1"><label>Korte beschrijving</label><input value="${esc(service.shortDescription||'')}" placeholder="Bijv. Xiaomi / Redmi / Poco" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].shortDescription=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1"><label>Volledige beschrijving</label><textarea oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].details=this.value;markChanged()">${esc(service.details||'')}</textarea></div>
           <div class="field"><label>Service icon</label><input value="${esc(service.icon||'🔧')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].icon=this.value;markChanged();renderGsmServices()"></div>
+          <div class="field"><label>Extra gegevens klant</label>
+            <label style="display:flex;align-items:center;gap:8px;font-weight:600"><input type="checkbox" ${service.requiresUsername?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresUsername=this.checked;markChanged()"> Gebruikersnaam</label>
+            <label style="display:flex;align-items:center;gap:8px;font-weight:600;margin-top:8px"><input type="checkbox" ${service.requiresImei?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresImei=this.checked;markChanged()"> IMEI / Serienummer</label>
+          </div>
         </div>
         <div class="actions" style="margin-top:8px"><button type="button" class="btn btn-green" onclick="saveGsmServiceEditor('${category[0]}',${selectedGsmServiceIndex})">Opslaan</button></div>
       </div>`;
@@ -1527,6 +1533,7 @@ async function loadOrders(){
             <div class="order-info"><strong>Klant</strong>${esc(order.name||"-")}</div>
             <div class="order-info"><strong>E-mail</strong>${esc(order.email||"-")}</div>
             <div class="order-info"><strong>Telefoon</strong>${esc(order.phone||"-")}</div>
+            ${order.username?`<div class="order-info"><strong>Gebruikersnaam</strong>${esc(order.username)}</div>`:""}
             <div class="order-info"><strong>Prijs</strong>${esc(price)}</div>
             <div class="order-info"><strong>IMEI / Serienummer</strong>${esc(order.imei||"-")}</div>
             <div class="order-info"><strong>Categorie</strong>${esc(order.service_category||"-")}</div>
