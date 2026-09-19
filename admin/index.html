@@ -576,6 +576,74 @@ textarea{
   .editor-layout,.gsm-editor-layout{grid-template-columns:1fr}
   .gsm-editor-layout .editor-list,.gsm-editor-layout .editor-panel{min-height:0}
 }
+
+/* HOMS TECH — FINAL DESKTOP SIDEBAR LAYOUT */
+@media (min-width: 901px){
+  body{overflow-x:hidden}
+  .topbar{
+    position:sticky;
+    top:0;
+    min-height:68px;
+    padding:14px 24px;
+    z-index:100;
+  }
+  .admin-nav{
+    position:fixed;
+    left:0;
+    top:68px;
+    bottom:0;
+    width:235px;
+    height:auto;
+    display:none;
+    overflow-y:auto;
+    overflow-x:hidden;
+    background:#111827;
+    border:0;
+    box-shadow:none;
+    z-index:90;
+  }
+  .admin-nav-inner{
+    max-width:none;
+    margin:0;
+    padding:18px 12px 30px;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:7px;
+    overflow:visible;
+  }
+  .nav-btn{
+    width:100%;
+    text-align:left;
+    border:0;
+    background:transparent;
+    color:#e5e7eb;
+    padding:13px 16px;
+    border-radius:10px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+  .nav-btn:hover{background:#1f2937;color:#fff}
+  .nav-btn.active{background:#25d366;color:#fff}
+  #dashboard{margin-left:235px}
+  #dashboard > .container{
+    max-width:none;
+    width:100%;
+    margin:0;
+    padding:28px 28px 110px;
+  }
+  .section{width:100%;}
+  .editor-layout{grid-template-columns:280px minmax(0,1fr)}
+  .gsm-editor-layout{grid-template-columns:minmax(320px,1fr) minmax(420px,1.35fr)}
+}
+
+@media (max-width:900px){
+  .admin-nav{position:static;top:auto;width:100%;height:auto;}
+  .admin-nav-inner{overflow-x:auto;flex-direction:row;}
+  #dashboard{margin-left:0}
+  .container{max-width:none;margin:18px auto;padding:0 14px 90px}
+}
+
 </style>
 </head>
 
@@ -1182,7 +1250,7 @@ let selectedPhoneIndex=0;
 let selectedUsedPhoneIndex=0;
 let selectedWhyIndex=0;
 let selectedGsmServiceIndex=0;
-let gsmActiveCategory=window.gsmActiveCategory || "imei";
+let gsmActiveCategory="imei";
 
 /* ---------------- SERVICES ---------------- */
 
@@ -1354,7 +1422,7 @@ const gsmServiceCategories=[
 function renderGsmServices(){
   const box=document.getElementById("gsmServicesList");
   if(!box) return;
-  const activeKey=window.gsmActiveCategory || "imei";
+  const activeKey=gsmActiveCategory || "imei";
   const category=gsmServiceCategories.find(x=>x[0]===activeKey) || gsmServiceCategories[0];
   const list=data.gsmServices[category[0]] || [];
   if(selectedGsmServiceIndex>=list.length) selectedGsmServiceIndex=Math.max(0,list.length-1);
@@ -1390,13 +1458,13 @@ function renderGsmServices(){
 }
 
 function openGsmServiceEditor(category,i){
-  window.gsmActiveCategory=category;
+  gsmActiveCategory=category;
   selectedGsmServiceIndex=i;
   renderGsmServices();
 }
 
 function saveGsmServiceEditor(category,i){
-  window.gsmActiveCategory=category;
+  gsmActiveCategory=category;
   selectedGsmServiceIndex=i;
   renderGsmServices();
   markChanged();
@@ -1405,7 +1473,7 @@ function saveGsmServiceEditor(category,i){
 function addGsmService(key){
   if(!data.gsmServices[key]) data.gsmServices[key]=[];
   data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",shortDescription:"",details:"",price:"",active:true});
-  window.gsmActiveCategory=key;
+  gsmActiveCategory=key;
   selectedGsmServiceIndex=data.gsmServices[key].length-1;
   renderGsmServices();
   markChanged();
@@ -1414,7 +1482,7 @@ function addGsmService(key){
 function deleteGsmService(key,i){
   if(confirm("Deze GSM-service verwijderen?")){
     data.gsmServices[key].splice(i,1);
-    window.gsmActiveCategory=key;
+    gsmActiveCategory=key;
     selectedGsmServiceIndex=Math.max(0,Math.min(selectedGsmServiceIndex,data.gsmServices[key].length-1));
     renderGsmServices();
     markChanged();
