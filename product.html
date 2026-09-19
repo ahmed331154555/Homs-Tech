@@ -36,6 +36,22 @@ nav a:hover{background:#2563eb}
 .gray{background:#eef2f7;color:#111827}
 .btn:hover{opacity:.9}
 .status{padding:14px;border-radius:10px;background:#fff7ed;color:#9a3412;margin-top:15px}
+.option-section{margin:22px 0}
+.option-title{font-weight:800;font-size:17px;margin-bottom:10px}
+.option-grid{display:flex;flex-wrap:wrap;gap:9px}
+.option-btn{border:1px solid #dbe3ec;background:#fff;color:#111827;border-radius:11px;padding:11px 14px;cursor:pointer;font-weight:700;min-width:90px;text-align:left}
+.option-btn:hover{border-color:#2563eb}
+.option-btn.active{border-color:#2563eb;background:#eff6ff;box-shadow:0 0 0 2px rgba(37,99,235,.10)}
+.option-btn small{display:block;color:#6b7280;font-weight:600;margin-top:2px}
+.order-summary{margin-top:22px;background:#111827;color:#fff;border-radius:18px;padding:20px}
+.order-summary h3{font-size:20px;margin-bottom:12px}
+.summary-row{display:flex;justify-content:space-between;gap:15px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.summary-row:last-child{border-bottom:0}
+.summary-total{font-size:24px;font-weight:900;margin-top:12px}
+.spec-box{margin-top:25px}
+.spec-box h2{font-size:25px;margin-bottom:12px}
+.spec-list{display:grid;gap:8px}
+.spec-list div{padding:10px 12px;background:#f8fafc;border-radius:9px}
 .empty{text-align:center;background:#fff;border-radius:20px;padding:60px 25px}
 footer{background:#0b1422;color:#cbd5e1;padding:35px 20px;margin-top:30px}
 .footer-inner{max-width:1200px;margin:auto;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
@@ -103,75 +119,110 @@ const n=String(number||"").replace(/\D/g,"");
 return n ? "https://wa.me/"+n : "#";
 }
 
+let selectedOptions={};
+let currentProduct=null;
+let currentData=null;
+
+function num(v){
+  const n=parseFloat(String(v??"").replace(",","."));
+  return Number.isFinite(n)?n:0;
+}
+function optionList(list){
+  return Array.isArray(list)?list.filter(x=>x&&x.label):[];
+}
+function optionDelta(x){ return num(x&&x.priceDelta); }
+function money(n){ return "€"+Number(n||0).toFixed(2).replace(".00","").replace(".",","); }
+function conditionPrice(product){
+  const list=optionList(product.conditionOptions);
+  const chosen=list.find(x=>x.label===selectedOptions.condition);
+  if(chosen && optionDelta(chosen)>0) return optionDelta(chosen);
+  return num(product.price || product.salePrice || product.sellPrice || 0);
+}
+function calculateTotal(product){
+  let total=conditionPrice(product);
+  ["storage","color","battery","vat","tradeIn"].forEach(key=>{
+    const list=optionList(product[key+"Options"]);
+    const chosen=list.find(x=>x.label===selectedOptions[key]);
+    if(chosen) total+=optionDelta(chosen);
+  });
+  return Math.max(0,total);
+}
+function selectProductOption(key,label){
+  selectedOptions[key]=label;
+  renderProductBody();
+}
+function renderOptionSection(key,title,list){
+  list=optionList(list);
+  if(!list.length) return "";
+  if(!selectedOptions[key]) selectedOptions[key]=list[0].label;
+  return `<div class="option-section"><div class="option-title">${esc(title)}</div><div class="option-grid">${list.map(x=>{
+    const active=x.label===selectedOptions[key];
+    const delta=optionDelta(x);
+    const sign=delta>0?"+":delta<0?"−":"";
+    const amount=delta?`${sign}${money(Math.abs(delta))}`:"Geen extra kosten";
+    return `<button type="button" class="option-btn ${active?"active":""}" onclick="selectProductOption('${esc(key)}','${esc(x.label)}')">${esc(x.label)}<small>${esc(amount)}</small></button>`;
+  }).join("")}</div></div>`;
+}
+function renderProductBody(){
+  const product=currentProduct,data=currentData;
+  const area=document.getElementById("productArea");
+  const images=Array.isArray(product.images)?product.images.filter(Boolean):[];
+  const mainImage=product.image||images[0]||"";
+  let gallery=mainImage?`<img id="mainImage" class="main-image" src="${esc(mainImage)}" alt="${esc(product.name)}">`:`<div class="main-image" style="display:flex;align-items:center;justify-content:center;font-size:80px;">📱</div>`;
+  if(mainImage&&images.length) gallery+=`<div class="thumbs">${images.map((img,i)=>`<img class="thumb ${i===0?"active":""}" src="${esc(img)}" alt="" onclick="changeImage(this,'${esc(img)}')">`).join("")}</div>`;
+
+  const basePrice=num(product.price||product.salePrice||product.sellPrice||0);
+  const hasOptions=["storage","color","condition","battery","vat","tradeIn"].some(k=>optionList(product[k+"Options"]).length);
+  const total=calculateTotal(product);
+  const storage=product.storage||product.geheugen||"";
+  const color=product.color||product.kleur||"";
+  const condition=product.condition||product.conditie||"";
+  const warranty=product.warranty||product.garantie||"";
+  const description=product.description||product.beschrijving||"";
+  const whatsapp=wa(data.whatsapp);
+  const title=product.name||"Smartphone";
+
+  let specs="";
+  if(storage) specs+=`<div><strong>Opslag:</strong> ${esc(storage)}</div>`;
+  if(color) specs+=`<div><strong>Kleur:</strong> ${esc(color)}</div>`;
+  if(condition) specs+=`<div><strong>Conditie:</strong> ${esc(condition)}</div>`;
+  if(warranty) specs+=`<div><strong>Garantie:</strong> ${esc(warranty)}</div>`;
+  if(product.screen) specs+=`<div><strong>Scherm reparatie:</strong> ${euro(esc(product.screen))}</div>`;
+  if(product.software) specs+=`<div><strong>Software:</strong> ${euro(esc(product.software))}</div>`;
+  if(product.hardware) specs+=`<div><strong>Hardware:</strong> ${euro(esc(product.hardware))}</div>`;
+  if(product.camera) specs+=`<div><strong>Camera:</strong> ${euro(esc(product.camera))}</div>`;
+
+  const specsList=Array.isArray(product.specifications)?product.specifications.filter(x=>x&&x.label):[];
+  const optionsHtml=hasOptions?[
+    renderOptionSection("storage","1. Geheugen",product.storageOptions),
+    renderOptionSection("color","2. Kleur",product.colorOptions),
+    renderOptionSection("condition","3. Productconditie",product.conditionOptions),
+    renderOptionSection("battery","4. Batterij",product.batteryOptions),
+    renderOptionSection("vat","5. BTW-keuze",product.vatOptions),
+    renderOptionSection("tradeIn","6. Inruil oude telefoon",product.tradeInOptions)
+  ].join(""):"";
+
+  area.innerHTML=`<div class="product"><div class="gallery">${gallery}</div><div class="info">
+    <div class="brand">${esc(product.brand||"HOMS TECH")}</div>
+    <h1>${esc(title)}</h1>
+    <div class="price">${hasOptions?money(total):(basePrice?euro(esc(basePrice)):"")}</div>
+    ${specs?`<div class="meta">${specs}</div>`:""}
+    ${optionsHtml}
+    ${hasOptions?`<div class="order-summary"><h3>Jouw bestelling</h3>${["storage","color","condition","battery","vat","tradeIn"].filter(k=>selectedOptions[k]).map(k=>`<div class="summary-row"><span>${esc(k==="storage"?"Geheugen":k==="color"?"Kleur":k==="condition"?"Conditie":k==="battery"?"Batterij":k==="vat"?"BTW":"Inruil")}</span><strong>${esc(selectedOptions[k])}</strong></div>`).join("")}<div class="summary-total">Totaal: ${money(total)}</div></div>`:""}
+    ${description?`<div class="description">${esc(description)}</div>`:""}
+    ${specsList.length?`<div class="spec-box"><h2>Belangrijkste specificaties</h2><div class="spec-list">${specsList.map(x=>`<div><strong>${esc(x.label)}:</strong> ${esc(x.value||"")}</div>`).join("")}</div></div>`:""}
+    <div class="buttons"><a class="btn green" href="${esc(whatsapp)}" target="_blank">💬 Bestel via WhatsApp</a><a class="btn gray" href="devices.html">← Apparaten</a></div>
+    ${!basePrice&&!hasOptions?`<div class="status">Neem contact met ons op voor de actuele prijs.</div>`:""}
+  </div></div>`;
+}
+
 function render(product,data){
-const area=document.getElementById("productArea");
-
-if(!product){
-area.innerHTML=`<div class="empty"><h2>Product niet gevonden</h2><p>Dit apparaat bestaat niet of is niet meer beschikbaar.</p></div>`;
-return;
+  if(!product){document.getElementById("productArea").innerHTML=`<div class="empty"><h2>Product niet gevonden</h2><p>Dit apparaat bestaat niet of is niet meer beschikbaar.</p></div>`;return;}
+  currentProduct=product; currentData=data;
+  selectedOptions={};
+  ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{const list=optionList(product[key+"Options"]);if(list.length)selectedOptions[key]=list[0].label;});
+  renderProductBody();
 }
-
-const images=Array.isArray(product.images)?product.images.filter(Boolean):[];
-const mainImage=product.image || images[0] || "";
-
-let gallery="";
-if(mainImage){
-gallery=`<img id="mainImage" class="main-image" src="${esc(mainImage)}" alt="${esc(product.name)}">`;
-if(images.length){
-gallery+=`<div class="thumbs">${images.map((img,i)=>`
-<img class="thumb ${i===0?"active":""}" src="${esc(img)}" alt="" onclick="changeImage(this,'${esc(img)}')">
-`).join("")}</div>`;
-}
-}else{
-gallery=`<div class="main-image" style="display:flex;align-items:center;justify-content:center;font-size:80px;">📱</div>`;
-}
-
-const price=product.price || product.salePrice || product.sellPrice || "";
-const storage=product.storage || product.geheugen || "";
-const color=product.color || product.kleur || "";
-const condition=product.condition || product.conditie || "";
-const warranty=product.warranty || product.garantie || "";
-const description=product.description || product.beschrijving || "";
-
-let specs="";
-if(storage) specs+=`<div><strong>Opslag:</strong> ${esc(storage)}</div>`;
-if(color) specs+=`<div><strong>Kleur:</strong> ${esc(color)}</div>`;
-if(condition) specs+=`<div><strong>Conditie:</strong> ${esc(condition)}</div>`;
-if(warranty) specs+=`<div><strong>Garantie:</strong> ${esc(warranty)}</div>`;
-
-if(product.screen) specs+=`<div><strong>Scherm reparatie:</strong> ${euro(esc(product.screen))}</div>`;
-if(product.software) specs+=`<div><strong>Software:</strong> ${euro(esc(product.software))}</div>`;
-if(product.hardware) specs+=`<div><strong>Hardware:</strong> ${euro(esc(product.hardware))}</div>`;
-if(product.camera) specs+=`<div><strong>Camera:</strong> ${euro(esc(product.camera))}</div>`;
-
-const whatsapp=wa(data.whatsapp);
-const title=product.name || "Smartphone";
-
-area.innerHTML=`
-<div class="product">
-<div class="gallery">${gallery}</div>
-<div class="info">
-<div class="brand">${esc(product.brand || "HOMS TECH")}</div>
-<h1>${esc(title)}</h1>
-${price ? `<div class="price">${euro(esc(price))}</div>` : ""}
-${specs ? `<div class="meta">${specs}</div>` : ""}
-${description ? `<div class="description">${esc(description)}</div>` : ""}
-<div class="buttons">
-<a class="btn green" id="orderBtn" href="#" target="_blank" rel="noopener">🛒 Bestel deze telefoon</a>
-<a class="btn gray" href="devices.html">← Apparaten</a>
-</div>
-${!price ? `<div class="status">Neem contact met ons op voor de actuele prijs.</div>` : ""}
-</div>
-</div>`;
-}
-
-function changeImage(el,url){
-const main=document.getElementById("mainImage");
-if(main) main.src=url;
-document.querySelectorAll(".thumb").forEach(x=>x.classList.remove("active"));
-el.classList.add("active");
-}
-
 async function load(){
 try{
 const response=await fetch("/api/site");
@@ -191,15 +242,6 @@ if(!list.length && Array.isArray(data.devices)) list=data.devices;
 
 const product=Number.isInteger(id) && id>=0 ? list[id] : null;
 render(product,data);
-const orderBtn = document.getElementById("orderBtn");
-if(orderBtn){
-const orderName = product.name || "deze telefoon";
-const orderPrice = product.price || product.salePrice || product.sellPrice || product.verkoopprijs || "";
-const message = `Hallo HOMS TECH, ik wil deze telefoon bestellen: ${orderName}${orderPrice ? ` - €${orderPrice}` : ""}.`;
-const number = String(data.whatsapp || "").replace(/\D/g,"");
-orderBtn.href = number ? `https://wa.me/${number}?text=${encodeURIComponent(message)}` : "#";
-}
-
 }catch(e){
 console.error("HOMS TECH:",e);
 document.getElementById("productArea").innerHTML=
