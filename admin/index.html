@@ -464,6 +464,25 @@ textarea{
 .gsm-admin-name{font-size:17px;font-weight:800;flex:1}
 .gsm-admin-arrow{font-size:22px;color:#64748b}
 .gsm-delete{flex:0 0 auto}
+
+.gsm-admin-tabs{display:flex;gap:8px;overflow-x:auto;margin:0 0 16px;padding:2px 0 8px}
+.gsm-admin-tab{flex:0 0 auto;border:1px solid #dbe2ea;background:#fff;color:#1f2937;padding:11px 15px;border-radius:10px;font-weight:800;cursor:pointer}
+.gsm-admin-tab.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.gsm-service-row{display:flex;align-items:center;gap:12px;border-bottom:1px solid #e5e7eb;padding:14px 4px}
+.gsm-service-row:last-child{border-bottom:0}
+.gsm-service-icon{width:36px;text-align:center;font-size:22px}
+.gsm-service-name{font-weight:800;flex:1}
+.gsm-edit-btn,.gsm-delete-btn{border:0;border-radius:8px;padding:8px 11px;font-weight:700;cursor:pointer}
+.gsm-edit-btn{background:#e8f0ff;color:#2563eb}
+.gsm-delete-btn{background:#fee2e2;color:#b91c1c}
+.gsm-editor-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+.gsm-editor{position:relative;width:min(560px,100%);background:#fff;border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.gsm-editor h3{margin:0 0 18px}
+.gsm-editor label{display:block;font-weight:700;margin:12px 0 6px}
+.gsm-editor input,.gsm-editor textarea{width:100%;padding:11px;border:1px solid #dbe2ea;border-radius:9px;font:inherit}
+.gsm-editor textarea{min-height:120px;resize:vertical}
+.gsm-editor .btn{margin-top:16px}
+.gsm-editor-close{position:absolute;right:14px;top:12px;border:0;background:#eef2f7;width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer}
 </style>
 </head>
 
@@ -1513,70 +1532,88 @@ const gsmServiceCategories=[
 ];
 
 function renderGsmServices(){
-  const box=document.getElementById("gsmServicesAdminList");
+  const box=document.getElementById("gsmServicesList");
   if(!box) return;
 
-  box.innerHTML=gsmServiceCategories.map(([key,title])=>{
-    const items=data.gsmServices[key] || [];
+  const activeKey=window.gsmActiveCategory || "imei";
 
-    return `<div class="card" style="margin-bottom:18px">
+  let tabs=gsmCategories.map(category=>`
+    <button type="button"
+      class="gsm-admin-tab ${category.key===activeKey?"active":""}"
+      onclick="gsmActiveCategory='${category.key}';renderGsmServices()">
+      ${category.label}
+    </button>
+  `).join("");
+
+  const category=gsmCategories.find(x=>x.key===activeKey) || gsmCategories[0];
+  const list=data.gsmServices[category.key] || [];
+
+  let content=`
+    <div class="gsm-admin-tabs">${tabs}</div>
+    <div class="card">
       <div class="card-head">
-        <div class="card-title">${title}</div>
-        <button class="btn btn-green" onclick="addGsmService('${key}')">+ Service toevoegen</button>
+        <div class="card-title">${category.label}</div>
+        <button class="btn btn-green" onclick="addGsmService('${category.key}')">+ Toevoegen</button>
       </div>
+  `;
 
-      <div class="gsm-admin-list">
-        ${items.length
-          ? items.map((item,i)=>gsmServiceRow(key,item,i)).join("")
-          : '<div class="small" style="padding:18px 4px">Nog geen services toegevoegd.</div>'}
-      </div>
-    </div>`;
-  }).join("");
+  if(!list.length){
+    content+=`<div class="small">Nog geen services in deze categorie.</div>`;
+  }else{
+    list.forEach((service,i)=>{
+      content+=`
+        <div class="gsm-service-row">
+          <div class="gsm-service-icon">${esc(service.icon||"🔧")}</div>
+          <div class="gsm-service-name">${esc(service.name||"Nieuwe GSM Service")}</div>
+          <button type="button" class="gsm-edit-btn" onclick="openGsmServiceEditor('${category.key}',${i})">Bewerken</button>
+          <button type="button" class="gsm-delete-btn" onclick="deleteGsmService('${category.key}',${i})">Verwijderen</button>
+        </div>
+      `;
+    });
+  }
+
+  content+=`</div>`;
+  box.innerHTML=content;
 }
 
-function gsmServiceRow(key,item,i){
-  return `<div class="gsm-admin-row" onclick="openGsmEditor('${key}',${i})">
-    <div class="gsm-admin-icon">${esc(item.icon||"🔧")}</div>
-    <div class="gsm-admin-name">${esc(item.name||"Nieuwe service")}</div>
-    <div class="gsm-admin-arrow">›</div>
-    <button class="btn btn-red gsm-delete" onclick="event.stopPropagation();deleteGsmService('${key}',${i})">Verwijderen</button>
-  </div>`;
+function openGsmServiceEditor(category,i){
+  const service=data.gsmServices[category][i];
+  const old=document.getElementById("gsmServiceEditor");
+  if(old) old.remove();
+
+  const editor=document.createElement("div");
+  editor.id="gsmServiceEditor";
+  editor.className="gsm-editor-overlay";
+  editor.innerHTML=`
+    <div class="gsm-editor">
+      <button type="button" class="gsm-editor-close" onclick="document.getElementById('gsmServiceEditor').remove()">×</button>
+      <h3>Service bewerken</h3>
+      <label>Naam service</label>
+      <input id="gsmEditName" value="${esc(service.name)}">
+      <label>Icoon / emoji</label>
+      <input id="gsmEditIcon" value="${esc(service.icon||"🔧")}">
+      <label>Prijs (€)</label>
+      <input id="gsmEditPrice" value="${esc(service.price)}">
+      <label>Details</label>
+      <textarea id="gsmEditDetails">${esc(service.details)}</textarea>
+      <button type="button" class="btn btn-green" onclick="saveGsmServiceEditor('${category}',${i})">Opslaan</button>
+    </div>
+  `;
+  document.body.appendChild(editor);
 }
 
-let gsmEditCategory="";
-let gsmEditIndex=-1;
-
-function openGsmEditor(key,i){
-  const item=data.gsmServices[key][i];
-  gsmEditCategory=key;
-  gsmEditIndex=i;
-
-  document.getElementById("gsmEditTitle").textContent=item.name||"GSM Service";
-  document.getElementById("gsmEditName").value=item.name||"";
-  document.getElementById("gsmEditIcon").value=item.icon||"🔧";
-  document.getElementById("gsmEditPrice").value=item.price||"";
-  document.getElementById("gsmEditDetails").value=item.details||"";
-  document.getElementById("gsmEditModal").classList.add("show");
-}
-
-function closeGsmEditor(e){
-  if(e && e.target!==document.getElementById("gsmEditModal")) return;
-  document.getElementById("gsmEditModal").classList.remove("show");
-}
-
-function saveGsmEditor(){
-  if(gsmEditIndex<0) return;
-
-  const item=data.gsmServices[gsmEditCategory][gsmEditIndex];
-  item.name=document.getElementById("gsmEditName").value.trim();
-  item.icon=document.getElementById("gsmEditIcon").value.trim()||"🔧";
-  item.price=document.getElementById("gsmEditPrice").value.trim();
-  item.details=document.getElementById("gsmEditDetails").value.trim();
-
+function saveGsmServiceEditor(category,i){
+  data.gsmServices[category][i]={
+    icon:document.getElementById("gsmEditIcon").value,
+    name:document.getElementById("gsmEditName").value,
+    price:document.getElementById("gsmEditPrice").value,
+    details:document.getElementById("gsmEditDetails").value
+  };
+  document.getElementById("gsmServiceEditor").remove();
   renderGsmServices();
   markChanged();
-  closeGsmEditor();
 }
+
 
 function addGsmService(key){
   data.gsmServices[key].push({
