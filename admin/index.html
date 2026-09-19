@@ -450,6 +450,20 @@ textarea{
     flex-direction:column;
   }
 }
+
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:999;align-items:center;justify-content:center;padding:20px}
+.modal-backdrop.show{display:flex}
+.modal{width:min(650px,100%);background:#fff;border-radius:18px;padding:25px;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative}
+.modal-close{position:absolute;right:15px;top:12px;border:0;background:#eef2f7;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer}
+
+.gsm-admin-list{background:#fff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden}
+.gsm-admin-row{display:flex;align-items:center;gap:14px;padding:15px 18px;border-bottom:1px solid #e5e7eb;cursor:pointer;transition:.15s}
+.gsm-admin-row:last-child{border-bottom:0}
+.gsm-admin-row:hover{background:#f8fafc}
+.gsm-admin-icon{width:38px;flex:0 0 38px;font-size:22px;text-align:center}
+.gsm-admin-name{font-size:17px;font-weight:800;flex:1}
+.gsm-admin-arrow{font-size:22px;color:#64748b}
+.gsm-delete{flex:0 0 auto}
 </style>
 </head>
 
@@ -624,19 +638,41 @@ textarea{
   </section>
 
 
-  <!-- GSM SERVICES -->
-  <section class="section admin-page" id="page-gsm-services">
-    <div class="section-head">
-      <div>
-        <h2>🛠️ GSM Services</h2>
-        <p>Beheer de diensten die op de openbare GSM Services-pagina verschijnen.</p>
+
+  <!-- GSM SERVICE EDIT MODAL -->
+  <div id="gsmEditModal" class="modal-backdrop" onclick="closeGsmEditor(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeGsmEditor()">×</button>
+      <h2 id="gsmEditTitle">GSM Service</h2>
+
+      <div class="grid">
+        <div class="field">
+          <label>Naam service</label>
+          <input id="gsmEditName">
+        </div>
+
+        <div class="field">
+          <label>Icoon / emoji</label>
+          <input id="gsmEditIcon">
+        </div>
+
+        <div class="field">
+          <label>Prijs (€)</label>
+          <input id="gsmEditPrice" placeholder="Bijv. 29,99">
+        </div>
+
+        <div class="field" style="grid-column:1/-1">
+          <label>Details</label>
+          <textarea id="gsmEditDetails" rows="5"></textarea>
+        </div>
       </div>
-      <button class="btn btn-green" onclick="addGsmService()">
-        + Service toevoegen
-      </button>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+        <button class="btn btn-light" onclick="closeGsmEditor()">Annuleren</button>
+        <button class="btn btn-green" onclick="saveGsmEditor()">Opslaan</button>
+      </div>
     </div>
-    <div id="gsmServicesList"></div>
-  </section>
+  </div>
 
   <!-- SAVE -->
   <div class="save-bar">
@@ -762,15 +798,7 @@ async function logout(){
 
 
 /* ---------------- DATA ---------------- */
-function normalizeGsmService(x){
-  x=x||{};
-  return {
-    icon:x.icon || "🔧",
-    name:x.name || "",
-    details:x.details || x.description || "",
-    price:x.price || ""
-  };
-}
+
 function normalizeData(){
 
   if(!data || typeof data!=="object"){
@@ -1477,40 +1505,79 @@ const gsmServiceCategories=[
 function renderGsmServices(){
   const box=document.getElementById("gsmServicesAdminList");
   if(!box) return;
+
   box.innerHTML=gsmServiceCategories.map(([key,title])=>{
     const items=data.gsmServices[key] || [];
+
     return `<div class="card" style="margin-bottom:18px">
       <div class="card-head">
         <div class="card-title">${title}</div>
         <button class="btn btn-green" onclick="addGsmService('${key}')">+ Service toevoegen</button>
       </div>
-      <div id="gsm-${key}">
-        ${items.length ? items.map((item,i)=>gsmServiceCard(key,item,i)).join("") : '<div class="small">Nog geen services toegevoegd.</div>'}
+
+      <div class="gsm-admin-list">
+        ${items.length
+          ? items.map((item,i)=>gsmServiceRow(key,item,i)).join("")
+          : '<div class="small" style="padding:18px 4px">Nog geen services toegevoegd.</div>'}
       </div>
     </div>`;
   }).join("");
 }
 
-function gsmServiceCard(key,item,i){
-  return `<div class="card" style="background:#fbfcfe">
-    <div class="card-head">
-      <div class="card-title">Service ${i+1}</div>
-      <button class="btn btn-red" onclick="deleteGsmService('${key}',${i})">Verwijderen</button>
-    </div>
-    <div class="grid">
-      <div class="field"><label>Icoon / emoji</label><input value="${esc(item.icon)}" oninput="data.gsmServices.${key}[${i}].icon=this.value;markChanged()"></div>
-      <div class="field"><label>Naam service</label><input value="${esc(item.name)}" oninput="data.gsmServices.${key}[${i}].name=this.value;markChanged()"></div>
-      <div class="field" style="grid-column:1/-1"><label>Details</label><textarea oninput="data.gsmServices.${key}[${i}].details=this.value;markChanged()">${esc(item.details)}</textarea></div>
-      <div class="field"><label>Prijs (€)</label><input value="${esc(item.price)}" placeholder="Bijv. 29,99" oninput="data.gsmServices.${key}[${i}].price=this.value;markChanged()"></div>
-    </div>
+function gsmServiceRow(key,item,i){
+  return `<div class="gsm-admin-row" onclick="openGsmEditor('${key}',${i})">
+    <div class="gsm-admin-icon">${esc(item.icon||"🔧")}</div>
+    <div class="gsm-admin-name">${esc(item.name||"Nieuwe service")}</div>
+    <div class="gsm-admin-arrow">›</div>
+    <button class="btn btn-red gsm-delete" onclick="event.stopPropagation();deleteGsmService('${key}',${i})">Verwijderen</button>
   </div>`;
 }
 
-function addGsmService(key){
-  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",details:"",price:""});
+let gsmEditCategory="";
+let gsmEditIndex=-1;
+
+function openGsmEditor(key,i){
+  const item=data.gsmServices[key][i];
+  gsmEditCategory=key;
+  gsmEditIndex=i;
+
+  document.getElementById("gsmEditTitle").textContent=item.name||"GSM Service";
+  document.getElementById("gsmEditName").value=item.name||"";
+  document.getElementById("gsmEditIcon").value=item.icon||"🔧";
+  document.getElementById("gsmEditPrice").value=item.price||"";
+  document.getElementById("gsmEditDetails").value=item.details||"";
+  document.getElementById("gsmEditModal").classList.add("show");
+}
+
+function closeGsmEditor(e){
+  if(e && e.target!==document.getElementById("gsmEditModal")) return;
+  document.getElementById("gsmEditModal").classList.remove("show");
+}
+
+function saveGsmEditor(){
+  if(gsmEditIndex<0) return;
+
+  const item=data.gsmServices[gsmEditCategory][gsmEditIndex];
+  item.name=document.getElementById("gsmEditName").value.trim();
+  item.icon=document.getElementById("gsmEditIcon").value.trim()||"🔧";
+  item.price=document.getElementById("gsmEditPrice").value.trim();
+  item.details=document.getElementById("gsmEditDetails").value.trim();
+
   renderGsmServices();
   markChanged();
-  showPage("gsm");
+  closeGsmEditor();
+}
+
+function addGsmService(key){
+  data.gsmServices[key].push({
+    icon:"🔧",
+    name:"Nieuwe service",
+    details:"",
+    price:""
+  });
+  renderGsmServices();
+  markChanged();
+  openGsmEditor(key,data.gsmServices[key].length-1);
 }
 
 function deleteGsmService(key,i){
