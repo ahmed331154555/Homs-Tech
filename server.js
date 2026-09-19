@@ -19,7 +19,7 @@ const pool = new Pool({
       : false,
 });
 
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "12mb" }));
 app.use(cookieParser());
 
 // Website files
