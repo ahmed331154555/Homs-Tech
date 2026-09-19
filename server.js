@@ -151,6 +151,9 @@ async function initDatabase() {
     )
   `);
 
+  // Added safely for existing installations: stores service-specific username when needed.
+  await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS username TEXT DEFAULT ''`);
+
   const result = await pool.query(
     "SELECT id FROM site_settings WHERE id = 1"
   );
@@ -521,22 +524,6 @@ app.post("/api/customer/logout", (req, res) => {
   });
 });
 
-// Admin customers
-app.get("/api/admin/customers", requireAuth, async (req, res) => {
-  try {
-    const result = await pool.query(
-      `SELECT id, name, email, phone, address, created_at
-       FROM customers
-       ORDER BY created_at DESC`
-    );
-
-    res.json({ customers: result.rows });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Kan klanten niet laden" });
-  }
-});
-
 // ---------------- GSM SERVICE ORDERS ----------------
 
 app.post("/api/orders", async (req, res) => {
@@ -549,6 +536,7 @@ app.post("/api/orders", async (req, res) => {
       name = "",
       email = "",
       phone = "",
+      username = "",
       imei = "",
       notes = ""
     } = req.body || {};
@@ -561,6 +549,7 @@ app.post("/api/orders", async (req, res) => {
       name: String(name || "").trim(),
       email: String(email || "").trim().toLowerCase(),
       phone: String(phone || "").trim(),
+      username: String(username || "").trim(),
       imei: String(imei || "").trim(),
       notes: String(notes || "").trim()
     };
@@ -568,6 +557,13 @@ app.post("/api/orders", async (req, res) => {
     if (!clean.serviceName || !clean.name || !clean.email || !clean.phone) {
       return res.status(400).json({
         error: "Vul naam, e-mail en telefoonnummer in."
+      });
+    }
+
+    // DFT activation/account services require the customer's username.
+    if (/\bdft\b/i.test(clean.serviceName) && /(activation|activate|account|username|user)/i.test(clean.serviceName) && !clean.username) {
+      return res.status(400).json({
+        error: "Vul de gebruikersnaam voor deze DFT-service in."
       });
     }
 
@@ -588,8 +584,8 @@ app.post("/api/orders", async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO service_orders
-       (customer_id, service_category, service_name, service_group, price, name, email, phone, imei, notes)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+       (customer_id, service_category, service_name, service_group, price, name, email, phone, username, imei, notes)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
        RETURNING id, status, created_at`,
       [
         customerId,
@@ -600,6 +596,7 @@ app.post("/api/orders", async (req, res) => {
         clean.name,
         clean.email,
         clean.phone,
+        clean.username,
         clean.imei,
         clean.notes
       ]
@@ -620,7 +617,7 @@ app.post("/api/orders", async (req, res) => {
 app.get("/api/customer/orders", requireCustomerAuth, async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, service_category, service_name, service_group, price, name, email, phone, imei, notes, status, created_at
+      `SELECT id, service_category, service_name, service_group, price, name, email, phone, username, imei, notes, status, created_at
        FROM service_orders
        WHERE customer_id = $1
        ORDER BY created_at DESC`,
