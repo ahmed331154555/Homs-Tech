@@ -1662,6 +1662,59 @@ function deleteWhy(i){
 }
 
 
+/* ---------------- PHONE IMAGE UPLOADS ---------------- */
+function handlePhoneImage(event, phoneIndex, imageIndex){
+  const file=event.target.files && event.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith("image/")){
+    alert("Kies een afbeeldingsbestand.");
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    if(!data.phones[phoneIndex]) return;
+    if(!Array.isArray(data.phones[phoneIndex].images)) data.phones[phoneIndex].images=["","","",""];
+    data.phones[phoneIndex].images[imageIndex]=reader.result;
+    markChanged();
+    renderPhones();
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePhoneImage(phoneIndex, imageIndex){
+  if(!data.phones[phoneIndex]) return;
+  if(!Array.isArray(data.phones[phoneIndex].images)) data.phones[phoneIndex].images=["","","",""];
+  data.phones[phoneIndex].images[imageIndex]="";
+  markChanged();
+  renderPhones();
+}
+
+function handleImage(event, phoneIndex, imageIndex){
+  const file=event.target.files && event.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith("image/")){
+    alert("Kies een afbeeldingsbestand.");
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    if(!data.usedPhones[phoneIndex]) return;
+    if(!Array.isArray(data.usedPhones[phoneIndex].images)) data.usedPhones[phoneIndex].images=["","","",""];
+    data.usedPhones[phoneIndex].images[imageIndex]=reader.result;
+    markChanged();
+    renderUsedPhones();
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage(phoneIndex, imageIndex){
+  if(!data.usedPhones[phoneIndex]) return;
+  if(!Array.isArray(data.usedPhones[phoneIndex].images)) data.usedPhones[phoneIndex].images=["","","",""];
+  data.usedPhones[phoneIndex].images[imageIndex]="";
+  markChanged();
+  renderUsedPhones();
+}
+
 /* ---------------- SAVE ---------------- */
 
 async function save(){
