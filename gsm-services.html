@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GSM Services | HOMS TECH</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f7fa;color:#111827}
+a{text-decoration:none}
+header{background:#111827;color:#fff;padding:14px 5%;position:sticky;top:0;z-index:50;box-shadow:0 4px 18px rgba(0,0,0,.18)}
+.top{max-width:1250px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.logo{font-size:25px;font-weight:900;letter-spacing:.5px}
+.logo span{color:#3b82f6}
+nav{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+nav a{color:#fff;padding:9px 12px;border-radius:9px;font-weight:700;font-size:14px}
+nav a:hover{background:#2563eb}
+.hero{background:linear-gradient(135deg,#07101f,#1d3557);color:white;text-align:center;padding:55px 20px 45px}
+.hero h1{font-size:48px;margin:0 0 10px;font-weight:900}
+.hero h1 span{color:#60a5fa}
+.hero p{margin:0;color:#dbeafe;font-size:18px}
+.container{max-width:1250px;margin:auto;padding:35px 20px 70px}
+.tabs{display:flex;gap:10px;overflow-x:auto;padding:5px 2px 18px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;border:1px solid #dbe2ea;background:white;color:#1f2937;padding:12px 17px;border-radius:12px;font-weight:800;cursor:pointer}
+.tab.active{background:#2563eb;color:white;border-color:#2563eb}
+.category{display:none}
+.category.active{display:block}
+.category-head{display:flex;align-items:end;justify-content:space-between;gap:15px;margin:10px 0 22px}
+.category-head h2{margin:0;font-size:30px}
+.category-head p{margin:5px 0 0;color:#64748b}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.card{background:white;border:1px solid #e5e7eb;border-radius:18px;overflow:hidden;box-shadow:0 8px 28px rgba(15,23,42,.06)}
+.card-image{height:145px;background:linear-gradient(135deg,#e8eef7,#f8fafc);display:flex;align-items:center;justify-content:center;font-size:55px}
+.card-body{padding:21px}
+.card h3{margin:0 0 8px;font-size:21px}
+.details{color:#64748b;font-size:15px;min-height:70px}
+.meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0}
+.price{font-size:22px;font-weight:900;color:#111827}
+.badge{font-size:12px;font-weight:800;padding:6px 9px;border-radius:999px;background:#ecfdf5;color:#047857}
+.order{display:block;text-align:center;background:#16c766;color:#fff;padding:12px 16px;border-radius:11px;font-weight:900}
+.order:hover{background:#0eae56}
+.empty{background:white;border:1px dashed #cbd5e1;border-radius:18px;padding:45px;text-align:center;color:#64748b}
+.info{margin-top:30px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:16px;padding:18px;color:#1e3a8a}
+footer{background:#0b1422;color:#cbd5e1;text-align:center;padding:30px 20px}
+@media(max-width:950px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.top{flex-direction:column}.hero h1{font-size:39px}.grid{grid-template-columns:1fr}.category-head{align-items:start;flex-direction:column}nav{justify-content:center}}
+</style>
+</head>
+<body>
+
+<header>
+<div class="top">
+<div class="logo">HOMS <span>TECH</span></div>
+<nav>
+<a href="index.html">Home</a>
+<a href="about.html">Over ons</a>
+<a href="repair.html">Reparaties</a>
+<a href="devices.html">Apparaten</a>
+<a href="prices.html">Prijzen</a>
+<a href="/used.html">Tweedehands</a>
+<a href="gsm-services.html">GSM Services</a>
+<a href="account.html">👤 Mijn account</a>
+</nav>
+</div>
+</header>
+
+<section class="hero">
+<h1>GSM <span>Services</span></h1>
+<p>Kies een service en bekijk naam, details en prijs.</p>
+</section>
+
+<main class="container">
+
+<div class="tabs">
+<button class="tab active" data-target="imei">IMEI Services</button>
+<button class="tab" data-target="remote">Remote Service</button>
+<button class="tab" data-target="server">Server / Tools</button>
+<button class="tab" data-target="frp">FRP Services</button>
+<button class="tab" data-target="firmware">Firmware / Software</button>
+</div>
+
+<section class="category active" id="imei">
+<div class="category-head">
+<div><h2>📱 IMEI Services</h2><p>IMEI- en netwerkservices die door HOMS TECH worden aangeboden.</p></div>
+</div>
+<div class="grid" id="imei-list"></div>
+</section>
+
+<section class="category" id="remote">
+<div class="category-head">
+<div><h2>🛠️ Remote Service</h2><p>Services op afstand. Elk aanbod krijgt een eigen naam, details en prijs.</p></div>
+</div>
+<div class="grid" id="remote-list"></div>
+</section>
+
+<section class="category" id="server">
+<div class="category-head">
+<div><h2>🔧 Server / Tools</h2><p>Tools, servers, credits en activaties.</p></div>
+</div>
+<div class="grid" id="server-list"></div>
+</section>
+
+<section class="category" id="frp">
+<div class="category-head">
+<div><h2>🔐 FRP Services</h2><p>Ondersteunde softwarediensten voor rechtmatige apparaateigenaren.</p></div>
+</div>
+<div class="grid" id="frp-list"></div>
+</section>
+
+<section class="category" id="firmware">
+<div class="category-head">
+<div><h2>💻 Firmware / Software</h2><p>Firmware- en softwarediensten.</p></div>
+</div>
+<div class="grid" id="firmware-list"></div>
+</section>
+
+<div class="info">
+<strong>Zo gaan we het beheren:</strong> iedere service krijgt straks net als een telefoon een <strong>naam + details + prijs + Bestellen</strong>. Jij kunt per categorie de echte services en prijzen invullen. Voorlopig worden er geen verzonnen producten of prijzen getoond.
+</div>
+
+</main>
+
+<footer>© HOMS TECH — GSM Services & Telefoonservice</footer>
+
+<script>
+const categories=["imei","remote","server","frp","firmware"];
+const defaultLabels={imei:"IMEI Services",remote:"Remote Service",server:"Server / Tools",frp:"FRP Services",firmware:"Firmware / Software"};
+let siteData={};
+
+function esc(value){return String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
+function whatsappLink(service){
+  const number=String(siteData.whatsapp||"").replace(/\D/g,"");
+  if(!number)return "#";
+  const text="Hallo HOMS TECH, ik wil graag de volgende GSM-service aanvragen: "+service+"\n\nMerk/model: \nIMEI/Serienummer indien nodig: \nOpmerking: ";
+  return "https://wa.me/"+number+"?text="+encodeURIComponent(text);
+}
+function card(item){
+  const price=item.price ? "€ "+esc(item.price) : "Prijs op aanvraag";
+  const icon=esc(item.icon||"🔧");
+  const name=esc(item.name||"Service");
+  const details=esc(item.details||"");
+  return `<article class="card"><div class="card-image">${icon}</div><div class="card-body"><h3>${name}</h3><div class="details">${details}</div><div class="meta"><div class="price">${price}</div></div><a class="order" href="${whatsappLink(item.name||"GSM Service")}">Bestellen</a></div></article>`;
+}
+function render(){
+  categories.forEach(key=>{
+    const el=document.getElementById(key+"-list");
+    const list=siteData.gsmServices && Array.isArray(siteData.gsmServices[key]) ? siteData.gsmServices[key] : [];
+    el.innerHTML=list.length ? list.map(card).join("") : '<div class="empty" style="grid-column:1/-1"><strong>Nog geen services toegevoegd.</strong><br>Deze categorie is klaar om services toe te voegen via Admin.</div>';
+  });
+}
+async function loadSite(){
+  try{
+    const r=await fetch("/api/site",{cache:"no-store"});
+    if(r.ok)siteData=await r.json();
+  }catch(e){console.error(e)}
+  render();
+  const hero=document.getElementById("heroWhatsApp");
+  const order=document.getElementById("orderWhatsApp");
+  if(hero)hero.href=whatsappLink("GSM Service - algemene aanvraag");
+  if(order)order.href=whatsappLink("GSM Service - algemene aanvraag");
+}
+document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".category").forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById(btn.dataset.target).classList.add("active");
+}));
+loadSite();
+</script>
+</body>
+</html>
