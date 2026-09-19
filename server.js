@@ -144,6 +144,7 @@ async function initDatabase() {
       name TEXT NOT NULL,
       email TEXT NOT NULL,
       phone TEXT DEFAULT '',
+      username TEXT DEFAULT '',
       imei TEXT DEFAULT '',
       notes TEXT DEFAULT '',
       status TEXT NOT NULL DEFAULT 'Nieuw',
@@ -151,7 +152,6 @@ async function initDatabase() {
     )
   `);
 
-  // Added safely for existing installations: stores service-specific username when needed.
   await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS username TEXT DEFAULT ''`);
 
   const result = await pool.query(
@@ -560,13 +560,6 @@ app.post("/api/orders", async (req, res) => {
       });
     }
 
-    // DFT activation/account services require the customer's username.
-    if (/\bdft\b/i.test(clean.serviceName) && /(activation|activate|account|username|user)/i.test(clean.serviceName) && !clean.username) {
-      return res.status(400).json({
-        error: "Vul de gebruikersnaam voor deze DFT-service in."
-      });
-    }
-
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean.email);
     if (!emailOk) {
       return res.status(400).json({
@@ -631,10 +624,25 @@ app.get("/api/customer/orders", requireCustomerAuth, async (req, res) => {
   }
 });
 
+app.get("/api/admin/customers", requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, name, email, phone, address, created_at
+       FROM customers
+       ORDER BY created_at DESC`
+    );
+
+    res.json({ customers: result.rows });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Kan klanten niet laden" });
+  }
+});
+
 app.get("/api/admin/orders", requireAuth, async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, customer_id, service_category, service_name, service_group, price, name, email, phone, imei, notes, status, created_at
+      `SELECT id, customer_id, service_category, service_name, service_group, price, name, email, phone, username, imei, notes, status, created_at
        FROM service_orders
        ORDER BY created_at DESC`
     );
