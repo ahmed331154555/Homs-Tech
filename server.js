@@ -133,6 +133,24 @@ async function initDatabase() {
     )
   `);
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS service_orders (
+      id SERIAL PRIMARY KEY,
+      customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
+      service_category TEXT NOT NULL DEFAULT '',
+      service_name TEXT NOT NULL DEFAULT '',
+      service_group TEXT DEFAULT '',
+      price TEXT DEFAULT '',
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT DEFAULT '',
+      imei TEXT DEFAULT '',
+      notes TEXT DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'Nieuw',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
   const result = await pool.query(
     "SELECT id FROM site_settings WHERE id = 1"
   );
@@ -503,7 +521,164 @@ app.post("/api/customer/logout", (req, res) => {
   });
 });
 
+// ---------------- GSM SERVICE ORDERS ----------------
+
+app.post("/api/orders", async (req, res) => {
+  try {
+    const {
+      serviceCategory = "",
+      serviceName = "",
+      serviceGroup = "",
+      price = "",
+      name = "",
+      email = "",
+      phone = "",
+      imei = "",
+      notes = ""
+    } = req.body || {};
+
+    const clean = {
+      serviceCategory: String(serviceCategory || "").trim(),
+      serviceName: String(serviceName || "").trim(),
+      serviceGroup: String(serviceGroup || "").trim(),
+      price: String(price || "").trim(),
+      name: String(name || "").trim(),
+      email: String(email || "").trim().toLowerCase(),
+      phone: String(phone || "").trim(),
+      imei: String(imei || "").trim(),
+      notes: String(notes || "").trim()
+    };
+
+    if (!clean.serviceName || !clean.name || !clean.email || !clean.phone) {
+      return res.status(400).json({
+        error: "Vul naam, e-mail en telefoonnummer in."
+      });
+    }
+
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean.email);
+    if (!emailOk) {
+      return res.status(400).json({
+        error: "Vul een geldig e-mailadres in."
+      });
+    }
+
+    let customerId = null;
+    try {
+      if (req.cookies.customerToken) {
+        const decoded = jwt.verify(req.cookies.customerToken, process.env.JWT_SECRET);
+        customerId = decoded.customerId || null;
+      }
+    } catch {}
+
+    const result = await pool.query(
+      `INSERT INTO service_orders
+       (customer_id, service_category, service_name, service_group, price, name, email, phone, imei, notes)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+       RETURNING id, status, created_at`,
+      [
+        customerId,
+        clean.serviceCategory,
+        clean.serviceName,
+        clean.serviceGroup,
+        clean.price,
+        clean.name,
+        clean.email,
+        clean.phone,
+        clean.imei,
+        clean.notes
+      ]
+    );
+
+    res.status(201).json({
+      success: true,
+      order: result.rows[0]
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "Bestelling kon niet worden aangemaakt."
+    });
+  }
+});
+
+app.get("/api/customer/orders", requireCustomerAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, service_category, service_name, service_group, price, name, email, phone, imei, notes, status, created_at
+       FROM service_orders
+       WHERE customer_id = $1
+       ORDER BY created_at DESC`,
+      [req.customerId]
+    );
+
+    res.json({ orders: result.rows });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Bestellingen konden niet worden geladen." });
+  }
+});
+
+app.get("/api/admin/orders", requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, customer_id, service_category, service_name, service_group, price, name, email, phone, imei, notes, status, created_at
+       FROM service_orders
+       ORDER BY created_at DESC`
+    );
+
+    res.json({ orders: result.rows });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Bestellingen konden niet worden geladen." });
+  }
+});
+
+app.put("/api/admin/orders/:id/status", requireAuth, async (req, res) => {
+  try {
+    const allowed = ["Nieuw", "In behandeling", "Voltooid", "Geannuleerd"];
+    const status = String(req.body?.status || "").trim();
+
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ error: "Ongeldige status." });
+    }
+
+    const result = await pool.query(
+      `UPDATE service_orders SET status = $1 WHERE id = $2 RETURNING id, status`,
+      [status, req.params.id]
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({ error: "Bestelling niet gevonden." });
+    }
+
+    res.json({ success: true, order: result.rows[0] });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Status kon niet worden gewijzigd." });
+  }
+});
+
 // Authentication middleware
+function requireCustomerAuth(req, res, next) {
+  try {
+    const token = req.cookies.customerToken;
+
+    if (!token) {
+      return res.status(401).json({
+        error: "Niet ingelogd"
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.customerId = decoded.customerId;
+    next();
+  } catch (error) {
+    res.status(401).json({
+      error: "Niet ingelogd"
+    });
+  }
+}
+
 function requireAuth(req, res, next) {
   try {
     const token = req.cookies.token;
@@ -526,27 +701,6 @@ function requireAuth(req, res, next) {
     });
   }
 }
-
-
-// Admin: list registered customers (passwords are never returned)
-app.get("/api/admin/customers", requireAuth, async (req, res) => {
-  try {
-    const result = await pool.query(
-      `SELECT id, name, email, phone, address, created_at
-       FROM customers
-       ORDER BY created_at DESC`
-    );
-
-    res.json({
-      customers: result.rows
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      error: "Kan klanten niet laden"
-    });
-  }
-});
 
 // Update website settings
 app.put("/api/site", requireAuth, async (req, res) => {
