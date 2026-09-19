@@ -762,7 +762,15 @@ async function logout(){
 
 
 /* ---------------- DATA ---------------- */
-
+function normalizeGsmService(x){
+  x=x||{};
+  return {
+    icon:x.icon || "🔧",
+    name:x.name || "",
+    details:x.details || x.description || "",
+    price:x.price || ""
+  };
+}
 function normalizeData(){
 
   if(!data || typeof data!=="object"){
