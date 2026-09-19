@@ -73,23 +73,17 @@ footer{background:#0b1422;color:#fff;padding:38px 5%}
 .modal-actions{display:flex;gap:10px}.modal-actions .btn{flex:1}
 
 
-.order-form{display:grid;grid-template-columns:1fr 1fr;gap:14px;text-align:left;margin-top:20px;background:#0b1220;border:1px solid #1f2b3d;border-radius:16px;padding:18px}
-.order-form .field{display:flex;flex-direction:column;gap:7px}
+.order-form{display:grid;grid-template-columns:1fr 1fr;gap:13px;text-align:left;margin-top:18px}
+.order-form .field{display:flex;flex-direction:column;gap:6px}
 .order-form .field.full{grid-column:1/-1}
-.order-form label{font-size:12px;font-weight:800;color:#cbd5e1;letter-spacing:.2px}
-.order-form input,.order-form textarea{width:100%;padding:13px 14px;border:1px solid #334155;border-radius:11px;background:#111827;color:#fff;outline:none;font:inherit;transition:.15s ease}
-.order-form input::placeholder,.order-form textarea::placeholder{color:#64748b}
-.order-form input:focus,.order-form textarea:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(96,165,250,.12)}
+.order-form label{font-size:13px;font-weight:800;color:#e5e7eb}
+.order-form input,.order-form textarea{width:100%;padding:12px 13px;border:1px solid #334155;border-radius:10px;background:#0f172a;color:#fff;outline:none;font:inherit}
+.order-form input:focus,.order-form textarea:focus{border-color:#60a5fa}
 .order-form textarea{min-height:95px;resize:vertical}
-.order-submit{margin-top:2px;width:100%;background:#16c766;color:#fff;min-height:48px;font-size:15px}
-.order-submit:disabled{opacity:.65;cursor:wait}
+.order-submit{margin-top:2px;width:100%;background:#16c766;color:#fff}
 .order-status{grid-column:1/-1;padding:11px 13px;border-radius:10px;font-size:13px;display:none}
 .order-status.success{display:block;background:#dcfce7;color:#166534}
 .order-status.error{display:block;background:#fee2e2;color:#991b1b}
-.service-requirements{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 0}
-.requirement-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;font-size:11px;font-weight:800}
-.order-intro{padding:12px 14px;border-radius:12px;background:#0f172a;border:1px solid #1f2b3d;color:#cbd5e1;font-size:12px;line-height:1.55;margin-top:15px}
-.order-intro strong{color:#fff}
 @media(max-width:550px){.order-form{grid-template-columns:1fr}.order-form .field.full{grid-column:auto}}
 
 @media(max-width:750px){
@@ -187,14 +181,12 @@ footer{background:#0b1422;color:#fff;padding:38px 5%}
     </div>
     <div class="detail" id="modalDetails"></div>
     <div class="modal-price" id="modalPrice"></div>
-    <div class="order-intro"><strong>Uw aanvraag</strong><br>Vul alleen de gegevens in die voor deze service nodig zijn. Bij services zoals DFT Activation verschijnt automatisch het gebruikersnaamveld.</div>
-    <div id="serviceRequirements" class="service-requirements"></div>
     <form class="order-form" id="serviceOrderForm">
       <div class="field"><label>Naam *</label><input id="orderName" required autocomplete="name"></div>
       <div class="field"><label>E-mail *</label><input id="orderEmail" type="email" required autocomplete="email"></div>
       <div class="field"><label>Telefoon *</label><input id="orderPhone" required autocomplete="tel"></div>
-      <div class="field" id="usernameField" style="display:none"><label>Gebruikersnaam *</label><input id="orderUsername" autocomplete="username" placeholder="Uw gebruikersnaam"></div>
-      <div class="field" id="imeiField" style="display:none"><label id="imeiLabel">IMEI / Serienummer *</label><input id="orderImei" autocomplete="off"></div>
+      <div class="field"><label>IMEI / Serienummer</label><input id="orderImei" autocomplete="off"></div>
+      <div class="field" id="orderUsernameField" style="display:none"><label>Gebruikersnaam *</label><input id="orderUsername" autocomplete="username"></div>
       <div class="field full"><label>Opmerking</label><textarea id="orderNotes" placeholder="Vertel ons wat we voor u moeten doen..."></textarea></div>
       <div id="orderStatus" class="order-status"></div>
       <div class="field full"><button class="btn order-submit" type="submit">📤 Aanvraag versturen</button></div>
@@ -317,35 +309,6 @@ function renderServices(){
 }
 let selectedServiceForOrder=null;
 
-function serviceNeedsUsername(service){
-  if(service && service.requiresUsername===true)return true;
-  const name=String(service?.name||"").toLowerCase();
-  return /\bdft\b/.test(name) && /(activation|activate|account|username|user)/.test(name);
-}
-function serviceNeedsImei(service,category){
-  if(service && service.requiresImei===true)return true;
-  if(service && service.requiresImei===false)return false;
-  return category==="imei";
-}
-function renderRequirementFields(service,category){
-  const username=serviceNeedsUsername(service);
-  const imei=serviceNeedsImei(service,category);
-  const usernameField=document.getElementById("usernameField");
-  const imeiField=document.getElementById("imeiField");
-  const usernameInput=document.getElementById("orderUsername");
-  const imeiInput=document.getElementById("orderImei");
-  const req=document.getElementById("serviceRequirements");
-  usernameField.style.display=username?"flex":"none";
-  imeiField.style.display=imei?"flex":"none";
-  usernameInput.required=username;
-  imeiInput.required=imei;
-  document.getElementById("imeiLabel").textContent=imei?"IMEI / Serienummer *":"IMEI / Serienummer";
-  const badges=[];
-  if(username)badges.push("👤 Gebruikersnaam");
-  if(imei)badges.push("📱 IMEI / Serienummer");
-  req.innerHTML=badges.map(x=>`<span class="requirement-badge">${x}</span>`).join("");
-}
-
 async function prefillCustomerOrder(){
   try{
     const r=await fetch("/api/customer/me",{credentials:"same-origin"});
@@ -371,8 +334,13 @@ function openService(category,index){
   document.getElementById("modalWhatsApp").href=whatsappLink(service);
   document.getElementById("orderStatus").className="order-status";
   document.getElementById("orderStatus").textContent="";
+  const usernameField=document.getElementById("orderUsernameField");
+  const usernameInput=document.getElementById("orderUsername");
+  const needsUsername=service.requiresUsername===true;
+  usernameField.style.display=needsUsername?"flex":"none";
+  usernameInput.required=needsUsername;
+  usernameInput.value="";
   document.getElementById("serviceOrderForm").reset();
-  renderRequirementFields(service,category);
   document.getElementById("serviceModal").classList.add("open");
   prefillCustomerOrder();
 }
@@ -412,7 +380,6 @@ async function submitServiceOrder(event){
     status.className="order-status success";
     status.textContent="✓ Aanvraag ontvangen. Uw ordernummer is #"+(result.order?.id||"")+". We nemen zo snel mogelijk contact met u op.";
     document.getElementById("serviceOrderForm").reset();
-    renderRequirementFields(service,selected.category);
   }catch(error){
     status.className="order-status error";
     status.textContent="✕ "+error.message;
@@ -422,7 +389,11 @@ async function submitServiceOrder(event){
 }
 
 document.getElementById("serviceOrderForm").addEventListener("submit",submitServiceOrder);
-function closeModal(){document.getElementById("serviceModal").classList.remove("open")}
+function closeModal(){
+  document.getElementById("serviceModal").classList.remove("open");
+  const f=document.getElementById("orderUsernameField");
+  if(f)f.style.display="none";
+}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
 
 async function loadSite(){
@@ -434,6 +405,14 @@ async function loadSite(){
     siteData={whatsapp:"",gsmServices:{}};
   }
   if(!siteData.gsmServices || typeof siteData.gsmServices!=="object")siteData.gsmServices={};
+  ["imei","remote","server","frp","firmware"].forEach(key=>{
+    if(!Array.isArray(siteData.gsmServices[key]))siteData.gsmServices[key]=[];
+    siteData.gsmServices[key]=siteData.gsmServices[key].map(s=>({
+      ...(s||{}),
+      group:(s&&s.group)||categoryLabel(key),
+      requiresUsername:s&&s.requiresUsername===true
+    }));
+  });
   allEntries=getEntries();
   renderServices();
   document.getElementById("orderWhatsApp").href=whatsappLink({name:"GSM Service - algemene aanvraag",group:"Algemeen",price:""});
