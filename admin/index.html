@@ -1014,10 +1014,12 @@ function normalizeGsmService(x){
   return {
     icon:x.icon || "🔧",
     name:x.name || "",
+    group:x.group || "",
     shortDescription:x.shortDescription || "",
     details:x.details || x.description || "",
     price:x.price || "",
-    active:x.active !== false
+    active:x.active !== false,
+    requiresUsername:x.requiresUsername === true
   };
 }
 
@@ -1036,7 +1038,11 @@ function normalizeData(){
     if(!Array.isArray(data.gsmServices[key])){
       data.gsmServices[key]=[];
     }
-    data.gsmServices[key]=data.gsmServices[key].map(normalizeGsmService);
+    data.gsmServices[key]=data.gsmServices[key].map(x=>{
+      const service=normalizeGsmService(x);
+      if(!service.group) service.group=key==="imei"?"IMEI Services":key==="remote"?"Remote Service":key==="server"?"Server / Tools":key==="frp"?"FRP Services":"Firmware / Software";
+      return service;
+    });
   });
 
   /*
@@ -1145,12 +1151,11 @@ function normalizeData(){
   if(!data.gsmServices || typeof data.gsmServices !== "object") data.gsmServices={};
   ["imei","remote","server","frp","firmware"].forEach(key=>{
     if(!Array.isArray(data.gsmServices[key])) data.gsmServices[key]=[];
-    data.gsmServices[key]=data.gsmServices[key].map(x=>({
-      icon:x.icon || "🔧",
-      name:x.name || "",
-      details:x.details || x.description || "",
-      price:x.price || ""
-    }));
+    data.gsmServices[key]=data.gsmServices[key].map(x=>{
+      const service=normalizeGsmService(x);
+      if(!service.group) service.group=key==="imei"?"IMEI Services":key==="remote"?"Remote Service":key==="server"?"Server / Tools":key==="frp"?"FRP Services":"Firmware / Software";
+      return service;
+    });
   });
 
   /* why */
@@ -1440,8 +1445,9 @@ function renderGsmServices(){
           <button class="btn btn-red" onclick="deleteGsmService('${category[0]}',${selectedGsmServiceIndex})">Verwijderen</button>
         </div>
         <div class="grid">
-          <div class="field"><label>Groep</label><input value="${esc(category[1].replace(/^[^ ]+ /,''))}" readonly></div>
+          <div class="field"><label>Groep / bestandsnaam</label><input value="${esc(service.group || category[1].replace(/^[^ ]+ /,''))}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].group=this.value;markChanged();renderGsmServices()" placeholder="Bijv. INPRO RAMDISK A12/A13"></div>
           <div class="field"><label>Status</label><select onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].active=this.value==='Actief';markChanged()"><option value="Actief" ${service.active!==false?'selected':''}>Actief</option><option value="Inactief" ${service.active===false?'selected':''}>Inactief</option></select></div>
+          <div class="field" style="display:flex;align-items:flex-end"><label style="display:flex;align-items:center;gap:9px;margin:0;padding:12px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresUsername===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresUsername=this.checked;markChanged()" style="width:18px;height:18px"> Gebruikersnaam klant verplicht</label></div>
           <div class="field"><label>Naam service</label><input value="${esc(service.name||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].name=this.value;markChanged();renderGsmServices()"></div>
           <div class="field"><label>Prijs (€)</label><input value="${esc(service.price||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].price=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1"><label>Korte beschrijving</label><input value="${esc(service.shortDescription||'')}" placeholder="Bijv. Xiaomi / Redmi / Poco" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].shortDescription=this.value;markChanged()"></div>
@@ -1472,7 +1478,8 @@ function saveGsmServiceEditor(category,i){
 
 function addGsmService(key){
   if(!data.gsmServices[key]) data.gsmServices[key]=[];
-  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",shortDescription:"",details:"",price:"",active:true});
+  const categoryLabel=(gsmServiceCategories.find(x=>x[0]===key)||[key,key])[1].replace(/^[^ ]+ /,'');
+  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",group:categoryLabel,shortDescription:"",details:"",price:"",active:true,requiresUsername:false});
   gsmActiveCategory=key;
   selectedGsmServiceIndex=data.gsmServices[key].length-1;
   renderGsmServices();
@@ -1528,6 +1535,7 @@ async function loadOrders(){
             <div class="order-info"><strong>E-mail</strong>${esc(order.email||"-")}</div>
             <div class="order-info"><strong>Telefoon</strong>${esc(order.phone||"-")}</div>
             <div class="order-info"><strong>Prijs</strong>${esc(price)}</div>
+            <div class="order-info"><strong>Gebruikersnaam</strong>${esc(order.username||"-")}</div>
             <div class="order-info"><strong>IMEI / Serienummer</strong>${esc(order.imei||"-")}</div>
             <div class="order-info"><strong>Categorie</strong>${esc(order.service_category||"-")}</div>
           </div>
