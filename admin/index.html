@@ -47,10 +47,9 @@ button{
 }
 
 .container{
-  width:100%;
-  max-width:none;
-  margin:30px 0;
-  padding:0 24px;
+  max-width:1150px;
+  margin:30px auto;
+  padding:0 18px;
 }
 
 .login{
@@ -127,7 +126,6 @@ textarea{
 
 .dashboard{
   display:none;
-  width:100%;
 }
 
 .admin-nav{
@@ -141,10 +139,9 @@ textarea{
 }
 
 .admin-nav-inner{
-  width:100%;
-  max-width:none;
-  margin:0;
-  padding:10px 24px;
+  max-width:1150px;
+  margin:auto;
+  padding:10px 18px;
   display:flex;
   gap:8px;
   overflow-x:auto;
@@ -267,44 +264,23 @@ textarea{
   grid-column:span 1;
 }
 
-/* Master-detail layout for Diensten / Telefoons / Gebruikte telefoons */
-.editor-split{
-  display:grid;
-  grid-template-columns:220px minmax(0,1fr);
-  gap:22px;
-  align-items:start;
-}
-.editor-sidebar{
-  border:1px solid #e5eaf1;
-  border-radius:14px;
-  background:#fff;
-  padding:10px;
-}
-.editor-sidebar-title{
-  font-weight:800;
-  padding:8px 10px 10px;
-}
-.editor-item{
-  width:100%;
-  border:0;
-  background:transparent;
-  border-radius:10px;
-  padding:11px 12px;
-  text-align:left;
-  font-weight:700;
-  cursor:pointer;
-  margin-bottom:4px;
-}
-.editor-item:hover{background:#f1f8f4}
-.editor-item.active{background:#35bd79;color:#fff}
-.editor-item .item-sub{display:block;font-size:12px;font-weight:500;opacity:.85;margin-top:3px}
-.editor-panel{min-width:0}
-.editor-panel .card{margin-bottom:0}
-
 /* على الشاشات الصغيرة */
-@media(max-width:750px){
 
-  .editor-split{grid-template-columns:1fr;}
+.orders-list{display:flex;flex-direction:column;gap:12px}
+.order-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px 18px;box-shadow:0 4px 15px rgba(15,23,42,.05)}
+.order-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;border-bottom:1px solid #eef2f7;padding-bottom:12px;margin-bottom:12px}
+.order-title{font-weight:900;font-size:16px;color:#172033}
+.order-meta{font-size:12px;color:#64748b;margin-top:3px}
+.order-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;font-size:13px}
+.order-info{background:#f8fafc;border-radius:9px;padding:10px}
+.order-info strong{display:block;font-size:11px;color:#64748b;margin-bottom:3px;text-transform:uppercase}
+.order-notes{margin-top:12px;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:10px;font-size:13px}
+.order-status-select{padding:9px 11px;border:1px solid #dbe2ea;border-radius:9px;font-weight:800;background:#fff;min-width:150px}
+.order-empty{padding:30px;text-align:center;color:#64748b;background:#f8fafc;border-radius:12px}
+@media(max-width:900px){.order-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:550px){.order-card-head{flex-direction:column}.order-grid{grid-template-columns:1fr}.order-status-select{width:100%}}
+
+@media(max-width:750px){
 
   #servicesList,
   #phonesList,
@@ -495,67 +471,33 @@ textarea{
 .modal{width:min(650px,100%);background:#fff;border-radius:18px;padding:25px;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative}
 .modal-close{position:absolute;right:15px;top:12px;border:0;background:#eef2f7;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer}
 
-.gsm-admin-page{background:#06111d;color:#e5edf7;border:1px solid #102238;box-shadow:0 14px 45px rgba(2,8,23,.20);padding:0;overflow:hidden}
-.gsm-page-shell{padding:26px}
-.gsm-page-head{display:flex;align-items:center;justify-content:space-between;gap:18px;padding-bottom:22px;border-bottom:1px solid #1a2b40}
-.gsm-page-head h2{margin:0;color:#f8fafc;font-size:28px;letter-spacing:.1px}
-.gsm-page-head p{margin:6px 0 0;color:#8fa3b8;font-size:14px}
-.gsm-primary-btn{border:1px solid #1685ff;background:#087cf5;color:#fff;border-radius:10px;padding:12px 18px;font-weight:800;box-shadow:0 8px 22px rgba(8,124,245,.22)}
-.gsm-primary-btn:hover{background:#1688ff}
-.gsm-category-tabs{display:flex;gap:9px;overflow-x:auto;padding:18px 0 14px;border-bottom:1px solid #1a2b40}
-.gsm-category-tab{flex:0 0 auto;border:1px solid #1d324a;background:#091827;color:#b8c7d8;border-radius:9px;padding:10px 14px;font-weight:800;cursor:pointer;white-space:nowrap}
-.gsm-category-tab:hover{background:#0d2034;color:#fff}
-.gsm-category-tab.active{background:#087cf5;border-color:#087cf5;color:#fff;box-shadow:0 6px 18px rgba(8,124,245,.20)}
-.gsm-info-bar{margin:18px 0;padding:13px 15px;border:1px solid #1a4354;border-left:3px solid #23c8d6;border-radius:10px;background:#071b28;color:#b7c9d8;display:flex;align-items:center;gap:10px;font-size:13px}
-.gsm-info-icon{display:inline-flex;width:21px;height:21px;border-radius:50%;align-items:center;justify-content:center;background:#1bc7d2;color:#04202a;font-weight:900;flex:0 0 21px}
-.gsm-toolbar{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(220px,.7fr);gap:14px;margin-bottom:14px}
-.gsm-search-wrap{display:flex;align-items:center;gap:10px;border:1px solid #1d324a;background:#081624;border-radius:10px;padding:0 13px}
-.gsm-search-wrap span{font-size:24px;color:#6f879e;line-height:1}
-.gsm-search-wrap input{width:100%;border:0!important;outline:0;background:transparent!important;color:#eaf2fb!important;padding:13px 0!important;border-radius:0!important}
-.gsm-search-wrap input::placeholder{color:#6f8296}
-#gsmGroupFilter{width:100%;border:1px solid #1d324a;background:#081624;color:#eaf2fb;border-radius:10px;padding:13px;outline:0}
-.gsm-workspace{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(330px,.9fr);gap:18px;align-items:start}
-.gsm-browser-panel{min-width:0;border:1px solid #162b40;background:#07131f;border-radius:12px;overflow:hidden}
-.gsm-browser-meta{padding:12px 15px;color:#8095aa;font-size:12px;border-bottom:1px solid #14283b}
-.gsm-group-block{border-bottom:1px solid #14283b}
-.gsm-group-block:last-child{border-bottom:0}
-.gsm-group-head{display:flex;align-items:center;gap:10px;padding:13px 15px;background:#091b2b;color:#dce8f4;font-size:13px;font-weight:900;letter-spacing:.4px}
-.gsm-group-count{display:inline-flex;align-items:center;justify-content:center;min-width:25px;height:22px;padding:0 7px;border-radius:999px;background:#063d77;color:#5eb3ff;font-size:11px}
-.gsm-service-row{display:flex;align-items:center;gap:12px;min-height:57px;padding:10px 13px;border-top:1px solid #11263a;background:#07131f;color:#dce8f4;cursor:pointer;transition:background .15s,border-color .15s}
-.gsm-service-row:hover{background:#0b1d2f}
-.gsm-service-row.active{background:#0c2237;border-left:3px solid #1385ff;padding-left:10px}
-.gsm-service-icon{width:34px;height:34px;flex:0 0 34px;border-radius:8px;border:1px solid #1d3951;background:#0b2032;display:flex;align-items:center;justify-content:center;font-size:18px}
-.gsm-service-copy{min-width:0;flex:1}
-.gsm-service-name{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#eaf2fb}
-.gsm-service-sub{margin-top:3px;font-size:11px;color:#7890a6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gsm-service-price{flex:0 0 auto;border:1px solid #176fd1;background:#056bdc;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:900;min-width:54px;text-align:center}
-.gsm-service-arrow{flex:0 0 auto;color:#7e93a8;font-size:22px}
-.gsm-no-services{padding:34px 20px;text-align:center;color:#7890a6}
-.gsm-editor-panel{position:sticky;top:120px;border:1px solid #19334b;background:#07131f;border-radius:12px;padding:20px;color:#e8f0f8;min-height:430px}
-.gsm-editor-panel h3{margin:0;color:#f8fafc;font-size:19px}
-.gsm-editor-panel .field{margin-bottom:14px}
-.gsm-editor-panel .field label{color:#9fb1c3;font-size:12px;margin-bottom:6px}
-.gsm-editor-panel .field input,.gsm-editor-panel .field textarea,.gsm-editor-panel .field select{background:#091b2b;border:1px solid #1d3952;color:#eef6ff;border-radius:8px;padding:11px 12px}
-.gsm-editor-panel .field input:focus,.gsm-editor-panel .field textarea:focus,.gsm-editor-panel .field select:focus{border-color:#1385ff;box-shadow:0 0 0 2px rgba(19,133,255,.12)}
-.gsm-editor-title{display:flex;align-items:center;gap:10px;margin-bottom:18px;padding-bottom:15px;border-bottom:1px solid #193047}
-.gsm-editor-title-icon{width:38px;height:38px;border-radius:9px;background:#0d2b45;border:1px solid #1b567c;display:flex;align-items:center;justify-content:center;font-size:20px}
-.gsm-editor-actions{display:flex;gap:10px;margin-top:18px}
-.gsm-editor-actions .gsm-save{flex:1;border:0;border-radius:9px;background:#087cf5;color:#fff;padding:12px;font-weight:900}
-.gsm-editor-actions .gsm-delete{border:0;border-radius:9px;background:#ef4444;color:#fff;padding:12px 16px;font-weight:900}
-.gsm-empty-editor{min-height:390px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#7890a6}
-.gsm-empty-editor h3{margin:12px 0 6px;color:#e7eff8}
-.gsm-empty-editor p{margin:0;max-width:250px;font-size:13px;line-height:1.5}
-.gsm-empty-icon{width:60px;height:60px;border-radius:16px;background:#0c2338;border:1px solid #1d4565;display:flex;align-items:center;justify-content:center;font-size:28px}
-.gsm-dark-status{font-size:12px;color:#7f96ab;margin-top:6px}
-@media(max-width:900px){
-  .gsm-workspace{grid-template-columns:1fr}
-  .gsm-editor-panel{position:static}
-}
-@media(max-width:750px){
-  .gsm-page-shell{padding:18px}
-  .gsm-page-head{align-items:flex-start;flex-direction:column}
-  .gsm-toolbar{grid-template-columns:1fr}
-}
+.gsm-admin-list{background:#fff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden}
+.gsm-admin-row{display:flex;align-items:center;gap:14px;padding:15px 18px;border-bottom:1px solid #e5e7eb;cursor:pointer;transition:.15s}
+.gsm-admin-row:last-child{border-bottom:0}
+.gsm-admin-row:hover{background:#f8fafc}
+.gsm-admin-icon{width:38px;flex:0 0 38px;font-size:22px;text-align:center}
+.gsm-admin-name{font-size:17px;font-weight:800;flex:1}
+.gsm-admin-arrow{font-size:22px;color:#64748b}
+.gsm-delete{flex:0 0 auto}
+
+.gsm-admin-tabs{display:flex;gap:8px;overflow-x:auto;margin:0 0 16px;padding:2px 0 8px}
+.gsm-admin-tab{flex:0 0 auto;border:1px solid #dbe2ea;background:#fff;color:#1f2937;padding:11px 15px;border-radius:10px;font-weight:800;cursor:pointer}
+.gsm-admin-tab.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.gsm-service-row{display:flex;align-items:center;gap:12px;border-bottom:1px solid #e5e7eb;padding:14px 4px}
+.gsm-service-row:last-child{border-bottom:0}
+.gsm-service-icon{width:36px;text-align:center;font-size:22px}
+.gsm-service-name{font-weight:800;flex:1}
+.gsm-edit-btn,.gsm-delete-btn{border:0;border-radius:8px;padding:8px 11px;font-weight:700;cursor:pointer}
+.gsm-edit-btn{background:#e8f0ff;color:#2563eb}
+.gsm-delete-btn{background:#fee2e2;color:#b91c1c}
+.gsm-editor-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+.gsm-editor{position:relative;width:min(560px,100%);background:#fff;border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.gsm-editor h3{margin:0 0 18px}
+.gsm-editor label{display:block;font-weight:700;margin:12px 0 6px}
+.gsm-editor input,.gsm-editor textarea{width:100%;padding:11px;border:1px solid #dbe2ea;border-radius:9px;font:inherit}
+.gsm-editor textarea{min-height:120px;resize:vertical}
+.gsm-editor .btn{margin-top:16px}
+.gsm-editor-close{position:absolute;right:14px;top:12px;border:0;background:#eef2f7;width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer}
 
 /* HOMS TECH: phone lists stay as full-width rows/cards */
 #servicesList,#phonesList,#usedPhonesList,#whyList{
@@ -587,6 +529,7 @@ textarea{
     <button class="nav-btn" data-page="used" onclick="showPage('used')">♻️ Gebruikte telefoons</button>
     <button class="nav-btn" data-page="why" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
     <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
+    <button class="nav-btn" data-page="orders" onclick="showPage('orders')">📋 GSM Orders</button>
     <button class="nav-btn" data-page="gsm" onclick="showPage('gsm')">🛠️ GSM Services</button>
   </div>
 </div>
@@ -725,49 +668,29 @@ textarea{
     <div id="customersList"></div>
   </section>
 
+  <!-- GSM ORDERS -->
+  <section class="section admin-page" id="page-orders">
+    <div class="section-head">
+      <div>
+        <h2>📋 GSM Service Orders</h2>
+        <p>Bekijk en beheer de aanvragen die klanten via GSM Services hebben verstuurd.</p>
+      </div>
+      <button class="btn btn-light" onclick="loadOrders()">↻ Vernieuwen</button>
+    </div>
+    <div id="ordersStatus" class="status info" style="margin-bottom:15px"></div>
+    <div id="ordersList" class="orders-list"></div>
+  </section>
+
   <!-- GSM SERVICES -->
-  <section class="section admin-page gsm-admin-page" id="page-gsm">
-    <div class="gsm-page-shell">
-      <div class="gsm-page-head">
-        <div>
-          <h2>🛠️ GSM Services</h2>
-          <p>Beheer hier al je GSM services, tools en server diensten.</p>
-        </div>
-        <button class="gsm-primary-btn" type="button" onclick="addGsmService()">＋ Nieuwe service</button>
-      </div>
-
-      <div id="gsmCategoryTabs" class="gsm-category-tabs"></div>
-
-      <div class="gsm-info-bar">
-        <span class="gsm-info-icon">i</span>
-        <span>Deze prijzen zijn voor HOMS TECH klanten. Kies een service om de gegevens te bewerken.</span>
-      </div>
-
-      <div class="gsm-toolbar">
-        <div class="gsm-search-wrap">
-          <span>⌕</span>
-          <input id="gsmSearch" type="search" placeholder="Zoek in services..." oninput="renderGsmServices()">
-        </div>
-        <select id="gsmGroupFilter" onchange="renderGsmServices()">
-          <option value="">Alle groepen</option>
-        </select>
-      </div>
-
-      <div class="gsm-workspace">
-        <div class="gsm-browser-panel">
-          <div class="gsm-browser-meta" id="gsmBrowserMeta">0 services</div>
-          <div id="gsmServiceGroups"></div>
-        </div>
-
-        <aside class="gsm-editor-panel" id="gsmEditorPanel">
-          <div class="gsm-empty-editor">
-            <div class="gsm-empty-icon">🛠️</div>
-            <h3>Service bewerken</h3>
-            <p>Kies links een service om de gegevens te bewerken.</p>
-          </div>
-        </aside>
+  <section class="section admin-page" id="page-gsm">
+    <div class="section-head">
+      <div>
+        <h2>🛠️ GSM Services</h2>
+        <p>Beheer per categorie de services met naam, details en prijs.</p>
       </div>
     </div>
+
+    <div id="gsmServicesList"></div>
   </section>
 
   <!-- WAAROM HOMS TECH -->
@@ -788,6 +711,41 @@ textarea{
 
 
 
+  <!-- GSM SERVICE EDIT MODAL -->
+  <div id="gsmEditModal" class="modal-backdrop" onclick="closeGsmEditor(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeGsmEditor()">×</button>
+      <h2 id="gsmEditTitle">GSM Service</h2>
+
+      <div class="grid">
+        <div class="field">
+          <label>Naam service</label>
+          <input id="gsmEditName">
+        </div>
+
+        <div class="field">
+          <label>Icoon / emoji</label>
+          <input id="gsmEditIcon">
+        </div>
+
+        <div class="field">
+          <label>Prijs (€)</label>
+          <input id="gsmEditPrice" placeholder="Bijv. 29,99">
+        </div>
+
+        <div class="field" style="grid-column:1/-1">
+          <label>Details</label>
+          <textarea id="gsmEditDetails" rows="5"></textarea>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+        <button class="btn btn-light" onclick="closeGsmEditor()">Annuleren</button>
+        <button class="btn btn-green" onclick="saveGsmEditor()">Opslaan</button>
+      </div>
+    </div>
+  </div>
+
   <!-- SAVE -->
   <div class="save-bar">
     <div>
@@ -807,9 +765,6 @@ textarea{
 
 let data = {};
 let loading = false;
-let selectedService = 0;
-let selectedPhone = 0;
-let selectedUsedPhone = 0;
 let currentPage = "general";
 
 function showPage(page){
@@ -823,6 +778,7 @@ function showPage(page){
   if(target){
     target.classList.add("active");
     if(page==="customers") loadCustomers();
+    if(page==="orders") loadOrders();
   }
 
   document.querySelectorAll(".nav-btn").forEach(button=>{
@@ -922,10 +878,8 @@ function normalizeGsmService(x){
   return {
     icon:x.icon || "🔧",
     name:x.name || "",
-    group:x.group || x.category || "General",
     details:x.details || x.description || "",
-    price:x.price || "",
-    active:x.active !== false
+    price:x.price || ""
   };
 }
 
@@ -1053,7 +1007,12 @@ function normalizeData(){
   if(!data.gsmServices || typeof data.gsmServices !== "object") data.gsmServices={};
   ["imei","remote","server","frp","firmware"].forEach(key=>{
     if(!Array.isArray(data.gsmServices[key])) data.gsmServices[key]=[];
-    data.gsmServices[key]=data.gsmServices[key].map(normalizeGsmService);
+    data.gsmServices[key]=data.gsmServices[key].map(x=>({
+      icon:x.icon || "🔧",
+      name:x.name || "",
+      details:x.details || x.description || "",
+      price:x.price || ""
+    }));
   });
 
   /* why */
@@ -1150,195 +1109,435 @@ function renderGeneral(){
 /* ---------------- SERVICES ---------------- */
 
 function renderServices(){
+
   const box=document.getElementById("servicesList");
-  if(!data.services.length){
-    box.innerHTML=`<div class="small">Nog geen diensten toegevoegd.</div>`;
-    return;
-  }
-  if(selectedService >= data.services.length) selectedService=data.services.length-1;
-  const service=data.services[selectedService] || ["🔧","Nieuwe dienst",""];
-  const emoji=service[0] || "🔧";
-  const name=service[1] || "";
-  const desc=service[2] || "";
-  box.innerHTML=`
-    <div class="editor-split">
-      <div class="editor-sidebar">
-        <div class="editor-sidebar-title">🔧 Diensten</div>
-        ${data.services.map((x,i)=>`
-          <button class="editor-item ${i===selectedService?'active':''}" onclick="selectedService=${i};renderServices()">
-            ${esc(x[0]||"🔧")} ${esc(x[1]||"Nieuwe dienst")}
+
+  box.innerHTML="";
+
+  data.services.forEach((service,i)=>{
+
+    const emoji=service[0] || "🔧";
+    const name=service[1] || "";
+    const desc=service[2] || "";
+
+    box.innerHTML+=`
+
+      <div class="card service-card">
+
+        <div class="card-head">
+
+          <div class="card-title">
+            Dienst ${i+1}
+          </div>
+
+          <button class="btn btn-red"
+            onclick="deleteService(${i})">
+            Verwijderen
           </button>
-        `).join("")}
-      </div>
-      <div class="editor-panel">
-        <div class="card service-card">
-          <div class="card-head">
-            <div>
-              <div class="card-title" style="font-size:20px">${esc(emoji)} ${esc(name||"Nieuwe dienst")}</div>
-              <div class="small">Bewerk hier de gegevens van deze dienst.</div>
-            </div>
-            <button class="btn btn-red" onclick="deleteService(${selectedService})">Verwijderen</button>
-          </div>
-          <div class="grid">
-            <div class="field">
-              <label>Icoon / emoji</label>
-              <input value="${esc(emoji)}" oninput="data.services[${selectedService}][0]=this.value;markChanged();renderServices()">
-            </div>
-            <div class="field">
-              <label>Naam dienst</label>
-              <input value="${esc(name)}" oninput="data.services[${selectedService}][1]=this.value;markChanged();renderServices()">
-            </div>
-            <div class="field" style="grid-column:1/-1">
-              <label>Beschrijving</label>
-              <textarea oninput="data.services[${selectedService}][2]=this.value;markChanged()">${esc(desc)}</textarea>
-            </div>
-          </div>
+
         </div>
+
+        <div class="grid">
+
+          <div class="field">
+            <label>Icoon / emoji</label>
+            <input value="${esc(emoji)}"
+              oninput="data.services[${i}][0]=this.value;markChanged()">
+          </div>
+
+          <div class="field">
+            <label>Naam dienst</label>
+            <input value="${esc(name)}"
+              oninput="data.services[${i}][1]=this.value;markChanged()">
+          </div>
+
+          <div class="field" style="grid-column:1/-1">
+            <label>Beschrijving</label>
+            <textarea
+              oninput="data.services[${i}][2]=this.value;markChanged()">${esc(desc)}</textarea>
+          </div>
+
+        </div>
+
       </div>
-    </div>`;
+    `;
+  });
+
+  if(!data.services.length){
+    box.innerHTML=`
+      <div class="small">
+        Nog geen diensten toegevoegd.
+      </div>
+    `;
+  }
 }
 
 function addService(){
-  data.services.push(["🔧","Nieuwe dienst",""]);
-  selectedService=data.services.length-1;
+
+  data.services.push([
+    "🔧",
+    "Nieuwe dienst",
+    ""
+  ]);
+
   renderServices();
   markChanged();
 }
 
 function deleteService(i){
+
   if(confirm("Deze dienst verwijderen?")){
+
     data.services.splice(i,1);
-    if(selectedService>=data.services.length) selectedService=Math.max(0,data.services.length-1);
+
     renderServices();
     markChanged();
+
   }
 }
 
+
 /* ---------------- PHONES ---------------- */
+
 function renderPhones(){
+
   const box=document.getElementById("phonesList");
-  if(!data.phones.length){
-    box.innerHTML=`<div class="small">Nog geen telefoons toegevoegd.</div>`;
-    return;
-  }
-  if(selectedPhone >= data.phones.length) selectedPhone=data.phones.length-1;
-  const phone=data.phones[selectedPhone] || {};
-  const images=phone.images || ["","","",""];
-  box.innerHTML=`
-    <div class="editor-split">
-      <div class="editor-sidebar">
-        <div class="editor-sidebar-title">📱 Telefoons</div>
-        ${data.phones.map((x,i)=>`
-          <button class="editor-item ${i===selectedPhone?'active':''}" onclick="selectedPhone=${i};renderPhones()">
-            📱 ${esc(x.name||"Nieuwe telefoon")}
-          </button>
-        `).join("")}
-      </div>
-      <div class="editor-panel">
-        <div class="card device-card">
-          <div class="card-head">
-            <div>
-              <div class="card-title" style="font-size:20px">📱 ${esc(phone.name||"Nieuwe telefoon")}</div>
-              <div class="small">Beheer de gegevens van de telefoon die HOMS TECH verkoopt.</div>
+
+  box.innerHTML="";
+
+  data.phones.forEach((phone,i)=>{
+
+    const images=phone.images || ["","","",""];
+
+    box.innerHTML+=`
+
+      <div class="card device-card">
+
+        <div class="card-head">
+
+          <div>
+            <div class="card-title" style="font-size:20px">
+              📱 ${esc(phone.name || "Nieuwe telefoon")}
             </div>
-            <button class="btn btn-red" onclick="deletePhone(${selectedPhone})">Verwijderen</button>
+            <div class="small">Verkoopgegevens van deze telefoon.</div>
           </div>
-          <div class="grid">
-            <div class="field"><label>Model</label><input value="${esc(phone.name||"")}" oninput="data.phones[${selectedPhone}].name=this.value;markChanged();renderPhones()"></div>
-            <div class="field"><label>Merk</label><input value="${esc(phone.brand||"")}" oninput="data.phones[${selectedPhone}].brand=this.value;markChanged()"></div>
-            <div class="field"><label>Verkoopprijs (€)</label><input value="${esc(phone.price||"")}" oninput="data.phones[${selectedPhone}].price=this.value;markChanged()"></div>
-            <div class="field"><label>Opslag</label><input value="${esc(phone.storage||"")}" placeholder="128 GB" oninput="data.phones[${selectedPhone}].storage=this.value;markChanged()"></div>
-            <div class="field"><label>Kleur</label><input value="${esc(phone.color||"")}" placeholder="Black" oninput="data.phones[${selectedPhone}].color=this.value;markChanged()"></div>
-            <div class="field"><label>Conditie</label><select onchange="data.phones[${selectedPhone}].condition=this.value;markChanged()">
+
+          <button class="btn btn-red"
+            onclick="deletePhone(${i})">
+            Verwijderen
+          </button>
+
+        </div>
+
+        <div class="grid">
+
+          <div class="field">
+            <label>Model</label>
+            <input value="${esc(phone.name)}"
+              oninput="data.phones[${i}].name=this.value;markChanged();renderPhoneTitle(${i})">
+          </div>
+
+          <div class="field">
+            <label>Merk</label>
+            <input value="${esc(phone.brand)}"
+              oninput="data.phones[${i}].brand=this.value;markChanged()">
+          </div>
+
+          <div class="field">
+            <label>Verkoopprijs (€)</label>
+            <input value="${esc(phone.price)}"
+              oninput="data.phones[${i}].price=this.value;markChanged()">
+          </div>
+
+          <div class="field">
+            <label>Opslag</label>
+            <input value="${esc(phone.storage)}" placeholder="128 GB"
+              oninput="data.phones[${i}].storage=this.value;markChanged()">
+          </div>
+
+          <div class="field">
+            <label>Kleur</label>
+            <input value="${esc(phone.color)}" placeholder="Black"
+              oninput="data.phones[${i}].color=this.value;markChanged()">
+          </div>
+
+          <div class="field">
+            <label>Conditie</label>
+            <select onchange="data.phones[${i}].condition=this.value;markChanged()">
               <option value="Nieuw" ${phone.condition==="Nieuw"?"selected":""}>Nieuw</option>
               <option value="Als nieuw" ${phone.condition==="Als nieuw"?"selected":""}>Als nieuw</option>
               <option value="Zeer goed" ${phone.condition==="Zeer goed"?"selected":""}>Zeer goed</option>
               <option value="Goed" ${phone.condition==="Goed"?"selected":""}>Goed</option>
               <option value="Gebruikt" ${phone.condition==="Gebruikt"?"selected":""}>Gebruikt</option>
-            </select></div>
-            <div class="field"><label>Garantie</label><input value="${esc(phone.warranty||"")}" placeholder="12 maanden" oninput="data.phones[${selectedPhone}].warranty=this.value;markChanged()"></div>
-            <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.phones[${selectedPhone}].description=this.value;markChanged()">${esc(phone.description||"")}</textarea></div>
+            </select>
           </div>
-          <div style="margin-top:15px">
-            <label style="font-weight:700">📷 Foto's</label>
-            <div class="images-grid">${images.map((img,j)=>`<div class="image-box">${img?`<img src="${esc(img)}" class="image-preview">`:`<div class="empty-preview">Geen foto</div>`}<input type="file" accept="image/*" onchange="handlePhoneImage(event,${selectedPhone},${j})">${img?`<button class="btn btn-light" style="margin-top:7px" onclick="removePhoneImage(${selectedPhone},${j})">Verwijder foto</button>`:""}</div>`).join("")}</div>
-            <p class="small">Maximaal 4 foto's per telefoon.</p>
+
+          <div class="field">
+            <label>Garantie</label>
+            <input value="${esc(phone.warranty)}" placeholder="12 maanden"
+              oninput="data.phones[${i}].warranty=this.value;markChanged()">
           </div>
+
+          <div class="field" style="grid-column:1/-1">
+            <label>Beschrijving</label>
+            <textarea
+              oninput="data.phones[${i}].description=this.value;markChanged()">${esc(phone.description)}</textarea>
+          </div>
+
         </div>
+
+        <div style="margin-top:15px">
+          <label style="font-weight:700">📷 Foto's</label>
+          <div class="images-grid">
+            ${images.map((img,j)=>`
+              <div class="image-box">
+                ${img ? `<img src="${esc(img)}" class="image-preview">` : `<div class="empty-preview">Geen foto</div>`}
+                <input type="file" accept="image/*" onchange="handlePhoneImage(event,${i},${j})">
+                ${img ? `<button class="btn btn-light" style="margin-top:7px" onclick="removePhoneImage(${i},${j})">Verwijder foto</button>` : ""}
+              </div>
+            `).join("")}
+          </div>
+          <p class="small">Maximaal 4 foto's per telefoon.</p>
+        </div>
+
       </div>
-    </div>`;
+    `;
+  });
+
+  if(!data.phones.length){
+    box.innerHTML=`
+      <div class="small">Nog geen telefoons toegevoegd.</div>
+    `;
+  }
 }
 
-function renderPhoneTitle(i){ renderPhones(); }
+function renderPhoneTitle(i){
+  renderPhones();
+}
+
 function addPhone(){
-  data.phones.push({name:"Nieuwe iPhone",brand:"Apple",price:"",storage:"128 GB",color:"",condition:"Nieuw",warranty:"",description:"",images:["","","",""]});
-  selectedPhone=data.phones.length-1;
+
+  data.phones.push({
+    name:"Nieuwe iPhone",
+    brand:"Apple",
+    price:"",
+    storage:"128 GB",
+    color:"",
+    condition:"Nieuw",
+    warranty:"",
+    description:"",
+    images:["","","",""]
+  });
+
   renderPhones();
   markChanged();
 }
+
 function deletePhone(i){
+
   if(confirm("Deze telefoon verwijderen?")){
+
     data.phones.splice(i,1);
-    if(selectedPhone>=data.phones.length) selectedPhone=Math.max(0,data.phones.length-1);
+
     renderPhones();
     markChanged();
+
   }
 }
 
+
 /* ---------------- USED PHONES ---------------- */
+
 function renderUsedPhones(){
+
   const box=document.getElementById("usedPhonesList");
-  if(!data.usedPhones.length){
-    box.innerHTML=`<div class="small">Nog geen gebruikte telefoons toegevoegd.</div>`;
-    return;
-  }
-  if(selectedUsedPhone >= data.usedPhones.length) selectedUsedPhone=data.usedPhones.length-1;
-  const phone=data.usedPhones[selectedUsedPhone] || {};
-  const images=phone.images || ["","","",""];
-  box.innerHTML=`
-    <div class="editor-split">
-      <div class="editor-sidebar">
-        <div class="editor-sidebar-title">♻️ Telefoons</div>
-        ${data.usedPhones.map((x,i)=>`<button class="editor-item ${i===selectedUsedPhone?'active':''}" onclick="selectedUsedPhone=${i};renderUsedPhones()">📱 ${esc(x.name||"Nieuwe gebruikte telefoon")}</button>`).join("")}
-      </div>
-      <div class="editor-panel">
-        <div class="card used-card">
-          <div class="card-head">
-            <div><div class="card-title" style="font-size:20px">♻️ ${esc(phone.name||"Nieuwe gebruikte telefoon")}</div><div class="small">Bewerk hier de gegevens van deze telefoon.</div></div>
-            <button class="btn btn-red" onclick="deleteUsedPhone(${selectedUsedPhone})">Verwijderen</button>
+
+  box.innerHTML="";
+
+  data.usedPhones.forEach((phone,i)=>{
+
+    const images=phone.images || ["","","",""];
+
+    box.innerHTML+=`
+
+      <div class="card used-card">
+
+        <div class="card-head">
+
+          <div class="card-title">
+            ♻️ ${esc(phone.name || "Nieuwe gebruikte telefoon")}
           </div>
-          <div class="grid">
-            <div class="field"><label>Model</label><input value="${esc(phone.name||"")}" oninput="data.usedPhones[${selectedUsedPhone}].name=this.value;markChanged();renderUsedPhones()"></div>
-            <div class="field"><label>Merk</label><input value="${esc(phone.brand||"")}" oninput="data.usedPhones[${selectedUsedPhone}].brand=this.value;markChanged()"></div>
-            <div class="field"><label>Prijs (€)</label><input value="${esc(phone.price||"")}" oninput="data.usedPhones[${selectedUsedPhone}].price=this.value;markChanged()"></div>
-            <div class="field"><label>Conditie</label><select onchange="data.usedPhones[${selectedUsedPhone}].condition=this.value;markChanged()">
-              <option value="Als nieuw" ${phone.condition==="Als nieuw"?"selected":""}>Als nieuw</option>
-              <option value="Zeer goed" ${phone.condition==="Zeer goed"?"selected":""}>Zeer goed</option>
-              <option value="Goed" ${phone.condition==="Goed"?"selected":""}>Goed</option>
-              <option value="Gebruikt" ${phone.condition==="Gebruikt"?"selected":""}>Gebruikt</option>
-            </select></div>
-            <div class="field"><label>Opslag</label><input value="${esc(phone.storage||"")}" oninput="data.usedPhones[${selectedUsedPhone}].storage=this.value;markChanged()"></div>
-            <div class="field"><label>RAM</label><input value="${esc(phone.ram||"")}" oninput="data.usedPhones[${selectedUsedPhone}].ram=this.value;markChanged()"></div>
-            <div class="field"><label>WhatsApp</label><input value="${esc(phone.whatsapp||"")}" oninput="data.usedPhones[${selectedUsedPhone}].whatsapp=this.value;markChanged()"></div>
-            <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.usedPhones[${selectedUsedPhone}].description=this.value;markChanged()">${esc(phone.description||"")}</textarea></div>
-          </div>
-          <div style="margin-top:15px"><label style="font-weight:700">📷 Foto's</label><div class="images-grid">${images.map((img,j)=>`<div class="image-box">${img?`<img src="${esc(img)}" class="image-preview">`:`<div class="empty-preview">Geen foto</div>`}<input type="file" accept="image/*" onchange="handleImage(event,${selectedUsedPhone},${j})">${img?`<button class="btn btn-light" style="margin-top:7px" onclick="removeImage(${selectedUsedPhone},${j})">Verwijder foto</button>`:""}</div>`).join("")}</div><p class="small">Je kunt maximaal 4 foto's per telefoon toevoegen.</p></div>
+
+          <button class="btn btn-red"
+            onclick="deleteUsedPhone(${i})">
+            Verwijderen
+          </button>
+
         </div>
+
+        <div class="grid">
+
+          <div class="field">
+            <label>Model</label>
+            <input value="${esc(phone.name)}"
+              oninput="data.usedPhones[${i}].name=this.value;markChanged()">
+          </div>
+
+          <div class="field">
+            <label>Merk</label>
+            <input value="${esc(phone.brand)}"
+              oninput="data.usedPhones[${i}].brand=this.value;markChanged()">
+          </div>
+
+          <div class="field">
+            <label>Prijs (€)</label>
+            <input value="${esc(phone.price)}"
+              oninput="data.usedPhones[${i}].price=this.value;markChanged()">
+          </div>
+
+          <div class="field">
+            <label>Conditie</label>
+
+            <select
+              onchange="data.usedPhones[${i}].condition=this.value;markChanged()">
+
+              <option ${phone.condition==="Als nieuw"?"selected":""}>
+                Als nieuw
+              </option>
+
+              <option ${phone.condition==="Zeer goed"?"selected":""}>
+                Zeer goed
+              </option>
+
+              <option ${phone.condition==="Goed"?"selected":""}>
+                Goed
+              </option>
+
+              <option ${phone.condition==="Gebruikt"?"selected":""}>
+                Gebruikt
+              </option>
+
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Opslag</label>
+            <input value="${esc(phone.storage)}"
+              oninput="data.usedPhones[${i}].storage=this.value;markChanged()">
+          </div>
+
+          <div class="field">
+            <label>RAM</label>
+            <input value="${esc(phone.ram)}"
+              oninput="data.usedPhones[${i}].ram=this.value;markChanged()">
+          </div>
+
+          <div class="field">
+            <label>WhatsApp</label>
+            <input value="${esc(phone.whatsapp)}"
+              oninput="data.usedPhones[${i}].whatsapp=this.value;markChanged()">
+          </div>
+
+          <div class="field" style="grid-column:1/-1">
+            <label>Beschrijving</label>
+
+            <textarea
+              oninput="data.usedPhones[${i}].description=this.value;markChanged()">${esc(phone.description)}</textarea>
+          </div>
+
+        </div>
+
+        <div style="margin-top:15px">
+
+          <label style="font-weight:700">
+            📷 Foto's
+          </label>
+
+          <div class="images-grid">
+
+            ${images.map((img,j)=>`
+
+              <div class="image-box">
+
+                ${
+                  img
+                  ?
+                  `<img src="${esc(img)}" class="image-preview">`
+                  :
+                  `<div class="empty-preview">Geen foto</div>`
+                }
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onchange="handleImage(event,${i},${j})">
+
+                ${
+                  img
+                  ?
+                  `<button class="btn btn-light"
+                    style="margin-top:7px"
+                    onclick="removeImage(${i},${j})">
+                    Verwijder foto
+                  </button>`
+                  :
+                  ""
+                }
+
+              </div>
+
+            `).join("")}
+
+          </div>
+
+          <p class="small">
+            Je kunt maximaal 4 foto's per telefoon toevoegen.
+          </p>
+
+        </div>
+
       </div>
-    </div>`;
+    `;
+  });
+
+  if(!data.usedPhones.length){
+    box.innerHTML=`
+      <div class="small">
+        Nog geen gebruikte telefoons toegevoegd.
+      </div>
+    `;
+  }
 }
+
 function addUsedPhone(){
-  data.usedPhones.push({name:"iPhone 13",brand:"Apple",price:"",condition:"Goed",storage:"128 GB",ram:"",whatsapp:"",description:"",images:["","","",""]});
-  selectedUsedPhone=data.usedPhones.length-1;
+
+  data.usedPhones.push({
+
+    name:"iPhone 13",
+    brand:"Apple",
+    price:"",
+    condition:"Goed",
+    storage:"128 GB",
+    ram:"",
+    whatsapp:"",
+    description:"",
+    images:["","","",""]
+
+  });
+
   renderUsedPhones();
   markChanged();
 }
+
 function deleteUsedPhone(i){
+
   if(confirm("Deze gebruikte telefoon verwijderen?")){
+
     data.usedPhones.splice(i,1);
-    if(selectedUsedPhone>=data.usedPhones.length) selectedUsedPhone=Math.max(0,data.usedPhones.length-1);
+
     renderUsedPhones();
     markChanged();
+
   }
 }
 
@@ -1441,204 +1640,183 @@ function removeImage(i,j){
 /* ---------------- GSM SERVICES ---------------- */
 
 const gsmServiceCategories=[
-  ["all","🔎 Alle services"],
   ["imei","📱 IMEI Services"],
   ["remote","🛠️ Remote Service"],
-  ["server","🔧 Server Service"],
+  ["server","🔧 Server / Tools"],
   ["frp","🔐 FRP Services"],
   ["firmware","💻 Firmware / Software"]
 ];
 
-window.gsmActiveCategory="all";
-window.gsmSelectedService=null;
-
-function getGsmCategoryLabel(key){
-  const found=gsmServiceCategories.find(x=>x[0]===key);
-  return found ? found[1].replace(/^\S+\s/,"") : key;
-}
-
-function getAllGsmEntries(){
-  const entries=[];
-  ["imei","remote","server","frp","firmware"].forEach(key=>{
-    (data.gsmServices[key]||[]).forEach((service,index)=>{
-      entries.push({category:key,index,service});
-    });
-  });
-  return entries;
-}
-
-function getGsmFilteredEntries(){
-  const active=window.gsmActiveCategory||"all";
-  let entries=getAllGsmEntries();
-  if(active!=="all") entries=entries.filter(x=>x.category===active);
-
-  const search=(document.getElementById("gsmSearch")?.value||"").trim().toLowerCase();
-  const group=(document.getElementById("gsmGroupFilter")?.value||"").trim();
-
-  if(search){
-    entries=entries.filter(x=>{
-      const s=x.service||{};
-      return [s.name,s.details,s.group,x.category].join(" ").toLowerCase().includes(search);
-    });
-  }
-  if(group) entries=entries.filter(x=>(x.service.group||"General")===group);
-  return entries;
-}
-
-function renderGsmCategoryTabs(){
-  const box=document.getElementById("gsmCategoryTabs");
-  if(!box) return;
-  const all=getAllGsmEntries();
-  box.innerHTML=gsmServiceCategories.map(([key,label])=>{
-    const count=key==="all" ? all.length : (data.gsmServices[key]||[]).length;
-    return `<button type="button" class="gsm-category-tab ${key===window.gsmActiveCategory?"active":""}" onclick="selectGsmCategory('${key}')">${label} <span style="opacity:.75;font-size:11px">(${count})</span></button>`;
-  }).join("");
-}
-
-function updateGsmGroupFilter(entries){
-  const select=document.getElementById("gsmGroupFilter");
-  if(!select) return;
-  const current=select.value;
-  const groups=[...new Set(entries.map(x=>x.service.group||"General"))].sort((a,b)=>a.localeCompare(b));
-  select.innerHTML='<option value="">Alle groepen</option>'+groups.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join("");
-  if(groups.includes(current)) select.value=current;
-}
-
-function selectGsmCategory(key){
-  window.gsmActiveCategory=key;
-  window.gsmSelectedService=null;
-  const search=document.getElementById("gsmSearch");
-  if(search) search.value="";
-  const group=document.getElementById("gsmGroupFilter");
-  if(group) group.value="";
-  renderGsmServices();
-}
-
 function renderGsmServices(){
-  const groupsBox=document.getElementById("gsmServiceGroups");
-  if(!groupsBox) return;
+  const box=document.getElementById("gsmServicesList");
+  if(!box) return;
 
-  renderGsmCategoryTabs();
+  const activeKey=window.gsmActiveCategory || "imei";
 
-  const baseEntries=getAllGsmEntries().filter(x=>window.gsmActiveCategory==="all" || x.category===window.gsmActiveCategory);
-  updateGsmGroupFilter(baseEntries);
-  const entries=getGsmFilteredEntries();
-  const meta=document.getElementById("gsmBrowserMeta");
-  if(meta) meta.textContent=`Toont ${entries.length} van ${baseEntries.length} services`;
+  let tabs=gsmServiceCategories.map(category=>`
+    <button type="button"
+      class="gsm-admin-tab ${category[0]===activeKey?"active":""}"
+      onclick="gsmActiveCategory='${category[0]}';renderGsmServices()">
+      ${category[1]}
+    </button>
+  `).join("");
 
-  if(!entries.length){
-    groupsBox.innerHTML='<div class="gsm-no-services">Nog geen services in deze categorie.<br>Gebruik <b>＋ Nieuwe service</b> om er één toe te voegen.</div>';
-    renderGsmEditor();
-    return;
+  const category=gsmServiceCategories.find(x=>x[0]===activeKey) || gsmServiceCategories[0];
+  const list=data.gsmServices[category[0]] || [];
+
+  let content=`
+    <div class="gsm-admin-tabs">${tabs}</div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">${category[1]}</div>
+        <button class="btn btn-green" onclick="addGsmService('${category[0]}')">+ Toevoegen</button>
+      </div>
+  `;
+
+  if(!list.length){
+    content+=`<div class="small">Nog geen services in deze categorie.</div>`;
+  }else{
+    list.forEach((service,i)=>{
+      content+=`
+        <div class="gsm-service-row">
+          <div class="gsm-service-icon">${esc(service.icon||"🔧")}</div>
+          <div class="gsm-service-name">${esc(service.name||"Nieuwe GSM Service")}</div>
+          <button type="button" class="gsm-edit-btn" onclick="openGsmServiceEditor('${category[0]}',${i})">Bewerken</button>
+          <button type="button" class="gsm-delete-btn" onclick="deleteGsmService('${category[0]}',${i})">Verwijderen</button>
+        </div>
+      `;
+    });
   }
 
-  const grouped=new Map();
-  entries.forEach(entry=>{
-    const group=entry.service.group||"General";
-    if(!grouped.has(group)) grouped.set(group,[]);
-    grouped.get(group).push(entry);
-  });
-
-  groupsBox.innerHTML=[...grouped.entries()].map(([group,list])=>{
-    const rows=list.map(entry=>{
-      const s=entry.service;
-      const selected=window.gsmSelectedService && window.gsmSelectedService.category===entry.category && window.gsmSelectedService.index===entry.index;
-      const subtitle=s.details || getGsmCategoryLabel(entry.category);
-      return `
-        <div class="gsm-service-row ${selected?"active":""}" onclick="selectGsmService('${entry.category}',${entry.index})">
-          <div class="gsm-service-icon">${esc(s.icon||"🔧")}</div>
-          <div class="gsm-service-copy">
-            <div class="gsm-service-name">${esc(s.name||"Nieuwe service")}</div>
-            <div class="gsm-service-sub">${esc(subtitle)}</div>
-          </div>
-          ${s.price!==""?`<div class="gsm-service-price">€ ${esc(s.price)}</div>`:""}
-          <div class="gsm-service-arrow">›</div>
-        </div>`;
-    }).join("");
-    return `<div class="gsm-group-block"><div class="gsm-group-head"><span>${esc(group)}</span><span class="gsm-group-count">${list.length}</span></div>${rows}</div>`;
-  }).join("");
-
-  renderGsmEditor();
+  content+=`</div>`;
+  box.innerHTML=content;
 }
 
-function selectGsmService(category,index){
-  window.gsmSelectedService={category,index};
-  renderGsmServices();
-}
+function openGsmServiceEditor(category,i){
+  const service=data.gsmServices[category][i];
+  const old=document.getElementById("gsmServiceEditor");
+  if(old) old.remove();
 
-function renderGsmEditor(){
-  const panel=document.getElementById("gsmEditorPanel");
-  if(!panel) return;
-  const selected=window.gsmSelectedService;
-  if(!selected){
-    panel.innerHTML=`<div class="gsm-empty-editor"><div class="gsm-empty-icon">🛠️</div><h3>Service bewerken</h3><p>Kies links een service om de gegevens te bewerken.</p></div>`;
-    return;
-  }
-
-  const service=data.gsmServices[selected.category]?.[selected.index];
-  if(!service){
-    window.gsmSelectedService=null;
-    renderGsmEditor();
-    return;
-  }
-
-  panel.innerHTML=`
-    <div class="gsm-editor-title">
-      <div class="gsm-editor-title-icon">${esc(service.icon||"🔧")}</div>
-      <div><h3>Service bewerken</h3><div class="gsm-dark-status">${esc(getGsmCategoryLabel(selected.category))}</div></div>
-    </div>
-    <div class="field"><label>Groep</label><input id="gsmFieldGroup" value="${esc(service.group||"General")}"></div>
-    <div class="field"><label>Naam service</label><input id="gsmFieldName" value="${esc(service.name||"")}"></div>
-    <div class="field"><label>Korte beschrijving</label><input id="gsmFieldShort" value="${esc(service.details||"")}"></div>
-    <div class="field"><label>Volledige beschrijving</label><textarea id="gsmFieldDetails" rows="5">${esc(service.details||"")}</textarea></div>
-    <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
-      <div class="field"><label>Prijs (€)</label><input id="gsmFieldPrice" value="${esc(service.price||"")}" placeholder="10"></div>
-      <div class="field"><label>Status</label><select id="gsmFieldActive"><option value="true" ${service.active!==false?"selected":""}>Actief</option><option value="false" ${service.active===false?"selected":""}>Inactief</option></select></div>
-    </div>
-    <div class="field"><label>Service icon / emoji</label><input id="gsmFieldIcon" value="${esc(service.icon||"🔧")}"></div>
-    <div class="gsm-editor-actions">
-      <button type="button" class="gsm-save" onclick="saveGsmServiceEditor()">Opslaan</button>
-      <button type="button" class="gsm-delete" onclick="deleteSelectedGsmService()">Verwijderen</button>
+  const editor=document.createElement("div");
+  editor.id="gsmServiceEditor";
+  editor.className="gsm-editor-overlay";
+  editor.innerHTML=`
+    <div class="gsm-editor">
+      <button type="button" class="gsm-editor-close" onclick="document.getElementById('gsmServiceEditor').remove()">×</button>
+      <h3>Service bewerken</h3>
+      <label>Naam service</label>
+      <input id="gsmEditName" value="${esc(service.name)}">
+      <label>Icoon / emoji</label>
+      <input id="gsmEditIcon" value="${esc(service.icon||"🔧")}">
+      <label>Prijs (€)</label>
+      <input id="gsmEditPrice" value="${esc(service.price)}">
+      <label>Details</label>
+      <textarea id="gsmEditDetails">${esc(service.details)}</textarea>
+      <button type="button" class="btn btn-green" onclick="saveGsmServiceEditor('${category}',${i})">Opslaan</button>
     </div>
   `;
+  document.body.appendChild(editor);
 }
 
-function saveGsmServiceEditor(){
-  const selected=window.gsmSelectedService;
-  if(!selected) return;
-  const service=data.gsmServices[selected.category][selected.index];
-  if(!service) return;
-  service.group=document.getElementById("gsmFieldGroup").value.trim()||"General";
-  service.name=document.getElementById("gsmFieldName").value.trim();
-  service.details=document.getElementById("gsmFieldDetails").value.trim() || document.getElementById("gsmFieldShort").value.trim();
-  service.price=document.getElementById("gsmFieldPrice").value.trim();
-  service.icon=document.getElementById("gsmFieldIcon").value.trim()||"🔧";
-  service.active=document.getElementById("gsmFieldActive").value!=="false";
+function saveGsmServiceEditor(category,i){
+  data.gsmServices[category][i]={
+    icon:document.getElementById("gsmEditIcon").value,
+    name:document.getElementById("gsmEditName").value,
+    price:document.getElementById("gsmEditPrice").value,
+    details:document.getElementById("gsmEditDetails").value
+  };
+  document.getElementById("gsmServiceEditor").remove();
   renderGsmServices();
   markChanged();
 }
 
-function addGsmService(category){
-  const key=category && category!=="all" ? category : "imei";
-  if(!Array.isArray(data.gsmServices[key])) data.gsmServices[key]=[];
-  const item={icon:"🔧",name:"Nieuwe service",group:"General",details:"",price:"",active:true};
-  data.gsmServices[key].push(item);
-  window.gsmActiveCategory=key;
-  window.gsmSelectedService={category:key,index:data.gsmServices[key].length-1};
+
+function addGsmService(key){
+  data.gsmServices[key].push({
+    icon:"🔧",
+    name:"Nieuwe service",
+    details:"",
+    price:""
+  });
   renderGsmServices();
   markChanged();
+  openGsmEditor(key,data.gsmServices[key].length-1);
 }
 
-function deleteSelectedGsmService(){
-  const selected=window.gsmSelectedService;
-  if(!selected) return;
-  if(!confirm("Deze GSM-service verwijderen?")) return;
-  data.gsmServices[selected.category].splice(selected.index,1);
-  window.gsmSelectedService=null;
-  renderGsmServices();
-  markChanged();
+function deleteGsmService(key,i){
+  if(confirm("Deze GSM-service verwijderen?")){
+    data.gsmServices[key].splice(i,1);
+    renderGsmServices();
+    markChanged();
+  }
 }
 
+
+/* ---------------- GSM ORDERS ---------------- */
+async function loadOrders(){
+  const box=document.getElementById("ordersList");
+  const status=document.getElementById("ordersStatus");
+  if(!box) return;
+  status.className="status info";
+  status.textContent="Bestellingen laden...";
+  box.innerHTML="";
+  try{
+    const r=await fetch("/api/admin/orders");
+    const result=await r.json();
+    if(!r.ok) throw new Error(result.error||"Bestellingen konden niet worden geladen");
+    const orders=result.orders||[];
+    status.className="status success";
+    status.textContent=orders.length+" bestelling(en) gevonden";
+    if(!orders.length){
+      box.innerHTML='<div class="order-empty">Nog geen GSM-service bestellingen ontvangen.</div>';
+      return;
+    }
+    box.innerHTML=orders.map(order=>{
+      const date=order.created_at ? new Date(order.created_at).toLocaleString("nl-NL") : "";
+      const price=order.price ? "€ "+esc(order.price) : "Op aanvraag";
+      return `
+        <div class="order-card">
+          <div class="order-card-head">
+            <div>
+              <div class="order-title">#${esc(order.id)} — ${esc(order.service_name||"GSM Service")}</div>
+              <div class="order-meta">${esc(order.service_group||"General")} · ${esc(date)}</div>
+            </div>
+            <select class="order-status-select" onchange="updateOrderStatus(${Number(order.id)},this.value)">
+              ${["Nieuw","In behandeling","Voltooid","Geannuleerd"].map(x=>`<option value="${esc(x)}" ${order.status===x?"selected":""}>${esc(x)}</option>`).join("")}
+            </select>
+          </div>
+          <div class="order-grid">
+            <div class="order-info"><strong>Klant</strong>${esc(order.name||"-")}</div>
+            <div class="order-info"><strong>E-mail</strong>${esc(order.email||"-")}</div>
+            <div class="order-info"><strong>Telefoon</strong>${esc(order.phone||"-")}</div>
+            <div class="order-info"><strong>Prijs</strong>${esc(price)}</div>
+            <div class="order-info"><strong>IMEI / Serienummer</strong>${esc(order.imei||"-")}</div>
+            <div class="order-info"><strong>Categorie</strong>${esc(order.service_category||"-")}</div>
+          </div>
+          ${order.notes?`<div class="order-notes"><strong>Opmerking:</strong><br>${esc(order.notes)}</div>`:""}
+        </div>`;
+    }).join("");
+  }catch(e){
+    status.className="status error";
+    status.textContent="✕ "+e.message;
+  }
+}
+
+async function updateOrderStatus(id,statusValue){
+  try{
+    const r=await fetch("/api/admin/orders/"+encodeURIComponent(id)+"/status",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({status:statusValue})
+    });
+    const result=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(result.error||"Status kon niet worden gewijzigd");
+    setStatus("✓ Order #"+id+" bijgewerkt","success");
+  }catch(e){
+    setStatus("✕ "+e.message,"error");
+    loadOrders();
+  }
+}
 
 /* ---------------- CUSTOMERS ---------------- */
 async function loadCustomers(){
