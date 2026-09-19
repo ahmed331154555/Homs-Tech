@@ -2,138 +2,314 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>GSM Services | HOMS TECH</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f7fa;color:#111827}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f7fa;color:#111827;line-height:1.6}
 a{text-decoration:none}
-header{background:#111827;color:#fff;padding:14px 5%;position:sticky;top:0;z-index:50;box-shadow:0 4px 18px rgba(0,0,0,.18)}
-.top{max-width:1250px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px}
-.logo{font-size:25px;font-weight:900}.logo span{color:#3b82f6}
-nav{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
-nav a{color:#fff;padding:9px 12px;border-radius:9px;font-weight:700;font-size:14px}
-nav a:hover{background:#2563eb}
-.hero{background:linear-gradient(135deg,#07101f,#1d3557);color:white;text-align:center;padding:55px 20px 45px}
-.hero h1{font-size:48px;margin:0 0 10px;font-weight:900}.hero h1 span{color:#60a5fa}
-.hero p{margin:0;color:#dbeafe;font-size:18px}
-.container{max-width:1100px;margin:auto;padding:35px 20px 70px}
-.tabs{display:flex;gap:10px;overflow-x:auto;padding:5px 2px 18px;scrollbar-width:none}
-.tabs::-webkit-scrollbar{display:none}
-.tab{flex:0 0 auto;border:1px solid #dbe2ea;background:white;color:#1f2937;padding:12px 17px;border-radius:12px;font-weight:800;cursor:pointer}
-.tab.active{background:#2563eb;color:white;border-color:#2563eb}
-.category{display:none}.category.active{display:block}
-.category-head{margin:10px 0 18px}.category-head h2{margin:0;font-size:30px}.category-head p{margin:5px 0;color:#64748b}
-.service-list{background:white;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;box-shadow:0 5px 20px rgba(15,23,42,.05)}
-.service-row{display:flex;align-items:center;gap:16px;padding:18px 22px;border-bottom:1px solid #e5e7eb;cursor:pointer;transition:.15s;background:#fff}
-.service-row:last-child{border-bottom:0}
-.service-row:hover{background:#f8fafc}
-.service-icon{width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:25px;flex:0 0 42px}
-.service-name{font-size:18px;font-weight:800;flex:1}
-.service-arrow{font-size:20px;color:#64748b}
-.empty{padding:40px;text-align:center;color:#64748b}
-.info{margin-top:25px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:16px;color:#1e3a8a}
-footer{background:#0b1422;color:#cbd5e1;text-align:center;padding:30px 20px}
-.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:100;align-items:center;justify-content:center;padding:20px}
-.modal-backdrop.show{display:flex}
-.modal{width:min(560px,100%);background:#fff;border-radius:18px;padding:25px;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative}
-.modal-close{position:absolute;right:15px;top:12px;border:0;background:#eef2f7;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer}
-.modal-icon{font-size:42px}.modal h3{font-size:27px;margin:8px 45px 8px 0}.modal-details{color:#64748b;line-height:1.6;white-space:pre-wrap}
-.modal-price{font-size:23px;font-weight:900;margin:20px 0}
-.order{display:block;text-align:center;background:#16c766;color:#fff;padding:13px 16px;border-radius:11px;font-weight:900}
-@media(max-width:700px){.top{flex-direction:column}.hero h1{font-size:39px}.service-row{padding:16px}.service-name{font-size:16px}}
+header{background:#111827;color:#fff;padding:13px 5%;display:flex;justify-content:space-between;align-items:center;gap:20px;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+.brand img{width:170px}.brand{display:block}
+nav{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
+nav a{color:#fff;font-weight:700;padding:10px 14px;border-radius:9px}
+nav a:hover,nav a.active{background:#2563eb}
+
+.hero{background:radial-gradient(circle at 75% 35%,rgba(37,99,235,.35),transparent 35%),linear-gradient(135deg,#07101f,#1b2b43);color:#fff;padding:58px 5%}
+.hero-inner{max-width:1200px;margin:auto;text-align:center}
+.hero h1{font-size:clamp(40px,6vw,64px);line-height:1.08;margin:0 0 15px;font-weight:900}
+.hero h1 span{color:#60a5fa}.hero p{font-size:18px;max-width:760px;margin:0 auto 24px;color:#e5e7eb}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:10px;font-weight:800;border:0;cursor:pointer}
+.green{background:#16c766;color:#fff}
+
+.section{max-width:1200px;margin:auto;padding:42px 5%}
+.gsm-shell{background:#fff;border:1px solid #e5e7eb;border-radius:18px;box-shadow:0 10px 35px rgba(15,23,42,.07);overflow:hidden}
+.gsm-head{padding:25px 25px 18px}
+.gsm-head h2{margin:0;font-size:30px;font-weight:900}
+.gsm-head p{margin:5px 0 0;color:#64748b}
+
+.tabs{display:flex;gap:9px;overflow-x:auto;padding:0 25px 16px;border-bottom:1px solid #e5e7eb}
+.tab{flex:0 0 auto;border:1px solid #dbe3ec;background:#fff;color:#334155;border-radius:9px;padding:10px 14px;font-weight:800;cursor:pointer;white-space:nowrap}
+.tab:hover{background:#f1f5f9}.tab.active{background:#2563eb;border-color:#2563eb;color:#fff}
+
+.info{margin:18px 25px;padding:13px 15px;border:1px solid #bfdbfe;border-left:3px solid #2563eb;border-radius:10px;background:#eff6ff;color:#1e3a8a;font-size:13px}
+.toolbar{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(220px,.7fr);gap:14px;padding:0 25px 18px}
+.search{display:flex;align-items:center;gap:10px;border:1px solid #dbe3ec;background:#fff;border-radius:10px;padding:0 13px}
+.search span{font-size:22px;color:#64748b}
+.search input{width:100%;border:0;outline:0;background:transparent;padding:13px 0;font-size:14px}
+#groupFilter{width:100%;border:1px solid #dbe3ec;background:#fff;color:#111827;border-radius:10px;padding:13px;outline:0}
+
+.browser{margin:0 25px 25px;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;background:#fff}
+.meta{padding:12px 15px;color:#64748b;font-size:12px;border-bottom:1px solid #e2e8f0}
+.group{border-bottom:1px solid #e2e8f0}.group:last-child{border-bottom:0}
+.group-head{display:flex;align-items:center;gap:10px;padding:13px 15px;background:#f8fafc;color:#1e293b;font-size:13px;font-weight:900;letter-spacing:.4px}
+.group-count{display:inline-flex;align-items:center;justify-content:center;min-width:25px;height:22px;padding:0 7px;border-radius:999px;background:#dbeafe;color:#2563eb;font-size:11px}
+.row{display:flex;align-items:center;gap:12px;min-height:62px;padding:10px 13px;border-top:1px solid #edf2f7;background:#fff;color:#1e293b;cursor:pointer;transition:background .15s,border-color .15s}
+.row:hover{background:#f8fbff}
+.icon{width:36px;height:36px;flex:0 0 36px;border-radius:8px;border:1px solid #dbe3ec;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-size:18px}
+.copy{min-width:0;flex:1}
+.name{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#172033}
+.sub{margin-top:3px;font-size:11px;color:#718096;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.price{flex:0 0 auto;border:1px solid #176fd1;background:#056bdc;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:900;min-width:62px;text-align:center}
+.arrow{flex:0 0 auto;color:#64748b;font-size:22px}
+.empty{padding:35px 20px;text-align:center;color:#64748b}
+
+.order{margin-top:30px;background:#111827;color:#fff;border-radius:18px;padding:34px 25px;text-align:center}
+.order h2{font-size:29px;margin:0 0 8px}.order p{color:#cbd5e1;max-width:700px;margin:0 auto 20px}
+
+footer{background:#0b1422;color:#fff;padding:38px 5%}
+.footer-inner{max-width:1200px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:25px}
+.footer-logo img{width:165px}.footer-center{text-align:center;color:#cbd5e1}
+
+.modal{position:fixed;inset:0;background:rgba(2,8,23,.65);display:none;align-items:center;justify-content:center;padding:20px;z-index:300}
+.modal.open{display:flex}
+.modal-box{width:min(620px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:18px;box-shadow:0 25px 80px rgba(0,0,0,.25);padding:25px}
+.modal-top{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;border-bottom:1px solid #e5e7eb;padding-bottom:15px;margin-bottom:18px}
+.modal-title{display:flex;gap:12px;align-items:center}
+.modal-icon{width:46px;height:46px;border-radius:10px;background:#eff6ff;border:1px solid #bfdbfe;display:flex;align-items:center;justify-content:center;font-size:23px}
+.modal h3{margin:0;font-size:22px}.modal-group{color:#64748b;font-size:12px;margin-top:3px}
+.close{border:0;background:#f1f5f9;border-radius:9px;width:38px;height:38px;font-size:22px;cursor:pointer}
+.detail{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:15px;margin-bottom:15px;white-space:pre-line}
+.modal-price{font-size:25px;font-weight:900;margin:8px 0 18px;color:#0f172a}
+.modal-actions{display:flex;gap:10px}.modal-actions .btn{flex:1}
+
+@media(max-width:750px){
+  header{flex-wrap:wrap;justify-content:center}nav{order:3;width:100%}
+  .toolbar{grid-template-columns:1fr}
+  .row{min-height:58px}.name{font-size:13px}
+}
+@media(max-width:550px){
+  .brand img{width:150px}nav a{font-size:13px;padding:8px 9px}
+  .hero{padding:48px 5%}.hero h1{font-size:40px}
+  .gsm-head,.tabs,.toolbar{padding-left:15px;padding-right:15px}
+  .info{margin-left:15px;margin-right:15px}.browser{margin-left:15px;margin-right:15px}
+  .price{min-width:54px;padding:5px 7px}.modal-actions{flex-direction:column}
+  .footer-inner{flex-direction:column;text-align:center}
+}
 </style>
 </head>
 <body>
+
 <header>
-<div class="top">
-<div class="logo">HOMS <span>TECH</span></div>
-<nav>
-<a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a>
-<a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a><a href="/used.html">Tweedehands</a>
-<a href="gsm-services.html">GSM Services</a><a href="account.html">👤 Mijn account</a>
-</nav>
-</div>
+  <a class="brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="about.html">Over ons</a>
+    <a href="repair.html">Reparaties</a>
+    <a href="devices.html">Apparaten</a>
+    <a href="prices.html">Prijzen</a>
+    <a href="/used.html">Tweedehands</a>
+    <a href="gsm-services.html" class="active">GSM Services</a>
+    <a href="account.html">👤 Mijn account</a>
+  </nav>
 </header>
 
-<section class="hero"><h1>GSM <span>Services</span></h1><p>Kies een service om de details en prijs te bekijken.</p></section>
+<section class="hero">
+  <div class="hero-inner">
+    <h1>GSM <span>Services</span></h1>
+    <p>Professionele GSM-diensten van HOMS TECH. Kies een service, bekijk de prijs en stuur uw aanvraag rechtstreeks naar ons.</p>
+  </div>
+</section>
 
-<main class="container">
-<div class="tabs">
-<button class="tab active" data-target="imei">IMEI Services</button>
-<button class="tab" data-target="remote">Remote Service</button>
-<button class="tab" data-target="server">Server / Tools</button>
-<button class="tab" data-target="frp">FRP Services</button>
-<button class="tab" data-target="firmware">Firmware / Software</button>
+<section class="section">
+  <div class="gsm-shell">
+    <div class="gsm-head">
+      <h2 id="pageTitle">GSM Services</h2>
+      <p>Bekijk onze services en beschikbare prijzen.</p>
+    </div>
+
+    <div id="tabs" class="tabs"></div>
+
+    <div class="info">
+      <strong>ℹ️</strong> Klik op een service om de details, prijs en besteloptie te bekijken.
+    </div>
+
+    <div class="toolbar">
+      <div class="search">
+        <span>⌕</span>
+        <input id="search" type="search" placeholder="Zoek in services..." oninput="renderServices()">
+      </div>
+      <select id="groupFilter" onchange="renderServices()">
+        <option value="">Alle groepen</option>
+      </select>
+    </div>
+
+    <div class="browser">
+      <div class="meta" id="meta">Gegevens laden...</div>
+      <div id="serviceGroups"></div>
+    </div>
+  </div>
+
+  <div class="order">
+    <h2>Een GSM-service nodig?</h2>
+    <p>Kies hierboven een service of stuur ons direct uw aanvraag via WhatsApp.</p>
+    <a class="btn green" id="orderWhatsApp" href="#">💬 Aanvraag sturen</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></div>
+    <div class="footer-center"><strong>HOMS TECH</strong><br><span>GSM Services & Telefoonservice</span><br><br>© HOMS TECH — Alle rechten voorbehouden.</div>
+  </div>
+</footer>
+
+<div class="modal" id="serviceModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-top">
+      <div class="modal-title">
+        <div class="modal-icon" id="modalIcon">🔧</div>
+        <div>
+          <h3 id="modalName">Service</h3>
+          <div class="modal-group" id="modalGroup"></div>
+        </div>
+      </div>
+      <button class="close" type="button" onclick="closeModal()">×</button>
+    </div>
+    <div class="detail" id="modalDetails"></div>
+    <div class="modal-price" id="modalPrice"></div>
+    <div class="modal-actions">
+      <a class="btn green" id="modalWhatsApp" href="#">💬 Bestellen via WhatsApp</a>
+      <button class="btn" type="button" style="background:#e5e7eb;color:#111827" onclick="closeModal()">Sluiten</button>
+    </div>
+  </div>
 </div>
-
-<section class="category active" id="imei"><div class="category-head"><h2>📱 IMEI Services</h2><p>IMEI- en netwerkservices van HOMS TECH.</p></div><div class="service-list" id="imei-list"></div></section>
-<section class="category" id="remote"><div class="category-head"><h2>🛠️ Remote Service</h2><p>Services op afstand.</p></div><div class="service-list" id="remote-list"></div></section>
-<section class="category" id="server"><div class="category-head"><h2>🔧 Server / Tools</h2><p>Tools, servers, credits en activaties.</p></div><div class="service-list" id="server-list"></div></section>
-<section class="category" id="frp"><div class="category-head"><h2>🔐 FRP Services</h2><p>Ondersteunde softwarediensten.</p></div><div class="service-list" id="frp-list"></div></section>
-<section class="category" id="firmware"><div class="category-head"><h2>💻 Firmware / Software</h2><p>Firmware- en softwarediensten.</p></div><div class="service-list" id="firmware-list"></div></section>
-
-<div class="info"><strong>Zo werkt het:</strong> klik op een service om de details, prijs en bestelknop te bekijken.</div>
-</main>
-
-<div class="modal-backdrop" id="modal" onclick="closeModal(event)">
-<div class="modal" onclick="event.stopPropagation()">
-<button class="modal-close" onclick="closeModal()">×</button>
-<div class="modal-icon" id="modalIcon">🔧</div>
-<h3 id="modalName"></h3>
-<div class="modal-details" id="modalDetails"></div>
-<div class="modal-price" id="modalPrice"></div>
-<a class="order" id="modalOrder" target="_blank">Bestellen via WhatsApp</a>
-</div>
-</div>
-
-<footer>© HOMS TECH — GSM Services & Telefoonservice</footer>
 
 <script>
-const categories=["imei","remote","server","frp","firmware"];
-let siteData={};
+const categories=[
+  ["all","🔎 Alle services"],
+  ["imei","📱 IMEI Services"],
+  ["remote","🛠️ Remote Service"],
+  ["server","🔧 Server Service"],
+  ["frp","🔐 FRP Services"],
+  ["firmware","💻 Firmware / Software"]
+];
 
-function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+let siteData={whatsapp:"",gsmServices:{}};
+let activeCategory="all";
+let allEntries=[];
+
+function esc(value){
+  return String(value ?? "").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+function categoryLabel(key){
+  const found=categories.find(x=>x[0]===key);
+  return found ? found[1].replace(/^\S+\s/,"") : key;
+}
+function getEntries(){
+  const entries=[];
+  ["imei","remote","server","frp","firmware"].forEach(key=>{
+    const list=Array.isArray(siteData.gsmServices?.[key]) ? siteData.gsmServices[key] : [];
+    list.forEach((service,index)=>{
+      service=service||{};
+      if(service.active===false)return;
+      entries.push({category:key,index,service});
+    });
+  });
+  return entries;
+}
 function whatsappLink(service){
- const number=String(siteData.whatsapp||"").replace(/\D/g,"");
- if(!number)return "#";
- const text="Hallo HOMS TECH, ik wil graag de volgende GSM-service aanvragen: "+service+"\\n\\nMerk/model: \\nIMEI/Serienummer indien nodig: \\nOpmerking: ";
- return "https://wa.me/"+number+"?text="+encodeURIComponent(text);
+  const number=String(siteData.whatsapp||"").replace(/\D/g,"");
+  if(!number)return"#";
+  const text="Hallo HOMS TECH, ik wil graag de volgende GSM-service bestellen:\n\nService: "+service.name+
+    "\nGroep: "+(service.group||"General")+
+    "\nPrijs: "+(service.price!=="" && service.price!=null ? "€ "+service.price : "Op aanvraag")+
+    "\n\nOpmerking: ";
+  return "https://wa.me/"+number+"?text="+encodeURIComponent(text);
 }
-function openModal(item){
- document.getElementById("modalIcon").textContent=item.icon||"🔧";
- document.getElementById("modalName").textContent=item.name||"Service";
- document.getElementById("modalDetails").textContent=item.details||"Geen extra informatie.";
- document.getElementById("modalPrice").textContent=item.price ? "€ "+item.price : "Prijs op aanvraag";
- document.getElementById("modalOrder").href=whatsappLink(item.name||"GSM Service");
- document.getElementById("modal").classList.add("show");
+function renderTabs(){
+  const box=document.getElementById("tabs");
+  const entries=getEntries();
+  box.innerHTML=categories.map(([key,label])=>{
+    const count=key==="all"?entries.length:entries.filter(x=>x.category===key).length;
+    return `<button type="button" class="tab ${key===activeCategory?"active":""}" onclick="selectCategory('${key}')">${label} <span style="opacity:.7;font-size:11px">(${count})</span></button>`;
+  }).join("");
 }
-function closeModal(e){
- if(e && e.target!==document.getElementById("modal"))return;
- document.getElementById("modal").classList.remove("show");
+function updateGroupFilter(baseEntries){
+  const select=document.getElementById("groupFilter");
+  const current=select.value;
+  const groups=[...new Set(baseEntries.map(x=>x.service.group||"General"))].sort((a,b)=>a.localeCompare(b));
+  select.innerHTML='<option value="">Alle groepen</option>'+groups.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join("");
+  if(groups.includes(current))select.value=current;
 }
-function render(){
- categories.forEach(key=>{
-  const el=document.getElementById(key+"-list");
-  const list=siteData.gsmServices&&Array.isArray(siteData.gsmServices[key])?siteData.gsmServices[key]:[];
-  el.innerHTML=list.length?list.map((item,i)=>`
-   <div class="service-row" onclick='openModal(${JSON.stringify(item).replace(/'/g,"&#039;")})'>
-    <div class="service-icon">${esc(item.icon||"🔧")}</div>
-    <div class="service-name">${esc(item.name||"Service")}</div>
-    <div class="service-arrow">›</div>
-   </div>`).join(""):`<div class="empty"><strong>Nog geen services toegevoegd.</strong><br>Deze categorie is klaar om services toe te voegen via Admin.</div>`;
- });
+function selectCategory(key){
+  activeCategory=key;
+  document.getElementById("search").value="";
+  document.getElementById("groupFilter").value="";
+  renderServices();
 }
-async function loadSite(){
- try{const r=await fetch("/api/site",{cache:"no-store"});if(r.ok)siteData=await r.json()}catch(e){console.error(e)}
- render();
+function renderServices(){
+  renderTabs();
+  const base=allEntries.filter(x=>activeCategory==="all"||x.category===activeCategory);
+  updateGroupFilter(base);
+  const search=document.getElementById("search").value.trim().toLowerCase();
+  const group=document.getElementById("groupFilter").value;
+  let entries=base.filter(x=>{
+    const s=x.service||{};
+    const hay=[s.name,s.details,s.group,x.category].join(" ").toLowerCase();
+    return !search || hay.includes(search);
+  });
+  if(group)entries=entries.filter(x=>(x.service.group||"General")===group);
+
+  document.getElementById("meta").textContent=`Toont ${entries.length} van ${base.length} services`;
+
+  const box=document.getElementById("serviceGroups");
+  if(!entries.length){
+    box.innerHTML='<div class="empty">Nog geen services in deze categorie.</div>';
+    return;
+  }
+
+  const grouped=new Map();
+  entries.forEach(entry=>{
+    const groupName=entry.service.group||"General";
+    if(!grouped.has(groupName))grouped.set(groupName,[]);
+    grouped.get(groupName).push(entry);
+  });
+
+  box.innerHTML=[...grouped.entries()].map(([groupName,list])=>{
+    const rows=list.map(entry=>{
+      const s=entry.service;
+      const price=(s.price!=="" && s.price!=null) ? `€ ${esc(s.price)}` : "Op aanvraag";
+      const subtitle=s.details||categoryLabel(entry.category);
+      return `<div class="row" onclick="openService('${entry.category}',${entry.index})">
+        <div class="icon">${esc(s.icon||"🔧")}</div>
+        <div class="copy">
+          <div class="name">${esc(s.name||"Service")}</div>
+          <div class="sub">${esc(subtitle)}</div>
+        </div>
+        <div class="price">${price}</div>
+        <div class="arrow">›</div>
+      </div>`;
+    }).join("");
+    return `<div class="group"><div class="group-head"><span>${esc(groupName)}</span><span class="group-count">${list.length}</span></div>${rows}</div>`;
+  }).join("");
 }
-document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>{
- document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
- document.querySelectorAll(".category").forEach(x=>x.classList.remove("active"));
- btn.classList.add("active");document.getElementById(btn.dataset.target).classList.add("active");
-}));
+function openService(category,index){
+  const service=siteData.gsmServices?.[category]?.[index];
+  if(!service || service.active===false)return;
+  document.getElementById("modalIcon").textContent=service.icon||"🔧";
+  document.getElementById("modalName").textContent=service.name||"Service";
+  document.getElementById("modalGroup").textContent=(service.group||"General")+" • "+categoryLabel(category);
+  document.getElementById("modalDetails").textContent=service.details||"Meer informatie over deze service is op aanvraag beschikbaar.";
+  document.getElementById("modalPrice").textContent=(service.price!=="" && service.price!=null)?"€ "+service.price:"Prijs op aanvraag";
+  document.getElementById("modalWhatsApp").href=whatsappLink(service);
+  document.getElementById("serviceModal").classList.add("open");
+}
+function closeModal(){document.getElementById("serviceModal").classList.remove("open")}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
+
+async function loadSite(){
+  try{
+    const r=await fetch("/api/site",{cache:"no-store"});
+    if(!r.ok)throw new Error("Websitegegevens konden niet worden geladen");
+    siteData=await r.json();
+  }catch(e){
+    siteData={whatsapp:"",gsmServices:{}};
+  }
+  if(!siteData.gsmServices || typeof siteData.gsmServices!=="object")siteData.gsmServices={};
+  allEntries=getEntries();
+  renderServices();
+  document.getElementById("orderWhatsApp").href=whatsappLink({name:"GSM Service - algemene aanvraag",group:"Algemeen",price:""});
+}
 loadSite();
 </script>
 </body>
