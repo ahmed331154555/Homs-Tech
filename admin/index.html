@@ -1019,7 +1019,8 @@ function normalizeGsmService(x){
     details:x.details || x.description || "",
     price:x.price || "",
     active:x.active !== false,
-    requiresUsername:x.requiresUsername === true
+    requiresUsername:x.requiresUsername === true,
+    requiresImei:x.requiresImei === true
   };
 }
 
@@ -1433,7 +1434,19 @@ function renderGsmServices(){
   if(selectedGsmServiceIndex>=list.length) selectedGsmServiceIndex=Math.max(0,list.length-1);
 
   const tabs=gsmServiceCategories.map(c=>`<button type="button" class="gsm-admin-tab ${c[0]===activeKey?"active":""}" onclick="gsmActiveCategory='${c[0]}';selectedGsmServiceIndex=0;renderGsmServices()">${c[1]}</button>`).join('');
-  const rows=list.length ? list.map((service,i)=>`<button type="button" class="editor-list-item ${i===selectedGsmServiceIndex?'active':''}" onclick="selectedGsmServiceIndex=${i};renderGsmServices()">${esc(service.icon||'🔧')} ${esc(service.name||'Nieuwe GSM Service')}<small>${service.price?('€ '+esc(service.price)):'Op aanvraag'}</small></button>`).join('') : '<div class="small" style="padding:10px">Nog geen services in deze categorie.</div>';
+  const grouped=new Map();
+  list.forEach((service,i)=>{
+    const groupName=(service.group||category[1].replace(/^[^ ]+ /,'')||"General").trim()||"General";
+    if(!grouped.has(groupName)) grouped.set(groupName,[]);
+    grouped.get(groupName).push({service,i});
+  });
+  const rows=list.length ? [...grouped.entries()].sort((a,b)=>a[0].localeCompare(b[0],'nl')).map(([groupName,items])=>`
+    <div class="gsm-admin-group" style="margin:10px 0 6px;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#fff">
+      <div style="padding:9px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:900;color:#334155;display:flex;justify-content:space-between;align-items:center">
+        <span>${esc(groupName)}</span><span style="font-size:11px;color:#64748b">${items.length}</span>
+      </div>
+      ${items.map(({service,i})=>`<button type="button" class="editor-list-item ${i===selectedGsmServiceIndex?'active':''}" onclick="selectedGsmServiceIndex=${i};renderGsmServices()">${esc(service.icon||'🔧')} ${esc(service.name||'Nieuwe GSM Service')}<small>${service.price?('€ '+esc(service.price)):'Op aanvraag'}</small></button>`).join('')}
+    </div>`).join('') : '<div class="small" style="padding:10px">Nog geen services in deze categorie.</div>';
   const service=list[selectedGsmServiceIndex];
 
   let editor='';
@@ -1447,7 +1460,7 @@ function renderGsmServices(){
         <div class="grid">
           <div class="field"><label>Groep / bestandsnaam</label><input value="${esc(service.group || category[1].replace(/^[^ ]+ /,''))}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].group=this.value;markChanged();renderGsmServices()" placeholder="Bijv. INPRO RAMDISK A12/A13"></div>
           <div class="field"><label>Status</label><select onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].active=this.value==='Actief';markChanged()"><option value="Actief" ${service.active!==false?'selected':''}>Actief</option><option value="Inactief" ${service.active===false?'selected':''}>Inactief</option></select></div>
-          <div class="field" style="display:flex;align-items:flex-end"><label style="display:flex;align-items:center;gap:9px;margin:0;padding:12px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresUsername===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresUsername=this.checked;markChanged()" style="width:18px;height:18px"> Gebruikersnaam klant verplicht</label></div>
+          <div class="field" style="display:flex;flex-direction:column;gap:8px;justify-content:flex-end"><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresUsername===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresUsername=this.checked;markChanged()" style="width:18px;height:18px"> Gebruikersnaam klant verplicht</label><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresImei===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresImei=this.checked;markChanged()" style="width:18px;height:18px"> IMEI / Serienummer klant verplicht</label></div>
           <div class="field"><label>Naam service</label><input value="${esc(service.name||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].name=this.value;markChanged();renderGsmServices()"></div>
           <div class="field"><label>Prijs (€)</label><input value="${esc(service.price||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].price=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1"><label>Korte beschrijving</label><input value="${esc(service.shortDescription||'')}" placeholder="Bijv. Xiaomi / Redmi / Poco" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].shortDescription=this.value;markChanged()"></div>
@@ -1479,7 +1492,7 @@ async function saveGsmServiceEditor(category,i){
 function addGsmService(key){
   if(!data.gsmServices[key]) data.gsmServices[key]=[];
   const categoryLabel=(gsmServiceCategories.find(x=>x[0]===key)||[key,key])[1].replace(/^[^ ]+ /,'');
-  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",group:categoryLabel,shortDescription:"",details:"",price:"",active:true,requiresUsername:false});
+  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",group:categoryLabel,shortDescription:"",details:"",price:"",active:true,requiresUsername:false,requiresImei:false});
   gsmActiveCategory=key;
   selectedGsmServiceIndex=data.gsmServices[key].length-1;
   renderGsmServices();
