@@ -499,80 +499,139 @@ textarea{
 .gsm-editor .btn{margin-top:16px}
 .gsm-editor-close{position:absolute;right:14px;top:12px;border:0;background:#eef2f7;width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer}
 
-/* HOMS TECH — classic editor layout: list left, editor right */
+/* HOMS TECH: phone lists stay as full-width rows/cards */
+#servicesList,#phonesList,#usedPhonesList,#whyList{
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:18px !important;
+}
+#phonesList > .card,#usedPhonesList > .card,#servicesList > .card,#whyList > .card{
+  width:100%;
+}
+
+
+/* ===== HOMS TECH ADMIN — SIDEBAR LAYOUT ===== */
+body{background:#f4f7fb;}
+.topbar{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:69px;
+  z-index:100;
+}
+.admin-nav{
+  display:none;
+  position:fixed;
+  left:0;
+  top:69px;
+  bottom:0;
+  width:245px;
+  height:auto;
+  background:#111827;
+  border-right:1px solid #243044;
+  border-bottom:0;
+  box-shadow:4px 0 18px rgba(0,0,0,.08);
+  overflow-y:auto;
+  overflow-x:hidden;
+  z-index:90;
+}
+.admin-nav-inner{
+  width:100%;
+  max-width:none;
+  margin:0;
+  padding:18px 12px 24px;
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  overflow:visible;
+}
+.nav-btn{
+  width:100%;
+  min-height:46px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:10px;
+  border:1px solid transparent;
+  background:transparent;
+  color:#d7deea;
+  padding:12px 14px;
+  border-radius:10px;
+  font-weight:700;
+  white-space:normal;
+  text-align:left;
+  transition:.15s ease;
+}
+.nav-btn:hover{
+  background:#1b2638;
+  color:#fff;
+}
+.nav-btn.active{
+  background:#25d366;
+  color:#fff;
+  box-shadow:0 5px 14px rgba(37,211,102,.18);
+}
+#dashboard{
+  padding-top:69px;
+}
+#dashboard .container{
+  max-width:none;
+  width:auto;
+  margin:0;
+  margin-left:245px;
+  padding:28px 30px 50px;
+}
+.admin-page.active{display:block;}
+.section{
+  width:100%;
+  max-width:none;
+  margin-bottom:22px;
+}
+
+/* Keep all editable lists stacked cleanly, one under another. */
 #servicesList,
 #phonesList,
 #usedPhonesList,
 #whyList{
-  display:block !important;
-  width:100% !important;
-}
-
-.homs-editor-layout{
-  display:grid !important;
-  grid-template-columns:260px minmax(0,1fr) !important;
-  gap:22px !important;
-  align-items:start !important;
-  width:100% !important;
-}
-
-.homs-editor-sidebar{
-  background:#fbfcfe;
-  border:1px solid #e5eaf1;
-  border-radius:14px;
-  padding:12px;
-  position:sticky;
-  top:90px;
-}
-
-.homs-editor-sidebar-title{
-  font-weight:800;
-  font-size:15px;
-  padding:8px 10px 12px;
-  color:#172033;
-}
-
-.homs-editor-item{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:18px !important;
   width:100%;
-  border:0;
-  background:transparent;
-  color:#334155;
-  text-align:left;
-  padding:11px 12px;
-  border-radius:10px;
-  font-weight:700;
-  cursor:pointer;
-  margin-bottom:4px;
+}
+#servicesList > .card,
+#phonesList > .card,
+#usedPhonesList > .card,
+#whyList > .card{
+  width:100%;
+  margin:0 !important;
 }
 
-.homs-editor-item:hover{background:#eef7f1}
-.homs-editor-item.active{background:#25d366;color:#fff}
-
-.homs-editor-content{
-  min-width:0;
-}
-
-.homs-editor-content > .card{
-  width:100% !important;
-  margin-bottom:0 !important;
-}
-
-@media(max-width:900px){
-  .homs-editor-layout{
-    grid-template-columns:210px minmax(0,1fr) !important;
+@media (max-width:900px){
+  .admin-nav{
+    width:205px;
+  }
+  #dashboard .container{
+    margin-left:205px;
+    padding-left:18px;
+    padding-right:18px;
   }
 }
 
-@media(max-width:700px){
-  .homs-editor-layout{
-    grid-template-columns:1fr !important;
+@media (max-width:700px){
+  .topbar{height:62px;padding:12px 14px;}
+  .logo{font-size:18px;}
+  .admin-nav{
+    top:62px;
+    width:190px;
   }
-  .homs-editor-sidebar{
-    position:static;
+  #dashboard{padding-top:62px;}
+  #dashboard .container{
+    margin-left:190px;
+    padding:18px 12px 35px;
   }
-  .homs-editor-content > .card{
-    width:100% !important;
-  }
+  .nav-btn{font-size:13px;padding:10px 11px;}
+  .section{padding:17px;}
 }
 </style>
 </head>
@@ -1174,52 +1233,6 @@ function renderGeneral(){
 
 /* ---------------- SERVICES ---------------- */
 
-const homsEditorSelection = {services:0, phones:0, used:0, why:0};
-
-function applyHomsEditorLayout(listId, key, sidebarTitle){
-  const box=document.getElementById(listId);
-  if(!box) return;
-  const cards=Array.from(box.children).filter(el=>el.classList && el.classList.contains("card"));
-  if(!cards.length) return;
-
-  let selected=Number(homsEditorSelection[key] || 0);
-  if(selected<0 || selected>=cards.length) selected=0;
-  homsEditorSelection[key]=selected;
-
-  const layout=document.createElement("div");
-  layout.className="homs-editor-layout";
-
-  const side=document.createElement("div");
-  side.className="homs-editor-sidebar";
-  side.innerHTML=`<div class="homs-editor-sidebar-title">${sidebarTitle}</div>`;
-
-  const content=document.createElement("div");
-  content.className="homs-editor-content";
-
-  cards.forEach((card,i)=>{
-    const title=card.querySelector(".card-title")?.textContent?.trim() || `Item ${i+1}`;
-    const cleanTitle=title.replace(/^Dienst\s+\d+\s*/i,"").trim();
-    const btn=document.createElement("button");
-    btn.type="button";
-    btn.className="homs-editor-item"+(i===selected?" active":"");
-    btn.textContent=cleanTitle || `Item ${i+1}`;
-    btn.onclick=()=>{
-      homsEditorSelection[key]=i;
-      Array.from(side.querySelectorAll(".homs-editor-item")).forEach((b,j)=>b.classList.toggle("active",j===i));
-      Array.from(content.children).forEach((c,j)=>c.style.display=j===i?"block":"none");
-    };
-    side.appendChild(btn);
-
-    card.style.display=i===selected?"block":"none";
-    content.appendChild(card);
-  });
-
-  layout.appendChild(side);
-  layout.appendChild(content);
-  box.innerHTML="";
-  box.appendChild(layout);
-}
-
 function renderServices(){
 
   const box=document.getElementById("servicesList");
@@ -1282,8 +1295,6 @@ function renderServices(){
       </div>
     `;
   }
-
-  applyHomsEditorLayout("servicesList","services","Diensten");
 }
 
 function addService(){
@@ -1423,8 +1434,6 @@ function renderPhones(){
       <div class="small">Nog geen telefoons toegevoegd.</div>
     `;
   }
-
-  applyHomsEditorLayout("phonesList","phones","Telefoons");
 }
 
 function renderPhoneTitle(i){
@@ -1623,8 +1632,6 @@ function renderUsedPhones(){
       </div>
     `;
   }
-
-  applyHomsEditorLayout("usedPhonesList","used","Telefoons");
 }
 
 function addUsedPhone(){
@@ -2038,8 +2045,6 @@ function renderWhy(){
       </div>
     `;
   }
-
-  applyHomsEditorLayout("whyList","why","Voordelen");
 }
 
 function addWhy(){
