@@ -519,6 +519,41 @@ flex-direction:column;
 text-align:center
 }
 }
+
+/* REFURBISHED CATEGORIES */
+.category-section{max-width:1200px;margin:auto;padding:45px 5%}
+.category-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.category-card{position:relative;display:block;min-height:210px;border-radius:22px;overflow:hidden;background:#111827;box-shadow:0 10px 30px rgba(0,0,0,.10)}
+.category-card img{width:100%;height:210px;object-fit:cover;display:block;transition:.25s}
+.category-card:hover img{transform:scale(1.04)}
+.category-card:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.78),rgba(0,0,0,.08))}
+.category-card-content{position:absolute;z-index:2;left:24px;right:20px;bottom:22px;color:#fff}
+.category-card-content h3{margin:0 0 13px;font-size:28px;font-weight:900;text-transform:uppercase}
+.category-card-content span{display:inline-flex;align-items:center;gap:10px;background:#ffe000;color:#111;padding:11px 20px;border-radius:13px;font-weight:900;font-size:18px}
+.category-card.no-image{display:flex;align-items:flex-end;padding:24px}
+.category-card.no-image:after{display:none}
+
+/* HORIZONTAL PHONE STRIP */
+.phone-strip{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px 4px 18px;scrollbar-width:thin}
+.phone-strip::-webkit-scrollbar{height:7px}
+.phone-strip::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:20px}
+.phone-strip .device{flex:0 0 205px;scroll-snap-align:start;padding:0 0 16px;overflow:hidden;text-align:left;border-radius:18px}
+.phone-strip .device-image{width:100%;height:190px;background:#f8fafc;display:flex;align-items:center;justify-content:center}
+.phone-strip .device-image img{width:100%;height:100%;object-fit:contain}
+.phone-strip .device-body{padding:13px 15px}
+.phone-strip .device strong{font-size:18px}
+.phone-strip .device-price{font-size:19px;font-weight:900;margin-top:7px;color:#111827}
+.phone-strip .device-link{display:inline-flex;margin-top:10px;background:#111827;color:#fff;border-radius:9px;padding:8px 12px;font-weight:800}
+@media(max-width:700px){
+  .category-grid{grid-template-columns:1fr 1fr;gap:12px}
+  .category-card,.category-card img{min-height:155px;height:155px}
+  .category-card-content{left:14px;bottom:14px}
+  .category-card-content h3{font-size:20px;margin-bottom:8px}
+  .category-card-content span{font-size:14px;padding:8px 12px}
+  .phone-strip .device{flex-basis:175px}
+  .phone-strip .device-image{height:165px}
+}
+
 </style>
 </head>
 
@@ -658,6 +693,13 @@ Onze diensten
 
 </div>
 
+
+<!-- CATEGORIES -->
+<section class="category-section">
+  <h2 class="section-title">Refurbished apparaten</h2>
+  <div id="deviceCategories" class="category-grid"></div>
+</section>
+
 <!-- DEVICES -->
 
 <section>
@@ -666,7 +708,7 @@ Onze diensten
 Populaire apparaten
 </h2>
 
-<div id="devices" class="devices"></div>
+<div id="devices" class="phone-strip"></div>
 
 </section>
 
@@ -760,7 +802,8 @@ phone:"",
 areas:"Rotterdam en omgeving",
 services:[],
 why:[],
-phones:[]
+phones:[],
+deviceCategories:[]
 };
 
 
@@ -980,101 +1023,114 @@ container.appendChild(card);
 
 /* Devices */
 
+function renderCategories(){
+
+const container=document.getElementById("deviceCategories");
+if(!container) return;
+container.innerHTML="";
+
+let categories=Array.isArray(data.deviceCategories)?data.deviceCategories:[];
+categories=categories.filter(x=>x && x.active!==false);
+
+if(!categories.length){
+  categories=[
+    {title:"Refurbished iPhones",image:"",link:"devices.html",active:true},
+    {title:"Refurbished iPads",image:"",link:"devices.html",active:true},
+    {title:"Refurbished Mac",image:"",link:"devices.html",active:true},
+    {title:"Refurbished Watches",image:"",link:"devices.html",active:true},
+    {title:"Refurbished Samsungs",image:"",link:"devices.html",active:true},
+    {title:"Onze accessoires",image:"",link:"devices.html",active:true}
+  ];
+}
+
+categories.forEach(function(cat){
+  const a=document.createElement("a");
+  a.className="category-card"+(cat.image?"":" no-image");
+  a.href=cat.link || "devices.html";
+
+  if(cat.image){
+    const img=document.createElement("img");
+    img.src=cat.image;
+    img.alt=cat.title||"";
+    a.appendChild(img);
+  }
+
+  const content=document.createElement("div");
+  content.className="category-card-content";
+
+  const h=document.createElement("h3");
+  h.textContent=cat.title||"Apparaten";
+
+  const span=document.createElement("span");
+  span.textContent=(cat.buttonText||"Bekijk")+"  ›";
+
+  content.appendChild(h);
+  content.appendChild(span);
+  a.appendChild(content);
+  container.appendChild(a);
+});
+}
+
 function renderDevices(){
 
-let container =
-document.getElementById("devices");
+let container=document.getElementById("devices");
+container.innerHTML="";
 
-container.innerHTML = "";
+let phones=Array.isArray(data.phones)?data.phones:[];
 
-let phones =
-Array.isArray(data.phones)
-? data.phones
-: [];
-
-if(phones.length === 0){
-
-phones = [
-{name:"iPhone 12",brand:"Apple"},
-{name:"iPhone 13",brand:"Apple"},
-{name:"iPhone 14",brand:"Apple"},
-{name:"iPhone 15",brand:"Apple"},
-{name:"iPhone 16",brand:"Apple"},
-{name:"iPhone 17",brand:"Apple"}
-];
-
+if(phones.length===0){
+  container.innerHTML='<div class="empty"><h3>Geen telefoons beschikbaar</h3><p>Neem contact met ons op voor het actuele aanbod.</p></div>';
+  return;
 }
 
-/*
-نظهر أول 6 أجهزة حتى يبقى
-تصميم الصفحة مثل التصميم الحالي.
-*/
+phones.slice(0,12).forEach(function(phone,index){
 
-phones.slice(0,6).forEach(function(phone){
+  if(typeof phone==="string") phone={name:phone,brand:""};
 
-if(typeof phone === "string"){
-phone = {
-name:phone,
-brand:""
-};
-}
+  let image=phone.image || (Array.isArray(phone.images)&&phone.images[0]) || "";
 
-let device =
-document.createElement("div");
+  let device=document.createElement("div");
+  device.className="device";
 
-device.className = "device";
+  let imageBox=document.createElement("div");
+  imageBox.className="device-image";
+  if(image){
+    imageBox.innerHTML='<img src="'+String(image).replace(/"/g,"&quot;")+'" alt="">';
+  }else{
+    imageBox.textContent="📱";
+    imageBox.style.fontSize="55px";
+  }
 
-let icon =
-document.createElement("div");
+  let body=document.createElement("div");
+  body.className="device-body";
 
-icon.className = "device-icon";
+  let name=document.createElement("strong");
+  name.textContent=phone.name || "Apparaat";
 
-let images = Array.isArray(phone.images)
-? phone.images.filter(Boolean)
-: [];
+  let brand=document.createElement("small");
+  brand.style.color="#64748b";
+  brand.style.display="block";
+  brand.textContent=phone.brand || "";
 
-if(images.length > 0){
-  let img = document.createElement("img");
-  img.src = images[0];
-  img.alt = phone.name || "Apparaat";
-  img.style.width = "100%";
-  img.style.height = "100%";
-  img.style.objectFit = "contain";
-  img.style.display = "block";
-  icon.appendChild(img);
-}else{
-  icon.textContent = "📱";
-}
+  let price=document.createElement("div");
+  price.className="device-price";
+  let p=phone.price || phone.salePrice || phone.sellPrice || phone.verkoopprijs || "";
+  price.textContent=p ? "€ "+String(p).replace(/^€\s*/,"") : "";
 
-let name =
-document.createElement("strong");
+  let link=document.createElement("a");
+  link.className="device-link";
+  link.href="product.html?type=phone&id="+encodeURIComponent(phone._index ?? index);
+  link.textContent="Bekijk →";
 
-name.textContent =
-phone.name || "Apparaat";
+  body.appendChild(name);
+  if(brand.textContent) body.appendChild(brand);
+  if(price.textContent) body.appendChild(price);
+  body.appendChild(link);
 
-device.appendChild(icon);
-device.appendChild(name);
-
-if(phone.brand){
-
-let brand =
-document.createElement("small");
-
-brand.style.color = "#64748b";
-brand.style.display = "block";
-brand.style.marginTop = "4px";
-
-brand.textContent =
-phone.brand;
-
-device.appendChild(brand);
-
-}
-
-container.appendChild(device);
-
+  device.appendChild(imageBox);
+  device.appendChild(body);
+  container.appendChild(device);
 });
-
 }
 
 
@@ -1152,6 +1208,7 @@ function renderAll(){
 common();
 renderHero();
 renderServices();
+renderCategories();
 renderDevices();
 renderWhy();
 
