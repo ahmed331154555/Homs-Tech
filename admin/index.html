@@ -710,6 +710,29 @@ textarea{
 .admin-search input{flex:1}
 @media(max-width:700px){.permission-grid{grid-template-columns:1fr}.admin-search{width:100%}}
 </style>
+
+<style id="HOMS-ORDERS-SPACING-FIX">
+/* Final spacing fix: status, price, details and delete are separated; date filters are aligned */
+.orders-toolbar{grid-template-columns:minmax(300px,1fr) 190px 170px 170px 145px!important;gap:12px!important}
+.orders-toolbar input[type="date"]{padding:0 12px 0 38px!important;min-width:0!important;text-align:left!important;direction:ltr!important}
+.orders-toolbar input[type="date"]::-webkit-calendar-picker-indicator{margin-left:6px}
+.order-card-head{grid-template-columns:minmax(320px,1.65fr) minmax(220px,1.05fr) 135px 105px 118px 128px!important;column-gap:18px!important;padding-left:18px!important;padding-right:18px!important}
+.order-status-select{min-width:128px!important;width:128px!important}
+.order-price{padding-left:6px!important;text-align:left!important}
+.order-actions{justify-content:flex-start!important;gap:10px!important}
+.order-detail-btn,.order-delete-btn{min-width:96px!important}
+@media(max-width:1350px){
+ .orders-toolbar{grid-template-columns:minmax(260px,1fr) 175px 155px 155px 135px!important}
+ .order-card-head{grid-template-columns:minmax(260px,1.45fr) minmax(190px,1fr) 130px 95px 110px 120px!important;column-gap:12px!important}
+ .order-status-select{min-width:120px!important;width:120px!important}
+ .order-detail-btn,.order-delete-btn{min-width:88px!important;padding-left:9px!important;padding-right:9px!important}
+}
+@media(max-width:1050px){
+ .orders-toolbar{grid-template-columns:1fr 180px 160px!important}
+ .order-card-head{grid-template-columns:1fr!important}
+ .order-actions{justify-content:flex-start!important}
+}
+</style>
 </head>
 
 <body>
