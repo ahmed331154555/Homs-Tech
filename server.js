@@ -835,6 +835,33 @@ app.put("/api/site", requireAuth, async (req, res) => {
   }
 });
 
+// Admin - get registered customers
+app.get("/api/admin/customers", requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        id,
+        name,
+        email,
+        phone,
+        address,
+        created_at
+      FROM customers
+      ORDER BY created_at DESC
+    `);
+
+    res.json({
+      customers: result.rows
+    });
+  } catch (error) {
+    console.error("Admin customers error:", error);
+
+    res.status(500).json({
+      error: "Kan klanten niet laden."
+    });
+  }
+});
+
 // Admin page
 app.get("/admin", (req, res) => {
   res.sendFile(
