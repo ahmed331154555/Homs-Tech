@@ -1,557 +1,647 @@
 <!DOCTYPE html>
-<html lang="nl" dir="ltr">
+<html lang="nl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HOMS TECH | Telefoonreparatie aan huis</title>
+<title>HOMS TECH - Admin</title>
 
 <style>
 *{box-sizing:border-box}
 
-html{scroll-behavior:smooth}
-
 body{
-margin:0;
-font-family:Arial,Helvetica,sans-serif;
-background:#f5f7fa;
-color:#111827;
-line-height:1.6
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#f4f7fb;
+  color:#172033;
 }
 
-a{text-decoration:none}
-
-header{
-background:#111827;
-color:#fff;
-padding:13px 5%;
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:20px;
-position:sticky;
-top:0;
-z-index:100;
-box-shadow:0 4px 20px rgba(0,0,0,.15)
+button,input,textarea,select{
+  font:inherit;
 }
 
-.brand img{
-width:170px;
-height:auto;
-display:block
+button{
+  cursor:pointer;
 }
 
-nav{
-display:flex;
-gap:7px;
-flex-wrap:wrap;
-justify-content:center
+.topbar{
+  background:#111827;
+  color:white;
+  padding:18px 25px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  position:sticky;
+  top:0;
+  z-index:20;
 }
 
-nav a{
-color:#fff;
-font-weight:700;
-padding:10px 14px;
-border-radius:9px
+.logo{
+  font-size:23px;
+  font-weight:800;
+  letter-spacing:.5px;
 }
 
-nav a:hover,
-nav a.active{
-background:#2563eb
+.logo span{
+  color:#25d366;
+}
+
+.container{
+  max-width:1150px;
+  margin:30px auto;
+  padding:0 18px;
+}
+
+.login{
+  max-width:430px;
+  margin:70px auto;
+  background:white;
+  padding:30px;
+  border-radius:18px;
+  box-shadow:0 10px 35px rgba(0,0,0,.08);
+}
+
+.login h1{
+  margin-top:0;
+}
+
+.field{
+  margin-bottom:16px;
+}
+
+.field label{
+  display:block;
+  font-weight:700;
+  margin-bottom:7px;
+}
+
+.field input,
+.field textarea,
+.field select{
+  width:100%;
+  padding:12px 13px;
+  border:1px solid #d7deea;
+  border-radius:10px;
+  background:white;
+  outline:none;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus{
+  border-color:#25d366;
+}
+
+textarea{
+  min-height:100px;
+  resize:vertical;
 }
 
 .btn{
-display:inline-flex;
-align-items:center;
-justify-content:center;
-gap:8px;
-padding:13px 21px;
-border-radius:12px;
-font-weight:800;
-border:0;
-cursor:pointer;
-transition:.2s
+  border:0;
+  border-radius:10px;
+  padding:11px 17px;
+  font-weight:700;
 }
 
-.btn:hover{
-transform:translateY(-2px)
+.btn-green{
+  background:#25d366;
+  color:white;
 }
 
-.green{
-background:#16c766;
-color:#fff
+.btn-dark{
+  background:#111827;
+  color:white;
 }
 
-.green:hover{
-background:#0eae56
+.btn-red{
+  background:#ef4444;
+  color:white;
 }
 
-.white{
-background:#fff;
-color:#2563eb;
-border:2px solid #2563eb
+.btn-light{
+  background:#eef2f7;
+  color:#172033;
 }
 
-/* HERO */
-
-.hero{
-background:
-radial-gradient(circle at 75% 35%,rgba(37,99,235,.35),transparent 35%),
-linear-gradient(135deg,#07101f,#1b2b43);
-color:#fff;
-padding:75px 6%;
-overflow:hidden
+.dashboard{
+  display:none;
 }
 
-.hero-inner{
-max-width:1200px;
-margin:auto;
-display:grid;
-grid-template-columns:1.2fr .8fr;
-align-items:center;
-gap:40px
+.admin-nav{
+  display:none;
+  background:#fff;
+  border-bottom:1px solid #e5eaf1;
+  box-shadow:0 3px 15px rgba(0,0,0,.05);
+  position:sticky;
+  top:69px;
+  z-index:40;
 }
 
-.hero h1{
-font-size:clamp(40px,6vw,67px);
-line-height:1.08;
-margin:0 0 20px;
-font-weight:900
+.admin-nav-inner{
+  max-width:1150px;
+  margin:auto;
+  padding:10px 18px;
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
 }
 
-.hero h1 span{
-color:#60a5fa
+.nav-btn{
+  border:0;
+  background:#f1f5f9;
+  color:#334155;
+  padding:11px 16px;
+  border-radius:10px;
+  font-weight:700;
+  white-space:nowrap;
 }
 
-.hero p{
-font-size:20px;
-max-width:720px;
-color:#e5e7eb;
-margin:0 0 28px
+.nav-btn.active{
+  background:#25d366;
+  color:#fff;
 }
 
-.hero-buttons{
-display:flex;
-gap:13px;
-flex-wrap:wrap
+.admin-page{
+  display:none;
 }
 
-.checks{
-display:flex;
-gap:25px;
-flex-wrap:wrap;
-margin-top:27px
+.admin-page.active{
+  display:block;
 }
 
-.check{
-display:flex;
-align-items:center;
-gap:7px;
-font-weight:700
+.section{
+  background:white;
+  border-radius:18px;
+  padding:24px;
+  margin-bottom:22px;
+  box-shadow:0 7px 25px rgba(0,0,0,.06);
 }
 
-.check-icon{
-width:24px;
-height:24px;
-border-radius:50%;
-background:#fff;
-color:#111827;
-display:flex;
-align-items:center;
-justify-content:center;
-font-weight:bold
+.section-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  margin-bottom:20px;
+  border-bottom:1px solid #edf0f5;
+  padding-bottom:15px;
 }
 
-/* PHONE VISUAL */
-
-.hero-phone{
-display:flex;
-justify-content:center;
-align-items:center;
-min-height:350px
+.section-head h2{
+  margin:0;
+  font-size:21px;
 }
 
-.phone{
-width:190px;
-height:365px;
-background:#111827;
-border:7px solid #374151;
-border-radius:32px;
-box-shadow:0 25px 50px rgba(0,0,0,.5);
-position:relative;
-transform:rotate(7deg)
+.section-head p{
+  margin:5px 0 0;
+  color:#718096;
+  font-size:14px;
 }
-
-.phone:before{
-content:"";
-position:absolute;
-top:8px;
-left:50%;
-transform:translateX(-50%);
-width:70px;
-height:20px;
-background:#000;
-border-radius:15px;
-z-index:2
-}
-
-.screen{
-position:absolute;
-inset:8px;
-border-radius:24px;
-background:
-radial-gradient(circle at 60% 30%,#8b5cf6,transparent 30%),
-linear-gradient(145deg,#111827,#312e81,#020617);
-overflow:hidden
-}
-
-.screen:after{
-content:"";
-position:absolute;
-width:120px;
-height:250px;
-background:rgba(255,255,255,.08);
-transform:rotate(30deg);
-right:-55px;
-top:30px
-}
-
-.phone-text{
-position:absolute;
-right:-135px;
-top:60px;
-font-size:24px;
-font-weight:800;
-font-style:italic;
-line-height:1.1;
-transform:rotate(-5deg);
-color:#fff
-}
-
-/* SECTIONS */
-
-section{
-max-width:1200px;
-margin:auto;
-padding:60px 5%
-}
-
-.section-title{
-text-align:center;
-font-size:35px;
-margin:0 0 38px;
-font-weight:900
-}
-
-.section-title:after{
-content:"";
-display:block;
-width:42px;
-height:5px;
-background:#2563eb;
-border-radius:5px;
-margin:11px auto 0
-}
-
-/* SERVICES */
 
 .grid{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:18px
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:16px;
 }
 
 .card{
-background:#fff;
-border-radius:18px;
-padding:27px 20px;
-text-align:center;
-box-shadow:0 8px 28px rgba(0,0,0,.06);
-transition:.2s
+  border:1px solid #e5eaf1;
+  border-radius:14px;
+  padding:17px;
+  background:#fbfcfe;
+  margin-bottom:14px;
 }
 
-.card:hover{
-transform:translateY(-4px);
-box-shadow:0 14px 35px rgba(0,0,0,.1)
+.card-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:15px;
 }
 
-.icon{
-font-size:45px;
-margin-bottom:8px
+.card-title{
+  font-weight:800;
+  font-size:16px;
 }
 
-.card h3{
-margin:8px 0;
-font-size:20px
+.actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
 }
 
-.card p{
-margin:0;
-color:#64748b
+.service-card,
+.why-card,
+.device-card,
+.used-card{
+  background:#fff;
+  position:relative;
 }
 
-/* BANNER */
-
-.home-banner{
-max-width:1140px;
-margin:5px auto 0;
-background:linear-gradient(135deg,#162438,#25364d);
-color:#fff;
-border-radius:22px;
-padding:28px 38px;
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:20px
+/* ترتيب البطاقات جنب بعض */
+#servicesList,
+#phonesList,
+#usedPhonesList,
+#whyList{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:18px;
 }
 
-.banner-left{
-display:flex;
-align-items:center;
-gap:18px
+/* البطاقة */
+#servicesList .card,
+#phonesList .card,
+#usedPhonesList .card,
+#whyList .card{
+  margin-bottom:0;
+  min-width:0;
 }
 
-.banner-icon{
-font-size:52px
+/* ترتيب بطاقات الهواتف المستعملة */
+#usedPhonesList .used-card{
+  grid-column:span 1;
 }
 
-.banner h2{
-margin:0;
-font-size:29px
+/* على الشاشات الصغيرة */
+
+.orders-list{display:flex;flex-direction:column;gap:12px}
+.order-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px 18px;box-shadow:0 4px 15px rgba(15,23,42,.05)}
+.order-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;border-bottom:1px solid #eef2f7;padding-bottom:12px;margin-bottom:12px}
+.order-title{font-weight:900;font-size:16px;color:#172033}
+.order-meta{font-size:12px;color:#64748b;margin-top:3px}
+.order-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;font-size:13px}
+.order-info{background:#f8fafc;border-radius:9px;padding:10px}
+.order-info strong{display:block;font-size:11px;color:#64748b;margin-bottom:3px;text-transform:uppercase}
+.order-notes{margin-top:12px;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:10px;font-size:13px}
+.order-status-select{padding:9px 11px;border:1px solid #dbe2ea;border-radius:9px;font-weight:800;background:#fff;min-width:150px}
+.order-empty{padding:30px;text-align:center;color:#64748b;background:#f8fafc;border-radius:12px}
+@media(max-width:900px){.order-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:550px){.order-card-head{flex-direction:column}.order-grid{grid-template-columns:1fr}.order-status-select{width:100%}}
+
+@media(max-width:750px){
+
+  #servicesList,
+  #phonesList,
+  #usedPhonesList,
+  #whyList{
+    grid-template-columns:1fr;
+  }
+
+  #usedPhonesList .used-card{
+    grid-column:span 1;
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .images-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:5px;
+  }
+
+  .image-box{
+    padding:4px;
+  }
+
+  .image-preview,
+  .empty-preview{
+    height:55px;
+  }
+
+  .image-box input[type="file"]{
+    font-size:7px;
+  }
+
+  .image-box .btn{
+    font-size:7px;
+    padding:5px 2px;
+  }
 }
 
-.banner p{
-margin:3px 0 0;
-color:#dbeafe
+.images-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+  margin-top:10px;
+  width:100%;
 }
 
-/* DEVICES */
-
-.devices{
-display:grid;
-grid-template-columns:repeat(6,1fr);
-gap:15px
+.image-box{
+  min-width:0;
+  width:100%;
+  border:1px dashed #cbd5e1;
+  border-radius:10px;
+  padding:6px;
+  text-align:center;
+  background:#f8fafc;
+  overflow:hidden;
 }
 
-.device{
-background:#fff;
-border-radius:16px;
-padding:22px 10px;
-text-align:center;
-box-shadow:0 7px 25px rgba(0,0,0,.05)
+.image-preview{
+  display:block;
+  width:100%;
+  height:70px;
+  max-width:100%;
+  object-fit:cover;
+  border-radius:7px;
+  margin:0 auto 5px;
+  background:#eef2f7;
 }
 
-.device-icon{
-font-size:45px;
-margin-bottom:8px
+.empty-preview{
+  width:100%;
+  height:70px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#94a3b8;
+  font-size:10px;
+  overflow:hidden;
 }
 
-.device strong{
-display:block;
-font-size:17px
+.image-box input[type="file"]{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  font-size:9px;
+  overflow:hidden;
 }
 
-/* WHY */
-
-.why{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:18px
+.image-box .btn{
+  width:100%;
+  max-width:100%;
+  padding:6px 3px;
+  font-size:9px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
-.why .icon{
-color:#2563eb
+.save-bar{
+  position:sticky;
+  bottom:15px;
+  z-index:10;
+  background:white;
+  padding:14px;
+  border-radius:15px;
+  box-shadow:0 8px 30px rgba(0,0,0,.14);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  margin-top:10px;
 }
 
-/* CONTACT */
-
-.contact-box{
-background:#111827;
-color:#fff;
-border-radius:22px;
-padding:42px 25px;
-text-align:center
+.status{
+  font-weight:700;
 }
 
-.contact-box h2{
-font-size:32px;
-margin:0 0 8px
+.status.success{
+  color:#16a34a;
 }
 
-.contact-box p{
-color:#cbd5e1;
-margin:0 0 22px
+.status.error{
+  color:#dc2626;
 }
 
-/* FOOTER */
-
-footer{
-background:#0b1422;
-color:#fff;
-padding:38px 5%
+.status.info{
+  color:#2563eb;
 }
 
-.footer-inner{
-max-width:1200px;
-margin:auto;
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:25px
+.hidden{
+  display:none!important;
 }
 
-.footer-logo img{
-width:165px
+.small{
+  font-size:13px;
+  color:#718096;
 }
 
-.footer-center{
-text-align:center;
-color:#cbd5e1
+@media(max-width:750px){
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .images-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:5px;
+  }
+
+  .image-box{
+    padding:4px;
+  }
+
+  .image-preview,
+  .empty-preview{
+    height:55px;
+  }
+
+  .image-box input[type="file"]{
+    font-size:7px;
+  }
+
+  .image-box .btn{
+    font-size:7px;
+    padding:5px 2px;
+  }
+
+  .topbar{
+    padding:15px;
+  }
+
+  .container{
+    margin:18px auto;
+  }
+
+  .section{
+    padding:18px;
+  }
+
+  .save-bar{
+    align-items:flex-start;
+    flex-direction:column;
+  }
 }
 
-.admin-btn{
-border:1px solid #fff;
-color:#fff;
-padding:11px 19px;
-border-radius:10px;
-font-weight:bold
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:999;align-items:center;justify-content:center;padding:20px}
+.modal-backdrop.show{display:flex}
+.modal{width:min(650px,100%);background:#fff;border-radius:18px;padding:25px;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative}
+.modal-close{position:absolute;right:15px;top:12px;border:0;background:#eef2f7;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer}
+
+.gsm-admin-list{background:#fff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden}
+.gsm-admin-row{display:flex;align-items:center;gap:14px;padding:15px 18px;border-bottom:1px solid #e5e7eb;cursor:pointer;transition:.15s}
+.gsm-admin-row:last-child{border-bottom:0}
+.gsm-admin-row:hover{background:#f8fafc}
+.gsm-admin-icon{width:38px;flex:0 0 38px;font-size:22px;text-align:center}
+.gsm-admin-name{font-size:17px;font-weight:800;flex:1}
+.gsm-admin-arrow{font-size:22px;color:#64748b}
+.gsm-delete{flex:0 0 auto}
+
+.gsm-admin-tabs{display:flex;gap:8px;overflow-x:auto;margin:0 0 16px;padding:2px 0 8px}
+.gsm-admin-tab{flex:0 0 auto;border:1px solid #dbe2ea;background:#fff;color:#1f2937;padding:11px 15px;border-radius:10px;font-weight:800;cursor:pointer}
+.gsm-admin-tab.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.gsm-service-row{display:flex;align-items:center;gap:12px;border-bottom:1px solid #e5e7eb;padding:14px 4px}
+.gsm-service-row:last-child{border-bottom:0}
+.gsm-service-icon{width:36px;text-align:center;font-size:22px}
+.gsm-service-name{font-weight:800;flex:1}
+.gsm-edit-btn,.gsm-delete-btn{border:0;border-radius:8px;padding:8px 11px;font-weight:700;cursor:pointer}
+.gsm-edit-btn{background:#e8f0ff;color:#2563eb}
+.gsm-delete-btn{background:#fee2e2;color:#b91c1c}
+.gsm-editor-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+.gsm-editor{position:relative;width:min(560px,100%);background:#fff;border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.gsm-editor h3{margin:0 0 18px}
+.gsm-editor label{display:block;font-weight:700;margin:12px 0 6px}
+.gsm-editor input,.gsm-editor textarea{width:100%;padding:11px;border:1px solid #dbe2ea;border-radius:9px;font:inherit}
+.gsm-editor textarea{min-height:120px;resize:vertical}
+.gsm-editor .btn{margin-top:16px}
+.gsm-editor-close{position:absolute;right:14px;top:12px;border:0;background:#eef2f7;width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer}
+
+/* HOMS TECH — editor layout: list left, editor right */
+.editor-layout{
+  display:grid;
+  grid-template-columns:280px minmax(0,1fr);
+  gap:18px;
+  align-items:stretch;
 }
-
-/* MOBILE */
-
+.editor-list{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:16px;
+  padding:10px;
+  min-height:240px;
+}
+.editor-list-title{
+  font-size:13px;
+  font-weight:800;
+  color:#64748b;
+  padding:8px 10px 10px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.editor-list-item{
+  width:100%;
+  border:0;
+  background:transparent;
+  color:#172033;
+  text-align:left;
+  padding:12px 13px;
+  border-radius:11px;
+  font-weight:700;
+  margin-bottom:5px;
+  transition:.15s ease;
+}
+.editor-list-item:hover{background:#eef7f1}
+.editor-list-item.active{
+  background:#25d366;
+  color:#fff;
+}
+.editor-list-item small{
+  display:block;
+  font-weight:500;
+  opacity:.75;
+  margin-top:3px;
+}
+.editor-panel{
+  border:1px solid #e2e8f0;
+  border-radius:16px;
+  background:#fff;
+  padding:20px;
+  min-width:0;
+  box-shadow:0 5px 20px rgba(15,23,42,.05);
+}
+.editor-panel .grid{
+  margin-top:4px;
+}
+.editor-panel .field:last-child{margin-bottom:0}
+.editor-empty{
+  min-height:240px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:#64748b;
+  padding:30px;
+}
+.gsm-editor-layout{
+  display:grid;
+  grid-template-columns:1fr 1.35fr;
+  gap:18px;
+}
+.gsm-editor-layout .editor-list{min-height:500px}
+.gsm-editor-layout .editor-panel{min-height:500px}
 @media(max-width:900px){
-
-header{
-flex-wrap:wrap;
-justify-content:center
+  .editor-layout,.gsm-editor-layout{grid-template-columns:1fr}
+  .gsm-editor-layout .editor-list,.gsm-editor-layout .editor-panel{min-height:0}
 }
 
-nav{
-order:3;
-width:100%
+/* HOMS TECH — FINAL DESKTOP SIDEBAR LAYOUT */
+@media (min-width: 901px){
+  body{overflow-x:hidden}
+  .topbar{
+    position:sticky;
+    top:0;
+    min-height:68px;
+    padding:14px 24px;
+    z-index:100;
+  }
+  .admin-nav{
+    position:fixed;
+    left:0;
+    top:68px;
+    bottom:0;
+    width:235px;
+    height:auto;
+    display:none;
+    overflow-y:auto;
+    overflow-x:hidden;
+    background:#111827;
+    border:0;
+    box-shadow:none;
+    z-index:90;
+  }
+  .admin-nav-inner{
+    max-width:none;
+    margin:0;
+    padding:18px 12px 30px;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:7px;
+    overflow:visible;
+  }
+  .nav-btn{
+    width:100%;
+    text-align:left;
+    border:0;
+    background:transparent;
+    color:#e5e7eb;
+    padding:13px 16px;
+    border-radius:10px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+  .nav-btn:hover{background:#1f2937;color:#fff}
+  .nav-btn.active{background:#25d366;color:#fff}
+  #dashboard{margin-left:235px}
+  #dashboard > .container{
+    max-width:none;
+    width:100%;
+    margin:0;
+    padding:28px 28px 110px;
+  }
+  .section{width:100%;}
+  .editor-layout{grid-template-columns:280px minmax(0,1fr)}
+  .gsm-editor-layout{grid-template-columns:minmax(320px,1fr) minmax(420px,1.35fr)}
 }
 
-.hero-inner{
-grid-template-columns:1fr;
-text-align:center
-}
-
-.hero p{
-margin-left:auto;
-margin-right:auto
-}
-
-.hero-buttons,
-.checks{
-justify-content:center
-}
-
-.hero-phone{
-min-height:300px
-}
-
-.grid,
-.why{
-grid-template-columns:repeat(2,1fr)
-}
-
-.devices{
-grid-template-columns:repeat(3,1fr)
-}
-
-.home-banner{
-margin-left:5%;
-margin-right:5%
-}
-
-.phone-text{
-display:none
-}
-}
-
-@media(max-width:550px){
-
-.brand img{
-width:150px
-}
-
-header>.btn{
-display:none
-}
-
-nav a{
-font-size:13px;
-padding:8px 9px
-}
-
-.hero{
-padding:55px 5%
-}
-
-.hero h1{
-font-size:40px
-}
-
-.hero p{
-font-size:18px
-}
-
-.grid,
-.why{
-grid-template-columns:1fr
-}
-
-.devices{
-grid-template-columns:repeat(2,1fr)
-}
-
-.home-banner{
-flex-direction:column;
-text-align:center;
-padding:28px 20px
-}
-
-.banner-left{
-flex-direction:column
-}
-
-.footer-inner{
-flex-direction:column;
-text-align:center
-}
-}
-
-/* REFURBISHED CATEGORIES */
-.category-section{max-width:1200px;margin:auto;padding:45px 5%}
-.category-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.category-card{position:relative;display:block;min-height:210px;border-radius:22px;overflow:hidden;background:#111827;box-shadow:0 10px 30px rgba(0,0,0,.10)}
-.category-card img{width:100%;height:210px;object-fit:cover;display:block;transition:.25s}
-.category-card:hover img{transform:scale(1.04)}
-.category-card:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.78),rgba(0,0,0,.08))}
-.category-card-content{position:absolute;z-index:2;left:24px;right:20px;bottom:22px;color:#fff}
-.category-card-content h3{margin:0 0 13px;font-size:28px;font-weight:900;text-transform:uppercase}
-.category-card-content span{display:inline-flex;align-items:center;gap:10px;background:#ffe000;color:#111;padding:11px 20px;border-radius:13px;font-weight:900;font-size:18px}
-.category-card.no-image{display:flex;align-items:flex-end;padding:24px}
-.category-card.no-image:after{display:none}
-
-/* HORIZONTAL PHONE STRIP */
-.phone-strip{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px 4px 18px;scrollbar-width:thin}
-.phone-strip::-webkit-scrollbar{height:7px}
-.phone-strip::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:20px}
-.phone-strip .device{flex:0 0 205px;scroll-snap-align:start;padding:0 0 16px;overflow:hidden;text-align:left;border-radius:18px}
-.phone-strip .device-image{width:100%;height:190px;background:#f8fafc;display:flex;align-items:center;justify-content:center}
-.phone-strip .device-image img{width:100%;height:100%;object-fit:contain}
-.phone-strip .device-body{padding:13px 15px}
-.phone-strip .device strong{font-size:18px}
-.phone-strip .device-price{font-size:19px;font-weight:900;margin-top:7px;color:#111827}
-.phone-strip .device-link{display:inline-flex;margin-top:10px;background:#111827;color:#fff;border-radius:9px;padding:8px 12px;font-weight:800}
-@media(max-width:700px){
-  .category-grid{grid-template-columns:1fr 1fr;gap:12px}
-  .category-card,.category-card img{min-height:155px;height:155px}
-  .category-card-content{left:14px;bottom:14px}
-  .category-card-content h3{font-size:20px;margin-bottom:8px}
-  .category-card-content span{font-size:14px;padding:8px 12px}
-  .phone-strip .device{flex-basis:175px}
-  .phone-strip .device-image{height:165px}
+@media (max-width:900px){
+  .admin-nav{position:static;top:auto;width:100%;height:auto;}
+  .admin-nav-inner{overflow-x:auto;flex-direction:row;}
+  #dashboard{margin-left:0}
+  .container{max-width:none;margin:18px auto;padding:0 14px 90px}
 }
 
 </style>
@@ -559,662 +649,1386 @@ text-align:center
 
 <body>
 
-<header>
-
-<a class="brand" href="index.html">
-<img src="assets/homs-tech-logo.png" alt="HOMS TECH">
-</a>
-
-<nav>
-<a href="index.html" class="active">Home</a>
-<a href="about.html">Over ons</a>
-<a href="repair.html">Reparaties</a>
-<a href="devices.html">Apparaten</a>
-<a href="prices.html">Prijzen</a>
-<a href="/used.html">Tweedehands</a>
-<a href="gsm-services.html">🛠️ GSM Services</a>
-<a href="account.html">👤 Mijn account</a>
-</nav>
-
-<a class="btn green" data-wa>💬 WhatsApp</a>
-
-</header>
-
-<main>
-
-<section class="hero">
-
-<div class="hero-inner">
-
-<div>
-
-<h1>
-<span id="heroTitleTop">Is uw telefoon kapot?</span><br>
-<span id="heroTitleBottom">Wij komen naar u toe!</span>
-</h1>
-
-<p id="heroText">
-Reparatie van alle soorten telefoons bij u thuis —
-snelle service, professioneel werk en betaalbare prijzen.
-</p>
-
-<div class="hero-buttons">
-
-<a class="btn green" data-wa>
-💬 Afspraak via WhatsApp
-</a>
-
-<a class="btn white" data-phone>
-📞 Bel nu
-</a>
-
+<div class="topbar">
+  <div class="logo">HOMS <span>TECH</span> — Admin</div>
+  <button class="btn btn-light" id="logoutBtn" onclick="logout()" style="display:none">
+    Uitloggen
+  </button>
 </div>
 
-<div class="checks">
-
-<div class="check">
-<span class="check-icon">✓</span>
-Snel
+<!-- ================= NAVIGATIE ================= -->
+<div id="adminNav" class="admin-nav">
+  <div class="admin-nav-inner">
+    <button class="nav-btn active" data-page="general" onclick="showPage('general')">⚙️ Algemeen</button>
+    <button class="nav-btn" data-page="services" onclick="showPage('services')">🔧 Diensten</button>
+    <button class="nav-btn" data-page="phones" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
+    <button class="nav-btn" data-page="categories" onclick="showPage('categories')">🖼️ Apparaten & categorieën</button>
+    <button class="nav-btn" data-page="used" onclick="showPage('used')">♻️ Gebruikte telefoons</button>
+    <button class="nav-btn" data-page="why" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
+    <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
+    <button class="nav-btn" data-page="orders" onclick="showPage('orders')">📋 GSM Orders</button>
+    <button class="nav-btn" data-page="gsm" onclick="showPage('gsm')">🛠️ GSM Services</button>
+  </div>
 </div>
 
-<div class="check">
-<span class="check-icon">✓</span>
-Betrouwbaar
+<!-- LOGIN -->
+<div id="loginBox" class="login">
+  <h1>Admin login</h1>
+  <p class="small">Log in om de website te beheren.</p>
+
+  <div class="field">
+    <label>Gebruikersnaam</label>
+    <input id="username" type="text" autocomplete="username">
+  </div>
+
+  <div class="field">
+    <label>Wachtwoord</label>
+    <input id="password" type="password" autocomplete="current-password">
+  </div>
+
+  <button class="btn btn-green" onclick="login()" style="width:100%">
+    Inloggen
+  </button>
+
+  <p id="loginStatus" class="status"></p>
 </div>
 
-<div class="check">
-<span class="check-icon">✓</span>
-Aan huis
+<!-- DASHBOARD -->
+<div id="dashboard" class="dashboard">
+<div class="container">
+
+  <!-- ALGEMEEN -->
+  <section class="section admin-page active" id="page-general">
+    <div class="section-head">
+      <div>
+        <h2>⚙️ Algemene informatie</h2>
+        <p>Deze gegevens worden gebruikt op de website.</p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="field">
+        <label>Bedrijfsnaam</label>
+        <input data-u="businessName">
+      </div>
+
+      <div class="field">
+        <label>Tagline</label>
+        <input data-u="tagline">
+      </div>
+
+      <div class="field">
+        <label>Titel homepage</label>
+        <input data-u="heroTitle">
+      </div>
+
+      <div class="field">
+        <label>Telefoon</label>
+        <input data-u="phone">
+      </div>
+
+      <div class="field">
+        <label>WhatsApp</label>
+        <input data-u="whatsapp">
+      </div>
+
+      <div class="field">
+        <label>Werkgebieden</label>
+        <input data-u="areas">
+      </div>
+
+      <div class="field" style="grid-column:1/-1">
+        <label>Tekst homepage</label>
+        <textarea data-u="heroText"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="section admin-page" id="page-services">
+    <div class="section-head">
+      <div>
+        <h2>🔧 Diensten</h2>
+        <p>Beheer de reparatiediensten die op de website verschijnen.</p>
+      </div>
+
+      <button class="btn btn-green" onclick="addService()">
+        + Dienst toevoegen
+      </button>
+    </div>
+
+    <div id="servicesList"></div>
+  </section>
+
+  <!-- TELEFOONS EN PRIJZEN -->
+  <section class="section admin-page" id="page-phones">
+    <div class="section-head">
+      <div>
+        <h2>📱 Telefoons te koop</h2>
+        <p>Beheer de telefoons die HOMS TECH verkoopt.</p>
+      </div>
+
+      <button class="btn btn-green" onclick="addPhone()">
+        + Telefoon toevoegen
+      </button>
+    </div>
+
+    <div id="phonesList"></div>
+  </section>
+
+
+  <!-- APPARAATCATEGORIEËN -->
+  <section class="section admin-page" id="page-categories">
+    <div class="section-head">
+      <div>
+        <h2>🖼️ Apparaten & categorieën</h2>
+        <p>Beheer de blokken zoals iPhones, iPads, Mac, Watches, Samsung en accessoires op de homepage.</p>
+      </div>
+      <button class="btn btn-green" onclick="addDeviceCategory()">+ Categorie toevoegen</button>
+    </div>
+    <div id="deviceCategoriesList"></div>
+  </section>
+
+  <!-- GEBRUIKTE TELEFOONS -->
+  <section class="section admin-page" id="page-used">
+    <div class="section-head">
+      <div>
+        <h2>♻️ Gebruikte telefoons</h2>
+        <p>Telefoons die je tweedehands verkoopt.</p>
+      </div>
+
+      <button class="btn btn-green" onclick="addUsedPhone()">
+        + Telefoon toevoegen
+      </button>
+    </div>
+
+    <div id="usedPhonesList"></div>
+  </section>
+
+  <!-- KLANTEN -->
+  <section class="section admin-page" id="page-customers">
+    <div class="section-head">
+      <div>
+        <h2>👥 Klanten</h2>
+        <p>Bekijk de geregistreerde klanten van HOMS TECH.</p>
+      </div>
+      <button class="btn btn-light" onclick="loadCustomers()">↻ Vernieuwen</button>
+    </div>
+    <div id="customersStatus" class="status info" style="margin-bottom:15px"></div>
+    <div id="customersList"></div>
+  </section>
+
+  <!-- GSM ORDERS -->
+  <section class="section admin-page" id="page-orders">
+    <div class="section-head">
+      <div>
+        <h2>📋 GSM Service Orders</h2>
+        <p>Bekijk en beheer de aanvragen die klanten via GSM Services hebben verstuurd.</p>
+      </div>
+      <button class="btn btn-light" onclick="loadOrders()">↻ Vernieuwen</button>
+    </div>
+    <div id="ordersStatus" class="status info" style="margin-bottom:15px"></div>
+    <div id="ordersList" class="orders-list"></div>
+  </section>
+
+  <!-- GSM SERVICES -->
+  <section class="section admin-page" id="page-gsm">
+    <div class="section-head">
+      <div>
+        <h2>🛠️ GSM Services</h2>
+        <p>Beheer per categorie de services met naam, details en prijs.</p>
+      </div>
+    </div>
+
+    <div id="gsmServicesList"></div>
+  </section>
+
+  <!-- WAAROM HOMS TECH -->
+  <section class="section admin-page" id="page-why">
+    <div class="section-head">
+      <div>
+        <h2>⭐ Waarom HOMS TECH?</h2>
+        <p>Beheer de voordelen die op de homepage verschijnen.</p>
+      </div>
+
+      <button class="btn btn-green" onclick="addWhy()">
+        + Voordeel toevoegen
+      </button>
+    </div>
+
+    <div id="whyList"></div>
+  </section>
+
+
+
+  <!-- GSM SERVICE EDIT MODAL -->
+  <div id="gsmEditModal" class="modal-backdrop" onclick="closeGsmEditor(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeGsmEditor()">×</button>
+      <h2 id="gsmEditTitle">GSM Service</h2>
+
+      <div class="grid">
+        <div class="field">
+          <label>Naam service</label>
+          <input id="gsmEditName">
+        </div>
+
+        <div class="field">
+          <label>Icoon / emoji</label>
+          <input id="gsmEditIcon">
+        </div>
+
+        <div class="field">
+          <label>Prijs (€)</label>
+          <input id="gsmEditPrice" placeholder="Bijv. 29,99">
+        </div>
+
+        <div class="field" style="grid-column:1/-1">
+          <label>Details</label>
+          <textarea id="gsmEditDetails" rows="5"></textarea>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+        <button class="btn btn-light" onclick="closeGsmEditor()">Annuleren</button>
+        <button class="btn btn-green" onclick="saveGsmEditor()">Opslaan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAVE -->
+  <div class="save-bar">
+    <div>
+      <div id="saveStatus" class="status">Wijzigingen nog niet opgeslagen</div>
+      <div class="small">Klik op Opslaan nadat je iets hebt gewijzigd.</div>
+    </div>
+
+    <button class="btn btn-green" onclick="save()" style="font-size:16px;padding:13px 25px">
+      💾 Wijzigingen opslaan
+    </button>
+  </div>
+
 </div>
-
-<div class="check">
-<span class="check-icon">✓</span>
-Betaalbare prijzen
 </div>
-
-</div>
-
-</div>
-
-<div class="hero-phone">
-
-<div class="phone">
-<div class="screen"></div>
-</div>
-
-<div class="phone-text">
-Uw<br>
-telefoon<br>
-in goede<br>
-handen
-</div>
-
-</div>
-
-</div>
-
-</section>
-
-<!-- SERVICES -->
-
-<section>
-
-<h2 class="section-title">
-Onze diensten
-</h2>
-
-<div id="services" class="grid"></div>
-
-</section>
-
-<!-- HOME SERVICE -->
-
-<div class="home-banner">
-
-<div class="banner-left">
-
-<div class="banner-icon">📍</div>
-
-<div>
-
-<h2>Wij komen bij u thuis!</h2>
-
-<p id="areas">
-🚗 Rotterdam en omgeving
-</p>
-
-</div>
-
-</div>
-
-<a class="btn green" data-wa>
-💬 WhatsApp
-</a>
-
-</div>
-
-
-<!-- CATEGORIES -->
-<section class="category-section">
-  <h2 class="section-title">Refurbished apparaten</h2>
-  <div id="deviceCategories" class="category-grid"></div>
-</section>
-
-<!-- DEVICES -->
-
-<section>
-
-<h2 class="section-title">
-Populaire apparaten
-</h2>
-
-<div id="devices" class="phone-strip"></div>
-
-</section>
-
-<!-- WHY -->
-
-<section>
-
-<h2 class="section-title">
-Waarom HOMS TECH?
-</h2>
-
-<div id="why" class="why"></div>
-
-</section>
-
-<!-- CONTACT -->
-
-<section>
-
-<div class="contact-box">
-
-<h2>
-Heeft u een probleem met uw telefoon?
-</h2>
-
-<p>
-Neem direct contact met ons op voor informatie of een afspraak.
-</p>
-
-<div class="hero-buttons" style="justify-content:center">
-
-<a class="btn green" data-wa>
-💬 WhatsApp
-</a>
-
-<a class="btn white" data-phone>
-📞 Bel ons
-</a>
-
-</div>
-
-</div>
-
-</section>
-
-</main>
-
-<footer>
-
-<div class="footer-inner">
-
-<div class="footer-logo">
-<img src="assets/homs-tech-logo.png" alt="HOMS TECH">
-</div>
-
-<div class="footer-center">
-
-<strong data-name>HOMS TECH</strong>
-
-<br>
-
-<span data-tag>
-Telefoonreparatie aan huis
-</span>
-
-<br><br>
-
-© HOMS TECH — Alle rechten voorbehouden.
-
-</div>
-
-<a class="admin-btn" href="admin/index.html">
-⚙️ Admin
-</a>
-
-</div>
-
-</footer>
 
 <script>
 
-let data = null;
+let data = {};
+let loading = false;
+let currentPage = "general";
 
-const defaults = {
-businessName:"HOMS TECH",
-tagline:"Telefoonreparatie aan huis",
-heroTitle:"Is uw telefoon kapot? Wij komen naar u toe!",
-heroText:"Reparatie van alle soorten telefoons bij u thuis — snelle service, professioneel werk en betaalbare prijzen.",
-whatsapp:"",
-phone:"",
-areas:"Rotterdam en omgeving",
-services:[],
-why:[],
-phones:[],
-deviceCategories:[]
-};
+function showPage(page){
+  currentPage = page;
 
+  document.querySelectorAll(".admin-page").forEach(section=>{
+    section.classList.remove("active");
+  });
 
-/* تحميل البيانات من السيرفر */
+  const target = document.getElementById("page-" + page);
+  if(target){
+    target.classList.add("active");
+    if(page==="customers") loadCustomers();
+    if(page==="orders") loadOrders();
+  }
 
-async function loadSite(){
-
-try{
-
-const response = await fetch("/api/site",{
-cache:"no-store"
-});
-
-if(!response.ok){
-throw new Error("Server error");
+  document.querySelectorAll(".nav-btn").forEach(button=>{
+    button.classList.toggle("active", button.dataset.page === page);
+  });
 }
 
-data = await response.json();
+/* ---------------- LOGIN ---------------- */
 
-if(!data || typeof data !== "object"){
-data = {...defaults};
+async function checkLogin(){
+  try{
+    const r = await fetch("/api/me");
+
+    if(r.ok){
+      showDashboard();
+      await loadData();
+    }else{
+      showLogin();
+    }
+  }catch(e){
+    showLogin();
+  }
 }
 
-renderAll();
-
-}catch(error){
-
-console.error("Kan websitegegevens niet laden:",error);
-
-/*
-إذا تعذر الاتصال بالسيرفر،
-نظهر البيانات الافتراضية بدل ما الصفحة تكون مكسورة.
-*/
-
-data = {...defaults};
-
-renderAll();
-
+function showLogin(){
+  document.getElementById("loginBox").style.display="block";
+  document.getElementById("dashboard").style.display="none";
+  document.getElementById("logoutBtn").style.display="none";
+  document.getElementById("adminNav").style.display="none";
 }
 
+function showDashboard(){
+  document.getElementById("loginBox").style.display="none";
+  document.getElementById("dashboard").style.display="block";
+  document.getElementById("logoutBtn").style.display="block";
+  document.getElementById("adminNav").style.display="block";
+  showPage(currentPage);
 }
 
+async function login(){
 
-/* WhatsApp */
+  const username=document.getElementById("username").value.trim();
+  const password=document.getElementById("password").value;
 
-function wa(){
+  const status=document.getElementById("loginStatus");
 
-let number = String(data.whatsapp || "").replace(/\D/g,"");
+  status.className="status info";
+  status.textContent="Inloggen...";
 
-if(!number){
-return "#";
+  try{
+
+    const r=await fetch("/api/login",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        username,
+        password
+      })
+    });
+
+    const result=await r.json();
+
+    if(!r.ok){
+      throw new Error(result.error || "Login mislukt");
+    }
+
+    status.className="status success";
+    status.textContent="✓ Inloggen gelukt";
+
+    showDashboard();
+    await loadData();
+
+  }catch(e){
+
+    status.className="status error";
+    status.textContent="✕ "+e.message;
+
+  }
 }
 
-return "https://wa.me/" +
-number +
-"?text=" +
-encodeURIComponent(
-"Hallo, ik wil graag informeren over een telefoonreparatie."
-);
+async function logout(){
 
-}
+  await fetch("/api/logout",{
+    method:"POST"
+  });
 
-
-/* البيانات العامة */
-
-function common(){
-
-document.querySelectorAll("[data-name]").forEach(function(el){
-
-el.textContent =
-data.businessName ||
-defaults.businessName;
-
-});
-
-document.querySelectorAll("[data-tag]").forEach(function(el){
-
-el.textContent =
-data.tagline ||
-defaults.tagline;
-
-});
-
-document.querySelectorAll("[data-wa]").forEach(function(el){
-
-el.href = wa();
-
-});
-
-document.querySelectorAll("[data-phone]").forEach(function(el){
-
-let phone =
-data.phone ||
-"";
-
-el.href =
-phone
-? "tel:" + phone.replace(/[^\d+]/g,"")
-: "#";
-
-});
-
+  location.reload();
 }
 
 
-/* Hero */
+/* ---------------- DATA ---------------- */
 
-function renderHero(){
-
-let title =
-data.heroTitle ||
-defaults.heroTitle;
-
-let parts =
-title.split("!");
-
-let top =
-parts[0] || "Is uw telefoon kapot?";
-
-let bottom =
-parts.slice(1).join("!").trim();
-
-if(!bottom){
-bottom = "Wij komen naar u toe!";
-}else{
-bottom += "!";
+function normalizeGsmService(x){
+  x=x||{};
+  return {
+    icon:x.icon || "🔧",
+    name:x.name || "",
+    group:x.group || "",
+    shortDescription:x.shortDescription || "",
+    details:x.details || x.description || "",
+    price:x.price || "",
+    active:x.active !== false,
+    requiresUsername:x.requiresUsername === true,
+    requiresImei:x.requiresImei === true
+  };
 }
 
-document.getElementById("heroTitleTop").textContent =
-top + (top.endsWith("!") ? "" : "!");
+  function normalizePhoneOption(x, fallbackLabel, fallbackPrice){
+    if(typeof x === "string") return {label:x, enabled:true, active:true, available:true, priceDelta:0};
+    x=x||{};
+    const active=x.active !== undefined ? x.active !== false : x.enabled !== false;
+    return {
+      label:String(x.label || x.name || fallbackLabel || ""),
+      enabled:active,
+      active:active,
+      available:x.available !== false,
+      priceDelta:x.priceDelta ?? x.delta ?? x.priceAdjustment ?? x.extra ?? fallbackPrice ?? 0
+    };
+  }
 
-document.getElementById("heroTitleBottom").textContent =
-bottom;
+  
+function canonicalPhoneOptionLabel(key,label){
+  const raw=String(label??'').trim(), low=raw.toLowerCase();
+  if(key==='color'){
+    if(low==='blue'||low==='blauw') return 'Blauw';
+    if(low==='red'||low==='rood') return 'Rood';
+    if(low==='white'||low==='wit') return 'Wit';
+    if(low==='black'||low==='zwart') return 'Zwart';
+  }
+  if(key==='storage'){
+    if(/^64\s*gb$/i.test(raw)) return '64 GB';
+    if(/^128\s*gb$/i.test(raw)) return '128 GB';
+    if(/^256\s*gb$/i.test(raw)) return '256 GB';
+    if(/^512\s*gb$/i.test(raw)) return '512 GB';
+    if(/^1\s*tb$/i.test(raw)) return '1 TB';
+  }
+  if(key==='vatOptions'){
+    if(low.includes('zonder btw')) return 'Zonder BTW';
+    if(low.includes('met btw')) return 'Met BTW';
+  }
+  if(key==='batteryOptions'){
+    if(low.includes('nieuw')) return 'Nieuw (100%)';
+    if(low.includes('standaard')) return 'Standaard';
+  }
+  if(key==='tradeInOptions'){
+    if(low==='ja') return 'Ja';
+    if(low==='nee') return 'Nee';
+  }
+  return raw;
+}
 
-document.getElementById("heroText").textContent =
-data.heroText ||
-defaults.heroText;
+function normalizePhoneOptions(phone){
+    const defaults={
+      conditionOptions:[
+        {label:"Zichtbaar gebruikt",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"Licht gebruikt",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"Zo goed als nieuw",enabled:true,active:true,available:true,priceDelta:0}
+      ],
+      storageOptions:[
+        {label:"64 GB",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"128 GB",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"256 GB",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"512 GB",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"1 TB",enabled:true,active:true,available:true,priceDelta:0}
+      ],
+      colorOptions:[
+        {label:"Zwart",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"Wit",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"Blauw",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"Rood",enabled:true,active:true,available:true,priceDelta:0}
+      ],
+      batteryOptions:[
+        {label:"Standaard",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"Nieuw (100%)",enabled:true,active:true,available:true,priceDelta:30}
+      ],
+      vatOptions:[
+        {label:"Zonder BTW",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"Met BTW",enabled:true,active:true,available:true,priceDelta:10}
+      ],
+      tradeInOptions:[
+        {label:"Nee",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"Ja",enabled:true,active:true,available:true,priceDelta:0}
+      ]
+    };
+    Object.keys(defaults).forEach(key=>{
+      const incoming=Array.isArray(phone[key]) ? phone[key] : [];
+      const normalized=incoming.map((x,i)=>{
+        const d=defaults[key][i] || {priceDelta:0};
+        const n=normalizePhoneOption(x,d.label,d.priceDelta);
+        n.label=canonicalPhoneOptionLabel(key,n.label);
+        if(key==='batteryOptions') n.priceDelta=String(n.label).toLowerCase().includes('nieuw') ? 30 : 0;
+        if(key==='vatOptions') n.priceDelta=String(n.label).toLowerCase().includes('met btw') ? 10 : 0;
+        return n;
+      });
+      const deduped=[];
+      const seen=new Set();
+      normalized.forEach(n=>{
+        if(!n || !n.label) return;
+        const id=String(n.label).toLowerCase();
+        if(seen.has(id)) return;
+        if(key==='vatOptions' && n.label!=='Zonder BTW' && n.label!=='Met BTW') return;
+        if(key==='batteryOptions' && n.label!=='Standaard' && n.label!=='Nieuw (100%)') return;
+        seen.add(id);
+        deduped.push(n);
+      });
+      const labels=new Set(deduped.map(x=>String(x.label).toLowerCase()));
+      defaults[key].forEach(d=>{
+        if(!labels.has(String(d.label).toLowerCase())) deduped.push({...d});
+      });
+      phone[key]=deduped;
+    });
+  }
 
-document.getElementById("areas").textContent =
-"🚗 " +
-(data.areas || defaults.areas);
 
+
+
+function normalizeDeviceCategories(){
+  normalizeDeviceCategories();
+  if(!Array.isArray(data.deviceCategories)) data.deviceCategories=[];
+  data.deviceCategories=data.deviceCategories.map(x=>({
+    title:x.title || "Nieuwe categorie",
+    image:x.image || "",
+    link:x.link || "devices.html",
+    buttonText:x.buttonText || "Bekijk",
+    active:x.active !== false
+  }));
+}
+
+function renderDeviceCategories(){
+  normalizeDeviceCategories();
+  const box=document.getElementById("deviceCategoriesList");
+  if(!box) return;
+
+  if(!data.deviceCategories.length){
+    box.innerHTML='<div class="empty">Nog geen categorieën. Voeg er één toe.</div>';
+    return;
+  }
+
+  box.innerHTML=data.deviceCategories.map((x,i)=>`
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-head">
+        <div>
+          <div class="card-title">${esc(x.title)}</div>
+          <div class="small">Homepage categorie</div>
+        </div>
+        <button class="btn btn-red" onclick="deleteDeviceCategory(${i})">Verwijderen</button>
+      </div>
+      <div class="grid">
+        <div class="field">
+          <label>Naam</label>
+          <input value="${esc(x.title)}" oninput="data.deviceCategories[${i}].title=this.value;markChanged()">
+        </div>
+        <div class="field">
+          <label>Link</label>
+          <input value="${esc(x.link)}" oninput="data.deviceCategories[${i}].link=this.value;markChanged()">
+        </div>
+        <div class="field">
+          <label>Tekst knop</label>
+          <input value="${esc(x.buttonText)}" oninput="data.deviceCategories[${i}].buttonText=this.value;markChanged()">
+        </div>
+        <div class="field">
+          <label>Actief</label>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:9px">
+            <input type="checkbox" ${x.active!==false?'checked':''} onchange="data.deviceCategories[${i}].active=this.checked;markChanged()">
+            Tonen op homepage
+          </label>
+        </div>
+        <div class="field" style="grid-column:1/-1">
+          <label>Afbeelding</label>
+          <input type="file" accept="image/*" onchange="handleCategoryImage(event,${i})">
+          <input value="${esc(x.image)}" placeholder="Of plak een afbeelding URL" oninput="data.deviceCategories[${i}].image=this.value;markChanged()">
+          ${x.image?`<img src="${esc(x.image)}" alt="" style="display:block;width:220px;height:120px;object-fit:cover;border-radius:12px;margin-top:10px">`:""}
+          <div class="small">Upload een afbeelding of gebruik een URL. De gekozen afbeelding wordt in de website opgeslagen.</div>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function handleCategoryImage(event,i){
+  const file=event.target.files && event.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    data.deviceCategories[i].image=reader.result;
+    renderDeviceCategories();
+    markChanged();
+  };
+  reader.readAsDataURL(file);
+}
+
+function addDeviceCategory(){
+  normalizeDeviceCategories();
+  data.deviceCategories.push({
+    title:"Nieuwe categorie",
+    image:"",
+    link:"devices.html",
+    buttonText:"Bekijk",
+    active:true
+  });
+  renderDeviceCategories();
+  markChanged();
+}
+
+function deleteDeviceCategory(i){
+  if(confirm("Deze categorie verwijderen?")){
+    data.deviceCategories.splice(i,1);
+    renderDeviceCategories();
+    markChanged();
+  }
+}
+
+function normalizeData(){
+
+  if(!data || typeof data!=="object"){
+    data={};
+  }
+
+  /* GSM Services */
+  if(!data.gsmServices || typeof data.gsmServices!=="object"){
+    data.gsmServices={};
+  }
+
+  ["imei","remote","server","frp","firmware"].forEach(key=>{
+    if(!Array.isArray(data.gsmServices[key])){
+      data.gsmServices[key]=[];
+    }
+    data.gsmServices[key]=data.gsmServices[key].map(x=>{
+      const service=normalizeGsmService(x);
+      if(!service.group) service.group=key==="imei"?"IMEI Services":key==="remote"?"Remote Service":key==="server"?"Server / Tools":key==="frp"?"FRP Services":"Firmware / Software";
+      return service;
+    });
+  });
+
+  /*
+   Oude services kunnen strings zijn.
+   We zetten ze automatisch om naar het nieuwe formaat.
+  */
+  if(!Array.isArray(data.services)){
+    data.services=[];
+  }
+
+  data.services=data.services.map(x=>{
+
+    if(Array.isArray(x)){
+      return [
+        x[0] || "🔧",
+        x[1] || "",
+        x[2] || ""
+      ];
+    }
+
+    return [
+      "🔧",
+      String(x || ""),
+      ""
+    ];
+  });
+
+
+  /* telefoons te koop */
+
+  if(!Array.isArray(data.phones)){
+    if(Array.isArray(data.devices)){
+      data.phones=data.devices.map(x=>({
+        name:x.name || x.model || "",
+        brand:x.brand || "Apple",
+        price:x.price || x.salePrice || x.sellPrice || x.verkoopprijs || x.screen || "",
+        storage:x.storage || "",
+        color:x.color || x.colour || "",
+        condition:x.condition || "Nieuw",
+        warranty:x.warranty || "",
+        description:x.description || "",
+        images:Array.isArray(x.images) ? x.images.slice(0,4) : [x.image || ""]
+      }));
+    }else{
+      data.phones=[];
+    }
+  }
+
+  data.phones=data.phones.map(x=>{
+    const phone={
+      name:x.name || x.model || "",
+      brand:x.brand || "Apple",
+      price:x.price || x.salePrice || x.sellPrice || x.verkoopprijs || x.screen || "",
+      storage:x.storage || "",
+      color:x.color || x.colour || "",
+      condition:x.condition || "Nieuw",
+      warranty:x.warranty || "",
+      description:x.description || "",
+      images:Array.isArray(x.images) ? x.images.slice(0,4) : [],
+      conditionOptions:x.conditionOptions,
+      storageOptions:x.storageOptions,
+      colorOptions:x.colorOptions,
+      batteryOptions:x.batteryOptions,
+      vatOptions:x.vatOptions,
+      tradeInOptions:x.tradeInOptions
+    };
+    normalizePhoneOptions(phone);
+    return phone;
+  });
+
+  data.phones.forEach(x=>{
+    while(x.images.length<4) x.images.push("");
+    if(x.image && !x.images[0]) x.images[0]=x.image;
+  });
+
+  /* gebruikte telefoons */
+
+  if(!Array.isArray(data.usedPhones)){
+    data.usedPhones=[];
+  }
+
+  data.usedPhones=data.usedPhones.map(x=>{
+
+    let images=[];
+
+    if(Array.isArray(x.images)){
+      images=x.images.slice(0,4);
+    }
+
+    while(images.length<4){
+      images.push("");
+    }
+
+    if(x.image && !images[0]){
+      images[0]=x.image;
+    }
+
+    return {
+      name:x.name || "",
+      brand:x.brand || "",
+      price:x.price || "",
+      condition:x.condition || "Goed",
+      storage:x.storage || "",
+      ram:x.ram || "",
+      whatsapp:x.whatsapp || "",
+      description:x.description || "",
+      images:images
+    };
+  });
+
+
+  /* GSM services */
+  if(!data.gsmServices || typeof data.gsmServices !== "object") data.gsmServices={};
+  ["imei","remote","server","frp","firmware"].forEach(key=>{
+    if(!Array.isArray(data.gsmServices[key])) data.gsmServices[key]=[];
+    data.gsmServices[key]=data.gsmServices[key].map(x=>{
+      const service=normalizeGsmService(x);
+      if(!service.group) service.group=key==="imei"?"IMEI Services":key==="remote"?"Remote Service":key==="server"?"Server / Tools":key==="frp"?"FRP Services":"Firmware / Software";
+      return service;
+    });
+  });
+
+  /* why */
+
+  if(!Array.isArray(data.why)){
+
+    if(Array.isArray(data.features)){
+
+      data.why=data.features.map(x=>[
+        "⭐",
+        String(x || ""),
+        ""
+      ]);
+
+    }else{
+      data.why=[];
+    }
+  }
+
+  data.why=data.why.map(x=>{
+
+    if(Array.isArray(x)){
+      return [
+        x[0] || "⭐",
+        x[1] || "",
+        x[2] || ""
+      ];
+    }
+
+    return [
+      "⭐",
+      String(x || ""),
+      ""
+    ];
+  });
 }
 
 
-/* Services */
+async function loadData(){
+
+  loading=true;
+
+  setStatus("Gegevens laden...","info");
+
+  try{
+
+    const r=await fetch("/api/site");
+
+    if(!r.ok){
+      throw new Error("Websitegegevens konden niet worden geladen");
+    }
+
+    data=await r.json();
+
+    normalizeData();
+
+    renderAll();
+
+    setStatus("✓ Gegevens geladen","success");
+
+  }catch(e){
+
+    setStatus("✕ "+e.message,"error");
+
+  }
+
+  loading=false;
+}
+
+
+/* ---------------- GENERAL ---------------- */
+
+function renderGeneral(){
+
+  document.querySelectorAll("[data-u]").forEach(el=>{
+
+    const key=el.dataset.u;
+
+    if(key==="usedPhones") return;
+
+    el.value=data[key] ?? "";
+
+    el.oninput=()=>{
+
+      data[key]=el.value;
+
+      markChanged();
+
+    };
+  });
+}
+
+
+/* Editor selections */
+let selectedServiceIndex=0;
+let selectedPhoneIndex=0;
+let selectedUsedPhoneIndex=0;
+let selectedWhyIndex=0;
+let selectedGsmServiceIndex=0;
+let gsmActiveCategory="imei";
+
+/* ---------------- SERVICES ---------------- */
 
 function renderServices(){
+  const box=document.getElementById("servicesList");
+  if(!box) return;
+  if(!data.services.length){
+    box.innerHTML=`<div class="editor-layout"><div class="editor-list"><div class="editor-list-title">Diensten</div><div class="small" style="padding:10px">Nog geen diensten toegevoegd.</div></div><div class="editor-panel editor-empty">Nog geen dienst toegevoegd.</div></div>`;
+    return;
+  }
+  if(selectedServiceIndex>=data.services.length) selectedServiceIndex=data.services.length-1;
+  const service=data.services[selectedServiceIndex];
+  const list=data.services.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedServiceIndex?'active':''}" onclick="selectedServiceIndex=${i};renderServices()">🔧 ${esc(x[1]||'Nieuwe dienst')}<small>${esc(x[2]||'')}</small></button>`).join('');
+  box.innerHTML=`
+    <div class="editor-layout">
+      <div class="editor-list">
+        <div class="editor-list-title">Diensten</div>
+        ${list}
+      </div>
+      <div class="editor-panel">
+        <div class="card-head">
+          <div><div class="card-title" style="font-size:20px">🔧 ${esc(service[1]||'Nieuwe dienst')}</div><div class="small">Bewerk hier de gegevens van deze dienst.</div></div>
+          <button class="btn btn-red" onclick="deleteService(${selectedServiceIndex})">Verwijderen</button>
+        </div>
+        <div class="grid">
+          <div class="field"><label>Icoon / emoji</label><input value="${esc(service[0]||'🔧')}" oninput="data.services[${selectedServiceIndex}][0]=this.value;markChanged()"></div>
+          <div class="field"><label>Naam dienst</label><input value="${esc(service[1]||'')}" oninput="data.services[${selectedServiceIndex}][1]=this.value;markChanged();renderServices()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.services[${selectedServiceIndex}][2]=this.value;markChanged()">${esc(service[2]||'')}</textarea></div>
+        </div>
+      </div>
+    </div>`;
+}
 
-let container =
-document.getElementById("services");
+function addService(){
+  data.services.push(["🔧","Nieuwe dienst",""]);
+  selectedServiceIndex=data.services.length-1;
+  renderServices();
+  markChanged();
+}
 
-container.innerHTML = "";
+function deleteService(i){
+  if(confirm("Deze dienst verwijderen?")){
+    data.services.splice(i,1);
+    selectedServiceIndex=Math.max(0,Math.min(selectedServiceIndex,data.services.length-1));
+    renderServices();
+    markChanged();
+  }
+}
 
-let services =
-Array.isArray(data.services)
-? data.services
-: [];
 
-if(services.length === 0){
+/* ---------------- PHONES ---------------- */
 
-services = [
-["🔧","Telefoon reparatie","Professionele reparatie van verschillende telefoonproblemen."],
-["🖥️","Scherm vervangen","Gebarsten of defect scherm? Wij vervangen het snel."],
-["🔋","Batterij vervangen","Loopt uw batterij snel leeg? Wij plaatsen een nieuwe."],
-["🔌","Laadproblemen","Laadt uw telefoon niet goed op? Wij zoeken het probleem."]
+function renderPhones(){
+  const box=document.getElementById("phonesList");
+  if(!box) return;
+  if(!data.phones.length){
+    box.innerHTML=`<div class="editor-layout"><div class="editor-list"><div class="editor-list-title">Telefoons</div><div class="small" style="padding:10px">Nog geen telefoons toegevoegd.</div></div><div class="editor-panel editor-empty">Nog geen telefoon toegevoegd.</div></div>`;
+    return;
+  }
+  if(selectedPhoneIndex>=data.phones.length) selectedPhoneIndex=data.phones.length-1;
+  const phone=data.phones[selectedPhoneIndex];
+  normalizePhoneOptions(phone);
+  const images=phone.images || ["","","",""];
+  const list=data.phones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">📱 ${esc(x.name||'Nieuwe telefoon')}<small>${esc(x.brand||'')}</small></button>`).join('');
+  const optionEditor=(key,title,help,priceEditable=true)=>{
+    const opts=phone[key]||[];
+    const fixedGroup = key==='batteryOptions' || key==='vatOptions';
+    return `<div class="card" style="margin-top:16px"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">${help}</div>${opts.map((o,i)=>{
+      const active=o.active !== undefined ? o.active !== false : o.enabled !== false;
+      const available=o.available !== false;
+      let fixed=0;
+      if(key==='batteryOptions') fixed=String(o.label).toLowerCase().includes('nieuw') ? 30 : 0;
+      if(key==='vatOptions') fixed=String(o.label).toLowerCase().includes('met btw') ? 10 : 0;
+
+      if(fixedGroup){
+        const fixedLabel = key==='batteryOptions'
+          ? (String(o.label).toLowerCase().includes('nieuw') ? 'Nieuw (100%)' : 'Standaard')
+          : (String(o.label).toLowerCase().includes('met btw') ? 'Met BTW' : 'Zonder BTW');
+        return `<div style="display:grid;grid-template-columns:minmax(220px,1fr) 150px;gap:10px;align-items:center;margin-bottom:9px">
+          <input value="${esc(fixedLabel)}" readonly style="background:#f3f4f6;cursor:not-allowed">
+          <div class="small" style="font-weight:800">Vast: + €${fixed}</div>
+        </div>`;
+      }
+
+      return `<div style="display:grid;grid-template-columns:minmax(180px,1fr) 110px 125px 120px;gap:10px;align-items:center;margin-bottom:9px">
+        <input value="${esc(o.label)}" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].label=this.value;markChanged()">
+        <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${active?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].active=this.checked;data.phones[${selectedPhoneIndex}].${key}[${i}].enabled=this.checked;markChanged()"> Actief</label>
+        <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${available?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].available=this.checked;markChanged()"> Beschikbaar</label>
+        <input type="number" step="1" value="${esc(o.priceDelta)}" placeholder="0" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].priceDelta=this.value;markChanged()">
+      </div>`;
+    }).join('')}<div class="small" style="margin-top:8px">Actief = tonen op de website. Beschikbaar = kan geselecteerd worden. Bij BTW en batterij zijn de bedragen vast: Met BTW +€10 en Nieuw (100%) +€30.</div></div>`;
+  };
+  box.innerHTML=`
+    <div class="editor-layout">
+      <div class="editor-list">
+        <div class="editor-list-title">Telefoons</div>
+        ${list}
+      </div>
+      <div class="editor-panel">
+        <div class="card-head">
+          <div><div class="card-title" style="font-size:20px">📱 ${esc(phone.name||'Nieuwe telefoon')}</div><div class="small">Beheer de gegevens en verkoopopties van deze telefoon.</div></div>
+          <button class="btn btn-red" onclick="deletePhone(${selectedPhoneIndex})">Verwijderen</button>
+        </div>
+        <div class="grid">
+          <div class="field"><label>Model</label><input value="${esc(phone.name||'')}" oninput="data.phones[${selectedPhoneIndex}].name=this.value;markChanged();renderPhones()"></div>
+          <div class="field"><label>Merk</label><input value="${esc(phone.brand||'')}" oninput="data.phones[${selectedPhoneIndex}].brand=this.value;markChanged()"></div>
+          <div class="field"><label>Basisprijs (€)</label><input type="number" step="1" value="${esc(phone.price||'')}" oninput="data.phones[${selectedPhoneIndex}].price=this.value;markChanged()"><div class="small">Dit is de basisprijs van Zichtbaar gebruikt.</div></div>
+          <div class="field"><label>Garantie</label><input value="${esc(phone.warranty||'')}" placeholder="12 maanden" oninput="data.phones[${selectedPhoneIndex}].warranty=this.value;markChanged()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.phones[${selectedPhoneIndex}].description=this.value;markChanged()">${esc(phone.description||'')}</textarea></div>
+        </div>
+        ${optionEditor('conditionOptions','1. Productconditie','Jij bepaalt per conditie de meerprijs. Basisprijs = Zichtbaar gebruikt.')}
+        ${optionEditor('storageOptions','2. Geheugen','64 / 128 / 256 / 512 GB en 1 TB. Zet actief/beschikbaar en bepaal zelf de meerprijs.')}
+        ${optionEditor('colorOptions','3. Kleur','Bepaal welke kleuren actief en beschikbaar zijn en eventueel de meerprijs.')}
+        ${optionEditor('batteryOptions','4. Batterij','Vast: Standaard + €0 en Nieuw (100%) + €30.',false)}
+        ${optionEditor('vatOptions','5. BTW','Vast: Zonder BTW + €0 en Met BTW + €10.',false)}
+        ${optionEditor('tradeInOptions','6. Inruil oude telefoon','Klant kiest Ja of Nee. Laat prijs op 0 als je later een aparte inruilpagina wilt maken.')}
+        <div style="margin-top:15px"><label style="font-weight:700">📷 Foto's</label><div class="images-grid">${images.map((img,j)=>`<div class="image-box">${img?`<img src="${esc(img)}" class="image-preview">`:`<div class="empty-preview">Geen foto</div>`}<input type="file" accept="image/*" onchange="handlePhoneImage(event,${selectedPhoneIndex},${j})">${img?`<button class="btn btn-light" style="margin-top:7px" onclick="removePhoneImage(${selectedPhoneIndex},${j})">Verwijder foto</button>`:""}</div>`).join('')}</div><p class="small">Maximaal 4 foto's per telefoon.</p></div>
+      </div>
+    </div>`;
+}
+
+function renderPhoneTitle(i){ renderPhones(); }
+
+function addPhone(){
+  data.phones.push({name:"Nieuwe iPhone",brand:"Apple",price:"",storage:"",color:"",condition:"Zichtbaar gebruikt",warranty:"",description:"",images:["","","",""]});
+  normalizePhoneOptions(data.phones[data.phones.length-1]);
+  selectedPhoneIndex=data.phones.length-1;
+  renderPhones();
+  markChanged();
+}
+
+function deletePhone(i){
+  if(confirm("Deze telefoon verwijderen?")){
+    data.phones.splice(i,1);
+    selectedPhoneIndex=Math.max(0,Math.min(selectedPhoneIndex,data.phones.length-1));
+    renderPhones();
+    markChanged();
+  }
+}
+
+
+/* ---------------- USED PHONES ---------------- */
+
+function renderUsedPhones(){
+  const box=document.getElementById("usedPhonesList");
+  if(!box) return;
+  if(!data.usedPhones.length){
+    box.innerHTML=`<div class="editor-layout"><div class="editor-list"><div class="editor-list-title">Telefoons</div><div class="small" style="padding:10px">Nog geen gebruikte telefoons toegevoegd.</div></div><div class="editor-panel editor-empty">Nog geen telefoon toegevoegd.</div></div>`;
+    return;
+  }
+  if(selectedUsedPhoneIndex>=data.usedPhones.length) selectedUsedPhoneIndex=data.usedPhones.length-1;
+  const phone=data.usedPhones[selectedUsedPhoneIndex];
+  const images=phone.images || ["","","",""];
+  const list=data.usedPhones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedUsedPhoneIndex?'active':''}" onclick="selectedUsedPhoneIndex=${i};renderUsedPhones()">♻️ ${esc(x.name||'Nieuwe gebruikte telefoon')}<small>${esc(x.brand||'')}</small></button>`).join('');
+  box.innerHTML=`
+    <div class="editor-layout">
+      <div class="editor-list"><div class="editor-list-title">Telefoons</div>${list}</div>
+      <div class="editor-panel">
+        <div class="card-head"><div><div class="card-title" style="font-size:20px">♻️ ${esc(phone.name||'Nieuwe gebruikte telefoon')}</div><div class="small">Bewerk hier de gegevens van deze telefoon.</div></div><button class="btn btn-red" onclick="deleteUsedPhone(${selectedUsedPhoneIndex})">Verwijderen</button></div>
+        <div class="grid">
+          <div class="field"><label>Model</label><input value="${esc(phone.name||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].name=this.value;markChanged();renderUsedPhones()"></div>
+          <div class="field"><label>Merk</label><input value="${esc(phone.brand||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].brand=this.value;markChanged()"></div>
+          <div class="field"><label>Prijs (€)</label><input value="${esc(phone.price||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].price=this.value;markChanged()"></div>
+          <div class="field"><label>Conditie</label><select onchange="data.usedPhones[${selectedUsedPhoneIndex}].condition=this.value;markChanged()"><option ${phone.condition==="Als nieuw"?"selected":""}>Als nieuw</option><option ${phone.condition==="Zeer goed"?"selected":""}>Zeer goed</option><option ${phone.condition==="Goed"?"selected":""}>Goed</option><option ${phone.condition==="Gebruikt"?"selected":""}>Gebruikt</option></select></div>
+          <div class="field"><label>Opslag</label><input value="${esc(phone.storage||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].storage=this.value;markChanged()"></div>
+          <div class="field"><label>RAM</label><input value="${esc(phone.ram||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].ram=this.value;markChanged()"></div>
+          <div class="field"><label>WhatsApp</label><input value="${esc(phone.whatsapp||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].whatsapp=this.value;markChanged()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.usedPhones[${selectedUsedPhoneIndex}].description=this.value;markChanged()">${esc(phone.description||'')}</textarea></div>
+        </div>
+        <div style="margin-top:15px"><label style="font-weight:700">📷 Foto's</label><div class="images-grid">${images.map((img,j)=>`<div class="image-box">${img?`<img src="${esc(img)}" class="image-preview">`:`<div class="empty-preview">Geen foto</div>`}<input type="file" accept="image/*" onchange="handleImage(event,${selectedUsedPhoneIndex},${j})">${img?`<button class="btn btn-light" style="margin-top:7px" onclick="removeImage(${selectedUsedPhoneIndex},${j})">Verwijder foto</button>`:""}</div>`).join('')}</div><p class="small">Je kunt maximaal 4 foto's per telefoon toevoegen.</p></div>
+      </div>
+    </div>`;
+}
+
+function addUsedPhone(){
+  data.usedPhones.push({name:"iPhone 13",brand:"Apple",price:"",condition:"Goed",storage:"128 GB",ram:"",whatsapp:"",description:"",images:["","","",""]});
+  selectedUsedPhoneIndex=data.usedPhones.length-1;
+  renderUsedPhones();
+  markChanged();
+}
+
+function deleteUsedPhone(i){
+  if(confirm("Deze gebruikte telefoon verwijderen?")){
+    data.usedPhones.splice(i,1);
+    selectedUsedPhoneIndex=Math.max(0,Math.min(selectedUsedPhoneIndex,data.usedPhones.length-1));
+    renderUsedPhones();
+    markChanged();
+  }
+}
+
+
+/* ---------------- GSM SERVICES ---------------- */
+
+const gsmServiceCategories=[
+  ["imei","📱 IMEI Services"],
+  ["remote","🛠️ Remote Service"],
+  ["server","🔧 Server / Tools"],
+  ["frp","🔐 FRP Services"],
+  ["firmware","💻 Firmware / Software"]
 ];
 
-}
+function renderGsmServices(){
+  const box=document.getElementById("gsmServicesList");
+  if(!box) return;
+  const activeKey=gsmActiveCategory || "imei";
+  const category=gsmServiceCategories.find(x=>x[0]===activeKey) || gsmServiceCategories[0];
+  const list=data.gsmServices[category[0]] || [];
+  if(selectedGsmServiceIndex>=list.length) selectedGsmServiceIndex=Math.max(0,list.length-1);
 
-services.forEach(function(item){
+  const tabs=gsmServiceCategories.map(c=>`<button type="button" class="gsm-admin-tab ${c[0]===activeKey?"active":""}" onclick="gsmActiveCategory='${c[0]}';selectedGsmServiceIndex=0;renderGsmServices()">${c[1]}</button>`).join('');
+  const grouped=new Map();
+  list.forEach((service,i)=>{
+    const groupName=(service.group||category[1].replace(/^[^ ]+ /,'')||"General").trim()||"General";
+    if(!grouped.has(groupName)) grouped.set(groupName,[]);
+    grouped.get(groupName).push({service,i});
+  });
+  const rows=list.length ? [...grouped.entries()].sort((a,b)=>a[0].localeCompare(b[0],'nl')).map(([groupName,items])=>`
+    <div class="gsm-admin-group" style="margin:10px 0 6px;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#fff">
+      <div style="padding:9px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:900;color:#334155;display:flex;justify-content:space-between;align-items:center">
+        <span>${esc(groupName)}</span><span style="font-size:11px;color:#64748b">${items.length}</span>
+      </div>
+      ${items.map(({service,i})=>`<button type="button" class="editor-list-item ${i===selectedGsmServiceIndex?'active':''}" onclick="selectedGsmServiceIndex=${i};renderGsmServices()">${esc(service.icon||'🔧')} ${esc(service.name||'Nieuwe GSM Service')}<small>${service.price?('€ '+esc(service.price)):'Op aanvraag'}</small></button>`).join('')}
+    </div>`).join('') : '<div class="small" style="padding:10px">Nog geen services in deze categorie.</div>';
+  const service=list[selectedGsmServiceIndex];
 
-/*
-Ondersteunt ook oude data waarbij
-services strings waren.
-*/
-
-if(typeof item === "string"){
-item = ["🔧",item,""];
-}
-
-let card =
-document.createElement("div");
-
-card.className = "card";
-
-let icon =
-document.createElement("div");
-
-icon.className = "icon";
-
-icon.textContent =
-item[0] || "🔧";
-
-let title =
-document.createElement("h3");
-
-title.textContent =
-item[1] || "";
-
-let text =
-document.createElement("p");
-
-text.textContent =
-item[2] || "";
-
-card.appendChild(icon);
-card.appendChild(title);
-card.appendChild(text);
-
-container.appendChild(card);
-
-});
-
-}
-
-
-/* Devices */
-
-function renderCategories(){
-
-const container=document.getElementById("deviceCategories");
-if(!container) return;
-container.innerHTML="";
-
-let categories=Array.isArray(data.deviceCategories)?data.deviceCategories:[];
-categories=categories.filter(x=>x && x.active!==false);
-
-if(!categories.length){
-  categories=[
-    {title:"Refurbished iPhones",image:"",link:"devices.html",active:true},
-    {title:"Refurbished iPads",image:"",link:"devices.html",active:true},
-    {title:"Refurbished Mac",image:"",link:"devices.html",active:true},
-    {title:"Refurbished Watches",image:"",link:"devices.html",active:true},
-    {title:"Refurbished Samsungs",image:"",link:"devices.html",active:true},
-    {title:"Onze accessoires",image:"",link:"devices.html",active:true}
-  ];
-}
-
-categories.forEach(function(cat){
-  const a=document.createElement("a");
-  a.className="category-card"+(cat.image?"":" no-image");
-  a.href=cat.link || "devices.html";
-
-  if(cat.image){
-    const img=document.createElement("img");
-    img.src=cat.image;
-    img.alt=cat.title||"";
-    a.appendChild(img);
-  }
-
-  const content=document.createElement("div");
-  content.className="category-card-content";
-
-  const h=document.createElement("h3");
-  h.textContent=cat.title||"Apparaten";
-
-  const span=document.createElement("span");
-  span.textContent=(cat.buttonText||"Bekijk")+"  ›";
-
-  content.appendChild(h);
-  content.appendChild(span);
-  a.appendChild(content);
-  container.appendChild(a);
-});
-}
-
-function renderDevices(){
-
-let container=document.getElementById("devices");
-container.innerHTML="";
-
-let phones=Array.isArray(data.phones)?data.phones:[];
-
-if(phones.length===0){
-  container.innerHTML='<div class="empty"><h3>Geen telefoons beschikbaar</h3><p>Neem contact met ons op voor het actuele aanbod.</p></div>';
-  return;
-}
-
-phones.slice(0,12).forEach(function(phone,index){
-
-  if(typeof phone==="string") phone={name:phone,brand:""};
-
-  let image=phone.image || (Array.isArray(phone.images)&&phone.images[0]) || "";
-
-  let device=document.createElement("div");
-  device.className="device";
-
-  let imageBox=document.createElement("div");
-  imageBox.className="device-image";
-  if(image){
-    imageBox.innerHTML='<img src="'+String(image).replace(/"/g,"&quot;")+'" alt="">';
+  let editor='';
+  if(service){
+    editor=`
+      <div class="editor-panel">
+        <div class="card-head">
+          <div><div class="card-title" style="font-size:20px">🛠️ Service bewerken</div><div class="small">Vul de servicegegevens in en bewaar ze samen met de websitegegevens.</div></div>
+          <button class="btn btn-red" onclick="deleteGsmService('${category[0]}',${selectedGsmServiceIndex})">Verwijderen</button>
+        </div>
+        <div class="grid">
+          <div class="field"><label>Groep / bestandsnaam</label><input value="${esc(service.group || category[1].replace(/^[^ ]+ /,''))}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].group=this.value;markChanged();renderGsmServices()" placeholder="Bijv. INPRO RAMDISK A12/A13"></div>
+          <div class="field"><label>Status</label><select onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].active=this.value==='Actief';markChanged()"><option value="Actief" ${service.active!==false?'selected':''}>Actief</option><option value="Inactief" ${service.active===false?'selected':''}>Inactief</option></select></div>
+          <div class="field" style="display:flex;flex-direction:column;gap:8px;justify-content:flex-end"><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresUsername===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresUsername=this.checked;markChanged()" style="width:18px;height:18px"> Gebruikersnaam klant verplicht</label><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresImei===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresImei=this.checked;markChanged()" style="width:18px;height:18px"> IMEI / Serienummer klant verplicht</label></div>
+          <div class="field"><label>Naam service</label><input value="${esc(service.name||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].name=this.value;markChanged();renderGsmServices()"></div>
+          <div class="field"><label>Prijs (€)</label><input value="${esc(service.price||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].price=this.value;markChanged()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Korte beschrijving</label><input value="${esc(service.shortDescription||'')}" placeholder="Bijv. Xiaomi / Redmi / Poco" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].shortDescription=this.value;markChanged()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Volledige beschrijving</label><textarea oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].details=this.value;markChanged()">${esc(service.details||'')}</textarea></div>
+          <div class="field"><label>Service icon</label><input value="${esc(service.icon||'🔧')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].icon=this.value;markChanged();renderGsmServices()"></div>
+        </div>
+        <div class="actions" style="margin-top:8px"><button type="button" class="btn btn-green" onclick="saveGsmServiceEditor('${category[0]}',${selectedGsmServiceIndex})">Opslaan</button></div>
+      </div>`;
   }else{
-    imageBox.textContent="📱";
-    imageBox.style.fontSize="55px";
+    editor='<div class="editor-panel editor-empty">Kies links een service of klik op + Nieuwe service.</div>';
   }
 
-  let body=document.createElement("div");
-  body.className="device-body";
+  box.innerHTML=`<div class="gsm-admin-tabs">${tabs}</div><div class="gsm-editor-layout"><div class="editor-list"><div class="card-head" style="margin-bottom:8px"><div class="editor-list-title" style="padding:0">${esc(category[1])}</div><button class="btn btn-green" type="button" onclick="addGsmService('${category[0]}')">+ Nieuwe service</button></div>${rows}</div>${editor}</div>`;
+}
 
-  let name=document.createElement("strong");
-  name.textContent=phone.name || "Apparaat";
+function openGsmServiceEditor(category,i){
+  gsmActiveCategory=category;
+  selectedGsmServiceIndex=i;
+  renderGsmServices();
+}
 
-  let brand=document.createElement("small");
-  brand.style.color="#64748b";
-  brand.style.display="block";
-  brand.textContent=phone.brand || "";
+async function saveGsmServiceEditor(category,i){
+  gsmActiveCategory=category;
+  selectedGsmServiceIndex=i;
+  renderGsmServices();
+  await save();
+}
 
-  let price=document.createElement("div");
-  price.className="device-price";
-  let p=phone.price || phone.salePrice || phone.sellPrice || phone.verkoopprijs || "";
-  price.textContent=p ? "€ "+String(p).replace(/^€\s*/,"") : "";
+function addGsmService(key){
+  if(!data.gsmServices[key]) data.gsmServices[key]=[];
+  const categoryLabel=(gsmServiceCategories.find(x=>x[0]===key)||[key,key])[1].replace(/^[^ ]+ /,'');
+  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",group:categoryLabel,shortDescription:"",details:"",price:"",active:true,requiresUsername:false,requiresImei:false});
+  gsmActiveCategory=key;
+  selectedGsmServiceIndex=data.gsmServices[key].length-1;
+  renderGsmServices();
+  markChanged();
+}
 
-  let link=document.createElement("a");
-  link.className="device-link";
-  link.href="product.html?type=phone&id="+encodeURIComponent(phone._index ?? index);
-  link.textContent="Bekijk →";
-
-  body.appendChild(name);
-  if(brand.textContent) body.appendChild(brand);
-  if(price.textContent) body.appendChild(price);
-  body.appendChild(link);
-
-  device.appendChild(imageBox);
-  device.appendChild(body);
-  container.appendChild(device);
-});
+function deleteGsmService(key,i){
+  if(confirm("Deze GSM-service verwijderen?")){
+    data.gsmServices[key].splice(i,1);
+    gsmActiveCategory=key;
+    selectedGsmServiceIndex=Math.max(0,Math.min(selectedGsmServiceIndex,data.gsmServices[key].length-1));
+    renderGsmServices();
+    markChanged();
+  }
 }
 
 
-/* Waarom */
+/* ---------------- GSM ORDERS ---------------- */
+async function loadOrders(){
+  const box=document.getElementById("ordersList");
+  const status=document.getElementById("ordersStatus");
+  if(!box) return;
+  status.className="status info";
+  status.textContent="Bestellingen laden...";
+  box.innerHTML="";
+  try{
+    const r=await fetch("/api/admin/orders");
+    const result=await r.json();
+    if(!r.ok) throw new Error(result.error||"Bestellingen konden niet worden geladen");
+    const orders=result.orders||[];
+    status.className="status success";
+    status.textContent=orders.length+" bestelling(en) gevonden";
+    if(!orders.length){
+      box.innerHTML='<div class="order-empty">Nog geen GSM-service bestellingen ontvangen.</div>';
+      return;
+    }
+    box.innerHTML=orders.map(order=>{
+      const date=order.created_at ? new Date(order.created_at).toLocaleString("nl-NL") : "";
+      const price=order.price ? "€ "+esc(order.price) : "Op aanvraag";
+      return `
+        <div class="order-card">
+          <div class="order-card-head">
+            <div>
+              <div class="order-title">#${esc(order.id)} — ${esc(order.service_name||"GSM Service")}</div>
+              <div class="order-meta">${esc(order.service_group||"General")} · ${esc(date)}</div>
+            </div>
+            <select class="order-status-select" onchange="updateOrderStatus(${Number(order.id)},this.value)">
+              ${["Nieuw","In behandeling","Voltooid","Geannuleerd"].map(x=>`<option value="${esc(x)}" ${order.status===x?"selected":""}>${esc(x)}</option>`).join("")}
+            </select>
+          </div>
+          <div class="order-grid">
+            <div class="order-info"><strong>Klant</strong>${esc(order.name||"-")}</div>
+            <div class="order-info"><strong>E-mail</strong>${esc(order.email||"-")}</div>
+            <div class="order-info"><strong>Telefoon</strong>${esc(order.phone||"-")}</div>
+            <div class="order-info"><strong>Prijs</strong>${esc(price)}</div>
+            <div class="order-info"><strong>Gebruikersnaam</strong>${esc(order.username||"-")}</div>
+            <div class="order-info"><strong>IMEI / Serienummer</strong>${esc(order.imei||"-")}</div>
+            <div class="order-info"><strong>Categorie</strong>${esc(order.service_category||"-")}</div>
+          </div>
+          ${order.notes?`<div class="order-notes"><strong>Opmerking:</strong><br>${esc(order.notes)}</div>`:""}
+        </div>`;
+    }).join("");
+  }catch(e){
+    status.className="status error";
+    status.textContent="✕ "+e.message;
+  }
+}
+
+async function updateOrderStatus(id,statusValue){
+  try{
+    const r=await fetch("/api/admin/orders/"+encodeURIComponent(id)+"/status",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({status:statusValue})
+    });
+    const result=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(result.error||"Status kon niet worden gewijzigd");
+    setStatus("✓ Order #"+id+" bijgewerkt","success");
+  }catch(e){
+    setStatus("✕ "+e.message,"error");
+    loadOrders();
+  }
+}
+
+/* ---------------- CUSTOMERS ---------------- */
+async function loadCustomers(){
+  const box=document.getElementById("customersList");
+  const status=document.getElementById("customersStatus");
+  if(!box) return;
+
+  status.className="status info";
+  status.textContent="Klanten laden...";
+  box.innerHTML="";
+
+  try{
+    const r=await fetch("/api/admin/customers");
+    const result=await r.json();
+    if(!r.ok) throw new Error(result.error || "Kan klanten niet laden");
+
+    const customers=result.customers || [];
+    status.className="status success";
+    status.textContent=customers.length+" klant(en) gevonden";
+
+    if(!customers.length){
+      box.innerHTML='<div class="small">Nog geen geregistreerde klanten.</div>';
+      return;
+    }
+
+    box.innerHTML=customers.map(customer=>`
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-head">
+          <div class="card-title">👤 ${esc(customer.name || "Klant")}</div>
+          <div class="small">${esc(customer.created_at || "")}</div>
+        </div>
+        <div class="grid">
+          <div><strong>E-mail</strong><br>${esc(customer.email || "-")}</div>
+          <div><strong>Telefoon</strong><br>${esc(customer.phone || "-")}</div>
+          <div style="grid-column:1/-1"><strong>Adres</strong><br>${esc(customer.address || "-")}</div>
+        </div>
+      </div>`).join("");
+  }catch(e){
+    status.className="status error";
+    status.textContent="✕ "+e.message;
+  }
+}
+
+/* ---------------- WHY ---------------- */
 
 function renderWhy(){
-
-let container =
-document.getElementById("why");
-
-container.innerHTML = "";
-
-let why =
-Array.isArray(data.why)
-? data.why
-: [];
-
-if(why.length === 0){
-
-why = [
-["⚡","Snel","Wij proberen uw reparatie zo snel mogelijk uit te voeren."],
-["🛠️","Professioneel","Nauwkeurige diagnose en professioneel werk."],
-["🚗","Wij komen naar u","Mobiele service bij u thuis."],
-["💰","Betaalbare prijzen","Vraag vooraf naar de prijs."]
-];
-
+  const box=document.getElementById("whyList");
+  if(!box) return;
+  if(!data.why.length){
+    box.innerHTML=`<div class="editor-layout"><div class="editor-list"><div class="editor-list-title">Voordelen</div><div class="small" style="padding:10px">Nog geen voordelen toegevoegd.</div></div><div class="editor-panel editor-empty">Nog geen voordeel toegevoegd.</div></div>`;
+    return;
+  }
+  if(selectedWhyIndex>=data.why.length) selectedWhyIndex=data.why.length-1;
+  const item=data.why[selectedWhyIndex];
+  const list=data.why.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedWhyIndex?'active':''}" onclick="selectedWhyIndex=${i};renderWhy()">${esc(x[0]||'⭐')} ${esc(x[1]||'Nieuw voordeel')}<small>${esc(x[2]||'')}</small></button>`).join('');
+  box.innerHTML=`
+    <div class="editor-layout">
+      <div class="editor-list"><div class="editor-list-title">Waarom HOMS TECH</div>${list}</div>
+      <div class="editor-panel">
+        <div class="card-head"><div><div class="card-title" style="font-size:20px">⭐ ${esc(item[1]||'Nieuw voordeel')}</div><div class="small">Bewerk hier het voordeel.</div></div><button class="btn btn-red" onclick="deleteWhy(${selectedWhyIndex})">Verwijderen</button></div>
+        <div class="grid">
+          <div class="field"><label>Icoon / emoji</label><input value="${esc(item[0]||'⭐')}" oninput="data.why[${selectedWhyIndex}][0]=this.value;markChanged()"></div>
+          <div class="field"><label>Titel</label><input value="${esc(item[1]||'')}" oninput="data.why[${selectedWhyIndex}][1]=this.value;markChanged();renderWhy()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.why[${selectedWhyIndex}][2]=this.value;markChanged()">${esc(item[2]||'')}</textarea></div>
+        </div>
+      </div>
+    </div>`;
 }
 
-why.forEach(function(item){
-
-if(typeof item === "string"){
-item = ["⭐",item,""];
+function addWhy(){
+  data.why.push(["⭐","Nieuw voordeel",""]);
+  selectedWhyIndex=data.why.length-1;
+  renderWhy();
+  markChanged();
 }
 
-let card =
-document.createElement("div");
-
-card.className = "card";
-
-let icon =
-document.createElement("div");
-
-icon.className = "icon";
-
-icon.textContent =
-item[0] || "⭐";
-
-let title =
-document.createElement("h3");
-
-title.textContent =
-item[1] || "";
-
-let text =
-document.createElement("p");
-
-text.textContent =
-item[2] || "";
-
-card.appendChild(icon);
-card.appendChild(title);
-card.appendChild(text);
-
-container.appendChild(card);
-
-});
-
+function deleteWhy(i){
+  if(confirm("Dit voordeel verwijderen?")){
+    data.why.splice(i,1);
+    selectedWhyIndex=Math.max(0,Math.min(selectedWhyIndex,data.why.length-1));
+    renderWhy();
+    markChanged();
+  }
 }
 
 
-/* Alles starten */
+/* ---------------- SAVE ---------------- */
+
+async function save(){
+
+  if(loading) return;
+
+  loading=true;
+
+  setStatus("Opslaan...","info");
+
+  try{
+
+    /*
+     Maak oude velden ook consistent.
+    */
+
+    normalizeData();
+
+    const r=await fetch("/api/site",{
+
+      method:"PUT",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify(data)
+
+    });
+
+    const result=await r.json();
+
+    if(!r.ok){
+      throw new Error(
+        result.error || "Opslaan mislukt"
+      );
+    }
+
+    data=result.data || data;
+
+    normalizeData();
+
+    renderAll();
+
+    setStatus(
+      "✓ Alle wijzigingen zijn succesvol opgeslagen",
+      "success"
+    );
+
+  }catch(e){
+
+    setStatus(
+      "✕ Opslaan mislukt: "+e.message,
+      "error"
+    );
+
+  }
+
+  loading=false;
+}
+
+
+/* ---------------- HELPERS ---------------- */
 
 function renderAll(){
 
-common();
-renderHero();
-renderServices();
-renderCategories();
-renderDevices();
-renderWhy();
-
+  renderGeneral();
+  renderServices();
+  renderPhones();
+  renderDeviceCategories();
+  renderUsedPhones();
+  renderGsmServices();
+  renderWhy();
+  showPage(currentPage);
 }
 
-loadSite();
+function markChanged(){
+
+  setStatus(
+    "● Er zijn niet-opgeslagen wijzigingen",
+    "info"
+  );
+}
+
+function setStatus(text,type){
+
+  const el=document.getElementById("saveStatus");
+
+  if(!el) return;
+
+  el.textContent=text;
+  el.className="status "+type;
+}
+
+function esc(value){
+
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+
+/* START */
+
+checkLogin();
 
 </script>
 
