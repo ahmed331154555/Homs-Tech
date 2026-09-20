@@ -320,22 +320,39 @@ function renderWhy(){
 function moveProducts(dir){document.getElementById("products").scrollBy({left:dir*220,behavior:"smooth"})}
 function startProductTicker(){
  const box=document.getElementById("products");
- if(!box || box.children.length<2) return;
+ if(!box || box.children.length===0) return;
+
+ // Duplicate the products so there is ALWAYS enough content to scroll.
+ if(!box.dataset.duplicated){
+   const originals=[...box.children];
+   originals.forEach(card=>box.appendChild(card.cloneNode(true)));
+   box.dataset.duplicated="1";
+ }
+
  box.classList.add("auto-moving");
- let paused=false, last=performance.now(), carry=0;
+ box.style.overflowX="hidden";
+
+ let paused=false;
+ let last=performance.now();
+ let position=box.scrollLeft;
+ const speed=0.055; // pixels per millisecond
+
  box.addEventListener("mouseenter",()=>paused=true);
  box.addEventListener("mouseleave",()=>paused=false);
  box.addEventListener("touchstart",()=>paused=true,{passive:true});
- box.addEventListener("touchend",()=>setTimeout(()=>paused=false,1200),{passive:true});
+ box.addEventListener("touchend",()=>setTimeout(()=>paused=false,1000),{passive:true});
+
  function tick(now){
-   const dt=Math.min(40,now-last); last=now;
-   if(!paused && box.scrollWidth>box.clientWidth){
-     carry += dt*0.045;
-     if(carry>=1){
-       box.scrollLeft += Math.floor(carry);
-       carry -= Math.floor(carry);
-       if(box.scrollLeft + box.clientWidth >= box.scrollWidth-2) box.scrollLeft=0;
+   const dt=Math.min(50,now-last);
+   last=now;
+
+   if(!paused){
+     position += dt*speed;
+     const half=box.scrollWidth/2;
+     if(half>box.clientWidth && position>=half){
+       position -= half;
      }
+     box.scrollLeft=position;
    }
    requestAnimationFrame(tick);
  }
