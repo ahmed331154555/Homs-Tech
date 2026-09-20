@@ -35,6 +35,8 @@ nav a:hover{background:#2563eb}
 .blue{background:#2563eb;color:#fff}
 .gray{background:#eef2f7;color:#111827}
 .btn:hover{opacity:.9}
+.cart-link{background:#dc2626;color:#fff!important;padding:10px 14px;border-radius:10px;font-weight:800;white-space:nowrap}.cart-count{display:inline-flex;min-width:21px;height:21px;align-items:center;justify-content:center;background:#fff;color:#dc2626;border-radius:999px;font-size:12px;margin-left:4px;padding:0 5px}
+.cart-added{margin-top:10px;padding:12px 14px;border-radius:10px;background:#ecfdf5;color:#166534;font-weight:700;display:none}
 .status{padding:14px;border-radius:10px;background:#fff7ed;color:#9a3412;margin-top:15px}
 .option-section{margin:22px 0}
 .option-title{font-weight:800;font-size:17px;margin-bottom:10px}
@@ -84,6 +86,7 @@ nav{justify-content:center}
 <a href="repair.html">Reparaties</a>
 <a href="devices.html">Apparaten</a>
 <a href="prices.html">Prijzen</a>
+<a class="cart-link" href="cart.html">🛒 Winkelwagen <span class="cart-count" id="cartCount">0</span></a>
 </nav>
 </div>
 </header>
@@ -225,6 +228,23 @@ function changeImage(el,url){
   const index=galleryImagesState.indexOf(url);
   if(index>=0) setGalleryImage(index);
 }
+function cartKey(){return "homsTechCart";}
+function readCart(){try{return JSON.parse(localStorage.getItem(cartKey())||"[]")}catch(e){return []}}
+function writeCart(items){localStorage.setItem(cartKey(),JSON.stringify(items));updateCartCount()}
+function updateCartCount(){const el=document.getElementById("cartCount");if(el)el.textContent=readCart().reduce((n,x)=>n+Number(x.qty||1),0)}
+function addCurrentProductToCart(){
+  if(!currentProduct) return;
+  const total=calculateTotal(currentProduct);
+  const options={};
+  ["storage","color","condition","battery","vat","tradeIn"].forEach(k=>{if(selectedOptions[k]) options[k]=selectedOptions[k]});
+  const items=readCart();
+  const key=String(type)+"|"+String(id)+"|"+JSON.stringify(options);
+  const found=items.find(x=>x.key===key);
+  if(found) found.qty=Number(found.qty||1)+1;
+  else items.push({key,type,id,name:currentProduct.name||"Smartphone",brand:currentProduct.brand||"",image:(Array.isArray(currentProduct.images)&&currentProduct.images[0])||currentProduct.image||"",options,unitPrice:total,qty:1});
+  writeCart(items);
+  const msg=document.getElementById("cartAdded"); if(msg){msg.style.display="block";msg.textContent="✓ Toegevoegd aan winkelwagen";setTimeout(()=>msg.style.display="none",2200)}
+}
 function renderProductBody(){
   const product=currentProduct,data=currentData;
   const area=document.getElementById("productArea");
@@ -280,7 +300,7 @@ function renderProductBody(){
     ${hasOptions?`<div class="order-summary"><h3>Jouw bestelling</h3>${["storage","color","condition","battery","vat","tradeIn"].filter(k=>selectedOptions[k]).map(k=>`<div class="summary-row"><span>${esc(k==="storage"?"Geheugen":k==="color"?"Kleur":k==="condition"?"Conditie":k==="battery"?"Batterij":k==="vat"?"BTW":"Inruil")}</span><strong>${esc(selectedOptions[k])}</strong></div>`).join("")}<div class="summary-total">Totaal: ${money(total)}</div></div>`:""}
     ${description?`<div class="description">${esc(description)}</div>`:""}
     ${specsList.length?`<div class="spec-box"><h2>Belangrijkste specificaties</h2><div class="spec-list">${specsList.map(x=>`<div><strong>${esc(x.label)}:</strong> ${esc(x.value||"")}</div>`).join("")}</div></div>`:""}
-    <div class="buttons"><a class="btn green" href="${esc(whatsapp)}" target="_blank">💬 Bestel via WhatsApp</a><a class="btn gray" href="devices.html">← Apparaten</a></div>
+    <div class="buttons"><button type="button" class="btn green" onclick="addCurrentProductToCart()">🛒 In winkelwagen</button><a class="btn gray" href="devices.html">← Apparaten</a></div><div id="cartAdded" class="cart-added">✓ Toegevoegd aan winkelwagen</div>
     ${!basePrice&&!hasOptions?`<div class="status">Neem contact met ons op voor de actuele prijs.</div>`:""}
   </div></div>`;
 }
