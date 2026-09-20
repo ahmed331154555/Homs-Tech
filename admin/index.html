@@ -1037,7 +1037,38 @@ function normalizeGsmService(x){
     };
   }
 
-  function normalizePhoneOptions(phone){
+  
+function canonicalPhoneOptionLabel(key,label){
+  const raw=String(label??'').trim(), low=raw.toLowerCase();
+  if(key==='color'){
+    if(low==='blue'||low==='blauw') return 'Blauw';
+    if(low==='red'||low==='rood') return 'Rood';
+    if(low==='white'||low==='wit') return 'Wit';
+    if(low==='black'||low==='zwart') return 'Zwart';
+  }
+  if(key==='storage'){
+    if(/^64\s*gb$/i.test(raw)) return '64 GB';
+    if(/^128\s*gb$/i.test(raw)) return '128 GB';
+    if(/^256\s*gb$/i.test(raw)) return '256 GB';
+    if(/^512\s*gb$/i.test(raw)) return '512 GB';
+    if(/^1\s*tb$/i.test(raw)) return '1 TB';
+  }
+  if(key==='vatOptions'){
+    if(low.includes('zonder btw')) return 'Zonder BTW';
+    if(low.includes('met btw')) return 'Met BTW';
+  }
+  if(key==='batteryOptions'){
+    if(low.includes('nieuw')) return 'Nieuw (100%)';
+    if(low.includes('standaard')) return 'Standaard';
+  }
+  if(key==='tradeInOptions'){
+    if(low==='ja') return 'Ja';
+    if(low==='nee') return 'Nee';
+  }
+  return raw;
+}
+
+function normalizePhoneOptions(phone){
     const defaults={
       conditionOptions:[
         {label:"Zichtbaar gebruikt",enabled:true,active:true,available:true,priceDelta:0},
@@ -1075,15 +1106,27 @@ function normalizeGsmService(x){
       const normalized=incoming.map((x,i)=>{
         const d=defaults[key][i] || {priceDelta:0};
         const n=normalizePhoneOption(x,d.label,d.priceDelta);
+        n.label=canonicalPhoneOptionLabel(key,n.label);
         if(key==='batteryOptions') n.priceDelta=String(n.label).toLowerCase().includes('nieuw') ? 30 : 0;
         if(key==='vatOptions') n.priceDelta=String(n.label).toLowerCase().includes('met btw') ? 10 : 0;
         return n;
       });
-      const labels=new Set(normalized.map(x=>String(x.label).toLowerCase()));
-      defaults[key].forEach(d=>{
-        if(!labels.has(String(d.label).toLowerCase())) normalized.push({...d});
+      const deduped=[];
+      const seen=new Set();
+      normalized.forEach(n=>{
+        if(!n || !n.label) return;
+        const id=String(n.label).toLowerCase();
+        if(seen.has(id)) return;
+        if(key==='vatOptions' && n.label!=='Zonder BTW' && n.label!=='Met BTW') return;
+        if(key==='batteryOptions' && n.label!=='Standaard' && n.label!=='Nieuw (100%)') return;
+        seen.add(id);
+        deduped.push(n);
       });
-      phone[key]=normalized;
+      const labels=new Set(deduped.map(x=>String(x.label).toLowerCase()));
+      defaults[key].forEach(d=>{
+        if(!labels.has(String(d.label).toLowerCase())) deduped.push({...d});
+      });
+      phone[key]=deduped;
     });
   }
 
