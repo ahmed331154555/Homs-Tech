@@ -992,7 +992,8 @@ const ADMIN_PERMISSION_LABELS = {
   "phones.view":"Telefoons & prijzen bekijken","categories.view":"Apparaten & categorieën bekijken",
   "used.view":"Gebruikte telefoons bekijken","why.view":"Waarom HOMS TECH bekijken",
   "customers.view":"Klanten bekijken","orders.view":"GSM Orders bekijken","orders.update":"GSM Order-status wijzigen",
-  "webshop_orders.view":"Webshop bestellingen bekijken","webshop_orders.update":"Webshop order-status wijzigen",
+  "webshop_orders.view":"Webshop bestellingen bekijken","webshop_orders.update":"Webshop order-status wijzigen","webshop_orders.delete":"Webshop bestellingen verwijderen",
+  "orders.delete":"GSM Orders verwijderen",
   "gsm.view":"GSM Services bekijken","site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
 };
 
@@ -1871,9 +1872,13 @@ async function loadOrders(){
               <div class="order-title">#${esc(order.id)} — ${esc(order.service_name||"GSM Service")}</div>
               <div class="order-meta">${esc(order.service_group||"General")} · ${esc(date)}</div>
             </div>
-            <select class="order-status-select" onchange="updateOrderStatus(${Number(order.id)},this.value)">
-              ${["Nieuw","In behandeling","Voltooid","Geannuleerd"].map(x=>`<option value="${esc(x)}" ${order.status===x?"selected":""}>${esc(x)}</option>`).join("")}
-            </select>
+            <div class="actions">
+              <select class="order-status-select" onchange="updateOrderStatus(${Number(order.id)},this.value)">
+                ${["Nieuw","In behandeling","Voltooid","Geannuleerd"].map(x=>`<option value="${esc(x)}" ${order.status===x?"selected":""}>${esc(x)}</option>`).join("")}
+              </select>
+              <button class="btn btn-light" onclick="showGsmOrderDetails(${Number(order.id)})">Details</button>
+              ${hasPermission("orders.delete")?`<button class="btn btn-red" onclick="deleteGsmOrder(${Number(order.id)})">Verwijderen</button>`:""}
+            </div>
           </div>
           <div class="order-grid">
             <div class="order-info"><strong>Klant</strong>${esc(order.name||"-")}</div>
@@ -1945,9 +1950,13 @@ async function loadWebshopOrders(){
             <div class="order-title">#${esc(order.id)} — Webshop bestelling</div>
             <div class="order-meta">${esc(date)}</div>
           </div>
-          <select class="order-status-select" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">
-            ${["Nieuw","In behandeling","Verzonden","Voltooid","Geannuleerd"].map(x=>`<option value="${esc(x)}" ${order.status===x?'selected':''}>${esc(x)}</option>`).join('')}
-          </select>
+          <div class="actions">
+            <select class="order-status-select" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">
+              ${["Nieuw","In behandeling","Verzonden","Voltooid","Geannuleerd"].map(x=>`<option value="${esc(x)}" ${order.status===x?'selected':''}>${esc(x)}</option>`).join('')}
+            </select>
+            <button class="btn btn-light" onclick="showWebshopOrderDetails(${Number(order.id)})">Details</button>
+            ${hasPermission("webshop_orders.delete")?`<button class="btn btn-red" onclick="deleteWebshopOrder(${Number(order.id)})">Verwijderen</button>`:""}
+          </div>
         </div>
         <div class="order-grid">
           <div class="order-info"><strong>Klant</strong>${esc(order.name||'-')}</div>
@@ -2138,8 +2147,8 @@ async function adminSearch(){
     const x=await r.json().catch(()=>({}));if(!r.ok)throw new Error(x.error||"Zoeken mislukt.");
     const parts=[];
     if((x.customers||[]).length)parts.push("<h3>👥 Klanten</h3>"+x.customers.map(c=>`<div class="search-result"><strong>${esc(c.name||"Klant")}</strong><br>${esc(c.email||"-")} · ${esc(c.phone||"-")}<br><span class="small">${esc(c.address||"")}</span></div>`).join(""));
-    if((x.orders||[]).length)parts.push("<h3>📋 GSM Orders</h3>"+x.orders.map(o=>`<div class="search-result"><strong>#${esc(o.id)} — ${esc(o.service_name||"GSM Service")}</strong><br>${esc(o.name||"-")} · ${esc(o.email||"-")} · ${esc(o.phone||"-")}<br><span class="small">IMEI: ${esc(o.imei||"-")} · ${esc(o.status||"-")}</span></div>`).join(""));
-    if((x.webshopOrders||[]).length)parts.push("<h3>🛍️ Webshop Bestellingen</h3>"+x.webshopOrders.map(o=>`<div class="search-result"><strong>#${esc(o.id)} — ${esc(o.name||"Klant")}</strong><br>${esc(o.email||"-")} · ${esc(o.phone||"-")} · € ${esc(Number(o.total||0).toFixed(2))}<br><span class="small">${esc(o.postcode||"")} ${esc(o.city||"")} · ${esc(o.status||"-")}</span></div>`).join(""));
+    if((x.orders||[]).length)parts.push("<h3>📋 GSM Orders</h3>"+x.orders.map(o=>`<div class="search-result"><strong>#${esc(o.id)} — ${esc(o.service_name||"GSM Service")}</strong><br>${esc(o.name||"-")} · ${esc(o.email||"-")} · ${esc(o.phone||"-")}<br><span class="small">IMEI: ${esc(o.imei||"-")} · ${esc(o.status||"-")}</span><div class="actions" style="margin-top:10px"><button class="btn btn-light" onclick="showGsmOrderDetails(${Number(o.id)})">Details</button>${hasPermission("orders.delete")?`<button class="btn btn-red" onclick="deleteGsmOrder(${Number(o.id)})">Verwijderen</button>`:""}</div></div>`).join(""));
+    if((x.webshopOrders||[]).length)parts.push("<h3>🛍️ Webshop Bestellingen</h3>"+x.webshopOrders.map(o=>`<div class="search-result"><strong>#${esc(o.id)} — ${esc(o.name||"Klant")}</strong><br>${esc(o.email||"-")} · ${esc(o.phone||"-")} · € ${esc(Number(o.total||0).toFixed(2))}<br><span class="small">${esc(o.postcode||"")} ${esc(o.city||"")} · ${esc(o.status||"-")}</span><div class="actions" style="margin-top:10px"><button class="btn btn-light" onclick="showWebshopOrderDetails(${Number(o.id)})">Details</button>${hasPermission("webshop_orders.delete")?`<button class="btn btn-red" onclick="deleteWebshopOrder(${Number(o.id)})">Verwijderen</button>`:""}</div></div>`).join(""));
     box.innerHTML=parts.join("")||'<div class="small">Geen resultaten gevonden.</div>';
     status.className="status success";status.textContent=parts.length?"Zoeken voltooid.":"Geen resultaten.";
   }catch(e){status.className="status error";status.textContent="✕ "+e.message;}
