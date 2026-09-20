@@ -131,6 +131,27 @@ function num(v){
 function optionList(list){
   return Array.isArray(list)?list.filter(x=>x&&x.label):[];
 }
+function effectiveOptions(product,key){
+  const base=num(product.price || product.salePrice || product.sellPrice || 0);
+  if(key==="condition") return [
+    {label:"Zichtbaar gebruikt",priceDelta:0},
+    {label:"Licht gebruikt",priceDelta:51},
+    {label:"Zo goed als nieuw",priceDelta:102}
+  ];
+  if(key==="vat") return [
+    {label:"Zonder BTW",priceDelta:0},
+    {label:"Met BTW",priceDelta:10}
+  ];
+  if(key==="battery") return [
+    {label:"Standaard",priceDelta:0},
+    {label:"Nieuw (100%)",priceDelta:30}
+  ];
+  if(key==="tradeIn") return [
+    {label:"Nee",priceDelta:0},
+    {label:"Ja",priceDelta:0}
+  ];
+  return optionList(product[key+"Options"]);
+}
 function optionDelta(x){
   if(!x) return 0;
 
@@ -158,7 +179,7 @@ function calculateTotal(product){
   const base=num(product.price || product.salePrice || product.sellPrice || 0);
   let total=base;
   ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{
-    const list=optionList(product[key+"Options"]);
+    const list=effectiveOptions(product,key);
     const chosen=list.find(x=>x.label===selectedOptions[key]);
     if(chosen) total+=optionDelta(chosen);
   });
@@ -169,7 +190,7 @@ function selectProductOption(key,label){
   renderProductBody();
 }
 function renderOptionSection(key,title,list){
-  list=optionList(list);
+  list=key==="condition"||key==="vat"||key==="battery"||key==="tradeIn" ? effectiveOptions(currentProduct,key) : optionList(list);
   if(!list.length) return "";
   if(!selectedOptions[key]) selectedOptions[key]=list[0].label;
   return `<div class="option-section"><div class="option-title">${esc(title)}</div><div class="option-grid">${list.map(x=>{
@@ -189,7 +210,7 @@ function renderProductBody(){
   if(mainImage&&images.length) gallery+=`<div class="thumbs">${images.map((img,i)=>`<img class="thumb ${i===0?"active":""}" src="${esc(img)}" alt="" onclick="changeImage(this,'${esc(img)}')">`).join("")}</div>`;
 
   const basePrice=num(product.price||product.salePrice||product.sellPrice||0);
-  const hasOptions=["storage","color","condition","battery","vat","tradeIn"].some(k=>optionList(product[k+"Options"]).length);
+  const hasOptions=true;
   const total=calculateTotal(product);
   const storage=product.storage||product.geheugen||"";
   const color=product.color||product.kleur||"";
@@ -237,7 +258,7 @@ function render(product,data){
   if(!product){document.getElementById("productArea").innerHTML=`<div class="empty"><h2>Product niet gevonden</h2><p>Dit apparaat bestaat niet of is niet meer beschikbaar.</p></div>`;return;}
   currentProduct=product; currentData=data;
   selectedOptions={};
-  ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{const list=optionList(product[key+"Options"]);if(list.length)selectedOptions[key]=list[0].label;});
+  ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{const list=effectiveOptions(product,key);if(list.length)selectedOptions[key]=list[0].label;});
   renderProductBody();
 }
 async function load(){
