@@ -653,85 +653,6 @@ textarea{
 .webshop-item-name{font-weight:800}
 .webshop-item-meta{font-size:12px;color:#64748b;margin-top:3px}
 .webshop-order-address{margin-top:12px;padding:12px;background:#f8fafc;border-radius:10px}
-
-<style id="HOMS-ORDERS-REFERENCE-DESIGN">
-#page-orders,#page-webshop-orders{background:#fff}
-.orders-reference-wrap{width:100%}
-.orders-topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px}
-.orders-topbar h2{margin:0!important;font-size:27px!important;line-height:1.15!important;color:#172033!important;font-weight:850!important}
-.orders-topbar p{margin:6px 0 0!important;color:#64748b!important;font-size:13px!important}
-.orders-new-btn{background:#08a66d!important;color:#fff!important;border:0!important;border-radius:10px!important;padding:12px 17px!important;font-weight:800!important;font-size:14px!important}
-.orders-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0 0 18px}
-.orders-stat{height:102px;box-sizing:border-box;border:1px solid #e4e9f0;border-radius:13px;padding:17px 18px;display:flex;align-items:center;gap:14px;background:#fff;box-shadow:0 2px 8px rgba(15,23,42,.025)}
-.orders-stat-icon{width:50px;height:50px;min-width:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900}
-.orders-stat-total{background:#edf5ff}.orders-stat-total .orders-stat-icon{background:#dcecff;color:#1971d8}
-.orders-stat-new{background:#f1fbf6}.orders-stat-new .orders-stat-icon{background:#ddf7ea;color:#07966a}
-.orders-stat-progress{background:#fffaf0}.orders-stat-progress .orders-stat-icon{background:#fff0cf;color:#e39a00}
-.orders-stat-cancel{background:#fff5f6}.orders-stat-cancel .orders-stat-icon{background:#ffe3e7;color:#e52d3b}
-.orders-stat-num{font-size:25px;font-weight:900;line-height:1}.orders-stat-label{margin-top:7px;color:#526176;font-size:14px}
-.orders-stat-total .orders-stat-num{color:#1971d8}.orders-stat-new .orders-stat-num{color:#078b63}.orders-stat-progress .orders-stat-num{color:#d58a00}.orders-stat-cancel .orders-stat-num{color:#d92b39}
-.orders-toolbar{display:grid;grid-template-columns:minmax(260px,1fr) 225px 180px 180px 150px;gap:10px;align-items:center;margin-bottom:8px}
-.orders-search-wrap{position:relative}.orders-search-wrap:before{content:"⌕";position:absolute;left:14px;top:7px;font-size:25px;color:#24344a;z-index:1}
-.orders-toolbar input,.orders-toolbar select,.orders-filter-clear{height:47px!important;box-sizing:border-box!important;border:1px solid #dce4ee!important;border-radius:10px!important;background:#fff!important;color:#526176!important;font-size:13px!important}
-.orders-toolbar input{width:100%!important;padding:0 12px 0 42px!important}.orders-toolbar select{width:100%!important;padding:0 12px!important}
-.orders-filter-clear{width:100%!important;background:#eef3f9!important;font-weight:800!important}
-.orders-count{font-size:12px;color:#64748b;font-weight:700;margin:0 0 10px}
-.orders-list{display:flex!important;flex-direction:column!important;gap:10px!important}
-.order-card{background:#fff!important;border:1px solid #e3e8ef!important;border-radius:13px!important;padding:0!important;box-shadow:0 2px 10px rgba(15,23,42,.035)!important;overflow:hidden}
-.order-card-head{display:grid!important;grid-template-columns:minmax(290px,1.6fr) minmax(230px,1.1fr) 112px 120px 235px!important;align-items:center!important;gap:14px!important;min-height:74px!important;padding:11px 15px!important;margin:0!important;border-bottom:1px solid #edf1f5!important}
-.order-left{display:flex;align-items:center;gap:12px;min-width:0}.order-badge{width:43px;height:43px;min-width:43px;border-radius:10px;background:#eaf3ff;color:#1971d8;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px}
-.order-heading-text{min-width:0}.order-title{font-weight:850!important;font-size:13px!important;color:#172033!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.order-meta{font-size:10.5px!important;color:#748196!important;margin-top:4px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.order-contact{font-size:11px;color:#526176;line-height:1.55;min-width:0}.order-contact div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.order-contact b{color:#738197;font-size:8px;letter-spacing:.35px;margin-right:5px}
-.order-price{font-size:13px;font-weight:900;color:#172033;white-space:nowrap}.order-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;flex-wrap:nowrap!important}
-.order-status-select{height:38px!important;min-width:122px!important;padding:0 9px!important;border-radius:9px!important;border:1px solid transparent!important;font-size:11px!important;font-weight:850!important;cursor:pointer!important}
-.order-status-select.status-nieuw{background:#e5f2ff!important;color:#176cc6!important;border-color:#cbe4fb!important}
-.order-status-select.status-in-behandeling{background:#fff0d6!important;color:#d47b00!important;border-color:#ffd99a!important}
-.order-status-select.status-voltooid{background:#dff7e9!important;color:#078e5e!important;border-color:#bcebd2!important}
-.order-status-select.status-geannuleerd{background:#ffe3e6!important;color:#d92d3b!important;border-color:#ffc5cb!important}
-.order-status-select.status-verzonden{background:#eee7ff!important;color:#7140c6!important;border-color:#d9c8ff!important}
-.order-detail-btn{height:38px!important;padding:0 13px!important;background:#f2f5f9!important;color:#172033!important;border:1px solid #d5dee9!important;border-radius:9px!important;font-size:11px!important;font-weight:850!important;white-space:nowrap!important}
-.order-delete-btn{height:38px!important;padding:0 13px!important;background:#ef3f45!important;color:#fff!important;border:0!important;border-radius:9px!important;font-size:11px!important;font-weight:850!important;white-space:nowrap!important}
-.order-detail-btn:hover{background:#e8eef5!important}.order-delete-btn:hover{background:#d92f36!important}
-.order-empty{padding:30px;text-align:center;color:#64748b;background:#f8fafc;border-radius:12px}
-@media(max-width:1250px){.orders-toolbar{grid-template-columns:minmax(240px,1fr) 180px 150px 150px 135px}.order-card-head{grid-template-columns:minmax(250px,1.4fr) minmax(190px,1fr) 95px 105px 215px}}
-@media(max-width:1000px){.orders-stats{grid-template-columns:repeat(2,1fr)}.orders-toolbar{grid-template-columns:1fr 180px 150px}.order-card-head{grid-template-columns:1fr;gap:9px}.order-actions{justify-content:flex-start}}
-@media(max-width:650px){.orders-stats{grid-template-columns:1fr}.orders-toolbar{grid-template-columns:1fr}.order-actions{flex-wrap:wrap}}
-</style>
-
-</style>
-<style>
-.permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.permission-item{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid #e5eaf1;border-radius:10px;background:#fbfcfe}
-.permission-item input{margin-top:3px}
-.admin-user-card{border:1px solid #e5eaf1;border-radius:14px;padding:16px;background:#fff;margin-bottom:12px}
-.search-result{border:1px solid #e5eaf1;border-radius:12px;padding:14px;margin-bottom:10px;background:#fff}
-.admin-search{display:flex;gap:8px;align-items:center;max-width:700px}
-.admin-search input{flex:1}
-@media(max-width:700px){.permission-grid{grid-template-columns:1fr}.admin-search{width:100%}}
-</style>
-
-<style id="HOMS-ORDERS-SPACING-FIX">
-/* Final spacing fix: status, price, details and delete are separated; date filters are aligned */
-.orders-toolbar{grid-template-columns:minmax(300px,1fr) 190px 170px 170px 145px!important;gap:12px!important}
-.orders-toolbar input[type="date"]{padding:0 12px 0 38px!important;min-width:0!important;text-align:left!important;direction:ltr!important}
-.orders-toolbar input[type="date"]::-webkit-calendar-picker-indicator{margin-left:6px}
-.order-card-head{grid-template-columns:minmax(320px,1.65fr) minmax(220px,1.05fr) 135px 105px 118px 128px!important;column-gap:18px!important;padding-left:18px!important;padding-right:18px!important}
-.order-status-select{min-width:128px!important;width:128px!important}
-.order-price{padding-left:6px!important;text-align:left!important}
-.order-actions{justify-content:flex-start!important;gap:10px!important}
-.order-detail-btn,.order-delete-btn{min-width:96px!important}
-@media(max-width:1350px){
- .orders-toolbar{grid-template-columns:minmax(260px,1fr) 175px 155px 155px 135px!important}
- .order-card-head{grid-template-columns:minmax(260px,1.45fr) minmax(190px,1fr) 130px 95px 110px 120px!important;column-gap:12px!important}
- .order-status-select{min-width:120px!important;width:120px!important}
- .order-detail-btn,.order-delete-btn{min-width:88px!important;padding-left:9px!important;padding-right:9px!important}
-}
-@media(max-width:1050px){
- .orders-toolbar{grid-template-columns:1fr 180px 160px!important}
- .order-card-head{grid-template-columns:1fr!important}
- .order-actions{justify-content:flex-start!important}
-}
 </style>
 </head>
 
@@ -750,6 +671,7 @@ textarea{
     <button class="nav-btn active" data-page="general" onclick="showPage('general')">⚙️ Algemeen</button>
     <button class="nav-btn" data-page="services" onclick="showPage('services')">🔧 Diensten</button>
     <button class="nav-btn" data-page="phones" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
+    <button class="nav-btn" data-page="buyback" onclick="showPage('buyback')">📥 Uw toestel verkopen</button>
     <button class="nav-btn" data-page="categories" onclick="showPage('categories')">🖼️ Apparaten & categorieën</button>
     <button class="nav-btn" data-page="used" onclick="showPage('used')">♻️ Gebruikte telefoons</button>
     <button class="nav-btn" data-page="why" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
@@ -757,8 +679,6 @@ textarea{
     <button class="nav-btn" data-page="orders" onclick="showPage('orders')">📋 GSM Orders</button>
     <button class="nav-btn" data-page="webshop-orders" onclick="showPage('webshop-orders')">🛍️ Webshop Bestellingen</button>
     <button class="nav-btn" data-page="gsm" onclick="showPage('gsm')">🛠️ GSM Services</button>
-    <button class="nav-btn" data-page="search" data-permission="search" onclick="showPage('search')">🔎 Zoeken</button>
-    <button class="nav-btn" data-page="admins" data-permission="admins.manage" onclick="showPage('admins')">👤 Admins</button>
   </div>
 </div>
 
@@ -868,6 +788,18 @@ textarea{
   </section>
 
 
+  <!-- INKOOP / UW TOESTEL VERKOPEN -->
+  <section class="section admin-page" id="page-buyback">
+    <div class="section-head">
+      <div>
+        <h2>📥 Uw toestel verkopen</h2>
+        <p>Beheer de telefoons die HOMS TECH van klanten wil inkopen.</p>
+      </div>
+      <button class="btn btn-green" onclick="addBuybackPhone()">+ Telefoon toevoegen</button>
+    </div>
+    <div id="buybackPhonesList"></div>
+  </section>
+
   <!-- APPARAATCATEGORIEËN -->
   <section class="section admin-page" id="page-categories">
     <div class="section-head">
@@ -909,47 +841,30 @@ textarea{
     <div id="customersList"></div>
   </section>
 
-
   <!-- GSM ORDERS -->
   <section class="section admin-page" id="page-orders">
-    <div class="orders-reference-wrap">
-      <div class="orders-topbar">
-        <div><h2>📱 GSM Service Orders</h2><p>Bekijk en beheer alle aanvragen van klanten via GSM Services.</p></div>
-        <button class="btn btn-green orders-new-btn" onclick="loadOrders()">↻ Vernieuwen</button>
+    <div class="section-head">
+      <div>
+        <h2>📋 GSM Service Orders</h2>
+        <p>Bekijk en beheer de aanvragen die klanten via GSM Services hebben verstuurd.</p>
       </div>
-      <div class="orders-stats" id="gsmOrderStats"></div>
-      <div class="orders-toolbar">
-        <div class="orders-search-wrap"><input id="gsmOrderSearch" type="text" placeholder="Zoeken op klant, e-mail, telefoon, IMEI, order..." oninput="filterGsmOrders()"></div>
-        <select id="gsmOrderStatusFilter" onchange="filterGsmOrders()"><option value="">Alle statussen</option><option>Nieuw</option><option>In behandeling</option><option>Voltooid</option><option>Geannuleerd</option></select>
-        <input id="gsmOrderFromDate" type="date" onchange="filterGsmOrders()">
-        <input id="gsmOrderToDate" type="date" onchange="filterGsmOrders()">
-        <button class="orders-filter-clear" onclick="clearGsmOrderFilters()">↻ Filters wissen</button>
-      </div>
-      <div id="ordersStatus" class="status info"></div>
-      <div id="gsmOrderCount" class="orders-count"></div>
-      <div id="ordersList" class="orders-list"></div>
+      <button class="btn btn-light" onclick="loadOrders()">↻ Vernieuwen</button>
     </div>
+    <div id="ordersStatus" class="status info" style="margin-bottom:15px"></div>
+    <div id="ordersList" class="orders-list"></div>
   </section>
 
   <!-- WEBSHOP ORDERS -->
   <section class="section admin-page" id="page-webshop-orders">
-    <div class="orders-reference-wrap">
-      <div class="orders-topbar">
-        <div><h2>🛒 Webshop Bestellingen</h2><p>Bekijk en beheer alle bestellingen uit de webshop.</p></div>
-        <button class="btn btn-green orders-new-btn" onclick="loadWebshopOrders()">↻ Vernieuwen</button>
+    <div class="section-head">
+      <div>
+        <h2>🛍️ Webshop Bestellingen</h2>
+        <p>Bekijk en beheer bestellingen die klanten via de winkelwagen hebben geplaatst.</p>
       </div>
-      <div class="orders-stats" id="webshopOrderStats"></div>
-      <div class="orders-toolbar">
-        <div class="orders-search-wrap"><input id="webshopOrderSearch" type="text" placeholder="Zoeken op klant, e-mail, telefoon, ordernummer, postcode..." oninput="filterWebshopOrders()"></div>
-        <select id="webshopOrderStatusFilter" onchange="filterWebshopOrders()"><option value="">Alle statussen</option><option>Nieuw</option><option>In behandeling</option><option>Verzonden</option><option>Voltooid</option><option>Geannuleerd</option></select>
-        <input id="webshopOrderFromDate" type="date" onchange="filterWebshopOrders()">
-        <input id="webshopOrderToDate" type="date" onchange="filterWebshopOrders()">
-        <button class="orders-filter-clear" onclick="clearWebshopOrderFilters()">↻ Filters wissen</button>
-      </div>
-      <div id="webshopOrdersStatus" class="status info"></div>
-      <div id="webshopOrderCount" class="orders-count"></div>
-      <div id="webshopOrdersList" class="orders-list"></div>
+      <button class="btn btn-light" onclick="loadWebshopOrders()">↻ Vernieuwen</button>
     </div>
+    <div id="webshopOrdersStatus" class="status info" style="margin-bottom:15px"></div>
+    <div id="webshopOrdersList" class="orders-list"></div>
   </section>
 
   <!-- GSM SERVICES -->
@@ -981,34 +896,6 @@ textarea{
   </section>
 
 
-
-
-  <section class="section admin-page" id="page-search" data-permission="search">
-    <div class="section-head"><div><h2>🔎 Zoeken</h2><p>Zoek klanten en bestellingen vanuit één plek.</p></div></div>
-    <div class="admin-search">
-      <input id="adminSearchInput" placeholder="Naam, e-mail, telefoon, IMEI, ordernummer..." onkeydown="if(event.key==='Enter')adminSearch()">
-      <button class="btn btn-green" onclick="adminSearch()">Zoeken</button>
-    </div>
-    <div id="searchStatus" class="status info" style="margin:15px 0"></div>
-    <div id="searchResults"></div>
-  </section>
-
-  <section class="section admin-page" id="page-admins" data-permission="admins.manage">
-    <div class="section-head"><div><h2>👤 Admins</h2><p>Maak extra admins aan en bepaal exact wat iedere admin mag doen.</p></div></div>
-    <div class="card">
-      <div class="card-head"><div><div class="card-title">Nieuwe admin</div><div class="small">Kies hieronder de rechten.</div></div></div>
-      <div class="grid">
-        <div class="field"><label>Gebruikersnaam</label><input id="newAdminUsername" autocomplete="off"></div>
-        <div class="field"><label>Wachtwoord (minimaal 8 tekens)</label><input id="newAdminPassword" type="password" autocomplete="new-password"></div>
-      </div>
-      <div class="field"><label>Rechten</label><div id="newAdminPermissions" class="permission-grid"></div></div>
-      <button class="btn btn-green" onclick="createAdmin()">+ Admin aanmaken</button>
-      <div id="adminCreateStatus" class="status" style="margin-top:12px"></div>
-    </div>
-    <div class="section-head" style="margin-top:24px"><div><h3 style="margin:0">Bestaande admins</h3><p>Wijzig rechten, schakel accounts uit of verander een wachtwoord.</p></div><button class="btn btn-light" onclick="loadAdmins()">↻ Vernieuwen</button></div>
-    <div id="adminsStatus" class="status info" style="margin-bottom:15px"></div>
-    <div id="adminsList"></div>
-  </section>
 
   <!-- GSM SERVICE EDIT MODAL -->
   <div id="gsmEditModal" class="modal-backdrop" onclick="closeGsmEditor(event)">
@@ -1052,7 +939,7 @@ textarea{
       <div class="small">Klik op Opslaan nadat je iets hebt gewijzigd.</div>
     </div>
 
-    <button id="saveBtn" data-permission="site.save" class="btn btn-green" onclick="save()" style="font-size:16px;padding:13px 25px">
+    <button class="btn btn-green" onclick="save()" style="font-size:16px;padding:13px 25px">
       💾 Wijzigingen opslaan
     </button>
   </div>
@@ -1065,96 +952,101 @@ textarea{
 let data = {};
 let loading = false;
 let currentPage = "general";
-let currentUser = {username:"",role:"admin",permissions:[]};
 
-const PAGE_PERMISSIONS = {
-  general:"general.view",services:"services.view",phones:"phones.view",categories:"categories.view",
-  used:"used.view",why:"why.view",customers:"customers.view",orders:"orders.view",
-  "webshop-orders":"webshop_orders.view",gsm:"gsm.view",search:"search",admins:"admins.manage"
-};
-
-const ADMIN_PERMISSION_LABELS = {
-  "general.view":"Algemeen bekijken","services.view":"Diensten bekijken",
-  "phones.view":"Telefoons & prijzen bekijken","categories.view":"Apparaten & categorieën bekijken",
-  "used.view":"Gebruikte telefoons bekijken","why.view":"Waarom HOMS TECH bekijken",
-  "customers.view":"Klanten bekijken","orders.view":"GSM Orders bekijken","orders.update":"GSM Order-status wijzigen",
-  "webshop_orders.view":"Webshop bestellingen bekijken","webshop_orders.update":"Webshop order-status wijzigen",
-  "gsm.view":"GSM Services bekijken","site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
-};
-
-function hasPermission(p){return currentUser.role==="superadmin"||currentUser.permissions.includes("*")||currentUser.permissions.includes(p);}
-function canEditSite(){return hasPermission("site.save");}
-function firstAllowedPage(){
-  const pages=["general","services","phones","categories","used","why","customers","orders","webshop-orders","gsm","search","admins"];
-  return pages.find(p=>hasPermission(PAGE_PERMISSIONS[p]))||null;
-}
-function applyPermissionUI(){
-  document.querySelectorAll("[data-permission]").forEach(el=>el.style.display=hasPermission(el.dataset.permission)?"":"none");
-  const saveBtn=document.getElementById("saveBtn"); if(saveBtn) saveBtn.style.display=canEditSite()?"":"none";
-  document.querySelectorAll(".admin-page").forEach(page=>{
-    const n=(page.id||"").replace(/^page-/,"");
-    if(!["general","services","phones","categories","used","why","gsm"].includes(n))return;
-    page.querySelectorAll("input,textarea").forEach(el=>el.disabled=!canEditSite());
-    page.querySelectorAll("button").forEach(btn=>{
-      if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=!canEditSite();
-    });
-  });
-  document.querySelectorAll(".order-status-select").forEach(el=>el.disabled=!hasPermission(el.closest("#page-orders")?"orders.update":"webshop_orders.update"));
-}
 function showPage(page){
-  if(!hasPermission(PAGE_PERMISSIONS[page]||""))page=firstAllowedPage();
-  if(!page)return;
-  currentPage=page;
-  document.querySelectorAll(".admin-page").forEach(s=>s.classList.remove("active"));
-  const target=document.getElementById("page-"+page);
+  currentPage = page;
+
+  document.querySelectorAll(".admin-page").forEach(section=>{
+    section.classList.remove("active");
+  });
+
+  const target = document.getElementById("page-" + page);
   if(target){
     target.classList.add("active");
-    if(page==="customers")loadCustomers();
-    if(page==="orders")loadOrders();
-    if(page==="webshop-orders")loadWebshopOrders();
-    if(page==="admins")loadAdmins();
+    if(page==="customers") loadCustomers();
+    if(page==="buyback") renderBuybackPhones();
+    if(page==="orders") loadOrders();
+    if(page==="webshop-orders") loadWebshopOrders();
   }
-  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
-  applyPermissionUI();
+
+  document.querySelectorAll(".nav-btn").forEach(button=>{
+    button.classList.toggle("active", button.dataset.page === page);
+  });
 }
 
 /* ---------------- LOGIN ---------------- */
 
-async function loadCurrentUser(){
-  const r=await fetch("/api/me",{credentials:"same-origin"});
-  const x=await r.json().catch(()=>({}));
-  if(!r.ok||!x.authenticated)throw new Error("Not authenticated");
-  currentUser={id:x.id||null,username:x.username||"",role:x.role||"admin",permissions:Array.isArray(x.permissions)?x.permissions:[]};
-}
 async function checkLogin(){
-  try{await loadCurrentUser();showDashboard();await loadData();}catch(e){showLogin();}
+  try{
+    const r = await fetch("/api/me");
+
+    if(r.ok){
+      showDashboard();
+      await loadData();
+    }else{
+      showLogin();
+    }
+  }catch(e){
+    showLogin();
+  }
 }
+
 function showLogin(){
   document.getElementById("loginBox").style.display="block";
   document.getElementById("dashboard").style.display="none";
   document.getElementById("logoutBtn").style.display="none";
   document.getElementById("adminNav").style.display="none";
 }
+
 function showDashboard(){
   document.getElementById("loginBox").style.display="none";
   document.getElementById("dashboard").style.display="block";
   document.getElementById("logoutBtn").style.display="block";
   document.getElementById("adminNav").style.display="block";
-  if(!hasPermission(PAGE_PERMISSIONS[currentPage]||""))currentPage=firstAllowedPage()||"general";
-  applyPermissionUI();showPage(currentPage);
+  showPage(currentPage);
 }
+
 async function login(){
+
   const username=document.getElementById("username").value.trim();
   const password=document.getElementById("password").value;
+
   const status=document.getElementById("loginStatus");
-  status.className="status info";status.textContent="Inloggen...";
+
+  status.className="status info";
+  status.textContent="Inloggen...";
+
   try{
-    const r=await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({username,password})});
-    const x=await r.json();
-    if(!r.ok)throw new Error(x.error||"Login mislukt");
-    await loadCurrentUser();status.className="status success";status.textContent="✓ Inloggen gelukt";
-    showDashboard();await loadData();
-  }catch(e){status.className="status error";status.textContent="✕ "+e.message;}
+
+    const r=await fetch("/api/login",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        username,
+        password
+      })
+    });
+
+    const result=await r.json();
+
+    if(!r.ok){
+      throw new Error(result.error || "Login mislukt");
+    }
+
+    status.className="status success";
+    status.textContent="✓ Inloggen gelukt";
+
+    showDashboard();
+    await loadData();
+
+  }catch(e){
+
+    status.className="status error";
+    status.textContent="✕ "+e.message;
+
+  }
 }
 
 async function logout(){
@@ -1407,6 +1299,8 @@ function normalizeData(){
   if(!data || typeof data!=="object"){
     data={};
   }
+
+  normalizeBuybackPhones();
 
   /* GSM Services */
   if(!data.gsmServices || typeof data.gsmServices!=="object"){
@@ -1783,6 +1677,48 @@ function deletePhone(i){
 }
 
 
+
+/* ---------------- BUYBACK / UW TOESTEL VERKOPEN ---------------- */
+function normalizeBuybackPhones(){
+  if(!Array.isArray(data.buybackPhones)) data.buybackPhones=[];
+  data.buybackPhones=data.buybackPhones.map((x,i)=>({
+    id:x.id || ('buyback-'+Date.now()+'-'+i),
+    name:x.name||'', brand:x.brand||'', image:x.image||'', price:Number(x.price||0), active:x.active!==false,
+    storageOptions:Array.isArray(x.storageOptions)?x.storageOptions:[
+      {label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}
+    ],
+    conditionOptions:Array.isArray(x.conditionOptions)?x.conditionOptions:[
+      {label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}
+    ],
+    batteryOptions:Array.isArray(x.batteryOptions)?x.batteryOptions:[
+      {label:'90% - 100%',priceDelta:0,active:true},{label:'80% - 89%',priceDelta:-25,active:true},{label:'Onder 80%',priceDelta:-60,active:true}
+    ],
+    faceIdOptions:Array.isArray(x.faceIdOptions)?x.faceIdOptions:[
+      {label:'Face ID werkt',priceDelta:0,active:true},{label:'Face ID werkt niet',priceDelta:-100,active:true}
+    ],
+    screenOptions:Array.isArray(x.screenOptions)?x.screenOptions:[
+      {label:'Scherm goed',priceDelta:0,active:true},{label:'Kleine beschadigingen',priceDelta:-50,active:true},{label:'Scherm gebroken',priceDelta:-150,active:true}
+    ]
+  }));
+}
+function buybackOptionEditor(pi,title,key){
+  const opts=data.buybackPhones[pi][key]||[];
+  return `<div class="card" style="margin-top:16px"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">Pas de keuze en prijsaanpassing zelf aan.</div>${opts.map((o,i)=>`<div style="display:grid;grid-template-columns:minmax(180px,1fr) 120px 90px;gap:10px;align-items:center;margin-bottom:9px"><input value="${esc(o.label||'')}" oninput="data.buybackPhones[${pi}].${key}[${i}].label=this.value;markChanged()"><input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="data.buybackPhones[${pi}].${key}[${i}].priceDelta=Number(this.value||0);markChanged()"><label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="data.buybackPhones[${pi}].${key}[${i}].active=this.checked;markChanged()"> Actief</label></div>`).join('')}</div>`;
+}
+function renderBuybackPhones(){
+  normalizeBuybackPhones();
+  const box=document.getElementById('buybackPhonesList'); if(!box) return;
+  if(!data.buybackPhones.length){box.innerHTML='<div class="card" style="padding:30px;text-align:center"><h3>Nog geen inkooptelefoons</h3><p class="small">Klik op + Telefoon toevoegen om een toestel toe te voegen.</p></div>';return;}
+  box.innerHTML=data.buybackPhones.map((p,i)=>`<div class="card" style="margin-bottom:18px"><div class="card-head"><div><div class="card-title" style="font-size:20px">📥 ${esc(p.name||'Nieuwe telefoon')}</div><div class="small">${esc(p.brand||'')} · ${p.active?'Zichtbaar':'Verborgen'}</div></div><button class="btn btn-red" onclick="deleteBuybackPhone(${i})">Verwijderen</button></div><div class="grid"><div class="field"><label>Model</label><input value="${esc(p.name)}" oninput="data.buybackPhones[${i}].name=this.value;markChanged();renderBuybackPhones()"></div><div class="field"><label>Merk</label><input value="${esc(p.brand)}" oninput="data.buybackPhones[${i}].brand=this.value;markChanged()"></div><div class="field"><label>Basis inkoopprijs (€)</label><input type="number" step="1" value="${p.price}" oninput="data.buybackPhones[${i}].price=Number(this.value||0);markChanged()"><div class="small">Prijs vóór kortingen/toeslagen.</div></div><div class="field"><label>Website</label><label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" ${p.active?'checked':''} onchange="data.buybackPhones[${i}].active=this.checked;markChanged()"> Tonen op Uw toestel verkopen</label></div><div class="field" style="grid-column:1/-1"><label>📷 Foto van toestel</label><div style="display:flex;gap:15px;align-items:center;flex-wrap:wrap">${p.image?`<img src="${esc(p.image)}" style="width:100px;height:120px;object-fit:contain;border:1px solid #ddd;border-radius:12px;background:#f8fafc">`:'<div style="width:100px;height:120px;display:flex;align-items:center;justify-content:center;border:1px dashed #bbb;border-radius:12px">Geen foto</div>'}<input type="file" accept="image/*" onchange="handleBuybackImage(event,${i})"></div></div></div>${buybackOptionEditor(i,'Opslag','storageOptions')}${buybackOptionEditor(i,'Conditie','conditionOptions')}${buybackOptionEditor(i,'Batterij','batteryOptions')}${buybackOptionEditor(i,'Face ID','faceIdOptions')}${buybackOptionEditor(i,'Scherm','screenOptions')}</div>`).join('');
+}
+function addBuybackPhone(){
+  normalizeBuybackPhones();
+  data.buybackPhones.push({id:'buyback-'+Date.now(),name:'Nieuwe telefoon',brand:'Apple',image:'',price:0,active:true,storageOptions:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}],conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}],batteryOptions:[{label:'90% - 100%',priceDelta:0,active:true},{label:'80% - 89%',priceDelta:-25,active:true},{label:'Onder 80%',priceDelta:-60,active:true}],faceIdOptions:[{label:'Face ID werkt',priceDelta:0,active:true},{label:'Face ID werkt niet',priceDelta:-100,active:true}],screenOptions:[{label:'Scherm goed',priceDelta:0,active:true},{label:'Kleine beschadigingen',priceDelta:-50,active:true},{label:'Scherm gebroken',priceDelta:-150,active:true}]});
+  renderBuybackPhones(); markChanged();
+}
+function deleteBuybackPhone(i){if(!confirm('Deze inkooptelefoon verwijderen?'))return;data.buybackPhones.splice(i,1);renderBuybackPhones();markChanged();}
+function handleBuybackImage(event,i){const file=event.target.files&&event.target.files[0];if(!file)return;if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');return;}if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}const r=new FileReader();r.onload=()=>{data.buybackPhones[i].image=r.result;renderBuybackPhones();markChanged();};r.readAsDataURL(file);}
+
 /* ---------------- USED PHONES ---------------- */
 
 function renderUsedPhones(){
@@ -1928,104 +1864,152 @@ function deleteGsmService(key,i){
 }
 
 
-
-/* ---------------- GSM ORDERS / WEBSHOP ORDERS ---------------- */
-let gsmOrdersCache=[];
-let webshopOrdersCache=[];
-
-function orderStatusClass(status){return String(status||"Nieuw").toLowerCase().replace(/\s+/g,"-");}
-function renderOrderStats(targetId,orders){
-  const box=document.getElementById(targetId); if(!box)return;
-  const c={Nieuw:0,"In behandeling":0,Voltooid:0,Geannuleerd:0};
-  orders.forEach(o=>{if(c[o.status]!==undefined)c[o.status]++;});
-  box.innerHTML=`
-  <div class="orders-stat orders-stat-total"><div class="orders-stat-icon">☷</div><div><div class="orders-stat-num">${orders.length}</div><div class="orders-stat-label">Totaal orders</div></div></div>
-  <div class="orders-stat orders-stat-new"><div class="orders-stat-icon">✓</div><div><div class="orders-stat-num">${c.Nieuw}</div><div class="orders-stat-label">Nieuw</div></div></div>
-  <div class="orders-stat orders-stat-progress"><div class="orders-stat-icon">◷</div><div><div class="orders-stat-num">${c["In behandeling"]}</div><div class="orders-stat-label">In behandeling</div></div></div>
-  <div class="orders-stat orders-stat-cancel"><div class="orders-stat-icon">✓</div><div><div class="orders-stat-num">${c.Geannuleerd}</div><div class="orders-stat-label">Geannuleerd</div></div></div>`;
-}
-function dateOnly(v){if(!v)return"";const d=new Date(v);return Number.isNaN(d.getTime())?"":d.toISOString().slice(0,10);}
-function matchesOrderFilters(o,q,status,from,to){
-  const s=(q||"").trim().toLowerCase();
-  const hay=[o.id,o.name,o.email,o.phone,o.imei,o.username,o.service_name,o.service_group,o.service_category,o.postcode,o.city,o.street,o.house_number]
-    .filter(Boolean).join(" ").toLowerCase();
-  if(s&&!hay.includes(s))return false;
-  if(status&&o.status!==status)return false;
-  const d=dateOnly(o.created_at); if(from&&(!d||d<from))return false; if(to&&(!d||d>to))return false;
-  return true;
-}
-function gsmOrderRow(o){
-  const d=o.created_at?new Date(o.created_at):null;
-  const ds=d&&!Number.isNaN(d.getTime())?d.toLocaleDateString("nl-NL"):"";
-  const ts=d&&!Number.isNaN(d.getTime())?d.toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"}):"";
-  const price=o.price?"€ "+esc(o.price):"Op aanvraag";
-  return `<div class="order-card"><div class="order-card-head">
-    <div class="order-left"><div class="order-badge">#${esc(o.id)}</div><div class="order-heading-text"><div class="order-title">${esc(o.service_name||"GSM Service")}</div><div class="order-meta">${esc(o.service_group||"GSM Service")} · ${esc(ds)}${ts?" · "+esc(ts):""}</div></div></div>
-    <div class="order-contact"><div><b>KLANT</b>${esc(o.name||"-")}</div><div><b>✉</b>${esc(o.email||"-")}</div><div><b>☎</b>${esc(o.phone||"-")}</div></div>
-    <div><select class="order-status-select status-${orderStatusClass(o.status)}" onchange="updateOrderStatus(${Number(o.id)},this.value,this)">${["Nieuw","In behandeling","Voltooid","Geannuleerd"].map(x=>`<option value="${esc(x)}" ${o.status===x?"selected":""}>${esc(x)}</option>`).join("")}</select></div>
-    <div class="order-price">${esc(price)}</div>
-    <div class="order-actions"><button class="order-detail-btn" onclick="showGsmOrderDetails(${Number(o.id)})">◉ Details</button>${hasPermission("orders.delete")?`<button class="order-delete-btn" onclick="deleteGsmOrder(${Number(o.id)})">▣ Verwijderen</button>`:""}</div>
-  </div></div>`;
-}
-function webshopOrderRow(o){
-  const d=o.created_at?new Date(o.created_at):null;
-  const ds=d&&!Number.isNaN(d.getTime())?d.toLocaleDateString("nl-NL"):"";
-  const ts=d&&!Number.isNaN(d.getTime())?d.toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"}):"";
-  const total=Number(o.total||0).toFixed(2).replace(".",",");
-  const items=Array.isArray(o.items)?o.items:[];
-  const names=items.map(x=>x.name||"").filter(Boolean).join(" · ");
-  return `<div class="order-card"><div class="order-card-head">
-    <div class="order-left"><div class="order-badge">#${esc(o.id)}</div><div class="order-heading-text"><div class="order-title">Webshop bestelling</div><div class="order-meta">${esc(names||"Product")} · ${esc(ds)}${ts?" · "+esc(ts):""}</div></div></div>
-    <div class="order-contact"><div><b>KLANT</b>${esc(o.name||"-")}</div><div><b>✉</b>${esc(o.email||"-")}</div><div><b>☎</b>${esc(o.phone||"-")}</div></div>
-    <div><select class="order-status-select status-${orderStatusClass(o.status)}" onchange="updateWebshopOrderStatus(${Number(o.id)},this.value,this)">${["Nieuw","In behandeling","Verzonden","Voltooid","Geannuleerd"].map(x=>`<option value="${esc(x)}" ${o.status===x?"selected":""}>${esc(x)}</option>`).join("")}</select></div>
-    <div class="order-price">€ ${esc(total)}</div>
-    <div class="order-actions"><button class="order-detail-btn" onclick="showWebshopOrderDetails(${Number(o.id)})">◉ Details</button>${hasPermission("webshop_orders.delete")?`<button class="order-delete-btn" onclick="deleteWebshopOrder(${Number(o.id)})">▣ Verwijderen</button>`:""}</div>
-  </div></div>`;
-}
-function renderGsmOrders(){
-  const q=document.getElementById("gsmOrderSearch")?.value||"",s=document.getElementById("gsmOrderStatusFilter")?.value||"",f=document.getElementById("gsmOrderFromDate")?.value||"",t=document.getElementById("gsmOrderToDate")?.value||"";
-  const a=gsmOrdersCache.filter(o=>matchesOrderFilters(o,q,s,f,t)); renderOrderStats("gsmOrderStats",gsmOrdersCache);
-  document.getElementById("gsmOrderCount").textContent=`${a.length} van ${gsmOrdersCache.length} bestelling(en) zichtbaar`;
-  document.getElementById("ordersList").innerHTML=a.length?a.map(gsmOrderRow).join(""):'<div class="order-empty">Geen bestellingen gevonden met deze filters.</div>';
-}
-function renderWebshopOrders(){
-  const q=document.getElementById("webshopOrderSearch")?.value||"",s=document.getElementById("webshopOrderStatusFilter")?.value||"",f=document.getElementById("webshopOrderFromDate")?.value||"",t=document.getElementById("webshopOrderToDate")?.value||"";
-  const a=webshopOrdersCache.filter(o=>matchesOrderFilters(o,q,s,f,t)); renderOrderStats("webshopOrderStats",webshopOrdersCache);
-  document.getElementById("webshopOrderCount").textContent=`${a.length} van ${webshopOrdersCache.length} bestelling(en) zichtbaar`;
-  document.getElementById("webshopOrdersList").innerHTML=a.length?a.map(webshopOrderRow).join(""):'<div class="order-empty">Geen webshop bestellingen gevonden met deze filters.</div>';
-}
-function filterGsmOrders(){renderGsmOrders()} function filterWebshopOrders(){renderWebshopOrders()}
-function clearGsmOrderFilters(){["gsmOrderSearch","gsmOrderStatusFilter","gsmOrderFromDate","gsmOrderToDate"].forEach(id=>{const e=document.getElementById(id);if(e)e.value=""});renderGsmOrders()}
-function clearWebshopOrderFilters(){["webshopOrderSearch","webshopOrderStatusFilter","webshopOrderFromDate","webshopOrderToDate"].forEach(id=>{const e=document.getElementById(id);if(e)e.value=""});renderWebshopOrders()}
-
+/* ---------------- GSM ORDERS ---------------- */
 async function loadOrders(){
-  const st=document.getElementById("ordersStatus"); if(!st)return;
-  st.className="status info";st.textContent="Bestellingen laden...";
-  try{const r=await fetch("/api/admin/orders");const result=await r.json();if(!r.ok)throw new Error(result.error||"Bestellingen konden niet worden geladen");
-    gsmOrdersCache=result.orders||[];st.className="status success";st.textContent=gsmOrdersCache.length+" bestelling(en) gevonden";renderGsmOrders();
-  }catch(e){st.className="status error";st.textContent="✕ "+e.message}
+  const box=document.getElementById("ordersList");
+  const status=document.getElementById("ordersStatus");
+  if(!box) return;
+  status.className="status info";
+  status.textContent="Bestellingen laden...";
+  box.innerHTML="";
+  try{
+    const r=await fetch("/api/admin/orders");
+    const result=await r.json();
+    if(!r.ok) throw new Error(result.error||"Bestellingen konden niet worden geladen");
+    const orders=result.orders||[];
+    status.className="status success";
+    status.textContent=orders.length+" bestelling(en) gevonden";
+    if(!orders.length){
+      box.innerHTML='<div class="order-empty">Nog geen GSM-service bestellingen ontvangen.</div>';
+      return;
+    }
+    box.innerHTML=orders.map(order=>{
+      const date=order.created_at ? new Date(order.created_at).toLocaleString("nl-NL") : "";
+      const price=order.price ? "€ "+esc(order.price) : "Op aanvraag";
+      return `
+        <div class="order-card">
+          <div class="order-card-head">
+            <div>
+              <div class="order-title">#${esc(order.id)} — ${esc(order.service_name||"GSM Service")}</div>
+              <div class="order-meta">${esc(order.service_group||"General")} · ${esc(date)}</div>
+            </div>
+            <select class="order-status-select" onchange="updateOrderStatus(${Number(order.id)},this.value)">
+              ${["Nieuw","In behandeling","Voltooid","Geannuleerd"].map(x=>`<option value="${esc(x)}" ${order.status===x?"selected":""}>${esc(x)}</option>`).join("")}
+            </select>
+          </div>
+          <div class="order-grid">
+            <div class="order-info"><strong>Klant</strong>${esc(order.name||"-")}</div>
+            <div class="order-info"><strong>E-mail</strong>${esc(order.email||"-")}</div>
+            <div class="order-info"><strong>Telefoon</strong>${esc(order.phone||"-")}</div>
+            <div class="order-info"><strong>Prijs</strong>${esc(price)}</div>
+            <div class="order-info"><strong>Gebruikersnaam</strong>${esc(order.username||"-")}</div>
+            <div class="order-info"><strong>IMEI / Serienummer</strong>${esc(order.imei||"-")}</div>
+            <div class="order-info"><strong>Categorie</strong>${esc(order.service_category||"-")}</div>
+          </div>
+          ${order.notes?`<div class="order-notes"><strong>Opmerking:</strong><br>${esc(order.notes)}</div>`:""}
+        </div>`;
+    }).join("");
+  }catch(e){
+    status.className="status error";
+    status.textContent="✕ "+e.message;
+  }
 }
-async function updateOrderStatus(id,v,el){
-  if(!hasPermission("orders.update"))return;
-  if(el){el.disabled=true;el.className="order-status-select status-"+orderStatusClass(v)}
-  try{const r=await fetch("/api/admin/orders/"+encodeURIComponent(id)+"/status",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:v})});
-    const result=await r.json().catch(()=>({}));if(!r.ok)throw new Error(result.error||"Status kon niet worden gewijzigd");
-    const o=gsmOrdersCache.find(x=>Number(x.id)===Number(id));if(o)o.status=v;if(el)el.disabled=false;renderGsmOrders();setStatus("✓ Order #"+id+" automatisch opgeslagen","success");
-  }catch(e){if(el)el.disabled=false;setStatus("✕ "+e.message,"error");loadOrders()}
+
+async function updateOrderStatus(id,statusValue){
+  try{
+    const r=await fetch("/api/admin/orders/"+encodeURIComponent(id)+"/status",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({status:statusValue})
+    });
+    const result=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(result.error||"Status kon niet worden gewijzigd");
+    setStatus("✓ Order #"+id+" bijgewerkt","success");
+  }catch(e){
+    setStatus("✕ "+e.message,"error");
+    loadOrders();
+  }
 }
+
+/* ---------------- WEBSHOP ORDERS ---------------- */
 async function loadWebshopOrders(){
-  const st=document.getElementById("webshopOrdersStatus");if(!st)return;st.className="status info";st.textContent="Webshop bestellingen laden...";
-  try{const r=await fetch("/api/admin/webshop-orders",{credentials:"same-origin"});const raw=await r.text();let result={};try{result=raw?JSON.parse(raw):{}}catch{throw new Error("Server antwoord is geen JSON.")}if(!r.ok)throw new Error(result.error||"Webshop bestellingen konden niet worden geladen");
-    webshopOrdersCache=result.orders||[];st.className="status success";st.textContent=webshopOrdersCache.length+" webshop bestelling(en) gevonden";renderWebshopOrders();
-  }catch(e){st.className="status error";st.textContent="✕ "+e.message}
+  const box=document.getElementById("webshopOrdersList");
+  const status=document.getElementById("webshopOrdersStatus");
+  if(!box || !status) return;
+  status.className="status info";
+  status.textContent="Webshop bestellingen laden...";
+  box.innerHTML="";
+
+  try{
+    const r=await fetch("/api/admin/webshop-orders",{credentials:"same-origin"});
+    const raw=await r.text();
+    let result={};
+    try{ result=raw ? JSON.parse(raw) : {}; }catch{ throw new Error("Server antwoord is geen JSON."); }
+    if(!r.ok) throw new Error(result.error||"Webshop bestellingen konden niet worden geladen");
+
+    const orders=result.orders||[];
+    status.className="status success";
+    status.textContent=orders.length+" webshop bestelling(en) gevonden";
+    if(!orders.length){
+      box.innerHTML='<div class="order-empty">Nog geen webshop bestellingen ontvangen.</div>';
+      return;
+    }
+
+    box.innerHTML=orders.map(order=>{
+      const items=Array.isArray(order.items)?order.items:[];
+      const date=order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"";
+      const total=Number(order.total||0).toFixed(2).replace('.',',');
+      const address=[order.street,order.house_number,order.postcode,order.city].filter(Boolean).join(' ');
+      return `<div class="order-card">
+        <div class="order-card-head">
+          <div>
+            <div class="order-title">#${esc(order.id)} — Webshop bestelling</div>
+            <div class="order-meta">${esc(date)}</div>
+          </div>
+          <select class="order-status-select" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">
+            ${["Nieuw","In behandeling","Verzonden","Voltooid","Geannuleerd"].map(x=>`<option value="${esc(x)}" ${order.status===x?'selected':''}>${esc(x)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="order-grid">
+          <div class="order-info"><strong>Klant</strong>${esc(order.name||'-')}</div>
+          <div class="order-info"><strong>E-mail</strong>${esc(order.email||'-')}</div>
+          <div class="order-info"><strong>Telefoon</strong>${esc(order.phone||'-')}</div>
+          <div class="order-info"><strong>Totaal</strong>€ ${esc(total)}</div>
+        </div>
+        <div class="webshop-order-address"><strong>📍 Adres</strong><br>${esc(address||'-')}</div>
+        <div class="webshop-order-items"><strong>📦 Producten</strong>
+          ${items.map(item=>`<div class="webshop-item">
+            ${item.image?`<img src="${esc(item.image)}" alt="">`:''}
+            <div class="webshop-item-info"><div class="webshop-item-name">${esc(item.name||'Product')}</div>
+            <div class="webshop-item-meta">Aantal: ${Number(item.quantity)||1}${item.options&&Object.keys(item.options).length?' · '+esc(Object.values(item.options).filter(Boolean).join(' · ')):''}</div></div>
+            <strong>€ ${esc(Number(item.totalPrice||0).toFixed(2).replace('.',','))}</strong>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    status.className="status error";
+    status.textContent="✕ "+e.message;
+  }
 }
-async function updateWebshopOrderStatus(id,v,el){
-  if(!hasPermission("webshop_orders.update"))return;
-  if(el){el.disabled=true;el.className="order-status-select status-"+orderStatusClass(v)}
-  try{const r=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/status",{method:"PUT",headers:{"Content-Type":"application/json","Accept":"application/json"},credentials:"same-origin",body:JSON.stringify({status:v})});
-    const raw=await r.text();let result={};try{result=raw?JSON.parse(raw):{}}catch{throw new Error("Server antwoord is geen JSON.")}if(!r.ok)throw new Error(result.error||"Status kon niet worden gewijzigd");
-    const o=webshopOrdersCache.find(x=>Number(x.id)===Number(id));if(o)o.status=v;if(el)el.disabled=false;renderWebshopOrders();setStatus("✓ Webshop order #"+id+" automatisch opgeslagen","success");
-  }catch(e){if(el)el.disabled=false;setStatus("✕ "+e.message,"error");loadWebshopOrders()}
+
+async function updateWebshopOrderStatus(id,statusValue){
+  try{
+    const r=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/status",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      credentials:"same-origin",
+      body:JSON.stringify({status:statusValue})
+    });
+    const raw=await r.text();
+    let result={};
+    try{result=raw?JSON.parse(raw):{};}catch{throw new Error("Server antwoord is geen JSON.");}
+    if(!r.ok) throw new Error(result.error||"Status kon niet worden gewijzigd");
+    setStatus("✓ Webshop order #"+id+" bijgewerkt","success");
+  }catch(e){
+    setStatus("✕ "+e.message,"error");
+    loadWebshopOrders();
+  }
 }
 
 /* ---------------- CUSTOMERS ---------------- */
@@ -2116,7 +2100,6 @@ function deleteWhy(i){
 /* ---------------- SAVE ---------------- */
 
 async function save(){
-  if(!canEditSite()){setStatus("✕ Je hebt geen toestemming om wijzigingen op te slaan.","error");return;}
   if(loading) return;
   loading=true;
   setStatus("Opslaan...","info");
@@ -2159,168 +2142,6 @@ async function save(){
   }finally{
     loading=false;
   }
-}
-
-
-/* ---------------- SEARCH + ADMIN USERS ---------------- */
-async function adminSearch(){
-  if(!hasPermission("search"))return;
-  const q=String(document.getElementById("adminSearchInput")?.value||"").trim();
-  const status=document.getElementById("searchStatus"),box=document.getElementById("searchResults");
-  if(q.length<2){status.className="status info";status.textContent="Vul minimaal 2 tekens in.";box.innerHTML="";return;}
-  status.className="status info";status.textContent="Zoeken...";box.innerHTML="";
-  try{
-    const r=await fetch("/api/admin/search?q="+encodeURIComponent(q),{credentials:"same-origin"});
-    const x=await r.json().catch(()=>({}));if(!r.ok)throw new Error(x.error||"Zoeken mislukt.");
-    const parts=[];
-    if((x.customers||[]).length)parts.push("<h3>👥 Klanten</h3>"+x.customers.map(c=>`<div class="search-result"><strong>${esc(c.name||"Klant")}</strong><br>${esc(c.email||"-")} · ${esc(c.phone||"-")}<br><span class="small">${esc(c.address||"")}</span></div>`).join(""));
-    if((x.orders||[]).length)parts.push("<h3>📋 GSM Orders</h3>"+x.orders.map(o=>`<div class="search-result"><strong>#${esc(o.id)} — ${esc(o.service_name||"GSM Service")}</strong><br>${esc(o.name||"-")} · ${esc(o.email||"-")} · ${esc(o.phone||"-")}<br><span class="small">IMEI: ${esc(o.imei||"-")} · ${esc(o.status||"-")}</span></div>`).join(""));
-    if((x.webshopOrders||[]).length)parts.push("<h3>🛍️ Webshop Bestellingen</h3>"+x.webshopOrders.map(o=>`<div class="search-result"><strong>#${esc(o.id)} — ${esc(o.name||"Klant")}</strong><br>${esc(o.email||"-")} · ${esc(o.phone||"-")} · € ${esc(Number(o.total||0).toFixed(2))}<br><span class="small">${esc(o.postcode||"")} ${esc(o.city||"")} · ${esc(o.status||"-")}</span></div>`).join(""));
-    box.innerHTML=parts.join("")||'<div class="small">Geen resultaten gevonden.</div>';
-    status.className="status success";status.textContent=parts.length?"Zoeken voltooid.":"Geen resultaten.";
-  }catch(e){status.className="status error";status.textContent="✕ "+e.message;}
-}
-function renderPermissionCheckboxes(id,selected=[]){
-  const box=document.getElementById(id);if(!box)return;
-  box.innerHTML=Object.entries(ADMIN_PERMISSION_LABELS).map(([k,v])=>`<label class="permission-item"><input type="checkbox" value="${esc(k)}" ${selected.includes(k)?"checked":""}><span>${esc(v)}</span></label>`).join("");
-}
-function getCheckedPermissions(id){
-  const box=document.getElementById(id);return box?[...box.querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value):[];
-}
-async function createAdmin(){
-  const st=document.getElementById("adminCreateStatus");
-  const username=document.getElementById("newAdminUsername").value.trim();
-  const password=document.getElementById("newAdminPassword").value;
-  const permissions=getCheckedPermissions("newAdminPermissions");
-  st.className="status info";st.textContent="Admin aanmaken...";
-  try{
-    const r=await fetch("/api/admin/users",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({username,password,permissions})});
-    const x=await r.json().catch(()=>({}));if(!r.ok)throw new Error(x.error||"Admin kon niet worden aangemaakt.");
-    document.getElementById("newAdminUsername").value="";document.getElementById("newAdminPassword").value="";
-    renderPermissionCheckboxes("newAdminPermissions",[]);st.className="status success";st.textContent="✓ Admin aangemaakt.";await loadAdmins();
-  }catch(e){st.className="status error";st.textContent="✕ "+e.message;}
-}
-async function loadAdmins(){
-  if(!hasPermission("admins.manage"))return;
-  const box=document.getElementById("adminsList"),st=document.getElementById("adminsStatus");if(!box)return;
-  st.className="status info";st.textContent="Admins laden...";box.innerHTML="";
-  try{
-    const r=await fetch("/api/admin/users",{credentials:"same-origin"});const x=await r.json().catch(()=>({}));
-    if(!r.ok)throw new Error(x.error||"Admins konden niet worden geladen.");
-    const users=x.users||[];
-    box.innerHTML=users.length?users.map(u=>`<div class="admin-user-card">
-      <div class="card-head"><div><div class="card-title">👤 ${esc(u.username)}</div><div class="small">${u.active?"Actief":"Uitgeschakeld"}</div></div>
-      <button class="btn btn-red" onclick="deleteAdmin(${Number(u.id)})">Verwijderen</button></div>
-      <div class="grid">
-        <div class="field"><label>Gebruikersnaam</label><input id="an-${Number(u.id)}" value="${esc(u.username)}"></div>
-        <div class="field"><label>Nieuw wachtwoord (leeg = behouden)</label><input id="ap-${Number(u.id)}" type="password"></div>
-      </div>
-      <label class="permission-item" style="max-width:300px"><input id="aa-${Number(u.id)}" type="checkbox" ${u.active?"checked":""}><span>Admin is actief</span></label>
-      <div class="field"><label>Rechten</label><div id="ax-${Number(u.id)}" class="permission-grid"></div></div>
-      <button class="btn btn-green" onclick="updateAdmin(${Number(u.id)})">💾 Admin opslaan</button>
-      <div id="as-${Number(u.id)}" class="status" style="margin-top:10px"></div>
-    </div>`).join(""):'<div class="small">Nog geen extra admins aangemaakt.</div>';
-    users.forEach(u=>renderPermissionCheckboxes("ax-"+Number(u.id),Array.isArray(u.permissions)?u.permissions:[]));
-    st.className="status success";st.textContent=users.length+" admin(s) gevonden";
-  }catch(e){st.className="status error";st.textContent="✕ "+e.message;}
-}
-async function updateAdmin(id){
-  const st=document.getElementById("as-"+id);
-  const body={username:document.getElementById("an-"+id).value.trim(),password:document.getElementById("ap-"+id).value,active:document.getElementById("aa-"+id).checked,permissions:getCheckedPermissions("ax-"+id)};
-  st.className="status info";st.textContent="Opslaan...";
-  try{
-    const r=await fetch("/api/admin/users/"+encodeURIComponent(id),{method:"PUT",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify(body)});
-    const x=await r.json().catch(()=>({}));if(!r.ok)throw new Error(x.error||"Admin kon niet worden bijgewerkt.");
-    st.className="status success";st.textContent="✓ Opgeslagen.";await loadAdmins();
-  }catch(e){st.className="status error";st.textContent="✕ "+e.message;}
-}
-async function deleteAdmin(id){
-  if(!confirm("Deze admin echt verwijderen?"))return;
-  const r=await fetch("/api/admin/users/"+encodeURIComponent(id),{method:"DELETE",credentials:"same-origin"});
-  const x=await r.json().catch(()=>({}));if(!r.ok){document.getElementById("adminsStatus").textContent=x.error||"Verwijderen mislukt.";return;}
-  await loadAdmins();
-}
-
-
-/* ---------------- ORDER DETAILS / DELETE ---------------- */
-
-function showOrderDetails(title, data){
-  const existing=document.getElementById("orderDetailsModal");
-  if(existing) existing.remove();
-
-  const modal=document.createElement("div");
-  modal.id="orderDetailsModal";
-  modal.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;";
-  const rows=Object.entries(data||{}).map(([k,v])=>`
-    <div style="padding:10px 0;border-bottom:1px solid #e5eaf1">
-      <strong>${esc(k)}</strong><br>
-      <span style="white-space:pre-wrap">${esc(v===null||v===undefined?"":String(v))}</span>
-    </div>`).join("");
-  modal.innerHTML=`
-    <div style="background:#fff;border-radius:16px;max-width:760px;width:100%;max-height:90vh;overflow:auto;padding:22px">
-      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
-        <h2 style="margin:0">${esc(title)}</h2>
-        <button class="btn btn-light" onclick="document.getElementById('orderDetailsModal').remove()">✕</button>
-      </div>
-      <div style="margin-top:14px">${rows}</div>
-    </div>`;
-  document.body.appendChild(modal);
-}
-
-async function showGsmOrderDetails(id){
-  try{
-    const r=await fetch("/api/admin/orders",{credentials:"same-origin"});
-    const result=await r.json().catch(()=>({}));
-    if(!r.ok) throw new Error(result.error||"Order kon niet worden geladen.");
-    const order=(result.orders||[]).find(x=>Number(x.id)===Number(id));
-    if(!order) throw new Error("Order niet gevonden.");
-    showOrderDetails("GSM Order #"+id, order);
-  }catch(e){
-    alert(e.message);
-  }
-}
-
-async function showWebshopOrderDetails(id){
-  try{
-    const r=await fetch("/api/admin/webshop-orders",{credentials:"same-origin"});
-    const result=await r.json().catch(()=>({}));
-    if(!r.ok) throw new Error(result.error||"Bestelling kon niet worden geladen.");
-    const order=(result.orders||[]).find(x=>Number(x.id)===Number(id));
-    if(!order) throw new Error("Bestelling niet gevonden.");
-    showOrderDetails("Webshop Bestelling #"+id, order);
-  }catch(e){
-    alert(e.message);
-  }
-}
-
-async function deleteGsmOrder(id){
-  if(!hasPermission("orders.delete")) return;
-  if(!confirm("GSM Order #"+id+" echt verwijderen? Dit kan niet ongedaan worden.")) return;
-  try{
-    const r=await fetch("/api/admin/orders/"+encodeURIComponent(id),{
-      method:"DELETE",
-      credentials:"same-origin"
-    });
-    const result=await r.json().catch(()=>({}));
-    if(!r.ok) throw new Error(result.error||"Order kon niet worden verwijderd.");
-    await loadOrders();
-    if(currentPage==="search") await adminSearch();
-  }catch(e){ alert(e.message); }
-}
-
-async function deleteWebshopOrder(id){
-  if(!hasPermission("webshop_orders.delete")) return;
-  if(!confirm("Webshop bestelling #"+id+" echt verwijderen? Dit kan niet ongedaan worden.")) return;
-  try{
-    const r=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id),{
-      method:"DELETE",
-      credentials:"same-origin"
-    });
-    const result=await r.json().catch(()=>({}));
-    if(!r.ok) throw new Error(result.error||"Bestelling kon niet worden verwijderd.");
-    await loadWebshopOrders();
-    if(currentPage==="search") await adminSearch();
-  }catch(e){ alert(e.message); }
 }
 
 /* ---------------- HELPERS ---------------- */
@@ -2368,7 +2189,6 @@ function esc(value){
 
 /* START */
 
-renderPermissionCheckboxes('newAdminPermissions',[]);
 checkLogin();
 
 </script>
