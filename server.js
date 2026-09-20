@@ -19,7 +19,7 @@ const pool = new Pool({
       : false,
 });
 
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({ limit: "2mb" }));
 app.use(cookieParser());
 
 // Website files
@@ -129,18 +129,6 @@ async function initDatabase() {
       phone TEXT DEFAULT '',
       address TEXT DEFAULT '',
       password_hash TEXT NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS admin_users (
-      id SERIAL PRIMARY KEY,
-      username TEXT NOT NULL UNIQUE,
-      password_hash TEXT NOT NULL,
-      role TEXT NOT NULL DEFAULT 'admin',
-      permissions JSONB NOT NULL DEFAULT '[]'::jsonb,
-      active BOOLEAN NOT NULL DEFAULT TRUE,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
@@ -266,177 +254,75 @@ app.get("/api/site", async (req, res) => {
   }
 });
 
-// Admin login + permissions
-const ADMIN_PERMISSION_NAMES = {
-  "general.view":"Algemeen bekijken","services.view":"Diensten bekijken",
-  "phones.view":"Telefoons & prijzen bekijken","categories.view":"Apparaten & categorieën bekijken",
-  "used.view":"Gebruikte telefoons bekijken","why.view":"Waarom HOMS TECH bekijken",
-  "customers.view":"Klanten bekijken","orders.view":"GSM Orders bekijken",
-  "orders.update":"GSM Order-status wijzigen","webshop_orders.view":"Webshop bestellingen bekijken",
-  "webshop_orders.update":"Webshop order-status wijzigen","gsm.view":"GSM Services bekijken",
-  "site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
-};
+// Admin login
+app.post("/api/login", (req, res) => {
+  const { username, password } = req.body;
 
-function getSuperAdminUser(username){
-  return {id:null,username,role:"superadmin",permissions:["*"]};
-}
+  if (
+    username !== process.env.ADMIN_USERNAME ||
+    password !== process.env.ADMIN_PASSWORD
+  ) {
+    return res.status(401).json({
+      error: "Invalid username or password"
+    });
+  }
 
-app.post("/api/login", async (req,res)=>{
-  try{
-    const username=String(req.body?.username||"").trim();
-    const password=String(req.body?.password||"");
+  const token = jwt.sign(
+    {
+      username: username
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "7d"
+    }
+  );
 
-    if(username===String(process.env.ADMIN_USERNAME||"") && password===String(process.env.ADMIN_PASSWORD||"")){
-      const user=getSuperAdminUser(username);
-      const token=jwt.sign(user,process.env.JWT_SECRET,{expiresIn:"7d"});
-      res.cookie("token",token,{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",maxAge:7*24*60*60*1000});
-      return res.json({success:true,user});
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000
+  });
+
+  res.json({
+    success: true
+  });
+});
+
+// Check admin login
+app.get("/api/me", (req, res) => {
+  try {
+    const token = req.cookies.token;
+
+    if (!token) {
+      return res.status(401).json({
+        authenticated: false
+      });
     }
 
-    const q=await pool.query(`SELECT id,username,password_hash,role,permissions,active
-      FROM admin_users WHERE LOWER(username)=LOWER($1) LIMIT 1`,[username]);
-    if(!q.rows.length || !q.rows[0].active) return res.status(401).json({error:"Invalid username or password"});
+    const user = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
 
-    const a=q.rows[0];
-    if(!await verifyPassword(password,a.password_hash))
-      return res.status(401).json({error:"Invalid username or password"});
-
-    const user={id:a.id,username:a.username,role:a.role||"admin",permissions:Array.isArray(a.permissions)?a.permissions:[]};
-    const token=jwt.sign(user,process.env.JWT_SECRET,{expiresIn:"7d"});
-    res.cookie("token",token,{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",maxAge:7*24*60*60*1000});
-    res.json({success:true,user});
-  }catch(e){
-    console.error("Admin login error:",e);
-    res.status(500).json({error:"Login mislukt"});
+    res.json({
+      authenticated: true,
+      username: user.username
+    });
+  } catch (error) {
+    res.status(401).json({
+      authenticated: false
+    });
   }
 });
 
-app.get("/api/me",(req,res)=>{
-  try{
-    const token=req.cookies.token;
-    if(!token) return res.status(401).json({authenticated:false});
-    const user=jwt.verify(token,process.env.JWT_SECRET);
-    const normalized=user.username===String(process.env.ADMIN_USERNAME||"")
-      ? getSuperAdminUser(user.username)
-      : {id:user.id||null,username:user.username,role:user.role||"admin",permissions:Array.isArray(user.permissions)?user.permissions:[]};
-    res.json({authenticated:true,...normalized});
-  }catch(e){res.status(401).json({authenticated:false});}
-});
-
-app.post("/api/logout",(req,res)=>{
+// Admin logout
+app.post("/api/logout", (req, res) => {
   res.clearCookie("token");
-  res.json({success:true});
-});
 
-function getAdminFromRequest(req){
-  const token=req.cookies.token;
-  if(!token) return null;
-  const user=jwt.verify(token,process.env.JWT_SECRET);
-  if(user.username===String(process.env.ADMIN_USERNAME||"")) return getSuperAdminUser(user.username);
-  return {id:user.id||null,username:user.username,role:user.role||"admin",permissions:Array.isArray(user.permissions)?user.permissions:[]};
-}
-
-function requireAuth(req,res,next){
-  try{
-    const user=getAdminFromRequest(req);
-    if(!user) return res.status(401).json({error:"Not authenticated"});
-    req.admin=user; next();
-  }catch(e){res.status(401).json({error:"Not authenticated"});}
-}
-
-function requirePermission(permission){
-  return (req,res,next)=>{
-    try{
-      const user=getAdminFromRequest(req);
-      if(!user) return res.status(401).json({error:"Not authenticated"});
-      if(user.role==="superadmin" || user.username===String(process.env.ADMIN_USERNAME||"") || user.permissions.includes("*") || user.permissions.includes(permission)){
-        req.admin=user; return next();
-      }
-      res.status(403).json({error:"Geen toestemming voor deze actie."});
-    }catch(e){res.status(401).json({error:"Not authenticated"});}
-  };
-}
-
-app.get("/api/admin/users",requirePermission("admins.manage"),async(req,res)=>{
-  try{
-    const q=await pool.query(`SELECT id,username,role,permissions,active,created_at FROM admin_users ORDER BY created_at ASC`);
-    res.json({users:q.rows});
-  }catch(e){console.error(e);res.status(500).json({error:"Admins konden niet worden geladen."});}
-});
-
-app.post("/api/admin/users",requirePermission("admins.manage"),async(req,res)=>{
-  try{
-    const username=String(req.body?.username||"").trim();
-    const password=String(req.body?.password||"");
-    const permissions=Array.isArray(req.body?.permissions)?[...new Set(req.body.permissions.map(String))]:[];
-    if(!username||!password) return res.status(400).json({error:"Gebruikersnaam en wachtwoord zijn verplicht."});
-    if(username.toLowerCase()===String(process.env.ADMIN_USERNAME||"").trim().toLowerCase())
-      return res.status(400).json({error:"Deze gebruikersnaam is gereserveerd voor de hoofdadmin."});
-    if(password.length<8) return res.status(400).json({error:"Het wachtwoord moet minimaal 8 tekens bevatten."});
-    const exists=await pool.query("SELECT id FROM admin_users WHERE LOWER(username)=LOWER($1)",[username]);
-    if(exists.rows.length) return res.status(409).json({error:"Deze admin-gebruikersnaam bestaat al."});
-    const hash=await hashPassword(password);
-    const q=await pool.query(`INSERT INTO admin_users(username,password_hash,role,permissions,active)
-      VALUES($1,$2,'admin',$3::jsonb,TRUE)
-      RETURNING id,username,role,permissions,active,created_at`,[username,hash,JSON.stringify(permissions)]);
-    res.status(201).json({success:true,user:q.rows[0]});
-  }catch(e){console.error(e);res.status(500).json({error:"Admin kon niet worden aangemaakt."});}
-});
-
-app.put("/api/admin/users/:id",requirePermission("admins.manage"),async(req,res)=>{
-  try{
-    const id=Number(req.params.id), username=String(req.body?.username||"").trim();
-    const password=String(req.body?.password||"");
-    const permissions=Array.isArray(req.body?.permissions)?[...new Set(req.body.permissions.map(String))]:[];
-    const active=req.body?.active!==false;
-    if(!Number.isInteger(id)||id<1) return res.status(400).json({error:"Ongeldig admin-ID."});
-    if(!username) return res.status(400).json({error:"Gebruikersnaam is verplicht."});
-    if(username.toLowerCase()===String(process.env.ADMIN_USERNAME||"").trim().toLowerCase())
-      return res.status(400).json({error:"De hoofdadmin wordt beheerd via Render Environment Variables."});
-    const dup=await pool.query("SELECT id FROM admin_users WHERE LOWER(username)=LOWER($1) AND id<>$2",[username,id]);
-    if(dup.rows.length) return res.status(409).json({error:"Deze gebruikersnaam bestaat al."});
-    let q;
-    if(password){
-      if(password.length<8) return res.status(400).json({error:"Het wachtwoord moet minimaal 8 tekens bevatten."});
-      const hash=await hashPassword(password);
-      q=await pool.query(`UPDATE admin_users SET username=$1,password_hash=$2,permissions=$3::jsonb,active=$4
-        WHERE id=$5 RETURNING id,username,role,permissions,active,created_at`,[username,hash,JSON.stringify(permissions),active,id]);
-    }else{
-      q=await pool.query(`UPDATE admin_users SET username=$1,permissions=$2::jsonb,active=$3
-        WHERE id=$4 RETURNING id,username,role,permissions,active,created_at`,[username,JSON.stringify(permissions),active,id]);
-    }
-    if(!q.rows.length) return res.status(404).json({error:"Admin niet gevonden."});
-    res.json({success:true,user:q.rows[0]});
-  }catch(e){console.error(e);res.status(500).json({error:"Admin kon niet worden bijgewerkt."});}
-});
-
-app.delete("/api/admin/users/:id",requirePermission("admins.manage"),async(req,res)=>{
-  try{
-    const id=Number(req.params.id);
-    const q=await pool.query("DELETE FROM admin_users WHERE id=$1 RETURNING id",[id]);
-    if(!q.rows.length) return res.status(404).json({error:"Admin niet gevonden."});
-    res.json({success:true});
-  }catch(e){console.error(e);res.status(500).json({error:"Admin kon niet worden verwijderd."});}
-});
-
-app.get("/api/admin/search",requirePermission("search"),async(req,res)=>{
-  try{
-    const q=String(req.query?.q||"").trim();
-    if(q.length<2) return res.json({customers:[],orders:[],webshopOrders:[]});
-    const like=`%${q}%`;
-    const [customers,orders,webshopOrders]=await Promise.all([
-      pool.query(`SELECT id,name,email,phone,address,created_at FROM customers
-        WHERE name ILIKE $1 OR email ILIKE $1 OR phone ILIKE $1 OR address ILIKE $1
-        ORDER BY created_at DESC LIMIT 20`,[like]),
-      pool.query(`SELECT id,service_name,service_category,name,email,phone,username,imei,status,created_at FROM service_orders
-        WHERE CAST(id AS TEXT) ILIKE $1 OR service_name ILIKE $1 OR service_category ILIKE $1 OR name ILIKE $1 OR email ILIKE $1 OR phone ILIKE $1 OR username ILIKE $1 OR imei ILIKE $1
-        ORDER BY created_at DESC LIMIT 20`,[like]),
-      pool.query(`SELECT id,name,email,phone,city,postcode,status,total,created_at FROM webshop_orders
-        WHERE CAST(id AS TEXT) ILIKE $1 OR name ILIKE $1 OR email ILIKE $1 OR phone ILIKE $1 OR city ILIKE $1 OR postcode ILIKE $1
-        ORDER BY created_at DESC LIMIT 20`,[like])
-    ]);
-    res.json({customers:customers.rows,orders:orders.rows,webshopOrders:webshopOrders.rows});
-  }catch(e){console.error(e);res.status(500).json({error:"Zoeken mislukt."});}
+  res.json({
+    success: true
+  });
 });
 
 // Customer registration
@@ -794,7 +680,7 @@ app.post("/api/webshop/orders", async (req, res) => {
   }
 });
 
-app.get("/api/admin/webshop-orders", requirePermission("webshop_orders.view"), async (req, res) => {
+app.get("/api/admin/webshop-orders", requireAuth, async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT id, customer_id, name, email, phone, street, house_number, postcode, city, items, total, status, created_at
@@ -808,7 +694,7 @@ app.get("/api/admin/webshop-orders", requirePermission("webshop_orders.view"), a
   }
 });
 
-app.put("/api/admin/webshop-orders/:id/status", requirePermission("webshop_orders.update"), async (req, res) => {
+app.put("/api/admin/webshop-orders/:id/status", requireAuth, async (req, res) => {
   try {
     const allowed = ["Nieuw", "In behandeling", "Verzonden", "Voltooid", "Geannuleerd"];
     const status = String(req.body?.status || "").trim();
@@ -827,31 +713,6 @@ app.put("/api/admin/webshop-orders/:id/status", requirePermission("webshop_order
   }
 });
 
-
-app.delete("/api/admin/webshop-orders/:id", requirePermission("webshop_orders.delete"), async (req, res) => {
-  try {
-    const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ error: "Ongeldig order-ID." });
-    }
-
-    const result = await pool.query(
-      "DELETE FROM webshop_orders WHERE id = $1 RETURNING id",
-      [id]
-    );
-
-    if (!result.rows.length) {
-      return res.status(404).json({ error: "Bestelling niet gevonden." });
-    }
-
-    res.json({ success: true });
-  } catch (error) {
-    console.error("Delete webshop order error:", error);
-    res.status(500).json({ error: "Bestelling kon niet worden verwijderd." });
-  }
-});
-
-
 app.get("/api/customer/orders", requireCustomerAuth, async (req, res) => {
   try {
     const result = await pool.query(
@@ -869,7 +730,7 @@ app.get("/api/customer/orders", requireCustomerAuth, async (req, res) => {
   }
 });
 
-app.get("/api/admin/orders", requirePermission("orders.view"), async (req, res) => {
+app.get("/api/admin/orders", requireAuth, async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT id, customer_id, service_category, service_name, service_group, price, name, email, phone, username, imei, notes, status, created_at
@@ -884,7 +745,7 @@ app.get("/api/admin/orders", requirePermission("orders.view"), async (req, res) 
   }
 });
 
-app.put("/api/admin/orders/:id/status", requirePermission("orders.update"), async (req, res) => {
+app.put("/api/admin/orders/:id/status", requireAuth, async (req, res) => {
   try {
     const allowed = ["Nieuw", "In behandeling", "Voltooid", "Geannuleerd"];
     const status = String(req.body?.status || "").trim();
@@ -930,33 +791,31 @@ function requireCustomerAuth(req, res, next) {
   }
 }
 
-// Update website settings
-
-app.delete("/api/admin/orders/:id", requirePermission("orders.delete"), async (req, res) => {
+function requireAuth(req, res, next) {
   try {
-    const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ error: "Ongeldig order-ID." });
+    const token = req.cookies.token;
+
+    if (!token) {
+      return res.status(401).json({
+        error: "Not authenticated"
+      });
     }
 
-    const result = await pool.query(
-      "DELETE FROM service_orders WHERE id = $1 RETURNING id",
-      [id]
+    jwt.verify(
+      token,
+      process.env.JWT_SECRET
     );
 
-    if (!result.rows.length) {
-      return res.status(404).json({ error: "Order niet gevonden." });
-    }
-
-    res.json({ success: true });
+    next();
   } catch (error) {
-    console.error("Delete GSM order error:", error);
-    res.status(500).json({ error: "Order kon niet worden verwijderd." });
+    res.status(401).json({
+      error: "Not authenticated"
+    });
   }
-});
+}
 
-
-app.put("/api/site", requirePermission("site.save"), async (req, res) => {
+// Update website settings
+app.put("/api/site", requireAuth, async (req, res) => {
   try {
     await pool.query(
       "UPDATE site_settings SET data = $1 WHERE id = 1",
@@ -977,7 +836,7 @@ app.put("/api/site", requirePermission("site.save"), async (req, res) => {
 });
 
 // Admin - get registered customers
-app.get("/api/admin/customers", requirePermission("customers.view"), async (req, res) => {
+app.get("/api/admin/customers", requireAuth, async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT

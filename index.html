@@ -118,39 +118,55 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
  .footer-grid{grid-template-columns:1fr}.copyright{display:block}.copyright span{display:block;margin-top:5px}
 }
 </style>
+<link rel="stylesheet" href="assets/homs-tech-theme.css">
 </head>
 <body>
 
-<div class="topbar">
- <div class="container">
-  <div class="top-info">
-   <span>Altijd garantie</span><span>Snel geleverd</span><span>Betrouwbare service</span><span>Betaalbare prijzen</span>
+
+<div class="ht-topbar">
+  <div class="ht-topbar-inner">
+    <div class="ht-topinfo">
+      <span>Altijd garantie</span><span>Snel geleverd</span><span>Betrouwbare service</span><span>Betaalbare prijzen</span>
+    </div>
+    <div class="ht-rating">★★★★★ HOMS TECH</div>
   </div>
-  <div class="top-rating">★★★★★ HOMS TECH</div>
- </div>
+</div>
+<header class="ht-header">
+  <div class="ht-head-main">
+    <a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>
+    <div class="ht-search">
+      <button class="ht-search-btn" data-ht-search type="button">⌕</button>
+      <input data-ht-search-input placeholder="Waar ben je naar op zoek?" aria-label="Zoeken">
+    </div>
+    <div class="ht-actions">
+      <button class="ht-action" data-ht-search type="button">Zoek</button>
+      <div class="ht-lang" data-ht-lang>
+        <button class="ht-action" data-ht-lang-toggle type="button">NL⌄</button>
+        <div class="ht-lang-menu">
+          <button type="button" data-lang="nl">Nederlands</button>
+          <button type="button" data-lang="en">English</button>
+          <button type="button" data-lang="ar">العربية</button>
+        </div>
+      </div>
+      <a class="ht-action" href="account.html">♙ Mijn account</a>
+      <a class="ht-action" href="cart.html">🛒 Winkelwagen <span class="ht-cart-count" data-ht-cart-count>0</span></a>
+    </div>
+  </div>
+  <nav class="ht-nav">
+    <a href="index.html" data-ht-nav="index.html">Home</a>
+    <a href="about.html" data-ht-nav="about.html">Over ons</a>
+    <a href="repair.html" data-ht-nav="repair.html">Reparaties</a>
+    <a href="devices.html" data-ht-nav="devices.html">Apparaten</a>
+    <a href="prices.html" data-ht-nav="prices.html">Prijzen</a>
+    <a href="used.html" data-ht-nav="used.html">Tweedehands</a>
+    <a href="gsm-services.html" data-ht-nav="gsm-services.html">GSM Services</a>
+  </nav>
+</header>
+<div class="ht-search-panel" data-ht-search-panel>
+  <input data-ht-search-input placeholder="Zoek naar een apparaat..." aria-label="Zoeken naar apparaat">
+  <button data-ht-search-submit type="button">Zoeken</button>
 </div>
 
-<header>
- <div class="container">
-  <div class="header-main">
-   <a class="brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>
-   <label class="search">⌕ <input placeholder="Waar ben je naar op zoek?"></label>
-   <div class="header-actions">
-    <span>Zoek⌄</span><span>NL⌄</span><span>♙ Mijn Account</span><span>🛒 Winkelwagen</span>
-   </div>
-  </div>
-  <nav class="nav">
-   <a class="active" href="index.html">Home</a>
-   <a href="about.html">Over ons</a>
-   <a href="repair.html">Reparaties</a>
-   <a href="devices.html">Apparaten</a>
-   <a href="prices.html">Prijzen</a>
-   <a href="/used.html">Tweedehands</a>
-   <a href="gsm-services.html">GSM Services</a>
-   <a href="account.html">Mijn account</a>
-  </nav>
- </div>
-</header>
 
 <section class="hero">
  <div class="container hero-inner">
@@ -220,17 +236,29 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 
 </main>
 
-<footer>
- <div class="container">
-  <div class="footer-grid">
-   <div><div class="footer-logo">HOMS <span>TECH</span></div><p>Refurbished apparaten · Reparatie aan huis · GSM Services</p></div>
-   <div><h3>Snelle links</h3><ul><li>Home</li><li>Apparaten</li><li>Reparaties</li><li>Prijzen</li></ul></div>
-   <div><h3>Service</h3><ul><li>Garantie</li><li>Verzending</li><li>Retour</li><li>Voorwaarden</li></ul></div>
-   <div><h3>Contact</h3><p>Rotterdam en omgeving</p><p>WhatsApp · Telefoon · E-mail</p></div>
+
+<footer class="ht-footer">
+  <div class="ht-footer-inner">
+    <div class="ht-footer-grid">
+      <div>
+        <div class="ht-footer-brand">HOMS <span>TECH</span></div>
+        <p>Refurbished apparaten · Reparatie aan huis · GSM Services</p>
+        <p>Rotterdam en omgeving.</p>
+      </div>
+      <div><h3>Snelle links</h3><ul>
+        <li><a href="index.html">Home</a></li><li><a href="devices.html">Apparaten</a></li>
+        <li><a href="repair.html">Reparaties</a></li><li><a href="prices.html">Prijzen</a></li>
+      </ul></div>
+      <div><h3>Service</h3><ul>
+        <li><a href="about.html">Over ons</a></li><li><a href="used.html">Tweedehands</a></li>
+        <li><a href="gsm-services.html">GSM Services</a></li><li><a href="account.html">Mijn account</a></li>
+      </ul></div>
+      <div><h3>Contact</h3><p>WhatsApp</p><p>Telefoon</p><p>E-mail</p></div>
+    </div>
+    <div class="ht-copy"><span>© 2026 HOMS TECH</span><span>Refurbished · Reparatie · Service</span></div>
   </div>
-  <div class="copyright"><span>© 2026 HOMS TECH</span><span>Refurbished · Reparatie · Service</span></div>
- </div>
 </footer>
+
 
 <script>
 const defaults={
@@ -368,5 +396,6 @@ async function loadSite(){
 }
 loadSite();
 </script>
+<script src="assets/homs-tech-theme.js"></script>
 </body>
 </html>
