@@ -1931,46 +1931,45 @@ async function save(){
   setStatus("Opslaan...","info");
 
   try{
-
     normalizeData();
 
     const r=await fetch("/api/site",{
       method:"PUT",
       headers:{"Content-Type":"application/json"},
+      credentials:"same-origin",
       body:JSON.stringify(data)
     });
 
-    /* Lees eerst als tekst zodat een HTML-foutpagina niet
-       opnieuw de melding "Unexpected token <" veroorzaakt. */
-    const raw=await r.text();
+    const text=await r.text();
     let result={};
-
-    try{
-      result=raw ? JSON.parse(raw) : {};
-    }catch(parseError){
-      throw new Error("Server gaf geen JSON terug (HTTP "+r.status+"). Controleer de serverversie.");
+    try{ result=text ? JSON.parse(text) : {}; }catch(parseError){
+      throw new Error("De server gaf geen geldige JSON terug (HTTP "+r.status+"). Controleer of je de juiste serverversie gebruikt.");
     }
 
     if(!r.ok){
       throw new Error(result.error || "Opslaan mislukt (HTTP "+r.status+")");
     }
 
-    if(result.data){
-      data=result.data;
-      normalizeData();
-    }
+    data=result.data || data;
+    normalizeData();
 
-    /* Niet renderAll() uitvoeren: dat kan editorvelden onnodig
-       opnieuw opbouwen. De huidige pagina en opties blijven staan. */
+    /* Alleen de huidige pagina opnieuw tekenen.
+       renderAll() wordt bewust NIET aangeroepen om een call-stack fout te voorkomen. */
+    if(currentPage === "general") renderGeneral();
+    else if(currentPage === "services") renderServices();
+    else if(currentPage === "phones") renderPhones();
+    else if(currentPage === "used") renderUsedPhones();
+    else if(currentPage === "gsm") renderGsmServices();
+    else if(currentPage === "why") renderWhy();
+
     setStatus("✓ Alle wijzigingen zijn succesvol opgeslagen","success");
 
   }catch(e){
     setStatus("✕ Opslaan mislukt: "+e.message,"error");
-  }finally{
-    loading=false;
   }
-}
 
+  loading=false;
+}
 
 /* ---------------- HELPERS ---------------- */
 
