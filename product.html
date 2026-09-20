@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="nl" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Product - HOMS TECH</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;background:#f5f7fa;color:#111827;line-height:1.6}
+a{text-decoration:none;color:inherit}
+header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.nav{max-width:1200px;margin:auto;min-height:72px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.logo{width:170px;display:block}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+nav a{padding:10px 14px;border-radius:10px;color:#fff;font-weight:600}
+nav a:hover{background:#2563eb}
+.section{max-width:1200px;margin:auto;padding:55px 20px}
+.back{display:inline-block;margin-bottom:25px;color:#2563eb;font-weight:700}
+.product{display:grid;grid-template-columns:1fr 1fr;gap:45px;background:#fff;border-radius:24px;padding:35px;box-shadow:0 8px 30px rgba(15,23,42,.08)}
+.gallery{min-width:0}
+.main-image{width:100%;height:430px;object-fit:contain;background:#f8fafc;border-radius:18px;padding:20px}
+.thumbs{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.thumb{width:78px;height:78px;object-fit:cover;background:#f8fafc;border:2px solid #e5e7eb;border-radius:10px;padding:4px;cursor:pointer}
+.thumb.active{border-color:#2563eb}
+.info h1{font-size:38px;line-height:1.2;margin-bottom:8px}
+.brand{color:#2563eb;font-weight:700;font-size:18px;margin-bottom:20px}
+.price{font-size:34px;font-weight:800;margin:20px 0;color:#111827}
+.meta{display:grid;gap:10px;margin:20px 0}
+.meta div{padding:13px 15px;background:#f8fafc;border-radius:10px}
+.meta strong{display:inline-block;min-width:115px}
+.description{margin:25px 0;color:#4b5563}
+.buttons{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:14px 22px;border-radius:11px;font-weight:800;border:0;cursor:pointer}
+.green{background:#16c766;color:#fff}
+.blue{background:#2563eb;color:#fff}
+.gray{background:#eef2f7;color:#111827}
+.btn:hover{opacity:.9}
+.cart-link{background:#dc2626;color:#fff!important;padding:10px 14px;border-radius:10px;font-weight:800;white-space:nowrap}.cart-count{display:inline-flex;min-width:21px;height:21px;align-items:center;justify-content:center;background:#fff;color:#dc2626;border-radius:999px;font-size:12px;margin-left:4px;padding:0 5px}
+.cart-added{margin-top:10px;padding:12px 14px;border-radius:10px;background:#ecfdf5;color:#166534;font-weight:700;display:none}
+.status{padding:14px;border-radius:10px;background:#fff7ed;color:#9a3412;margin-top:15px}
+.option-section{margin:22px 0}
+.option-title{font-weight:800;font-size:17px;margin-bottom:10px}
+.option-grid{display:flex;flex-wrap:wrap;gap:9px}
+.option-btn{border:1px solid #dbe3ec;background:#fff;color:#111827;border-radius:11px;padding:11px 14px;cursor:pointer;font-weight:700;min-width:90px;text-align:left}
+.option-btn:hover{border-color:#2563eb}
+.option-btn.active{border-color:#2563eb;background:#eff6ff;box-shadow:0 0 0 2px rgba(37,99,235,.10)}
+.option-btn.unavailable{opacity:.55;text-decoration:line-through;cursor:not-allowed;background:#f3f4f6;border-color:#d1d5db}.sold-x{color:#dc2626;font-weight:900;margin-left:6px;text-decoration:none}
+.option-btn small{display:block;color:#6b7280;font-weight:600;margin-top:2px}
+.order-summary{margin-top:22px;background:#111827;color:#fff;border-radius:18px;padding:20px}
+.order-summary h3{font-size:20px;margin-bottom:12px}
+.summary-row{display:flex;justify-content:space-between;gap:15px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.summary-row:last-child{border-bottom:0}
+.summary-total{font-size:24px;font-weight:900;margin-top:12px}
+.spec-box{margin-top:25px}
+.spec-box h2{font-size:25px;margin-bottom:12px}
+.spec-list{display:grid;gap:8px}
+.spec-list div{padding:10px 12px;background:#f8fafc;border-radius:9px}
+.empty{text-align:center;background:#fff;border-radius:20px;padding:60px 25px}
+footer{background:#0b1422;color:#cbd5e1;padding:35px 20px;margin-top:30px}
+.footer-inner{max-width:1200px;margin:auto;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.footer-name{color:#fff;font-size:20px;font-weight:800}
+@media(max-width:800px){
+.product{grid-template-columns:1fr;padding:22px}
+.main-image{height:330px}
+.info h1{font-size:30px}
+.nav{flex-direction:column;padding:12px 15px}
+nav{justify-content:center}
+}
+
+.gallery-wrap{position:relative;display:flex;justify-content:center;align-items:center}
+.gallery-nav{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border:0;border-radius:50%;background:rgba(17,24,39,.82);color:#fff;font-size:28px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5}
+.gallery-nav.prev{left:8px}.gallery-nav.next{right:8px}
+.gallery-nav:hover{background:#dc2626}
+.thumb-button{border:0;background:transparent;padding:0;cursor:pointer;border-radius:10px}
+.thumb-button .thumb{display:block}
+</style>
+</head>
+<body>
+
+<header>
+<div class="nav">
+<a href="index.html"><img src="assets/homs-tech-logo.png" class="logo" alt="HOMS TECH"></a>
+<nav>
+<a href="index.html">Home</a>
+<a href="about.html">Over ons</a>
+<a href="repair.html">Reparaties</a>
+<a href="devices.html">Apparaten</a>
+<a href="prices.html">Prijzen</a>
+<a class="cart-link" href="cart.html">🛒 Winkelwagen <span class="cart-count" id="cartCount">0</span></a>
+</nav>
+</div>
+</header>
+
+<main class="section">
+<a class="back" href="devices.html">← Terug naar apparaten</a>
+<div id="productArea"></div>
+</main>
+
+<footer>
+<div class="footer-inner">
+<div>
+<div class="footer-name" id="footerName">HOMS TECH</div>
+<div id="footerTag">Telefoonreparatie aan huis</div>
+</div>
+</div>
+</footer>
+
+<script>
+const params = new URLSearchParams(location.search);
+const type = params.get("type") || "phone";
+const id = Number(params.get("id"));
+
+function esc(v){
+return String(v ?? "")
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+}
+
+function euro(v){
+if(v===undefined || v===null || v==="") return "";
+const s=String(v);
+return s.includes("€") ? s : "€"+s;
+}
+
+function wa(number){
+const n=String(number||"").replace(/\D/g,"");
+return n ? "https://wa.me/"+n : "#";
+}
+
+let selectedOptions={};
+let currentProduct=null;
+let currentData=null;
+
+function num(v){
+  const cleaned=String(v??"").replace(/€/g,"").replace(/\s/g,"").replace(",",".");
+  const n=parseFloat(cleaned);
+  return Number.isFinite(n)?n:0;
+}
+function optionList(list){
+  return Array.isArray(list)?list.filter(x=>x&&x.label&&(x.active!==false && x.enabled!==false)):[];
+}
+function allActiveOptions(list){
+  return Array.isArray(list)?list.filter(x=>x&&x.label&&(x.active!==false && x.enabled!==false)):[];
+}
+function effectiveOptions(product,key){
+  const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
+  const raw=Array.isArray(product[map[key]]) ? product[map[key]] : [];
+  const defaults={
+    condition:[{label:'Zichtbaar gebruikt',priceDelta:0,active:true,available:true},{label:'Licht gebruikt',priceDelta:0,active:true,available:true},{label:'Zo goed als nieuw',priceDelta:0,active:true,available:true}],
+    storage:[{label:'64 GB',priceDelta:0,active:true,available:true},{label:'128 GB',priceDelta:0,active:true,available:true},{label:'256 GB',priceDelta:0,active:true,available:true},{label:'512 GB',priceDelta:0,active:true,available:true},{label:'1 TB',priceDelta:0,active:true,available:true}],
+    color:[{label:'Zwart',priceDelta:0,active:true,available:true},{label:'Wit',priceDelta:0,active:true,available:true},{label:'Blauw',priceDelta:0,active:true,available:true},{label:'Rood',priceDelta:0,active:true,available:true}],
+    battery:[{label:'Standaard',priceDelta:0,active:true,available:true},{label:'Nieuw (100%)',priceDelta:30,active:true,available:true}],
+    vat:[{label:'Zonder BTW',priceDelta:0,active:true,available:true},{label:'Met BTW',priceDelta:10,active:true,available:true}],
+    tradeIn:[{label:'Nee',priceDelta:0,active:true,available:true},{label:'Ja',priceDelta:0,active:true,available:true}]
+  };
+  let list=raw.length?raw:defaults[key];
+  list=list.map(x=>{const y={...x}; if(key==='battery') y.priceDelta=String(y.label||'').toLowerCase().includes('nieuw')?30:0; if(key==='vat') y.priceDelta=String(y.label||'').toLowerCase().includes('met btw')?10:0; return y;});
+  return list.filter(x=>x&&x.label&&(x.active!==false && x.enabled!==false));
+}
+function optionDelta(x){
+  if(!x) return 0;
+
+  const raw = x.priceDelta ?? x.delta ?? x.priceAdjustment ?? x.extra ?? x.amount ?? x.value;
+  if(raw !== undefined && raw !== null && raw !== ""){
+    const n=num(raw);
+    if(n !== 0) return n;
+  }
+
+  const label=String(x.label||"");
+  const match=label.match(/([+-])\s*€?\s*(\d+(?:[.,]\d+)?)\s*$/);
+  if(match){
+    const amount=parseFloat(match[2].replace(",","."));
+    return match[1]==="-" ? -amount : amount;
+  }
+
+  if(x.price !== undefined && x.price !== null && x.price !== ""){
+    return num(x.price);
+  }
+
+  return 0;
+}
+function money(n){ return "€"+Number(n||0).toFixed(2).replace(".00","").replace(".",","); }
+function calculateTotal(product){
+  const base=num(product.price || product.salePrice || product.sellPrice || 0);
+  let total=base;
+  ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{
+    const list=effectiveOptions(product,key);
+    const chosen=list.find(x=>x.label===selectedOptions[key]);
+    if(chosen) total+=optionDelta(chosen);
+  });
+  return Math.max(0,total);
+}
+function selectProductOption(key,label){
+  selectedOptions[key]=label;
+  renderProductBody();
+}
+function renderOptionSection(key,title,list){
+  const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
+  const raw=Array.isArray(currentProduct[map[key]]) ? currentProduct[map[key]] : [];
+  const base=raw.length?raw:effectiveOptions(currentProduct,key);
+  list=base.filter(x=>x&&x.label&&(x.active!==false && x.enabled!==false));
+  if(!list.length) return "";
+  const available=list.filter(x=>x.available!==false);
+  if(!selectedOptions[key] || !available.some(x=>x.label===selectedOptions[key])) selectedOptions[key]=available[0]?.label || "";
+  return `<div class="option-section"><div class="option-title">${esc(title)}</div><div class="option-grid">${list.map(x=>{
+    const active=x.label===selectedOptions[key];
+    const availableNow=x.available!==false;
+    return `<button type="button" class="option-btn ${active?"active":""} ${availableNow?"":"unavailable"}" ${availableNow?`onclick="selectProductOption('${esc(key)}','${esc(x.label)}')"`:'disabled'}>${esc(x.label)}${availableNow?"":" <span class=\"sold-x\">✕</span>"}</button>`;
+  }).join("")}</div></div>`;
+}
+let galleryImagesState=[];
+let galleryIndex=0;
+
+function setGalleryImage(index){
+  if(!galleryImagesState.length) return;
+  galleryIndex=(index+galleryImagesState.length)%galleryImagesState.length;
+  const main=document.getElementById("mainImage");
+  if(main) main.src=galleryImagesState[galleryIndex];
+  document.querySelectorAll(".thumb").forEach((x,i)=>x.classList.toggle("active",i===galleryIndex));
+}
+function changeGalleryImage(direction){
+  setGalleryImage(galleryIndex+direction);
+}
+function changeImage(el,url){
+  const index=galleryImagesState.indexOf(url);
+  if(index>=0) setGalleryImage(index);
+}
+function cartKey(){return "homsTechCart";}
+function readCart(){try{return JSON.parse(localStorage.getItem(cartKey())||"[]")}catch(e){return []}}
+function writeCart(items){localStorage.setItem(cartKey(),JSON.stringify(items));updateCartCount()}
+function updateCartCount(){const el=document.getElementById("cartCount");if(el)el.textContent=readCart().reduce((n,x)=>n+Number(x.qty||1),0)}
+function addCurrentProductToCart(){
+  if(!currentProduct) return;
+  const total=calculateTotal(currentProduct);
+  const options={};
+  ["storage","color","condition","battery","vat","tradeIn"].forEach(k=>{if(selectedOptions[k]) options[k]=selectedOptions[k]});
+  const items=readCart();
+  const key=String(type)+"|"+String(id)+"|"+JSON.stringify(options);
+  const found=items.find(x=>x.key===key);
+  if(found) found.qty=Number(found.qty||1)+1;
+  else items.push({key,type,id,name:currentProduct.name||"Smartphone",brand:currentProduct.brand||"",image:(Array.isArray(currentProduct.images)&&currentProduct.images[0])||currentProduct.image||"",options,unitPrice:total,qty:1});
+  writeCart(items);
+  const msg=document.getElementById("cartAdded"); if(msg){msg.style.display="block";msg.textContent="✓ Toegevoegd aan winkelwagen";setTimeout(()=>msg.style.display="none",2200)}
+}
+function renderProductBody(){
+  const product=currentProduct,data=currentData;
+  const area=document.getElementById("productArea");
+  const images=Array.isArray(product.images)?product.images.filter(Boolean):[];
+  const galleryImages=images.length ? images : (product.image ? [product.image] : []);
+  const mainImage=galleryImages[0]||"";
+  galleryImagesState=galleryImages.slice();
+  galleryIndex=0;
+  let gallery=mainImage?`<div class="gallery-wrap">
+    <img id="mainImage" class="main-image" src="${esc(mainImage)}" alt="${esc(product.name)}">
+    ${galleryImages.length>1?`<button type="button" class="gallery-nav prev" onclick="changeGalleryImage(-1)" aria-label="Vorige foto">‹</button>
+    <button type="button" class="gallery-nav next" onclick="changeGalleryImage(1)" aria-label="Volgende foto">›</button>`:""}
+  </div>`:`<div class="main-image" style="display:flex;align-items:center;justify-content:center;font-size:80px;">📱</div>`;
+  if(galleryImages.length>1) gallery+=`<div class="thumbs">${galleryImages.map((img,i)=>`<button type="button" class="thumb-button" onclick="setGalleryImage(${i})" aria-label="Foto ${i+1}"><img class="thumb ${i===0?"active":""}" src="${esc(img)}" alt=""></button>`).join("")}</div>`;
+
+  const basePrice=num(product.price||product.salePrice||product.sellPrice||0);
+  const hasOptions=true;
+  const total=calculateTotal(product);
+  const storage=product.storage||product.geheugen||"";
+  const color=product.color||product.kleur||"";
+  const condition=product.condition||product.conditie||"";
+  const warranty=product.warranty||product.garantie||"";
+  const description=product.description||product.beschrijving||"";
+  const whatsapp=wa(data.whatsapp);
+  const title=product.name||"Smartphone";
+
+  let specs="";
+  if(storage) specs+=`<div><strong>Opslag:</strong> ${esc(storage)}</div>`;
+  if(color) specs+=`<div><strong>Kleur:</strong> ${esc(color)}</div>`;
+  if(condition) specs+=`<div><strong>Conditie:</strong> ${esc(condition)}</div>`;
+  if(warranty) specs+=`<div><strong>Garantie:</strong> ${esc(warranty)}</div>`;
+  if(product.screen) specs+=`<div><strong>Scherm reparatie:</strong> ${euro(esc(product.screen))}</div>`;
+  if(product.software) specs+=`<div><strong>Software:</strong> ${euro(esc(product.software))}</div>`;
+  if(product.hardware) specs+=`<div><strong>Hardware:</strong> ${euro(esc(product.hardware))}</div>`;
+  if(product.camera) specs+=`<div><strong>Camera:</strong> ${euro(esc(product.camera))}</div>`;
+
+  const specsList=Array.isArray(product.specifications)?product.specifications.filter(x=>x&&x.label):[];
+  const optionsHtml=hasOptions?[
+    renderOptionSection("storage","1. Geheugen",product.storageOptions),
+    renderOptionSection("color","2. Kleur",product.colorOptions),
+    renderOptionSection("condition","3. Productconditie",product.conditionOptions),
+    renderOptionSection("battery","4. Batterij",product.batteryOptions),
+    renderOptionSection("vat","5. BTW-keuze",product.vatOptions),
+    renderOptionSection("tradeIn","6. Inruil oude telefoon",product.tradeInOptions)
+  ].join(""):"";
+
+  area.innerHTML=`<div class="product"><div class="gallery">${gallery}</div><div class="info">
+    <div class="brand">${esc(product.brand||"HOMS TECH")}</div>
+    <h1>${esc(title)}</h1>
+    <div class="price">${hasOptions?money(total):(basePrice?euro(esc(basePrice)):"")}</div>
+    ${specs?`<div class="meta">${specs}</div>`:""}
+    ${optionsHtml}
+    ${hasOptions?`<div class="order-summary"><h3>Jouw bestelling</h3>${["storage","color","condition","battery","vat","tradeIn"].filter(k=>selectedOptions[k]).map(k=>`<div class="summary-row"><span>${esc(k==="storage"?"Geheugen":k==="color"?"Kleur":k==="condition"?"Conditie":k==="battery"?"Batterij":k==="vat"?"BTW":"Inruil")}</span><strong>${esc(selectedOptions[k])}</strong></div>`).join("")}<div class="summary-total">Totaal: ${money(total)}</div></div>`:""}
+    ${description?`<div class="description">${esc(description)}</div>`:""}
+    ${specsList.length?`<div class="spec-box"><h2>Belangrijkste specificaties</h2><div class="spec-list">${specsList.map(x=>`<div><strong>${esc(x.label)}:</strong> ${esc(x.value||"")}</div>`).join("")}</div></div>`:""}
+    <div class="buttons"><button type="button" class="btn green" onclick="addCurrentProductToCart()">🛒 In winkelwagen</button><a class="btn gray" href="devices.html">← Apparaten</a></div><div id="cartAdded" class="cart-added">✓ Toegevoegd aan winkelwagen</div>
+    ${!basePrice&&!hasOptions?`<div class="status">Neem contact met ons op voor de actuele prijs.</div>`:""}
+  </div></div>`;
+}
+
+function render(product,data){
+  if(!product){document.getElementById("productArea").innerHTML=`<div class="empty"><h2>Product niet gevonden</h2><p>Dit apparaat bestaat niet of is niet meer beschikbaar.</p></div>`;return;}
+  currentProduct=product; currentData=data;
+  selectedOptions={};
+  ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'}; const raw=Array.isArray(product[map[key]])?product[map[key]]:[]; const list=(raw.length?raw:effectiveOptions(product,key)).filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false&&x.available!==false)); if(list.length) selectedOptions[key]=list[0].label;});
+  renderProductBody();
+}
+async function load(){
+try{
+const response=await fetch("/api/site");
+if(!response.ok) throw new Error("API error");
+const data=await response.json();
+
+document.getElementById("footerName").textContent=data.businessName||data.siteName||"HOMS TECH";
+document.getElementById("footerTag").textContent=data.tagline||"Telefoonreparatie aan huis";
+
+let list=[];
+if(type==="used"){
+list=Array.isArray(data.usedPhones)?data.usedPhones:[];
+}else{
+list=Array.isArray(data.phones)?data.phones:[];
+if(!list.length && Array.isArray(data.devices)) list=data.devices;
+}
+
+const product=Number.isInteger(id) && id>=0 ? list[id] : null;
+render(product,data);
+}catch(e){
+console.error("HOMS TECH:",e);
+document.getElementById("productArea").innerHTML=
+`<div class="empty"><h2>Product kan niet worden geladen</h2><p>Probeer het opnieuw.</p></div>`;
+}
+}
+
+load();
+</script>
+</body>
+</html>
