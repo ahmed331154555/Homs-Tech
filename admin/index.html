@@ -266,6 +266,33 @@ textarea{
 
 /* على الشاشات الصغيرة */
 
+
+/* Modern orders dashboard */
+.orders-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 18px}
+.orders-search{flex:1 1 360px;position:relative}
+.orders-search input{width:100%;padding:13px 15px 13px 42px;border:1px solid #dbe3ee;border-radius:12px;background:#fff;outline:none;box-shadow:0 2px 8px rgba(15,23,42,.03)}
+.orders-search input:focus{border-color:#25d366;box-shadow:0 0 0 3px rgba(37,211,102,.12)}
+.orders-search:before{content:'🔎';position:absolute;left:14px;top:11px;font-size:18px;z-index:1}
+.order-filter{padding:12px 13px;border:1px solid #dbe3ee;border-radius:12px;background:#fff;min-width:155px;font-weight:700;color:#334155}
+.order-filter-btn{border:0;border-radius:12px;padding:12px 16px;background:#eef2f7;color:#172033;font-weight:800}
+.order-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.order-stat{border:1px solid #e6ebf2;border-radius:14px;padding:14px 16px;background:linear-gradient(180deg,#fff,#f8fafc)}
+.order-stat b{display:block;font-size:22px;margin-bottom:3px}.order-stat span{font-size:12px;color:#64748b;font-weight:700}
+.order-card{padding:0;overflow:hidden;border-radius:15px;border:1px solid #e4e9f0;box-shadow:0 3px 13px rgba(15,23,42,.045)}
+.order-card-head{padding:15px 17px 13px;margin:0;border-bottom:1px solid #eef2f7;background:#fff}
+.order-main{padding:14px 17px 16px}
+.order-title{font-size:15px;line-height:1.35}.order-meta{font-size:12px;color:#64748b;margin-top:5px}
+.order-actions{display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.order-actions .btn{padding:9px 12px;border-radius:9px;font-size:13px}
+.order-status-select{min-width:145px;padding:9px 10px;border-radius:9px}
+.order-info{background:#f8fafc;border:1px solid #edf1f5;padding:9px 11px}
+.order-info strong{font-size:10px;letter-spacing:.35px}
+.webshop-order-items{margin-top:12px;padding:12px;background:#fbfcfe;border:1px solid #edf1f5;border-radius:12px}
+.webshop-order-address{margin-top:12px;padding:11px 12px;background:#f8fafc;border-radius:10px;font-size:13px}
+.order-count{margin:0 0 10px;color:#64748b;font-size:13px;font-weight:700}
+@media(max-width:900px){.order-summary{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:550px){.order-summary{grid-template-columns:1fr}.orders-toolbar{align-items:stretch}.order-filter,.order-filter-btn{width:100%}.order-actions{justify-content:flex-start}.order-actions .btn,.order-status-select{flex:1}.order-main{padding:12px}.order-card-head{padding:13px 12px}}
+
 .orders-list{display:flex;flex-direction:column;gap:12px}
 .order-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px 18px;box-shadow:0 4px 15px rgba(15,23,42,.05)}
 .order-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;border-bottom:1px solid #eef2f7;padding-bottom:12px;margin-bottom:12px}
@@ -843,26 +870,32 @@ textarea{
   <!-- GSM ORDERS -->
   <section class="section admin-page" id="page-orders">
     <div class="section-head">
-      <div>
-        <h2>📋 GSM Service Orders</h2>
-        <p>Bekijk en beheer de aanvragen die klanten via GSM Services hebben verstuurd.</p>
-      </div>
+      <div><h2>📋 GSM Service Orders</h2><p>Alle reparatie- en serviceaanvragen overzichtelijk bij elkaar.</p></div>
       <button class="btn btn-light" onclick="loadOrders()">↻ Vernieuwen</button>
     </div>
-    <div id="ordersStatus" class="status info" style="margin-bottom:15px"></div>
+    <div id="gsmOrderSummary" class="order-summary"></div>
+    <div class="orders-toolbar">
+      <div class="orders-search"><input id="gsmOrderSearch" type="search" placeholder="Zoeken op klant, e-mail, telefoon, IMEI, order..." oninput="renderGsmOrders()"></div>
+      <select id="gsmOrderStatusFilter" class="order-filter" onchange="renderGsmOrders()"><option value="">Alle statussen</option><option>Nieuw</option><option>In behandeling</option><option>Voltooid</option><option>Geannuleerd</option></select>
+      <button class="order-filter-btn" onclick="clearGsmOrderFilters()">↻ Filters wissen</button>
+    </div>
+    <div id="ordersStatus" class="status info" style="margin-bottom:10px"></div>
     <div id="ordersList" class="orders-list"></div>
   </section>
 
   <!-- WEBSHOP ORDERS -->
   <section class="section admin-page" id="page-webshop-orders">
     <div class="section-head">
-      <div>
-        <h2>🛍️ Webshop Bestellingen</h2>
-        <p>Bekijk en beheer bestellingen die klanten via de winkelwagen hebben geplaatst.</p>
-      </div>
+      <div><h2>🛍️ Webshop Bestellingen</h2><p>Bestellingen uit de webshop, met klantgegevens, producten en status.</p></div>
       <button class="btn btn-light" onclick="loadWebshopOrders()">↻ Vernieuwen</button>
     </div>
-    <div id="webshopOrdersStatus" class="status info" style="margin-bottom:15px"></div>
+    <div id="webshopOrderSummary" class="order-summary"></div>
+    <div class="orders-toolbar">
+      <div class="orders-search"><input id="webshopOrderSearch" type="search" placeholder="Zoeken op klant, e-mail, telefoon, ordernummer, postcode..." oninput="renderWebshopOrders()"></div>
+      <select id="webshopOrderStatusFilter" class="order-filter" onchange="renderWebshopOrders()"><option value="">Alle statussen</option><option>Nieuw</option><option>In behandeling</option><option>Verzonden</option><option>Voltooid</option><option>Geannuleerd</option></select>
+      <button class="order-filter-btn" onclick="clearWebshopOrderFilters()">↻ Filters wissen</button>
+    </div>
+    <div id="webshopOrdersStatus" class="status info" style="margin-bottom:10px"></div>
     <div id="webshopOrdersList" class="orders-list"></div>
   </section>
 
@@ -1844,58 +1877,50 @@ function deleteGsmService(key,i){
 
 
 /* ---------------- GSM ORDERS ---------------- */
+let adminGsmOrdersCache=[];
+let adminWebshopOrdersCache=[];
+
+function orderSearchText(o){
+  return [o.id,o.name,o.email,o.phone,o.imei,o.username,o.service_name,o.service_group,o.service_category,o.postcode,o.city,o.street,o.house_number].filter(Boolean).join(' ').toLowerCase();
+}
+function clearGsmOrderFilters(){
+  const q=document.getElementById('gsmOrderSearch'), f=document.getElementById('gsmOrderStatusFilter');
+  if(q)q.value=''; if(f)f.value=''; renderGsmOrders();
+}
+function clearWebshopOrderFilters(){
+  const q=document.getElementById('webshopOrderSearch'), f=document.getElementById('webshopOrderStatusFilter');
+  if(q)q.value=''; if(f)f.value=''; renderWebshopOrders();
+}
+function renderOrderSummary(id,orders,kind){
+  const box=document.getElementById(id); if(!box)return;
+  const statuses=kind==='gsm'?['Nieuw','In behandeling','Voltooid','Geannuleerd']:['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'];
+  box.innerHTML=`<div class="order-stat"><b>${orders.length}</b><span>Totaal orders</span></div>`+statuses.slice(0,3).map(s=>`<div class="order-stat"><b>${orders.filter(o=>o.status===s).length}</b><span>${esc(s)}</span></div>`).join('');
+}
+function renderGsmOrders(){
+  const box=document.getElementById('ordersList'); if(!box)return;
+  const q=(document.getElementById('gsmOrderSearch')?.value||'').trim().toLowerCase();
+  const filter=document.getElementById('gsmOrderStatusFilter')?.value||'';
+  const filtered=adminGsmOrdersCache.filter(o=>(!q||orderSearchText(o).includes(q))&&(!filter||o.status===filter));
+  renderOrderSummary('gsmOrderSummary',adminGsmOrdersCache,'gsm');
+  const status=document.getElementById('ordersStatus');
+  if(status){status.className='status info';status.textContent=`${filtered.length} van ${adminGsmOrdersCache.length} bestelling(en) zichtbaar`}
+  if(!filtered.length){box.innerHTML='<div class="order-empty">Geen bestellingen gevonden met deze zoekopdracht.</div>';return;}
+  box.innerHTML=filtered.map(order=>{
+    const date=order.created_at?new Date(order.created_at).toLocaleString('nl-NL'):'';
+    const price=order.price?'€ '+esc(order.price):'Op aanvraag';
+    return `<div class="order-card"><div class="order-card-head"><div><div class="order-title">#${esc(order.id)} — ${esc(order.service_name||'GSM Service')}</div><div class="order-meta">${esc(order.service_group||'General')} · ${esc(date)}</div></div><div class="order-actions"><select class="order-status-select" onchange="updateOrderStatus(${Number(order.id)},this.value)">${['Nieuw','In behandeling','Voltooid','Geannuleerd'].map(x=>`<option value="${esc(x)}" ${order.status===x?'selected':''}>${esc(x)}</option>`).join('')}</select><button class="btn btn-light" onclick="showGsmOrderDetails(${Number(order.id)})">👁 Details</button>${hasPermission('orders.delete')?`<button class="btn btn-red" onclick="deleteGsmOrder(${Number(order.id)})">🗑 Verwijderen</button>`:''}</div></div><div class="order-main"><div class="order-grid"><div class="order-info"><strong>Klant</strong>${esc(order.name||'-')}</div><div class="order-info"><strong>E-mail</strong>${esc(order.email||'-')}</div><div class="order-info"><strong>Telefoon</strong>${esc(order.phone||'-')}</div><div class="order-info"><strong>Prijs</strong>${esc(price)}</div><div class="order-info"><strong>Gebruikersnaam</strong>${esc(order.username||'-')}</div><div class="order-info"><strong>IMEI / Serienummer</strong>${esc(order.imei||'-')}</div><div class="order-info"><strong>Categorie</strong>${esc(order.service_category||'-')}</div></div>${order.notes?`<div class="order-notes"><strong>Opmerking:</strong><br>${esc(order.notes)}</div>`:''}</div></div>`;
+  }).join('');
+}
+
 async function loadOrders(){
-  const box=document.getElementById("ordersList");
-  const status=document.getElementById("ordersStatus");
-  if(!box) return;
-  status.className="status info";
-  status.textContent="Bestellingen laden...";
-  box.innerHTML="";
+  const box=document.getElementById('ordersList'), status=document.getElementById('ordersStatus');
+  if(!box)return;
+  status.className='status info'; status.textContent='Bestellingen laden...'; box.innerHTML='';
   try{
-    const r=await fetch("/api/admin/orders");
-    const result=await r.json();
-    if(!r.ok) throw new Error(result.error||"Bestellingen konden niet worden geladen");
-    const orders=result.orders||[];
-    status.className="status success";
-    status.textContent=orders.length+" bestelling(en) gevonden";
-    if(!orders.length){
-      box.innerHTML='<div class="order-empty">Nog geen GSM-service bestellingen ontvangen.</div>';
-      return;
-    }
-    box.innerHTML=orders.map(order=>{
-      const date=order.created_at ? new Date(order.created_at).toLocaleString("nl-NL") : "";
-      const price=order.price ? "€ "+esc(order.price) : "Op aanvraag";
-      return `
-        <div class="order-card">
-          <div class="order-card-head">
-            <div>
-              <div class="order-title">#${esc(order.id)} — ${esc(order.service_name||"GSM Service")}</div>
-              <div class="order-meta">${esc(order.service_group||"General")} · ${esc(date)}</div>
-            </div>
-            <div class="actions">
-              <select class="order-status-select" onchange="updateOrderStatus(${Number(order.id)},this.value)">
-                ${["Nieuw","In behandeling","Voltooid","Geannuleerd"].map(x=>`<option value="${esc(x)}" ${order.status===x?"selected":""}>${esc(x)}</option>`).join("")}
-              </select>
-              <button class="btn btn-light" onclick="showGsmOrderDetails(${Number(order.id)})">Details</button>
-              ${hasPermission("orders.delete")?`<button class="btn btn-red" onclick="deleteGsmOrder(${Number(order.id)})">Verwijderen</button>`:""}
-            </div>
-          </div>
-          <div class="order-grid">
-            <div class="order-info"><strong>Klant</strong>${esc(order.name||"-")}</div>
-            <div class="order-info"><strong>E-mail</strong>${esc(order.email||"-")}</div>
-            <div class="order-info"><strong>Telefoon</strong>${esc(order.phone||"-")}</div>
-            <div class="order-info"><strong>Prijs</strong>${esc(price)}</div>
-            <div class="order-info"><strong>Gebruikersnaam</strong>${esc(order.username||"-")}</div>
-            <div class="order-info"><strong>IMEI / Serienummer</strong>${esc(order.imei||"-")}</div>
-            <div class="order-info"><strong>Categorie</strong>${esc(order.service_category||"-")}</div>
-          </div>
-          ${order.notes?`<div class="order-notes"><strong>Opmerking:</strong><br>${esc(order.notes)}</div>`:""}
-        </div>`;
-    }).join("");
-  }catch(e){
-    status.className="status error";
-    status.textContent="✕ "+e.message;
-  }
+    const r=await fetch('/api/admin/orders'); const result=await r.json();
+    if(!r.ok)throw new Error(result.error||'Bestellingen konden niet worden geladen');
+    adminGsmOrdersCache=result.orders||[]; renderGsmOrders();
+  }catch(e){status.className='status error';status.textContent='✕ '+e.message;}
 }
 
 async function updateOrderStatus(id,statusValue){
@@ -1916,69 +1941,34 @@ async function updateOrderStatus(id,statusValue){
 }
 
 /* ---------------- WEBSHOP ORDERS ---------------- */
+function renderWebshopOrders(){
+  const box=document.getElementById('webshopOrdersList'); if(!box)return;
+  const q=(document.getElementById('webshopOrderSearch')?.value||'').trim().toLowerCase();
+  const filter=document.getElementById('webshopOrderStatusFilter')?.value||'';
+  const filtered=adminWebshopOrdersCache.filter(o=>(!q||orderSearchText(o).includes(q))&&(!filter||o.status===filter));
+  renderOrderSummary('webshopOrderSummary',adminWebshopOrdersCache,'webshop');
+  const status=document.getElementById('webshopOrdersStatus');
+  if(status){status.className='status info';status.textContent=`${filtered.length} van ${adminWebshopOrdersCache.length} webshop bestelling(en) zichtbaar`}
+  if(!filtered.length){box.innerHTML='<div class="order-empty">Geen webshop bestellingen gevonden met deze zoekopdracht.</div>';return;}
+  box.innerHTML=filtered.map(order=>{
+    const items=Array.isArray(order.items)?order.items:[];
+    const date=order.created_at?new Date(order.created_at).toLocaleString('nl-NL'):'';
+    const total=Number(order.total||0).toFixed(2).replace('.',',');
+    const address=[order.street,order.house_number,order.postcode,order.city].filter(Boolean).join(' ');
+    return `<div class="order-card"><div class="order-card-head"><div><div class="order-title">#${esc(order.id)} — Webshop bestelling</div><div class="order-meta">${esc(date)} · ${esc(order.status||'Nieuw')}</div></div><div class="order-actions"><select class="order-status-select" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">${['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(x=>`<option value="${esc(x)}" ${order.status===x?'selected':''}>${esc(x)}</option>`).join('')}</select><button class="btn btn-light" onclick="showWebshopOrderDetails(${Number(order.id)})">👁 Details</button>${hasPermission('webshop_orders.delete')?`<button class="btn btn-red" onclick="deleteWebshopOrder(${Number(order.id)})">🗑 Verwijderen</button>`:''}</div></div><div class="order-main"><div class="order-grid"><div class="order-info"><strong>Klant</strong>${esc(order.name||'-')}</div><div class="order-info"><strong>E-mail</strong>${esc(order.email||'-')}</div><div class="order-info"><strong>Telefoon</strong>${esc(order.phone||'-')}</div><div class="order-info"><strong>Totaal</strong>€ ${esc(total)}</div></div><div class="webshop-order-address"><strong>📍 Adres</strong><br>${esc(address||'-')}</div><div class="webshop-order-items"><strong>📦 Producten</strong>${items.map(item=>`<div class="webshop-item">${item.image?`<img src="${esc(item.image)}" alt="">`:''}<div class="webshop-item-info"><div class="webshop-item-name">${esc(item.name||'Product')}</div><div class="webshop-item-meta">Aantal: ${Number(item.quantity)||1}${item.options&&Object.keys(item.options).length?' · '+esc(Object.values(item.options).filter(Boolean).join(' · ')):''}</div></div><strong>€ ${esc(Number(item.totalPrice||0).toFixed(2).replace('.',','))}</strong></div>`).join('')}</div></div></div>`;
+  }).join('');
+}
+
 async function loadWebshopOrders(){
-  const box=document.getElementById("webshopOrdersList");
-  const status=document.getElementById("webshopOrdersStatus");
-  if(!box || !status) return;
-  status.className="status info";
-  status.textContent="Webshop bestellingen laden...";
-  box.innerHTML="";
-
+  const box=document.getElementById('webshopOrdersList'), status=document.getElementById('webshopOrdersStatus');
+  if(!box||!status)return;
+  status.className='status info'; status.textContent='Webshop bestellingen laden...'; box.innerHTML='';
   try{
-    const r=await fetch("/api/admin/webshop-orders",{credentials:"same-origin"});
-    const raw=await r.text();
-    let result={};
-    try{ result=raw ? JSON.parse(raw) : {}; }catch{ throw new Error("Server antwoord is geen JSON."); }
-    if(!r.ok) throw new Error(result.error||"Webshop bestellingen konden niet worden geladen");
-
-    const orders=result.orders||[];
-    status.className="status success";
-    status.textContent=orders.length+" webshop bestelling(en) gevonden";
-    if(!orders.length){
-      box.innerHTML='<div class="order-empty">Nog geen webshop bestellingen ontvangen.</div>';
-      return;
-    }
-
-    box.innerHTML=orders.map(order=>{
-      const items=Array.isArray(order.items)?order.items:[];
-      const date=order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"";
-      const total=Number(order.total||0).toFixed(2).replace('.',',');
-      const address=[order.street,order.house_number,order.postcode,order.city].filter(Boolean).join(' ');
-      return `<div class="order-card">
-        <div class="order-card-head">
-          <div>
-            <div class="order-title">#${esc(order.id)} — Webshop bestelling</div>
-            <div class="order-meta">${esc(date)}</div>
-          </div>
-          <div class="actions">
-            <select class="order-status-select" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">
-              ${["Nieuw","In behandeling","Verzonden","Voltooid","Geannuleerd"].map(x=>`<option value="${esc(x)}" ${order.status===x?'selected':''}>${esc(x)}</option>`).join('')}
-            </select>
-            <button class="btn btn-light" onclick="showWebshopOrderDetails(${Number(order.id)})">Details</button>
-            ${hasPermission("webshop_orders.delete")?`<button class="btn btn-red" onclick="deleteWebshopOrder(${Number(order.id)})">Verwijderen</button>`:""}
-          </div>
-        </div>
-        <div class="order-grid">
-          <div class="order-info"><strong>Klant</strong>${esc(order.name||'-')}</div>
-          <div class="order-info"><strong>E-mail</strong>${esc(order.email||'-')}</div>
-          <div class="order-info"><strong>Telefoon</strong>${esc(order.phone||'-')}</div>
-          <div class="order-info"><strong>Totaal</strong>€ ${esc(total)}</div>
-        </div>
-        <div class="webshop-order-address"><strong>📍 Adres</strong><br>${esc(address||'-')}</div>
-        <div class="webshop-order-items"><strong>📦 Producten</strong>
-          ${items.map(item=>`<div class="webshop-item">
-            ${item.image?`<img src="${esc(item.image)}" alt="">`:''}
-            <div class="webshop-item-info"><div class="webshop-item-name">${esc(item.name||'Product')}</div>
-            <div class="webshop-item-meta">Aantal: ${Number(item.quantity)||1}${item.options&&Object.keys(item.options).length?' · '+esc(Object.values(item.options).filter(Boolean).join(' · ')):''}</div></div>
-            <strong>€ ${esc(Number(item.totalPrice||0).toFixed(2).replace('.',','))}</strong>
-          </div>`).join('')}
-        </div>
-      </div>`;
-    }).join('');
-  }catch(e){
-    status.className="status error";
-    status.textContent="✕ "+e.message;
-  }
+    const r=await fetch('/api/admin/webshop-orders',{credentials:'same-origin'}); const raw=await r.text(); let result={};
+    try{result=raw?JSON.parse(raw):{};}catch{throw new Error('Server antwoord is geen JSON.');}
+    if(!r.ok)throw new Error(result.error||'Webshop bestellingen konden niet worden geladen');
+    adminWebshopOrdersCache=result.orders||[]; renderWebshopOrders();
+  }catch(e){status.className='status error';status.textContent='✕ '+e.message;}
 }
 
 async function updateWebshopOrderStatus(id,statusValue){
