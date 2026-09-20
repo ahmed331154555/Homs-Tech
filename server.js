@@ -827,6 +827,31 @@ app.put("/api/admin/webshop-orders/:id/status", requirePermission("webshop_order
   }
 });
 
+
+app.delete("/api/admin/webshop-orders/:id", requirePermission("webshop_orders.delete"), async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id < 1) {
+      return res.status(400).json({ error: "Ongeldig order-ID." });
+    }
+
+    const result = await pool.query(
+      "DELETE FROM webshop_orders WHERE id = $1 RETURNING id",
+      [id]
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({ error: "Bestelling niet gevonden." });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Delete webshop order error:", error);
+    res.status(500).json({ error: "Bestelling kon niet worden verwijderd." });
+  }
+});
+
+
 app.get("/api/customer/orders", requireCustomerAuth, async (req, res) => {
   try {
     const result = await pool.query(
@@ -906,6 +931,31 @@ function requireCustomerAuth(req, res, next) {
 }
 
 // Update website settings
+
+app.delete("/api/admin/orders/:id", requirePermission("orders.delete"), async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id < 1) {
+      return res.status(400).json({ error: "Ongeldig order-ID." });
+    }
+
+    const result = await pool.query(
+      "DELETE FROM service_orders WHERE id = $1 RETURNING id",
+      [id]
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({ error: "Order niet gevonden." });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Delete GSM order error:", error);
+    res.status(500).json({ error: "Order kon niet worden verwijderd." });
+  }
+});
+
+
 app.put("/api/site", requirePermission("site.save"), async (req, res) => {
   try {
     await pool.query(
