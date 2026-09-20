@@ -662,12 +662,10 @@ textarea{
     <button class="nav-btn active" data-page="general" onclick="showPage('general')">⚙️ Algemeen</button>
     <button class="nav-btn" data-page="services" onclick="showPage('services')">🔧 Diensten</button>
     <button class="nav-btn" data-page="phones" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
-    <button class="nav-btn" data-page="categories" onclick="showPage('categories')">🖼️ Apparaten & categorieën</button>
     <button class="nav-btn" data-page="used" onclick="showPage('used')">♻️ Gebruikte telefoons</button>
     <button class="nav-btn" data-page="why" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
     <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
     <button class="nav-btn" data-page="orders" onclick="showPage('orders')">📋 GSM Orders</button>
-    <button class="nav-btn" data-page="webshopOrders" onclick="showPage('webshopOrders')">🛍️ Webshop Bestellingen</button>
     <button class="nav-btn" data-page="gsm" onclick="showPage('gsm')">🛠️ GSM Services</button>
   </div>
 </div>
@@ -777,19 +775,6 @@ textarea{
     <div id="phonesList"></div>
   </section>
 
-
-  <!-- APPARAATCATEGORIEËN -->
-  <section class="section admin-page" id="page-categories">
-    <div class="section-head">
-      <div>
-        <h2>🖼️ Apparaten & categorieën</h2>
-        <p>Beheer de blokken zoals iPhones, iPads, Mac, Watches, Samsung en accessoires op de homepage.</p>
-      </div>
-      <button class="btn btn-green" onclick="addDeviceCategory()">+ Categorie toevoegen</button>
-    </div>
-    <div id="deviceCategoriesList"></div>
-  </section>
-
   <!-- GEBRUIKTE TELEFOONS -->
   <section class="section admin-page" id="page-used">
     <div class="section-head">
@@ -830,19 +815,6 @@ textarea{
     </div>
     <div id="ordersStatus" class="status info" style="margin-bottom:15px"></div>
     <div id="ordersList" class="orders-list"></div>
-  </section>
-
-  <!-- WEBSHOP BESTELLINGEN -->
-  <section class="section admin-page" id="page-webshopOrders">
-    <div class="section-head">
-      <div>
-        <h2>🛍️ Webshop Bestellingen</h2>
-        <p>Bekijk en beheer de bestellingen van smartphones uit de webshop.</p>
-      </div>
-      <button class="btn btn-light" onclick="loadWebshopOrders()">↻ Vernieuwen</button>
-    </div>
-    <div id="webshopOrdersStatus" class="status info" style="margin-bottom:15px"></div>
-    <div id="webshopOrdersList" class="orders-list"></div>
   </section>
 
   <!-- GSM SERVICES -->
@@ -943,7 +915,6 @@ function showPage(page){
     target.classList.add("active");
     if(page==="customers") loadCustomers();
     if(page==="orders") loadOrders();
-    if(page==="webshopOrders") loadWebshopOrders();
   }
 
   document.querySelectorAll(".nav-btn").forEach(button=>{
@@ -1043,219 +1014,11 @@ function normalizeGsmService(x){
   return {
     icon:x.icon || "🔧",
     name:x.name || "",
-    group:x.group || "",
     shortDescription:x.shortDescription || "",
     details:x.details || x.description || "",
     price:x.price || "",
-    active:x.active !== false,
-    requiresUsername:x.requiresUsername === true,
-    requiresImei:x.requiresImei === true
-  };
-}
-
-  function normalizePhoneOption(x, fallbackLabel, fallbackPrice){
-    if(typeof x === "string") return {label:x, enabled:true, active:true, available:true, priceDelta:0};
-    x=x||{};
-    const active=x.active !== undefined ? x.active !== false : x.enabled !== false;
-    return {
-      label:String(x.label || x.name || fallbackLabel || ""),
-      enabled:active,
-      active:active,
-      available:x.available !== false,
-      priceDelta:x.priceDelta ?? x.delta ?? x.priceAdjustment ?? x.extra ?? fallbackPrice ?? 0
-    };
-  }
-
-  
-function canonicalPhoneOptionLabel(key,label){
-  const raw=String(label??'').trim(), low=raw.toLowerCase();
-  if(key==='color'){
-    if(low==='blue'||low==='blauw') return 'Blauw';
-    if(low==='red'||low==='rood') return 'Rood';
-    if(low==='white'||low==='wit') return 'Wit';
-    if(low==='black'||low==='zwart') return 'Zwart';
-  }
-  if(key==='storage'){
-    if(/^64\s*gb$/i.test(raw)) return '64 GB';
-    if(/^128\s*gb$/i.test(raw)) return '128 GB';
-    if(/^256\s*gb$/i.test(raw)) return '256 GB';
-    if(/^512\s*gb$/i.test(raw)) return '512 GB';
-    if(/^1\s*tb$/i.test(raw)) return '1 TB';
-  }
-  if(key==='vatOptions'){
-    if(low.includes('zonder btw')) return 'Zonder BTW';
-    if(low.includes('met btw')) return 'Met BTW';
-  }
-  if(key==='batteryOptions'){
-    if(low.includes('nieuw')) return 'Nieuw (100%)';
-    if(low.includes('standaard')) return 'Standaard';
-  }
-  if(key==='tradeInOptions'){
-    if(low==='ja') return 'Ja';
-    if(low==='nee') return 'Nee';
-  }
-  return raw;
-}
-
-function normalizePhoneOptions(phone){
-    const defaults={
-      conditionOptions:[
-        {label:"Zichtbaar gebruikt",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Licht gebruikt",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Zo goed als nieuw",enabled:true,active:true,available:true,priceDelta:0}
-      ],
-      storageOptions:[
-        {label:"64 GB",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"128 GB",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"256 GB",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"512 GB",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"1 TB",enabled:true,active:true,available:true,priceDelta:0}
-      ],
-      colorOptions:[
-        {label:"Zwart",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Wit",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Blauw",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Rood",enabled:true,active:true,available:true,priceDelta:0}
-      ],
-      batteryOptions:[
-        {label:"Standaard",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Nieuw (100%)",enabled:true,active:true,available:true,priceDelta:30}
-      ],
-      vatOptions:[
-        {label:"Zonder BTW",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Met BTW",enabled:true,active:true,available:true,priceDelta:10}
-      ],
-      tradeInOptions:[
-        {label:"Nee",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Ja",enabled:true,active:true,available:true,priceDelta:0}
-      ]
-    };
-    Object.keys(defaults).forEach(key=>{
-      const incoming=Array.isArray(phone[key]) ? phone[key] : [];
-      const normalized=incoming.map((x,i)=>{
-        const d=defaults[key][i] || {priceDelta:0};
-        const n=normalizePhoneOption(x,d.label,d.priceDelta);
-        n.label=canonicalPhoneOptionLabel(key,n.label);
-        if(key==='batteryOptions') n.priceDelta=String(n.label).toLowerCase().includes('nieuw') ? 30 : 0;
-        if(key==='vatOptions') n.priceDelta=String(n.label).toLowerCase().includes('met btw') ? 10 : 0;
-        return n;
-      });
-      const deduped=[];
-      const seen=new Set();
-      normalized.forEach(n=>{
-        if(!n || !n.label) return;
-        const id=String(n.label).toLowerCase();
-        if(seen.has(id)) return;
-        if(key==='vatOptions' && n.label!=='Zonder BTW' && n.label!=='Met BTW') return;
-        if(key==='batteryOptions' && n.label!=='Standaard' && n.label!=='Nieuw (100%)') return;
-        seen.add(id);
-        deduped.push(n);
-      });
-      const labels=new Set(deduped.map(x=>String(x.label).toLowerCase()));
-      defaults[key].forEach(d=>{
-        if(!labels.has(String(d.label).toLowerCase())) deduped.push({...d});
-      });
-      phone[key]=deduped;
-    });
-  }
-
-
-
-
-function normalizeDeviceCategories(){
-  normalizeDeviceCategories();
-  if(!Array.isArray(data.deviceCategories)) data.deviceCategories=[];
-  data.deviceCategories=data.deviceCategories.map(x=>({
-    title:x.title || "Nieuwe categorie",
-    image:x.image || "",
-    link:x.link || "devices.html",
-    buttonText:x.buttonText || "Bekijk",
     active:x.active !== false
-  }));
-}
-
-function renderDeviceCategories(){
-  normalizeDeviceCategories();
-  const box=document.getElementById("deviceCategoriesList");
-  if(!box) return;
-
-  if(!data.deviceCategories.length){
-    box.innerHTML='<div class="empty">Nog geen categorieën. Voeg er één toe.</div>';
-    return;
-  }
-
-  box.innerHTML=data.deviceCategories.map((x,i)=>`
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-head">
-        <div>
-          <div class="card-title">${esc(x.title)}</div>
-          <div class="small">Homepage categorie</div>
-        </div>
-        <button class="btn btn-red" onclick="deleteDeviceCategory(${i})">Verwijderen</button>
-      </div>
-      <div class="grid">
-        <div class="field">
-          <label>Naam</label>
-          <input value="${esc(x.title)}" oninput="data.deviceCategories[${i}].title=this.value;markChanged()">
-        </div>
-        <div class="field">
-          <label>Link</label>
-          <input value="${esc(x.link)}" oninput="data.deviceCategories[${i}].link=this.value;markChanged()">
-        </div>
-        <div class="field">
-          <label>Tekst knop</label>
-          <input value="${esc(x.buttonText)}" oninput="data.deviceCategories[${i}].buttonText=this.value;markChanged()">
-        </div>
-        <div class="field">
-          <label>Actief</label>
-          <label style="display:flex;align-items:center;gap:8px;margin-top:9px">
-            <input type="checkbox" ${x.active!==false?'checked':''} onchange="data.deviceCategories[${i}].active=this.checked;markChanged()">
-            Tonen op homepage
-          </label>
-        </div>
-        <div class="field" style="grid-column:1/-1">
-          <label>Afbeelding</label>
-          <input type="file" accept="image/*" onchange="handleCategoryImage(event,${i})">
-          <input value="${esc(x.image)}" placeholder="Of plak een afbeelding URL" oninput="data.deviceCategories[${i}].image=this.value;markChanged()">
-          ${x.image?`<img src="${esc(x.image)}" alt="" style="display:block;width:220px;height:120px;object-fit:cover;border-radius:12px;margin-top:10px">`:""}
-          <div class="small">Upload een afbeelding of gebruik een URL. De gekozen afbeelding wordt in de website opgeslagen.</div>
-        </div>
-      </div>
-    </div>
-  `).join("");
-}
-
-function handleCategoryImage(event,i){
-  const file=event.target.files && event.target.files[0];
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=()=>{
-    data.deviceCategories[i].image=reader.result;
-    renderDeviceCategories();
-    markChanged();
   };
-  reader.readAsDataURL(file);
-}
-
-function addDeviceCategory(){
-  normalizeDeviceCategories();
-  data.deviceCategories.push({
-    title:"Nieuwe categorie",
-    image:"",
-    link:"devices.html",
-    buttonText:"Bekijk",
-    active:true
-  });
-  renderDeviceCategories();
-  markChanged();
-}
-
-function deleteDeviceCategory(i){
-  if(confirm("Deze categorie verwijderen?")){
-    data.deviceCategories.splice(i,1);
-    renderDeviceCategories();
-    markChanged();
-  }
 }
 
 function normalizeData(){
@@ -1273,11 +1036,7 @@ function normalizeData(){
     if(!Array.isArray(data.gsmServices[key])){
       data.gsmServices[key]=[];
     }
-    data.gsmServices[key]=data.gsmServices[key].map(x=>{
-      const service=normalizeGsmService(x);
-      if(!service.group) service.group=key==="imei"?"IMEI Services":key==="remote"?"Remote Service":key==="server"?"Server / Tools":key==="frp"?"FRP Services":"Firmware / Software";
-      return service;
-    });
+    data.gsmServices[key]=data.gsmServices[key].map(normalizeGsmService);
   });
 
   /*
@@ -1309,7 +1068,9 @@ function normalizeData(){
   /* telefoons te koop */
 
   if(!Array.isArray(data.phones)){
+
     if(Array.isArray(data.devices)){
+
       data.phones=data.devices.map(x=>({
         name:x.name || x.model || "",
         brand:x.brand || "Apple",
@@ -1321,32 +1082,23 @@ function normalizeData(){
         description:x.description || "",
         images:Array.isArray(x.images) ? x.images.slice(0,4) : [x.image || ""]
       }));
+
     }else{
       data.phones=[];
     }
   }
 
-  data.phones=data.phones.map(x=>{
-    const phone={
-      name:x.name || x.model || "",
-      brand:x.brand || "Apple",
-      price:x.price || x.salePrice || x.sellPrice || x.verkoopprijs || x.screen || "",
-      storage:x.storage || "",
-      color:x.color || x.colour || "",
-      condition:x.condition || "Nieuw",
-      warranty:x.warranty || "",
-      description:x.description || "",
-      images:Array.isArray(x.images) ? x.images.slice(0,4) : [],
-      conditionOptions:x.conditionOptions,
-      storageOptions:x.storageOptions,
-      colorOptions:x.colorOptions,
-      batteryOptions:x.batteryOptions,
-      vatOptions:x.vatOptions,
-      tradeInOptions:x.tradeInOptions
-    };
-    normalizePhoneOptions(phone);
-    return phone;
-  });
+  data.phones=data.phones.map(x=>({
+    name:x.name || x.model || "",
+    brand:x.brand || "Apple",
+    price:x.price || x.salePrice || x.sellPrice || x.verkoopprijs || x.screen || "",
+    storage:x.storage || "",
+    color:x.color || x.colour || "",
+    condition:x.condition || "Nieuw",
+    warranty:x.warranty || "",
+    description:x.description || "",
+    images:Array.isArray(x.images) ? x.images.slice(0,4) : []
+  }));
 
   data.phones.forEach(x=>{
     while(x.images.length<4) x.images.push("");
@@ -1393,11 +1145,12 @@ function normalizeData(){
   if(!data.gsmServices || typeof data.gsmServices !== "object") data.gsmServices={};
   ["imei","remote","server","frp","firmware"].forEach(key=>{
     if(!Array.isArray(data.gsmServices[key])) data.gsmServices[key]=[];
-    data.gsmServices[key]=data.gsmServices[key].map(x=>{
-      const service=normalizeGsmService(x);
-      if(!service.group) service.group=key==="imei"?"IMEI Services":key==="remote"?"Remote Service":key==="server"?"Server / Tools":key==="frp"?"FRP Services":"Firmware / Software";
-      return service;
-    });
+    data.gsmServices[key]=data.gsmServices[key].map(x=>({
+      icon:x.icon || "🔧",
+      name:x.name || "",
+      details:x.details || x.description || "",
+      price:x.price || ""
+    }));
   });
 
   /* why */
@@ -1559,37 +1312,8 @@ function renderPhones(){
   }
   if(selectedPhoneIndex>=data.phones.length) selectedPhoneIndex=data.phones.length-1;
   const phone=data.phones[selectedPhoneIndex];
-  normalizePhoneOptions(phone);
   const images=phone.images || ["","","",""];
   const list=data.phones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">📱 ${esc(x.name||'Nieuwe telefoon')}<small>${esc(x.brand||'')}</small></button>`).join('');
-  const optionEditor=(key,title,help,priceEditable=true)=>{
-    const opts=phone[key]||[];
-    const fixedGroup = key==='batteryOptions' || key==='vatOptions';
-    return `<div class="card" style="margin-top:16px"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">${help}</div>${opts.map((o,i)=>{
-      const active=o.active !== undefined ? o.active !== false : o.enabled !== false;
-      const available=o.available !== false;
-      let fixed=0;
-      if(key==='batteryOptions') fixed=String(o.label).toLowerCase().includes('nieuw') ? 30 : 0;
-      if(key==='vatOptions') fixed=String(o.label).toLowerCase().includes('met btw') ? 10 : 0;
-
-      if(fixedGroup){
-        const fixedLabel = key==='batteryOptions'
-          ? (String(o.label).toLowerCase().includes('nieuw') ? 'Nieuw (100%)' : 'Standaard')
-          : (String(o.label).toLowerCase().includes('met btw') ? 'Met BTW' : 'Zonder BTW');
-        return `<div style="display:grid;grid-template-columns:minmax(220px,1fr) 150px;gap:10px;align-items:center;margin-bottom:9px">
-          <input value="${esc(fixedLabel)}" readonly style="background:#f3f4f6;cursor:not-allowed">
-          <div class="small" style="font-weight:800">Vast: + €${fixed}</div>
-        </div>`;
-      }
-
-      return `<div style="display:grid;grid-template-columns:minmax(180px,1fr) 110px 125px 120px;gap:10px;align-items:center;margin-bottom:9px">
-        <input value="${esc(o.label)}" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].label=this.value;markChanged()">
-        <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${active?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].active=this.checked;data.phones[${selectedPhoneIndex}].${key}[${i}].enabled=this.checked;markChanged()"> Actief</label>
-        <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${available?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].available=this.checked;markChanged()"> Beschikbaar</label>
-        <input type="number" step="1" value="${esc(o.priceDelta)}" placeholder="0" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].priceDelta=this.value;markChanged()">
-      </div>`;
-    }).join('')}<div class="small" style="margin-top:8px">Actief = tonen op de website. Beschikbaar = kan geselecteerd worden. Bij BTW en batterij zijn de bedragen vast: Met BTW +€10 en Nieuw (100%) +€30.</div></div>`;
-  };
   box.innerHTML=`
     <div class="editor-layout">
       <div class="editor-list">
@@ -1598,22 +1322,19 @@ function renderPhones(){
       </div>
       <div class="editor-panel">
         <div class="card-head">
-          <div><div class="card-title" style="font-size:20px">📱 ${esc(phone.name||'Nieuwe telefoon')}</div><div class="small">Beheer de gegevens en verkoopopties van deze telefoon.</div></div>
+          <div><div class="card-title" style="font-size:20px">📱 ${esc(phone.name||'Nieuwe telefoon')}</div><div class="small">Beheer de gegevens van de telefoon die HOMS TECH verkoopt.</div></div>
           <button class="btn btn-red" onclick="deletePhone(${selectedPhoneIndex})">Verwijderen</button>
         </div>
         <div class="grid">
           <div class="field"><label>Model</label><input value="${esc(phone.name||'')}" oninput="data.phones[${selectedPhoneIndex}].name=this.value;markChanged();renderPhones()"></div>
           <div class="field"><label>Merk</label><input value="${esc(phone.brand||'')}" oninput="data.phones[${selectedPhoneIndex}].brand=this.value;markChanged()"></div>
-          <div class="field"><label>Basisprijs (€)</label><input type="number" step="1" value="${esc(phone.price||'')}" oninput="data.phones[${selectedPhoneIndex}].price=this.value;markChanged()"><div class="small">Dit is de basisprijs van Zichtbaar gebruikt.</div></div>
+          <div class="field"><label>Verkoopprijs (€)</label><input value="${esc(phone.price||'')}" oninput="data.phones[${selectedPhoneIndex}].price=this.value;markChanged()"></div>
+          <div class="field"><label>Opslag</label><input value="${esc(phone.storage||'')}" placeholder="128 GB" oninput="data.phones[${selectedPhoneIndex}].storage=this.value;markChanged()"></div>
+          <div class="field"><label>Kleur</label><input value="${esc(phone.color||'')}" placeholder="Black" oninput="data.phones[${selectedPhoneIndex}].color=this.value;markChanged()"></div>
+          <div class="field"><label>Conditie</label><select onchange="data.phones[${selectedPhoneIndex}].condition=this.value;markChanged()"><option value="Nieuw" ${phone.condition==="Nieuw"?"selected":""}>Nieuw</option><option value="Als nieuw" ${phone.condition==="Als nieuw"?"selected":""}>Als nieuw</option><option value="Zeer goed" ${phone.condition==="Zeer goed"?"selected":""}>Zeer goed</option><option value="Goed" ${phone.condition==="Goed"?"selected":""}>Goed</option><option value="Gebruikt" ${phone.condition==="Gebruikt"?"selected":""}>Gebruikt</option></select></div>
           <div class="field"><label>Garantie</label><input value="${esc(phone.warranty||'')}" placeholder="12 maanden" oninput="data.phones[${selectedPhoneIndex}].warranty=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.phones[${selectedPhoneIndex}].description=this.value;markChanged()">${esc(phone.description||'')}</textarea></div>
         </div>
-        ${optionEditor('conditionOptions','1. Productconditie','Jij bepaalt per conditie de meerprijs. Basisprijs = Zichtbaar gebruikt.')}
-        ${optionEditor('storageOptions','2. Geheugen','64 / 128 / 256 / 512 GB en 1 TB. Zet actief/beschikbaar en bepaal zelf de meerprijs.')}
-        ${optionEditor('colorOptions','3. Kleur','Bepaal welke kleuren actief en beschikbaar zijn en eventueel de meerprijs.')}
-        ${optionEditor('batteryOptions','4. Batterij','Vast: Standaard + €0 en Nieuw (100%) + €30.',false)}
-        ${optionEditor('vatOptions','5. BTW','Vast: Zonder BTW + €0 en Met BTW + €10.',false)}
-        ${optionEditor('tradeInOptions','6. Inruil oude telefoon','Klant kiest Ja of Nee. Laat prijs op 0 als je later een aparte inruilpagina wilt maken.')}
         <div style="margin-top:15px"><label style="font-weight:700">📷 Foto's</label><div class="images-grid">${images.map((img,j)=>`<div class="image-box">${img?`<img src="${esc(img)}" class="image-preview">`:`<div class="empty-preview">Geen foto</div>`}<input type="file" accept="image/*" onchange="handlePhoneImage(event,${selectedPhoneIndex},${j})">${img?`<button class="btn btn-light" style="margin-top:7px" onclick="removePhoneImage(${selectedPhoneIndex},${j})">Verwijder foto</button>`:""}</div>`).join('')}</div><p class="small">Maximaal 4 foto's per telefoon.</p></div>
       </div>
     </div>`;
@@ -1622,8 +1343,7 @@ function renderPhones(){
 function renderPhoneTitle(i){ renderPhones(); }
 
 function addPhone(){
-  data.phones.push({name:"Nieuwe iPhone",brand:"Apple",price:"",storage:"",color:"",condition:"Zichtbaar gebruikt",warranty:"",description:"",images:["","","",""]});
-  normalizePhoneOptions(data.phones[data.phones.length-1]);
+  data.phones.push({name:"Nieuwe iPhone",brand:"Apple",price:"",storage:"128 GB",color:"",condition:"Nieuw",warranty:"",description:"",images:["","","",""]});
   selectedPhoneIndex=data.phones.length-1;
   renderPhones();
   markChanged();
@@ -1708,19 +1428,7 @@ function renderGsmServices(){
   if(selectedGsmServiceIndex>=list.length) selectedGsmServiceIndex=Math.max(0,list.length-1);
 
   const tabs=gsmServiceCategories.map(c=>`<button type="button" class="gsm-admin-tab ${c[0]===activeKey?"active":""}" onclick="gsmActiveCategory='${c[0]}';selectedGsmServiceIndex=0;renderGsmServices()">${c[1]}</button>`).join('');
-  const grouped=new Map();
-  list.forEach((service,i)=>{
-    const groupName=(service.group||category[1].replace(/^[^ ]+ /,'')||"General").trim()||"General";
-    if(!grouped.has(groupName)) grouped.set(groupName,[]);
-    grouped.get(groupName).push({service,i});
-  });
-  const rows=list.length ? [...grouped.entries()].sort((a,b)=>a[0].localeCompare(b[0],'nl')).map(([groupName,items])=>`
-    <div class="gsm-admin-group" style="margin:10px 0 6px;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#fff">
-      <div style="padding:9px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:900;color:#334155;display:flex;justify-content:space-between;align-items:center">
-        <span>${esc(groupName)}</span><span style="font-size:11px;color:#64748b">${items.length}</span>
-      </div>
-      ${items.map(({service,i})=>`<button type="button" class="editor-list-item ${i===selectedGsmServiceIndex?'active':''}" onclick="selectedGsmServiceIndex=${i};renderGsmServices()">${esc(service.icon||'🔧')} ${esc(service.name||'Nieuwe GSM Service')}<small>${service.price?('€ '+esc(service.price)):'Op aanvraag'}</small></button>`).join('')}
-    </div>`).join('') : '<div class="small" style="padding:10px">Nog geen services in deze categorie.</div>';
+  const rows=list.length ? list.map((service,i)=>`<button type="button" class="editor-list-item ${i===selectedGsmServiceIndex?'active':''}" onclick="selectedGsmServiceIndex=${i};renderGsmServices()">${esc(service.icon||'🔧')} ${esc(service.name||'Nieuwe GSM Service')}<small>${service.price?('€ '+esc(service.price)):'Op aanvraag'}</small></button>`).join('') : '<div class="small" style="padding:10px">Nog geen services in deze categorie.</div>';
   const service=list[selectedGsmServiceIndex];
 
   let editor='';
@@ -1732,9 +1440,8 @@ function renderGsmServices(){
           <button class="btn btn-red" onclick="deleteGsmService('${category[0]}',${selectedGsmServiceIndex})">Verwijderen</button>
         </div>
         <div class="grid">
-          <div class="field"><label>Groep / bestandsnaam</label><input value="${esc(service.group || category[1].replace(/^[^ ]+ /,''))}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].group=this.value;markChanged();renderGsmServices()" placeholder="Bijv. INPRO RAMDISK A12/A13"></div>
+          <div class="field"><label>Groep</label><input value="${esc(category[1].replace(/^[^ ]+ /,''))}" readonly></div>
           <div class="field"><label>Status</label><select onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].active=this.value==='Actief';markChanged()"><option value="Actief" ${service.active!==false?'selected':''}>Actief</option><option value="Inactief" ${service.active===false?'selected':''}>Inactief</option></select></div>
-          <div class="field" style="display:flex;flex-direction:column;gap:8px;justify-content:flex-end"><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresUsername===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresUsername=this.checked;markChanged()" style="width:18px;height:18px"> Gebruikersnaam klant verplicht</label><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresImei===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresImei=this.checked;markChanged()" style="width:18px;height:18px"> IMEI / Serienummer klant verplicht</label></div>
           <div class="field"><label>Naam service</label><input value="${esc(service.name||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].name=this.value;markChanged();renderGsmServices()"></div>
           <div class="field"><label>Prijs (€)</label><input value="${esc(service.price||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].price=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1"><label>Korte beschrijving</label><input value="${esc(service.shortDescription||'')}" placeholder="Bijv. Xiaomi / Redmi / Poco" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].shortDescription=this.value;markChanged()"></div>
@@ -1756,17 +1463,16 @@ function openGsmServiceEditor(category,i){
   renderGsmServices();
 }
 
-async function saveGsmServiceEditor(category,i){
+function saveGsmServiceEditor(category,i){
   gsmActiveCategory=category;
   selectedGsmServiceIndex=i;
   renderGsmServices();
-  await save();
+  markChanged();
 }
 
 function addGsmService(key){
   if(!data.gsmServices[key]) data.gsmServices[key]=[];
-  const categoryLabel=(gsmServiceCategories.find(x=>x[0]===key)||[key,key])[1].replace(/^[^ ]+ /,'');
-  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",group:categoryLabel,shortDescription:"",details:"",price:"",active:true,requiresUsername:false,requiresImei:false});
+  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",shortDescription:"",details:"",price:"",active:true});
   gsmActiveCategory=key;
   selectedGsmServiceIndex=data.gsmServices[key].length-1;
   renderGsmServices();
@@ -1822,7 +1528,6 @@ async function loadOrders(){
             <div class="order-info"><strong>E-mail</strong>${esc(order.email||"-")}</div>
             <div class="order-info"><strong>Telefoon</strong>${esc(order.phone||"-")}</div>
             <div class="order-info"><strong>Prijs</strong>${esc(price)}</div>
-            <div class="order-info"><strong>Gebruikersnaam</strong>${esc(order.username||"-")}</div>
             <div class="order-info"><strong>IMEI / Serienummer</strong>${esc(order.imei||"-")}</div>
             <div class="order-info"><strong>Categorie</strong>${esc(order.service_category||"-")}</div>
           </div>
@@ -1848,76 +1553,6 @@ async function updateOrderStatus(id,statusValue){
   }catch(e){
     setStatus("✕ "+e.message,"error");
     loadOrders();
-  }
-}
-
-/* ---------------- WEBSHOP ORDERS ---------------- */
-async function loadWebshopOrders(){
-  const box=document.getElementById("webshopOrdersList");
-  const status=document.getElementById("webshopOrdersStatus");
-  if(!box) return;
-  status.className="status info";
-  status.textContent="Webshop bestellingen laden...";
-  box.innerHTML="";
-  try{
-    const r=await fetch("/api/admin/webshop-orders");
-    const result=await r.json().catch(()=>({}));
-    if(!r.ok) throw new Error(result.error||"Webshop bestellingen konden niet worden geladen");
-    const orders=result.orders||[];
-    status.className="status success";
-    status.textContent=orders.length+" bestelling(en) gevonden";
-    if(!orders.length){
-      box.innerHTML='<div class="order-empty">Nog geen webshop bestellingen ontvangen.</div>';
-      return;
-    }
-    box.innerHTML=orders.map(order=>{
-      const date=order.created_at ? new Date(order.created_at).toLocaleString("nl-NL") : "";
-      const items=Array.isArray(order.items)?order.items:[];
-      const itemHtml=items.map(item=>{
-        const opts=item.options&&typeof item.options==="object" ? Object.entries(item.options).map(([k,v])=>esc(k)+": "+esc(v)).join(" · ") : "";
-        return `<div style="padding:9px 0;border-bottom:1px solid #e5e7eb"><strong>${esc(item.name||"Smartphone")}</strong> × ${Number(item.qty||1)}${opts?`<div class="order-meta">${opts}</div>`:""}<div class="order-meta">€ ${Number(item.unitPrice||0).toFixed(2).replace(".00","").replace(".",",")} per stuk</div></div>`;
-      }).join("");
-      return `
-        <div class="order-card">
-          <div class="order-card-head">
-            <div>
-              <div class="order-title">#${esc(order.id)} — Webshop bestelling</div>
-              <div class="order-meta">${esc(date)}</div>
-            </div>
-            <select class="order-status-select" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">
-              ${["Nieuw","In behandeling","Verzonden","Voltooid","Geannuleerd"].map(x=>`<option value="${esc(x)}" ${order.status===x?"selected":""}>${esc(x)}</option>`).join("")}
-            </select>
-          </div>
-          <div class="order-grid">
-            <div class="order-info"><strong>Klant</strong>${esc(order.name||"-")}</div>
-            <div class="order-info"><strong>E-mail</strong>${esc(order.email||"-")}</div>
-            <div class="order-info"><strong>Telefoon</strong>${esc(order.phone||"-")}</div>
-            <div class="order-info"><strong>Adres</strong>${esc([order.street,order.house_number].filter(Boolean).join(" ")||"-")}<br>${esc([order.postcode,order.city].filter(Boolean).join(" "))}</div>
-            <div class="order-info"><strong>Totaal</strong>€ ${Number(order.total||0).toFixed(2).replace(".00","").replace(".",",")}</div>
-          </div>
-          <div class="order-notes"><strong>Producten</strong>${itemHtml||"-"}</div>
-        </div>`;
-    }).join("");
-  }catch(e){
-    status.className="status error";
-    status.textContent="✕ "+e.message;
-  }
-}
-
-async function updateWebshopOrderStatus(id,statusValue){
-  try{
-    const r=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/status",{
-      method:"PUT",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({status:statusValue})
-    });
-    const result=await r.json().catch(()=>({}));
-    if(!r.ok) throw new Error(result.error||"Status kon niet worden gewijzigd");
-    loadWebshopOrders();
-  }catch(e){
-    const status=document.getElementById("webshopOrdersStatus");
-    status.className="status error";
-    status.textContent="✕ "+e.message;
   }
 }
 
@@ -2046,9 +1681,9 @@ async function save(){
 
     data=result.data || data;
 
+    /* Na het opslaan niet opnieuw alle editors renderen.
+       Dat kan een call-stack fout veroorzaken en is niet nodig. */
     normalizeData();
-
-    renderAll();
 
     setStatus(
       "✓ Alle wijzigingen zijn succesvol opgeslagen",
@@ -2075,7 +1710,6 @@ function renderAll(){
   renderGeneral();
   renderServices();
   renderPhones();
-  renderDeviceCategories();
   renderUsedPhones();
   renderGsmServices();
   renderWhy();
