@@ -1348,7 +1348,7 @@ function renderPhones(){
           <div class="field"><label>Garantie</label><input value="${esc(phone.warranty||'')}" placeholder="12 maanden" oninput="data.phones[${selectedPhoneIndex}].warranty=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1">
             <label>🛒 Keuze-opties voor de productpagina</label>
-            <div class="small">Eén optie per regel: <strong>naam|prijsverschil</strong>. Bijvoorbeeld: 64 GB|0 en 128 GB|20. Bij conditie kun je een vaste prijs gebruiken: Als nieuw|219.</div>
+            <div class="small">Eén optie per regel: <strong>naam|bedrag</strong>. Opslag/kleur/batterij/BTW/inruil gebruiken het bedrag als prijsverschil. Bij <strong>Conditie</strong> is het bedrag de eindprijs van de telefoon, bijvoorbeeld: Als nieuw|219 en Zeer goed|199.</div>
           </div>
           <div class="field"><label>Opslag opties</label><textarea placeholder="64 GB|0\n128 GB|20" oninput="data.phones[${selectedPhoneIndex}].storageOptions=parseProductOptions(this.value);markChanged()">${esc(formatProductOptions(phone.storageOptions))}</textarea></div>
           <div class="field"><label>Kleur opties</label><textarea placeholder="Zwart|0\nBlauw|10" oninput="data.phones[${selectedPhoneIndex}].colorOptions=parseProductOptions(this.value);markChanged()">${esc(formatProductOptions(phone.colorOptions))}</textarea></div>
