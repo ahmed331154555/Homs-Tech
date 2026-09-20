@@ -205,7 +205,7 @@ function renderOptionSection(key,title,list){
   return `<div class="option-section"><div class="option-title">${esc(title)}</div><div class="option-grid">${list.map(x=>{
     const active=x.label===selectedOptions[key];
     const availableNow=x.available!==false;
-    return `<button type="button" class="option-btn ${active?"active":""} ${availableNow?"":"unavailable"}" ${availableNow?`onclick="selectProductOption('${esc(key)}','${esc(x.label)}')" disabled="false"`:'disabled'}>${esc(x.label)}${availableNow?"":" <span class=\"sold-x\">✕</span>"}</button>`;
+    return `<button type="button" class="option-btn ${active?"active":""} ${availableNow?"":"unavailable"}" ${availableNow?`onclick="selectProductOption('${esc(key)}','${esc(x.label)}')"`:'disabled'}>${esc(x.label)}${availableNow?"":" <span class=\"sold-x\">✕</span>"}</button>`;
   }).join("")}</div></div>`;
 }
 let galleryImagesState=[];
