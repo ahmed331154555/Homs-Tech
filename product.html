@@ -114,12 +114,9 @@ const s=String(v);
 return s.includes("€") ? s : "€"+s;
 }
 
-function wa(v,message){
-  let n=String(v||"").replace(/\D/g,"");
-  if(!n) return "#";
-  if(n.startsWith("0")) n="31"+n.slice(1);
-  if(!n.startsWith("31")) n="31"+n;
-  return "https://wa.me/"+n+(message?"?text="+encodeURIComponent(message):"");
+function wa(number){
+const n=String(number||"").replace(/\D/g,"");
+return n ? "https://wa.me/"+n : "#";
 }
 
 let selectedOptions={};
@@ -127,23 +124,23 @@ let currentProduct=null;
 let currentData=null;
 
 function num(v){
-  const n=parseFloat(String(v??"").replace(",","."));
+  const cleaned=String(v??"").replace(/€/g,"").replace(/\s/g,"").replace(",",".");
+  const n=parseFloat(cleaned);
   return Number.isFinite(n)?n:0;
 }
 function optionList(list){
   return Array.isArray(list)?list.filter(x=>x&&x.label):[];
 }
-function optionDelta(x){ return num(x&&x.priceDelta); }
-function money(n){ return "€"+Number(n||0).toFixed(2).replace(".00","").replace(".",","); }
-function conditionPrice(product){
-  const list=optionList(product.conditionOptions);
-  const chosen=list.find(x=>x.label===selectedOptions.condition);
-  if(chosen && optionDelta(chosen)>0) return optionDelta(chosen);
-  return num(product.price || product.salePrice || product.sellPrice || 0);
+function optionDelta(x){
+  if(!x) return 0;
+  const raw = x.priceDelta ?? x.delta ?? x.priceAdjustment ?? x.extra ?? x.amount ?? x.price ?? x.value ?? 0;
+  return num(raw);
 }
+function money(n){ return "€"+Number(n||0).toFixed(2).replace(".00","").replace(".",","); }
 function calculateTotal(product){
-  let total=conditionPrice(product);
-  ["storage","color","battery","vat","tradeIn"].forEach(key=>{
+  const base=num(product.price || product.salePrice || product.sellPrice || 0);
+  let total=base;
+  ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{
     const list=optionList(product[key+"Options"]);
     const chosen=list.find(x=>x.label===selectedOptions[key]);
     if(chosen) total+=optionDelta(chosen);
@@ -182,15 +179,8 @@ function renderProductBody(){
   const condition=product.condition||product.conditie||"";
   const warranty=product.warranty||product.garantie||"";
   const description=product.description||product.beschrijving||"";
+  const whatsapp=wa(data.whatsapp);
   const title=product.name||"Smartphone";
-  const selectedLines=["storage","color","condition","battery","vat","tradeIn"]
-    .filter(k=>selectedOptions[k])
-    .map(k=>{
-      const label=k==="storage"?"Geheugen":k==="color"?"Kleur":k==="condition"?"Conditie":k==="battery"?"Batterij":k==="vat"?"BTW":"Inruil";
-      return label+": "+selectedOptions[k];
-    });
-  const orderMessage=`Hallo HOMS TECH, ik wil deze telefoon bestellen: ${title}. ${selectedLines.join(" | ")} Totaal: ${money(total)}.`;
-  const whatsapp=wa(data.whatsapp,orderMessage);
 
   let specs="";
   if(storage) specs+=`<div><strong>Opslag:</strong> ${esc(storage)}</div>`;
@@ -221,7 +211,7 @@ function renderProductBody(){
     ${hasOptions?`<div class="order-summary"><h3>Jouw bestelling</h3>${["storage","color","condition","battery","vat","tradeIn"].filter(k=>selectedOptions[k]).map(k=>`<div class="summary-row"><span>${esc(k==="storage"?"Geheugen":k==="color"?"Kleur":k==="condition"?"Conditie":k==="battery"?"Batterij":k==="vat"?"BTW":"Inruil")}</span><strong>${esc(selectedOptions[k])}</strong></div>`).join("")}<div class="summary-total">Totaal: ${money(total)}</div></div>`:""}
     ${description?`<div class="description">${esc(description)}</div>`:""}
     ${specsList.length?`<div class="spec-box"><h2>Belangrijkste specificaties</h2><div class="spec-list">${specsList.map(x=>`<div><strong>${esc(x.label)}:</strong> ${esc(x.value||"")}</div>`).join("")}</div></div>`:""}
-    <div class="buttons"><a class="btn green" href="${esc(whatsapp)}" target="_blank" rel="noopener">💬 Bestel via WhatsApp</a><a class="btn gray" href="devices.html">← Apparaten</a></div>
+    <div class="buttons"><a class="btn green" href="${esc(whatsapp)}" target="_blank">💬 Bestel via WhatsApp</a><a class="btn gray" href="devices.html">← Apparaten</a></div>
     ${!basePrice&&!hasOptions?`<div class="status">Neem contact met ons op voor de actuele prijs.</div>`:""}
   </div></div>`;
 }
