@@ -6,9 +6,9 @@
 <title>Product - HOMS TECH</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,Helvetica,sans-serif;background:#f7f7f4;color:#111827;line-height:1.6}
+body{font-family:Arial,Helvetica,sans-serif;background:#f5f7fa;color:#111827;line-height:1.6}
 a{text-decoration:none;color:inherit}
-header{position:sticky;top:0;z-index:1000;background:#071d2d;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}
 .nav{max-width:1200px;margin:auto;min-height:72px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:20px}
 .logo{width:170px;display:block}
 nav{display:flex;gap:6px;flex-wrap:wrap}
@@ -31,11 +31,11 @@ nav a:hover{background:#2563eb}
 .description{margin:25px 0;color:#4b5563}
 .buttons{display:flex;gap:12px;flex-wrap:wrap}
 .btn{display:inline-flex;align-items:center;justify-content:center;padding:14px 22px;border-radius:11px;font-weight:800;border:0;cursor:pointer}
-.green{background:#2563eb;color:#fff}
+.green{background:#16c766;color:#fff}
 .blue{background:#2563eb;color:#fff}
 .gray{background:#eef2f7;color:#111827}
 .btn:hover{opacity:.9}
-.cart-link{background:#2563eb;color:#fff!important;padding:10px 14px;border-radius:10px;font-weight:800;white-space:nowrap}.cart-count{display:inline-flex;min-width:21px;height:21px;align-items:center;justify-content:center;background:#fff;color:#2563eb;border-radius:999px;font-size:12px;margin-left:4px;padding:0 5px}
+.cart-link{background:#dc2626;color:#fff!important;padding:10px 14px;border-radius:10px;font-weight:800;white-space:nowrap}.cart-count{display:inline-flex;min-width:21px;height:21px;align-items:center;justify-content:center;background:#fff;color:#dc2626;border-radius:999px;font-size:12px;margin-left:4px;padding:0 5px}
 .cart-added{margin-top:10px;padding:12px 14px;border-radius:10px;background:#ecfdf5;color:#166534;font-weight:700;display:none}
 .status{padding:14px;border-radius:10px;background:#fff7ed;color:#9a3412;margin-top:15px}
 .option-section{margin:22px 0}
@@ -44,9 +44,9 @@ nav a:hover{background:#2563eb}
 .option-btn{border:1px solid #dbe3ec;background:#fff;color:#111827;border-radius:11px;padding:11px 14px;cursor:pointer;font-weight:700;min-width:90px;text-align:left}
 .option-btn:hover{border-color:#2563eb}
 .option-btn.active{border-color:#2563eb;background:#eff6ff;box-shadow:0 0 0 2px rgba(37,99,235,.10)}
-.option-btn.unavailable{opacity:.55;text-decoration:line-through;cursor:not-allowed;background:#f3f4f6;border-color:#d1d5db}.sold-x{color:#2563eb;font-weight:900;margin-left:6px;text-decoration:none}
+.option-btn.unavailable{opacity:.55;text-decoration:line-through;cursor:not-allowed;background:#f3f4f6;border-color:#d1d5db}.sold-x{color:#dc2626;font-weight:900;margin-left:6px;text-decoration:none}
 .option-btn small{display:block;color:#6b7280;font-weight:600;margin-top:2px}
-.order-summary{margin-top:22px;background:#071d2d;color:#fff;border-radius:18px;padding:20px}
+.order-summary{margin-top:22px;background:#111827;color:#fff;border-radius:18px;padding:20px}
 .order-summary h3{font-size:20px;margin-bottom:12px}
 .summary-row{display:flex;justify-content:space-between;gap:15px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12)}
 .summary-row:last-child{border-bottom:0}
@@ -70,88 +70,40 @@ nav{justify-content:center}
 .gallery-wrap{position:relative;display:flex;justify-content:center;align-items:center}
 .gallery-nav{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border:0;border-radius:50%;background:rgba(17,24,39,.82);color:#fff;font-size:28px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5}
 .gallery-nav.prev{left:8px}.gallery-nav.next{right:8px}
-.gallery-nav:hover{background:#2563eb}
+.gallery-nav:hover{background:#dc2626}
 .thumb-button{border:0;background:transparent;padding:0;cursor:pointer;border-radius:10px}
 .thumb-button .thumb{display:block}
 </style>
-<link rel="stylesheet" href="assets/homs-tech-theme.css">
 </head>
 <body>
 
-
-<div class="ht-topbar">
-  <div class="ht-topbar-inner">
-    <div class="ht-topinfo">
-      <span>Altijd garantie</span><span>Snel geleverd</span><span>Betrouwbare service</span><span>Betaalbare prijzen</span>
-    </div>
-    <div class="ht-rating">★★★★★ HOMS TECH</div>
-  </div>
+<header>
+<div class="nav">
+<a href="index.html"><img src="assets/homs-tech-logo.png" class="logo" alt="HOMS TECH"></a>
+<nav>
+<a href="index.html">Home</a>
+<a href="about.html">Over ons</a>
+<a href="repair.html">Reparaties</a>
+<a href="devices.html">Apparaten</a>
+<a href="prices.html">Prijzen</a>
+<a class="cart-link" href="cart.html">🛒 Winkelwagen <span class="cart-count" id="cartCount">0</span></a>
+</nav>
 </div>
-<header class="ht-header">
-  <div class="ht-head-main">
-    <a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>
-    <div class="ht-search">
-      <button class="ht-search-btn" data-ht-search type="button">⌕</button>
-      <input data-ht-search-input placeholder="Waar ben je naar op zoek?" aria-label="Zoeken">
-    </div>
-    <div class="ht-actions">
-      <button class="ht-action" data-ht-search type="button">Zoek</button>
-      <div class="ht-lang" data-ht-lang>
-        <button class="ht-action" data-ht-lang-toggle type="button">NL⌄</button>
-        <div class="ht-lang-menu">
-          <button type="button" data-lang="nl">Nederlands</button>
-          <button type="button" data-lang="en">English</button>
-          <button type="button" data-lang="ar">العربية</button>
-        </div>
-      </div>
-      <a class="ht-action" href="account.html">♙ Mijn account</a>
-      <a class="ht-action" href="cart.html">🛒 Winkelwagen <span class="ht-cart-count" data-ht-cart-count>0</span></a>
-    </div>
-  </div>
-  <nav class="ht-nav">
-    <a href="index.html" data-ht-nav="index.html">Home</a>
-    <a href="about.html" data-ht-nav="about.html">Over ons</a>
-    <a href="repair.html" data-ht-nav="repair.html">Reparaties</a>
-    <a href="devices.html" data-ht-nav="devices.html">Apparaten</a>
-    <a href="prices.html" data-ht-nav="prices.html">Prijzen</a>
-    <a href="used.html" data-ht-nav="used.html">Tweedehands</a>
-    <a href="gsm-services.html" data-ht-nav="gsm-services.html">GSM Services</a>
-  </nav>
 </header>
-<div class="ht-search-panel" data-ht-search-panel>
-  <input data-ht-search-input placeholder="Zoek naar een apparaat..." aria-label="Zoeken naar apparaat">
-  <button data-ht-search-submit type="button">Zoeken</button>
-</div>
-
 
 <main class="section">
 <a class="back" href="devices.html">← Terug naar apparaten</a>
 <div id="productArea"></div>
 </main>
 
-
-<footer class="ht-footer">
-  <div class="ht-footer-inner">
-    <div class="ht-footer-grid">
-      <div>
-        <div class="ht-footer-brand">HOMS <span>TECH</span></div>
-        <p>Refurbished apparaten · Reparatie aan huis · GSM Services</p>
-        <p>Rotterdam en omgeving.</p>
-      </div>
-      <div><h3>Snelle links</h3><ul>
-        <li><a href="index.html">Home</a></li><li><a href="devices.html">Apparaten</a></li>
-        <li><a href="repair.html">Reparaties</a></li><li><a href="prices.html">Prijzen</a></li>
-      </ul></div>
-      <div><h3>Service</h3><ul>
-        <li><a href="about.html">Over ons</a></li><li><a href="used.html">Tweedehands</a></li>
-        <li><a href="gsm-services.html">GSM Services</a></li><li><a href="account.html">Mijn account</a></li>
-      </ul></div>
-      <div><h3>Contact</h3><p>WhatsApp</p><p>Telefoon</p><p>E-mail</p></div>
-    </div>
-    <div class="ht-copy"><span>© 2026 HOMS TECH</span><span>Refurbished · Reparatie · Service</span></div>
-  </div>
+<footer>
+<div class="footer-inner">
+<div>
+<div class="footer-name" id="footerName">HOMS TECH</div>
+<div id="footerTag">Telefoonreparatie aan huis</div>
+</div>
+</div>
 </footer>
-
 
 <script>
 const params = new URLSearchParams(location.search);
@@ -388,6 +340,5 @@ document.getElementById("productArea").innerHTML=
 
 load();
 </script>
-<script src="assets/homs-tech-theme.js"></script>
 </body>
 </html>

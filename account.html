@@ -6,9 +6,9 @@
 <title>Mijn account - HOMS TECH</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,Helvetica,sans-serif;background:#f7f7f4;color:#111827;line-height:1.6}
+body{font-family:Arial,Helvetica,sans-serif;background:#f5f7fa;color:#111827;line-height:1.6}
 a{text-decoration:none;color:inherit}
-header{background:#071d2d;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}
 .nav{max-width:1200px;margin:auto;min-height:72px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:20px}
 .logo{width:170px;display:block}
 nav{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -20,7 +20,7 @@ h1{font-size:38px;margin-bottom:10px}
 .subtitle{color:#6b7280;margin-bottom:28px}
 .tabs{display:flex;gap:8px;margin-bottom:25px}
 .tab{border:0;background:#eef2f7;padding:11px 18px;border-radius:10px;font-weight:700;cursor:pointer}
-.tab.active{background:#2563eb;color:#fff}
+.tab.active{background:#16c766;color:#fff}
 .form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .field{display:flex;flex-direction:column;gap:7px}
 .field.full{grid-column:1/-1}
@@ -28,7 +28,7 @@ label{font-weight:700}
 input{width:100%;padding:13px 14px;border:1px solid #dbe2ea;border-radius:10px;font-size:16px}
 input:focus{outline:3px solid rgba(37,99,235,.12);border-color:#2563eb}
 .btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 20px;border:0;border-radius:10px;font-weight:800;cursor:pointer}
-.green{background:#2563eb;color:#fff}.blue{background:#2563eb;color:#fff}.gray{background:#eef2f7;color:#111827}
+.green{background:#16c766;color:#fff}.blue{background:#2563eb;color:#fff}.gray{background:#eef2f7;color:#111827}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
 .message{padding:12px 14px;border-radius:10px;margin-bottom:18px;display:none}
 .message.error{display:block;background:#fee2e2;color:#991b1b}
@@ -40,54 +40,22 @@ input:focus{outline:3px solid rgba(37,99,235,.12);border-color:#2563eb}
 .orders{margin-top:20px}.orders h2{margin-bottom:12px}.order-list{display:flex;flex-direction:column;gap:10px}.order-item{border:1px solid #e5e7eb;border-radius:12px;padding:14px;background:#f8fafc}.order-item-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.order-name{font-weight:900}.order-date{font-size:12px;color:#64748b}.order-status{padding:5px 9px;border-radius:999px;background:#e2e8f0;font-size:12px;font-weight:800}.order-detail{margin-top:8px;font-size:13px;color:#475569}.orders-empty{color:#64748b;padding:15px;background:#f8fafc;border-radius:10px}
 @media(max-width:650px){.nav{flex-direction:column;padding:12px 15px}.form,.account-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.section{padding:45px 16px}h1{font-size:31px}}
 </style>
-<link rel="stylesheet" href="assets/homs-tech-theme.css">
 </head>
 <body>
-
-<div class="ht-topbar">
-  <div class="ht-topbar-inner">
-    <div class="ht-topinfo">
-      <span>Altijd garantie</span><span>Snel geleverd</span><span>Betrouwbare service</span><span>Betaalbare prijzen</span>
-    </div>
-    <div class="ht-rating">★★★★★ HOMS TECH</div>
-  </div>
+<header>
+<div class="nav">
+<a href="index.html"><img src="assets/homs-tech-logo.png" class="logo" alt="HOMS TECH"></a>
+<nav>
+<a href="index.html">Home</a>
+<a href="about.html">Over ons</a>
+<a href="repair.html">Reparaties</a>
+<a href="devices.html">Apparaten</a>
+<a href="prices.html">Prijzen</a>
+<a href="gsm-services.html">GSM Services</a>
+<a href="account.html" class="active">Mijn account</a>
+</nav>
 </div>
-<header class="ht-header">
-  <div class="ht-head-main">
-    <a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>
-    <div class="ht-search">
-      <button class="ht-search-btn" data-ht-search type="button">⌕</button>
-      <input data-ht-search-input placeholder="Waar ben je naar op zoek?" aria-label="Zoeken">
-    </div>
-    <div class="ht-actions">
-      <button class="ht-action" data-ht-search type="button">Zoek</button>
-      <div class="ht-lang" data-ht-lang>
-        <button class="ht-action" data-ht-lang-toggle type="button">NL⌄</button>
-        <div class="ht-lang-menu">
-          <button type="button" data-lang="nl">Nederlands</button>
-          <button type="button" data-lang="en">English</button>
-          <button type="button" data-lang="ar">العربية</button>
-        </div>
-      </div>
-      <a class="ht-action" href="account.html">♙ Mijn account</a>
-      <a class="ht-action" href="cart.html">🛒 Winkelwagen <span class="ht-cart-count" data-ht-cart-count>0</span></a>
-    </div>
-  </div>
-  <nav class="ht-nav">
-    <a href="index.html" data-ht-nav="index.html">Home</a>
-    <a href="about.html" data-ht-nav="about.html">Over ons</a>
-    <a href="repair.html" data-ht-nav="repair.html">Reparaties</a>
-    <a href="devices.html" data-ht-nav="devices.html">Apparaten</a>
-    <a href="prices.html" data-ht-nav="prices.html">Prijzen</a>
-    <a href="used.html" data-ht-nav="used.html">Tweedehands</a>
-    <a href="gsm-services.html" data-ht-nav="gsm-services.html">GSM Services</a>
-  </nav>
 </header>
-<div class="ht-search-panel" data-ht-search-panel>
-  <input data-ht-search-input placeholder="Zoek naar een apparaat..." aria-label="Zoeken naar apparaat">
-  <button data-ht-search-submit type="button">Zoeken</button>
-</div>
-
 
 <section class="section">
 <div class="card" id="authCard">
@@ -232,29 +200,5 @@ if(data.authenticated)showAccount(data.customer);
 }catch{}
 })();
 </script>
-
-<footer class="ht-footer">
-  <div class="ht-footer-inner">
-    <div class="ht-footer-grid">
-      <div>
-        <div class="ht-footer-brand">HOMS <span>TECH</span></div>
-        <p>Refurbished apparaten · Reparatie aan huis · GSM Services</p>
-        <p>Rotterdam en omgeving.</p>
-      </div>
-      <div><h3>Snelle links</h3><ul>
-        <li><a href="index.html">Home</a></li><li><a href="devices.html">Apparaten</a></li>
-        <li><a href="repair.html">Reparaties</a></li><li><a href="prices.html">Prijzen</a></li>
-      </ul></div>
-      <div><h3>Service</h3><ul>
-        <li><a href="about.html">Over ons</a></li><li><a href="used.html">Tweedehands</a></li>
-        <li><a href="gsm-services.html">GSM Services</a></li><li><a href="account.html">Mijn account</a></li>
-      </ul></div>
-      <div><h3>Contact</h3><p>WhatsApp</p><p>Telefoon</p><p>E-mail</p></div>
-    </div>
-    <div class="ht-copy"><span>© 2026 HOMS TECH</span><span>Refurbished · Reparatie · Service</span></div>
-  </div>
-</footer>
-
-<script src="assets/homs-tech-theme.js"></script>
 </body>
 </html>
