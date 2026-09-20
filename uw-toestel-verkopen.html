@@ -53,28 +53,62 @@ footer{background:var(--navy);color:#fff;margin-top:65px;padding:35px 0 20px}.fo
 </main>
 <footer><div class="wrap footergrid"><div><div class="flogo">HOMS <span>TECH</span></div><p>Telefoonverkoop, reparatie en service.</p></div><div><h3>Navigatie</h3><ul><li><a href="index.html">Home</a></li><li><a href="devices.html">Apparaten</a></li><li><a href="repair.html">Reparaties</a></li></ul></div><div><h3>Verkopen</h3><ul><li><a href="uw-toestel-verkopen.html">Uw toestel verkopen</a></li><li><a href="used.html">Tweedehands</a></li></ul></div><div><h3>Contact</h3><ul><li>HOMS TECH</li><li>Persoonlijk contact</li></ul></div></div><div class="wrap copy"><span>© 2026 HOMS TECH</span><span>Alle rechten voorbehouden</span></div></footer>
 <script>
-const devices=[
- {cat:'Apple',name:'Apple iPhone 17',sub:'vanaf € 640',base:640,type:'phone'},
- {cat:'Apple',name:'Apple iPhone 17 Pro',sub:'vanaf € 760',base:760,type:'phone'},
- {cat:'Apple',name:'Apple iPhone 16',sub:'vanaf € 510',base:510,type:'phone'},
- {cat:'Apple',name:'Apple iPhone 15',sub:'vanaf € 390',base:390,type:'phone'},
- {cat:'Samsung',name:'Samsung Galaxy S25',sub:'vanaf € 430',base:430,type:'phone'},
- {cat:'Samsung',name:'Samsung Galaxy S24',sub:'vanaf € 340',base:340,type:'phone'},
- {cat:'Samsung',name:'Samsung Galaxy A Series',sub:'vanaf € 140',base:140,type:'phone'},
- {cat:'Samsung',name:'Samsung Galaxy Z Fold',sub:'vanaf € 420',base:420,type:'phone'},
- {cat:'Samsung',name:'Samsung Galaxy Z Flip',sub:'vanaf € 300',base:300,type:'phone'},
- {cat:'Apple',name:'Apple iPad',sub:'vanaf € 160',base:160,type:'tablet'},
- {cat:'Apple',name:'Apple Watch',sub:'vanaf € 90',base:90,type:'watch'},
- {cat:'Apple',name:'MacBook',sub:'vanaf € 280',base:280,type:'mac'}
-];
+let devices=[];
 let selected=null,selectedModel=null,selectedCondition='good',pay='money';
+let siteData={};
 const $=id=>document.getElementById(id);function money(n){return new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(n)}
-function icon(t){return t==='tablet'?'<div class="icontablet"></div>':t==='watch'?'<div class="iconwatch"></div>':t==='mac'?'<div class="iconmac"></div>':'<div class="iconphone"></div>'}
-function renderDevices(){const q=$('deviceSearch').value.toLowerCase(),cat=$('category').value;const arr=devices.filter(d=>(cat==='Alle categorieën'||d.cat===cat)&&(!q||d.name.toLowerCase().includes(q)));$('deviceGrid').innerHTML=arr.map((d,i)=>`<div class="device" data-i="${devices.indexOf(d)}"><div class="pic">${icon(d.type)}</div><div class="name">${d.name}</div><div class="sub">${d.sub}</div></div>`).join('');document.querySelectorAll('#deviceGrid .device').forEach(el=>el.onclick=()=>chooseDevice(devices[+el.dataset.i]));}
-function chooseDevice(d){selected=d;selectedModel=d; $('selectedTitle').textContent='Verkoop jouw '+d.name;$('selectedCategory').textContent=d.cat;const variants=[d,{...d,name:d.name+' 128GB',base:Math.round(d.base*1.06)},{...d,name:d.name+' 256GB',base:Math.round(d.base*1.13)},{...d,name:d.name+' 512GB',base:Math.round(d.base*1.20)}];$('modelGrid').innerHTML=variants.map((v,i)=>`<div class="device ${i===0?'selected':''}" data-i="${i}"><div class="pic">${icon(v.type)}</div><div class="name">${v.name}</div><div class="sub">Indicatie ${money(v.base)}</div></div>`).join('');$('modelGrid').querySelectorAll('.device').forEach(el=>el.onclick=()=>{document.querySelectorAll('#modelGrid .device').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');selectedModel=variants[+el.dataset.i];updateCondition()});go(2)}
-function updateCondition(){const states=[['Zo goed als nieuw','€ '+selectedModel.base,'excellent',1],['Licht gebruikt','€ '+Math.round(selectedModel.base*.86),'good',.86],['Zichtbaar gebruikt','€ '+Math.round(selectedModel.base*.64),'used',.64],['Kapot','€ '+Math.round(selectedModel.base*.18),'broken',.18]];$('conditionTitle').textContent='Verkoop jouw '+selectedModel.name;$('baseText').textContent='Kies de staat van je toestel';$('conditionGrid').innerHTML=states.map((s,i)=>`<div class="conditioncard ${s[2]===selectedCondition?'selected':''}" data-v="${s[2]}" data-m="${s[3]}"><strong>${s[0]}</strong><span>${s[1]}</span></div>`).join('');document.querySelectorAll('.conditioncard').forEach(c=>c.onclick=()=>{selectedCondition=c.dataset.v;document.querySelectorAll('.conditioncard').forEach(x=>x.classList.remove('selected'));c.classList.add('selected');calcQuote()});calcQuote()}
-function calcQuote(){if(!selectedModel)return;let v=selectedModel.base;const m={excellent:1,good:.86,used:.64,broken:.18};v*=m[selectedCondition];if(!$('works').checked)v*=.55;if(!$('battery').checked)v*=.9;if(!$('account').checked)v*=.75;v=Math.max(0,Math.round(v/5)*5);$('quote').textContent=money(v);return v}
+function icon(d){
+  if(d && d.image) return `<img src="${d.image}" alt="${d.name||''}" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none'">`;
+  const t=d&&d.type||'phone';
+  return t==='tablet'?'<div class="icontablet"></div>':t==='watch'?'<div class="iconwatch"></div>':t==='mac'?'<div class="iconmac"></div>':'<div class="iconphone"></div>';
+}
+function renderDevices(){
+  const q=$('deviceSearch').value.toLowerCase(),cat=$('category').value;
+  const arr=devices.filter(d=>(cat==='Alle categorieën'||d.cat===cat)&&(!q||d.name.toLowerCase().includes(q)));
+  $('deviceGrid').innerHTML=arr.map((d,i)=>`<div class="device" data-i="${devices.indexOf(d)}"><div class="pic">${icon(d)}</div><div class="name">${d.name}</div><div class="sub">vanaf ${money(d.base)}</div></div>`).join('');
+  document.querySelectorAll('#deviceGrid .device').forEach(el=>el.onclick=()=>chooseDevice(devices[+el.dataset.i]));
+}
+function activeOptions(arr){return (Array.isArray(arr)?arr:[]).filter(x=>x && x.active!==false);}
+function chooseDevice(d){
+  selected=d; selectedModel={...d,base:Number(d.price||0),name:d.name};
+  $('selectedTitle').textContent='Verkoop jouw '+d.name; $('selectedCategory').textContent=d.cat||'';
+  const storage=activeOptions(d.storageOptions);
+  const variants=storage.length?storage.map((x,i)=>({...d,name:`${d.name} ${x.label}`,base:Number(d.price||0)+Number(x.priceDelta||0),storage:x.label})): [{...d,name:d.name,base:Number(d.price||0)}];
+  $('modelGrid').innerHTML=variants.map((v,i)=>`<div class="device ${i===0?'selected':''}" data-i="${i}"><div class="pic">${icon(d)}</div><div class="name">${v.name}</div><div class="sub">Indicatie ${money(v.base)}</div></div>`).join('');
+  document.querySelectorAll('#modelGrid .device').forEach(el=>el.onclick=()=>{document.querySelectorAll('#modelGrid .device').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');selectedModel=variants[+el.dataset.i];updateCondition();});
+  if(variants[0]) selectedModel=variants[0]; fillBuybackChecks(); go(2);
+}
+function fillBuybackChecks(){
+  if(!selected){return;}
+  const sets=[['faceId',selected.faceIdOptions,'Face ID'],['batteryLevel',selected.batteryOptions,'Batterij'],['screenState',selected.screenOptions,'Scherm']];
+  sets.forEach(([id,arr,title])=>{const el=$(id);if(!el)return;el.innerHTML=`<option value="">${title}</option>`+activeOptions(arr).map(x=>`<option value="${String(x.label).replace(/\"/g,'&quot;')}">${x.label}</option>`).join('');});
+}
+
+function updateCondition(){
+  if(!selectedModel||!selected)return;
+  const states=activeOptions(selected.conditionOptions);
+  $('conditionTitle').textContent='Verkoop jouw '+selectedModel.name; $('baseText').textContent='Kies de staat van je toestel';
+  $('conditionGrid').innerHTML=states.map((s,i)=>`<div class="conditioncard ${i===0||s.label.toLowerCase().includes('licht')&&selectedCondition==='good'?'selected':''}" data-v="${s.label}" data-delta="${Number(s.priceDelta||0)}"><strong>${s.label}</strong><span>${money(Math.max(0,Number(selectedModel.base)+Number(s.priceDelta||0)))}</span></div>`).join('');
+  const first=states[0]; if(first) selectedCondition=first.label;
+  document.querySelectorAll('.conditioncard').forEach(c=>c.onclick=()=>{selectedCondition=c.dataset.v;document.querySelectorAll('.conditioncard').forEach(x=>x.classList.remove('selected'));c.classList.add('selected');calcQuote();});
+  calcQuote();
+}
+function selectedDelta(arr,label){const x=(arr||[]).find(o=>o.label===label);return x?Number(x.priceDelta||0):0;}
+function calcQuote(){
+  if(!selectedModel||!selected)return 0;
+  let v=Number(selectedModel.base||0)+selectedDelta(selected.conditionOptions,selectedCondition);
+  const face=$('faceId')?$('faceId').value:''; const battery=$('batteryLevel')?$('batteryLevel').value:''; const screen=$('screenState')?$('screenState').value:'';
+  if(face) v+=selectedDelta(selected.faceIdOptions,face);
+  if(battery) v+=selectedDelta(selected.batteryOptions,battery);
+  if(screen) v+=selectedDelta(selected.screenOptions,screen);
+  if(!$('works').checked)v*=.55; if(!$('account').checked)v*=.75;
+  v=Math.max(0,Math.round(v/5)*5); $('quote').textContent=money(v); return v;
+}
+async function loadBuyback(){
+  try{const r=await fetch('/api/site'); if(!r.ok)throw new Error(); siteData=await r.json(); const list=Array.isArray(siteData.buybackPhones)?siteData.buybackPhones.filter(x=>x.active!==false):[]; devices=list.map(x=>({...x,cat:x.brand||'Overig',base:Number(x.price||0),type:'phone'})); renderDevices();}
+  catch(e){devices=[];renderDevices();}
+}
 function go(n){$('step1').style.display=n===1?'block':'none';$('step2').style.display=n===2?'block':'none';$('step3').style.display=n===3?'block':'none';$('step4').style.display=n===4?'block':'none';$('d1').className='dot '+(n>=1?'active':'');$('d2').className='dot '+(n>=2?'active':'');$('d3').className='dot '+(n>=3?'active':'');$('l1').className='line '+(n>=2?'active':'');$('l2').className='line '+(n>=3?'active':'');window.scrollTo({top:document.querySelector('.hero').offsetTop-20,behavior:'smooth'});if(n===3)updateCondition()}
-$('deviceSearch').oninput=renderDevices;$('continueModel').onclick=()=>{if(!selectedModel){alert('Kies eerst een toestel.');return}go(3)};$('category').onchange=renderDevices;$('back1').onclick=e=>{e.preventDefault();go(1)};$('back2').onclick=e=>{e.preventDefault();go(2)};$('back3').onclick=e=>{e.preventDefault();go(3)};$('toCheckout').onclick=()=>{const v=calcQuote();$('sumDevice').textContent=selectedModel.name+' · '+selectedCondition;$('sumPrice').textContent=money(v);$('sumTotal').textContent=money(pay==='credit'?v*1.10:v);$('sumPay').textContent=pay==='credit'?'HOMS TECH tegoed (+10%)':'Geld ontvangen';go(4)};$('finish').onclick=()=>{if(!$('cName').value.trim()||!$('cEmail').value.trim()||!$('agree').checked){alert('Vul je naam en e-mailadres in en accepteer de voorwaarden.');return}$('success').style.display='block';$('success').scrollIntoView({behavior:'smooth',block:'center'})};document.querySelectorAll('.choice button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.choice button').forEach(x=>x.classList.remove('active'));b.classList.add('active');pay=b.dataset.pay});$('siteSearch').onkeydown=e=>{if(e.key==='Enter'&&e.target.value.trim())location.href='devices.html?search='+encodeURIComponent(e.target.value.trim())};renderDevices();
+$('deviceSearch').oninput=renderDevices;$('continueModel').onclick=()=>{if(!selectedModel){alert('Kies eerst een toestel.');return}go(3)};$('category').onchange=renderDevices;$('back1').onclick=e=>{e.preventDefault();go(1)};$('back2').onclick=e=>{e.preventDefault();go(2)};$('back3').onclick=e=>{e.preventDefault();go(3)};$('toCheckout').onclick=()=>{const v=calcQuote();$('sumDevice').textContent=selectedModel.name+' · '+selectedCondition;$('sumPrice').textContent=money(v);$('sumTotal').textContent=money(pay==='credit'?v*1.10:v);$('sumPay').textContent=pay==='credit'?'HOMS TECH tegoed (+10%)':'Geld ontvangen';go(4)};$('finish').onclick=()=>{if(!$('cName').value.trim()||!$('cEmail').value.trim()||!$('agree').checked){alert('Vul je naam en e-mailadres in en accepteer de voorwaarden.');return}$('success').style.display='block';$('success').scrollIntoView({behavior:'smooth',block:'center'})};document.querySelectorAll('.choice button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.choice button').forEach(x=>x.classList.remove('active'));b.classList.add('active');pay=b.dataset.pay});$('siteSearch').onkeydown=e=>{if(e.key==='Enter'&&e.target.value.trim())location.href='devices.html?search='+encodeURIComponent(e.target.value.trim())};loadBuyback();
 </script>
 </body></html>
