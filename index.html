@@ -534,7 +534,7 @@ text-align:center
 .category-card.no-image:after{display:none}
 
 /* HORIZONTAL PHONE STRIP */
-.phone-strip{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px 4px 18px;scrollbar-width:thin}
+.phone-strip{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px 4px 18px;scrollbar-width:none;scroll-behavior:smooth;overscroll-behavior-x:contain;touch-action:pan-x}.phone-strip::-webkit-scrollbar{display:none}
 .phone-strip::-webkit-scrollbar{height:7px}
 .phone-strip::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:20px}
 .phone-strip .device{flex:0 0 205px;scroll-snap-align:start;padding:0 0 16px;overflow:hidden;text-align:left;border-radius:18px}
@@ -1210,6 +1210,7 @@ renderHero();
 renderServices();
 renderCategories();
 renderDevices();
+startPhoneCarousel();
 renderWhy();
 
 }
