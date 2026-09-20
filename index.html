@@ -2,371 +2,1846 @@
 <html lang="nl" dir="ltr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HOMS TECH | Refurbished & Reparatie</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HOMS TECH | Telefoonreparatie aan huis</title>
+
 <style>
-:root{
- --navy:#071d2d;--navy2:#102d42;--blue:#2563eb;--blue2:#60a5fa;
- --bg:#f7f7f4;--text:#172330;--muted:#667784;--white:#fff;--line:#e5e9ed
-}
 *{box-sizing:border-box}
+
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
-a{text-decoration:none;color:inherit}
-.container{max-width:1120px;margin:auto;padding:0 18px}
-button,input{font:inherit}
 
-/* TOP BAR */
-.topbar{height:31px;background:#06131e;color:#fff;font-size:10px}
-.topbar .container{height:100%;display:flex;align-items:center;justify-content:space-between}
-.top-info{display:flex;gap:22px}.top-info span:before{content:"✓";color:var(--blue2);margin-right:5px}
-.top-rating{color:#dce9f5}
+body{
+margin:0;
+font-family:Arial,Helvetica,sans-serif;
+background:#f5f7fa;
+color:#111827;
+line-height:1.6
+}
 
-/* HEADER */
-header{background:#fff;border-bottom:1px solid var(--line)}
-.header-main{height:76px;display:flex;align-items:center;gap:25px}
-.brand img{width:158px;height:auto;display:block}
-.search{width:275px;height:37px;border:1px solid #d9e0e5;background:#fafafa;display:flex;align-items:center;padding:0 12px;color:#7b8790}
-.search input{border:0;outline:0;background:transparent;width:100%;font-size:12px}
-.header-actions{margin-left:auto;display:flex;gap:22px;align-items:center;font-size:12px;font-weight:600}
-.nav{height:45px;display:flex;align-items:center;gap:27px;font-size:12px;font-weight:700;overflow-x:auto;white-space:nowrap}
-.nav a:hover,.nav .active{color:var(--blue)}
-.nav .active{background:#edf4ff;padding:8px 11px;border-radius:5px}
+a{text-decoration:none}
+
+header{
+background:#111827;
+color:#fff;
+padding:13px 5%;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:20px;
+position:sticky;
+top:0;
+z-index:100;
+box-shadow:0 4px 20px rgba(0,0,0,.15)
+}
+
+.brand img{
+width:170px;
+height:auto;
+display:block
+}
+
+nav{
+display:flex;
+gap:7px;
+flex-wrap:wrap;
+justify-content:center
+}
+
+nav a{
+color:#fff;
+font-weight:700;
+padding:10px 14px;
+border-radius:9px
+}
+
+nav a:hover,
+nav a.active{
+background:#dc2626
+}
+
+.btn{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+gap:8px;
+padding:13px 21px;
+border-radius:12px;
+font-weight:800;
+border:0;
+cursor:pointer;
+transition:.2s
+}
+
+.btn:hover{
+transform:translateY(-2px)
+}
+
+.green{
+background:#16c766;
+color:#fff
+}
+
+.green:hover{
+background:#0eae56
+}
+
+.white{
+background:#fff;
+color:#2563eb;
+border:2px solid #2563eb
+}
 
 /* HERO */
-.hero{background:linear-gradient(120deg,#071925,#173c55);color:#fff}
-.hero-inner{min-height:330px;display:grid;grid-template-columns:1.35fr .65fr;align-items:center;gap:25px}
-.hero h1{font-size:46px;line-height:1.02;margin:0 0 14px;font-weight:900}
-.hero h1 span{color:var(--blue2)}
-.hero p{max-width:610px;color:#d6e3eb;font-size:15px;line-height:1.65}
-.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}
-.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 15px;border-radius:6px;border:0;font-weight:800;font-size:11px;cursor:pointer}
-.btn-blue{background:var(--blue);color:#fff}.btn-light{background:#fff;color:var(--navy)}
-.hero-device{height:275px;display:flex;align-items:center;justify-content:center}
-.phone{width:132px;height:245px;border:6px solid #273744;border-radius:27px;background:linear-gradient(145deg,#13283a,#4b88bd,#111f2c);box-shadow:20px 25px 45px #0007;position:relative;transform:rotate(7deg)}
-.phone:before{content:"";position:absolute;top:5px;left:50%;transform:translateX(-50%);width:48px;height:14px;background:#050a0e;border-radius:12px;z-index:2}
 
-/* TRUST */
-.trust{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:#fff;padding:13px 0;border-bottom:1px solid var(--line)}
-.trust-item{text-align:center;color:#566672;font-size:11px}.trust-item b{display:block;color:var(--blue);font-size:20px;margin-bottom:2px}
+.hero{
+background:
+radial-gradient(circle at 75% 35%,rgba(37,99,235,.35),transparent 35%),
+linear-gradient(135deg,#07101f,#1b2b43);
+color:#fff;
+padding:75px 6%;
+overflow:hidden
+}
 
-/* BANNERS */
-.promo{padding:18px 0 8px}
-.promo-grid{display:grid;grid-template-columns:2fr 1fr;gap:12px}
-.promo-card{min-height:195px;border-radius:10px;background:linear-gradient(120deg,#081722,#1c3445);color:#fff;position:relative;overflow:hidden;padding:25px}
-.promo-card h2{font-size:26px;line-height:1.05;margin:0 0 11px;text-transform:uppercase}.promo-card p{font-size:11px;line-height:1.6;color:#d5e1e8;max-width:440px}
-.promo-card .art{position:absolute;right:25px;bottom:-15px;font-size:110px;opacity:.65}
-.promo-card .btn{margin-top:5px}
+.hero-inner{
+max-width:1200px;
+margin:auto;
+display:grid;
+grid-template-columns:1.2fr .8fr;
+align-items:center;
+gap:40px
+}
 
-/* TITLES */
-.section{padding:25px 0}
-.section-title{text-align:center;font-size:25px;margin:7px 0 5px;font-weight:900}
-.section-title:after{content:"";display:block;width:36px;height:3px;background:var(--blue);margin:8px auto 17px;border-radius:4px}
+.hero h1{
+font-size:clamp(40px,6vw,67px);
+line-height:1.08;
+margin:0 0 20px;
+font-weight:900
+}
 
-/* CATEGORIES */
-.category-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
-.category-card{height:125px;border-radius:10px;overflow:hidden;position:relative;background:linear-gradient(120deg,#081a28,#274861);display:block;color:#fff}
-.category-card:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#061522dc,#06152215)}
-.category-card img{position:absolute;right:0;bottom:0;width:55%;height:100%;object-fit:cover}
-.category-content{position:absolute;z-index:2;left:17px;top:17px}
-.category-content h3{font-size:17px;line-height:1.05;margin:0 0 12px;text-transform:uppercase}
-.category-content span{background:var(--blue);padding:6px 11px;border-radius:5px;font-size:10px;font-weight:800}
-.category-card.no-image{padding:17px}
+.hero h1 span{
+color:#60a5fa
+}
 
-/* PRODUCTS */
-.products{display:flex;gap:13px;overflow-x:auto;scroll-snap-type:x mandatory;padding:3px 2px 15px;scrollbar-width:thin;scroll-behavior:auto}
-.products.auto-moving{scroll-behavior:auto;overflow-x:hidden;cursor:default}
-.products.auto-moving .product{flex:0 0 205px}
-.products::-webkit-scrollbar{height:6px}.products::-webkit-scrollbar-thumb{background:#b9c7d2;border-radius:20px}
-.product{flex:0 0 205px;scroll-snap-align:start;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:0 4px 15px #071d2d0b}
-.product-img{height:160px;background:#f0f3f5;display:flex;align-items:center;justify-content:center}
-.product-img img{width:100%;height:100%;object-fit:contain}
-.phone-placeholder{width:61px;height:112px;border:4px solid #172631;border-radius:14px;background:linear-gradient(145deg,#6eb5e5,#173f5d);position:relative}
-.phone-placeholder:before{content:"";position:absolute;top:4px;left:18px;width:18px;height:4px;border-radius:4px;background:#111}
-.product-body{padding:12px}.product h3{margin:0 0 3px;font-size:14px}.meta{font-size:10px;color:var(--muted)}
-.price{font-size:16px;font-weight:900;margin:8px 0}.buy{width:100%;border:0;background:var(--blue);color:#fff;padding:9px;border-radius:5px;font-size:11px;font-weight:800;cursor:pointer}
-.product-nav{display:flex;justify-content:flex-end;gap:5px;margin-bottom:6px}.product-nav button{width:28px;height:26px;border:0;background:var(--navy);color:#fff;border-radius:4px}
+.hero p{
+font-size:20px;
+max-width:720px;
+color:#e5e7eb;
+margin:0 0 28px
+}
 
-/* HOME SERVICE */
-.home-banner{margin:18px 0;background:var(--navy);color:#fff;border-radius:10px;padding:22px 27px;display:flex;align-items:center;justify-content:space-between}
-.home-banner h2{font-size:20px;margin:0 0 3px}.home-banner p{font-size:11px;color:#cbd9e2;margin:0}
+.hero-buttons{
+display:flex;
+gap:13px;
+flex-wrap:wrap
+}
+
+.checks{
+display:flex;
+gap:25px;
+flex-wrap:wrap;
+margin-top:27px
+}
+
+.check{
+display:flex;
+align-items:center;
+gap:7px;
+font-weight:700
+}
+
+.check-icon{
+width:24px;
+height:24px;
+border-radius:50%;
+background:#fff;
+color:#111827;
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:bold
+}
+
+/* PHONE VISUAL */
+
+.hero-phone{
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:350px
+}
+
+.phone{
+width:190px;
+height:365px;
+background:#111827;
+border:7px solid #374151;
+border-radius:32px;
+box-shadow:0 25px 50px rgba(0,0,0,.5);
+position:relative;
+transform:rotate(7deg)
+}
+
+.phone:before{
+content:"";
+position:absolute;
+top:8px;
+left:50%;
+transform:translateX(-50%);
+width:70px;
+height:20px;
+background:#000;
+border-radius:15px;
+z-index:2
+}
+
+.screen{
+position:absolute;
+inset:8px;
+border-radius:24px;
+background:
+radial-gradient(circle at 60% 30%,#8b5cf6,transparent 30%),
+linear-gradient(145deg,#111827,#312e81,#020617);
+overflow:hidden
+}
+
+.screen:after{
+content:"";
+position:absolute;
+width:120px;
+height:250px;
+background:rgba(255,255,255,.08);
+transform:rotate(30deg);
+right:-55px;
+top:30px
+}
+
+.phone-text{
+position:absolute;
+right:-135px;
+top:60px;
+font-size:24px;
+font-weight:800;
+font-style:italic;
+line-height:1.1;
+transform:rotate(-5deg);
+color:#fff
+}
+
+/* SECTIONS */
+
+section{
+max-width:1200px;
+margin:auto;
+padding:60px 5%
+}
+
+.section-title{
+text-align:center;
+font-size:35px;
+margin:0 0 38px;
+font-weight:900
+}
+
+.section-title:after{
+content:"";
+display:block;
+width:42px;
+height:5px;
+background:#dc2626;
+border-radius:5px;
+margin:11px auto 0
+}
 
 /* SERVICES */
-.services{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.service{background:#fff;border:1px solid var(--line);border-radius:9px;text-align:center;padding:19px}
-.service-icon{font-size:26px;margin-bottom:7px}.service strong{font-size:12px}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:18px
+}
+
+.card{
+background:#fff;
+border-radius:18px;
+padding:27px 20px;
+text-align:center;
+box-shadow:0 8px 28px rgba(0,0,0,.06);
+transition:.2s
+}
+
+.card:hover{
+transform:translateY(-4px);
+box-shadow:0 14px 35px rgba(0,0,0,.1)
+}
+
+.icon{
+font-size:45px;
+margin-bottom:8px
+}
+
+.card h3{
+margin:8px 0;
+font-size:20px
+}
+
+.card p{
+margin:0;
+color:#64748b
+}
+
+/* BANNER */
+
+.home-banner{
+max-width:1140px;
+margin:5px auto 0;
+background:linear-gradient(135deg,#162438,#25364d);
+color:#fff;
+border-radius:22px;
+padding:28px 38px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:20px
+}
+
+.banner-left{
+display:flex;
+align-items:center;
+gap:18px
+}
+
+.banner-icon{
+font-size:52px
+}
+
+.banner h2{
+margin:0;
+font-size:29px
+}
+
+.banner p{
+margin:3px 0 0;
+color:#dbeafe
+}
+
+/* DEVICES */
+
+.devices{
+display:grid;
+grid-template-columns:repeat(6,1fr);
+gap:15px
+}
+
+.device{
+background:#fff;
+border-radius:16px;
+padding:22px 10px;
+text-align:center;
+box-shadow:0 7px 25px rgba(0,0,0,.05)
+}
+
+.device-icon{
+font-size:45px;
+margin-bottom:8px
+}
+
+.device strong{
+display:block;
+font-size:17px
+}
 
 /* WHY */
-.why{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.why-card{background:#fff;border:1px solid var(--line);border-radius:9px;padding:18px;text-align:center}.why-card b{font-size:23px;color:var(--blue);display:block}.why-card strong{display:block;font-size:12px;margin:5px}.why-card small{color:var(--muted);font-size:10px}
+
+.why{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:18px
+}
+
+.why .icon{
+color:#2563eb
+}
+
+/* CONTACT */
+
+.contact-box{
+background:#111827;
+color:#fff;
+border-radius:22px;
+padding:42px 25px;
+text-align:center
+}
+
+.contact-box h2{
+font-size:32px;
+margin:0 0 8px
+}
+
+.contact-box p{
+color:#cbd5e1;
+margin:0 0 22px
+}
 
 /* FOOTER */
-footer{margin-top:25px;background:var(--navy);color:#fff;padding:35px 0 18px}
-.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:25px}.footer-logo{font-size:22px;font-weight:900}.footer-logo span{color:var(--blue2)}
-footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:#b9c8d2;line-height:1.8}footer ul{list-style:none;padding:0;margin:0}
-.copyright{border-top:1px solid #ffffff1c;margin-top:22px;padding-top:12px;color:#91a5b2;font-size:9px;display:flex;justify-content:space-between}
+
+footer{
+background:#0b1422;
+color:#fff;
+padding:38px 5%
+}
+
+.footer-inner{
+max-width:1200px;
+margin:auto;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:25px
+}
+
+.footer-logo img{
+width:165px
+}
+
+.footer-center{
+text-align:center;
+color:#cbd5e1
+}
+
+.admin-btn{
+border:1px solid #fff;
+color:#fff;
+padding:11px 19px;
+border-radius:10px;
+font-weight:bold
+}
 
 /* MOBILE */
-@media(max-width:850px){
- .top-info span:nth-child(n+3){display:none}.header-main{height:auto;padding:12px 0;flex-wrap:wrap}.search{order:3;width:100%}.header-actions{margin-left:auto}
- .hero-inner{grid-template-columns:1fr;text-align:center;padding:45px 0}.hero p{margin-left:auto;margin-right:auto}.actions{justify-content:center}.hero-device{display:none}
- .promo-grid{grid-template-columns:1fr}.promo-card{min-height:210px}
- .category-grid{grid-template-columns:1fr 1fr}.services,.why{grid-template-columns:1fr 1fr}.footer-grid{grid-template-columns:1fr 1fr}
+
+@media(max-width:900px){
+
+header{
+flex-wrap:wrap;
+justify-content:center
 }
-@media(max-width:520px){
- .top-rating{display:none}.category-grid{grid-template-columns:1fr}.services,.why{grid-template-columns:1fr 1fr}
- .home-banner{display:block;text-align:center}.home-banner .btn{margin-top:12px}
- .footer-grid{grid-template-columns:1fr}.copyright{display:block}.copyright span{display:block;margin-top:5px}
+
+nav{
+order:3;
+width:100%
 }
+
+.hero-inner{
+grid-template-columns:1fr;
+text-align:center
+}
+
+.hero p{
+margin-left:auto;
+margin-right:auto
+}
+
+.hero-buttons,
+.checks{
+justify-content:center
+}
+
+.hero-phone{
+min-height:300px
+}
+
+.grid,
+.why{
+grid-template-columns:repeat(2,1fr)
+}
+
+.devices{
+grid-template-columns:repeat(3,1fr)
+}
+
+.home-banner{
+margin-left:5%;
+margin-right:5%
+}
+
+.phone-text{
+display:none
+}
+}
+
+@media(max-width:550px){
+
+.brand img{
+width:150px
+}
+
+header>.btn{
+display:none
+}
+
+nav a{
+font-size:13px;
+padding:8px 9px
+}
+
+.hero{
+padding:55px 5%
+}
+
+.hero h1{
+font-size:40px
+}
+
+.hero p{
+font-size:18px
+}
+
+.grid,
+.why{
+grid-template-columns:1fr
+}
+
+.devices{
+grid-template-columns:repeat(2,1fr)
+}
+
+.home-banner{
+flex-direction:column;
+text-align:center;
+padding:28px 20px
+}
+
+.banner-left{
+flex-direction:column
+}
+
+.footer-inner{
+flex-direction:column;
+text-align:center
+}
+}
+
+/* REFURBISHED CATEGORIES */
+
+.category-section{
+max-width:1200px;
+margin:auto;
+padding:45px 5%
+}
+
+.category-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:20px
+}
+
+.category-card{
+position:relative;
+display:block;
+min-height:210px;
+border-radius:22px;
+overflow:hidden;
+background:#111827;
+box-shadow:0 10px 30px rgba(0,0,0,.10)
+}
+
+.category-card img{
+width:100%;
+height:210px;
+object-fit:cover;
+display:block;
+transition:.25s
+}
+
+.category-card:hover img{
+transform:scale(1.04)
+}
+
+.category-card:after{
+content:"";
+position:absolute;
+inset:0;
+background:linear-gradient(90deg,rgba(0,0,0,.78),rgba(0,0,0,.08))
+}
+
+.category-card-content{
+position:absolute;
+z-index:2;
+left:24px;
+right:20px;
+bottom:22px;
+color:#fff
+}
+
+.category-card-content h3{
+margin:0 0 13px;
+font-size:28px;
+font-weight:900;
+text-transform:uppercase
+}
+
+.category-card-content span{
+display:inline-flex;
+align-items:center;
+gap:10px;
+background:#dc2626;
+color:#fff;
+padding:11px 20px;
+border-radius:13px;
+font-weight:900;
+font-size:18px
+}
+
+.category-card.no-image{
+display:flex;
+align-items:flex-end;
+padding:24px
+}
+
+.category-card.no-image:after{
+display:none
+}
+
+/* AUTO PHONE CAROUSEL */
+
+.phone-strip{
+overflow-x:auto;
+scroll-behavior:smooth;
+scrollbar-width:thin
+}
+
+.phone-strip .device{
+flex:0 0 205px
+}
+
+@media(max-width:700px){
+
+.phone-strip .device{
+flex-basis:175px
+}
+
+}
+
+/* ELEGANT AUTO PHONE CAROUSEL */
+
+.phone-strip{
+display:flex;
+gap:22px;
+overflow-x:auto;
+scroll-snap-type:x mandatory;
+padding:8px 4px 22px;
+scrollbar-width:none;
+-ms-overflow-style:none
+}
+
+.phone-strip::-webkit-scrollbar{
+display:none
+}
+
+.phone-strip .device{
+flex:0 0 205px;
+scroll-snap-align:start;
+overflow:hidden;
+text-align:center;
+border-radius:20px;
+background:#fff;
+padding:0 0 8px;
+box-shadow:0 8px 24px rgba(15,23,42,.07)
+}
+
+.phone-strip .device-image{
+width:100%;
+height:205px;
+background:#fff;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:12px
+}
+
+.phone-strip .device-image img{
+width:100%;
+height:100%;
+object-fit:contain;
+transition:transform .25s ease
+}
+
+.phone-strip .device:hover .device-image img{
+transform:scale(1.04)
+}
+
+.phone-strip .device-body{
+padding:8px 10px 0
+}
+
+.phone-strip .device strong{
+display:block;
+font-size:17px;
+line-height:1.2;
+min-height:42px
+}
+
+.phone-strip .device small{
+display:block;
+min-height:22px;
+margin-top:4px
+}
+
+.phone-strip .device-price{
+margin:13px 0 0;
+min-height:50px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:8px;
+padding:7px 9px 7px 16px;
+border-radius:12px;
+background:#dc2626;
+color:#fff;
+font-size:19px;
+font-weight:900
+}
+
+.phone-strip .device-link{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+width:38px;
+height:38px;
+margin:0;
+background:#111827;
+color:#fff;
+border-radius:10px;
+font-size:0;
+font-weight:900
+}
+
+.phone-strip .device-link::after{
+content:"›";
+font-size:27px;
+line-height:1
+}
+
+@media(max-width:700px){
+
+.phone-strip{
+gap:14px
+}
+
+.phone-strip .device{
+flex-basis:175px
+}
+
+.phone-strip .device-image{
+height:165px
+}
+
+.phone-strip .device strong{
+font-size:15px
+}
+
+.phone-strip .device-price{
+font-size:17px
+}
+
+}
+
+@media(max-width:700px){
+
+.category-grid{
+grid-template-columns:1fr 1fr;
+gap:12px
+}
+
+.category-card,
+.category-card img{
+min-height:155px;
+height:155px
+}
+
+.category-card-content{
+left:14px;
+bottom:14px
+}
+
+.category-card-content h3{
+font-size:20px;
+margin-bottom:8px
+}
+
+.category-card-content span{
+font-size:14px;
+padding:8px 12px
+}
+
+.phone-strip .device{
+flex-basis:175px
+}
+
+.phone-strip .device-image{
+height:165px
+}
+
+}
+
+/* TOESTEL VERKOPEN */
+
+.toestel-verkoop-banner{
+margin-top:25px;
+margin-bottom:10px
+}
+
+.toestel-verkoop-banner .white{
+background:#fff;
+color:#2563eb;
+border:2px solid #2563eb;
+white-space:nowrap
+}
+
+.toestel-verkoop-banner .white:hover{
+background:#eff6ff
+}
+
+@media(max-width:700px){
+
+.toestel-verkoop-banner .white{
+white-space:normal;
+width:100%
+}
+
+}
+
 </style>
 </head>
+
 <body>
 
-<div class="topbar">
- <div class="container">
-  <div class="top-info">
-   <span>Altijd garantie</span><span>Snel geleverd</span><span>Betrouwbare service</span><span>Betaalbare prijzen</span>
-  </div>
-  <div class="top-rating">★★★★★ HOMS TECH</div>
- </div>
-</div>
-
 <header>
- <div class="container">
-  <div class="header-main">
-   <a class="brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>
-   <label class="search">⌕ <input placeholder="Waar ben je naar op zoek?"></label>
-   <div class="header-actions">
-    <span>Zoek⌄</span><span>NL⌄</span><span>♙ Mijn Account</span><span>🛒 Winkelwagen</span>
-   </div>
-  </div>
-  <nav class="nav">
-   <a class="active" href="index.html">Home</a>
-   <a href="about.html">Over ons</a>
-   <a href="repair.html">Reparaties</a>
-   <a href="devices.html">Apparaten</a>
-   <a href="prices.html">Prijzen</a>
-   <a href="/used.html">Tweedehands</a>
-   <a href="gsm-services.html">GSM Services</a>
-   <a href="account.html">Mijn account</a>
-  </nav>
- </div>
+
+<a class="brand" href="index.html">
+<img src="assets/homs-tech-logo.png" alt="HOMS TECH">
+</a>
+
+<nav>
+<a href="index.html" class="active">Home</a>
+<a href="about.html">Over ons</a>
+<a href="repair.html">Reparaties</a>
+<a href="devices.html">Apparaten</a>
+<a href="prices.html">Prijzen</a>
+<a href="/used.html">Tweedehands</a>
+<a href="gsm-services.html">🛠️ GSM Services</a>
+<a href="account.html">👤 Mijn account</a>
+</nav>
+
+<a class="btn green" data-wa>
+💬 WhatsApp
+</a>
+
 </header>
 
-<section class="hero">
- <div class="container hero-inner">
-  <div>
-   <h1><span id="heroTop">Is uw telefoon kapot?</span><br><span id="heroBottom">Wij komen naar u toe!</span></h1>
-   <p id="heroText">Reparatie van alle soorten telefoons bij u thuis — snelle service, professioneel werk en betaalbare prijzen.</p>
-   <div class="actions">
-    <a class="btn btn-blue" data-wa>💬 Afspraak via WhatsApp</a>
-    <a class="btn btn-light" data-phone>📞 Bel nu</a>
-   </div>
-  </div>
-  <div class="hero-device"><div class="phone"></div></div>
- </div>
-</section>
+<main>
 
-<div class="trust">
- <div class="trust-item"><b>✓</b>Snelle service</div>
- <div class="trust-item"><b>✓</b>Betrouwbaar</div>
- <div class="trust-item"><b>✓</b>Aan huis</div>
- <div class="trust-item"><b>✓</b>Betaalbare prijzen</div>
+<section class="hero">
+
+<div class="hero-inner">
+
+<div>
+
+<h1>
+<span id="heroTitleTop">Is uw telefoon kapot?</span><br>
+<span id="heroTitleBottom">Wij komen naar u toe!</span>
+</h1>
+
+<p id="heroText">
+Reparatie van alle soorten telefoons bij u thuis —
+snelle service, professioneel werk en betaalbare prijzen.
+</p>
+
+<div class="hero-buttons">
+
+<a class="btn green" data-wa>
+💬 Afspraak via WhatsApp
+</a>
+
+<a class="btn white" data-phone>
+📞 Bel nu
+</a>
+
 </div>
 
-<main class="container">
+<div class="checks">
 
-<section class="promo">
- <div class="promo-grid">
-  <div class="promo-card">
-   <h2>Uw toestel<br><span style="color:var(--blue2)">verkopen?</span></h2>
-   <p>Heeft u een oude iPhone, Samsung, iPad of Mac? Laat HOMS TECH uw toestel beoordelen en ontvang een eerlijke prijs.</p>
-   <a class="btn btn-blue" href="/used.html">Bekijk wat uw toestel waard is →</a>
-   <div class="art">♻️📱</div>
-  </div>
-  <div class="promo-card">
-   <h2><span style="color:var(--blue2)">Refurbished</span><br>apparaten</h2>
-   <p>Geteste apparaten met duidelijke informatie en garantie.</p>
-   <a class="btn btn-blue" href="devices.html">Bekijk apparaten →</a>
-   <div class="art">📱</div>
-  </div>
- </div>
+<div class="check">
+<span class="check-icon">✓</span>
+Snel
+</div>
+
+<div class="check">
+<span class="check-icon">✓</span>
+Betrouwbaar
+</div>
+
+<div class="check">
+<span class="check-icon">✓</span>
+Aan huis
+</div>
+
+<div class="check">
+<span class="check-icon">✓</span>
+Betaalbare prijzen
+</div>
+
+</div>
+
+</div>
+
+<div class="hero-phone">
+
+<div class="phone">
+<div class="screen"></div>
+</div>
+
+<div class="phone-text">
+Uw<br>
+telefoon<br>
+in goede<br>
+handen
+</div>
+
+</div>
+
+</div>
+
 </section>
 
-<section class="section">
- <h2 class="section-title">Refurbished apparaten</h2>
- <div id="categories" class="category-grid"></div>
+<!-- SERVICES -->
+
+<section>
+
+<h2 class="section-title">
+Onze diensten
+</h2>
+
+<div id="services" class="grid"></div>
+
 </section>
 
-<section class="section">
- <h2 class="section-title">Populaire apparaten</h2>
- <div class="product-nav"><button onclick="moveProducts(-1)">‹</button><button onclick="moveProducts(1)">›</button></div>
- <div id="products" class="products"></div>
-</section>
+<!-- HOME SERVICE -->
 
 <div class="home-banner">
- <div><h2>📍 Wij komen bij u thuis!</h2><p id="areas">Rotterdam en omgeving · Professionele reparatie aan huis</p></div>
- <a class="btn btn-blue" data-wa>💬 WhatsApp</a>
+
+<div class="banner-left">
+
+<div class="banner-icon">📍</div>
+
+<div>
+
+<h2>Wij komen bij u thuis!</h2>
+
+<p id="areas">
+🚗 Rotterdam en omgeving
+</p>
+
 </div>
 
-<section class="section">
- <h2 class="section-title">Onze reparatie diensten</h2>
- <div id="services" class="services"></div>
+</div>
+
+<a class="btn green" data-wa>
+💬 WhatsApp
+</a>
+
+</div>
+
+
+<!-- TOESTEL VERKOPEN -->
+
+<div class="home-banner toestel-verkoop-banner">
+
+<div class="banner-left">
+
+<div class="banner-icon">📱</div>
+
+<div>
+
+<h2>Uw toestel verkopen?</h2>
+
+<p>
+Heeft u een oude iPhone, Samsung, iPad of Mac?
+Laat HOMS TECH uw toestel beoordelen en ontvang een eerlijke prijs.
+</p>
+
+</div>
+
+</div>
+
+<a
+class="btn white"
+href="uw-toestel-verkopen.html"
+>
+Bekijk wat uw toestel waard is →
+</a>
+
+</div>
+
+
+<!-- CATEGORIES -->
+
+<section class="category-section">
+
+<h2 class="section-title">
+Refurbished apparaten
+</h2>
+
+<div id="deviceCategories" class="category-grid"></div>
+
 </section>
 
-<section class="section">
- <h2 class="section-title">Waarom HOMS TECH?</h2>
- <div id="why" class="why"></div>
+
+<!-- DEVICES -->
+
+<section>
+
+<h2 class="section-title">
+Populaire apparaten
+</h2>
+
+<div id="devices" class="phone-strip"></div>
+
+</section>
+
+
+<!-- WHY -->
+
+<section>
+
+<h2 class="section-title">
+Waarom HOMS TECH?
+</h2>
+
+<div id="why" class="why"></div>
+
+</section>
+
+
+<!-- CONTACT -->
+
+<section>
+
+<div class="contact-box">
+
+<h2>
+Heeft u een probleem met uw telefoon?
+</h2>
+
+<p>
+Neem direct contact met ons op voor informatie of een afspraak.
+</p>
+
+<div class="hero-buttons" style="justify-content:center">
+
+<a class="btn green" data-wa>
+💬 WhatsApp
+</a>
+
+<a class="btn white" data-phone>
+📞 Bel ons
+</a>
+
+</div>
+
+</div>
+
 </section>
 
 </main>
 
+
 <footer>
- <div class="container">
-  <div class="footer-grid">
-   <div><div class="footer-logo">HOMS <span>TECH</span></div><p>Refurbished apparaten · Reparatie aan huis · GSM Services</p></div>
-   <div><h3>Snelle links</h3><ul><li>Home</li><li>Apparaten</li><li>Reparaties</li><li>Prijzen</li></ul></div>
-   <div><h3>Service</h3><ul><li>Garantie</li><li>Verzending</li><li>Retour</li><li>Voorwaarden</li></ul></div>
-   <div><h3>Contact</h3><p>Rotterdam en omgeving</p><p>WhatsApp · Telefoon · E-mail</p></div>
-  </div>
-  <div class="copyright"><span>© 2026 HOMS TECH</span><span>Refurbished · Reparatie · Service</span></div>
- </div>
+
+<div class="footer-inner">
+
+<div class="footer-logo">
+<img src="assets/homs-tech-logo.png" alt="HOMS TECH">
+</div>
+
+<div class="footer-center">
+
+<strong data-name>HOMS TECH</strong>
+
+<br>
+
+<span data-tag>
+Telefoonreparatie aan huis
+</span>
+
+<br><br>
+
+© HOMS TECH — Alle rechten voorbehouden.
+
+</div>
+
+<a class="admin-btn" href="admin/index.html">
+⚙️ Admin
+</a>
+
+</div>
+
 </footer>
 
+
 <script>
-const defaults={
- businessName:"HOMS TECH",
- tagline:"Telefoonreparatie aan huis",
- heroTitle:"Is uw telefoon kapot? Wij komen naar u toe!",
- heroText:"Reparatie van alle soorten telefoons bij u thuis — snelle service, professioneel werk en betaalbare prijzen.",
- whatsapp:"",phone:"",areas:"Rotterdam en omgeving",
- services:[],why:[],phones:[],deviceCategories:[]
+
+let data = null;
+
+const defaults = {
+businessName:"HOMS TECH",
+tagline:"Telefoonreparatie aan huis",
+heroTitle:"Is uw telefoon kapot? Wij komen naar u toe!",
+heroText:"Reparatie van alle soorten telefoons bij u thuis — snelle service, professioneel werk en betaalbare prijzen.",
+whatsapp:"",
+phone:"",
+areas:"Rotterdam en omgeving",
+services:[],
+why:[],
+phones:[],
+deviceCategories:[]
 };
-let data={...defaults};
 
-function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 
-function wa(){
- const n=String(data.whatsapp||"").replace(/\D/g,"");
- return n?"https://wa.me/"+n+"?text="+encodeURIComponent("Hallo, ik wil graag informeren over HOMS TECH."):"#";
-}
-function common(){
- document.querySelectorAll("[data-wa]").forEach(a=>a.href=wa());
- document.querySelectorAll("[data-phone]").forEach(a=>a.href=data.phone?"tel:"+String(data.phone).replace(/[^\d+]/g,""):"#");
-}
-function renderHero(){
- const title=data.heroTitle||defaults.heroTitle;
- const p=title.split("!");
- document.getElementById("heroTop").textContent=(p[0]||"Is uw telefoon kapot?")+"!";
- document.getElementById("heroBottom").textContent=(p.slice(1).join("!").trim()||"Wij komen naar u toe!").replace(/!$/,"")+"!";
- document.getElementById("heroText").textContent=data.heroText||defaults.heroText;
- document.getElementById("areas").textContent=(data.areas||defaults.areas)+" · Professionele reparatie aan huis";
-}
-function renderCategories(){
- const box=document.getElementById("categories");box.innerHTML="";
- let cats=Array.isArray(data.deviceCategories)?data.deviceCategories.filter(x=>x&&x.active!==false):[];
- if(!cats.length)cats=[
-  {title:"Refurbished iPhones",link:"devices.html"},{title:"Refurbished iPads",link:"devices.html"},
-  {title:"Refurbished Mac",link:"devices.html"},{title:"Refurbished Watches",link:"devices.html"},
-  {title:"Refurbished Samsungs",link:"devices.html"},{title:"Onze accessoires",link:"devices.html"}
- ];
- cats.slice(0,6).forEach(c=>{
-  const a=document.createElement("a");a.className="category-card"+(c.image?"":" no-image");a.href=c.link||"devices.html";
-  if(c.image){const img=document.createElement("img");img.src=c.image;img.alt=c.title||"";a.appendChild(img)}
-  const d=document.createElement("div");d.className="category-content";
-  d.innerHTML="<h3>"+esc(c.title||"Apparaat")+"</h3><span>"+esc(c.buttonText||"Bekijk")+" →</span>";
-  a.appendChild(d);box.appendChild(a);
- });
-}
-function renderProducts(){
- const box=document.getElementById("products");box.innerHTML="";
- let phones=Array.isArray(data.phones)?data.phones:[];
- if(!phones.length){
-  box.innerHTML="<div style='padding:25px;color:#667784'>Geen apparaten beschikbaar.</div>";return;
- }
- phones.slice(0,12).forEach((p,i)=>{
-  if(typeof p==="string")p={name:p};
-  const img=p.image||(Array.isArray(p.images)?p.images[0]:"");
-  const card=document.createElement("article");card.className="product";
-  const pic=document.createElement("div");pic.className="product-img";
-  pic.innerHTML=img?'<img src="'+esc(img)+'" alt="'+esc(p.name||"")+'">':'<div class="phone-placeholder"></div>';
-  const body=document.createElement("div");body.className="product-body";
-  const price=p.price||p.salePrice||p.sellPrice||p.verkoopprijs||"";
-  body.innerHTML="<h3>"+esc(p.name||"Apparaat")+"</h3><div class='meta'>"+esc(p.brand||"Refurbished")+"</div>"+(price?"<div class='price'>€ "+esc(String(price).replace(/^€\s*/,""))+"</div>":"");
-  const link=document.createElement("a");link.className="buy";link.href="product.html?type=phone&id="+encodeURIComponent(p._index??i);link.textContent="Bekijk apparaat";
-  body.appendChild(link);card.appendChild(pic);card.appendChild(body);box.appendChild(card);
- });
-}
-function renderServices(){
- const box=document.getElementById("services");box.innerHTML="";
- let arr=Array.isArray(data.services)?data.services:[];if(!arr.length)arr=[
-  ["📱","Scherm reparatie"],["🔋","Batterij vervangen"],["🔌","Laadpoort reparatie"],["📷","Camera reparatie"]
- ];
- arr.slice(0,8).forEach(x=>{
-  if(typeof x==="string")x=["🔧",x];
-  const d=document.createElement("div");d.className="service";d.innerHTML="<div class='service-icon'>"+esc(x[0]||"🔧")+"</div><strong>"+esc(x[1]||"Service")+"</strong>";box.appendChild(d);
- });
-}
-function renderWhy(){
- const box=document.getElementById("why");box.innerHTML="";
- let arr=Array.isArray(data.why)?data.why:[];if(!arr.length)arr=[
-  ["✓","Betrouwbaar","Kwaliteit en duidelijke service"],["⌁","Aan huis","Wij komen naar u toe"],
-  ["⚡","Snelle service","Snel geholpen waar mogelijk"],["€","Transparante prijzen","Geen verrassingen"]
- ];
- arr.slice(0,8).forEach(x=>{
-  if(typeof x==="string")x=["✓",x,""];
-  const d=document.createElement("div");d.className="why-card";d.innerHTML="<b>"+esc(x[0]||"✓")+"</b><strong>"+esc(x[1]||"")+"</strong><small>"+esc(x[2]||"")+"</small>";box.appendChild(d);
- });
-}
-function moveProducts(dir){document.getElementById("products").scrollBy({left:dir*220,behavior:"smooth"})}
-function startProductTicker(){
- const box=document.getElementById("products");
- if(!box || box.children.length===0) return;
-
- // Duplicate the products so there is ALWAYS enough content to scroll.
- if(!box.dataset.duplicated){
-   const originals=[...box.children];
-   originals.forEach(card=>box.appendChild(card.cloneNode(true)));
-   box.dataset.duplicated="1";
- }
-
- box.classList.add("auto-moving");
- box.style.overflowX="hidden";
-
- let paused=false;
- let last=performance.now();
- let position=box.scrollLeft;
- const speed=0.055; // pixels per millisecond
-
- box.addEventListener("mouseenter",()=>paused=true);
- box.addEventListener("mouseleave",()=>paused=false);
- box.addEventListener("touchstart",()=>paused=true,{passive:true});
- box.addEventListener("touchend",()=>setTimeout(()=>paused=false,1000),{passive:true});
-
- function tick(now){
-   const dt=Math.min(50,now-last);
-   last=now;
-
-   if(!paused){
-     position += dt*speed;
-     const half=box.scrollWidth/2;
-     if(half>box.clientWidth && position>=half){
-       position -= half;
-     }
-     box.scrollLeft=position;
-   }
-   requestAnimationFrame(tick);
- }
- requestAnimationFrame(tick);
-}
+/* Laden van gegevens van de server */
 
 async function loadSite(){
- try{
-  const r=await fetch("/api/site",{cache:"no-store"});
-  if(r.ok){const x=await r.json();if(x&&typeof x==="object")data={...defaults,...x}}
- }catch(e){console.warn("Website data unavailable, using defaults.")}
- common();renderHero();renderCategories();renderProducts();renderServices();renderWhy();startProductTicker();
+
+try{
+
+const response = await fetch("/api/site",{
+cache:"no-store"
+});
+
+if(!response.ok){
+throw new Error("Server error");
 }
+
+data = await response.json();
+
+if(!data || typeof data !== "object"){
+data = {...defaults};
+}
+
+renderAll();
+
+}catch(error){
+
+console.error("Kan websitegegevens niet laden:",error);
+
+data = {...defaults};
+
+renderAll();
+
+}
+
+}
+
+
+/* WhatsApp */
+
+function wa(){
+
+let number = String(data.whatsapp || "").replace(/\D/g,"");
+
+if(!number){
+return "#";
+}
+
+return "https://wa.me/" +
+number +
+"?text=" +
+encodeURIComponent(
+"Hallo, ik wil graag informeren over een telefoonreparatie."
+);
+
+}
+
+
+/* Algemene gegevens */
+
+function common(){
+
+document.querySelectorAll("[data-name]").forEach(function(el){
+
+el.textContent =
+data.businessName ||
+defaults.businessName;
+
+});
+
+document.querySelectorAll("[data-tag]").forEach(function(el){
+
+el.textContent =
+data.tagline ||
+defaults.tagline;
+
+});
+
+document.querySelectorAll("[data-wa]").forEach(function(el){
+
+el.href = wa();
+
+});
+
+document.querySelectorAll("[data-phone]").forEach(function(el){
+
+let phone =
+data.phone ||
+"";
+
+el.href =
+phone
+? "tel:" + phone.replace(/[^\d+]/g,"")
+: "#";
+
+});
+
+}
+
+
+/* Hero */
+
+function renderHero(){
+
+let title =
+data.heroTitle ||
+defaults.heroTitle;
+
+let parts =
+title.split("!");
+
+let top =
+parts[0] || "Is uw telefoon kapot?";
+
+let bottom =
+parts.slice(1).join("!").trim();
+
+if(!bottom){
+bottom = "Wij komen naar u toe!";
+}else{
+bottom += "!";
+}
+
+document.getElementById("heroTitleTop").textContent =
+top + (top.endsWith("!") ? "" : "!");
+
+document.getElementById("heroTitleBottom").textContent =
+bottom;
+
+document.getElementById("heroText").textContent =
+data.heroText ||
+defaults.heroText;
+
+document.getElementById("areas").textContent =
+"🚗 " +
+(data.areas || defaults.areas);
+
+}
+
+
+/* Services */
+
+function renderServices(){
+
+let container =
+document.getElementById("services");
+
+container.innerHTML = "";
+
+let services =
+Array.isArray(data.services)
+? data.services
+: [];
+
+if(services.length === 0){
+
+services = [
+["🔧","Telefoon reparatie","Professionele reparatie van verschillende telefoonproblemen."],
+["🖥️","Scherm vervangen","Gebarsten of defect scherm? Wij vervangen het snel."],
+["🔋","Batterij vervangen","Loopt uw batterij snel leeg? Wij plaatsen een nieuwe."],
+["🔌","Laadproblemen","Laadt uw telefoon niet goed op? Wij zoeken het probleem."]
+];
+
+}
+
+services.forEach(function(item){
+
+if(typeof item === "string"){
+item = ["🔧",item,""];
+}
+
+let card =
+document.createElement("div");
+
+card.className = "card";
+
+let icon =
+document.createElement("div");
+
+icon.className = "icon";
+
+icon.textContent =
+item[0] || "🔧";
+
+let title =
+document.createElement("h3");
+
+title.textContent =
+item[1] || "";
+
+let text =
+document.createElement("p");
+
+text.textContent =
+item[2] || "";
+
+card.appendChild(icon);
+card.appendChild(title);
+card.appendChild(text);
+
+container.appendChild(card);
+
+});
+
+}
+
+
+/* Categories */
+
+function renderCategories(){
+
+const container =
+document.getElementById("deviceCategories");
+
+if(!container) return;
+
+container.innerHTML="";
+
+let categories =
+Array.isArray(data.deviceCategories)
+? data.deviceCategories
+: [];
+
+categories =
+categories.filter(x =>
+x &&
+x.active !== false
+);
+
+if(!categories.length){
+
+categories=[
+{
+title:"Refurbished iPhones",
+image:"",
+link:"devices.html",
+active:true
+},
+{
+title:"Refurbished iPads",
+image:"",
+link:"devices.html",
+active:true
+},
+{
+title:"Refurbished Mac",
+image:"",
+link:"devices.html",
+active:true
+},
+{
+title:"Refurbished Watches",
+image:"",
+link:"devices.html",
+active:true
+},
+{
+title:"Refurbished Samsungs",
+image:"",
+link:"devices.html",
+active:true
+},
+{
+title:"Onze accessoires",
+image:"",
+link:"devices.html",
+active:true
+}
+];
+
+}
+
+categories.forEach(function(cat){
+
+const a =
+document.createElement("a");
+
+a.className =
+"category-card" +
+(cat.image ? "" : " no-image");
+
+a.href =
+cat.link ||
+"devices.html";
+
+if(cat.image){
+
+const img =
+document.createElement("img");
+
+img.src =
+cat.image;
+
+img.alt =
+cat.title || "";
+
+a.appendChild(img);
+
+}
+
+const content =
+document.createElement("div");
+
+content.className =
+"category-card-content";
+
+const h =
+document.createElement("h3");
+
+h.textContent =
+cat.title ||
+"Apparaten";
+
+const span =
+document.createElement("span");
+
+span.textContent =
+(cat.buttonText || "Bekijk") +
+"  ›";
+
+content.appendChild(h);
+content.appendChild(span);
+
+a.appendChild(content);
+
+container.appendChild(a);
+
+});
+
+}
+
+
+/* Devices */
+
+function renderDevices(){
+
+const container =
+document.getElementById("devices");
+
+if(!container) return;
+
+container.innerHTML = "";
+
+
+/* Always use phones managed from Admin. */
+
+let phones =
+Array.isArray(data && data.phones)
+? data.phones
+: [];
+
+
+/* Backward compatibility */
+
+if(
+!phones.length &&
+Array.isArray(data && data.devices)
+){
+
+phones =
+data.devices;
+
+}
+
+
+if(!phones.length){
+
+container.innerHTML =
+'<div class="empty"><h3>Geen telefoons beschikbaar</h3><p>Neem contact met ons op voor het actuele aanbod.</p></div>';
+
+return;
+
+}
+
+
+phones
+.slice(0,12)
+.forEach(function(phone,index){
+
+if(typeof phone === "string"){
+
+phone = {
+name:phone,
+brand:""
+};
+
+}
+
+
+const image =
+phone.image ||
+(
+Array.isArray(phone.images) &&
+phone.images.length
+? phone.images[0]
+: ""
+) ||
+"";
+
+
+const device =
+document.createElement("div");
+
+device.className =
+"device";
+
+
+const imageBox =
+document.createElement("div");
+
+imageBox.className =
+"device-image";
+
+
+if(image){
+
+const img =
+document.createElement("img");
+
+img.src =
+image;
+
+img.alt =
+phone.name ||
+"Telefoon";
+
+imageBox.appendChild(img);
+
+}else{
+
+imageBox.textContent =
+"📱";
+
+imageBox.style.fontSize =
+"55px";
+
+}
+
+
+const body =
+document.createElement("div");
+
+body.className =
+"device-body";
+
+
+const name =
+document.createElement("strong");
+
+name.textContent =
+phone.name ||
+phone.model ||
+"Apparaat";
+
+
+const brand =
+document.createElement("small");
+
+brand.style.color =
+"#64748b";
+
+brand.style.display =
+"block";
+
+brand.textContent =
+phone.brand ||
+"";
+
+
+const price =
+document.createElement("div");
+
+price.className =
+"device-price";
+
+
+const p =
+phone.price ||
+phone.salePrice ||
+phone.sellPrice ||
+phone.verkoopprijs ||
+"";
+
+
+price.textContent =
+p
+? "€ " +
+String(p).replace(/^€\s*/,"")
+: "";
+
+
+const link =
+document.createElement("a");
+
+link.className =
+"device-link";
+
+link.href =
+"product.html?type=phone&id=" +
+encodeURIComponent(index);
+
+link.textContent =
+"Bekijk →";
+
+
+body.appendChild(name);
+
+if(brand.textContent)
+body.appendChild(brand);
+
+if(price.textContent)
+body.appendChild(price);
+
+body.appendChild(link);
+
+device.appendChild(imageBox);
+device.appendChild(body);
+
+container.appendChild(device);
+
+});
+
+
+startPhoneAutoCarousel(container);
+
+}
+
+
+/* Automatic movement */
+
+let phoneCarouselTimer =
+null;
+
+
+function startPhoneAutoCarousel(container){
+
+if(!container)
+return;
+
+
+if(phoneCarouselTimer){
+
+clearInterval(phoneCarouselTimer);
+
+phoneCarouselTimer =
+null;
+
+}
+
+
+if(container.children.length < 2)
+return;
+
+
+let paused =
+false;
+
+
+const pause =
+() => {
+paused = true;
+};
+
+
+const resume =
+() => {
+paused = false;
+};
+
+
+container.onmouseenter =
+pause;
+
+container.onmouseleave =
+resume;
+
+container.ontouchstart =
+pause;
+
+container.ontouchend =
+() => {
+
+setTimeout(
+resume,
+1200
+);
+
+};
+
+
+phoneCarouselTimer =
+setInterval(() => {
+
+if(paused)
+return;
+
+
+const first =
+container.children[0];
+
+if(!first)
+return;
+
+
+const step =
+first.getBoundingClientRect().width +
+18;
+
+
+const max =
+container.scrollWidth -
+container.clientWidth;
+
+
+if(container.scrollLeft >= max - 5){
+
+container.scrollTo({
+left:0,
+behavior:"smooth"
+});
+
+}else{
+
+container.scrollBy({
+left:step,
+behavior:"smooth"
+});
+
+}
+
+},2800);
+
+}
+
+
+/* Waarom */
+
+function renderWhy(){
+
+let container =
+document.getElementById("why");
+
+container.innerHTML = "";
+
+let why =
+Array.isArray(data.why)
+? data.why
+: [];
+
+if(why.length === 0){
+
+why = [
+["⚡","Snel","Wij proberen uw reparatie zo snel mogelijk uit te voeren."],
+["🛠️","Professioneel","Nauwkeurige diagnose en professioneel werk."],
+["🚗","Wij komen naar u","Mobiele service bij u thuis."],
+["💰","Betaalbare prijzen","Vraag vooraf naar de prijs."]
+];
+
+}
+
+
+why.forEach(function(item){
+
+if(typeof item === "string"){
+
+item =
+["⭐",item,""];
+
+}
+
+
+let card =
+document.createElement("div");
+
+card.className =
+"card";
+
+
+let icon =
+document.createElement("div");
+
+icon.className =
+"icon";
+
+icon.textContent =
+item[0] ||
+"⭐";
+
+
+let title =
+document.createElement("h3");
+
+title.textContent =
+item[1] ||
+"";
+
+
+let text =
+document.createElement("p");
+
+text.textContent =
+item[2] ||
+"";
+
+
+card.appendChild(icon);
+card.appendChild(title);
+card.appendChild(text);
+
+container.appendChild(card);
+
+});
+
+}
+
+
+/* Alles starten */
+
+function renderAll(){
+
+common();
+
+renderHero();
+
+renderServices();
+
+renderCategories();
+
+renderDevices();
+
+renderWhy();
+
+}
+
+
 loadSite();
+
 </script>
+
 </body>
 </html>
