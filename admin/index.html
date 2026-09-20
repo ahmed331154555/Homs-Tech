@@ -644,6 +644,15 @@ textarea{
   .container{max-width:none;margin:18px auto;padding:0 14px 90px}
 }
 
+
+/* Webshop orders */
+.webshop-order-items{margin-top:14px;border-top:1px solid #eef2f7;padding-top:12px}
+.webshop-item{display:flex;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid #f1f5f9}
+.webshop-item img{width:54px;height:54px;object-fit:cover;border-radius:8px;background:#f1f5f9}
+.webshop-item-info{flex:1;min-width:0}
+.webshop-item-name{font-weight:800}
+.webshop-item-meta{font-size:12px;color:#64748b;margin-top:3px}
+.webshop-order-address{margin-top:12px;padding:12px;background:#f8fafc;border-radius:10px}
 </style>
 </head>
 
@@ -667,6 +676,7 @@ textarea{
     <button class="nav-btn" data-page="why" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
     <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
     <button class="nav-btn" data-page="orders" onclick="showPage('orders')">📋 GSM Orders</button>
+    <button class="nav-btn" data-page="webshop-orders" onclick="showPage('webshop-orders')">🛍️ Webshop Bestellingen</button>
     <button class="nav-btn" data-page="gsm" onclick="showPage('gsm')">🛠️ GSM Services</button>
   </div>
 </div>
@@ -831,6 +841,19 @@ textarea{
     <div id="ordersList" class="orders-list"></div>
   </section>
 
+  <!-- WEBSHOP ORDERS -->
+  <section class="section admin-page" id="page-webshop-orders">
+    <div class="section-head">
+      <div>
+        <h2>🛍️ Webshop Bestellingen</h2>
+        <p>Bekijk en beheer bestellingen die klanten via de winkelwagen hebben geplaatst.</p>
+      </div>
+      <button class="btn btn-light" onclick="loadWebshopOrders()">↻ Vernieuwen</button>
+    </div>
+    <div id="webshopOrdersStatus" class="status info" style="margin-bottom:15px"></div>
+    <div id="webshopOrdersList" class="orders-list"></div>
+  </section>
+
   <!-- GSM SERVICES -->
   <section class="section admin-page" id="page-gsm">
     <div class="section-head">
@@ -929,6 +952,7 @@ function showPage(page){
     target.classList.add("active");
     if(page==="customers") loadCustomers();
     if(page==="orders") loadOrders();
+    if(page==="webshop-orders") loadWebshopOrders();
   }
 
   document.querySelectorAll(".nav-btn").forEach(button=>{
@@ -1836,6 +1860,87 @@ async function updateOrderStatus(id,statusValue){
   }
 }
 
+/* ---------------- WEBSHOP ORDERS ---------------- */
+async function loadWebshopOrders(){
+  const box=document.getElementById("webshopOrdersList");
+  const status=document.getElementById("webshopOrdersStatus");
+  if(!box || !status) return;
+  status.className="status info";
+  status.textContent="Webshop bestellingen laden...";
+  box.innerHTML="";
+
+  try{
+    const r=await fetch("/api/admin/webshop-orders",{credentials:"same-origin"});
+    const raw=await r.text();
+    let result={};
+    try{ result=raw ? JSON.parse(raw) : {}; }catch{ throw new Error("Server antwoord is geen JSON."); }
+    if(!r.ok) throw new Error(result.error||"Webshop bestellingen konden niet worden geladen");
+
+    const orders=result.orders||[];
+    status.className="status success";
+    status.textContent=orders.length+" webshop bestelling(en) gevonden";
+    if(!orders.length){
+      box.innerHTML='<div class="order-empty">Nog geen webshop bestellingen ontvangen.</div>';
+      return;
+    }
+
+    box.innerHTML=orders.map(order=>{
+      const items=Array.isArray(order.items)?order.items:[];
+      const date=order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"";
+      const total=Number(order.total||0).toFixed(2).replace('.',',');
+      const address=[order.street,order.house_number,order.postcode,order.city].filter(Boolean).join(' ');
+      return `<div class="order-card">
+        <div class="order-card-head">
+          <div>
+            <div class="order-title">#${esc(order.id)} — Webshop bestelling</div>
+            <div class="order-meta">${esc(date)}</div>
+          </div>
+          <select class="order-status-select" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">
+            ${["Nieuw","In behandeling","Verzonden","Voltooid","Geannuleerd"].map(x=>`<option value="${esc(x)}" ${order.status===x?'selected':''}>${esc(x)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="order-grid">
+          <div class="order-info"><strong>Klant</strong>${esc(order.name||'-')}</div>
+          <div class="order-info"><strong>E-mail</strong>${esc(order.email||'-')}</div>
+          <div class="order-info"><strong>Telefoon</strong>${esc(order.phone||'-')}</div>
+          <div class="order-info"><strong>Totaal</strong>€ ${esc(total)}</div>
+        </div>
+        <div class="webshop-order-address"><strong>📍 Adres</strong><br>${esc(address||'-')}</div>
+        <div class="webshop-order-items"><strong>📦 Producten</strong>
+          ${items.map(item=>`<div class="webshop-item">
+            ${item.image?`<img src="${esc(item.image)}" alt="">`:''}
+            <div class="webshop-item-info"><div class="webshop-item-name">${esc(item.name||'Product')}</div>
+            <div class="webshop-item-meta">Aantal: ${Number(item.quantity)||1}${item.options&&Object.keys(item.options).length?' · '+esc(Object.values(item.options).filter(Boolean).join(' · ')):''}</div></div>
+            <strong>€ ${esc(Number(item.totalPrice||0).toFixed(2).replace('.',','))}</strong>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    status.className="status error";
+    status.textContent="✕ "+e.message;
+  }
+}
+
+async function updateWebshopOrderStatus(id,statusValue){
+  try{
+    const r=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/status",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      credentials:"same-origin",
+      body:JSON.stringify({status:statusValue})
+    });
+    const raw=await r.text();
+    let result={};
+    try{result=raw?JSON.parse(raw):{};}catch{throw new Error("Server antwoord is geen JSON.");}
+    if(!r.ok) throw new Error(result.error||"Status kon niet worden gewijzigd");
+    setStatus("✓ Webshop order #"+id+" bijgewerkt","success");
+  }catch(e){
+    setStatus("✕ "+e.message,"error");
+    loadWebshopOrders();
+  }
+}
+
 /* ---------------- CUSTOMERS ---------------- */
 async function loadCustomers(){
   const box=document.getElementById("customersList");
@@ -1924,9 +2029,7 @@ function deleteWhy(i){
 /* ---------------- SAVE ---------------- */
 
 async function save(){
-
   if(loading) return;
-
   loading=true;
   setStatus("Opslaan...","info");
 
@@ -1935,40 +2038,39 @@ async function save(){
 
     const r=await fetch("/api/site",{
       method:"PUT",
-      headers:{"Content-Type":"application/json"},
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
       credentials:"same-origin",
       body:JSON.stringify(data)
     });
 
-    const text=await r.text();
+    const raw=await r.text();
     let result={};
-    try{ result=text ? JSON.parse(text) : {}; }catch(parseError){
-      throw new Error("De server gaf geen geldige JSON terug (HTTP "+r.status+"). Controleer of je de juiste serverversie gebruikt.");
+    try{ result=raw ? JSON.parse(raw) : {}; }catch{
+      throw new Error("De server stuurde geen JSON terug. Controleer of de juiste server.js draait.");
     }
 
     if(!r.ok){
-      throw new Error(result.error || "Opslaan mislukt (HTTP "+r.status+")");
+      throw new Error(result.error || "Opslaan mislukt");
     }
 
     data=result.data || data;
     normalizeData();
 
-    /* Alleen de huidige pagina opnieuw tekenen.
-       renderAll() wordt bewust NIET aangeroepen om een call-stack fout te voorkomen. */
-    if(currentPage === "general") renderGeneral();
-    else if(currentPage === "services") renderServices();
-    else if(currentPage === "phones") renderPhones();
-    else if(currentPage === "used") renderUsedPhones();
-    else if(currentPage === "gsm") renderGsmServices();
-    else if(currentPage === "why") renderWhy();
+    // Alleen de huidige pagina opnieuw tekenen. Geen renderAll-loop na opslaan.
+    if(currentPage==="general") renderGeneral();
+    else if(currentPage==="services") renderServices();
+    else if(currentPage==="phones") renderPhones();
+    else if(currentPage==="categories") renderDeviceCategories();
+    else if(currentPage==="used") renderUsedPhones();
+    else if(currentPage==="why") renderWhy();
+    else if(currentPage==="gsm") renderGsmServices();
 
     setStatus("✓ Alle wijzigingen zijn succesvol opgeslagen","success");
-
   }catch(e){
     setStatus("✕ Opslaan mislukt: "+e.message,"error");
+  }finally{
+    loading=false;
   }
-
-  loading=false;
 }
 
 /* ---------------- HELPERS ---------------- */
