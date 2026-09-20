@@ -135,9 +135,61 @@ function optionList(list){
 function allActiveOptions(list){
   return Array.isArray(list)?list.filter(x=>x&&x.label&&(x.active!==false && x.enabled!==false)):[];
 }
+
+function cleanOptionLabel(key,label){
+  const raw=String(label??'').trim();
+  const low=raw.toLowerCase();
+  if(key==='color'){
+    if(low==='blue' || low==='blauw') return 'Blauw';
+    if(low==='red' || low==='rood') return 'Rood';
+    if(low==='white' || low==='wit') return 'Wit';
+    if(low==='black' || low==='zwart') return 'Zwart';
+  }
+  if(key==='storage'){
+    if(/^64\s*gb$/i.test(raw)) return '64 GB';
+    if(/^128\s*gb$/i.test(raw)) return '128 GB';
+    if(/^256\s*gb$/i.test(raw)) return '256 GB';
+    if(/^512\s*gb$/i.test(raw)) return '512 GB';
+    if(/^1\s*tb$/i.test(raw)) return '1 TB';
+  }
+  if(key==='vat'){
+    if(low.includes('zonder btw')) return 'Zonder BTW';
+    if(low.includes('met btw')) return 'Met BTW';
+  }
+  if(key==='battery'){
+    if(low.includes('nieuw')) return 'Nieuw (100%)';
+    if(low.includes('standaard')) return 'Standaard';
+  }
+  if(key==='tradeIn'){
+    if(low==='ja') return 'Ja';
+    if(low==='nee') return 'Nee';
+  }
+  return raw;
+}
+function canonicalizeOptions(key,raw){
+  const out=[];
+  const seen=new Set();
+  (Array.isArray(raw)?raw:[]).forEach((x)=>{
+    if(!x) return;
+    const label=cleanOptionLabel(key,x.label);
+    if(!label) return;
+    // VAT and battery are fixed business options; ignore legacy duplicates/variants.
+    if(key==='vat' && label!=='Zonder BTW' && label!=='Met BTW') return;
+    if(key==='battery' && label!=='Standaard' && label!=='Nieuw (100%)') return;
+    const id=label.toLowerCase();
+    if(seen.has(id)) return;
+    const n={...x,label};
+    if(key==='vat') n.priceDelta=(label==='Met BTW'?10:0);
+    if(key==='battery') n.priceDelta=(label==='Nieuw (100%)'?30:0);
+    out.push(n);
+    seen.add(id);
+  });
+  return out;
+}
+
 function effectiveOptions(product,key){
   const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
-  const raw=Array.isArray(product[map[key]]) ? product[map[key]] : [];
+  const raw=canonicalizeOptions(key,Array.isArray(product[map[key]]) ? product[map[key]] : []);
   const defaults={
     condition:[{label:'Zichtbaar gebruikt',priceDelta:0,active:true,available:true},{label:'Licht gebruikt',priceDelta:0,active:true,available:true},{label:'Zo goed als nieuw',priceDelta:0,active:true,available:true}],
     storage:[{label:'64 GB',priceDelta:0,active:true,available:true},{label:'128 GB',priceDelta:0,active:true,available:true},{label:'256 GB',priceDelta:0,active:true,available:true},{label:'512 GB',priceDelta:0,active:true,available:true},{label:'1 TB',priceDelta:0,active:true,available:true}],
@@ -189,7 +241,7 @@ function selectProductOption(key,label){
 }
 function renderOptionSection(key,title,list){
   const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
-  const raw=Array.isArray(currentProduct[map[key]]) ? currentProduct[map[key]] : [];
+  const raw=canonicalizeOptions(key,Array.isArray(currentProduct[map[key]]) ? currentProduct[map[key]] : []);
   const base=raw.length?raw:effectiveOptions(currentProduct,key);
   list=base.filter(x=>x&&x.label&&(x.active!==false && x.enabled!==false));
   if(!list.length) return "";
