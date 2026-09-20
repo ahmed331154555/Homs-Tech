@@ -1395,17 +1395,31 @@ function renderPhones(){
   const list=data.phones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">📱 ${esc(x.name||'Nieuwe telefoon')}<small>${esc(x.brand||'')}</small></button>`).join('');
   const optionEditor=(key,title,help,priceEditable=true)=>{
     const opts=phone[key]||[];
+    const fixedGroup = key==='batteryOptions' || key==='vatOptions';
     return `<div class="card" style="margin-top:16px"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">${help}</div>${opts.map((o,i)=>{
       const active=o.active !== undefined ? o.active !== false : o.enabled !== false;
       const available=o.available !== false;
-      const fixed = key==='vatOptions' ? (String(o.label).toLowerCase().includes('met btw') ? 10 : 0) : key==='batteryOptions' ? (String(o.label).toLowerCase().includes('nieuw') ? 30 : 0) : null;
-      return `<div style="display:grid;grid-template-columns:minmax(180px,1fr) 110px 125px ${priceEditable?'120px':'110px'};gap:10px;align-items:center;margin-bottom:9px">
+      let fixed=0;
+      if(key==='batteryOptions') fixed=String(o.label).toLowerCase().includes('nieuw') ? 30 : 0;
+      if(key==='vatOptions') fixed=String(o.label).toLowerCase().includes('met btw') ? 10 : 0;
+
+      if(fixedGroup){
+        const fixedLabel = key==='batteryOptions'
+          ? (String(o.label).toLowerCase().includes('nieuw') ? 'Nieuw (100%)' : 'Standaard')
+          : (String(o.label).toLowerCase().includes('met btw') ? 'Met BTW' : 'Zonder BTW');
+        return `<div style="display:grid;grid-template-columns:minmax(220px,1fr) 150px;gap:10px;align-items:center;margin-bottom:9px">
+          <input value="${esc(fixedLabel)}" readonly style="background:#f3f4f6;cursor:not-allowed">
+          <div class="small" style="font-weight:800">Vast: + €${fixed}</div>
+        </div>`;
+      }
+
+      return `<div style="display:grid;grid-template-columns:minmax(180px,1fr) 110px 125px 120px;gap:10px;align-items:center;margin-bottom:9px">
         <input value="${esc(o.label)}" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].label=this.value;markChanged()">
         <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${active?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].active=this.checked;data.phones[${selectedPhoneIndex}].${key}[${i}].enabled=this.checked;markChanged()"> Actief</label>
         <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${available?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].available=this.checked;markChanged()"> Beschikbaar</label>
-        ${priceEditable ? `<input type="number" step="1" value="${esc(o.priceDelta)}" placeholder="0" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].priceDelta=this.value;markChanged()">` : `<div class="small" style="font-weight:800">+ €${fixed}</div>`}
+        <input type="number" step="1" value="${esc(o.priceDelta)}" placeholder="0" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].priceDelta=this.value;markChanged()">
       </div>`;
-    }).join('')}<div class="small" style="margin-top:8px">Actief = tonen op de website. Beschikbaar = kan geselecteerd worden. Uitgeschakelde beschikbaarheid verschijnt met ✕/doorgestreept.</div></div>`;
+    }).join('')}<div class="small" style="margin-top:8px">Actief = tonen op de website. Beschikbaar = kan geselecteerd worden. Bij BTW en batterij zijn de bedragen vast: Met BTW +€10 en Nieuw (100%) +€30.</div></div>`;
   };
   box.innerHTML=`
     <div class="editor-layout">
