@@ -1328,6 +1328,152 @@ let selectedWhyIndex=0;
 let selectedGsmServiceIndex=0;
 let gsmActiveCategory="imei";
 
+
+/* ---------------- PHONE IMAGE UPLOAD FIX ----------------
+   Compress uploaded images before storing them in site-data.
+   This keeps the admin save request small and makes new phone
+   images reliably appear on the website.
+---------------------------------------------------------- */
+function resizePhoneImage(dataUrl, maxSize, quality){
+  return new Promise((resolve)=>{
+    const img=new Image();
+    img.onload=()=>{
+      let w=img.naturalWidth || img.width;
+      let h=img.naturalHeight || img.height;
+
+      if(!w || !h){
+        resolve(dataUrl);
+        return;
+      }
+
+      const scale=Math.min(1, maxSize/Math.max(w,h));
+      w=Math.max(1, Math.round(w*scale));
+      h=Math.max(1, Math.round(h*scale));
+
+      const canvas=document.createElement("canvas");
+      canvas.width=w;
+      canvas.height=h;
+
+      const ctx=canvas.getContext("2d");
+      ctx.drawImage(img,0,0,w,h);
+
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror=()=>resolve(dataUrl);
+    img.src=dataUrl;
+  });
+}
+
+async function handlePhoneImage(event, phoneIndex, imageIndex){
+  const file=event && event.target ? event.target.files[0] : null;
+  if(!file) return;
+
+  if(!file.type || !file.type.startsWith("image/")){
+    alert("Kies een afbeeldingsbestand.");
+    return;
+  }
+
+  const reader=new FileReader();
+
+  reader.onload=async()=>{
+    try{
+      const compressed=await resizePhoneImage(reader.result, 1400, 0.82);
+
+      if(!data.phones[phoneIndex]){
+        return;
+      }
+
+      if(!Array.isArray(data.phones[phoneIndex].images)){
+        data.phones[phoneIndex].images=["","","",""];
+      }
+
+      while(data.phones[phoneIndex].images.length<4){
+        data.phones[phoneIndex].images.push("");
+      }
+
+      data.phones[phoneIndex].images[imageIndex]=compressed;
+
+      renderPhones();
+      markChanged();
+      setStatus("✓ Foto toegevoegd. Klik daarna op Opslaan.","success");
+    }catch(error){
+      console.error(error);
+      setStatus("✕ Foto kon niet worden toegevoegd.","error");
+    }
+  };
+
+  reader.readAsDataURL(file);
+}
+
+function removePhoneImage(phoneIndex, imageIndex){
+  if(!data.phones[phoneIndex]) return;
+
+  if(!Array.isArray(data.phones[phoneIndex].images)){
+    data.phones[phoneIndex].images=["","","",""];
+  }
+
+  data.phones[phoneIndex].images[imageIndex]="";
+
+  renderPhones();
+  markChanged();
+  setStatus("Foto verwijderd. Klik op Opslaan om de wijziging te bewaren.","info");
+}
+
+/* Used-phone image upload handlers */
+async function handleImage(event, phoneIndex, imageIndex){
+  const file=event && event.target ? event.target.files[0] : null;
+  if(!file) return;
+
+  if(!file.type || !file.type.startsWith("image/")){
+    alert("Kies een afbeeldingsbestand.");
+    return;
+  }
+
+  const reader=new FileReader();
+
+  reader.onload=async()=>{
+    try{
+      const compressed=await resizePhoneImage(reader.result, 1400, 0.82);
+
+      if(!data.usedPhones[phoneIndex]) return;
+
+      if(!Array.isArray(data.usedPhones[phoneIndex].images)){
+        data.usedPhones[phoneIndex].images=["","","",""];
+      }
+
+      while(data.usedPhones[phoneIndex].images.length<4){
+        data.usedPhones[phoneIndex].images.push("");
+      }
+
+      data.usedPhones[phoneIndex].images[imageIndex]=compressed;
+
+      renderUsedPhones();
+      markChanged();
+      setStatus("✓ Foto toegevoegd. Klik daarna op Opslaan.","success");
+    }catch(error){
+      console.error(error);
+      setStatus("✕ Foto kon niet worden toegevoegd.","error");
+    }
+  };
+
+  reader.readAsDataURL(file);
+}
+
+function removeImage(phoneIndex, imageIndex){
+  if(!data.usedPhones[phoneIndex]) return;
+
+  if(!Array.isArray(data.usedPhones[phoneIndex].images)){
+    data.usedPhones[phoneIndex].images=["","","",""];
+  }
+
+  data.usedPhones[phoneIndex].images[imageIndex]="";
+
+  renderUsedPhones();
+  markChanged();
+  setStatus("Foto verwijderd. Klik op Opslaan om de wijziging te bewaren.","info");
+}
+
+
 /* ---------------- SERVICES ---------------- */
 
 function renderServices(){
