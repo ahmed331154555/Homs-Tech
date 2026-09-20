@@ -19,7 +19,7 @@ const pool = new Pool({
       : false,
 });
 
-app.use(express.json({ limit: "12mb" }));
+app.use(express.json({ limit: "2mb" }));
 app.use(cookieParser());
 
 // Website files
@@ -153,6 +153,24 @@ async function initDatabase() {
   `);
 
   await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS username TEXT DEFAULT ''`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS webshop_orders (
+      id SERIAL PRIMARY KEY,
+      customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT DEFAULT '',
+      street TEXT DEFAULT '',
+      house_number TEXT DEFAULT '',
+      postcode TEXT DEFAULT '',
+      city TEXT DEFAULT '',
+      items JSONB NOT NULL DEFAULT '[]'::jsonb,
+      total NUMERIC(12,2) NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'Nieuw',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
 
   const result = await pool.query(
     "SELECT id FROM site_settings WHERE id = 1"
@@ -607,6 +625,94 @@ app.post("/api/orders", async (req, res) => {
   }
 });
 
+// ---------------- WEBSHOP ORDERS ----------------
+
+app.post("/api/webshop/orders", async (req, res) => {
+  try {
+    const body = req.body || {};
+    const name = String(body.name || "").trim();
+    const email = String(body.email || "").trim().toLowerCase();
+    const phone = String(body.phone || "").trim();
+    const street = String(body.street || "").trim();
+    const houseNumber = String(body.houseNumber || "").trim();
+    const postcode = String(body.postcode || "").trim();
+    const city = String(body.city || "").trim();
+    const items = Array.isArray(body.items) ? body.items : [];
+
+    if (!name || !email || !phone || !street || !houseNumber || !postcode || !city || !items.length) {
+      return res.status(400).json({ error: "Vul alle verplichte gegevens in en controleer uw winkelwagen." });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "Vul een geldig e-mailadres in." });
+    }
+
+    let customerId = null;
+    try {
+      if (req.cookies.customerToken) {
+        const decoded = jwt.verify(req.cookies.customerToken, process.env.JWT_SECRET);
+        customerId = decoded.customerId || null;
+      }
+    } catch {}
+
+    const safeItems = items.map(item => ({
+      name: String(item?.name || ""),
+      brand: String(item?.brand || ""),
+      options: item?.options && typeof item.options === "object" ? item.options : {},
+      qty: Math.max(1, Number(item?.qty || 1)),
+      unitPrice: Number(item?.unitPrice || 0)
+    }));
+
+    const total = safeItems.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
+
+    const result = await pool.query(
+      `INSERT INTO webshop_orders
+       (customer_id, name, email, phone, street, house_number, postcode, city, items, total)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+       RETURNING id, status, created_at`,
+      [customerId, name, email, phone, street, houseNumber, postcode, city, JSON.stringify(safeItems), total.toFixed(2)]
+    );
+
+    res.status(201).json({ success: true, order: result.rows[0] });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Webshop bestelling kon niet worden opgeslagen." });
+  }
+});
+
+app.get("/api/admin/webshop-orders", requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, customer_id, name, email, phone, street, house_number, postcode, city, items, total, status, created_at
+       FROM webshop_orders
+       ORDER BY created_at DESC`
+    );
+    res.json({ orders: result.rows });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Webshop bestellingen konden niet worden geladen." });
+  }
+});
+
+app.put("/api/admin/webshop-orders/:id/status", requireAuth, async (req, res) => {
+  try {
+    const allowed = ["Nieuw", "In behandeling", "Verzonden", "Voltooid", "Geannuleerd"];
+    const status = String(req.body?.status || "").trim();
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ error: "Ongeldige status." });
+    }
+    const result = await pool.query(
+      `UPDATE webshop_orders SET status = $1 WHERE id = $2 RETURNING id, status`,
+      [status, req.params.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: "Webshop bestelling niet gevonden." });
+    res.json({ success: true, order: result.rows[0] });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Status kon niet worden gewijzigd." });
+  }
+});
+
 app.get("/api/customer/orders", requireCustomerAuth, async (req, res) => {
   try {
     const result = await pool.query(
@@ -621,21 +727,6 @@ app.get("/api/customer/orders", requireCustomerAuth, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Bestellingen konden niet worden geladen." });
-  }
-});
-
-app.get("/api/admin/customers", requireAuth, async (req, res) => {
-  try {
-    const result = await pool.query(
-      `SELECT id, name, email, phone, address, created_at
-       FROM customers
-       ORDER BY created_at DESC`
-    );
-
-    res.json({ customers: result.rows });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Kan klanten niet laden" });
   }
 });
 
