@@ -56,7 +56,7 @@ border-radius:9px
 
 nav a:hover,
 nav a.active{
-background:#dc2626
+background:#e50914
 }
 
 .btn{
@@ -77,18 +77,18 @@ transform:translateY(-2px)
 }
 
 .green{
-background:#16c766;
+background:#e50914;
 color:#fff
 }
 
 .green:hover{
-background:#0eae56
+background:#c70812
 }
 
 .white{
 background:#fff;
-color:#2563eb;
-border:2px solid #2563eb
+color:#e50914;
+border:2px solid #e50914
 }
 
 /* HERO */
@@ -119,7 +119,7 @@ font-weight:900
 }
 
 .hero h1 span{
-color:#60a5fa
+color:#ff4b55
 }
 
 .hero p{
@@ -247,7 +247,7 @@ content:"";
 display:block;
 width:42px;
 height:5px;
-background:#dc2626;
+background:#e50914;
 border-radius:5px;
 margin:11px auto 0
 }
@@ -359,7 +359,7 @@ gap:18px
 }
 
 .why .icon{
-color:#2563eb
+color:#e50914
 }
 
 /* CONTACT */
@@ -529,122 +529,25 @@ text-align:center
 .category-card:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.78),rgba(0,0,0,.08))}
 .category-card-content{position:absolute;z-index:2;left:24px;right:20px;bottom:22px;color:#fff}
 .category-card-content h3{margin:0 0 13px;font-size:28px;font-weight:900;text-transform:uppercase}
-.category-card-content span{display:inline-flex;align-items:center;gap:10px;background:#dc2626;color:#fff;padding:11px 20px;border-radius:13px;font-weight:900;font-size:18px}
+.category-card-content span{display:inline-flex;align-items:center;gap:10px;background:#ffe000;color:#111;padding:11px 20px;border-radius:13px;font-weight:900;font-size:18px}
 .category-card.no-image{display:flex;align-items:flex-end;padding:24px}
 .category-card.no-image:after{display:none}
 
-
-/* AUTO PHONE CAROUSEL */
-.phone-strip{
-  overflow-x:auto;
-  scroll-behavior:smooth;
-  scrollbar-width:thin;
-}
-.phone-strip .device{
-  flex:0 0 205px;
-}
-@media(max-width:700px){
-  .phone-strip .device{flex-basis:175px}
-}
-
-/* ELEGANT AUTO PHONE CAROUSEL */
-.phone-strip{
-  display:flex;
-  gap:22px;
-  overflow-x:auto;
-  scroll-snap-type:x mandatory;
-  padding:8px 4px 22px;
-  scrollbar-width:none;
-  -ms-overflow-style:none;
-}
-.phone-strip::-webkit-scrollbar{display:none}
-.phone-strip .device{
-  flex:0 0 205px;
-  scroll-snap-align:start;
-  overflow:hidden;
-  text-align:center;
-  border-radius:20px;
-  background:#fff;
-  padding:0 0 8px;
-  box-shadow:0 8px 24px rgba(15,23,42,.07);
-}
-.phone-strip .device-image{
-  width:100%;
-  height:205px;
-  background:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:12px;
-}
-.phone-strip .device-image img{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  transition:transform .25s ease;
-}
-.phone-strip .device:hover .device-image img{transform:scale(1.04)}
-.phone-strip .device-body{padding:8px 10px 0}
-.phone-strip .device strong{
-  display:block;
-  font-size:17px;
-  line-height:1.2;
-  min-height:42px;
-}
-.phone-strip .device small{
-  display:block;
-  min-height:22px;
-  margin-top:4px;
-}
-.phone-strip .device-price{
-  margin:13px 0 0;
-  min-height:50px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  padding:7px 9px 7px 16px;
-  border-radius:12px;
-  background:#dc2626;
-  color:#fff;
-  font-size:19px;
-  font-weight:900;
-}
-.phone-strip .device-link{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:38px;
-  height:38px;
-  margin:0;
-  background:#111827;
-  color:#fff;
-  border-radius:10px;
-  font-size:0;
-  font-weight:900;
-}
-.phone-strip .device-link::after{
-  content:"›";
-  font-size:27px;
-  line-height:1;
-}
-@media(max-width:700px){
-  .phone-strip{gap:14px}
-  .phone-strip .device{flex-basis:175px}
-  .phone-strip .device-image{height:165px}
-  .phone-strip .device strong{font-size:15px}
-  .phone-strip .device-price{font-size:17px}
-}
-@media(max-width:700px){
-  .category-grid{grid-template-columns:1fr 1fr;gap:12px}
-  .category-card,.category-card img{min-height:155px;height:155px}
-  .category-card-content{left:14px;bottom:14px}
-  .category-card-content h3{font-size:20px;margin-bottom:8px}
-  .category-card-content span{font-size:14px;padding:8px 12px}
-  .phone-strip .device{flex-basis:175px}
-  .phone-strip .device-image{height:165px}
-}
-
+/* HOMS TECH RED PRODUCT CARDS */
+.phone-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;overflow:visible;padding:8px 2px 18px}
+.phone-strip .device{position:relative;min-width:0;background:#fff;border:1px solid #edf0f4;border-radius:20px;padding:0 0 16px;overflow:hidden;text-align:left;box-shadow:0 8px 28px rgba(0,0,0,.08);transition:transform .2s,box-shadow .2s}
+.phone-strip .device:hover{transform:translateY(-5px);box-shadow:0 16px 38px rgba(0,0,0,.12)}
+.phone-strip .device-image{width:100%;height:265px;background:linear-gradient(180deg,#fff,#f7f8fa);display:flex;align-items:center;justify-content:center;padding:18px;position:relative}
+.phone-strip .device-image:before{content:"Nieuw";position:absolute;top:14px;left:14px;background:#e50914;color:#fff;border-radius:10px;padding:6px 11px;font-size:13px;font-weight:900;z-index:2}
+.phone-strip .device-image img{width:100%;height:100%;object-fit:contain;display:block;image-rendering:auto}
+.phone-strip .device-body{padding:16px 16px 0}
+.phone-strip .device strong{display:block;font-size:21px;line-height:1.2;margin-bottom:3px;color:#111827}
+.phone-strip .device-body small{font-size:14px;color:#64748b!important}
+.phone-strip .device-price{background:#e50914;color:#fff;border-radius:12px;padding:11px 14px;margin-top:14px;font-size:21px;font-weight:900;text-align:center}
+.phone-strip .device-link{display:flex;align-items:center;justify-content:center;margin-top:10px;background:#111827;color:#fff;border-radius:11px;padding:10px 13px;font-weight:800}
+.phone-strip .device-link:hover{background:#e50914}
+@media(max-width:950px){.phone-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.phone-strip .device-image{height:250px}}
+@media(max-width:550px){.phone-strip{grid-template-columns:1fr 1fr;gap:12px}.phone-strip .device-image{height:190px;padding:10px}.phone-strip .device-body{padding:12px}.phone-strip .device strong{font-size:17px}.phone-strip .device-price{font-size:17px;padding:9px}.phone-strip .device-link{font-size:13px;padding:9px}.phone-strip .device-image:before{font-size:11px;padding:5px 8px}}
 </style>
 </head>
 
@@ -1163,134 +1066,65 @@ categories.forEach(function(cat){
 }
 
 function renderDevices(){
-  const container = document.getElementById("devices");
-  if(!container) return;
 
-  container.innerHTML = "";
+let container=document.getElementById("devices");
+container.innerHTML="";
 
-  /* Always use the phones managed from Admin. */
-  let phones = Array.isArray(data && data.phones) ? data.phones : [];
+let phones=Array.isArray(data.phones)?data.phones:[];
 
-  /* Backward compatibility if an older site-data structure exists. */
-  if(!phones.length && Array.isArray(data && data.devices)){
-    phones = data.devices;
-  }
-
-  if(!phones.length){
-    container.innerHTML =
-      '<div class="empty"><h3>Geen telefoons beschikbaar</h3><p>Neem contact met ons op voor het actuele aanbod.</p></div>';
-    return;
-  }
-
-  phones.slice(0,12).forEach(function(phone,index){
-    if(typeof phone === "string"){
-      phone = {name:phone, brand:""};
-    }
-
-    const image =
-      phone.image ||
-      (Array.isArray(phone.images) && phone.images.length ? phone.images[0] : "") ||
-      "";
-
-    const device = document.createElement("div");
-    device.className = "device";
-
-    const imageBox = document.createElement("div");
-    imageBox.className = "device-image";
-
-    if(image){
-      const img = document.createElement("img");
-      img.src = image;
-      img.alt = phone.name || "Telefoon";
-      imageBox.appendChild(img);
-    }else{
-      imageBox.textContent = "📱";
-      imageBox.style.fontSize = "55px";
-    }
-
-    const body = document.createElement("div");
-    body.className = "device-body";
-
-    const name = document.createElement("strong");
-    name.textContent = phone.name || phone.model || "Apparaat";
-
-    const brand = document.createElement("small");
-    brand.style.color = "#64748b";
-    brand.style.display = "block";
-    brand.textContent = phone.brand || "";
-
-    const price = document.createElement("div");
-    price.className = "device-price";
-    const p =
-      phone.price ||
-      phone.salePrice ||
-      phone.sellPrice ||
-      phone.verkoopprijs ||
-      "";
-    price.textContent = p ? "€ " + String(p).replace(/^€\s*/, "") : "";
-
-    const link = document.createElement("a");
-    link.className = "device-link";
-    link.href =
-      "product.html?type=phone&id=" +
-      encodeURIComponent(index);
-    link.textContent = "Bekijk →";
-
-    body.appendChild(name);
-    if(brand.textContent) body.appendChild(brand);
-    if(price.textContent) body.appendChild(price);
-    body.appendChild(link);
-
-    device.appendChild(imageBox);
-    device.appendChild(body);
-    container.appendChild(device);
-  });
-
-  startPhoneAutoCarousel(container);
+if(phones.length===0){
+  container.innerHTML='<div class="empty"><h3>Geen telefoons beschikbaar</h3><p>Neem contact met ons op voor het actuele aanbod.</p></div>';
+  return;
 }
 
-/* Automatic movement, with pause while the user touches/uses the strip. */
-let phoneCarouselTimer = null;
+phones.slice(0,12).forEach(function(phone,index){
 
-function startPhoneAutoCarousel(container){
-  if(!container) return;
+  if(typeof phone==="string") phone={name:phone,brand:""};
 
-  if(phoneCarouselTimer){
-    clearInterval(phoneCarouselTimer);
-    phoneCarouselTimer = null;
+  let image=phone.image || (Array.isArray(phone.images)&&phone.images[0]) || "";
+
+  let device=document.createElement("div");
+  device.className="device";
+
+  let imageBox=document.createElement("div");
+  imageBox.className="device-image";
+  if(image){
+    imageBox.innerHTML='<img src="'+String(image).replace(/"/g,"&quot;")+'" alt="">';
+  }else{
+    imageBox.textContent="📱";
+    imageBox.style.fontSize="55px";
   }
 
-  if(container.children.length < 2) return;
+  let body=document.createElement("div");
+  body.className="device-body";
 
-  let paused = false;
+  let name=document.createElement("strong");
+  name.textContent=phone.name || "Apparaat";
 
-  const pause = () => { paused = true; };
-  const resume = () => {
-    paused = false;
-  };
+  let brand=document.createElement("small");
+  brand.style.color="#64748b";
+  brand.style.display="block";
+  brand.textContent=phone.brand || "";
 
-  container.onmouseenter = pause;
-  container.onmouseleave = resume;
-  container.ontouchstart = pause;
-  container.ontouchend = () => {
-    setTimeout(resume, 1200);
-  };
+  let price=document.createElement("div");
+  price.className="device-price";
+  let p=phone.price || phone.salePrice || phone.sellPrice || phone.verkoopprijs || "";
+  price.textContent=p ? "€ "+String(p).replace(/^€\s*/,"") : "";
 
-  phoneCarouselTimer = setInterval(() => {
-    if(paused) return;
+  let link=document.createElement("a");
+  link.className="device-link";
+  link.href="product.html?type=phone&id="+encodeURIComponent(phone._index ?? index);
+  link.textContent="Bekijk →";
 
-    const first = container.children[0];
-    if(!first) return;
+  body.appendChild(name);
+  if(brand.textContent) body.appendChild(brand);
+  if(price.textContent) body.appendChild(price);
+  body.appendChild(link);
 
-    const step = first.getBoundingClientRect().width + 18;
-    const max = container.scrollWidth - container.clientWidth;
-
-    if(container.scrollLeft >= max - 5){
-      container.scrollTo({left:0, behavior:"smooth"});
-    }else{
-      container.scrollBy({left:step, behavior:"smooth"});
-    }
-  }, 2800);
+  device.appendChild(imageBox);
+  device.appendChild(body);
+  container.appendChild(device);
+});
 }
 
 
