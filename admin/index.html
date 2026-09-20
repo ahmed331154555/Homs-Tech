@@ -1172,7 +1172,18 @@ function normalizePhoneOptions(phone){
 
 
 function normalizeDeviceCategories(){
-  normalizeDeviceCategories();
+  if(!Array.isArray(data.deviceCategories)){
+    data.deviceCategories = [];
+  }
+
+  data.deviceCategories = data.deviceCategories.map(x => ({
+    title: x.title || "Nieuwe categorie",
+    image: x.image || "",
+    link: x.link || "devices.html",
+    buttonText: x.buttonText || "Bekijk",
+    active: x.active !== false
+  }));
+}
   if(!Array.isArray(data.deviceCategories)) data.deviceCategories=[];
   data.deviceCategories=data.deviceCategories.map(x=>({
     title:x.title || "Nieuwe categorie",
