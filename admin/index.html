@@ -1184,6 +1184,8 @@ function normalizeDeviceCategories(){
     active: x.active !== false
   }));
 }
+
+function renderDeviceCategories(){
   if(!Array.isArray(data.deviceCategories)) data.deviceCategories=[];
   data.deviceCategories=data.deviceCategories.map(x=>({
     title:x.title || "Nieuwe categorie",
