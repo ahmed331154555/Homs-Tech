@@ -74,7 +74,9 @@ header{background:#fff;border-bottom:1px solid var(--line)}
 .category-card.no-image{padding:17px}
 
 /* PRODUCTS */
-.products{display:flex;gap:13px;overflow-x:auto;scroll-snap-type:x mandatory;padding:3px 2px 15px;scrollbar-width:thin}
+.products{display:flex;gap:13px;overflow-x:auto;scroll-snap-type:x mandatory;padding:3px 2px 15px;scrollbar-width:thin;scroll-behavior:auto}
+.products.auto-moving{scroll-behavior:auto;overflow-x:hidden;cursor:default}
+.products.auto-moving .product{flex:0 0 205px}
 .products::-webkit-scrollbar{height:6px}.products::-webkit-scrollbar-thumb{background:#b9c7d2;border-radius:20px}
 .product{flex:0 0 205px;scroll-snap-align:start;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:0 4px 15px #071d2d0b}
 .product-img{height:160px;background:#f0f3f5;display:flex;align-items:center;justify-content:center}
@@ -316,13 +318,36 @@ function renderWhy(){
  });
 }
 function moveProducts(dir){document.getElementById("products").scrollBy({left:dir*220,behavior:"smooth"})}
+function startProductTicker(){
+ const box=document.getElementById("products");
+ if(!box || box.children.length<2) return;
+ box.classList.add("auto-moving");
+ let paused=false, last=performance.now(), carry=0;
+ box.addEventListener("mouseenter",()=>paused=true);
+ box.addEventListener("mouseleave",()=>paused=false);
+ box.addEventListener("touchstart",()=>paused=true,{passive:true});
+ box.addEventListener("touchend",()=>setTimeout(()=>paused=false,1200),{passive:true});
+ function tick(now){
+   const dt=Math.min(40,now-last); last=now;
+   if(!paused && box.scrollWidth>box.clientWidth){
+     carry += dt*0.045;
+     if(carry>=1){
+       box.scrollLeft += Math.floor(carry);
+       carry -= Math.floor(carry);
+       if(box.scrollLeft + box.clientWidth >= box.scrollWidth-2) box.scrollLeft=0;
+     }
+   }
+   requestAnimationFrame(tick);
+ }
+ requestAnimationFrame(tick);
+}
 
 async function loadSite(){
  try{
   const r=await fetch("/api/site",{cache:"no-store"});
   if(r.ok){const x=await r.json();if(x&&typeof x==="object")data={...defaults,...x}}
  }catch(e){console.warn("Website data unavailable, using defaults.")}
- common();renderHero();renderCategories();renderProducts();renderServices();renderWhy();
+ common();renderHero();renderCategories();renderProducts();renderServices();renderWhy();startProductTicker();
 }
 loadSite();
 </script>
