@@ -654,6 +654,16 @@ textarea{
 .webshop-item-meta{font-size:12px;color:#64748b;margin-top:3px}
 .webshop-order-address{margin-top:12px;padding:12px;background:#f8fafc;border-radius:10px}
 </style>
+<style>
+.permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.permission-item{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid #e5eaf1;border-radius:10px;background:#fbfcfe}
+.permission-item input{margin-top:3px}
+.admin-user-card{border:1px solid #e5eaf1;border-radius:14px;padding:16px;background:#fff;margin-bottom:12px}
+.search-result{border:1px solid #e5eaf1;border-radius:12px;padding:14px;margin-bottom:10px;background:#fff}
+.admin-search{display:flex;gap:8px;align-items:center;max-width:700px}
+.admin-search input{flex:1}
+@media(max-width:700px){.permission-grid{grid-template-columns:1fr}.admin-search{width:100%}}
+</style>
 </head>
 
 <body>
@@ -678,6 +688,8 @@ textarea{
     <button class="nav-btn" data-page="orders" onclick="showPage('orders')">📋 GSM Orders</button>
     <button class="nav-btn" data-page="webshop-orders" onclick="showPage('webshop-orders')">🛍️ Webshop Bestellingen</button>
     <button class="nav-btn" data-page="gsm" onclick="showPage('gsm')">🛠️ GSM Services</button>
+    <button class="nav-btn" data-page="search" data-permission="search" onclick="showPage('search')">🔎 Zoeken</button>
+    <button class="nav-btn" data-page="admins" data-permission="admins.manage" onclick="showPage('admins')">👤 Admins</button>
   </div>
 </div>
 
@@ -884,6 +896,34 @@ textarea{
 
 
 
+
+  <section class="section admin-page" id="page-search" data-permission="search">
+    <div class="section-head"><div><h2>🔎 Zoeken</h2><p>Zoek klanten en bestellingen vanuit één plek.</p></div></div>
+    <div class="admin-search">
+      <input id="adminSearchInput" placeholder="Naam, e-mail, telefoon, IMEI, ordernummer..." onkeydown="if(event.key==='Enter')adminSearch()">
+      <button class="btn btn-green" onclick="adminSearch()">Zoeken</button>
+    </div>
+    <div id="searchStatus" class="status info" style="margin:15px 0"></div>
+    <div id="searchResults"></div>
+  </section>
+
+  <section class="section admin-page" id="page-admins" data-permission="admins.manage">
+    <div class="section-head"><div><h2>👤 Admins</h2><p>Maak extra admins aan en bepaal exact wat iedere admin mag doen.</p></div></div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Nieuwe admin</div><div class="small">Kies hieronder de rechten.</div></div></div>
+      <div class="grid">
+        <div class="field"><label>Gebruikersnaam</label><input id="newAdminUsername" autocomplete="off"></div>
+        <div class="field"><label>Wachtwoord (minimaal 8 tekens)</label><input id="newAdminPassword" type="password" autocomplete="new-password"></div>
+      </div>
+      <div class="field"><label>Rechten</label><div id="newAdminPermissions" class="permission-grid"></div></div>
+      <button class="btn btn-green" onclick="createAdmin()">+ Admin aanmaken</button>
+      <div id="adminCreateStatus" class="status" style="margin-top:12px"></div>
+    </div>
+    <div class="section-head" style="margin-top:24px"><div><h3 style="margin:0">Bestaande admins</h3><p>Wijzig rechten, schakel accounts uit of verander een wachtwoord.</p></div><button class="btn btn-light" onclick="loadAdmins()">↻ Vernieuwen</button></div>
+    <div id="adminsStatus" class="status info" style="margin-bottom:15px"></div>
+    <div id="adminsList"></div>
+  </section>
+
   <!-- GSM SERVICE EDIT MODAL -->
   <div id="gsmEditModal" class="modal-backdrop" onclick="closeGsmEditor(event)">
     <div class="modal" onclick="event.stopPropagation()">
@@ -926,7 +966,7 @@ textarea{
       <div class="small">Klik op Opslaan nadat je iets hebt gewijzigd.</div>
     </div>
 
-    <button class="btn btn-green" onclick="save()" style="font-size:16px;padding:13px 25px">
+    <button id="saveBtn" data-permission="site.save" class="btn btn-green" onclick="save()" style="font-size:16px;padding:13px 25px">
       💾 Wijzigingen opslaan
     </button>
   </div>
@@ -939,100 +979,96 @@ textarea{
 let data = {};
 let loading = false;
 let currentPage = "general";
+let currentUser = {username:"",role:"admin",permissions:[]};
 
-function showPage(page){
-  currentPage = page;
+const PAGE_PERMISSIONS = {
+  general:"general.view",services:"services.view",phones:"phones.view",categories:"categories.view",
+  used:"used.view",why:"why.view",customers:"customers.view",orders:"orders.view",
+  "webshop-orders":"webshop_orders.view",gsm:"gsm.view",search:"search",admins:"admins.manage"
+};
 
-  document.querySelectorAll(".admin-page").forEach(section=>{
-    section.classList.remove("active");
+const ADMIN_PERMISSION_LABELS = {
+  "general.view":"Algemeen bekijken","services.view":"Diensten bekijken",
+  "phones.view":"Telefoons & prijzen bekijken","categories.view":"Apparaten & categorieën bekijken",
+  "used.view":"Gebruikte telefoons bekijken","why.view":"Waarom HOMS TECH bekijken",
+  "customers.view":"Klanten bekijken","orders.view":"GSM Orders bekijken","orders.update":"GSM Order-status wijzigen",
+  "webshop_orders.view":"Webshop bestellingen bekijken","webshop_orders.update":"Webshop order-status wijzigen",
+  "gsm.view":"GSM Services bekijken","site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
+};
+
+function hasPermission(p){return currentUser.role==="superadmin"||currentUser.permissions.includes("*")||currentUser.permissions.includes(p);}
+function canEditSite(){return hasPermission("site.save");}
+function firstAllowedPage(){
+  const pages=["general","services","phones","categories","used","why","customers","orders","webshop-orders","gsm","search","admins"];
+  return pages.find(p=>hasPermission(PAGE_PERMISSIONS[p]))||null;
+}
+function applyPermissionUI(){
+  document.querySelectorAll("[data-permission]").forEach(el=>el.style.display=hasPermission(el.dataset.permission)?"":"none");
+  const saveBtn=document.getElementById("saveBtn"); if(saveBtn) saveBtn.style.display=canEditSite()?"":"none";
+  document.querySelectorAll(".admin-page").forEach(page=>{
+    const n=(page.id||"").replace(/^page-/,"");
+    if(!["general","services","phones","categories","used","why","gsm"].includes(n))return;
+    page.querySelectorAll("input,textarea").forEach(el=>el.disabled=!canEditSite());
+    page.querySelectorAll("button").forEach(btn=>{
+      if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=!canEditSite();
+    });
   });
-
-  const target = document.getElementById("page-" + page);
+  document.querySelectorAll(".order-status-select").forEach(el=>el.disabled=!hasPermission(el.closest("#page-orders")?"orders.update":"webshop_orders.update"));
+}
+function showPage(page){
+  if(!hasPermission(PAGE_PERMISSIONS[page]||""))page=firstAllowedPage();
+  if(!page)return;
+  currentPage=page;
+  document.querySelectorAll(".admin-page").forEach(s=>s.classList.remove("active"));
+  const target=document.getElementById("page-"+page);
   if(target){
     target.classList.add("active");
-    if(page==="customers") loadCustomers();
-    if(page==="orders") loadOrders();
-    if(page==="webshop-orders") loadWebshopOrders();
+    if(page==="customers")loadCustomers();
+    if(page==="orders")loadOrders();
+    if(page==="webshop-orders")loadWebshopOrders();
+    if(page==="admins")loadAdmins();
   }
-
-  document.querySelectorAll(".nav-btn").forEach(button=>{
-    button.classList.toggle("active", button.dataset.page === page);
-  });
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+  applyPermissionUI();
 }
 
 /* ---------------- LOGIN ---------------- */
 
-async function checkLogin(){
-  try{
-    const r = await fetch("/api/me");
-
-    if(r.ok){
-      showDashboard();
-      await loadData();
-    }else{
-      showLogin();
-    }
-  }catch(e){
-    showLogin();
-  }
+async function loadCurrentUser(){
+  const r=await fetch("/api/me",{credentials:"same-origin"});
+  const x=await r.json().catch(()=>({}));
+  if(!r.ok||!x.authenticated)throw new Error("Not authenticated");
+  currentUser={id:x.id||null,username:x.username||"",role:x.role||"admin",permissions:Array.isArray(x.permissions)?x.permissions:[]};
 }
-
+async function checkLogin(){
+  try{await loadCurrentUser();showDashboard();await loadData();}catch(e){showLogin();}
+}
 function showLogin(){
   document.getElementById("loginBox").style.display="block";
   document.getElementById("dashboard").style.display="none";
   document.getElementById("logoutBtn").style.display="none";
   document.getElementById("adminNav").style.display="none";
 }
-
 function showDashboard(){
   document.getElementById("loginBox").style.display="none";
   document.getElementById("dashboard").style.display="block";
   document.getElementById("logoutBtn").style.display="block";
   document.getElementById("adminNav").style.display="block";
-  showPage(currentPage);
+  if(!hasPermission(PAGE_PERMISSIONS[currentPage]||""))currentPage=firstAllowedPage()||"general";
+  applyPermissionUI();showPage(currentPage);
 }
-
 async function login(){
-
   const username=document.getElementById("username").value.trim();
   const password=document.getElementById("password").value;
-
   const status=document.getElementById("loginStatus");
-
-  status.className="status info";
-  status.textContent="Inloggen...";
-
+  status.className="status info";status.textContent="Inloggen...";
   try{
-
-    const r=await fetch("/api/login",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify({
-        username,
-        password
-      })
-    });
-
-    const result=await r.json();
-
-    if(!r.ok){
-      throw new Error(result.error || "Login mislukt");
-    }
-
-    status.className="status success";
-    status.textContent="✓ Inloggen gelukt";
-
-    showDashboard();
-    await loadData();
-
-  }catch(e){
-
-    status.className="status error";
-    status.textContent="✕ "+e.message;
-
-  }
+    const r=await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({username,password})});
+    const x=await r.json();
+    if(!r.ok)throw new Error(x.error||"Login mislukt");
+    await loadCurrentUser();status.className="status success";status.textContent="✓ Inloggen gelukt";
+    showDashboard();await loadData();
+  }catch(e){status.className="status error";status.textContent="✕ "+e.message;}
 }
 
 async function logout(){
@@ -1858,6 +1894,7 @@ async function loadOrders(){
 }
 
 async function updateOrderStatus(id,statusValue){
+  if(!hasPermission("orders.update"))return;
   try{
     const r=await fetch("/api/admin/orders/"+encodeURIComponent(id)+"/status",{
       method:"PUT",
@@ -1936,6 +1973,7 @@ async function loadWebshopOrders(){
 }
 
 async function updateWebshopOrderStatus(id,statusValue){
+  if(!hasPermission("webshop_orders.update"))return;
   try{
     const r=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/status",{
       method:"PUT",
@@ -2042,6 +2080,7 @@ function deleteWhy(i){
 /* ---------------- SAVE ---------------- */
 
 async function save(){
+  if(!canEditSite()){setStatus("✕ Je hebt geen toestemming om wijzigingen op te slaan.","error");return;}
   if(loading) return;
   loading=true;
   setStatus("Opslaan...","info");
@@ -2084,6 +2123,86 @@ async function save(){
   }finally{
     loading=false;
   }
+}
+
+
+/* ---------------- SEARCH + ADMIN USERS ---------------- */
+async function adminSearch(){
+  if(!hasPermission("search"))return;
+  const q=String(document.getElementById("adminSearchInput")?.value||"").trim();
+  const status=document.getElementById("searchStatus"),box=document.getElementById("searchResults");
+  if(q.length<2){status.className="status info";status.textContent="Vul minimaal 2 tekens in.";box.innerHTML="";return;}
+  status.className="status info";status.textContent="Zoeken...";box.innerHTML="";
+  try{
+    const r=await fetch("/api/admin/search?q="+encodeURIComponent(q),{credentials:"same-origin"});
+    const x=await r.json().catch(()=>({}));if(!r.ok)throw new Error(x.error||"Zoeken mislukt.");
+    const parts=[];
+    if((x.customers||[]).length)parts.push("<h3>👥 Klanten</h3>"+x.customers.map(c=>`<div class="search-result"><strong>${esc(c.name||"Klant")}</strong><br>${esc(c.email||"-")} · ${esc(c.phone||"-")}<br><span class="small">${esc(c.address||"")}</span></div>`).join(""));
+    if((x.orders||[]).length)parts.push("<h3>📋 GSM Orders</h3>"+x.orders.map(o=>`<div class="search-result"><strong>#${esc(o.id)} — ${esc(o.service_name||"GSM Service")}</strong><br>${esc(o.name||"-")} · ${esc(o.email||"-")} · ${esc(o.phone||"-")}<br><span class="small">IMEI: ${esc(o.imei||"-")} · ${esc(o.status||"-")}</span></div>`).join(""));
+    if((x.webshopOrders||[]).length)parts.push("<h3>🛍️ Webshop Bestellingen</h3>"+x.webshopOrders.map(o=>`<div class="search-result"><strong>#${esc(o.id)} — ${esc(o.name||"Klant")}</strong><br>${esc(o.email||"-")} · ${esc(o.phone||"-")} · € ${esc(Number(o.total||0).toFixed(2))}<br><span class="small">${esc(o.postcode||"")} ${esc(o.city||"")} · ${esc(o.status||"-")}</span></div>`).join(""));
+    box.innerHTML=parts.join("")||'<div class="small">Geen resultaten gevonden.</div>';
+    status.className="status success";status.textContent=parts.length?"Zoeken voltooid.":"Geen resultaten.";
+  }catch(e){status.className="status error";status.textContent="✕ "+e.message;}
+}
+function renderPermissionCheckboxes(id,selected=[]){
+  const box=document.getElementById(id);if(!box)return;
+  box.innerHTML=Object.entries(ADMIN_PERMISSION_LABELS).map(([k,v])=>`<label class="permission-item"><input type="checkbox" value="${esc(k)}" ${selected.includes(k)?"checked":""}><span>${esc(v)}</span></label>`).join("");
+}
+function getCheckedPermissions(id){
+  const box=document.getElementById(id);return box?[...box.querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value):[];
+}
+async function createAdmin(){
+  const st=document.getElementById("adminCreateStatus");
+  const username=document.getElementById("newAdminUsername").value.trim();
+  const password=document.getElementById("newAdminPassword").value;
+  const permissions=getCheckedPermissions("newAdminPermissions");
+  st.className="status info";st.textContent="Admin aanmaken...";
+  try{
+    const r=await fetch("/api/admin/users",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({username,password,permissions})});
+    const x=await r.json().catch(()=>({}));if(!r.ok)throw new Error(x.error||"Admin kon niet worden aangemaakt.");
+    document.getElementById("newAdminUsername").value="";document.getElementById("newAdminPassword").value="";
+    renderPermissionCheckboxes("newAdminPermissions",[]);st.className="status success";st.textContent="✓ Admin aangemaakt.";await loadAdmins();
+  }catch(e){st.className="status error";st.textContent="✕ "+e.message;}
+}
+async function loadAdmins(){
+  if(!hasPermission("admins.manage"))return;
+  const box=document.getElementById("adminsList"),st=document.getElementById("adminsStatus");if(!box)return;
+  st.className="status info";st.textContent="Admins laden...";box.innerHTML="";
+  try{
+    const r=await fetch("/api/admin/users",{credentials:"same-origin"});const x=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(x.error||"Admins konden niet worden geladen.");
+    const users=x.users||[];
+    box.innerHTML=users.length?users.map(u=>`<div class="admin-user-card">
+      <div class="card-head"><div><div class="card-title">👤 ${esc(u.username)}</div><div class="small">${u.active?"Actief":"Uitgeschakeld"}</div></div>
+      <button class="btn btn-red" onclick="deleteAdmin(${Number(u.id)})">Verwijderen</button></div>
+      <div class="grid">
+        <div class="field"><label>Gebruikersnaam</label><input id="an-${Number(u.id)}" value="${esc(u.username)}"></div>
+        <div class="field"><label>Nieuw wachtwoord (leeg = behouden)</label><input id="ap-${Number(u.id)}" type="password"></div>
+      </div>
+      <label class="permission-item" style="max-width:300px"><input id="aa-${Number(u.id)}" type="checkbox" ${u.active?"checked":""}><span>Admin is actief</span></label>
+      <div class="field"><label>Rechten</label><div id="ax-${Number(u.id)}" class="permission-grid"></div></div>
+      <button class="btn btn-green" onclick="updateAdmin(${Number(u.id)})">💾 Admin opslaan</button>
+      <div id="as-${Number(u.id)}" class="status" style="margin-top:10px"></div>
+    </div>`).join(""):'<div class="small">Nog geen extra admins aangemaakt.</div>';
+    users.forEach(u=>renderPermissionCheckboxes("ax-"+Number(u.id),Array.isArray(u.permissions)?u.permissions:[]));
+    st.className="status success";st.textContent=users.length+" admin(s) gevonden";
+  }catch(e){st.className="status error";st.textContent="✕ "+e.message;}
+}
+async function updateAdmin(id){
+  const st=document.getElementById("as-"+id);
+  const body={username:document.getElementById("an-"+id).value.trim(),password:document.getElementById("ap-"+id).value,active:document.getElementById("aa-"+id).checked,permissions:getCheckedPermissions("ax-"+id)};
+  st.className="status info";st.textContent="Opslaan...";
+  try{
+    const r=await fetch("/api/admin/users/"+encodeURIComponent(id),{method:"PUT",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify(body)});
+    const x=await r.json().catch(()=>({}));if(!r.ok)throw new Error(x.error||"Admin kon niet worden bijgewerkt.");
+    st.className="status success";st.textContent="✓ Opgeslagen.";await loadAdmins();
+  }catch(e){st.className="status error";st.textContent="✕ "+e.message;}
+}
+async function deleteAdmin(id){
+  if(!confirm("Deze admin echt verwijderen?"))return;
+  const r=await fetch("/api/admin/users/"+encodeURIComponent(id),{method:"DELETE",credentials:"same-origin"});
+  const x=await r.json().catch(()=>({}));if(!r.ok){document.getElementById("adminsStatus").textContent=x.error||"Verwijderen mislukt.";return;}
+  await loadAdmins();
 }
 
 /* ---------------- HELPERS ---------------- */
@@ -2131,6 +2250,7 @@ function esc(value){
 
 /* START */
 
+renderPermissionCheckboxes('newAdminPermissions',[]);
 checkLogin();
 
 </script>
