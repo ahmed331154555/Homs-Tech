@@ -533,8 +533,22 @@ text-align:center
 .category-card.no-image{display:flex;align-items:flex-end;padding:24px}
 .category-card.no-image:after{display:none}
 
+
+/* AUTO PHONE CAROUSEL */
+.phone-strip{
+  overflow-x:auto;
+  scroll-behavior:smooth;
+  scrollbar-width:thin;
+}
+.phone-strip .device{
+  flex:0 0 205px;
+}
+@media(max-width:700px){
+  .phone-strip .device{flex-basis:175px}
+}
+
 /* HORIZONTAL PHONE STRIP */
-.phone-strip{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px 4px 18px;scrollbar-width:none;scroll-behavior:smooth;overscroll-behavior-x:contain;touch-action:pan-x}.phone-strip::-webkit-scrollbar{display:none}
+.phone-strip{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px 4px 18px;scrollbar-width:thin}
 .phone-strip::-webkit-scrollbar{height:7px}
 .phone-strip::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:20px}
 .phone-strip .device{flex:0 0 205px;scroll-snap-align:start;padding:0 0 16px;overflow:hidden;text-align:left;border-radius:18px}
@@ -1072,65 +1086,134 @@ categories.forEach(function(cat){
 }
 
 function renderDevices(){
+  const container = document.getElementById("devices");
+  if(!container) return;
 
-let container=document.getElementById("devices");
-container.innerHTML="";
+  container.innerHTML = "";
 
-let phones=Array.isArray(data.phones)?data.phones:[];
+  /* Always use the phones managed from Admin. */
+  let phones = Array.isArray(data && data.phones) ? data.phones : [];
 
-if(phones.length===0){
-  container.innerHTML='<div class="empty"><h3>Geen telefoons beschikbaar</h3><p>Neem contact met ons op voor het actuele aanbod.</p></div>';
-  return;
-}
-
-phones.slice(0,12).forEach(function(phone,index){
-
-  if(typeof phone==="string") phone={name:phone,brand:""};
-
-  let image=phone.image || (Array.isArray(phone.images)&&phone.images[0]) || "";
-
-  let device=document.createElement("div");
-  device.className="device";
-
-  let imageBox=document.createElement("div");
-  imageBox.className="device-image";
-  if(image){
-    imageBox.innerHTML='<img src="'+String(image).replace(/"/g,"&quot;")+'" alt="">';
-  }else{
-    imageBox.textContent="📱";
-    imageBox.style.fontSize="55px";
+  /* Backward compatibility if an older site-data structure exists. */
+  if(!phones.length && Array.isArray(data && data.devices)){
+    phones = data.devices;
   }
 
-  let body=document.createElement("div");
-  body.className="device-body";
+  if(!phones.length){
+    container.innerHTML =
+      '<div class="empty"><h3>Geen telefoons beschikbaar</h3><p>Neem contact met ons op voor het actuele aanbod.</p></div>';
+    return;
+  }
 
-  let name=document.createElement("strong");
-  name.textContent=phone.name || "Apparaat";
+  phones.slice(0,12).forEach(function(phone,index){
+    if(typeof phone === "string"){
+      phone = {name:phone, brand:""};
+    }
 
-  let brand=document.createElement("small");
-  brand.style.color="#64748b";
-  brand.style.display="block";
-  brand.textContent=phone.brand || "";
+    const image =
+      phone.image ||
+      (Array.isArray(phone.images) && phone.images.length ? phone.images[0] : "") ||
+      "";
 
-  let price=document.createElement("div");
-  price.className="device-price";
-  let p=phone.price || phone.salePrice || phone.sellPrice || phone.verkoopprijs || "";
-  price.textContent=p ? "€ "+String(p).replace(/^€\s*/,"") : "";
+    const device = document.createElement("div");
+    device.className = "device";
 
-  let link=document.createElement("a");
-  link.className="device-link";
-  link.href="product.html?type=phone&id="+encodeURIComponent(phone._index ?? index);
-  link.textContent="Bekijk →";
+    const imageBox = document.createElement("div");
+    imageBox.className = "device-image";
 
-  body.appendChild(name);
-  if(brand.textContent) body.appendChild(brand);
-  if(price.textContent) body.appendChild(price);
-  body.appendChild(link);
+    if(image){
+      const img = document.createElement("img");
+      img.src = image;
+      img.alt = phone.name || "Telefoon";
+      imageBox.appendChild(img);
+    }else{
+      imageBox.textContent = "📱";
+      imageBox.style.fontSize = "55px";
+    }
 
-  device.appendChild(imageBox);
-  device.appendChild(body);
-  container.appendChild(device);
-});
+    const body = document.createElement("div");
+    body.className = "device-body";
+
+    const name = document.createElement("strong");
+    name.textContent = phone.name || phone.model || "Apparaat";
+
+    const brand = document.createElement("small");
+    brand.style.color = "#64748b";
+    brand.style.display = "block";
+    brand.textContent = phone.brand || "";
+
+    const price = document.createElement("div");
+    price.className = "device-price";
+    const p =
+      phone.price ||
+      phone.salePrice ||
+      phone.sellPrice ||
+      phone.verkoopprijs ||
+      "";
+    price.textContent = p ? "€ " + String(p).replace(/^€\s*/, "") : "";
+
+    const link = document.createElement("a");
+    link.className = "device-link";
+    link.href =
+      "product.html?type=phone&id=" +
+      encodeURIComponent(index);
+    link.textContent = "Bekijk →";
+
+    body.appendChild(name);
+    if(brand.textContent) body.appendChild(brand);
+    if(price.textContent) body.appendChild(price);
+    body.appendChild(link);
+
+    device.appendChild(imageBox);
+    device.appendChild(body);
+    container.appendChild(device);
+  });
+
+  startPhoneAutoCarousel(container);
+}
+
+/* Automatic movement, with pause while the user touches/uses the strip. */
+let phoneCarouselTimer = null;
+
+function startPhoneAutoCarousel(container){
+  if(!container) return;
+
+  if(phoneCarouselTimer){
+    clearInterval(phoneCarouselTimer);
+    phoneCarouselTimer = null;
+  }
+
+  if(container.children.length < 2) return;
+
+  let paused = false;
+
+  const pause = () => { paused = true; };
+  const resume = () => {
+    paused = false;
+  };
+
+  container.onmouseenter = pause;
+  container.onmouseleave = resume;
+  container.ontouchstart = pause;
+  container.ontouchend = () => {
+    setTimeout(resume, 1200);
+  };
+
+  phoneCarouselTimer = setInterval(() => {
+    if(paused) return;
+
+    const first = container.children[0];
+    if(!first) return;
+
+    const step = first.getBoundingClientRect().width + 18;
+    const max = container.scrollWidth - container.clientWidth;
+
+    if(container.scrollLeft >= max - 5){
+      container.scrollTo({left:0, behavior:"smooth"});
+    }else{
+      container.scrollBy({left:step, behavior:"smooth"});
+    }
+  }, 2800);
 }
 
 
@@ -1210,7 +1293,6 @@ renderHero();
 renderServices();
 renderCategories();
 renderDevices();
-startPhoneCarousel();
 renderWhy();
 
 }
