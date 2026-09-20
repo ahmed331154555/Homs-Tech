@@ -1075,14 +1075,11 @@ function normalizeData(){
   /* telefoons te koop */
 
   function normalizePhoneOption(x, fallbackLabel, fallbackPrice){
-    if(typeof x === "string") return {label:x, enabled:true, active:true, available:true, priceDelta:0};
+    if(typeof x === "string") return {label:x, enabled:true, priceDelta:0};
     x=x||{};
-    const active=x.active !== undefined ? x.active !== false : x.enabled !== false;
     return {
       label:String(x.label || x.name || fallbackLabel || ""),
-      enabled:active,
-      active:active,
-      available:x.available !== false,
+      enabled:x.enabled !== false,
       priceDelta:x.priceDelta ?? x.delta ?? x.priceAdjustment ?? x.extra ?? fallbackPrice ?? 0
     };
   }
@@ -1090,44 +1087,41 @@ function normalizeData(){
   function normalizePhoneOptions(phone){
     const defaults={
       conditionOptions:[
-        {label:"Zichtbaar gebruikt",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Licht gebruikt",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Zo goed als nieuw",enabled:true,active:true,available:true,priceDelta:0}
+        {label:"Zichtbaar gebruikt",enabled:true,priceDelta:0},
+        {label:"Licht gebruikt",enabled:true,priceDelta:51},
+        {label:"Zo goed als nieuw",enabled:true,priceDelta:102}
       ],
       storageOptions:[
-        {label:"64 GB",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"128 GB",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"256 GB",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"512 GB",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"1 TB",enabled:true,active:true,available:true,priceDelta:0}
+        {label:"64 GB",enabled:true,priceDelta:0},
+        {label:"128 GB",enabled:true,priceDelta:0},
+        {label:"256 GB",enabled:true,priceDelta:0},
+        {label:"512 GB",enabled:true,priceDelta:0},
+        {label:"1 TB",enabled:true,priceDelta:0}
       ],
       colorOptions:[
-        {label:"Zwart",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Wit",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Blauw",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Rood",enabled:true,active:true,available:true,priceDelta:0}
+        {label:"Zwart",enabled:true,priceDelta:0},
+        {label:"Wit",enabled:true,priceDelta:0},
+        {label:"Blauw",enabled:true,priceDelta:0},
+        {label:"Rood",enabled:true,priceDelta:0}
       ],
       batteryOptions:[
-        {label:"Standaard",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Nieuw (100%)",enabled:true,active:true,available:true,priceDelta:30}
+        {label:"Standaard",enabled:true,priceDelta:0},
+        {label:"Nieuw (100%)",enabled:true,priceDelta:30}
       ],
       vatOptions:[
-        {label:"Zonder BTW",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Met BTW",enabled:true,active:true,available:true,priceDelta:10}
+        {label:"Zonder BTW",enabled:true,priceDelta:0},
+        {label:"Met BTW",enabled:true,priceDelta:10}
       ],
       tradeInOptions:[
-        {label:"Nee",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Ja",enabled:true,active:true,available:true,priceDelta:0}
+        {label:"Nee",enabled:true,priceDelta:0},
+        {label:"Ja",enabled:true,priceDelta:0}
       ]
     };
     Object.keys(defaults).forEach(key=>{
       const incoming=Array.isArray(phone[key]) ? phone[key] : [];
       const normalized=incoming.map((x,i)=>{
         const d=defaults[key][i] || {priceDelta:0};
-        const n=normalizePhoneOption(x,d.label,d.priceDelta);
-        if(key==='batteryOptions') n.priceDelta=String(n.label).toLowerCase().includes('nieuw') ? 30 : 0;
-        if(key==='vatOptions') n.priceDelta=String(n.label).toLowerCase().includes('met btw') ? 10 : 0;
-        return n;
+        return normalizePhoneOption(x,d.label,d.priceDelta);
       });
       const labels=new Set(normalized.map(x=>String(x.label).toLowerCase()));
       defaults[key].forEach(d=>{
@@ -1391,19 +1385,9 @@ function renderPhones(){
   normalizePhoneOptions(phone);
   const images=phone.images || ["","","",""];
   const list=data.phones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">📱 ${esc(x.name||'Nieuwe telefoon')}<small>${esc(x.brand||'')}</small></button>`).join('');
-  const optionEditor=(key,title,help,priceEditable=true)=>{
+  const optionEditor=(key,title,help)=>{
     const opts=phone[key]||[];
-    return `<div class="card" style="margin-top:16px"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">${help}</div>${opts.map((o,i)=>{
-      const active=o.active !== undefined ? o.active !== false : o.enabled !== false;
-      const available=o.available !== false;
-      const fixed = key==='vatOptions' ? (String(o.label).toLowerCase().includes('met btw') ? 10 : 0) : key==='batteryOptions' ? (String(o.label).toLowerCase().includes('nieuw') ? 30 : 0) : null;
-      return `<div style="display:grid;grid-template-columns:minmax(180px,1fr) 110px 125px ${priceEditable?'120px':'110px'};gap:10px;align-items:center;margin-bottom:9px">
-        <input value="${esc(o.label)}" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].label=this.value;markChanged()">
-        <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${active?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].active=this.checked;data.phones[${selectedPhoneIndex}].${key}[${i}].enabled=this.checked;markChanged()"> Actief</label>
-        <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${available?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].available=this.checked;markChanged()"> Beschikbaar</label>
-        ${priceEditable ? `<input type="number" step="1" value="${esc(o.priceDelta)}" placeholder="0" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].priceDelta=this.value;markChanged()">` : `<div class="small" style="font-weight:800">+ €${fixed}</div>`}
-      </div>`;
-    }).join('')}<div class="small" style="margin-top:8px">Actief = tonen op de website. Beschikbaar = kan geselecteerd worden. Uitgeschakelde beschikbaarheid verschijnt met ✕/doorgestreept.</div></div>`;
+    return `<div class="card" style="margin-top:16px"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">${help}</div>${opts.map((o,i)=>`<div style="display:grid;grid-template-columns:minmax(180px,1fr) 120px 130px;gap:10px;align-items:center;margin-bottom:9px"><input value="${esc(o.label)}" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].label=this.value;markChanged()"><label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${o.enabled!==false?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].enabled=this.checked;markChanged()"> Beschikbaar</label><input type="number" step="1" value="${esc(o.priceDelta)}" placeholder="0" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].priceDelta=this.value;markChanged()"></div>`).join('')}</div>`;
   };
   box.innerHTML=`
     <div class="editor-layout">
@@ -1423,11 +1407,11 @@ function renderPhones(){
           <div class="field"><label>Garantie</label><input value="${esc(phone.warranty||'')}" placeholder="12 maanden" oninput="data.phones[${selectedPhoneIndex}].warranty=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.phones[${selectedPhoneIndex}].description=this.value;markChanged()">${esc(phone.description||'')}</textarea></div>
         </div>
-        ${optionEditor('conditionOptions','1. Productconditie','Jij bepaalt per conditie de meerprijs. Basisprijs = Zichtbaar gebruikt.')}
-        ${optionEditor('storageOptions','2. Geheugen','64 / 128 / 256 / 512 GB en 1 TB. Zet actief/beschikbaar en bepaal zelf de meerprijs.')}
-        ${optionEditor('colorOptions','3. Kleur','Bepaal welke kleuren actief en beschikbaar zijn en eventueel de meerprijs.')}
-        ${optionEditor('batteryOptions','4. Batterij','Vast: Standaard + €0 en Nieuw (100%) + €30.',false)}
-        ${optionEditor('vatOptions','5. BTW','Vast: Zonder BTW + €0 en Met BTW + €10.',false)}
+        ${optionEditor('conditionOptions','1. Productconditie','Vul hier zelf de prijsverhoging in. Bijvoorbeeld 0 / 51 / 102 euro. De klant ziet alleen de naam, niet de prijsverhoging.')}
+        ${optionEditor('storageOptions','2. Geheugen','Zet geheugen aan of uit en vul de prijsverhoging in die jij wilt.')}
+        ${optionEditor('colorOptions','3. Kleur','Zet kleuren aan of uit. De prijs kan op 0 blijven als de kleur geen meerprijs heeft.')}
+        ${optionEditor('batteryOptions','4. Batterij','Standaard kan 0 zijn; Nieuw (100%) kan bijvoorbeeld 30 zijn.')}
+        ${optionEditor('vatOptions','5. BTW','Zonder BTW kan 0 zijn; Met BTW kan bijvoorbeeld 10 zijn.')}
         ${optionEditor('tradeInOptions','6. Inruil oude telefoon','Klant kiest Ja of Nee. Laat prijs op 0 als je later een aparte inruilpagina wilt maken.')}
         <div style="margin-top:15px"><label style="font-weight:700">📷 Foto's</label><div class="images-grid">${images.map((img,j)=>`<div class="image-box">${img?`<img src="${esc(img)}" class="image-preview">`:`<div class="empty-preview">Geen foto</div>`}<input type="file" accept="image/*" onchange="handlePhoneImage(event,${selectedPhoneIndex},${j})">${img?`<button class="btn btn-light" style="margin-top:7px" onclick="removePhoneImage(${selectedPhoneIndex},${j})">Verwijder foto</button>`:""}</div>`).join('')}</div><p class="small">Maximaal 4 foto's per telefoon.</p></div>
       </div>
