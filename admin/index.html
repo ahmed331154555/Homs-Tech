@@ -1377,6 +1377,71 @@ function deleteService(i){
 }
 
 
+/* Global phone-option helpers: needed by renderPhones/addPhone */
+function normalizePhoneOption(x, fallbackLabel, fallbackPrice){
+  if(typeof x === "string") return {label:x, enabled:true, active:true, available:true, priceDelta:0};
+  x=x||{};
+  const active=x.active !== undefined ? x.active !== false : x.enabled !== false;
+  return {
+    label:String(x.label || x.name || fallbackLabel || ""),
+    enabled:active,
+    active:active,
+    available:x.available !== false,
+    priceDelta:x.priceDelta ?? x.delta ?? x.priceAdjustment ?? x.extra ?? fallbackPrice ?? 0
+  };
+}
+
+function normalizePhoneOptions(phone){
+  if(!phone) return;
+  const defaults={
+    conditionOptions:[
+      {label:"Zichtbaar gebruikt",enabled:true,active:true,available:true,priceDelta:0},
+      {label:"Licht gebruikt",enabled:true,active:true,available:true,priceDelta:0},
+      {label:"Zo goed als nieuw",enabled:true,active:true,available:true,priceDelta:0}
+    ],
+    storageOptions:[
+      {label:"64 GB",enabled:true,active:true,available:true,priceDelta:0},
+      {label:"128 GB",enabled:true,active:true,available:true,priceDelta:0},
+      {label:"256 GB",enabled:true,active:true,available:true,priceDelta:0},
+      {label:"512 GB",enabled:true,active:true,available:true,priceDelta:0},
+      {label:"1 TB",enabled:true,active:true,available:true,priceDelta:0}
+    ],
+    colorOptions:[
+      {label:"Zwart",enabled:true,active:true,available:true,priceDelta:0},
+      {label:"Wit",enabled:true,active:true,available:true,priceDelta:0},
+      {label:"Blauw",enabled:true,active:true,available:true,priceDelta:0},
+      {label:"Rood",enabled:true,active:true,available:true,priceDelta:0}
+    ],
+    batteryOptions:[
+      {label:"Standaard",enabled:true,active:true,available:true,priceDelta:0},
+      {label:"Nieuw (100%)",enabled:true,active:true,available:true,priceDelta:30}
+    ],
+    vatOptions:[
+      {label:"Zonder BTW",enabled:true,active:true,available:true,priceDelta:0},
+      {label:"Met BTW",enabled:true,active:true,available:true,priceDelta:10}
+    ],
+    tradeInOptions:[
+      {label:"Nee",enabled:true,active:true,available:true,priceDelta:0},
+      {label:"Ja",enabled:true,active:true,available:true,priceDelta:0}
+    ]
+  };
+  Object.keys(defaults).forEach(key=>{
+    const incoming=Array.isArray(phone[key]) ? phone[key] : [];
+    const normalized=incoming.map((x,i)=>{
+      const d=defaults[key][i] || {priceDelta:0};
+      const n=normalizePhoneOption(x,d.label,d.priceDelta);
+      if(key==='batteryOptions') n.priceDelta=String(n.label).toLowerCase().includes('nieuw') ? 30 : 0;
+      if(key==='vatOptions') n.priceDelta=String(n.label).toLowerCase().includes('met btw') ? 10 : 0;
+      return n;
+    });
+    const labels=new Set(normalized.map(x=>String(x.label).toLowerCase()));
+    defaults[key].forEach(d=>{
+      if(!labels.has(String(d.label).toLowerCase())) normalized.push({...d});
+    });
+    phone[key]=normalized;
+  });
+}
+
 /* ---------------- PHONES ---------------- */
 
 function renderPhones(){
