@@ -133,8 +133,25 @@ function optionList(list){
 }
 function optionDelta(x){
   if(!x) return 0;
-  const raw = x.priceDelta ?? x.delta ?? x.priceAdjustment ?? x.extra ?? x.amount ?? x.price ?? x.value ?? 0;
-  return num(raw);
+
+  const raw = x.priceDelta ?? x.delta ?? x.priceAdjustment ?? x.extra ?? x.amount ?? x.value;
+  if(raw !== undefined && raw !== null && raw !== ""){
+    const n=num(raw);
+    if(n !== 0) return n;
+  }
+
+  const label=String(x.label||"");
+  const match=label.match(/([+-])\s*€?\s*(\d+(?:[.,]\d+)?)\s*$/);
+  if(match){
+    const amount=parseFloat(match[2].replace(",","."));
+    return match[1]==="-" ? -amount : amount;
+  }
+
+  if(x.price !== undefined && x.price !== null && x.price !== ""){
+    return num(x.price);
+  }
+
+  return 0;
 }
 function money(n){ return "€"+Number(n||0).toFixed(2).replace(".00","").replace(".",","); }
 function calculateTotal(product){
