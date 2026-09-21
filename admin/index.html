@@ -790,7 +790,16 @@ textarea{
 .status-select-in-behandeling{background:#fff0d5!important;color:#c47700!important;border-color:#f5c66a!important}
 .status-select-voltooid{background:#d9f7e8!important;color:#078451!important;border-color:#62d39d!important}
 .status-select-geannuleerd{background:#ffe0e3!important;color:#cf2632!important;border-color:#f58b95!important}
-</style></head>
+</style><style id="homs-buyback-admin">
+#page-buyback-orders .order-card{background:#fff;border:1px solid #e3e8ef;border-radius:14px;padding:16px 18px;box-shadow:0 2px 10px rgba(15,23,42,.035)}
+#page-buyback-orders .bb-order-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:14px}
+#page-buyback-orders .bb-info{background:#fafbfd;border:1px solid #edf1f5;border-radius:9px;padding:9px 11px;min-width:0}
+#page-buyback-orders .bb-info strong{display:block;font-size:9px;color:#7a8797;margin-bottom:3px;text-transform:uppercase}
+#page-buyback-orders .bb-info span{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:900px){#page-buyback-orders .bb-order-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:550px){#page-buyback-orders .bb-order-grid{grid-template-columns:1fr}}
+</style>
+</head>
 
 <body>
 
@@ -807,6 +816,9 @@ textarea{
     <button class="nav-btn active" data-page="general" onclick="showPage('general')">⚙️ Algemeen</button>
     <button class="nav-btn" data-page="services" onclick="showPage('services')">🔧 Diensten</button>
     <button class="nav-btn" data-page="phones" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
+    <button class="nav-btn" data-page="buyback" data-permission="buyback.view" onclick="showPage('buyback')">📥 Uw toestel verkopen</button>
+    <button class="nav-btn" data-page="buyback-orders" data-permission="buyback_orders.view" onclick="showPage('buyback-orders')">📥 Verkoopaanvragen</button>
+
     <button class="nav-btn" data-page="categories" onclick="showPage('categories')">🖼️ Apparaten & categorieën</button>
     <button class="nav-btn" data-page="used" onclick="showPage('used')">♻️ Gebruikte telefoons</button>
     <button class="nav-btn" data-page="why" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
@@ -922,6 +934,19 @@ textarea{
     </div>
 
     <div id="phonesList"></div>
+  </section>
+
+
+  <!-- INKOOP / UW TOESTEL VERKOPEN -->
+  <section class="section admin-page" id="page-buyback" data-permission="buyback.view">
+    <div class="section-head">
+      <div>
+        <h2>📥 Uw toestel verkopen</h2>
+        <p>Beheer de telefoons die HOMS TECH van klanten wil inkopen.</p>
+      </div>
+      <button class="btn btn-green" onclick="addBuybackPhone()">+ Telefoon toevoegen</button>
+    </div>
+    <div id="buybackPhonesList"></div>
   </section>
 
 
@@ -1091,6 +1116,20 @@ textarea{
     </div>
   </div>
 
+  <!-- VERKOOPAANVRAGEN -->
+  <section class="section admin-page" id="page-buyback-orders" data-permission="buyback_orders.view">
+    <div class="section-head">
+      <div>
+        <h2>📥 Verkoopaanvragen</h2>
+        <p>Aanvragen van klanten die hun toestel aan HOMS TECH willen verkopen.</p>
+      </div>
+      <button class="btn btn-light" onclick="loadBuybackOrders()">↻ Vernieuwen</button>
+    </div>
+    <div id="buybackOrdersStatus" class="status info" style="margin-bottom:12px"></div>
+    <div id="buybackOrdersList" class="orders-list"></div>
+  </section>
+
+
   <!-- SAVE -->
   <div class="save-bar">
     <div>
@@ -1116,7 +1155,8 @@ let currentUser = {username:"",role:"admin",permissions:[]};
 const PAGE_PERMISSIONS = {
   general:"general.view",services:"services.view",phones:"phones.view",categories:"categories.view",
   used:"used.view",why:"why.view",customers:"customers.view",orders:"orders.view",
-  "webshop-orders":"webshop_orders.view",gsm:"gsm.view",search:"search",admins:"admins.manage"
+  "webshop-orders":"webshop_orders.view",gsm:"gsm.view",search:"search",admins:"admins.manage",
+  buyback:"buyback.view", "buyback-orders":"buyback_orders.view"
 };
 
 const ADMIN_PERMISSION_LABELS = {
@@ -1126,13 +1166,15 @@ const ADMIN_PERMISSION_LABELS = {
   "customers.view":"Klanten bekijken","orders.view":"GSM Orders bekijken","orders.update":"GSM Order-status wijzigen",
   "webshop_orders.view":"Webshop bestellingen bekijken","webshop_orders.update":"Webshop order-status wijzigen","webshop_orders.delete":"Webshop bestellingen verwijderen",
   "orders.delete":"GSM Orders verwijderen",
+  "buyback.view":"Inkooptelefoons bekijken","buyback.update":"Inkooptelefoons wijzigen",
+  "buyback_orders.view":"Verkoopaanvragen bekijken","buyback_orders.update":"Verkoopaanvraag-status wijzigen","buyback_orders.delete":"Verkoopaanvragen verwijderen",
   "gsm.view":"GSM Services bekijken","site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
 };
 
 function hasPermission(p){return currentUser.role==="superadmin"||currentUser.permissions.includes("*")||currentUser.permissions.includes(p);}
 function canEditSite(){return hasPermission("site.save");}
 function firstAllowedPage(){
-  const pages=["general","services","phones","categories","used","why","customers","orders","webshop-orders","gsm","search","admins"];
+  const pages=["general","services","phones","buyback","buyback-orders","categories","used","why","customers","orders","webshop-orders","gsm","search","admins"];
   return pages.find(p=>hasPermission(PAGE_PERMISSIONS[p]))||null;
 }
 function applyPermissionUI(){
@@ -1140,7 +1182,7 @@ function applyPermissionUI(){
   const saveBtn=document.getElementById("saveBtn"); if(saveBtn) saveBtn.style.display=canEditSite()?"":"none";
   document.querySelectorAll(".admin-page").forEach(page=>{
     const n=(page.id||"").replace(/^page-/,"");
-    if(!["general","services","phones","categories","used","why","gsm"].includes(n))return;
+    if(!["general","services","phones","buyback","categories","used","why","gsm"].includes(n))return;
     page.querySelectorAll("input,textarea").forEach(el=>el.disabled=!canEditSite());
     page.querySelectorAll("button").forEach(btn=>{
       if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=!canEditSite();
@@ -1159,6 +1201,8 @@ function showPage(page){
     if(page==="customers")loadCustomers();
     if(page==="orders")loadOrders();
     if(page==="webshop-orders")loadWebshopOrders();
+    if(page==="buyback")renderBuybackPhones();
+    if(page==="buyback-orders")loadBuybackOrders();
     if(page==="admins")loadAdmins();
   }
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
@@ -1454,6 +1498,8 @@ function normalizeData(){
   if(!data || typeof data!=="object"){
     data={};
   }
+
+  normalizeBuybackPhones();
 
   /* GSM Services */
   if(!data.gsmServices || typeof data.gsmServices!=="object"){
@@ -1828,6 +1874,48 @@ function deletePhone(i){
     markChanged();
   }
 }
+
+
+/* ---------------- BUYBACK / UW TOESTEL VERKOPEN ---------------- */
+function normalizeBuybackPhones(){
+  if(!Array.isArray(data.buybackPhones)) data.buybackPhones=[];
+  data.buybackPhones=data.buybackPhones.map((x,i)=>({
+    id:x.id || ('buyback-'+Date.now()+'-'+i),
+    name:x.name||'', brand:x.brand||'', image:x.image||'', price:Number(x.price||0), active:x.active!==false,
+    storageOptions:Array.isArray(x.storageOptions)?x.storageOptions:[
+      {label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}
+    ],
+    conditionOptions:Array.isArray(x.conditionOptions)?x.conditionOptions:[
+      {label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}
+    ],
+    batteryOptions:Array.isArray(x.batteryOptions)?x.batteryOptions:[
+      {label:'90% - 100%',priceDelta:0,active:true},{label:'80% - 89%',priceDelta:-25,active:true},{label:'Onder 80%',priceDelta:-60,active:true}
+    ],
+    faceIdOptions:Array.isArray(x.faceIdOptions)?x.faceIdOptions:[
+      {label:'Face ID werkt',priceDelta:0,active:true},{label:'Face ID werkt niet',priceDelta:-100,active:true}
+    ],
+    screenOptions:Array.isArray(x.screenOptions)?x.screenOptions:[
+      {label:'Scherm goed',priceDelta:0,active:true},{label:'Kleine beschadigingen',priceDelta:-50,active:true},{label:'Scherm gebroken',priceDelta:-150,active:true}
+    ]
+  }));
+}
+function buybackOptionEditor(pi,title,key){
+  const opts=data.buybackPhones[pi][key]||[];
+  return `<div class="card" style="margin-top:16px"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">Pas de keuze en prijsaanpassing zelf aan.</div>${opts.map((o,i)=>`<div style="display:grid;grid-template-columns:minmax(180px,1fr) 120px 90px;gap:10px;align-items:center;margin-bottom:9px"><input value="${esc(o.label||'')}" oninput="data.buybackPhones[${pi}].${key}[${i}].label=this.value;markChanged()"><input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="data.buybackPhones[${pi}].${key}[${i}].priceDelta=Number(this.value||0);markChanged()"><label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="data.buybackPhones[${pi}].${key}[${i}].active=this.checked;markChanged()"> Actief</label></div>`).join('')}</div>`;
+}
+function renderBuybackPhones(){
+  normalizeBuybackPhones();
+  const box=document.getElementById('buybackPhonesList'); if(!box) return;
+  if(!data.buybackPhones.length){box.innerHTML='<div class="card" style="padding:30px;text-align:center"><h3>Nog geen inkooptelefoons</h3><p class="small">Klik op + Telefoon toevoegen om een toestel toe te voegen.</p></div>';return;}
+  box.innerHTML=data.buybackPhones.map((p,i)=>`<div class="card" style="margin-bottom:18px"><div class="card-head"><div><div class="card-title" style="font-size:20px">📥 ${esc(p.name||'Nieuwe telefoon')}</div><div class="small">${esc(p.brand||'')} · ${p.active?'Zichtbaar':'Verborgen'}</div></div><button class="btn btn-red" onclick="deleteBuybackPhone(${i})">Verwijderen</button></div><div class="grid"><div class="field"><label>Model</label><input value="${esc(p.name)}" oninput="data.buybackPhones[${i}].name=this.value;markChanged();renderBuybackPhones()"></div><div class="field"><label>Merk</label><input value="${esc(p.brand)}" oninput="data.buybackPhones[${i}].brand=this.value;markChanged()"></div><div class="field"><label>Basis inkoopprijs (€)</label><input type="number" step="1" value="${p.price}" oninput="data.buybackPhones[${i}].price=Number(this.value||0);markChanged()"><div class="small">Prijs vóór kortingen/toeslagen.</div></div><div class="field"><label>Website</label><label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" ${p.active?'checked':''} onchange="data.buybackPhones[${i}].active=this.checked;markChanged()"> Tonen op Uw toestel verkopen</label></div><div class="field" style="grid-column:1/-1"><label>📷 Foto van toestel</label><div style="display:flex;gap:15px;align-items:center;flex-wrap:wrap">${p.image?`<img src="${esc(p.image)}" style="width:100px;height:120px;object-fit:contain;border:1px solid #ddd;border-radius:12px;background:#f8fafc">`:'<div style="width:100px;height:120px;display:flex;align-items:center;justify-content:center;border:1px dashed #bbb;border-radius:12px">Geen foto</div>'}<input type="file" accept="image/*" onchange="handleBuybackImage(event,${i})"></div></div></div>${buybackOptionEditor(i,'Opslag','storageOptions')}${buybackOptionEditor(i,'Conditie','conditionOptions')}${buybackOptionEditor(i,'Batterij','batteryOptions')}${buybackOptionEditor(i,'Face ID','faceIdOptions')}${buybackOptionEditor(i,'Scherm','screenOptions')}</div>`).join('');
+}
+function addBuybackPhone(){
+  normalizeBuybackPhones();
+  data.buybackPhones.push({id:'buyback-'+Date.now(),name:'Nieuwe telefoon',brand:'Apple',image:'',price:0,active:true,storageOptions:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}],conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}],batteryOptions:[{label:'90% - 100%',priceDelta:0,active:true},{label:'80% - 89%',priceDelta:-25,active:true},{label:'Onder 80%',priceDelta:-60,active:true}],faceIdOptions:[{label:'Face ID werkt',priceDelta:0,active:true},{label:'Face ID werkt niet',priceDelta:-100,active:true}],screenOptions:[{label:'Scherm goed',priceDelta:0,active:true},{label:'Kleine beschadigingen',priceDelta:-50,active:true},{label:'Scherm gebroken',priceDelta:-150,active:true}]});
+  renderBuybackPhones(); markChanged();
+}
+function deleteBuybackPhone(i){if(!confirm('Deze inkooptelefoon verwijderen?'))return;data.buybackPhones.splice(i,1);renderBuybackPhones();markChanged();}
+function handleBuybackImage(event,i){const file=event.target.files&&event.target.files[0];if(!file)return;if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');return;}if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}const r=new FileReader();r.onload=()=>{data.buybackPhones[i].image=r.result;renderBuybackPhones();markChanged();};r.readAsDataURL(file);}
 
 
 /* ---------------- USED PHONES ---------------- */
@@ -2477,11 +2565,117 @@ async function deleteWebshopOrder(id){
 
 /* ---------------- HELPERS ---------------- */
 
+// =====================================================
+// BUYBACK ORDERS ADMIN
+// =====================================================
+async function loadBuybackOrders(){
+  const list=document.getElementById("buybackOrdersList");
+  const status=document.getElementById("buybackOrdersStatus");
+  if(!list)return;
+  list.innerHTML='<div style="padding:25px;text-align:center">Laden...</div>';
+  try{
+    const response=await fetch("/api/admin/buyback-orders",{credentials:"same-origin"});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Verkoopaanvragen konden niet worden geladen.");
+    const orders=result.orders||[];
+    status.textContent=orders.length+" verkoopaanvragen gevonden.";
+    if(!orders.length){
+      list.innerHTML='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:35px;text-align:center;color:#64748b">Nog geen verkoopaanvragen.</div>';
+      return;
+    }
+    list.innerHTML=orders.map(order=>{
+      const date=order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"";
+      const price=Number(order.offered_price||0).toFixed(2).replace(".",",");
+      return `
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:20px;box-shadow:0 4px 15px rgba(15,23,42,.05)">
+        <div style="display:flex;justify-content:space-between;gap:15px;align-items:flex-start;flex-wrap:wrap">
+          <div>
+            <div style="font-size:13px;color:#64748b;margin-bottom:5px">Aanvraag #${order.id}</div>
+            <h3 style="margin:0 0 5px">${esc(order.device||"-")}</h3>
+            <div>${esc(order.name||"-")}</div>
+            <div style="color:#64748b;font-size:14px">${esc(order.email||"-")}${order.phone?" · "+esc(order.phone):""}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:24px;font-weight:800;color:#2563eb">€ ${price}</div>
+            <div style="color:#64748b;font-size:13px">${date}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:18px">
+          ${bbInfo("Opslag",order.storage)}
+          ${bbInfo("Conditie",order.condition)}
+          ${bbInfo("Face ID",order.face_id)}
+          ${bbInfo("Batterij",order.battery)}
+          ${bbInfo("Scherm",order.screen)}
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px;padding-top:15px;border-top:1px solid #e5e7eb">
+          <label style="font-weight:700">Status:</label>
+          <select ${hasPermission("buyback_orders.update")?"":"disabled"} onchange="updateBuybackStatus(${order.id},this.value)" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:10px">
+            ${bbOpt("Nieuw",order.status)}
+            ${bbOpt("In behandeling",order.status)}
+            ${bbOpt("Goedgekeurd",order.status)}
+            ${bbOpt("Afgewezen",order.status)}
+            ${bbOpt("Voltooid",order.status)}
+          </select>
+          <button class="btn btn-light" onclick="showBuybackDetails(${order.id})">Details</button>
+          ${hasPermission("buyback_orders.delete")?`<button class="btn btn-red" onclick="deleteBuybackOrder(${order.id})">Verwijderen</button>`:""}
+        </div>
+      </div>`;
+    }).join("");
+  }catch(error){
+    status.textContent="";
+    list.innerHTML='<div style="background:#fef2f2;color:#991b1b;padding:18px;border-radius:12px">'+esc(error.message)+'</div>';
+  }
+}
+function bbInfo(label,value){return `<div style="background:#f8fafc;padding:12px;border-radius:10px"><div style="font-size:12px;color:#64748b">${label}</div><strong>${esc(value||"-")}</strong></div>`}
+function bbOpt(value,current){return `<option value="${esc(value)}" ${value===current?"selected":""}>${esc(value)}</option>`}
+async function updateBuybackStatus(id,newStatus){
+  try{
+    const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id)+"/status",{method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:newStatus})});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Status kon niet worden gewijzigd.");
+    await loadBuybackOrders();
+  }catch(error){alert(error.message)}
+}
+async function deleteBuybackOrder(id){
+  if(!confirm("Deze verkoopaanvraag echt verwijderen?"))return;
+  try{
+    const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id),{method:"DELETE",credentials:"same-origin"});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Verwijderen mislukt.");
+    await loadBuybackOrders();
+  }catch(error){alert(error.message)}
+}
+async function showBuybackDetails(id){
+  try{
+    const response=await fetch("/api/admin/buyback-orders",{credentials:"same-origin"});
+    const result=await response.json();
+    const order=(result.orders||[]).find(x=>Number(x.id)===Number(id));
+    if(!order)throw new Error("Verkoopaanvraag niet gevonden.");
+    alert(
+      "Aanvraag #"+order.id+
+      "\\n\\nKlant: "+(order.name||"-")+
+      "\\nE-mail: "+(order.email||"-")+
+      "\\nTelefoon: "+(order.phone||"-")+
+      "\\nAdres: "+(order.address||"-")+
+      "\\n\\nToestel: "+(order.device||"-")+
+      "\\nOpslag: "+(order.storage||"-")+
+      "\\nConditie: "+(order.condition||"-")+
+      "\\nFace ID: "+(order.face_id||"-")+
+      "\\nBatterij: "+(order.battery||"-")+
+      "\\nScherm: "+(order.screen||"-")+
+      "\\n\\nPrijs: € "+Number(order.offered_price||0).toFixed(2)+
+      "\\nStatus: "+(order.status||"-")
+    );
+  }catch(error){alert(error.message)}
+}
+
+
 function renderAll(){
 
   renderGeneral();
   renderServices();
   renderPhones();
+  renderBuybackPhones();
   renderDeviceCategories();
   renderUsedPhones();
   renderGsmServices();
