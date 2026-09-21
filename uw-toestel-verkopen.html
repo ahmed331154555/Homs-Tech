@@ -95,10 +95,21 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
 @media(max-width:850px){.hero-grid,.product-card,.checkout,.two-col{grid-template-columns:1fr}.benefits{display:none}.device-grid{grid-template-columns:repeat(2,1fr)}.condition-grid{grid-template-columns:repeat(2,1fr)}.totalbar{grid-template-columns:1fr}.searchrow{grid-template-columns:1fr}.headlinks{display:none}.search{max-width:none}.head .wrap{gap:12px}.logo{min-width:130px}.logo img{width:130px}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.footgrid{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.wrap{width:min(100% - 24px,1380px)}.topbar{display:none}.head{height:65px}.nav .wrap{gap:22px}.panel{padding:16px;border-radius:18px}.device-grid{grid-template-columns:1fr 1fr;gap:9px}.device{min-height:155px;padding:10px}.product-card{gap:14px}.product-image{min-height:220px}.condition-grid{grid-template-columns:1fr 1fr}.extra-row{grid-template-columns:1fr}.info-grid{grid-template-columns:1fr}.footgrid{grid-template-columns:1fr}.hero{padding-top:35px}.hero h1{font-size:36px}.stepper{max-width:95%}}
 </style>
-</head>
+<style id="homs-topbar-marquee-final">
+/* HOMS TECH TOPBAR — exactly four messages, one pass, left-to-right order */
+.ht-topbar,.topbar{height:42px!important;background:#071d2d!important;color:#eaf4ff!important;overflow:hidden!important;width:100%!important;}
+.ht-topbar .ht-container,.topbar .container,.topbar .wrap{height:100%!important;max-width:1180px!important;margin:0 auto!important;overflow:hidden!important;}
+.ht-marquee,.top-info{height:100%!important;width:max-content!important;display:flex!important;align-items:center!important;gap:44px!important;white-space:nowrap!important;animation:htMarqueeOneWay 15s linear infinite!important;will-change:transform!important;}
+.ht-marquee-track{display:flex!important;align-items:center!important;gap:44px!important;white-space:nowrap!important;}
+.ht-marquee-item,.top-info span{font-size:14px!important;font-weight:800!important;letter-spacing:.1px!important;white-space:nowrap!important;color:#eaf4ff!important;}
+.ht-marquee-item b,.top-info span:before{color:#60a5fa!important;margin-right:7px!important;font-weight:900!important;}
+@keyframes htMarqueeOneWay{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
+@media(max-width:700px){.ht-topbar,.topbar{height:38px!important}.ht-marquee,.top-info{gap:28px!important;animation-duration:13s!important}.ht-marquee-track{gap:28px!important}.ht-marquee-item,.top-info span{font-size:13px!important}}
+@media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
+</style></head>
 <body>
 
-<div class="topbar"><div class="wrap"><span>HOMS TECH — Repair • Buy • Sell • Service</span><span><b>Veilig</b> · Snel · Betrouwbaar</span></div></div>
+<div class="topbar"><div class="wrap"><div class="top-info"><span>1 jaar garantie</span><span>Snel geleverd</span><span>Betrouwbare service</span><span>Betaalbare prijzen</span></div></div></div>
 
 <header class="head"><div class="wrap">
   <a class="logo" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>

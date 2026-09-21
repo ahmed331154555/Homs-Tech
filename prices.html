@@ -394,31 +394,23 @@ text-align:center
 @media(max-width:560px){.ht-header .ht-container{padding:0 12px!important}.ht-header .ht-brand img{width:138px!important;max-width:138px!important}.ht-header .ht-actions{gap:10px!important}.ht-header .ht-actions a{font-size:12px!important}.ht-header .ht-nav a{font-size:12px!important;padding:8px 10px!important}}
 </style>
 
+
 <style id="homs-topbar-marquee-final">
-/* HOMS TECH TOPBAR — clean centered moving ticker */
-.ht-topbar{height:38px!important;overflow:hidden!important;background:#071d2d!important;color:#eaf4ff!important;border-bottom:1px solid rgba(255,255,255,.08)!important;font-size:13px!important;}
-.ht-topbar .ht-container{height:100%!important;min-height:38px!important;max-width:none!important;padding:0!important;display:block!important;overflow:hidden!important;}
-.ht-marquee{height:100%!important;display:flex!important;align-items:center!important;width:max-content!important;animation:htMarquee 24s linear infinite!important;will-change:transform!important;}
-.ht-marquee-track{display:flex!important;align-items:center!important;gap:42px!important;padding-right:42px!important;white-space:nowrap!important;}
-.ht-marquee-item{font-size:13px!important;font-weight:700!important;letter-spacing:.15px!important;white-space:nowrap!important;color:#eaf4ff!important;}
-.ht-marquee-item b{color:#60a5fa!important;margin-right:7px!important;font-weight:900!important;}
-@keyframes htMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-@media(max-width:700px){.ht-topbar{height:36px!important;font-size:12px!important}.ht-marquee{animation-duration:20s!important}.ht-marquee-item{font-size:12px!important}.ht-marquee-track{gap:28px!important;padding-right:28px!important}}
-/* legacy homepage topbar */
-.topbar{height:38px!important;overflow:hidden!important;font-size:13px!important;}
-.topbar .container{max-width:none!important;padding:0!important;display:block!important;overflow:hidden!important;}
-.top-info{height:38px!important;display:flex!important;align-items:center!important;gap:42px!important;width:max-content!important;animation:htHomeMarquee 24s linear infinite!important;will-change:transform!important;}
-.top-info span{font-size:13px!important;font-weight:700!important;white-space:nowrap!important;color:#eaf4ff!important;}
-.top-info span:before{margin-right:7px!important;color:#60a5fa!important;}
-.top-rating{display:none!important;}
-@keyframes htHomeMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-@media(max-width:700px){.topbar{height:36px!important}.top-info{height:36px!important;gap:28px!important;animation-duration:20s!important}.top-info span{font-size:12px!important}}
-</style>
-</head>
+/* HOMS TECH TOPBAR — exactly four messages, one pass, left-to-right order */
+.ht-topbar,.topbar{height:42px!important;background:#071d2d!important;color:#eaf4ff!important;overflow:hidden!important;width:100%!important;}
+.ht-topbar .ht-container,.topbar .container,.topbar .wrap{height:100%!important;max-width:1180px!important;margin:0 auto!important;overflow:hidden!important;}
+.ht-marquee,.top-info{height:100%!important;width:max-content!important;display:flex!important;align-items:center!important;gap:44px!important;white-space:nowrap!important;animation:htMarqueeOneWay 15s linear infinite!important;will-change:transform!important;}
+.ht-marquee-track{display:flex!important;align-items:center!important;gap:44px!important;white-space:nowrap!important;}
+.ht-marquee-item,.top-info span{font-size:14px!important;font-weight:800!important;letter-spacing:.1px!important;white-space:nowrap!important;color:#eaf4ff!important;}
+.ht-marquee-item b,.top-info span:before{color:#60a5fa!important;margin-right:7px!important;font-weight:900!important;}
+@keyframes htMarqueeOneWay{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
+@media(max-width:700px){.ht-topbar,.topbar{height:38px!important}.ht-marquee,.top-info{gap:28px!important;animation-duration:13s!important}.ht-marquee-track{gap:28px!important}.ht-marquee-item,.top-info span{font-size:13px!important}}
+@media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
+</style></head>
 
 <body>
 
-<div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><div class="ht-marquee-track"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div><div class="ht-marquee-track" aria-hidden="true"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div></div>
+<div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div></div>
 <header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="devices.html">Zoek</a><a href="devices.html">NL⌄</a><a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a class="active" href="prices.html">Prijzen</a><a href="used.html">Tweedehands</a><a href="gsm-services.html">GSM Services</a>
    <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a></nav></div></header>
 
