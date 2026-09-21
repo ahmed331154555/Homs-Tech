@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="nl">
 <head>
+<!-- HOMS-TECH-BUYBACK-V3 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Uw toestel verkopen | HOMS TECH</title>
@@ -19,7 +20,7 @@ header{background:#fff;border-bottom:1px solid var(--line)}.head{height:76px;dis
 footer{background:var(--navy);color:#fff;margin-top:65px;padding:35px 0 20px}.footergrid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:30px}.flogo{font-size:22px;font-weight:900}.flogo span{color:var(--blue2)}footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:#c0ccd3;line-height:1.8}footer ul{list-style:none;padding:0;margin:0}.copy{border-top:1px solid #ffffff1b;margin-top:25px;padding-top:13px;font-size:9px;color:#9badb7;display:flex;justify-content:space-between}
 @media(max-width:800px){.search{display:none}.headlinks{gap:12px}.grid{grid-template-columns:repeat(2,1fr)}.info3{grid-template-columns:1fr}.conditiongrid{grid-template-columns:repeat(2,1fr)}.footergrid{grid-template-columns:1fr 1fr}.hero h1{font-size:27px}}
 @media(max-width:520px){.head{height:65px}.logo img{width:125px}.headlinks{font-size:10px}.nav{gap:17px}.hero{padding-top:22px}.stepper{width:90%}.line{width:70px}.grid{grid-template-columns:repeat(2,1fr)}.conditiongrid,.contactgrid{grid-template-columns:1fr}.contactgrid .full{grid-column:auto}.footergrid{grid-template-columns:1fr}.copy{display:block}.copy span{display:block;margin-top:6px}}
-</style>
+@media(max-width:700px){.buyback-extra-options{grid-template-columns:1fr!important}}</style>
 </head>
 <body>
 <div class="top"><div class="wrap"><div><span>✓ Betrouwbare service</span><span>✓ Snelle beoordeling</span><span>✓ Persoonlijk contact</span></div><b>HOMS TECH</b></div></div>
@@ -40,6 +41,11 @@ footer{background:var(--navy);color:#fff;margin-top:65px;padding:35px 0 20px}.fo
 <section id="step3" class="panel">
 <a class="back" href="#" id="back2">← Terug</a><div class="modelhead"><h2 id="conditionTitle">Verkoop jouw toestel</h2><span id="baseText" style="font-size:10px;color:#89949b"></span></div>
 <div class="conditionbox"><label style="font-size:11px;font-weight:700">Wat is de staat van je toestel?</label><div class="conditiongrid" id="conditionGrid" style="margin-top:12px"></div></div>
+<div class="buyback-extra-options" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0">
+<div><label style="display:block;font-size:11px;font-weight:700;margin-bottom:6px">Face ID</label><select id="faceId" style="width:100%;padding:11px;border:1px solid #d8e0e6;border-radius:10px;background:#fff"><option value="">Face ID</option></select></div>
+<div><label style="display:block;font-size:11px;font-weight:700;margin-bottom:6px">Batterij</label><select id="batteryLevel" style="width:100%;padding:11px;border:1px solid #d8e0e6;border-radius:10px;background:#fff"><option value="">Batterij</option></select></div>
+<div><label style="display:block;font-size:11px;font-weight:700;margin-bottom:6px">Scherm</label><select id="screenState" style="width:100%;padding:11px;border:1px solid #d8e0e6;border-radius:10px;background:#fff"><option value="">Scherm</option></select></div>
+</div>
 <div class="checks"><div class="check"><input type="checkbox" id="works" checked> <label for="works">Alle belangrijke functies werken goed (scherm, camera, knoppen, laden en bellen).</label></div><div class="check"><input type="checkbox" id="battery" checked> <label for="battery">De batterij werkt normaal.</label></div><div class="check"><input type="checkbox" id="account" checked> <label for="account">Het toestel kan worden losgekoppeld van Apple/Google/Samsung account.</label></div></div>
 <div class="quote"><div><small>Geschatte waarde</small><strong id="quote">€ 0,00</strong></div><button class="btn" id="toCheckout">Bevestig toestel</button></div>
 </section>
@@ -109,26 +115,21 @@ async function loadBuyback(){
   catch(e){devices=[];renderDevices();}
 }
 function go(n){$('step1').style.display=n===1?'block':'none';$('step2').style.display=n===2?'block':'none';$('step3').style.display=n===3?'block':'none';$('step4').style.display=n===4?'block':'none';$('d1').className='dot '+(n>=1?'active':'');$('d2').className='dot '+(n>=2?'active':'');$('d3').className='dot '+(n>=3?'active':'');$('l1').className='line '+(n>=2?'active':'');$('l2').className='line '+(n>=3?'active':'');window.scrollTo({top:document.querySelector('.hero').offsetTop-20,behavior:'smooth'});if(n===3)updateCondition()}
+$('faceId').onchange=calcQuote;$('batteryLevel').onchange=calcQuote;$('screenState').onchange=calcQuote;
 $('deviceSearch').oninput=renderDevices;$('continueModel').onclick=()=>{if(!selectedModel){alert('Kies eerst een toestel.');return}go(3)};$('category').onchange=renderDevices;$('back1').onclick=e=>{e.preventDefault();go(1)};$('back2').onclick=e=>{e.preventDefault();go(2)};$('back3').onclick=e=>{e.preventDefault();go(3)};$('toCheckout').onclick=()=>{const v=calcQuote();$('sumDevice').textContent=selectedModel.name+' · '+selectedCondition;$('sumPrice').textContent=money(v);$('sumTotal').textContent=money(pay==='credit'?v*1.10:v);$('sumPay').textContent=pay==='credit'?'HOMS TECH tegoed (+10%)':'Geld ontvangen';go(4)};$('finish').onclick=async()=>{
   if(!$('cName').value.trim()||!$('cEmail').value.trim()||!$('agree').checked){
     alert('Vul je naam en e-mailadres in en accepteer de voorwaarden.');
     return;
   }
-  const btn=$('finish');
-  const oldText=btn.textContent;
-  btn.disabled=true;
-  btn.textContent='Aanvraag wordt verzonden...';
+  const btn=$('finish'),oldText=btn.textContent;
+  btn.disabled=true;btn.textContent='Aanvraag wordt verzonden...';
   try{
     const quote=calcQuote();
     const payload={
       name:$('cName').value.trim(),
       email:$('cEmail').value.trim(),
       phone:($('cPhone')?.value||'').trim(),
-      address:[
-        ($('cAddress')?.value||'').trim(),
-        ($('cZip')?.value||'').trim(),
-        ($('cCity')?.value||'').trim()
-      ].filter(Boolean).join(', '),
+      address:[($('cAddress')?.value||'').trim(),($('cZip')?.value||'').trim(),($('cCity')?.value||'').trim()].filter(Boolean).join(', '),
       device:selectedModel?.name||'',
       brand:selectedModel?.brand||selected?.brand||'',
       model:selectedModel?.name||'',
@@ -141,24 +142,16 @@ $('deviceSearch').oninput=renderDevices;$('continueModel').onclick=()=>{if(!sele
       iban:($('cIban')?.value||'').trim(),
       paymentMethod:$('cMethod')?.value||''
     };
-    const response=await fetch('/api/buyback/orders',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      credentials:'same-origin',
-      body:JSON.stringify(payload)
-    });
+    const response=await fetch('/api/buyback/orders',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(payload)});
     const result=await response.json().catch(()=>({}));
-    if(!response.ok||!result.ok){
-      throw new Error(result.error||'Kon de aanvraag niet verzenden.');
-    }
+    if(!response.ok||!result.ok)throw new Error(result.error||'Kon de aanvraag niet verzenden.');
     $('success').style.display='block';
     $('success').scrollIntoView({behavior:'smooth',block:'center'});
   }catch(err){
     console.error('Buyback submit error:',err);
     alert(err.message||'Er ging iets mis bij het verzenden van je aanvraag.');
   }finally{
-    btn.disabled=false;
-    btn.textContent=oldText;
+    btn.disabled=false;btn.textContent=oldText;
   }
 };document.querySelectorAll('.choice button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.choice button').forEach(x=>x.classList.remove('active'));b.classList.add('active');pay=b.dataset.pay});$('siteSearch').onkeydown=e=>{if(e.key==='Enter'&&e.target.value.trim())location.href='devices.html?search='+encodeURIComponent(e.target.value.trim())};loadBuyback();
 </script>
