@@ -7,6 +7,31 @@ const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const path = require("path");
 
+
+async function ensureBuybackOrdersTable(){
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS buyback_orders (
+      id SERIAL PRIMARY KEY,
+      order_no VARCHAR(40) UNIQUE NOT NULL,
+      name TEXT,
+      email TEXT,
+      phone TEXT,
+      address TEXT,
+      device TEXT,
+      brand TEXT,
+      model TEXT,
+      storage TEXT,
+      condition TEXT,
+      face_id TEXT,
+      battery TEXT,
+      screen TEXT,
+      offered_price NUMERIC(10,2) DEFAULT 0,
+      status VARCHAR(40) DEFAULT 'Nieuw',
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -1019,7 +1044,61 @@ app.get("/admin/", (req, res) => {
 // Start server
 initDatabase()
   .then(() => {
-    app.listen(PORT, () => {
+    
+app.post("/api/buyback/orders", async (req,res)=>{
+  try{
+    await ensureBuybackOrdersTable();
+    const b=req.body||{};
+    if(!String(b.name||"").trim() || !String(b.email||"").trim())
+      return res.status(400).json({error:"Naam en e-mail zijn verplicht"});
+    const orderNo="BT-"+Date.now().toString().slice(-8);
+    const q=await pool.query(`
+      INSERT INTO buyback_orders
+      (order_no,name,email,phone,address,device,brand,model,storage,condition,face_id,battery,screen,offered_price,status)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'Nieuw')
+      RETURNING id,order_no,status,created_at
+    `,[
+      orderNo,b.name,b.email,b.phone||"",b.address||"",b.device||"",
+      b.brand||"",b.model||"",b.storage||"",b.condition||"",b.faceId||"",
+      b.battery||"",b.screen||"",Number(b.offeredPrice||0)
+    ]);
+    res.json({ok:true,order:q.rows[0]});
+  }catch(e){
+    console.error("buyback order error",e);
+    res.status(500).json({error:"Kon aanvraag niet opslaan"});
+  }
+});
+
+app.get("/api/admin/buyback-orders", requirePermission("buyback_orders.view"), async (req,res)=>{
+  try{
+    await ensureBuybackOrdersTable();
+    const q=await pool.query("SELECT * FROM buyback_orders ORDER BY id DESC");
+    res.json({orders:q.rows});
+  }catch(e){console.error(e);res.status(500).json({error:"Kon aanvragen niet laden"});}
+});
+
+app.put("/api/admin/buyback-orders/:id", requirePermission("buyback_orders.update"), async (req,res)=>{
+  try{
+    await ensureBuybackOrdersTable();
+    const status=String(req.body?.status||"Nieuw");
+    const allowed=["Nieuw","In behandeling","Goedgekeurd","Afgewezen","Voltooid"];
+    if(!allowed.includes(status))return res.status(400).json({error:"Ongeldige status"});
+    const q=await pool.query("UPDATE buyback_orders SET status=$1 WHERE id=$2 RETURNING *",[status,req.params.id]);
+    if(!q.rowCount)return res.status(404).json({error:"Aanvraag niet gevonden"});
+    res.json({ok:true,order:q.rows[0]});
+  }catch(e){console.error(e);res.status(500).json({error:"Status wijzigen mislukt"});}
+});
+
+app.delete("/api/admin/buyback-orders/:id", requirePermission("buyback_orders.delete"), async (req,res)=>{
+  try{
+    await ensureBuybackOrdersTable();
+    const q=await pool.query("DELETE FROM buyback_orders WHERE id=$1",[req.params.id]);
+    if(!q.rowCount)return res.status(404).json({error:"Aanvraag niet gevonden"});
+    res.json({ok:true});
+  }catch(e){console.error(e);res.status(500).json({error:"Verwijderen mislukt"});}
+});
+
+app.listen(PORT, () => {
       console.log(
         `HOMS TECH running on port ${PORT}`
       );
@@ -1033,128 +1112,3 @@ initDatabase()
 
     process.exit(1);
   });
-
-// =====================================================
-// BUYBACK / UW TOESTEL VERKOPEN ORDERS
-// =====================================================
-async function ensureBuybackOrdersTable() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS buyback_orders (
-      id SERIAL PRIMARY KEY,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      phone TEXT DEFAULT '',
-      address TEXT DEFAULT '',
-      device TEXT DEFAULT '',
-      brand TEXT DEFAULT '',
-      storage TEXT DEFAULT '',
-      condition TEXT DEFAULT '',
-      face_id TEXT DEFAULT '',
-      battery TEXT DEFAULT '',
-      screen TEXT DEFAULT '',
-      offered_price NUMERIC(10,2) DEFAULT 0,
-      status TEXT NOT NULL DEFAULT 'Nieuw',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-}
-
-app.post("/api/buyback/orders", async (req, res) => {
-  try {
-    await ensureBuybackOrdersTable();
-    const b = req.body || {};
-    const name = String(b.name || "").trim();
-    const email = String(b.email || "").trim().toLowerCase();
-
-    if (!name || !email || !String(b.device || "").trim()) {
-      return res.status(400).json({ error: "Naam, e-mailadres en toestel zijn verplicht." });
-    }
-
-    const offeredPrice = Number(b.offeredPrice || 0);
-    if (!Number.isFinite(offeredPrice) || offeredPrice < 0) {
-      return res.status(400).json({ error: "Ongeldige prijs." });
-    }
-
-    const result = await pool.query(`
-      INSERT INTO buyback_orders
-      (name,email,phone,address,device,brand,storage,condition,face_id,battery,screen,offered_price,status)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'Nieuw')
-      RETURNING id,status,created_at
-    `, [
-      name, email,
-      String(b.phone || "").trim(),
-      String(b.address || "").trim(),
-      String(b.device || "").trim(),
-      String(b.brand || "").trim(),
-      String(b.storage || "").trim(),
-      String(b.condition || "").trim(),
-      String(b.faceId || "").trim(),
-      String(b.battery || "").trim(),
-      String(b.screen || "").trim(),
-      offeredPrice
-    ]);
-
-    res.status(201).json({ success: true, order: result.rows[0] });
-  } catch (error) {
-    console.error("BUYBACK ORDER ERROR:", error);
-    res.status(500).json({ error: "Verkoopaanvraag kon niet worden opgeslagen." });
-  }
-});
-
-app.get("/api/admin/buyback-orders", requirePermission("buyback_orders.view"), async (req, res) => {
-  try {
-    await ensureBuybackOrdersTable();
-    const result = await pool.query(`
-      SELECT id,name,email,phone,address,device,brand,storage,condition,
-             face_id,battery,screen,offered_price,status,created_at
-      FROM buyback_orders
-      ORDER BY created_at DESC
-    `);
-    res.json({ orders: result.rows });
-  } catch (error) {
-    console.error("BUYBACK LOAD ERROR:", error);
-    res.status(500).json({ error: "Verkoopaanvragen konden niet worden geladen." });
-  }
-});
-
-app.put("/api/admin/buyback-orders/:id/status", requirePermission("buyback_orders.update"), async (req, res) => {
-  try {
-    const allowed = ["Nieuw","In behandeling","Goedgekeurd","Afgewezen","Voltooid"];
-    const status = String(req.body?.status || "").trim();
-    if (!allowed.includes(status)) {
-      return res.status(400).json({ error: "Ongeldige status." });
-    }
-
-    const result = await pool.query(`
-      UPDATE buyback_orders
-      SET status=$1
-      WHERE id=$2
-      RETURNING id,status
-    `, [status, req.params.id]);
-
-    if (!result.rows.length) {
-      return res.status(404).json({ error: "Verkoopaanvraag niet gevonden." });
-    }
-    res.json({ success: true, order: result.rows[0] });
-  } catch (error) {
-    console.error("BUYBACK STATUS ERROR:", error);
-    res.status(500).json({ error: "Status kon niet worden gewijzigd." });
-  }
-});
-
-app.delete("/api/admin/buyback-orders/:id", requirePermission("buyback_orders.delete"), async (req, res) => {
-  try {
-    const result = await pool.query(`
-      DELETE FROM buyback_orders WHERE id=$1 RETURNING id
-    `, [req.params.id]);
-
-    if (!result.rows.length) {
-      return res.status(404).json({ error: "Verkoopaanvraag niet gevonden." });
-    }
-    res.json({ success: true });
-  } catch (error) {
-    console.error("BUYBACK DELETE ERROR:", error);
-    res.status(500).json({ error: "Verkoopaanvraag kon niet worden verwijderd." });
-  }
-});
-
