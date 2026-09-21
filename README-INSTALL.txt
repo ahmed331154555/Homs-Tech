@@ -1,3 +1,3 @@
-HOMS TECH topbar polish only. Replace the same 10 public HTML pages from this ZIP.
-Changed: top trust bar wording/styling only. “Altijd garantie” is now “1 jaar garantie”.
-Do not replace index.html, uw-toestel-verkopen.html, admin/index.html, server.js, or package.json.
+HOMS TECH — CENTERED TOPBAR
+
+Replace only the 11 public HTML pages in this package. This version centers the topbar content consistently across the homepage and public pages. Do not replace server.js, admin/index.html, or uw-toestel-verkopen.html.
