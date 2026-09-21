@@ -109,6 +109,32 @@ async function loadBuyback(){
   catch(e){devices=[];renderDevices();}
 }
 function go(n){$('step1').style.display=n===1?'block':'none';$('step2').style.display=n===2?'block':'none';$('step3').style.display=n===3?'block':'none';$('step4').style.display=n===4?'block':'none';$('d1').className='dot '+(n>=1?'active':'');$('d2').className='dot '+(n>=2?'active':'');$('d3').className='dot '+(n>=3?'active':'');$('l1').className='line '+(n>=2?'active':'');$('l2').className='line '+(n>=3?'active':'');window.scrollTo({top:document.querySelector('.hero').offsetTop-20,behavior:'smooth'});if(n===3)updateCondition()}
-$('deviceSearch').oninput=renderDevices;$('continueModel').onclick=()=>{if(!selectedModel){alert('Kies eerst een toestel.');return}go(3)};$('category').onchange=renderDevices;$('back1').onclick=e=>{e.preventDefault();go(1)};$('back2').onclick=e=>{e.preventDefault();go(2)};$('back3').onclick=e=>{e.preventDefault();go(3)};$('toCheckout').onclick=()=>{const v=calcQuote();$('sumDevice').textContent=selectedModel.name+' · '+selectedCondition;$('sumPrice').textContent=money(v);$('sumTotal').textContent=money(pay==='credit'?v*1.10:v);$('sumPay').textContent=pay==='credit'?'HOMS TECH tegoed (+10%)':'Geld ontvangen';go(4)};$('finish').onclick=()=>{if(!$('cName').value.trim()||!$('cEmail').value.trim()||!$('agree').checked){alert('Vul je naam en e-mailadres in en accepteer de voorwaarden.');return}$('success').style.display='block';$('success').scrollIntoView({behavior:'smooth',block:'center'})};document.querySelectorAll('.choice button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.choice button').forEach(x=>x.classList.remove('active'));b.classList.add('active');pay=b.dataset.pay});$('siteSearch').onkeydown=e=>{if(e.key==='Enter'&&e.target.value.trim())location.href='devices.html?search='+encodeURIComponent(e.target.value.trim())};loadBuyback();
+$('deviceSearch').oninput=renderDevices;$('continueModel').onclick=()=>{if(!selectedModel){alert('Kies eerst een toestel.');return}go(3)};$('category').onchange=renderDevices;$('back1').onclick=e=>{e.preventDefault();go(1)};$('back2').onclick=e=>{e.preventDefault();go(2)};$('back3').onclick=e=>{e.preventDefault();go(3)};$('toCheckout').onclick=()=>{const v=calcQuote();$('sumDevice').textContent=selectedModel.name+' · '+selectedCondition;$('sumPrice').textContent=money(v);$('sumTotal').textContent=money(pay==='credit'?v*1.10:v);$('sumPay').textContent=pay==='credit'?'HOMS TECH tegoed (+10%)':'Geld ontvangen';go(4)};$('finish').onclick=async()=>{
+  if(!$('cName').value.trim()||!$('cEmail').value.trim()||!$('agree').checked){alert('Vul je naam en e-mailadres in en accepteer de voorwaarden.');return}
+  const offeredPrice=calcQuote();
+  const payload={
+    name:$('cName').value.trim(),
+    email:$('cEmail').value.trim(),
+    phone:$('cPhone')?.value.trim()||'',
+    address:[$('cAddress')?.value.trim(),$('cCity')?.value.trim()].filter(Boolean).join(', '),
+    device:selectedModel?.name||selected?.name||'',
+    brand:selected?.brand||'',
+    storage:selectedModel?.storage||'',
+    condition:selectedCondition||'',
+    faceId:$('faceId')?.value||'',
+    battery:$('batteryLevel')?.value||'',
+    screen:$('screenState')?.value||'',
+    offeredPrice
+  };
+  const btn=$('finish');btn.disabled=true;btn.textContent='Aanvraag wordt verstuurd...';
+  try{
+    const r=await fetch('/api/buyback/orders',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(payload)});
+    const result=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(result.error||'De aanvraag kon niet worden verstuurd.');
+    $('success').style.display='block';
+    $('success').scrollIntoView({behavior:'smooth',block:'center'});
+  }catch(e){alert(e.message)}
+  finally{btn.disabled=false;btn.textContent='Verkoop aanvragen'}
+};document.querySelectorAll('.choice button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.choice button').forEach(x=>x.classList.remove('active'));b.classList.add('active');pay=b.dataset.pay});$('siteSearch').onkeydown=e=>{if(e.key==='Enter'&&e.target.value.trim())location.href='devices.html?search='+encodeURIComponent(e.target.value.trim())};loadBuyback();
 </script>
 </body></html>
