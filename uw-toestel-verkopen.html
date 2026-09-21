@@ -271,7 +271,7 @@ $('finish').onclick=async()=>{
   try{
     const v=calcQuote(),credit=$('cMethod').value.includes('tegoed'),offer=credit?v*1.10:v;
     const payload={name:$('cName').value.trim(),email:$('cEmail').value.trim(),phone:$('cPhone').value.trim(),address:[$('cAddress').value.trim(),$('cZip').value.trim(),$('cCity').value.trim()].filter(Boolean).join(', '),device:selectedModel.name||'',brand:selectedModel.brand||'',model:selectedModel.name||'',storage:selectedModel.storage||'',condition:selectedCondition||'',faceId:$('faceId').value||'',battery:$('batteryLevel').value||'',screen:$('screenState').value||'',offeredPrice:Number(offer.toFixed(2)),iban:$('cIban').value.trim(),paymentMethod:$('cMethod').value};
-    const r=await fetch('/api/buyback/orders',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(payload)});const j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw new Error(j.error||'Kon de aanvraag niet verzenden.');
+    const r=await fetch('/api/buyback/orders',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(payload)});const j=await r.json().catch(()=>({}));if(!r.ok||(!j.ok&&!j.success))throw new Error(j.error||'Kon de aanvraag niet verzenden.');
     go(4);
   }catch(e){console.error(e);alert(e.message||'Er ging iets mis bij het verzenden.')}finally{btn.disabled=false;btn.textContent=old}
 };
