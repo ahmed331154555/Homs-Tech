@@ -1,7 +1,6 @@
-HOMS TECH — MODERN THEME V3
+HOMS TECH TRUE REDESIGN
 
-This ZIP is FLAT ON PURPOSE.
-Upload/replace ONLY these files on branch backup-before-languages:
+Replace only these public pages and the CSS file on backup-before-languages:
 about.html
 devices.html
 prices.html
@@ -12,13 +11,7 @@ account.html
 cart.html
 checkout.html
 product.html
-assets/homs-tech-modern-theme.css
+assets/homs-tech-modern-true-theme.css
 
-DO NOT replace:
-index.html
-uw-toestel-verkopen.html
-admin/index.html
-server.js
-
-After upload, commit to backup-before-languages and redeploy.
-The CSS URL contains a version query (?v=20260921-3) to prevent old cached CSS from being used.
+Do NOT replace index.html, uw-toestel-verkopen.html, admin/index.html or server.js.
+JavaScript blocks were preserved byte-for-byte after header replacement.
