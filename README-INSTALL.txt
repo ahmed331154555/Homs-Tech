@@ -1,24 +1,5 @@
-HOMS TECH — FINAL PUBLIC UI
+HOMS TECH — FINAL HEADER UPDATE
 
-Replace ONLY these 11 files on branch backup-before-languages:
-index.html
-about.html
-devices.html
-prices.html
-repair.html
-gsm-services.html
-used.html
-account.html
-cart.html
-checkout.html
-product.html
-
-DO NOT replace:
-uw-toestel-verkopen.html
-admin/index.html
-server.js
-package.json
-
-The index.html is the previously working HOMS TECH moving-product homepage.
-The other 10 public pages use the new HOMS TECH modern visual design while preserving their page functionality.
-Keep the existing assets/ folder, especially assets/homs-tech-logo.png.
+Upload ONLY these 10 HTML pages and assets/ to backup-before-languages.
+Do NOT replace index.html, uw-toestel-verkopen.html, admin/index.html, server.js or package.json.
+The header CSS is embedded in assets/homs-tech-modern-true-theme.css and cache-busted.
