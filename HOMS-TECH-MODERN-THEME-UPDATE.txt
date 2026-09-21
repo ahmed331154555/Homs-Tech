@@ -1,0 +1,25 @@
+HOMS TECH — MODERN THEME UPDATE
+
+This package updates the visual design of the legacy public pages to match the new HOMS TECH navy/blue style.
+
+Changed visually only:
+- about.html
+- devices.html
+- prices.html
+- repair.html
+- used.html
+- gsm-services.html
+- account.html
+- cart.html
+- checkout.html
+- product.html
+- assets/homs-tech-modern-theme.css
+
+Intentionally NOT changed:
+- index.html
+- uw-toestel-verkopen.html
+- admin/index.html
+- server.js
+- package.json
+
+The existing page JavaScript/API logic is preserved; the theme is loaded as a separate stylesheet.
