@@ -138,6 +138,8 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
 .searchbox{height:46px;border:1px solid #dce5ee;border-radius:10px;display:flex;align-items:center;background:#fff}
 .searchbox span{padding:0 12px;color:#8191a3;font-size:18px}.searchbox .field{border:0;height:44px;padding-left:0}
 .language-select{height:46px;border:1px solid #dce5ee;border-radius:10px;background:#fff;padding:0 12px;font-size:12px;color:#33485e}
+.sell-search-results{max-width:760px;margin:0 auto 14px;background:#fff;border:1px solid #dfe6ee;border-radius:10px;overflow:hidden;display:none;box-shadow:0 8px 22px rgba(7,26,43,.06)}
+.sell-search-results.show{display:block}.sell-search-result{width:100%;border:0;border-bottom:1px solid #edf1f5;background:#fff;padding:10px 14px;display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer}.sell-search-result:last-child{border-bottom:0}.sell-search-result:hover{background:#f7faff}.sell-search-result .sr-img{width:42px;height:42px;display:flex;align-items:center;justify-content:center;flex:none}.sell-search-result .sr-img .device-img{height:42px;width:44px;margin:0}.sell-search-result .sr-main{min-width:0;flex:1}.sell-search-result .sr-name{font-size:12px;font-weight:800;color:#17283a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sell-search-result .sr-meta{font-size:10px;color:#8191a3;margin-top:2px}.sell-search-result .sr-price{font-size:10px;font-weight:800;color:#26384b;background:#eef3f8;border-radius:999px;padding:5px 9px;white-space:nowrap}.sell-search-empty{padding:16px;text-align:center;color:#7b8da0;font-size:11px}
 .family-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:900px;margin:0 auto}
 .family-card{min-height:128px;border:1px solid #dfe6ee;border-radius:8px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 8px;cursor:pointer;transition:.18s}
 .family-card:hover{border-color:#a9c9ee;box-shadow:0 8px 22px rgba(7,26,43,.08);transform:translateY(-2px)}
@@ -188,8 +190,9 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
   </div>
   <div class="forza-searchrow">
     <div class="searchbox"><span>⌕</span><input id="deviceSearch" class="field" placeholder="Zoek jouw apparaat..."></div>
-    <select class="language-select" aria-label="Taal"><option>🇳🇱 Nederlands</option><option>🇬🇧 English</option><option>🇸🇦 العربية</option></select>
+    <select class="language-select" aria-label="Taal"><option>🇬🇧 English</option><option>🇸🇦 العربية</option></select>
   </div>
+  <div id="sellSearchResults" class="sell-search-results"></div>
   <button id="familyBack" class="family-back" type="button" style="display:none">← Terug naar apparaten</button>
   <div id="familyGrid" class="family-grid"></div>
   <div id="modelHeader" class="model-header" style="display:none">
@@ -371,6 +374,24 @@ function renderFamilyCard(family, arr){
     <div class="device-price">${arr.length} ${arr.length===1?'model':'modellen'} · vanaf ${money(min)}</div>
   </button>`;
 }
+function renderSearchResults(q, pool){
+  const box=$('sellSearchResults');
+  if(!box)return;
+  q=String(q||'').trim().toLowerCase();
+  if(!q){box.classList.remove('show');box.innerHTML='';return;}
+  const matches=pool.filter(d=>{
+    const text=[d.name,d.brand,d.deviceType,d.type,d.family].filter(Boolean).join(' ').toLowerCase();
+    return text.includes(q);
+  }).slice(0,8);
+  if(!matches.length){box.classList.add('show');box.innerHTML='<div class="sell-search-empty">Geen apparaten gevonden.</div>';return;}
+  box.classList.add('show');
+  box.innerHTML=matches.map(d=>`<button type="button" class="sell-search-result" data-i="${devices.indexOf(d)}">
+    <span class="sr-img">${imageFor(d)}</span>
+    <span class="sr-main"><span class="sr-name">${esc(d.name||'Toestel')}</span><span class="sr-meta">${esc([d.brand,d.deviceType].filter(Boolean).join(' · '))}</span></span>
+    <span class="sr-price">Ontvangst tot wel ${money(Number(d.price||0))}</span>
+  </button>`).join('');
+  box.querySelectorAll('.sell-search-result').forEach(el=>el.onclick=()=>chooseDevice(devices[+el.dataset.i]));
+}
 function categories(){
   const groups=new Map();
   devices.forEach(d=>{const k=familyKey(d);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(d)});
@@ -390,7 +411,7 @@ function categories(){
   }
   let families=[...groups.entries()];
   if(q){
-    families=families.filter(([k,arr])=>k.toLowerCase().includes(q)||arr.some(d=>String(d.name||'').toLowerCase().includes(q)));
+    families=families.filter(([k,arr])=>k.toLowerCase().includes(q)||arr.some(d=>[d.name,d.brand,d.deviceType,d.type].filter(Boolean).join(' ').toLowerCase().includes(q)));
   }
   $('familyGrid').innerHTML=families.length
     ?families.map(([k,arr])=>renderFamilyCard(k,arr)).join('')
@@ -401,12 +422,13 @@ function categories(){
     $('deviceSearch').value='';
     categories();
   });
+  renderSearchResults(q, selectedFamily ? devices.filter(d=>familyKey(d)===selectedFamily) : devices);
   renderFamilyModels();
 }
 function renderFamilyModels(){
   const q=String($('deviceSearch')?.value||'').trim().toLowerCase();
   if(!selectedFamily){$('deviceGrid').innerHTML='';$('loadMoreModels').style.display='none';return;}
-  const arr=devices.filter(d=>familyKey(d)===selectedFamily && (!q||String(d.name||'').toLowerCase().includes(q)));
+  const arr=devices.filter(d=>familyKey(d)===selectedFamily && (!q||[d.name,d.brand,d.deviceType,d.type].filter(Boolean).join(' ').toLowerCase().includes(q)));
   const limit=window._modelLimit||12;
   const visible=arr.slice(0,limit);
   $('deviceGrid').innerHTML=visible.length
@@ -490,7 +512,7 @@ $('finish').onclick=async()=>{
     go(4);
   }catch(e){console.error(e);alert(e.message||'Er ging iets mis bij het verzenden.')}finally{btn.disabled=false;btn.textContent=old}
 };
-$('deviceSearch').oninput=()=>{window._modelLimit=12;if(selectedFamily)renderFamilyModels();else categories()};
+$('deviceSearch').oninput=()=>{window._modelLimit=12;categories()};
 $('familyBack').onclick=()=>{selectedFamily='';window._modelLimit=12;$('deviceSearch').value='';categories()};
 $('loadMoreModels').onclick=()=>{window._modelLimit=(window._modelLimit||12)+12;renderFamilyModels()};
 $('siteSearch').onkeydown=e=>{if(e.key==='Enter'&&e.target.value.trim())location.href='devices.html?search='+encodeURIComponent(e.target.value.trim())};
@@ -508,16 +530,6 @@ async function loadBuyback(){
 }
 loadBuyback();
 
-// HOMS TECH FORZA V9: legacy filter UI is intentionally disabled.
-// This keeps the first screen as device-family cards -> model cards.
-function removeLegacySellFilters(){
-  const legacyLabels=['Alle merken','Alle soorten'];
-  document.querySelectorAll('button,a,span,div,label').forEach(el=>{
-    const t=(el.textContent||'').trim();
-    if(legacyLabels.includes(t)){ el.remove(); }
-  });
-}
-removeLegacySellFilters();
 new MutationObserver(removeLegacySellFilters).observe(document.body,{childList:true,subtree:true});
 </script>
 </body>
