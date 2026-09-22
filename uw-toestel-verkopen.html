@@ -377,12 +377,14 @@ function categories(){
   const q=String($('deviceSearch')?.value||'').trim().toLowerCase();
   if(selectedFamily){
     $('familyGrid').style.display='none';
+    $('deviceGrid').style.display='grid';
     $('familyBack').style.display='block';
     $('modelHeader').style.display='flex';
     $('modelHeaderTitle').textContent=selectedFamily;
     $('modelHeaderSub').textContent='Kies jouw exacte model';
   }else{
     $('familyGrid').style.display='grid';
+    $('deviceGrid').style.display='none';
     $('familyBack').style.display='none';
     $('modelHeader').style.display='none';
   }
@@ -395,8 +397,9 @@ function categories(){
     :'<div style="grid-column:1/-1;padding:35px;text-align:center;color:#64748b">Geen apparaten gevonden.</div>';
   document.querySelectorAll('.family-card').forEach(el=>el.onclick=()=>{
     selectedFamily=el.dataset.family;
+    window._modelLimit=12;
     $('deviceSearch').value='';
-    renderFamilyModels();
+    categories();
   });
   renderFamilyModels();
 }
