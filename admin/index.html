@@ -799,187 +799,6 @@ textarea{
 @media(max-width:900px){#page-buyback-orders .bb-order-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:550px){#page-buyback-orders .bb-order-grid{grid-template-columns:1fr}}
 </style>
-
-<style id="homs-admin-modern-v1">
-:root{
- --ht-navy:#071d2d;
- --ht-navy2:#0b2940;
- --ht-blue:#2563eb;
- --ht-blue2:#60a5fa;
- --ht-bg:#f5f8fc;
- --ht-card:#fff;
- --ht-line:#e2e8f0;
- --ht-ink:#172033;
- --ht-muted:#64748b;
- --ht-shadow:0 10px 28px rgba(7,29,45,.07);
-}
-html{scroll-behavior:smooth}
-body{
- background:var(--ht-bg)!important;
- color:var(--ht-ink)!important;
- font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif!important;
-}
-.topbar{
- background:linear-gradient(135deg,var(--ht-navy),var(--ht-navy2))!important;
- padding:13px 22px!important;
- min-height:64px!important;
- box-shadow:0 5px 20px rgba(7,29,45,.14)!important;
-}
-.logo{font-size:21px!important;letter-spacing:.2px!important}
-.logo span{color:var(--ht-blue2)!important}
-.container{max-width:1240px!important;margin:22px auto!important;padding:0 16px!important}
-.admin-nav{
- background:rgba(255,255,255,.96)!important;
- border-bottom:1px solid var(--ht-line)!important;
- box-shadow:0 4px 18px rgba(7,29,45,.06)!important;
- top:64px!important;
-}
-.admin-nav-inner{
- max-width:1240px!important;
- padding:9px 16px!important;
- gap:7px!important;
-}
-.nav-btn{
- background:#f1f5f9!important;
- color:#334155!important;
- border:1px solid transparent!important;
- padding:9px 13px!important;
- border-radius:9px!important;
- font-size:12px!important;
-}
-.nav-btn:hover{background:#eaf2ff!important;color:var(--ht-blue)!important}
-.nav-btn.active{
- background:var(--ht-blue)!important;
- color:#fff!important;
- box-shadow:0 4px 12px rgba(37,99,235,.22)!important;
-}
-.login{
- max-width:410px!important;
- margin:55px auto!important;
- padding:27px!important;
- border:1px solid var(--ht-line)!important;
- border-radius:16px!important;
- box-shadow:var(--ht-shadow)!important;
-}
-.field{margin-bottom:13px!important}
-.field label{font-size:12px!important;color:#334155!important;margin-bottom:6px!important}
-.field input,.field textarea,.field select{
- padding:10px 12px!important;
- border:1px solid #dbe4ee!important;
- border-radius:9px!important;
- background:#fff!important;
- font-size:13px!important;
-}
-.field input:focus,.field textarea:focus,.field select:focus{
- border-color:#8db8ff!important;
- box-shadow:0 0 0 3px rgba(37,99,235,.09)!important;
-}
-.btn{
- border-radius:9px!important;
- padding:9px 14px!important;
- font-size:12px!important;
- transition:.16s ease!important;
-}
-.btn:hover{transform:translateY(-1px)!important}
-.btn-green{background:var(--ht-blue)!important}
-.btn-dark{background:var(--ht-navy)!important}
-.btn-red{background:#dc3545!important}
-.btn-light{background:#eef2f7!important;color:#334155!important}
-.section{
- background:var(--ht-card)!important;
- border:1px solid var(--ht-line)!important;
- border-radius:15px!important;
- padding:19px!important;
- margin-bottom:17px!important;
- box-shadow:var(--ht-shadow)!important;
-}
-.section-head{
- margin-bottom:15px!important;
- padding-bottom:12px!important;
- border-bottom:1px solid #edf2f7!important;
-}
-.section-head h2{font-size:18px!important;color:var(--ht-navy)!important}
-.section-head p{font-size:12px!important;color:var(--ht-muted)!important}
-.grid{gap:12px!important}
-.card{
- border:1px solid var(--ht-line)!important;
- border-radius:12px!important;
- padding:14px!important;
- background:#fff!important;
- box-shadow:0 5px 18px rgba(7,29,45,.04)!important;
- margin-bottom:10px!important;
-}
-.card-head{margin-bottom:11px!important}
-.card-title{font-size:14px!important}
-.actions{gap:6px!important}
-input,select,textarea{border-radius:9px!important}
-textarea{min-height:85px!important}
-
-/* Orders / buyback dashboard */
-.orders-toolbar{gap:8px!important;margin-bottom:13px!important}
-.orders-search input{
- padding:11px 13px 11px 39px!important;
- border-radius:10px!important;
-}
-.orders-search:before{left:12px!important;top:9px!important}
-.order-filter{padding:10px 11px!important;border-radius:10px!important;font-size:12px!important}
-.order-filter-btn{border-radius:10px!important;padding:10px 13px!important;font-size:12px!important}
-.order-summary{gap:9px!important;margin-bottom:13px!important}
-.order-stat{
- border-radius:12px!important;
- padding:12px 14px!important;
- border-color:var(--ht-line)!important;
-}
-.order-stat b{font-size:19px!important}
-.order-stat span{font-size:10px!important}
-.order-card{
- border-radius:13px!important;
- border-color:var(--ht-line)!important;
- box-shadow:0 5px 18px rgba(7,29,45,.045)!important;
-}
-.order-card-head{padding:12px 14px 11px!important}
-.order-main{padding:12px 14px 14px!important}
-.order-title{font-size:14px!important}
-
-/* Tables / lists */
-table{border-color:var(--ht-line)!important}
-th{
- background:#f4f7fb!important;
- color:#334155!important;
- font-size:11px!important;
-}
-td{font-size:11px!important}
-.badge,.status,.tag,.chip{
- border-radius:999px!important;
- font-size:10px!important;
-}
-
-/* buyback cards */
-#buybackPhonesList .card,
-#buybackOrdersList .card,
-#buybackList .card{
- border-radius:12px!important;
- box-shadow:0 5px 18px rgba(7,29,45,.045)!important;
-}
-img{max-width:100%;border-radius:10px}
-
-/* responsive */
-@media(max-width:850px){
- .container{margin:16px auto!important;padding:0 11px!important}
- .section{padding:14px!important}
- .grid{grid-template-columns:1fr!important}
- .order-summary{grid-template-columns:repeat(2,1fr)!important}
- .topbar{padding:11px 13px!important}
-}
-@media(max-width:560px){
- .logo{font-size:18px!important}
- .admin-nav-inner{padding:7px 10px!important}
- .nav-btn{font-size:10px!important;padding:8px 10px!important}
- .order-summary{grid-template-columns:1fr 1fr!important}
- .section-head{align-items:flex-start!important}
-}
-</style>
-
 </head>
 
 <body>
@@ -2829,32 +2648,24 @@ async function deleteBuybackOrder(id){
 async function showBuybackDetails(id){
   try{
     const response=await fetch("/api/admin/buyback-orders",{credentials:"same-origin"});
-    const result=await response.json().catch(()=>({}));
-    if(!response.ok) throw new Error(result.error||"Verkoopaanvraag kon niet worden geladen.");
+    const result=await response.json();
     const order=(result.orders||[]).find(x=>Number(x.id)===Number(id));
-    if(!order) throw new Error("Verkoopaanvraag niet gevonden.");
-
-    const price=Number(order.offered_price||0).toFixed(2).replace('.',',');
-    showOrderDetails("Verkoopaanvraag #"+(order.order_no||order.id), {
-      "Ordernummer": order.order_no || ("BT-"+order.id),
-      "Datum": order.created_at ? new Date(order.created_at).toLocaleString("nl-NL") : "-",
-      "Status": order.status || "-",
-      "Klant": order.name || "-",
-      "E-mail": order.email || "-",
-      "Telefoon": order.phone || "-",
-      "Adres": order.address || "-",
-      "Toestel": order.device || "-",
-      "Merk": order.brand || "-",
-      "Model": order.model || "-",
-      "Opslag": order.storage || "-",
-      "Conditie": order.condition || "-",
-      "Face ID": order.face_id || "-",
-      "Batterij": order.battery || "-",
-      "Scherm": order.screen || "-",
-      "Aangeboden prijs": "€ " + price,
-      "Betaalmethode": order.payment_method || "-",
-      "IBAN": order.iban || "-"
-    });
+    if(!order)throw new Error("Verkoopaanvraag niet gevonden.");
+    alert(
+      "Aanvraag #"+order.id+
+      "\\n\\nKlant: "+(order.name||"-")+
+      "\\nE-mail: "+(order.email||"-")+
+      "\\nTelefoon: "+(order.phone||"-")+
+      "\\nAdres: "+(order.address||"-")+
+      "\\n\\nToestel: "+(order.device||"-")+
+      "\\nOpslag: "+(order.storage||"-")+
+      "\\nConditie: "+(order.condition||"-")+
+      "\\nFace ID: "+(order.face_id||"-")+
+      "\\nBatterij: "+(order.battery||"-")+
+      "\\nScherm: "+(order.screen||"-")+
+      "\\n\\nPrijs: € "+Number(order.offered_price||0).toFixed(2)+
+      "\\nStatus: "+(order.status||"-")
+    );
   }catch(error){alert(error.message)}
 }
 
