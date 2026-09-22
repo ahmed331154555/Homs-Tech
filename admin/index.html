@@ -821,6 +821,27 @@ textarea{
 @media(max-width:900px){#page-buyback-orders .bb-order-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:550px){#page-buyback-orders .bb-order-grid{grid-template-columns:1fr}}
 </style>
+
+<style id="homs-buyback-v5">
+/* HOMS TECH BUYBACK V5 — compact vertical phone list */
+#page-buyback #buybackPhonesList{display:flex!important;flex-direction:column!important;gap:12px!important;width:100%!important;max-width:100%!important;margin:0!important;padding:0!important}
+#page-buyback .buyback-phone-card-v5{display:block!important;width:100%!important;box-sizing:border-box!important;background:#fff!important;border:1px solid #e2e8f0!important;border-radius:14px!important;overflow:hidden!important;margin:0!important;box-shadow:0 5px 18px rgba(15,23,42,.06)!important}
+#page-buyback .buyback-phone-row-v5{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:14px!important;padding:14px 16px!important;min-height:64px!important;background:#fff!important}
+#page-buyback .buyback-phone-name-v5{display:flex!important;align-items:center!important;gap:11px!important;min-width:0!important}
+#page-buyback .buyback-phone-name-v5>span{font-size:22px!important;flex:0 0 auto!important}
+#page-buyback .buyback-phone-name-v5 strong{display:block!important;font-size:16px!important;color:#0f172a!important;line-height:1.2!important}
+#page-buyback .buyback-phone-name-v5 small{display:block!important;margin-top:4px!important;font-size:12px!important;color:#64748b!important}
+#page-buyback .buyback-phone-actions-v5{display:flex!important;gap:7px!important;align-items:center!important;flex:0 0 auto!important}
+#page-buyback .buyback-phone-actions-v5 .btn{white-space:nowrap!important}
+#page-buyback .buyback-phone-editor-v5{border-top:1px solid #e5e7eb!important;padding:16px!important;background:#f8fafc!important}
+#page-buyback .buyback-v5-fields{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+#page-buyback .buyback-v5-fields .field{min-width:0!important}
+#page-buyback .buyback-check-v5{display:flex!important;align-items:center!important;gap:8px!important;margin-top:8px!important;padding:10px 12px!important;border:1px solid #dbe3ec!important;border-radius:10px!important;background:#fff!important;cursor:pointer!important}
+#page-buyback .buyback-photo-line-v5{display:flex!important;align-items:center!important;gap:12px!important;flex-wrap:wrap!important;margin-top:8px!important}
+#page-buyback .buyback-photo-line-v5 img,.buyback-no-photo-v5{width:72px!important;height:86px!important;object-fit:contain!important;border:1px solid #dbe3ec!important;border-radius:9px!important;background:#fff!important}
+#page-buyback .buyback-no-photo-v5{display:flex!important;align-items:center!important;justify-content:center!important;font-size:11px!important;color:#64748b!important}
+@media(max-width:700px){#page-buyback .buyback-phone-row-v5{align-items:flex-start!important;flex-direction:column!important}.buyback-phone-actions-v5{width:100%!important}.buyback-phone-actions-v5 .btn{flex:1!important}.buyback-v5-fields{grid-template-columns:1fr!important}}
+</style>
 </head>
 
 <body>
@@ -1930,8 +1951,47 @@ function buybackOptionEditor(pi,title,key){
 function renderBuybackPhones(){
   normalizeBuybackPhones();
   const box=document.getElementById('buybackPhonesList'); if(!box) return;
-  if(!data.buybackPhones.length){box.innerHTML='<div class="card" style="padding:30px;text-align:center"><h3>Nog geen inkooptelefoons</h3><p class="small">Klik op + Telefoon toevoegen om een toestel toe te voegen.</p></div>';return;}
-  box.innerHTML=data.buybackPhones.map((p,i)=>`<div class="card buyback-phone-card" style="display:block;width:100%;max-width:none;float:none;clear:both;margin:0 0 24px 0;padding:20px;box-sizing:border-box"><div class="buyback-phone-title"><div><div class="card-title" style="font-size:20px">📱 ${esc(p.name||'Nieuwe telefoon')}</div><div class="small">${esc(p.brand||'')} · ${p.active?'Zichtbaar':'Verborgen'}</div></div><button class="btn btn-red" onclick="deleteBuybackPhone(${i})">Verwijderen</button></div><div class="buyback-phone-main" style="margin-top:16px"><div class="buyback-phone-fields"><div class="field"><label>Model</label><input value="${esc(p.name)}" oninput="data.buybackPhones[${i}].name=this.value;markChanged();this.closest('.card').querySelector('.card-title').textContent='📱 '+(this.value||'Nieuwe telefoon')"></div><div class="field"><label>Merk</label><input value="${esc(p.brand)}" oninput="data.buybackPhones[${i}].brand=this.value;markChanged()"></div><div class="field"><label>Basis inkoopprijs (€)</label><input type="number" step="1" value="${p.price}" oninput="data.buybackPhones[${i}].price=Number(this.value||0);markChanged()"><div class="small">Prijs vóór kortingen/toeslagen.</div></div><div class="field"><label>Website</label><label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" ${p.active?'checked':''} onchange="data.buybackPhones[${i}].active=this.checked;markChanged()"> Tonen op Uw toestel verkopen</label></div><div class="field"><label>📷 Foto van toestel</label><div style="display:flex;gap:15px;align-items:center;flex-wrap:wrap;margin-top:8px">${p.image?`<img src="${esc(p.image)}" style="width:100px;height:120px;object-fit:contain;border:1px solid #ddd;border-radius:12px;background:#f8fafc">`:'<div style="width:100px;height:120px;display:flex;align-items:center;justify-content:center;border:1px dashed #bbb;border-radius:12px">Geen foto</div>'}<input type="file" accept="image/*" onchange="handleBuybackImage(event,${i})"></div></div></div>${buybackOptionEditor(i,'Opslag','storageOptions')}${buybackOptionEditor(i,'Conditie','conditionOptions')}${buybackOptionEditor(i,'Batterij','batteryOptions')}${buybackOptionEditor(i,'Face ID','faceIdOptions')}${buybackOptionEditor(i,'Scherm','screenOptions')}</div></div>`).join('');
+  if(!data.buybackPhones.length){
+    box.innerHTML='<div class="card" style="padding:30px;text-align:center"><h3>Nog geen inkooptelefoons</h3><p class="small">Klik op + Telefoon toevoegen om een toestel toe te voegen.</p></div>';return;
+  }
+  box.innerHTML=data.buybackPhones.map((p,i)=>{
+    const battery=(p.batteryOptions||[]).map(o=>o.label).join(' / ') || '85% of hoger / Onder 85%';
+    return `<div class="buyback-phone-card-v5" id="buyback-phone-${i}">
+      <div class="buyback-phone-row-v5">
+        <div class="buyback-phone-name-v5"><span>📱</span><div><strong>${esc(p.name||'Nieuwe telefoon')}</strong><small>${esc(p.brand||'')} · ${p.active?'Zichtbaar':'Verborgen'}</small></div></div>
+        <div class="buyback-phone-actions-v5">
+          <button type="button" class="btn btn-light" onclick="toggleBuybackPhone(${i})">✏️ Bewerken</button>
+          <button type="button" class="btn btn-red" onclick="deleteBuybackPhone(${i})">Verwijderen</button>
+        </div>
+      </div>
+      <div class="buyback-phone-editor-v5" id="buyback-editor-${i}" style="display:none">
+        <div class="buyback-v5-fields">
+          <div class="field"><label>Model</label><input value="${esc(p.name||'')}" oninput="data.buybackPhones[${i}].name=this.value;markChanged();updateBuybackPhoneTitle(${i})"></div>
+          <div class="field"><label>Merk</label><input value="${esc(p.brand||'')}" oninput="data.buybackPhones[${i}].brand=this.value;markChanged();updateBuybackPhoneTitle(${i})"></div>
+          <div class="field"><label>Basis inkoopprijs (€)</label><input type="number" step="1" value="${p.price||0}" oninput="data.buybackPhones[${i}].price=Number(this.value||0);markChanged()"><div class="small">Prijs vóór kortingen/toeslagen.</div></div>
+          <div class="field"><label>Website</label><label class="buyback-check-v5"><input type="checkbox" ${p.active?'checked':''} onchange="data.buybackPhones[${i}].active=this.checked;markChanged();updateBuybackPhoneTitle(${i})"> Tonen op Uw toestel verkopen</label></div>
+          <div class="field buyback-photo-v5"><label>📷 Foto van toestel</label><div class="buyback-photo-line-v5">${p.image?`<img src="${esc(p.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen foto</div>'}<input type="file" accept="image/*" onchange="handleBuybackImage(event,${i})"></div></div>
+        </div>
+        ${buybackOptionEditor(i,'Opslag','storageOptions')}
+        ${buybackOptionEditor(i,'Conditie','conditionOptions')}
+        ${buybackOptionEditor(i,'Batterij','batteryOptions')}
+        ${buybackOptionEditor(i,'Face ID','faceIdOptions')}
+        ${buybackOptionEditor(i,'Scherm','screenOptions')}
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleBuybackPhone(i){
+  const el=document.getElementById('buyback-editor-'+i); if(!el)return;
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+function updateBuybackPhoneTitle(i){
+  const card=document.getElementById('buyback-phone-'+i); if(!card)return;
+  const p=data.buybackPhones[i];
+  const strong=card.querySelector('.buyback-phone-name-v5 strong');
+  const small=card.querySelector('.buyback-phone-name-v5 small');
+  if(strong) strong.textContent=p.name||'Nieuwe telefoon';
+  if(small) small.textContent=(p.brand||'')+' · '+(p.active?'Zichtbaar':'Verborgen');
 }
 
 function addBuybackPhone(){
