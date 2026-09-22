@@ -2202,7 +2202,15 @@ function renderBuybackQuestionOptions(q){
 function updateBuybackQuestion(id,key,value){
   const t=getBuybackType();const q=t&&t.questions.find(x=>x.id===id);if(!q)return;
   if(key==='required')q.required=!!value;
-  else if(key==='type'){q.type=value;q.options=value==='text'?[]:[{label:'Ja',priceDelta:0,active:true},{label:'Nee',priceDelta:-25,active:true}];}
+  else if(key==='type'){
+    q.type=value;
+    q.options=value==='text'?[]:[
+      {label:value==='yesno'?'Ja':'Optie 1',priceDelta:0,active:true},
+      {label:value==='yesno'?'Nee':'Optie 2',priceDelta:-25,active:true}
+    ];
+    if(value==='yesno' || value==='options') buybackQuestionOpenId=q.id;
+    else buybackQuestionOpenId='';
+  }
   else q[key]=value;
   markChanged();renderBuybackTypeSettings();
 }
@@ -2211,7 +2219,13 @@ function addBuybackQuestion(type){
   const t=getBuybackType();if(!t)return;
   const label=prompt('Naam van de vraag:','Nieuwe vraag');if(!label||!label.trim())return;
   t.questions=t.questions||[];
-  t.questions.push({id:newBuybackId("q"),label:label.trim(),type,required:true,options:type==='text'?[]:[{label:type==='yesno'?'Ja':'Optie 1',priceDelta:0,active:true},{label:type==='yesno'?'Nee':'Optie 2',priceDelta:-25,active:true}]});
+  const newQuestion={id:newBuybackId("q"),label:label.trim(),type,required:true,options:type==='text'?[]:[
+    {label:type==='yesno'?'Ja':'Optie 1',priceDelta:0,active:true},
+    {label:type==='yesno'?'Nee':'Optie 2',priceDelta:-25,active:true}
+  ]};
+  t.questions.push(newQuestion);
+  // Open the options immediately so Ja/Nee is visible without saving first.
+  buybackQuestionOpenId=type==='text'?'':newQuestion.id;
   markChanged();renderBuybackTypeSettings();
 }
 function deleteBuybackQuestion(id){
