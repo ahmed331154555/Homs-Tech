@@ -3,7 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Verkoop uw toestel | HOMS TECH</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Uw toestel verkopen | HOMS TECH</title>
 <style>
 :root{
   --navy:#071a2b;--navy2:#0c2740;--blue:#1677ff;--blue2:#4da3ff;
@@ -181,7 +184,7 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
 
 <section id="step1" class="panel forzastyle-panel">
   <div class="panel-head forzastyle-head">
-    <div><h2 id="chooseTitle">Welk toestel wilt u verkopen?</h2><p>Kies jouw apparaat. Daarna kies je het exacte model.</p></div>
+    <div><h2 id="chooseTitle">Welk toestel wilt u verkopen?</h2><p>Kies eerst een apparaatgroep. Daarna kies je het exacte model.</p></div>
   </div>
   <div class="forza-searchrow">
     <div class="searchbox"><span>⌕</span><input id="deviceSearch" class="field" placeholder="Zoek jouw apparaat..."></div>
@@ -261,7 +264,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
 function active(a){return Array.isArray(a)?a.filter(x=>x&&x.active!==false):[]}
 function imageFor(d){return d?.image?`<img src="${esc(d.image)}" alt="${esc(d.name||'')}">`:`<div class="phone-icon"></div>`}
 
-let selectedBrand='Alle merken',selectedType='Alle soorten';
+let selectedBrand='',selectedType='';
 
 function flattenBuybackCatalog(catalog){
   const out=[];
@@ -501,6 +504,18 @@ async function loadBuyback(){
   }catch(e){devices=[];categories();renderDevices()}
 }
 loadBuyback();
+
+// HOMS TECH FORZA V9: legacy filter UI is intentionally disabled.
+// This keeps the first screen as device-family cards -> model cards.
+function removeLegacySellFilters(){
+  const legacyLabels=['Alle merken','Alle soorten'];
+  document.querySelectorAll('button,a,span,div,label').forEach(el=>{
+    const t=(el.textContent||'').trim();
+    if(legacyLabels.includes(t)){ el.remove(); }
+  });
+}
+removeLegacySellFilters();
+new MutationObserver(removeLegacySellFilters).observe(document.body,{childList:true,subtree:true});
 </script>
 </body>
 </html>
