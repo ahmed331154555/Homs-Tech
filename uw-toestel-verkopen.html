@@ -143,7 +143,7 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
 .family-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:900px;margin:0 auto}
 .family-card{min-height:150px;border:1px solid #dfe6ee;border-radius:12px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 10px;cursor:pointer;transition:.18s;box-shadow:0 3px 12px rgba(7,26,43,.025)}
 .family-card:hover{border-color:#a9c9ee;box-shadow:0 12px 28px rgba(7,26,43,.09);transform:translateY(-2px)}
-.family-card .device-img{height:82px;width:88px;margin-bottom:9px}.family-card .device-img img{object-fit:contain}.family-card .device-name{font-size:12px;font-weight:850;color:#17283a}
+.family-card .device-img{height:82px;width:88px;margin-bottom:9px}.family-card .device-img img{object-fit:contain}.brand-img-wrap{display:grid;place-items:center}.brand-card-image{width:74px!important;height:74px!important;object-fit:contain!important;border-radius:12px}.brand-card-placeholder{font-size:16px;font-weight:900;color:#18324a;line-height:1.15;text-align:center;padding:8px}.family-card .device-name{font-size:12px;font-weight:850;color:#17283a}
 .family-card .device-price{font-size:9.5px;color:#8191a3;margin-top:4px}
 .family-back{border:0;background:transparent;color:#45596d;font-weight:800;padding:5px 0 14px;display:block}
 .model-header{max-width:900px;margin:0 auto 12px;align-items:center;justify-content:space-between}.model-header h3{margin:0;font-size:17px}.model-header p{margin:3px 0;color:#7b8da0;font-size:11px}
@@ -154,7 +154,7 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
 @media(max-width:850px){.family-grid,.device-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:620px){.sell-intro h1{font-size:28px}.family-grid,.device-grid{grid-template-columns:repeat(2,1fr)}.family-card{min-height:135px}.sell-search-result{padding:9px 11px}.sell-search-result .sr-price{font-size:9px;padding:5px 7px}}
 </style>
-<!-- HOMS TECH FORZA STYLE V12: language selector removed + visual card/search polish -->
+<!-- HOMS TECH FORZA STYLE V15: brand images + model images only -->
 </head>
 <body>
 
@@ -212,7 +212,6 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
     </div>
     <aside class="quote"><div><small>Totale prijs (geschat)</small><strong id="quote">€ 0,00</strong></div><button id="toStep3" class="primary blue">Ga verder →</button><ul><li>Gratis verzending</li><li>Snelle beoordeling</li><li>Directe uitbetaling</li></ul></aside>
   </div>
-  <div id="insidePhotoBox" class="inside-photo-box" style="display:none"><h4>🔧 Binnenkant van het toestel</h4><div id="insidePhoto" class="inside-photo"></div></div>
   <div class="two-col">
     <div class="box" style="grid-column:1/-1">
       <h3>Toestelgegevens</h3>
@@ -270,11 +269,6 @@ function imageFor(d){
   const src=d?.imageOutside||d?.image||'';
   return src?`<img src="${esc(src)}" alt="${esc(d.name||'')}">`:`<div class="phone-icon"></div>`;
 }
-function internalImageFor(d){
-  const src=d?.imageInside||'';
-  return src?`<img src="${esc(src)}" alt="${esc(d.name||'')} binnenkant">`:`<div class="phone-icon"></div>`;
-}
-
 let selectedBrand='',selectedType='';
 
 function flattenBuybackCatalog(catalog){
@@ -285,7 +279,7 @@ function flattenBuybackCatalog(catalog){
         const p=(siteData.buybackPhones||[]).find(x=>x.id===m.buybackId);
         if(p && p.active!==false){
           out.push({...p,brand:b.name,deviceType:t.name,typeId:t.id,typeName:t.name,brandId:b.id,modelId:m.id,
-            typeQuestions:Array.isArray(t.questions)?t.questions:[]});
+            typeQuestions:Array.isArray(t.questions)?t.questions:[],brandImage:b.image||b.brandImage||''});
         }
       });
     });
@@ -375,9 +369,11 @@ let selectedFamily='';
 
 function renderFamilyCard(family, arr){
   const sample=arr[0]||{};
+  const brandSrc=sample.brandImage||'';
   const min=Math.min(...arr.map(x=>Number(x.price||0)));
+  const visual=brandSrc?`<img src="${esc(brandSrc)}" alt="${esc(family)}" class="brand-card-image">`:`<div class="brand-card-placeholder">${esc(family)}</div>`;
   return `<button type="button" class="family-card" data-family="${esc(family)}">
-    <div class="device-img">${imageFor(sample)}</div>
+    <div class="device-img brand-img-wrap">${visual}</div>
     <div class="device-name">${esc(family)}</div>
     <div class="device-price">${arr.length} ${arr.length===1?'model':'modellen'} · vanaf ${money(min)}</div>
   </button>`;
@@ -452,11 +448,6 @@ function chooseDevice(d){
   $('modelName').textContent=d.name||'Toestel';
   $('modelSub').textContent=(d.brand||'')+' · '+(d.deviceType||'')+' · HOMS TECH inkoop';
   $('productImage').innerHTML=imageFor(d);
-  const insideBox=$('insidePhotoBox'), inside=$('insidePhoto');
-  if(insideBox&&inside){
-    if(d.imageInside){inside.innerHTML=internalImageFor(d);insideBox.style.display='block';}
-    else {inside.innerHTML='';insideBox.style.display='none';}
-  }
   // Set the first active option for every question, so the estimate is immediately visible.
   (selectedModel.typeQuestions||[]).forEach(q=>{
     const opts=active(q.options);
