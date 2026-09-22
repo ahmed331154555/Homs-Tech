@@ -2648,24 +2648,32 @@ async function deleteBuybackOrder(id){
 async function showBuybackDetails(id){
   try{
     const response=await fetch("/api/admin/buyback-orders",{credentials:"same-origin"});
-    const result=await response.json();
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok) throw new Error(result.error||"Verkoopaanvraag kon niet worden geladen.");
     const order=(result.orders||[]).find(x=>Number(x.id)===Number(id));
-    if(!order)throw new Error("Verkoopaanvraag niet gevonden.");
-    alert(
-      "Aanvraag #"+order.id+
-      "\\n\\nKlant: "+(order.name||"-")+
-      "\\nE-mail: "+(order.email||"-")+
-      "\\nTelefoon: "+(order.phone||"-")+
-      "\\nAdres: "+(order.address||"-")+
-      "\\n\\nToestel: "+(order.device||"-")+
-      "\\nOpslag: "+(order.storage||"-")+
-      "\\nConditie: "+(order.condition||"-")+
-      "\\nFace ID: "+(order.face_id||"-")+
-      "\\nBatterij: "+(order.battery||"-")+
-      "\\nScherm: "+(order.screen||"-")+
-      "\\n\\nPrijs: € "+Number(order.offered_price||0).toFixed(2)+
-      "\\nStatus: "+(order.status||"-")
-    );
+    if(!order) throw new Error("Verkoopaanvraag niet gevonden.");
+
+    const price=Number(order.offered_price||0).toFixed(2).replace('.',',');
+    showOrderDetails("Verkoopaanvraag #"+(order.order_no||order.id), {
+      "Ordernummer": order.order_no || ("BT-"+order.id),
+      "Datum": order.created_at ? new Date(order.created_at).toLocaleString("nl-NL") : "-",
+      "Status": order.status || "-",
+      "Klant": order.name || "-",
+      "E-mail": order.email || "-",
+      "Telefoon": order.phone || "-",
+      "Adres": order.address || "-",
+      "Toestel": order.device || "-",
+      "Merk": order.brand || "-",
+      "Model": order.model || "-",
+      "Opslag": order.storage || "-",
+      "Conditie": order.condition || "-",
+      "Face ID": order.face_id || "-",
+      "Batterij": order.battery || "-",
+      "Scherm": order.screen || "-",
+      "Aangeboden prijs": "€ " + price,
+      "Betaalmethode": order.payment_method || "-",
+      "IBAN": order.iban || "-"
+    });
   }catch(error){alert(error.message)}
 }
 
