@@ -106,7 +106,21 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
 @keyframes htMarqueeOneWay{from{transform:translateX(0)}to{transform:translateX(-100%)}}
 @media(max-width:700px){.ht-topbar,.topbar{height:38px!important}.ht-marquee,.top-info{gap:28px!important;animation-duration:24s!important}.ht-marquee-track{gap:28px!important}.ht-marquee-item,.top-info span{font-size:13px!important}}
 @media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
-</style></head>
+</style><style id="homs-buyback-hierarchy-public">
+.bb-public-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.bb-public-tabs button{border:1px solid #dbe5ef;background:#fff;color:#17324a;border-radius:12px;padding:10px 16px;font-weight:800;cursor:pointer}.bb-public-tabs button.active{background:#2563eb;color:#fff;border-color:#2563eb}.bb-public-types{margin-top:4px}.bb-public-types:empty{display:none}
+
+.dynamic-questions{display:grid;gap:16px;margin-top:15px}
+.dynamic-question{border:1px solid #e5e7eb;border-radius:16px;padding:16px;background:#fff}
+.dynamic-question-title{font-weight:800;font-size:15px;margin-bottom:10px}
+.dynamic-question-required{color:#dc2626;margin-left:4px}
+.dynamic-option-grid{display:flex;flex-wrap:wrap;gap:9px}
+.dynamic-option{border:1px solid #dbe3ec;background:#fff;border-radius:12px;padding:11px 14px;cursor:pointer;font-weight:750;min-width:110px;text-align:left}
+.dynamic-option.active{border-color:#1677ff;background:#eff6ff;box-shadow:0 0 0 2px rgba(22,119,255,.08)}
+.dynamic-option .delta{display:block;font-size:12px;color:#64748b;margin-top:3px;font-weight:650}
+.dynamic-text{width:100%;min-height:90px;resize:vertical;border:1px solid #dbe3ec;border-radius:12px;padding:12px;font:inherit}
+.dynamic-select{width:100%;border:1px solid #dbe3ec;border-radius:12px;padding:12px;background:#fff;font:inherit}
+</style>
+</head>
 <body>
 
 <div class="topbar"><div class="wrap"><div class="top-info"><span>1 jaar garantie</span><span>Snel geleverd</span><span>Betrouwbare service</span><span>Betaalbare prijzen</span></div></div></div>
@@ -143,7 +157,9 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
 
 <section id="step1" class="panel">
   <div class="panel-head"><div><h2>Welk toestel wilt u verkopen?</h2><p>Kies het toestel dat u wilt verkopen of inruilen.</p></div></div>
-  <div class="searchrow"><input id="deviceSearch" class="field" placeholder="Zoek op model, bijvoorbeeld iPhone 17..."><select id="category" class="field"><option>Alle categorieën</option></select></div>
+  <div class="searchrow"><input id="deviceSearch" class="field" placeholder="Zoek op model, bijvoorbeeld S25 of iPhone 17..."></div>
+  <div id="brandTabs" class="bb-public-tabs"></div>
+  <div id="typeTabs" class="bb-public-tabs bb-public-types"></div>
   <div id="deviceGrid" class="device-grid"></div>
 </section>
 
@@ -158,21 +174,20 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
     <aside class="quote"><div><small>Totale prijs (geschat)</small><strong id="quote">€ 0,00</strong></div><button id="toStep3" class="primary blue">Ga verder →</button><ul><li>Gratis verzending</li><li>Snelle beoordeling</li><li>Directe uitbetaling</li></ul></aside>
   </div>
   <div class="two-col">
-    <div class="box"><h3>Extra specificaties</h3>
-      <div class="extra-row"><div class="name">Face ID</div><select id="faceId" class="field"></select></div>
-      <div class="extra-row"><div class="name">Batterijconditie</div><select id="batteryLevel" class="field"></select></div>
-      <div class="extra-row"><div class="name">Scherm</div><select id="screenState" class="field"></select></div>
+    <div class="box" style="grid-column:1/-1">
+      <h3>Toestelgegevens</h3>
+      <p class="small" style="color:#64748b;margin-top:-4px">De vragen hieronder worden automatisch bepaald door HOMS TECH op basis van het gekozen merk en type apparaat.</p>
+      <div id="dynamicQuestions" class="dynamic-questions"></div>
     </div>
-    <div class="box"><h3>Prijstrend van dit device</h3><div class="chart"><svg viewBox="0 0 600 230" preserveAspectRatio="none"><defs><linearGradient id="fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#1677ff" stop-opacity=".18"/><stop offset="1" stop-color="#1677ff" stop-opacity="0"/></linearGradient></defs><path d="M20 75 C150 72 180 72 250 78 C320 85 320 155 400 166 C460 174 520 165 580 166 L580 230 L20 230Z" fill="url(#fill)"/><path d="M20 75 C150 72 180 72 250 78 C320 85 320 155 400 166 C460 174 520 165 580 166" fill="none" stroke="#1677ff" stroke-width="4"/><circle cx="245" cy="78" r="7" fill="#1677ff"/><circle cx="470" cy="169" r="7" fill="#1677ff"/><text x="205" y="205" font-size="13" fill="#64748b">Huidige waarde</text><text x="420" y="205" font-size="13" fill="#64748b">Volgende periode</text></svg></div></div>
+    <div class="box" style="grid-column:1/-1">
+      <h3>Controle van uw toestel</h3>
+      <ul>
+        <li><span class="bullet">✓</span> Het toestel wordt gecontroleerd op werking en uiterlijke staat.</li>
+        <li><span class="bullet">✓</span> Account- en vergrendelingsbeveiliging moet zijn uitgeschakeld.</li>
+        <li><span class="bullet">✓</span> De definitieve waarde wordt na controle bevestigd.</li>
+      </ul>
+    </div>
   </div>
-  <div class="box checks"><h3>Controle van uw toestel</h3><ul>
-    <li><span class="bullet">✓</span> Het toestel werkt goed en kan normaal worden getest.</li>
-    <li><span class="bullet">✓</span> Scherm en behuizing worden gecontroleerd op krassen en deuken.</li>
-    <li><span class="bullet">✓</span> Het toestel is niet gebogen en heeft geen waterschade.</li>
-    <li><span class="bullet">✓</span> Zoek mijn iPhone / accountbeveiliging moet zijn uitgeschakeld.</li>
-  </ul>
-  <div style="margin-top:20px"><b>Werken alle functies van uw iPhone goed?</b><div class="radio-row"><label class="radio"><input type="radio" name="works" value="yes" checked> Ja</label><label class="radio"><input type="radio" name="works" value="no"> Nee</label></div></div>
-  <div style="margin-top:20px"><b>Is de batterijcapaciteit minimaal 85%?</b><div class="radio-row"><label class="radio"><input type="radio" name="battery85" value="yes" checked> Ja</label><label class="radio"><input type="radio" name="battery85" value="no"> Nee</label></div></div></div>
   <div class="totalbar"><div class="total"><small>Totaal geschatte waarde</small><strong id="bottomTotal">€ 0,00</strong></div><div></div><button id="toCheckout" class="primary">Bevestig en ga verder →</button></div>
 </section>
 
@@ -206,79 +221,193 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
 </div><div class="copy">© HOMS TECH — Uw toestel, onze zorg.</div></div></footer>
 
 <script>
-let devices=[],selected=null,selectedModel=null,selectedCondition='',pay='money',siteData={};
+let devices=[],selected=null,selectedModel=null,selectedCondition='',pay='money',siteData={},buybackAnswers={};
 const $=id=>document.getElementById(id);
 const money=n=>new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(Number(n||0));
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function active(a){return Array.isArray(a)?a.filter(x=>x&&x.active!==false):[]}
 function imageFor(d){return d?.image?`<img src="${esc(d.image)}" alt="${esc(d.name||'')}">`:`<div class="phone-icon"></div>`}
+
+let selectedBrand='Alle merken',selectedType='Alle soorten';
+
+function flattenBuybackCatalog(catalog){
+  const out=[];
+  (Array.isArray(catalog)?catalog:[]).forEach(b=>{
+    (b.types||[]).forEach(t=>{
+      (t.models||[]).forEach(m=>{
+        const p=(siteData.buybackPhones||[]).find(x=>x.id===m.buybackId);
+        if(p && p.active!==false){
+          out.push({...p,brand:b.name,deviceType:t.name,typeId:t.id,typeName:t.name,brandId:b.id,modelId:m.id,
+            typeQuestions:Array.isArray(t.questions)?t.questions:[]});
+        }
+      });
+    });
+  });
+  return out;
+}
+
+function getQuestionDelta(qId,label){
+  const q=(selectedModel?.typeQuestions||[]).find(x=>x.id===qId);
+  const o=active(q?.options).find(x=>x.label===label);
+  return Number(o?.priceDelta||0);
+}
+function questionValue(q){return buybackAnswers[q.id]??''}
+function setQuestionValue(qid,value){
+  buybackAnswers[qid]=value;
+  renderDynamicQuestions();
+  calcQuote();
+}
+function renderQuestion(q){
+  const opts=active(q.options);
+  const val=questionValue(q);
+  const required=q.required!==false;
+  if(q.type==='text'){
+    return `<div class="dynamic-question">
+      <div class="dynamic-question-title">${esc(q.label)}${required?'<span class="dynamic-question-required">*</span>':''}</div>
+      <textarea class="dynamic-text" placeholder="${esc(q.label)}" oninput="buybackAnswers['${esc(q.id)}']=this.value;calcQuote()">${esc(val)}</textarea>
+    </div>`;
+  }
+  if(q.type==='yesno' || q.type==='options'){
+    if(!opts.length)return '';
+    return `<div class="dynamic-question">
+      <div class="dynamic-question-title">${esc(q.label)}${required?'<span class="dynamic-question-required">*</span>':''}</div>
+      <div class="dynamic-option-grid">${opts.map(o=>{
+        const activeNow=val===o.label;
+        const delta=Number(o.priceDelta||0);
+        return `<button type="button" class="dynamic-option ${activeNow?'active':''}" onclick="setQuestionValue('${esc(q.id)}','${esc(o.label)}')">
+          ${esc(o.label)}${delta?`<span class="delta">${delta>0?'+':''}${money(delta)}</span>`:''}
+        </button>`;
+      }).join('')}</div>
+    </div>`;
+  }
+  return '';
+}
+function renderDynamicQuestions(){
+  const box=$('dynamicQuestions'); if(!box)return;
+  const qs=Array.isArray(selectedModel?.typeQuestions)?selectedModel.typeQuestions:[];
+  if(!qs.length){box.innerHTML='<div style="padding:14px;background:#f8fafc;border-radius:12px;color:#64748b">Voor dit type zijn nog geen extra vragen ingesteld.</div>';return;}
+  box.innerHTML=qs.map(renderQuestion).join('');
+}
+function validateDynamicQuestions(){
+  const qs=selectedModel?.typeQuestions||[];
+  const missing=qs.find(q=>q.required!==false && !String(questionValue(q)).trim());
+  if(missing){alert('Kies of vul eerst in: '+missing.label);return false;}
+  return true;
+}
+function firstAnswerByLabel(words){
+  const qs=selectedModel?.typeQuestions||[];
+  for(const q of qs){
+    const label=String(q.label||'').toLowerCase();
+    if(words.some(w=>label.includes(w))) return questionValue(q)||'';
+  }
+  return '';
+}
 function categories(){
-  const cats=[...new Set(devices.map(x=>x.brand||x.cat||'Overig'))].filter(Boolean);
-  $('category').innerHTML='<option>Alle categorieën</option>'+cats.map(c=>`<option>${esc(c)}</option>`).join('');
+  const brands=[...new Set(devices.map(x=>x.brand||'Overig'))].filter(Boolean);
+  $('brandTabs').innerHTML=['Alle merken',...brands].map(b=>`<button type="button" class="${b===selectedBrand?'active':''}" data-brand="${esc(b)}">${esc(b)}</button>`).join('');
+  document.querySelectorAll('#brandTabs button').forEach(b=>b.onclick=()=>{selectedBrand=b.dataset.brand;selectedType='Alle soorten';categories();renderDevices()});
+  const byBrand=selectedBrand==='Alle merken'?devices:devices.filter(d=>(d.brand||'Overig')===selectedBrand);
+  const types=[...new Set(byBrand.map(x=>x.deviceType||x.type||'Telefoon'))].filter(Boolean);
+  $('typeTabs').innerHTML=(types.length?['Alle soorten',...types]:[]).map(t=>`<button type="button" class="${t===selectedType?'active':''}" data-type="${esc(t)}">${esc(t)}</button>`).join('');
+  document.querySelectorAll('#typeTabs button').forEach(b=>b.onclick=()=>{selectedType=b.dataset.type;categories();renderDevices()});
 }
 function renderDevices(){
-  const q=$('deviceSearch').value.toLowerCase(),cat=$('category').value;
-  const arr=devices.filter(d=>(cat==='Alle categorieën'||(d.brand||d.cat||'Overig')===cat)&&(!q||String(d.name||'').toLowerCase().includes(q)));
-  $('deviceGrid').innerHTML=arr.length?arr.map((d,i)=>`<button class="device" data-i="${devices.indexOf(d)}"><div class="device-img">${imageFor(d)}</div><div class="device-name">${esc(d.name)}</div><div class="device-price">vanaf ${money(d.price)}</div></button>`).join(''):'<div style="grid-column:1/-1;padding:40px;text-align:center;color:#64748b">Geen toestellen gevonden.</div>';
+  const q=$('deviceSearch').value.toLowerCase();
+  const arr=devices.filter(d=>{
+    const brand=d.brand||'Overig',type=d.deviceType||d.type||'Telefoon';
+    return (selectedBrand==='Alle merken'||brand===selectedBrand)&&(selectedType==='Alle soorten'||type===selectedType)&&(!q||String(d.name||'').toLowerCase().includes(q)||brand.toLowerCase().includes(q)||type.toLowerCase().includes(q));
+  });
+  $('deviceGrid').innerHTML=arr.length?arr.map(d=>`<button class="device" data-i="${devices.indexOf(d)}"><div class="device-img">${imageFor(d)}</div><div class="device-name">${esc(d.name)}</div><div class="device-price">${esc(d.brand||'')} · ${esc(d.deviceType||d.type||'Telefoon')} · vanaf ${money(d.price)}</div></button>`).join(''):'<div style="grid-column:1/-1;padding:40px;text-align:center;color:#64748b">Geen toestellen gevonden.</div>';
   document.querySelectorAll('#deviceGrid .device').forEach(el=>el.onclick=()=>chooseDevice(devices[+el.dataset.i]));
 }
 function chooseDevice(d){
-  selected=d;
-  selectedModel={...d,base:Number(d.price||0),storage:''};
+  selected=d; buybackAnswers={};
+  selectedModel={...d,base:Number(d.price||0),storage:'',typeQuestions:Array.isArray(d.typeQuestions)?d.typeQuestions:[]};
   $('modelName').textContent=d.name||'Toestel';
-  $('modelSub').textContent=(d.brand||'')+' · HOMS TECH inkoop';
+  $('modelSub').textContent=(d.brand||'')+' · '+(d.deviceType||'')+' · HOMS TECH inkoop';
   $('productImage').innerHTML=imageFor(d);
-  const opts=active(d.storageOptions);
-  $('storage').innerHTML=(opts.length?opts:[{label:'Standaard',priceDelta:0}]).map((x,i)=>`<button class="${i===0?'active':''}" data-storage="${esc(x.label)}" data-delta="${Number(x.priceDelta||0)}">${esc(x.label)}</button>`).join('');
-  document.querySelectorAll('#storage button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#storage button').forEach(x=>x.classList.remove('active'));b.classList.add('active');selectedModel={...selected,base:Number(selected.price||0)+Number(b.dataset.delta||0),storage:b.dataset.storage};updateCondition();calcQuote()});
-  if(opts.length)selectedModel={...d,base:Number(d.price||0)+Number(opts[0].priceDelta||0),storage:opts[0].label};
-  fillExtras();updateCondition();go(2);
-}
-function fillExtras(){
-  const sets=[['faceId',selected?.faceIdOptions,'Face ID'],['batteryLevel',selected?.batteryOptions,'Batterij'],['screenState',selected?.screenOptions,'Scherm']];
-  sets.forEach(([id,a,title])=>{const el=$(id);const vals=active(a);el.innerHTML=`<option value="">${title} kiezen</option>`+vals.map(x=>`<option value="${esc(x.label)}" data-delta="${Number(x.priceDelta||0)}">${esc(x.label)}</option>`).join('');el.onchange=()=>calcQuote()});
-}
-function updateCondition(){
-  const states=active(selected?.conditionOptions);
-  const arr=states.length?states:[{label:'Zo goed als nieuw',priceDelta:0}];
-  selectedCondition=arr[0].label;
-  $('conditionGrid').innerHTML=arr.map((x,i)=>`<button class="condition ${i===0?'selected':''}" data-v="${esc(x.label)}" data-delta="${Number(x.priceDelta||0)}"><strong>${esc(x.label)}</strong><span>${money(Math.max(0,Number(selectedModel.base)+Number(x.priceDelta||0)))}</span></button>`).join('');
-  document.querySelectorAll('#conditionGrid .condition').forEach(b=>b.onclick=()=>{selectedCondition=b.dataset.v;document.querySelectorAll('#conditionGrid .condition').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');calcQuote()});
+  renderDynamicQuestions();
+  // Set the first active option for every question, so the estimate is immediately visible.
+  (selectedModel.typeQuestions||[]).forEach(q=>{
+    const opts=active(q.options);
+    if(q.type!=='text' && opts.length) buybackAnswers[q.id]=opts[0].label;
+  });
+  renderDynamicQuestions();
   calcQuote();
+  go(2);
 }
-function delta(arr,label){const x=active(arr).find(o=>o.label===label);return Number(x?.priceDelta||0)}
 function calcQuote(){
   if(!selectedModel)return 0;
-  let v=Number(selectedModel.base||0)+delta(selected.conditionOptions,selectedCondition);
-  v+=delta(selected.faceIdOptions,$('faceId').value);v+=delta(selected.batteryOptions,$('batteryLevel').value);v+=delta(selected.screenOptions,$('screenState').value);
-  if(document.querySelector('input[name="works"]:checked')?.value==='no')v*=.55;
-  if(document.querySelector('input[name="battery85"]:checked')?.value==='no')v-=25;
-  v=Math.max(0,Math.round(v/5)*5);$('quote').textContent=money(v);$('bottomTotal').textContent=money(v);return v;
+  let v=Number(selectedModel.base||0);
+  (selectedModel.typeQuestions||[]).forEach(q=>{
+    if(q.type==='text')return;
+    const val=questionValue(q);
+    v+=getQuestionDelta(q.id,val);
+  });
+  v=Math.max(0,Math.round(v/5)*5);
+  const credit=$('cMethod')?.value?.includes('tegoed');
+  const display=credit?v*1.10:v;
+  $('quote').textContent=money(display);
+  $('bottomTotal').textContent=money(display);
+  return v;
 }
 function go(n){
-  [1,2,3,4].forEach(i=>$('step'+i).style.display=i===n?(i===4?'block':'block'):'none');
+  [1,2,3,4].forEach(i=>$('step'+i).style.display=i===n?'block':'none');
   for(let i=1;i<=4;i++)$('d'+i).className='sdot '+(n>=i?'active':'');
   for(let i=1;i<=3;i++)$('l'+i).className='sline '+(n>i?'active':'');
   window.scrollTo({top:document.querySelector('.hero').offsetTop-10,behavior:'smooth'});
 }
-$('toStep3').onclick=()=>go(3);
-$('toCheckout').onclick=()=>{if(!selectedModel)return;const v=calcQuote();$('sumDevice').textContent=selectedModel.name+' '+(selectedModel.storage||'');$('sumCondition').textContent=selectedCondition||'—';$('sumFace').textContent=$('faceId').value||'—';$('sumBattery').textContent=$('batteryLevel').value||'—';$('sumScreen').textContent=$('screenState').value||'—';$('sumPrice').textContent=money(v);$('sumMethod').textContent=$('cMethod').value;go(3)};
+$('toStep3').onclick=()=>{if(!validateDynamicQuestions())return;go(3)};
+$('toCheckout').onclick=()=>{
+  if(!selectedModel||!validateDynamicQuestions())return;
+  const v=calcQuote();
+  $('sumDevice').textContent=selectedModel.name||'—';
+  $('sumCondition').textContent=firstAnswerByLabel(['conditie','staat'])||'—';
+  $('sumFace').textContent=firstAnswerByLabel(['face id'])||'—';
+  $('sumBattery').textContent=firstAnswerByLabel(['batterij'])||'—';
+  $('sumScreen').textContent=firstAnswerByLabel(['scherm'])||'—';
+  $('sumPrice').textContent=money($('cMethod').value.includes('tegoed')?v*1.10:v);
+  $('sumMethod').textContent=$('cMethod').value;
+  go(3);
+};
 $('back1').onclick=()=>go(1);$('back2').onclick=()=>go(2);
 $('cMethod').onchange=()=>{const v=calcQuote();$('sumMethod').textContent=$('cMethod').value;$('sumPrice').textContent=money($('cMethod').value.includes('tegoed')?v*1.10:v)};
 $('finish').onclick=async()=>{
   if(!$('cName').value.trim()||!$('cEmail').value.trim()||!$('agree').checked){alert('Vul uw naam en e-mailadres in en accepteer de voorwaarden.');return}
+  if(!validateDynamicQuestions())return;
   const btn=$('finish'),old=btn.textContent;btn.disabled=true;btn.textContent='Aanvraag wordt verzonden...';
   try{
     const v=calcQuote(),credit=$('cMethod').value.includes('tegoed'),offer=credit?v*1.10:v;
-    const payload={name:$('cName').value.trim(),email:$('cEmail').value.trim(),phone:$('cPhone').value.trim(),address:[$('cAddress').value.trim(),$('cZip').value.trim(),$('cCity').value.trim()].filter(Boolean).join(', '),device:selectedModel.name||'',brand:selectedModel.brand||'',model:selectedModel.name||'',storage:selectedModel.storage||'',condition:selectedCondition||'',faceId:$('faceId').value||'',battery:$('batteryLevel').value||'',screen:$('screenState').value||'',offeredPrice:Number(offer.toFixed(2)),iban:$('cIban').value.trim(),paymentMethod:$('cMethod').value};
-    const r=await fetch('/api/buyback/orders',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(payload)});const j=await r.json().catch(()=>({}));if(!r.ok||(!j.ok&&!j.success))throw new Error(j.error||'Kon de aanvraag niet verzenden.');
+    const answers={};
+    (selectedModel.typeQuestions||[]).forEach(q=>answers[q.id]={question:q.label,value:questionValue(q),type:q.type});
+    const payload={
+      name:$('cName').value.trim(),email:$('cEmail').value.trim(),phone:$('cPhone').value.trim(),
+      address:[$('cAddress').value.trim(),$('cZip').value.trim(),$('cCity').value.trim()].filter(Boolean).join(', '),
+      device:selectedModel.name||'',brand:selectedModel.brand||'',model:selectedModel.name||'',storage:firstAnswerByLabel(['opslag'])||'',
+      condition:firstAnswerByLabel(['conditie','staat'])||'',faceId:firstAnswerByLabel(['face id'])||'',
+      battery:firstAnswerByLabel(['batterij'])||'',screen:firstAnswerByLabel(['scherm'])||'',
+      offeredPrice:Number(offer.toFixed(2)),iban:$('cIban').value.trim(),paymentMethod:$('cMethod').value,
+      answers,deviceType:selectedModel.deviceType||selectedModel.typeName||''
+    };
+    const r=await fetch('/api/buyback/orders',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(payload)});
+    const j=await r.json().catch(()=>({}));if(!r.ok||(!j.ok&&!j.success))throw new Error(j.error||'Kon de aanvraag niet verzenden.');
     go(4);
   }catch(e){console.error(e);alert(e.message||'Er ging iets mis bij het verzenden.')}finally{btn.disabled=false;btn.textContent=old}
 };
-document.querySelectorAll('input[name="works"],input[name="battery85"]').forEach(x=>x.onchange=calcQuote);
-$('deviceSearch').oninput=renderDevices;$('category').onchange=renderDevices;
+$('deviceSearch').oninput=renderDevices;
 $('siteSearch').onkeydown=e=>{if(e.key==='Enter'&&e.target.value.trim())location.href='devices.html?search='+encodeURIComponent(e.target.value.trim())};
-async function loadBuyback(){try{const r=await fetch('/api/site');if(!r.ok)throw 0;siteData=await r.json();devices=(Array.isArray(siteData.buybackPhones)?siteData.buybackPhones:[]).filter(x=>x.active!==false);categories();renderDevices()}catch(e){devices=[];categories();renderDevices()}}
+async function loadBuyback(){
+  try{
+    const r=await fetch('/api/site');if(!r.ok)throw 0;
+    siteData=await r.json();
+    const catalog=Array.isArray(siteData.buybackCatalog)?siteData.buybackCatalog:[];
+    devices=flattenBuybackCatalog(catalog);
+    if(!devices.length){
+      devices=(Array.isArray(siteData.buybackPhones)?siteData.buybackPhones:[]).filter(x=>x.active!==false).map(x=>({...x,typeQuestions:[]}));
+    }
+    categories();renderDevices();
+  }catch(e){devices=[];categories();renderDevices()}
+}
 loadBuyback();
 </script>
 </body>

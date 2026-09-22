@@ -1057,6 +1057,8 @@ async function ensureBuybackOrdersTable() {
       offered_price NUMERIC(12,2) NOT NULL DEFAULT 0,
       iban TEXT DEFAULT '',
       payment_method TEXT DEFAULT '',
+      answers JSONB NOT NULL DEFAULT '{}'::jsonb,
+      device_type TEXT DEFAULT '',
       status TEXT NOT NULL DEFAULT 'Nieuw',
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
@@ -1067,6 +1069,8 @@ async function ensureBuybackOrdersTable() {
   await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS model TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS iban TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS answers JSONB NOT NULL DEFAULT '{}'::jsonb`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS device_type TEXT DEFAULT ''`);
   await pool.query(`UPDATE buyback_orders SET order_no = 'BT-LEGACY-' || id WHERE order_no IS NULL`);
   await pool.query(`ALTER TABLE buyback_orders ALTER COLUMN order_no SET NOT NULL`);
 }
@@ -1091,8 +1095,8 @@ app.post("/api/buyback/orders", async (req, res) => {
 
     const result = await pool.query(`
       INSERT INTO buyback_orders
-      (order_no,name,email,phone,address,device,brand,model,storage,condition,face_id,battery,screen,offered_price,iban,payment_method,status)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,'Nieuw')
+      (order_no,name,email,phone,address,device,brand,model,storage,condition,face_id,battery,screen,offered_price,iban,payment_method,answers,device_type,status)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,'Nieuw')
       RETURNING id,order_no,status,created_at
     `, [
       orderNo,
@@ -1109,7 +1113,9 @@ app.post("/api/buyback/orders", async (req, res) => {
       String(b.screen || "").trim(),
       offeredPrice,
       String(b.iban || "").trim(),
-      String(b.paymentMethod || "").trim()
+      String(b.paymentMethod || "").trim(),
+      JSON.stringify((b.answers && typeof b.answers === "object" && !Array.isArray(b.answers)) ? b.answers : {}),
+      String(b.deviceType || "").trim()
     ]);
 
     res.status(201).json({ success: true, order: result.rows[0] });

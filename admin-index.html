@@ -1,0 +1,3337 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HOMS TECH - Admin</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#f4f7fb;
+  color:#172033;
+}
+
+button,input,textarea,select{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+.topbar{
+  background:#111827;
+  color:white;
+  padding:18px 25px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  position:sticky;
+  top:0;
+  z-index:20;
+}
+
+.logo{
+  font-size:23px;
+  font-weight:800;
+  letter-spacing:.5px;
+}
+
+.logo span{
+  color:#25d366;
+}
+
+.container{
+  max-width:1150px;
+  margin:30px auto;
+  padding:0 18px;
+}
+
+.login{
+  max-width:430px;
+  margin:70px auto;
+  background:white;
+  padding:30px;
+  border-radius:18px;
+  box-shadow:0 10px 35px rgba(0,0,0,.08);
+}
+
+.login h1{
+  margin-top:0;
+}
+
+.field{
+  margin-bottom:16px;
+}
+
+.field label{
+  display:block;
+  font-weight:700;
+  margin-bottom:7px;
+}
+
+.field input,
+.field textarea,
+.field select{
+  width:100%;
+  padding:12px 13px;
+  border:1px solid #d7deea;
+  border-radius:10px;
+  background:white;
+  outline:none;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus{
+  border-color:#25d366;
+}
+
+textarea{
+  min-height:100px;
+  resize:vertical;
+}
+
+.btn{
+  border:0;
+  border-radius:10px;
+  padding:11px 17px;
+  font-weight:700;
+}
+
+.btn-green{
+  background:#25d366;
+  color:white;
+}
+
+.btn-dark{
+  background:#111827;
+  color:white;
+}
+
+.btn-red{
+  background:#ef4444;
+  color:white;
+}
+
+.btn-light{
+  background:#eef2f7;
+  color:#172033;
+}
+
+.dashboard{
+  display:none;
+}
+
+.admin-nav{
+  display:none;
+  background:#fff;
+  border-bottom:1px solid #e5eaf1;
+  box-shadow:0 3px 15px rgba(0,0,0,.05);
+  position:sticky;
+  top:69px;
+  z-index:40;
+}
+
+.admin-nav-inner{
+  max-width:1150px;
+  margin:auto;
+  padding:10px 18px;
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+}
+
+.nav-btn{
+  border:0;
+  background:#f1f5f9;
+  color:#334155;
+  padding:11px 16px;
+  border-radius:10px;
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.nav-btn.active{
+  background:#25d366;
+  color:#fff;
+}
+
+.admin-page{
+  display:none;
+}
+
+.admin-page.active{
+  display:block;
+}
+
+.section{
+  background:white;
+  border-radius:18px;
+  padding:24px;
+  margin-bottom:22px;
+  box-shadow:0 7px 25px rgba(0,0,0,.06);
+}
+
+.section-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  margin-bottom:20px;
+  border-bottom:1px solid #edf0f5;
+  padding-bottom:15px;
+}
+
+.section-head h2{
+  margin:0;
+  font-size:21px;
+}
+
+.section-head p{
+  margin:5px 0 0;
+  color:#718096;
+  font-size:14px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:16px;
+}
+
+.card{
+  border:1px solid #e5eaf1;
+  border-radius:14px;
+  padding:17px;
+  background:#fbfcfe;
+  margin-bottom:14px;
+}
+
+.card-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:15px;
+}
+
+.card-title{
+  font-weight:800;
+  font-size:16px;
+}
+
+.actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.service-card,
+.why-card,
+.device-card,
+.used-card{
+  background:#fff;
+  position:relative;
+}
+
+/* ترتيب البطاقات جنب بعض */
+#servicesList,
+#phonesList,
+#usedPhonesList,
+#whyList{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:18px;
+}
+
+/* البطاقة */
+#servicesList .card,
+#phonesList .card,
+#usedPhonesList .card,
+#whyList .card{
+  margin-bottom:0;
+  min-width:0;
+}
+
+/* ترتيب بطاقات الهواتف المستعملة */
+#usedPhonesList .used-card{
+  grid-column:span 1;
+}
+
+/* على الشاشات الصغيرة */
+
+
+/* Modern orders dashboard */
+.orders-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 18px}
+.orders-search{flex:1 1 360px;position:relative}
+.orders-search input{width:100%;padding:13px 15px 13px 42px;border:1px solid #dbe3ee;border-radius:12px;background:#fff;outline:none;box-shadow:0 2px 8px rgba(15,23,42,.03)}
+.orders-search input:focus{border-color:#25d366;box-shadow:0 0 0 3px rgba(37,211,102,.12)}
+.orders-search:before{content:'🔎';position:absolute;left:14px;top:11px;font-size:18px;z-index:1}
+.order-filter{padding:12px 13px;border:1px solid #dbe3ee;border-radius:12px;background:#fff;min-width:155px;font-weight:700;color:#334155}
+.order-filter-btn{border:0;border-radius:12px;padding:12px 16px;background:#eef2f7;color:#172033;font-weight:800}
+.order-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.order-stat{border:1px solid #e6ebf2;border-radius:14px;padding:14px 16px;background:linear-gradient(180deg,#fff,#f8fafc)}
+.order-stat b{display:block;font-size:22px;margin-bottom:3px}.order-stat span{font-size:12px;color:#64748b;font-weight:700}
+.order-card{padding:0;overflow:hidden;border-radius:15px;border:1px solid #e4e9f0;box-shadow:0 3px 13px rgba(15,23,42,.045)}
+.order-card-head{padding:15px 17px 13px;margin:0;border-bottom:1px solid #eef2f7;background:#fff}
+.order-main{padding:14px 17px 16px}
+.order-title{font-size:15px;line-height:1.35}.order-meta{font-size:12px;color:#64748b;margin-top:5px}
+.order-actions{display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.order-actions .btn{padding:9px 12px;border-radius:9px;font-size:13px}
+.order-status-select{min-width:145px;padding:9px 10px;border-radius:9px}
+.order-info{background:#f8fafc;border:1px solid #edf1f5;padding:9px 11px}
+.order-info strong{font-size:10px;letter-spacing:.35px}
+.webshop-order-items{margin-top:12px;padding:12px;background:#fbfcfe;border:1px solid #edf1f5;border-radius:12px}
+.webshop-order-address{margin-top:12px;padding:11px 12px;background:#f8fafc;border-radius:10px;font-size:13px}
+.order-count{margin:0 0 10px;color:#64748b;font-size:13px;font-weight:700}
+@media(max-width:900px){.order-summary{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:550px){.order-summary{grid-template-columns:1fr}.orders-toolbar{align-items:stretch}.order-filter,.order-filter-btn{width:100%}.order-actions{justify-content:flex-start}.order-actions .btn,.order-status-select{flex:1}.order-main{padding:12px}.order-card-head{padding:13px 12px}}
+
+.orders-list{display:flex;flex-direction:column;gap:12px}
+.order-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px 18px;box-shadow:0 4px 15px rgba(15,23,42,.05)}
+.order-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;border-bottom:1px solid #eef2f7;padding-bottom:12px;margin-bottom:12px}
+.order-title{font-weight:900;font-size:16px;color:#172033}
+.order-meta{font-size:12px;color:#64748b;margin-top:3px}
+.order-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;font-size:13px}
+.order-info{background:#f8fafc;border-radius:9px;padding:10px}
+.order-info strong{display:block;font-size:11px;color:#64748b;margin-bottom:3px;text-transform:uppercase}
+.order-notes{margin-top:12px;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:10px;font-size:13px}
+.order-status-select{padding:9px 11px;border:1px solid #dbe2ea;border-radius:9px;font-weight:800;background:#fff;min-width:150px}
+.order-empty{padding:30px;text-align:center;color:#64748b;background:#f8fafc;border-radius:12px}
+@media(max-width:900px){.order-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:550px){.order-card-head{flex-direction:column}.order-grid{grid-template-columns:1fr}.order-status-select{width:100%}}
+
+@media(max-width:750px){
+
+  #servicesList,
+  #phonesList,
+  #usedPhonesList,
+  #whyList{
+    grid-template-columns:1fr;
+  }
+
+  #usedPhonesList .used-card{
+    grid-column:span 1;
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .images-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:5px;
+  }
+
+  .image-box{
+    padding:4px;
+  }
+
+  .image-preview,
+  .empty-preview{
+    height:55px;
+  }
+
+  .image-box input[type="file"]{
+    font-size:7px;
+  }
+
+  .image-box .btn{
+    font-size:7px;
+    padding:5px 2px;
+  }
+}
+
+.images-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+  margin-top:10px;
+  width:100%;
+}
+
+.image-box{
+  min-width:0;
+  width:100%;
+  border:1px dashed #cbd5e1;
+  border-radius:10px;
+  padding:6px;
+  text-align:center;
+  background:#f8fafc;
+  overflow:hidden;
+}
+
+.image-preview{
+  display:block;
+  width:100%;
+  height:70px;
+  max-width:100%;
+  object-fit:cover;
+  border-radius:7px;
+  margin:0 auto 5px;
+  background:#eef2f7;
+}
+
+.empty-preview{
+  width:100%;
+  height:70px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#94a3b8;
+  font-size:10px;
+  overflow:hidden;
+}
+
+.image-box input[type="file"]{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  font-size:9px;
+  overflow:hidden;
+}
+
+.image-box .btn{
+  width:100%;
+  max-width:100%;
+  padding:6px 3px;
+  font-size:9px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.save-bar{
+  position:sticky;
+  bottom:15px;
+  z-index:10;
+  background:white;
+  padding:14px;
+  border-radius:15px;
+  box-shadow:0 8px 30px rgba(0,0,0,.14);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  margin-top:10px;
+}
+
+.status{
+  font-weight:700;
+}
+
+.status.success{
+  color:#16a34a;
+}
+
+.status.error{
+  color:#dc2626;
+}
+
+.status.info{
+  color:#2563eb;
+}
+
+.hidden{
+  display:none!important;
+}
+
+.small{
+  font-size:13px;
+  color:#718096;
+}
+
+@media(max-width:750px){
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .images-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:5px;
+  }
+
+  .image-box{
+    padding:4px;
+  }
+
+  .image-preview,
+  .empty-preview{
+    height:55px;
+  }
+
+  .image-box input[type="file"]{
+    font-size:7px;
+  }
+
+  .image-box .btn{
+    font-size:7px;
+    padding:5px 2px;
+  }
+
+  .topbar{
+    padding:15px;
+  }
+
+  .container{
+    margin:18px auto;
+  }
+
+  .section{
+    padding:18px;
+  }
+
+  .save-bar{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+}
+
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:999;align-items:center;justify-content:center;padding:20px}
+.modal-backdrop.show{display:flex}
+.modal{width:min(650px,100%);background:#fff;border-radius:18px;padding:25px;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative}
+.modal-close{position:absolute;right:15px;top:12px;border:0;background:#eef2f7;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer}
+
+.gsm-admin-list{background:#fff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden}
+.gsm-admin-row{display:flex;align-items:center;gap:14px;padding:15px 18px;border-bottom:1px solid #e5e7eb;cursor:pointer;transition:.15s}
+.gsm-admin-row:last-child{border-bottom:0}
+.gsm-admin-row:hover{background:#f8fafc}
+.gsm-admin-icon{width:38px;flex:0 0 38px;font-size:22px;text-align:center}
+.gsm-admin-name{font-size:17px;font-weight:800;flex:1}
+.gsm-admin-arrow{font-size:22px;color:#64748b}
+.gsm-delete{flex:0 0 auto}
+
+.gsm-admin-tabs{display:flex;gap:8px;overflow-x:auto;margin:0 0 16px;padding:2px 0 8px}
+.gsm-admin-tab{flex:0 0 auto;border:1px solid #dbe2ea;background:#fff;color:#1f2937;padding:11px 15px;border-radius:10px;font-weight:800;cursor:pointer}
+.gsm-admin-tab.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.gsm-service-row{display:flex;align-items:center;gap:12px;border-bottom:1px solid #e5e7eb;padding:14px 4px}
+.gsm-service-row:last-child{border-bottom:0}
+.gsm-service-icon{width:36px;text-align:center;font-size:22px}
+.gsm-service-name{font-weight:800;flex:1}
+.gsm-edit-btn,.gsm-delete-btn{border:0;border-radius:8px;padding:8px 11px;font-weight:700;cursor:pointer}
+.gsm-edit-btn{background:#e8f0ff;color:#2563eb}
+.gsm-delete-btn{background:#fee2e2;color:#b91c1c}
+.gsm-editor-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+.gsm-editor{position:relative;width:min(560px,100%);background:#fff;border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.gsm-editor h3{margin:0 0 18px}
+.gsm-editor label{display:block;font-weight:700;margin:12px 0 6px}
+.gsm-editor input,.gsm-editor textarea{width:100%;padding:11px;border:1px solid #dbe2ea;border-radius:9px;font:inherit}
+.gsm-editor textarea{min-height:120px;resize:vertical}
+.gsm-editor .btn{margin-top:16px}
+.gsm-editor-close{position:absolute;right:14px;top:12px;border:0;background:#eef2f7;width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer}
+
+/* HOMS TECH — editor layout: list left, editor right */
+.editor-layout{
+  display:grid;
+  grid-template-columns:280px minmax(0,1fr);
+  gap:18px;
+  align-items:stretch;
+}
+.editor-list{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:16px;
+  padding:10px;
+  min-height:240px;
+}
+.editor-list-title{
+  font-size:13px;
+  font-weight:800;
+  color:#64748b;
+  padding:8px 10px 10px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.editor-list-item{
+  width:100%;
+  border:0;
+  background:transparent;
+  color:#172033;
+  text-align:left;
+  padding:12px 13px;
+  border-radius:11px;
+  font-weight:700;
+  margin-bottom:5px;
+  transition:.15s ease;
+}
+.editor-list-item:hover{background:#eef7f1}
+.editor-list-item.active{
+  background:#25d366;
+  color:#fff;
+}
+.editor-list-item small{
+  display:block;
+  font-weight:500;
+  opacity:.75;
+  margin-top:3px;
+}
+.editor-panel{
+  border:1px solid #e2e8f0;
+  border-radius:16px;
+  background:#fff;
+  padding:20px;
+  min-width:0;
+  box-shadow:0 5px 20px rgba(15,23,42,.05);
+}
+.editor-panel .grid{
+  margin-top:4px;
+}
+.editor-panel .field:last-child{margin-bottom:0}
+.editor-empty{
+  min-height:240px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:#64748b;
+  padding:30px;
+}
+.gsm-editor-layout{
+  display:grid;
+  grid-template-columns:1fr 1.35fr;
+  gap:18px;
+}
+.gsm-editor-layout .editor-list{min-height:500px}
+.gsm-editor-layout .editor-panel{min-height:500px}
+@media(max-width:900px){
+  .editor-layout,.gsm-editor-layout{grid-template-columns:1fr}
+  .gsm-editor-layout .editor-list,.gsm-editor-layout .editor-panel{min-height:0}
+}
+
+/* HOMS TECH — FINAL DESKTOP SIDEBAR LAYOUT */
+@media (min-width: 901px){
+  body{overflow-x:hidden}
+  .topbar{
+    position:sticky;
+    top:0;
+    min-height:68px;
+    padding:14px 24px;
+    z-index:100;
+  }
+  .admin-nav{
+    position:fixed;
+    left:0;
+    top:68px;
+    bottom:0;
+    width:235px;
+    height:auto;
+    display:none;
+    overflow-y:auto;
+    overflow-x:hidden;
+    background:#111827;
+    border:0;
+    box-shadow:none;
+    z-index:90;
+  }
+  .admin-nav-inner{
+    max-width:none;
+    margin:0;
+    padding:18px 12px 30px;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:7px;
+    overflow:visible;
+  }
+  .nav-btn{
+    width:100%;
+    text-align:left;
+    border:0;
+    background:transparent;
+    color:#e5e7eb;
+    padding:13px 16px;
+    border-radius:10px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+  .nav-btn:hover{background:#1f2937;color:#fff}
+  .nav-btn.active{background:#25d366;color:#fff}
+  #dashboard{margin-left:235px}
+  #dashboard > .container{
+    max-width:none;
+    width:100%;
+    margin:0;
+    padding:28px 28px 110px;
+  }
+  .section{width:100%;}
+  .editor-layout{grid-template-columns:280px minmax(0,1fr)}
+  .gsm-editor-layout{grid-template-columns:minmax(320px,1fr) minmax(420px,1.35fr)}
+}
+
+@media (max-width:900px){
+  .admin-nav{position:static;top:auto;width:100%;height:auto;}
+  .admin-nav-inner{overflow-x:auto;flex-direction:row;}
+  #dashboard{margin-left:0}
+  .container{max-width:none;margin:18px auto;padding:0 14px 90px}
+}
+
+
+/* Webshop orders */
+.webshop-order-items{margin-top:14px;border-top:1px solid #eef2f7;padding-top:12px}
+.webshop-item{display:flex;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid #f1f5f9}
+.webshop-item img{width:54px;height:54px;object-fit:cover;border-radius:8px;background:#f1f5f9}
+.webshop-item-info{flex:1;min-width:0}
+.webshop-item-name{font-weight:800}
+.webshop-item-meta{font-size:12px;color:#64748b;margin-top:3px}
+.webshop-order-address{margin-top:12px;padding:12px;background:#f8fafc;border-radius:10px}
+</style>
+<style>
+.permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.permission-item{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid #e5eaf1;border-radius:10px;background:#fbfcfe}
+.permission-item input{margin-top:3px}
+.admin-user-card{border:1px solid #e5eaf1;border-radius:14px;padding:16px;background:#fff;margin-bottom:12px}
+.search-result{border:1px solid #e5eaf1;border-radius:12px;padding:14px;margin-bottom:10px;background:#fff}
+.admin-search{display:flex;gap:8px;align-items:center;max-width:700px}
+.admin-search input{flex:1}
+@media(max-width:700px){.permission-grid{grid-template-columns:1fr}.admin-search{width:100%}}
+</style>
+
+<style id="homs-orders-modern-v2">
+/* Modern, spacious order dashboard */
+#page-orders .section-head, #page-webshop-orders .section-head{
+  margin-bottom:18px;
+}
+#page-orders .section-head h2, #page-webshop-orders .section-head h2{
+  font-size:24px;letter-spacing:-.4px;margin-bottom:5px;
+}
+#page-orders .section-head p, #page-webshop-orders .section-head p{
+  color:#64748b;margin:0;font-size:13px;
+}
+#page-orders .section-head .btn, #page-webshop-orders .section-head .btn{
+  border-radius:10px;padding:10px 14px;
+}
+#gsmOrderSummary,#webshopOrderSummary{
+  display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0 0 18px;
+}
+#gsmOrderSummary .order-stat,#webshopOrderSummary .order-stat{
+  min-height:78px;display:flex;align-items:center;gap:13px;border-radius:14px;padding:14px 16px;
+  border:1px solid #e6ebf2;background:#fff;box-shadow:0 3px 14px rgba(15,23,42,.035);
+}
+#gsmOrderSummary .order-stat b,#webshopOrderSummary .order-stat b{font-size:23px;line-height:1;margin:0 0 4px}
+#gsmOrderSummary .order-stat span,#webshopOrderSummary .order-stat span{font-size:12px;color:#64748b;font-weight:700}
+.stat-icon{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;flex:none}
+.stat-total .stat-icon{background:#eaf2ff;color:#1769d1}.stat-new .stat-icon{background:#e6f8ef;color:#0b9b67}
+.stat-progress .stat-icon{background:#fff1d9;color:#d98a00}.stat-cancel .stat-icon{background:#ffe9eb;color:#e3343e}
+.stat-total b{color:#1769d1}.stat-new b{color:#079467}.stat-progress b{color:#c67b00}.stat-cancel b{color:#d92f39}
+.orders-toolbar{
+  display:grid!important;grid-template-columns:minmax(300px,1fr) 170px auto;gap:10px;align-items:center;
+  margin:0 0 10px!important;
+}
+.orders-search input{
+  height:44px!important;padding:0 15px 0 42px!important;border-radius:11px!important;
+  border:1px solid #dbe3ee!important;box-shadow:none!important;
+}
+.order-filter{height:44px;min-width:0!important;border-radius:11px!important}
+.order-filter-btn{height:44px;border-radius:11px!important}
+.order-count{font-size:12px!important;color:#64748b!important;margin:0 0 10px!important;font-weight:700!important}
+.orders-list{gap:10px!important}
+.order-card{
+  border:1px solid #e3e8ef!important;border-radius:13px!important;box-shadow:0 2px 10px rgba(15,23,42,.035)!important;
+  overflow:hidden!important;background:#fff!important;
+}
+.order-card-head{
+  min-height:68px;padding:13px 16px!important;margin:0!important;border-bottom:1px solid #eef2f7!important;
+  display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;
+}
+.order-heading{display:flex;align-items:center;gap:12px;min-width:0}
+.order-number{
+  width:42px;height:42px;border-radius:11px;background:#f0f6ff;color:#1769d1;
+  display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;flex:none;
+}
+.order-title{font-size:14px!important;font-weight:850!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.order-meta{font-size:11px!important;color:#718096!important;margin-top:4px!important}
+.order-actions{gap:7px!important;flex-wrap:nowrap!important}
+.order-status-select{height:38px;min-width:138px!important;padding:0 10px!important;border-radius:9px!important;font-size:12px!important}
+.order-detail-btn,.order-delete-btn{height:38px;padding:0 12px!important;font-size:12px!important;white-space:nowrap}
+.order-delete-btn{background:#ef4444!important;color:#fff!important;border:0!important}
+.order-main{padding:11px 16px 13px!important}
+.order-grid{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;
+}
+.order-info{
+  min-width:0;background:#fafbfd!important;border:1px solid #edf1f5!important;border-radius:9px!important;
+  padding:9px 11px!important;
+}
+.order-info strong{font-size:9px!important;letter-spacing:.35px;color:#7a8797!important;margin-bottom:3px!important}
+.order-info span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:#27364a}
+.order-price span{font-weight:900;color:#172033}
+.order-notes{margin-top:9px!important;padding:9px 11px!important;font-size:12px!important}
+.webshop-order-card .order-main{padding-bottom:12px!important}
+.order-address-compact{grid-column:span 2}
+.order-empty{padding:32px!important;border:1px dashed #dbe3ee}
+@media(max-width:1100px){
+  #gsmOrderSummary,#webshopOrderSummary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .orders-toolbar{grid-template-columns:minmax(220px,1fr) 160px auto}
+  .order-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:700px){
+  #gsmOrderSummary,#webshopOrderSummary{grid-template-columns:1fr}
+  .orders-toolbar{grid-template-columns:1fr!important}
+  .order-card-head{align-items:flex-start!important;flex-direction:column!important}
+  .order-actions{width:100%;flex-wrap:wrap!important}
+  .order-status-select{flex:1;min-width:130px!important}
+  .order-detail-btn,.order-delete-btn{flex:0 0 auto}
+  .order-grid{grid-template-columns:1fr!important}
+  .order-address-compact{grid-column:auto}
+}
+</style>
+
+<style id="homs-auto-status-save">
+.order-status-select{font-weight:800!important;border-width:1px!important;transition:.18s ease}
+.order-status-select.is-saving{opacity:.6;cursor:wait;filter:saturate(.65)}
+.order-status-select.is-saved{box-shadow:0 0 0 3px rgba(16,185,129,.16)!important}
+.status-select-nieuw{background:#e0f2fe!important;color:#0878b8!important;border-color:#7dd3fc!important}
+.status-select-in-behandeling{background:#fff0d5!important;color:#c47700!important;border-color:#f5c66a!important}
+.status-select-voltooid{background:#d9f7e8!important;color:#078451!important;border-color:#62d39d!important}
+.status-select-geannuleerd{background:#ffe0e3!important;color:#cf2632!important;border-color:#f58b95!important}
+</style>
+<style id="homs-buyback-admin">
+/* HOMS TECH BUYBACK V4: one phone card per row, always stacked */
+#page-buyback #buybackPhonesList{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;float:none!important;clear:both!important}
+#page-buyback #buybackPhonesList > .buyback-phone-card{display:block!important;position:relative!important;width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important;float:none!important;clear:both!important;margin:0 0 24px 0!important;flex:none!important;grid-column:1 / -1!important}
+#page-buyback .buyback-phone-main{display:block!important;width:100%!important;box-sizing:border-box!important}
+#page-buyback .buyback-phone-fields{display:block!important;width:100%!important;box-sizing:border-box!important}
+#page-buyback .buyback-phone-fields .field{display:block!important;width:100%!important;box-sizing:border-box!important;margin:0 0 14px 0!important}
+#page-buyback .buyback-phone-title{display:flex!important;justify-content:space-between!important;align-items:flex-start!important;gap:15px!important;flex-wrap:wrap!important;width:100%!important}
+#page-buyback .buyback-option-card{display:block!important;width:100%!important;box-sizing:border-box!important;margin-top:16px!important}
+#page-buyback .buyback-option-row{display:grid!important;grid-template-columns:minmax(0,1fr) 120px 90px!important;gap:10px!important;align-items:center!important;margin-bottom:9px!important;width:100%!important;box-sizing:border-box!important}
+#page-buyback .buyback-option-card .card-title{font-size:16px!important;font-weight:800!important;margin-bottom:6px!important}
+@media(max-width:700px){#page-buyback .buyback-option-row{grid-template-columns:1fr!important}#page-buyback .buyback-option-row label{margin-top:0!important}}
+#page-buyback .buyback-phone-main{display:flex!important;flex-direction:column!important;gap:14px!important;width:100%!important}
+#page-buyback .buyback-phone-fields{display:flex!important;flex-direction:column!important;gap:14px!important;width:100%!important}
+#page-buyback .buyback-phone-fields .field{width:100%!important}
+#page-buyback .buyback-phone-title{display:flex!important;justify-content:space-between!important;align-items:flex-start!important;gap:15px!important;flex-wrap:wrap!important}
+#page-buyback .buyback-option-card{width:100%!important;box-sizing:border-box!important}
+#page-buyback .buyback-option-row{display:grid!important;grid-template-columns:minmax(0,1fr) 120px 90px!important;gap:10px!important;align-items:center!important;margin-bottom:9px!important}
+#page-buyback .buyback-option-card .card-title{font-size:16px!important;font-weight:800!important;margin-bottom:6px!important}
+@media(max-width:700px){#page-buyback .buyback-option-row{grid-template-columns:1fr!important}#page-buyback .buyback-option-row label{margin-top:0!important}}
+</style>
+<style id="homs-buyback-orders-admin">
+#page-buyback-orders .order-card{background:#fff;border:1px solid #e3e8ef;border-radius:14px;padding:16px 18px;box-shadow:0 2px 10px rgba(15,23,42,.035)}
+#page-buyback-orders .bb-order-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:14px}
+#page-buyback-orders .bb-info{background:#fafbfd;border:1px solid #edf1f5;border-radius:9px;padding:9px 11px;min-width:0}
+#page-buyback-orders .bb-info strong{display:block;font-size:9px;color:#7a8797;margin-bottom:3px;text-transform:uppercase}
+#page-buyback-orders .bb-info span{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:900px){#page-buyback-orders .bb-order-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:550px){#page-buyback-orders .bb-order-grid{grid-template-columns:1fr}}
+</style>
+
+<style id="homs-buyback-v5">
+/* HOMS TECH BUYBACK V5 — compact vertical phone list */
+#page-buyback #buybackPhonesList{display:flex!important;flex-direction:column!important;gap:12px!important;width:100%!important;max-width:100%!important;margin:0!important;padding:0!important}
+#page-buyback .buyback-phone-card-v5{display:block!important;width:100%!important;box-sizing:border-box!important;background:#fff!important;border:1px solid #e2e8f0!important;border-radius:14px!important;overflow:hidden!important;margin:0!important;box-shadow:0 5px 18px rgba(15,23,42,.06)!important}
+#page-buyback .buyback-phone-row-v5{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:14px!important;padding:14px 16px!important;min-height:64px!important;background:#fff!important}
+#page-buyback .buyback-phone-name-v5{display:flex!important;align-items:center!important;gap:11px!important;min-width:0!important}
+#page-buyback .buyback-phone-name-v5>span{font-size:22px!important;flex:0 0 auto!important}
+#page-buyback .buyback-phone-name-v5 strong{display:block!important;font-size:16px!important;color:#0f172a!important;line-height:1.2!important}
+#page-buyback .buyback-phone-name-v5 small{display:block!important;margin-top:4px!important;font-size:12px!important;color:#64748b!important}
+#page-buyback .buyback-phone-actions-v5{display:flex!important;gap:7px!important;align-items:center!important;flex:0 0 auto!important}
+#page-buyback .buyback-phone-actions-v5 .btn{white-space:nowrap!important}
+#page-buyback .buyback-phone-editor-v5{border-top:1px solid #e5e7eb!important;padding:16px!important;background:#f8fafc!important}
+#page-buyback .buyback-v5-fields{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+#page-buyback .buyback-v5-fields .field{min-width:0!important}
+#page-buyback .buyback-check-v5{display:flex!important;align-items:center!important;gap:8px!important;margin-top:8px!important;padding:10px 12px!important;border:1px solid #dbe3ec!important;border-radius:10px!important;background:#fff!important;cursor:pointer!important}
+#page-buyback .buyback-photo-line-v5{display:flex!important;align-items:center!important;gap:12px!important;flex-wrap:wrap!important;margin-top:8px!important}
+#page-buyback .buyback-photo-line-v5 img,.buyback-no-photo-v5{width:72px!important;height:86px!important;object-fit:contain!important;border:1px solid #dbe3ec!important;border-radius:9px!important;background:#fff!important}
+#page-buyback .buyback-no-photo-v5{display:flex!important;align-items:center!important;justify-content:center!important;font-size:11px!important;color:#64748b!important}
+@media(max-width:700px){#page-buyback .buyback-phone-row-v5{align-items:flex-start!important;flex-direction:column!important}.buyback-phone-actions-v5{width:100%!important}.buyback-phone-actions-v5 .btn{flex:1!important}.buyback-v5-fields{grid-template-columns:1fr!important}}
+</style>
+
+<style id="homs-buyback-hierarchy-v1">
+/* HOMS TECH — Buyback hierarchy V1: Merk → Type → Model */
+.buyback-hierarchy{
+  border:1px solid #e2e8f0;border-radius:16px;background:#fff;overflow:hidden;
+}
+.buyback-hierarchy-toolbar{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:14px 16px;border-bottom:1px solid #e8edf3;background:#f8fafc;flex-wrap:wrap;
+}
+.buyback-hierarchy-toolbar .small{margin:0}
+.buyback-tree{
+  display:grid;grid-template-columns:220px 240px minmax(0,1fr);min-height:360px;
+}
+.buyback-tree-pane{
+  padding:12px;border-right:1px solid #e8edf3;background:#fbfcfe;min-width:0;
+}
+.buyback-tree-pane:last-child{border-right:0;background:#fff}
+.buyback-tree-title{
+  font-size:11px;font-weight:900;color:#64748b;text-transform:uppercase;
+  letter-spacing:.06em;padding:6px 8px 10px;
+}
+.buyback-tree-list{display:flex;flex-direction:column;gap:5px}
+.buyback-tree-item{
+  width:100%;border:1px solid transparent;background:transparent;text-align:left;
+  border-radius:10px;padding:10px 11px;font-weight:800;color:#1e293b;cursor:pointer;
+}
+.buyback-tree-item:hover{background:#eef5ff}
+.buyback-tree-item.active{background:#2563eb;color:#fff}
+.buyback-tree-item small{display:block;font-weight:600;opacity:.72;margin-top:3px}
+.buyback-tree-empty{
+  padding:18px 10px;text-align:center;color:#94a3b8;font-size:13px;
+}
+.buyback-model-panel{
+  margin:14px;padding:16px;border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc;
+}
+.buyback-model-panel h3{margin:0 0 4px;font-size:18px}
+.buyback-model-panel .panel-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.buyback-model-panel .panel-actions .btn{padding:9px 12px}
+.buyback-model-options{
+  margin-top:14px;padding-top:14px;border-top:1px solid #e2e8f0;
+}
+.buyback-hierarchy-add{
+  display:flex;gap:7px;flex-wrap:wrap;
+}
+.buyback-hierarchy-add .btn{padding:9px 12px}
+.buyback-danger{
+  color:#b91c1c;background:#fee2e2!important;
+}
+@media(max-width:900px){
+  .buyback-tree{grid-template-columns:1fr}
+  .buyback-tree-pane{border-right:0;border-bottom:1px solid #e8edf3}
+  .buyback-tree-pane:last-child{border-bottom:0}
+  .buyback-tree-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:550px){
+  .buyback-tree-list{grid-template-columns:1fr}
+  .buyback-hierarchy-toolbar{align-items:stretch}
+  .buyback-hierarchy-add{width:100%}
+  .buyback-hierarchy-add .btn{flex:1}
+}
+</style>
+
+
+<style id="homs-buyback-type-settings-v2">
+.bb-type-settings{margin-top:14px;border:1px solid #e2e8f0;border-radius:14px;background:#fff;overflow:hidden}
+.bb-type-settings-head{padding:14px 16px;border-bottom:1px solid #e8edf3;background:#f8fafc;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.bb-type-settings-head h4{margin:0 0 3px;font-size:16px}
+.bb-question-list{padding:12px}
+.bb-question-row{display:grid;grid-template-columns:minmax(180px,1.1fr) minmax(150px,.8fr) 110px 82px auto;gap:8px;align-items:center;border:1px solid #e5eaf1;border-radius:11px;padding:9px;margin-bottom:8px;background:#fbfcfe}
+.bb-question-row input,.bb-question-row select{width:100%;padding:9px 10px;border:1px solid #d7deea;border-radius:8px;background:#fff}
+.bb-question-actions{display:flex;gap:6px;align-items:center}
+.bb-question-actions button{border:0;border-radius:8px;padding:8px 9px;font-weight:800}
+.bb-q-delete{background:#fee2e2;color:#b91c1c}
+.bb-q-edit{background:#e8f0ff;color:#2563eb}
+.bb-question-type{font-size:11px;color:#64748b;font-weight:800}
+.bb-option-editor{padding:10px 12px 12px;background:#f8fafc;border:1px solid #e5eaf1;border-radius:10px;margin:7px 0 10px}
+.bb-option-line{display:grid;grid-template-columns:minmax(0,1fr) 110px 80px auto;gap:7px;align-items:center;margin-bottom:7px}
+.bb-option-line input{padding:8px 9px;border:1px solid #d7deea;border-radius:8px}
+.bb-type-actions{display:flex;gap:7px;flex-wrap:wrap;padding:0 12px 12px}
+@media(max-width:850px){
+  .bb-question-row{grid-template-columns:1fr 1fr}
+  .bb-question-actions{grid-column:1/-1}
+}
+@media(max-width:550px){
+  .bb-question-row{grid-template-columns:1fr}
+  .bb-option-line{grid-template-columns:1fr}
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="topbar">
+  <div class="logo">HOMS <span>TECH</span> — Admin</div>
+  <button class="btn btn-light" id="logoutBtn" onclick="logout()" style="display:none">
+    Uitloggen
+  </button>
+</div>
+
+<!-- ================= NAVIGATIE ================= -->
+<div id="adminNav" class="admin-nav">
+  <div class="admin-nav-inner">
+    <button class="nav-btn active" data-page="general" onclick="showPage('general')">⚙️ Algemeen</button>
+    <button class="nav-btn" data-page="services" onclick="showPage('services')">🔧 Diensten</button>
+    <button class="nav-btn" data-page="phones" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
+    <button class="nav-btn" data-page="buyback" data-permission="buyback.view" onclick="showPage('buyback')">📥 Uw toestel verkopen</button>
+    <button class="nav-btn" data-page="buyback-orders" data-permission="buyback_orders.view" onclick="showPage('buyback-orders')">📥 Verkoopaanvragen</button>
+
+    <button class="nav-btn" data-page="categories" onclick="showPage('categories')">🖼️ Apparaten & categorieën</button>
+    <button class="nav-btn" data-page="used" onclick="showPage('used')">♻️ Gebruikte telefoons</button>
+    <button class="nav-btn" data-page="why" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
+    <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
+    <button class="nav-btn" data-page="orders" onclick="showPage('orders')">📋 GSM Orders</button>
+    <button class="nav-btn" data-page="webshop-orders" onclick="showPage('webshop-orders')">🛍️ Webshop Bestellingen</button>
+    <button class="nav-btn" data-page="gsm" onclick="showPage('gsm')">🛠️ GSM Services</button>
+    <button class="nav-btn" data-page="search" data-permission="search" onclick="showPage('search')">🔎 Zoeken</button>
+    <button class="nav-btn" data-page="admins" data-permission="admins.manage" onclick="showPage('admins')">👤 Admins</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="loginBox" class="login">
+  <h1>Admin login</h1>
+  <p class="small">Log in om de website te beheren.</p>
+
+  <div class="field">
+    <label>Gebruikersnaam</label>
+    <input id="username" type="text" autocomplete="username">
+  </div>
+
+  <div class="field">
+    <label>Wachtwoord</label>
+    <input id="password" type="password" autocomplete="current-password">
+  </div>
+
+  <button class="btn btn-green" onclick="login()" style="width:100%">
+    Inloggen
+  </button>
+
+  <p id="loginStatus" class="status"></p>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="dashboard">
+<div class="container">
+
+  <!-- ALGEMEEN -->
+  <section class="section admin-page active" id="page-general">
+    <div class="section-head">
+      <div>
+        <h2>⚙️ Algemene informatie</h2>
+        <p>Deze gegevens worden gebruikt op de website.</p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="field">
+        <label>Bedrijfsnaam</label>
+        <input data-u="businessName">
+      </div>
+
+      <div class="field">
+        <label>Tagline</label>
+        <input data-u="tagline">
+      </div>
+
+      <div class="field">
+        <label>Titel homepage</label>
+        <input data-u="heroTitle">
+      </div>
+
+      <div class="field">
+        <label>Telefoon</label>
+        <input data-u="phone">
+      </div>
+
+      <div class="field">
+        <label>WhatsApp</label>
+        <input data-u="whatsapp">
+      </div>
+
+      <div class="field">
+        <label>Werkgebieden</label>
+        <input data-u="areas">
+      </div>
+
+      <div class="field" style="grid-column:1/-1">
+        <label>Tekst homepage</label>
+        <textarea data-u="heroText"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="section admin-page" id="page-services">
+    <div class="section-head">
+      <div>
+        <h2>🔧 Diensten</h2>
+        <p>Beheer de reparatiediensten die op de website verschijnen.</p>
+      </div>
+
+      <button class="btn btn-green" onclick="addService()">
+        + Dienst toevoegen
+      </button>
+    </div>
+
+    <div id="servicesList"></div>
+  </section>
+
+  <!-- TELEFOONS EN PRIJZEN -->
+  <section class="section admin-page" id="page-phones">
+    <div class="section-head">
+      <div>
+        <h2>📱 Telefoons te koop</h2>
+        <p>Beheer de telefoons die HOMS TECH verkoopt.</p>
+      </div>
+
+      <button class="btn btn-green" onclick="addPhone()">
+        + Telefoon toevoegen
+      </button>
+    </div>
+
+    <div id="phonesList"></div>
+  </section>
+
+
+  <!-- INKOOP / UW TOESTEL VERKOPEN -->
+  <section class="section admin-page" id="page-buyback" data-permission="buyback.view">
+    <div class="section-head">
+      <div>
+        <h2>📥 Uw toestel verkopen</h2>
+        <p>Beheer de structuur van je inkooptoestellen: Merk → Type apparaat → Model.</p>
+      </div>
+    </div>
+
+    <div class="buyback-hierarchy">
+      <div class="buyback-hierarchy-toolbar">
+        <div>
+          <strong>Apparaatstructuur</strong>
+          <div class="small">Bestaande toestellen blijven behouden. De nieuwe structuur wordt er veilig omheen gebouwd.</div>
+        </div>
+        <div class="buyback-hierarchy-add">
+          <button class="btn btn-light" type="button" onclick="addBuybackBrand()">+ Merk</button>
+          <button class="btn btn-light" type="button" onclick="addBuybackType()">+ Type apparaat</button>
+          <button class="btn btn-green" type="button" onclick="addBuybackModel()">+ Model</button>
+        </div>
+      </div>
+
+      <div id="buybackHierarchy"></div>
+      <div id="buybackModelEditor"></div>
+    </div>
+  </section>
+
+
+  <!-- APPARAATCATEGORIEËN -->
+  <section class="section admin-page" id="page-categories">
+    <div class="section-head">
+      <div>
+        <h2>🖼️ Apparaten & categorieën</h2>
+        <p>Beheer de blokken zoals iPhones, iPads, Mac, Watches, Samsung en accessoires op de homepage.</p>
+      </div>
+      <button class="btn btn-green" onclick="addDeviceCategory()">+ Categorie toevoegen</button>
+    </div>
+    <div id="deviceCategoriesList"></div>
+  </section>
+
+  <!-- GEBRUIKTE TELEFOONS -->
+  <section class="section admin-page" id="page-used">
+    <div class="section-head">
+      <div>
+        <h2>♻️ Gebruikte telefoons</h2>
+        <p>Telefoons die je tweedehands verkoopt.</p>
+      </div>
+
+      <button class="btn btn-green" onclick="addUsedPhone()">
+        + Telefoon toevoegen
+      </button>
+    </div>
+
+    <div id="usedPhonesList"></div>
+  </section>
+
+  <!-- KLANTEN -->
+  <section class="section admin-page" id="page-customers">
+    <div class="section-head">
+      <div>
+        <h2>👥 Klanten</h2>
+        <p>Bekijk de geregistreerde klanten van HOMS TECH.</p>
+      </div>
+      <button class="btn btn-light" onclick="loadCustomers()">↻ Vernieuwen</button>
+    </div>
+    <div id="customersStatus" class="status info" style="margin-bottom:15px"></div>
+    <div id="customersList"></div>
+  </section>
+
+  <!-- GSM ORDERS -->
+  <section class="section admin-page" id="page-orders">
+    <div class="section-head">
+      <div><h2>📋 GSM Service Orders</h2><p>Alle reparatie- en serviceaanvragen overzichtelijk bij elkaar.</p></div>
+      <button class="btn btn-light" onclick="loadOrders()">↻ Vernieuwen</button>
+    </div>
+    <div id="gsmOrderSummary" class="order-summary"></div>
+    <div class="orders-toolbar">
+      <div class="orders-search"><input id="gsmOrderSearch" type="search" placeholder="Zoeken op klant, e-mail, telefoon, IMEI, order..." oninput="renderGsmOrders()"></div>
+      <select id="gsmOrderStatusFilter" class="order-filter" onchange="renderGsmOrders()"><option value="">Alle statussen</option><option>Nieuw</option><option>In behandeling</option><option>Voltooid</option><option>Geannuleerd</option></select>
+      <button class="order-filter-btn" onclick="clearGsmOrderFilters()">↻ Filters wissen</button>
+    </div>
+    <div id="ordersStatus" class="status info" style="margin-bottom:10px"></div>
+    <div id="ordersList" class="orders-list"></div>
+  </section>
+
+  <!-- WEBSHOP ORDERS -->
+  <section class="section admin-page" id="page-webshop-orders">
+    <div class="section-head">
+      <div><h2>🛍️ Webshop Bestellingen</h2><p>Bestellingen uit de webshop, met klantgegevens, producten en status.</p></div>
+      <button class="btn btn-light" onclick="loadWebshopOrders()">↻ Vernieuwen</button>
+    </div>
+    <div id="webshopOrderSummary" class="order-summary"></div>
+    <div class="orders-toolbar">
+      <div class="orders-search"><input id="webshopOrderSearch" type="search" placeholder="Zoeken op klant, e-mail, telefoon, ordernummer, postcode..." oninput="renderWebshopOrders()"></div>
+      <select id="webshopOrderStatusFilter" class="order-filter" onchange="renderWebshopOrders()"><option value="">Alle statussen</option><option>Nieuw</option><option>In behandeling</option><option>Verzonden</option><option>Voltooid</option><option>Geannuleerd</option></select>
+      <button class="order-filter-btn" onclick="clearWebshopOrderFilters()">↻ Filters wissen</button>
+    </div>
+    <div id="webshopOrdersStatus" class="status info" style="margin-bottom:10px"></div>
+    <div id="webshopOrdersList" class="orders-list"></div>
+  </section>
+
+  <!-- GSM SERVICES -->
+  <section class="section admin-page" id="page-gsm">
+    <div class="section-head">
+      <div>
+        <h2>🛠️ GSM Services</h2>
+        <p>Beheer per categorie de services met naam, details en prijs.</p>
+      </div>
+    </div>
+
+    <div id="gsmServicesList"></div>
+  </section>
+
+  <!-- WAAROM HOMS TECH -->
+  <section class="section admin-page" id="page-why">
+    <div class="section-head">
+      <div>
+        <h2>⭐ Waarom HOMS TECH?</h2>
+        <p>Beheer de voordelen die op de homepage verschijnen.</p>
+      </div>
+
+      <button class="btn btn-green" onclick="addWhy()">
+        + Voordeel toevoegen
+      </button>
+    </div>
+
+    <div id="whyList"></div>
+  </section>
+
+
+
+
+  <section class="section admin-page" id="page-search" data-permission="search">
+    <div class="section-head"><div><h2>🔎 Zoeken</h2><p>Zoek klanten en bestellingen vanuit één plek.</p></div></div>
+    <div class="admin-search">
+      <input id="adminSearchInput" placeholder="Naam, e-mail, telefoon, IMEI, ordernummer..." onkeydown="if(event.key==='Enter')adminSearch()">
+      <button class="btn btn-green" onclick="adminSearch()">Zoeken</button>
+    </div>
+    <div id="searchStatus" class="status info" style="margin:15px 0"></div>
+    <div id="searchResults"></div>
+  </section>
+
+  <section class="section admin-page" id="page-admins" data-permission="admins.manage">
+    <div class="section-head"><div><h2>👤 Admins</h2><p>Maak extra admins aan en bepaal exact wat iedere admin mag doen.</p></div></div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Nieuwe admin</div><div class="small">Kies hieronder de rechten.</div></div></div>
+      <div class="grid">
+        <div class="field"><label>Gebruikersnaam</label><input id="newAdminUsername" autocomplete="off"></div>
+        <div class="field"><label>Wachtwoord (minimaal 8 tekens)</label><input id="newAdminPassword" type="password" autocomplete="new-password"></div>
+      </div>
+      <div class="field"><label>Rechten</label><div id="newAdminPermissions" class="permission-grid"></div></div>
+      <button class="btn btn-green" onclick="createAdmin()">+ Admin aanmaken</button>
+      <div id="adminCreateStatus" class="status" style="margin-top:12px"></div>
+    </div>
+    <div class="section-head" style="margin-top:24px"><div><h3 style="margin:0">Bestaande admins</h3><p>Wijzig rechten, schakel accounts uit of verander een wachtwoord.</p></div><button class="btn btn-light" onclick="loadAdmins()">↻ Vernieuwen</button></div>
+    <div id="adminsStatus" class="status info" style="margin-bottom:15px"></div>
+    <div id="adminsList"></div>
+  </section>
+
+  <!-- GSM SERVICE EDIT MODAL -->
+  <div id="gsmEditModal" class="modal-backdrop" onclick="closeGsmEditor(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeGsmEditor()">×</button>
+      <h2 id="gsmEditTitle">GSM Service</h2>
+
+      <div class="grid">
+        <div class="field">
+          <label>Naam service</label>
+          <input id="gsmEditName">
+        </div>
+
+        <div class="field">
+          <label>Icoon / emoji</label>
+          <input id="gsmEditIcon">
+        </div>
+
+        <div class="field">
+          <label>Prijs (€)</label>
+          <input id="gsmEditPrice" placeholder="Bijv. 29,99">
+        </div>
+
+        <div class="field" style="grid-column:1/-1">
+          <label>Details</label>
+          <textarea id="gsmEditDetails" rows="5"></textarea>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+        <button class="btn btn-light" onclick="closeGsmEditor()">Annuleren</button>
+        <button class="btn btn-green" onclick="saveGsmEditor()">Opslaan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VERKOOPAANVRAGEN -->
+  <section class="section admin-page" id="page-buyback-orders" data-permission="buyback_orders.view">
+    <div class="section-head">
+      <div>
+        <h2>📥 Verkoopaanvragen</h2>
+        <p>Aanvragen van klanten die hun toestel aan HOMS TECH willen verkopen.</p>
+      </div>
+      <button class="btn btn-light" onclick="loadBuybackOrders()">↻ Vernieuwen</button>
+    </div>
+    <div id="buybackOrdersStatus" class="status info" style="margin-bottom:12px"></div>
+    <div id="buybackOrdersList" class="orders-list"></div>
+  </section>
+
+
+  <!-- SAVE -->
+  <div class="save-bar">
+    <div>
+      <div id="saveStatus" class="status">Wijzigingen nog niet opgeslagen</div>
+      <div class="small">Klik op Opslaan nadat je iets hebt gewijzigd.</div>
+    </div>
+
+    <button id="saveBtn" data-permission="site.save" class="btn btn-green" onclick="save()" style="font-size:16px;padding:13px 25px">
+      💾 Wijzigingen opslaan
+    </button>
+  </div>
+
+</div>
+</div>
+
+<script>
+
+let data = {};
+let loading = false;
+let currentPage = "general";
+let currentUser = {username:"",role:"admin",permissions:[]};
+let selectedBuybackBrandId = "";
+let selectedBuybackTypeId = "";
+let selectedBuybackModelId = "";
+let buybackOptionsOpen = false;
+let buybackTypeSettingsOpen = false;
+let buybackQuestionOpenId = "";
+
+
+
+const PAGE_PERMISSIONS = {
+  general:"general.view",services:"services.view",phones:"phones.view",categories:"categories.view",
+  used:"used.view",why:"why.view",customers:"customers.view",orders:"orders.view",
+  "webshop-orders":"webshop_orders.view",gsm:"gsm.view",search:"search",admins:"admins.manage",
+  buyback:"buyback.view", "buyback-orders":"buyback_orders.view"
+};
+
+const ADMIN_PERMISSION_LABELS = {
+  "general.view":"Algemeen bekijken","services.view":"Diensten bekijken",
+  "phones.view":"Telefoons & prijzen bekijken","categories.view":"Apparaten & categorieën bekijken",
+  "used.view":"Gebruikte telefoons bekijken","why.view":"Waarom HOMS TECH bekijken",
+  "customers.view":"Klanten bekijken","orders.view":"GSM Orders bekijken","orders.update":"GSM Order-status wijzigen",
+  "webshop_orders.view":"Webshop bestellingen bekijken","webshop_orders.update":"Webshop order-status wijzigen","webshop_orders.delete":"Webshop bestellingen verwijderen",
+  "orders.delete":"GSM Orders verwijderen",
+  "buyback.view":"Inkooptelefoons bekijken","buyback.update":"Inkooptelefoons wijzigen",
+  "buyback_orders.view":"Verkoopaanvragen bekijken","buyback_orders.update":"Verkoopaanvraag-status wijzigen","buyback_orders.delete":"Verkoopaanvragen verwijderen",
+  "gsm.view":"GSM Services bekijken","site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
+};
+
+function hasPermission(p){return currentUser.role==="superadmin"||currentUser.permissions.includes("*")||currentUser.permissions.includes(p);}
+function canEditSite(){return hasPermission("site.save");}
+function firstAllowedPage(){
+  const pages=["general","services","phones","buyback","buyback-orders","categories","used","why","customers","orders","webshop-orders","gsm","search","admins"];
+  return pages.find(p=>hasPermission(PAGE_PERMISSIONS[p]))||null;
+}
+function applyPermissionUI(){
+  document.querySelectorAll("[data-permission]").forEach(el=>el.style.display=hasPermission(el.dataset.permission)?"":"none");
+  const saveBtn=document.getElementById("saveBtn"); if(saveBtn) saveBtn.style.display=canEditSite()?"":"none";
+  document.querySelectorAll(".admin-page").forEach(page=>{
+    const n=(page.id||"").replace(/^page-/,"");
+    if(!["general","services","phones","buyback","categories","used","why","gsm"].includes(n))return;
+    page.querySelectorAll("input,textarea").forEach(el=>el.disabled=!canEditSite());
+    page.querySelectorAll("button").forEach(btn=>{
+      if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=!canEditSite();
+    });
+  });
+  document.querySelectorAll(".order-status-select").forEach(el=>el.disabled=!hasPermission(el.closest("#page-orders")?"orders.update":"webshop_orders.update"));
+}
+function showPage(page){
+  if(!hasPermission(PAGE_PERMISSIONS[page]||""))page=firstAllowedPage();
+  if(!page)return;
+  currentPage=page;
+  document.querySelectorAll(".admin-page").forEach(s=>s.classList.remove("active"));
+  const target=document.getElementById("page-"+page);
+  if(target){
+    target.classList.add("active");
+    if(page==="customers")loadCustomers();
+    if(page==="orders")loadOrders();
+    if(page==="webshop-orders")loadWebshopOrders();
+    if(page==="buyback")renderBuybackPhones();
+    if(page==="buyback-orders")loadBuybackOrders();
+    if(page==="admins")loadAdmins();
+  }
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+  applyPermissionUI();
+}
+
+/* ---------------- LOGIN ---------------- */
+
+async function loadCurrentUser(){
+  const r=await fetch("/api/me",{credentials:"same-origin"});
+  const x=await r.json().catch(()=>({}));
+  if(!r.ok||!x.authenticated)throw new Error("Not authenticated");
+  currentUser={id:x.id||null,username:x.username||"",role:x.role||"admin",permissions:Array.isArray(x.permissions)?x.permissions:[]};
+}
+async function checkLogin(){
+  try{await loadCurrentUser();showDashboard();await loadData();}catch(e){showLogin();}
+}
+function showLogin(){
+  document.getElementById("loginBox").style.display="block";
+  document.getElementById("dashboard").style.display="none";
+  document.getElementById("logoutBtn").style.display="none";
+  document.getElementById("adminNav").style.display="none";
+}
+function showDashboard(){
+  document.getElementById("loginBox").style.display="none";
+  document.getElementById("dashboard").style.display="block";
+  document.getElementById("logoutBtn").style.display="block";
+  document.getElementById("adminNav").style.display="block";
+  if(!hasPermission(PAGE_PERMISSIONS[currentPage]||""))currentPage=firstAllowedPage()||"general";
+  applyPermissionUI();showPage(currentPage);
+}
+async function login(){
+  const username=document.getElementById("username").value.trim();
+  const password=document.getElementById("password").value;
+  const status=document.getElementById("loginStatus");
+  status.className="status info";status.textContent="Inloggen...";
+  try{
+    const r=await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({username,password})});
+    const x=await r.json();
+    if(!r.ok)throw new Error(x.error||"Login mislukt");
+    await loadCurrentUser();status.className="status success";status.textContent="✓ Inloggen gelukt";
+    showDashboard();await loadData();
+  }catch(e){status.className="status error";status.textContent="✕ "+e.message;}
+}
+
+async function logout(){
+
+  await fetch("/api/logout",{
+    method:"POST"
+  });
+
+  location.reload();
+}
+
+
+/* ---------------- DATA ---------------- */
+
+function normalizeGsmService(x){
+  x=x||{};
+  return {
+    icon:x.icon || "🔧",
+    name:x.name || "",
+    group:x.group || "",
+    shortDescription:x.shortDescription || "",
+    details:x.details || x.description || "",
+    price:x.price || "",
+    active:x.active !== false,
+    requiresUsername:x.requiresUsername === true,
+    requiresImei:x.requiresImei === true
+  };
+}
+
+  function normalizePhoneOption(x, fallbackLabel, fallbackPrice){
+    if(typeof x === "string") return {label:x, enabled:true, active:true, available:true, priceDelta:0};
+    x=x||{};
+    const active=x.active !== undefined ? x.active !== false : x.enabled !== false;
+    return {
+      label:String(x.label || x.name || fallbackLabel || ""),
+      enabled:active,
+      active:active,
+      available:x.available !== false,
+      priceDelta:x.priceDelta ?? x.delta ?? x.priceAdjustment ?? x.extra ?? fallbackPrice ?? 0
+    };
+  }
+
+  
+function canonicalPhoneOptionLabel(key,label){
+  const raw=String(label??'').trim(), low=raw.toLowerCase();
+  if(key==='color'){
+    if(low==='blue'||low==='blauw') return 'Blauw';
+    if(low==='red'||low==='rood') return 'Rood';
+    if(low==='white'||low==='wit') return 'Wit';
+    if(low==='black'||low==='zwart') return 'Zwart';
+  }
+  if(key==='storage'){
+    if(/^64\s*gb$/i.test(raw)) return '64 GB';
+    if(/^128\s*gb$/i.test(raw)) return '128 GB';
+    if(/^256\s*gb$/i.test(raw)) return '256 GB';
+    if(/^512\s*gb$/i.test(raw)) return '512 GB';
+    if(/^1\s*tb$/i.test(raw)) return '1 TB';
+  }
+  if(key==='vatOptions'){
+    if(low.includes('zonder btw')) return 'Zonder BTW';
+    if(low.includes('met btw')) return 'Met BTW';
+  }
+  if(key==='batteryOptions'){
+    if(low.includes('nieuw')) return 'Nieuw (100%)';
+    if(low.includes('standaard')) return 'Standaard';
+  }
+  if(key==='tradeInOptions'){
+    if(low==='ja') return 'Ja';
+    if(low==='nee') return 'Nee';
+  }
+  return raw;
+}
+
+function normalizePhoneOptions(phone){
+    const defaults={
+      conditionOptions:[
+        {label:"Zichtbaar gebruikt",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"Licht gebruikt",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"Zo goed als nieuw",enabled:true,active:true,available:true,priceDelta:0}
+      ],
+      storageOptions:[
+        {label:"64 GB",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"128 GB",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"256 GB",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"512 GB",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"1 TB",enabled:true,active:true,available:true,priceDelta:0}
+      ],
+      colorOptions:[
+        {label:"Zwart",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"Wit",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"Blauw",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"Rood",enabled:true,active:true,available:true,priceDelta:0}
+      ],
+      batteryOptions:[
+        {label:"Standaard",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"Nieuw (100%)",enabled:true,active:true,available:true,priceDelta:30}
+      ],
+      vatOptions:[
+        {label:"Zonder BTW",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"Met BTW",enabled:true,active:true,available:true,priceDelta:10}
+      ],
+      tradeInOptions:[
+        {label:"Nee",enabled:true,active:true,available:true,priceDelta:0},
+        {label:"Ja",enabled:true,active:true,available:true,priceDelta:0}
+      ]
+    };
+    Object.keys(defaults).forEach(key=>{
+      const incoming=Array.isArray(phone[key]) ? phone[key] : [];
+      const normalized=incoming.map((x,i)=>{
+        const d=defaults[key][i] || {priceDelta:0};
+        const n=normalizePhoneOption(x,d.label,d.priceDelta);
+        n.label=canonicalPhoneOptionLabel(key,n.label);
+        if(key==='batteryOptions') n.priceDelta=String(n.label).toLowerCase().includes('nieuw') ? 30 : 0;
+        if(key==='vatOptions') n.priceDelta=String(n.label).toLowerCase().includes('met btw') ? 10 : 0;
+        return n;
+      });
+      const deduped=[];
+      const seen=new Set();
+      normalized.forEach(n=>{
+        if(!n || !n.label) return;
+        const id=String(n.label).toLowerCase();
+        if(seen.has(id)) return;
+        if(key==='vatOptions' && n.label!=='Zonder BTW' && n.label!=='Met BTW') return;
+        if(key==='batteryOptions' && n.label!=='Standaard' && n.label!=='Nieuw (100%)') return;
+        seen.add(id);
+        deduped.push(n);
+      });
+      const labels=new Set(deduped.map(x=>String(x.label).toLowerCase()));
+      defaults[key].forEach(d=>{
+        if(!labels.has(String(d.label).toLowerCase())) deduped.push({...d});
+      });
+      phone[key]=deduped;
+    });
+  }
+
+
+
+
+function normalizeDeviceCategories(){
+  if(!Array.isArray(data.deviceCategories)){
+    data.deviceCategories = [];
+  }
+
+  data.deviceCategories = data.deviceCategories.map(x => ({
+    title: x.title || "Nieuwe categorie",
+    image: x.image || "",
+    link: x.link || "devices.html",
+    buttonText: x.buttonText || "Bekijk",
+    active: x.active !== false
+  }));
+}
+
+function renderDeviceCategories(){
+  if(!Array.isArray(data.deviceCategories)) data.deviceCategories=[];
+  data.deviceCategories=data.deviceCategories.map(x=>({
+    title:x.title || "Nieuwe categorie",
+    image:x.image || "",
+    link:x.link || "devices.html",
+    buttonText:x.buttonText || "Bekijk",
+    active:x.active !== false
+  }));
+}
+
+function renderDeviceCategories(){
+  normalizeDeviceCategories();
+  const box=document.getElementById("deviceCategoriesList");
+  if(!box) return;
+
+  if(!data.deviceCategories.length){
+    box.innerHTML='<div class="empty">Nog geen categorieën. Voeg er één toe.</div>';
+    return;
+  }
+
+  box.innerHTML=data.deviceCategories.map((x,i)=>`
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-head">
+        <div>
+          <div class="card-title">${esc(x.title)}</div>
+          <div class="small">Homepage categorie</div>
+        </div>
+        <button class="btn btn-red" onclick="deleteDeviceCategory(${i})">Verwijderen</button>
+      </div>
+      <div class="grid">
+        <div class="field">
+          <label>Naam</label>
+          <input value="${esc(x.title)}" oninput="data.deviceCategories[${i}].title=this.value;markChanged()">
+        </div>
+        <div class="field">
+          <label>Link</label>
+          <input value="${esc(x.link)}" oninput="data.deviceCategories[${i}].link=this.value;markChanged()">
+        </div>
+        <div class="field">
+          <label>Tekst knop</label>
+          <input value="${esc(x.buttonText)}" oninput="data.deviceCategories[${i}].buttonText=this.value;markChanged()">
+        </div>
+        <div class="field">
+          <label>Actief</label>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:9px">
+            <input type="checkbox" ${x.active!==false?'checked':''} onchange="data.deviceCategories[${i}].active=this.checked;markChanged()">
+            Tonen op homepage
+          </label>
+        </div>
+        <div class="field" style="grid-column:1/-1">
+          <label>Afbeelding</label>
+          <input type="file" accept="image/*" onchange="handleCategoryImage(event,${i})">
+          <input value="${esc(x.image)}" placeholder="Of plak een afbeelding URL" oninput="data.deviceCategories[${i}].image=this.value;markChanged()">
+          ${x.image?`<img src="${esc(x.image)}" alt="" style="display:block;width:220px;height:120px;object-fit:cover;border-radius:12px;margin-top:10px">`:""}
+          <div class="small">Upload een afbeelding of gebruik een URL. De gekozen afbeelding wordt in de website opgeslagen.</div>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function handleCategoryImage(event,i){
+  const file=event.target.files && event.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    data.deviceCategories[i].image=reader.result;
+    renderDeviceCategories();
+    markChanged();
+  };
+  reader.readAsDataURL(file);
+}
+
+function addDeviceCategory(){
+  normalizeDeviceCategories();
+  data.deviceCategories.push({
+    title:"Nieuwe categorie",
+    image:"",
+    link:"devices.html",
+    buttonText:"Bekijk",
+    active:true
+  });
+  renderDeviceCategories();
+  markChanged();
+}
+
+function deleteDeviceCategory(i){
+  if(confirm("Deze categorie verwijderen?")){
+    data.deviceCategories.splice(i,1);
+    renderDeviceCategories();
+    markChanged();
+  }
+}
+
+function normalizeData(){
+
+  if(!data || typeof data!=="object"){
+    data={};
+  }
+
+  normalizeBuybackPhones();
+  normalizeBuybackCatalog();
+
+  /* GSM Services */
+  if(!data.gsmServices || typeof data.gsmServices!=="object"){
+    data.gsmServices={};
+  }
+
+  ["imei","remote","server","frp","firmware"].forEach(key=>{
+    if(!Array.isArray(data.gsmServices[key])){
+      data.gsmServices[key]=[];
+    }
+    data.gsmServices[key]=data.gsmServices[key].map(x=>{
+      const service=normalizeGsmService(x);
+      if(!service.group) service.group=key==="imei"?"IMEI Services":key==="remote"?"Remote Service":key==="server"?"Server / Tools":key==="frp"?"FRP Services":"Firmware / Software";
+      return service;
+    });
+  });
+
+  /*
+   Oude services kunnen strings zijn.
+   We zetten ze automatisch om naar het nieuwe formaat.
+  */
+  if(!Array.isArray(data.services)){
+    data.services=[];
+  }
+
+  data.services=data.services.map(x=>{
+
+    if(Array.isArray(x)){
+      return [
+        x[0] || "🔧",
+        x[1] || "",
+        x[2] || ""
+      ];
+    }
+
+    return [
+      "🔧",
+      String(x || ""),
+      ""
+    ];
+  });
+
+
+  /* telefoons te koop */
+
+  if(!Array.isArray(data.phones)){
+    if(Array.isArray(data.devices)){
+      data.phones=data.devices.map(x=>({
+        name:x.name || x.model || "",
+        brand:x.brand || "Apple",
+        price:x.price || x.salePrice || x.sellPrice || x.verkoopprijs || x.screen || "",
+        storage:x.storage || "",
+        color:x.color || x.colour || "",
+        condition:x.condition || "Nieuw",
+        warranty:x.warranty || "",
+        description:x.description || "",
+        images:Array.isArray(x.images) ? x.images.slice(0,4) : [x.image || ""]
+      }));
+    }else{
+      data.phones=[];
+    }
+  }
+
+  data.phones=data.phones.map(x=>{
+    const phone={
+      name:x.name || x.model || "",
+      brand:x.brand || "Apple",
+      price:x.price || x.salePrice || x.sellPrice || x.verkoopprijs || x.screen || "",
+      storage:x.storage || "",
+      color:x.color || x.colour || "",
+      condition:x.condition || "Nieuw",
+      warranty:x.warranty || "",
+      description:x.description || "",
+      images:Array.isArray(x.images) ? x.images.slice(0,4) : [],
+      conditionOptions:x.conditionOptions,
+      storageOptions:x.storageOptions,
+      colorOptions:x.colorOptions,
+      batteryOptions:x.batteryOptions,
+      vatOptions:x.vatOptions,
+      tradeInOptions:x.tradeInOptions
+    };
+    normalizePhoneOptions(phone);
+    return phone;
+  });
+
+  data.phones.forEach(x=>{
+    while(x.images.length<4) x.images.push("");
+    if(x.image && !x.images[0]) x.images[0]=x.image;
+  });
+
+  /* gebruikte telefoons */
+
+  if(!Array.isArray(data.usedPhones)){
+    data.usedPhones=[];
+  }
+
+  data.usedPhones=data.usedPhones.map(x=>{
+
+    let images=[];
+
+    if(Array.isArray(x.images)){
+      images=x.images.slice(0,4);
+    }
+
+    while(images.length<4){
+      images.push("");
+    }
+
+    if(x.image && !images[0]){
+      images[0]=x.image;
+    }
+
+    return {
+      name:x.name || "",
+      brand:x.brand || "",
+      price:x.price || "",
+      condition:x.condition || "Goed",
+      storage:x.storage || "",
+      ram:x.ram || "",
+      whatsapp:x.whatsapp || "",
+      description:x.description || "",
+      images:images
+    };
+  });
+
+
+  /* GSM services */
+  if(!data.gsmServices || typeof data.gsmServices !== "object") data.gsmServices={};
+  ["imei","remote","server","frp","firmware"].forEach(key=>{
+    if(!Array.isArray(data.gsmServices[key])) data.gsmServices[key]=[];
+    data.gsmServices[key]=data.gsmServices[key].map(x=>{
+      const service=normalizeGsmService(x);
+      if(!service.group) service.group=key==="imei"?"IMEI Services":key==="remote"?"Remote Service":key==="server"?"Server / Tools":key==="frp"?"FRP Services":"Firmware / Software";
+      return service;
+    });
+  });
+
+  /* why */
+
+  if(!Array.isArray(data.why)){
+
+    if(Array.isArray(data.features)){
+
+      data.why=data.features.map(x=>[
+        "⭐",
+        String(x || ""),
+        ""
+      ]);
+
+    }else{
+      data.why=[];
+    }
+  }
+
+  data.why=data.why.map(x=>{
+
+    if(Array.isArray(x)){
+      return [
+        x[0] || "⭐",
+        x[1] || "",
+        x[2] || ""
+      ];
+    }
+
+    return [
+      "⭐",
+      String(x || ""),
+      ""
+    ];
+  });
+}
+
+
+async function loadData(){
+
+  loading=true;
+
+  setStatus("Gegevens laden...","info");
+
+  try{
+
+    const r=await fetch("/api/site");
+
+    if(!r.ok){
+      throw new Error("Websitegegevens konden niet worden geladen");
+    }
+
+    data=await r.json();
+
+    normalizeData();
+
+    renderAll();
+
+    setStatus("✓ Gegevens geladen","success");
+
+  }catch(e){
+
+    setStatus("✕ "+e.message,"error");
+
+  }
+
+  loading=false;
+}
+
+
+/* ---------------- GENERAL ---------------- */
+
+function renderGeneral(){
+
+  document.querySelectorAll("[data-u]").forEach(el=>{
+
+    const key=el.dataset.u;
+
+    if(key==="usedPhones") return;
+
+    el.value=data[key] ?? "";
+
+    el.oninput=()=>{
+
+      data[key]=el.value;
+
+      markChanged();
+
+    };
+  });
+}
+
+
+/* Editor selections */
+let selectedServiceIndex=0;
+let selectedPhoneIndex=0;
+let selectedUsedPhoneIndex=0;
+let selectedWhyIndex=0;
+let selectedGsmServiceIndex=0;
+let gsmActiveCategory="imei";
+
+/* ---------------- SERVICES ---------------- */
+
+function renderServices(){
+  const box=document.getElementById("servicesList");
+  if(!box) return;
+  if(!data.services.length){
+    box.innerHTML=`<div class="editor-layout"><div class="editor-list"><div class="editor-list-title">Diensten</div><div class="small" style="padding:10px">Nog geen diensten toegevoegd.</div></div><div class="editor-panel editor-empty">Nog geen dienst toegevoegd.</div></div>`;
+    return;
+  }
+  if(selectedServiceIndex>=data.services.length) selectedServiceIndex=data.services.length-1;
+  const service=data.services[selectedServiceIndex];
+  const list=data.services.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedServiceIndex?'active':''}" onclick="selectedServiceIndex=${i};renderServices()">🔧 ${esc(x[1]||'Nieuwe dienst')}<small>${esc(x[2]||'')}</small></button>`).join('');
+  box.innerHTML=`
+    <div class="editor-layout">
+      <div class="editor-list">
+        <div class="editor-list-title">Diensten</div>
+        ${list}
+      </div>
+      <div class="editor-panel">
+        <div class="card-head">
+          <div><div class="card-title" style="font-size:20px">🔧 ${esc(service[1]||'Nieuwe dienst')}</div><div class="small">Bewerk hier de gegevens van deze dienst.</div></div>
+          <button class="btn btn-red" onclick="deleteService(${selectedServiceIndex})">Verwijderen</button>
+        </div>
+        <div class="grid">
+          <div class="field"><label>Icoon / emoji</label><input value="${esc(service[0]||'🔧')}" oninput="data.services[${selectedServiceIndex}][0]=this.value;markChanged()"></div>
+          <div class="field"><label>Naam dienst</label><input value="${esc(service[1]||'')}" oninput="data.services[${selectedServiceIndex}][1]=this.value;markChanged();renderServices()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.services[${selectedServiceIndex}][2]=this.value;markChanged()">${esc(service[2]||'')}</textarea></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function addService(){
+  data.services.push(["🔧","Nieuwe dienst",""]);
+  selectedServiceIndex=data.services.length-1;
+  renderServices();
+  markChanged();
+}
+
+function deleteService(i){
+  if(confirm("Deze dienst verwijderen?")){
+    data.services.splice(i,1);
+    selectedServiceIndex=Math.max(0,Math.min(selectedServiceIndex,data.services.length-1));
+    renderServices();
+    markChanged();
+  }
+}
+
+
+/* ---------------- PHONES ---------------- */
+
+function renderPhones(){
+  const box=document.getElementById("phonesList");
+  if(!box) return;
+  if(!data.phones.length){
+    box.innerHTML=`<div class="editor-layout"><div class="editor-list"><div class="editor-list-title">Telefoons</div><div class="small" style="padding:10px">Nog geen telefoons toegevoegd.</div></div><div class="editor-panel editor-empty">Nog geen telefoon toegevoegd.</div></div>`;
+    return;
+  }
+  if(selectedPhoneIndex>=data.phones.length) selectedPhoneIndex=data.phones.length-1;
+  const phone=data.phones[selectedPhoneIndex];
+  normalizePhoneOptions(phone);
+  const images=phone.images || ["","","",""];
+  const list=data.phones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">📱 ${esc(x.name||'Nieuwe telefoon')}<small>${esc(x.brand||'')}</small></button>`).join('');
+  const optionEditor=(key,title,help,priceEditable=true)=>{
+    const opts=phone[key]||[];
+    const fixedGroup = key==='batteryOptions' || key==='vatOptions';
+    return `<div class="card" style="margin-top:16px"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">${help}</div>${opts.map((o,i)=>{
+      const active=o.active !== undefined ? o.active !== false : o.enabled !== false;
+      const available=o.available !== false;
+      let fixed=0;
+      if(key==='batteryOptions') fixed=String(o.label).toLowerCase().includes('nieuw') ? 30 : 0;
+      if(key==='vatOptions') fixed=String(o.label).toLowerCase().includes('met btw') ? 10 : 0;
+
+      if(fixedGroup){
+        const fixedLabel = key==='batteryOptions'
+          ? (String(o.label).toLowerCase().includes('nieuw') ? 'Nieuw (100%)' : 'Standaard')
+          : (String(o.label).toLowerCase().includes('met btw') ? 'Met BTW' : 'Zonder BTW');
+        return `<div style="display:grid;grid-template-columns:minmax(220px,1fr) 150px;gap:10px;align-items:center;margin-bottom:9px">
+          <input value="${esc(fixedLabel)}" readonly style="background:#f3f4f6;cursor:not-allowed">
+          <div class="small" style="font-weight:800">Vast: + €${fixed}</div>
+        </div>`;
+      }
+
+      return `<div style="display:grid;grid-template-columns:minmax(180px,1fr) 110px 125px 120px;gap:10px;align-items:center;margin-bottom:9px">
+        <input value="${esc(o.label)}" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].label=this.value;markChanged()">
+        <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${active?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].active=this.checked;data.phones[${selectedPhoneIndex}].${key}[${i}].enabled=this.checked;markChanged()"> Actief</label>
+        <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${available?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].available=this.checked;markChanged()"> Beschikbaar</label>
+        <input type="number" step="1" value="${esc(o.priceDelta)}" placeholder="0" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].priceDelta=this.value;markChanged()">
+      </div>`;
+    }).join('')}<div class="small" style="margin-top:8px">Actief = tonen op de website. Beschikbaar = kan geselecteerd worden. Bij BTW en batterij zijn de bedragen vast: Met BTW +€10 en Nieuw (100%) +€30.</div></div>`;
+  };
+  box.innerHTML=`
+    <div class="editor-layout">
+      <div class="editor-list">
+        <div class="editor-list-title">Telefoons</div>
+        ${list}
+      </div>
+      <div class="editor-panel">
+        <div class="card-head">
+          <div><div class="card-title" style="font-size:20px">📱 ${esc(phone.name||'Nieuwe telefoon')}</div><div class="small">Beheer de gegevens en verkoopopties van deze telefoon.</div></div>
+          <button class="btn btn-red" onclick="deletePhone(${selectedPhoneIndex})">Verwijderen</button>
+        </div>
+        <div class="grid">
+          <div class="field"><label>Model</label><input value="${esc(phone.name||'')}" oninput="data.phones[${selectedPhoneIndex}].name=this.value;markChanged();renderPhones()"></div>
+          <div class="field"><label>Merk</label><input value="${esc(phone.brand||'')}" oninput="data.phones[${selectedPhoneIndex}].brand=this.value;markChanged()"></div>
+          <div class="field"><label>Basisprijs (€)</label><input type="number" step="1" value="${esc(phone.price||'')}" oninput="data.phones[${selectedPhoneIndex}].price=this.value;markChanged()"><div class="small">Dit is de basisprijs van Zichtbaar gebruikt.</div></div>
+          <div class="field"><label>Garantie</label><input value="${esc(phone.warranty||'')}" placeholder="12 maanden" oninput="data.phones[${selectedPhoneIndex}].warranty=this.value;markChanged()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.phones[${selectedPhoneIndex}].description=this.value;markChanged()">${esc(phone.description||'')}</textarea></div>
+        </div>
+        ${optionEditor('conditionOptions','1. Productconditie','Jij bepaalt per conditie de meerprijs. Basisprijs = Zichtbaar gebruikt.')}
+        ${optionEditor('storageOptions','2. Geheugen','64 / 128 / 256 / 512 GB en 1 TB. Zet actief/beschikbaar en bepaal zelf de meerprijs.')}
+        ${optionEditor('colorOptions','3. Kleur','Bepaal welke kleuren actief en beschikbaar zijn en eventueel de meerprijs.')}
+        ${optionEditor('batteryOptions','4. Batterij','Vast: Standaard + €0 en Nieuw (100%) + €30.',false)}
+        ${optionEditor('vatOptions','5. BTW','Vast: Zonder BTW + €0 en Met BTW + €10.',false)}
+        ${optionEditor('tradeInOptions','6. Inruil oude telefoon','Klant kiest Ja of Nee. Laat prijs op 0 als je later een aparte inruilpagina wilt maken.')}
+        <div style="margin-top:15px"><label style="font-weight:700">📷 Foto's</label><div class="images-grid">${images.map((img,j)=>`<div class="image-box">${img?`<img src="${esc(img)}" class="image-preview">`:`<div class="empty-preview">Geen foto</div>`}<input type="file" accept="image/*" onchange="handlePhoneImage(event,${selectedPhoneIndex},${j})">${img?`<button class="btn btn-light" style="margin-top:7px" onclick="removePhoneImage(${selectedPhoneIndex},${j})">Verwijder foto</button>`:""}</div>`).join('')}</div><p class="small">Maximaal 4 foto's per telefoon.</p></div>
+      </div>
+    </div>`;
+}
+
+function renderPhoneTitle(i){ renderPhones(); }
+
+function addPhone(){
+  data.phones.push({name:"Nieuwe iPhone",brand:"Apple",price:"",storage:"",color:"",condition:"Zichtbaar gebruikt",warranty:"",description:"",images:["","","",""]});
+  normalizePhoneOptions(data.phones[data.phones.length-1]);
+  selectedPhoneIndex=data.phones.length-1;
+  renderPhones();
+  markChanged();
+}
+
+function deletePhone(i){
+  if(confirm("Deze telefoon verwijderen?")){
+    data.phones.splice(i,1);
+    selectedPhoneIndex=Math.max(0,Math.min(selectedPhoneIndex,data.phones.length-1));
+    renderPhones();
+    markChanged();
+  }
+}
+
+
+/* ---------------- BUYBACK / UW TOESTEL VERKOPEN ---------------- */
+function normalizeBuybackPhones(){
+  if(!Array.isArray(data.buybackPhones)) data.buybackPhones=[];
+  data.buybackPhones=data.buybackPhones.map((x,i)=>({
+    id:x.id || ('buyback-'+Date.now()+'-'+i),
+    name:x.name||'', brand:x.brand||'', image:x.image||'', price:Number(x.price||0), active:x.active!==false,
+    storageOptions:Array.isArray(x.storageOptions)?x.storageOptions:[
+      {label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}
+    ],
+    conditionOptions:Array.isArray(x.conditionOptions)?x.conditionOptions:[
+      {label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}
+    ],
+    batteryOptions:[
+      {label:'85% of hoger',priceDelta:(Array.isArray(x.batteryOptions)&&x.batteryOptions[0]?Number(x.batteryOptions[0].priceDelta||0):0),active:true},
+      {label:'Onder 85%',priceDelta:(Array.isArray(x.batteryOptions)&&x.batteryOptions.length>2?Number(x.batteryOptions[x.batteryOptions.length-1].priceDelta||-25):-25),active:true}
+    ],
+    faceIdOptions:Array.isArray(x.faceIdOptions)?x.faceIdOptions:[
+      {label:'Face ID werkt',priceDelta:0,active:true},{label:'Face ID werkt niet',priceDelta:-100,active:true}
+    ],
+    screenOptions:Array.isArray(x.screenOptions)?x.screenOptions:[
+      {label:'Scherm goed',priceDelta:0,active:true},{label:'Kleine beschadigingen',priceDelta:-50,active:true},{label:'Scherm gebroken',priceDelta:-150,active:true}
+    ]
+  }));
+}
+
+function newBuybackId(prefix){
+  return prefix+"-"+Date.now()+"-"+Math.random().toString(36).slice(2,8);
+}
+
+function normalizeBuybackCatalog(){
+  if(!Array.isArray(data.buybackCatalog)) data.buybackCatalog=[];
+
+  /* Safe migration: existing flat buybackPhones are grouped by brand → Telefoon → model. */
+  if(!data.buybackCatalog.length && Array.isArray(data.buybackPhones) && data.buybackPhones.length){
+    const byBrand={};
+    data.buybackPhones.forEach(phone=>{
+      const brand=(phone.brand||"Overig").trim()||"Overig";
+      if(!byBrand[brand]) byBrand[brand]={id:newBuybackId("brand"),name:brand,types:[]};
+      let type=byBrand[brand].types.find(t=>t.name==="Telefoon");
+      if(!type){
+        type={id:newBuybackId("type"),name:"Telefoon",questions:[],models:[]};
+        byBrand[brand].types.push(type);
+      }
+      type.models.push({id:newBuybackId("model"),name:phone.name||"Nieuw model",buybackId:phone.id});
+    });
+    data.buybackCatalog=Object.values(byBrand);
+  }
+
+  data.buybackCatalog=data.buybackCatalog.map(brand=>{
+    brand=brand||{};
+    return {
+      id:brand.id||newBuybackId("brand"),
+      name:String(brand.name||"Nieuw merk"),
+      types:Array.isArray(brand.types)?brand.types.map(type=>({
+        id:type.id||newBuybackId("type"),
+        name:String(type.name||"Telefoon"),
+        questions:Array.isArray(type.questions)?type.questions:[],
+        models:Array.isArray(type.models)?type.models.map(model=>({
+          id:model.id||newBuybackId("model"),
+          name:String(model.name||"Nieuw model"),
+          buybackId:model.buybackId||""
+        })): []
+      })): []
+    };
+  });
+}
+
+
+function defaultBuybackQuestionsForType(typeName){
+  const n=String(typeName||'').toLowerCase();
+  const isWatch=n.includes('watch')||n.includes('smartwatch');
+  const isTablet=n.includes('tablet')||n.includes('ipad');
+  const isIphone=n.includes('iphone');
+  const qs=[];
+  if(isWatch){
+    qs.push({id:newBuybackId("q"),label:'Werkt het apparaat?',type:'yesno',required:true,options:[{label:'Ja',priceDelta:0,active:true},{label:'Nee',priceDelta:-100,active:true}]});
+    qs.push({id:newBuybackId("q"),label:'Conditie',type:'options',required:true,options:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-30,active:true},{label:'Zichtbaar gebruikt',priceDelta:-70,active:true},{label:'Kapot',priceDelta:-150,active:true}]});
+    qs.push({id:newBuybackId("q"),label:'Batterij',type:'options',required:true,options:[{label:'85% of hoger',priceDelta:0,active:true},{label:'Onder 85%',priceDelta:-25,active:true}]});
+  }else if(isTablet){
+    qs.push({id:newBuybackId("q"),label:'Opslag',type:'options',required:true,options:[{label:'64 GB',priceDelta:0,active:true},{label:'128 GB',priceDelta:25,active:true},{label:'256 GB',priceDelta:60,active:true},{label:'512 GB',priceDelta:100,active:true}]});
+    qs.push({id:newBuybackId("q"),label:'Conditie',type:'options',required:true,options:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}]});
+    qs.push({id:newBuybackId("q"),label:'Scherm',type:'options',required:true,options:[{label:'Scherm goed',priceDelta:0,active:true},{label:'Beschadigd',priceDelta:-75,active:true},{label:'Gebroken',priceDelta:-175,active:true}]});
+  }else if(isIphone){
+    qs.push({id:newBuybackId("q"),label:'Opslag',type:'options',required:true,options:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true},{label:'1 TB',priceDelta:140,active:true}]});
+    qs.push({id:newBuybackId("q"),label:'Conditie',type:'options',required:true,options:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}]});
+    qs.push({id:newBuybackId("q"),label:'Batterij',type:'options',required:true,options:[{label:'85% of hoger',priceDelta:0,active:true},{label:'Onder 85%',priceDelta:-25,active:true}]});
+    qs.push({id:newBuybackId("q"),label:'Face ID',type:'options',required:true,options:[{label:'Face ID werkt',priceDelta:0,active:true},{label:'Face ID werkt niet',priceDelta:-100,active:true}]});
+    qs.push({id:newBuybackId("q"),label:'Scherm',type:'options',required:true,options:[{label:'Scherm goed',priceDelta:0,active:true},{label:'Kleine beschadigingen',priceDelta:-50,active:true},{label:'Scherm gebroken',priceDelta:-150,active:true}]});
+    qs.push({id:newBuybackId("q"),label:'iCloud / account verwijderd',type:'yesno',required:true,options:[{label:'Ja',priceDelta:0,active:true},{label:'Nee',priceDelta:-200,active:true}]});
+  }else{
+    qs.push({id:newBuybackId("q"),label:'Opslag',type:'options',required:true,options:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}]});
+    qs.push({id:newBuybackId("q"),label:'Conditie',type:'options',required:true,options:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}]});
+    qs.push({id:newBuybackId("q"),label:'Batterij',type:'options',required:true,options:[{label:'85% of hoger',priceDelta:0,active:true},{label:'Onder 85%',priceDelta:-25,active:true}]});
+    qs.push({id:newBuybackId("q"),label:'Scherm',type:'options',required:true,options:[{label:'Scherm goed',priceDelta:0,active:true},{label:'Beschadigd',priceDelta:-75,active:true},{label:'Gebroken',priceDelta:-150,active:true}]});
+    qs.push({id:newBuybackId("q"),label:'Account / vergrendeling verwijderd',type:'yesno',required:true,options:[{label:'Ja',priceDelta:0,active:true},{label:'Nee',priceDelta:-200,active:true}]});
+  }
+  return qs;
+}
+
+function normalizeBuybackTypeSettings(){
+  (data.buybackCatalog||[]).forEach(b=>(b.types||[]).forEach(t=>{
+    if(!Array.isArray(t.questions)||!t.questions.length) t.questions=defaultBuybackQuestionsForType(t.name);
+    t.questions=t.questions.map(q=>({
+      id:q.id||newBuybackId("q"),
+      label:String(q.label||'Vraag'),
+      type:q.type||'options',
+      required:q.required!==false,
+      options:Array.isArray(q.options)?q.options.map(o=>({label:String(o.label||''),priceDelta:Number(o.priceDelta||0),active:o.active!==false})):[],
+    }));
+  }));
+}
+
+function getBuybackQuestionTypeLabel(type){
+  return type==='yesno'?'Ja / Nee':type==='text'?'Tekst':'Keuze met prijsaanpassing';
+}
+
+function renderBuybackTypeSettings(){
+  normalizeBuybackTypeSettings();
+  const t=getBuybackType();
+  if(!t)return '';
+  if(!buybackTypeSettingsOpen)return '';
+  const qs=t.questions||[];
+  return `<div class="bb-type-settings">
+    <div class="bb-type-settings-head">
+      <div><h4>⚙️ Vragen voor ${esc(t.name)}</h4><div class="small">Deze vragen gelden voor alle modellen binnen dit type apparaat.</div></div>
+      <button class="btn btn-light" type="button" onclick="buybackTypeSettingsOpen=false;renderBuybackModelEditor()">Sluiten</button>
+    </div>
+    <div class="bb-question-list">
+      ${qs.length?qs.map(q=>`
+        <div class="bb-question-row">
+          <input value="${esc(q.label)}" oninput="updateBuybackQuestion('${esc(q.id)}','label',this.value)">
+          <select onchange="updateBuybackQuestion('${esc(q.id)}','type',this.value)">
+            <option value="options" ${q.type==='options'?'selected':''}>Keuzes + prijs</option>
+            <option value="yesno" ${q.type==='yesno'?'selected':''}>Ja / Nee</option>
+            <option value="text" ${q.type==='text'?'selected':''}>Tekst</option>
+          </select>
+          <label style="display:flex;gap:6px;align-items:center;font-size:12px;font-weight:800"><input type="checkbox" ${q.required!==false?'checked':''} onchange="updateBuybackQuestion('${esc(q.id)}','required',this.checked)"> Verplicht</label>
+          <div class="bb-question-type">${getBuybackQuestionTypeLabel(q.type)}</div>
+          <div class="bb-question-actions">
+            ${q.type!=='text'?`<button class="bb-q-edit" type="button" onclick="toggleBuybackQuestion('${esc(q.id)}')">${buybackQuestionOpenId===q.id?'Sluit opties':'Opties'}</button>`:''}
+            <button class="bb-q-delete" type="button" onclick="deleteBuybackQuestion('${esc(q.id)}')">×</button>
+          </div>
+        </div>
+        ${buybackQuestionOpenId===q.id&&q.type!=='text'?renderBuybackQuestionOptions(q):''}
+      `).join(''):'<div class="buyback-tree-empty">Nog geen vragen toegevoegd.</div>'}
+    </div>
+    <div class="bb-type-actions">
+      <button class="btn btn-green" type="button" onclick="addBuybackQuestion('options')">+ Keuzevraag</button>
+      <button class="btn btn-light" type="button" onclick="addBuybackQuestion('yesno')">+ Ja/Nee-vraag</button>
+      <button class="btn btn-light" type="button" onclick="addBuybackQuestion('text')">+ Tekstvraag</button>
+    </div>
+  </div>`;
+}
+
+function renderBuybackQuestionOptions(q){
+  return `<div class="bb-option-editor">
+    ${(q.options||[]).map((o,i)=>`<div class="bb-option-line">
+      <input value="${esc(o.label)}" oninput="updateBuybackQuestionOption('${esc(q.id)}',${i},'label',this.value)">
+      <input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateBuybackQuestionOption('${esc(q.id)}',${i},'priceDelta',this.value)">
+      <label style="font-size:11px;font-weight:800"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateBuybackQuestionOption('${esc(q.id)}',${i},'active',this.checked)"> Actief</label>
+      <button class="bb-q-delete" type="button" onclick="deleteBuybackQuestionOption('${esc(q.id)}',${i})">×</button>
+    </div>`).join('')}
+    <button class="btn btn-light" type="button" onclick="addBuybackQuestionOption('${esc(q.id)}')">+ Optie</button>
+  </div>`;
+}
+
+function updateBuybackQuestion(id,key,value){
+  const t=getBuybackType();const q=t&&t.questions.find(x=>x.id===id);if(!q)return;
+  if(key==='required')q.required=!!value;
+  else if(key==='type'){
+    q.type=value;
+    q.options=value==='text'?[]:[
+      {label:value==='yesno'?'Ja':'Optie 1',priceDelta:0,active:true},
+      {label:value==='yesno'?'Nee':'Optie 2',priceDelta:-25,active:true}
+    ];
+    if(value==='yesno' || value==='options') buybackQuestionOpenId=q.id;
+    else buybackQuestionOpenId='';
+  }
+  else q[key]=value;
+  markChanged();renderBuybackTypeSettings();
+}
+function toggleBuybackQuestion(id){buybackQuestionOpenId=buybackQuestionOpenId===id?'':id;renderBuybackTypeSettings();}
+function addBuybackQuestion(type){
+  const t=getBuybackType();if(!t)return;
+  const label=prompt('Naam van de vraag:','Nieuwe vraag');if(!label||!label.trim())return;
+  t.questions=t.questions||[];
+  const newQuestion={id:newBuybackId("q"),label:label.trim(),type,required:true,options:type==='text'?[]:[
+    {label:type==='yesno'?'Ja':'Optie 1',priceDelta:0,active:true},
+    {label:type==='yesno'?'Nee':'Optie 2',priceDelta:-25,active:true}
+  ]};
+  t.questions.push(newQuestion);
+  // Open the options immediately so Ja/Nee is visible without saving first.
+  buybackQuestionOpenId=type==='text'?'':newQuestion.id;
+  markChanged();renderBuybackTypeSettings();
+}
+function deleteBuybackQuestion(id){
+  const t=getBuybackType();if(!t)return;
+  if(!confirm('Deze vraag verwijderen voor dit type apparaat?'))return;
+  t.questions=t.questions.filter(q=>q.id!==id);buybackQuestionOpenId='';markChanged();renderBuybackTypeSettings();
+}
+function updateBuybackQuestionOption(qid,index,key,value){
+  const t=getBuybackType();const q=t&&t.questions.find(x=>x.id===qid);if(!q||!q.options[index])return;
+  q.options[index][key]=key==='priceDelta'?Number(value||0):key==='active'?!!value:value;
+  markChanged();renderBuybackTypeSettings();
+}
+function addBuybackQuestionOption(qid){
+  const t=getBuybackType();const q=t&&t.questions.find(x=>x.id===qid);if(!q)return;
+  q.options.push({label:'Nieuwe optie',priceDelta:0,active:true});markChanged();renderBuybackTypeSettings();
+}
+function deleteBuybackQuestionOption(qid,index){
+  const t=getBuybackType();const q=t&&t.questions.find(x=>x.id===qid);if(!q)return;
+  q.options.splice(index,1);markChanged();renderBuybackTypeSettings();
+}
+
+function getBuybackBrand(){
+  return data.buybackCatalog.find(x=>x.id===selectedBuybackBrandId)||null;
+}
+function getBuybackType(){
+  const b=getBuybackBrand();
+  return b ? (b.types||[]).find(x=>x.id===selectedBuybackTypeId)||null : null;
+}
+function getBuybackModel(){
+  const t=getBuybackType();
+  return t ? (t.models||[]).find(x=>x.id===selectedBuybackModelId)||null : null;
+}
+function getBuybackPhoneById(id){
+  return data.buybackPhones.find(x=>x.id===id)||null;
+}
+function ensureBuybackSelection(){
+  const brands=data.buybackCatalog||[];
+  if(!brands.length){selectedBuybackBrandId="";selectedBuybackTypeId="";selectedBuybackModelId="";return;}
+  if(!brands.some(x=>x.id===selectedBuybackBrandId)) selectedBuybackBrandId=brands[0].id;
+  const b=getBuybackBrand();
+  const types=b&&b.types||[];
+  if(!types.some(x=>x.id===selectedBuybackTypeId)) selectedBuybackTypeId=types[0]?types[0].id:"";
+  const t=getBuybackType();
+  const models=t&&t.models||[];
+  if(!models.some(x=>x.id===selectedBuybackModelId)) selectedBuybackModelId=models[0]?models[0].id:"";
+}
+
+function renderBuybackPhones(){
+  normalizeBuybackPhones();
+  normalizeBuybackCatalog();
+  normalizeBuybackTypeSettings();
+  ensureBuybackSelection();
+
+  const box=document.getElementById('buybackHierarchy');
+  const editor=document.getElementById('buybackModelEditor');
+  if(!box||!editor)return;
+
+  const brands=data.buybackCatalog||[];
+  if(!brands.length){
+    box.innerHTML='<div class="buyback-tree-empty" style="padding:40px">Nog geen merk toegevoegd.<br><br><button class="btn btn-green" type="button" onclick="addBuybackBrand()">+ Eerste merk toevoegen</button></div>';
+    editor.innerHTML='';
+    return;
+  }
+
+  const brandList=brands.map(b=>`<button type="button" class="buyback-tree-item ${b.id===selectedBuybackBrandId?'active':''}" onclick="selectBuybackBrand('${esc(b.id)}')">${esc(b.name)}<small>${(b.types||[]).length} type${(b.types||[]).length===1?'':'s'}</small></button>`).join('');
+
+  const b=getBuybackBrand();
+  const types=(b&&b.types)||[];
+  const typeList=types.length
+    ? types.map(t=>`<button type="button" class="buyback-tree-item ${t.id===selectedBuybackTypeId?'active':''}" onclick="selectBuybackType('${esc(t.id)}')">${esc(t.name)}<small>${(t.models||[]).length} model${(t.models||[]).length===1?'':'len'}</small></button>`).join('')
+    : '<div class="buyback-tree-empty">Nog geen type.<br><br><button class="btn btn-light" type="button" onclick="addBuybackType()">+ Type toevoegen</button></div>';
+
+  const t=getBuybackType();
+  const models=(t&&t.models)||[];
+  const modelList=models.length
+    ? models.map(m=>`<button type="button" class="buyback-tree-item ${m.id===selectedBuybackModelId?'active':''}" onclick="selectBuybackModel('${esc(m.id)}')">${esc(m.name)}<small>${getBuybackPhoneById(m.buybackId)?.active===false?'Verborgen':'Zichtbaar'}</small></button>`).join('')
+    : '<div class="buyback-tree-empty">Nog geen model.<br><br><button class="btn btn-green" type="button" onclick="addBuybackModel()">+ Model toevoegen</button></div>';
+
+  box.innerHTML=`
+    <div class="buyback-tree">
+      <div class="buyback-tree-pane">
+        <div class="buyback-tree-title">1. Merk</div>
+        <div class="buyback-tree-list">${brandList}</div>
+      </div>
+      <div class="buyback-tree-pane">
+        <div class="buyback-tree-title">2. Type apparaat</div>
+        <div class="buyback-tree-list">${typeList}</div>
+      </div>
+      <div class="buyback-tree-pane">
+        <div class="buyback-tree-title">3. Model</div>
+        <div class="buyback-tree-list">${modelList}</div>
+      </div>
+    </div>`;
+
+  renderBuybackModelEditor();
+}
+
+function renderBuybackModelEditor(){
+  const editor=document.getElementById('buybackModelEditor');
+  if(!editor)return;
+  const b=getBuybackBrand(), t=getBuybackType(), m=getBuybackModel();
+  if(!b||!t||!m){editor.innerHTML='';return;}
+
+  const phone=getBuybackPhoneById(m.buybackId);
+  if(!phone){
+    editor.innerHTML=`<div class="buyback-model-panel">
+      <h3>${esc(m.name)}</h3>
+      <div class="small">Dit model heeft nog geen gekoppeld inkooptoestel.</div>
+      <div class="panel-actions"><button class="btn btn-green" onclick="attachBuybackModel()">Koppelen aan inkooptoestel</button><button class="btn buyback-danger" onclick="deleteBuybackModel()">Model verwijderen</button></div>
+    </div>`;
+    return;
+  }
+
+  editor.innerHTML=`
+    <div class="buyback-model-panel">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
+        <div><h3>📱 ${esc(phone.name||m.name)}</h3><div class="small">${esc(b.name)} → ${esc(t.name)} → ${esc(m.name)}</div></div>
+        <div class="actions">
+          <button class="btn btn-light" type="button" onclick="toggleBuybackTypeSettings()">⚙️ Vragen voor type</button>
+          <button class="btn btn-light" type="button" onclick="toggleBuybackPhoneOptions()">📱 Modelopties</button>
+          <button class="btn btn-red" type="button" onclick="deleteBuybackModel()">Verwijderen</button>
+        </div>
+      </div>
+      <div class="grid" style="margin-top:15px">
+        <div class="field"><label>Merk</label><input value="${esc(b.name)}" oninput="renameBuybackBrand(this.value)"></div>
+        <div class="field"><label>Type apparaat</label><input value="${esc(t.name)}" oninput="renameBuybackType(this.value)"></div>
+        <div class="field"><label>Model</label><input value="${esc(phone.name||m.name)}" oninput="renameBuybackModel(this.value)"></div>
+        <div class="field"><label>Basis inkoopprijs (€)</label><input type="number" step="1" value="${Number(phone.price||0)}" oninput="phone.price=Number(this.value||0);markChanged()"></div>
+        <div class="field"><label>Website</label><label class="buyback-check-v5"><input type="checkbox" ${phone.active!==false?'checked':''} onchange="phone.active=this.checked;markChanged();renderBuybackPhones()"> Tonen op Uw toestel verkopen</label></div>
+        <div class="field buyback-photo-v5"><label>📷 Foto van toestel</label><div class="buyback-photo-line-v5">${phone.image?`<img src="${esc(phone.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen foto</div>'}<input type="file" accept="image/*" onchange="handleBuybackImageForModel(event)"></div></div>
+      </div>
+      ${renderBuybackTypeSettings()}
+      <div id="buybackOptionsArea" class="buyback-model-options" style="display:${buybackOptionsOpen?'block':'none'}">
+        ${buybackOptionEditorForModel(phone,'Opslag','storageOptions')}
+        ${buybackOptionEditorForModel(phone,'Conditie','conditionOptions')}
+        ${buybackOptionEditorForModel(phone,'Batterij','batteryOptions')}
+        ${buybackOptionEditorForModel(phone,'Face ID','faceIdOptions')}
+        ${buybackOptionEditorForModel(phone,'Scherm','screenOptions')}
+      </div>
+    </div>`;
+}
+
+function buybackOptionEditorForModel(phone,title,key){
+  const opts=phone[key]||[];
+  return `<div class="card buyback-option-card"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">Pas de keuze en prijsaanpassing zelf aan.</div>${opts.map((o,i)=>`<div class="buyback-option-row"><input value="${esc(o.label||'')}" oninput="phone.${key}[${i}].label=this.value;markChanged()"><input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="phone.${key}[${i}].priceDelta=Number(this.value||0);markChanged()"><label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="phone.${key}[${i}].active=this.checked;markChanged()"> Actief</label></div>`).join('')}</div>`;
+}
+
+function toggleBuybackTypeSettings(){
+  buybackTypeSettingsOpen=!buybackTypeSettingsOpen;
+  buybackQuestionOpenId="";
+  renderBuybackModelEditor();
+}
+function toggleBuybackPhoneOptions(){
+  buybackOptionsOpen=!buybackOptionsOpen;
+  renderBuybackModelEditor();
+}
+function selectBuybackBrand(id){
+  selectedBuybackBrandId=id;selectedBuybackTypeId="";selectedBuybackModelId="";buybackOptionsOpen=false;renderBuybackPhones();
+}
+function selectBuybackType(id){
+  selectedBuybackTypeId=id;selectedBuybackModelId="";buybackOptionsOpen=false;renderBuybackPhones();
+}
+function selectBuybackModel(id){
+  selectedBuybackModelId=id;buybackOptionsOpen=false;renderBuybackPhones();
+}
+
+function addBuybackBrand(){
+  const name=prompt("Naam van het merk (bijvoorbeeld Apple of Samsung):","Nieuw merk");
+  if(!name||!name.trim())return;
+  const brand={id:newBuybackId("brand"),name:name.trim(),types:[]};
+  data.buybackCatalog.push(brand);
+  selectedBuybackBrandId=brand.id;selectedBuybackTypeId="";selectedBuybackModelId="";
+  markChanged();renderBuybackPhones();
+}
+
+function addBuybackType(){
+  const b=getBuybackBrand();
+  if(!b){alert("Kies eerst een merk.");return;}
+  const name=prompt("Type apparaat (bijvoorbeeld iPhone, Tablet of Smartwatch):","Telefoon");
+  if(!name||!name.trim())return;
+  const type={id:newBuybackId("type"),name:name.trim(),questions:defaultBuybackQuestionsForType(name.trim()),models:[]};
+  b.types.push(type);
+  selectedBuybackTypeId=type.id;selectedBuybackModelId="";
+  markChanged();renderBuybackPhones();
+}
+
+function addBuybackModel(){
+  const b=getBuybackBrand(), t=getBuybackType();
+  if(!b){alert("Kies eerst een merk.");return;}
+  if(!t){alert("Kies eerst een type apparaat.");return;}
+  const name=prompt("Modelnaam (bijvoorbeeld iPhone 17):","Nieuw model");
+  if(!name||!name.trim())return;
+
+  const phone={
+    id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,
+    storageOptions:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}],
+    conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}],
+    batteryOptions:[{label:'85% of hoger',priceDelta:0,active:true},{label:'Onder 85%',priceDelta:-25,active:true}],
+    faceIdOptions:[{label:'Face ID werkt',priceDelta:0,active:true},{label:'Face ID werkt niet',priceDelta:-100,active:true}],
+    screenOptions:[{label:'Scherm goed',priceDelta:0,active:true},{label:'Kleine beschadigingen',priceDelta:-50,active:true},{label:'Scherm gebroken',priceDelta:-150,active:true}]
+  };
+  data.buybackPhones.push(phone);
+  const model={id:newBuybackId("model"),name:name.trim(),buybackId:phone.id};
+  t.models.push(model);
+  selectedBuybackModelId=model.id;
+  markChanged();renderBuybackPhones();
+}
+
+function renameBuybackBrand(value){
+  const b=getBuybackBrand();if(!b)return;
+  b.name=value||"";
+  (b.types||[]).forEach(t=>(t.models||[]).forEach(m=>{const p=getBuybackPhoneById(m.buybackId);if(p)p.brand=b.name;}));
+  markChanged();
+  renderBuybackPhones();
+}
+function renameBuybackType(value){
+  const t=getBuybackType();if(!t)return;
+  t.name=value||"";markChanged();renderBuybackPhones();
+}
+function renameBuybackModel(value){
+  const m=getBuybackModel(),p=m&&getBuybackPhoneById(m.buybackId);if(!m||!p)return;
+  m.name=value||"";p.name=value||"";markChanged();
+  renderBuybackPhones();
+}
+
+function deleteBuybackModel(){
+  const b=getBuybackBrand(),t=getBuybackType();
+  if(!b||!t)return;
+  const m=getBuybackModel();if(!m)return;
+  if(!confirm("Dit model en het gekoppelde inkooptoestel verwijderen?"))return;
+  const idx=t.models.findIndex(x=>x.id===m.id);
+  if(idx>=0)t.models.splice(idx,1);
+  const pidx=data.buybackPhones.findIndex(x=>x.id===m.buybackId);
+  if(pidx>=0)data.buybackPhones.splice(pidx,1);
+  selectedBuybackModelId="";
+  buybackOptionsOpen=false;
+  markChanged();renderBuybackPhones();
+}
+
+function attachBuybackModel(){
+  const b=getBuybackBrand(),t=getBuybackType(),m=getBuybackModel();
+  if(!b||!t||!m)return;
+  const name=prompt("Naam van het bestaande inkooptoestel:","Nieuwe telefoon");
+  if(!name||!name.trim())return;
+  const phone={id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,
+    storageOptions:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}],
+    conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}],
+    batteryOptions:[{label:'85% of hoger',priceDelta:0,active:true},{label:'Onder 85%',priceDelta:-25,active:true}],
+    faceIdOptions:[{label:'Face ID werkt',priceDelta:0,active:true},{label:'Face ID werkt niet',priceDelta:-100,active:true}],
+    screenOptions:[{label:'Scherm goed',priceDelta:0,active:true},{label:'Kleine beschadigingen',priceDelta:-50,active:true},{label:'Scherm gebroken',priceDelta:-150,active:true}]};
+  data.buybackPhones.push(phone);m.buybackId=phone.id;m.name=phone.name;markChanged();renderBuybackPhones();
+}
+
+function handleBuybackImageForModel(event){
+  const m=getBuybackModel(),p=m&&getBuybackPhoneById(m.buybackId);
+  const file=event.target.files&&event.target.files[0];
+  if(!p||!file)return;
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');return;}
+  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}
+  const r=new FileReader();
+  r.onload=()=>{p.image=r.result;markChanged();renderBuybackModelEditor();};
+  r.readAsDataURL(file);
+}
+
+/* Compatibility helpers kept for existing data/functions. */
+function addBuybackPhone(){
+  if(!data.buybackCatalog.length){
+    addBuybackBrand();
+    return;
+  }
+  if(!getBuybackBrand()||!getBuybackType()){
+    selectedBuybackBrandId=data.buybackCatalog[0].id;
+    selectedBuybackTypeId=data.buybackCatalog[0].types[0]?.id||"";
+  }
+  if(getBuybackBrand()&&getBuybackType()) addBuybackModel();
+}
+function deleteBuybackPhone(i){
+  const phone=data.buybackPhones[i];if(!phone)return;
+  if(!confirm('Deze inkooptelefoon verwijderen?'))return;
+  data.buybackPhones.splice(i,1);
+  data.buybackCatalog.forEach(b=>b.types.forEach(t=>t.models=t.models.filter(m=>m.buybackId!==phone.id)));
+  markChanged();renderBuybackPhones();
+}
+function handleBuybackImage(event,i){
+  const phone=data.buybackPhones[i];if(!phone)return;
+  const file=event.target.files&&event.target.files[0];if(!file)return;
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');return;}
+  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}
+  const r=new FileReader();r.onload=()=>{phone.image=r.result;markChanged();renderBuybackPhones();};r.readAsDataURL(file);
+}
+
+
+/* ---------------- USED PHONES ---------------- */
+
+function renderUsedPhones(){
+  const box=document.getElementById("usedPhonesList");
+  if(!box) return;
+  if(!data.usedPhones.length){
+    box.innerHTML=`<div class="editor-layout"><div class="editor-list"><div class="editor-list-title">Telefoons</div><div class="small" style="padding:10px">Nog geen gebruikte telefoons toegevoegd.</div></div><div class="editor-panel editor-empty">Nog geen telefoon toegevoegd.</div></div>`;
+    return;
+  }
+  if(selectedUsedPhoneIndex>=data.usedPhones.length) selectedUsedPhoneIndex=data.usedPhones.length-1;
+  const phone=data.usedPhones[selectedUsedPhoneIndex];
+  const images=phone.images || ["","","",""];
+  const list=data.usedPhones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedUsedPhoneIndex?'active':''}" onclick="selectedUsedPhoneIndex=${i};renderUsedPhones()">♻️ ${esc(x.name||'Nieuwe gebruikte telefoon')}<small>${esc(x.brand||'')}</small></button>`).join('');
+  box.innerHTML=`
+    <div class="editor-layout">
+      <div class="editor-list"><div class="editor-list-title">Telefoons</div>${list}</div>
+      <div class="editor-panel">
+        <div class="card-head"><div><div class="card-title" style="font-size:20px">♻️ ${esc(phone.name||'Nieuwe gebruikte telefoon')}</div><div class="small">Bewerk hier de gegevens van deze telefoon.</div></div><button class="btn btn-red" onclick="deleteUsedPhone(${selectedUsedPhoneIndex})">Verwijderen</button></div>
+        <div class="grid">
+          <div class="field"><label>Model</label><input value="${esc(phone.name||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].name=this.value;markChanged();renderUsedPhones()"></div>
+          <div class="field"><label>Merk</label><input value="${esc(phone.brand||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].brand=this.value;markChanged()"></div>
+          <div class="field"><label>Prijs (€)</label><input value="${esc(phone.price||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].price=this.value;markChanged()"></div>
+          <div class="field"><label>Conditie</label><select onchange="data.usedPhones[${selectedUsedPhoneIndex}].condition=this.value;markChanged()"><option ${phone.condition==="Als nieuw"?"selected":""}>Als nieuw</option><option ${phone.condition==="Zeer goed"?"selected":""}>Zeer goed</option><option ${phone.condition==="Goed"?"selected":""}>Goed</option><option ${phone.condition==="Gebruikt"?"selected":""}>Gebruikt</option></select></div>
+          <div class="field"><label>Opslag</label><input value="${esc(phone.storage||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].storage=this.value;markChanged()"></div>
+          <div class="field"><label>RAM</label><input value="${esc(phone.ram||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].ram=this.value;markChanged()"></div>
+          <div class="field"><label>WhatsApp</label><input value="${esc(phone.whatsapp||'')}" oninput="data.usedPhones[${selectedUsedPhoneIndex}].whatsapp=this.value;markChanged()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.usedPhones[${selectedUsedPhoneIndex}].description=this.value;markChanged()">${esc(phone.description||'')}</textarea></div>
+        </div>
+        <div style="margin-top:15px"><label style="font-weight:700">📷 Foto's</label><div class="images-grid">${images.map((img,j)=>`<div class="image-box">${img?`<img src="${esc(img)}" class="image-preview">`:`<div class="empty-preview">Geen foto</div>`}<input type="file" accept="image/*" onchange="handleImage(event,${selectedUsedPhoneIndex},${j})">${img?`<button class="btn btn-light" style="margin-top:7px" onclick="removeImage(${selectedUsedPhoneIndex},${j})">Verwijder foto</button>`:""}</div>`).join('')}</div><p class="small">Je kunt maximaal 4 foto's per telefoon toevoegen.</p></div>
+      </div>
+    </div>`;
+}
+
+function addUsedPhone(){
+  data.usedPhones.push({name:"iPhone 13",brand:"Apple",price:"",condition:"Goed",storage:"128 GB",ram:"",whatsapp:"",description:"",images:["","","",""]});
+  selectedUsedPhoneIndex=data.usedPhones.length-1;
+  renderUsedPhones();
+  markChanged();
+}
+
+function deleteUsedPhone(i){
+  if(confirm("Deze gebruikte telefoon verwijderen?")){
+    data.usedPhones.splice(i,1);
+    selectedUsedPhoneIndex=Math.max(0,Math.min(selectedUsedPhoneIndex,data.usedPhones.length-1));
+    renderUsedPhones();
+    markChanged();
+  }
+}
+
+
+/* ---------------- GSM SERVICES ---------------- */
+
+const gsmServiceCategories=[
+  ["imei","📱 IMEI Services"],
+  ["remote","🛠️ Remote Service"],
+  ["server","🔧 Server / Tools"],
+  ["frp","🔐 FRP Services"],
+  ["firmware","💻 Firmware / Software"]
+];
+
+function renderGsmServices(){
+  const box=document.getElementById("gsmServicesList");
+  if(!box) return;
+  const activeKey=gsmActiveCategory || "imei";
+  const category=gsmServiceCategories.find(x=>x[0]===activeKey) || gsmServiceCategories[0];
+  const list=data.gsmServices[category[0]] || [];
+  if(selectedGsmServiceIndex>=list.length) selectedGsmServiceIndex=Math.max(0,list.length-1);
+
+  const tabs=gsmServiceCategories.map(c=>`<button type="button" class="gsm-admin-tab ${c[0]===activeKey?"active":""}" onclick="gsmActiveCategory='${c[0]}';selectedGsmServiceIndex=0;renderGsmServices()">${c[1]}</button>`).join('');
+  const grouped=new Map();
+  list.forEach((service,i)=>{
+    const groupName=(service.group||category[1].replace(/^[^ ]+ /,'')||"General").trim()||"General";
+    if(!grouped.has(groupName)) grouped.set(groupName,[]);
+    grouped.get(groupName).push({service,i});
+  });
+  const rows=list.length ? [...grouped.entries()].sort((a,b)=>a[0].localeCompare(b[0],'nl')).map(([groupName,items])=>`
+    <div class="gsm-admin-group" style="margin:10px 0 6px;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#fff">
+      <div style="padding:9px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:900;color:#334155;display:flex;justify-content:space-between;align-items:center">
+        <span>${esc(groupName)}</span><span style="font-size:11px;color:#64748b">${items.length}</span>
+      </div>
+      ${items.map(({service,i})=>`<button type="button" class="editor-list-item ${i===selectedGsmServiceIndex?'active':''}" onclick="selectedGsmServiceIndex=${i};renderGsmServices()">${esc(service.icon||'🔧')} ${esc(service.name||'Nieuwe GSM Service')}<small>${service.price?('€ '+esc(service.price)):'Op aanvraag'}</small></button>`).join('')}
+    </div>`).join('') : '<div class="small" style="padding:10px">Nog geen services in deze categorie.</div>';
+  const service=list[selectedGsmServiceIndex];
+
+  let editor='';
+  if(service){
+    editor=`
+      <div class="editor-panel">
+        <div class="card-head">
+          <div><div class="card-title" style="font-size:20px">🛠️ Service bewerken</div><div class="small">Vul de servicegegevens in en bewaar ze samen met de websitegegevens.</div></div>
+          <button class="btn btn-red" onclick="deleteGsmService('${category[0]}',${selectedGsmServiceIndex})">Verwijderen</button>
+        </div>
+        <div class="grid">
+          <div class="field"><label>Groep / bestandsnaam</label><input value="${esc(service.group || category[1].replace(/^[^ ]+ /,''))}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].group=this.value;markChanged();renderGsmServices()" placeholder="Bijv. INPRO RAMDISK A12/A13"></div>
+          <div class="field"><label>Status</label><select onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].active=this.value==='Actief';markChanged()"><option value="Actief" ${service.active!==false?'selected':''}>Actief</option><option value="Inactief" ${service.active===false?'selected':''}>Inactief</option></select></div>
+          <div class="field" style="display:flex;flex-direction:column;gap:8px;justify-content:flex-end"><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresUsername===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresUsername=this.checked;markChanged()" style="width:18px;height:18px"> Gebruikersnaam klant verplicht</label><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresImei===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresImei=this.checked;markChanged()" style="width:18px;height:18px"> IMEI / Serienummer klant verplicht</label></div>
+          <div class="field"><label>Naam service</label><input value="${esc(service.name||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].name=this.value;markChanged();renderGsmServices()"></div>
+          <div class="field"><label>Prijs (€)</label><input value="${esc(service.price||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].price=this.value;markChanged()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Korte beschrijving</label><input value="${esc(service.shortDescription||'')}" placeholder="Bijv. Xiaomi / Redmi / Poco" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].shortDescription=this.value;markChanged()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Volledige beschrijving</label><textarea oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].details=this.value;markChanged()">${esc(service.details||'')}</textarea></div>
+          <div class="field"><label>Service icon</label><input value="${esc(service.icon||'🔧')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].icon=this.value;markChanged();renderGsmServices()"></div>
+        </div>
+        <div class="actions" style="margin-top:8px"><button type="button" class="btn btn-green" onclick="saveGsmServiceEditor('${category[0]}',${selectedGsmServiceIndex})">Opslaan</button></div>
+      </div>`;
+  }else{
+    editor='<div class="editor-panel editor-empty">Kies links een service of klik op + Nieuwe service.</div>';
+  }
+
+  box.innerHTML=`<div class="gsm-admin-tabs">${tabs}</div><div class="gsm-editor-layout"><div class="editor-list"><div class="card-head" style="margin-bottom:8px"><div class="editor-list-title" style="padding:0">${esc(category[1])}</div><button class="btn btn-green" type="button" onclick="addGsmService('${category[0]}')">+ Nieuwe service</button></div>${rows}</div>${editor}</div>`;
+}
+
+function openGsmServiceEditor(category,i){
+  gsmActiveCategory=category;
+  selectedGsmServiceIndex=i;
+  renderGsmServices();
+}
+
+async function saveGsmServiceEditor(category,i){
+  gsmActiveCategory=category;
+  selectedGsmServiceIndex=i;
+  renderGsmServices();
+  await save();
+}
+
+function addGsmService(key){
+  if(!data.gsmServices[key]) data.gsmServices[key]=[];
+  const categoryLabel=(gsmServiceCategories.find(x=>x[0]===key)||[key,key])[1].replace(/^[^ ]+ /,'');
+  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",group:categoryLabel,shortDescription:"",details:"",price:"",active:true,requiresUsername:false,requiresImei:false});
+  gsmActiveCategory=key;
+  selectedGsmServiceIndex=data.gsmServices[key].length-1;
+  renderGsmServices();
+  markChanged();
+}
+
+function deleteGsmService(key,i){
+  if(confirm("Deze GSM-service verwijderen?")){
+    data.gsmServices[key].splice(i,1);
+    gsmActiveCategory=key;
+    selectedGsmServiceIndex=Math.max(0,Math.min(selectedGsmServiceIndex,data.gsmServices[key].length-1));
+    renderGsmServices();
+    markChanged();
+  }
+}
+
+
+/* ---------------- GSM ORDERS ---------------- */
+let adminGsmOrdersCache=[];
+let adminWebshopOrdersCache=[];
+
+function orderSearchText(o){
+  return [o.id,o.name,o.email,o.phone,o.imei,o.username,o.service_name,o.service_group,o.service_category,o.postcode,o.city,o.street,o.house_number].filter(Boolean).join(' ').toLowerCase();
+}
+function clearGsmOrderFilters(){
+  const q=document.getElementById('gsmOrderSearch'), f=document.getElementById('gsmOrderStatusFilter');
+  if(q)q.value=''; if(f)f.value=''; renderGsmOrders();
+}
+function clearWebshopOrderFilters(){
+  const q=document.getElementById('webshopOrderSearch'), f=document.getElementById('webshopOrderStatusFilter');
+  if(q)q.value=''; if(f)f.value=''; renderWebshopOrders();
+}
+function renderOrderSummary(id,orders,kind){
+  const box=document.getElementById(id); if(!box)return;
+  const total=orders.length;
+  const nieuw=orders.filter(o=>(o.status||'Nieuw')==='Nieuw').length;
+  const bezig=orders.filter(o=>o.status==='In behandeling').length;
+  const cancelled=orders.filter(o=>o.status==='Geannuleerd').length;
+  box.innerHTML=`
+    <div class="order-stat stat-total"><div class="stat-icon">☷</div><div><b>${total}</b><span>Totaal orders</span></div></div>
+    <div class="order-stat stat-new"><div class="stat-icon">✓</div><div><b>${nieuw}</b><span>Nieuw</span></div></div>
+    <div class="order-stat stat-progress"><div class="stat-icon">◷</div><div><b>${bezig}</b><span>In behandeling</span></div></div>
+    <div class="order-stat stat-cancel"><div class="stat-icon">✓</div><div><b>${cancelled}</b><span>Geannuleerd</span></div></div>`;
+}
+
+function renderGsmOrders(){
+  const box=document.getElementById('ordersList'); if(!box)return;
+  const q=(document.getElementById('gsmOrderSearch')?.value||'').trim().toLowerCase();
+  const filter=document.getElementById('gsmOrderStatusFilter')?.value||'';
+  const filtered=adminGsmOrdersCache.filter(o=>(!q||orderSearchText(o).includes(q))&&(!filter||o.status===filter));
+  renderOrderSummary('gsmOrderSummary',adminGsmOrdersCache,'gsm');
+  const status=document.getElementById('ordersStatus');
+  if(status){status.className='order-count';status.textContent=`${filtered.length} van ${adminGsmOrdersCache.length} bestelling(en) zichtbaar`}
+  if(!filtered.length){box.innerHTML='<div class="order-empty">Geen bestellingen gevonden met deze zoekopdracht.</div>';return;}
+  box.innerHTML=filtered.map(order=>{
+    const date=order.created_at?new Date(order.created_at).toLocaleString('nl-NL'):'';
+    const price=order.price?'€ '+esc(order.price):'Op aanvraag';
+    const statusLabel=order.status||'Nieuw';
+    return `<article class="order-card">
+      <div class="order-card-head">
+        <div class="order-heading">
+          <div class="order-number">#${esc(order.id)}</div>
+          <div>
+            <div class="order-title">${esc(order.service_name||'GSM Service')}</div>
+            <div class="order-meta">${esc(order.service_group||order.service_category||'GSM Service')} · ${esc(date)}</div>
+          </div>
+        </div>
+        <div class="order-actions">
+          <select class="order-status-select status-select-${statusLabel.replace(/\s+/g,'-').toLowerCase()}" data-order-id="${Number(order.id)}" onchange="updateOrderStatus(${Number(order.id)},this.value)">${['Nieuw','In behandeling','Voltooid','Geannuleerd'].map(x=>`<option value="${esc(x)}" ${statusLabel===x?'selected':''}>${esc(x)}</option>`).join('')}</select>
+          <button class="btn btn-light order-detail-btn" onclick="showGsmOrderDetails(${Number(order.id)})">◉ Details</button>
+          ${hasPermission('orders.delete')?`<button class="btn btn-red order-delete-btn" onclick="deleteGsmOrder(${Number(order.id)})">▣ Verwijderen</button>`:''}
+        </div>
+      </div>
+      <div class="order-main">
+        <div class="order-grid">
+          <div class="order-info"><strong>Klant</strong><span>${esc(order.name||'-')}</span></div>
+          <div class="order-info"><strong>E-mail</strong><span>${esc(order.email||'-')}</span></div>
+          <div class="order-info"><strong>Telefoon</strong><span>${esc(order.phone||'-')}</span></div>
+          <div class="order-info order-price"><strong>Prijs</strong><span>${esc(price)}</span></div>
+          <div class="order-info"><strong>IMEI / Serienummer</strong><span>${esc(order.imei||'-')}</span></div>
+          <div class="order-info"><strong>Categorie</strong><span>${esc(order.service_category||'-')}</span></div>
+        </div>
+        ${order.notes?`<div class="order-notes"><strong>Opmerking</strong><br>${esc(order.notes)}</div>`:''}
+      </div>
+    </article>`;
+  }).join('');
+}
+
+async function loadOrders(){
+  const box=document.getElementById('ordersList'), status=document.getElementById('ordersStatus');
+  if(!box)return;
+  status.className='status info'; status.textContent='Bestellingen laden...'; box.innerHTML='';
+  try{
+    const r=await fetch('/api/admin/orders'); const result=await r.json();
+    if(!r.ok)throw new Error(result.error||'Bestellingen konden niet worden geladen');
+    adminGsmOrdersCache=result.orders||[]; renderGsmOrders();
+  }catch(e){status.className='status error';status.textContent='✕ '+e.message;}
+}
+
+async function updateOrderStatus(id,statusValue){
+  if(!hasPermission("orders.update"))return;
+  const selects=[...document.querySelectorAll(".order-status-select")];
+  const select=selects.find(el=>el.dataset.orderId===String(id));
+  if(select){select.disabled=true; select.classList.add("is-saving");}
+  try{
+    setStatus("Opslaan van order #"+id+"...","info");
+    const r=await fetch("/api/admin/orders/"+encodeURIComponent(id)+"/status",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      credentials:"same-origin",
+      body:JSON.stringify({status:statusValue})
+    });
+    const result=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(result.error||"Status kon niet worden gewijzigd");
+    if(select){
+      select.dataset.savedStatus=statusValue;
+      select.classList.remove("is-saving");
+      select.classList.add("is-saved");
+      setTimeout(()=>select.classList.remove("is-saved"),900);
+    }
+    setStatus("✓ Order #"+id+" automatisch opgeslagen","success");
+  }catch(e){
+    if(select){select.classList.remove("is-saving");}
+    setStatus("✕ "+e.message,"error");
+    await loadOrders();
+  }finally{
+    if(select)select.disabled=false;
+  }
+}
+
+/* ---------------- WEBSHOP ORDERS ---------------- */
+function renderWebshopOrders(){
+  const box=document.getElementById('webshopOrdersList'); if(!box)return;
+  const q=(document.getElementById('webshopOrderSearch')?.value||'').trim().toLowerCase();
+  const filter=document.getElementById('webshopOrderStatusFilter')?.value||'';
+  const filtered=adminWebshopOrdersCache.filter(o=>(!q||orderSearchText(o).includes(q))&&(!filter||o.status===filter));
+  renderOrderSummary('webshopOrderSummary',adminWebshopOrdersCache,'webshop');
+  const status=document.getElementById('webshopOrdersStatus');
+  if(status){status.className='order-count';status.textContent=`${filtered.length} van ${adminWebshopOrdersCache.length} webshop bestelling(en) zichtbaar`}
+  if(!filtered.length){box.innerHTML='<div class="order-empty">Geen webshop bestellingen gevonden met deze zoekopdracht.</div>';return;}
+  box.innerHTML=filtered.map(order=>{
+    const items=Array.isArray(order.items)?order.items:[];
+    const date=order.created_at?new Date(order.created_at).toLocaleString('nl-NL'):'';
+    const total=Number(order.total||0).toFixed(2).replace('.',',');
+    const address=[order.street,order.house_number,order.postcode,order.city].filter(Boolean).join(' ');
+    const itemNames=items.map(x=>x.name||'Product').slice(0,2).join(' · ');
+    const itemExtra=items.length>2?` + ${items.length-2}`:'';
+    const statusLabel=order.status||'Nieuw';
+    return `<article class="order-card webshop-order-card">
+      <div class="order-card-head">
+        <div class="order-heading">
+          <div class="order-number">#${esc(order.id)}</div>
+          <div>
+            <div class="order-title">Webshop bestelling</div>
+            <div class="order-meta">${esc(date)} · ${esc(itemNames||'Geen productgegevens')}${itemExtra}</div>
+          </div>
+        </div>
+        <div class="order-actions">
+          <select class="order-status-select status-select-${statusLabel.replace(/\s+/g,'-').toLowerCase()}" data-webshop-order-id="${Number(order.id)}" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">${['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(x=>`<option value="${esc(x)}" ${statusLabel===x?'selected':''}>${esc(x)}</option>`).join('')}</select>
+          <button class="btn btn-light order-detail-btn" onclick="showWebshopOrderDetails(${Number(order.id)})">◉ Details</button>
+          ${hasPermission('webshop_orders.delete')?`<button class="btn btn-red order-delete-btn" onclick="deleteWebshopOrder(${Number(order.id)})">▣ Verwijderen</button>`:''}
+        </div>
+      </div>
+      <div class="order-main">
+        <div class="order-grid">
+          <div class="order-info"><strong>Klant</strong><span>${esc(order.name||'-')}</span></div>
+          <div class="order-info"><strong>E-mail</strong><span>${esc(order.email||'-')}</span></div>
+          <div class="order-info"><strong>Telefoon</strong><span>${esc(order.phone||'-')}</span></div>
+          <div class="order-info order-price"><strong>Totaal</strong><span>€ ${esc(total)}</span></div>
+          <div class="order-info order-address-compact"><strong>Adres</strong><span>${esc(address||'-')}</span></div>
+          <div class="order-info"><strong>Producten</strong><span>${esc(itemNames||'-')}${itemExtra}</span></div>
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+async function loadWebshopOrders(){
+  const box=document.getElementById('webshopOrdersList'), status=document.getElementById('webshopOrdersStatus');
+  if(!box||!status)return;
+  status.className='status info'; status.textContent='Webshop bestellingen laden...'; box.innerHTML='';
+  try{
+    const r=await fetch('/api/admin/webshop-orders',{credentials:'same-origin'}); const raw=await r.text(); let result={};
+    try{result=raw?JSON.parse(raw):{};}catch{throw new Error('Server antwoord is geen JSON.');}
+    if(!r.ok)throw new Error(result.error||'Webshop bestellingen konden niet worden geladen');
+    adminWebshopOrdersCache=result.orders||[]; renderWebshopOrders();
+  }catch(e){status.className='status error';status.textContent='✕ '+e.message;}
+}
+
+async function updateWebshopOrderStatus(id,statusValue){
+  if(!hasPermission("webshop_orders.update"))return;
+  const selects=[...document.querySelectorAll(".order-status-select")];
+  const select=selects.find(el=>el.dataset.webshopOrderId===String(id));
+  if(select){select.disabled=true; select.classList.add("is-saving");}
+  try{
+    setStatus("Opslaan van webshop order #"+id+"...","info");
+    const r=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/status",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      credentials:"same-origin",
+      body:JSON.stringify({status:statusValue})
+    });
+    const raw=await r.text();
+    let result={};
+    try{result=raw?JSON.parse(raw):{};}catch{throw new Error("Server antwoord is geen JSON.");}
+    if(!r.ok) throw new Error(result.error||"Status kon niet worden gewijzigd");
+    if(select){
+      select.dataset.savedStatus=statusValue;
+      select.classList.remove("is-saving");
+      select.classList.add("is-saved");
+      setTimeout(()=>select.classList.remove("is-saved"),900);
+    }
+    setStatus("✓ Webshop order #"+id+" automatisch opgeslagen","success");
+  }catch(e){
+    if(select){select.classList.remove("is-saving");}
+    setStatus("✕ "+e.message,"error");
+    await loadWebshopOrders();
+  }finally{
+    if(select)select.disabled=false;
+  }
+}
+
+/* ---------------- CUSTOMERS ---------------- */
+async function loadCustomers(){
+  const box=document.getElementById("customersList");
+  const status=document.getElementById("customersStatus");
+  if(!box) return;
+
+  status.className="status info";
+  status.textContent="Klanten laden...";
+  box.innerHTML="";
+
+  try{
+    const r=await fetch("/api/admin/customers");
+    const result=await r.json();
+    if(!r.ok) throw new Error(result.error || "Kan klanten niet laden");
+
+    const customers=result.customers || [];
+    status.className="status success";
+    status.textContent=customers.length+" klant(en) gevonden";
+
+    if(!customers.length){
+      box.innerHTML='<div class="small">Nog geen geregistreerde klanten.</div>';
+      return;
+    }
+
+    box.innerHTML=customers.map(customer=>`
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-head">
+          <div class="card-title">👤 ${esc(customer.name || "Klant")}</div>
+          <div class="small">${esc(customer.created_at || "")}</div>
+        </div>
+        <div class="grid">
+          <div><strong>E-mail</strong><br>${esc(customer.email || "-")}</div>
+          <div><strong>Telefoon</strong><br>${esc(customer.phone || "-")}</div>
+          <div style="grid-column:1/-1"><strong>Adres</strong><br>${esc(customer.address || "-")}</div>
+        </div>
+      </div>`).join("");
+  }catch(e){
+    status.className="status error";
+    status.textContent="✕ "+e.message;
+  }
+}
+
+/* ---------------- WHY ---------------- */
+
+function renderWhy(){
+  const box=document.getElementById("whyList");
+  if(!box) return;
+  if(!data.why.length){
+    box.innerHTML=`<div class="editor-layout"><div class="editor-list"><div class="editor-list-title">Voordelen</div><div class="small" style="padding:10px">Nog geen voordelen toegevoegd.</div></div><div class="editor-panel editor-empty">Nog geen voordeel toegevoegd.</div></div>`;
+    return;
+  }
+  if(selectedWhyIndex>=data.why.length) selectedWhyIndex=data.why.length-1;
+  const item=data.why[selectedWhyIndex];
+  const list=data.why.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedWhyIndex?'active':''}" onclick="selectedWhyIndex=${i};renderWhy()">${esc(x[0]||'⭐')} ${esc(x[1]||'Nieuw voordeel')}<small>${esc(x[2]||'')}</small></button>`).join('');
+  box.innerHTML=`
+    <div class="editor-layout">
+      <div class="editor-list"><div class="editor-list-title">Waarom HOMS TECH</div>${list}</div>
+      <div class="editor-panel">
+        <div class="card-head"><div><div class="card-title" style="font-size:20px">⭐ ${esc(item[1]||'Nieuw voordeel')}</div><div class="small">Bewerk hier het voordeel.</div></div><button class="btn btn-red" onclick="deleteWhy(${selectedWhyIndex})">Verwijderen</button></div>
+        <div class="grid">
+          <div class="field"><label>Icoon / emoji</label><input value="${esc(item[0]||'⭐')}" oninput="data.why[${selectedWhyIndex}][0]=this.value;markChanged()"></div>
+          <div class="field"><label>Titel</label><input value="${esc(item[1]||'')}" oninput="data.why[${selectedWhyIndex}][1]=this.value;markChanged();renderWhy()"></div>
+          <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.why[${selectedWhyIndex}][2]=this.value;markChanged()">${esc(item[2]||'')}</textarea></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function addWhy(){
+  data.why.push(["⭐","Nieuw voordeel",""]);
+  selectedWhyIndex=data.why.length-1;
+  renderWhy();
+  markChanged();
+}
+
+function deleteWhy(i){
+  if(confirm("Dit voordeel verwijderen?")){
+    data.why.splice(i,1);
+    selectedWhyIndex=Math.max(0,Math.min(selectedWhyIndex,data.why.length-1));
+    renderWhy();
+    markChanged();
+  }
+}
+
+
+/* ---------------- SAVE ---------------- */
+
+async function save(){
+  if(!canEditSite()){setStatus("✕ Je hebt geen toestemming om wijzigingen op te slaan.","error");return;}
+  if(loading) return;
+  loading=true;
+  setStatus("Opslaan...","info");
+
+  try{
+    normalizeData();
+
+    const r=await fetch("/api/site",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      credentials:"same-origin",
+      body:JSON.stringify(data)
+    });
+
+    const raw=await r.text();
+    let result={};
+    try{ result=raw ? JSON.parse(raw) : {}; }catch{
+      throw new Error("De server stuurde geen JSON terug. Controleer of de juiste server.js draait.");
+    }
+
+    if(!r.ok){
+      throw new Error(result.error || "Opslaan mislukt");
+    }
+
+    data=result.data || data;
+    normalizeData();
+
+    // Alleen de huidige pagina opnieuw tekenen. Geen renderAll-loop na opslaan.
+    if(currentPage==="general") renderGeneral();
+    else if(currentPage==="services") renderServices();
+    else if(currentPage==="phones") renderPhones();
+    else if(currentPage==="buyback") renderBuybackPhones();
+    else if(currentPage==="categories") renderDeviceCategories();
+    else if(currentPage==="used") renderUsedPhones();
+    else if(currentPage==="why") renderWhy();
+    else if(currentPage==="gsm") renderGsmServices();
+
+    setStatus("✓ Alle wijzigingen zijn succesvol opgeslagen","success");
+  }catch(e){
+    setStatus("✕ Opslaan mislukt: "+e.message,"error");
+  }finally{
+    loading=false;
+  }
+}
+
+
+/* ---------------- SEARCH + ADMIN USERS ---------------- */
+async function adminSearch(){
+  if(!hasPermission("search"))return;
+  const q=String(document.getElementById("adminSearchInput")?.value||"").trim();
+  const status=document.getElementById("searchStatus"),box=document.getElementById("searchResults");
+  if(q.length<2){status.className="status info";status.textContent="Vul minimaal 2 tekens in.";box.innerHTML="";return;}
+  status.className="status info";status.textContent="Zoeken...";box.innerHTML="";
+  try{
+    const r=await fetch("/api/admin/search?q="+encodeURIComponent(q),{credentials:"same-origin"});
+    const x=await r.json().catch(()=>({}));if(!r.ok)throw new Error(x.error||"Zoeken mislukt.");
+    const parts=[];
+    if((x.customers||[]).length)parts.push("<h3>👥 Klanten</h3>"+x.customers.map(c=>`<div class="search-result"><strong>${esc(c.name||"Klant")}</strong><br>${esc(c.email||"-")} · ${esc(c.phone||"-")}<br><span class="small">${esc(c.address||"")}</span></div>`).join(""));
+    if((x.orders||[]).length)parts.push("<h3>📋 GSM Orders</h3>"+x.orders.map(o=>`<div class="search-result"><strong>#${esc(o.id)} — ${esc(o.service_name||"GSM Service")}</strong><br>${esc(o.name||"-")} · ${esc(o.email||"-")} · ${esc(o.phone||"-")}<br><span class="small">IMEI: ${esc(o.imei||"-")} · ${esc(o.status||"-")}</span><div class="actions" style="margin-top:10px"><button class="btn btn-light" onclick="showGsmOrderDetails(${Number(o.id)})">Details</button>${hasPermission("orders.delete")?`<button class="btn btn-red" onclick="deleteGsmOrder(${Number(o.id)})">Verwijderen</button>`:""}</div></div>`).join(""));
+    if((x.webshopOrders||[]).length)parts.push("<h3>🛍️ Webshop Bestellingen</h3>"+x.webshopOrders.map(o=>`<div class="search-result"><strong>#${esc(o.id)} — ${esc(o.name||"Klant")}</strong><br>${esc(o.email||"-")} · ${esc(o.phone||"-")} · € ${esc(Number(o.total||0).toFixed(2))}<br><span class="small">${esc(o.postcode||"")} ${esc(o.city||"")} · ${esc(o.status||"-")}</span><div class="actions" style="margin-top:10px"><button class="btn btn-light" onclick="showWebshopOrderDetails(${Number(o.id)})">Details</button>${hasPermission("webshop_orders.delete")?`<button class="btn btn-red" onclick="deleteWebshopOrder(${Number(o.id)})">Verwijderen</button>`:""}</div></div>`).join(""));
+    box.innerHTML=parts.join("")||'<div class="small">Geen resultaten gevonden.</div>';
+    status.className="status success";status.textContent=parts.length?"Zoeken voltooid.":"Geen resultaten.";
+  }catch(e){status.className="status error";status.textContent="✕ "+e.message;}
+}
+function renderPermissionCheckboxes(id,selected=[]){
+  const box=document.getElementById(id);if(!box)return;
+  box.innerHTML=Object.entries(ADMIN_PERMISSION_LABELS).map(([k,v])=>`<label class="permission-item"><input type="checkbox" value="${esc(k)}" ${selected.includes(k)?"checked":""}><span>${esc(v)}</span></label>`).join("");
+}
+function getCheckedPermissions(id){
+  const box=document.getElementById(id);return box?[...box.querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value):[];
+}
+async function createAdmin(){
+  const st=document.getElementById("adminCreateStatus");
+  const username=document.getElementById("newAdminUsername").value.trim();
+  const password=document.getElementById("newAdminPassword").value;
+  const permissions=getCheckedPermissions("newAdminPermissions");
+  st.className="status info";st.textContent="Admin aanmaken...";
+  try{
+    const r=await fetch("/api/admin/users",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({username,password,permissions})});
+    const x=await r.json().catch(()=>({}));if(!r.ok)throw new Error(x.error||"Admin kon niet worden aangemaakt.");
+    document.getElementById("newAdminUsername").value="";document.getElementById("newAdminPassword").value="";
+    renderPermissionCheckboxes("newAdminPermissions",[]);st.className="status success";st.textContent="✓ Admin aangemaakt.";await loadAdmins();
+  }catch(e){st.className="status error";st.textContent="✕ "+e.message;}
+}
+async function loadAdmins(){
+  if(!hasPermission("admins.manage"))return;
+  const box=document.getElementById("adminsList"),st=document.getElementById("adminsStatus");if(!box)return;
+  st.className="status info";st.textContent="Admins laden...";box.innerHTML="";
+  try{
+    const r=await fetch("/api/admin/users",{credentials:"same-origin"});const x=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(x.error||"Admins konden niet worden geladen.");
+    const users=x.users||[];
+    box.innerHTML=users.length?users.map(u=>`<div class="admin-user-card">
+      <div class="card-head"><div><div class="card-title">👤 ${esc(u.username)}</div><div class="small">${u.active?"Actief":"Uitgeschakeld"}</div></div>
+      <button class="btn btn-red" onclick="deleteAdmin(${Number(u.id)})">Verwijderen</button></div>
+      <div class="grid">
+        <div class="field"><label>Gebruikersnaam</label><input id="an-${Number(u.id)}" value="${esc(u.username)}"></div>
+        <div class="field"><label>Nieuw wachtwoord (leeg = behouden)</label><input id="ap-${Number(u.id)}" type="password"></div>
+      </div>
+      <label class="permission-item" style="max-width:300px"><input id="aa-${Number(u.id)}" type="checkbox" ${u.active?"checked":""}><span>Admin is actief</span></label>
+      <div class="field"><label>Rechten</label><div id="ax-${Number(u.id)}" class="permission-grid"></div></div>
+      <button class="btn btn-green" onclick="updateAdmin(${Number(u.id)})">💾 Admin opslaan</button>
+      <div id="as-${Number(u.id)}" class="status" style="margin-top:10px"></div>
+    </div>`).join(""):'<div class="small">Nog geen extra admins aangemaakt.</div>';
+    users.forEach(u=>renderPermissionCheckboxes("ax-"+Number(u.id),Array.isArray(u.permissions)?u.permissions:[]));
+    st.className="status success";st.textContent=users.length+" admin(s) gevonden";
+  }catch(e){st.className="status error";st.textContent="✕ "+e.message;}
+}
+async function updateAdmin(id){
+  const st=document.getElementById("as-"+id);
+  const body={username:document.getElementById("an-"+id).value.trim(),password:document.getElementById("ap-"+id).value,active:document.getElementById("aa-"+id).checked,permissions:getCheckedPermissions("ax-"+id)};
+  st.className="status info";st.textContent="Opslaan...";
+  try{
+    const r=await fetch("/api/admin/users/"+encodeURIComponent(id),{method:"PUT",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify(body)});
+    const x=await r.json().catch(()=>({}));if(!r.ok)throw new Error(x.error||"Admin kon niet worden bijgewerkt.");
+    st.className="status success";st.textContent="✓ Opgeslagen.";await loadAdmins();
+  }catch(e){st.className="status error";st.textContent="✕ "+e.message;}
+}
+async function deleteAdmin(id){
+  if(!confirm("Deze admin echt verwijderen?"))return;
+  const r=await fetch("/api/admin/users/"+encodeURIComponent(id),{method:"DELETE",credentials:"same-origin"});
+  const x=await r.json().catch(()=>({}));if(!r.ok){document.getElementById("adminsStatus").textContent=x.error||"Verwijderen mislukt.";return;}
+  await loadAdmins();
+}
+
+
+/* ---------------- ORDER DETAILS / DELETE ---------------- */
+
+function showOrderDetails(title, data){
+  const existing=document.getElementById("orderDetailsModal");
+  if(existing) existing.remove();
+
+  const modal=document.createElement("div");
+  modal.id="orderDetailsModal";
+  modal.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;";
+  const rows=Object.entries(data||{}).map(([k,v])=>`
+    <div style="padding:10px 0;border-bottom:1px solid #e5eaf1">
+      <strong>${esc(k)}</strong><br>
+      <span style="white-space:pre-wrap">${esc(v===null||v===undefined?"":String(v))}</span>
+    </div>`).join("");
+  modal.innerHTML=`
+    <div style="background:#fff;border-radius:16px;max-width:760px;width:100%;max-height:90vh;overflow:auto;padding:22px">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+        <h2 style="margin:0">${esc(title)}</h2>
+        <button class="btn btn-light" onclick="document.getElementById('orderDetailsModal').remove()">✕</button>
+      </div>
+      <div style="margin-top:14px">${rows}</div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function showGsmOrderDetails(id){
+  try{
+    const r=await fetch("/api/admin/orders",{credentials:"same-origin"});
+    const result=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(result.error||"Order kon niet worden geladen.");
+    const order=(result.orders||[]).find(x=>Number(x.id)===Number(id));
+    if(!order) throw new Error("Order niet gevonden.");
+    showOrderDetails("GSM Order #"+id, order);
+  }catch(e){
+    alert(e.message);
+  }
+}
+
+async function showWebshopOrderDetails(id){
+  try{
+    const r=await fetch("/api/admin/webshop-orders",{credentials:"same-origin"});
+    const result=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(result.error||"Bestelling kon niet worden geladen.");
+    const order=(result.orders||[]).find(x=>Number(x.id)===Number(id));
+    if(!order) throw new Error("Bestelling niet gevonden.");
+    showOrderDetails("Webshop Bestelling #"+id, order);
+  }catch(e){
+    alert(e.message);
+  }
+}
+
+async function deleteGsmOrder(id){
+  if(!hasPermission("orders.delete")) return;
+  if(!confirm("GSM Order #"+id+" echt verwijderen? Dit kan niet ongedaan worden.")) return;
+  try{
+    const r=await fetch("/api/admin/orders/"+encodeURIComponent(id),{
+      method:"DELETE",
+      credentials:"same-origin"
+    });
+    const result=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(result.error||"Order kon niet worden verwijderd.");
+    await loadOrders();
+    if(currentPage==="search") await adminSearch();
+  }catch(e){ alert(e.message); }
+}
+
+async function deleteWebshopOrder(id){
+  if(!hasPermission("webshop_orders.delete")) return;
+  if(!confirm("Webshop bestelling #"+id+" echt verwijderen? Dit kan niet ongedaan worden.")) return;
+  try{
+    const r=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id),{
+      method:"DELETE",
+      credentials:"same-origin"
+    });
+    const result=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(result.error||"Bestelling kon niet worden verwijderd.");
+    await loadWebshopOrders();
+    if(currentPage==="search") await adminSearch();
+  }catch(e){ alert(e.message); }
+}
+
+/* ---------------- HELPERS ---------------- */
+
+// =====================================================
+// BUYBACK ORDERS ADMIN
+// =====================================================
+async function loadBuybackOrders(){
+  const list=document.getElementById("buybackOrdersList");
+  const status=document.getElementById("buybackOrdersStatus");
+  if(!list)return;
+  list.innerHTML='<div style="padding:25px;text-align:center">Laden...</div>';
+  try{
+    const response=await fetch("/api/admin/buyback-orders",{credentials:"same-origin"});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Verkoopaanvragen konden niet worden geladen.");
+    const orders=result.orders||[];
+    status.textContent=orders.length+" verkoopaanvragen gevonden.";
+    if(!orders.length){
+      list.innerHTML='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:35px;text-align:center;color:#64748b">Nog geen verkoopaanvragen.</div>';
+      return;
+    }
+    list.innerHTML=orders.map(order=>{
+      const date=order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"";
+      const price=Number(order.offered_price||0).toFixed(2).replace(".",",");
+      return `
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:20px;box-shadow:0 4px 15px rgba(15,23,42,.05)">
+        <div style="display:flex;justify-content:space-between;gap:15px;align-items:flex-start;flex-wrap:wrap">
+          <div>
+            <div style="font-size:13px;color:#64748b;margin-bottom:5px">Aanvraag #${order.id}</div>
+            <h3 style="margin:0 0 5px">${esc(order.device||"-")}</h3>
+            <div>${esc(order.name||"-")}</div>
+            <div style="color:#64748b;font-size:14px">${esc(order.email||"-")}${order.phone?" · "+esc(order.phone):""}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:24px;font-weight:800;color:#2563eb">€ ${price}</div>
+            <div style="color:#64748b;font-size:13px">${date}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:18px">
+          ${bbInfo("Opslag",order.storage)}
+          ${bbInfo("Conditie",order.condition)}
+          ${bbInfo("Face ID",order.face_id)}
+          ${bbInfo("Batterij",order.battery)}
+          ${bbInfo("Scherm",order.screen)}
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px;padding-top:15px;border-top:1px solid #e5e7eb">
+          <label style="font-weight:700">Status:</label>
+          <select ${hasPermission("buyback_orders.update")?"":"disabled"} onchange="updateBuybackStatus(${order.id},this.value)" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:10px">
+            ${bbOpt("Nieuw",order.status)}
+            ${bbOpt("In behandeling",order.status)}
+            ${bbOpt("Goedgekeurd",order.status)}
+            ${bbOpt("Afgewezen",order.status)}
+            ${bbOpt("Voltooid",order.status)}
+          </select>
+          <button class="btn btn-light" onclick="showBuybackDetails(${order.id})">Details</button>
+          ${hasPermission("buyback_orders.delete")?`<button class="btn btn-red" onclick="deleteBuybackOrder(${order.id})">Verwijderen</button>`:""}
+        </div>
+      </div>`;
+    }).join("");
+  }catch(error){
+    status.textContent="";
+    list.innerHTML='<div style="background:#fef2f2;color:#991b1b;padding:18px;border-radius:12px">'+esc(error.message)+'</div>';
+  }
+}
+function bbInfo(label,value){return `<div style="background:#f8fafc;padding:12px;border-radius:10px"><div style="font-size:12px;color:#64748b">${label}</div><strong>${esc(value||"-")}</strong></div>`}
+function bbOpt(value,current){return `<option value="${esc(value)}" ${value===current?"selected":""}>${esc(value)}</option>`}
+async function updateBuybackStatus(id,newStatus){
+  try{
+    const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id)+"/status",{method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:newStatus})});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Status kon niet worden gewijzigd.");
+    await loadBuybackOrders();
+  }catch(error){alert(error.message)}
+}
+async function deleteBuybackOrder(id){
+  if(!confirm("Deze verkoopaanvraag echt verwijderen?"))return;
+  try{
+    const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id),{method:"DELETE",credentials:"same-origin"});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Verwijderen mislukt.");
+    await loadBuybackOrders();
+  }catch(error){alert(error.message)}
+}
+async function showBuybackDetails(id){
+  try{
+    const response=await fetch("/api/admin/buyback-orders",{credentials:"same-origin"});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok) throw new Error(result.error||"Verkoopaanvraag kon niet worden geladen.");
+    const order=(result.orders||[]).find(x=>Number(x.id)===Number(id));
+    if(!order) throw new Error("Verkoopaanvraag niet gevonden.");
+
+    const price=Number(order.offered_price||0).toFixed(2).replace('.',',');
+    const extraAnswers=order.answers&&typeof order.answers==="object"
+      ? Object.values(order.answers).map(x=>x&&x.question?String(x.question)+": "+String(x.value||"-"):"").filter(Boolean).join("\n")
+      : "";
+    showOrderDetails("Verkoopaanvraag #"+(order.order_no||order.id), {
+      "Ordernummer": order.order_no || ("BT-"+order.id),
+      "Datum": order.created_at ? new Date(order.created_at).toLocaleString("nl-NL") : "-",
+      "Status": order.status || "-",
+      "Klant": order.name || "-",
+      "E-mail": order.email || "-",
+      "Telefoon": order.phone || "-",
+      "Adres": order.address || "-",
+      "Toestel": order.device || "-",
+      "Merk": order.brand || "-",
+      "Model": order.model || "-",
+      "Type apparaat": order.device_type || "-",
+      "Opslag": order.storage || "-",
+      "Conditie": order.condition || "-",
+      "Face ID": order.face_id || "-",
+      "Batterij": order.battery || "-",
+      "Scherm": order.screen || "-",
+      "Aangeboden prijs": "€ " + price,
+      "Betaalmethode": order.payment_method || "-",
+      "IBAN": order.iban || "-",
+      "Extra antwoorden": extraAnswers || "-"
+    });
+  }catch(error){alert(error.message)}
+}
+
+
+function renderAll(){
+
+  renderGeneral();
+  renderServices();
+  renderPhones();
+  renderBuybackPhones();
+  renderDeviceCategories();
+  renderUsedPhones();
+  renderGsmServices();
+  renderWhy();
+  showPage(currentPage);
+}
+
+function markChanged(){
+
+  setStatus(
+    "● Er zijn niet-opgeslagen wijzigingen",
+    "info"
+  );
+}
+
+function setStatus(text,type){
+
+  const el=document.getElementById("saveStatus");
+
+  if(!el) return;
+
+  el.textContent=text;
+  el.className="status "+type;
+}
+
+function esc(value){
+
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+
+/* START */
+
+renderPermissionCheckboxes('newAdminPermissions',[]);
+checkLogin();
+
+</script>
+
+</body>
+</html>
