@@ -844,7 +844,7 @@ textarea{
 </style>
 
 <style id="homs-buyback-hierarchy-v1">
-/* HOMS TECH — Buyback hierarchy V1: Merk → Type → Model */
+/* HOMS TECH — Buyback hierarchy V3: Merk → Type → Model */
 .buyback-hierarchy{
   border:1px solid #e2e8f0;border-radius:16px;background:#fff;overflow:hidden;
 }
@@ -2038,9 +2038,7 @@ function normalizeBuybackPhones(){
   if(!Array.isArray(data.buybackPhones)) data.buybackPhones=[];
   data.buybackPhones=data.buybackPhones.map((x,i)=>({
     id:x.id || ('buyback-'+Date.now()+'-'+i),
-    name:x.name||'', brand:x.brand||'', image:x.image||'',
-      imageOutside:x.imageOutside||x.image||'',
-      imageInside:x.imageInside||'', price:Number(x.price||0), active:x.active!==false,
+    name:x.name||'', brand:x.brand||'', image:x.image||'', price:Number(x.price||0), active:x.active!==false,
     storageOptions:Array.isArray(x.storageOptions)?x.storageOptions:[
       {label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}
     ],
@@ -2088,7 +2086,7 @@ function normalizeBuybackCatalog(){
     return {
       id:brand.id||newBuybackId("brand"),
       name:String(brand.name||"Nieuw merk"),
-      image:String(brand.image||""),
+      image:brand.image||brand.brandImage||"",
       types:Array.isArray(brand.types)?brand.types.map(type=>({
         id:type.id||newBuybackId("type"),
         name:String(type.name||"Telefoon"),
@@ -2205,15 +2203,7 @@ function renderBuybackQuestionOptions(q){
 function updateBuybackQuestion(id,key,value){
   const t=getBuybackType();const q=t&&t.questions.find(x=>x.id===id);if(!q)return;
   if(key==='required')q.required=!!value;
-  else if(key==='type'){
-    q.type=value;
-    q.options=value==='text'?[]:[
-      {label:value==='yesno'?'Ja':'Optie 1',priceDelta:0,active:true},
-      {label:value==='yesno'?'Nee':'Optie 2',priceDelta:-25,active:true}
-    ];
-    if(value==='yesno' || value==='options') buybackQuestionOpenId=q.id;
-    else buybackQuestionOpenId='';
-  }
+  else if(key==='type'){q.type=value;q.options=value==='text'?[]:[{label:'Ja',priceDelta:0,active:true},{label:'Nee',priceDelta:-25,active:true}];}
   else q[key]=value;
   markChanged();renderBuybackTypeSettings();
 }
@@ -2222,13 +2212,7 @@ function addBuybackQuestion(type){
   const t=getBuybackType();if(!t)return;
   const label=prompt('Naam van de vraag:','Nieuwe vraag');if(!label||!label.trim())return;
   t.questions=t.questions||[];
-  const newQuestion={id:newBuybackId("q"),label:label.trim(),type,required:true,options:type==='text'?[]:[
-    {label:type==='yesno'?'Ja':'Optie 1',priceDelta:0,active:true},
-    {label:type==='yesno'?'Nee':'Optie 2',priceDelta:-25,active:true}
-  ]};
-  t.questions.push(newQuestion);
-  // Open the options immediately so Ja/Nee is visible without saving first.
-  buybackQuestionOpenId=type==='text'?'':newQuestion.id;
+  t.questions.push({id:newBuybackId("q"),label:label.trim(),type,required:true,options:type==='text'?[]:[{label:type==='yesno'?'Ja':'Optie 1',priceDelta:0,active:true},{label:type==='yesno'?'Nee':'Optie 2',priceDelta:-25,active:true}]});
   markChanged();renderBuybackTypeSettings();
 }
 function deleteBuybackQuestion(id){
@@ -2354,13 +2338,12 @@ function renderBuybackModelEditor(){
       </div>
       <div class="grid" style="margin-top:15px">
         <div class="field"><label>Merk</label><input value="${esc(b.name)}" oninput="renameBuybackBrand(this.value)"></div>
-        <div class="field buyback-photo-v5"><label>🏷️ Foto van merk/familie</label><div class="buyback-photo-line-v5">${b.image?`<img src="${esc(b.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen foto</div>'}<input type="file" accept="image/*" onchange="handleBuybackBrandImage(event)"></div></div>
+        <div class="field"><label>📷 Afbeelding van merk</label><div class="buyback-photo-line-v5">${b.image?`<img src="${esc(b.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen merkafbeelding</div>'}<input type="file" accept="image/*" onchange="handleBuybackBrandImage(event)"></div></div>
         <div class="field"><label>Type apparaat</label><input value="${esc(t.name)}" oninput="renameBuybackType(this.value)"></div>
         <div class="field"><label>Model</label><input value="${esc(phone.name||m.name)}" oninput="renameBuybackModel(this.value)"></div>
         <div class="field"><label>Basis inkoopprijs (€)</label><input type="number" step="1" value="${Number(phone.price||0)}" oninput="phone.price=Number(this.value||0);markChanged()"></div>
         <div class="field"><label>Website</label><label class="buyback-check-v5"><input type="checkbox" ${phone.active!==false?'checked':''} onchange="phone.active=this.checked;markChanged();renderBuybackPhones()"> Tonen op Uw toestel verkopen</label></div>
-        <div class="field buyback-photo-v5"><label>📱 Foto buitenkant</label><div class="buyback-photo-line-v5">${phone.imageOutside||phone.image?`<img src="${esc(phone.imageOutside||phone.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen foto</div>'}<input type="file" accept="image/*" onchange="handleBuybackImageForModel(event,'outside')"></div></div>
-      <div class="field buyback-photo-v5"><label>🔧 Foto binnenkant</label><div class="buyback-photo-line-v5">${phone.imageInside?`<img src="${esc(phone.imageInside)}" alt="">`:'<div class="buyback-no-photo-v5">Geen foto</div>'}<input type="file" accept="image/*" onchange="handleBuybackImageForModel(event,'inside')"></div></div>
+        <div class="field buyback-photo-v5"><label>📷 Foto van toestel</label><div class="buyback-photo-line-v5">${phone.image?`<img src="${esc(phone.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen foto</div>'}<input type="file" accept="image/*" onchange="handleBuybackImageForModel(event)"></div></div>
       </div>
       ${renderBuybackTypeSettings()}
       <div id="buybackOptionsArea" class="buyback-model-options" style="display:${buybackOptionsOpen?'block':'none'}">
@@ -2400,7 +2383,7 @@ function selectBuybackModel(id){
 function addBuybackBrand(){
   const name=prompt("Naam van het merk (bijvoorbeeld Apple of Samsung):","Nieuw merk");
   if(!name||!name.trim())return;
-  const brand={id:newBuybackId("brand"),name:name.trim(),types:[]};
+  const brand={id:newBuybackId("brand"),name:name.trim(),image:"",types:[]};
   data.buybackCatalog.push(brand);
   selectedBuybackBrandId=brand.id;selectedBuybackTypeId="";selectedBuybackModelId="";
   markChanged();renderBuybackPhones();
@@ -2425,7 +2408,7 @@ function addBuybackModel(){
   if(!name||!name.trim())return;
 
   const phone={
-    id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',imageOutside:'',imageInside:'',price:0,active:true,
+    id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,
     storageOptions:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}],
     conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}],
     batteryOptions:[{label:'85% of hoger',priceDelta:0,active:true},{label:'Onder 85%',priceDelta:-25,active:true}],
@@ -2475,7 +2458,7 @@ function attachBuybackModel(){
   if(!b||!t||!m)return;
   const name=prompt("Naam van het bestaande inkooptoestel:","Nieuwe telefoon");
   if(!name||!name.trim())return;
-  const phone={id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',imageOutside:'',imageInside:'',price:0,active:true,
+  const phone={id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,
     storageOptions:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}],
     conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}],
     batteryOptions:[{label:'85% of hoger',priceDelta:0,active:true},{label:'Onder 85%',priceDelta:-25,active:true}],
@@ -2484,22 +2467,26 @@ function attachBuybackModel(){
   data.buybackPhones.push(phone);m.buybackId=phone.id;m.name=phone.name;markChanged();renderBuybackPhones();
 }
 
-function handleBuybackImageForModel(event,side){
+function handleBuybackBrandImage(event){
+  const b=getBuybackBrand();
+  const file=event.target.files&&event.target.files[0];
+  if(!b||!file)return;
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');return;}
+  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}
+  const r=new FileReader();
+  r.onload=()=>{b.image=r.result;markChanged();renderBuybackPhones();};
+  r.readAsDataURL(file);
+}
+
+function handleBuybackImageForModel(event){
   const m=getBuybackModel(),p=m&&getBuybackPhoneById(m.buybackId);
   const file=event.target.files&&event.target.files[0];
   if(!p||!file)return;
   if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');return;}
   if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}
   const r=new FileReader();
-  r.onload=()=>{if(side==='inside')p.imageInside=r.result;else{p.imageOutside=r.result;p.image=r.result;}markChanged();renderBuybackModelEditor();};
+  r.onload=()=>{p.image=r.result;markChanged();renderBuybackModelEditor();};
   r.readAsDataURL(file);
-}
-function handleBuybackBrandImage(event){
-  const b=getBuybackBrand(),file=event.target.files&&event.target.files[0];
-  if(!b||!file)return;
-  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');return;}
-  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}
-  const r=new FileReader();r.onload=()=>{b.image=r.result;markChanged();renderBuybackModelEditor();};r.readAsDataURL(file);
 }
 
 /* Compatibility helpers kept for existing data/functions. */
@@ -3267,9 +3254,6 @@ async function showBuybackDetails(id){
     if(!order) throw new Error("Verkoopaanvraag niet gevonden.");
 
     const price=Number(order.offered_price||0).toFixed(2).replace('.',',');
-    const extraAnswers=order.answers&&typeof order.answers==="object"
-      ? Object.values(order.answers).map(x=>x&&x.question?String(x.question)+": "+String(x.value||"-"):"").filter(Boolean).join("\n")
-      : "";
     showOrderDetails("Verkoopaanvraag #"+(order.order_no||order.id), {
       "Ordernummer": order.order_no || ("BT-"+order.id),
       "Datum": order.created_at ? new Date(order.created_at).toLocaleString("nl-NL") : "-",
@@ -3281,7 +3265,6 @@ async function showBuybackDetails(id){
       "Toestel": order.device || "-",
       "Merk": order.brand || "-",
       "Model": order.model || "-",
-      "Type apparaat": order.device_type || "-",
       "Opslag": order.storage || "-",
       "Conditie": order.condition || "-",
       "Face ID": order.face_id || "-",
@@ -3289,8 +3272,7 @@ async function showBuybackDetails(id){
       "Scherm": order.screen || "-",
       "Aangeboden prijs": "€ " + price,
       "Betaalmethode": order.payment_method || "-",
-      "IBAN": order.iban || "-",
-      "Extra antwoorden": extraAnswers || "-"
+      "IBAN": order.iban || "-"
     });
   }catch(error){alert(error.message)}
 }
