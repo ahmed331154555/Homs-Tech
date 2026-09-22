@@ -120,6 +120,35 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
 .dynamic-text{width:100%;min-height:90px;resize:vertical;border:1px solid #dbe3ec;border-radius:12px;padding:12px;font:inherit}
 .dynamic-select{width:100%;border:1px solid #dbe3ec;border-radius:12px;padding:12px;background:#fff;font:inherit}
 </style>
+
+<style id="homs-forza-buyback-v8">
+.sell-intro{text-align:center;max-width:920px;margin:0 auto}
+.sell-intro .crumb{text-align:left}
+.sell-intro h1{font-size:clamp(30px,4vw,48px);letter-spacing:-1.5px;margin:10px 0 10px}
+.sell-intro h1 span{color:#111827}
+.sell-intro p{max-width:850px;margin:0 auto;color:#66778a;font-size:13px;line-height:1.7}
+.forzastyle-panel{max-width:1080px;margin:0 auto}
+.forzastyle-head{text-align:center;display:block;margin-bottom:14px}
+.forzastyle-head h2{font-size:22px}
+.forzastyle-head p{font-size:12px}
+.forza-searchrow{display:grid;grid-template-columns:1fr 150px;gap:10px;max-width:760px;margin:0 auto 20px}
+.searchbox{height:46px;border:1px solid #dce5ee;border-radius:10px;display:flex;align-items:center;background:#fff}
+.searchbox span{padding:0 12px;color:#8191a3;font-size:18px}.searchbox .field{border:0;height:44px;padding-left:0}
+.language-select{height:46px;border:1px solid #dce5ee;border-radius:10px;background:#fff;padding:0 12px;font-size:12px;color:#33485e}
+.family-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:900px;margin:0 auto}
+.family-card{min-height:128px;border:1px solid #dfe6ee;border-radius:8px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 8px;cursor:pointer;transition:.18s}
+.family-card:hover{border-color:#a9c9ee;box-shadow:0 8px 22px rgba(7,26,43,.08);transform:translateY(-2px)}
+.family-card .device-img{height:70px;width:76px;margin-bottom:7px}.family-card .device-name{font-size:11px}
+.family-card .device-price{font-size:9px}
+.family-back{border:0;background:transparent;color:#45596d;font-weight:800;padding:5px 0 14px;display:block}
+.model-header{max-width:900px;margin:0 auto 12px;align-items:center;justify-content:space-between}.model-header h3{margin:0;font-size:17px}.model-header p{margin:3px 0;color:#7b8da0;font-size:11px}
+.device-grid{max-width:900px;margin:0 auto;grid-template-columns:repeat(4,1fr);gap:13px}
+.device{min-height:145px;border-radius:8px;padding:10px}.device-img{height:75px;margin-bottom:7px}.device-name{font-size:10.5px}.device-price{font-size:9px}
+.load-more{display:block;margin:18px auto 0;border:1px solid #d7e0ea;background:#fff;border-radius:9px;padding:10px 22px;font-weight:800;color:#33485e}
+.bb-public-tabs{display:none!important}
+@media(max-width:850px){.family-grid,.device-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:620px){.sell-intro h1{font-size:28px}.forza-searchrow{grid-template-columns:1fr}.family-grid,.device-grid{grid-template-columns:repeat(2,1fr)}.family-card{min-height:120px}}
+</style>
 </head>
 <body>
 
@@ -136,31 +165,35 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
   <a class="active" href="uw-toestel-verkopen.html">Verkopen</a><a href="used.html">Occasions</a><a href="gsm-services.html">GSM Services</a><a href="about.html">Over ons</a>
 </div></nav>
 
-<section class="hero"><div class="wrap">
-  <div class="hero-grid">
-    <div><div class="crumb">Home <b>›</b> Verkopen</div>
-      <h1>Verkoop uw Apple iPhone</h1>
-      <p>Ontvang direct een duidelijke indicatie van de waarde van uw toestel. Kies uw model, opslag, staat en technische conditie — snel, veilig en professioneel bij HOMS TECH.</p>
+<section class="hero">
+  <div class="wrap">
+    <div class="sell-intro">
+      <div class="crumb">Home <b>›</b> Verkopen</div>
+      <h1>Telefoon verkopen of inruilen? <span>Jij kiest: geld of tegoed</span></h1>
+      <p>Wil je jouw telefoon, tablet of smartwatch verkopen of inruilen voor geld? Kies hieronder jouw apparaat. We geven je direct een duidelijke indicatie van de waarde.</p>
     </div>
-    <div class="benefits">
-      <div class="benefit"><span class="check">✓</span> Veilig & betrouwbaar</div>
-      <div class="benefit"><span class="check">✓</span> Snelle beoordeling</div>
-      <div class="benefit"><span class="check">✓</span> Eerlijke prijzen</div>
-      <div class="benefit"><span class="check">✓</span> Directe uitbetaling</div>
-    </div>
+    <div class="stepper"><div id="d1" class="sdot active">1</div><div id="l1" class="sline"></div><div id="d2" class="sdot">2</div><div id="l2" class="sline"></div><div id="d3" class="sdot">3</div><div id="l3" class="sline"></div><div id="d4" class="sdot">4</div></div>
+    <div class="step-labels"><span>Toestel kiezen</span><span>Staat & gegevens</span><span>Uw gegevens</span><span>Aanvraag versturen</span></div>
   </div>
-  <div class="stepper"><div id="d1" class="sdot active">1</div><div id="l1" class="sline"></div><div id="d2" class="sdot">2</div><div id="l2" class="sline"></div><div id="d3" class="sdot">3</div><div id="l3" class="sline"></div><div id="d4" class="sdot">4</div></div>
-  <div class="step-labels"><span>Toestel kiezen</span><span>Staat & gegevens</span><span>Uw gegevens</span><span>Aanvraag versturen</span></div>
-</div></section>
+</section>
 
 <main class="main"><div class="wrap">
 
-<section id="step1" class="panel">
-  <div class="panel-head"><div><h2>Welk toestel wilt u verkopen?</h2><p>Kies het toestel dat u wilt verkopen of inruilen.</p></div></div>
-  <div class="searchrow"><input id="deviceSearch" class="field" placeholder="Zoek op model, bijvoorbeeld S25 of iPhone 17..."></div>
-  <div id="brandTabs" class="bb-public-tabs"></div>
-  <div id="typeTabs" class="bb-public-tabs bb-public-types"></div>
+<section id="step1" class="panel forzastyle-panel">
+  <div class="panel-head forzastyle-head">
+    <div><h2 id="chooseTitle">Welk toestel wilt u verkopen?</h2><p>Kies jouw apparaat. Daarna kies je het exacte model.</p></div>
+  </div>
+  <div class="forza-searchrow">
+    <div class="searchbox"><span>⌕</span><input id="deviceSearch" class="field" placeholder="Zoek jouw apparaat..."></div>
+    <select class="language-select" aria-label="Taal"><option>🇳🇱 Nederlands</option><option>🇬🇧 English</option><option>🇸🇦 العربية</option></select>
+  </div>
+  <button id="familyBack" class="family-back" type="button" style="display:none">← Terug naar apparaten</button>
+  <div id="familyGrid" class="family-grid"></div>
+  <div id="modelHeader" class="model-header" style="display:none">
+    <div><h3 id="modelHeaderTitle">Kies jouw model</h3><p id="modelHeaderSub">Selecteer je toestel.</p></div>
+  </div>
   <div id="deviceGrid" class="device-grid"></div>
+  <button id="loadMoreModels" class="load-more" type="button" style="display:none">Meer laden</button>
 </section>
 
 <section id="step2" class="panel" style="display:none">
@@ -302,31 +335,87 @@ function firstAnswerByLabel(words){
   }
   return '';
 }
-function categories(){
-  const brands=[...new Set(devices.map(x=>x.brand||'Overig'))].filter(Boolean);
-  $('brandTabs').innerHTML=['Alle merken',...brands].map(b=>`<button type="button" class="${b===selectedBrand?'active':''}" data-brand="${esc(b)}">${esc(b)}</button>`).join('');
-  document.querySelectorAll('#brandTabs button').forEach(b=>b.onclick=()=>{selectedBrand=b.dataset.brand;selectedType='Alle soorten';categories();renderDevices()});
-  const byBrand=selectedBrand==='Alle merken'?devices:devices.filter(d=>(d.brand||'Overig')===selectedBrand);
-  const types=[...new Set(byBrand.map(x=>x.deviceType||x.type||'Telefoon'))].filter(Boolean);
-  $('typeTabs').innerHTML=(types.length?['Alle soorten',...types]:[]).map(t=>`<button type="button" class="${t===selectedType?'active':''}" data-type="${esc(t)}">${esc(t)}</button>`).join('');
-  document.querySelectorAll('#typeTabs button').forEach(b=>b.onclick=()=>{selectedType=b.dataset.type;categories();renderDevices()});
+function familyKey(d){
+  const brand=String(d.brand||'').trim(), type=String(d.deviceType||d.type||'Telefoon').trim(), name=String(d.name||'');
+  const n=name.toLowerCase();
+  if(/apple/i.test(brand) && /watch/i.test(type+' '+name)) return 'Apple Watch';
+  if(/apple/i.test(brand) && /ipad/i.test(type+' '+name)) return 'iPad';
+  if(/apple/i.test(brand) && /iphone/i.test(type+' '+name)) return 'iPhone';
+  if(/samsung/i.test(brand)){
+    if(/watch/i.test(type+' '+name)) return 'Samsung Galaxy Watch';
+    if(/tablet|tab/i.test(type+' '+name)) return 'Samsung Tablet';
+    if(/\b(a\d|galaxy a|a series)/i.test(n)) return 'Galaxy A Series';
+    if(/\b(s\d|galaxy s|s series)/i.test(n)) return 'Galaxy S Series';
+    if(/note/i.test(n)) return 'Galaxy Note Series';
+    if(/xcover/i.test(n)) return 'Galaxy XCover Series';
+    if(/z flip/i.test(n)) return 'Galaxy Z Flip Series';
+    if(/z fold/i.test(n)) return 'Galaxy Z Fold Series';
+    return 'Samsung Galaxy';
+  }
+  if(/watch/i.test(type+' '+name)) return brand+' Watch';
+  if(/tablet|ipad/i.test(type+' '+name)) return brand+' Tablet';
+  if(/phone|iphone|smartphone|telefoon/i.test(type+' '+name)) return brand+' Telefoon';
+  return brand+' '+type;
 }
-function renderDevices(){
-  const q=$('deviceSearch').value.toLowerCase();
-  const arr=devices.filter(d=>{
-    const brand=d.brand||'Overig',type=d.deviceType||d.type||'Telefoon';
-    return (selectedBrand==='Alle merken'||brand===selectedBrand)&&(selectedType==='Alle soorten'||type===selectedType)&&(!q||String(d.name||'').toLowerCase().includes(q)||brand.toLowerCase().includes(q)||type.toLowerCase().includes(q));
+let selectedFamily='';
+
+function renderFamilyCard(family, arr){
+  const sample=arr[0]||{};
+  const min=Math.min(...arr.map(x=>Number(x.price||0)));
+  return `<button type="button" class="family-card" data-family="${esc(family)}">
+    <div class="device-img">${imageFor(sample)}</div>
+    <div class="device-name">${esc(family)}</div>
+    <div class="device-price">${arr.length} ${arr.length===1?'model':'modellen'} · vanaf ${money(min)}</div>
+  </button>`;
+}
+function categories(){
+  const groups=new Map();
+  devices.forEach(d=>{const k=familyKey(d);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(d)});
+  const q=String($('deviceSearch')?.value||'').trim().toLowerCase();
+  if(selectedFamily){
+    $('familyGrid').style.display='none';
+    $('familyBack').style.display='block';
+    $('modelHeader').style.display='flex';
+    $('modelHeaderTitle').textContent=selectedFamily;
+    $('modelHeaderSub').textContent='Kies jouw exacte model';
+  }else{
+    $('familyGrid').style.display='grid';
+    $('familyBack').style.display='none';
+    $('modelHeader').style.display='none';
+  }
+  let families=[...groups.entries()];
+  if(q){
+    families=families.filter(([k,arr])=>k.toLowerCase().includes(q)||arr.some(d=>String(d.name||'').toLowerCase().includes(q)));
+  }
+  $('familyGrid').innerHTML=families.length
+    ?families.map(([k,arr])=>renderFamilyCard(k,arr)).join('')
+    :'<div style="grid-column:1/-1;padding:35px;text-align:center;color:#64748b">Geen apparaten gevonden.</div>';
+  document.querySelectorAll('.family-card').forEach(el=>el.onclick=()=>{
+    selectedFamily=el.dataset.family;
+    $('deviceSearch').value='';
+    renderFamilyModels();
   });
-  $('deviceGrid').innerHTML=arr.length?arr.map(d=>`<button class="device" data-i="${devices.indexOf(d)}"><div class="device-img">${imageFor(d)}</div><div class="device-name">${esc(d.name)}</div><div class="device-price">${esc(d.brand||'')} · ${esc(d.deviceType||d.type||'Telefoon')} · vanaf ${money(d.price)}</div></button>`).join(''):'<div style="grid-column:1/-1;padding:40px;text-align:center;color:#64748b">Geen toestellen gevonden.</div>';
+  renderFamilyModels();
+}
+function renderFamilyModels(){
+  const q=String($('deviceSearch')?.value||'').trim().toLowerCase();
+  if(!selectedFamily){$('deviceGrid').innerHTML='';$('loadMoreModels').style.display='none';return;}
+  const arr=devices.filter(d=>familyKey(d)===selectedFamily && (!q||String(d.name||'').toLowerCase().includes(q)));
+  const limit=window._modelLimit||12;
+  const visible=arr.slice(0,limit);
+  $('deviceGrid').innerHTML=visible.length
+    ?visible.map(d=>`<button class="device" data-i="${devices.indexOf(d)}"><div class="device-img">${imageFor(d)}</div><div class="device-name">${esc(d.name)}</div><div class="device-price">Bekijk waarde →</div></button>`).join('')
+    :'<div style="grid-column:1/-1;padding:35px;text-align:center;color:#64748b">Geen modellen gevonden.</div>';
+  $('loadMoreModels').style.display=arr.length>limit?'block':'none';
   document.querySelectorAll('#deviceGrid .device').forEach(el=>el.onclick=()=>chooseDevice(devices[+el.dataset.i]));
 }
+function renderDevices(){ categories(); }
 function chooseDevice(d){
   selected=d; buybackAnswers={};
   selectedModel={...d,base:Number(d.price||0),storage:'',typeQuestions:Array.isArray(d.typeQuestions)?d.typeQuestions:[]};
   $('modelName').textContent=d.name||'Toestel';
   $('modelSub').textContent=(d.brand||'')+' · '+(d.deviceType||'')+' · HOMS TECH inkoop';
   $('productImage').innerHTML=imageFor(d);
-  renderDynamicQuestions();
   // Set the first active option for every question, so the estimate is immediately visible.
   (selectedModel.typeQuestions||[]).forEach(q=>{
     const opts=active(q.options);
@@ -352,6 +441,7 @@ function calcQuote(){
   return v;
 }
 function go(n){
+  if(n===1){selectedFamily='';window._modelLimit=12;if($('deviceSearch'))$('deviceSearch').value='';if($('familyGrid'))categories();}
   [1,2,3,4].forEach(i=>$('step'+i).style.display=i===n?'block':'none');
   for(let i=1;i<=4;i++)$('d'+i).className='sdot '+(n>=i?'active':'');
   for(let i=1;i<=3;i++)$('l'+i).className='sline '+(n>i?'active':'');
@@ -394,7 +484,9 @@ $('finish').onclick=async()=>{
     go(4);
   }catch(e){console.error(e);alert(e.message||'Er ging iets mis bij het verzenden.')}finally{btn.disabled=false;btn.textContent=old}
 };
-$('deviceSearch').oninput=renderDevices;
+$('deviceSearch').oninput=()=>{window._modelLimit=12;if(selectedFamily)renderFamilyModels();else categories()};
+$('familyBack').onclick=()=>{selectedFamily='';window._modelLimit=12;$('deviceSearch').value='';categories()};
+$('loadMoreModels').onclick=()=>{window._modelLimit=(window._modelLimit||12)+12;renderFamilyModels()};
 $('siteSearch').onkeydown=e=>{if(e.key==='Enter'&&e.target.value.trim())location.href='devices.html?search='+encodeURIComponent(e.target.value.trim())};
 async function loadBuyback(){
   try{
