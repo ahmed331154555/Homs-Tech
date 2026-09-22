@@ -64,6 +64,7 @@ a{text-decoration:none;color:inherit}
 .product-card{display:grid;grid-template-columns:220px 1fr 270px;gap:22px;align-items:stretch}
 .product-image{min-height:260px;border-radius:18px;background:linear-gradient(145deg,#f3f7fb,#e9f1f9);display:grid;place-items:center;padding:25px}
 .product-image img{width:100%;height:100%;max-height:235px;object-fit:contain}.product-info{padding:12px 0}
+.inside-photo-box{margin-top:16px;border:1px solid #e2e8f0;border-radius:16px;padding:12px;background:#fff}.inside-photo-box h4{margin:0 0 8px;font-size:14px;color:#0f172a}.inside-photo{height:180px;border-radius:12px;background:#f3f6fa;display:grid;place-items:center;overflow:hidden}.inside-photo img{width:100%;height:100%;object-fit:contain}
 .product-info h2{font-size:25px;margin:0 0 6px;color:var(--navy)}.product-info .sub{color:var(--muted);margin-bottom:25px}
 .label{font-size:12px;font-weight:800;margin:18px 0 8px;display:block}
 .storage{display:flex;gap:10px;flex-wrap:wrap}.storage button,.condition{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 18px;font-weight:700}
@@ -211,6 +212,7 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
     </div>
     <aside class="quote"><div><small>Totale prijs (geschat)</small><strong id="quote">€ 0,00</strong></div><button id="toStep3" class="primary blue">Ga verder →</button><ul><li>Gratis verzending</li><li>Snelle beoordeling</li><li>Directe uitbetaling</li></ul></aside>
   </div>
+  <div id="insidePhotoBox" class="inside-photo-box" style="display:none"><h4>🔧 Binnenkant van het toestel</h4><div id="insidePhoto" class="inside-photo"></div></div>
   <div class="two-col">
     <div class="box" style="grid-column:1/-1">
       <h3>Toestelgegevens</h3>
@@ -264,7 +266,14 @@ const $=id=>document.getElementById(id);
 const money=n=>new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(Number(n||0));
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function active(a){return Array.isArray(a)?a.filter(x=>x&&x.active!==false):[]}
-function imageFor(d){return d?.image?`<img src="${esc(d.image)}" alt="${esc(d.name||'')}">`:`<div class="phone-icon"></div>`}
+function imageFor(d){
+  const src=d?.imageOutside||d?.image||'';
+  return src?`<img src="${esc(src)}" alt="${esc(d.name||'')}">`:`<div class="phone-icon"></div>`;
+}
+function internalImageFor(d){
+  const src=d?.imageInside||'';
+  return src?`<img src="${esc(src)}" alt="${esc(d.name||'')} binnenkant">`:`<div class="phone-icon"></div>`;
+}
 
 let selectedBrand='',selectedType='';
 
@@ -443,6 +452,11 @@ function chooseDevice(d){
   $('modelName').textContent=d.name||'Toestel';
   $('modelSub').textContent=(d.brand||'')+' · '+(d.deviceType||'')+' · HOMS TECH inkoop';
   $('productImage').innerHTML=imageFor(d);
+  const insideBox=$('insidePhotoBox'), inside=$('insidePhoto');
+  if(insideBox&&inside){
+    if(d.imageInside){inside.innerHTML=internalImageFor(d);insideBox.style.display='block';}
+    else {inside.innerHTML='';insideBox.style.display='none';}
+  }
   // Set the first active option for every question, so the estimate is immediately visible.
   (selectedModel.typeQuestions||[]).forEach(q=>{
     const opts=active(q.options);
