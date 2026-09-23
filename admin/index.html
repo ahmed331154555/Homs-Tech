@@ -2558,16 +2558,36 @@ function editBuybackBrand(id){
 }
 
 function deleteBuybackBrand(id){
-  const b=(data.buybackCatalog||[]).find(x=>x.id===id);
+  const catalog=Array.isArray(data.buybackCatalog)?data.buybackCatalog:[];
+  const b=catalog.find(x=>x.id===id);
   if(!b)return;
+
   const count=(b.types||[]).reduce((n,t)=>n+(t.models||[]).length,0);
-  if(!confirm('Merk \"'+(b.name||'')+'\" verwijderen?'+(count?'\n\nHiermee worden ook de '+count+' telefoon(en) van dit merk verwijderd.':'')))return;
+  const msg='Merk "'+(b.name||'')+'" verwijderen?'+
+    (count?'\n\nHiermee worden ook de '+count+' telefoon(en) van dit merk verwijderd.':'');
+  if(!confirm(msg))return;
+
   const phoneIds=[];
-  (b.types||[]).forEach(t=>(t.models||[]).forEach(m=>{if(m.buybackId)phoneIds.push(m.buybackId);}));
-  data.buybackPhones=(data.buybackPhones||[]).filter(p=>!phoneIds.includes(p.id));
-  const idx=data.buybackCatalog.findIndex(x=>x.id===id);
-  if(idx>=0)data.buybackCatalog.splice(idx,1);
-  selectedBuybackBrandId='';selectedBuybackTypeId='';selectedBuybackModelId='';buybackAdminLevel='brands';
+  (b.types||[]).forEach(t=>{
+    (t.models||[]).forEach(m=>{
+      if(m && m.buybackId) phoneIds.push(String(m.buybackId));
+    });
+  });
+
+  // Remove the brand from the visible catalog.
+  data.buybackCatalog=catalog.filter(x=>x.id!==id);
+
+  // Remove all linked phones from the flat compatibility list as well.
+  data.buybackPhones=(Array.isArray(data.buybackPhones)?data.buybackPhones:[])
+    .filter(p=>!phoneIds.includes(String(p.id)));
+
+  selectedBuybackBrandId='';
+  selectedBuybackTypeId='';
+  selectedBuybackModelId='';
+  buybackOptionsOpen=false;
+  buybackAdminLevel='brands';
+
+  // Save the deletion immediately through the normal autosave mechanism.
   markChanged();
   renderBuybackPhones();
 }
@@ -2581,18 +2601,42 @@ function editBuybackModel(modelId,typeId){
 }
 
 function deleteBuybackModelById(modelId,typeId){
-  const b=getBuybackBrand();
+  const catalog=Array.isArray(data.buybackCatalog)?data.buybackCatalog:[];
+  const b=catalog.find(x=>x.id===selectedBuybackBrandId);
   const t=b&&(b.types||[]).find(x=>x.id===typeId);
   if(!b||!t)return;
+
   const m=(t.models||[]).find(x=>x.id===modelId);
   if(!m)return;
-  const p=m.buybackId?getBuybackPhoneById(m.buybackId):null;
-  if(!confirm('Telefoon "'+((p&&p.name)||m.name||'')+'" verwijderen?'))return;
-  t.models=t.models.filter(x=>x.id!==modelId);
-  if(m.buybackId)data.buybackPhones=(data.buybackPhones||[]).filter(x=>x.id!==m.buybackId);
+
+  const phone=getBuybackPhoneById(m.buybackId);
+  const modelName=(phone&&phone.name)||m.name||'';
+  if(!confirm('Telefoon "'+modelName+'" verwijderen?'))return;
+
+  const linkedId=m.buybackId ? String(m.buybackId) : '';
+
+  // Remove the model from the selected type.
+  t.models=(t.models||[]).filter(x=>x.id!==modelId);
+
+  // Also remove the linked phone from the flat compatibility list.
+  if(linkedId){
+    data.buybackPhones=(Array.isArray(data.buybackPhones)?data.buybackPhones:[])
+      .filter(p=>String(p.id)!==linkedId);
+  }
+
+  // Safety cleanup: remove any duplicate catalog references to the same phone.
+  if(linkedId){
+    data.buybackCatalog.forEach(brand=>{
+      (brand.types||[]).forEach(type=>{
+        type.models=(type.models||[]).filter(model=>String(model.buybackId||'')!==linkedId);
+      });
+    });
+  }
+
   selectedBuybackModelId='';
   buybackOptionsOpen=false;
   buybackAdminLevel='models';
+
   markChanged();
   renderBuybackPhones();
 }
