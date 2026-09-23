@@ -2115,7 +2115,11 @@ function defaultBuybackProtocol2(){
     battery:{
       label:'Is de batterijcapaciteit minimaal 85%?',
       yesDelta:0,noDelta:-25,active:true
-    }
+    },
+    wifiOptions:[
+      {label:'Wi-Fi werkt',priceDelta:0,active:true},
+      {label:'Wi-Fi werkt niet',priceDelta:0,active:true}
+    ]
   };
 }
 function normalizeBuybackProtocol2(x){
@@ -2126,7 +2130,8 @@ function normalizeBuybackProtocol2(x){
     conditionOptions:normOpts(p.conditionOptions,d.conditionOptions),
     checklist:Array.isArray(p.checklist)&&p.checklist.length?p.checklist.map(o=>({text:String(o.text||''),active:o.active!==false})):d.checklist.map(o=>({...o})),
     functions:{...d.functions,...(p.functions||{}),yesDelta:Number((p.functions||{}).yesDelta??d.functions.yesDelta),noDelta:Number((p.functions||{}).noDelta??d.functions.noDelta),active:(p.functions||{}).active!==false},
-    battery:{...d.battery,...(p.battery||{}),yesDelta:Number((p.battery||{}).yesDelta??d.battery.yesDelta),noDelta:Number((p.battery||{}).noDelta??d.battery.noDelta),active:(p.battery||{}).active!==false}
+    battery:{...d.battery,...(p.battery||{}),yesDelta:Number((p.battery||{}).yesDelta??d.battery.yesDelta),noDelta:Number((p.battery||{}).noDelta??d.battery.noDelta),active:(p.battery||{}).active!==false},
+    wifiOptions:normOpts(p.wifiOptions,d.wifiOptions)
   };
 }
 function normalizeBuybackPhones(){
@@ -2574,6 +2579,7 @@ function renderProtocol2Settings(phone){
     <div class="bb-protocol2-title"><div><h4>⚙️ Protocol 2 instellingen</h4><div class="small">Deze waarden worden gebruikt op Uw toestel verkopen. Prijs = basisprijs + gekozen aanpassingen.</div></div></div>
     ${optionEditor('storageOptions','Opslag / geheugen','Geheugen toevoegen')}
     ${optionEditor('conditionOptions','Staat van het toestel','Conditie toevoegen')}
+    ${optionEditor('wifiOptions','Wi-Fi','Wi-Fi keuze toevoegen')}
     <div class="card bb-proto-card"><div class="card-title">Controlepunten — tekst per regel</div>${p.checklist.map((o,i)=>`<div class="bb-proto-row bb-proto-check"><input value="${esc(o.text)}" oninput="updateProtocol2Checklist(${i},'text',this.value)"><label><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol2Checklist(${i},'active',this.checked)"> Actief</label><button type="button" class="btn btn-light" onclick="deleteProtocol2Checklist(${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol2Checklist()">+ Controlepunt toevoegen</button></div>
     <div class="card bb-proto-card"><div class="card-title">Alle functies werken?</div><div class="field"><label>Vraag</label><textarea oninput="updateProtocol2Field('functions.label',this.value)">${esc(p.functions.label)}</textarea></div><div class="bb-proto-two"><div class="field"><label>Ja: prijsaanpassing</label><input type="number" step="1" value="${Number(p.functions.yesDelta||0)}" oninput="updateProtocol2Field('functions.yesDelta',this.value)"></div><div class="field"><label>Nee: prijsaanpassing</label><input type="number" step="1" value="${Number(p.functions.noDelta||0)}" oninput="updateProtocol2Field('functions.noDelta',this.value)"></div></div><label class="buyback-check-v5"><input type="checkbox" ${p.functions.active!==false?'checked':''} onchange="updateProtocol2Field('functions.active',this.checked)"> Deze vraag tonen</label></div>
     <div class="card bb-proto-card"><div class="card-title">Batterij 85%</div><div class="field"><label>Vraag</label><input value="${esc(p.battery.label)}" oninput="updateProtocol2Field('battery.label',this.value)"></div><div class="bb-proto-two"><div class="field"><label>Ja: prijsaanpassing</label><input type="number" step="1" value="${Number(p.battery.yesDelta||0)}" oninput="updateProtocol2Field('battery.yesDelta',this.value)"></div><div class="field"><label>Nee: prijsaanpassing</label><input type="number" step="1" value="${Number(p.battery.noDelta||0)}" oninput="updateProtocol2Field('battery.noDelta',this.value)"></div></div><label class="buyback-check-v5"><input type="checkbox" ${p.battery.active!==false?'checked':''} onchange="updateProtocol2Field('battery.active',this.checked)"> Deze vraag tonen</label></div>
