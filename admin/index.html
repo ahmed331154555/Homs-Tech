@@ -2092,9 +2092,15 @@ function normalizeBuybackPhones(){
     storageOptions:Array.isArray(x.storageOptions)?x.storageOptions:[
       {label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}
     ],
-    conditionOptions:Array.isArray(x.conditionOptions)?x.conditionOptions:[
-      {label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}
-    ],
+    conditionOptions:(Array.isArray(x.conditionOptions)?x.conditionOptions:[
+      {label:'Zo goed als nieuw',priceDelta:0,buyPrice:Number(x.price||0),active:true},
+      {label:'Licht gebruikt',priceDelta:-40,buyPrice:Math.max(0,Number(x.price||0)-40),active:true},
+      {label:'Zichtbaar gebruikt',priceDelta:-90,buyPrice:Math.max(0,Number(x.price||0)-90),active:true},
+      {label:'Kapot',priceDelta:-200,buyPrice:Math.max(0,Number(x.price||0)-200),active:true}
+    ]).map(o=>({
+      ...o,
+      buyPrice:Number.isFinite(Number(o.buyPrice)) ? Number(o.buyPrice) : Math.max(0,Number(x.price||0)+Number(o.priceDelta||0))
+    })), 
     batteryOptions:(()=>{
       const old=Array.isArray(x.batteryOptions)?x.batteryOptions:[];
       const first=old[0]||{};
@@ -2335,7 +2341,7 @@ function updateSelectedBuybackPhoneField(key,value){
 function updateSelectedBuybackPhoneOption(key,index,field,value){
   const phone=getSelectedBuybackPhone();
   if(!phone || !Array.isArray(phone[key]) || !phone[key][index])return;
-  phone[key][index][field]=field==='priceDelta'
+  phone[key][index][field]=(field==='priceDelta'||field==='buyPrice')
     ? Number(value||0)
     : field==='active'
       ? !!value
@@ -2682,9 +2688,21 @@ function renderBuybackModelEditor(){
 
 function buybackOptionEditorForModel(phone,title,key){
   const opts=phone[key]||[];
+  if(key==='conditionOptions'){
+    const base=Number(phone.price||0);
+    return `<div class="card buyback-option-card"><div class="card-title">${title}</div>
+      <div class="small" style="margin-bottom:12px">Per conditie kunt u hier direct de inkoopprijs instellen.</div>
+      ${opts.map((o,i)=>{
+        const buyPrice=Number.isFinite(Number(o.buyPrice)) ? Number(o.buyPrice) : Math.max(0,base+Number(o.priceDelta||0));
+        return `<div class="buyback-option-row">
+          <input value="${esc(o.label||'')}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'label',this.value)">
+          <input type="number" step="1" value="${buyPrice}" placeholder="Inkoopprijs (€)" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'buyPrice',this.value)">
+          <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateSelectedBuybackPhoneOption('${key}',${i},'active',this.checked)"> Actief</label>
+        </div>`;
+      }).join('')}</div>`;
+  }
   return `<div class="card buyback-option-card"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">Pas de keuze en prijsaanpassing zelf aan.</div>${opts.map((o,i)=>`<div class="buyback-option-row"><input value="${esc(o.label||'')}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'label',this.value)"><input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'priceDelta',this.value)"><label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateSelectedBuybackPhoneOption('${key}',${i},'active',this.checked)"> Actief</label></div>`).join('')}</div>`;
 }
-
 function toggleBuybackTypeSettings(){
   buybackTypeSettingsOpen=!buybackTypeSettingsOpen;
   buybackQuestionOpenId="";
@@ -2865,7 +2883,7 @@ function addBuybackModel(){
   const phone={
     id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,
     storageOptions:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}],
-    conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}],
+    conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,buyPrice:0,active:true},{label:'Licht gebruikt',priceDelta:-40,buyPrice:0,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,buyPrice:0,active:true},{label:'Kapot',priceDelta:-200,buyPrice:0,active:true}],
     batteryOptions:[{label:'85% of hoger',priceDelta:0,active:true},{label:'Onder 85%',priceDelta:-25,active:true}],
     faceIdOptions:[{label:'Face ID werkt',priceDelta:0,active:true},{label:'Face ID werkt niet',priceDelta:-100,active:true}],
     screenOptions:[{label:'Scherm goed',priceDelta:0,active:true},{label:'Kleine beschadigingen',priceDelta:-50,active:true},{label:'Scherm gebroken',priceDelta:-150,active:true}]
@@ -2918,7 +2936,7 @@ function attachBuybackModel(){
   if(!name||!name.trim())return;
   const phone={id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,
     storageOptions:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}],
-    conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}],
+    conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,buyPrice:0,active:true},{label:'Licht gebruikt',priceDelta:-40,buyPrice:0,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,buyPrice:0,active:true},{label:'Kapot',priceDelta:-200,buyPrice:0,active:true}],
     batteryOptions:[{label:'85% of hoger',priceDelta:0,active:true},{label:'Onder 85%',priceDelta:-25,active:true}],
     faceIdOptions:[{label:'Face ID werkt',priceDelta:0,active:true},{label:'Face ID werkt niet',priceDelta:-100,active:true}],
     screenOptions:[{label:'Scherm goed',priceDelta:0,active:true},{label:'Kleine beschadigingen',priceDelta:-50,active:true},{label:'Scherm gebroken',priceDelta:-150,active:true}]};
