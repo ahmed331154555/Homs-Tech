@@ -464,7 +464,7 @@ function calcQuote(){
     const val=questionValue(q);
     v+=getQuestionDelta(q.id,val);
   });
-  v=Math.max(0,Math.round(v/5)*5);
+  v=Math.max(0,v);
   const credit=$('cMethod')?.value?.includes('tegoed');
   const display=credit?v*1.10:v;
   $('quote').textContent=money(display);
