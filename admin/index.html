@@ -2472,6 +2472,64 @@ function renderBuybackPhones(){
   if(existingEditor) existingEditor.classList.add('buyback-v1-editor-wrap');
 }
 
+function normalizeBuybackModelVariantOptions(phone){
+  if(!phone || !Array.isArray(phone.variantOptions)) phone.variantOptions=[];
+  phone.variantOptions=phone.variantOptions.map(o=>({
+    label:String(o?.label||''),
+    priceDelta:Number(o?.priceDelta||0),
+    active:o?.active===true
+  }));
+  // Always provide two editable slots. Empty/inactive slots never appear to customers.
+  while(phone.variantOptions.length<2){
+    phone.variantOptions.push({label:'',priceDelta:0,active:false});
+  }
+  if(phone.variantOptions.length>2) phone.variantOptions=phone.variantOptions.slice(0,2);
+}
+
+function addBuybackModelVariantOption(){
+  const phone=getSelectedBuybackPhone();
+  if(!phone)return;
+  normalizeBuybackModelVariantOptions(phone);
+  alert('Er zijn al twee velden. Vul de twee vakken in en zet Actief aan voor de keuze die de klant mag zien.');
+}
+function deleteBuybackModelVariantOption(index){
+  const phone=getSelectedBuybackPhone();
+  if(!phone || !Array.isArray(phone.variantOptions))return;
+  phone.variantOptions.splice(index,1);
+  markChanged();
+  renderBuybackModelEditor();
+}
+function updateBuybackModelVariantOption(index,field,value){
+  const phone=getSelectedBuybackPhone();
+  if(!phone)return;
+  normalizeBuybackModelVariantOptions(phone);
+  const o=phone.variantOptions[index];
+  if(!o)return;
+  o[field]=field==='priceDelta'?Number(value||0):field==='active'?!!value:String(value??'');
+  markChanged();
+}
+function renderBuybackModelVariantOptions(phone){
+  normalizeBuybackModelVariantOptions(phone);
+  const opts=phone.variantOptions||[];
+  return `<div class="card buyback-option-card">
+    <div class="card-title">⌚ Type / uitvoering</div>
+    <div class="small" style="margin-bottom:12px">Bijvoorbeeld WiFi of Bluetooth. Deze keuzes verschijnen bij de klant wanneer ze actief zijn.</div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+      ${opts.map((o,i)=>`<div style="border:1px solid #e5eaf1;border-radius:10px;padding:10px;background:#fbfcfe">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:8px;align-items:center">
+          <input value="${esc(o.label)}" placeholder="Bijv. WiFi" oninput="updateBuybackModelVariantOption(${i},'label',this.value)">
+          <input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateBuybackModelVariantOption(${i},'priceDelta',this.value)">
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px">
+          <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateBuybackModelVariantOption(${i},'active',this.checked)"> Actief</label>
+          <button class="bb-q-delete" type="button" onclick="deleteBuybackModelVariantOption(${i})">×</button>
+        </div>
+      </div>`).join('')}
+      <div style="grid-column:1/-1;font-size:12px;color:#64748b">Vul bijvoorbeeld <strong>WiFi</strong> en <strong>Bluetooth</strong> in. Alleen keuzes met een naam én Actief worden aan de klant getoond.</div>
+    </div>
+  </div>`;
+}
+
 function renderBuybackModelEditor(){
   const editor=document.getElementById('buybackModelEditor');
   if(!editor)return;
@@ -2508,6 +2566,7 @@ function renderBuybackModelEditor(){
       </div>
       ${renderBuybackTypeSettings()}
       <div id="buybackOptionsArea" class="buyback-model-options" style="display:${buybackOptionsOpen?'block':'none'}">
+        ${renderBuybackModelVariantOptions(phone)}
         ${buybackOptionEditorForModel(phone,'Opslag','storageOptions')}
         ${buybackOptionEditorForModel(phone,'Conditie','conditionOptions')}
         ${buybackOptionEditorForModel(phone,'Batterij','batteryOptions')}
@@ -2519,7 +2578,7 @@ function renderBuybackModelEditor(){
 
 function buybackOptionEditorForModel(phone,title,key){
   const opts=phone[key]||[];
-  return `<div class="card buyback-option-card"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">Pas de keuze en prijsaanpassing zelf aan.</div>${opts.map((o,i)=>`<div class="buyback-option-row"><input value="${esc(o.label||'')}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'label',this.value)"><input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'priceDelta',this.value)"><label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateSelectedBuybackPhoneOption('${key}',${i},'active',this.checked); this.checked=!!getSelectedBuybackPhone()?.${key}?.[${i}]?.active"> Actief</label></div>`).join('')}</div>`;
+  return `<div class="card buyback-option-card"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">Pas de keuze en prijsaanpassing zelf aan.</div>${opts.map((o,i)=>`<div class="buyback-option-row"><input value="${esc(o.label||'')}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'label',this.value)"><input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'priceDelta',this.value)"><label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateSelectedBuybackPhoneOption('${key}',${i},'active',this.checked)"> Actief</label></div>`).join('')}</div>`;
 }
 
 function toggleBuybackTypeSettings(){
