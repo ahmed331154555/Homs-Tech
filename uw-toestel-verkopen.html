@@ -349,11 +349,31 @@ function getQuestionDelta(qId,label){
   const o=active(q?.options).find(x=>x.label===label);
   return Number(o?.priceDelta||0);
 }
+function getConditionQuestion(){
+  return (selectedModel?.typeQuestions||[]).find(q=>String(q.label||'').toLowerCase().includes('conditie'));
+}
+function isKapotSelected(){
+  const q=getConditionQuestion();
+  if(!q)return false;
+  const v=String(questionValue(q)||'').trim().toLowerCase();
+  return v==='kapot' || v.includes('kapot');
+}
+function getSelectedConditionOption(){
+  const q=getConditionQuestion();
+  if(!q)return null;
+  const v=questionValue(q);
+  return active(q.options).find(o=>String(o.label||'')===String(v))||null;
+}
 function questionValue(q){return buybackAnswers[q.id]??''}
 function setQuestionValue(qid,value){
   const q=(selectedModel?.typeQuestions||[]).find(x=>x.id===qid);
   if(q && q.type!=='text' && !active(q.options).some(o=>o.label===value)) return;
   buybackAnswers[qid]=value;
+  // A kapot toestel needs no further inspection questions.
+  if(String(q?.label||'').toLowerCase().includes('conditie') && String(value||'').toLowerCase().includes('kapot')){
+    const conditionId=q.id;
+    Object.keys(buybackAnswers).forEach(id=>{if(id!==conditionId) delete buybackAnswers[id];});
+  }
   renderDynamicQuestions();
   calcQuote();
 }
@@ -373,9 +393,10 @@ function renderQuestion(q){
       <div class="dynamic-question-title">${esc(q.label)}${required?'<span class="dynamic-question-required">*</span>':''}</div>
       <div class="dynamic-option-grid">${opts.map(o=>{
         const activeNow=val===o.label;
+        const isCondition=String(q.label||'').toLowerCase().includes('conditie');
         const delta=Number(o.priceDelta||0);
         return `<button type="button" class="dynamic-option ${activeNow?'active':''}" onclick="setQuestionValue('${esc(q.id)}','${esc(o.label)}')">
-          ${esc(o.label)}${delta?`<span class="delta">${delta>0?'+':''}${money(delta)}</span>`:''}
+          ${esc(o.label)}${!isCondition&&delta?`<span class="delta">${delta>0?'+':''}${money(delta)}</span>`:''}
         </button>`;
       }).join('')}</div>
     </div>`;
@@ -384,12 +405,18 @@ function renderQuestion(q){
 }
 function renderDynamicQuestions(){
   const box=$('dynamicQuestions'); if(!box)return;
-  const qs=Array.isArray(selectedModel?.typeQuestions)?selectedModel.typeQuestions:[];
+  const allQs=Array.isArray(selectedModel?.typeQuestions)?selectedModel.typeQuestions:[];
+  const conditionQ=allQs.find(q=>String(q.label||'').toLowerCase().includes('conditie'));
+  const qs=isKapotSelected()
+    ? allQs.filter(q=>q===conditionQ)
+    : allQs;
   if(!qs.length){box.innerHTML='<div style="padding:14px;background:#f8fafc;border-radius:12px;color:#64748b">Voor dit type zijn nog geen extra vragen ingesteld.</div>';return;}
   box.innerHTML=qs.map(renderQuestion).join('');
 }
 function validateDynamicQuestions(){
-  const qs=selectedModel?.typeQuestions||[];
+  const allQs=selectedModel?.typeQuestions||[];
+  const conditionQ=allQs.find(q=>String(q.label||'').toLowerCase().includes('conditie'));
+  const qs=isKapotSelected()?allQs.filter(q=>q===conditionQ):allQs;
   const missing=qs.find(q=>q.required!==false && !String(questionValue(q)).trim());
   if(missing){alert('Kies of vul eerst in: '+missing.label);return false;}
   return true;
@@ -517,12 +544,40 @@ function chooseDevice(d){
 }
 function calcQuote(){
   if(!selectedModel)return 0;
+
+  const conditionQ=getConditionQuestion();
+  const conditionOpt=getSelectedConditionOption();
+
+  // Every condition can have its own direct purchase price.
+  // For a kapot device this is the final price and no other questions affect it.
+  if(conditionQ && isKapotSelected()){
+    let brokenPrice=Number(conditionOpt?.buyPrice);
+    if(!Number.isFinite(brokenPrice)) brokenPrice=Number(selectedModel.base||0)+Number(conditionOpt?.priceDelta||0);
+    brokenPrice=Math.max(0,brokenPrice);
+    const credit=$('cMethod')?.value?.includes('tegoed');
+    const display=credit?brokenPrice*1.10:brokenPrice;
+    $('quote').textContent=money(display);
+    $('bottomTotal').textContent=money(display);
+    return brokenPrice;
+  }
+
   let v=Number(selectedModel.base||0);
+  let usedDirectConditionPrice=false;
+
   (selectedModel.typeQuestions||[]).forEach(q=>{
     if(q.type==='text')return;
     const val=questionValue(q);
-    v+=getQuestionDelta(q.id,val);
+    const isCondition=q===conditionQ;
+    const opt=isCondition ? active(q.options).find(o=>String(o.label||'')===String(val)) : null;
+
+    if(isCondition && opt && Number.isFinite(Number(opt.buyPrice))){
+      v=Number(opt.buyPrice);
+      usedDirectConditionPrice=true;
+    }else{
+      v+=getQuestionDelta(q.id,val);
+    }
   });
+
   v=Math.max(0,v);
   const credit=$('cMethod')?.value?.includes('tegoed');
   const display=credit?v*1.10:v;
