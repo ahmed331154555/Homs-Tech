@@ -2299,6 +2299,31 @@ function getBuybackModel(){
 function getBuybackPhoneById(id){
   return data.buybackPhones.find(x=>x.id===id)||null;
 }
+
+function getSelectedBuybackPhone(){
+  const m=getBuybackModel();
+  return m ? getBuybackPhoneById(m.buybackId) : null;
+}
+
+function updateSelectedBuybackPhoneField(key,value){
+  const phone=getSelectedBuybackPhone();
+  if(!phone)return;
+  if(key==='price') phone.price=Number(value||0);
+  else if(key==='active') phone.active=!!value;
+  else phone[key]=value;
+  markChanged();
+}
+
+function updateSelectedBuybackPhoneOption(key,index,field,value){
+  const phone=getSelectedBuybackPhone();
+  if(!phone || !Array.isArray(phone[key]) || !phone[key][index])return;
+  phone[key][index][field]=field==='priceDelta'
+    ? Number(value||0)
+    : field==='active'
+      ? !!value
+      : value;
+  markChanged();
+}
 function ensureBuybackSelection(){
   const brands=data.buybackCatalog||[];
   if(!brands.length){selectedBuybackBrandId="";selectedBuybackTypeId="";selectedBuybackModelId="";return;}
@@ -2483,24 +2508,6 @@ function renderBuybackModelEditor(){
     </div>`;
 }
 
-function getSelectedBuybackPhone(){
-  const m=getBuybackModel();
-  return m ? getBuybackPhoneById(m.buybackId) : null;
-}
-function updateSelectedBuybackPhoneField(key,value){
-  const phone=getSelectedBuybackPhone();
-  if(!phone)return;
-  if(key==='price') phone.price=Number(value||0);
-  else if(key==='active') phone.active=!!value;
-  else phone[key]=value;
-  markChanged();
-}
-function updateSelectedBuybackPhoneOption(key,index,field,value){
-  const phone=getSelectedBuybackPhone();
-  if(!phone || !Array.isArray(phone[key]) || !phone[key][index])return;
-  phone[key][index][field]=field==='priceDelta'?Number(value||0):field==='active'?!!value:value;
-  markChanged();
-}
 function buybackOptionEditorForModel(phone,title,key){
   const opts=phone[key]||[];
   return `<div class="card buyback-option-card"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">Pas de keuze en prijsaanpassing zelf aan.</div>${opts.map((o,i)=>`<div class="buyback-option-row"><input value="${esc(o.label||'')}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'label',this.value)"><input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'priceDelta',this.value)"><label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateSelectedBuybackPhoneOption('${key}',${i},'active',this.checked)"> Actief</label></div>`).join('')}</div>`;
