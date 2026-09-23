@@ -155,7 +155,14 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
 @media(max-width:620px){.sell-intro h1{font-size:28px}.family-grid,.device-grid{grid-template-columns:repeat(2,1fr)}.family-card{min-height:135px}.sell-search-result{padding:9px 11px}.sell-search-result .sr-price{font-size:9px;padding:5px 7px}}
 </style>
 <!-- HOMS TECH FORZA STYLE V15: brand images + model images only -->
-</head>
+<style id="homs-buyback-protocol2">
+.dynamic-info-line{display:flex;gap:10px;align-items:flex-start;padding:10px 0;color:#334155;font-size:14px;line-height:1.55}
+.dynamic-info-line .bullet{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:#e2e8f0;color:#0f172a;display:flex;align-items:center;justify-content:center;font-weight:900}
+.dynamic-condition-question .dynamic-option-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.dynamic-condition-question .dynamic-option{min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.condition-price{font-size:16px;font-weight:900;color:#0f5ed8}
+@media(max-width:850px){.dynamic-condition-question .dynamic-option-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style></head>
 <body>
 
 <div class="topbar"><div class="wrap"><div class="top-info"><span>1 jaar garantie</span><span>Snel geleverd</span><span>Betrouwbare service</span><span>Betaalbare prijzen</span></div></div></div>
@@ -273,60 +280,115 @@ let selectedBrand='',selectedType='';
 
 function buildCustomerQuestions(phone,type){
   const protocol=phone?.buybackProtocol==='1'?'1':'2';
-  const protocolSource=phone?.protocolQuestions?.[protocol];
-  const source=Array.isArray(protocolSource)?protocolSource:(Array.isArray(type?.questions)?type.questions:[]);
-  const questions=source
-    .filter(q=>q && q.active!==false)
-    .map(q=>({...q,options:Array.isArray(q.options)?q.options.filter(o=>o&&o.active!==false).map(o=>({...o})):[]}));
 
-  // Model-specific options are the final source for the matching question.
-  // This makes the Actief checkbox in Admin control exactly what the customer sees.
-  const optionSets=[
-    ['storageOptions','Opslag',['opslag','storage']],
-    ['conditionOptions','Conditie',['conditie','staat','condition']],
-    ['batteryOptions','Batterij',['batterij','battery']],
-    ['faceIdOptions','Face ID',['face id','faceid']],
-    ['screenOptions','Scherm',['scherm','screen']],
-    ['variantOptions','Type / uitvoering',['type / uitvoering','type','uitvoering','variant','verbinding','connectiviteit']]
-  ];
+  // Protocol 1 = the existing HOMS TECH flow.
+  if(protocol==='1'){
+    const protocolSource=phone?.protocolQuestions?.['1'];
+    const source=Array.isArray(protocolSource)?protocolSource:(Array.isArray(type?.questions)?type.questions:[]);
+    const questions=source
+      .filter(q=>q && q.active!==false)
+      .map(q=>({...q,options:Array.isArray(q.options)?q.options.filter(o=>o&&o.active!==false).map(o=>({...o})):[]}));
 
-  optionSets.forEach(([key,label,aliases])=>{
-    const opts=Array.isArray(phone?.[key])
-      ? phone[key].filter(o=>o && o.active!==false && String(o.label||'').trim()).map(o=>({...o}))
-      : [];
-    if(!opts.length)return;
-
-    const existing=questions.find(q=>{
-      const ql=String(q.label||'').toLowerCase();
-      return aliases.some(a=>ql.includes(a));
-    });
-
-    if(existing){
-      existing.type='options';
-      existing.options=opts;
-    }else{
-      questions.push({
-        id:'model_'+key,
-        label,
-        type:'options',
-        required:true,
-        options:opts
+    const optionSets=[
+      ['storageOptions','Opslag',['opslag','storage']],
+      ['conditionOptions','Conditie',['conditie','staat','condition']],
+      ['batteryOptions','Batterij',['batterij','battery']],
+      ['faceIdOptions','Face ID',['face id','faceid']],
+      ['screenOptions','Scherm',['scherm','screen']],
+      ['variantOptions','Type / uitvoering',['type / uitvoering','type','uitvoering','variant','verbinding','connectiviteit']]
+    ];
+    optionSets.forEach(([key,label,aliases])=>{
+      const opts=Array.isArray(phone?.[key])
+        ? phone[key].filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>({...o}))
+        : [];
+      if(!opts.length)return;
+      const existing=questions.find(q=>{
+        const ql=String(q.label||'').toLowerCase();
+        return aliases.some(a=>ql.includes(a));
       });
-    }
+      if(existing){existing.type='options';existing.options=opts;}
+      else questions.push({id:'model_'+key,label,type:'options',required:true,options:opts});
+    });
+
+    const custom=Array.isArray(phone?.customBuybackQuestions)?phone.customBuybackQuestions.filter(q=>q&&q.active!==false):[];
+    custom.forEach((q,i)=>{
+      const opts=Array.isArray(q.options)?q.options.filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>({...o})):[];
+      if(!String(q.label||'').trim()||!opts.length)return;
+      questions.push({id:q.id||('custom_'+i),label:String(q.label),type:'options',required:q.required!==false,options:opts});
+    });
+    return questions;
+  }
+
+  // Protocol 2 = the exact new flow shown in the user's screenshot:
+  // storage -> condition -> editable information lines -> all functions -> battery.
+  const p=phone?.protocol2||{};
+  const questions=[];
+
+  const storage=Array.isArray(p.storageOptions)
+    ? p.storageOptions.filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>({...o}))
+    : [];
+  if(storage.length){
+    questions.push({
+      id:'p2_storage',
+      label:'Opslag',
+      type:'options',
+      required:true,
+      options:storage
+    });
+  }
+
+  const cp=p.conditionPrices||{};
+  const condition=[
+    {label:'Zo goed als nieuw',buyPrice:Number(cp.new||0),priceDelta:0,active:true},
+    {label:'Licht gebruikt',buyPrice:Number(cp.light||0),priceDelta:0,active:true},
+    {label:'Zichtbaar gebruikt',buyPrice:Number(cp.visible||0),priceDelta:0,active:true},
+    {label:'Kapot',buyPrice:Number(cp.broken||0),priceDelta:0,active:true}
+  ];
+  questions.push({
+    id:'p2_condition',
+    label:'Wat is de staat van het toestel?',
+    type:'options',
+    required:true,
+    options:condition
   });
 
-  const custom=Array.isArray(phone?.customBuybackQuestions)?phone.customBuybackQuestions.filter(q=>q&&q.active!==false):[];
-  custom.forEach((q,i)=>{
-    const opts=Array.isArray(q.options)?q.options.filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>({...o})):[];
-    if(!String(q.label||'').trim() || !opts.length)return;
-    questions.push({
-      id:q.id||('custom_'+i),
-      label:String(q.label),
-      type:'options',
-      required:q.required!==false,
-      options:opts
+  (Array.isArray(p.introLines)?p.introLines:[])
+    .filter(x=>x&&x.active!==false&&String(x.text||'').trim())
+    .forEach((x,i)=>{
+      questions.push({
+        id:'p2_info_'+i,
+        label:String(x.text),
+        type:'info',
+        required:false,
+        options:[]
+      });
     });
-  });
+
+  if(p.functions?.active!==false){
+    questions.push({
+      id:'p2_functions',
+      label:String(p.functions?.label||'Werken alle functies van het toestel goed?'),
+      type:'yesno',
+      required:true,
+      options:[
+        {label:String(p.functions?.yesLabel||'Ja'),priceDelta:0,active:true},
+        {label:String(p.functions?.noLabel||'Nee'),priceDelta:0,active:true}
+      ]
+    });
+  }
+
+  if(p.battery?.active!==false){
+    questions.push({
+      id:'p2_battery',
+      label:String(p.battery?.label||'Is de batterijcapaciteit minimaal 85%?'),
+      type:'yesno',
+      required:true,
+      options:[
+        {label:String(p.battery?.yesLabel||'Ja'),priceDelta:0,active:true},
+        {label:String(p.battery?.noLabel||'Nee'),priceDelta:0,active:true}
+      ]
+    });
+  }
 
   return questions;
 }
@@ -339,7 +401,7 @@ function flattenBuybackCatalog(catalog){
         const p=(siteData.buybackPhones||[]).find(x=>String(x.id)===String(m.buybackId));
         if(p && p.active!==false){
           out.push({...p,brand:b.name,deviceType:t.name,typeId:t.id,typeName:t.name,brandId:b.id,modelId:m.id,
-            typeQuestions:buildCustomerQuestions(p,t),protocol:p.buybackProtocol==='1'?'1':'2',protocolSettings:p.buybackProtocolSettings?.[p.buybackProtocol==='1'?'1':'2']||{},brandImage:b.image||b.brandImage||''});
+            typeQuestions:buildCustomerQuestions(p,t),protocol:p.buybackProtocol==='1'?'1':'2',protocol2:p.protocol2||{},protocolSettings:p.buybackProtocolSettings?.[p.buybackProtocol==='1'?'1':'2']||{},brandImage:b.image||b.brandImage||''});
         }
       });
     });
@@ -353,7 +415,7 @@ function getQuestionDelta(qId,label){
   return Number(o?.priceDelta||0);
 }
 function getConditionQuestion(){
-  return (selectedModel?.typeQuestions||[]).find(q=>String(q.label||'').toLowerCase().includes('conditie'));
+  return (selectedModel?.typeQuestions||[]).find(q=>q.id==='p2_condition' || String(q.label||'').toLowerCase().includes('conditie') || String(q.label||'').toLowerCase().includes('staat'));
 }
 function isKapotSelected(){
   const q=getConditionQuestion();
@@ -385,22 +447,31 @@ function renderQuestion(q){
   const opts=active(q.options);
   const val=questionValue(q);
   const required=q.required!==false;
+
+  if(q.type==='info'){
+    return `<div class="dynamic-info-line"><span class="bullet">✓</span><span>${esc(q.label)}</span></div>`;
+  }
+
   if(q.type==='text'){
     return `<div class="dynamic-question">
       <div class="dynamic-question-title">${esc(q.label)}${required?'<span class="dynamic-question-required">*</span>':''}</div>
       <textarea class="dynamic-text" placeholder="${esc(q.label)}" oninput="buybackAnswers['${esc(q.id)}']=this.value;calcQuote()">${esc(val)}</textarea>
     </div>`;
   }
+
   if(q.type==='yesno' || q.type==='options'){
     if(!opts.length)return '';
-    return `<div class="dynamic-question">
+    const isCondition=String(q.id||'')==='p2_condition' || String(q.label||'').toLowerCase().includes('conditie') || String(q.label||'').toLowerCase().includes('staat');
+    return `<div class="dynamic-question ${isCondition?'dynamic-condition-question':''}">
       <div class="dynamic-question-title">${esc(q.label)}${required?'<span class="dynamic-question-required">*</span>':''}</div>
       <div class="dynamic-option-grid">${opts.map(o=>{
         const activeNow=val===o.label;
-        const isCondition=String(q.label||'').toLowerCase().includes('conditie');
         const delta=Number(o.priceDelta||0);
+        const buyPrice=Number(o.buyPrice||0);
+        const showConditionPrice=isCondition && buyPrice>0;
         return `<button type="button" class="dynamic-option ${activeNow?'active':''}" onclick="setQuestionValue('${esc(q.id)}','${esc(o.label)}')">
-          ${esc(o.label)}${!isCondition&&delta?`<span class="delta">${delta>0?'+':''}${money(delta)}</span>`:''}
+          <span>${esc(o.label)}</span>
+          ${showConditionPrice?`<span class="condition-price">${money(buyPrice)}</span>`:(!isCondition&&delta?`<span class="delta">${delta>0?'+':''}${money(delta)}</span>`:'')}
         </button>`;
       }).join('')}</div>
     </div>`;
@@ -558,13 +629,21 @@ function getSelectedAnswerByWords(words){
 }
 function getConditionBasePrice(){
   const opt=getSelectedConditionOption();
-  const n=Number(opt?.buyPrice);
   const base=Number(selectedModel?.base||0);
-  // New models may have only the main basis price filled in Admin.
-  // If the selected condition still has its initial 0 buyPrice, use that basis price.
-  if(Number.isFinite(n) && n>0) return Math.max(0,n);
-  if(base>0) return base;
+  const n=Number(opt?.buyPrice);
+  if(selectedModel?.protocol==='2'){
+    return Number.isFinite(n)?Math.max(0,n):Math.max(0,base);
+  }
+  if(Number.isFinite(n)&&n>0)return Math.max(0,n);
+  if(base>0)return base;
   return Number.isFinite(n)?Math.max(0,n):Math.max(0,base+Number(opt?.priceDelta||0));
+}
+function getSelectedStorageDelta(){
+  if(selectedModel?.protocol!=='2')return 0;
+  const q=(selectedModel?.typeQuestions||[]).find(x=>x.id==='p2_storage');
+  if(!q)return 0;
+  const o=active(q.options).find(x=>String(x.label||'')===String(questionValue(q)||''));
+  return Number(o?.priceDelta||0);
 }
 async function calculateServerQuote(){
   if(!selectedModel)return 0;
@@ -579,7 +658,12 @@ async function calculateServerQuote(){
     battery:battery?.value||'',
     functions:functions?.value||'',
     storage:storage?.value||'',
-    protocol:selectedModel?.protocol==='1'?'1':'2'
+    storageDelta:getSelectedStorageDelta(),
+    protocol:selectedModel?.protocol==='1'?'1':'2',
+    functionsNoLabel:selectedModel?.protocol==='2' ? (selectedModel?.protocol2?.functions?.noLabel||'Nee') : 'Nee',
+    batteryNoLabel:selectedModel?.protocol==='2' ? (selectedModel?.protocol2?.battery?.noLabel||'Nee') : 'Nee',
+    functionsDiscount:selectedModel?.protocol==='2' ? Number(selectedModel?.protocol2?.functions?.noDiscount??33.3333333333) : Number(selectedModel?.protocolSettings?.functionsDiscount??30),
+    batteryDiscount:selectedModel?.protocol==='2' ? Number(selectedModel?.protocol2?.battery?.noDiscount??10) : Number(selectedModel?.protocolSettings?.batteryDiscount??10)
   };
   try{
     const r=await fetch('/api/buyback/calculate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
@@ -610,11 +694,20 @@ function calcQuoteLocalFallback(){
   let v=getConditionBasePrice();
   const battery=getSelectedAnswerByWords(['batterij','battery']);
   const functions=getSelectedAnswerByWords(['alle functies','functies','werkt het','werkt','function']);
-  const rules=selectedModel?.protocolSettings||{};
-  const fnMult=Math.max(0,1-(Number(rules.functionsDiscount??30)/100));
-  const batMult=Math.max(0,1-(Number(rules.batteryDiscount??10)/100));
-  if(functions && /nee|no|niet/i.test(String(functions.value||''))) v*=fnMult;
-  if(battery && /onder\s*85|<\s*85/i.test(String(battery.value||''))) v*=batMult;
+  if(selectedModel?.protocol==='2'){
+    v+=getSelectedStorageDelta();
+    const p2=selectedModel?.protocol2||{};
+    const fnDiscount=Number(p2?.functions?.noDiscount ?? selectedModel?.protocolSettings?.functionsDiscount ?? 33.3333333333);
+    const batDiscount=Number(p2?.battery?.noDiscount ?? selectedModel?.protocolSettings?.batteryDiscount ?? 10);
+    if(functions && String(functions.value||'')===String(p2?.functions?.noLabel||'Nee')) v*=Math.max(0,1-(fnDiscount/100));
+    if(battery && String(battery.value||'')===String(p2?.battery?.noLabel||'Nee')) v*=Math.max(0,1-(batDiscount/100));
+  }else{
+    const rules=selectedModel?.protocolSettings||{};
+    const fnMult=Math.max(0,1-(Number(rules.functionsDiscount??30)/100));
+    const batMult=Math.max(0,1-(Number(rules.batteryDiscount??10)/100));
+    if(functions && /nee|no|niet/i.test(String(functions.value||''))) v*=fnMult;
+    if(battery && /onder\s*85|<\s*85/i.test(String(battery.value||''))) v*=batMult;
+  }
   v=Math.max(0,v);
   const credit=$('cMethod')?.value?.includes('tegoed');
   const display=credit?v*1.10:v;
@@ -682,7 +775,7 @@ async function loadBuyback(){
     const catalog=Array.isArray(siteData.buybackCatalog)?siteData.buybackCatalog:[];
     devices=flattenBuybackCatalog(catalog);
     if(!devices.length){
-      devices=(Array.isArray(siteData.buybackPhones)?siteData.buybackPhones:[]).filter(x=>x.active!==false).map(x=>({...x,protocol:x.buybackProtocol==='1'?'1':'2',protocolSettings:x.buybackProtocolSettings?.[x.buybackProtocol==='1'?'1':'2']||{},typeQuestions:buildCustomerQuestions(x,{questions:[]})}));
+      devices=(Array.isArray(siteData.buybackPhones)?siteData.buybackPhones:[]).filter(x=>x.active!==false).map(x=>({...x,protocol:x.buybackProtocol==='1'?'1':'2',protocol2:x.protocol2||{},protocolSettings:x.buybackProtocolSettings?.[x.buybackProtocol==='1'?'1':'2']||{},typeQuestions:buildCustomerQuestions(x,{questions:[]})}));
     }
     categories();renderDevices();
   }catch(e){devices=[];categories();renderDevices()}
