@@ -2772,7 +2772,7 @@ function deleteBuybackBrand(id){
   buybackOptionsOpen=false;
   buybackAdminLevel='brands';
 
-  // Save the deletion immediately through the normal autosave mechanism.
+  // Deletion is local first; it is persisted when the administrator presses Save.
   markChanged();
   renderBuybackPhones();
 }
@@ -3780,12 +3780,26 @@ function markChanged(){
   // de zojuist gewijzigde checkbox/waarde terugzet.
   dataRevision++;
 
+  clearTimeout(autoSaveTimer);
+
+  // Buyback wordt bewust handmatig opgeslagen.
+  // Zo kan de beheerder eerst meerdere opties toevoegen/wijzigen/verwijderen
+  // en pas op het einde op "Wijzigingen opslaan" drukken.
+  // Dit voorkomt dat een nieuwe optie door een automatische server-save
+  // meteen opnieuw wordt ingeladen of verdwijnt tijdens het bewerken.
+  if(currentPage === "buyback"){
+    autoSaveAgain = false;
+    setStatus(
+      "● Wijzigingen nog niet opgeslagen — druk op \"Wijzigingen opslaan\" als je klaar bent.",
+      "info"
+    );
+    return;
+  }
+
   setStatus(
     "● Wijziging gedetecteerd — automatisch opslaan...",
     "info"
   );
-
-  clearTimeout(autoSaveTimer);
 
   if(loading){
     autoSaveAgain = true;
