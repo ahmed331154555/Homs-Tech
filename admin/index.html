@@ -2095,10 +2095,15 @@ function normalizeBuybackPhones(){
     conditionOptions:Array.isArray(x.conditionOptions)?x.conditionOptions:[
       {label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}
     ],
-    batteryOptions:[
-      {label:'85% of hoger',priceDelta:(Array.isArray(x.batteryOptions)&&x.batteryOptions[0]?Number(x.batteryOptions[0].priceDelta||0):0),active:true},
-      {label:'Onder 85%',priceDelta:(Array.isArray(x.batteryOptions)&&x.batteryOptions.length>2?Number(x.batteryOptions[x.batteryOptions.length-1].priceDelta||-25):-25),active:true}
-    ],
+    batteryOptions:(()=>{
+      const old=Array.isArray(x.batteryOptions)?x.batteryOptions:[];
+      const first=old[0]||{};
+      const last=old.length>1?(old.length>2?old[old.length-1]:old[1]):{};
+      return [
+        {label:'85% of hoger',priceDelta:Number(first.priceDelta||0),active:first.active!==false},
+        {label:'Onder 85%',priceDelta:Number(last.priceDelta||-25),active:last.active!==false}
+      ];
+    })(),
     faceIdOptions:Array.isArray(x.faceIdOptions)?x.faceIdOptions:[
       {label:'Face ID werkt',priceDelta:0,active:true},{label:'Face ID werkt niet',priceDelta:-100,active:true}
     ],
