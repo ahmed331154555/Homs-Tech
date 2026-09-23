@@ -854,6 +854,21 @@ textarea{
 #page-buyback .buyback-option-row{display:grid!important;grid-template-columns:minmax(0,1fr) 120px 90px!important;gap:10px!important;align-items:center!important;margin-bottom:9px!important;width:100%!important;box-sizing:border-box!important}
 #page-buyback .buyback-option-card .card-title{font-size:16px!important;font-weight:800!important;margin-bottom:6px!important}
 @media(max-width:700px){#page-buyback .buyback-option-row{grid-template-columns:1fr!important}#page-buyback .buyback-option-row label{margin-top:0!important}}
+
+/* Protocol 2 editor */
+#page-buyback .p2-panel{margin-top:16px;padding:18px;border:1px solid #e2e8f0;border-radius:14px;background:#fff}
+#page-buyback .p2-section{margin-top:18px;padding-top:15px;border-top:1px solid #e2e8f0}
+#page-buyback .p2-section:first-child{margin-top:0;padding-top:0;border-top:0}
+#page-buyback .p2-section h4{margin:0 0 5px;font-size:15px;color:#0f172a}
+#page-buyback .p2-help{font-size:11px;color:#64748b;margin:0 0 10px}
+#page-buyback .p2-row{display:grid;grid-template-columns:minmax(0,1fr) 110px 78px 34px;gap:8px;align-items:center;margin:8px 0}
+#page-buyback .p2-row input[type=text],#page-buyback .p2-row input[type=number]{width:100%;box-sizing:border-box}
+#page-buyback .p2-qrow{display:grid;grid-template-columns:minmax(0,1fr) 105px 105px 78px 34px;gap:8px;align-items:center;margin:8px 0}
+#page-buyback .p2-mini{font-size:10px;color:#64748b;font-weight:700}
+#page-buyback .p2-add{margin-top:7px}
+#page-buyback .p2-del{border:1px solid #fecaca;background:#fff;color:#dc2626;border-radius:8px;cursor:pointer;font-weight:900;height:34px}
+#page-buyback .p2-badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:#eff6ff;color:#2563eb;font-size:11px;font-weight:900}
+@media(max-width:800px){#page-buyback .p2-row,#page-buyback .p2-qrow{grid-template-columns:1fr 100px 80px 34px}#page-buyback .p2-qrow{grid-template-columns:1fr 100px 100px 80px 34px}}
 #page-buyback .buyback-phone-main{display:flex!important;flex-direction:column!important;gap:14px!important;width:100%!important}
 #page-buyback .buyback-phone-fields{display:flex!important;flex-direction:column!important;gap:14px!important;width:100%!important}
 #page-buyback .buyback-phone-fields .field{width:100%!important}
@@ -2089,47 +2104,25 @@ function normalizeBuybackPhones(){
   data.buybackPhones=data.buybackPhones.map((x,i)=>({
     id:x.id || ('buyback-'+Date.now()+'-'+i),
     name:x.name||'', brand:x.brand||'', image:x.image||'', price:Number(x.price||0), active:x.active!==false,
+    protocol:Number(x.protocol)===2?2:1, protocol2:x.protocol2&&typeof x.protocol2==='object'?x.protocol2:null,
     storageOptions:Array.isArray(x.storageOptions)?x.storageOptions:[
       {label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}
     ],
-    conditionOptions:(Array.isArray(x.conditionOptions)?x.conditionOptions:[
-      {label:'Zo goed als nieuw',priceDelta:0,buyPrice:Number(x.price||0),active:true},
-      {label:'Licht gebruikt',priceDelta:-40,buyPrice:Math.max(0,Number(x.price||0)-40),active:true},
-      {label:'Zichtbaar gebruikt',priceDelta:-90,buyPrice:Math.max(0,Number(x.price||0)-90),active:true},
-      {label:'Kapot',priceDelta:-200,buyPrice:Math.max(0,Number(x.price||0)-200),active:true}
-    ]).map(o=>({
-      ...o,
-      buyPrice:Number.isFinite(Number(o.buyPrice)) ? Number(o.buyPrice) : Math.max(0,Number(x.price||0)+Number(o.priceDelta||0))
-    })), 
-    batteryOptions:(()=>{
-      const old=Array.isArray(x.batteryOptions)?x.batteryOptions:[];
-      const first=old[0]||{};
-      const last=old.length>1?(old.length>2?old[old.length-1]:old[1]):{};
-      return [
-        {label:'85% of hoger',priceDelta:Number(first.priceDelta||0),active:first.active!==false},
-        {label:'Onder 85%',priceDelta:Number(last.priceDelta||-25),active:last.active!==false}
-      ];
-    })(),
+    conditionOptions:Array.isArray(x.conditionOptions)?x.conditionOptions:[
+      {label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}
+    ],
+    batteryOptions:[
+      {label:'85% of hoger',priceDelta:(Array.isArray(x.batteryOptions)&&x.batteryOptions[0]?Number(x.batteryOptions[0].priceDelta||0):0),active:true},
+      {label:'Onder 85%',priceDelta:(Array.isArray(x.batteryOptions)&&x.batteryOptions.length>2?Number(x.batteryOptions[x.batteryOptions.length-1].priceDelta||-25):-25),active:true}
+    ],
     faceIdOptions:Array.isArray(x.faceIdOptions)?x.faceIdOptions:[
       {label:'Face ID werkt',priceDelta:0,active:true},{label:'Face ID werkt niet',priceDelta:-100,active:true}
     ],
     screenOptions:Array.isArray(x.screenOptions)?x.screenOptions:[
       {label:'Scherm goed',priceDelta:0,active:true},{label:'Kleine beschadigingen',priceDelta:-50,active:true},{label:'Scherm gebroken',priceDelta:-150,active:true}
-    ],
-    variantOptions:Array.isArray(x.variantOptions)?x.variantOptions.map(o=>({label:String(o?.label||''),priceDelta:Number(o?.priceDelta||0),active:o?.active===true})):[
-      {label:'',priceDelta:0,active:false},{label:'',priceDelta:0,active:false}
-    ],
-    customBuybackQuestions:Array.isArray(x.customBuybackQuestions)?x.customBuybackQuestions.map(q=>({
-      id:q.id||newBuybackId('cq'),
-      label:String(q.label||''),
-      required:q.required!==false,
-      active:q.active!==false,
-      options:Array.isArray(q.options)?q.options.map(o=>({label:String(o?.label||''),priceDelta:Number(o?.priceDelta||0),active:o?.active!==false})):[]
-    })) : [],
-    buybackProtocol:x.buybackProtocol==='1'?'1':'2',
-    buybackProtocolSettings:x.buybackProtocolSettings&&typeof x.buybackProtocolSettings==='object'?x.buybackProtocolSettings:{},
-    protocolQuestions:x.protocolQuestions&&typeof x.protocolQuestions==='object'?x.protocolQuestions:{}
+    ]
   }));
+  data.buybackPhones.forEach(p=>{ if(!p.protocol) p.protocol=1; if(Number(p.protocol)===2) normalizeBuybackProtocol2(p); });
 }
 
 function newBuybackId(prefix){
@@ -2244,7 +2237,7 @@ function renderBuybackTypeSettings(){
             <option value="yesno" ${q.type==='yesno'?'selected':''}>Ja / Nee</option>
             <option value="text" ${q.type==='text'?'selected':''}>Tekst</option>
           </select>
-          <label style="display:flex;gap:6px;align-items:center;font-size:12px;font-weight:800"><input type="checkbox" ${q.active!==false?'checked':''} onchange="updateBuybackQuestion('${esc(q.id)}','active',this.checked)"> Actief</label><label style="display:flex;gap:6px;align-items:center;font-size:12px;font-weight:800"><input type="checkbox" ${q.required!==false?'checked':''} onchange="updateBuybackQuestion('${esc(q.id)}','required',this.checked)"> Verplicht</label>
+          <label style="display:flex;gap:6px;align-items:center;font-size:12px;font-weight:800"><input type="checkbox" ${q.required!==false?'checked':''} onchange="updateBuybackQuestion('${esc(q.id)}','required',this.checked)"> Verplicht</label>
           <div class="bb-question-type">${getBuybackQuestionTypeLabel(q.type)}</div>
           <div class="bb-question-actions">
             ${q.type!=='text'?`<button class="bb-q-edit" type="button" onclick="toggleBuybackQuestion('${esc(q.id)}')">${buybackQuestionOpenId===q.id?'Sluit opties':'Opties'}</button>`:''}
@@ -2276,7 +2269,7 @@ function renderBuybackQuestionOptions(q){
 
 function updateBuybackQuestion(id,key,value){
   const t=getBuybackType();const q=t&&t.questions.find(x=>x.id===id);if(!q)return;
-  if(key==='required'||key==='active')q[key]=!!value;
+  if(key==='required')q.required=!!value;
   else if(key==='type'){
     q.type=value;
     q.options=value==='text'?[]:[{label:'Ja',priceDelta:0,active:true},{label:'Nee',priceDelta:-25,active:true}];
@@ -2345,7 +2338,7 @@ function updateSelectedBuybackPhoneField(key,value){
 function updateSelectedBuybackPhoneOption(key,index,field,value){
   const phone=getSelectedBuybackPhone();
   if(!phone || !Array.isArray(phone[key]) || !phone[key][index])return;
-  phone[key][index][field]=(field==='priceDelta'||field==='buyPrice')
+  phone[key][index][field]=field==='priceDelta'
     ? Number(value||0)
     : field==='active'
       ? !!value
@@ -2491,431 +2484,107 @@ function renderBuybackPhones(){
   if(existingEditor) existingEditor.classList.add('buyback-v1-editor-wrap');
 }
 
-function cloneProtocolQuestions(source){
-  return (Array.isArray(source)?source:[]).map(q=>({
-    id:q.id||newBuybackId('pq'), label:String(q.label||''),
-    type:q.type==='text'?'text':q.type==='yesno'?'yesno':'options',
-    required:q.required!==false, active:q.active!==false,
-    options:Array.isArray(q.options)?q.options.map(o=>({label:String(o?.label||''),priceDelta:Number(o?.priceDelta||0),active:o?.active!==false})):(q.type==='text'?[]:[{label:q.type==='yesno'?'Ja':'Optie 1',priceDelta:0,active:true},{label:q.type==='yesno'?'Nee':'Optie 2',priceDelta:-25,active:true}])
-  }));
-}
-function cloneProtocolQuestions(source){
-  return (Array.isArray(source)?source:[]).map(q=>({
-    id:q.id||newBuybackId('pq'), label:String(q.label||''),
-    type:q.type==='text'?'text':q.type==='yesno'?'yesno':'options',
-    required:q.required!==false, active:q.active!==false,
-    options:Array.isArray(q.options)?q.options.map(o=>({label:String(o?.label||''),priceDelta:Number(o?.priceDelta||0),active:o?.active!==false})):(q.type==='text'?[]:[{label:q.type==='yesno'?'Ja':'Optie 1',priceDelta:0,active:true},{label:q.type==='yesno'?'Nee':'Optie 2',priceDelta:-25,active:true}])
-  }));
-}
-
-function defaultProtocol2(){
+function defaultBuybackProtocol2(){
   return {
     storageOptions:[
-      {label:'256 GB',priceDelta:0,active:true},
-      {label:'512 GB',priceDelta:0,active:true}
+      {label:'128 GB',priceDelta:0,active:true},
+      {label:'256 GB',priceDelta:30,active:true},
+      {label:'512 GB',priceDelta:80,active:true}
     ],
-    conditionPrices:{
-      new:0,
-      light:0,
-      visible:0,
-      broken:0
-    },
-    introLines:[
-      {text:'De telefoon ziet er als nieuw uit of heeft kleine gebruikssporen.',active:true},
-      {text:'Scherm en behuizing zijn vrij van krassen en deuken.',active:true},
-      {text:'Ziet eruit alsof het apparaat nauwelijks is gebruikt.',active:true},
-      {text:'Het apparaat heeft geen waterschade en is niet gebogen.',active:true},
-      {text:'Er bevindt zich geen iCloud meer op het toestel en Zoek mijn iPhone is uitgeschakeld.',active:true},
-      {text:'LET OP: iPhones die als verloren of gestolen zijn opgegeven, zijn vergrendeld met een account of zijn gekoppeld aan een MDM, komen niet in aanmerking voor inruil.',active:true}
+    conditionOptions:[
+      {label:'Zo goed als nieuw',priceDelta:0,active:true},
+      {label:'Licht gebruikt',priceDelta:-40,active:true},
+      {label:'Zichtbaar gebruikt',priceDelta:-90,active:true},
+      {label:'Kapot',priceDelta:-200,active:true}
+    ],
+    statements:[
+      {label:'Het apparaat bevat enkele lichte gebruikssporen, zoals kleine krasjes.',priceDelta:0,active:true},
+      {label:'Er zijn geen diepe deuken, scheuren of ernstige beschadigingen.',priceDelta:0,active:true},
+      {label:'Het scherm is intact en vertoont geen barsten of kleurafwijkingen.',priceDelta:0,active:true},
+      {label:'Het apparaat is vrij van waterschade en heeft geen andere vloeistofschade.',priceDelta:0,active:true},
+      {label:'Er staat geen iCloud- of ander account meer op het apparaat en de zoekfunctie is uitgeschakeld.',priceDelta:0,active:true},
+      {label:'LET OP: Apparaten die als verloren of gestolen zijn opgegeven, vergrendeld zijn met een account of gekoppeld zijn aan MDM, komen niet in aanmerking voor inruil.',priceDelta:0,active:true}
     ],
     functions:{
       active:true,
-      label:'Werken alle functies van het toestel goed, zoals ontgrendeling, opstarten, opladen, verbindingen (wifi/bluetooth), geluid, camera’s, knoppen, zaklamp en trillen?',
-      yesLabel:'Ja',
-      noLabel:'Nee',
-      noDiscount:33.3333333333
+      label:'Werken alle functies van het apparaat goed, zoals ontgrendeling, opstarten, opladen, verbindingen (wifi/bluetooth), geluid (luidspreker en microfoon), camera\'s, knoppen, zaklamp en trillen?',
+      yesDelta:0,
+      noDelta:-100
     },
     battery:{
       active:true,
       label:'Is de batterijcapaciteit minimaal 85%?',
-      yesLabel:'Ja',
-      noLabel:'Nee',
-      noDiscount:10
+      yesDelta:0,
+      noDelta:-25
     }
   };
 }
-
-function ensureProtocol2(phone){
-  if(!phone)return;
-  const d=defaultProtocol2();
-  const old=(phone.protocol2&&typeof phone.protocol2==='object')?phone.protocol2:{};
-  const oldPrices=old.conditionPrices&&typeof old.conditionPrices==='object'?old.conditionPrices:{};
-  const oldCond=Array.isArray(phone.conditionOptions)?phone.conditionOptions:[];
-  const findBuyPrice=labels=>{
-    const o=oldCond.find(x=>labels.some(l=>String(x?.label||'').toLowerCase().includes(l)));
-    const n=Number(o?.buyPrice);
-    return Number.isFinite(n)&&n>0?n:0;
-  };
-  phone.protocol2={
-    storageOptions:(Array.isArray(old.storageOptions)?old.storageOptions:(Array.isArray(phone.storageOptions)?phone.storageOptions:d.storageOptions))
-      .map(o=>({label:String(o?.label||''),priceDelta:Number(o?.priceDelta||0),active:o?.active!==false}))
-      .filter(o=>o.label),
-    conditionPrices:{
-      new:Number(oldPrices.new ?? findBuyPrice(['zo goed als nieuw'])),
-      light:Number(oldPrices.light ?? findBuyPrice(['licht gebruikt'])),
-      visible:Number(oldPrices.visible ?? findBuyPrice(['zichtbaar gebruikt'])),
-      broken:Number(oldPrices.broken ?? findBuyPrice(['kapot']))
-    },
-    introLines:(Array.isArray(old.introLines)&&old.introLines.length?old.introLines:d.introLines).map(x=>({text:String(x?.text||''),active:x?.active!==false})),
-    functions:{
-      active:old.functions?.active!==false,
-      label:String(old.functions?.label||d.functions.label),
-      yesLabel:String(old.functions?.yesLabel||d.functions.yesLabel),
-      noLabel:String(old.functions?.noLabel||d.functions.noLabel),
-      noDiscount:Number(old.functions?.noDiscount ?? d.functions.noDiscount)
-    },
-    battery:{
-      active:old.battery?.active!==false,
-      label:String(old.battery?.label||d.battery.label),
-      yesLabel:String(old.battery?.yesLabel||d.battery.yesLabel),
-      noLabel:String(old.battery?.noLabel||d.battery.noLabel),
-      noDiscount:Number(old.battery?.noDiscount ?? d.battery.noDiscount)
-    }
-  };
-}
-
-function ensureBuybackProtocol(phone,t){
-  if(!phone)return;
-  phone.buybackProtocol=phone.buybackProtocol==='1'?'1':'2';
-  if(!phone.protocolQuestions || typeof phone.protocolQuestions!=='object') phone.protocolQuestions={};
-  const base=Array.isArray(t?.questions)?t.questions:[];
-  if(!Array.isArray(phone.protocolQuestions['1'])) phone.protocolQuestions['1']=cloneProtocolQuestions(base);
-  phone.protocolQuestions['1']=cloneProtocolQuestions(phone.protocolQuestions['1']);
-  if(!Array.isArray(phone.protocolQuestions['2'])) phone.protocolQuestions['2']=[];
-  phone.protocolQuestions['2']=cloneProtocolQuestions(phone.protocolQuestions['2']);
-
-  const settings=phone.buybackProtocolSettings&&typeof phone.buybackProtocolSettings==='object'?phone.buybackProtocolSettings:{};
-  phone.buybackProtocolSettings={
-    '1':{functionsDiscount:Number(settings?.['1']?.functionsDiscount ?? 30),batteryDiscount:Number(settings?.['1']?.batteryDiscount ?? 10)},
-    '2':{functionsDiscount:Number(settings?.['2']?.functionsDiscount ?? 33.3333333333),batteryDiscount:Number(settings?.['2']?.batteryDiscount ?? 10)}
-  };
-  ensureProtocol2(phone);
-}
-
-function getSelectedProtocolQuestions(){
-  const phone=getSelectedBuybackPhone(); if(!phone)return [];
-  ensureBuybackProtocol(phone,getBuybackType());
-  return phone.protocolQuestions[phone.buybackProtocol]||[];
+function normalizeBuybackProtocol2(phone){
+  if(!phone) return;
+  const d=defaultBuybackProtocol2();
+  if(!phone.protocol) phone.protocol=1;
+  const p=phone.protocol2&&typeof phone.protocol2==='object'?phone.protocol2:{};
+  ['storageOptions','conditionOptions','statements'].forEach(k=>{
+    const arr=Array.isArray(p[k])?p[k]:d[k];
+    p[k]=arr.map((x,i)=>({label:String(x?.label??d[k][i]?.label??''),priceDelta:Number(x?.priceDelta||0),active:x?.active!==false}));
+  });
+  p.functions={...d.functions,...(p.functions||{})};
+  p.functions.active=p.functions.active!==false;
+  p.functions.yesDelta=Number(p.functions.yesDelta||0);
+  p.functions.noDelta=Number(p.functions.noDelta||0);
+  p.battery={...d.battery,...(p.battery||{})};
+  p.battery.active=p.battery.active!==false;
+  p.battery.yesDelta=Number(p.battery.yesDelta||0);
+  p.battery.noDelta=Number(p.battery.noDelta||0);
+  phone.protocol2=p;
 }
 function updateBuybackProtocol(value){
-  const phone=getSelectedBuybackPhone(); if(!phone)return;
-  ensureBuybackProtocol(phone,getBuybackType());
-  phone.buybackProtocol=value==='1'?'1':'2';
-  markChanged(); renderBuybackModelEditor();
+  const phone=getSelectedBuybackPhone();if(!phone)return;
+  phone.protocol=Number(value)===2?2:1;
+  if(phone.protocol===2)normalizeBuybackProtocol2(phone);
+  markChanged();renderBuybackModelEditor();
 }
-function updateBuybackProtocolRule(rule,value){
-  const phone=getSelectedBuybackPhone(); if(!phone)return;
-  ensureBuybackProtocol(phone,getBuybackType());
-  const pid=phone.buybackProtocol;
-  phone.buybackProtocolSettings[pid][rule]=Math.max(0,Math.min(100,Number(value||0)));
-  if(pid==='2'){
-    if(rule==='functionsDiscount') phone.protocol2.functions.noDiscount=phone.buybackProtocolSettings[pid][rule];
-    if(rule==='batteryDiscount') phone.protocol2.battery.noDiscount=phone.buybackProtocolSettings[pid][rule];
-  }
+function updateBuybackP2Array(key,index,field,value){
+  const phone=getSelectedBuybackPhone();if(!phone)return;normalizeBuybackProtocol2(phone);
+  const arr=phone.protocol2[key];if(!Array.isArray(arr)||!arr[index])return;
+  arr[index][field]=field==='priceDelta'?Number(value||0):field==='active'?!!value:value;
   markChanged();
 }
-function updateProtocol2Field(path,value){
-  const phone=getSelectedBuybackPhone();if(!phone)return;
-  ensureProtocol2(phone);
-  const parts=String(path).split('.');
-  let obj=phone.protocol2;
-  for(let i=0;i<parts.length-1;i++){if(!obj[parts[i]])obj[parts[i]]={};obj=obj[parts[i]];}
-  const key=parts[parts.length-1];
-  obj[key]=['active'].includes(key)?!!value:(['noDiscount','priceDelta'].includes(key)?Number(value||0):String(value??''));
+function addBuybackP2Row(key){
+  const phone=getSelectedBuybackPhone();if(!phone)return;normalizeBuybackProtocol2(phone);
+  phone.protocol2[key].push({label:'Nieuwe optie',priceDelta:0,active:true});
+  markChanged();renderBuybackModelEditor();
+}
+function deleteBuybackP2Row(key,index){
+  const phone=getSelectedBuybackPhone();if(!phone)return;normalizeBuybackProtocol2(phone);
+  if(!Array.isArray(phone.protocol2[key]))return;
+  phone.protocol2[key].splice(index,1);markChanged();renderBuybackModelEditor();
+}
+function updateBuybackP2Question(key,field,value){
+  const phone=getSelectedBuybackPhone();if(!phone)return;normalizeBuybackProtocol2(phone);
+  const q=phone.protocol2[key];if(!q)return;
+  q[field]=field==='active'?!!value:field==='yesDelta'||field==='noDelta'?Number(value||0):value;
   markChanged();
 }
-function updateProtocol2Storage(index,field,value){
-  const phone=getSelectedBuybackPhone();if(!phone)return;
-  ensureProtocol2(phone);const o=phone.protocol2.storageOptions[index];if(!o)return;
-  o[field]=field==='active'?!!value:field==='priceDelta'?Number(value||0):String(value??'');
-  markChanged();
-}
-function addProtocol2Storage(){
-  const phone=getSelectedBuybackPhone();if(!phone)return;
-  ensureProtocol2(phone);
-  phone.protocol2.storageOptions.push({label:'Nieuwe opslag',priceDelta:0,active:true});
-  markChanged();renderBuybackModelEditor();
-}
-function deleteProtocol2Storage(index){
-  const phone=getSelectedBuybackPhone();if(!phone)return;
-  ensureProtocol2(phone);phone.protocol2.storageOptions.splice(index,1);
-  markChanged();renderBuybackModelEditor();
-}
-function updateProtocol2Line(index,field,value){
-  const phone=getSelectedBuybackPhone();if(!phone)return;
-  ensureProtocol2(phone);const x=phone.protocol2.introLines[index];if(!x)return;
-  x[field]=field==='active'?!!value:String(value??'');markChanged();
-}
-function addProtocol2Line(){
-  const phone=getSelectedBuybackPhone();if(!phone)return;
-  ensureProtocol2(phone);phone.protocol2.introLines.push({text:'Nieuwe tekst',active:true});
-  markChanged();renderBuybackModelEditor();
-}
-function deleteProtocol2Line(index){
-  const phone=getSelectedBuybackPhone();if(!phone)return;
-  ensureProtocol2(phone);phone.protocol2.introLines.splice(index,1);
-  markChanged();renderBuybackModelEditor();
-}
-function renderProtocol2Settings(phone){
-  ensureProtocol2(phone);
-  const p=phone.protocol2, cp=p.conditionPrices;
-  return `<div class="card buyback-option-card" style="margin-top:12px">
-    <div class="card-title">🔧 Protocol 2 — beoordeling</div>
-    <div class="small" style="margin-bottom:12px">Dit is het protocol van de afbeelding: opslag → conditie → teksten → alle functies → batterij → prijs. Alles met <strong>Actief</strong> bepaalt wat de klant ziet.</div>
-
-    <div class="card" style="margin-top:12px">
-      <div class="card-title">1. Opslag / geheugens</div>
-      <div class="small" style="margin-bottom:10px">Deze keuzes verschijnen boven de conditie.</div>
-      ${(p.storageOptions||[]).map((o,i)=>`<div class="buyback-option-row">
-        <input value="${esc(o.label)}" oninput="updateProtocol2Storage(${i},'label',this.value)">
-        <input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateProtocol2Storage(${i},'priceDelta',this.value)" placeholder="Prijsverschil">
-        <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol2Storage(${i},'active',this.checked)"> Actief</label>
-        <button class="bb-q-delete" type="button" onclick="deleteProtocol2Storage(${i})">×</button>
-      </div>`).join('')}
-      <button class="btn btn-light" type="button" onclick="addProtocol2Storage()">+ Opslag toevoegen</button>
-    </div>
-
-    <div class="card" style="margin-top:12px">
-      <div class="card-title">2. Basis inkoopprijs per conditie</div>
-      <div class="small" style="margin-bottom:10px">Vul hier alleen de vier basisprijzen in. De server berekent daarna de kortingen.</div>
-      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">
-        <div class="field"><label>Zo goed als nieuw (€)</label><input type="number" step="0.01" value="${Number(cp.new||0)}" oninput="updateProtocol2Field('conditionPrices.new',this.value)"></div>
-        <div class="field"><label>Licht gebruikt (€)</label><input type="number" step="0.01" value="${Number(cp.light||0)}" oninput="updateProtocol2Field('conditionPrices.light',this.value)"></div>
-        <div class="field"><label>Zichtbaar gebruikt (€)</label><input type="number" step="0.01" value="${Number(cp.visible||0)}" oninput="updateProtocol2Field('conditionPrices.visible',this.value)"></div>
-        <div class="field"><label>Kapot (€)</label><input type="number" step="0.01" value="${Number(cp.broken||0)}" oninput="updateProtocol2Field('conditionPrices.broken',this.value)"></div>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:12px">
-      <div class="card-title">3. Teksten / voorwaarden</div>
-      <div class="small" style="margin-bottom:10px">Je kunt elke regel aanpassen en bepalen of hij op de website verschijnt.</div>
-      ${(p.introLines||[]).map((x,i)=>`<div class="buyback-option-row">
-        <input value="${esc(x.text)}" oninput="updateProtocol2Line(${i},'text',this.value)">
-        <span></span>
-        <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${x.active!==false?'checked':''} onchange="updateProtocol2Line(${i},'active',this.checked)"> Actief</label>
-        <button class="bb-q-delete" type="button" onclick="deleteProtocol2Line(${i})">×</button>
-      </div>`).join('')}
-      <button class="btn btn-light" type="button" onclick="addProtocol2Line()">+ Tekst toevoegen</button>
-    </div>
-
-    <div class="card" style="margin-top:12px">
-      <div class="card-title">4. Alle functies</div>
-      <div class="small" style="margin-bottom:10px">Als de klant Nee kiest, gebruikt de server de ingestelde korting.</div>
-      <div class="field"><label>Vraag</label><input value="${esc(p.functions.label)}" oninput="updateProtocol2Field('functions.label',this.value)"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 120px;gap:10px;margin-top:8px">
-        <div class="field"><label>Ja</label><input value="${esc(p.functions.yesLabel)}" oninput="updateProtocol2Field('functions.yesLabel',this.value)"></div>
-        <div class="field"><label>Nee</label><input value="${esc(p.functions.noLabel)}" oninput="updateProtocol2Field('functions.noLabel',this.value)"></div>
-        <div class="field"><label>Korting %</label><input type="number" min="0" max="100" step="0.01" value="${Number(p.functions.noDiscount||0)}" oninput="updateProtocol2Field('functions.noDiscount',this.value)"></div>
-      </div>
-      <label class="buyback-check-v5" style="margin-top:8px"><input type="checkbox" ${p.functions.active!==false?'checked':''} onchange="updateProtocol2Field('functions.active',this.checked)"> Actief</label>
-    </div>
-
-    <div class="card" style="margin-top:12px">
-      <div class="card-title">5. Batterij</div>
-      <div class="field"><label>Vraag</label><input value="${esc(p.battery.label)}" oninput="updateProtocol2Field('battery.label',this.value)"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 120px;gap:10px;margin-top:8px">
-        <div class="field"><label>Ja</label><input value="${esc(p.battery.yesLabel)}" oninput="updateProtocol2Field('battery.yesLabel',this.value)"></div>
-        <div class="field"><label>Nee</label><input value="${esc(p.battery.noLabel)}" oninput="updateProtocol2Field('battery.noLabel',this.value)"></div>
-        <div class="field"><label>Korting %</label><input type="number" min="0" max="100" step="0.01" value="${Number(p.battery.noDiscount||0)}" oninput="updateProtocol2Field('battery.noDiscount',this.value)"></div>
-      </div>
-      <label class="buyback-check-v5" style="margin-top:8px"><input type="checkbox" ${p.battery.active!==false?'checked':''} onchange="updateProtocol2Field('battery.active',this.checked)"> Actief</label>
-    </div>
+function renderBuybackProtocol2Editor(phone){
+  normalizeBuybackProtocol2(phone);
+  const p=phone.protocol2;
+  const row=(key,i,o)=>`<div class="p2-row">
+    <input type="text" value="${esc(o.label||'')}" oninput="updateBuybackP2Array('${key}',${i},'label',this.value)">
+    <input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateBuybackP2Array('${key}',${i},'priceDelta',this.value)" title="Prijsaanpassing">
+    <label class="buyback-check-v5"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateBuybackP2Array('${key}',${i},'active',this.checked)"> Actief</label>
+    <button type="button" class="p2-del" onclick="deleteBuybackP2Row('${key}',${i})">×</button>
   </div>`;
-}
-function updateProtocolQuestion(index,key,value){
-  const qs=getSelectedProtocolQuestions(), q=qs[index]; if(!q)return;
-  if(key==='active'||key==='required') q[key]=!!value;
-  else if(key==='type'){q.type=value;q.options=value==='text'?[]:[{label:value==='yesno'?'Ja':'Optie 1',priceDelta:0,active:true},{label:value==='yesno'?'Nee':'Optie 2',priceDelta:-25,active:true}];markChanged();renderBuybackModelEditor();return;}
-  else q[key]=String(value??''); markChanged();
-}
-function addProtocolQuestion(type){
-  const qs=getSelectedProtocolQuestions(); qs.push({id:newBuybackId('pq'),label:'Nieuwe vraag',type,required:true,active:true,options:type==='text'?[]:[{label:type==='yesno'?'Ja':'Optie 1',priceDelta:0,active:true},{label:type==='yesno'?'Nee':'Optie 2',priceDelta:-25,active:true}]}); markChanged(); renderBuybackModelEditor();
-}
-function deleteProtocolQuestion(index){
-  const qs=getSelectedProtocolQuestions(); if(!qs[index]||!confirm('Deze vraag verwijderen uit dit protocol?'))return; qs.splice(index,1); markChanged(); renderBuybackModelEditor();
-}
-function updateProtocolQuestionOption(qi,oi,key,value){
-  const qs=getSelectedProtocolQuestions(), o=qs[qi]?.options?.[oi]; if(!o)return; o[key]=key==='priceDelta'?Number(value||0):key==='active'?!!value:String(value??''); markChanged();
-}
-function addProtocolQuestionOption(qi){const qs=getSelectedProtocolQuestions(),q=qs[qi];if(!q)return;q.options=q.options||[];q.options.push({label:'Nieuwe optie',priceDelta:0,active:true});markChanged();renderBuybackModelEditor();}
-function deleteProtocolQuestionOption(qi,oi){const qs=getSelectedProtocolQuestions(),q=qs[qi];if(!q?.options?.[oi])return;q.options.splice(oi,1);markChanged();renderBuybackModelEditor();}
-function renderProtocolSettings(phone){
-  ensureBuybackProtocol(phone,getBuybackType());
-  const pid=phone.buybackProtocol;
-  if(pid==='2') return `<div class="card buyback-option-card" style="margin-top:12px">
-    <div class="card-title">🔧 Protocol voor dit toestel</div>
-    <div class="small" style="margin-bottom:12px">Protocol 2 gebruikt de indeling van de nieuwe beoordelingspagina.</div>
-    <div class="field"><label>Protocol</label><select onchange="updateBuybackProtocol(this.value)"><option value="1">Protocol 1 — bestaand</option><option value="2" selected>Protocol 2 — nieuwe beoordeling</option></select></div>
-    ${renderProtocol2Settings(phone)}
-  </div>`;
-  const qs=phone.protocolQuestions['1']||[];
-  const rules=phone.buybackProtocolSettings['1'];
-  return `<div class="card buyback-option-card" style="margin-top:12px"><div class="card-title">🔧 Protocol voor dit toestel</div><div class="small" style="margin-bottom:12px">Protocol 1 blijft hetzelfde bestaande systeem.</div>
-    <div class="field"><label>Protocol</label><select onchange="updateBuybackProtocol(this.value)"><option value="1" selected>Protocol 1 — bestaand</option><option value="2">Protocol 2 — nieuwe beoordeling</option></select></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px"><div class="field"><label>Functies defect: korting (%)</label><input type="number" min="0" max="100" value="${Number(rules.functionsDiscount||0)}" oninput="updateBuybackProtocolRule('functionsDiscount',this.value)"></div><div class="field"><label>Batterij onder 85%: korting (%)</label><input type="number" min="0" max="100" value="${Number(rules.batteryDiscount||0)}" oninput="updateBuybackProtocolRule('batteryDiscount',this.value)"></div></div>
-    <div style="margin-top:14px">${qs.map((q,i)=>`<div style="border:1px solid #e5eaf1;border-radius:10px;padding:10px;margin-bottom:8px;background:#fbfcfe"><div style="display:grid;grid-template-columns:minmax(0,1fr) 145px auto auto;gap:8px;align-items:center"><input value="${esc(q.label)}" oninput="updateProtocolQuestion(${i},'label',this.value)"><select onchange="updateProtocolQuestion(${i},'type',this.value)"><option value="options" ${q.type==='options'?'selected':''}>Keuzes + prijs</option><option value="yesno" ${q.type==='yesno'?'selected':''}>Ja / Nee</option><option value="text" ${q.type==='text'?'selected':''}>Tekst</option></select><label style="font-size:12px;font-weight:800;display:flex;gap:5px;align-items:center"><input type="checkbox" ${q.active!==false?'checked':''} onchange="updateProtocolQuestion(${i},'active',this.checked)"> Actief</label><button class="bb-q-delete" type="button" onclick="deleteProtocolQuestion(${i})">×</button></div>${q.type!=='text'?`<div style="margin-top:7px">${(q.options||[]).map((o,oi)=>`<div style="display:grid;grid-template-columns:minmax(0,1fr) 110px auto auto;gap:8px;align-items:center;margin-top:6px"><input value="${esc(o.label)}" oninput="updateProtocolQuestionOption(${i},${oi},'label',this.value)"><input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateProtocolQuestionOption(${i},${oi},'priceDelta',this.value)"><label style="font-size:11px;font-weight:800;display:flex;gap:5px;align-items:center"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocolQuestionOption(${i},${oi},'active',this.checked)"> Actief</label><button class="bb-q-delete" type="button" onclick="deleteProtocolQuestionOption(${i},${oi})">×</button></div>`).join('')}<button class="btn btn-light" type="button" style="margin-top:7px" onclick="addProtocolQuestionOption(${i})">+ Keuze</button></div>`:''}</div>`).join('')||'<div class="small">Geen vragen in dit protocol.</div>'}</div>
-    <div class="bb-type-actions"><button class="btn btn-green" type="button" onclick="addProtocolQuestion('options')">+ Keuzevraag</button><button class="btn btn-light" type="button" onclick="addProtocolQuestion('yesno')">+ Ja/Nee-vraag</button><button class="btn btn-light" type="button" onclick="addProtocolQuestion('text')">+ Tekstvraag</button></div></div>`;
-}
-
-function normalizeBuybackModelVariantOptions(phone){
-  if(!phone || !Array.isArray(phone.variantOptions)) phone.variantOptions=[];
-  phone.variantOptions=phone.variantOptions.map(o=>({
-    label:String(o?.label||''),
-    priceDelta:Number(o?.priceDelta||0),
-    active:o?.active===true
-  }));
-  // Always provide two editable slots. Empty/inactive slots never appear to customers.
-  while(phone.variantOptions.length<2){
-    phone.variantOptions.push({label:'',priceDelta:0,active:false});
-  }
-  if(phone.variantOptions.length>2) phone.variantOptions=phone.variantOptions.slice(0,2);
-}
-
-function addBuybackModelVariantOption(){
-  const phone=getSelectedBuybackPhone();
-  if(!phone)return;
-  normalizeBuybackModelVariantOptions(phone);
-  alert('Er zijn al twee velden. Vul de twee vakken in en zet Actief aan voor de keuze die de klant mag zien.');
-}
-function normalizeBuybackCustomQuestions(phone){
-  if(!phone || !Array.isArray(phone.customBuybackQuestions)) phone.customBuybackQuestions=[];
-  phone.customBuybackQuestions=phone.customBuybackQuestions.map(q=>({
-    id:q.id||newBuybackId('cq'),
-    label:String(q.label||''),
-    required:q.required!==false,
-    options:Array.isArray(q.options)?q.options.map(o=>({label:String(o?.label||''),priceDelta:Number(o?.priceDelta||0),active:o?.active!==false})):[]
-  }));
-}
-function addBuybackCustomQuestion(){
-  const phone=getSelectedBuybackPhone();
-  if(!phone)return;
-  normalizeBuybackCustomQuestions(phone);
-  phone.customBuybackQuestions.push({id:newBuybackId('cq'),label:'Nieuwe vraag',required:true,options:[
-    {label:'Optie 1',priceDelta:0,active:true},
-    {label:'Optie 2',priceDelta:-25,active:true}
-  ]});
-  markChanged();
-  renderBuybackModelEditor();
-}
-function deleteBuybackCustomQuestion(index){
-  const phone=getSelectedBuybackPhone();
-  if(!phone)return;
-  normalizeBuybackCustomQuestions(phone);
-  phone.customBuybackQuestions.splice(index,1);
-  markChanged();
-  renderBuybackModelEditor();
-}
-function updateBuybackCustomQuestion(index,field,value){
-  const phone=getSelectedBuybackPhone();
-  if(!phone)return;
-  normalizeBuybackCustomQuestions(phone);
-  const q=phone.customBuybackQuestions[index];
-  if(!q)return;
-  q[field]=(field==='required'||field==='active')?!!value:String(value??'');
-  markChanged();
-}
-function updateBuybackCustomQuestionOption(qIndex,oIndex,field,value){
-  const phone=getSelectedBuybackPhone();
-  if(!phone)return;
-  normalizeBuybackCustomQuestions(phone);
-  const q=phone.customBuybackQuestions[qIndex],o=q?.options?.[oIndex];
-  if(!o)return;
-  o[field]=field==='priceDelta'?Number(value||0):field==='active'?!!value:String(value??'');
-  markChanged();
-}
-function addBuybackCustomQuestionOption(qIndex){
-  const phone=getSelectedBuybackPhone();
-  if(!phone)return;
-  normalizeBuybackCustomQuestions(phone);
-  const q=phone.customBuybackQuestions[qIndex];
-  if(!q)return;
-  q.options.push({label:'Nieuwe optie',priceDelta:0,active:true});
-  markChanged();
-  renderBuybackModelEditor();
-}
-function deleteBuybackCustomQuestionOption(qIndex,oIndex){
-  const phone=getSelectedBuybackPhone();
-  if(!phone)return;
-  normalizeBuybackCustomQuestions(phone);
-  const q=phone.customBuybackQuestions[qIndex];
-  if(!q)return;
-  q.options.splice(oIndex,1);
-  markChanged();
-  renderBuybackModelEditor();
-}
-function renderBuybackCustomQuestions(phone){
-  normalizeBuybackCustomQuestions(phone);
-  const qs=phone.customBuybackQuestions||[];
-  return `<div class="card buyback-option-card">
-    <div class="card-title">✏️ Aangepaste keuzes</div>
-    <div class="small" style="margin-bottom:12px">Hier kunt u zelf de vraag en de antwoordteksten bepalen. Bijvoorbeeld: Type aansluiting → WiFi / Bluetooth.</div>
-    ${qs.map((q,qi)=>`<div style="border:1px solid #e5eaf1;border-radius:10px;padding:10px;margin-bottom:10px;background:#fbfcfe">
-      <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center">
-        <input value="${esc(q.label)}" placeholder="Bijv. Welke uitvoering heeft het toestel?" oninput="updateBuybackCustomQuestion(${qi},'label',this.value)">
-        <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${q.active!==false?'checked':''} onchange="updateBuybackCustomQuestion(${qi},'active',this.checked)"> Actief</label><label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${q.required!==false?'checked':''} onchange="updateBuybackCustomQuestion(${qi},'required',this.checked)"> Verplicht</label>
-      </div>
-      <div style="margin-top:8px">
-        ${(q.options||[]).map((o,oi)=>`<div style="display:grid;grid-template-columns:minmax(0,1fr) 110px auto auto;gap:8px;align-items:center;margin-top:7px">
-          <input value="${esc(o.label)}" placeholder="Tekst van keuze" oninput="updateBuybackCustomQuestionOption(${qi},${oi},'label',this.value)">
-          <input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateBuybackCustomQuestionOption(${qi},${oi},'priceDelta',this.value)">
-          <label style="display:flex;gap:5px;align-items:center;font-size:12px;font-weight:800"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateBuybackCustomQuestionOption(${qi},${oi},'active',this.checked)"> Actief</label>
-          <button class="bb-q-delete" type="button" onclick="deleteBuybackCustomQuestionOption(${qi},${oi})">×</button>
-        </div>`).join('')}
-      </div>
-      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:9px">
-        <button class="btn btn-light" type="button" onclick="addBuybackCustomQuestionOption(${qi})">+ Keuze</button>
-        <button class="bb-q-delete" type="button" onclick="deleteBuybackCustomQuestion(${qi})">Verwijderen</button>
-      </div>
-    </div>`).join('')}
-    <button class="btn btn-light" type="button" onclick="addBuybackCustomQuestion()">+ Aangepaste keuze toevoegen</button>
-  </div>`;
-}
-
-function deleteBuybackModelVariantOption(index){
-  const phone=getSelectedBuybackPhone();
-  if(!phone || !Array.isArray(phone.variantOptions))return;
-  phone.variantOptions.splice(index,1);
-  markChanged();
-  renderBuybackModelEditor();
-}
-function updateBuybackModelVariantOption(index,field,value){
-  const phone=getSelectedBuybackPhone();
-  if(!phone)return;
-  normalizeBuybackModelVariantOptions(phone);
-  const o=phone.variantOptions[index];
-  if(!o)return;
-  o[field]=field==='priceDelta'?Number(value||0):field==='active'?!!value:String(value??'');
-  markChanged();
-}
-function renderBuybackModelVariantOptions(phone){
-  normalizeBuybackModelVariantOptions(phone);
-  const opts=phone.variantOptions||[];
-  return `<div class="card buyback-option-card">
-    <div class="card-title">⌚ Type / uitvoering</div>
-    <div class="small" style="margin-bottom:12px">Bijvoorbeeld WiFi of Bluetooth. Deze keuzes verschijnen bij de klant wanneer ze actief zijn.</div>
-    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
-      ${opts.map((o,i)=>`<div style="border:1px solid #e5eaf1;border-radius:10px;padding:10px;background:#fbfcfe">
-        <div style="display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:8px;align-items:center">
-          <input value="${esc(o.label)}" placeholder="Bijv. WiFi" oninput="updateBuybackModelVariantOption(${i},'label',this.value)">
-          <input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateBuybackModelVariantOption(${i},'priceDelta',this.value)">
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px">
-          <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateBuybackModelVariantOption(${i},'active',this.checked)"> Actief</label>
-          <button class="bb-q-delete" type="button" onclick="deleteBuybackModelVariantOption(${i})">×</button>
-        </div>
-      </div>`).join('')}
-      <div style="grid-column:1/-1;font-size:12px;color:#64748b">Vul bijvoorbeeld <strong>WiFi</strong> en <strong>Bluetooth</strong> in. Alleen keuzes met een naam én Actief worden aan de klant getoond.</div>
-    </div>
+  const q=(key,title)=>{const x=p[key];return `<div class="p2-section"><h4>${title}</h4><div class="p2-help">Deze vraag verschijnt alleen als <b>Actief</b> aan staat. Jij bepaalt de tekst en de prijsaanpassing.</div>
+    <div class="p2-qrow"><input type="text" value="${esc(x.label||'')}" oninput="updateBuybackP2Question('${key}','label',this.value)"><input type="number" step="1" value="${Number(x.yesDelta||0)}" oninput="updateBuybackP2Question('${key}','yesDelta',this.value)" placeholder="Ja €"><input type="number" step="1" value="${Number(x.noDelta||0)}" oninput="updateBuybackP2Question('${key}','noDelta',this.value)" placeholder="Nee €"><label class="buyback-check-v5"><input type="checkbox" ${x.active!==false?'checked':''} onchange="updateBuybackP2Question('${key}','active',this.checked)"> Actief</label><span></span></div>
+    <div class="p2-mini">Kolom 2 = prijs bij Ja · kolom 3 = prijs bij Nee</div></div>`};
+  return `<div class="p2-panel">
+    <div class="p2-badge">Protocol 2</div>
+    <div class="p2-section"><h4>Geheugen / opslag</h4><p class="p2-help">Deze keuzes staan boven de staat van het toestel.</p>${p.storageOptions.map((o,i)=>row('storageOptions',i,o)).join('')}<button type="button" class="btn btn-light p2-add" onclick="addBuybackP2Row('storageOptions')">+ Opslag toevoegen</button></div>
+    <div class="p2-section"><h4>Staat van het toestel</h4><p class="p2-help">De gekozen staat bepaalt de basisaanpassing van de waarde.</p>${p.conditionOptions.map((o,i)=>row('conditionOptions',i,o)).join('')}<button type="button" class="btn btn-light p2-add" onclick="addBuybackP2Row('conditionOptions')">+ Staat toevoegen</button></div>
+    <div class="p2-section"><h4>Voorwaarden / teksten</h4><p class="p2-help">Elke regel kun je aan/uit zetten en een prijsaanpassing geven.</p>${p.statements.map((o,i)=>row('statements',i,o)).join('')}<button type="button" class="btn btn-light p2-add" onclick="addBuybackP2Row('statements')">+ Regel toevoegen</button></div>
+    ${q('functions','Alle functies werken')}
+    ${q('battery','Batterijcapaciteit')}
   </div>`;
 }
 
@@ -2934,6 +2603,8 @@ function renderBuybackModelEditor(){
     </div>`;
     return;
   }
+  if(!phone.protocol) phone.protocol=1;
+  if(Number(phone.protocol)===2)normalizeBuybackProtocol2(phone);
 
   editor.innerHTML=`
     <div class="buyback-model-panel">
@@ -2950,40 +2621,26 @@ function renderBuybackModelEditor(){
         <div class="field"><label>📷 Afbeelding van merk</label><div class="buyback-photo-line-v5">${b.image?`<img src="${esc(b.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen merkafbeelding</div>'}<input type="file" accept="image/*" onchange="handleBuybackBrandImage(event)"></div></div>
         <div class="field"><label>Model</label><input value="${esc(phone.name||m.name)}" oninput="renameBuybackModel(this.value)"></div>
         <div class="field"><label>Basis inkoopprijs (€)</label><input type="number" step="1" value="${Number(phone.price||0)}" oninput="updateSelectedBuybackPhoneField('price',this.value)"></div>
+        <div class="field"><label>Verkoopprotocol</label><select onchange="updateBuybackProtocol(this.value)"><option value="1" ${Number(phone.protocol)!==2?'selected':''}>Protocol 1 — bestaand</option><option value="2" ${Number(phone.protocol)===2?'selected':''}>Protocol 2 — nieuw</option></select></div>
         <div class="field"><label>Website</label><label class="buyback-check-v5"><input type="checkbox" ${phone.active!==false?'checked':''} onchange="updateSelectedBuybackPhoneField('active',this.checked);renderBuybackPhones()"> Tonen op Uw toestel verkopen</label></div>
         <div class="field buyback-photo-v5"><label>📷 Foto van toestel</label><div class="buyback-photo-line-v5">${phone.image?`<img src="${esc(phone.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen foto</div>'}<input type="file" accept="image/*" onchange="handleBuybackImageForModel(event)"></div></div>
       </div>
-      ${renderProtocolSettings(phone)}
-      ${renderBuybackTypeSettings()}
+      ${Number(phone.protocol)===2 ? renderBuybackProtocol2Editor(phone) : `${renderBuybackTypeSettings()}
       <div id="buybackOptionsArea" class="buyback-model-options" style="display:${buybackOptionsOpen?'block':'none'}">
-        ${renderBuybackModelVariantOptions(phone)}
-        ${renderBuybackCustomQuestions(phone)}
         ${buybackOptionEditorForModel(phone,'Opslag','storageOptions')}
         ${buybackOptionEditorForModel(phone,'Conditie','conditionOptions')}
         ${buybackOptionEditorForModel(phone,'Batterij','batteryOptions')}
         ${buybackOptionEditorForModel(phone,'Face ID','faceIdOptions')}
         ${buybackOptionEditorForModel(phone,'Scherm','screenOptions')}
-      </div>
+      </div>`}
     </div>`;
 }
 
 function buybackOptionEditorForModel(phone,title,key){
   const opts=phone[key]||[];
-  if(key==='conditionOptions'){
-    const base=Number(phone.price||0);
-    return `<div class="card buyback-option-card"><div class="card-title">${title}</div>
-      <div class="small" style="margin-bottom:12px">U vult alleen de 4 basis-inkoopprijzen in. De server berekent daarna automatisch de overige waardes volgens de vaste beoordelingsregels.</div>
-      ${opts.map((o,i)=>{
-        const buyPrice=Number.isFinite(Number(o.buyPrice)) ? Number(o.buyPrice) : Math.max(0,base+Number(o.priceDelta||0));
-        return `<div class="buyback-option-row">
-          <input value="${esc(o.label||'')}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'label',this.value)">
-          <input type="number" step="1" value="${buyPrice}" placeholder="Inkoopprijs (€)" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'buyPrice',this.value)">
-          <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateSelectedBuybackPhoneOption('${key}',${i},'active',this.checked)"> Actief</label>
-        </div>`;
-      }).join('')}</div>`;
-  }
   return `<div class="card buyback-option-card"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">Pas de keuze en prijsaanpassing zelf aan.</div>${opts.map((o,i)=>`<div class="buyback-option-row"><input value="${esc(o.label||'')}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'label',this.value)"><input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'priceDelta',this.value)"><label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateSelectedBuybackPhoneOption('${key}',${i},'active',this.checked)"> Actief</label></div>`).join('')}</div>`;
 }
+
 function toggleBuybackTypeSettings(){
   buybackTypeSettingsOpen=!buybackTypeSettingsOpen;
   buybackQuestionOpenId="";
@@ -3071,7 +2728,7 @@ function deleteBuybackBrand(id){
   buybackOptionsOpen=false;
   buybackAdminLevel='brands';
 
-  // Deletion is local first; it is persisted when the administrator presses Save.
+  // Save the deletion immediately through the normal autosave mechanism.
   markChanged();
   renderBuybackPhones();
 }
@@ -3162,9 +2819,10 @@ function addBuybackModel(){
   if(!name||!name.trim())return;
 
   const phone={
-    id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,
+    id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,protocol:1,
+    protocol2:defaultBuybackProtocol2(),
     storageOptions:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}],
-    conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,buyPrice:0,active:true},{label:'Licht gebruikt',priceDelta:-40,buyPrice:0,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,buyPrice:0,active:true},{label:'Kapot',priceDelta:-200,buyPrice:0,active:true}],
+    conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}],
     batteryOptions:[{label:'85% of hoger',priceDelta:0,active:true},{label:'Onder 85%',priceDelta:-25,active:true}],
     faceIdOptions:[{label:'Face ID werkt',priceDelta:0,active:true},{label:'Face ID werkt niet',priceDelta:-100,active:true}],
     screenOptions:[{label:'Scherm goed',priceDelta:0,active:true},{label:'Kleine beschadigingen',priceDelta:-50,active:true},{label:'Scherm gebroken',priceDelta:-150,active:true}]
@@ -3215,9 +2873,10 @@ function attachBuybackModel(){
   if(!b||!t||!m)return;
   const name=prompt("Naam van het bestaande inkooptoestel:","Nieuwe telefoon");
   if(!name||!name.trim())return;
-  const phone={id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,
+  const phone={id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,protocol:1,
+    protocol2:defaultBuybackProtocol2(),
     storageOptions:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}],
-    conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,buyPrice:0,active:true},{label:'Licht gebruikt',priceDelta:-40,buyPrice:0,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,buyPrice:0,active:true},{label:'Kapot',priceDelta:-200,buyPrice:0,active:true}],
+    conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}],
     batteryOptions:[{label:'85% of hoger',priceDelta:0,active:true},{label:'Onder 85%',priceDelta:-25,active:true}],
     faceIdOptions:[{label:'Face ID werkt',priceDelta:0,active:true},{label:'Face ID werkt niet',priceDelta:-100,active:true}],
     screenOptions:[{label:'Scherm goed',priceDelta:0,active:true},{label:'Kleine beschadigingen',priceDelta:-50,active:true},{label:'Scherm gebroken',priceDelta:-150,active:true}]};
@@ -3712,8 +3371,6 @@ function deleteWhy(i){
 
 /* ---------------- SAVE ---------------- */
 
-let dataRevision=0;
-
 async function save(isAuto=false){
   if(!canEditSite()){setStatus("✕ Je hebt geen toestemming om wijzigingen op te slaan.","error");return;}
   if(isAuto) autoSaveAgain=false;
@@ -3724,17 +3381,11 @@ async function save(isAuto=false){
   try{
     normalizeData();
 
-    // Bewaar de versie die we daadwerkelijk naar de server sturen.
-    // Als de gebruiker tijdens het opslaan iets wijzigt, mag een oude
-    // server-response die nieuwe lokale wijziging NIET terugzetten.
-    const saveRevision=dataRevision;
-    const payload=JSON.stringify(data);
-
     const r=await fetch("/api/site",{
       method:"PUT",
       headers:{"Content-Type":"application/json","Accept":"application/json"},
       credentials:"same-origin",
-      body:payload
+      body:JSON.stringify(data)
     });
 
     const raw=await r.text();
@@ -3747,33 +3398,27 @@ async function save(isAuto=false){
       throw new Error(result.error || "Opslaan mislukt");
     }
 
-    if(dataRevision===saveRevision){
-      data=result.data || data;
-      normalizeData();
+    data=result.data || data;
+    normalizeData();
 
-      // Alleen de huidige pagina opnieuw tekenen als er intussen
-      // geen nieuwe lokale wijziging is gemaakt.
-      if(currentPage==="general") renderGeneral();
-      else if(currentPage==="services") renderServices();
-      else if(currentPage==="phones") renderPhones();
-      else if(currentPage==="buyback") renderBuybackPhones();
-      else if(currentPage==="categories") renderDeviceCategories();
-      else if(currentPage==="used") renderUsedPhones();
-      else if(currentPage==="why") renderWhy();
-      else if(currentPage==="gsm") renderGsmServices();
+    // Alleen de huidige pagina opnieuw tekenen. Geen renderAll-loop na opslaan.
+    if(currentPage==="general") renderGeneral();
+    else if(currentPage==="services") renderServices();
+    else if(currentPage==="phones") renderPhones();
+    else if(currentPage==="buyback") renderBuybackPhones();
+    else if(currentPage==="categories") renderDeviceCategories();
+    else if(currentPage==="used") renderUsedPhones();
+    else if(currentPage==="why") renderWhy();
+    else if(currentPage==="gsm") renderGsmServices();
 
-      setStatus("✓ Alle wijzigingen zijn succesvol opgeslagen","success");
-    }else{
-      // Er kwam een wijziging binnen tijdens het opslaan.
-      // Laat de lokale wijziging staan en sla die daarna nogmaals op.
-      autoSaveAgain=true;
-      setStatus("● Nieuwe wijziging gedetecteerd — wordt opnieuw opgeslagen...","info");
-    }
+    setStatus("✓ Alle wijzigingen zijn succesvol opgeslagen","success");
   }catch(e){
     setStatus("✕ Opslaan mislukt: "+e.message,"error");
   }finally{
     loading=false;
 
+    // Als er tijdens het opslaan opnieuw iets gewijzigd werd,
+    // voer nog één automatische opslag uit.
     if(autoSaveAgain){
       autoSaveAgain=false;
       clearTimeout(autoSaveTimer);
@@ -4074,31 +3719,14 @@ function renderAll(){
 
 function markChanged(){
 
-  // Elke lokale wijziging krijgt een nieuwe versie.
-  // save() gebruikt dit om te voorkomen dat een oudere server-response
-  // de zojuist gewijzigde checkbox/waarde terugzet.
-  dataRevision++;
-
-  clearTimeout(autoSaveTimer);
-
-  // Buyback wordt bewust handmatig opgeslagen.
-  // Zo kan de beheerder eerst meerdere opties toevoegen/wijzigen/verwijderen
-  // en pas op het einde op "Wijzigingen opslaan" drukken.
-  // Dit voorkomt dat een nieuwe optie door een automatische server-save
-  // meteen opnieuw wordt ingeladen of verdwijnt tijdens het bewerken.
-  if(currentPage === "buyback"){
-    autoSaveAgain = false;
-    setStatus(
-      "● Wijzigingen nog niet opgeslagen — druk op \"Wijzigingen opslaan\" als je klaar bent.",
-      "info"
-    );
-    return;
-  }
-
   setStatus(
     "● Wijziging gedetecteerd — automatisch opslaan...",
     "info"
   );
+
+  // Automatisch opslaan na een korte pauze, zodat typen in velden
+  // niet voor iedere letter een aparte request naar de server stuurt.
+  clearTimeout(autoSaveTimer);
 
   if(loading){
     autoSaveAgain = true;
