@@ -791,6 +791,40 @@ textarea{
 .status-select-voltooid{background:#d9f7e8!important;color:#078451!important;border-color:#62d39d!important}
 .status-select-geannuleerd{background:#ffe0e3!important;color:#cf2632!important;border-color:#f58b95!important}
 </style>
+
+<style id="homs-buyback-admin-v1">
+#page-buyback .buyback-v1-shell{width:100%;}
+#page-buyback .buyback-v1-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+#page-buyback .buyback-v1-head-left{display:flex;align-items:center;gap:14px;min-width:0}
+#page-buyback .buyback-v1-back{border:1px solid #dbe3ec;background:#fff;color:#0f172a;border-radius:10px;padding:9px 13px;font-weight:800;cursor:pointer}
+#page-buyback .buyback-v1-back:hover{background:#f8fafc}
+#page-buyback .buyback-v1-title h3{margin:0;font-size:20px;color:#0f172a}
+#page-buyback .buyback-v1-title p{margin:4px 0 0;color:#64748b;font-size:12px}
+#page-buyback .buyback-v1-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+#page-buyback .buyback-v1-card{appearance:none;border:1px solid #e2e8f0;background:#fff;border-radius:16px;padding:15px;text-align:left;cursor:pointer;min-width:0;box-shadow:0 5px 18px rgba(15,23,42,.05);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+#page-buyback .buyback-v1-card:hover{transform:translateY(-2px);box-shadow:0 9px 25px rgba(15,23,42,.09);border-color:#bfdbfe}
+#page-buyback .buyback-v1-image{height:145px;border-radius:12px;background:#f8fafc;border:1px solid #edf2f7;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:12px}
+#page-buyback .buyback-v1-image img{width:100%;height:100%;object-fit:contain}
+#page-buyback .buyback-v1-placeholder{font-size:42px;color:#94a3b8}
+#page-buyback .buyback-v1-name{font-weight:900;font-size:15px;color:#0f172a;line-height:1.25}
+#page-buyback .buyback-v1-meta{margin-top:5px;font-size:11px;color:#64748b;line-height:1.45}
+#page-buyback .buyback-v1-price{margin-top:8px;font-size:13px;font-weight:900;color:#2563eb}
+#page-buyback .buyback-v1-add{border:2px dashed #cbd5e1;background:#f8fafc;box-shadow:none;display:flex;align-items:center;justify-content:center;min-height:220px;text-align:center}
+#page-buyback .buyback-v1-add strong{display:block;color:#2563eb;font-size:16px}
+#page-buyback .buyback-v1-add span{display:block;margin-top:5px;color:#64748b;font-size:11px}
+#page-buyback .buyback-v1-empty{padding:35px 20px;text-align:center;border:1px dashed #cbd5e1;border-radius:14px;background:#f8fafc;color:#64748b}
+#page-buyback .buyback-v1-brand-badge{display:inline-flex;align-items:center;gap:8px;margin-top:7px;font-size:11px;color:#64748b}
+#page-buyback .buyback-v1-brand-mini{width:28px;height:28px;border-radius:8px;object-fit:contain;background:#fff;border:1px solid #e2e8f0}
+#page-buyback .buyback-v1-card-actions{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+#page-buyback .buyback-v1-card-action{border:1px solid #dbe3ec;background:#fff;color:#334155;border-radius:8px;padding:6px 9px;font-size:11px;font-weight:800;cursor:pointer}
+#page-buyback .buyback-v1-card-action:hover{background:#f8fafc}
+#page-buyback .buyback-v1-card-action.danger{color:#dc2626;border-color:#fecaca}
+#page-buyback .buyback-v1-editor-wrap{margin-top:18px}
+@media(max-width:1050px){#page-buyback .buyback-v1-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){#page-buyback .buyback-v1-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#page-buyback .buyback-v1-image{height:125px}}
+@media(max-width:480px){#page-buyback .buyback-v1-grid{grid-template-columns:1fr}}
+</style>
+
 <style id="homs-buyback-admin">
 /* HOMS TECH BUYBACK V4: one phone card per row, always stacked */
 #page-buyback #buybackPhonesList{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;float:none!important;clear:both!important}
@@ -932,6 +966,10 @@ textarea{
 }
 </style>
 
+<style id="homs-buyback-admin-v2-direct">
+.buyback-v1-shell .buyback-v1-title p{margin-top:4px}
+.buyback-v1-brand-badge{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
 </head>
 
 <body>
@@ -1075,7 +1113,7 @@ textarea{
     <div class="section-head">
       <div>
         <h2>📥 Uw toestel verkopen</h2>
-        <p>Beheer de structuur van je inkooptoestellen: Merk → Type apparaat → Model.</p>
+        <p>Beheer je inkooptoestellen eenvoudig: Merk → Telefoon. Kies eerst een merk en daarna direct het toestel.</p>
       </div>
     </div>
 
@@ -1300,6 +1338,7 @@ let loading = false;
 let currentPage = "general";
 let currentUser = {username:"",role:"admin",permissions:[]};
 let selectedBuybackBrandId = "";
+let buybackAdminLevel = "brands"; // V2: brands -> models -> editor (internal types preserved)
 let selectedBuybackTypeId = "";
 let selectedBuybackModelId = "";
 let buybackOptionsOpen = false;
@@ -2264,50 +2303,101 @@ function renderBuybackPhones(){
   normalizeBuybackPhones();
   normalizeBuybackCatalog();
   normalizeBuybackTypeSettings();
-  ensureBuybackSelection();
 
   const box=document.getElementById('buybackHierarchy');
   const editor=document.getElementById('buybackModelEditor');
   if(!box||!editor)return;
+  editor.innerHTML='';
 
   const brands=data.buybackCatalog||[];
   if(!brands.length){
-    box.innerHTML='<div class="buyback-tree-empty" style="padding:40px">Nog geen merk toegevoegd.<br><br><button class="btn btn-green" type="button" onclick="addBuybackBrand()">+ Eerste merk toevoegen</button></div>';
-    editor.innerHTML='';
+    buybackAdminLevel='brands';
+    box.innerHTML='<div class="buyback-v1-empty">Nog geen merk toegevoegd.<br><br><button class="btn btn-green" type="button" onclick="addBuybackBrand()">+ Eerste merk toevoegen</button></div>';
     return;
   }
 
-  const brandList=brands.map(b=>`<button type="button" class="buyback-tree-item ${b.id===selectedBuybackBrandId?'active':''}" onclick="selectBuybackBrand('${esc(b.id)}')">${esc(b.name)}<small>${(b.types||[]).length} type${(b.types||[]).length===1?'':'s'}</small></button>`).join('');
+  const imageHtml=(src,emoji='📱')=>src
+    ? `<img src="${esc(src)}" alt="">`
+    : `<div class="buyback-v1-placeholder">${emoji}</div>`;
 
-  const b=getBuybackBrand();
-  const types=(b&&b.types)||[];
-  const typeList=types.length
-    ? types.map(t=>`<button type="button" class="buyback-tree-item ${t.id===selectedBuybackTypeId?'active':''}" onclick="selectBuybackType('${esc(t.id)}')">${esc(t.name)}<small>${(t.models||[]).length} model${(t.models||[]).length===1?'':'len'}</small></button>`).join('')
-    : '<div class="buyback-tree-empty">Nog geen type.<br><br><button class="btn btn-light" type="button" onclick="addBuybackType()">+ Type toevoegen</button></div>';
-
-  const t=getBuybackType();
-  const models=(t&&t.models)||[];
-  const modelList=models.length
-    ? models.map(m=>`<button type="button" class="buyback-tree-item ${m.id===selectedBuybackModelId?'active':''}" onclick="selectBuybackModel('${esc(m.id)}')">${esc(m.name)}<small>${getBuybackPhoneById(m.buybackId)?.active===false?'Verborgen':'Zichtbaar'}</small></button>`).join('')
-    : '<div class="buyback-tree-empty">Nog geen model.<br><br><button class="btn btn-green" type="button" onclick="addBuybackModel()">+ Model toevoegen</button></div>';
-
-  box.innerHTML=`
-    <div class="buyback-tree">
-      <div class="buyback-tree-pane">
-        <div class="buyback-tree-title">1. Merk</div>
-        <div class="buyback-tree-list">${brandList}</div>
+  // LEVEL 1 — BRANDS
+  if(buybackAdminLevel==='brands'){
+    box.innerHTML=`<div class="buyback-v1-shell">
+      <div class="buyback-v1-head">
+        <div class="buyback-v1-title"><h3>Merken</h3><p>Kies een merk om de apparaten te beheren.</p></div>
+        <button class="btn btn-green" type="button" onclick="addBuybackBrand()">+ Merk toevoegen</button>
       </div>
-      <div class="buyback-tree-pane">
-        <div class="buyback-tree-title">2. Type apparaat</div>
-        <div class="buyback-tree-list">${typeList}</div>
-      </div>
-      <div class="buyback-tree-pane">
-        <div class="buyback-tree-title">3. Model</div>
-        <div class="buyback-tree-list">${modelList}</div>
+      <div class="buyback-v1-grid">
+        ${brands.map(b=>`<div class="buyback-v1-card" role="button" tabindex="0" onclick="selectBuybackBrand('${esc(b.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectBuybackBrand('${esc(b.id)}')}">
+          <div class="buyback-v1-image">${imageHtml(b.image,'🏷️')}</div>
+          <div class="buyback-v1-name">${esc(b.name)}</div>
+          <div class="buyback-v1-meta">${(b.types||[]).reduce((n,t)=>n+(t.models||[]).length,0)} telefoon${((b.types||[]).reduce((n,t)=>n+(t.models||[]).length,0))===1?'':'s'}</div>
+          <div class="buyback-v1-card-actions" onclick="event.stopPropagation()">
+            <button type="button" class="buyback-v1-card-action" onclick="editBuybackBrand('${esc(b.id)}')">✏️ Bewerken</button>
+            <button type="button" class="buyback-v1-card-action danger" onclick="deleteBuybackBrand('${esc(b.id)}')">🗑️ Verwijderen</button>
+          </div>
+        </div>`).join('')}
+        <button type="button" class="buyback-v1-card buyback-v1-add" onclick="addBuybackBrand()"><div><strong>+ Merk toevoegen</strong><span>Bijvoorbeeld Apple, Samsung...</span></div></button>
       </div>
     </div>`;
+    return;
+  }
+
+  const b=getBuybackBrand();
+  if(!b){buybackAdminLevel='brands';return renderBuybackPhones();}
+
+  // V2 — DIRECT FROM BRAND TO DEVICES/MODELS
+  // The existing internal type structure is preserved for compatibility and type-specific questions,
+  // but it is no longer shown as a separate navigation step.
+  if(buybackAdminLevel==='models') {
+    const modelEntries=[];
+    (b.types||[]).forEach(t=>(t.models||[]).forEach(m=>modelEntries.push({type:t,model:m,phone:getBuybackPhoneById(m.buybackId)})));
+    box.innerHTML=`<div class="buyback-v1-shell">
+      <div class="buyback-v1-head">
+        <div class="buyback-v1-head-left">
+          <button class="buyback-v1-back" type="button" onclick="buybackGoBrands()">← Merken</button>
+          <div class="buyback-v1-title"><h3>${esc(b.name)}</h3><p>Kies direct het toestel.</p></div>
+        </div>
+        <button class="btn btn-green" type="button" onclick="addBuybackModel()">+ Telefoon toevoegen</button>
+      </div>
+      <div class="buyback-v1-grid">
+        ${modelEntries.map(({type,model:pModel,phone:p})=>`<div class="buyback-v1-card" role="button" tabindex="0" onclick="selectBuybackModel('${esc(pModel.id)}','${esc(type.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectBuybackModel('${esc(pModel.id)}','${esc(type.id)}')}">
+          <div class="buyback-v1-image">${imageHtml(p&&p.image,'📱')}</div>
+          <div class="buyback-v1-name">${esc((p&&p.name)||pModel.name)}</div>
+          <div class="buyback-v1-brand-badge">${esc(type.name||'Telefoon')} · ${p&&p.active===false?'Verborgen':'Zichtbaar'}</div>
+          <div class="buyback-v1-price">€ ${Number(p&&p.price||0).toFixed(2)}</div>
+          <div class="buyback-v1-card-actions" onclick="event.stopPropagation()">
+            <button type="button" class="buyback-v1-card-action" onclick="editBuybackModel('${esc(pModel.id)}','${esc(type.id)}')">✏️ Bewerken</button>
+            <button type="button" class="buyback-v1-card-action danger" onclick="deleteBuybackModelById('${esc(pModel.id)}','${esc(type.id)}')">🗑️ Verwijderen</button>
+          </div>
+        </div>`).join('')}
+        <button type="button" class="buyback-v1-card buyback-v1-add" onclick="addBuybackModel()"><div><strong>+ Telefoon toevoegen</strong><span>Voeg een nieuw toestel toe</span></div></button>
+      </div>
+      ${modelEntries.length?'':'<div class="buyback-tree-empty" style="margin-top:12px">Nog geen telefoons voor dit merk.</div>'}
+    </div>`;
+    return;
+  }
+
+  // LEVEL 3 — existing detailed model editor.
+  const t=getBuybackType();
+  if(!t){
+    // A model can be selected directly from the brand list; if the internal type was missing,
+    // fall back safely to the first available type without deleting or changing data.
+    const firstType=(b.types||[])[0];
+    if(firstType){ selectedBuybackTypeId=firstType.id; return renderBuybackPhones(); }
+    buybackAdminLevel='models';
+    return renderBuybackPhones();
+  }
 
   renderBuybackModelEditor();
+  box.innerHTML=`<div class="buyback-v1-head">
+    <div class="buyback-v1-head-left">
+      <button class="buyback-v1-back" type="button" onclick="buybackGoModels()">← ${esc(b.name)}</button>
+      <div class="buyback-v1-title"><h3>${esc(b.name)} → ${esc(getBuybackModel()?.name||'Telefoon')}</h3><p>Bewerk alleen dit toestel.</p></div>
+    </div>
+  </div>`;
+  const existingEditor=document.getElementById('buybackModelEditor');
+  if(existingEditor) existingEditor.classList.add('buyback-v1-editor-wrap');
 }
 
 function renderBuybackModelEditor(){
@@ -2329,7 +2419,7 @@ function renderBuybackModelEditor(){
   editor.innerHTML=`
     <div class="buyback-model-panel">
       <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
-        <div><h3>📱 ${esc(phone.name||m.name)}</h3><div class="small">${esc(b.name)} → ${esc(t.name)} → ${esc(m.name)}</div></div>
+        <div><h3>📱 ${esc(phone.name||m.name)}</h3><div class="small">${esc(b.name)} → ${esc(m.name)}</div></div>
         <div class="actions">
           <button class="btn btn-light" type="button" onclick="toggleBuybackTypeSettings()">⚙️ Vragen voor type</button>
           <button class="btn btn-light" type="button" onclick="toggleBuybackPhoneOptions()">📱 Modelopties</button>
@@ -2339,7 +2429,6 @@ function renderBuybackModelEditor(){
       <div class="grid" style="margin-top:15px">
         <div class="field"><label>Merk</label><input value="${esc(b.name)}" oninput="renameBuybackBrand(this.value)"></div>
         <div class="field"><label>📷 Afbeelding van merk</label><div class="buyback-photo-line-v5">${b.image?`<img src="${esc(b.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen merkafbeelding</div>'}<input type="file" accept="image/*" onchange="handleBuybackBrandImage(event)"></div></div>
-        <div class="field"><label>Type apparaat</label><input value="${esc(t.name)}" oninput="renameBuybackType(this.value)"></div>
         <div class="field"><label>Model</label><input value="${esc(phone.name||m.name)}" oninput="renameBuybackModel(this.value)"></div>
         <div class="field"><label>Basis inkoopprijs (€)</label><input type="number" step="1" value="${Number(phone.price||0)}" oninput="phone.price=Number(this.value||0);markChanged()"></div>
         <div class="field"><label>Website</label><label class="buyback-check-v5"><input type="checkbox" ${phone.active!==false?'checked':''} onchange="phone.active=this.checked;markChanged();renderBuybackPhones()"> Tonen op Uw toestel verkopen</label></div>
@@ -2371,13 +2460,76 @@ function toggleBuybackPhoneOptions(){
   renderBuybackModelEditor();
 }
 function selectBuybackBrand(id){
-  selectedBuybackBrandId=id;selectedBuybackTypeId="";selectedBuybackModelId="";buybackOptionsOpen=false;renderBuybackPhones();
+  selectedBuybackBrandId=id;selectedBuybackTypeId="";selectedBuybackModelId="";buybackOptionsOpen=false;buybackAdminLevel='types';renderBuybackPhones();
 }
 function selectBuybackType(id){
-  selectedBuybackTypeId=id;selectedBuybackModelId="";buybackOptionsOpen=false;renderBuybackPhones();
+  selectedBuybackTypeId=id;selectedBuybackModelId="";buybackOptionsOpen=false;buybackAdminLevel='models';renderBuybackPhones();
 }
-function selectBuybackModel(id){
-  selectedBuybackModelId=id;buybackOptionsOpen=false;renderBuybackPhones();
+function selectBuybackModel(id,typeId){
+  selectedBuybackModelId=id;
+  selectedBuybackTypeId=typeId||selectedBuybackTypeId||((getBuybackBrand()?.types||[])[0]?.id||'');
+  buybackOptionsOpen=false;
+  buybackAdminLevel='editor';
+  renderBuybackPhones();
+}
+function buybackGoBrands(){
+  selectedBuybackTypeId="";selectedBuybackModelId="";buybackOptionsOpen=false;buybackAdminLevel='brands';renderBuybackPhones();
+}
+function buybackGoModels(){
+  selectedBuybackModelId="";buybackOptionsOpen=false;buybackAdminLevel='models';renderBuybackPhones();
+}
+
+function editBuybackBrand(id){
+  const b=(data.buybackCatalog||[]).find(x=>x.id===id);
+  if(!b)return;
+  const name=prompt('Naam van het merk:',b.name||'');
+  if(name===null)return;
+  const clean=name.trim();
+  if(!clean)return;
+  b.name=clean;
+  (b.types||[]).forEach(t=>(t.models||[]).forEach(m=>{const p=getBuybackPhoneById(m.buybackId);if(p)p.brand=clean;}));
+  markChanged();
+  renderBuybackPhones();
+}
+
+function deleteBuybackBrand(id){
+  const b=(data.buybackCatalog||[]).find(x=>x.id===id);
+  if(!b)return;
+  const count=(b.types||[]).reduce((n,t)=>n+(t.models||[]).length,0);
+  if(!confirm('Merk \"'+(b.name||'')+'\" verwijderen?'+(count?'\n\nHiermee worden ook de '+count+' telefoon(en) van dit merk verwijderd.':'')))return;
+  const phoneIds=[];
+  (b.types||[]).forEach(t=>(t.models||[]).forEach(m=>{if(m.buybackId)phoneIds.push(m.buybackId);}));
+  data.buybackPhones=(data.buybackPhones||[]).filter(p=>!phoneIds.includes(p.id));
+  const idx=data.buybackCatalog.findIndex(x=>x.id===id);
+  if(idx>=0)data.buybackCatalog.splice(idx,1);
+  selectedBuybackBrandId='';selectedBuybackTypeId='';selectedBuybackModelId='';buybackAdminLevel='brands';
+  markChanged();
+  renderBuybackPhones();
+}
+
+function editBuybackModel(modelId,typeId){
+  selectedBuybackTypeId=typeId||'';
+  selectedBuybackModelId=modelId||'';
+  buybackOptionsOpen=false;
+  buybackAdminLevel='editor';
+  renderBuybackPhones();
+}
+
+function deleteBuybackModelById(modelId,typeId){
+  const b=getBuybackBrand();
+  const t=b&&(b.types||[]).find(x=>x.id===typeId);
+  if(!b||!t)return;
+  const m=(t.models||[]).find(x=>x.id===modelId);
+  if(!m)return;
+  const p=m.buybackId?getBuybackPhoneById(m.buybackId):null;
+  if(!confirm('Telefoon "'+((p&&p.name)||m.name||'')+'" verwijderen?'))return;
+  t.models=t.models.filter(x=>x.id!==modelId);
+  if(m.buybackId)data.buybackPhones=(data.buybackPhones||[]).filter(x=>x.id!==m.buybackId);
+  selectedBuybackModelId='';
+  buybackOptionsOpen=false;
+  buybackAdminLevel='models';
+  markChanged();
+  renderBuybackPhones();
 }
 
 function addBuybackBrand(){
@@ -2385,26 +2537,23 @@ function addBuybackBrand(){
   if(!name||!name.trim())return;
   const brand={id:newBuybackId("brand"),name:name.trim(),image:"",types:[]};
   data.buybackCatalog.push(brand);
-  selectedBuybackBrandId=brand.id;selectedBuybackTypeId="";selectedBuybackModelId="";
-  markChanged();renderBuybackPhones();
-}
-
-function addBuybackType(){
-  const b=getBuybackBrand();
-  if(!b){alert("Kies eerst een merk.");return;}
-  const name=prompt("Type apparaat (bijvoorbeeld iPhone, Tablet of Smartwatch):","Telefoon");
-  if(!name||!name.trim())return;
-  const type={id:newBuybackId("type"),name:name.trim(),questions:defaultBuybackQuestionsForType(name.trim()),models:[]};
-  b.types.push(type);
-  selectedBuybackTypeId=type.id;selectedBuybackModelId="";
+  selectedBuybackBrandId=brand.id;selectedBuybackTypeId="";selectedBuybackModelId="";buybackAdminLevel='models';
   markChanged();renderBuybackPhones();
 }
 
 function addBuybackModel(){
-  const b=getBuybackBrand(), t=getBuybackType();
+  const b=getBuybackBrand();
   if(!b){alert("Kies eerst een merk.");return;}
-  if(!t){alert("Kies eerst een type apparaat.");return;}
-  const name=prompt("Modelnaam (bijvoorbeeld iPhone 17):","Nieuw model");
+  // Keep the internal type structure for compatibility, but do not expose it as a navigation step.
+  let t=(b.types||[]).find(x=>String(x.name||'').toLowerCase()==='telefoon');
+  if(!t){
+    t=(b.types||[])[0];
+    if(!t){
+      t={id:newBuybackId("type"),name:"Telefoon",questions:defaultBuybackQuestionsForType("Telefoon"),models:[]};
+      b.types.push(t);
+    }
+  }
+  const name=prompt("Telefoon / modelnaam (bijvoorbeeld iPhone 17):","Nieuw model");
   if(!name||!name.trim())return;
 
   const phone={
@@ -2417,8 +2566,11 @@ function addBuybackModel(){
   };
   data.buybackPhones.push(phone);
   const model={id:newBuybackId("model"),name:name.trim(),buybackId:phone.id};
+  t.models=t.models||[];
   t.models.push(model);
+  selectedBuybackTypeId=t.id;
   selectedBuybackModelId=model.id;
+  buybackAdminLevel='editor';
   markChanged();renderBuybackPhones();
 }
 
@@ -2449,7 +2601,7 @@ function deleteBuybackModel(){
   const pidx=data.buybackPhones.findIndex(x=>x.id===m.buybackId);
   if(pidx>=0)data.buybackPhones.splice(pidx,1);
   selectedBuybackModelId="";
-  buybackOptionsOpen=false;
+  buybackOptionsOpen=false;buybackAdminLevel='models';
   markChanged();renderBuybackPhones();
 }
 
@@ -2498,6 +2650,7 @@ function addBuybackPhone(){
   if(!getBuybackBrand()||!getBuybackType()){
     selectedBuybackBrandId=data.buybackCatalog[0].id;
     selectedBuybackTypeId=data.buybackCatalog[0].types[0]?.id||"";
+    buybackAdminLevel='models';
   }
   if(getBuybackBrand()&&getBuybackType()) addBuybackModel();
 }
