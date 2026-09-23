@@ -2514,7 +2514,7 @@ function renderBuybackModelEditor(){
 
 function buybackOptionEditorForModel(phone,title,key){
   const opts=phone[key]||[];
-  return `<div class="card buyback-option-card"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">Pas de keuze en prijsaanpassing zelf aan.</div>${opts.map((o,i)=>`<div class="buyback-option-row"><input value="${esc(o.label||'')}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'label',this.value)"><input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'priceDelta',this.value)"><label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateSelectedBuybackPhoneOption('${key}',${i},'active',this.checked)"> Actief</label></div>`).join('')}</div>`;
+  return `<div class="card buyback-option-card"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">Pas de keuze en prijsaanpassing zelf aan.</div>${opts.map((o,i)=>`<div class="buyback-option-row"><input value="${esc(o.label||'')}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'label',this.value)"><input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'priceDelta',this.value)"><label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateSelectedBuybackPhoneOption('${key}',${i},'active',this.checked); this.checked=!!getSelectedBuybackPhone()?.${key}?.[${i}]?.active"> Actief</label></div>`).join('')}</div>`;
 }
 
 function toggleBuybackTypeSettings(){
@@ -3245,6 +3245,8 @@ function deleteWhy(i){
 
 /* ---------------- SAVE ---------------- */
 
+let dataRevision=0;
+
 async function save(isAuto=false){
   if(!canEditSite()){setStatus("✕ Je hebt geen toestemming om wijzigingen op te slaan.","error");return;}
   if(isAuto) autoSaveAgain=false;
@@ -3255,11 +3257,17 @@ async function save(isAuto=false){
   try{
     normalizeData();
 
+    // Bewaar de versie die we daadwerkelijk naar de server sturen.
+    // Als de gebruiker tijdens het opslaan iets wijzigt, mag een oude
+    // server-response die nieuwe lokale wijziging NIET terugzetten.
+    const saveRevision=dataRevision;
+    const payload=JSON.stringify(data);
+
     const r=await fetch("/api/site",{
       method:"PUT",
       headers:{"Content-Type":"application/json","Accept":"application/json"},
       credentials:"same-origin",
-      body:JSON.stringify(data)
+      body:payload
     });
 
     const raw=await r.text();
@@ -3272,27 +3280,33 @@ async function save(isAuto=false){
       throw new Error(result.error || "Opslaan mislukt");
     }
 
-    data=result.data || data;
-    normalizeData();
+    if(dataRevision===saveRevision){
+      data=result.data || data;
+      normalizeData();
 
-    // Alleen de huidige pagina opnieuw tekenen. Geen renderAll-loop na opslaan.
-    if(currentPage==="general") renderGeneral();
-    else if(currentPage==="services") renderServices();
-    else if(currentPage==="phones") renderPhones();
-    else if(currentPage==="buyback") renderBuybackPhones();
-    else if(currentPage==="categories") renderDeviceCategories();
-    else if(currentPage==="used") renderUsedPhones();
-    else if(currentPage==="why") renderWhy();
-    else if(currentPage==="gsm") renderGsmServices();
+      // Alleen de huidige pagina opnieuw tekenen als er intussen
+      // geen nieuwe lokale wijziging is gemaakt.
+      if(currentPage==="general") renderGeneral();
+      else if(currentPage==="services") renderServices();
+      else if(currentPage==="phones") renderPhones();
+      else if(currentPage==="buyback") renderBuybackPhones();
+      else if(currentPage==="categories") renderDeviceCategories();
+      else if(currentPage==="used") renderUsedPhones();
+      else if(currentPage==="why") renderWhy();
+      else if(currentPage==="gsm") renderGsmServices();
 
-    setStatus("✓ Alle wijzigingen zijn succesvol opgeslagen","success");
+      setStatus("✓ Alle wijzigingen zijn succesvol opgeslagen","success");
+    }else{
+      // Er kwam een wijziging binnen tijdens het opslaan.
+      // Laat de lokale wijziging staan en sla die daarna nogmaals op.
+      autoSaveAgain=true;
+      setStatus("● Nieuwe wijziging gedetecteerd — wordt opnieuw opgeslagen...","info");
+    }
   }catch(e){
     setStatus("✕ Opslaan mislukt: "+e.message,"error");
   }finally{
     loading=false;
 
-    // Als er tijdens het opslaan opnieuw iets gewijzigd werd,
-    // voer nog één automatische opslag uit.
     if(autoSaveAgain){
       autoSaveAgain=false;
       clearTimeout(autoSaveTimer);
@@ -3593,13 +3607,16 @@ function renderAll(){
 
 function markChanged(){
 
+  // Elke lokale wijziging krijgt een nieuwe versie.
+  // save() gebruikt dit om te voorkomen dat een oudere server-response
+  // de zojuist gewijzigde checkbox/waarde terugzet.
+  dataRevision++;
+
   setStatus(
     "● Wijziging gedetecteerd — automatisch opslaan...",
     "info"
   );
 
-  // Automatisch opslaan na een korte pauze, zodat typen in velden
-  // niet voor iedere letter een aparte request naar de server stuurt.
   clearTimeout(autoSaveTimer);
 
   if(loading){
