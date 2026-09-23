@@ -271,15 +271,56 @@ function imageFor(d){
 }
 let selectedBrand='',selectedType='';
 
+function buildCustomerQuestions(phone,type){
+  const questions=Array.isArray(type?.questions)
+    ? type.questions.map(q=>({...q,options:Array.isArray(q.options)?q.options.map(o=>({...o})):[]}))
+    : [];
+
+  // Model-specific options are the final source for the matching question.
+  // This makes the Actief checkbox in Admin control exactly what the customer sees.
+  const optionSets=[
+    ['storageOptions','Opslag',['opslag','storage']],
+    ['conditionOptions','Conditie',['conditie','staat','condition']],
+    ['batteryOptions','Batterij',['batterij','battery']],
+    ['faceIdOptions','Face ID',['face id','faceid']],
+    ['screenOptions','Scherm',['scherm','screen']]
+  ];
+
+  optionSets.forEach(([key,label,aliases])=>{
+    const opts=Array.isArray(phone?.[key]) ? phone[key].map(o=>({...o})) : [];
+    if(!opts.length)return;
+
+    const existing=questions.find(q=>{
+      const ql=String(q.label||'').toLowerCase();
+      return aliases.some(a=>ql.includes(a));
+    });
+
+    if(existing){
+      existing.type='options';
+      existing.options=opts;
+    }else{
+      questions.push({
+        id:'model_'+key,
+        label,
+        type:'options',
+        required:true,
+        options:opts
+      });
+    }
+  });
+
+  return questions;
+}
+
 function flattenBuybackCatalog(catalog){
   const out=[];
   (Array.isArray(catalog)?catalog:[]).forEach(b=>{
     (b.types||[]).forEach(t=>{
       (t.models||[]).forEach(m=>{
-        const p=(siteData.buybackPhones||[]).find(x=>x.id===m.buybackId);
+        const p=(siteData.buybackPhones||[]).find(x=>String(x.id)===String(m.buybackId));
         if(p && p.active!==false){
           out.push({...p,brand:b.name,deviceType:t.name,typeId:t.id,typeName:t.name,brandId:b.id,modelId:m.id,
-            typeQuestions:Array.isArray(t.questions)?t.questions:[],brandImage:b.image||b.brandImage||''});
+            typeQuestions:buildCustomerQuestions(p,t),brandImage:b.image||b.brandImage||''});
         }
       });
     });
@@ -526,7 +567,7 @@ async function loadBuyback(){
     const catalog=Array.isArray(siteData.buybackCatalog)?siteData.buybackCatalog:[];
     devices=flattenBuybackCatalog(catalog);
     if(!devices.length){
-      devices=(Array.isArray(siteData.buybackPhones)?siteData.buybackPhones:[]).filter(x=>x.active!==false).map(x=>({...x,typeQuestions:[]}));
+      devices=(Array.isArray(siteData.buybackPhones)?siteData.buybackPhones:[]).filter(x=>x.active!==false).map(x=>({...x,typeQuestions:buildCustomerQuestions(x,{questions:[]})}));
     }
     categories();renderDevices();
   }catch(e){devices=[];categories();renderDevices()}
