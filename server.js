@@ -1057,8 +1057,6 @@ async function ensureBuybackOrdersTable() {
       offered_price NUMERIC(12,2) NOT NULL DEFAULT 0,
       iban TEXT DEFAULT '',
       payment_method TEXT DEFAULT '',
-      answers JSONB NOT NULL DEFAULT '{}'::jsonb,
-      device_type TEXT DEFAULT '',
       status TEXT NOT NULL DEFAULT 'Nieuw',
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
@@ -1069,11 +1067,78 @@ async function ensureBuybackOrdersTable() {
   await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS model TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS iban TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT ''`);
-  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS answers JSONB NOT NULL DEFAULT '{}'::jsonb`);
-  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS device_type TEXT DEFAULT ''`);
   await pool.query(`UPDATE buyback_orders SET order_no = 'BT-LEGACY-' || id WHERE order_no IS NULL`);
   await pool.query(`ALTER TABLE buyback_orders ALTER COLUMN order_no SET NOT NULL`);
 }
+
+// Buyback quote calculator. The admin supplies only the four condition base prices.
+// The server applies the shared evaluation rules to the selected answers.
+const BUYBACK_RULES = Object.freeze({
+  functionsNotWorkingMultiplier: 0.70, // -30%
+  batteryUnder85Multiplier: 0.90        // -10%
+});
+
+app.post("/api/buyback/calculate", async (req, res) => {
+  try {
+    const b = req.body || {};
+    let price = Number(b.conditionBasePrice);
+    if (!Number.isFinite(price) || price < 0) {
+      return res.status(400).json({ error: "Ongeldige basis-inkoopprijs." });
+    }
+
+    const condition = String(b.condition || "").trim().toLowerCase();
+    const battery = String(b.battery || "").trim().toLowerCase();
+    const functions = String(b.functions || "").trim().toLowerCase();
+
+    // Kapot is a direct purchase price: no further questions affect it.
+    if (condition.includes("kapot")) {
+      return res.json({
+        success: true,
+        price: Number(price.toFixed(2)),
+        basePrice: Number(price.toFixed(2)),
+        adjustments: [],
+        broken: true
+      });
+    }
+
+    const adjustments = [];
+
+    if (/nee|no|niet/.test(functions)) {
+      const before = price;
+      price *= BUYBACK_RULES.functionsNotWorkingMultiplier;
+      adjustments.push({
+        rule: "functions_not_working",
+        multiplier: BUYBACK_RULES.functionsNotWorkingMultiplier,
+        before: Number(before.toFixed(2)),
+        after: Number(price.toFixed(2))
+      });
+    }
+
+    if (/onder\s*85|<\s*85/.test(battery)) {
+      const before = price;
+      price *= BUYBACK_RULES.batteryUnder85Multiplier;
+      adjustments.push({
+        rule: "battery_under_85",
+        multiplier: BUYBACK_RULES.batteryUnder85Multiplier,
+        before: Number(before.toFixed(2)),
+        after: Number(price.toFixed(2))
+      });
+    }
+
+    price = Math.max(0, Number(price.toFixed(2)));
+
+    res.json({
+      success: true,
+      price,
+      basePrice: Number(Number(b.conditionBasePrice).toFixed(2)),
+      adjustments,
+      broken: false
+    });
+  } catch (error) {
+    console.error("Buyback calculate error:", error);
+    res.status(500).json({ error: "Prijs kon niet worden berekend." });
+  }
+});
 
 app.post("/api/buyback/orders", async (req, res) => {
   try {
@@ -1095,8 +1160,8 @@ app.post("/api/buyback/orders", async (req, res) => {
 
     const result = await pool.query(`
       INSERT INTO buyback_orders
-      (order_no,name,email,phone,address,device,brand,model,storage,condition,face_id,battery,screen,offered_price,iban,payment_method,answers,device_type,status)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,'Nieuw')
+      (order_no,name,email,phone,address,device,brand,model,storage,condition,face_id,battery,screen,offered_price,iban,payment_method,status)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,'Nieuw')
       RETURNING id,order_no,status,created_at
     `, [
       orderNo,
@@ -1113,9 +1178,7 @@ app.post("/api/buyback/orders", async (req, res) => {
       String(b.screen || "").trim(),
       offeredPrice,
       String(b.iban || "").trim(),
-      String(b.paymentMethod || "").trim(),
-      JSON.stringify((b.answers && typeof b.answers === "object" && !Array.isArray(b.answers)) ? b.answers : {}),
-      String(b.deviceType || "").trim()
+      String(b.paymentMethod || "").trim()
     ]);
 
     res.status(201).json({ success: true, order: result.rows[0] });
