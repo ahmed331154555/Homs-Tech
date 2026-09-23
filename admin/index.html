@@ -2249,9 +2249,14 @@ function renderBuybackQuestionOptions(q){
 function updateBuybackQuestion(id,key,value){
   const t=getBuybackType();const q=t&&t.questions.find(x=>x.id===id);if(!q)return;
   if(key==='required')q.required=!!value;
-  else if(key==='type'){q.type=value;q.options=value==='text'?[]:[{label:'Ja',priceDelta:0,active:true},{label:'Nee',priceDelta:-25,active:true}];}
-  else q[key]=value;
-  markChanged();renderBuybackTypeSettings();
+  else if(key==='type'){
+    q.type=value;
+    q.options=value==='text'?[]:[{label:'Ja',priceDelta:0,active:true},{label:'Nee',priceDelta:-25,active:true}];
+    markChanged();
+    renderBuybackTypeSettings();
+    return;
+  }else q[key]=value;
+  markChanged();
 }
 function toggleBuybackQuestion(id){buybackQuestionOpenId=buybackQuestionOpenId===id?'':id;renderBuybackTypeSettings();}
 function addBuybackQuestion(type){
@@ -2269,7 +2274,7 @@ function deleteBuybackQuestion(id){
 function updateBuybackQuestionOption(qid,index,key,value){
   const t=getBuybackType();const q=t&&t.questions.find(x=>x.id===qid);if(!q||!q.options[index])return;
   q.options[index][key]=key==='priceDelta'?Number(value||0):key==='active'?!!value:value;
-  markChanged();renderBuybackTypeSettings();
+  markChanged();
 }
 function addBuybackQuestionOption(qid){
   const t=getBuybackType();const q=t&&t.questions.find(x=>x.id===qid);if(!q)return;
@@ -2463,8 +2468,8 @@ function renderBuybackModelEditor(){
         <div class="field"><label>Merk</label><input value="${esc(b.name)}" oninput="renameBuybackBrand(this.value)"></div>
         <div class="field"><label>📷 Afbeelding van merk</label><div class="buyback-photo-line-v5">${b.image?`<img src="${esc(b.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen merkafbeelding</div>'}<input type="file" accept="image/*" onchange="handleBuybackBrandImage(event)"></div></div>
         <div class="field"><label>Model</label><input value="${esc(phone.name||m.name)}" oninput="renameBuybackModel(this.value)"></div>
-        <div class="field"><label>Basis inkoopprijs (€)</label><input type="number" step="1" value="${Number(phone.price||0)}" oninput="phone.price=Number(this.value||0);markChanged()"></div>
-        <div class="field"><label>Website</label><label class="buyback-check-v5"><input type="checkbox" ${phone.active!==false?'checked':''} onchange="phone.active=this.checked;markChanged();renderBuybackPhones()"> Tonen op Uw toestel verkopen</label></div>
+        <div class="field"><label>Basis inkoopprijs (€)</label><input type="number" step="1" value="${Number(phone.price||0)}" oninput="updateSelectedBuybackPhoneField('price',this.value)"></div>
+        <div class="field"><label>Website</label><label class="buyback-check-v5"><input type="checkbox" ${phone.active!==false?'checked':''} onchange="updateSelectedBuybackPhoneField('active',this.checked);renderBuybackPhones()"> Tonen op Uw toestel verkopen</label></div>
         <div class="field buyback-photo-v5"><label>📷 Foto van toestel</label><div class="buyback-photo-line-v5">${phone.image?`<img src="${esc(phone.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen foto</div>'}<input type="file" accept="image/*" onchange="handleBuybackImageForModel(event)"></div></div>
       </div>
       ${renderBuybackTypeSettings()}
@@ -2478,9 +2483,27 @@ function renderBuybackModelEditor(){
     </div>`;
 }
 
+function getSelectedBuybackPhone(){
+  const m=getBuybackModel();
+  return m ? getBuybackPhoneById(m.buybackId) : null;
+}
+function updateSelectedBuybackPhoneField(key,value){
+  const phone=getSelectedBuybackPhone();
+  if(!phone)return;
+  if(key==='price') phone.price=Number(value||0);
+  else if(key==='active') phone.active=!!value;
+  else phone[key]=value;
+  markChanged();
+}
+function updateSelectedBuybackPhoneOption(key,index,field,value){
+  const phone=getSelectedBuybackPhone();
+  if(!phone || !Array.isArray(phone[key]) || !phone[key][index])return;
+  phone[key][index][field]=field==='priceDelta'?Number(value||0):field==='active'?!!value:value;
+  markChanged();
+}
 function buybackOptionEditorForModel(phone,title,key){
   const opts=phone[key]||[];
-  return `<div class="card buyback-option-card"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">Pas de keuze en prijsaanpassing zelf aan.</div>${opts.map((o,i)=>`<div class="buyback-option-row"><input value="${esc(o.label||'')}" oninput="phone.${key}[${i}].label=this.value;markChanged()"><input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="phone.${key}[${i}].priceDelta=Number(this.value||0);markChanged()"><label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="phone.${key}[${i}].active=this.checked;markChanged()"> Actief</label></div>`).join('')}</div>`;
+  return `<div class="card buyback-option-card"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">Pas de keuze en prijsaanpassing zelf aan.</div>${opts.map((o,i)=>`<div class="buyback-option-row"><input value="${esc(o.label||'')}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'label',this.value)"><input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateSelectedBuybackPhoneOption('${key}',${i},'priceDelta',this.value)"><label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateSelectedBuybackPhoneOption('${key}',${i},'active',this.checked)"> Actief</label></div>`).join('')}</div>`;
 }
 
 function toggleBuybackTypeSettings(){
