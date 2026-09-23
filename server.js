@@ -1074,74 +1074,121 @@ async function ensureBuybackOrdersTable() {
 // Buyback quote calculator. The admin supplies only the four condition base prices.
 // The server applies the shared evaluation rules to the selected answers.
 const BUYBACK_PROTOCOLS = Object.freeze({
+  // Protocol 1 keeps the existing HOMS TECH calculation.
   '1': Object.freeze({functionsNotWorkingMultiplier:0.70,batteryUnder85Multiplier:0.90}),
-  '2': Object.freeze({functionsNotWorkingMultiplier:0.70,batteryUnder85Multiplier:0.90})
+  // Protocol 2 matches the new flow shown by the user:
+  // functions = no -> 33.3333333333% discount, battery <85% -> 10%.
+  '2': Object.freeze({functionsNotWorkingMultiplier:1-(33.3333333333/100),batteryUnder85Multiplier:0.90})
 });
 
 app.post("/api/buyback/calculate", async (req, res) => {
   try {
     const b = req.body || {};
-    let price = Number(b.conditionBasePrice);
-    if (!Number.isFinite(price) || price < 0) {
-      return res.status(400).json({ error: "Ongeldige basis-inkoopprijs." });
-    }
-
-    const condition = String(b.condition || "").trim().toLowerCase();
-    const battery = String(b.battery || "").trim().toLowerCase();
-    const functions = String(b.functions || "").trim().toLowerCase();
     const protocol = String(b.protocol || "2") === "1" ? "1" : "2";
     const rules = BUYBACK_PROTOCOLS[protocol];
 
+    let price = Number(b.conditionBasePrice);
+    const storageDelta = Number(b.storageDelta || 0);
+    if (!Number.isFinite(price) || price < 0) {
+      return res.status(400).json({ error: "Ongeldige basis-inkoopprijs." });
+    }
+    if (!Number.isFinite(storageDelta)) {
+      return res.status(400).json({ error: "Ongeldige opslagprijsaanpassing." });
+    }
+
+    // The server starts from the condition price entered by Admin.
+    // Storage adjustment is applied before the condition/function rules.
+    price = Math.max(0, price + storageDelta);
+
+    const condition = String(b.condition || "").trim();
+    const battery = String(b.battery || "").trim();
+    const functions = String(b.functions || "").trim();
+    const functionsNoLabel = String(b.functionsNoLabel || "Nee").trim();
+    const batteryNoLabel = String(b.batteryNoLabel || "Nee").trim();
+
+    // Admin can change the discount values per phone/protocol.
+    const functionsDiscount = Math.max(0, Math.min(100,
+      Number.isFinite(Number(b.functionsDiscount)) ? Number(b.functionsDiscount) :
+      (1-rules.functionsNotWorkingMultiplier)*100
+    ));
+    const batteryDiscount = Math.max(0, Math.min(100,
+      Number.isFinite(Number(b.batteryDiscount)) ? Number(b.batteryDiscount) :
+      (1-rules.batteryUnder85Multiplier)*100
+    ));
+
+    const fnMultiplier = Math.max(0, 1 - functionsDiscount/100);
+    const batMultiplier = Math.max(0, 1 - batteryDiscount/100);
+
     // Kapot is a direct purchase price: no further questions affect it.
-    if (condition.includes("kapot")) {
+    if (/kapot/i.test(condition)) {
       return res.json({
-        success: true,
-        price: Number(price.toFixed(2)),
-        basePrice: Number(price.toFixed(2)),
-        adjustments: [],
+        success:true,
+        price:Number(price.toFixed(2)),
+        basePrice:Number(price.toFixed(2)),
+        storageDelta:Number(storageDelta.toFixed(2)),
+        adjustments:[],
         protocol,
-        broken: true
+        broken:true,
+        rules:{functionsNotWorkingMultiplier:fnMultiplier,batteryUnder85Multiplier:batMultiplier}
       });
     }
 
     const adjustments = [];
 
-    if (/nee|no|niet/.test(functions)) {
+    const functionsNo =
+      protocol === "2"
+        ? functions === functionsNoLabel
+        : /nee|no|niet/i.test(functions);
+
+    if (functionsNo) {
       const before = price;
-      price *= rules.functionsNotWorkingMultiplier;
+      price *= fnMultiplier;
       adjustments.push({
-        rule: "functions_not_working",
-        multiplier: rules.functionsNotWorkingMultiplier,
-        before: Number(before.toFixed(2)),
-        after: Number(price.toFixed(2))
+        rule:"functions_not_working",
+        discountPercent:functionsDiscount,
+        multiplier:fnMultiplier,
+        before:Number(before.toFixed(2)),
+        after:Number(price.toFixed(2))
       });
     }
 
-    if (/onder\s*85|<\s*85/.test(battery)) {
+    const batteryNo =
+      protocol === "2"
+        ? battery === batteryNoLabel
+        : /onder\s*85|<\s*85|nee|no|niet/i.test(battery);
+
+    if (batteryNo) {
       const before = price;
-      price *= rules.batteryUnder85Multiplier;
+      price *= batMultiplier;
       adjustments.push({
-        rule: "battery_under_85",
-        multiplier: rules.batteryUnder85Multiplier,
-        before: Number(before.toFixed(2)),
-        after: Number(price.toFixed(2))
+        rule:"battery_under_85",
+        discountPercent:batteryDiscount,
+        multiplier:batMultiplier,
+        before:Number(before.toFixed(2)),
+        after:Number(price.toFixed(2))
       });
     }
 
     price = Math.max(0, Number(price.toFixed(2)));
 
     res.json({
-      success: true,
+      success:true,
       price,
-      basePrice: Number(Number(b.conditionBasePrice).toFixed(2)),
+      basePrice:Number(Number(b.conditionBasePrice).toFixed(2)),
+      storageDelta:Number(storageDelta.toFixed(2)),
       adjustments,
       protocol,
-      rules: {functionsNotWorkingMultiplier:rules.functionsNotWorkingMultiplier,batteryUnder85Multiplier:rules.batteryUnder85Multiplier},
-      broken: false
+      rules:{
+        functionsNotWorkingMultiplier:fnMultiplier,
+        batteryUnder85Multiplier:batMultiplier,
+        functionsDiscount,
+        batteryDiscount
+      },
+      broken:false
     });
   } catch (error) {
     console.error("Buyback calculate error:", error);
-    res.status(500).json({ error: "Prijs kon niet worden berekend." });
+    res.status(500).json({ error:"Prijs kon niet worden berekend." });
   }
 });
 
