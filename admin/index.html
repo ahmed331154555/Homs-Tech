@@ -962,6 +962,10 @@ textarea{
 }
 </style>
 
+<style id="homs-buyback-admin-v2-direct">
+.buyback-v1-shell .buyback-v1-title p{margin-top:4px}
+.buyback-v1-brand-badge{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
 </head>
 
 <body>
@@ -1105,7 +1109,7 @@ textarea{
     <div class="section-head">
       <div>
         <h2>📥 Uw toestel verkopen</h2>
-        <p>Beheer de structuur van je inkooptoestellen: Merk → Type apparaat → Model.</p>
+        <p>Beheer je inkooptoestellen eenvoudig: Merk → Telefoon. Kies eerst een merk en daarna direct het toestel.</p>
       </div>
     </div>
 
@@ -1330,7 +1334,7 @@ let loading = false;
 let currentPage = "general";
 let currentUser = {username:"",role:"admin",permissions:[]};
 let selectedBuybackBrandId = "";
-let buybackAdminLevel = "brands"; // V1: brands -> types -> models -> editor
+let buybackAdminLevel = "brands"; // V2: brands -> models -> editor (internal types preserved)
 let selectedBuybackTypeId = "";
 let selectedBuybackModelId = "";
 let buybackOptionsOpen = false;
@@ -2323,7 +2327,7 @@ function renderBuybackPhones(){
         ${brands.map(b=>`<button type="button" class="buyback-v1-card" onclick="selectBuybackBrand('${esc(b.id)}')">
           <div class="buyback-v1-image">${imageHtml(b.image,'🏷️')}</div>
           <div class="buyback-v1-name">${esc(b.name)}</div>
-          <div class="buyback-v1-meta">${(b.types||[]).length} type${(b.types||[]).length===1?'':'s'} apparaat</div>
+          <div class="buyback-v1-meta">${(b.types||[]).reduce((n,t)=>n+(t.models||[]).length,0)} telefoon${((b.types||[]).reduce((n,t)=>n+(t.models||[]).length,0))===1?'':'s'}</div>
         </button>`).join('')}
         <button type="button" class="buyback-v1-card buyback-v1-add" onclick="addBuybackBrand()"><div><strong>+ Merk toevoegen</strong><span>Bijvoorbeeld Apple, Samsung...</span></div></button>
       </div>
@@ -2334,65 +2338,52 @@ function renderBuybackPhones(){
   const b=getBuybackBrand();
   if(!b){buybackAdminLevel='brands';return renderBuybackPhones();}
 
-  // LEVEL 2 — TYPES INSIDE BRAND
-  if(buybackAdminLevel==='types'){
-    const types=b.types||[];
+  // V2 — DIRECT FROM BRAND TO DEVICES/MODELS
+  // The existing internal type structure is preserved for compatibility and type-specific questions,
+  // but it is no longer shown as a separate navigation step.
+  if(buybackAdminLevel==='models') {
+    const modelEntries=[];
+    (b.types||[]).forEach(t=>(t.models||[]).forEach(m=>modelEntries.push({type:t,model:m,phone:getBuybackPhoneById(m.buybackId)})));
     box.innerHTML=`<div class="buyback-v1-shell">
       <div class="buyback-v1-head">
         <div class="buyback-v1-head-left">
           <button class="buyback-v1-back" type="button" onclick="buybackGoBrands()">← Merken</button>
-          <div class="buyback-v1-title"><h3>${esc(b.name)}</h3><p>Kies het type apparaat.</p></div>
+          <div class="buyback-v1-title"><h3>${esc(b.name)}</h3><p>Kies direct het toestel.</p></div>
         </div>
-        <button class="btn btn-green" type="button" onclick="addBuybackType()">+ Type apparaat</button>
+        <button class="btn btn-green" type="button" onclick="addBuybackModel()">+ Telefoon toevoegen</button>
       </div>
       <div class="buyback-v1-grid">
-        ${types.map(t=>`<button type="button" class="buyback-v1-card" onclick="selectBuybackType('${esc(t.id)}')">
-          <div class="buyback-v1-image"><div class="buyback-v1-placeholder">${String(t.name||'').toLowerCase().includes('watch')?'⌚':String(t.name||'').toLowerCase().includes('tablet')||String(t.name||'').toLowerCase().includes('ipad')?'📱':'📱'}</div></div>
-          <div class="buyback-v1-name">${esc(t.name)}</div>
-          <div class="buyback-v1-meta">${(t.models||[]).length} model${(t.models||[]).length===1?'':'len'}</div>
-        </button>`).join('')}
-        <button type="button" class="buyback-v1-card buyback-v1-add" onclick="addBuybackType()"><div><strong>+ Type apparaat</strong><span>Bijvoorbeeld iPhone, iPad, Watch...</span></div></button>
-      </div>
-    </div>`;
-    return;
-  }
-
-  const t=getBuybackType();
-  if(!t){buybackAdminLevel='types';return renderBuybackPhones();}
-
-  // LEVEL 3 — MODELS INSIDE TYPE
-  if(buybackAdminLevel==='models'){
-    const models=t.models||[];
-    box.innerHTML=`<div class="buyback-v1-shell">
-      <div class="buyback-v1-head">
-        <div class="buyback-v1-head-left">
-          <button class="buyback-v1-back" type="button" onclick="buybackGoTypes()">← ${esc(b.name)}</button>
-          <div class="buyback-v1-title"><h3>${esc(t.name)}</h3><p>Kies het model.</p></div>
-        </div>
-        <button class="btn btn-green" type="button" onclick="addBuybackModel()">+ Model toevoegen</button>
-      </div>
-      <div class="buyback-v1-grid">
-        ${models.map(m=>{const p=getBuybackPhoneById(m.buybackId);return `<button type="button" class="buyback-v1-card" onclick="selectBuybackModel('${esc(m.id)}')">
+        ${modelEntries.map(({type,model:pModel,phone:p})=>`<button type="button" class="buyback-v1-card" onclick="selectBuybackModel('${esc(pModel.id)}','${esc(type.id)}')">
           <div class="buyback-v1-image">${imageHtml(p&&p.image,'📱')}</div>
-          <div class="buyback-v1-name">${esc((p&&p.name)||m.name)}</div>
-          <div class="buyback-v1-brand-badge">${b.image?`<img class="buyback-v1-brand-mini" src="${esc(b.image)}" alt="">`:''}${p&&p.active===false?'Verborgen':'Zichtbaar'}</div>
+          <div class="buyback-v1-name">${esc((p&&p.name)||pModel.name)}</div>
+          <div class="buyback-v1-brand-badge">${esc(type.name||'Telefoon')} · ${p&&p.active===false?'Verborgen':'Zichtbaar'}</div>
           <div class="buyback-v1-price">€ ${Number(p&&p.price||0).toFixed(2)}</div>
-        </button>`}).join('')}
-        <button type="button" class="buyback-v1-card buyback-v1-add" onclick="addBuybackModel()"><div><strong>+ Model toevoegen</strong><span>Voeg een nieuw toestel toe</span></div></button>
+        </button>`).join('')}
+        <button type="button" class="buyback-v1-card buyback-v1-add" onclick="addBuybackModel()"><div><strong>+ Telefoon toevoegen</strong><span>Voeg een nieuw toestel toe</span></div></button>
       </div>
+      ${modelEntries.length?'':'<div class="buyback-tree-empty" style="margin-top:12px">Nog geen telefoons voor dit merk.</div>'}
     </div>`;
     return;
   }
 
-  // LEVEL 4 — existing detailed model editor, untouched.
+  // LEVEL 3 — existing detailed model editor.
+  const t=getBuybackType();
+  if(!t){
+    // A model can be selected directly from the brand list; if the internal type was missing,
+    // fall back safely to the first available type without deleting or changing data.
+    const firstType=(b.types||[])[0];
+    if(firstType){ selectedBuybackTypeId=firstType.id; return renderBuybackPhones(); }
+    buybackAdminLevel='models';
+    return renderBuybackPhones();
+  }
+
   renderBuybackModelEditor();
   box.innerHTML=`<div class="buyback-v1-head">
     <div class="buyback-v1-head-left">
-      <button class="buyback-v1-back" type="button" onclick="buybackGoModels()">← ${esc(t.name)}</button>
-      <div class="buyback-v1-title"><h3>${esc(b.name)} → ${esc(t.name)} → ${esc(getBuybackModel()?.name||'Model')}</h3><p>Bewerk alleen dit model.</p></div>
+      <button class="buyback-v1-back" type="button" onclick="buybackGoModels()">← ${esc(b.name)}</button>
+      <div class="buyback-v1-title"><h3>${esc(b.name)} → ${esc(getBuybackModel()?.name||'Telefoon')}</h3><p>Bewerk alleen dit toestel.</p></div>
     </div>
   </div>`;
-  // Keep the existing editor directly underneath the navigation header.
   const existingEditor=document.getElementById('buybackModelEditor');
   if(existingEditor) existingEditor.classList.add('buyback-v1-editor-wrap');
 }
@@ -2416,7 +2407,7 @@ function renderBuybackModelEditor(){
   editor.innerHTML=`
     <div class="buyback-model-panel">
       <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
-        <div><h3>📱 ${esc(phone.name||m.name)}</h3><div class="small">${esc(b.name)} → ${esc(t.name)} → ${esc(m.name)}</div></div>
+        <div><h3>📱 ${esc(phone.name||m.name)}</h3><div class="small">${esc(b.name)} → ${esc(m.name)}</div></div>
         <div class="actions">
           <button class="btn btn-light" type="button" onclick="toggleBuybackTypeSettings()">⚙️ Vragen voor type</button>
           <button class="btn btn-light" type="button" onclick="toggleBuybackPhoneOptions()">📱 Modelopties</button>
@@ -2426,7 +2417,6 @@ function renderBuybackModelEditor(){
       <div class="grid" style="margin-top:15px">
         <div class="field"><label>Merk</label><input value="${esc(b.name)}" oninput="renameBuybackBrand(this.value)"></div>
         <div class="field"><label>📷 Afbeelding van merk</label><div class="buyback-photo-line-v5">${b.image?`<img src="${esc(b.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen merkafbeelding</div>'}<input type="file" accept="image/*" onchange="handleBuybackBrandImage(event)"></div></div>
-        <div class="field"><label>Type apparaat</label><input value="${esc(t.name)}" oninput="renameBuybackType(this.value)"></div>
         <div class="field"><label>Model</label><input value="${esc(phone.name||m.name)}" oninput="renameBuybackModel(this.value)"></div>
         <div class="field"><label>Basis inkoopprijs (€)</label><input type="number" step="1" value="${Number(phone.price||0)}" oninput="phone.price=Number(this.value||0);markChanged()"></div>
         <div class="field"><label>Website</label><label class="buyback-check-v5"><input type="checkbox" ${phone.active!==false?'checked':''} onchange="phone.active=this.checked;markChanged();renderBuybackPhones()"> Tonen op Uw toestel verkopen</label></div>
@@ -2463,17 +2453,18 @@ function selectBuybackBrand(id){
 function selectBuybackType(id){
   selectedBuybackTypeId=id;selectedBuybackModelId="";buybackOptionsOpen=false;buybackAdminLevel='models';renderBuybackPhones();
 }
-function selectBuybackModel(id){
-  selectedBuybackModelId=id;buybackOptionsOpen=false;buybackAdminLevel='editor';renderBuybackPhones();
+function selectBuybackModel(id,typeId){
+  selectedBuybackModelId=id;
+  selectedBuybackTypeId=typeId||selectedBuybackTypeId||((getBuybackBrand()?.types||[])[0]?.id||'');
+  buybackOptionsOpen=false;
+  buybackAdminLevel='editor';
+  renderBuybackPhones();
 }
 function buybackGoBrands(){
   selectedBuybackTypeId="";selectedBuybackModelId="";buybackOptionsOpen=false;buybackAdminLevel='brands';renderBuybackPhones();
 }
-function buybackGoTypes(){
-  selectedBuybackModelId="";buybackOptionsOpen=false;buybackAdminLevel='types';renderBuybackPhones();
-}
 function buybackGoModels(){
-  buybackOptionsOpen=false;buybackAdminLevel='models';renderBuybackPhones();
+  selectedBuybackModelId="";buybackOptionsOpen=false;buybackAdminLevel='models';renderBuybackPhones();
 }
 
 function addBuybackBrand(){
@@ -2481,26 +2472,23 @@ function addBuybackBrand(){
   if(!name||!name.trim())return;
   const brand={id:newBuybackId("brand"),name:name.trim(),image:"",types:[]};
   data.buybackCatalog.push(brand);
-  selectedBuybackBrandId=brand.id;selectedBuybackTypeId="";selectedBuybackModelId="";buybackAdminLevel='types';
-  markChanged();renderBuybackPhones();
-}
-
-function addBuybackType(){
-  const b=getBuybackBrand();
-  if(!b){alert("Kies eerst een merk.");return;}
-  const name=prompt("Type apparaat (bijvoorbeeld iPhone, Tablet of Smartwatch):","Telefoon");
-  if(!name||!name.trim())return;
-  const type={id:newBuybackId("type"),name:name.trim(),questions:defaultBuybackQuestionsForType(name.trim()),models:[]};
-  b.types.push(type);
-  selectedBuybackTypeId=type.id;selectedBuybackModelId="";buybackAdminLevel='models';
+  selectedBuybackBrandId=brand.id;selectedBuybackTypeId="";selectedBuybackModelId="";buybackAdminLevel='models';
   markChanged();renderBuybackPhones();
 }
 
 function addBuybackModel(){
-  const b=getBuybackBrand(), t=getBuybackType();
+  const b=getBuybackBrand();
   if(!b){alert("Kies eerst een merk.");return;}
-  if(!t){alert("Kies eerst een type apparaat.");return;}
-  const name=prompt("Modelnaam (bijvoorbeeld iPhone 17):","Nieuw model");
+  // Keep the internal type structure for compatibility, but do not expose it as a navigation step.
+  let t=(b.types||[]).find(x=>String(x.name||'').toLowerCase()==='telefoon');
+  if(!t){
+    t=(b.types||[])[0];
+    if(!t){
+      t={id:newBuybackId("type"),name:"Telefoon",questions:defaultBuybackQuestionsForType("Telefoon"),models:[]};
+      b.types.push(t);
+    }
+  }
+  const name=prompt("Telefoon / modelnaam (bijvoorbeeld iPhone 17):","Nieuw model");
   if(!name||!name.trim())return;
 
   const phone={
@@ -2513,8 +2501,11 @@ function addBuybackModel(){
   };
   data.buybackPhones.push(phone);
   const model={id:newBuybackId("model"),name:name.trim(),buybackId:phone.id};
+  t.models=t.models||[];
   t.models.push(model);
-  selectedBuybackModelId=model.id;buybackAdminLevel='editor';
+  selectedBuybackTypeId=t.id;
+  selectedBuybackModelId=model.id;
+  buybackAdminLevel='editor';
   markChanged();renderBuybackPhones();
 }
 
