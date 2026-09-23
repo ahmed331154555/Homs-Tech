@@ -157,6 +157,7 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
 @media(max-width:620px){.sell-intro h1{font-size:28px}.family-grid,.device-grid{grid-template-columns:repeat(2,1fr)}.family-card{min-height:135px}.sell-search-result{padding:9px 11px}.sell-search-result .sr-price{font-size:9px;padding:5px 7px}}
 </style>
 <!-- HOMS TECH FORZA STYLE V15: brand images + model images only -->
+<!-- HOMS TECH Protocol 2: hide all option prices except condition prices -->
 </head>
 <body>
 
@@ -349,11 +350,11 @@ function renderProtocol2(){
   const fnVal=buybackAnswers.__p2_functions||'';
   const batVal=buybackAnswers.__p2_battery||'';
   box.innerHTML=`<div class="protocol2-box">
-    <div class="protocol2-section"><h3>Opslagcapaciteit</h3><div class="dynamic-option-grid">${storage.map(o=>`<button type="button" class="dynamic-option ${storageVal===o.label?'active':''}" onclick="setProtocol2Value('__p2_storage','${esc(o.label)}')">${esc(o.label)}${Number(o.priceDelta||0)?`<span class="delta">${Number(o.priceDelta)>0?'+':''}${money(o.priceDelta)}</span>`:''}</button>`).join('')}</div></div>
+    <div class="protocol2-section"><h3>Opslagcapaciteit</h3><div class="dynamic-option-grid">${storage.map(o=>`<button type="button" class="dynamic-option ${storageVal===o.label?'active':''}" onclick="setProtocol2Value('__p2_storage','${esc(o.label)}')">${esc(o.label)}</button>`).join('')}</div></div>
     <div class="protocol2-section"><h3>Wat is de staat van uw toestel?</h3><div class="protocol2-condition-grid">${conditions.map(o=>`<button type="button" class="protocol2-condition ${conditionVal===o.label?'active':''}" onclick="setProtocol2Value('__p2_condition','${esc(o.label)}')"><strong>${esc(o.label)}</strong><small>${money(Number(selectedModel.base||0)+Number(o.priceDelta||0))}</small></button>`).join('')}</div></div>
     ${broken?'':`<div class="protocol2-section"><h3>Controle van de staat</h3><p class="protocol2-muted">Dit toestel voldoet in deze conditie aan alle onderstaande punten:</p><ul class="protocol2-checklist">${checklist.map(x=>`<li>${esc(x.text)}</li>`).join('')}</ul></div>`}
-    ${(!broken&&fn.active!==false)?`<div class="protocol2-section"><h3>${esc(fn.label)}</h3><div class="protocol2-yn"><button type="button" class="protocol2-choice ${fnVal==='Ja'?'active':''}" onclick="setProtocol2Value('__p2_functions','Ja')">Ja<span class="delta">${Number(fn.yesDelta||0)?(Number(fn.yesDelta)>0?'+':'')+money(fn.yesDelta):''}</span></button><button type="button" class="protocol2-choice ${fnVal==='Nee'?'active':''}" onclick="setProtocol2Value('__p2_functions','Nee')">Nee<span class="delta">${Number(fn.noDelta||0)?(Number(fn.noDelta)>0?'+':'')+money(fn.noDelta):''}</span></button></div></div>`:''}
-    ${(!broken&&bat.active!==false)?`<div class="protocol2-section"><h3>${esc(bat.label)}</h3><div class="protocol2-yn"><button type="button" class="protocol2-choice ${batVal==='Ja'?'active':''}" onclick="setProtocol2Value('__p2_battery','Ja')">Ja<span class="delta">${Number(bat.yesDelta||0)?(Number(bat.yesDelta)>0?'+':'')+money(bat.yesDelta):''}</span></button><button type="button" class="protocol2-choice ${batVal==='Nee'?'active':''}" onclick="setProtocol2Value('__p2_battery','Nee')">Nee<span class="delta">${Number(bat.noDelta||0)?(Number(bat.noDelta)>0?'+':'')+money(bat.noDelta):''}</span></button></div></div>`:''}
+    ${(!broken&&fn.active!==false)?`<div class="protocol2-section"><h3>${esc(fn.label)}</h3><div class="protocol2-yn"><button type="button" class="protocol2-choice ${fnVal==='Ja'?'active':''}" onclick="setProtocol2Value('__p2_functions','Ja')">Ja</button><button type="button" class="protocol2-choice ${fnVal==='Nee'?'active':''}" onclick="setProtocol2Value('__p2_functions','Nee')">Nee</button></div></div>`:''}
+    ${(!broken&&bat.active!==false)?`<div class="protocol2-section"><h3>${esc(bat.label)}</h3><div class="protocol2-yn"><button type="button" class="protocol2-choice ${batVal==='Ja'?'active':''}" onclick="setProtocol2Value('__p2_battery','Ja')">Ja</button><button type="button" class="protocol2-choice ${batVal==='Nee'?'active':''}" onclick="setProtocol2Value('__p2_battery','Nee')">Nee</button></div></div>`:''}
   </div>`;
   $('storage').style.display='none';$('conditionGrid').style.display='none';
   const labels=document.querySelectorAll('#step2 .product-info > .label');labels.forEach(x=>x.style.display='none');
@@ -488,7 +489,7 @@ function renderSearchResults(q, pool){
   box.innerHTML=matches.map(d=>`<button type="button" class="sell-search-result" data-i="${devices.indexOf(d)}">
     <span class="sr-img">${imageFor(d)}</span>
     <span class="sr-main"><span class="sr-name">${esc(d.name||'Toestel')}</span><span class="sr-meta">${esc([d.brand,d.deviceType].filter(Boolean).join(' · '))}</span></span>
-    <span class="sr-price">Ontvangst tot wel ${money(Number(d.price||0))}</span>
+    
   </button>`).join('');
   box.querySelectorAll('.sell-search-result').forEach(el=>el.onclick=()=>chooseDevice(devices[+el.dataset.i]));
 }
