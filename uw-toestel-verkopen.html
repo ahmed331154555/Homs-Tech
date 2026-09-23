@@ -312,6 +312,19 @@ function buildCustomerQuestions(phone,type){
     }
   });
 
+  const custom=Array.isArray(phone?.customBuybackQuestions)?phone.customBuybackQuestions:[];
+  custom.forEach((q,i)=>{
+    const opts=Array.isArray(q.options)?q.options.filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>({...o})):[];
+    if(!String(q.label||'').trim() || !opts.length)return;
+    questions.push({
+      id:q.id||('custom_'+i),
+      label:String(q.label),
+      type:'options',
+      required:q.required!==false,
+      options:opts
+    });
+  });
+
   return questions;
 }
 
