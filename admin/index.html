@@ -1337,7 +1337,7 @@ textarea{
   <div class="save-bar">
     <div>
       <div id="saveStatus" class="status">Wijzigingen nog niet opgeslagen</div>
-      <div class="small">Klik op Opslaan nadat je iets hebt gewijzigd.</div>
+      <div class="small">✓ Wijzigingen worden automatisch opgeslagen.</div>
     </div>
 
     <button id="saveBtn" data-permission="site.save" class="btn btn-green" onclick="save()" style="font-size:16px;padding:13px 25px">
@@ -1352,6 +1352,8 @@ textarea{
 
 let data = {};
 let loading = false;
+let autoSaveTimer = null;
+let autoSaveAgain = false;
 let currentPage = "general";
 let currentUser = {username:"",role:"admin",permissions:[]};
 let selectedBuybackBrandId = "";
@@ -3170,8 +3172,9 @@ function deleteWhy(i){
 
 /* ---------------- SAVE ---------------- */
 
-async function save(){
+async function save(isAuto=false){
   if(!canEditSite()){setStatus("✕ Je hebt geen toestemming om wijzigingen op te slaan.","error");return;}
+  if(isAuto) autoSaveAgain=false;
   if(loading) return;
   loading=true;
   setStatus("Opslaan...","info");
@@ -3214,6 +3217,14 @@ async function save(){
     setStatus("✕ Opslaan mislukt: "+e.message,"error");
   }finally{
     loading=false;
+
+    // Als er tijdens het opslaan opnieuw iets gewijzigd werd,
+    // voer nog één automatische opslag uit.
+    if(autoSaveAgain){
+      autoSaveAgain=false;
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer=setTimeout(()=>save(true),300);
+    }
   }
 }
 
@@ -3510,9 +3521,22 @@ function renderAll(){
 function markChanged(){
 
   setStatus(
-    "● Er zijn niet-opgeslagen wijzigingen",
+    "● Wijziging gedetecteerd — automatisch opslaan...",
     "info"
   );
+
+  // Automatisch opslaan na een korte pauze, zodat typen in velden
+  // niet voor iedere letter een aparte request naar de server stuurt.
+  clearTimeout(autoSaveTimer);
+
+  if(loading){
+    autoSaveAgain = true;
+    return;
+  }
+
+  autoSaveTimer = setTimeout(()=>{
+    save(true);
+  },700);
 }
 
 function setStatus(text,type){
