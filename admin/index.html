@@ -680,6 +680,8 @@ textarea{
 .webshop-item-name{font-weight:800}
 .webshop-item-meta{font-size:12px;color:#64748b;margin-top:3px}
 .webshop-order-address{margin-top:12px;padding:12px;background:#f8fafc;border-radius:10px}
+
+.bb-protocol2-settings{margin-top:16px;padding-top:8px}.bb-protocol2-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.bb-proto-card{margin-top:12px}.bb-proto-row{display:grid;grid-template-columns:minmax(180px,1fr) 120px 110px 70px;gap:8px;align-items:center;margin-bottom:9px}.bb-proto-row.bb-proto-check{grid-template-columns:minmax(0,1fr) 90px 70px}.bb-proto-row label{display:flex;gap:6px;align-items:center;font-weight:700}.bb-proto-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:700px){.bb-proto-row,.bb-proto-row.bb-proto-check,.bb-proto-two{grid-template-columns:1fr}.bb-proto-row button{justify-self:start}}
 </style>
 <style>
 .permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -854,21 +856,6 @@ textarea{
 #page-buyback .buyback-option-row{display:grid!important;grid-template-columns:minmax(0,1fr) 120px 90px!important;gap:10px!important;align-items:center!important;margin-bottom:9px!important;width:100%!important;box-sizing:border-box!important}
 #page-buyback .buyback-option-card .card-title{font-size:16px!important;font-weight:800!important;margin-bottom:6px!important}
 @media(max-width:700px){#page-buyback .buyback-option-row{grid-template-columns:1fr!important}#page-buyback .buyback-option-row label{margin-top:0!important}}
-
-/* Protocol 2 editor */
-#page-buyback .p2-panel{margin-top:16px;padding:18px;border:1px solid #e2e8f0;border-radius:14px;background:#fff}
-#page-buyback .p2-section{margin-top:18px;padding-top:15px;border-top:1px solid #e2e8f0}
-#page-buyback .p2-section:first-child{margin-top:0;padding-top:0;border-top:0}
-#page-buyback .p2-section h4{margin:0 0 5px;font-size:15px;color:#0f172a}
-#page-buyback .p2-help{font-size:11px;color:#64748b;margin:0 0 10px}
-#page-buyback .p2-row{display:grid;grid-template-columns:minmax(0,1fr) 110px 78px 34px;gap:8px;align-items:center;margin:8px 0}
-#page-buyback .p2-row input[type=text],#page-buyback .p2-row input[type=number]{width:100%;box-sizing:border-box}
-#page-buyback .p2-qrow{display:grid;grid-template-columns:minmax(0,1fr) 105px 105px 78px 34px;gap:8px;align-items:center;margin:8px 0}
-#page-buyback .p2-mini{font-size:10px;color:#64748b;font-weight:700}
-#page-buyback .p2-add{margin-top:7px}
-#page-buyback .p2-del{border:1px solid #fecaca;background:#fff;color:#dc2626;border-radius:8px;cursor:pointer;font-weight:900;height:34px}
-#page-buyback .p2-badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:#eff6ff;color:#2563eb;font-size:11px;font-weight:900}
-@media(max-width:800px){#page-buyback .p2-row,#page-buyback .p2-qrow{grid-template-columns:1fr 100px 80px 34px}#page-buyback .p2-qrow{grid-template-columns:1fr 100px 100px 80px 34px}}
 #page-buyback .buyback-phone-main{display:flex!important;flex-direction:column!important;gap:14px!important;width:100%!important}
 #page-buyback .buyback-phone-fields{display:flex!important;flex-direction:column!important;gap:14px!important;width:100%!important}
 #page-buyback .buyback-phone-fields .field{width:100%!important}
@@ -2099,12 +2086,56 @@ function deletePhone(i){
 
 
 /* ---------------- BUYBACK / UW TOESTEL VERKOPEN ---------------- */
+function defaultBuybackProtocol2(){
+  return {
+    storageOptions:[
+      {label:'128 GB',priceDelta:0,active:true},
+      {label:'256 GB',priceDelta:0,active:true},
+      {label:'512 GB',priceDelta:0,active:true},
+      {label:'1 TB',priceDelta:0,active:false}
+    ],
+    conditionOptions:[
+      {label:'Bijna als nieuw',priceDelta:0,active:true},
+      {label:'Zichtbaar gebruikt',priceDelta:-73,active:true},
+      {label:'Gebruikt',priceDelta:-276,active:true},
+      {label:'Kapot',priceDelta:-458,active:true}
+    ],
+    checklist:[
+      {text:'Het toestel bevat op enkele gebruikssporen na geen diepe krassen of beschadigingen.',active:true},
+      {text:'Er zijn geen deuken, scheuren of barsten.',active:true},
+      {text:'De behuizing is schoon en vertoont geen ernstige verkleuring.',active:true},
+      {text:'Het toestel is niet krom of gebogen.',active:true},
+      {text:'Er is geen iCloud-account meer op het toestel en Zoek mijn iPhone is uitgeschakeld.',active:true},
+      {text:'Let op: gestolen of verloren apparaten en apparaten met MDM-beheer komen niet in aanmerking voor inruil.',active:true}
+    ],
+    functions:{
+      label:'Werken alle functies van het toestel goed, zoals Face-/Touch ID ontgrendeling, opladen, verbindingen (wifi), geluid (luidspreker en microfoon), camera’s, knoppen, zaklamp en trillen?',
+      yesDelta:0,noDelta:-100,active:true
+    },
+    battery:{
+      label:'Is de batterijcapaciteit minimaal 85%?',
+      yesDelta:0,noDelta:-25,active:true
+    }
+  };
+}
+function normalizeBuybackProtocol2(x){
+  const d=defaultBuybackProtocol2(), p=(x&&x.protocol2)||{};
+  const normOpts=(incoming,fallback)=>Array.isArray(incoming)&&incoming.length?incoming.map(o=>({label:String(o.label||''),priceDelta:Number(o.priceDelta||0),active:o.active!==false})):fallback.map(o=>({...o}));
+  return {
+    storageOptions:normOpts(p.storageOptions,d.storageOptions),
+    conditionOptions:normOpts(p.conditionOptions,d.conditionOptions),
+    checklist:Array.isArray(p.checklist)&&p.checklist.length?p.checklist.map(o=>({text:String(o.text||''),active:o.active!==false})):d.checklist.map(o=>({...o})),
+    functions:{...d.functions,...(p.functions||{}),yesDelta:Number((p.functions||{}).yesDelta??d.functions.yesDelta),noDelta:Number((p.functions||{}).noDelta??d.functions.noDelta),active:(p.functions||{}).active!==false},
+    battery:{...d.battery,...(p.battery||{}),yesDelta:Number((p.battery||{}).yesDelta??d.battery.yesDelta),noDelta:Number((p.battery||{}).noDelta??d.battery.noDelta),active:(p.battery||{}).active!==false}
+  };
+}
 function normalizeBuybackPhones(){
   if(!Array.isArray(data.buybackPhones)) data.buybackPhones=[];
   data.buybackPhones=data.buybackPhones.map((x,i)=>({
     id:x.id || ('buyback-'+Date.now()+'-'+i),
     name:x.name||'', brand:x.brand||'', image:x.image||'', price:Number(x.price||0), active:x.active!==false,
-    protocol:Number(x.protocol)===2?2:1, protocol2:x.protocol2&&typeof x.protocol2==='object'?x.protocol2:null,
+    protocol:x.protocol==='protocol2'?'protocol2':'protocol1',
+    protocol2:normalizeBuybackProtocol2(x),
     storageOptions:Array.isArray(x.storageOptions)?x.storageOptions:[
       {label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}
     ],
@@ -2122,7 +2153,6 @@ function normalizeBuybackPhones(){
       {label:'Scherm goed',priceDelta:0,active:true},{label:'Kleine beschadigingen',priceDelta:-50,active:true},{label:'Scherm gebroken',priceDelta:-150,active:true}
     ]
   }));
-  data.buybackPhones.forEach(p=>{ if(!p.protocol) p.protocol=1; if(Number(p.protocol)===2) normalizeBuybackProtocol2(p); });
 }
 
 function newBuybackId(prefix){
@@ -2484,107 +2514,69 @@ function renderBuybackPhones(){
   if(existingEditor) existingEditor.classList.add('buyback-v1-editor-wrap');
 }
 
-function defaultBuybackProtocol2(){
-  return {
-    storageOptions:[
-      {label:'128 GB',priceDelta:0,active:true},
-      {label:'256 GB',priceDelta:30,active:true},
-      {label:'512 GB',priceDelta:80,active:true}
-    ],
-    conditionOptions:[
-      {label:'Zo goed als nieuw',priceDelta:0,active:true},
-      {label:'Licht gebruikt',priceDelta:-40,active:true},
-      {label:'Zichtbaar gebruikt',priceDelta:-90,active:true},
-      {label:'Kapot',priceDelta:-200,active:true}
-    ],
-    statements:[
-      {label:'Het apparaat bevat enkele lichte gebruikssporen, zoals kleine krasjes.',priceDelta:0,active:true},
-      {label:'Er zijn geen diepe deuken, scheuren of ernstige beschadigingen.',priceDelta:0,active:true},
-      {label:'Het scherm is intact en vertoont geen barsten of kleurafwijkingen.',priceDelta:0,active:true},
-      {label:'Het apparaat is vrij van waterschade en heeft geen andere vloeistofschade.',priceDelta:0,active:true},
-      {label:'Er staat geen iCloud- of ander account meer op het apparaat en de zoekfunctie is uitgeschakeld.',priceDelta:0,active:true},
-      {label:'LET OP: Apparaten die als verloren of gestolen zijn opgegeven, vergrendeld zijn met een account of gekoppeld zijn aan MDM, komen niet in aanmerking voor inruil.',priceDelta:0,active:true}
-    ],
-    functions:{
-      active:true,
-      label:'Werken alle functies van het apparaat goed, zoals ontgrendeling, opstarten, opladen, verbindingen (wifi/bluetooth), geluid (luidspreker en microfoon), camera\'s, knoppen, zaklamp en trillen?',
-      yesDelta:0,
-      noDelta:-100
-    },
-    battery:{
-      active:true,
-      label:'Is de batterijcapaciteit minimaal 85%?',
-      yesDelta:0,
-      noDelta:-25
-    }
-  };
-}
-function normalizeBuybackProtocol2(phone){
-  if(!phone) return;
-  const d=defaultBuybackProtocol2();
-  if(!phone.protocol) phone.protocol=1;
-  const p=phone.protocol2&&typeof phone.protocol2==='object'?phone.protocol2:{};
-  ['storageOptions','conditionOptions','statements'].forEach(k=>{
-    const arr=Array.isArray(p[k])?p[k]:d[k];
-    p[k]=arr.map((x,i)=>({label:String(x?.label??d[k][i]?.label??''),priceDelta:Number(x?.priceDelta||0),active:x?.active!==false}));
-  });
-  p.functions={...d.functions,...(p.functions||{})};
-  p.functions.active=p.functions.active!==false;
-  p.functions.yesDelta=Number(p.functions.yesDelta||0);
-  p.functions.noDelta=Number(p.functions.noDelta||0);
-  p.battery={...d.battery,...(p.battery||{})};
-  p.battery.active=p.battery.active!==false;
-  p.battery.yesDelta=Number(p.battery.yesDelta||0);
-  p.battery.noDelta=Number(p.battery.noDelta||0);
-  phone.protocol2=p;
-}
 function updateBuybackProtocol(value){
   const phone=getSelectedBuybackPhone();if(!phone)return;
-  phone.protocol=Number(value)===2?2:1;
-  if(phone.protocol===2)normalizeBuybackProtocol2(phone);
+  phone.protocol=value==='protocol2'?'protocol2':'protocol1';
+  if(phone.protocol==='protocol2') phone.protocol2=normalizeBuybackProtocol2(phone);
   markChanged();renderBuybackModelEditor();
 }
-function updateBuybackP2Array(key,index,field,value){
-  const phone=getSelectedBuybackPhone();if(!phone)return;normalizeBuybackProtocol2(phone);
+function updateProtocol2Field(path,value){
+  const phone=getSelectedBuybackPhone();if(!phone)return;
+  phone.protocol2=normalizeBuybackProtocol2(phone);
+  const parts=String(path).split('.'); let obj=phone.protocol2;
+  for(let i=0;i<parts.length-1;i++) obj=obj[parts[i]];
+  const k=parts[parts.length-1];
+  obj[k]=['yesDelta','noDelta'].includes(k)?Number(value||0):value;
+  markChanged();
+}
+function updateProtocol2Option(key,index,field,value){
+  const phone=getSelectedBuybackPhone();if(!phone)return;
+  phone.protocol2=normalizeBuybackProtocol2(phone);
   const arr=phone.protocol2[key];if(!Array.isArray(arr)||!arr[index])return;
-  arr[index][field]=field==='priceDelta'?Number(value||0):field==='active'?!!value:value;
+  arr[index][field]=field==='priceDelta'?Number(value||0):field==='active'?!!value:String(value);
   markChanged();
 }
-function addBuybackP2Row(key){
-  const phone=getSelectedBuybackPhone();if(!phone)return;normalizeBuybackProtocol2(phone);
-  phone.protocol2[key].push({label:'Nieuwe optie',priceDelta:0,active:true});
+function updateProtocol2Checklist(index,field,value){
+  const phone=getSelectedBuybackPhone();if(!phone)return;
+  phone.protocol2=normalizeBuybackProtocol2(phone);
+  const row=phone.protocol2.checklist[index];if(!row)return;
+  row[field]=field==='active'?!!value:String(value);
+  markChanged();
+}
+function addProtocol2Option(key){
+  const phone=getSelectedBuybackPhone();if(!phone)return;
+  phone.protocol2=normalizeBuybackProtocol2(phone);
+  phone.protocol2[key].push({label:'Nieuwe keuze',priceDelta:0,active:true});
   markChanged();renderBuybackModelEditor();
 }
-function deleteBuybackP2Row(key,index){
-  const phone=getSelectedBuybackPhone();if(!phone)return;normalizeBuybackProtocol2(phone);
-  if(!Array.isArray(phone.protocol2[key]))return;
-  phone.protocol2[key].splice(index,1);markChanged();renderBuybackModelEditor();
+function deleteProtocol2Option(key,index){
+  const phone=getSelectedBuybackPhone();if(!phone)return;
+  phone.protocol2=normalizeBuybackProtocol2(phone);
+  phone.protocol2[key].splice(index,1);
+  markChanged();renderBuybackModelEditor();
 }
-function updateBuybackP2Question(key,field,value){
-  const phone=getSelectedBuybackPhone();if(!phone)return;normalizeBuybackProtocol2(phone);
-  const q=phone.protocol2[key];if(!q)return;
-  q[field]=field==='active'?!!value:field==='yesDelta'||field==='noDelta'?Number(value||0):value;
-  markChanged();
+function addProtocol2Checklist(){
+  const phone=getSelectedBuybackPhone();if(!phone)return;
+  phone.protocol2=normalizeBuybackProtocol2(phone);
+  phone.protocol2.checklist.push({text:'Nieuwe controlezin',active:true});
+  markChanged();renderBuybackModelEditor();
 }
-function renderBuybackProtocol2Editor(phone){
-  normalizeBuybackProtocol2(phone);
-  const p=phone.protocol2;
-  const row=(key,i,o)=>`<div class="p2-row">
-    <input type="text" value="${esc(o.label||'')}" oninput="updateBuybackP2Array('${key}',${i},'label',this.value)">
-    <input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateBuybackP2Array('${key}',${i},'priceDelta',this.value)" title="Prijsaanpassing">
-    <label class="buyback-check-v5"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateBuybackP2Array('${key}',${i},'active',this.checked)"> Actief</label>
-    <button type="button" class="p2-del" onclick="deleteBuybackP2Row('${key}',${i})">×</button>
-  </div>`;
-  const q=(key,title)=>{const x=p[key];return `<div class="p2-section"><h4>${title}</h4><div class="p2-help">Deze vraag verschijnt alleen als <b>Actief</b> aan staat. Jij bepaalt de tekst en de prijsaanpassing.</div>
-    <div class="p2-qrow"><input type="text" value="${esc(x.label||'')}" oninput="updateBuybackP2Question('${key}','label',this.value)"><input type="number" step="1" value="${Number(x.yesDelta||0)}" oninput="updateBuybackP2Question('${key}','yesDelta',this.value)" placeholder="Ja €"><input type="number" step="1" value="${Number(x.noDelta||0)}" oninput="updateBuybackP2Question('${key}','noDelta',this.value)" placeholder="Nee €"><label class="buyback-check-v5"><input type="checkbox" ${x.active!==false?'checked':''} onchange="updateBuybackP2Question('${key}','active',this.checked)"> Actief</label><span></span></div>
-    <div class="p2-mini">Kolom 2 = prijs bij Ja · kolom 3 = prijs bij Nee</div></div>`};
-  return `<div class="p2-panel">
-    <div class="p2-badge">Protocol 2</div>
-    <div class="p2-section"><h4>Geheugen / opslag</h4><p class="p2-help">Deze keuzes staan boven de staat van het toestel.</p>${p.storageOptions.map((o,i)=>row('storageOptions',i,o)).join('')}<button type="button" class="btn btn-light p2-add" onclick="addBuybackP2Row('storageOptions')">+ Opslag toevoegen</button></div>
-    <div class="p2-section"><h4>Staat van het toestel</h4><p class="p2-help">De gekozen staat bepaalt de basisaanpassing van de waarde.</p>${p.conditionOptions.map((o,i)=>row('conditionOptions',i,o)).join('')}<button type="button" class="btn btn-light p2-add" onclick="addBuybackP2Row('conditionOptions')">+ Staat toevoegen</button></div>
-    <div class="p2-section"><h4>Voorwaarden / teksten</h4><p class="p2-help">Elke regel kun je aan/uit zetten en een prijsaanpassing geven.</p>${p.statements.map((o,i)=>row('statements',i,o)).join('')}<button type="button" class="btn btn-light p2-add" onclick="addBuybackP2Row('statements')">+ Regel toevoegen</button></div>
-    ${q('functions','Alle functies werken')}
-    ${q('battery','Batterijcapaciteit')}
+function deleteProtocol2Checklist(index){
+  const phone=getSelectedBuybackPhone();if(!phone)return;
+  phone.protocol2=normalizeBuybackProtocol2(phone);
+  phone.protocol2.checklist.splice(index,1);
+  markChanged();renderBuybackModelEditor();
+}
+function renderProtocol2Settings(phone){
+  const p=normalizeBuybackProtocol2(phone);phone.protocol2=p;
+  const optionEditor=(key,title,addText)=>`<div class="card bb-proto-card"><div class="card-title">${title}</div>${p[key].map((o,i)=>`<div class="bb-proto-row"><input value="${esc(o.label)}" oninput="updateProtocol2Option('${key}',${i},'label',this.value)"><input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateProtocol2Option('${key}',${i},'priceDelta',this.value)"><label><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol2Option('${key}',${i},'active',this.checked)"> Actief</label><button type="button" class="btn btn-light" onclick="deleteProtocol2Option('${key}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol2Option('${key}')">+ ${addText}</button></div>`;
+  return `<div class="bb-protocol2-settings">
+    <div class="bb-protocol2-title"><div><h4>⚙️ Protocol 2 instellingen</h4><div class="small">Deze waarden worden gebruikt op Uw toestel verkopen. Prijs = basisprijs + gekozen aanpassingen.</div></div></div>
+    ${optionEditor('storageOptions','Opslag / geheugen','Geheugen toevoegen')}
+    ${optionEditor('conditionOptions','Staat van het toestel','Conditie toevoegen')}
+    <div class="card bb-proto-card"><div class="card-title">Controlepunten — tekst per regel</div>${p.checklist.map((o,i)=>`<div class="bb-proto-row bb-proto-check"><input value="${esc(o.text)}" oninput="updateProtocol2Checklist(${i},'text',this.value)"><label><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol2Checklist(${i},'active',this.checked)"> Actief</label><button type="button" class="btn btn-light" onclick="deleteProtocol2Checklist(${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol2Checklist()">+ Controlepunt toevoegen</button></div>
+    <div class="card bb-proto-card"><div class="card-title">Alle functies werken?</div><div class="field"><label>Vraag</label><textarea oninput="updateProtocol2Field('functions.label',this.value)">${esc(p.functions.label)}</textarea></div><div class="bb-proto-two"><div class="field"><label>Ja: prijsaanpassing</label><input type="number" step="1" value="${Number(p.functions.yesDelta||0)}" oninput="updateProtocol2Field('functions.yesDelta',this.value)"></div><div class="field"><label>Nee: prijsaanpassing</label><input type="number" step="1" value="${Number(p.functions.noDelta||0)}" oninput="updateProtocol2Field('functions.noDelta',this.value)"></div></div><label class="buyback-check-v5"><input type="checkbox" ${p.functions.active!==false?'checked':''} onchange="updateProtocol2Field('functions.active',this.checked)"> Deze vraag tonen</label></div>
+    <div class="card bb-proto-card"><div class="card-title">Batterij 85%</div><div class="field"><label>Vraag</label><input value="${esc(p.battery.label)}" oninput="updateProtocol2Field('battery.label',this.value)"></div><div class="bb-proto-two"><div class="field"><label>Ja: prijsaanpassing</label><input type="number" step="1" value="${Number(p.battery.yesDelta||0)}" oninput="updateProtocol2Field('battery.yesDelta',this.value)"></div><div class="field"><label>Nee: prijsaanpassing</label><input type="number" step="1" value="${Number(p.battery.noDelta||0)}" oninput="updateProtocol2Field('battery.noDelta',this.value)"></div></div><label class="buyback-check-v5"><input type="checkbox" ${p.battery.active!==false?'checked':''} onchange="updateProtocol2Field('battery.active',this.checked)"> Deze vraag tonen</label></div>
   </div>`;
 }
 
@@ -2603,16 +2595,14 @@ function renderBuybackModelEditor(){
     </div>`;
     return;
   }
-  if(!phone.protocol) phone.protocol=1;
-  if(Number(phone.protocol)===2)normalizeBuybackProtocol2(phone);
 
   editor.innerHTML=`
     <div class="buyback-model-panel">
       <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
         <div><h3>📱 ${esc(phone.name||m.name)}</h3><div class="small">${esc(b.name)} → ${esc(m.name)}</div></div>
         <div class="actions">
-          <button class="btn btn-light" type="button" onclick="toggleBuybackTypeSettings()">⚙️ Vragen voor type</button>
-          <button class="btn btn-light" type="button" onclick="toggleBuybackPhoneOptions()">📱 Modelopties</button>
+          ${phone.protocol==='protocol2'?'':`<button class="btn btn-light" type="button" onclick="toggleBuybackTypeSettings()">⚙️ Vragen voor type</button>
+          <button class="btn btn-light" type="button" onclick="toggleBuybackPhoneOptions()">📱 Modelopties</button>`}
           <button class="btn btn-red" type="button" onclick="deleteBuybackModel()">Verwijderen</button>
         </div>
       </div>
@@ -2621,18 +2611,18 @@ function renderBuybackModelEditor(){
         <div class="field"><label>📷 Afbeelding van merk</label><div class="buyback-photo-line-v5">${b.image?`<img src="${esc(b.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen merkafbeelding</div>'}<input type="file" accept="image/*" onchange="handleBuybackBrandImage(event)"></div></div>
         <div class="field"><label>Model</label><input value="${esc(phone.name||m.name)}" oninput="renameBuybackModel(this.value)"></div>
         <div class="field"><label>Basis inkoopprijs (€)</label><input type="number" step="1" value="${Number(phone.price||0)}" oninput="updateSelectedBuybackPhoneField('price',this.value)"></div>
-        <div class="field"><label>Verkoopprotocol</label><select onchange="updateBuybackProtocol(this.value)"><option value="1" ${Number(phone.protocol)!==2?'selected':''}>Protocol 1 — bestaand</option><option value="2" ${Number(phone.protocol)===2?'selected':''}>Protocol 2 — nieuw</option></select></div>
+        <div class="field"><label>Protocol voor dit toestel</label><select onchange="updateBuybackProtocol(this.value)"><option value="protocol1" ${phone.protocol!=='protocol2'?'selected':''}>Protocol 1 — bestaand</option><option value="protocol2" ${phone.protocol==='protocol2'?'selected':''}>Protocol 2 — nieuwe controle</option></select></div>
         <div class="field"><label>Website</label><label class="buyback-check-v5"><input type="checkbox" ${phone.active!==false?'checked':''} onchange="updateSelectedBuybackPhoneField('active',this.checked);renderBuybackPhones()"> Tonen op Uw toestel verkopen</label></div>
         <div class="field buyback-photo-v5"><label>📷 Foto van toestel</label><div class="buyback-photo-line-v5">${phone.image?`<img src="${esc(phone.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen foto</div>'}<input type="file" accept="image/*" onchange="handleBuybackImageForModel(event)"></div></div>
       </div>
-      ${Number(phone.protocol)===2 ? renderBuybackProtocol2Editor(phone) : `${renderBuybackTypeSettings()}
-      <div id="buybackOptionsArea" class="buyback-model-options" style="display:${buybackOptionsOpen?'block':'none'}">
+      ${phone.protocol==='protocol2' ? renderProtocol2Settings(phone) : renderBuybackTypeSettings()}
+      <div id="buybackOptionsArea" class="buyback-model-options" style="display:${phone.protocol==='protocol2'?'none':(buybackOptionsOpen?'block':'none')}">
         ${buybackOptionEditorForModel(phone,'Opslag','storageOptions')}
         ${buybackOptionEditorForModel(phone,'Conditie','conditionOptions')}
         ${buybackOptionEditorForModel(phone,'Batterij','batteryOptions')}
         ${buybackOptionEditorForModel(phone,'Face ID','faceIdOptions')}
         ${buybackOptionEditorForModel(phone,'Scherm','screenOptions')}
-      </div>`}
+      </div>
     </div>`;
 }
 
@@ -2819,8 +2809,7 @@ function addBuybackModel(){
   if(!name||!name.trim())return;
 
   const phone={
-    id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,protocol:1,
-    protocol2:defaultBuybackProtocol2(),
+    id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,protocol:'protocol1',protocol2:defaultBuybackProtocol2(),
     storageOptions:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}],
     conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}],
     batteryOptions:[{label:'85% of hoger',priceDelta:0,active:true},{label:'Onder 85%',priceDelta:-25,active:true}],
@@ -2873,8 +2862,7 @@ function attachBuybackModel(){
   if(!b||!t||!m)return;
   const name=prompt("Naam van het bestaande inkooptoestel:","Nieuwe telefoon");
   if(!name||!name.trim())return;
-  const phone={id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,protocol:1,
-    protocol2:defaultBuybackProtocol2(),
+  const phone={id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,protocol:'protocol1',protocol2:defaultBuybackProtocol2(),
     storageOptions:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}],
     conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}],
     batteryOptions:[{label:'85% of hoger',priceDelta:0,active:true},{label:'Onder 85%',priceDelta:-25,active:true}],
