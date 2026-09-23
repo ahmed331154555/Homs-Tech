@@ -1033,3 +1033,215 @@ initDatabase()
 
     process.exit(1);
   });
+
+// =====================================================
+// BUYBACK / UW TOESTEL VERKOPEN ORDERS
+// =====================================================
+async function ensureBuybackOrdersTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS buyback_orders (
+      id SERIAL PRIMARY KEY,
+      order_no TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT DEFAULT '',
+      address TEXT DEFAULT '',
+      device TEXT DEFAULT '',
+      brand TEXT DEFAULT '',
+      model TEXT DEFAULT '',
+      storage TEXT DEFAULT '',
+      condition TEXT DEFAULT '',
+      face_id TEXT DEFAULT '',
+      battery TEXT DEFAULT '',
+      screen TEXT DEFAULT '',
+      offered_price NUMERIC(12,2) NOT NULL DEFAULT 0,
+      iban TEXT DEFAULT '',
+      payment_method TEXT DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'Nieuw',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  // Keep this compatible with an already-existing buyback_orders table.
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS order_no TEXT`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS model TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS iban TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT ''`);
+  await pool.query(`UPDATE buyback_orders SET order_no = 'BT-LEGACY-' || id WHERE order_no IS NULL`);
+  await pool.query(`ALTER TABLE buyback_orders ALTER COLUMN order_no SET NOT NULL`);
+}
+
+// Buyback quote calculator. The admin supplies only the four condition base prices.
+// The server applies the shared evaluation rules to the selected answers.
+const BUYBACK_RULES = Object.freeze({
+  functionsNotWorkingMultiplier: 0.70, // -30%
+  batteryUnder85Multiplier: 0.90        // -10%
+});
+
+app.post("/api/buyback/calculate", async (req, res) => {
+  try {
+    const b = req.body || {};
+    let price = Number(b.conditionBasePrice);
+    if (!Number.isFinite(price) || price < 0) {
+      return res.status(400).json({ error: "Ongeldige basis-inkoopprijs." });
+    }
+
+    const condition = String(b.condition || "").trim().toLowerCase();
+    const battery = String(b.battery || "").trim().toLowerCase();
+    const functions = String(b.functions || "").trim().toLowerCase();
+
+    // Kapot is a direct purchase price: no further questions affect it.
+    if (condition.includes("kapot")) {
+      return res.json({
+        success: true,
+        price: Number(price.toFixed(2)),
+        basePrice: Number(price.toFixed(2)),
+        adjustments: [],
+        broken: true
+      });
+    }
+
+    const adjustments = [];
+
+    if (/nee|no|niet/.test(functions)) {
+      const before = price;
+      price *= BUYBACK_RULES.functionsNotWorkingMultiplier;
+      adjustments.push({
+        rule: "functions_not_working",
+        multiplier: BUYBACK_RULES.functionsNotWorkingMultiplier,
+        before: Number(before.toFixed(2)),
+        after: Number(price.toFixed(2))
+      });
+    }
+
+    if (/onder\s*85|<\s*85/.test(battery)) {
+      const before = price;
+      price *= BUYBACK_RULES.batteryUnder85Multiplier;
+      adjustments.push({
+        rule: "battery_under_85",
+        multiplier: BUYBACK_RULES.batteryUnder85Multiplier,
+        before: Number(before.toFixed(2)),
+        after: Number(price.toFixed(2))
+      });
+    }
+
+    price = Math.max(0, Number(price.toFixed(2)));
+
+    res.json({
+      success: true,
+      price,
+      basePrice: Number(Number(b.conditionBasePrice).toFixed(2)),
+      adjustments,
+      broken: false
+    });
+  } catch (error) {
+    console.error("Buyback calculate error:", error);
+    res.status(500).json({ error: "Prijs kon niet worden berekend." });
+  }
+});
+
+app.post("/api/buyback/orders", async (req, res) => {
+  try {
+    await ensureBuybackOrdersTable();
+    const b = req.body || {};
+    const name = String(b.name || "").trim();
+    const email = String(b.email || "").trim().toLowerCase();
+
+    if (!name || !email || !String(b.device || "").trim()) {
+      return res.status(400).json({ error: "Naam, e-mailadres en toestel zijn verplicht." });
+    }
+
+    const offeredPrice = Number(b.offeredPrice || 0);
+    if (!Number.isFinite(offeredPrice) || offeredPrice < 0) {
+      return res.status(400).json({ error: "Ongeldige prijs." });
+    }
+
+    const orderNo = `BT-${Date.now()}`;
+
+    const result = await pool.query(`
+      INSERT INTO buyback_orders
+      (order_no,name,email,phone,address,device,brand,model,storage,condition,face_id,battery,screen,offered_price,iban,payment_method,status)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,'Nieuw')
+      RETURNING id,order_no,status,created_at
+    `, [
+      orderNo,
+      name, email,
+      String(b.phone || "").trim(),
+      String(b.address || "").trim(),
+      String(b.device || "").trim(),
+      String(b.brand || "").trim(),
+      String(b.model || b.device || "").trim(),
+      String(b.storage || "").trim(),
+      String(b.condition || "").trim(),
+      String(b.faceId || "").trim(),
+      String(b.battery || "").trim(),
+      String(b.screen || "").trim(),
+      offeredPrice,
+      String(b.iban || "").trim(),
+      String(b.paymentMethod || "").trim()
+    ]);
+
+    res.status(201).json({ success: true, order: result.rows[0] });
+  } catch (error) {
+    console.error("BUYBACK ORDER ERROR:", error);
+    res.status(500).json({ error: "Verkoopaanvraag kon niet worden opgeslagen." });
+  }
+});
+
+app.get("/api/admin/buyback-orders", requirePermission("buyback_orders.view"), async (req, res) => {
+  try {
+    await ensureBuybackOrdersTable();
+    const result = await pool.query(`
+      SELECT id,order_no,name,email,phone,address,device,brand,model,storage,condition,
+             face_id,battery,screen,offered_price,iban,payment_method,status,created_at
+      FROM buyback_orders
+      ORDER BY created_at DESC
+    `);
+    res.json({ orders: result.rows });
+  } catch (error) {
+    console.error("BUYBACK LOAD ERROR:", error);
+    res.status(500).json({ error: "Verkoopaanvragen konden niet worden geladen." });
+  }
+});
+
+app.put("/api/admin/buyback-orders/:id/status", requirePermission("buyback_orders.update"), async (req, res) => {
+  try {
+    const allowed = ["Nieuw","In behandeling","Goedgekeurd","Afgewezen","Voltooid"];
+    const status = String(req.body?.status || "").trim();
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ error: "Ongeldige status." });
+    }
+
+    const result = await pool.query(`
+      UPDATE buyback_orders
+      SET status=$1
+      WHERE id=$2
+      RETURNING id,status
+    `, [status, req.params.id]);
+
+    if (!result.rows.length) {
+      return res.status(404).json({ error: "Verkoopaanvraag niet gevonden." });
+    }
+    res.json({ success: true, order: result.rows[0] });
+  } catch (error) {
+    console.error("BUYBACK STATUS ERROR:", error);
+    res.status(500).json({ error: "Status kon niet worden gewijzigd." });
+  }
+});
+
+app.delete("/api/admin/buyback-orders/:id", requirePermission("buyback_orders.delete"), async (req, res) => {
+  try {
+    const result = await pool.query(`
+      DELETE FROM buyback_orders WHERE id=$1 RETURNING id
+    `, [req.params.id]);
+
+    if (!result.rows.length) {
+      return res.status(404).json({ error: "Verkoopaanvraag niet gevonden." });
+    }
+    res.json({ success: true });
+  } catch (error) {
+    console.error("BUYBACK DELETE ERROR:", error);
+    res.status(500).json({ error: "Verkoopaanvraag kon niet worden verwijderd." });
+  }
+});
+
