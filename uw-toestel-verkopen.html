@@ -370,12 +370,11 @@ let selectedFamily='';
 function renderFamilyCard(family, arr){
   const sample=arr[0]||{};
   const brandSrc=sample.brandImage||'';
-  const min=Math.min(...arr.map(x=>Number(x.price||0)));
   const visual=brandSrc?`<img src="${esc(brandSrc)}" alt="${esc(family)}" class="brand-card-image">`:`<div class="brand-card-placeholder">${esc(family)}</div>`;
   return `<button type="button" class="family-card" data-family="${esc(family)}">
     <div class="device-img brand-img-wrap">${visual}</div>
     <div class="device-name">${esc(family)}</div>
-    <div class="device-price">${arr.length} ${arr.length===1?'model':'modellen'} · vanaf ${money(min)}</div>
+    <div class="device-price">${arr.length} ${arr.length===1?'model':'modellen'}</div>
   </button>`;
 }
 function renderSearchResults(q, pool){
