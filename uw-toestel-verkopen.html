@@ -556,7 +556,12 @@ function getSelectedAnswerByWords(words){
 function getConditionBasePrice(){
   const opt=getSelectedConditionOption();
   const n=Number(opt?.buyPrice);
-  return Number.isFinite(n)?Math.max(0,n):Math.max(0,Number(selectedModel?.base||0)+Number(opt?.priceDelta||0));
+  const base=Number(selectedModel?.base||0);
+  // New models may have only the main basis price filled in Admin.
+  // If the selected condition still has its initial 0 buyPrice, use that basis price.
+  if(Number.isFinite(n) && n>0) return Math.max(0,n);
+  if(base>0) return base;
+  return Number.isFinite(n)?Math.max(0,n):Math.max(0,base+Number(opt?.priceDelta||0));
 }
 async function calculateServerQuote(){
   if(!selectedModel)return 0;
