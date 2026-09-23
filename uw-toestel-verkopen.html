@@ -283,11 +283,14 @@ function buildCustomerQuestions(phone,type){
     ['conditionOptions','Conditie',['conditie','staat','condition']],
     ['batteryOptions','Batterij',['batterij','battery']],
     ['faceIdOptions','Face ID',['face id','faceid']],
-    ['screenOptions','Scherm',['scherm','screen']]
+    ['screenOptions','Scherm',['scherm','screen']],
+    ['variantOptions','Type / uitvoering',['type / uitvoering','type','uitvoering','variant','verbinding','connectiviteit']]
   ];
 
   optionSets.forEach(([key,label,aliases])=>{
-    const opts=Array.isArray(phone?.[key]) ? phone[key].map(o=>({...o})) : [];
+    const opts=Array.isArray(phone?.[key])
+      ? phone[key].filter(o=>o && o.active!==false && String(o.label||'').trim()).map(o=>({...o}))
+      : [];
     if(!opts.length)return;
 
     const existing=questions.find(q=>{
@@ -335,6 +338,8 @@ function getQuestionDelta(qId,label){
 }
 function questionValue(q){return buybackAnswers[q.id]??''}
 function setQuestionValue(qid,value){
+  const q=(selectedModel?.typeQuestions||[]).find(x=>x.id===qid);
+  if(q && q.type!=='text' && !active(q.options).some(o=>o.label===value)) return;
   buybackAnswers[qid]=value;
   renderDynamicQuestions();
   calcQuote();
