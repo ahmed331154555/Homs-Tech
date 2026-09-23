@@ -1073,9 +1073,9 @@ async function ensureBuybackOrdersTable() {
 
 // Buyback quote calculator. The admin supplies only the four condition base prices.
 // The server applies the shared evaluation rules to the selected answers.
-const BUYBACK_RULES = Object.freeze({
-  functionsNotWorkingMultiplier: 0.70, // -30%
-  batteryUnder85Multiplier: 0.90        // -10%
+const BUYBACK_PROTOCOLS = Object.freeze({
+  '1': Object.freeze({functionsNotWorkingMultiplier:0.70,batteryUnder85Multiplier:0.90}),
+  '2': Object.freeze({functionsNotWorkingMultiplier:0.70,batteryUnder85Multiplier:0.90})
 });
 
 app.post("/api/buyback/calculate", async (req, res) => {
@@ -1089,6 +1089,8 @@ app.post("/api/buyback/calculate", async (req, res) => {
     const condition = String(b.condition || "").trim().toLowerCase();
     const battery = String(b.battery || "").trim().toLowerCase();
     const functions = String(b.functions || "").trim().toLowerCase();
+    const protocol = String(b.protocol || "2") === "1" ? "1" : "2";
+    const rules = BUYBACK_PROTOCOLS[protocol];
 
     // Kapot is a direct purchase price: no further questions affect it.
     if (condition.includes("kapot")) {
@@ -1097,6 +1099,7 @@ app.post("/api/buyback/calculate", async (req, res) => {
         price: Number(price.toFixed(2)),
         basePrice: Number(price.toFixed(2)),
         adjustments: [],
+        protocol,
         broken: true
       });
     }
@@ -1105,10 +1108,10 @@ app.post("/api/buyback/calculate", async (req, res) => {
 
     if (/nee|no|niet/.test(functions)) {
       const before = price;
-      price *= BUYBACK_RULES.functionsNotWorkingMultiplier;
+      price *= rules.functionsNotWorkingMultiplier;
       adjustments.push({
         rule: "functions_not_working",
-        multiplier: BUYBACK_RULES.functionsNotWorkingMultiplier,
+        multiplier: rules.functionsNotWorkingMultiplier,
         before: Number(before.toFixed(2)),
         after: Number(price.toFixed(2))
       });
@@ -1116,10 +1119,10 @@ app.post("/api/buyback/calculate", async (req, res) => {
 
     if (/onder\s*85|<\s*85/.test(battery)) {
       const before = price;
-      price *= BUYBACK_RULES.batteryUnder85Multiplier;
+      price *= rules.batteryUnder85Multiplier;
       adjustments.push({
         rule: "battery_under_85",
-        multiplier: BUYBACK_RULES.batteryUnder85Multiplier,
+        multiplier: rules.batteryUnder85Multiplier,
         before: Number(before.toFixed(2)),
         after: Number(price.toFixed(2))
       });
@@ -1132,6 +1135,8 @@ app.post("/api/buyback/calculate", async (req, res) => {
       price,
       basePrice: Number(Number(b.conditionBasePrice).toFixed(2)),
       adjustments,
+      protocol,
+      rules: {functionsNotWorkingMultiplier:rules.functionsNotWorkingMultiplier,batteryUnder85Multiplier:rules.batteryUnder85Multiplier},
       broken: false
     });
   } catch (error) {
