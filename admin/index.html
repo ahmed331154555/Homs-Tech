@@ -2109,7 +2109,16 @@ function normalizeBuybackPhones(){
     ],
     screenOptions:Array.isArray(x.screenOptions)?x.screenOptions:[
       {label:'Scherm goed',priceDelta:0,active:true},{label:'Kleine beschadigingen',priceDelta:-50,active:true},{label:'Scherm gebroken',priceDelta:-150,active:true}
-    ]
+    ],
+    variantOptions:Array.isArray(x.variantOptions)?x.variantOptions.map(o=>({label:String(o?.label||''),priceDelta:Number(o?.priceDelta||0),active:o?.active===true})):[
+      {label:'',priceDelta:0,active:false},{label:'',priceDelta:0,active:false}
+    ],
+    customBuybackQuestions:Array.isArray(x.customBuybackQuestions)?x.customBuybackQuestions.map(q=>({
+      id:q.id||newBuybackId('cq'),
+      label:String(q.label||''),
+      required:q.required!==false,
+      options:Array.isArray(q.options)?q.options.map(o=>({label:String(o?.label||''),priceDelta:Number(o?.priceDelta||0),active:o?.active!==false})):[]
+    })) : []
   }));
 }
 
@@ -2492,6 +2501,100 @@ function addBuybackModelVariantOption(){
   normalizeBuybackModelVariantOptions(phone);
   alert('Er zijn al twee velden. Vul de twee vakken in en zet Actief aan voor de keuze die de klant mag zien.');
 }
+function normalizeBuybackCustomQuestions(phone){
+  if(!phone || !Array.isArray(phone.customBuybackQuestions)) phone.customBuybackQuestions=[];
+  phone.customBuybackQuestions=phone.customBuybackQuestions.map(q=>({
+    id:q.id||newBuybackId('cq'),
+    label:String(q.label||''),
+    required:q.required!==false,
+    options:Array.isArray(q.options)?q.options.map(o=>({label:String(o?.label||''),priceDelta:Number(o?.priceDelta||0),active:o?.active!==false})):[]
+  }));
+}
+function addBuybackCustomQuestion(){
+  const phone=getSelectedBuybackPhone();
+  if(!phone)return;
+  normalizeBuybackCustomQuestions(phone);
+  phone.customBuybackQuestions.push({id:newBuybackId('cq'),label:'Nieuwe vraag',required:true,options:[
+    {label:'Optie 1',priceDelta:0,active:true},
+    {label:'Optie 2',priceDelta:-25,active:true}
+  ]});
+  markChanged();
+  renderBuybackModelEditor();
+}
+function deleteBuybackCustomQuestion(index){
+  const phone=getSelectedBuybackPhone();
+  if(!phone)return;
+  normalizeBuybackCustomQuestions(phone);
+  phone.customBuybackQuestions.splice(index,1);
+  markChanged();
+  renderBuybackModelEditor();
+}
+function updateBuybackCustomQuestion(index,field,value){
+  const phone=getSelectedBuybackPhone();
+  if(!phone)return;
+  normalizeBuybackCustomQuestions(phone);
+  const q=phone.customBuybackQuestions[index];
+  if(!q)return;
+  q[field]=field==='required'?!!value:String(value??'');
+  markChanged();
+}
+function updateBuybackCustomQuestionOption(qIndex,oIndex,field,value){
+  const phone=getSelectedBuybackPhone();
+  if(!phone)return;
+  normalizeBuybackCustomQuestions(phone);
+  const q=phone.customBuybackQuestions[qIndex],o=q?.options?.[oIndex];
+  if(!o)return;
+  o[field]=field==='priceDelta'?Number(value||0):field==='active'?!!value:String(value??'');
+  markChanged();
+}
+function addBuybackCustomQuestionOption(qIndex){
+  const phone=getSelectedBuybackPhone();
+  if(!phone)return;
+  normalizeBuybackCustomQuestions(phone);
+  const q=phone.customBuybackQuestions[qIndex];
+  if(!q)return;
+  q.options.push({label:'Nieuwe optie',priceDelta:0,active:true});
+  markChanged();
+  renderBuybackModelEditor();
+}
+function deleteBuybackCustomQuestionOption(qIndex,oIndex){
+  const phone=getSelectedBuybackPhone();
+  if(!phone)return;
+  normalizeBuybackCustomQuestions(phone);
+  const q=phone.customBuybackQuestions[qIndex];
+  if(!q)return;
+  q.options.splice(oIndex,1);
+  markChanged();
+  renderBuybackModelEditor();
+}
+function renderBuybackCustomQuestions(phone){
+  normalizeBuybackCustomQuestions(phone);
+  const qs=phone.customBuybackQuestions||[];
+  return `<div class="card buyback-option-card">
+    <div class="card-title">✏️ Aangepaste keuzes</div>
+    <div class="small" style="margin-bottom:12px">Hier kunt u zelf de vraag en de antwoordteksten bepalen. Bijvoorbeeld: Type aansluiting → WiFi / Bluetooth.</div>
+    ${qs.map((q,qi)=>`<div style="border:1px solid #e5eaf1;border-radius:10px;padding:10px;margin-bottom:10px;background:#fbfcfe">
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center">
+        <input value="${esc(q.label)}" placeholder="Bijv. Welke uitvoering heeft het toestel?" oninput="updateBuybackCustomQuestion(${qi},'label',this.value)">
+        <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" ${q.required!==false?'checked':''} onchange="updateBuybackCustomQuestion(${qi},'required',this.checked)"> Verplicht</label>
+      </div>
+      <div style="margin-top:8px">
+        ${(q.options||[]).map((o,oi)=>`<div style="display:grid;grid-template-columns:minmax(0,1fr) 110px auto auto;gap:8px;align-items:center;margin-top:7px">
+          <input value="${esc(o.label)}" placeholder="Tekst van keuze" oninput="updateBuybackCustomQuestionOption(${qi},${oi},'label',this.value)">
+          <input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateBuybackCustomQuestionOption(${qi},${oi},'priceDelta',this.value)">
+          <label style="display:flex;gap:5px;align-items:center;font-size:12px;font-weight:800"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateBuybackCustomQuestionOption(${qi},${oi},'active',this.checked)"> Actief</label>
+          <button class="bb-q-delete" type="button" onclick="deleteBuybackCustomQuestionOption(${qi},${oi})">×</button>
+        </div>`).join('')}
+      </div>
+      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:9px">
+        <button class="btn btn-light" type="button" onclick="addBuybackCustomQuestionOption(${qi})">+ Keuze</button>
+        <button class="bb-q-delete" type="button" onclick="deleteBuybackCustomQuestion(${qi})">Verwijderen</button>
+      </div>
+    </div>`).join('')}
+    <button class="btn btn-light" type="button" onclick="addBuybackCustomQuestion()">+ Aangepaste keuze toevoegen</button>
+  </div>`;
+}
+
 function deleteBuybackModelVariantOption(index){
   const phone=getSelectedBuybackPhone();
   if(!phone || !Array.isArray(phone.variantOptions))return;
@@ -2567,6 +2670,7 @@ function renderBuybackModelEditor(){
       ${renderBuybackTypeSettings()}
       <div id="buybackOptionsArea" class="buyback-model-options" style="display:${buybackOptionsOpen?'block':'none'}">
         ${renderBuybackModelVariantOptions(phone)}
+        ${renderBuybackCustomQuestions(phone)}
         ${buybackOptionEditorForModel(phone,'Opslag','storageOptions')}
         ${buybackOptionEditorForModel(phone,'Conditie','conditionOptions')}
         ${buybackOptionEditorForModel(phone,'Batterij','batteryOptions')}
