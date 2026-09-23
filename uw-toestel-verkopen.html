@@ -376,6 +376,7 @@ function setQuestionValue(qid,value){
   }
   renderDynamicQuestions();
   calcQuote();
+  calculateServerQuote();
 }
 function renderQuestion(q){
   const opts=active(q.options);
@@ -540,50 +541,79 @@ function chooseDevice(d){
   });
   renderDynamicQuestions();
   calcQuote();
+  calculateServerQuote();
   go(2);
 }
-function calcQuote(){
+let serverQuoteRequest=0;
+function getSelectedAnswerByWords(words){
+  const qs=selectedModel?.typeQuestions||[];
+  for(const q of qs){
+    const ql=String(q.label||'').toLowerCase();
+    if(words.some(w=>ql.includes(w))) return {question:q,value:questionValue(q)};
+  }
+  return null;
+}
+function getConditionBasePrice(){
+  const opt=getSelectedConditionOption();
+  const n=Number(opt?.buyPrice);
+  return Number.isFinite(n)?Math.max(0,n):Math.max(0,Number(selectedModel?.base||0)+Number(opt?.priceDelta||0));
+}
+async function calculateServerQuote(){
   if(!selectedModel)return 0;
-
-  const conditionQ=getConditionQuestion();
-  const conditionOpt=getSelectedConditionOption();
-
-  // Every condition can have its own direct purchase price.
-  // For a kapot device this is the final price and no other questions affect it.
-  if(conditionQ && isKapotSelected()){
-    let brokenPrice=Number(conditionOpt?.buyPrice);
-    if(!Number.isFinite(brokenPrice)) brokenPrice=Number(selectedModel.base||0)+Number(conditionOpt?.priceDelta||0);
-    brokenPrice=Math.max(0,brokenPrice);
+  const reqId=++serverQuoteRequest;
+  const condition=getSelectedConditionOption();
+  const battery=getSelectedAnswerByWords(['batterij','battery']);
+  const functions=getSelectedAnswerByWords(['alle functies','functies','werkt het','werkt','function']);
+  const storage=getSelectedAnswerByWords(['opslag','storage']);
+  const payload={
+    condition:condition?.label||'',
+    conditionBasePrice:getConditionBasePrice(),
+    battery:battery?.value||'',
+    functions:functions?.value||'',
+    storage:storage?.value||''
+  };
+  try{
+    const r=await fetch('/api/buyback/calculate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const d=await r.json();
+    if(reqId!==serverQuoteRequest)return Number(d.price||0);
+    const v=Math.max(0,Number(d.price||0));
     const credit=$('cMethod')?.value?.includes('tegoed');
-    const display=credit?brokenPrice*1.10:brokenPrice;
+    const display=credit?v*1.10:v;
     $('quote').textContent=money(display);
     $('bottomTotal').textContent=money(display);
-    return brokenPrice;
+    return v;
+  }catch(e){
+    return calcQuoteLocalFallback();
   }
-
-  let v=Number(selectedModel.base||0);
-  let usedDirectConditionPrice=false;
-
-  (selectedModel.typeQuestions||[]).forEach(q=>{
-    if(q.type==='text')return;
-    const val=questionValue(q);
-    const isCondition=q===conditionQ;
-    const opt=isCondition ? active(q.options).find(o=>String(o.label||'')===String(val)) : null;
-
-    if(isCondition && opt && Number.isFinite(Number(opt.buyPrice))){
-      v=Number(opt.buyPrice);
-      usedDirectConditionPrice=true;
-    }else{
-      v+=getQuestionDelta(q.id,val);
-    }
-  });
-
+}
+function calcQuoteLocalFallback(){
+  if(!selectedModel)return 0;
+  const conditionQ=getConditionQuestion();
+  const conditionOpt=getSelectedConditionOption();
+  if(conditionQ && isKapotSelected()){
+    const v=getConditionBasePrice();
+    const credit=$('cMethod')?.value?.includes('tegoed');
+    const display=credit?v*1.10:v;
+    $('quote').textContent=money(display);
+    $('bottomTotal').textContent=money(display);
+    return v;
+  }
+  let v=getConditionBasePrice();
+  const battery=getSelectedAnswerByWords(['batterij','battery']);
+  const functions=getSelectedAnswerByWords(['alle functies','functies','werkt het','werkt','function']);
+  if(functions && /nee|no|niet/i.test(String(functions.value||''))) v*=0.70;
+  if(battery && /onder\s*85|<\s*85/i.test(String(battery.value||''))) v*=0.90;
   v=Math.max(0,v);
   const credit=$('cMethod')?.value?.includes('tegoed');
   const display=credit?v*1.10:v;
   $('quote').textContent=money(display);
   $('bottomTotal').textContent=money(display);
   return v;
+}
+function calcQuote(){
+  if(!selectedModel)return 0;
+  // Immediate local preview; the server is the authoritative calculator.
+  return calcQuoteLocalFallback();
 }
 function go(n){
   if(n===1){selectedFamily='';window._modelLimit=12;if($('deviceSearch'))$('deviceSearch').value='';if($('familyGrid'))categories();}
@@ -606,13 +636,13 @@ $('toCheckout').onclick=()=>{
   go(3);
 };
 $('back1').onclick=()=>go(1);$('back2').onclick=()=>go(2);
-$('cMethod').onchange=()=>{const v=calcQuote();$('sumMethod').textContent=$('cMethod').value;$('sumPrice').textContent=money($('cMethod').value.includes('tegoed')?v*1.10:v)};
+$('cMethod').onchange=async()=>{const v=await calculateServerQuote();$('sumMethod').textContent=$('cMethod').value;$('sumPrice').textContent=money($('cMethod').value.includes('tegoed')?v*1.10:v)};
 $('finish').onclick=async()=>{
   if(!$('cName').value.trim()||!$('cEmail').value.trim()||!$('agree').checked){alert('Vul uw naam en e-mailadres in en accepteer de voorwaarden.');return}
   if(!validateDynamicQuestions())return;
   const btn=$('finish'),old=btn.textContent;btn.disabled=true;btn.textContent='Aanvraag wordt verzonden...';
   try{
-    const v=calcQuote(),credit=$('cMethod').value.includes('tegoed'),offer=credit?v*1.10:v;
+    const v=await calculateServerQuote(),credit=$('cMethod').value.includes('tegoed'),offer=credit?v*1.10:v;
     const answers={};
     (selectedModel.typeQuestions||[]).forEach(q=>answers[q.id]={question:q.label,value:questionValue(q),type:q.type});
     const payload={
