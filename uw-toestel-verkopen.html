@@ -272,9 +272,12 @@ function imageFor(d){
 let selectedBrand='',selectedType='';
 
 function buildCustomerQuestions(phone,type){
-  const questions=Array.isArray(type?.questions)
-    ? type.questions.map(q=>({...q,options:Array.isArray(q.options)?q.options.map(o=>({...o})):[]}))
-    : [];
+  const protocol=phone?.buybackProtocol==='1'?'1':'2';
+  const protocolSource=phone?.protocolQuestions?.[protocol];
+  const source=Array.isArray(protocolSource)?protocolSource:(Array.isArray(type?.questions)?type.questions:[]);
+  const questions=source
+    .filter(q=>q && q.active!==false)
+    .map(q=>({...q,options:Array.isArray(q.options)?q.options.filter(o=>o&&o.active!==false).map(o=>({...o})):[]}));
 
   // Model-specific options are the final source for the matching question.
   // This makes the Actief checkbox in Admin control exactly what the customer sees.
@@ -312,7 +315,7 @@ function buildCustomerQuestions(phone,type){
     }
   });
 
-  const custom=Array.isArray(phone?.customBuybackQuestions)?phone.customBuybackQuestions:[];
+  const custom=Array.isArray(phone?.customBuybackQuestions)?phone.customBuybackQuestions.filter(q=>q&&q.active!==false):[];
   custom.forEach((q,i)=>{
     const opts=Array.isArray(q.options)?q.options.filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>({...o})):[];
     if(!String(q.label||'').trim() || !opts.length)return;
@@ -336,7 +339,7 @@ function flattenBuybackCatalog(catalog){
         const p=(siteData.buybackPhones||[]).find(x=>String(x.id)===String(m.buybackId));
         if(p && p.active!==false){
           out.push({...p,brand:b.name,deviceType:t.name,typeId:t.id,typeName:t.name,brandId:b.id,modelId:m.id,
-            typeQuestions:buildCustomerQuestions(p,t),brandImage:b.image||b.brandImage||''});
+            typeQuestions:buildCustomerQuestions(p,t),protocol:p.buybackProtocol==='1'?'1':'2',protocolSettings:p.buybackProtocolSettings?.[p.buybackProtocol==='1'?'1':'2']||{},brandImage:b.image||b.brandImage||''});
         }
       });
     });
@@ -575,7 +578,8 @@ async function calculateServerQuote(){
     conditionBasePrice:getConditionBasePrice(),
     battery:battery?.value||'',
     functions:functions?.value||'',
-    storage:storage?.value||''
+    storage:storage?.value||'',
+    protocol:selectedModel?.protocol==='1'?'1':'2'
   };
   try{
     const r=await fetch('/api/buyback/calculate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
@@ -606,8 +610,11 @@ function calcQuoteLocalFallback(){
   let v=getConditionBasePrice();
   const battery=getSelectedAnswerByWords(['batterij','battery']);
   const functions=getSelectedAnswerByWords(['alle functies','functies','werkt het','werkt','function']);
-  if(functions && /nee|no|niet/i.test(String(functions.value||''))) v*=0.70;
-  if(battery && /onder\s*85|<\s*85/i.test(String(battery.value||''))) v*=0.90;
+  const rules=selectedModel?.protocolSettings||{};
+  const fnMult=Math.max(0,1-(Number(rules.functionsDiscount??30)/100));
+  const batMult=Math.max(0,1-(Number(rules.batteryDiscount??10)/100));
+  if(functions && /nee|no|niet/i.test(String(functions.value||''))) v*=fnMult;
+  if(battery && /onder\s*85|<\s*85/i.test(String(battery.value||''))) v*=batMult;
   v=Math.max(0,v);
   const credit=$('cMethod')?.value?.includes('tegoed');
   const display=credit?v*1.10:v;
@@ -675,7 +682,7 @@ async function loadBuyback(){
     const catalog=Array.isArray(siteData.buybackCatalog)?siteData.buybackCatalog:[];
     devices=flattenBuybackCatalog(catalog);
     if(!devices.length){
-      devices=(Array.isArray(siteData.buybackPhones)?siteData.buybackPhones:[]).filter(x=>x.active!==false).map(x=>({...x,typeQuestions:buildCustomerQuestions(x,{questions:[]})}));
+      devices=(Array.isArray(siteData.buybackPhones)?siteData.buybackPhones:[]).filter(x=>x.active!==false).map(x=>({...x,protocol:x.buybackProtocol==='1'?'1':'2',protocolSettings:x.buybackProtocolSettings?.[x.buybackProtocol==='1'?'1':'2']||{},typeQuestions:buildCustomerQuestions(x,{questions:[]})}));
     }
     categories();renderDevices();
   }catch(e){devices=[];categories();renderDevices()}
