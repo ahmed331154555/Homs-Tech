@@ -2691,7 +2691,7 @@ function buybackOptionEditorForModel(phone,title,key){
   if(key==='conditionOptions'){
     const base=Number(phone.price||0);
     return `<div class="card buyback-option-card"><div class="card-title">${title}</div>
-      <div class="small" style="margin-bottom:12px">Per conditie kunt u hier direct de inkoopprijs instellen.</div>
+      <div class="small" style="margin-bottom:12px">U vult alleen de 4 basis-inkoopprijzen in. De server berekent daarna automatisch de overige waardes volgens de vaste beoordelingsregels.</div>
       ${opts.map((o,i)=>{
         const buyPrice=Number.isFinite(Number(o.buyPrice)) ? Number(o.buyPrice) : Math.max(0,base+Number(o.priceDelta||0));
         return `<div class="buyback-option-row">
