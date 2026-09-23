@@ -1364,6 +1364,7 @@ let selectedBuybackModelId = "";
 let buybackOptionsOpen = false;
 let buybackTypeSettingsOpen = false;
 let buybackQuestionOpenId = "";
+let buybackCatalogDeleteLock = false;
 
 
 
@@ -1893,6 +1894,7 @@ async function loadData(){
     }
 
     data=await r.json();
+    buybackCatalogDeleteLock=false;
 
     normalizeData();
 
@@ -2114,7 +2116,7 @@ function normalizeBuybackCatalog(){
   if(!Array.isArray(data.buybackCatalog)) data.buybackCatalog=[];
 
   /* Safe migration: existing flat buybackPhones are grouped by brand → Telefoon → model. */
-  if(!data.buybackCatalog.length && Array.isArray(data.buybackPhones) && data.buybackPhones.length){
+  if(!data.buybackCatalog.length && !buybackCatalogDeleteLock && Array.isArray(data.buybackPhones) && data.buybackPhones.length){
     const byBrand={};
     data.buybackPhones.forEach(phone=>{
       const brand=(phone.brand||"Overig").trim()||"Overig";
@@ -2577,9 +2579,24 @@ function deleteBuybackBrand(id){
   // Remove the brand from the visible catalog.
   data.buybackCatalog=catalog.filter(x=>x.id!==id);
 
-  // Remove all linked phones from the flat compatibility list as well.
+  // Remove every phone belonging to this brand.
+  // We use both the model IDs and the brand name as a safety net,
+  // because older catalog records may not contain buybackId.
+  const brandName=String(b.name||'').trim().toLowerCase();
   data.buybackPhones=(Array.isArray(data.buybackPhones)?data.buybackPhones:[])
-    .filter(p=>!phoneIds.includes(String(p.id)));
+    .filter(p=>{
+      const pid=String(p?.id||'');
+      const pbrand=String(p?.brand||'').trim().toLowerCase();
+      return !phoneIds.includes(pid) && !(brandName && pbrand===brandName);
+    });
+
+  // If this was the last brand, there must be no legacy phones left.
+  // Otherwise normalizeBuybackCatalog() would recreate the deleted brands
+  // from the old compatibility list.
+  if(!data.buybackCatalog.length){
+    data.buybackPhones=[];
+    buybackCatalogDeleteLock=true;
+  }
 
   selectedBuybackBrandId='';
   selectedBuybackTypeId='';
@@ -2622,6 +2639,17 @@ function deleteBuybackModelById(modelId,typeId){
   if(linkedId){
     data.buybackPhones=(Array.isArray(data.buybackPhones)?data.buybackPhones:[])
       .filter(p=>String(p.id)!==linkedId);
+  }else{
+    // Older model records can miss buybackId. Remove the matching phone
+    // by model name + current brand as a compatibility fallback.
+    const modelNameLower=String(m.name||'').trim().toLowerCase();
+    const brandNameLower=String(b.name||'').trim().toLowerCase();
+    data.buybackPhones=(Array.isArray(data.buybackPhones)?data.buybackPhones:[])
+      .filter(p=>{
+        const pn=String(p?.name||'').trim().toLowerCase();
+        const pb=String(p?.brand||'').trim().toLowerCase();
+        return !(modelNameLower && pn===modelNameLower && pb===brandNameLower);
+      });
   }
 
   // Safety cleanup: remove any duplicate catalog references to the same phone.
@@ -2646,6 +2674,7 @@ function addBuybackBrand(){
   if(!name||!name.trim())return;
   const brand={id:newBuybackId("brand"),name:name.trim(),image:"",types:[]};
   data.buybackCatalog.push(brand);
+  buybackCatalogDeleteLock=false;
   selectedBuybackBrandId=brand.id;selectedBuybackTypeId="";selectedBuybackModelId="";buybackAdminLevel='models';
   markChanged();renderBuybackPhones();
 }
