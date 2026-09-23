@@ -99,19 +99,7 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
 @media(max-width:850px){.hero-grid,.product-card,.checkout,.two-col{grid-template-columns:1fr}.benefits{display:none}.device-grid{grid-template-columns:repeat(2,1fr)}.condition-grid{grid-template-columns:repeat(2,1fr)}.totalbar{grid-template-columns:1fr}.searchrow{grid-template-columns:1fr}.headlinks{display:none}.search{max-width:none}.head .wrap{gap:12px}.logo{min-width:130px}.logo img{width:130px}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.footgrid{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.wrap{width:min(100% - 24px,1380px)}.topbar{display:none}.head{height:65px}.nav .wrap{gap:22px}.panel{padding:16px;border-radius:18px}.device-grid{grid-template-columns:1fr 1fr;gap:9px}.device{min-height:155px;padding:10px}.product-card{gap:14px}.product-image{min-height:220px}.condition-grid{grid-template-columns:1fr 1fr}.extra-row{grid-template-columns:1fr}.info-grid{grid-template-columns:1fr}.footgrid{grid-template-columns:1fr}.hero{padding-top:35px}.hero h1{font-size:36px}.stepper{max-width:95%}}
 
-/* HOMS TECH Protocol 2 */
-.protocol2-extra{margin-top:18px}
-.p2-customer-section{padding:18px;border:1px solid #e2e8f0;border-radius:16px;background:#fff;margin-top:14px}
-.p2-customer-title{font-size:16px;font-weight:900;color:#0f172a;margin:0 0 10px}
-.p2-customer-bullets{margin:0;padding:0;list-style:none}
-.p2-customer-bullets li{display:flex;gap:10px;align-items:flex-start;padding:8px 0;color:#334155;font-size:13px;line-height:1.55}
-.p2-customer-bullets li:before{content:'✓';font-weight:900;color:#16a34a;flex:0 0 auto}
-.p2-question{padding:18px;border:1px solid #e2e8f0;border-radius:16px;background:#fff;margin-top:14px}
-.p2-question-title{font-weight:800;color:#0f172a;line-height:1.55;margin-bottom:12px}
-.p2-answer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.p2-answer{border:1px solid #dbe3ec;background:#fff;border-radius:12px;padding:12px;text-align:center;font-weight:800;cursor:pointer}
-.p2-answer.active{border-color:#0f172a;box-shadow:0 0 0 2px rgba(15,23,42,.08);background:#f8fafc}
-@media(max-width:650px){.p2-answer-grid{grid-template-columns:1fr}}
+.protocol2-box{display:block}.protocol2-section{margin-top:18px;border:1px solid var(--line);border-radius:14px;padding:16px;background:#fff}.protocol2-section h3{margin:0 0 10px;font-size:16px}.protocol2-checklist{margin:0;padding:0;list-style:none}.protocol2-checklist li{position:relative;padding:7px 0 7px 25px;line-height:1.55}.protocol2-checklist li:before{content:'✓';position:absolute;left:0;top:7px;font-weight:900;color:#0f766e}.protocol2-yn{display:grid;grid-template-columns:1fr 1fr;gap:10px}.protocol2-choice{border:1px solid var(--line);background:#fff;border-radius:12px;padding:14px;text-align:left;cursor:pointer;font-weight:800;display:flex;justify-content:space-between;gap:10px}.protocol2-choice.active{border-color:var(--blue);box-shadow:0 0 0 2px #1677ff18;background:#f4f8ff;color:#0f5ed8}.protocol2-choice .delta{font-size:13px;color:#64748b}.protocol2-condition-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.protocol2-condition{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px;text-align:center;cursor:pointer;font-weight:800}.protocol2-condition.active{border-color:var(--blue);box-shadow:0 0 0 2px #1677ff18;background:#f4f8ff;color:#0f5ed8}.protocol2-condition small{display:block;margin-top:7px;color:#64748b;font-weight:700}.protocol2-muted{font-size:13px;color:#64748b;margin:0 0 10px}@media(max-width:700px){.protocol2-condition-grid,.protocol2-yn{grid-template-columns:1fr 1fr}.protocol2-section{padding:13px}}
 </style>
 <style id="homs-topbar-marquee-final">
 /* HOMS TECH TOPBAR — exactly four messages, one pass, left-to-right order */
@@ -326,6 +314,51 @@ function buildCustomerQuestions(phone,type){
   return questions;
 }
 
+function normalizeProtocol2ForCustomer(phone){
+  const d={
+    storageOptions:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:0,active:true},{label:'512 GB',priceDelta:0,active:true},{label:'1 TB',priceDelta:0,active:false}],
+    conditionOptions:[{label:'Bijna als nieuw',priceDelta:0,active:true},{label:'Zichtbaar gebruikt',priceDelta:-73,active:true},{label:'Gebruikt',priceDelta:-276,active:true},{label:'Kapot',priceDelta:-458,active:true}],
+    checklist:[],
+    functions:{label:'Werken alle functies van het toestel goed, zoals Face-/Touch ID ontgrendeling, opladen, verbindingen (wifi), geluid (luidspreker en microfoon), camera\'s, knoppen, zaklamp en trillen?',yesDelta:0,noDelta:-100,active:true},
+    battery:{label:'Is de batterijcapaciteit minimaal 85%?',yesDelta:0,noDelta:-25,active:true}
+  };
+  const p=phone?.protocol2||{};
+  return {
+    storageOptions:Array.isArray(p.storageOptions)&&p.storageOptions.length?p.storageOptions:d.storageOptions,
+    conditionOptions:Array.isArray(p.conditionOptions)&&p.conditionOptions.length?p.conditionOptions:d.conditionOptions,
+    checklist:Array.isArray(p.checklist)?p.checklist:[],
+    functions:{...d.functions,...(p.functions||{})},
+    battery:{...d.battery,...(p.battery||{})}
+  };
+}
+function isProtocol2(){return selectedModel?.protocol==='protocol2'}
+function protocol2Data(){return normalizeProtocol2ForCustomer(selectedModel)}
+function protocol2ActiveOptions(key){return active(protocol2Data()[key])}
+function protocol2IsBroken(){return String(buybackAnswers.__p2_condition||'').trim().toLowerCase()==='kapot'}
+function setProtocol2Value(key,value){buybackAnswers[key]=value;renderProtocol2();calcQuote()}
+function renderProtocol2(){
+  const box=$('dynamicQuestions');if(!box||!isProtocol2())return;
+  const p=protocol2Data(), storage=protocol2ActiveOptions('storageOptions'), conditions=protocol2ActiveOptions('conditionOptions');
+  const storageVal=buybackAnswers.__p2_storage||storage[0]?.label||'';
+  const conditionVal=buybackAnswers.__p2_condition||conditions[0]?.label||'';
+  if(!buybackAnswers.__p2_storage&&storageVal)buybackAnswers.__p2_storage=storageVal;
+  if(!buybackAnswers.__p2_condition&&conditionVal)buybackAnswers.__p2_condition=conditionVal;
+  const broken=String(conditionVal).toLowerCase()==='kapot';
+  const checklist=p.checklist.filter(x=>x&&x.active!==false&&String(x.text||'').trim());
+  const fn=p.functions||{}, bat=p.battery||{};
+  const fnVal=buybackAnswers.__p2_functions||'';
+  const batVal=buybackAnswers.__p2_battery||'';
+  box.innerHTML=`<div class="protocol2-box">
+    <div class="protocol2-section"><h3>Opslagcapaciteit</h3><div class="dynamic-option-grid">${storage.map(o=>`<button type="button" class="dynamic-option ${storageVal===o.label?'active':''}" onclick="setProtocol2Value('__p2_storage','${esc(o.label)}')">${esc(o.label)}${Number(o.priceDelta||0)?`<span class="delta">${Number(o.priceDelta)>0?'+':''}${money(o.priceDelta)}</span>`:''}</button>`).join('')}</div></div>
+    <div class="protocol2-section"><h3>Wat is de staat van uw toestel?</h3><div class="protocol2-condition-grid">${conditions.map(o=>`<button type="button" class="protocol2-condition ${conditionVal===o.label?'active':''}" onclick="setProtocol2Value('__p2_condition','${esc(o.label)}')"><strong>${esc(o.label)}</strong><small>${money(Number(selectedModel.base||0)+Number(o.priceDelta||0))}</small></button>`).join('')}</div></div>
+    ${broken?'':`<div class="protocol2-section"><h3>Controle van de staat</h3><p class="protocol2-muted">Dit toestel voldoet in deze conditie aan alle onderstaande punten:</p><ul class="protocol2-checklist">${checklist.map(x=>`<li>${esc(x.text)}</li>`).join('')}</ul></div>`}
+    ${(!broken&&fn.active!==false)?`<div class="protocol2-section"><h3>${esc(fn.label)}</h3><div class="protocol2-yn"><button type="button" class="protocol2-choice ${fnVal==='Ja'?'active':''}" onclick="setProtocol2Value('__p2_functions','Ja')">Ja<span class="delta">${Number(fn.yesDelta||0)?(Number(fn.yesDelta)>0?'+':'')+money(fn.yesDelta):''}</span></button><button type="button" class="protocol2-choice ${fnVal==='Nee'?'active':''}" onclick="setProtocol2Value('__p2_functions','Nee')">Nee<span class="delta">${Number(fn.noDelta||0)?(Number(fn.noDelta)>0?'+':'')+money(fn.noDelta):''}</span></button></div></div>`:''}
+    ${(!broken&&bat.active!==false)?`<div class="protocol2-section"><h3>${esc(bat.label)}</h3><div class="protocol2-yn"><button type="button" class="protocol2-choice ${batVal==='Ja'?'active':''}" onclick="setProtocol2Value('__p2_battery','Ja')">Ja<span class="delta">${Number(bat.yesDelta||0)?(Number(bat.yesDelta)>0?'+':'')+money(bat.yesDelta):''}</span></button><button type="button" class="protocol2-choice ${batVal==='Nee'?'active':''}" onclick="setProtocol2Value('__p2_battery','Nee')">Nee<span class="delta">${Number(bat.noDelta||0)?(Number(bat.noDelta)>0?'+':'')+money(bat.noDelta):''}</span></button></div></div>`:''}
+  </div>`;
+  $('storage').style.display='none';$('conditionGrid').style.display='none';
+  const labels=document.querySelectorAll('#step2 .product-info > .label');labels.forEach(x=>x.style.display='none');
+}
+
 function flattenBuybackCatalog(catalog){
   const out=[];
   (Array.isArray(catalog)?catalog:[]).forEach(b=>{
@@ -348,67 +381,65 @@ function getQuestionDelta(qId,label){
   return Number(o?.priceDelta||0);
 }
 function questionValue(q){return buybackAnswers[q.id]??''}
-function setQuestionValue(qid,value){buybackAnswers[qid]=value;renderDynamicQuestions();calcQuote()}
+function setQuestionValue(qid,value){
+  buybackAnswers[qid]=value;
+  renderDynamicQuestions();
+  calcQuote();
+}
 function renderQuestion(q){
-  const opts=active(q.options),val=questionValue(q),required=q.required!==false;
-  if(q.type==='text')return `<div class="dynamic-question"><div class="dynamic-question-title">${esc(q.label)}${required?'<span class="dynamic-question-required">*</span>':''}</div><textarea class="dynamic-text" placeholder="${esc(q.label)}" oninput="buybackAnswers['${esc(q.id)}']=this.value;calcQuote()">${esc(val)}</textarea></div>`;
-  if(q.type==='yesno'||q.type==='options')return opts.length?`<div class="dynamic-question"><div class="dynamic-question-title">${esc(q.label)}${required?'<span class="dynamic-question-required">*</span>':''}</div><div class="dynamic-option-grid">${opts.map(o=>{const activeNow=val===o.label,delta=Number(o.priceDelta||0);return `<button type="button" class="dynamic-option ${activeNow?'active':''}" onclick="setQuestionValue('${esc(q.id)}','${esc(o.label)}')">${esc(o.label)}${delta?`<span class="delta">${delta>0?'+':''}${money(delta)}</span>`:''}</button>`}).join('')}</div></div>`:'';
+  const opts=active(q.options);
+  const val=questionValue(q);
+  const required=q.required!==false;
+  if(q.type==='text'){
+    return `<div class="dynamic-question">
+      <div class="dynamic-question-title">${esc(q.label)}${required?'<span class="dynamic-question-required">*</span>':''}</div>
+      <textarea class="dynamic-text" placeholder="${esc(q.label)}" oninput="buybackAnswers['${esc(q.id)}']=this.value;calcQuote()">${esc(val)}</textarea>
+    </div>`;
+  }
+  if(q.type==='yesno' || q.type==='options'){
+    if(!opts.length)return '';
+    return `<div class="dynamic-question">
+      <div class="dynamic-question-title">${esc(q.label)}${required?'<span class="dynamic-question-required">*</span>':''}</div>
+      <div class="dynamic-option-grid">${opts.map(o=>{
+        const activeNow=val===o.label;
+        const delta=Number(o.priceDelta||0);
+        return `<button type="button" class="dynamic-option ${activeNow?'active':''}" onclick="setQuestionValue('${esc(q.id)}','${esc(o.label)}')">
+          ${esc(o.label)}${delta?`<span class="delta">${delta>0?'+':''}${money(delta)}</span>`:''}
+        </button>`;
+      }).join('')}</div>
+    </div>`;
+  }
   return '';
 }
 function renderDynamicQuestions(){
-  const box=$('dynamicQuestions');if(!box)return;
+  const box=$('dynamicQuestions'); if(!box)return;
   const qs=Array.isArray(selectedModel?.typeQuestions)?selectedModel.typeQuestions:[];
-  box.innerHTML=qs.length?qs.map(renderQuestion).join(''):'<div style="padding:14px;background:#f8fafc;border-radius:12px;color:#64748b">Voor dit type zijn nog geen extra vragen ingesteld.</div>';
+  if(!qs.length){box.innerHTML='<div style="padding:14px;background:#f8fafc;border-radius:12px;color:#64748b">Voor dit type zijn nog geen extra vragen ingesteld.</div>';return;}
+  box.innerHTML=qs.map(renderQuestion).join('');
 }
-function validateDynamicQuestions(){const qs=selectedModel?.typeQuestions||[],missing=qs.find(q=>q.required!==false&&!String(questionValue(q)).trim());if(missing){alert('Kies of vul eerst in: '+missing.label);return false}return true}
-function firstAnswerByLabel(words){for(const q of (selectedModel?.typeQuestions||[])){const label=String(q.label||'').toLowerCase();if(words.some(w=>label.includes(w)))return questionValue(q)||''}return ''}
-
-function defaultProtocol2(phone){
-  const d={
-    storageOptions:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}],
-    conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}],
-    statements:[
-      {label:'Het apparaat bevat enkele lichte gebruikssporen, zoals kleine krasjes.',priceDelta:0,active:true},
-      {label:'Er zijn geen diepe deuken, scheuren of ernstige beschadigingen.',priceDelta:0,active:true},
-      {label:'Het scherm is intact en vertoont geen barsten of kleurafwijkingen.',priceDelta:0,active:true},
-      {label:'Het apparaat is vrij van waterschade en heeft geen andere vloeistofschade.',priceDelta:0,active:true},
-      {label:'Er staat geen iCloud- of ander account meer op het apparaat en de zoekfunctie is uitgeschakeld.',priceDelta:0,active:true},
-      {label:'LET OP: Apparaten die als verloren of gestolen zijn opgegeven, vergrendeld zijn met een account of gekoppeld zijn aan MDM, komen niet in aanmerking voor inruil.',priceDelta:0,active:true}
-    ],
-    functions:{active:true,label:'Werken alle functies van het apparaat goed, zoals ontgrendeling, opstarten, opladen, verbindingen (wifi/bluetooth), geluid (luidspreker en microfoon), camera\'s, knoppen, zaklamp en trillen?',yesDelta:0,noDelta:-100},
-    battery:{active:true,label:'Is de batterijcapaciteit minimaal 85%?',yesDelta:0,noDelta:-25}
-  };
-  const p=phone?.protocol2&&typeof phone.protocol2==='object'?phone.protocol2:{};
-  return {storageOptions:Array.isArray(p.storageOptions)?p.storageOptions:d.storageOptions,conditionOptions:Array.isArray(p.conditionOptions)?p.conditionOptions:d.conditionOptions,statements:Array.isArray(p.statements)?p.statements:d.statements,functions:{...d.functions,...(p.functions||{})},battery:{...d.battery,...(p.battery||{})}};
-}
-function protocol2ActiveOptions(arr){return active(Array.isArray(arr)?arr:[])}
-function protocol2Answer(key){return buybackAnswers['p2_'+key]??''}
-function setProtocol2Answer(key,value){buybackAnswers['p2_'+key]=value;renderProtocol2();calcQuote()}
-function protocol2IsBroken(){return /kapot|broken|defect|gebroken/i.test(String(protocol2Answer('condition')||''))}
-function renderProtocol2(){
-  const box=$('dynamicQuestions');if(!box||!selectedModel)return;
-  const p=defaultProtocol2(selectedModel),storage=protocol2ActiveOptions(p.storageOptions),conditions=protocol2ActiveOptions(p.conditionOptions);let html='';
-  html+=`<div class="p2-customer-section"><div class="p2-customer-title">Opslagcapaciteit</div><div class="p2-answer-grid">${storage.map(o=>`<button type="button" class="p2-answer ${protocol2Answer('storage')===o.label?'active':''}" onclick="setProtocol2Answer('storage','${esc(o.label)}')">${esc(o.label)}</button>`).join('')}</div></div>`;
-  html+=`<div class="p2-customer-section"><div class="p2-customer-title">Wat is de staat van uw toestel?</div><div class="p2-answer-grid">${conditions.map(o=>`<button type="button" class="p2-answer ${protocol2Answer('condition')===o.label?'active':''}" onclick="setProtocol2Answer('condition','${esc(o.label)}')">${esc(o.label)}${Number(o.priceDelta||0)?` <small>${Number(o.priceDelta)>0?'+':''}${money(o.priceDelta)}</small>`:''}</button>`).join('')}</div></div>`;
-  if(!protocol2IsBroken()){
-    const statements=protocol2ActiveOptions(p.statements);
-    if(statements.length)html+=`<div class="p2-customer-section"><div class="p2-customer-title">Het toestel bevindt zich in deze conditie als ALLE volgende punten van toepassing zijn:</div><ul class="p2-customer-bullets">${statements.map(x=>`<li>${esc(x.label)}</li>`).join('')}</ul></div>`;
-    if(p.functions.active!==false)html+=`<div class="p2-question"><div class="p2-question-title">${esc(p.functions.label)}</div><div class="p2-answer-grid"><button type="button" class="p2-answer ${protocol2Answer('functions')==='Ja'?'active':''}" onclick="setProtocol2Answer('functions','Ja')">Ja</button><button type="button" class="p2-answer ${protocol2Answer('functions')==='Nee'?'active':''}" onclick="setProtocol2Answer('functions','Nee')">Nee</button></div></div>`;
-    if(p.battery.active!==false)html+=`<div class="p2-question"><div class="p2-question-title">${esc(p.battery.label)}</div><div class="p2-answer-grid"><button type="button" class="p2-answer ${protocol2Answer('battery')==='Ja'?'active':''}" onclick="setProtocol2Answer('battery','Ja')">Ja</button><button type="button" class="p2-answer ${protocol2Answer('battery')==='Nee'?'active':''}" onclick="setProtocol2Answer('battery','Nee')">Nee</button></div></div>`;
+function validateDynamicQuestions(){
+  if(selectedModel?.protocol==='protocol2'){
+    if(!String(buybackAnswers.__p2_storage||'').trim()){alert('Kies eerst de opslagcapaciteit.');return false;}
+    if(!String(buybackAnswers.__p2_condition||'').trim()){alert('Kies eerst de staat van het toestel.');return false;}
+    if(protocol2IsBroken())return true;
+    const p=protocol2Data();
+    if(p.functions?.active!==false&&!['Ja','Nee'].includes(buybackAnswers.__p2_functions)){alert('Beantwoord eerst de vraag over alle functies.');return false;}
+    if(p.battery?.active!==false&&!['Ja','Nee'].includes(buybackAnswers.__p2_battery)){alert('Beantwoord eerst de vraag over de batterij.');return false;}
+    return true;
   }
-  box.innerHTML=html;
+  const qs=selectedModel?.typeQuestions||[];
+  const missing=qs.find(q=>q.required!==false && !String(questionValue(q)).trim());
+  if(missing){alert('Kies of vul eerst in: '+missing.label);return false;}
+  return true;
 }
-function calcProtocol2(){
-  if(!selectedModel)return 0;const p=defaultProtocol2(selectedModel);let v=Number(selectedModel.base||0);
-  const s=protocol2ActiveOptions(p.storageOptions).find(x=>x.label===protocol2Answer('storage')),c=protocol2ActiveOptions(p.conditionOptions).find(x=>x.label===protocol2Answer('condition'));if(s)v+=Number(s.priceDelta||0);if(c)v+=Number(c.priceDelta||0);
-  if(!protocol2IsBroken()){if(p.functions.active!==false&&protocol2Answer('functions'))v+=protocol2Answer('functions')==='Ja'?Number(p.functions.yesDelta||0):Number(p.functions.noDelta||0);if(p.battery.active!==false&&protocol2Answer('battery'))v+=protocol2Answer('battery')==='Ja'?Number(p.battery.yesDelta||0):Number(p.battery.noDelta||0)}
-  return Math.max(0,v)
+function firstAnswerByLabel(words){
+  const qs=selectedModel?.typeQuestions||[];
+  for(const q of qs){
+    const label=String(q.label||'').toLowerCase();
+    if(words.some(w=>label.includes(w))) return questionValue(q)||'';
+  }
+  return '';
 }
-function validateProtocol2(){
-  const p=defaultProtocol2(selectedModel);if(protocol2ActiveOptions(p.storageOptions).length&&!protocol2Answer('storage')){alert('Kies eerst de opslagcapaciteit.');return false}if(protocol2ActiveOptions(p.conditionOptions).length&&!protocol2Answer('condition')){alert('Kies eerst de staat van het toestel.');return false}
-  if(!protocol2IsBroken()){if(p.functions.active!==false&&!protocol2Answer('functions')){alert('Beantwoord eerst de vraag over alle functies.');return false}if(p.battery.active!==false&&!protocol2Answer('battery')){alert('Beantwoord eerst de vraag over de batterij.');return false}}return true
-}
-
 function familyKey(d){
   const brand=String(d.brand||'').trim(), type=String(d.deviceType||d.type||'Telefoon').trim(), name=String(d.name||'');
   const n=name.toLowerCase();
@@ -508,19 +539,51 @@ function renderFamilyModels(){
 }
 function renderDevices(){ categories(); }
 function chooseDevice(d){
-  selected=d;buybackAnswers={};selectedModel={...d,base:Number(d.price||0),storage:'',typeQuestions:Array.isArray(d.typeQuestions)?d.typeQuestions:[]};
-  $('modelName').textContent=d.name||'Toestel';$('modelSub').textContent=(d.brand||'')+' · '+(d.deviceType||'')+' · HOMS TECH inkoop';$('productImage').innerHTML=imageFor(d);
-  if(Number(selectedModel.protocol)===2){
-    const p=defaultProtocol2(selectedModel),s=protocol2ActiveOptions(p.storageOptions),co=protocol2ActiveOptions(p.conditionOptions);
-    if(s.length)buybackAnswers.p2_storage=s[0].label;if(co.length)buybackAnswers.p2_condition=co[0].label;
-    if(p.functions.active!==false)buybackAnswers.p2_functions='Ja';if(p.battery.active!==false)buybackAnswers.p2_battery='Ja';renderProtocol2();
-  }else{(selectedModel.typeQuestions||[]).forEach(q=>{const opts=active(q.options);if(q.type!=='text'&&opts.length)buybackAnswers[q.id]=opts[0].label});renderDynamicQuestions()}
-  calcQuote();go(2)
+  selected=d; buybackAnswers={};
+  selectedModel={...d,base:Number(d.price||0),storage:'',typeQuestions:Array.isArray(d.typeQuestions)?d.typeQuestions:[],protocol:d.protocol==='protocol2'?'protocol2':'protocol1'};
+  buybackAnswers={};
+  if(selectedModel.protocol==='protocol2'){
+    const p=normalizeProtocol2ForCustomer(selectedModel);
+    buybackAnswers.__p2_storage=active(p.storageOptions)[0]?.label||'';
+    buybackAnswers.__p2_condition=active(p.conditionOptions)[0]?.label||'';
+  }
+  $('modelName').textContent=d.name||'Toestel';
+  $('modelSub').textContent=(d.brand||'')+' · '+(d.deviceType||'')+' · HOMS TECH inkoop';
+  $('productImage').innerHTML=imageFor(d);
+  // Set the first active option for every question, so the estimate is immediately visible.
+  (selectedModel.typeQuestions||[]).forEach(q=>{
+    const opts=active(q.options);
+    if(q.type!=='text' && opts.length) buybackAnswers[q.id]=opts[0].label;
+  });
+  if(selectedModel.protocol==='protocol2') renderProtocol2(); else {
+    const labels=document.querySelectorAll('#step2 .product-info > .label');labels.forEach(x=>x.style.display='');
+    $('storage').style.display='';$('conditionGrid').style.display='';
+    renderDynamicQuestions();
+  }
+  calcQuote();
+  go(2);
 }
 function calcQuote(){
-  if(!selectedModel)return 0;let v=Number(selectedModel.base||0);
-  if(Number(selectedModel.protocol)===2)v=calcProtocol2();else (selectedModel.typeQuestions||[]).forEach(q=>{if(q.type!=='text')v+=getQuestionDelta(q.id,questionValue(q))});
-  v=Math.max(0,v);const credit=$('cMethod')?.value?.includes('tegoed'),display=credit?v*1.10:v;$('quote').textContent=money(display);$('bottomTotal').textContent=money(display);return v
+  if(!selectedModel)return 0;
+  let v=Number(selectedModel.base||0);
+  if(selectedModel.protocol==='protocol2'){
+    const p=protocol2Data();
+    const s=active(p.storageOptions).find(x=>x.label===buybackAnswers.__p2_storage);
+    const c=active(p.conditionOptions).find(x=>x.label===buybackAnswers.__p2_condition);
+    v+=Number(s?.priceDelta||0)+Number(c?.priceDelta||0);
+    if(!protocol2IsBroken()){
+      if(p.functions?.active!==false) v+=buybackAnswers.__p2_functions==='Ja'?Number(p.functions.yesDelta||0):buybackAnswers.__p2_functions==='Nee'?Number(p.functions.noDelta||0):0;
+      if(p.battery?.active!==false) v+=buybackAnswers.__p2_battery==='Ja'?Number(p.battery.yesDelta||0):buybackAnswers.__p2_battery==='Nee'?Number(p.battery.noDelta||0):0;
+    }
+  }else{
+    (selectedModel.typeQuestions||[]).forEach(q=>{if(q.type==='text')return;v+=getQuestionDelta(q.id,questionValue(q));});
+  }
+  v=Math.max(0,v);
+  const credit=$('cMethod')?.value?.includes('tegoed');
+  const display=credit?v*1.10:v;
+  $('quote').textContent=money(display);
+  $('bottomTotal').textContent=money(display);
+  return v;
 }
 function go(n){
   if(n===1){selectedFamily='';window._modelLimit=12;if($('deviceSearch'))$('deviceSearch').value='';if($('familyGrid'))categories();}
@@ -529,40 +592,47 @@ function go(n){
   for(let i=1;i<=3;i++)$('l'+i).className='sline '+(n>i?'active':'');
   window.scrollTo({top:document.querySelector('.hero').offsetTop-10,behavior:'smooth'});
 }
-$('toStep3').onclick=()=>{if(Number(selectedModel?.protocol)===2){if(!validateProtocol2())return}else if(!validateDynamicQuestions())return;go(3)};
+$('toStep3').onclick=()=>{if(!validateDynamicQuestions())return;go(3)};
 $('toCheckout').onclick=()=>{
-  if(!selectedModel)return;if(Number(selectedModel.protocol)===2){if(!validateProtocol2())return}else if(!validateDynamicQuestions())return;
-  const v=calcQuote();$('sumDevice').textContent=selectedModel.name||'—';
-  $('sumCondition').textContent=Number(selectedModel.protocol)===2?(protocol2Answer('condition')||'—'):(firstAnswerByLabel(['conditie','staat'])||'—');
-  $('sumFace').textContent=Number(selectedModel.protocol)===2?'—':(firstAnswerByLabel(['face id'])||'—');
-  $('sumBattery').textContent=Number(selectedModel.protocol)===2?(protocol2Answer('battery')||'—'):(firstAnswerByLabel(['batterij'])||'—');
-  $('sumScreen').textContent=Number(selectedModel.protocol)===2?'—':(firstAnswerByLabel(['scherm'])||'—');$('sumPrice').textContent=money($('cMethod').value.includes('tegoed')?v*1.10:v);$('sumMethod').textContent=$('cMethod').value;go(3);
+  if(!selectedModel||!validateDynamicQuestions())return;
+  const v=calcQuote();
+  $('sumDevice').textContent=selectedModel.name||'—';
+  $('sumCondition').textContent=firstAnswerByLabel(['conditie','staat'])||'—';
+  $('sumFace').textContent=firstAnswerByLabel(['face id'])||'—';
+  $('sumBattery').textContent=firstAnswerByLabel(['batterij'])||'—';
+  $('sumScreen').textContent=firstAnswerByLabel(['scherm'])||'—';
+  $('sumPrice').textContent=money($('cMethod').value.includes('tegoed')?v*1.10:v);
+  $('sumMethod').textContent=$('cMethod').value;
+  go(3);
 };
 $('back1').onclick=()=>go(1);$('back2').onclick=()=>go(2);
 $('cMethod').onchange=()=>{const v=calcQuote();$('sumMethod').textContent=$('cMethod').value;$('sumPrice').textContent=money($('cMethod').value.includes('tegoed')?v*1.10:v)};
 $('finish').onclick=async()=>{
   if(!$('cName').value.trim()||!$('cEmail').value.trim()||!$('agree').checked){alert('Vul uw naam en e-mailadres in en accepteer de voorwaarden.');return}
-  if(Number(selectedModel?.protocol)===2){if(!validateProtocol2())return}else if(!validateDynamicQuestions())return;
+  if(!validateDynamicQuestions())return;
   const btn=$('finish'),old=btn.textContent;btn.disabled=true;btn.textContent='Aanvraag wordt verzonden...';
   try{
     const v=calcQuote(),credit=$('cMethod').value.includes('tegoed'),offer=credit?v*1.10:v;
-    const answers={protocol:Number(selectedModel.protocol)||1};
-    if(Number(selectedModel.protocol)===2){
-      const p=defaultProtocol2(selectedModel);
-      answers.storage={question:'Opslagcapaciteit',value:protocol2Answer('storage'),type:'options'};
-      answers.condition={question:'Wat is de staat van uw toestel?',value:protocol2Answer('condition'),type:'options'};
-      answers.functions={question:p.functions.label,value:protocol2Answer('functions'),type:'yesno'};
-      answers.battery={question:p.battery.label,value:protocol2Answer('battery'),type:'yesno'};
-      answers.statements=p.statements.filter(x=>x.active!==false).map(x=>x.label);
+    const answers={};
+    if(selectedModel.protocol==='protocol2'){
+      const p=protocol2Data();
+      answers.protocol='protocol2';
+      answers.storage={question:'Opslagcapaciteit',value:buybackAnswers.__p2_storage};
+      answers.condition={question:'Staat van het toestel',value:buybackAnswers.__p2_condition};
+      if(!protocol2IsBroken()){
+        if(p.functions?.active!==false) answers.functions={question:p.functions.label,value:buybackAnswers.__p2_functions,type:'yesno'};
+        if(p.battery?.active!==false) answers.battery={question:p.battery.label,value:buybackAnswers.__p2_battery,type:'yesno'};
+        answers.checklist=p.checklist.filter(x=>x&&x.active!==false).map(x=>x.text);
+      }
     }else{
       (selectedModel.typeQuestions||[]).forEach(q=>answers[q.id]={question:q.label,value:questionValue(q),type:q.type});
     }
     const payload={
       name:$('cName').value.trim(),email:$('cEmail').value.trim(),phone:$('cPhone').value.trim(),
       address:[$('cAddress').value.trim(),$('cZip').value.trim(),$('cCity').value.trim()].filter(Boolean).join(', '),
-      device:selectedModel.name||'',brand:selectedModel.brand||'',model:selectedModel.name||'',storage:firstAnswerByLabel(['opslag'])||'',
-      condition:firstAnswerByLabel(['conditie','staat'])||'',faceId:firstAnswerByLabel(['face id'])||'',
-      battery:firstAnswerByLabel(['batterij'])||'',screen:firstAnswerByLabel(['scherm'])||'',
+      device:selectedModel.name||'',brand:selectedModel.brand||'',model:selectedModel.name||'',storage:selectedModel.protocol==='protocol2'?(buybackAnswers.__p2_storage||''):firstAnswerByLabel(['opslag'])||'',
+      condition:selectedModel.protocol==='protocol2'?(buybackAnswers.__p2_condition||''):firstAnswerByLabel(['conditie','staat'])||'',faceId:firstAnswerByLabel(['face id'])||'',
+      battery:selectedModel.protocol==='protocol2'?(buybackAnswers.__p2_battery||''):firstAnswerByLabel(['batterij'])||'',screen:firstAnswerByLabel(['scherm'])||'',
       offeredPrice:Number(offer.toFixed(2)),iban:$('cIban').value.trim(),paymentMethod:$('cMethod').value,
       answers,deviceType:selectedModel.deviceType||selectedModel.typeName||''
     };
