@@ -2903,7 +2903,7 @@ function updateProtocol3Option(section,index,field,value){
   const phone=getSelectedBuybackPhone();if(!phone)return;
   phone.protocol3=normalizeBuybackProtocol3(phone);
   const arr=phone.protocol3[section].options;if(!Array.isArray(arr)||!arr[index])return;
-  arr[index][field]=field==='priceDelta'?Number(value||0):field==='active'?!!value:String(value);
+  arr[index][field]=field==='buyPrice'?Number(value||0):field==='priceDelta'?Number(value||0):field==='active'?!!value:String(value);
   markChanged();
 }
 function updateProtocol3Checklist(index,field,value){
@@ -2980,7 +2980,7 @@ function updateProtocol5Option(section,index,field,value){
   const phone=getSelectedBuybackPhone();if(!phone)return;
   phone.protocol5=normalizeBuybackProtocol5(phone);
   const arr=phone.protocol5[section].options;if(!Array.isArray(arr)||!arr[index])return;
-  arr[index][field]=field==='priceDelta'?Number(value||0):field==='active'?!!value:String(value);
+  arr[index][field]=field==='buyPrice'?Number(value||0):field==='priceDelta'?Number(value||0):field==='active'?!!value:String(value);
   markChanged();
 }
 function updateProtocol5Checklist(index,field,value){
@@ -3033,7 +3033,7 @@ function updateProtocol4Option(section,index,field,value){
   const phone=getSelectedBuybackPhone();if(!phone)return;
   phone.protocol4=normalizeBuybackProtocol4(phone);
   const arr=phone.protocol4[section].options;if(!Array.isArray(arr)||!arr[index])return;
-  arr[index][field]=field==='priceDelta'?Number(value||0):field==='active'?!!value:String(value);
+  arr[index][field]=field==='buyPrice'?Number(value||0):field==='priceDelta'?Number(value||0):field==='active'?!!value:String(value);
   markChanged();
 }
 function updateProtocol4Checklist(index,field,value){
