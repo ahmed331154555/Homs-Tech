@@ -162,7 +162,7 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
 .dynamic-condition-question .dynamic-option{min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
 .condition-price{font-size:16px;font-weight:900;color:#0f5ed8}
 @media(max-width:850px){.dynamic-condition-question .dynamic-option-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-</style></head>
+</style><style id="homs-pricing-customer-v1">.pricing-hint{margin-top:5px;font-size:11px;color:#64748b}.delta{margin-left:auto;font-size:12px;font-weight:800;color:#2563eb}.condition-price{margin-left:auto;font-size:13px;font-weight:900;color:#0f172a}</style></head>
 <body>
 
 <div class="topbar"><div class="wrap"><div class="top-info"><span>1 jaar garantie</span><span>Snel geleverd</span><span>Betrouwbare service</span><span>Betaalbare prijzen</span></div></div></div>
@@ -217,7 +217,7 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
       <label class="label">Opslagcapaciteit</label><div id="storage" class="storage"></div>
       <label class="label">Wat is de staat van uw toestel?</label><div id="conditionGrid" class="condition-grid"></div>
     </div>
-    <aside class="quote"><div><small>Totale prijs (geschat)</small><strong id="quote">€ 0,00</strong></div><button id="toStep3" class="primary blue">Ga verder →</button><ul><li>Gratis verzending</li><li>Snelle beoordeling</li><li>Directe uitbetaling</li></ul></aside>
+    <aside class="quote"><div><small>Totale prijs (geschat)</small><div class="pricing-hint">Staat = vaste prijs · overige keuzes = + / -</div><strong id="quote">€ 0,00</strong></div><button id="toStep3" class="primary blue">Ga verder →</button><ul><li>Gratis verzending</li><li>Snelle beoordeling</li><li>Directe uitbetaling</li></ul></aside>
   </div>
   <div class="two-col">
     <div class="box" style="grid-column:1/-1">
@@ -297,7 +297,7 @@ function buildCustomerQuestions(phone,type){
     return questions;
   }
   const p=phone?.[protocol]||{},base=Number(phone?.price||0),questions=[];
-  const addSection=(key,label)=>{const sec=p[key];if(!sec||sec.active===false)return;const opts=Array.isArray(sec.options)?sec.options.filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>{const out={...o};if(key==='condition')out.buyPrice=Math.max(0,base+Number(o.priceDelta||0));return out;}):[];if(opts.length)questions.push({id:protocol+'_'+key,label,type:'options',required:true,options:opts});};
+  const addSection=(key,label)=>{const sec=p[key];if(!sec||sec.active===false)return;const opts=Array.isArray(sec.options)?sec.options.filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>{const out={...o};if(key==='condition')out.buyPrice=Number.isFinite(Number(o.buyPrice))?Math.max(0,Number(o.buyPrice)):Math.max(0,base+Number(o.priceDelta||0));return out;}):[];if(opts.length)questions.push({id:protocol+'_'+key,label,type:'options',required:true,options:opts});};
   const addChecklist=()=>{const sec=p.checklist;if(!sec||sec.active===false)return;(Array.isArray(sec.items)?sec.items:[]).filter(x=>x&&x.active!==false&&String(x.text||'').trim()).forEach((x,i)=>questions.push({id:protocol+'_check_'+i,label:String(x.text),type:'info',required:false,options:[]}));};
   const addFunctions=()=>{const sec=p.functions;if(!sec||sec.active===false)return;questions.push({id:protocol+'_functions',label:String(sec.label||'Werken alle functies van het toestel goed?'),type:'options',required:true,options:[{label:'Ja',priceDelta:Number(sec.yesDelta||0),active:true},{label:'Nee',priceDelta:Number(sec.noDelta||0),active:true}]});};
   const addBattery=()=>{const sec=p.battery;if(!sec||sec.active===false)return;const opts=Array.isArray(sec.options)&&sec.options.length?sec.options.filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>({...o})):[{label:'Ja',priceDelta:Number(sec.yesDelta||0),active:true},{label:'Nee',priceDelta:Number(sec.noDelta||0),active:true}];questions.push({id:protocol+'_battery',label:String(sec.label||'Wat is de status van de batterij?'),type:'options',required:true,options:opts});};
