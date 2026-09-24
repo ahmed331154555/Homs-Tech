@@ -2453,7 +2453,7 @@ function normalizeBuybackPhones(){
   data.buybackPhones=data.buybackPhones.map((x,i)=>({
     id:x.id || ('buyback-'+Date.now()+'-'+i),
     name:x.name||'', brand:x.brand||'', image:x.image||'', price:Number(x.price||0), active:x.active!==false,
-    protocol:x.protocol==='protocol6'?'protocol6':(x.protocol==='protocol5'?'protocol5':(x.protocol==='protocol4'?'protocol4':(x.protocol==='protocol3'?'protocol3':(x.protocol==='protocol2'?'protocol2':'protocol1')))),
+    protocol:x.protocol==='protocol8'?'protocol8':(x.protocol==='protocol7'?'protocol7':(x.protocol==='protocol6'?'protocol6':(x.protocol==='protocol5'?'protocol5':(x.protocol==='protocol4'?'protocol4':(x.protocol==='protocol3'?'protocol3':(x.protocol==='protocol2'?'protocol2':'protocol1')))))),
     protocol2:normalizeBuybackProtocol2(x),
     protocol3:normalizeBuybackProtocol3(x),
     protocol4:normalizeBuybackProtocol4(x),
@@ -2847,6 +2847,8 @@ function updateBuybackProtocol(value){
   if(phone.protocol==='protocol4') phone.protocol4=normalizeBuybackProtocol4(phone);
   if(phone.protocol==='protocol5') phone.protocol5=normalizeBuybackProtocol5(phone);
   if(phone.protocol==='protocol6') phone.protocol6=normalizeBuybackProtocol6(phone);
+  if(phone.protocol==='protocol7') phone.protocol7=normalizeBuybackProtocol7(phone);
+  if(phone.protocol==='protocol8') phone.protocol8=normalizeBuybackProtocol8(phone);
   markChanged();renderBuybackModelEditor();
 }
 function updateProtocol2Field(path,value){
