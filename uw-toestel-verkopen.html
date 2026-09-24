@@ -279,7 +279,7 @@ function imageFor(d){
 let selectedBrand='',selectedType='';
 
 function buildCustomerQuestions(phone,type){
-  const protocol=String(phone?.buybackProtocol||'1');
+  const protocol=String(phone?.buybackProtocol||phone?.protocol||'1');
   if(protocol==='1'){
     const questions=Array.isArray(type?.questions)?type.questions.map(q=>({...q,options:Array.isArray(q.options)?q.options.map(o=>({...o})):[]})):[];
     const optionSets=[['storageOptions','Opslag',['opslag','storage']],['conditionOptions','Conditie',['conditie','staat','condition']],['batteryOptions','Batterij',['batterij','battery']],['faceIdOptions','Face ID',['face id','faceid']],['screenOptions','Scherm',['scherm','screen']],['variantOptions','Type / uitvoering',['type / uitvoering','type','uitvoering','variant','verbinding','connectiviteit']]];
@@ -313,7 +313,7 @@ function flattenBuybackCatalog(catalog){
         const p=(siteData.buybackPhones||[]).find(x=>String(x.id)===String(m.buybackId));
         if(p && p.active!==false){
           out.push({...p,brand:b.name,deviceType:t.name,typeId:t.id,typeName:t.name,brandId:b.id,modelId:m.id,
-            typeQuestions:buildCustomerQuestions(p,t),protocol:String(p.buybackProtocol||'1'),protocol2:p.protocol2||{},protocolSettings:p.buybackProtocolSettings?.[p.buybackProtocol==='1'?'1':'2']||{},brandImage:b.image||b.brandImage||''});
+            typeQuestions:buildCustomerQuestions(p,t),protocol:String(p.buybackProtocol||p.protocol||'1'),protocol2:p.protocol2||{},protocolSettings:p.buybackProtocolSettings?.[p.buybackProtocol==='1'?'1':'2']||{},brandImage:b.image||b.brandImage||''});
         }
       });
     });
@@ -629,7 +629,7 @@ async function loadBuyback(){
     const catalog=Array.isArray(siteData.buybackCatalog)?siteData.buybackCatalog:[];
     devices=flattenBuybackCatalog(catalog);
     if(!devices.length){
-      devices=(Array.isArray(siteData.buybackPhones)?siteData.buybackPhones:[]).filter(x=>x.active!==false).map(x=>({...x,protocol:String(x.buybackProtocol||'1'),protocol2:x.protocol2||{},protocolSettings:x.buybackProtocolSettings?.[x.buybackProtocol==='1'?'1':'2']||{},typeQuestions:buildCustomerQuestions(x,{questions:[]})}));
+      devices=(Array.isArray(siteData.buybackPhones)?siteData.buybackPhones:[]).filter(x=>x.active!==false).map(x=>({...x,protocol:String(x.buybackProtocol||x.protocol||'1'),protocol2:x.protocol2||{},protocolSettings:x.buybackProtocolSettings?.[x.buybackProtocol==='1'?'1':'2']||{},typeQuestions:buildCustomerQuestions(x,{questions:[]})}));
     }
     categories();renderDevices();
   }catch(e){devices=[];categories();renderDevices()}
