@@ -755,12 +755,12 @@ device.imageUrl ||
 const storage = device.storage || device.geheugen || "";
 const color = device.color || device.kleur || "";
 const condition = device.condition || device.conditie || "";
-const salePrice =
-device.price ||
-device.salePrice ||
-device.sellPrice ||
-device.verkoopprijs ||
-"";
+const conditionOptions = Array.isArray(device.conditionOptions) ? device.conditionOptions : [];
+const firstCondition = conditionOptions.find(x => x && x.label && x.active !== false && x.available !== false && (x.basePrice !== undefined || x.conditionBasePrice !== undefined || x.conditionPrice !== undefined || x.isCondition));
+const conditionPrice = firstCondition ? (firstCondition.basePrice ?? firstCondition.conditionBasePrice ?? firstCondition.conditionPrice ?? firstCondition.price) : "";
+const salePrice = conditionPrice !== "" && conditionPrice !== undefined && conditionPrice !== null
+? conditionPrice
+: (device.price || device.salePrice || device.sellPrice || device.verkoopprijs || "");
 
 const productUrl =
 "product.html?type=phone&id=" +
