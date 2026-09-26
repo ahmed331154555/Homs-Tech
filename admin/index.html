@@ -1181,8 +1181,9 @@ textarea{
         </div>
       </div>
       <div class="small" style="margin-bottom:12px;padding:10px 12px;background:#f4f8ff;border:1px solid #dce9ff;border-radius:10px">
-        Stel hier de vaste uitleg in voor <strong>Zo goed als nieuw</strong>, <strong>Licht gebruikt</strong>, <strong>Zichtbaar gebruikt</strong> en <strong>Kapot</strong>. De klant kan deze uitleg later openen via «Wat is dat?» op de productpagina.
+        Stel hier één keer de uitleg in voor <strong>Zo goed als nieuw</strong>, <strong>Licht gebruikt</strong> en <strong>Zichtbaar gebruikt</strong>. Deze instellingen gelden voor alle telefoons.
       </div>
+      <div id="globalConditionOverviewBox"></div>
       <div id="globalConditionDetailsList"></div>
     </div>
   </section>
@@ -1648,33 +1649,23 @@ function normalizePhoneOptions(phone){
 
 function normalizeGlobalConditionDetails(){
   const defaults=[
-    {title:"Zo goed als nieuw",text:"",image:""},
-    {title:"Licht gebruikt",text:"",image:""},
-    {title:"Zichtbaar gebruikt",text:"",image:""},
-    {title:"Kapot",text:"",image:""}
+    {title:"Zo goed als nieuw",text:"Geen of zeer minimale gebruikssporen. Scherm meestal als nieuw. Technisch 100% in orde.",image:""},
+    {title:"Licht gebruikt",text:"Enkele kleine gebruikssporen en lichte krasjes op de behuizing. Technisch 100% in orde.",image:""},
+    {title:"Zichtbaar gebruikt",text:"Duidelijke gebruikssporen, krasjes en kleine deukjes op de behuizing. Face ID / Touch ID werkt niet.",image:""}
   ];
-
   if(!Array.isArray(data.globalConditionDetails) || !data.globalConditionDetails.length){
-    const old=(Array.isArray(data.phones)?data.phones:[]).find(p=>Array.isArray(p.conditionDetails)&&p.conditionDetails.length);
-    data.globalConditionDetails=old
-      ? old.conditionDetails.slice(0,10).map(x=>({title:String(x.title||""),text:String(x.text||""),image:String(x.image||"")}))
-      : defaults.map(x=>({...x}));
+    data.globalConditionDetails=defaults.map(x=>({...x}));
   }else{
-    data.globalConditionDetails=data.globalConditionDetails.slice(0,10).map((x,i)=>({
-      title:String(x?.title||defaults[i]?.title||""),
-      text:String(x?.text||""),
-      image:String(x?.image||"")
+    const current=data.globalConditionDetails.slice(0,3);
+    data.globalConditionDetails=defaults.map((d,i)=>({
+      title:String(current[i]?.title || d.title),
+      text:String(current[i]?.text || d.text),
+      image:String(current[i]?.image || d.image)
     }));
-    const existing=new Set(data.globalConditionDetails.map(x=>x.title.trim().toLowerCase()).filter(Boolean));
-    defaults.forEach(x=>{
-      if(!existing.has(x.title.toLowerCase()) && data.globalConditionDetails.length<10){
-        data.globalConditionDetails.push({...x});
-      }
-    });
   }
 }
 
-function handleGlobalConditionImage(event,i){
+function handleGlobalConditionOverviewImage(event){
   const file=event.target.files && event.target.files[0];
   if(!file) return;
   if(!file.type || !file.type.startsWith('image/')){
@@ -1682,15 +1673,14 @@ function handleGlobalConditionImage(event,i){
     event.target.value='';
     return;
   }
-  if(file.size>2*1024*1024){
-    alert('De afbeelding mag maximaal 2 MB zijn.');
+  if(file.size>5*1024*1024){
+    alert('De afbeelding mag maximaal 5 MB zijn.');
     event.target.value='';
     return;
   }
   const reader=new FileReader();
   reader.onload=()=>{
-    normalizeGlobalConditionDetails();
-    data.globalConditionDetails[i].image=reader.result;
+    data.globalConditionOverviewImage=reader.result;
     renderGlobalConditionDetails();
     markChanged();
   };
@@ -1699,31 +1689,33 @@ function handleGlobalConditionImage(event,i){
 
 function renderGlobalConditionDetails(){
   normalizeGlobalConditionDetails();
+  const overview=document.getElementById('globalConditionOverviewBox');
+  if(overview){
+    const img=String(data.globalConditionOverviewImage||'');
+    overview.innerHTML=`
+      <div style="border:1px solid #dbe4f0;border-radius:14px;padding:14px;margin-bottom:14px;background:#fff">
+        <label style="font-weight:800;display:block;margin-bottom:7px">🖼️ Eén afbeelding voor «Wat is dat?»</label>
+        <div class="small" style="margin-bottom:10px">Upload hier de afbeelding met de 3 condities. Deze afbeelding wordt centraal gebruikt op alle productpagina's.</div>
+        <input type="file" accept="image/*" onchange="handleGlobalConditionOverviewImage(event)">
+        <input value="${esc(img)}" placeholder="Of plak een afbeelding URL" oninput="data.globalConditionOverviewImage=this.value;renderGlobalConditionDetails();markChanged()" style="margin-top:8px">
+        ${img?`<img src="${esc(img)}" alt="Productcondities" style="display:block;width:100%;max-width:900px;max-height:420px;object-fit:contain;border-radius:12px;margin-top:10px;background:#f8fafc">`:''}
+      </div>`;
+  }
   const box=document.getElementById('globalConditionDetailsList');
   if(!box) return;
   box.innerHTML=data.globalConditionDetails.map((x,i)=>`
     <div style="border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin-bottom:12px;background:#fff">
-      <div style="display:grid;grid-template-columns:1fr 1.5fr 44px;gap:10px;align-items:start">
-        <div class="field">
-          <label>Naam conditie</label>
-          <input value="${esc(x.title||'')}" placeholder="Zo goed als nieuw" oninput="data.globalConditionDetails[${i}].title=this.value;markChanged()">
-        </div>
-        <div class="field">
-          <label>Uitleg voor de klant</label>
-          <textarea rows="3" placeholder="Leg uit hoe deze conditie eruitziet..." oninput="data.globalConditionDetails[${i}].text=this.value;markChanged()">${esc(x.text||'')}</textarea>
-        </div>
-        <button class="btn btn-red" type="button" style="margin-top:25px" onclick="data.globalConditionDetails.splice(${i},1);renderGlobalConditionDetails();markChanged()">×</button>
+      <div style="font-weight:800;margin-bottom:8px">${i+1}. ${esc(x.title)}</div>
+      <div class="field">
+        <label>Naam conditie</label>
+        <input value="${esc(x.title||'')}" oninput="data.globalConditionDetails[${i}].title=this.value;markChanged()">
       </div>
-      <div style="margin-top:10px">
-        <label style="font-weight:700;display:block;margin-bottom:6px">🖼️ Afbeelding voor «Wat is dat?»</label>
-        <input type="file" accept="image/*" onchange="handleGlobalConditionImage(event,${i})">
-        <input value="${esc(x.image||'')}" placeholder="Of plak een afbeelding URL" oninput="data.globalConditionDetails[${i}].image=this.value;markChanged()">
-        ${x.image?`<img src="${esc(x.image)}" alt="" style="display:block;width:220px;height:135px;object-fit:cover;border-radius:10px;margin-top:8px">`:''}
-        <div class="small" style="margin-top:6px">Deze afbeelding wordt voor deze conditie gebruikt op alle productpagina's.</div>
+      <div class="field" style="margin-top:8px">
+        <label>Uitleg voor de klant</label>
+        <textarea rows="3" oninput="data.globalConditionDetails[${i}].text=this.value;markChanged()">${esc(x.text||'')}</textarea>
       </div>
     </div>
-  `).join('')+`
-    <button class="btn btn-light" type="button" onclick="data.globalConditionDetails.push({title:'',text:'',image:''});renderGlobalConditionDetails();markChanged()">+ Conditie-uitleg toevoegen</button>`;
+  `).join('');
 }
 
 function normalizeDeviceCategories(){
