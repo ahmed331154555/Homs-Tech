@@ -1181,17 +1181,42 @@ function forzaExtractTest(html, sourceUrl) {
     "Zichtbaar gebruikt"
   ];
 
-  for (const name of conditionNames) {
+  // Forza's public page can render the condition price either directly
+  // after the condition name or with extra labels/elements in between.
+  // Keep the direct match first, then use a bounded fallback that stops
+  // before the next condition. This is especially important for the
+  // 64GB page, which can have a slightly different rendered structure.
+  for (let i = 0; i < conditionNames.length; i++) {
+    const name = conditionNames[i];
     const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const pattern = new RegExp(
+    const directPattern = new RegExp(
       escaped + "\\s+(?:Meest gekozen\\s+)?€\\s*([0-9]+(?:[.,][0-9]{1,2})?)",
       "i"
     );
-    const match = clean.match(pattern);
-    conditions.push({
-      name,
-      price: match ? forzaParseEuro(match[1]) : null
-    });
+
+    let price = null;
+    const directMatch = clean.match(directPattern);
+    if (directMatch) {
+      price = forzaParseEuro(directMatch[1]);
+    } else {
+      const nextNames = conditionNames.slice(i + 1);
+      const stopPattern = nextNames.length
+        ? new RegExp(nextNames.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") , "i")
+        : null;
+      const nameMatch = clean.match(new RegExp(escaped, "i"));
+      if (nameMatch) {
+        const start = nameMatch.index + nameMatch[0].length;
+        let segment = clean.slice(start, start + 220);
+        if (stopPattern) {
+          const stop = segment.search(stopPattern);
+          if (stop >= 0) segment = segment.slice(0, stop);
+        }
+        const euroMatch = segment.match(/€\\s*([0-9]+(?:[.,][0-9]{1,2})?)/i);
+        if (euroMatch) price = forzaParseEuro(euroMatch[1]);
+      }
+    }
+
+    conditions.push({ name, price });
   }
 
   const battery = [];
