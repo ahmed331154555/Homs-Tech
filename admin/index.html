@@ -2154,7 +2154,7 @@ function defaultBuybackProtocol3(){
     },
     condition:{
       active:true,
-      options:[{label:'Zo goed als nieuw',buyPrice:0,priceDelta:0,active:true},{label:'Licht gebruikt',buyPrice:0,priceDelta:0,active:true},{label:'Zichtbaar gebruikt',buyPrice:0,priceDelta:0,active:true},{label:'Kapot',buyPrice:0,priceDelta:0,active:true}]
+      options:[{label:'Zo goed als nieuw',buyPrice:0,conditionPrice:0,priceDelta:0,active:true},{label:'Licht gebruikt',buyPrice:0,conditionPrice:0,priceDelta:0,active:true},{label:'Zichtbaar gebruikt',buyPrice:0,conditionPrice:0,priceDelta:0,active:true},{label:'Kapot',buyPrice:0,conditionPrice:0,priceDelta:0,active:true}]
     },
     checklist:{
       active:true,
@@ -2183,11 +2183,11 @@ function defaultBuybackProtocol3(){
 }
 function normalizeBuybackProtocol3(x){
   const d=defaultBuybackProtocol3(), p=(x&&x.protocol3)||{};
-  const normOpts=(incoming,fallback)=>Array.isArray(incoming)&&incoming.length?incoming.map(o=>({label:String(o.label||''),buyPrice:(o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):undefined,priceDelta:Number(o.priceDelta||0),active:o.active!==false})):fallback.map(o=>({...o}));
+  const normOpts=(incoming,fallback)=>Array.isArray(incoming)&&incoming.length?incoming.map(o=>({label:String(o.label||''),buyPrice:(o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):((o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):undefined),conditionPrice:(o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):((o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):undefined),priceDelta:Number(o.priceDelta||0),active:o.active!==false})):fallback.map(o=>({...o}));
   const normSection=(incoming,fallback)=>({
     ...fallback,
     ...(incoming||{}),
-    active:(incoming||{}).active!==false,
+    active:(incoming||{}).active===undefined ? true : !!(incoming||{}).active,
     options:normOpts((incoming||{}).options,fallback.options)
   });
   return {
@@ -2197,7 +2197,7 @@ function normalizeBuybackProtocol3(x){
     checklist:{
       ...d.checklist,
       ...(p.checklist||{}),
-      active:(p.checklist||{}).active!==false,
+      active:(p.checklist||{}).active===undefined ? true : !!(p.checklist||{}).active,
       items:Array.isArray(p.checklist&&p.checklist.items)&&p.checklist.items.length?p.checklist.items.map(o=>({text:String(o.text||''),active:o.active!==false})):d.checklist.items.map(o=>({...o}))
     },
     functions:{...d.functions,...(p.functions||{}),yesDelta:Number((p.functions||{}).yesDelta??d.functions.yesDelta),noDelta:Number((p.functions||{}).noDelta??d.functions.noDelta),active:(p.functions||{}).active!==false},
@@ -2213,10 +2213,10 @@ function defaultBuybackProtocol8(){
     memory:{active:true,options:[{label:'16GB unified memory',priceDelta:0,active:true},{label:'32GB unified memory',priceDelta:0,active:true}]},
     graphics:{active:true,options:[{label:'Built-in',priceDelta:0,active:true}]},
     condition:{active:true,options:[
-      {label:'Zo goed als nieuw',buyPrice:660,priceDelta:0,active:true},
-      {label:'Licht gebruikt',buyPrice:484,priceDelta:0,active:true},
-      {label:'Zichtbaar gebruikt',buyPrice:264,priceDelta:0,active:true},
-      {label:'Kapot',buyPrice:83,priceDelta:0,active:true}
+      {label:'Zo goed als nieuw',buyPrice:660,conditionPrice:660,priceDelta:0,active:true},
+      {label:'Licht gebruikt',buyPrice:484,conditionPrice:484,priceDelta:0,active:true},
+      {label:'Zichtbaar gebruikt',buyPrice:264,conditionPrice:264,priceDelta:0,active:true},
+      {label:'Kapot',buyPrice:83,conditionPrice:83,priceDelta:0,active:true}
     ]},
     checklist:{active:true,items:[
       {text:'De MacBook ziet er als nieuw uit of heeft kleine gebruikssporen.',active:true},
@@ -2233,11 +2233,11 @@ function defaultBuybackProtocol8(){
 }
 function normalizeBuybackProtocol8(x){
   const d=defaultBuybackProtocol8(), p=(x&&x.protocol8)||{};
-  const normOpts=(incoming,fallback)=>Array.isArray(incoming)&&incoming.length?incoming.map(o=>({label:String(o.label||''),buyPrice:(o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):undefined,priceDelta:Number(o.priceDelta||0),active:o.active!==false})):fallback.map(o=>({...o}));
-  const normSection=(incoming,fallback)=>({...fallback,...(incoming||{}),active:(incoming||{}).active!==false,options:normOpts((incoming||{}).options,fallback.options)});
+  const normOpts=(incoming,fallback)=>Array.isArray(incoming)&&incoming.length?incoming.map(o=>({label:String(o.label||''),buyPrice:(o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):((o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):undefined),conditionPrice:(o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):((o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):undefined),priceDelta:Number(o.priceDelta||0),active:o.active!==false})):fallback.map(o=>({...o}));
+  const normSection=(incoming,fallback)=>({...fallback,...(incoming||{}),active:(incoming||{}).active===undefined ? true : !!(incoming||{}).active,options:normOpts((incoming||{}).options,fallback.options)});
   return {
     screenSize:normSection(p.screenSize,d.screenSize),yearModel:normSection(p.yearModel,d.yearModel),processor:normSection(p.processor,d.processor),storage:normSection(p.storage,d.storage),memory:normSection(p.memory,d.memory),graphics:normSection(p.graphics,d.graphics),condition:normSection(p.condition,d.condition),
-    checklist:{...d.checklist,...(p.checklist||{}),active:(p.checklist||{}).active!==false,items:Array.isArray(p.checklist&&p.checklist.items)&&p.checklist.items.length?p.checklist.items.map(o=>({text:String(o.text||''),active:o.active!==false})):d.checklist.items.map(o=>({...o}))},
+    checklist:{...d.checklist,...(p.checklist||{}),active:(p.checklist||{}).active===undefined ? true : !!(p.checklist||{}).active,items:Array.isArray(p.checklist&&p.checklist.items)&&p.checklist.items.length?p.checklist.items.map(o=>({text:String(o.text||''),active:o.active!==false})):d.checklist.items.map(o=>({...o}))},
     functions:{...d.functions,...(p.functions||{}),yesDelta:Number((p.functions||{}).yesDelta??d.functions.yesDelta),noDelta:Number((p.functions||{}).noDelta??d.functions.noDelta),active:(p.functions||{}).active!==false},
     battery:{...d.battery,...(p.battery||{}),active:(p.battery||{}).active!==false,options:normOpts((p.battery||{}).options,d.battery.options)}
   };
@@ -2247,10 +2247,10 @@ function defaultBuybackProtocol7(){
     connectivity:{active:true,options:[{label:'Wi-Fi',priceDelta:0,active:true}]},
     capacity:{active:true,options:[{label:'256GB',priceDelta:0,active:true}]},
     condition:{active:true,options:[
-            {label:'Zo goed als nieuw',buyPrice:100,priceDelta:0,active:true},
-      {label:'Licht gebruikt',buyPrice:80,priceDelta:0,active:true},
-      {label:'Zichtbaar gebruikt',buyPrice:60,priceDelta:0,active:true},
-      {label:'Kapot',buyPrice:15,priceDelta:0,active:true}
+            {label:'Zo goed als nieuw',buyPrice:100,conditionPrice:100,priceDelta:0,active:true},
+      {label:'Licht gebruikt',buyPrice:80,conditionPrice:80,priceDelta:0,active:true},
+      {label:'Zichtbaar gebruikt',buyPrice:60,conditionPrice:60,priceDelta:0,active:true},
+      {label:'Kapot',buyPrice:15,conditionPrice:15,priceDelta:0,active:true}
     ]},
     checklist:{active:true,items:[
       {text:'De Samsung Tab heeft enkele lichte gebruikssporen, zoals kleine krasjes.',active:true},
@@ -2266,16 +2266,16 @@ function defaultBuybackProtocol7(){
 }
 function normalizeBuybackProtocol7(x){
   const d=defaultBuybackProtocol7(), p=(x&&x.protocol7)||{};
-  const normOpts=(incoming,fallback)=>Array.isArray(incoming)&&incoming.length?incoming.map(o=>({label:String(o.label||''),buyPrice:(o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):undefined,priceDelta:Number(o.priceDelta||0),active:o.active!==false})):fallback.map(o=>({...o}));
-  const normSection=(incoming,fallback)=>({...fallback,...(incoming||{}),active:(incoming||{}).active!==false,options:normOpts((incoming||{}).options,fallback.options)});
-  return {connectivity:normSection(p.connectivity,d.connectivity),capacity:normSection(p.capacity,d.capacity),condition:normSection(p.condition,d.condition),checklist:{...d.checklist,...(p.checklist||{}),active:(p.checklist||{}).active!==false,items:Array.isArray(p.checklist&&p.checklist.items)&&p.checklist.items.length?p.checklist.items.map(o=>({text:String(o.text||''),active:o.active!==false})):d.checklist.items.map(o=>({...o}))},functions:{...d.functions,...(p.functions||{}),yesDelta:Number((p.functions||{}).yesDelta??d.functions.yesDelta),noDelta:Number((p.functions||{}).noDelta??d.functions.noDelta),active:(p.functions||{}).active!==false},battery:{...d.battery,...(p.battery||{}),active:(p.battery||{}).active!==false,options:normOpts((p.battery||{}).options,d.battery.options)}};
+  const normOpts=(incoming,fallback)=>Array.isArray(incoming)&&incoming.length?incoming.map(o=>({label:String(o.label||''),buyPrice:(o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):((o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):undefined),conditionPrice:(o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):((o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):undefined),priceDelta:Number(o.priceDelta||0),active:o.active!==false})):fallback.map(o=>({...o}));
+  const normSection=(incoming,fallback)=>({...fallback,...(incoming||{}),active:(incoming||{}).active===undefined ? true : !!(incoming||{}).active,options:normOpts((incoming||{}).options,fallback.options)});
+  return {connectivity:normSection(p.connectivity,d.connectivity),capacity:normSection(p.capacity,d.capacity),condition:normSection(p.condition,d.condition),checklist:{...d.checklist,...(p.checklist||{}),active:(p.checklist||{}).active===undefined ? true : !!(p.checklist||{}).active,items:Array.isArray(p.checklist&&p.checklist.items)&&p.checklist.items.length?p.checklist.items.map(o=>({text:String(o.text||''),active:o.active!==false})):d.checklist.items.map(o=>({...o}))},functions:{...d.functions,...(p.functions||{}),yesDelta:Number((p.functions||{}).yesDelta??d.functions.yesDelta),noDelta:Number((p.functions||{}).noDelta??d.functions.noDelta),active:(p.functions||{}).active!==false},battery:{...d.battery,...(p.battery||{}),active:(p.battery||{}).active!==false,options:normOpts((p.battery||{}).options,d.battery.options)}};
 }
 function defaultBuybackProtocol6(){
   return {
     connectivity:{active:true,options:[{label:'🔓 Ontgrendeld',priceDelta:0,active:true}]},
     capacity:{active:true,options:[{label:'128GB',priceDelta:0,active:true},{label:'256GB',priceDelta:0,active:true}]},
     ram:{active:true,options:[{label:'6GB RAM',priceDelta:0,active:true},{label:'8GB RAM',priceDelta:0,active:true}]},
-    condition:{active:true,options:[{label:'Zo goed als nieuw',buyPrice:160,priceDelta:0,active:true},{label:'Licht gebruikt',buyPrice:155,priceDelta:0,active:true},{label:'Zichtbaar gebruikt',buyPrice:85,priceDelta:0,active:true},{label:'Kapot',buyPrice:27,priceDelta:0,active:true}]},
+    condition:{active:true,options:[{label:'Zo goed als nieuw',buyPrice:160,conditionPrice:160,priceDelta:0,active:true},{label:'Licht gebruikt',buyPrice:155,conditionPrice:155,priceDelta:0,active:true},{label:'Zichtbaar gebruikt',buyPrice:85,conditionPrice:85,priceDelta:0,active:true},{label:'Kapot',buyPrice:27,conditionPrice:27,priceDelta:0,active:true}]},
     checklist:{active:true,items:[
       {text:'De Samsung Galaxy smartphone heeft enkele lichte gebruikssporen, zoals kleine krasjes.',active:true},
       {text:'Geen diepe krassen, barsten of deuken.',active:true},
@@ -2290,9 +2290,9 @@ function defaultBuybackProtocol6(){
 }
 function normalizeBuybackProtocol6(x){
   const d=defaultBuybackProtocol6(), p=(x&&x.protocol6)||{};
-  const normOpts=(incoming,fallback)=>Array.isArray(incoming)&&incoming.length?incoming.map(o=>({label:String(o.label||''),buyPrice:(o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):undefined,priceDelta:Number(o.priceDelta||0),active:o.active!==false})):fallback.map(o=>({...o}));
-  const normSection=(incoming,fallback)=>({...fallback,...(incoming||{}),active:(incoming||{}).active!==false,options:normOpts((incoming||{}).options,fallback.options)});
-  return {connectivity:normSection(p.connectivity,d.connectivity),capacity:normSection(p.capacity,d.capacity),ram:normSection(p.ram,d.ram),condition:normSection(p.condition,d.condition),checklist:{...d.checklist,...(p.checklist||{}),active:(p.checklist||{}).active!==false,items:Array.isArray(p.checklist&&p.checklist.items)&&p.checklist.items.length?p.checklist.items.map(o=>({text:String(o.text||''),active:o.active!==false})):d.checklist.items.map(o=>({...o}))},functions:{...d.functions,...(p.functions||{}),yesDelta:Number((p.functions||{}).yesDelta??d.functions.yesDelta),noDelta:Number((p.functions||{}).noDelta??d.functions.noDelta),active:(p.functions||{}).active!==false},battery:{...d.battery,...(p.battery||{}),active:(p.battery||{}).active!==false,options:normOpts((p.battery||{}).options,d.battery.options)}};
+  const normOpts=(incoming,fallback)=>Array.isArray(incoming)&&incoming.length?incoming.map(o=>({label:String(o.label||''),buyPrice:(o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):((o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):undefined),conditionPrice:(o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):((o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):undefined),priceDelta:Number(o.priceDelta||0),active:o.active!==false})):fallback.map(o=>({...o}));
+  const normSection=(incoming,fallback)=>({...fallback,...(incoming||{}),active:(incoming||{}).active===undefined ? true : !!(incoming||{}).active,options:normOpts((incoming||{}).options,fallback.options)});
+  return {connectivity:normSection(p.connectivity,d.connectivity),capacity:normSection(p.capacity,d.capacity),ram:normSection(p.ram,d.ram),condition:normSection(p.condition,d.condition),checklist:{...d.checklist,...(p.checklist||{}),active:(p.checklist||{}).active===undefined ? true : !!(p.checklist||{}).active,items:Array.isArray(p.checklist&&p.checklist.items)&&p.checklist.items.length?p.checklist.items.map(o=>({text:String(o.text||''),active:o.active!==false})):d.checklist.items.map(o=>({...o}))},functions:{...d.functions,...(p.functions||{}),yesDelta:Number((p.functions||{}).yesDelta??d.functions.yesDelta),noDelta:Number((p.functions||{}).noDelta??d.functions.noDelta),active:(p.functions||{}).active!==false},battery:{...d.battery,...(p.battery||{}),active:(p.battery||{}).active!==false,options:normOpts((p.battery||{}).options,d.battery.options)}};
 }
 function defaultBuybackProtocol5(){
   return {
@@ -2315,10 +2315,10 @@ function defaultBuybackProtocol5(){
     condition:{
       active:true,
       options:[
-              {label:'Zo goed als nieuw',buyPrice:650,priceDelta:0,active:true},
-      {label:'Licht gebruikt',buyPrice:520,priceDelta:0,active:true},
-      {label:'Zichtbaar gebruikt',buyPrice:390,priceDelta:0,active:true},
-      {label:'Kapot',buyPrice:98,priceDelta:0,active:true}
+              {label:'Zo goed als nieuw',buyPrice:650,conditionPrice:650,priceDelta:0,active:true},
+      {label:'Licht gebruikt',buyPrice:520,conditionPrice:520,priceDelta:0,active:true},
+      {label:'Zichtbaar gebruikt',buyPrice:390,conditionPrice:390,priceDelta:0,active:true},
+      {label:'Kapot',buyPrice:98,conditionPrice:98,priceDelta:0,active:true}
       ]
     },
     checklist:{
@@ -2364,10 +2364,10 @@ function defaultBuybackProtocol4(){
     condition:{
       active:true,
       options:[
-              {label:'Zo goed als nieuw',buyPrice:550,priceDelta:0,active:true},
-      {label:'Licht gebruikt',buyPrice:473,priceDelta:0,active:true},
-      {label:'Zichtbaar gebruikt',buyPrice:359,priceDelta:0,active:true},
-      {label:'Kapot',buyPrice:65,priceDelta:0,active:true}
+              {label:'Zo goed als nieuw',buyPrice:550,conditionPrice:550,priceDelta:0,active:true},
+      {label:'Licht gebruikt',buyPrice:473,conditionPrice:473,priceDelta:0,active:true},
+      {label:'Zichtbaar gebruikt',buyPrice:359,conditionPrice:359,priceDelta:0,active:true},
+      {label:'Kapot',buyPrice:65,conditionPrice:65,priceDelta:0,active:true}
       ]
     },
     checklist:{
@@ -2398,11 +2398,11 @@ function defaultBuybackProtocol4(){
 }
 function normalizeBuybackProtocol5(x){
   const d=defaultBuybackProtocol5(), p=(x&&x.protocol5)||{};
-  const normOpts=(incoming,fallback)=>Array.isArray(incoming)&&incoming.length?incoming.map(o=>({label:String(o.label||''),buyPrice:(o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):undefined,priceDelta:Number(o.priceDelta||0),active:o.active!==false})):fallback.map(o=>({...o}));
+  const normOpts=(incoming,fallback)=>Array.isArray(incoming)&&incoming.length?incoming.map(o=>({label:String(o.label||''),buyPrice:(o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):((o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):undefined),conditionPrice:(o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):((o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):undefined),priceDelta:Number(o.priceDelta||0),active:o.active!==false})):fallback.map(o=>({...o}));
   const normSection=(incoming,fallback)=>({
     ...fallback,
     ...(incoming||{}),
-    active:(incoming||{}).active!==false,
+    active:(incoming||{}).active===undefined ? true : !!(incoming||{}).active,
     options:normOpts((incoming||{}).options,fallback.options)
   });
   return {
@@ -2412,7 +2412,7 @@ function normalizeBuybackProtocol5(x){
     checklist:{
       ...d.checklist,
       ...(p.checklist||{}),
-      active:(p.checklist||{}).active!==false,
+      active:(p.checklist||{}).active===undefined ? true : !!(p.checklist||{}).active,
       items:Array.isArray(p.checklist&&p.checklist.items)&&p.checklist.items.length?p.checklist.items.map(o=>({text:String(o.text||''),active:o.active!==false})):d.checklist.items.map(o=>({...o}))
     },
     functions:{...d.functions,...(p.functions||{}),yesDelta:Number((p.functions||{}).yesDelta??d.functions.yesDelta),noDelta:Number((p.functions||{}).noDelta??d.functions.noDelta),active:(p.functions||{}).active!==false},
@@ -2421,11 +2421,11 @@ function normalizeBuybackProtocol5(x){
 }
 function normalizeBuybackProtocol4(x){
   const d=defaultBuybackProtocol4(), p=(x&&x.protocol4)||{};
-  const normOpts=(incoming,fallback)=>Array.isArray(incoming)&&incoming.length?incoming.map(o=>({label:String(o.label||''),buyPrice:(o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):undefined,priceDelta:Number(o.priceDelta||0),active:o.active!==false})):fallback.map(o=>({...o}));
+  const normOpts=(incoming,fallback)=>Array.isArray(incoming)&&incoming.length?incoming.map(o=>({label:String(o.label||''),buyPrice:(o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):((o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):undefined),conditionPrice:(o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):((o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):undefined),priceDelta:Number(o.priceDelta||0),active:o.active!==false})):fallback.map(o=>({...o}));
   const normSection=(incoming,fallback)=>({
     ...fallback,
     ...(incoming||{}),
-    active:(incoming||{}).active!==false,
+    active:(incoming||{}).active===undefined ? true : !!(incoming||{}).active,
     options:normOpts((incoming||{}).options,fallback.options)
   });
   return {
@@ -2435,7 +2435,7 @@ function normalizeBuybackProtocol4(x){
     checklist:{
       ...d.checklist,
       ...(p.checklist||{}),
-      active:(p.checklist||{}).active!==false,
+      active:(p.checklist||{}).active===undefined ? true : !!(p.checklist||{}).active,
       items:Array.isArray(p.checklist&&p.checklist.items)&&p.checklist.items.length?p.checklist.items.map(o=>({text:String(o.text||''),active:o.active!==false})):d.checklist.items.map(o=>({...o}))
     },
     functions:{...d.functions,...(p.functions||{}),yesDelta:Number((p.functions||{}).yesDelta??d.functions.yesDelta),noDelta:Number((p.functions||{}).noDelta??d.functions.noDelta),active:(p.functions||{}).active!==false},
@@ -2895,15 +2895,16 @@ function deleteProtocol2Checklist(index){
 }
 function updateProtocol3Section(section,value){
   const phone=getSelectedBuybackPhone();if(!phone)return;
-  phone.protocol3=normalizeBuybackProtocol3(phone);
-  phone.protocol3[section].active=!!value;
+  if(!phone.protocol3 || typeof phone.protocol3!=="object") phone.protocol3=normalizeBuybackProtocol3(phone);
+  if(!phone.protocol3[section] || typeof phone.protocol3[section]!=="object") phone.protocol3=normalizeBuybackProtocol3(phone);
+  phone.protocol3[section].active = value === true || value === "true" || value === 1 || value === "1";
   markChanged();renderBuybackModelEditor();
 }
 function updateProtocol3Option(section,index,field,value){
   const phone=getSelectedBuybackPhone();if(!phone)return;
   phone.protocol3=normalizeBuybackProtocol3(phone);
   const arr=phone.protocol3[section].options;if(!Array.isArray(arr)||!arr[index])return;
-  arr[index][field]=field==='buyPrice'?Number(value||0):field==='priceDelta'?Number(value||0):field==='active'?!!value:String(value);
+  if(field==='buyPrice'){const v=Number(value||0);arr[index].buyPrice=v;arr[index].conditionPrice=v;arr[index].priceDelta=0;}else if(field==='priceDelta')arr[index].priceDelta=Number(value||0);else if(field==='active')arr[index].active=!!value;else arr[index][field]=String(value);
   markChanged();
 }
 function updateProtocol3Checklist(index,field,value){
@@ -2925,7 +2926,7 @@ function updateProtocol3Field(path,value){
 function addProtocol3Option(section){
   const phone=getSelectedBuybackPhone();if(!phone)return;
   phone.protocol3=normalizeBuybackProtocol3(phone);
-  phone.protocol3[section].options.push({label:'Nieuwe keuze',buyPrice:0,priceDelta:0,active:true});
+  phone.protocol3[section].options.push({label:'Nieuwe keuze',buyPrice:0,conditionPrice:0,priceDelta:0,active:true});
   markChanged();renderBuybackModelEditor();
 }
 function deleteProtocol3Option(section,index){
@@ -2946,27 +2947,27 @@ function deleteProtocol3Checklist(index){
   phone.protocol3.checklist.items.splice(index,1);
   markChanged();renderBuybackModelEditor();
 }
-function updateProtocol8Section(section,value){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol8=normalizeBuybackProtocol8(phone);phone.protocol8[section].active=!!value;markChanged();renderBuybackModelEditor();}
-function updateProtocol8Option(section,index,field,value){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol8=normalizeBuybackProtocol8(phone);const arr=phone.protocol8[section].options;if(!Array.isArray(arr)||!arr[index])return;arr[index][field]=field==='buyPrice'?Number(value||0):field==='priceDelta'?Number(value||0):field==='active'?!!value:String(value);markChanged();}
+function updateProtocol8Section(section,value){const phone=getSelectedBuybackPhone();if(!phone)return;if(!phone.protocol8 || typeof phone.protocol8!=="object") phone.protocol8=normalizeBuybackProtocol8(phone);if(!phone.protocol8[section] || typeof phone.protocol8[section]!=="object") phone.protocol8=normalizeBuybackProtocol8(phone);phone.protocol8[section].active=value===true||value==="true"||value===1||value==="1";markChanged();renderBuybackModelEditor();}
+function updateProtocol8Option(section,index,field,value){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol8=normalizeBuybackProtocol8(phone);const arr=phone.protocol8[section].options;if(!Array.isArray(arr)||!arr[index])return;if(field==='buyPrice'){const v=Number(value||0);arr[index].buyPrice=v;arr[index].conditionPrice=v;arr[index].priceDelta=0;}else if(field==='priceDelta')arr[index].priceDelta=Number(value||0);else if(field==='active')arr[index].active=!!value;else arr[index][field]=String(value);markChanged();}
 function updateProtocol8Checklist(index,field,value){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol8=normalizeBuybackProtocol8(phone);const row=phone.protocol8.checklist.items[index];if(!row)return;row[field]=field==='active'?!!value:String(value);markChanged();}
 function updateProtocol8Field(path,value){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol8=normalizeBuybackProtocol8(phone);const parts=String(path).split('.');let obj=phone.protocol8;for(let i=0;i<parts.length-1;i++)obj=obj[parts[i]];const k=parts[parts.length-1];obj[k]=['yesDelta','noDelta'].includes(k)?Number(value||0):value;markChanged();}
-function addProtocol8Option(section){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol8=normalizeBuybackProtocol8(phone);phone.protocol8[section].options.push({label:'Nieuwe keuze',buyPrice:0,priceDelta:0,active:true});markChanged();renderBuybackModelEditor();}
+function addProtocol8Option(section){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol8=normalizeBuybackProtocol8(phone);phone.protocol8[section].options.push({label:'Nieuwe keuze',buyPrice:0,conditionPrice:0,priceDelta:0,active:true});markChanged();renderBuybackModelEditor();}
 function deleteProtocol8Option(section,index){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol8=normalizeBuybackProtocol8(phone);phone.protocol8[section].options.splice(index,1);markChanged();renderBuybackModelEditor();}
 function addProtocol8Checklist(){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol8=normalizeBuybackProtocol8(phone);phone.protocol8.checklist.items.push({text:'Nieuwe controlezin',active:true});markChanged();renderBuybackModelEditor();}
 function deleteProtocol8Checklist(index){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol8=normalizeBuybackProtocol8(phone);phone.protocol8.checklist.items.splice(index,1);markChanged();renderBuybackModelEditor();}
-function updateProtocol7Section(section,value){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol7=normalizeBuybackProtocol7(phone);phone.protocol7[section].active=!!value;markChanged();renderBuybackModelEditor();}
-function updateProtocol7Option(section,index,field,value){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol7=normalizeBuybackProtocol7(phone);const arr=phone.protocol7[section].options;if(!Array.isArray(arr)||!arr[index])return;arr[index][field]=field==='buyPrice'?Number(value||0):field==='priceDelta'?Number(value||0):field==='active'?!!value:String(value);markChanged();}
+function updateProtocol7Section(section,value){const phone=getSelectedBuybackPhone();if(!phone)return;if(!phone.protocol7 || typeof phone.protocol7!=="object") phone.protocol7=normalizeBuybackProtocol7(phone);if(!phone.protocol7[section] || typeof phone.protocol7[section]!=="object") phone.protocol7=normalizeBuybackProtocol7(phone);phone.protocol7[section].active=value===true||value==="true"||value===1||value==="1";markChanged();renderBuybackModelEditor();}
+function updateProtocol7Option(section,index,field,value){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol7=normalizeBuybackProtocol7(phone);const arr=phone.protocol7[section].options;if(!Array.isArray(arr)||!arr[index])return;if(field==='buyPrice'){const v=Number(value||0);arr[index].buyPrice=v;arr[index].conditionPrice=v;arr[index].priceDelta=0;}else if(field==='priceDelta')arr[index].priceDelta=Number(value||0);else if(field==='active')arr[index].active=!!value;else arr[index][field]=String(value);markChanged();}
 function updateProtocol7Checklist(index,field,value){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol7=normalizeBuybackProtocol7(phone);const row=phone.protocol7.checklist.items[index];if(!row)return;row[field]=field==='active'?!!value:String(value);markChanged();}
 function updateProtocol7Field(path,value){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol7=normalizeBuybackProtocol7(phone);const parts=String(path).split('.');let obj=phone.protocol7;for(let i=0;i<parts.length-1;i++)obj=obj[parts[i]];const k=parts[parts.length-1];obj[k]=['yesDelta','noDelta'].includes(k)?Number(value||0):value;markChanged();}
-function addProtocol7Option(section){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol7=normalizeBuybackProtocol7(phone);phone.protocol7[section].options.push({label:'Nieuwe keuze',buyPrice:0,priceDelta:0,active:true});markChanged();renderBuybackModelEditor();}
+function addProtocol7Option(section){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol7=normalizeBuybackProtocol7(phone);phone.protocol7[section].options.push({label:'Nieuwe keuze',buyPrice:0,conditionPrice:0,priceDelta:0,active:true});markChanged();renderBuybackModelEditor();}
 function deleteProtocol7Option(section,index){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol7=normalizeBuybackProtocol7(phone);phone.protocol7[section].options.splice(index,1);markChanged();renderBuybackModelEditor();}
 function addProtocol7Checklist(){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol7=normalizeBuybackProtocol7(phone);phone.protocol7.checklist.items.push({text:'Nieuwe controlezin',active:true});markChanged();renderBuybackModelEditor();}
 function deleteProtocol7Checklist(index){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol7=normalizeBuybackProtocol7(phone);phone.protocol7.checklist.items.splice(index,1);markChanged();renderBuybackModelEditor();}
-function updateProtocol6Section(section,value){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol6=normalizeBuybackProtocol6(phone);phone.protocol6[section].active=!!value;markChanged();renderBuybackModelEditor();}
-function updateProtocol6Option(section,index,field,value){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol6=normalizeBuybackProtocol6(phone);const arr=phone.protocol6[section].options;if(!Array.isArray(arr)||!arr[index])return;arr[index][field]=field==='buyPrice'?Number(value||0):field==='priceDelta'?Number(value||0):field==='active'?!!value:String(value);markChanged();}
+function updateProtocol6Section(section,value){const phone=getSelectedBuybackPhone();if(!phone)return;if(!phone.protocol6 || typeof phone.protocol6!=="object") phone.protocol6=normalizeBuybackProtocol6(phone);if(!phone.protocol6[section] || typeof phone.protocol6[section]!=="object") phone.protocol6=normalizeBuybackProtocol6(phone);phone.protocol6[section].active=value===true||value==="true"||value===1||value==="1";markChanged();renderBuybackModelEditor();}
+function updateProtocol6Option(section,index,field,value){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol6=normalizeBuybackProtocol6(phone);const arr=phone.protocol6[section].options;if(!Array.isArray(arr)||!arr[index])return;if(field==='buyPrice'){const v=Number(value||0);arr[index].buyPrice=v;arr[index].conditionPrice=v;arr[index].priceDelta=0;}else if(field==='priceDelta')arr[index].priceDelta=Number(value||0);else if(field==='active')arr[index].active=!!value;else arr[index][field]=String(value);markChanged();}
 function updateProtocol6Checklist(index,field,value){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol6=normalizeBuybackProtocol6(phone);const row=phone.protocol6.checklist.items[index];if(!row)return;row[field]=field==='active'?!!value:String(value);markChanged();}
 function updateProtocol6Field(path,value){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol6=normalizeBuybackProtocol6(phone);const parts=String(path).split('.');let obj=phone.protocol6;for(let i=0;i<parts.length-1;i++)obj=obj[parts[i]];const k=parts[parts.length-1];obj[k]=['yesDelta','noDelta'].includes(k)?Number(value||0):value;markChanged();}
-function addProtocol6Option(section){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol6=normalizeBuybackProtocol6(phone);phone.protocol6[section].options.push({label:'Nieuwe keuze',buyPrice:0,priceDelta:0,active:true});markChanged();renderBuybackModelEditor();}
+function addProtocol6Option(section){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol6=normalizeBuybackProtocol6(phone);phone.protocol6[section].options.push({label:'Nieuwe keuze',buyPrice:0,conditionPrice:0,priceDelta:0,active:true});markChanged();renderBuybackModelEditor();}
 function deleteProtocol6Option(section,index){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol6=normalizeBuybackProtocol6(phone);phone.protocol6[section].options.splice(index,1);markChanged();renderBuybackModelEditor();}
 function addProtocol6Checklist(){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol6=normalizeBuybackProtocol6(phone);phone.protocol6.checklist.items.push({text:'Nieuwe controlezin',active:true});markChanged();renderBuybackModelEditor();}
 function deleteProtocol6Checklist(index){const phone=getSelectedBuybackPhone();if(!phone)return;phone.protocol6=normalizeBuybackProtocol6(phone);phone.protocol6.checklist.items.splice(index,1);markChanged();renderBuybackModelEditor();}
@@ -2980,7 +2981,7 @@ function updateProtocol5Option(section,index,field,value){
   const phone=getSelectedBuybackPhone();if(!phone)return;
   phone.protocol5=normalizeBuybackProtocol5(phone);
   const arr=phone.protocol5[section].options;if(!Array.isArray(arr)||!arr[index])return;
-  arr[index][field]=field==='buyPrice'?Number(value||0):field==='priceDelta'?Number(value||0):field==='active'?!!value:String(value);
+  if(field==='buyPrice'){const v=Number(value||0);arr[index].buyPrice=v;arr[index].conditionPrice=v;arr[index].priceDelta=0;}else if(field==='priceDelta')arr[index].priceDelta=Number(value||0);else if(field==='active')arr[index].active=!!value;else arr[index][field]=String(value);
   markChanged();
 }
 function updateProtocol5Checklist(index,field,value){
@@ -3002,7 +3003,7 @@ function updateProtocol5Field(path,value){
 function addProtocol5Option(section){
   const phone=getSelectedBuybackPhone();if(!phone)return;
   phone.protocol5=normalizeBuybackProtocol5(phone);
-  phone.protocol5[section].options.push({label:'Nieuwe keuze',buyPrice:0,priceDelta:0,active:true});
+  phone.protocol5[section].options.push({label:'Nieuwe keuze',buyPrice:0,conditionPrice:0,priceDelta:0,active:true});
   markChanged();renderBuybackModelEditor();
 }
 function deleteProtocol5Option(section,index){
@@ -3033,7 +3034,7 @@ function updateProtocol4Option(section,index,field,value){
   const phone=getSelectedBuybackPhone();if(!phone)return;
   phone.protocol4=normalizeBuybackProtocol4(phone);
   const arr=phone.protocol4[section].options;if(!Array.isArray(arr)||!arr[index])return;
-  arr[index][field]=field==='buyPrice'?Number(value||0):field==='priceDelta'?Number(value||0):field==='active'?!!value:String(value);
+  if(field==='buyPrice'){const v=Number(value||0);arr[index].buyPrice=v;arr[index].conditionPrice=v;arr[index].priceDelta=0;}else if(field==='priceDelta')arr[index].priceDelta=Number(value||0);else if(field==='active')arr[index].active=!!value;else arr[index][field]=String(value);
   markChanged();
 }
 function updateProtocol4Checklist(index,field,value){
@@ -3055,7 +3056,7 @@ function updateProtocol4Field(path,value){
 function addProtocol4Option(section){
   const phone=getSelectedBuybackPhone();if(!phone)return;
   phone.protocol4=normalizeBuybackProtocol4(phone);
-  phone.protocol4[section].options.push({label:'Nieuwe keuze',buyPrice:0,priceDelta:0,active:true});
+  phone.protocol4[section].options.push({label:'Nieuwe keuze',buyPrice:0,conditionPrice:0,priceDelta:0,active:true});
   markChanged();renderBuybackModelEditor();
 }
 function deleteProtocol4Option(section,index){
@@ -3078,7 +3079,7 @@ function deleteProtocol4Checklist(index){
 }
 function renderProtocol8Settings(phone){
   const p=normalizeBuybackProtocol8(phone);phone.protocol8=p;
-  const optionEditor=(section,title,addText)=>`<div class="card bb-proto8-card"><div class="bb-proto8-card-head"><div><div class="card-title">${title}</div><div class="small">Keuzes, prijsaanpassingen en zichtbaarheid</div></div><label class="bb-proto8-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol8Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto8-row"><input value="${esc(o.label)}" oninput="updateProtocol8Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${section==='condition'?Number(o.buyPrice??0):Number(o.priceDelta||0)}" oninput="updateProtocol8Option('${section}',${i},section==='condition'?'buyPrice':'priceDelta',this.value)" placeholder="+ / -"><label class="bb-proto8-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol8Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol8Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol8Option('${section}')">+ ${addText}</button></div>`;
+  const optionEditor=(section,title,addText)=>`<div class="card bb-proto8-card"><div class="bb-proto8-card-head"><div><div class="card-title">${title}</div><div class="small">Keuzes, prijsaanpassingen en zichtbaarheid</div></div><label class="bb-proto8-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol8Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto8-row"><input value="${esc(o.label)}" oninput="updateProtocol8Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${section==='condition'?Number(o.conditionPrice ?? o.buyPrice ?? 0):Number(o.priceDelta||0)}" oninput="updateProtocol8Option('${section}',${i},section==='condition'?'buyPrice':'priceDelta',this.value)" placeholder="+ / -"><label class="bb-proto8-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol8Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol8Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol8Option('${section}')">+ ${addText}</button></div>`;
   return `<div class="bb-protocol8-settings"><div class="bb-protocol8-title"><div><h4>💻 Protocol 8 instellingen</h4><div class="small">Opbouw zoals de MacBook Pro-verkoopstap: schermgrootte, model/jaar, processor, opslag, geheugen, grafische kaart, staat, controlepunten, functies en batterij.</div></div><div class="bb-protocol8-badge">PROTOCOL 8</div></div>
     ${optionEditor('screenSize','Schermgrootte','Schermformaat toevoegen')}
     ${optionEditor('yearModel','Jaar en type','Model/jaar toevoegen')}
@@ -3095,7 +3096,7 @@ function renderProtocol8Settings(phone){
 
 function renderProtocol7Settings(phone){
   const p=normalizeBuybackProtocol7(phone);phone.protocol7=p;
-  const optionEditor=(section,title,addText)=>`<div class="card bb-proto7-card"><div class="bb-proto7-card-head"><div><div class="card-title">${title}</div><div class="small">Keuzes, prijsaanpassingen en zichtbaarheid</div></div><label class="bb-proto7-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol7Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto7-row"><input value="${esc(o.label)}" oninput="updateProtocol7Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${section==='condition'?Number(o.buyPrice??0):Number(o.priceDelta||0)}" oninput="updateProtocol7Option('${section}',${i},section==='condition'?'buyPrice':'priceDelta',this.value)" placeholder="+ / -"><label class="bb-proto7-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol7Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol7Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol7Option('${section}')">+ ${addText}</button></div>`;
+  const optionEditor=(section,title,addText)=>`<div class="card bb-proto7-card"><div class="bb-proto7-card-head"><div><div class="card-title">${title}</div><div class="small">Keuzes, prijsaanpassingen en zichtbaarheid</div></div><label class="bb-proto7-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol7Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto7-row"><input value="${esc(o.label)}" oninput="updateProtocol7Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${section==='condition'?Number(o.conditionPrice ?? o.buyPrice ?? 0):Number(o.priceDelta||0)}" oninput="updateProtocol7Option('${section}',${i},section==='condition'?'buyPrice':'priceDelta',this.value)" placeholder="+ / -"><label class="bb-proto7-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol7Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol7Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol7Option('${section}')">+ ${addText}</button></div>`;
   return `<div class="bb-protocol7-settings"><div class="bb-protocol7-title"><div><h4>📱 Protocol 7 instellingen</h4><div class="small">Opbouw zoals de Samsung Galaxy Tab S10 FE Plus-verkoopstap: Wi-Fi, capaciteit, staat, controlepunten, functies en batterijstatus.</div></div><div class="bb-protocol7-badge">PROTOCOL 7</div></div>
     ${optionEditor('connectivity','Connectiviteit','Verbindingsoptie toevoegen')}
     ${optionEditor('capacity','Capaciteit','Opslag toevoegen')}
@@ -3108,7 +3109,7 @@ function renderProtocol7Settings(phone){
 
 function renderProtocol6Settings(phone){
   const p=normalizeBuybackProtocol6(phone);phone.protocol6=p;
-  const optionEditor=(section,title,addText)=>`<div class="card bb-proto6-card"><div class="bb-proto6-card-head"><div><div class="card-title">${title}</div><div class="small">Keuzes, prijsaanpassingen en zichtbaarheid</div></div><label class="bb-proto6-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol6Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto6-row"><input value="${esc(o.label)}" oninput="updateProtocol6Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${section==='condition'?Number(o.buyPrice??0):Number(o.priceDelta||0)}" oninput="updateProtocol6Option('${section}',${i},section==='condition'?'buyPrice':'priceDelta',this.value)" placeholder="+ / -"><label class="bb-proto6-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol6Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol6Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol6Option('${section}')">+ ${addText}</button></div>`;
+  const optionEditor=(section,title,addText)=>`<div class="card bb-proto6-card"><div class="bb-proto6-card-head"><div><div class="card-title">${title}</div><div class="small">Keuzes, prijsaanpassingen en zichtbaarheid</div></div><label class="bb-proto6-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol6Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto6-row"><input value="${esc(o.label)}" oninput="updateProtocol6Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${section==='condition'?Number(o.conditionPrice ?? o.buyPrice ?? 0):Number(o.priceDelta||0)}" oninput="updateProtocol6Option('${section}',${i},section==='condition'?'buyPrice':'priceDelta',this.value)" placeholder="+ / -"><label class="bb-proto6-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol6Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol6Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol6Option('${section}')">+ ${addText}</button></div>`;
   return `<div class="bb-protocol6-settings"><div class="bb-protocol6-title"><div><h4>📱 Protocol 6 instellingen</h4><div class="small">Opbouw zoals de Samsung Galaxy A56-verkoopstap: ontgrendeling, capaciteit, RAM, staat, controlepunten, functies en batterijstatus.</div></div><div class="bb-protocol6-badge">PROTOCOL 6</div></div>
     ${optionEditor('connectivity','Connectiviteit','Verbindingsoptie toevoegen')}
     ${optionEditor('capacity','Capaciteit','Opslag toevoegen')}
@@ -3122,7 +3123,7 @@ function renderProtocol6Settings(phone){
 
 function renderProtocol5Settings(phone){
   const p=normalizeBuybackProtocol5(phone);phone.protocol5=p;
-  const optionEditor=(section,title,addText)=>`<div class="card bb-proto4-card"><div class="bb-proto4-card-head"><div><div class="card-title">${title}</div><div class="small">Keuzes: staat = vaste prijs · overige keuzes = +/-</div></div><label class="bb-proto4-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol5Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto4-row"><input value="${esc(o.label)}" oninput="updateProtocol5Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${section==='condition'?Number(o.buyPrice??0):Number(o.priceDelta||0)}" oninput="updateProtocol5Option('${section}',${i},section==='condition'?'buyPrice':'priceDelta',this.value)" placeholder="+ / -"><label class="bb-proto4-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol5Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol5Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol5Option('${section}')">+ ${addText}</button></div>`;
+  const optionEditor=(section,title,addText)=>`<div class="card bb-proto4-card"><div class="bb-proto4-card-head"><div><div class="card-title">${title}</div><div class="small">Keuzes: staat = vaste prijs · overige keuzes = +/-</div></div><label class="bb-proto4-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol5Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto4-row"><input value="${esc(o.label)}" oninput="updateProtocol5Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${section==='condition'?Number(o.conditionPrice ?? o.buyPrice ?? 0):Number(o.priceDelta||0)}" oninput="updateProtocol5Option('${section}',${i},section==='condition'?'buyPrice':'priceDelta',this.value)" placeholder="+ / -"><label class="bb-proto4-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol5Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol5Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol5Option('${section}')">+ ${addText}</button></div>`;
   return `<div class="bb-protocol5-settings">
     <div class="bb-protocol5-title"><div><h4>📱 Protocol 4 instellingen</h4><div class="small">Opbouw zoals de iPad-verkoopstap: connectiviteit, capaciteit, staat, controlepunten, functies en batterij.</div></div><div class="bb-protocol5-badge">PROTOCOL 4</div></div>
     ${optionEditor('connectivity','Connectiviteit','Verbindingsoptie toevoegen')}
@@ -3136,7 +3137,7 @@ function renderProtocol5Settings(phone){
 
 function renderProtocol4Settings(phone){
   const p=normalizeBuybackProtocol4(phone);phone.protocol4=p;
-  const optionEditor=(section,title,addText)=>`<div class="card bb-proto4-card"><div class="bb-proto4-card-head"><div><div class="card-title">${title}</div><div class="small">Keuzes: staat = vaste prijs · overige keuzes = +/-</div></div><label class="bb-proto4-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol4Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto4-row"><input value="${esc(o.label)}" oninput="updateProtocol4Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${section==='condition'?Number(o.buyPrice??0):Number(o.priceDelta||0)}" oninput="updateProtocol4Option('${section}',${i},section==='condition'?'buyPrice':'priceDelta',this.value)" placeholder="+ / -"><label class="bb-proto4-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol4Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol4Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol4Option('${section}')">+ ${addText}</button></div>`;
+  const optionEditor=(section,title,addText)=>`<div class="card bb-proto4-card"><div class="bb-proto4-card-head"><div><div class="card-title">${title}</div><div class="small">Keuzes: staat = vaste prijs · overige keuzes = +/-</div></div><label class="bb-proto4-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol4Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto4-row"><input value="${esc(o.label)}" oninput="updateProtocol4Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${section==='condition'?Number(o.conditionPrice ?? o.buyPrice ?? 0):Number(o.priceDelta||0)}" oninput="updateProtocol4Option('${section}',${i},section==='condition'?'buyPrice':'priceDelta',this.value)" placeholder="+ / -"><label class="bb-proto4-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol4Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol4Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol4Option('${section}')">+ ${addText}</button></div>`;
   return `<div class="bb-protocol4-settings">
     <div class="bb-protocol4-title"><div><h4>📱 Protocol 4 instellingen</h4><div class="small">Opbouw zoals de iPhone-verkoopstap: ontgrendeling, capaciteit, staat, controlepunten, functies en batterij.</div></div><div class="bb-protocol4-badge">PROTOCOL 4</div></div>
     ${optionEditor('connectivity','Connectiviteit','Verbindingsoptie toevoegen')}
@@ -3150,7 +3151,7 @@ function renderProtocol4Settings(phone){
 
 function renderProtocol3Settings(phone){
   const p=normalizeBuybackProtocol3(phone);phone.protocol3=p;
-  const optionEditor=(section,title,addText)=>`<div class="card bb-proto3-card"><div class="bb-proto3-card-head"><div><div class="card-title">${title}</div><div class="small">Keuzes: staat = vaste prijs · overige keuzes = +/-</div></div><label class="bb-proto3-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol3Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto3-row"><input value="${esc(o.label)}" oninput="updateProtocol3Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${section==='condition'?Number(o.buyPrice??0):Number(o.priceDelta||0)}" oninput="updateProtocol3Option('${section}',${i},section==='condition'?'buyPrice':'priceDelta',this.value)" placeholder="+ / -"><label class="bb-proto3-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol3Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol3Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol3Option('${section}')">+ ${addText}</button></div>`;
+  const optionEditor=(section,title,addText)=>`<div class="card bb-proto3-card"><div class="bb-proto3-card-head"><div><div class="card-title">${title}</div><div class="small">Keuzes: staat = vaste prijs · overige keuzes = +/-</div></div><label class="bb-proto3-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol3Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto3-row"><input value="${esc(o.label)}" oninput="updateProtocol3Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${section==='condition'?Number(o.conditionPrice ?? o.buyPrice ?? 0):Number(o.priceDelta||0)}" oninput="updateProtocol3Option('${section}',${i},section==='condition'?'buyPrice':'priceDelta',this.value)" placeholder="+ / -"><label class="bb-proto3-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol3Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol3Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol3Option('${section}')">+ ${addText}</button></div>`;
   return `<div class="bb-protocol3-settings">
     <div class="bb-protocol3-title"><div><h4>⌚ Protocol 3 instellingen</h4><div class="small">Zelfde opbouw als de verkoopstap: verbindingsoptie, maat, staat, controlepunten, functies en batterij.</div></div><div class="bb-protocol3-badge">PROTOCOL 3</div></div>
     ${optionEditor('connectivity','Connectiviteit','Verbindingsoptie toevoegen')}
@@ -3963,6 +3964,23 @@ async function save(isAuto=false){
 
   try{
     normalizeData();
+
+    // Preserve every explicit "Op website tonen" / "Actief" state exactly as set in Admin.
+    // Missing values default to true; false must never be converted back to true/undefined.
+    if(Array.isArray(data.buybackPhones)){
+      data.buybackPhones.forEach(phone=>{
+        [3,4,5,6,7,8].forEach(n=>{
+          const p=phone[`protocol${n}`];
+          if(p && typeof p === "object"){
+            Object.keys(p).forEach(k=>{
+              if(p[k] && typeof p[k] === "object" && !Array.isArray(p[k]) && "active" in p[k]) p[k].active=!!p[k].active;
+              if(p[k] && typeof p[k] === "object" && Array.isArray(p[k].options)) p[k].options.forEach(o=>{ if(o && "active" in o) o.active=!!o.active; });
+              if(p[k] && typeof p[k] === "object" && Array.isArray(p[k].items)) p[k].items.forEach(o=>{ if(o && "active" in o) o.active=!!o.active; });
+            });
+          }
+        });
+      });
+    }
 
     const r=await fetch("/api/site",{
       method:"PUT",
