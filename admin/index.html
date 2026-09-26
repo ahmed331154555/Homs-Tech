@@ -4612,6 +4612,36 @@ function forzaAdminPick(obj, keys){
   return undefined;
 }
 
+// Admin-only fallback: some Forza fields can be nested in JSON-LD/meta data.
+// This never writes anything; it only searches the already returned test JSON.
+function forzaAdminDeepPick(obj, keys, maxDepth=5, seen=new Set()){
+  if(!obj || typeof obj!=="object" || maxDepth<0)return undefined;
+  if(seen.has(obj))return undefined;
+  seen.add(obj);
+  const direct=forzaAdminPick(obj,keys);
+  if(direct!==undefined)return direct;
+  if(Array.isArray(obj)){
+    for(const item of obj){
+      const found=forzaAdminDeepPick(item,keys,maxDepth-1,seen);
+      if(found!==undefined)return found;
+    }
+  }else{
+    for(const value of Object.values(obj)){
+      if(value && typeof value==="object"){
+        const found=forzaAdminDeepPick(value,keys,maxDepth-1,seen);
+        if(found!==undefined)return found;
+      }
+    }
+  }
+  return undefined;
+}
+
+function forzaAdminDisplayValue(value, fallback="Niet gevonden"){
+  if(value===null || value===undefined || value==="")return fallback;
+  if(typeof value==="object")return JSON.stringify(value);
+  return String(value);
+}
+
 function forzaAdminRenderList(el, values, emptyText="Niet gevonden"){
   const arr=forzaAdminArray(values).filter(v=>v!==null&&v!==undefined&&String(v).trim()!=="");
   el.innerHTML=arr.length
@@ -4687,12 +4717,16 @@ async function loadForzaTest(){
     const product=x.product && typeof x.product==="object" ? x.product : x;
     const name=forzaAdminPick(product,["name","productName","title"]) ?? "Niet gevonden";
     const brand=forzaAdminPick(product,["brand","brandName"]) ?? "Niet gevonden";
-    const sku=forzaAdminPick(product,["sku","SKU","productSku"]) ?? "Niet gevonden";
+    const sku=forzaAdminPick(product,["sku","SKU","productSku","productSKU","articleNumber","article_number","mpn","productCode","product_code"])
+      ?? forzaAdminDeepPick(x,["sku","SKU","productSku","productSKU","articleNumber","article_number","mpn","productCode","product_code"])
+      ?? "Niet gevonden";
     const color=forzaAdminPick(product,["color","colour","colorName"]) ?? "Niet gevonden";
     const storage=forzaAdminPick(product,["storage","storageOptions","memory","memoryOptions"]) ?? x.storageOptions ?? [];
     const conditions=forzaAdminPick(product,["conditions","conditionPrices","conditionOptions"]) ?? x.conditions ?? x.conditionPrices ?? [];
     const battery=forzaAdminPick(product,["battery","batteryOptions","batteries"]) ?? x.batteryOptions ?? [];
-    const stock=forzaAdminPick(product,["stock","visibleStock","maxVisibleStock","availability"]) ?? x.stock ?? "Niet gevonden";
+    const directStock=forzaAdminPick(product,["stock","visibleStock","maxVisibleStock","availability"]);
+    const deepStock=forzaAdminDeepPick(x,["stock","visibleStock","maxVisibleStock","availability","stockText","availabilityText"]);
+    const stock=(directStock!==undefined ? directStock : (deepStock!==undefined ? deepStock : undefined));
     const images=forzaAdminPick(product,["images","imageUrls","photos","gallery"]) ?? x.images ?? [];
     const specs=forzaAdminPick(product,["specs","specifications","attributes"]) ?? x.specifications ?? [];
     const description=forzaAdminPick(product,["description","shortDescription","longDescription"]) ?? x.description ?? "Niet gevonden";
@@ -4701,9 +4735,9 @@ async function loadForzaTest(){
 
     document.getElementById("forzaTestName").textContent=name;
     document.getElementById("forzaTestBrand").textContent=brand;
-    document.getElementById("forzaTestSku").textContent=sku;
-    document.getElementById("forzaTestColor").textContent="Kleur: "+color;
-    document.getElementById("forzaTestStock").textContent=typeof stock==="object"?JSON.stringify(stock):String(stock);
+    document.getElementById("forzaTestSku").textContent="SKU: "+forzaAdminDisplayValue(sku);
+    document.getElementById("forzaTestColor").textContent="Kleur: "+forzaAdminDisplayValue(color);
+    document.getElementById("forzaTestStock").textContent=forzaAdminDisplayValue(stock);
     document.getElementById("forzaTestReadOnly").textContent=readOnly?"✓ READ ONLY — niets opgeslagen":"Controleer: read-only status ontbreekt";
     forzaAdminRenderList(document.getElementById("forzaTestStorage"),storage);
     forzaAdminRenderConditions(document.getElementById("forzaTestConditions"),conditions);
