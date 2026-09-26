@@ -309,7 +309,7 @@ function selectProductOption(key,label){
   const priceEl=document.getElementById("selectedConditionPrice");
   if(priceEl && currentProduct){
     const selectedCondition=effectiveOptions(currentProduct,"condition").find(x=>x.label===selectedOptions.condition);
-    priceEl.textContent=money(conditionBasePrice(selectedCondition,currentProduct));
+    priceEl.textContent=money(calculateTotal(currentProduct));
   }
 }
 function renderOptionSection(key,title,list){
@@ -381,8 +381,8 @@ function renderProductBody(){
   const basePrice=num(product.price||product.salePrice||product.sellPrice||0);
   const hasOptions=true;
   const total=calculateTotal(product);
-  const selectedConditionOption=effectiveOptions(product,"condition").find(x=>x.label===selectedOptions.condition);
-  const conditionDisplayPrice=conditionBasePrice(selectedConditionOption,product);
+  // Main displayed price = selected condition base price + all selected +/- options.
+  const conditionDisplayPrice=calculateTotal(product);
   const storage=product.storage||product.geheugen||"";
   const color=product.color||product.kleur||"";
   const condition=product.condition||product.conditie||"";
@@ -427,7 +427,7 @@ function renderProductBody(){
     <div class="brand">${esc(product.brand||"HOMS TECH")}</div>
     <h1>${esc(title)}</h1>
     <div id="selectedConditionPrice" class="price">${money(conditionDisplayPrice)}</div>
-    <div class="price-caption">Prijs voor de gekozen productconditie</div>
+    <div class="price-caption">Actuele prijs op basis van de gekozen opties</div>
     ${selectedOptions.condition?`<div style="margin-top:-12px;margin-bottom:16px;color:#64748b;font-size:13px">Prijs voor staat: <strong style="color:#111827">${esc(selectedOptions.condition)}</strong></div>`:""}
     ${specs?`<div class="meta">${specs}</div>`:""}
     ${optionsHtml}
