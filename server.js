@@ -1015,6 +1015,243 @@ app.get("/admin/", (req, res) => {
     path.join(__dirname, "admin", "index.html")
   );
 });
+HOMS TECH — Forza Test Import (read-only)
+==============================================
+
+این پچ فقط برای تست صفحه عمومی Forza است و هیچ محصولی را در دیتابیس HOMS TECH ذخیره یا تغییر نمی‌دهد.
+
+1) این کد را در server.js، قبل از بخش "// Start server" قرار بده:
+
+// =====================================================
+// FORZA PUBLIC TEST IMPORT — READ ONLY
+// =====================================================
+
+function forzaText(value) {
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .trim();
+}
+
+function walkJson(value, visit) {
+  if (!value) return;
+  if (Array.isArray(value)) {
+    for (const item of value) walkJson(item, visit);
+    return;
+  }
+  if (typeof value === "object") {
+    visit(value);
+    for (const key of Object.keys(value)) walkJson(value[key], visit);
+  }
+}
+
+function extractForzaJsonLd(html) {
+  const found = [];
+  const re = /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  let match;
+
+  while ((match = re.exec(html))) {
+    try {
+      const json = JSON.parse(match[1].trim());
+      walkJson(json, obj => found.push(obj));
+    } catch (_) {
+      // Some websites contain non-standard JSON-LD blocks.
+    }
+  }
+
+  return found;
+}
+
+function firstMatch(text, patterns) {
+  for (const pattern of patterns) {
+    const m = text.match(pattern);
+    if (m && m[1]) return forzaText(m[1]);
+  }
+  return "";
+}
+
+function parseEuro(value) {
+  if (value === undefined || value === null) return null;
+  const s = String(value)
+    .replace(/[^\d,.-]/g, "")
+    .replace(/\./g, "")
+    .replace(",", ".");
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
+}
+
+function extractForzaTest(html, sourceUrl) {
+  const jsonLd = extractForzaJsonLd(html);
+
+  let product = null;
+  for (const obj of jsonLd) {
+    const type = String(obj["@type"] || "").toLowerCase();
+    if (type === "product" || type.includes("product")) {
+      product = obj;
+      break;
+    }
+  }
+
+  const pageText = forzaText(
+    html
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+  );
+
+  const title =
+    product?.name ||
+    firstMatch(pageText, [
+      /(?:Forza\s*)?(iPhone\s*11[^|€]{0,80})/i
+    ]) ||
+    "iPhone 11";
+
+  const imageCandidates = [];
+  if (product?.image) {
+    if (Array.isArray(product.image)) imageCandidates.push(...product.image);
+    else imageCandidates.push(product.image);
+  }
+
+  const imageUrls = [...new Set(
+    imageCandidates
+      .map(x => String(x || "").trim())
+      .filter(Boolean)
+  )].slice(0, 10);
+
+  const offers = [];
+  if (product?.offers) {
+    const arr = Array.isArray(product.offers) ? product.offers : [product.offers];
+    for (const offer of arr) {
+      if (!offer || typeof offer !== "object") continue;
+      const price = parseEuro(offer.price);
+      if (price !== null) {
+        offers.push({
+          price,
+          currency: offer.priceCurrency || "EUR",
+          availability: offer.availability || ""
+        });
+      }
+    }
+  }
+
+  // Visible condition prices from the public page.
+  const conditions = [];
+  const conditionPatterns = [
+    ["Zo goed als nieuw", /Zo goed als nieuw[\s\S]{0,220}?(?:€\s*)?(\d{2,4}(?:[.,]\d{2})?)/i],
+    ["Licht gebruikt", /Licht gebruikt[\s\S]{0,220}?(?:€\s*)?(\d{2,4}(?:[.,]\d{2})?)/i],
+    ["Zichtbaar gebruikt", /Zichtbaar gebruikt[\s\S]{0,220}?(?:€\s*)?(\d{2,4}(?:[.,]\d{2})?)/i]
+  ];
+
+  for (const [name, pattern] of conditionPatterns) {
+    const m = pageText.match(pattern);
+    if (m) {
+      const price = parseEuro(m[1]);
+      if (price !== null) conditions.push({ name, price });
+    }
+  }
+
+  const storage = [];
+  for (const gb of ["64GB", "128GB", "256GB"]) {
+    if (new RegExp(`\\b${gb}\\b`, "i").test(pageText)) storage.push(gb);
+  }
+
+  const batteryNew = firstMatch(pageText, [
+    /Nieuw\s*100%\s*(?:\+|€)\s*(\d{1,3})/i,
+    /Nieuwe batterij[\s\S]{0,100}?(?:\+|€)\s*(\d{1,3})/i
+  ]);
+
+  const availability =
+    /op voorraad/i.test(pageText) ? true :
+    /tijdelijk niet op voorraad|uitverkocht/i.test(pageText) ? false :
+    null;
+
+  return {
+    source: "Forza public website",
+    sourceUrl,
+    readOnly: true,
+    model: title,
+    storage,
+    conditions,
+    battery: {
+      newBatteryDelta: batteryNew ? parseEuro(batteryNew) : null
+    },
+    images: imageUrls,
+    offers,
+    availability,
+    note: "Only publicly visible information was read. Nothing was saved to HOMS TECH."
+  };
+}
+
+app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) => {
+  const sourceUrl = "https://www.forza-refurbished.nl/refurbished-iphone/iphone-11";
+
+  try {
+    const response = await fetch(sourceUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; HOMS-TECH public product test)"
+      },
+      redirect: "follow"
+    });
+
+    if (!response.ok) {
+      return res.status(502).json({
+        success: false,
+        error: `Forza returned HTTP ${response.status}`,
+        sourceUrl
+      });
+    }
+
+    const html = await response.text();
+    const result = extractForzaTest(html, sourceUrl);
+
+    res.json({
+      success: true,
+      result
+    });
+  } catch (error) {
+    console.error("FORZA TEST ERROR:", error);
+    res.status(502).json({
+      success: false,
+      error: "Forza test import kon de openbare pagina niet ophalen.",
+      details: error.message
+    });
+  }
+});
+
+2) بعد الحفظ، أعد تشغيل Render.
+
+3) الاختبار:
+افتح وأنت مسجل دخول كـAdmin:
+
+/api/forza-test
+
+مثال:
+https://JOUW-HOMS-TECH-DOMEIN/api/forza-test
+
+المفروض يرجع JSON يبدأ بـ:
+
+{
+  "success": true,
+  "result": {
+    "source": "Forza public website",
+    "readOnly": true,
+    ...
+  }
+}
+
+مهم:
+- لا يوجد INSERT.
+- لا يوجد UPDATE.
+- لا يوجد DELETE.
+- لا يغير site_settings.
+- لا يغير webshop_orders.
+- لا يغير buyback_orders.
+- Protocol 1–8 لا يتم لمسها.
+
+بعد نجاح هذا الاختبار فقط نضيف زر Admin:
+"🔄 Forza Test Import"
+
+ثم ننتقل للمرحلة التالية: مزامنة المنتجات وحفظها.
 
 // Start server
 initDatabase()
