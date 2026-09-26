@@ -1015,170 +1015,264 @@ app.get("/admin/", (req, res) => {
     path.join(__dirname, "admin", "index.html")
   );
 });
-HOMS TECH — Forza Test Import (read-only)
-==============================================
 
-این پچ فقط برای تست صفحه عمومی Forza است و هیچ محصولی را در دیتابیس HOMS TECH ذخیره یا تغییر نمی‌دهد.
-
-1) این کد را در server.js، قبل از بخش "// Start server" قرار بده:
 
 // =====================================================
-// FORZA PUBLIC TEST IMPORT — READ ONLY
+// FORZA TEST IMPORT — READ ONLY
+// Public Forza product page test.
+// This endpoint only reads publicly visible data.
+// It does NOT create, update or delete HOMS TECH products.
 // =====================================================
 
-function forzaText(value) {
+function forzaCleanText(value) {
   return String(value || "")
+    .replace(/\u00a0/g, " ")
     .replace(/\s+/g, " ")
-    .replace(/&nbsp;/gi, " ")
     .trim();
 }
 
-function walkJson(value, visit) {
-  if (!value) return;
-  if (Array.isArray(value)) {
-    for (const item of value) walkJson(item, visit);
-    return;
-  }
-  if (typeof value === "object") {
-    visit(value);
-    for (const key of Object.keys(value)) walkJson(value[key], visit);
-  }
+function forzaStripHtml(value) {
+  return forzaCleanText(
+    String(value || "")
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+  );
 }
 
-function extractForzaJsonLd(html) {
-  const found = [];
-  const re = /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
-  let match;
+function forzaParseEuro(value) {
+  const raw = String(value || "")
+    .replace(/\u00a0/g, " ")
+    .replace(/[^\d,.\-+€]/g, " ")
+    .trim();
 
-  while ((match = re.exec(html))) {
-    try {
-      const json = JSON.parse(match[1].trim());
-      walkJson(json, obj => found.push(obj));
-    } catch (_) {
-      // Some websites contain non-standard JSON-LD blocks.
-    }
-  }
+  const match = raw.match(/([+-]?\d+(?:[.,]\d{1,2})?)/);
+  if (!match) return null;
 
-  return found;
+  const numberText = match[1].replace(/\./g, "").replace(",", ".");
+  const number = Number(numberText);
+  return Number.isFinite(number) ? number : null;
 }
 
-function firstMatch(text, patterns) {
+function forzaFirstMatch(text, patterns) {
   for (const pattern of patterns) {
-    const m = text.match(pattern);
-    if (m && m[1]) return forzaText(m[1]);
+    const match = String(text || "").match(pattern);
+    if (match && match[1]) return forzaCleanText(match[1]);
   }
   return "";
 }
 
-function parseEuro(value) {
-  if (value === undefined || value === null) return null;
-  const s = String(value)
-    .replace(/[^\d,.-]/g, "")
-    .replace(/\./g, "")
-    .replace(",", ".");
-  const n = Number(s);
-  return Number.isFinite(n) ? n : null;
-}
-
-function extractForzaTest(html, sourceUrl) {
-  const jsonLd = extractForzaJsonLd(html);
-
-  let product = null;
-  for (const obj of jsonLd) {
-    const type = String(obj["@type"] || "").toLowerCase();
-    if (type === "product" || type.includes("product")) {
-      product = obj;
-      break;
-    }
-  }
-
-  const pageText = forzaText(
-    html
-      .replace(/<script[\s\S]*?<\/script>/gi, " ")
-      .replace(/<style[\s\S]*?<\/style>/gi, " ")
-      .replace(/<[^>]+>/g, " ")
+function forzaExtractMeta(html, name) {
+  const safeName = String(name).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(
+    `<meta[^>]+(?:property|name)=["']${safeName}["'][^>]+content=["']([^"']+)["']`,
+    "i"
+  );
+  const reversePattern = new RegExp(
+    `<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${safeName}["']`,
+    "i"
   );
 
-  const title =
-    product?.name ||
-    firstMatch(pageText, [
-      /(?:Forza\s*)?(iPhone\s*11[^|€]{0,80})/i
-    ]) ||
-    "iPhone 11";
+  const match = html.match(pattern) || html.match(reversePattern);
+  return match ? forzaCleanText(match[1]) : "";
+}
 
-  const imageCandidates = [];
-  if (product?.image) {
-    if (Array.isArray(product.image)) imageCandidates.push(...product.image);
-    else imageCandidates.push(product.image);
+function forzaExtractJsonLd(html) {
+  const results = [];
+  const scripts = String(html || "").match(
+    /<script[^>]+type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/gi
+  ) || [];
+
+  for (const script of scripts) {
+    const jsonText = script
+      .replace(/^<script[^>]*>/i, "")
+      .replace(/<\/script>$/i, "")
+      .trim();
+
+    try {
+      results.push(JSON.parse(jsonText));
+    } catch {
+      // Some pages contain JSON-LD that is not valid JSON. Ignore that block.
+    }
   }
 
-  const imageUrls = [...new Set(
-    imageCandidates
-      .map(x => String(x || "").trim())
-      .filter(Boolean)
-  )].slice(0, 10);
+  return results;
+}
 
-  const offers = [];
-  if (product?.offers) {
-    const arr = Array.isArray(product.offers) ? product.offers : [product.offers];
-    for (const offer of arr) {
-      if (!offer || typeof offer !== "object") continue;
-      const price = parseEuro(offer.price);
-      if (price !== null) {
-        offers.push({
-          price,
-          currency: offer.priceCurrency || "EUR",
-          availability: offer.availability || ""
-        });
+function forzaWalkJson(value, visitor, seen = new Set()) {
+  if (value === null || value === undefined) return;
+  if (typeof value !== "object") {
+    visitor(value);
+    return;
+  }
+  if (seen.has(value)) return;
+  seen.add(value);
+
+  if (Array.isArray(value)) {
+    for (const item of value) forzaWalkJson(item, visitor, seen);
+    return;
+  }
+
+  for (const [key, child] of Object.entries(value)) {
+    visitor(child, key);
+    forzaWalkJson(child, visitor, seen);
+  }
+}
+
+function forzaExtractTest(html, sourceUrl) {
+  const clean = forzaStripHtml(html);
+  const jsonLd = forzaExtractJsonLd(html);
+
+  let product = null;
+  const images = new Set();
+
+  for (const data of jsonLd) {
+    forzaWalkJson(data, (value, key) => {
+      if (key === "image") {
+        if (Array.isArray(value)) {
+          value.forEach(item => {
+            if (typeof item === "string" && /^https?:\/\//i.test(item)) images.add(item);
+          });
+        } else if (typeof value === "string" && /^https?:\/\//i.test(value)) {
+          images.add(value);
+        }
       }
-    }
+
+      if (!product && value && typeof value === "object" && !Array.isArray(value)) {
+        const type = String(value["@type"] || "").toLowerCase();
+        if (type === "product" || type.includes("product")) {
+          product = value;
+        }
+      }
+    });
   }
 
-  // Visible condition prices from the public page.
-  const conditions = [];
-  const conditionPatterns = [
-    ["Zo goed als nieuw", /Zo goed als nieuw[\s\S]{0,220}?(?:€\s*)?(\d{2,4}(?:[.,]\d{2})?)/i],
-    ["Licht gebruikt", /Licht gebruikt[\s\S]{0,220}?(?:€\s*)?(\d{2,4}(?:[.,]\d{2})?)/i],
-    ["Zichtbaar gebruikt", /Zichtbaar gebruikt[\s\S]{0,220}?(?:€\s*)?(\d{2,4}(?:[.,]\d{2})?)/i]
-  ];
+  const metaImage = forzaExtractMeta(html, "og:image");
+  if (metaImage) images.add(metaImage);
 
-  for (const [name, pattern] of conditionPatterns) {
-    const m = pageText.match(pattern);
-    if (m) {
-      const price = parseEuro(m[1]);
-      if (price !== null) conditions.push({ name, price });
-    }
-  }
+  const title =
+    String(product?.name || "").trim() ||
+    forzaExtractMeta(html, "og:title") ||
+    forzaFirstMatch(clean, [
+      /\b(iPhone\s+\d+(?:\s+(?:Pro|Pro Max|Plus|Mini|SE))?)\b/i,
+      /\b(Galaxy\s+[A-Za-z0-9 +\-]+)\b/i
+    ]);
 
-  const storage = [];
-  for (const gb of ["64GB", "128GB", "256GB"]) {
-    if (new RegExp(`\\b${gb}\\b`, "i").test(pageText)) storage.push(gb);
-  }
-
-  const batteryNew = firstMatch(pageText, [
-    /Nieuw\s*100%\s*(?:\+|€)\s*(\d{1,3})/i,
-    /Nieuwe batterij[\s\S]{0,100}?(?:\+|€)\s*(\d{1,3})/i
+  const color = forzaFirstMatch(clean, [
+    /Kleur:\s*([^|]{1,80}?)(?=\s+\+?\s*€|\s+Geheugen|\s+Productconditie)/i
   ]);
 
-  const availability =
-    /op voorraad/i.test(pageText) ? true :
-    /tijdelijk niet op voorraad|uitverkocht/i.test(pageText) ? false :
-    null;
+  const memoryValues = [];
+  const memoryMatch = clean.match(
+    /Geheugen\s+(.{0,180}?)(?=\s+Productconditie|\s+Batterij|\s+Condities)/i
+  );
+  if (memoryMatch) {
+    const found = memoryMatch[1].match(/\b\d+\s*(?:GB|TB)\b/gi) || [];
+    found.forEach(item => {
+      const value = forzaCleanText(item).replace(/\s+/g, "");
+      if (!memoryValues.includes(value)) memoryValues.push(value);
+    });
+  }
+
+  const conditions = [];
+  const conditionNames = [
+    "Zo goed als nieuw",
+    "Licht gebruikt",
+    "Zichtbaar gebruikt"
+  ];
+
+  for (const name of conditionNames) {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(
+      escaped + "\\s+(?:Meest gekozen\\s+)?€\\s*([0-9]+(?:[.,][0-9]{1,2})?)",
+      "i"
+    );
+    const match = clean.match(pattern);
+    conditions.push({
+      name,
+      price: match ? forzaParseEuro(match[1]) : null
+    });
+  }
+
+  const battery = [];
+  const batterySection = clean.match(
+    /Batterij\s+(.{0,260}?)(?=\s+Wil je de inruilwaarde|\s+Condities|\s+Belangrijkste specificaties|\s+Productcondities)/i
+  );
+
+  if (batterySection) {
+    const section = batterySection[1];
+    const standardMatch = section.match(/Standaard.*?\+\s*€\s*([0-9]+)/i);
+    const newMatch = section.match(/Nieuw.*?\+\s*€\s*([0-9]+)/i);
+
+    battery.push({
+      name: "Standaard",
+      delta: standardMatch ? forzaParseEuro(standardMatch[1]) : 0
+    });
+
+    battery.push({
+      name: "Nieuw",
+      delta: newMatch ? forzaParseEuro(newMatch[1]) : null
+    });
+  }
+
+  const stockMatches = clean.match(
+    /(?:Nog\s+(\d+)\s+op\s+voorraad|Tijdelijk niet op voorraad|Deze uitvoering is tijdelijk uitverkocht)/gi
+  ) || [];
+
+  const stock = stockMatches
+    .map(item => {
+      const match = item.match(/Nog\s+(\d+)\s+op\s+voorraad/i);
+      return match ? Number(match[1]) : 0;
+    });
+
+  const specs = [];
+  const specSection = clean.match(
+    /Belangrijkste specificaties\s+(.{0,1200}?)(?=\s+Lees volledige productomschrijving|\s+Productomschrijving|\s+€)/i
+  );
+  if (specSection) {
+    const parts = specSection[1].split(/\s+(?=\d+(?:[.,]\d+)?\s*(?:inch|Hz|MP|GB|mm)|[A-Z][^:]{1,40}:)/i);
+    parts.forEach(item => {
+      const value = forzaCleanText(item);
+      if (value && value.length <= 120) specs.push(value);
+    });
+  }
+
+  const description =
+    forzaCleanText(product?.description || "") ||
+    forzaFirstMatch(clean, [
+      /Productomschrijving\s+(.{100,1200}?)(?=\s+Alternatieven|\s+Condities|\s+Belangrijkste specificaties)/i,
+      /Apple iPhone[^.]{0,80}\.\s+(.{100,900}?)(?=\s+Alternatieven|\s+Condities)/i
+    ]);
+
+  const sku = String(product?.sku || "").trim();
+  const brand = String(
+    product?.brand?.name ||
+    product?.brand ||
+    (/iphone/i.test(title) ? "Apple" : /galaxy/i.test(title) ? "Samsung" : "")
+  ).trim();
+
+  const canonical =
+    forzaExtractMeta(html, "og:url") ||
+    sourceUrl;
 
   return {
-    source: "Forza public website",
     sourceUrl,
+    canonical,
     readOnly: true,
-    model: title,
-    storage,
-    conditions,
-    battery: {
-      newBatteryDelta: batteryNew ? parseEuro(batteryNew) : null
-    },
-    images: imageUrls,
-    offers,
-    availability,
-    note: "Only publicly visible information was read. Nothing was saved to HOMS TECH."
+    fetchedAt: new Date().toISOString(),
+    product: {
+      name: title,
+      brand,
+      sku,
+      color,
+      storage: memoryValues,
+      conditions,
+      battery,
+      stock: stock.length ? Math.max(...stock) : null,
+      images: [...images].slice(0, 12),
+      specs,
+      description
+    }
   };
 }
 
@@ -1187,71 +1281,43 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
 
   try {
     const response = await fetch(sourceUrl, {
+      method: "GET",
+      redirect: "follow",
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; HOMS-TECH public product test)"
-      },
-      redirect: "follow"
+        "User-Agent": "Mozilla/5.0 (compatible; HOMS-TECH public product test)",
+        "Accept": "text/html,application/xhtml+xml"
+      }
     });
+
+    const html = await response.text();
 
     if (!response.ok) {
       return res.status(502).json({
         success: false,
-        error: `Forza returned HTTP ${response.status}`,
-        sourceUrl
+        readOnly: true,
+        sourceUrl,
+        error: `Forza returned HTTP ${response.status}`
       });
     }
 
-    const html = await response.text();
-    const result = extractForzaTest(html, sourceUrl);
+    const result = forzaExtractTest(html, sourceUrl);
 
-    res.json({
+    return res.json({
       success: true,
+      readOnly: true,
       result
     });
   } catch (error) {
-    console.error("FORZA TEST ERROR:", error);
-    res.status(502).json({
+    console.error("FORZA TEST IMPORT ERROR:", error);
+    return res.status(502).json({
       success: false,
-      error: "Forza test import kon de openbare pagina niet ophalen.",
-      details: error.message
+      readOnly: true,
+      sourceUrl,
+      error: "Forza test request failed.",
+      details: String(error?.message || error)
     });
   }
 });
-
-2) بعد الحفظ، أعد تشغيل Render.
-
-3) الاختبار:
-افتح وأنت مسجل دخول كـAdmin:
-
-/api/forza-test
-
-مثال:
-https://JOUW-HOMS-TECH-DOMEIN/api/forza-test
-
-المفروض يرجع JSON يبدأ بـ:
-
-{
-  "success": true,
-  "result": {
-    "source": "Forza public website",
-    "readOnly": true,
-    ...
-  }
-}
-
-مهم:
-- لا يوجد INSERT.
-- لا يوجد UPDATE.
-- لا يوجد DELETE.
-- لا يغير site_settings.
-- لا يغير webshop_orders.
-- لا يغير buyback_orders.
-- Protocol 1–8 لا يتم لمسها.
-
-بعد نجاح هذا الاختبار فقط نضيف زر Admin:
-"🔄 Forza Test Import"
-
-ثم ننتقل للمرحلة التالية: مزامنة المنتجات وحفظها.
 
 // Start server
 initDatabase()
