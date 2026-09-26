@@ -1172,6 +1172,19 @@ textarea{
       <button class="btn btn-green" onclick="addDeviceCategory()">+ Categorie toevoegen</button>
     </div>
     <div id="deviceCategoriesList"></div>
+
+    <div class="card" style="margin-top:18px">
+      <div class="card-head">
+        <div>
+          <div class="card-title">📋 Conditie-uitleg — één keer instellen</div>
+          <div class="small">Deze uitleg hoort bij HOMS TECH als geheel en wordt gebruikt voor alle verkochte telefoons. Je hoeft de foto's dus niet opnieuw per telefoon toe te voegen.</div>
+        </div>
+      </div>
+      <div class="small" style="margin-bottom:12px;padding:10px 12px;background:#f4f8ff;border:1px solid #dce9ff;border-radius:10px">
+        Stel hier de vaste uitleg in voor <strong>Zo goed als nieuw</strong>, <strong>Licht gebruikt</strong>, <strong>Zichtbaar gebruikt</strong> en <strong>Kapot</strong>. De klant kan deze uitleg later openen via «Wat is dat?» op de productpagina.
+      </div>
+      <div id="globalConditionDetailsList"></div>
+    </div>
   </section>
 
   <!-- GEBRUIKTE TELEFOONS -->
@@ -1633,6 +1646,86 @@ function normalizePhoneOptions(phone){
 
 
 
+function normalizeGlobalConditionDetails(){
+  const defaults=[
+    {title:"Zo goed als nieuw",text:"",image:""},
+    {title:"Licht gebruikt",text:"",image:""},
+    {title:"Zichtbaar gebruikt",text:"",image:""},
+    {title:"Kapot",text:"",image:""}
+  ];
+
+  if(!Array.isArray(data.globalConditionDetails) || !data.globalConditionDetails.length){
+    const old=(Array.isArray(data.phones)?data.phones:[]).find(p=>Array.isArray(p.conditionDetails)&&p.conditionDetails.length);
+    data.globalConditionDetails=old
+      ? old.conditionDetails.slice(0,10).map(x=>({title:String(x.title||""),text:String(x.text||""),image:String(x.image||"")}))
+      : defaults.map(x=>({...x}));
+  }else{
+    data.globalConditionDetails=data.globalConditionDetails.slice(0,10).map((x,i)=>({
+      title:String(x?.title||defaults[i]?.title||""),
+      text:String(x?.text||""),
+      image:String(x?.image||"")
+    }));
+    const existing=new Set(data.globalConditionDetails.map(x=>x.title.trim().toLowerCase()).filter(Boolean));
+    defaults.forEach(x=>{
+      if(!existing.has(x.title.toLowerCase()) && data.globalConditionDetails.length<10){
+        data.globalConditionDetails.push({...x});
+      }
+    });
+  }
+}
+
+function handleGlobalConditionImage(event,i){
+  const file=event.target.files && event.target.files[0];
+  if(!file) return;
+  if(!file.type || !file.type.startsWith('image/')){
+    alert('Kies een afbeelding.');
+    event.target.value='';
+    return;
+  }
+  if(file.size>2*1024*1024){
+    alert('De afbeelding mag maximaal 2 MB zijn.');
+    event.target.value='';
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    normalizeGlobalConditionDetails();
+    data.globalConditionDetails[i].image=reader.result;
+    renderGlobalConditionDetails();
+    markChanged();
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderGlobalConditionDetails(){
+  normalizeGlobalConditionDetails();
+  const box=document.getElementById('globalConditionDetailsList');
+  if(!box) return;
+  box.innerHTML=data.globalConditionDetails.map((x,i)=>`
+    <div style="border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin-bottom:12px;background:#fff">
+      <div style="display:grid;grid-template-columns:1fr 1.5fr 44px;gap:10px;align-items:start">
+        <div class="field">
+          <label>Naam conditie</label>
+          <input value="${esc(x.title||'')}" placeholder="Zo goed als nieuw" oninput="data.globalConditionDetails[${i}].title=this.value;markChanged()">
+        </div>
+        <div class="field">
+          <label>Uitleg voor de klant</label>
+          <textarea rows="3" placeholder="Leg uit hoe deze conditie eruitziet..." oninput="data.globalConditionDetails[${i}].text=this.value;markChanged()">${esc(x.text||'')}</textarea>
+        </div>
+        <button class="btn btn-red" type="button" style="margin-top:25px" onclick="data.globalConditionDetails.splice(${i},1);renderGlobalConditionDetails();markChanged()">×</button>
+      </div>
+      <div style="margin-top:10px">
+        <label style="font-weight:700;display:block;margin-bottom:6px">🖼️ Afbeelding voor «Wat is dat?»</label>
+        <input type="file" accept="image/*" onchange="handleGlobalConditionImage(event,${i})">
+        <input value="${esc(x.image||'')}" placeholder="Of plak een afbeelding URL" oninput="data.globalConditionDetails[${i}].image=this.value;markChanged()">
+        ${x.image?`<img src="${esc(x.image)}" alt="" style="display:block;width:220px;height:135px;object-fit:cover;border-radius:10px;margin-top:8px">`:''}
+        <div class="small" style="margin-top:6px">Deze afbeelding wordt voor deze conditie gebruikt op alle productpagina's.</div>
+      </div>
+    </div>
+  `).join('')+`
+    <button class="btn btn-light" type="button" onclick="data.globalConditionDetails.push({title:'',text:'',image:''});renderGlobalConditionDetails();markChanged()">+ Conditie-uitleg toevoegen</button>`;
+}
+
 function normalizeDeviceCategories(){
   if(!Array.isArray(data.deviceCategories)){
     data.deviceCategories = [];
@@ -1649,6 +1742,8 @@ function normalizeDeviceCategories(){
 
 function renderDeviceCategories(){
   normalizeDeviceCategories();
+  normalizeGlobalConditionDetails();
+  renderGlobalConditionDetails();
   const box=document.getElementById("deviceCategoriesList");
   if(!box) return;
 
@@ -2052,21 +2147,6 @@ function renderPhones(){
   normalizePhoneOptions(phone);
   while(!Array.isArray(phone.images)) phone.images=[];
   while(phone.images.length<4) phone.images.push("");
-  if(!Array.isArray(phone.conditionDetails)) phone.conditionDetails=[];
-
-  // Zorg dat de vier standaard conditie-uitleggen direct zichtbaar zijn.
-  const defaultConditionTitles=[
-    'Zo goed als nieuw',
-    'Licht gebruikt',
-    'Zichtbaar gebruikt',
-    'Kapot'
-  ];
-  defaultConditionTitles.forEach((title)=>{
-    if(!phone.conditionDetails.some(x=>String(x?.title||'').trim().toLowerCase()===title.toLowerCase())){
-      phone.conditionDetails.push({title:title,text:'',image:''});
-    }
-  });
-
   if(!Array.isArray(phone.specifications)) phone.specifications=[];
 
   const list=data.phones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">🛒 ${esc(x.name||'Nieuw product')}<small>${esc(x.brand||'')} · ${esc(x.category||'Smartphones')}</small></button>`).join('');
@@ -2096,22 +2176,6 @@ function renderPhones(){
       <input value="${esc(s.label||'')}" placeholder="Specificatie" oninput="data.phones[${selectedPhoneIndex}].specifications[${i}].label=this.value;markChanged()">
       <input value="${esc(s.value||'')}" placeholder="Waarde" oninput="data.phones[${selectedPhoneIndex}].specifications[${i}].value=this.value;markChanged()">
       <button class="btn btn-red" type="button" onclick="data.phones[${selectedPhoneIndex}].specifications.splice(${i},1);renderPhones();markChanged()">×</button>
-    </div>`).join('');
-
-  const conditions=phone.conditionDetails.map((s,i)=>`
-    <div style="border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin-bottom:12px;background:#fff">
-      <div style="display:grid;grid-template-columns:1fr 1fr 44px;gap:10px;align-items:center">
-        <input value="${esc(s.title||'')}" placeholder="Bijv. Zo goed als nieuw" oninput="data.phones[${selectedPhoneIndex}].conditionDetails[${i}].title=this.value;markChanged()">
-        <input value="${esc(s.text||'')}" placeholder="Beschrijving van de conditie" oninput="data.phones[${selectedPhoneIndex}].conditionDetails[${i}].text=this.value;markChanged()">
-        <button class="btn btn-red" type="button" onclick="data.phones[${selectedPhoneIndex}].conditionDetails.splice(${i},1);renderPhones();markChanged()">×</button>
-      </div>
-      <div style="margin-top:10px">
-        <label style="font-weight:700;display:block;margin-bottom:6px">🖼️ Afbeelding voor «Wat is dat?»</label>
-        <input type="file" accept="image/*" onchange="handleConditionDetailImage(event,${selectedPhoneIndex},${i})">
-        <input value="${esc(s.image||'')}" placeholder="Of plak een afbeelding URL" oninput="data.phones[${selectedPhoneIndex}].conditionDetails[${i}].image=this.value;markChanged()" style="margin-top:7px;width:100%">
-        ${s.image?`<img src="${esc(s.image)}" alt="" style="display:block;width:180px;height:110px;object-fit:cover;border-radius:10px;margin-top:8px">`:''}
-        <div class="small" style="margin-top:6px">Deze afbeelding wordt gebruikt wanneer de klant op «Wat is dat?» bij deze conditie klikt.</div>
-      </div>
     </div>`).join('');
 
   box.innerHTML=`
@@ -2162,13 +2226,6 @@ function renderPhones(){
         ${optionEditor('tradeInOptions','6. Inruil oude telefoon','Voor later gebruik met het inruilsysteem; staat los van de buyback-protocollen.')}
 
         <div class="card" style="margin-top:16px">
-          <div class="card-title">📋 Conditie-uitleg voor de klant</div>
-          <div class="small" style="margin-bottom:12px">Teksten die later op de productpagina onder de conditie kunnen verschijnen.</div>
-          ${conditions}
-          <button class="btn btn-light" type="button" onclick="data.phones[${selectedPhoneIndex}].conditionDetails.push({title:'',text:'',image:''});renderPhones();markChanged()">+ Conditie-uitleg</button>
-        </div>
-
-        <div class="card" style="margin-top:16px">
           <div class="card-title">📷 Productfoto's</div>
           <div class="images-grid">${phone.images.map((img,j)=>`
             <div class="image-box">
@@ -2180,31 +2237,6 @@ function renderPhones(){
         </div>
       </div>
     </div>`;
-}
-
-function handleConditionDetailImage(event,phoneIndex,conditionIndex){
-  const phone=data.phones[phoneIndex];
-  const details=phone && phone.conditionDetails;
-  const detail=details && details[conditionIndex];
-  const file=event.target.files && event.target.files[0];
-  if(!detail || !file) return;
-  if(!file.type.startsWith('image/')){
-    alert('Kies een afbeelding.');
-    event.target.value='';
-    return;
-  }
-  if(file.size>2*1024*1024){
-    alert('De afbeelding mag maximaal 2 MB zijn.');
-    event.target.value='';
-    return;
-  }
-  const reader=new FileReader();
-  reader.onload=()=>{
-    detail.image=reader.result;
-    renderPhones();
-    markChanged();
-  };
-  reader.readAsDataURL(file);
 }
 
 function handlePhoneImage(event,i,j){
@@ -4485,6 +4517,7 @@ function renderAll(){
   renderPhones();
   renderBuybackPhones();
   renderDeviceCategories();
+  renderGlobalConditionDetails();
   renderUsedPhones();
   renderGsmServices();
   renderWhy();
