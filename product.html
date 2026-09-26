@@ -232,25 +232,8 @@ nav{justify-content:center}
       <h2 id="conditionHelpTitle">Wat is dat? – Productcondities</h2>
       <button type="button" class="condition-modal-close" onclick="closeConditionHelp()" aria-label="Sluiten">×</button>
     </div>
-    <p class="condition-help-intro">Voorbeelden om het verschil tussen de productcondities duidelijk te maken. De foto's zijn voorbeelden; het exacte uiterlijk kan per toestel verschillen.</p>
-    <div class="condition-help-grid">
-      <article class="condition-help-item">
-        <img src="assets/condition-info/zo-goed-als-nieuw.jpg" alt="Voorbeeld Zo goed als nieuw">
-        <div class="condition-help-item-body"><h3>Zo goed als nieuw</h3><p>Minimale gebruikerssporen en een zeer nette staat.</p></div>
-      </article>
-      <article class="condition-help-item">
-        <img src="assets/condition-info/licht-gebruikt.jpg" alt="Voorbeeld Licht gebruikt">
-        <div class="condition-help-item-body"><h3>Licht gebruikt</h3><p>Kleine zichtbare gebruikerssporen, zoals lichte krasjes.</p></div>
-      </article>
-      <article class="condition-help-item">
-        <img src="assets/condition-info/zichtbaar-gebruikt.jpg" alt="Voorbeeld Zichtbaar gebruikt">
-        <div class="condition-help-item-body"><h3>Zichtbaar gebruikt</h3><p>Duidelijkere cosmetische gebruikerssporen of beschadigingen.</p></div>
-      </article>
-      <article class="condition-help-item">
-        <img src="assets/condition-info/face-id-touch-id.jpg" alt="Voorbeeld Face ID / Touch ID probleem">
-        <div class="condition-help-item-body"><h3>Face ID / Touch ID</h3><p>Voorbeeld van een toestel waarbij biometrische herkenning niet werkt.</p></div>
-      </article>
-    </div>
+    <p class="condition-help-intro">Voorbeelden om het verschil tussen de productcondities duidelijk te maken. De foto's en uitleg worden centraal beheerd via Admin → Apparaten.</p>
+    <div id="conditionHelpGrid" class="condition-help-grid"></div>
     <div class="condition-help-note">De beschikbare condities en eventuele functionele gebreken worden altijd bij het betreffende toestel vermeld.</div>
   </div>
 </div>
@@ -494,9 +477,31 @@ function renderProductBody(){
 }
 
 
+function renderConditionHelp(){
+  const grid=document.getElementById("conditionHelpGrid");
+  if(!grid) return;
+  const details=Array.isArray(currentData?.globalConditionDetails)
+    ? currentData.globalConditionDetails.filter(x=>x && (String(x.title||"").trim() || String(x.text||"").trim() || String(x.image||"").trim()))
+    : [];
+  if(!details.length){
+    grid.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;color:#64748b">Geen conditie-uitleg beschikbaar.</div>';
+    return;
+  }
+  grid.innerHTML=details.map(x=>{
+    const title=String(x.title||"").trim() || "Productconditie";
+    const text=String(x.text||"").trim() || "";
+    const image=String(x.image||"").trim();
+    return `<article class="condition-help-item">
+      ${image ? `<img src="${esc(image)}" alt="${esc(title)}">` : `<div style="height:220px;display:flex;align-items:center;justify-content:center;background:#f1f5f9;color:#64748b">Geen afbeelding</div>`}
+      <div class="condition-help-item-body"><h3>${esc(title)}</h3><p>${esc(text)}</p></div>
+    </article>`;
+  }).join("");
+}
+
 function openConditionHelp(){
   const modal=document.getElementById("conditionHelpModal");
   if(!modal) return;
+  renderConditionHelp();
   modal.classList.add("open");
   document.body.style.overflow="hidden";
 }
