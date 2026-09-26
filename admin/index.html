@@ -1427,6 +1427,35 @@ textarea{
         </div>
       </div>
 
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+          <div>
+            <h3 style="margin:0">👁️ Preview voor Apparaten</h3>
+            <div class="small" style="margin-top:4px">Alleen een voorbeeld van hoe Forza-data als producten zou kunnen worden opgebouwd. <strong>Er wordt niets opgeslagen.</strong></div>
+          </div>
+          <button class="btn btn-light" id="forzaPreviewBtn" onclick="renderForzaPreview()">Preview maken</button>
+        </div>
+        <div id="forzaPreviewStatus" class="status info" style="margin-top:12px">Nog geen preview gemaakt.</div>
+        <div id="forzaPreviewContent" style="display:none;margin-top:12px">
+          <div id="forzaPreviewSummary" class="grid grid-3" style="margin-bottom:12px"></div>
+          <div style="overflow:auto">
+            <table style="width:100%;border-collapse:collapse;min-width:760px">
+              <thead>
+                <tr>
+                  <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Product</th>
+                  <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Opslag</th>
+                  <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Conditie</th>
+                  <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Batterij</th>
+                  <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Prijs</th>
+                  <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Status</th>
+                </tr>
+              </thead>
+              <tbody id="forzaPreviewRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <div class="card">
         <h3 style="margin-top:0">Ruwe testdata</h3>
         <pre id="forzaTestRaw" style="white-space:pre-wrap;overflow:auto;max-height:420px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;font-size:11px"></pre>
@@ -4698,6 +4727,77 @@ function forzaAdminFindResult(payload){
   return payload?.result || payload?.data?.result || payload?.data || payload || {};
 }
 
+let forzaPreviewModel = null;
+
+function forzaAdminNormalizeOption(item, index, type){
+  if(item && typeof item === "object"){
+    const name = forzaAdminPick(item,["name","label","title","condition","option","battery","storage","memory"]) ?? `${type} ${index+1}`;
+    const price = forzaAdminPick(item,["price","amount","value","salePrice","sellingPrice","delta"]);
+    return {name:String(name),price};
+  }
+  return {name:String(item ?? `${type} ${index+1}`),price:undefined};
+}
+
+function forzaAdminNumericPrice(value){
+  if(typeof value === "number" && Number.isFinite(value)) return value;
+  if(value===null || value===undefined) return null;
+  const m=String(value).replace(/,/g,".").match(/-?\d+(?:\.\d+)?/);
+  return m ? Number(m[0]) : null;
+}
+
+function forzaAdminBuildPreview(){
+  if(!forzaPreviewModel)return [];
+  const {product,storage,conditions,battery}=forzaPreviewModel;
+  const storageArr=forzaAdminArray(storage).map((v,i)=>forzaAdminNormalizeOption(v,i,"Opslag"));
+  const conditionArr=forzaAdminArray(conditions).map((v,i)=>forzaAdminNormalizeOption(v,i,"Conditie"));
+  const batteryArr=forzaAdminArray(battery).map((v,i)=>forzaAdminNormalizeOption(v,i,"Batterij"));
+  const finalStorage=storageArr.length?storageArr:[{name:"Niet gevonden",price:undefined}];
+  const finalConditions=conditionArr.length?conditionArr:[{name:"Niet gevonden",price:undefined}];
+  const finalBattery=batteryArr.length?batteryArr:[{name:"Standaard / niet gevonden",price:0}];
+  const rows=[];
+  for(const st of finalStorage){
+    for(const co of finalConditions){
+      for(const ba of finalBattery){
+        const base=forzaAdminNumericPrice(co.price);
+        const delta=forzaAdminNumericPrice(ba.price);
+        const total=base!==null ? base + (delta!==null ? delta : 0) : null;
+        rows.push({product:forzaAdminPick(product,["name","productName","title"])||"Niet gevonden",storage:st.name,condition:co.name,battery:ba.name,price:total,status:"Preview — niet opgeslagen"});
+      }
+    }
+  }
+  return rows;
+}
+
+function renderForzaPreview(){
+  const status=document.getElementById("forzaPreviewStatus");
+  const content=document.getElementById("forzaPreviewContent");
+  const rowsEl=document.getElementById("forzaPreviewRows");
+  const summary=document.getElementById("forzaPreviewSummary");
+  if(!status||!content||!rowsEl||!summary)return;
+  if(!forzaPreviewModel){
+    status.className="status error";
+    status.textContent="Lees eerst de Forza-data met ‘Forza opnieuw lezen’.";
+    return;
+  }
+  const rows=forzaAdminBuildPreview();
+  summary.innerHTML=[
+    ["Product",forzaAdminPick(forzaPreviewModel.product,["name","productName","title"])||"Niet gevonden"],
+    ["Voorbeeldregels",String(rows.length)],
+    ["Actie","NIET OPSLAAN"]
+  ].map(([k,v])=>`<div class="card"><div class="small">${forzaAdminEsc(k)}</div><strong style="display:block;margin-top:5px">${forzaAdminEsc(v)}</strong></div>`).join("");
+  rowsEl.innerHTML=rows.map(row=>`<tr>
+    <td style="padding:9px;border-bottom:1px solid #edf2f7">${forzaAdminEsc(row.product)}</td>
+    <td style="padding:9px;border-bottom:1px solid #edf2f7">${forzaAdminEsc(row.storage)}</td>
+    <td style="padding:9px;border-bottom:1px solid #edf2f7">${forzaAdminEsc(row.condition)}</td>
+    <td style="padding:9px;border-bottom:1px solid #edf2f7">${forzaAdminEsc(row.battery)}</td>
+    <td style="padding:9px;border-bottom:1px solid #edf2f7;font-weight:800">${row.price!==null?forzaAdminEsc(forzaAdminMoney(row.price)):"Niet gevonden"}</td>
+    <td style="padding:9px;border-bottom:1px solid #edf2f7"><span style="font-size:12px;font-weight:800">${forzaAdminEsc(row.status)}</span></td>
+  </tr>`).join("");
+  content.style.display="block";
+  status.className="status success";
+  status.textContent=`✓ Preview gemaakt: ${rows.length} mogelijke regels. Geen enkele regel is opgeslagen.`;
+}
+
 async function loadForzaTest(){
   const status=document.getElementById("forzaTestStatus");
   const content=document.getElementById("forzaTestContent");
@@ -4733,6 +4833,11 @@ async function loadForzaTest(){
     const sourceUrl=payload.sourceUrl || x.sourceUrl || x.url || product.url || "Niet gevonden";
     const readOnly=payload.readOnly ?? x.readOnly ?? true;
 
+    forzaPreviewModel={product,storage,conditions,battery};
+    const previewContent=document.getElementById("forzaPreviewContent");
+    const previewStatus=document.getElementById("forzaPreviewStatus");
+    if(previewContent)previewContent.style.display="none";
+    if(previewStatus){previewStatus.className="status info";previewStatus.textContent="Nieuwe Forza-data geladen. Klik op ‘Preview maken’ om alleen een voorbeeld te zien.";}
     document.getElementById("forzaTestName").textContent=name;
     document.getElementById("forzaTestBrand").textContent=brand;
     document.getElementById("forzaTestSku").textContent="SKU: "+forzaAdminDisplayValue(sku);
