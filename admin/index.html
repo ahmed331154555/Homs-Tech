@@ -4755,13 +4755,36 @@ function forzaAdminBuildPreview(){
   const finalConditions=conditionArr.length?conditionArr:[{name:"Niet gevonden",price:undefined}];
   const finalBattery=batteryArr.length?batteryArr:[{name:"Standaard / niet gevonden",price:0}];
   const rows=[];
+
+  // Belangrijk: de huidige read-only Forza endpoint levert de conditieprijzen
+  // als één set prijzen, zonder opslagkoppeling. We mogen die prijzen daarom
+  // NIET kopiëren naar 128GB/256GB. Alleen de eerste opslag (zoals 64GB op
+  // de huidige Forza-pagina) krijgt de werkelijk gelezen conditieprijs.
+  const knownPriceStorage = finalStorage.length ? finalStorage[0].name : null;
+  const baseProductName = forzaAdminPick(product,["name","productName","title"])||"Niet gevonden";
+
+  function productNameForStorage(name){
+    const cleanStorage=String(name||"").trim();
+    if(!cleanStorage || cleanStorage==="Niet gevonden") return baseProductName;
+    const withoutMemory=baseProductName.replace(/\b\d+\s*(?:GB|TB)\b/ig,"").replace(/\s{2,}/g," ").trim();
+    return withoutMemory ? `${withoutMemory} ${cleanStorage}` : `${baseProductName} — ${cleanStorage}`;
+  }
+
   for(const st of finalStorage){
+    const hasKnownStoragePrice=knownPriceStorage!==null && st.name===knownPriceStorage;
     for(const co of finalConditions){
       for(const ba of finalBattery){
-        const base=forzaAdminNumericPrice(co.price);
+        const base=hasKnownStoragePrice ? forzaAdminNumericPrice(co.price) : null;
         const delta=forzaAdminNumericPrice(ba.price);
         const total=base!==null ? base + (delta!==null ? delta : 0) : null;
-        rows.push({product:forzaAdminPick(product,["name","productName","title"])||"Niet gevonden",storage:st.name,condition:co.name,battery:ba.name,price:total,status:"Preview — niet opgeslagen"});
+        rows.push({
+          product:productNameForStorage(st.name),
+          storage:st.name,
+          condition:co.name,
+          battery:ba.name,
+          price:total,
+          status:hasKnownStoragePrice ? "Preview — prijs gelezen" : "Preview — prijs niet gelezen voor deze opslag"
+        });
       }
     }
   }
@@ -4795,7 +4818,7 @@ function renderForzaPreview(){
   </tr>`).join("");
   content.style.display="block";
   status.className="status success";
-  status.textContent=`✓ Preview gemaakt: ${rows.length} mogelijke regels. Geen enkele regel is opgeslagen.`;
+  status.textContent=`✓ Preview gemaakt: ${rows.length} mogelijke regels. Geen enkele regel is opgeslagen. Prijzen voor opslagvarianten die Forza niet aan een prijs koppelt zijn bewust niet ingevuld.`;
 }
 
 async function loadForzaTest(){
