@@ -2061,7 +2061,24 @@ function renderPhones(){
   if(!Array.isArray(phone.conditionDetails)) phone.conditionDetails=[];
   if(!Array.isArray(phone.specifications)) phone.specifications=[];
 
-  const list=data.phones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">🛒 ${esc(x.name||'Nieuw product')}<small>${esc(x.brand||'')} · ${esc(x.category||'Smartphones')}</small></button>`).join('');
+  // Apparaten opdelen per merk: Apple iPhone en Samsung Galaxy blijven apart zichtbaar.
+  if(!window.__homsPhoneBrandFilter){
+    const currentBrand=String(phone.brand||'').toLowerCase();
+    window.__homsPhoneBrandFilter=currentBrand.includes('samsung') ? 'Samsung' : 'Apple';
+  }
+  const brandFilter=window.__homsPhoneBrandFilter;
+  const matchesBrand=(x)=>{
+    const b=String(x.brand||'').toLowerCase();
+    if(brandFilter==='Apple') return b.includes('apple') || b.includes('iphone');
+    if(brandFilter==='Samsung') return b.includes('samsung') || b.includes('galaxy');
+    if(brandFilter==='Other') return !b.includes('apple') && !b.includes('iphone') && !b.includes('samsung') && !b.includes('galaxy');
+    return true;
+  };
+  const visibleIndexes=data.phones.map((x,i)=>({x,i})).filter(o=>matchesBrand(o.x));
+  if(!visibleIndexes.some(o=>o.i===selectedPhoneIndex) && visibleIndexes.length){
+    selectedPhoneIndex=visibleIndexes[0].i;
+  }
+  const list=visibleIndexes.map(({x,i})=>`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">🛒 ${esc(x.name||'Nieuw product')}<small>${esc(x.brand||'')} · ${esc(x.category||'Smartphones')}</small></button>`).join('');
 
   const optionEditor=(key,title,help)=>{
     const opts=phone[key]||[];
@@ -2107,7 +2124,13 @@ function renderPhones(){
     <div class="editor-layout">
       <div class="editor-list">
         <div class="editor-list-title">Producten</div>
-        ${list}
+        <div style="display:flex;flex-wrap:wrap;gap:7px;padding:10px;border-bottom:1px solid #e5e9ef">
+          <button type="button" class="btn btn-light" style="${brandFilter==='Apple'?'border-color:#0f5ed8;color:#0f5ed8;background:#f1f6ff':''}" onclick="window.__homsPhoneBrandFilter='Apple';renderPhones()">🍎 Apple iPhone</button>
+          <button type="button" class="btn btn-light" style="${brandFilter==='Samsung'?'border-color:#0f5ed8;color:#0f5ed8;background:#f1f6ff':''}" onclick="window.__homsPhoneBrandFilter='Samsung';renderPhones()">📱 Samsung Galaxy</button>
+          <button type="button" class="btn btn-light" style="${brandFilter==='Other'?'border-color:#0f5ed8;color:#0f5ed8;background:#f1f6ff':''}" onclick="window.__homsPhoneBrandFilter='Other';renderPhones()">Andere</button>
+          <button type="button" class="btn btn-light" style="${brandFilter==='All'?'border-color:#0f5ed8;color:#0f5ed8;background:#f1f6ff':''}" onclick="window.__homsPhoneBrandFilter='All';renderPhones()">Alle</button>
+        </div>
+        ${list || `<div class="small" style="padding:10px">Geen producten in deze groep.</div>`}
       </div>
       <div class="editor-panel">
         <div class="card-head">
