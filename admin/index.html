@@ -2053,6 +2053,20 @@ function renderPhones(){
   while(!Array.isArray(phone.images)) phone.images=[];
   while(phone.images.length<4) phone.images.push("");
   if(!Array.isArray(phone.conditionDetails)) phone.conditionDetails=[];
+
+  // Zorg dat de vier standaard conditie-uitleggen direct zichtbaar zijn.
+  const defaultConditionTitles=[
+    'Zo goed als nieuw',
+    'Licht gebruikt',
+    'Zichtbaar gebruikt',
+    'Kapot'
+  ];
+  defaultConditionTitles.forEach((title)=>{
+    if(!phone.conditionDetails.some(x=>String(x?.title||'').trim().toLowerCase()===title.toLowerCase())){
+      phone.conditionDetails.push({title:title,text:'',image:''});
+    }
+  });
+
   if(!Array.isArray(phone.specifications)) phone.specifications=[];
 
   const list=data.phones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">🛒 ${esc(x.name||'Nieuw product')}<small>${esc(x.brand||'')} · ${esc(x.category||'Smartphones')}</small></button>`).join('');
@@ -2151,7 +2165,7 @@ function renderPhones(){
           <div class="card-title">📋 Conditie-uitleg voor de klant</div>
           <div class="small" style="margin-bottom:12px">Teksten die later op de productpagina onder de conditie kunnen verschijnen.</div>
           ${conditions}
-          <button class="btn btn-light" type="button" onclick="data.phones[${selectedPhoneIndex}].conditionDetails.push({title:'',text:''});renderPhones();markChanged()">+ Conditie-uitleg</button>
+          <button class="btn btn-light" type="button" onclick="data.phones[${selectedPhoneIndex}].conditionDetails.push({title:'',text:'',image:''});renderPhones();markChanged()">+ Conditie-uitleg</button>
         </div>
 
         <div class="card" style="margin-top:16px">
