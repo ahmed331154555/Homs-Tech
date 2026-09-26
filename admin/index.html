@@ -1433,9 +1433,13 @@ textarea{
             <h3 style="margin:0">👁️ Preview voor Apparaten</h3>
             <div class="small" style="margin-top:4px">Alleen een voorbeeld van hoe Forza-data als producten zou kunnen worden opgebouwd. <strong>Er wordt niets opgeslagen.</strong></div>
           </div>
-          <button class="btn btn-light" id="forzaPreviewBtn" onclick="renderForzaPreview()">Preview maken</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-light" id="forzaPreviewBtn" onclick="renderForzaPreview()">Preview maken</button>
+            <button class="btn btn-light" id="forzaCompareBtn" onclick="compareForzaWithHoms()">🔎 Vergelijk met HOMS TECH</button>
+          </div>
         </div>
         <div id="forzaPreviewStatus" class="status info" style="margin-top:12px">Nog geen preview gemaakt.</div>
+        <div id="forzaCompareStatus" class="status info" style="margin-top:10px">Nog geen vergelijking gemaakt.</div>
         <div id="forzaPreviewContent" style="display:none;margin-top:12px">
           <div id="forzaPreviewSummary" class="grid grid-3" style="margin-bottom:12px"></div>
           <div style="overflow:auto">
@@ -1451,6 +1455,34 @@ textarea{
                 </tr>
               </thead>
               <tbody id="forzaPreviewRows"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" id="forzaCompareContent" style="display:none;margin-top:14px">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+            <div>
+              <h3 style="margin:0">🔎 Forza ↔ HOMS TECH</h3>
+              <div class="small" style="margin-top:4px">
+                Alleen vergelijken. Er wordt niets opgeslagen en geen HOMS TECH-prijs gewijzigd.
+              </div>
+            </div>
+          </div>
+          <div style="overflow:auto;margin-top:12px">
+            <table style="width:100%;border-collapse:collapse;min-width:980px">
+              <thead>
+                <tr>
+                  <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Product</th>
+                  <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Opslag</th>
+                  <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Conditie</th>
+                  <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Batterij</th>
+                  <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Forza</th>
+                  <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">HOMS TECH</th>
+                  <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Verschil</th>
+                  <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Status</th>
+                </tr>
+              </thead>
+              <tbody id="forzaCompareRows"></tbody>
             </table>
           </div>
         </div>
@@ -4841,6 +4873,142 @@ function renderForzaPreview(){
   content.style.display="block";
   status.className="status success";
   status.textContent=`✓ Preview gemaakt: ${rows.length} mogelijke regels. Geen enkele regel is opgeslagen. Elke opslag gebruikt alleen de prijzen van de bijbehorende Forza-pagina; ontbrekende prijzen blijven leeg.`;
+}
+
+
+function forzaCompareNormalize(value){
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/&nbsp;/g," ")
+    .replace(/[^a-z0-9]+/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+function forzaCompareStorageKey(value){
+  const m=String(value ?? "").match(/(\d+)\s*gb/i);
+  return m ? `${m[1]}GB` : forzaCompareNormalize(value).replace(/\s+/g,"").toUpperCase();
+}
+
+function forzaCompareConditionKey(value){
+  const v=forzaCompareNormalize(value);
+  if(v.includes("zo goed als nieuw")) return "zo goed als nieuw";
+  if(v.includes("licht gebruikt")) return "licht gebruikt";
+  if(v.includes("zichtbaar gebruikt")) return "zichtbaar gebruikt";
+  return v;
+}
+
+function forzaCompareBatteryKey(value){
+  const v=forzaCompareNormalize(value);
+  if(v.includes("nieuw")) return "nieuw";
+  return "standaard";
+}
+
+function forzaCompareModelKey(value){
+  let v=String(value ?? "")
+    .replace(/\b\d+\s*(?:GB|TB)\b/ig," ")
+    .replace(/\b(64|128|256|512)\s*gb\b/ig," ")
+    .replace(/\s+/g," ")
+    .trim();
+  v=v.replace(/\b(paars|purple|zwart|black|wit|white|rood|red|blauw|blue|groen|green)\b/ig," ");
+  return forzaCompareNormalize(v);
+}
+
+function forzaCompareFindPhone(forzaProduct){
+  if(!Array.isArray(data?.phones)) return null;
+  const modelKey=forzaCompareModelKey(forzaProduct);
+  const brandKey=forzaCompareNormalize(forzaPreviewModel?.product?.brand || "");
+  let best=null, bestScore=-1;
+  for(const phone of data.phones){
+    if(!phone || typeof phone!=="object") continue;
+    const phoneKey=forzaCompareModelKey(phone.name || "");
+    if(!phoneKey) continue;
+    let score=0;
+    if(phoneKey===modelKey) score+=100;
+    else if(phoneKey.includes(modelKey) || modelKey.includes(phoneKey)) score+=60;
+    const pBrand=forzaCompareNormalize(phone.brand || "");
+    if(brandKey && pBrand && pBrand===brandKey) score+=20;
+    if(score>bestScore){bestScore=score;best=phone;}
+  }
+  return bestScore>=60 ? best : null;
+}
+
+function forzaCompareFindOption(arr, wantedKey, kind){
+  if(!Array.isArray(arr)) return null;
+  return arr.find(o=>{
+    if(!o) return false;
+    if(kind==="storage") return forzaCompareStorageKey(o.label)===wantedKey;
+    if(kind==="condition") return forzaCompareConditionKey(o.label)===wantedKey;
+    if(kind==="battery") return forzaCompareBatteryKey(o.label)===wantedKey;
+    return false;
+  }) || null;
+}
+
+function forzaComparePrice(phone, row){
+  if(!phone) return null;
+  normalizePhoneOptions(phone);
+  const storageKey=forzaCompareStorageKey(row.storage);
+  const conditionKey=forzaCompareConditionKey(row.condition);
+  const batteryKey=forzaCompareBatteryKey(row.battery);
+
+  const co=forzaCompareFindOption(phone.conditionOptions,conditionKey,"condition");
+  if(!co) return null;
+  const st=forzaCompareFindOption(phone.storageOptions,storageKey,"storage");
+  const ba=forzaCompareFindOption(phone.batteryOptions,batteryKey,"battery");
+
+  const base=Number(co.basePrice);
+  if(!Number.isFinite(base)) return null;
+  const storageDelta=st && Number.isFinite(Number(st.priceDelta)) ? Number(st.priceDelta) : 0;
+  const batteryDelta=ba && Number.isFinite(Number(ba.priceDelta)) ? Number(ba.priceDelta) : 0;
+  return base + storageDelta + batteryDelta;
+}
+
+function compareForzaWithHoms(){
+  const status=document.getElementById("forzaCompareStatus");
+  const content=document.getElementById("forzaCompareContent");
+  const rowsEl=document.getElementById("forzaCompareRows");
+  if(!status||!content||!rowsEl)return;
+  if(!forzaPreviewModel){
+    status.className="status error";
+    status.textContent="Lees eerst Forza met ‘Forza opnieuw lezen’.";
+    content.style.display="none";
+    return;
+  }
+
+  const rows=forzaAdminBuildPreview();
+  const modelProduct=forzaAdminPick(forzaPreviewModel.product,["name","productName","title"])||"Niet gevonden";
+  const phone=forzaCompareFindPhone(modelProduct);
+
+  rowsEl.innerHTML=rows.map(row=>{
+    const forzaPrice=Number.isFinite(Number(row.price)) ? Number(row.price) : null;
+    const homsPrice=forzaComparePrice(phone,row);
+    const diff=forzaPrice!==null && homsPrice!==null ? forzaPrice-homsPrice : null;
+    let statusText="Geen passend HOMS TECH-product gevonden";
+    if(phone && homsPrice!==null){
+      statusText = diff===0 ? "Gelijk" : (diff>0 ? "Forza hoger" : "Forza lager");
+    } else if(phone){
+      statusText="HOMS TECH-optie niet gevonden";
+    }
+    return `<tr>
+      <td style="padding:9px;border-bottom:1px solid #edf2f7">${forzaAdminEsc(row.product)}</td>
+      <td style="padding:9px;border-bottom:1px solid #edf2f7">${forzaAdminEsc(row.storage)}</td>
+      <td style="padding:9px;border-bottom:1px solid #edf2f7">${forzaAdminEsc(row.condition)}</td>
+      <td style="padding:9px;border-bottom:1px solid #edf2f7">${forzaAdminEsc(row.battery)}</td>
+      <td style="padding:9px;border-bottom:1px solid #edf2f7;font-weight:800">${forzaPrice!==null?forzaAdminEsc(forzaAdminMoney(forzaPrice)):"Niet gevonden"}</td>
+      <td style="padding:9px;border-bottom:1px solid #edf2f7;font-weight:800">${homsPrice!==null?forzaAdminEsc(forzaAdminMoney(homsPrice)):"Niet gevonden"}</td>
+      <td style="padding:9px;border-bottom:1px solid #edf2f7;font-weight:800">${diff!==null?forzaAdminEsc(forzaAdminMoney(diff)):"—"}</td>
+      <td style="padding:9px;border-bottom:1px solid #edf2f7"><span style="font-size:12px;font-weight:800">${forzaAdminEsc(statusText)}</span></td>
+    </tr>`;
+  }).join("");
+
+  content.style.display="block";
+  if(phone){
+    status.className="status success";
+    status.textContent="✓ Vergelijking gemaakt. Alleen lezen: er is niets opgeslagen en geen HOMS TECH-prijs gewijzigd.";
+  }else{
+    status.className="status info";
+    status.textContent="ℹ️ Forza-data is gelezen, maar er is nog geen passend HOMS TECH-product gevonden om mee te vergelijken.";
+  }
 }
 
 async function loadForzaTest(){
