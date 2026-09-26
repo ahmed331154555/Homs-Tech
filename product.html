@@ -118,7 +118,62 @@ nav{justify-content:center}
 @keyframes htMarqueeOneWay{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
 @media(max-width:700px){.ht-topbar,.topbar{height:38px!important}.ht-marquee,.top-info{gap:28px!important;animation-duration:13s!important}.ht-marquee-track{gap:28px!important}.ht-marquee-item,.top-info span{font-size:13px!important}}
 @media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
-</style></head>
+</style>
+<style id="homs-product-forza-polish-v2">
+/* HOMS TECH product detail — Forza-inspired layout polish, blue only */
+.product{max-width:1280px;grid-template-columns:minmax(0,46%) minmax(0,54%);gap:38px;padding:38px 42px;border:1px solid #e7edf5;box-shadow:0 12px 36px rgba(15,23,42,.07)}
+.gallery{position:sticky;top:145px;align-self:start}
+.gallery-wrap{background:#f8fafc;border:1px solid #e8eef5;border-radius:18px;min-height:500px}
+.main-image{height:500px;background:#f8fafc;border-radius:18px;padding:30px}
+.thumbs{justify-content:flex-start;padding:0 2px}
+.thumb{width:84px;height:84px;border-radius:12px;background:#fff}
+.info{min-width:0;padding:2px 0}
+.info h1{font-size:34px;letter-spacing:-.5px;margin-bottom:5px}
+.brand{font-size:14px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;color:#2563eb}
+.price{font-size:30px;margin:12px 0 4px;color:#111827}
+.price-caption{font-size:12px;color:#64748b;margin-bottom:17px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.meta div{padding:8px 11px;background:#f8fafc;border:1px solid #edf2f7;border-radius:9px;font-size:12px}
+.meta strong{min-width:auto;margin-right:4px}
+.option-section{margin:18px 0}
+.option-title{font-size:15px;margin-bottom:9px}
+.option-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.option-btn{min-width:0;width:100%;min-height:52px;padding:9px 11px;border:1px solid #d8e1eb;border-radius:10px;background:#fff;font-size:12px;line-height:1.25}
+.option-btn.active{border:2px solid #2563eb;background:#f5f9ff;box-shadow:none;padding:8px 10px}
+.option-btn small{font-size:11px;color:#475569;margin-top:3px}
+.option-section:nth-of-type(2) .option-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.option-section:nth-of-type(4) .option-grid,.option-section:nth-of-type(5) .option-grid,.option-section:nth-of-type(6) .option-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.order-summary{margin-top:20px;border-radius:14px;padding:18px 19px;background:#111827;box-shadow:0 8px 20px rgba(15,23,42,.12)}
+.order-summary h3{font-size:18px}
+.summary-row{font-size:12px;padding:7px 0}
+.summary-total{font-size:23px;margin-top:10px}
+.buttons{margin-top:14px}
+.btn.green,.btn.blue{background:#2563eb}
+.btn.gray{background:#eef4fb;color:#1e3a5f}
+.cart-added{background:#eff6ff;color:#1d4ed8}
+.spec-box{margin-top:28px;padding-top:4px}
+.spec-box h2{font-size:23px}
+.spec-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+.spec-list div{font-size:13px;border:1px solid #edf2f7}
+.description{padding-top:4px;font-size:14px}
+@media(max-width:1050px){
+  .product{grid-template-columns:minmax(0,43%) minmax(0,57%);padding:28px;gap:28px}
+  .gallery{top:120px}.gallery-wrap,.main-image{min-height:420px;height:420px}
+}
+@media(max-width:800px){
+  .product{grid-template-columns:1fr;padding:22px}
+  .gallery{position:static}.gallery-wrap,.main-image{min-height:330px;height:330px}
+  .option-grid,.option-section:nth-of-type(2) .option-grid,.option-section:nth-of-type(4) .option-grid,.option-section:nth-of-type(5) .option-grid,.option-section:nth-of-type(6) .option-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .spec-list{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .product{padding:14px;border-radius:16px}.info h1{font-size:27px}.price{font-size:27px}
+  .option-grid,.option-section:nth-of-type(2) .option-grid,.option-section:nth-of-type(4) .option-grid,.option-section:nth-of-type(5) .option-grid,.option-section:nth-of-type(6) .option-grid{grid-template-columns:1fr 1fr}
+  .option-btn{min-height:50px;padding:8px 9px}.option-btn.active{padding:7px 8px}
+}
+</style>
+
+</head>
 <body>
 
 <div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div></div>
@@ -310,6 +365,8 @@ function renderProductBody(){
   const basePrice=num(product.price||product.salePrice||product.sellPrice||0);
   const hasOptions=true;
   const total=calculateTotal(product);
+  const selectedConditionOption=effectiveOptions(product,"condition").find(x=>x.label===selectedOptions.condition);
+  const conditionDisplayPrice=conditionBasePrice(selectedConditionOption,product);
   const storage=product.storage||product.geheugen||"";
   const color=product.color||product.kleur||"";
   const condition=product.condition||product.conditie||"";
@@ -341,7 +398,8 @@ function renderProductBody(){
   area.innerHTML=`<div class="product"><div class="gallery">${gallery}</div><div class="info">
     <div class="brand">${esc(product.brand||"HOMS TECH")}</div>
     <h1>${esc(title)}</h1>
-    <div class="price">${money(total)}</div>
+    <div class="price">${money(conditionDisplayPrice)}</div>
+    <div class="price-caption">Prijs voor de gekozen productconditie</div>
     ${selectedOptions.condition?`<div style="margin-top:-12px;margin-bottom:16px;color:#64748b;font-size:13px">Prijs voor staat: <strong style="color:#111827">${esc(selectedOptions.condition)}</strong></div>`:""}
     ${specs?`<div class="meta">${specs}</div>`:""}
     ${optionsHtml}
