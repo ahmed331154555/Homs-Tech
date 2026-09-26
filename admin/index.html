@@ -1464,9 +1464,12 @@ textarea{
             <div>
               <h3 style="margin:0">🔎 Forza ↔ HOMS TECH</h3>
               <div class="small" style="margin-top:4px">
-                Alleen vergelijken. Er wordt niets opgeslagen en geen HOMS TECH-prijs gewijzigd.
+                Vergelijken is alleen lezen. Bijwerken gebeurt pas na jouw bevestiging.
               </div>
             </div>
+            <button id="forzaUpdatePricesBtn" class="btn btn-green" onclick="updateHomsPricesFromForza()" style="display:none">
+              🔄 Forza-prijzen bijwerken
+            </button>
           </div>
           <div style="overflow:auto;margin-top:12px">
             <table style="width:100%;border-collapse:collapse;min-width:980px">
@@ -5002,12 +5005,85 @@ function compareForzaWithHoms(){
   }).join("");
 
   content.style.display="block";
+  const updateBtn=document.getElementById("forzaUpdatePricesBtn");
+  if(updateBtn) updateBtn.style.display = phone ? "inline-flex" : "none";
+
   if(phone){
     status.className="status success";
     status.textContent="✓ Vergelijking gemaakt. Alleen lezen: er is niets opgeslagen en geen HOMS TECH-prijs gewijzigd.";
   }else{
     status.className="status info";
     status.textContent="ℹ️ Forza-data is gelezen, maar er is nog geen passend HOMS TECH-product gevonden om mee te vergelijken.";
+  }
+}
+
+async function updateHomsPricesFromForza(){
+  const status=document.getElementById("forzaCompareStatus");
+  const btn=document.getElementById("forzaUpdatePricesBtn");
+  if(!forzaPreviewModel){
+    if(status){status.className="status error";status.textContent="Lees eerst de actuele Forza-data.";}
+    return;
+  }
+
+  const rows=forzaAdminBuildPreview();
+  const modelProduct=forzaAdminPick(forzaPreviewModel.product,["name","productName","title"])||"Niet gevonden";
+  const phone=forzaCompareFindPhone(modelProduct);
+  if(!phone){
+    if(status){status.className="status error";status.textContent="HOMS TECH-product niet gevonden. Er is niets gewijzigd.";}
+    return;
+  }
+
+  const different=rows.filter(row=>{
+    const fp=Number(row.price);
+    const hp=forzaComparePrice(phone,row);
+    return Number.isFinite(fp) && Number.isFinite(hp) && Math.abs(fp-hp)>0.009;
+  });
+
+  if(!different.length){
+    if(status){status.className="status success";status.textContent="✓ Alle Forza-prijzen zijn al gelijk aan HOMS TECH. Er is niets te wijzigen.";}
+    return;
+  }
+
+  const list=different.map(row=>{
+    const fp=Number(row.price), hp=forzaComparePrice(phone,row);
+    return `${row.storage} – ${row.condition} – ${row.battery}: HOMS TECH ${forzaAdminMoney(hp)} → Forza ${forzaAdminMoney(fp)}`;
+  }).join("\n");
+
+  const confirmed=window.confirm(
+    `Forza heeft ${different.length} prijsverschil(len).\n\n${list}\n\n`+
+    `Wil je de prijsopties van "${modelProduct}" bijwerken?\n\n`+
+    `Er wordt alleen dit product bijgewerkt. Andere producten blijven ongewijzigd.`
+  );
+  if(!confirmed)return;
+
+  if(btn)btn.disabled=true;
+  if(status){status.className="status info";status.textContent="Forza-prijzen worden bijgewerkt...";}
+
+  try{
+    const r=await fetch("/api/admin/forza/update-prices",{
+      method:"PUT",
+      credentials:"same-origin",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({productName:modelProduct,rows})
+    });
+    const payload=await r.json().catch(()=>({}));
+    if(!r.ok || payload.success===false){
+      throw new Error(payload.error || `Bijwerken mislukt (HTTP ${r.status})`);
+    }
+
+    if(status){
+      status.className="status success";
+      status.textContent=`✓ ${payload.message || "Forza-prijzen bijgewerkt."} Klik opnieuw op ‘Vergelijk met HOMS TECH’ om te controleren.`;
+    }
+    await loadSiteData();
+    compareForzaWithHoms();
+  }catch(error){
+    if(status){
+      status.className="status error";
+      status.textContent=`✗ ${error.message || "Bijwerken mislukt. Er is niets gewijzigd."}`;
+    }
+  }finally{
+    if(btn)btn.disabled=false;
   }
 }
 
