@@ -1319,6 +1319,98 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
   }
 });
 
+
+// =====================================================
+// FORZA TEST ADMIN PAGE — READ ONLY
+// Protected by the same phones.view permission.
+// This page only displays data returned by /api/forza-test.
+// It never writes to the HOMS TECH product database.
+// =====================================================
+app.get("/admin/forza-test", requirePermission("phones.view"), (req, res) => {
+  res.type("html").send(`<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HOMS TECH · Forza Test</title>
+<style>
+  *{box-sizing:border-box}body{margin:0;background:#f5f7fb;color:#111827;font-family:Inter,Arial,sans-serif}
+  .wrap{max-width:1200px;margin:0 auto;padding:28px 18px 60px}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+  h1{margin:0;font-size:28px}.sub{color:#64748b;margin-top:7px}
+  .badge{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;padding:8px 12px;border-radius:999px;font-weight:700;font-size:13px}
+  .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:20px;margin-top:16px;box-shadow:0 5px 18px rgba(15,23,42,.05)}
+  .actions{display:flex;gap:10px;flex-wrap:wrap}.btn{border:0;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer}.primary{background:#111827;color:#fff}.light{background:#eef2f7;color:#111827}
+  .status{margin-top:12px;color:#64748b}.error{color:#b91c1c}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.item{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:13px}.label{font-size:12px;color:#64748b;margin-bottom:5px}.value{font-weight:700;word-break:break-word}
+  .section-title{font-size:18px;margin:0 0 12px}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:11px;border-bottom:1px solid #e5e7eb;vertical-align:top}.table th{font-size:13px;color:#475569}
+  .images{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}.images img{width:100%;height:150px;object-fit:contain;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:8px}
+  .muted{color:#64748b}.source{font-size:13px;word-break:break-all}.back{display:inline-block;margin-top:18px;text-decoration:none;color:#2563eb;font-weight:700}
+  pre{white-space:pre-wrap;word-break:break-word;background:#0f172a;color:#e2e8f0;padding:14px;border-radius:12px;max-height:420px;overflow:auto;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><h1>Forza Test Import</h1><div class="sub">Publieke Forza-pagina uitlezen · alleen-lezen test</div></div>
+    <div class="badge">READ ONLY · GEEN PRODUCT-WRITES</div>
+  </div>
+
+  <div class="card">
+    <div class="actions"><button id="load" class="btn primary">Forza opnieuw lezen</button><button id="rawBtn" class="btn light">Toon ruwe JSON</button></div>
+    <div id="status" class="status">Nog niet geladen.</div>
+  </div>
+
+  <div id="content" style="display:none">
+    <div class="card"><h2 class="section-title">Product</h2><div id="productGrid" class="grid"></div></div>
+    <div class="card"><h2 class="section-title">Opslag</h2><div id="storage"></div></div>
+    <div class="card"><h2 class="section-title">Conditie & prijzen</h2><div id="conditions"></div></div>
+    <div class="card"><h2 class="section-title">Batterij</h2><div id="battery"></div></div>
+    <div class="card"><h2 class="section-title">Voorraad</h2><div id="stock"></div></div>
+    <div class="card"><h2 class="section-title">Afbeeldingen</h2><div id="images" class="images"></div></div>
+    <div class="card"><h2 class="section-title">Specificaties</h2><div id="specs"></div></div>
+    <div class="card"><h2 class="section-title">Beschrijving</h2><div id="description" class="muted"></div></div>
+    <div class="card"><h2 class="section-title">Bron</h2><div id="source" class="source"></div></div>
+  </div>
+
+  <div id="raw" class="card" style="display:none"><h2 class="section-title">Ruwe JSON</h2><pre id="rawText"></pre></div>
+  <a class="back" href="/admin">← Terug naar Admin</a>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const money=n=>n===null||n===undefined||n===''?'—':new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(Number(n));
+function rows(obj){return Object.entries(obj||{}).map(([k,v])=>'<div class="item"><div class="label">'+esc(k)+'</div><div class="value">'+esc(typeof v==='object'?JSON.stringify(v):v)+'</div></div>').join('')||'<div class="muted">Geen gegevens gevonden.</div>'}
+function list(arr){return (arr||[]).length?(arr||[]).map(x=>'<span style="display:inline-block;background:#eef2f7;border-radius:999px;padding:7px 10px;margin:0 6px 6px 0">'+esc(typeof x==='object'?JSON.stringify(x):x)+'</span>').join(''):'<span class="muted">Geen gegevens gevonden.</span>'}
+async function load(){
+  $('status').className='status';$('status').textContent='Forza wordt gelezen...';$('load').disabled=true;
+  try{
+    const r=await fetch('/api/forza-test',{credentials:'same-origin'});
+    const x=await r.json().catch(()=>({}));
+    if(!r.ok||!x.success) throw new Error(x.error||'Forza test mislukt.');
+    const p=x.result?.product||{};
+    $('productGrid').innerHTML=rows({Naam:p.name, Merk:p.brand, SKU:p.sku, Kleur:p.color});
+    $('storage').innerHTML=list(p.storage);
+    $('conditions').innerHTML=(p.conditions||[]).length?'<table class="table"><thead><tr><th>Conditie</th><th>Prijs</th></tr></thead><tbody>'+(p.conditions||[]).map(c=>'<tr><td>'+esc(c.name||c.label||c.condition||'-')+'</td><td>'+money(c.price??c.value)+'</td></tr>').join('')+'</tbody></table>':'<span class="muted">Geen conditieprijzen gevonden.</span>';
+    $('battery').innerHTML=(p.battery||[]).length?'<table class="table"><thead><tr><th>Optie</th><th>Prijs / verschil</th></tr></thead><tbody>'+(p.battery||[]).map(b=>'<tr><td>'+esc(b.name||b.label||b.battery||'-')+'</td><td>'+money(b.price??b.delta??b.value)+'</td></tr>').join('')+'</tbody></table>':'<span class="muted">Geen batterijopties gevonden.</span>';
+    $('stock').innerHTML=rows({'Max. zichtbare voorraad':p.stock});
+    $('images').innerHTML=(p.images||[]).length?(p.images||[]).map(src=>'<img loading="lazy" src="'+esc(src)+'" alt="Forza product">').join(''):'<span class="muted">Geen afbeeldingen gevonden.</span>';
+    $('specs').innerHTML=rows(p.specs);
+    $('description').textContent=p.description||'Geen beschrijving gevonden.';
+    $('source').innerHTML='<div><b>URL:</b> '+esc(x.result?.sourceUrl||'')+'</div><div><b>Canonical:</b> '+esc(x.result?.canonical||'')+'</div><div><b>Opgehaald:</b> '+esc(x.result?.fetchedAt||'')+'</div><div><b>Read-only:</b> '+esc(x.result?.readOnly)+'</div>';
+    $('rawText').textContent=JSON.stringify(x,null,2);
+    $('content').style.display='block';$('status').className='status';$('status').textContent='✓ Forza-data succesvol gelezen.';
+  }catch(e){$('status').className='status error';$('status').textContent='✕ '+e.message;$('content').style.display='none';}
+  finally{$('load').disabled=false}
+}
+$('load').onclick=load;
+$('rawBtn').onclick=()=>{$('raw').style.display=$('raw').style.display==='none'?'block':'none'};
+load();
+</script>
+</body>
+</html>`);
+});
+
 // Start server
 initDatabase()
   .then(() => {
