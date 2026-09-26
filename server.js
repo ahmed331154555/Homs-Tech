@@ -1335,13 +1335,17 @@ function forzaExtractStorageLinks(html, baseUrl) {
   // These are only safe public-page fallbacks for the three variants of this
   // fixed iPhone 11 test. No arbitrary user URL is accepted.
   const fallbacks = {
-    "64GB": baseUrl,
+    // Use the exact public Purple variant for all three storage sizes so the
+    // test never mixes the generic/Black landing page with the Purple variants.
+    "64GB": "https://www.forza-refurbished.nl/iphone-11-64-gb-paars",
     "128GB": "https://www.forza-refurbished.nl/iphone-11-128gb-paars",
     "256GB": "https://www.forza-refurbished.nl/iphone-11-256gb-purple"
   };
 
   for (const [storage, url] of Object.entries(fallbacks)) {
-    if (!found.has(storage)) found.set(storage, url);
+    // For this fixed read-only test, prefer the known exact Purple variant
+    // over a generic link discovered in the landing-page HTML.
+    found.set(storage, url);
   }
 
   return ["64GB", "128GB", "256GB"]
