@@ -325,7 +325,7 @@ function renderOptionSection(key,title,list){
     const availableNow=x.available!==false;
     const priceLabel=key==='condition'
       ? (conditionBasePrice(x,currentProduct)>0 ? `<small>${money(conditionBasePrice(x,currentProduct))}</small>` : '')
-      : (optionDelta(x)!==0 ? `<small>${optionDelta(x)>0?'+':''}${money(optionDelta(x))}</small>` : '');
+      : (key==='storage' ? '' : (optionDelta(x)!==0 ? `<small>${optionDelta(x)>0?'+':''}${money(optionDelta(x))}</small>` : ''));
     return `<button type="button" class="option-btn ${active?"active":""} ${availableNow?"":"unavailable"}" ${availableNow?`onclick="selectProductOption('${esc(key)}','${esc(x.label)}')"`:'disabled'}>${esc(x.label)}${priceLabel}${availableNow?"":" <span class=\"sold-x\">✕</span>"}</button>`;
   }).join("")}</div>${key==='condition'?'<div style="margin-top:7px;color:#64748b;font-size:12px">De gekozen staat bepaalt de basisprijs. Opslag, kleur, batterij en andere opties worden daarna als +/- prijsverschil toegevoegd.</div>':''}</div>`;
 }
