@@ -24,6 +24,7 @@ nav a:hover{background:#2563eb}
 .thumb.active{border-color:#2563eb}
 .info h1{font-size:38px;line-height:1.2;margin-bottom:8px}
 .brand{color:#2563eb;font-weight:700;font-size:18px;margin-bottom:20px}
+.base-price-note{font-size:13px;color:#687385;margin-top:-12px;margin-bottom:14px}.base-price-note strong{color:#172033}
 .price{font-size:34px;font-weight:800;margin:20px 0;color:#111827}
 .meta{display:grid;gap:10px;margin:20px 0}
 .meta div{padding:13px 15px;background:#f8fafc;border-radius:10px}
@@ -217,10 +218,22 @@ function optionDelta(x){
   return 0;
 }
 function money(n){ return "€"+Number(n||0).toFixed(2).replace(".00","").replace(".",","); }
+function conditionBasePrice(product){
+  const fallback=num(product.price || product.salePrice || product.sellPrice || 0);
+  const list=effectiveOptions(product,"condition");
+  const chosen=list.find(x=>x.label===selectedOptions.condition);
+  if(!chosen) return fallback;
+  const absolute=chosen.basePrice ?? chosen.conditionBasePrice;
+  if(absolute!==undefined && absolute!==null && absolute!=="" && Number.isFinite(num(absolute))) return num(absolute);
+  // Backward compatibility with older condition data that used priceDelta.
+  return Math.max(0,fallback+optionDelta(chosen));
+}
+
 function calculateTotal(product){
-  const base=num(product.price || product.salePrice || product.sellPrice || 0);
-  let total=base;
-  ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{
+  // The normal product price is the fallback/base price.
+  // Once a condition is selected, that condition's basePrice becomes the new base.
+  let total=conditionBasePrice(product);
+  ["storage","color","battery","vat","tradeIn"].forEach(key=>{
     const list=effectiveOptions(product,key);
     const chosen=list.find(x=>x.label===selectedOptions[key]);
     if(chosen) total+=optionDelta(chosen);
@@ -329,6 +342,7 @@ function renderProductBody(){
     <div class="brand">${esc(product.brand||"HOMS TECH")}</div>
     <h1>${esc(title)}</h1>
     <div class="price">${hasOptions?money(total):(basePrice?euro(esc(basePrice)):"")}</div>
+    ${hasOptions && basePrice?`<div class="base-price-note">Basisprijs: ${money(basePrice)}</div>`:""}
     ${specs?`<div class="meta">${specs}</div>`:""}
     ${optionsHtml}
     ${hasOptions?`<div class="order-summary"><h3>Jouw bestelling</h3>${["storage","color","condition","battery","vat","tradeIn"].filter(k=>selectedOptions[k]).map(k=>`<div class="summary-row"><span>${esc(k==="storage"?"Geheugen":k==="color"?"Kleur":k==="condition"?"Conditie":k==="battery"?"Batterij":k==="vat"?"BTW":"Inruil")}</span><strong>${esc(selectedOptions[k])}</strong></div>`).join("")}<div class="summary-total">Totaal: ${money(total)}</div></div>`:""}
