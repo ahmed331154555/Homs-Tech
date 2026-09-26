@@ -689,7 +689,6 @@ textarea{
 .bb-protocol7-settings{margin-top:18px;padding:18px;border:1px solid #dfe6ee;border-radius:18px;background:linear-gradient(180deg,#fbfdff,#f7f9fc);box-shadow:0 8px 24px rgba(15,23,42,.06)}.bb-protocol7-title{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #e6ebf1}.bb-protocol7-title h4{margin:0 0 4px}.bb-protocol7-badge{font-size:11px;font-weight:800;letter-spacing:.08em;padding:7px 10px;border-radius:999px;background:#eef4ff;color:#315b9b}.bb-proto7-card{margin-top:12px;padding:14px;border:1px solid #e1e7ef;border-radius:14px;background:#fff}.bb-proto7-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.bb-proto7-row{display:grid;grid-template-columns:minmax(180px,1fr) 130px 110px 48px;gap:9px;align-items:center;margin-bottom:9px}.bb-proto7-row.bb-proto7-check{grid-template-columns:minmax(0,1fr) 100px 48px}.bb-proto7-switch{display:inline-flex;align-items:center;gap:7px;font-weight:700;white-space:nowrap}.bb-proto7-switch input{accent-color:#315b9b}.bb-proto7-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.bb-proto7-card .card-title{font-weight:800}.bb-proto7-card input,.bb-proto7-card textarea{width:100%;box-sizing:border-box}.bb-proto7-card textarea{min-height:78px;resize:vertical}@media(max-width:700px){.bb-protocol7-title,.bb-proto7-card-head{align-items:flex-start;flex-direction:column}.bb-proto7-row,.bb-proto7-row.bb-proto7-check,.bb-proto7-two{grid-template-columns:1fr}.bb-proto7-row button{justify-self:start}}
 
 .bb-protocol8-settings{margin-top:18px;padding:18px;border:1px solid #dfe6ee;border-radius:18px;background:linear-gradient(180deg,#fbfdff,#f7f9fc);box-shadow:0 8px 24px rgba(15,23,42,.06)}.bb-protocol8-title{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #e6ebf1}.bb-protocol8-title h4{margin:0 0 4px}.bb-protocol8-badge{font-size:11px;font-weight:800;letter-spacing:.08em;padding:7px 10px;border-radius:999px;background:#eef4ff;color:#315b9b}.bb-proto8-card{margin-top:12px;padding:14px;border:1px solid #e1e7ef;border-radius:14px;background:#fff}.bb-proto8-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.bb-proto8-row{display:grid;grid-template-columns:minmax(180px,1fr) 130px 110px 48px;gap:9px;align-items:center;margin-bottom:9px}.bb-proto8-row.bb-proto8-check{grid-template-columns:minmax(0,1fr) 100px 48px}.bb-proto8-switch{display:inline-flex;align-items:center;gap:7px;font-weight:700;white-space:nowrap}.bb-proto8-switch input{accent-color:#315b9b}.bb-proto8-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.bb-proto8-card .card-title{font-weight:800}.bb-proto8-card input,.bb-proto8-card textarea{width:100%;box-sizing:border-box}.bb-proto8-card textarea{min-height:78px;resize:vertical}@media(max-width:700px){.bb-protocol8-title,.bb-proto8-card-head{align-items:flex-start;flex-direction:column}.bb-proto8-row,.bb-proto8-row.bb-proto8-check,.bb-proto8-two{grid-template-columns:1fr}.bb-proto8-row button{justify-self:start}}
-.forza-test-note{color:#64748b}.tag{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef2ff;margin:3px;font-weight:700}.card{border:1px solid #e2e8f0;border-radius:14px;background:#fff;padding:16px;box-shadow:0 3px 12px rgba(15,23,42,.04)}
 </style>
 <style>
 .permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -1137,19 +1136,6 @@ textarea{
 
 
   <!-- INKOOP / UW TOESTEL VERKOPEN -->
-
-  <section class="section admin-page" id="page-forza-test" data-permission="phones.view">
-    <div class="section-head">
-      <div>
-        <h2>🧪 Forza Test Import</h2>
-        <p>Lees de publieke Forza-pagina en controleer welke productgegevens HOMS TECH kan uitlezen. <strong>Read-only:</strong> er wordt niets in de HOMS TECH-productdatabase opgeslagen.</p>
-      </div>
-      <button class="btn btn-green" onclick="loadForzaTest()">↻ Forza opnieuw lezen</button>
-    </div>
-    <div id="forzaStatus" class="status info">Nog niet geladen.</div>
-    <div id="forzaResult" style="margin-top:16px"></div>
-  </section>
-
   <section class="section admin-page" id="page-buyback" data-permission="buyback.view">
     <div class="section-head">
       <div>
@@ -1371,6 +1357,83 @@ textarea{
   </section>
 
 
+
+  <!-- FORZA TEST IMPORT — ADMIN ONLY / READ ONLY -->
+  <section class="section admin-page" id="page-forza-test" data-permission="phones.view">
+    <div class="section-head">
+      <div>
+        <h2>🧪 Forza Test Import</h2>
+        <p>Publieke Forza-productgegevens lezen en controleren. Alleen lezen — er wordt niets opgeslagen in HOMS TECH.</p>
+      </div>
+      <button class="btn btn-light" id="forzaTestReloadBtn" onclick="loadForzaTest()">↻ Forza opnieuw lezen</button>
+    </div>
+
+    <div id="forzaTestStatus" class="status info" style="margin-bottom:14px">Nog niet geladen.</div>
+
+    <div id="forzaTestContent" style="display:none">
+      <div class="grid grid-3" style="margin-bottom:14px">
+        <div class="card">
+          <div class="small">Product</div>
+          <h3 id="forzaTestName" style="margin:5px 0 0"></h3>
+          <div id="forzaTestBrand" class="small" style="margin-top:5px"></div>
+        </div>
+        <div class="card">
+          <div class="small">SKU / Kleur</div>
+          <div id="forzaTestSku" style="font-weight:800;margin-top:5px"></div>
+          <div id="forzaTestColor" class="small" style="margin-top:5px"></div>
+        </div>
+        <div class="card">
+          <div class="small">Voorraad</div>
+          <div id="forzaTestStock" style="font-weight:900;font-size:18px;margin-top:5px"></div>
+          <div id="forzaTestReadOnly" class="small" style="margin-top:5px">READ ONLY</div>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-bottom:14px">
+        <div class="card">
+          <h3 style="margin-top:0">Opslag</h3>
+          <div id="forzaTestStorage" class="tag-list" style="display:flex;flex-wrap:wrap;gap:7px"></div>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Conditie & prijs</h3>
+          <div id="forzaTestConditions"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-bottom:14px">
+        <div class="card">
+          <h3 style="margin-top:0">Batterij</h3>
+          <div id="forzaTestBattery"></div>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Bron</h3>
+          <div id="forzaTestSource"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px">
+        <h3 style="margin-top:0">Afbeeldingen</h3>
+        <div id="forzaTestImages" style="display:flex;flex-wrap:wrap;gap:10px"></div>
+      </div>
+
+      <div class="grid grid-2" style="margin-bottom:14px">
+        <div class="card">
+          <h3 style="margin-top:0">Specificaties</h3>
+          <div id="forzaTestSpecs"></div>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Beschrijving</h3>
+          <div id="forzaTestDescription" class="small" style="white-space:pre-wrap;line-height:1.6"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Ruwe testdata</h3>
+        <pre id="forzaTestRaw" style="white-space:pre-wrap;overflow:auto;max-height:420px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;font-size:11px"></pre>
+      </div>
+    </div>
+  </section>
+
   <!-- SAVE -->
   <div class="save-bar">
     <div>
@@ -1407,10 +1470,10 @@ let buybackCatalogDeleteLock = false;
 
 
 const PAGE_PERMISSIONS = {
-  general:"general.view",services:"services.view",phones:"phones.view", "forza-test":"phones.view", categories:"categories.view",
+  general:"general.view",services:"services.view",phones:"phones.view",categories:"categories.view",
   used:"used.view",why:"why.view",customers:"customers.view",orders:"orders.view",
   "webshop-orders":"webshop_orders.view",gsm:"gsm.view",search:"search",admins:"admins.manage",
-  buyback:"buyback.view", "buyback-orders":"buyback_orders.view"
+  buyback:"buyback.view", "buyback-orders":"buyback_orders.view", "forza-test":"phones.view"
 };
 
 const ADMIN_PERMISSION_LABELS = {
@@ -1455,60 +1518,13 @@ function showPage(page){
     if(page==="customers")loadCustomers();
     if(page==="orders")loadOrders();
     if(page==="webshop-orders")loadWebshopOrders();
-    if(page==="forza-test")loadForzaTest();
     if(page==="buyback")renderBuybackPhones();
     if(page==="buyback-orders")loadBuybackOrders();
+    if(page==="forza-test")loadForzaTest();
     if(page==="admins")loadAdmins();
   }
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
   applyPermissionUI();
-}
-
-
-
-/* ---------------- FORZA TEST IMPORT (READ ONLY) ---------------- */
-function forzaEsc(v){return esc(v);}
-function renderForzaTest(data){
-  const box=document.getElementById('forzaResult');
-  if(!box)return;
-  const p=data?.result?.product||{};
-  const cond=Array.isArray(p.conditions)?p.conditions:[];
-  const bat=Array.isArray(p.battery)?p.battery:[];
-  const storage=Array.isArray(p.storage)?p.storage:[];
-  const imgs=Array.isArray(p.images)?p.images:[];
-  const specs=p.specs&&typeof p.specs==='object'?p.specs:{};
-  box.innerHTML=`
-    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px">
-      <div class="card"><div class="small">Product</div><h3>${forzaEsc(p.name||'-')}</h3><div>${forzaEsc(p.brand||'')} ${p.sku?'· '+forzaEsc(p.sku):''}</div></div>
-      <div class="card"><div class="small">Kleur</div><h3>${forzaEsc(p.color||'-')}</h3></div>
-      <div class="card"><div class="small">Voorraad</div><h3>${p.maxVisibleStock==null?'Niet gevonden':forzaEsc(p.maxVisibleStock)}</h3></div>
-    </div>
-    <div class="grid" style="margin-top:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
-      <div class="card"><h3>Opslag</h3><div>${storage.length?storage.map(x=>`<span class="tag">${forzaEsc(x)}</span>`).join(' '):'Geen opslag gevonden'}</div></div>
-      <div class="card"><h3>Conditie & prijs</h3>${cond.length?cond.map(x=>`<div style="padding:9px 0;border-bottom:1px solid #e5e7eb"><strong>${forzaEsc(x.label)}</strong><span style="float:right">${x.price==null?'—':forzaEsc('€ '+Number(x.price).toFixed(2))}</span></div>`).join(''):'Geen condities gevonden'}</div>
-      <div class="card"><h3>Batterij</h3>${bat.length?bat.map(x=>`<div style="padding:9px 0;border-bottom:1px solid #e5e7eb"><strong>${forzaEsc(x.label)}</strong> · ${forzaEsc(x.minimum||'')} <span style="float:right">+ € ${Number(x.priceDelta||0).toFixed(2)}</span></div>`).join(''):'Geen batterijopties gevonden'}</div>
-    </div>
-    <div class="card" style="margin-top:16px"><h3>Afbeeldingen</h3><div style="display:flex;gap:12px;overflow:auto">${imgs.length?imgs.map(u=>`<img src="${forzaEsc(u)}" alt="Forza" style="width:110px;height:110px;object-fit:contain;border:1px solid #e5e7eb;border-radius:10px;background:#fff">`).join(''):'Geen afbeeldingen gevonden'}</div></div>
-    <div class="card" style="margin-top:16px"><h3>Specificaties</h3><pre style="white-space:pre-wrap;margin:0">${forzaEsc(JSON.stringify(specs,null,2))}</pre></div>
-    <div class="card" style="margin-top:16px"><h3>Beschrijving</h3><p style="white-space:pre-wrap">${forzaEsc(p.description||'Geen beschrijving gevonden')}</p></div>
-    <div class="card" style="margin-top:16px"><h3>Bron</h3><a href="${forzaEsc(data.result?.sourceUrl||'#')}" target="_blank" rel="noopener">${forzaEsc(data.result?.sourceUrl||'-')}</a><div class="small" style="margin-top:6px">Read-only: ${data.readOnly?'Ja':'Onbekend'} · Gelezen: ${forzaEsc(data.result?.fetchedAt||'-')}</div></div>
-    <details class="card" style="margin-top:16px"><summary><strong>Raw JSON</strong></summary><pre style="white-space:pre-wrap;margin-top:12px;max-height:500px;overflow:auto">${forzaEsc(JSON.stringify(data,null,2))}</pre></details>`;
-}
-async function loadForzaTest(){
-  if(!hasPermission('phones.view'))return;
-  const st=document.getElementById('forzaStatus');
-  const box=document.getElementById('forzaResult');
-  if(st){st.className='status info';st.textContent='Forza-pagina lezen...';}
-  try{
-    const r=await fetch('/api/forza-test',{credentials:'same-origin'});
-    const x=await r.json().catch(()=>({}));
-    if(!r.ok||!x.success)throw new Error(x.error||'Forza test mislukt.');
-    renderForzaTest(x);
-    if(st){st.className='status success';st.textContent='✓ Forza succesvol gelezen — alleen-lezen test.';}
-  }catch(e){
-    if(box)box.innerHTML='';
-    if(st){st.className='status error';st.textContent='✕ '+e.message;}
-  }
 }
 
 /* ---------------- LOGIN ---------------- */
@@ -4564,6 +4580,150 @@ async function showBuybackDetails(id){
   }catch(error){alert(error.message)}
 }
 
+
+function forzaAdminEsc(value){
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function forzaAdminArray(value){
+  if(Array.isArray(value))return value;
+  if(value===null||value===undefined||value==="")return [];
+  return [value];
+}
+
+function forzaAdminMoney(value){
+  if(value===null||value===undefined||value==="")return "Niet gevonden";
+  if(typeof value==="number")return "€ " + value.toFixed(2).replace(".",",");
+  const text=String(value).trim();
+  if(!text)return "Niet gevonden";
+  return text.includes("€") ? text : "€ " + text;
+}
+
+function forzaAdminPick(obj, keys){
+  if(!obj || typeof obj!=="object")return undefined;
+  for(const key of keys){
+    if(Object.prototype.hasOwnProperty.call(obj,key) && obj[key]!==null && obj[key]!==undefined && obj[key]!=="")return obj[key];
+  }
+  return undefined;
+}
+
+function forzaAdminRenderList(el, values, emptyText="Niet gevonden"){
+  const arr=forzaAdminArray(values).filter(v=>v!==null&&v!==undefined&&String(v).trim()!=="");
+  el.innerHTML=arr.length
+    ? arr.map(v=>`<span style="display:inline-flex;align-items:center;padding:6px 9px;border:1px solid #e2e8f0;border-radius:999px;background:#f8fafc;font-size:12px;font-weight:800">${forzaAdminEsc(v)}</span>`).join("")
+    : `<span class="small">${forzaAdminEsc(emptyText)}</span>`;
+}
+
+function forzaAdminRenderConditions(el, values){
+  const arr=forzaAdminArray(values);
+  if(!arr.length){el.innerHTML='<div class="small">Geen conditieprijzen gevonden.</div>';return;}
+  el.innerHTML=arr.map((item,i)=>{
+    if(item && typeof item==="object"){
+      const name=forzaAdminPick(item,["name","condition","label","title"]) ?? `Conditie ${i+1}`;
+      const price=forzaAdminPick(item,["price","amount","value","salePrice","sellingPrice"]);
+      return `<div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #edf2f7"><span>${forzaAdminEsc(name)}</span><strong>${forzaAdminEsc(forzaAdminMoney(price))}</strong></div>`;
+    }
+    return `<div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #edf2f7"><span>${forzaAdminEsc(item)}</span><strong>-</strong></div>`;
+  }).join("");
+}
+
+function forzaAdminRenderBattery(el, values){
+  const arr=forzaAdminArray(values);
+  if(!arr.length){el.innerHTML='<div class="small">Geen batterijopties gevonden.</div>';return;}
+  el.innerHTML=arr.map((item,i)=>{
+    if(item && typeof item==="object"){
+      const name=forzaAdminPick(item,["name","label","title","option","battery"]) ?? `Optie ${i+1}`;
+      const detail=forzaAdminPick(item,["price","delta","amount","value","description","details"]);
+      return `<div style="padding:9px 0;border-bottom:1px solid #edf2f7"><strong>${forzaAdminEsc(name)}</strong>${detail!==undefined?`<div class="small" style="margin-top:3px">${forzaAdminEsc(typeof detail==="number"?forzaAdminMoney(detail):detail)}</div>`:""}</div>`;
+    }
+    return `<div style="padding:9px 0;border-bottom:1px solid #edf2f7">${forzaAdminEsc(item)}</div>`;
+  }).join("");
+}
+
+function forzaAdminRenderSpecs(el, value){
+  if(!value){el.innerHTML='<div class="small">Geen specificaties gevonden.</div>';return;}
+  if(Array.isArray(value)){
+    el.innerHTML=value.map(v=>`<div style="padding:7px 0;border-bottom:1px solid #edf2f7;font-size:12px">${forzaAdminEsc(typeof v==="object"?JSON.stringify(v):v)}</div>`).join("");
+    return;
+  }
+  if(typeof value==="object"){
+    el.innerHTML=Object.entries(value).map(([k,v])=>`<div style="display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #edf2f7;font-size:12px"><strong>${forzaAdminEsc(k)}</strong><span>${forzaAdminEsc(typeof v==="object"?JSON.stringify(v):v)}</span></div>`).join("");
+    return;
+  }
+  el.innerHTML=`<div class="small" style="white-space:pre-wrap">${forzaAdminEsc(value)}</div>`;
+}
+
+function forzaAdminRenderImages(el, values){
+  const arr=forzaAdminArray(values).filter(v=>typeof v==="string"&&v.trim());
+  if(!arr.length){el.innerHTML='<div class="small">Geen afbeeldingen gevonden.</div>';return;}
+  el.innerHTML=arr.map(url=>`<a href="${forzaAdminEsc(url)}" target="_blank" rel="noopener noreferrer" style="display:block;width:90px;height:110px;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#fff"><img src="${forzaAdminEsc(url)}" alt="Forza product" loading="lazy" style="width:100%;height:100%;object-fit:contain"></a>`).join("");
+}
+
+function forzaAdminFindResult(payload){
+  return payload?.result || payload?.data?.result || payload?.data || payload || {};
+}
+
+async function loadForzaTest(){
+  const status=document.getElementById("forzaTestStatus");
+  const content=document.getElementById("forzaTestContent");
+  const btn=document.getElementById("forzaTestReloadBtn");
+  if(!status||!content)return;
+  if(btn)btn.disabled=true;
+  status.className="status info";
+  status.textContent="Forza wordt opnieuw gelezen...";
+  try{
+    const r=await fetch("/api/forza-test",{credentials:"same-origin",headers:{"Accept":"application/json"}});
+    const payload=await r.json().catch(()=>({}));
+    if(!r.ok || payload.success===false){
+      throw new Error(payload.error || (r.status===401||r.status===403 ? "Geen toegang tot Forza Test Import." : `Forza test mislukt (HTTP ${r.status})`));
+    }
+
+    const x=forzaAdminFindResult(payload);
+    const product=x.product && typeof x.product==="object" ? x.product : x;
+    const name=forzaAdminPick(product,["name","productName","title"]) ?? "Niet gevonden";
+    const brand=forzaAdminPick(product,["brand","brandName"]) ?? "Niet gevonden";
+    const sku=forzaAdminPick(product,["sku","SKU","productSku"]) ?? "Niet gevonden";
+    const color=forzaAdminPick(product,["color","colour","colorName"]) ?? "Niet gevonden";
+    const storage=forzaAdminPick(product,["storage","storageOptions","memory","memoryOptions"]) ?? x.storageOptions ?? [];
+    const conditions=forzaAdminPick(product,["conditions","conditionPrices","conditionOptions"]) ?? x.conditions ?? x.conditionPrices ?? [];
+    const battery=forzaAdminPick(product,["battery","batteryOptions","batteries"]) ?? x.batteryOptions ?? [];
+    const stock=forzaAdminPick(product,["stock","visibleStock","maxVisibleStock","availability"]) ?? x.stock ?? "Niet gevonden";
+    const images=forzaAdminPick(product,["images","imageUrls","photos","gallery"]) ?? x.images ?? [];
+    const specs=forzaAdminPick(product,["specs","specifications","attributes"]) ?? x.specifications ?? [];
+    const description=forzaAdminPick(product,["description","shortDescription","longDescription"]) ?? x.description ?? "Niet gevonden";
+    const sourceUrl=payload.sourceUrl || x.sourceUrl || x.url || product.url || "Niet gevonden";
+    const readOnly=payload.readOnly ?? x.readOnly ?? true;
+
+    document.getElementById("forzaTestName").textContent=name;
+    document.getElementById("forzaTestBrand").textContent=brand;
+    document.getElementById("forzaTestSku").textContent=sku;
+    document.getElementById("forzaTestColor").textContent="Kleur: "+color;
+    document.getElementById("forzaTestStock").textContent=typeof stock==="object"?JSON.stringify(stock):String(stock);
+    document.getElementById("forzaTestReadOnly").textContent=readOnly?"✓ READ ONLY — niets opgeslagen":"Controleer: read-only status ontbreekt";
+    forzaAdminRenderList(document.getElementById("forzaTestStorage"),storage);
+    forzaAdminRenderConditions(document.getElementById("forzaTestConditions"),conditions);
+    forzaAdminRenderBattery(document.getElementById("forzaTestBattery"),battery);
+    forzaAdminRenderImages(document.getElementById("forzaTestImages"),images);
+    forzaAdminRenderSpecs(document.getElementById("forzaTestSpecs"),specs);
+    document.getElementById("forzaTestDescription").textContent=typeof description==="object"?JSON.stringify(description,null,2):String(description);
+    document.getElementById("forzaTestSource").innerHTML=sourceUrl && /^https?:\/\//i.test(String(sourceUrl)) ? `<a href="${forzaAdminEsc(sourceUrl)}" target="_blank" rel="noopener noreferrer">${forzaAdminEsc(sourceUrl)}</a>` : forzaAdminEsc(sourceUrl);
+    document.getElementById("forzaTestRaw").textContent=JSON.stringify(payload,null,2);
+    content.style.display="block";
+    status.className="status success";
+    status.textContent="✓ Forza succesvol gelezen — alleen-lezen test. Er is niets naar de HOMS TECH-productdatabase geschreven.";
+  }catch(error){
+    content.style.display="none";
+    status.className="status error";
+    status.textContent="✕ "+(error?.message || "Forza test mislukt.");
+  }finally{
+    if(btn)btn.disabled=false;
+  }
+}
 
 function renderAll(){
 
