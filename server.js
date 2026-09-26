@@ -1448,39 +1448,24 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     return r ? r.price : null;
   };
 
-  // The HOMS TECH pricing model is base condition + storage delta + battery delta.
-  // Validate that the current Forza data fits that model before writing anything.
+  // Store the exact Forza matrix instead of forcing every storage/condition
+  // combination into the older single storage-delta pricing model.
+  // Example: 128GB / Licht gebruikt can legitimately have a different
+  // storage difference than 128GB / Zo goed als nieuw.
+  const forzaPriceMatrix = {};
+  for (const r of cleanRows) {
+    forzaPriceMatrix[`${r.storage}|${r.condition}|${r.battery}`] = r.price;
+  }
+
   const bases = {};
   for (const condition of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) {
     bases[condition] = getPrice("64GB", condition, "standaard");
   }
 
   const batteryDelta = getPrice("64GB", "zo goed als nieuw", "nieuw") - bases["zo goed als nieuw"];
-  if (Math.abs(batteryDelta - 30) > 0.01) {
-    return res.status(400).json({
-      success: false,
-      error: `Forza batterijverschil is €${batteryDelta.toFixed(2)}; verwachte standaard +€30. Geen wijziging uitgevoerd.`
-    });
-  }
-
   const storageDeltas = {};
   for (const storage of ["64GB","128GB","256GB"]) {
     storageDeltas[storage] = getPrice(storage, "zo goed als nieuw", "standaard") - bases["zo goed als nieuw"];
-  }
-
-  for (const storage of ["64GB","128GB","256GB"]) {
-    for (const condition of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) {
-      const expectedStandard = bases[condition] + storageDeltas[storage];
-      const actualStandard = getPrice(storage, condition, "standaard");
-      const actualNew = getPrice(storage, condition, "nieuw");
-      if (Math.abs(actualStandard - expectedStandard) > 0.01 ||
-          Math.abs(actualNew - (expectedStandard + batteryDelta)) > 0.01) {
-        return res.status(400).json({
-          success: false,
-          error: "De Forza-prijzen passen niet in het HOMS TECH prijsmodel. Geen wijziging uitgevoerd."
-        });
-      }
-    }
   }
 
   const client = await pool.connect();
@@ -1559,7 +1544,8 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     const before = {
       conditions: phone.conditionOptions.map(o => ({label:o.label, basePrice:o.basePrice})),
       storage: phone.storageOptions.map(o => ({label:o.label, priceDelta:o.priceDelta})),
-      battery: phone.batteryOptions.map(o => ({label:o.label, priceDelta:o.priceDelta}))
+      battery: phone.batteryOptions.map(o => ({label:o.label, priceDelta:o.priceDelta})),
+      forzaPriceMatrix: phone.forzaPriceMatrix || null
     };
 
     for (const key of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) {
@@ -1571,10 +1557,17 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     findBattery("standaard").priceDelta = 0;
     findBattery("nieuw").priceDelta = batteryDelta;
 
+    // Keep the legacy fields updated from the 64GB base for backwards
+    // compatibility, while the exact matrix is what the webshop uses.
+    phone.forzaPriceMatrix = forzaPriceMatrix;
+    phone.forzaPriceMatrixSource = "Forza public website";
+    phone.forzaPriceMatrixUpdatedAt = new Date().toISOString();
+
     const after = {
       conditions: phone.conditionOptions.map(o => ({label:o.label, basePrice:o.basePrice})),
       storage: phone.storageOptions.map(o => ({label:o.label, priceDelta:o.priceDelta})),
-      battery: phone.batteryOptions.map(o => ({label:o.label, priceDelta:o.priceDelta}))
+      battery: phone.batteryOptions.map(o => ({label:o.label, priceDelta:o.priceDelta})),
+      forzaPriceMatrix: phone.forzaPriceMatrix
     };
 
     await client.query(
