@@ -31,7 +31,7 @@ nav a:hover{background:#2563eb}
 .description{margin:25px 0;color:#4b5563}
 .buttons{display:flex;gap:12px;flex-wrap:wrap}
 .btn{display:inline-flex;align-items:center;justify-content:center;padding:14px 22px;border-radius:11px;font-weight:800;border:0;cursor:pointer}
-.green{background:#16c766;color:#fff}
+.green{background:#2563eb;color:#fff}
 .blue{background:#2563eb;color:#fff}
 .gray{background:#eef2f7;color:#111827}
 .btn:hover{opacity:.9}
@@ -70,7 +70,7 @@ nav{justify-content:center}
 .gallery-wrap{position:relative;display:flex;justify-content:center;align-items:center}
 .gallery-nav{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border:0;border-radius:50%;background:rgba(17,24,39,.82);color:#fff;font-size:28px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5}
 .gallery-nav.prev{left:8px}.gallery-nav.next{right:8px}
-.gallery-nav:hover{background:#dc2626}
+.gallery-nav:hover{background:#2563eb}
 .thumb-button{border:0;background:transparent;padding:0;cursor:pointer;border-radius:10px}
 .thumb-button .thumb{display:block}
 </style>
@@ -196,31 +196,46 @@ function effectiveOptions(product,key){
 }
 function optionDelta(x){
   if(!x) return 0;
+
   const raw = x.priceDelta ?? x.delta ?? x.priceAdjustment ?? x.extra ?? x.amount ?? x.value;
-  if(raw !== undefined && raw !== null && raw !== "") return num(raw);
+  if(raw !== undefined && raw !== null && raw !== ""){
+    const n=num(raw);
+    if(n !== 0) return n;
+  }
+
   const label=String(x.label||"");
   const match=label.match(/([+-])\s*€?\s*(\d+(?:[.,]\d+)?)\s*$/);
-  if(match){ const amount=parseFloat(match[2].replace(",",".")); return match[1]==="-" ? -amount : amount; }
+  if(match){
+    const amount=parseFloat(match[2].replace(",","."));
+    return match[1]==="-" ? -amount : amount;
+  }
+
+  if(x.price !== undefined && x.price !== null && x.price !== ""){
+    return num(x.price);
+  }
+
   return 0;
-}
-function conditionBasePrice(product, chosen){
-  if(!chosen) return num(product.price || product.salePrice || product.sellPrice || 0);
-  const v=chosen.basePrice ?? chosen.conditionBasePrice ?? chosen.conditionPrice;
-  if(v!==undefined && v!==null && v!=="") return num(v);
-  if(chosen.isCondition && chosen.price!==undefined && chosen.price!==null && chosen.price!=="") return num(chosen.price);
-  return num(product.price || product.salePrice || product.sellPrice || 0) + optionDelta(chosen);
 }
 function money(n){ return "€"+Number(n||0).toFixed(2).replace(".00","").replace(".",","); }
 function calculateTotal(product){
-  const conditionList=effectiveOptions(product,"condition");
-  const chosenCondition=conditionList.find(x=>x.label===selectedOptions.condition) || conditionList[0];
-  let total=conditionBasePrice(product,chosenCondition);
+  const conditions=effectiveOptions(product,"condition");
+  const selectedCondition=conditions.find(x=>x.label===selectedOptions.condition);
+  // The selected condition is the real base price. All other options are +/- deltas.
+  let total=selectedCondition && (selectedCondition.basePrice!==undefined || selectedCondition.conditionBasePrice!==undefined)
+    ? num(selectedCondition.basePrice ?? selectedCondition.conditionBasePrice)
+    : num(product.price || product.salePrice || product.sellPrice || 0);
   ["storage","color","battery","vat","tradeIn"].forEach(key=>{
     const list=effectiveOptions(product,key);
     const chosen=list.find(x=>x.label===selectedOptions[key]);
     if(chosen) total+=optionDelta(chosen);
   });
   return Math.max(0,total);
+}
+function conditionBasePrice(option, product){
+  if(!option) return num(product?.price || product?.salePrice || product?.sellPrice || 0);
+  if(option.basePrice!==undefined && option.basePrice!==null && option.basePrice!=="") return num(option.basePrice);
+  if(option.conditionBasePrice!==undefined && option.conditionBasePrice!==null && option.conditionBasePrice!=="") return num(option.conditionBasePrice);
+  return num(product?.price || product?.salePrice || product?.sellPrice || 0) + optionDelta(option);
 }
 function selectProductOption(key,label){
   selectedOptions[key]=label;
@@ -237,12 +252,11 @@ function renderOptionSection(key,title,list){
   return `<div class="option-section"><div class="option-title">${esc(title)}</div><div class="option-grid">${list.map(x=>{
     const active=x.label===selectedOptions[key];
     const availableNow=x.available!==false;
-    const conditionPrice = key==='condition' ? conditionBasePrice(currentProduct,x) : null;
-    const conditionPriceHtml = key==='condition' && availableNow ? '<small>'+money(conditionPrice)+'</small>' : '';
-    const clickAttr = availableNow ? `onclick="selectProductOption('${esc(key)}','${esc(x.label)}')"` : 'disabled';
-    const unavailableHtml = availableNow ? '' : ' <span class="sold-x">✕</span>';
-    return `<button type="button" class="option-btn ${active?"active":""} ${availableNow?"":"unavailable"}" ${clickAttr}>${esc(x.label)}${conditionPriceHtml}${unavailableHtml}</button>`;
-  }).join("")}</div></div>`;
+    const priceLabel=key==='condition'
+      ? (conditionBasePrice(x,currentProduct)>0 ? `<small>${money(conditionBasePrice(x,currentProduct))}</small>` : '')
+      : (optionDelta(x)!==0 ? `<small>${optionDelta(x)>0?'+':''}${money(optionDelta(x))}</small>` : '');
+    return `<button type="button" class="option-btn ${active?"active":""} ${availableNow?"":"unavailable"}" ${availableNow?`onclick="selectProductOption('${esc(key)}','${esc(x.label)}')"`:'disabled'}>${esc(x.label)}${priceLabel}${availableNow?"":" <span class=\"sold-x\">✕</span>"}</button>`;
+  }).join("")}</div>${key==='condition'?'<div style="margin-top:7px;color:#64748b;font-size:12px">De gekozen staat bepaalt de basisprijs. Opslag, kleur, batterij en andere opties worden daarna als +/- prijsverschil toegevoegd.</div>':''}</div>`;
 }
 let galleryImagesState=[];
 let galleryIndex=0;
@@ -327,7 +341,8 @@ function renderProductBody(){
   area.innerHTML=`<div class="product"><div class="gallery">${gallery}</div><div class="info">
     <div class="brand">${esc(product.brand||"HOMS TECH")}</div>
     <h1>${esc(title)}</h1>
-    <div class="price">${hasOptions?money(total):(basePrice?euro(esc(basePrice)):"")}</div>
+    <div class="price">${money(total)}</div>
+    ${selectedOptions.condition?`<div style="margin-top:-12px;margin-bottom:16px;color:#64748b;font-size:13px">Prijs voor staat: <strong style="color:#111827">${esc(selectedOptions.condition)}</strong></div>`:""}
     ${specs?`<div class="meta">${specs}</div>`:""}
     ${optionsHtml}
     ${hasOptions?`<div class="order-summary"><h3>Jouw bestelling</h3>${["storage","color","condition","battery","vat","tradeIn"].filter(k=>selectedOptions[k]).map(k=>`<div class="summary-row"><span>${esc(k==="storage"?"Geheugen":k==="color"?"Kleur":k==="condition"?"Conditie":k==="battery"?"Batterij":k==="vat"?"BTW":"Inruil")}</span><strong>${esc(selectedOptions[k])}</strong></div>`).join("")}<div class="summary-total">Totaal: ${money(total)}</div></div>`:""}
