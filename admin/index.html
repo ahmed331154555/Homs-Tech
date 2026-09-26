@@ -3963,7 +3963,10 @@ async function save(isAuto=false){
   setStatus("Opslaan...","info");
 
   try{
-    normalizeData();
+    // Do NOT run the global normalizer before saving.
+    // The editor already keeps Protocol 1–8 in the live `data` object.
+    // Re-normalizing here can rebuild protocol options and overwrite values
+    // that were just entered. Save the exact current state instead.
 
     // Preserve every explicit "Op website tonen" / "Actief" state exactly as set in Admin.
     // Missing values default to true; false must never be converted back to true/undefined.
@@ -3999,8 +4002,10 @@ async function save(isAuto=false){
       throw new Error(result.error || "Opslaan mislukt");
     }
 
+    // Use the exact data returned by the server (the persisted DB state).
+    // Do not normalize again here, so Protocol 1–8 values cannot be reset
+    // immediately after a successful save.
     data=result.data || data;
-    normalizeData();
 
     // Alleen de huidige pagina opnieuw tekenen. Geen renderAll-loop na opslaan.
     if(currentPage==="general") renderGeneral();
