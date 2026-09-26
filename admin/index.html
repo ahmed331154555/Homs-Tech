@@ -4949,11 +4949,20 @@ function forzaCompareFindOption(arr, wantedKey, kind){
 
 function forzaComparePrice(phone, row){
   if(!phone) return null;
-  normalizePhoneOptions(phone);
   const storageKey=forzaCompareStorageKey(row.storage);
   const conditionKey=forzaCompareConditionKey(row.condition);
   const batteryKey=forzaCompareBatteryKey(row.battery);
 
+  // Exact Forza matrix has priority. This allows storage-specific condition
+  // prices that cannot be represented by one global storage delta.
+  const matrix=phone.forzaPriceMatrix;
+  const matrixKey=`${storageKey}|${conditionKey}|${batteryKey}`;
+  if(matrix && typeof matrix==="object" && Object.prototype.hasOwnProperty.call(matrix,matrixKey)){
+    const exact=Number(matrix[matrixKey]);
+    return Number.isFinite(exact) ? exact : null;
+  }
+
+  normalizePhoneOptions(phone);
   const co=forzaCompareFindOption(phone.conditionOptions,conditionKey,"condition");
   if(!co) return null;
   const st=forzaCompareFindOption(phone.storageOptions,storageKey,"storage");
