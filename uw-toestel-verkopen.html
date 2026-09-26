@@ -162,7 +162,51 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
 .dynamic-condition-question .dynamic-option{min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
 .condition-price{font-size:16px;font-weight:900;color:#0f5ed8}
 @media(max-width:850px){.dynamic-condition-question .dynamic-option-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-</style><style id="homs-pricing-customer-v1">.pricing-hint{margin-top:5px;font-size:11px;color:#64748b}.delta{margin-left:auto;font-size:12px;font-weight:800;color:#2563eb}.condition-price{margin-left:auto;font-size:13px;font-weight:900;color:#0f172a}</style></head>
+</style><style id="homs-pricing-customer-v1">.pricing-hint{margin-top:5px;font-size:11px;color:#64748b}.delta{margin-left:auto;font-size:12px;font-weight:800;color:#2563eb}.condition-price{margin-left:auto;font-size:13px;font-weight:900;color:#0f172a}</style>
+<style id="homs-tech-product-image-fix">
+/* Product cards: consistent, larger image area */
+.device-card img,
+.device-option-card img,
+.buyback-device-card img,
+.device-grid img,
+.device-item img,
+.product-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  margin: 0 auto;
+  border-radius: 12px;
+}
+.device-card .device-image,
+.device-option-card .device-image,
+.buyback-device-card .device-image,
+.device-grid .device-image,
+.device-item .device-image,
+.product-card .device-image {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin: 0 auto 12px;
+}
+.device-card .device-name,
+.device-option-card .device-name,
+.buyback-device-card .device-name,
+.device-grid .device-name,
+.device-item .device-name,
+.product-card .device-name {
+  display: block;
+  text-align: center;
+  line-height: 1.35;
+  margin-top: 8px;
+}
+</style>
+
+</head>
 <body>
 
 <div class="topbar"><div class="wrap"><div class="top-info"><span>1 jaar garantie</span><span>Snel geleverd</span><span>Betrouwbare service</span><span>Betaalbare prijzen</span></div></div></div>
@@ -297,7 +341,7 @@ function buildCustomerQuestions(phone,type){
     return questions;
   }
   const p=phone?.[protocol]||{},base=Number(phone?.price||0),questions=[];
-  const addSection=(key,label)=>{const sec=p[key];if(!sec||sec.active===false)return;const opts=Array.isArray(sec.options)?sec.options.filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>{const out={...o};if(key==='condition')out.buyPrice=Number.isFinite(Number(o.buyPrice))?Math.max(0,Number(o.buyPrice)):Math.max(0,base+Number(o.priceDelta||0));return out;}):[];if(opts.length)questions.push({id:protocol+'_'+key,label,type:'options',required:true,options:opts});};
+  const addSection=(key,label)=>{const sec=p[key];if(!sec||sec.active===false)return;const opts=Array.isArray(sec.options)?sec.options.filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>{const out={...o};if(key==='condition')out.buyPrice=(o.conditionPrice!==undefined&&o.conditionPrice!=='')?Math.max(0,Number(o.conditionPrice)):((o.buyPrice!==undefined&&o.buyPrice!=='')?Math.max(0,Number(o.buyPrice)):Math.max(0,base+Number(o.priceDelta||0)));out.conditionPrice=out.buyPrice;return out;}):[];if(opts.length)questions.push({id:protocol+'_'+key,label,type:'options',required:true,options:opts});};
   const addChecklist=()=>{const sec=p.checklist;if(!sec||sec.active===false)return;(Array.isArray(sec.items)?sec.items:[]).filter(x=>x&&x.active!==false&&String(x.text||'').trim()).forEach((x,i)=>questions.push({id:protocol+'_check_'+i,label:String(x.text),type:'info',required:false,options:[]}));};
   const addFunctions=()=>{const sec=p.functions;if(!sec||sec.active===false)return;questions.push({id:protocol+'_functions',label:String(sec.label||'Werken alle functies van het toestel goed?'),type:'options',required:true,options:[{label:'Ja',priceDelta:Number(sec.yesDelta||0),active:true},{label:'Nee',priceDelta:Number(sec.noDelta||0),active:true}]});};
   const addBattery=()=>{const sec=p.battery;if(!sec||sec.active===false)return;const opts=Array.isArray(sec.options)&&sec.options.length?sec.options.filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>({...o})):[{label:'Ja',priceDelta:Number(sec.yesDelta||0),active:true},{label:'Nee',priceDelta:Number(sec.noDelta||0),active:true}];questions.push({id:protocol+'_battery',label:String(sec.label||'Wat is de status van de batterij?'),type:'options',required:true,options:opts});};
@@ -542,13 +586,17 @@ function getSelectedAnswerByWords(words){
 function getConditionBasePrice(){
   const opt=getSelectedConditionOption();
   const base=Number(selectedModel?.base||0);
-  const n=Number(opt?.buyPrice);
-  if(selectedModel?.protocol==='2'){
-    return Number.isFinite(n)?Math.max(0,n):Math.max(0,base);
+  const raw=(opt?.conditionPrice!==undefined&&opt?.conditionPrice!=='')?opt.conditionPrice:opt?.buyPrice;
+  const n=Number(raw);
+  // Protocol 3–8: the condition price is the final/base price for that condition.
+  // Never add the model's general base price to it.
+  if(/^protocol[3-8]$/.test(String(selectedModel?.protocol||''))){
+    if(Number.isFinite(n)) return Math.max(0,n);
+    return Math.max(0,base);
   }
-  if(Number.isFinite(n)&&n>0)return Math.max(0,n);
-  if(base>0)return base;
-  return Number.isFinite(n)?Math.max(0,n):Math.max(0,base+Number(opt?.priceDelta||0));
+  if(selectedModel?.protocol==='2') return Number.isFinite(n)?Math.max(0,n):Math.max(0,base);
+  if(Number.isFinite(n)) return Math.max(0,n);
+  return Math.max(0,base+Number(opt?.priceDelta||0));
 }
 function getSelectedStorageDelta(){
   if(selectedModel?.protocol!=='2')return 0;const q=(selectedModel?.typeQuestions||[]).find(x=>x.id==='p2_storage');if(!q)return 0;const o=active(q.options).find(x=>String(x.label||'')===String(questionValue(q)||''));return Number(o?.priceDelta||0);
