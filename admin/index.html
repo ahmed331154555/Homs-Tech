@@ -1788,7 +1788,19 @@ function normalizeData(){
       condition:x.condition || "Nieuw",
       warranty:x.warranty || "",
       description:x.description || "",
+      subtitle:x.subtitle || "",
+      sku:x.sku || "",
+      stock:Number.isFinite(Number(x.stock)) ? Number(x.stock) : 0,
+      category:x.category || "Smartphones",
+      connectivity:x.connectivity || "",
+      processor:x.processor || "",
+      memory:x.memory || "",
+      gpu:x.gpu || "",
+      screenSize:x.screenSize || "",
+      releaseYear:x.releaseYear || "",
       images:Array.isArray(x.images) ? x.images.slice(0,4) : [],
+      conditionDetails:Array.isArray(x.conditionDetails) ? x.conditionDetails.slice(0,10) : [],
+      specifications:Array.isArray(x.specifications) ? x.specifications.slice(0,20) : [],
       conditionOptions:x.conditionOptions,
       storageOptions:x.storageOptions,
       colorOptions:x.colorOptions,
@@ -2006,76 +2018,159 @@ function deleteService(i){
 function renderPhones(){
   const box=document.getElementById("phonesList");
   if(!box) return;
+  if(!Array.isArray(data.phones)) data.phones=[];
   if(!data.phones.length){
-    box.innerHTML=`<div class="editor-layout"><div class="editor-list"><div class="editor-list-title">Telefoons</div><div class="small" style="padding:10px">Nog geen telefoons toegevoegd.</div></div><div class="editor-panel editor-empty">Nog geen telefoon toegevoegd.</div></div>`;
+    box.innerHTML=`<div class="editor-layout"><div class="editor-list"><div class="editor-list-title">Producten</div><div class="small" style="padding:10px">Nog geen producten toegevoegd.</div></div><div class="editor-panel editor-empty">Voeg een product toe om te beginnen.</div></div>`;
     return;
   }
   if(selectedPhoneIndex>=data.phones.length) selectedPhoneIndex=data.phones.length-1;
   const phone=data.phones[selectedPhoneIndex];
   normalizePhoneOptions(phone);
-  const images=phone.images || ["","","",""];
-  const list=data.phones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">📱 ${esc(x.name||'Nieuwe telefoon')}<small>${esc(x.brand||'')}</small></button>`).join('');
-  const optionEditor=(key,title,help,priceEditable=true)=>{
+  while(!Array.isArray(phone.images)) phone.images=[];
+  while(phone.images.length<4) phone.images.push("");
+  if(!Array.isArray(phone.conditionDetails)) phone.conditionDetails=[];
+  if(!Array.isArray(phone.specifications)) phone.specifications=[];
+
+  const list=data.phones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">🛒 ${esc(x.name||'Nieuw product')}<small>${esc(x.brand||'')} · ${esc(x.category||'Smartphones')}</small></button>`).join('');
+
+  const optionEditor=(key,title,help)=>{
     const opts=phone[key]||[];
-    const fixedGroup = key==='batteryOptions' || key==='vatOptions';
-    return `<div class="card" style="margin-top:16px"><div class="card-title">${title}</div><div class="small" style="margin-bottom:12px">${help}</div>${opts.map((o,i)=>{
-      const active=o.active !== undefined ? o.active !== false : o.enabled !== false;
-      const available=o.available !== false;
-      let fixed=0;
-      if(key==='batteryOptions') fixed=String(o.label).toLowerCase().includes('nieuw') ? 30 : 0;
-      if(key==='vatOptions') fixed=String(o.label).toLowerCase().includes('met btw') ? 10 : 0;
-
-      if(fixedGroup){
-        const fixedLabel = key==='batteryOptions'
-          ? (String(o.label).toLowerCase().includes('nieuw') ? 'Nieuw (100%)' : 'Standaard')
-          : (String(o.label).toLowerCase().includes('met btw') ? 'Met BTW' : 'Zonder BTW');
-        return `<div style="display:grid;grid-template-columns:minmax(220px,1fr) 150px;gap:10px;align-items:center;margin-bottom:9px">
-          <input value="${esc(fixedLabel)}" readonly style="background:#f3f4f6;cursor:not-allowed">
-          <div class="small" style="font-weight:800">Vast: + €${fixed}</div>
-        </div>`;
-      }
-
-      return `<div style="display:grid;grid-template-columns:minmax(180px,1fr) 110px 125px 120px;gap:10px;align-items:center;margin-bottom:9px">
-        <input value="${esc(o.label)}" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].label=this.value;markChanged()">
-        <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${active?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].active=this.checked;data.phones[${selectedPhoneIndex}].${key}[${i}].enabled=this.checked;markChanged()"> Actief</label>
-        <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${available?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].available=this.checked;markChanged()"> Beschikbaar</label>
-        <input type="number" step="1" value="${esc(o.priceDelta)}" placeholder="0" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].priceDelta=this.value;markChanged()">
-      </div>`;
-    }).join('')}<div class="small" style="margin-top:8px">Actief = tonen op de website. Beschikbaar = kan geselecteerd worden. Bij BTW en batterij zijn de bedragen vast: Met BTW +€10 en Nieuw (100%) +€30.</div></div>`;
+    return `<div class="card" style="margin-top:16px">
+      <div class="card-title">${title}</div>
+      <div class="small" style="margin-bottom:12px">${help}</div>
+      ${opts.map((o,i)=>`
+        <div style="display:grid;grid-template-columns:minmax(180px,1fr) 110px 125px 120px;gap:10px;align-items:center;margin-bottom:9px">
+          <input value="${esc(o.label)}" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].label=this.value;markChanged()">
+          <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].active=this.checked;data.phones[${selectedPhoneIndex}].${key}[${i}].enabled=this.checked;markChanged()"> Actief</label>
+          <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${o.available!==false?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].available=this.checked;markChanged()"> Beschikbaar</label>
+          <input type="number" step="1" value="${esc(o.priceDelta)}" placeholder="+/- €" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].priceDelta=this.value;markChanged()">
+        </div>`).join('')}
+    </div>`;
   };
+
+  const specs=phone.specifications.map((s,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 1fr 44px;gap:10px;align-items:center;margin-bottom:9px">
+      <input value="${esc(s.label||'')}" placeholder="Specificatie" oninput="data.phones[${selectedPhoneIndex}].specifications[${i}].label=this.value;markChanged()">
+      <input value="${esc(s.value||'')}" placeholder="Waarde" oninput="data.phones[${selectedPhoneIndex}].specifications[${i}].value=this.value;markChanged()">
+      <button class="btn btn-red" type="button" onclick="data.phones[${selectedPhoneIndex}].specifications.splice(${i},1);renderPhones();markChanged()">×</button>
+    </div>`).join('');
+
+  const conditions=phone.conditionDetails.map((s,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 1fr 44px;gap:10px;align-items:center;margin-bottom:9px">
+      <input value="${esc(s.title||'')}" placeholder="Bijv. Zo goed als nieuw" oninput="data.phones[${selectedPhoneIndex}].conditionDetails[${i}].title=this.value;markChanged()">
+      <input value="${esc(s.text||'')}" placeholder="Beschrijving van de conditie" oninput="data.phones[${selectedPhoneIndex}].conditionDetails[${i}].text=this.value;markChanged()">
+      <button class="btn btn-red" type="button" onclick="data.phones[${selectedPhoneIndex}].conditionDetails.splice(${i},1);renderPhones();markChanged()">×</button>
+    </div>`).join('');
+
   box.innerHTML=`
     <div class="editor-layout">
       <div class="editor-list">
-        <div class="editor-list-title">Telefoons</div>
+        <div class="editor-list-title">Producten</div>
         ${list}
       </div>
       <div class="editor-panel">
         <div class="card-head">
-          <div><div class="card-title" style="font-size:20px">📱 ${esc(phone.name||'Nieuwe telefoon')}</div><div class="small">Beheer de gegevens en verkoopopties van deze telefoon.</div></div>
+          <div><div class="card-title" style="font-size:20px">🛒 ${esc(phone.name||'Nieuw product')}</div><div class="small">Dit is het verkoopsysteem van HOMS TECH. Staat los van Uw toestel verkopen / Protocol 1–8.</div></div>
           <button class="btn btn-red" onclick="deletePhone(${selectedPhoneIndex})">Verwijderen</button>
         </div>
+
         <div class="grid">
-          <div class="field"><label>Model</label><input value="${esc(phone.name||'')}" oninput="data.phones[${selectedPhoneIndex}].name=this.value;markChanged();renderPhones()"></div>
+          <div class="field"><label>Model / Productnaam</label><input value="${esc(phone.name||'')}" oninput="data.phones[${selectedPhoneIndex}].name=this.value;markChanged();renderPhones()"></div>
           <div class="field"><label>Merk</label><input value="${esc(phone.brand||'')}" oninput="data.phones[${selectedPhoneIndex}].brand=this.value;markChanged()"></div>
-          <div class="field"><label>Basisprijs (€)</label><input type="number" step="1" value="${esc(phone.price||'')}" oninput="data.phones[${selectedPhoneIndex}].price=this.value;markChanged()"><div class="small">Dit is de basisprijs van Zichtbaar gebruikt.</div></div>
+          <div class="field"><label>Subtitel</label><input value="${esc(phone.subtitle||'')}" placeholder="Krachtiger. Slimmer. Mooier." oninput="data.phones[${selectedPhoneIndex}].subtitle=this.value;markChanged()"></div>
+          <div class="field"><label>Categorie</label><input value="${esc(phone.category||'Smartphones')}" placeholder="Smartphones / Tablets / MacBook..." oninput="data.phones[${selectedPhoneIndex}].category=this.value;markChanged()"></div>
+          <div class="field"><label>Basisprijs (€)</label><input type="number" step="0.01" value="${esc(phone.price||'')}" oninput="data.phones[${selectedPhoneIndex}].price=this.value;markChanged()"></div>
+          <div class="field"><label>Voorraad</label><input type="number" min="0" step="1" value="${esc(phone.stock||0)}" oninput="data.phones[${selectedPhoneIndex}].stock=Number(this.value||0);markChanged()"></div>
+          <div class="field"><label>SKU</label><input value="${esc(phone.sku||'')}" placeholder="HT-IPH12-64" oninput="data.phones[${selectedPhoneIndex}].sku=this.value;markChanged()"></div>
           <div class="field"><label>Garantie</label><input value="${esc(phone.warranty||'')}" placeholder="12 maanden" oninput="data.phones[${selectedPhoneIndex}].warranty=this.value;markChanged()"></div>
-          <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.phones[${selectedPhoneIndex}].description=this.value;markChanged()">${esc(phone.description||'')}</textarea></div>
+          <div class="field" style="grid-column:1/-1"><label>Korte beschrijving</label><textarea oninput="data.phones[${selectedPhoneIndex}].description=this.value;markChanged()">${esc(phone.description||'')}</textarea></div>
         </div>
-        ${optionEditor('conditionOptions','1. Productconditie','Jij bepaalt per conditie de meerprijs. Basisprijs = Zichtbaar gebruikt.')}
-        ${optionEditor('storageOptions','2. Geheugen','64 / 128 / 256 / 512 GB en 1 TB. Zet actief/beschikbaar en bepaal zelf de meerprijs.')}
-        ${optionEditor('colorOptions','3. Kleur','Bepaal welke kleuren actief en beschikbaar zijn en eventueel de meerprijs.')}
-        ${optionEditor('batteryOptions','4. Batterij','Vast: Standaard + €0 en Nieuw (100%) + €30.',false)}
-        ${optionEditor('vatOptions','5. BTW','Vast: Zonder BTW + €0 en Met BTW + €10.',false)}
-        ${optionEditor('tradeInOptions','6. Inruil oude telefoon','Klant kiest Ja of Nee. Laat prijs op 0 als je later een aparte inruilpagina wilt maken.')}
-        <div style="margin-top:15px"><label style="font-weight:700">📷 Foto's</label><div class="images-grid">${images.map((img,j)=>`<div class="image-box">${img?`<img src="${esc(img)}" class="image-preview">`:`<div class="empty-preview">Geen foto</div>`}<input type="file" accept="image/*" onchange="handlePhoneImage(event,${selectedPhoneIndex},${j})">${img?`<button class="btn btn-light" style="margin-top:7px" onclick="removePhoneImage(${selectedPhoneIndex},${j})">Verwijder foto</button>`:""}</div>`).join('')}</div><p class="small">Maximaal 4 foto's per telefoon.</p></div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="card-title">⚙️ Productspecificaties</div>
+          <div class="grid">
+            <div class="field"><label>Connectiviteit</label><input value="${esc(phone.connectivity||'')}" placeholder="Origineel / Wi-Fi / Wi-Fi + Cellular" oninput="data.phones[${selectedPhoneIndex}].connectivity=this.value;markChanged()"></div>
+            <div class="field"><label>Schermgrootte</label><input value="${esc(phone.screenSize||'')}" placeholder="6.1 inch" oninput="data.phones[${selectedPhoneIndex}].screenSize=this.value;markChanged()"></div>
+            <div class="field"><label>Processor</label><input value="${esc(phone.processor||'')}" placeholder="Apple A..." oninput="data.phones[${selectedPhoneIndex}].processor=this.value;markChanged()"></div>
+            <div class="field"><label>Geheugen / RAM</label><input value="${esc(phone.memory||'')}" placeholder="8GB RAM" oninput="data.phones[${selectedPhoneIndex}].memory=this.value;markChanged()"></div>
+            <div class="field"><label>Grafische kaart</label><input value="${esc(phone.gpu||'')}" placeholder="Built-in" oninput="data.phones[${selectedPhoneIndex}].gpu=this.value;markChanged()"></div>
+            <div class="field"><label>Jaar</label><input value="${esc(phone.releaseYear||'')}" placeholder="2025" oninput="data.phones[${selectedPhoneIndex}].releaseYear=this.value;markChanged()"></div>
+          </div>
+          <div style="margin-top:14px"><strong>Extra specificaties</strong>${specs}<button class="btn btn-light" type="button" onclick="data.phones[${selectedPhoneIndex}].specifications.push({label:'',value:''});renderPhones();markChanged()">+ Specificatie</button></div>
+        </div>
+
+        ${optionEditor('conditionOptions','1. Productconditie','De prijsbasis blijft het product. Elke conditie kan een eigen meerprijs krijgen.')}
+        ${optionEditor('storageOptions','2. Geheugen / opslag','64GB, 128GB, 256GB, 512GB, 1TB enz. met eigen +/- prijs.')}
+        ${optionEditor('colorOptions','3. Kleur','Kleuren kunnen actief/beschikbaar worden gezet en een eigen +/- prijs krijgen.')}
+        ${optionEditor('batteryOptions','4. Batterij','Batterijopties met eigen +/- prijs.')}
+        ${optionEditor('vatOptions','5. BTW','BTW-opties met eigen +/- prijs.')}
+        ${optionEditor('tradeInOptions','6. Inruil oude telefoon','Voor later gebruik met het inruilsysteem; staat los van de buyback-protocollen.')}
+
+        <div class="card" style="margin-top:16px">
+          <div class="card-title">📋 Conditie-uitleg voor de klant</div>
+          <div class="small" style="margin-bottom:12px">Teksten die later op de productpagina onder de conditie kunnen verschijnen.</div>
+          ${conditions}
+          <button class="btn btn-light" type="button" onclick="data.phones[${selectedPhoneIndex}].conditionDetails.push({title:'',text:''});renderPhones();markChanged()">+ Conditie-uitleg</button>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="card-title">📷 Productfoto's</div>
+          <div class="images-grid">${phone.images.map((img,j)=>`
+            <div class="image-box">
+              ${img?`<img src="${esc(img)}" class="image-preview">`:`<div class="empty-preview">Geen foto</div>`}
+              <input type="file" accept="image/*" onchange="handlePhoneImage(event,${selectedPhoneIndex},${j})">
+              ${img?`<button class="btn btn-light" type="button" style="margin-top:7px" onclick="removePhoneImage(${selectedPhoneIndex},${j})">Verwijder foto</button>`:""}
+            </div>`).join('')}</div>
+          <p class="small">Maximaal 4 foto's per product.</p>
+        </div>
       </div>
     </div>`;
+}
+
+function handlePhoneImage(event,i,j){
+  const phone=data.phones[i];
+  const file=event.target.files && event.target.files[0];
+  if(!phone || !file) return;
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');event.target.value='';return;}
+  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}
+  const reader=new FileReader();
+  reader.onload=()=>{phone.images[j]=reader.result;renderPhones();markChanged();};
+  reader.readAsDataURL(file);
+}
+
+function removePhoneImage(i,j){
+  if(!data.phones[i]) return;
+  data.phones[i].images[j]="";
+  renderPhones();
+  markChanged();
 }
 
 function renderPhoneTitle(i){ renderPhones(); }
 
 function addPhone(){
-  data.phones.push({name:"Nieuwe iPhone",brand:"Apple",price:"",storage:"",color:"",condition:"Zichtbaar gebruikt",warranty:"",description:"",images:["","","",""]});
+  data.phones.push({
+    name:"Nieuwe iPhone",
+    brand:"Apple",
+    price:"",
+    storage:"",
+    color:"",
+    condition:"Zichtbaar gebruikt",
+    warranty:"12 maanden",
+    description:"",
+    subtitle:"",
+    sku:"",
+    stock:0,
+    category:"Smartphones",
+    connectivity:"",
+    processor:"",
+    memory:"",
+    gpu:"",
+    screenSize:"",
+    releaseYear:"",
+    images:["","","",""],
+    conditionDetails:[],
+    specifications:[]
+  });
   normalizePhoneOptions(data.phones[data.phones.length-1]);
   selectedPhoneIndex=data.phones.length-1;
   renderPhones();
@@ -2083,7 +2178,7 @@ function addPhone(){
 }
 
 function deletePhone(i){
-  if(confirm("Deze telefoon verwijderen?")){
+  if(confirm("Dit verkoopproduct verwijderen?")){
     data.phones.splice(i,1);
     selectedPhoneIndex=Math.max(0,Math.min(selectedPhoneIndex,data.phones.length-1));
     renderPhones();
