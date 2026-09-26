@@ -448,7 +448,7 @@ text-align:center
 }
 
 }
-</style>
+.product-stock{margin:8px 0 0;font-size:13px;font-weight:800}.product-stock.in-stock{color:#2563eb}.product-stock.sold-out{color:#dc2626}</style>
 <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20260922-final-header">
 <style>
 /* HOMS TECH FINAL HEADER OVERRIDE — self-contained */
@@ -728,6 +728,16 @@ return "tel:" + n.replace(/[^\d+]/g,"");
 }
 
 
+function startingConditionPrice(device){
+const options = Array.isArray(device.conditionOptions) ? device.conditionOptions.filter(x=>x && x.active!==false && x.available!==false) : [];
+const prices = options.map(x=>{
+  if(x.basePrice!==undefined && x.basePrice!==null && x.basePrice!=="") return Number(String(x.basePrice).replace(/€/g,"").replace(/\s/g,"").replace(",","."))||0;
+  if(x.conditionBasePrice!==undefined && x.conditionBasePrice!==null && x.conditionBasePrice!=="") return Number(String(x.conditionBasePrice).replace(/€/g,"").replace(/\s/g,"").replace(",","."))||0;
+  return 0;
+}).filter(n=>n>0);
+return prices.length ? Math.min(...prices) : Number(device.price || device.salePrice || 0) || 0;
+}
+
 function renderDevices(devices){
 
 const grid = document.getElementById("devicesGrid");
@@ -755,12 +765,8 @@ device.imageUrl ||
 const storage = device.storage || device.geheugen || "";
 const color = device.color || device.kleur || "";
 const condition = device.condition || device.conditie || "";
-const conditionOptions = Array.isArray(device.conditionOptions) ? device.conditionOptions : [];
-const firstCondition = conditionOptions.find(x => x && x.label && x.active !== false && x.available !== false && (x.basePrice !== undefined || x.conditionBasePrice !== undefined || x.conditionPrice !== undefined || x.isCondition));
-const conditionPrice = firstCondition ? (firstCondition.basePrice ?? firstCondition.conditionBasePrice ?? firstCondition.conditionPrice ?? firstCondition.price) : "";
-const salePrice = conditionPrice !== "" && conditionPrice !== undefined && conditionPrice !== null
-? conditionPrice
-: (device.price || device.salePrice || device.sellPrice || device.verkoopprijs || "");
+const salePrice = startingConditionPrice(device);
+const stock = Number(device.stock || 0);
 
 const productUrl =
 "product.html?type=phone&id=" +
@@ -800,10 +806,12 @@ ${condition ? `<span>${escapeHtml(condition)}</span>` : ""}
 ${
 salePrice
 ?
-`<div class="sale-price">€${escapeHtml(salePrice)}</div>`
+`<div class="sale-price">Vanaf €${escapeHtml(String(salePrice).replace(".00", ""))}</div>`
 :
 `<div class="sale-price contact-price">Prijs op aanvraag</div>`
 }
+
+<div class="product-stock ${stock>0?'in-stock':'sold-out'}">${stock>0?'✓ Op voorraad':'Uitverkocht'}</div>
 
 <div class="product-action">
 Bekijk product <span>→</span>
@@ -883,11 +891,14 @@ devices = data.phones.map((phone, index) => ({
         storage: phone.storage || phone.geheugen || "",
         color: phone.color || phone.kleur || "",
         condition: phone.condition || phone.conditie || "",
+        conditionOptions: Array.isArray(phone.conditionOptions) ? phone.conditionOptions : [],
+        stock: Number(phone.stock || 0),
+        active: phone.active !== false,
         warranty: phone.warranty || phone.garantie || "",
         description: phone.description || "",
         image: phone.image || phone.imageUrl || "",
         images: Array.isArray(phone.images) ? phone.images : []
-      }));
+      })).filter(phone => phone.active);
 
 }
 
