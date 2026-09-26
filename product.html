@@ -183,6 +183,28 @@ nav{justify-content:center}
 @media(max-width:800px){.spec-list{grid-template-columns:1fr}}
 </style>
 
+
+<style id="homs-condition-help-v1">
+.condition-help-link{display:inline-flex;align-items:center;gap:5px;margin-left:8px;padding:2px 8px;border:1px solid #2563eb;border-radius:999px;background:#eff6ff;color:#2563eb;font-size:12px;font-weight:800;cursor:pointer;vertical-align:middle}
+.condition-help-link:hover{background:#2563eb;color:#fff}
+.condition-modal{position:fixed;inset:0;z-index:20000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(7,29,45,.72)}
+.condition-modal.open{display:flex}
+.condition-modal-card{width:min(1050px,96vw);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;box-shadow:0 24px 70px rgba(0,0,0,.3);padding:24px}
+.condition-modal-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:18px}
+.condition-modal-head h2{font-size:24px;color:#111827}
+.condition-modal-close{width:38px;height:38px;border:0;border-radius:50%;background:#eef4fb;color:#1e3a5f;font-size:24px;cursor:pointer;font-weight:800}
+.condition-modal-close:hover{background:#2563eb;color:#fff}
+.condition-help-intro{color:#64748b;font-size:13px;margin:-8px 0 18px}
+.condition-help-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.condition-help-item{border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;background:#f8fafc}
+.condition-help-item img{width:100%;height:260px;display:block;object-fit:cover;background:#fff}
+.condition-help-item-body{padding:14px 16px 16px}
+.condition-help-item h3{font-size:17px;color:#111827;margin-bottom:5px}
+.condition-help-item p{font-size:13px;color:#64748b}
+.condition-help-note{margin-top:18px;padding:12px 14px;border-radius:11px;background:#eff6ff;color:#1e3a5f;font-size:12px}
+@media(max-width:700px){.condition-modal-card{padding:17px;border-radius:16px}.condition-help-grid{grid-template-columns:1fr}.condition-help-item img{height:230px}.condition-modal-head h2{font-size:20px}}
+</style>
+
 </head>
 <body>
 
@@ -203,6 +225,35 @@ nav{justify-content:center}
 </div>
 </div>
 </footer>
+
+<div id="conditionHelpModal" class="condition-modal" role="dialog" aria-modal="true" aria-labelledby="conditionHelpTitle" onclick="closeConditionHelp(event)">
+  <div class="condition-modal-card" onclick="event.stopPropagation()">
+    <div class="condition-modal-head">
+      <h2 id="conditionHelpTitle">Wat is dat? – Productcondities</h2>
+      <button type="button" class="condition-modal-close" onclick="closeConditionHelp()" aria-label="Sluiten">×</button>
+    </div>
+    <p class="condition-help-intro">Voorbeelden om het verschil tussen de productcondities duidelijk te maken. De foto's zijn voorbeelden; het exacte uiterlijk kan per toestel verschillen.</p>
+    <div class="condition-help-grid">
+      <article class="condition-help-item">
+        <img src="assets/condition-info/zo-goed-als-nieuw.jpg" alt="Voorbeeld Zo goed als nieuw">
+        <div class="condition-help-item-body"><h3>Zo goed als nieuw</h3><p>Minimale gebruikerssporen en een zeer nette staat.</p></div>
+      </article>
+      <article class="condition-help-item">
+        <img src="assets/condition-info/licht-gebruikt.jpg" alt="Voorbeeld Licht gebruikt">
+        <div class="condition-help-item-body"><h3>Licht gebruikt</h3><p>Kleine zichtbare gebruikerssporen, zoals lichte krasjes.</p></div>
+      </article>
+      <article class="condition-help-item">
+        <img src="assets/condition-info/zichtbaar-gebruikt.jpg" alt="Voorbeeld Zichtbaar gebruikt">
+        <div class="condition-help-item-body"><h3>Zichtbaar gebruikt</h3><p>Duidelijkere cosmetische gebruikerssporen of beschadigingen.</p></div>
+      </article>
+      <article class="condition-help-item">
+        <img src="assets/condition-info/face-id-touch-id.jpg" alt="Voorbeeld Face ID / Touch ID probleem">
+        <div class="condition-help-item-body"><h3>Face ID / Touch ID</h3><p>Voorbeeld van een toestel waarbij biometrische herkenning niet werkt.</p></div>
+      </article>
+    </div>
+    <div class="condition-help-note">De beschikbare condities en eventuele functionele gebreken worden altijd bij het betreffende toestel vermeld.</div>
+  </div>
+</div>
 
 <script>
 const params = new URLSearchParams(location.search);
@@ -320,7 +371,7 @@ function renderOptionSection(key,title,list){
   if(!list.length) return "";
   const available=list.filter(x=>x.available!==false);
   if(!selectedOptions[key] || !available.some(x=>x.label===selectedOptions[key])) selectedOptions[key]=available[0]?.label || "";
-  return `<div class="option-section"><div class="option-title">${esc(title)}</div><div class="option-grid">${list.map(x=>{
+  return `<div class="option-section"><div class="option-title">${esc(title)}${key==='condition'?`<button type="button" class="condition-help-link" onclick="openConditionHelp()">ⓘ Wat is dat?</button>`:''}</div><div class="option-grid">${list.map(x=>{
     const active=x.label===selectedOptions[key];
     const availableNow=x.available!==false;
     const priceLabel=key==='condition'
@@ -441,6 +492,22 @@ function renderProductBody(){
     ${!basePrice&&!hasOptions?`<div class="status">Neem contact met ons op voor de actuele prijs.</div>`:""}
   </div></div>`;
 }
+
+
+function openConditionHelp(){
+  const modal=document.getElementById("conditionHelpModal");
+  if(!modal) return;
+  modal.classList.add("open");
+  document.body.style.overflow="hidden";
+}
+function closeConditionHelp(event){
+  if(event && event.target && event.target.id!=="conditionHelpModal") return;
+  const modal=document.getElementById("conditionHelpModal");
+  if(!modal) return;
+  modal.classList.remove("open");
+  document.body.style.overflow="";
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape") closeConditionHelp();});
 
 function render(product,data){
   if(!product){document.getElementById("productArea").innerHTML=`<div class="empty"><h2>Product niet gevonden</h2><p>Dit apparaat bestaat niet of is niet meer beschikbaar.</p></div>`;return;}
