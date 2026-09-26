@@ -1346,7 +1346,7 @@ textarea{
   <div class="save-bar">
     <div>
       <div id="saveStatus" class="status">Wijzigingen nog niet opgeslagen</div>
-      <div class="small">✓ Wijzigingen worden automatisch opgeslagen.</div>
+      <div class="small">✓ Wijzigingen worden opgeslagen wanneer jij op «Wijzigingen opslaan» drukt.</div>
     </div>
 
     <button id="saveBtn" data-permission="site.save" class="btn btn-green" onclick="save()" style="font-size:16px;padding:13px 25px">
@@ -1500,10 +1500,27 @@ function normalizeGsmService(x){
   };
 }
 
-  function normalizePhoneOption(x, fallbackLabel, fallbackPrice){
-    if(typeof x === "string") return {label:x, enabled:true, active:true, available:true, priceDelta:0};
+  function normalizePhoneOption(x, fallbackLabel, fallbackPrice, isCondition=false, phonePrice=0){
+    if(typeof x === "string"){
+      return isCondition
+        ? {label:x, enabled:true, active:true, available:true, basePrice:Number(phonePrice||0)}
+        : {label:x, enabled:true, active:true, available:true, priceDelta:0};
+    }
     x=x||{};
     const active=x.active !== undefined ? x.active !== false : x.enabled !== false;
+    if(isCondition){
+      // New model: a condition owns the absolute base price.
+      // Keep older priceDelta data compatible by converting it to phone base + delta.
+      const oldDelta = Number(x.priceDelta ?? x.delta ?? x.priceAdjustment ?? x.extra ?? fallbackPrice ?? 0);
+      const base = x.basePrice ?? x.conditionBasePrice ?? x.price;
+      return {
+        label:String(x.label || x.name || fallbackLabel || ""),
+        enabled:active,
+        active:active,
+        available:x.available !== false,
+        basePrice: Number(base !== undefined && base !== "" ? base : (Number(phonePrice||0) + oldDelta))
+      };
+    }
     return {
       label:String(x.label || x.name || fallbackLabel || ""),
       enabled:active,
@@ -1547,9 +1564,9 @@ function canonicalPhoneOptionLabel(key,label){
 function normalizePhoneOptions(phone){
     const defaults={
       conditionOptions:[
-        {label:"Zichtbaar gebruikt",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Licht gebruikt",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Zo goed als nieuw",enabled:true,active:true,available:true,priceDelta:0}
+        {label:"Zichtbaar gebruikt",enabled:true,active:true,available:true,basePrice:0},
+        {label:"Licht gebruikt",enabled:true,active:true,available:true,basePrice:0},
+        {label:"Zo goed als nieuw",enabled:true,active:true,available:true,basePrice:0}
       ],
       storageOptions:[
         {label:"64 GB",enabled:true,active:true,available:true,priceDelta:0},
@@ -1580,9 +1597,16 @@ function normalizePhoneOptions(phone){
     Object.keys(defaults).forEach(key=>{
       const incoming=Array.isArray(phone[key]) ? phone[key] : [];
       const normalized=incoming.map((x,i)=>{
-        const d=defaults[key][i] || {priceDelta:0};
-        const n=normalizePhoneOption(x,d.label,d.priceDelta);
+        const d=defaults[key][i] || (key==='conditionOptions' ? {basePrice:Number(phone.price||0)} : {priceDelta:0});
+        const n=normalizePhoneOption(
+          x,
+          d.label,
+          d.priceDelta,
+          key==='conditionOptions',
+          Number(phone.price||0)
+        );
         n.label=canonicalPhoneOptionLabel(key,n.label);
+        if(key==='conditionOptions' && n.basePrice===undefined) n.basePrice=Number(phone.price||0);
         if(key==='batteryOptions') n.priceDelta=String(n.label).toLowerCase().includes('nieuw') ? 30 : 0;
         if(key==='vatOptions') n.priceDelta=String(n.label).toLowerCase().includes('met btw') ? 10 : 0;
         return n;
@@ -2035,15 +2059,20 @@ function renderPhones(){
 
   const optionEditor=(key,title,help)=>{
     const opts=phone[key]||[];
+    const isCondition=key==='conditionOptions';
     return `<div class="card" style="margin-top:16px">
       <div class="card-title">${title}</div>
       <div class="small" style="margin-bottom:12px">${help}</div>
       ${opts.map((o,i)=>`
-        <div style="display:grid;grid-template-columns:minmax(180px,1fr) 110px 125px 120px;gap:10px;align-items:center;margin-bottom:9px">
+        <div style="display:grid;grid-template-columns:minmax(180px,1fr) 125px 125px 125px 120px;gap:10px;align-items:center;margin-bottom:9px">
           <input value="${esc(o.label)}" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].label=this.value;markChanged()">
           <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].active=this.checked;data.phones[${selectedPhoneIndex}].${key}[${i}].enabled=this.checked;markChanged()"> Actief</label>
           <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${o.available!==false?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].available=this.checked;markChanged()"> Beschikbaar</label>
-          <input type="number" step="1" value="${esc(o.priceDelta)}" placeholder="+/- €" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].priceDelta=this.value;markChanged()">
+          ${isCondition
+            ? `<input type="number" step="0.01" min="0" value="${esc(o.basePrice??0)}" placeholder="€ Basisprijs" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].basePrice=Number(this.value||0);markChanged()">`
+            : `<input type="number" step="0.01" value="${esc(o.priceDelta??0)}" placeholder="+/- €" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].priceDelta=Number(this.value||0);markChanged()">`
+          }
+          <span class="small">${isCondition?'Basisprijs':'Prijsverschil'}</span>
         </div>`).join('')}
     </div>`;
   };
@@ -2079,7 +2108,7 @@ function renderPhones(){
           <div class="field"><label>Merk</label><input value="${esc(phone.brand||'')}" oninput="data.phones[${selectedPhoneIndex}].brand=this.value;markChanged()"></div>
           <div class="field"><label>Subtitel</label><input value="${esc(phone.subtitle||'')}" placeholder="Krachtiger. Slimmer. Mooier." oninput="data.phones[${selectedPhoneIndex}].subtitle=this.value;markChanged()"></div>
           <div class="field"><label>Categorie</label><input value="${esc(phone.category||'Smartphones')}" placeholder="Smartphones / Tablets / MacBook..." oninput="data.phones[${selectedPhoneIndex}].category=this.value;markChanged()"></div>
-          <div class="field"><label>Basisprijs (€)</label><input type="number" step="0.01" value="${esc(phone.price||'')}" oninput="data.phones[${selectedPhoneIndex}].price=this.value;markChanged()"></div>
+          <div class="field"><label>Standaardprijs / fallback (€)</label><input type="number" step="0.01" value="${esc(phone.price||'')}" oninput="data.phones[${selectedPhoneIndex}].price=Number(this.value||0);markChanged()"></div>
           <div class="field"><label>Voorraad</label><input type="number" min="0" step="1" value="${esc(phone.stock||0)}" oninput="data.phones[${selectedPhoneIndex}].stock=Number(this.value||0);markChanged()"></div>
           <div class="field"><label>SKU</label><input value="${esc(phone.sku||'')}" placeholder="HT-IPH12-64" oninput="data.phones[${selectedPhoneIndex}].sku=this.value;markChanged()"></div>
           <div class="field"><label>Garantie</label><input value="${esc(phone.warranty||'')}" placeholder="12 maanden" oninput="data.phones[${selectedPhoneIndex}].warranty=this.value;markChanged()"></div>
@@ -2088,6 +2117,9 @@ function renderPhones(){
 
         <div class="card" style="margin-top:16px">
           <div class="card-title">⚙️ Productspecificaties</div>
+          <div class="small" style="margin:10px 0;padding:10px 12px;background:#f4f8ff;border:1px solid #dce9ff;border-radius:10px">
+            <strong>Prijsberekening:</strong> gekozen conditie = basisprijs. Daarna worden opslag, kleur, batterij, BTW en andere opties als +/- prijsverschil toegevoegd.
+          </div>
           <div class="grid">
             <div class="field"><label>Connectiviteit</label><input value="${esc(phone.connectivity||'')}" placeholder="Origineel / Wi-Fi / Wi-Fi + Cellular" oninput="data.phones[${selectedPhoneIndex}].connectivity=this.value;markChanged()"></div>
             <div class="field"><label>Schermgrootte</label><input value="${esc(phone.screenSize||'')}" placeholder="6.1 inch" oninput="data.phones[${selectedPhoneIndex}].screenSize=this.value;markChanged()"></div>
@@ -2099,10 +2131,10 @@ function renderPhones(){
           <div style="margin-top:14px"><strong>Extra specificaties</strong>${specs}<button class="btn btn-light" type="button" onclick="data.phones[${selectedPhoneIndex}].specifications.push({label:'',value:''});renderPhones();markChanged()">+ Specificatie</button></div>
         </div>
 
-        ${optionEditor('conditionOptions','1. Productconditie','De prijsbasis blijft het product. Elke conditie kan een eigen meerprijs krijgen.')}
-        ${optionEditor('storageOptions','2. Geheugen / opslag','64GB, 128GB, 256GB, 512GB, 1TB enz. met eigen +/- prijs.')}
+        ${optionEditor('conditionOptions','1. Productconditie','Hier zet je de ECHTE basisprijs per conditie. Bijvoorbeeld: Zo goed als nieuw €650, Licht gebruikt €520. De gekozen conditie wordt de basisprijs.')}
+        ${optionEditor('storageOptions','2. Geheugen / opslag','Opslag is altijd een prijsverschil (+/-) bovenop de gekozen conditie.')}
         ${optionEditor('colorOptions','3. Kleur','Kleuren kunnen actief/beschikbaar worden gezet en een eigen +/- prijs krijgen.')}
-        ${optionEditor('batteryOptions','4. Batterij','Batterijopties met eigen +/- prijs.')}
+        ${optionEditor('batteryOptions','4. Batterij','Batterij is altijd een prijsverschil (+/-). Bijvoorbeeld Nieuw (100%) +€30.')}
         ${optionEditor('vatOptions','5. BTW','BTW-opties met eigen +/- prijs.')}
         ${optionEditor('tradeInOptions','6. Inruil oude telefoon','Voor later gebruik met het inruilsysteem; staat los van de buyback-protocollen.')}
 
@@ -4117,14 +4149,7 @@ async function save(isAuto=false){
     setStatus("✕ Opslaan mislukt: "+e.message,"error");
   }finally{
     loading=false;
-
-    // Als er tijdens het opslaan opnieuw iets gewijzigd werd,
-    // voer nog één automatische opslag uit.
-    if(autoSaveAgain){
-      autoSaveAgain=false;
-      clearTimeout(autoSaveTimer);
-      autoSaveTimer=setTimeout(()=>save(true),300);
-    }
+    autoSaveAgain=false;
   }
 }
 
@@ -4419,24 +4444,14 @@ function renderAll(){
 }
 
 function markChanged(){
-
   setStatus(
-    "● Wijziging gedetecteerd — automatisch opslaan...",
+    "● Wijziging موجودة — اضغط «Wijzigingen opslaan» للحفظ.",
     "info"
   );
-
-  // Automatisch opslaan na een korte pauze, zodat typen in velden
-  // niet voor iedere letter een aparte request naar de server stuurt.
+  // Geen autosave meer. De beheerder kan eerst meerdere velden aanpassen
+  // en pas daarna één keer op «Wijzigingen opslaan» drukken.
   clearTimeout(autoSaveTimer);
-
-  if(loading){
-    autoSaveAgain = true;
-    return;
-  }
-
-  autoSaveTimer = setTimeout(()=>{
-    save(true);
-  },700);
+  autoSaveAgain = false;
 }
 
 function setStatus(text,type){
