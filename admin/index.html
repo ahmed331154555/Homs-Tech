@@ -996,6 +996,70 @@ textarea{
 .buyback-v1-shell .buyback-v1-title p{margin-top:4px}
 .buyback-v1-brand-badge{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
+
+<style id="homs-compact-device-folders">
+.homs-folder-list{padding:10px!important;overflow:auto}
+.homs-folder-brand{
+  padding:10px 9px 6px;
+  margin-top:4px;
+  font-size:12px;
+  font-weight:900;
+  color:#475569;
+  text-transform:uppercase;
+}
+.homs-folder-model{
+  width:100%;
+  border:0;
+  background:#fff;
+  color:#172033;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:10px 11px;
+  border-radius:10px;
+  font-weight:850;
+  text-align:left;
+  cursor:pointer;
+}
+.homs-folder-model:hover{background:#f1f5f9}
+.homs-folder-model.open{background:#eef7f1;color:#166534}
+.homs-folder-model small{font-size:10px;color:#94a3b8;font-weight:700;white-space:nowrap}
+.homs-folder-model.open small{color:#4b7a5a}
+.homs-folder-variants{
+  margin:0 0 7px 10px;
+  padding:4px 0 4px 8px;
+  border-left:2px solid #dbe5df;
+}
+.homs-folder-product{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  border:0;
+  background:transparent;
+  color:#334155;
+  padding:8px 7px;
+  border-radius:9px;
+  text-align:left;
+  cursor:pointer;
+}
+.homs-folder-product:hover{background:#f8fafc}
+.homs-folder-product.active{background:#25d366;color:#fff}
+.homs-folder-product-icon{font-size:15px;flex:0 0 auto}
+.homs-folder-product-text{min-width:0;display:block}
+.homs-folder-product-text strong{
+  display:block;font-size:12px;line-height:1.3;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.homs-folder-product-text small{
+  display:block;margin-top:2px;font-size:10px;opacity:.72;
+}
+.homs-folder-product.active small{opacity:.9}
+@media(max-width:900px){
+  .homs-folder-list{max-height:none}
+}
+</style>
 </head>
 
 <body>
@@ -2340,8 +2404,9 @@ function renderPhones(){
   while(phone.images.length<4) phone.images.push("");
   if(!Array.isArray(phone.specifications)) phone.specifications=[];
 
-  // Dynamische apparaat-hiërarchie: Merk → Familie → Model → Geheugen → Kleur.
-  // Sorteert alleen de weergave; data.phones en de opgeslagen indexen worden niet gewijzigd.
+  // HOMS TECH compact catalog folders:
+  // Merk → Familie → Model → exacte producten (Geheugen + Kleur).
+  // Alleen de weergave wordt gegroepeerd; data.phones blijft ongewijzigd.
   const storageOrder = value => {
     const m = String(value||'').match(/(\d+(?:[.,]\d+)?)\s*(GB|TB)/i);
     if(!m) return 999999;
@@ -2349,34 +2414,95 @@ function renderPhones(){
     return m[2].toUpperCase()==='TB' ? n*1024 : n;
   };
   const colorOrder = value => {
-    const map={zwart:1,wit:2,rood:3,groen:4,blauw:5,roze:6,paars:7,goud:8,zilver:9,black:1,white:2,red:3,green:4,blue:5,pink:6,purple:7,gold:8,silver:9};
+    const map={zwart:1,wit:2,rood:3,groen:4,blauw:5,roze:6,paars:7,goud:8,zilver:9,black:1,white:2,red:3,green:4,blue:5,pink:6,purple:7,gold:8,silver:9,graphite:10,grey:11,gray:11};
     return map[String(value||'').trim().toLowerCase()] || 99;
   };
-  const hierarchyValue = (x,key,fallback='') => String(x?.[key] ?? fallback).trim();
-  const sortedPhoneEntries = data.phones.map((x,i)=>({x,i})).sort((a,b)=>{
-    const A=a.x,B=b.x;
-    const brandA=hierarchyValue(A,'catalogBrand',A.brand||'Onbekend');
-    const brandB=hierarchyValue(B,'catalogBrand',B.brand||'Onbekend');
-    const familyA=hierarchyValue(A,'catalogFamily',A.category||A.name||'');
-    const familyB=hierarchyValue(B,'catalogFamily',B.category||B.name||'');
-    const modelA=hierarchyValue(A,'catalogModel',A.name||'');
-    const modelB=hierarchyValue(B,'catalogModel',B.name||'');
-    return brandA.localeCompare(brandB,'nl') || familyA.localeCompare(familyB,'nl',{numeric:true}) || modelA.localeCompare(modelB,'nl',{numeric:true}) || storageOrder(A.catalogStorage||A.storage) - storageOrder(B.catalogStorage||B.storage) || colorOrder(A.catalogColor||A.color) - colorOrder(B.catalogColor||B.color) || String(A.name||'').localeCompare(String(B.name||''),'nl',{numeric:true});
+  const firstText = (...values) => {
+    for(const value of values){
+      const s=String(value??'').trim();
+      if(s) return s;
+    }
+    return '';
+  };
+  const deriveStorage = x => {
+    const explicit=Array.isArray(x.storage)?x.storage.join(' '):String(x.catalogStorage||x.storage||'');
+    const m=explicit.match(/\d+(?:[.,]\d+)?\s*(?:GB|TB)/i);
+    if(m) return m[0].replace(/\s+/g,'');
+    const m2=String(x.name||'').match(/\d+(?:[.,]\d+)?\s*(?:GB|TB)/i);
+    return m2 ? m2[0].replace(/\s+/g,'') : '';
+  };
+  const deriveColor = x => {
+    const explicit=firstText(x.catalogColor,x.color);
+    if(explicit) return explicit;
+    const colors=['Pacific Blue','Sierra Blue','Midnight','Starlight','Space Black','Space Gray','Graphite','Deep Purple','Natural Titanium','Blue Titanium','Black Titanium','White Titanium','Black','White','Red','Green','Blue','Pink','Purple','Gold','Silver','Goud','Zilver','Zwart','Wit','Rood','Groen','Blauw','Roze','Paars'];
+    const name=String(x.name||'').toLowerCase();
+    return colors.find(c=>name.includes(c.toLowerCase())) || '';
+  };
+  const deriveBrand = x => firstText(x.catalogBrand,x.brand,'Onbekend');
+  const deriveFamily = x => {
+    const explicit=firstText(x.catalogFamily);
+    if(explicit) return explicit;
+    const name=String(x.name||'');
+    if(/\bipad\b/i.test(name)) return 'iPad';
+    if(/\biphone\b/i.test(name)) return 'iPhone';
+    if(/\bgalaxy\b/i.test(name)) return 'Galaxy';
+    return firstText(x.category,'Apparaten');
+  };
+  const deriveModel = x => {
+    const explicit=firstText(x.catalogModel);
+    if(explicit) return explicit;
+    let name=String(x.name||'').trim();
+    const storage=deriveStorage(x);
+    if(storage) name=name.replace(new RegExp(storage.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'ig'),'');
+    const color=deriveColor(x);
+    if(color) name=name.replace(new RegExp(color.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'ig'),'');
+    name=name.replace(/\s{2,}/g,' ').replace(/\s*[-|·]\s*$/,'').trim();
+    return name || firstText(x.name,'Model');
+  };
+
+  const groups=new Map();
+  data.phones.forEach((x,i)=>{
+    const brand=deriveBrand(x), family=deriveFamily(x), model=deriveModel(x);
+    const storage=deriveStorage(x), color=deriveColor(x);
+    const key=`${brand}|||${family}|||${model}`;
+    if(!groups.has(key)) groups.set(key,{brand,family,model,items:[]});
+    groups.get(key).items.push({x,i,storage,color});
   });
-  let lastBrand='', lastFamily='', lastModel='';
-  const list=sortedPhoneEntries.map(({x,i})=>{
-    const brand=hierarchyValue(x,'catalogBrand',x.brand||'Onbekend');
-    const family=hierarchyValue(x,'catalogFamily',x.category||'Apparaten');
-    const model=hierarchyValue(x,'catalogModel',x.name||'Model');
-    let html='';
-    if(brand!==lastBrand){ html+=`<div class="editor-list-group" style="padding:10px 12px 6px;font-weight:900;font-size:12px;color:#475569;text-transform:uppercase;border-top:1px solid #e2e8f0;margin-top:6px">${esc(brand)}</div>`; lastBrand=brand; lastFamily=''; lastModel=''; }
-    if(family!==lastFamily){ html+=`<div class="editor-list-group" style="padding:5px 12px 4px;font-weight:800;color:#64748b">↳ ${esc(family)}</div>`; lastFamily=family; lastModel=''; }
-    if(model!==lastModel && model!==family){ html+=`<div class="editor-list-group" style="padding:4px 12px 4px 24px;font-weight:800;color:#334155">↳ ${esc(model)}</div>`; lastModel=model; }
-    const storage=x.catalogStorage || (Array.isArray(x.storage)?x.storage.join(', '):x.storage) || '';
-    const color=x.catalogColor || x.color || '';
-    const sub=[storage,color].filter(Boolean).join(' · ') || x.category || 'Smartphones';
-    html+=`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">🛒 ${esc(x.name||'Nieuw product')}<small>${esc(sub)}</small></button>`;
-    return html;
+
+  const sortedGroups=[...groups.values()].sort((a,b)=>
+    a.brand.localeCompare(b.brand,'nl') ||
+    a.family.localeCompare(b.family,'nl',{numeric:true}) ||
+    a.model.localeCompare(b.model,'nl',{numeric:true})
+  );
+  sortedGroups.forEach(g=>g.items.sort((a,b)=>
+    storageOrder(a.storage)-storageOrder(b.storage) ||
+    colorOrder(a.color)-colorOrder(b.color) ||
+    String(a.x.name||'').localeCompare(String(b.x.name||''),'nl',{numeric:true})
+  ));
+
+  // Keep the currently selected model open. Clicking a model selects its first exact product.
+  const selected=selectedPhoneIndex>=0 ? data.phones[selectedPhoneIndex] : null;
+  const selectedModel=selected ? deriveModel(selected) : '';
+  const selectedBrand=selected ? deriveBrand(selected) : '';
+  const selectedFamily=selected ? deriveFamily(selected) : '';
+
+  const list=sortedGroups.map((g,gi)=>{
+    const isOpen=g.brand===selectedBrand && g.family===selectedFamily && g.model===selectedModel;
+    const variants=isOpen ? g.items.map(({x,i,storage,color})=>{
+      const fullName=String(x.name||`${g.brand} ${g.model} ${storage} ${color}`).trim();
+      const meta=[storage,color].filter(Boolean).join(' · ');
+      return `<button type="button" class="homs-folder-product ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">
+        <span class="homs-folder-product-icon">📱</span>
+        <span class="homs-folder-product-text"><strong>${esc(fullName)}</strong><small>${esc(meta)}</small></span>
+      </button>`;
+    }).join('') : '';
+
+    return `
+      ${gi===0 || sortedGroups[gi-1].brand!==g.brand ? `<div class="homs-folder-brand">📁 ${esc(g.brand)}</div>`:''}
+      <button type="button" class="homs-folder-model ${isOpen?'open':''}" onclick="selectedPhoneIndex=${g.items[0].i};renderPhones()">
+        <span>📂 ${esc(g.model)}</span><small>${g.items.length} variant(en)</small>
+      </button>
+      ${isOpen ? `<div class="homs-folder-variants">${variants}</div>` : ''}`;
   }).join('');
 
   const optionEditor=(key,title,help)=>{
@@ -2408,8 +2534,9 @@ function renderPhones(){
 
   box.innerHTML=`
     <div class="editor-layout">
-      <div class="editor-list">
-        <div class="editor-list-title">Producten</div>
+      <div class="editor-list homs-folder-list">
+        <div class="editor-list-title">Apparaten</div>
+        <div class="small" style="padding:0 10px 10px">📁 Merk → model → geheugen + kleur</div>
         ${list}
       </div>
       <div class="editor-panel">
