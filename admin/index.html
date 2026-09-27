@@ -2071,7 +2071,13 @@ function normalizeData(){
       colorOptions:x.colorOptions,
       batteryOptions:x.batteryOptions,
       vatOptions:x.vatOptions,
-      tradeInOptions:x.tradeInOptions
+      tradeInOptions:x.tradeInOptions,
+      // Preserve the exact Forza price matrix saved on this product.
+      // This is read-only metadata for comparison; it must not be lost
+      // when /api/site data is normalized in the Admin UI.
+      forzaPriceMatrix: x.forzaPriceMatrix && typeof x.forzaPriceMatrix === "object" ? x.forzaPriceMatrix : null,
+      forzaPriceMatrixSource: x.forzaPriceMatrixSource || "",
+      forzaPriceMatrixUpdatedAt: x.forzaPriceMatrixUpdatedAt || ""
     };
     normalizePhoneOptions(phone);
     return phone;
@@ -5084,7 +5090,7 @@ async function updateHomsPricesFromForza(){
       method:"PUT",
       credentials:"same-origin",
       headers:{"Content-Type":"application/json","Accept":"application/json"},
-      body:JSON.stringify({productName:modelProduct,rows})
+      body:JSON.stringify({productName:modelProduct,targetPhoneName:phone.name||"",rows})
     });
     const payload=await r.json().catch(()=>({}));
     if(!r.ok || payload.success===false){
