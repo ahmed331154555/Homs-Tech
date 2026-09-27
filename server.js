@@ -1275,6 +1275,22 @@ function forzaExtractTest(html, sourceUrl) {
       /Apple iPhone[^.]{0,80}\.\s+(.{100,900}?)(?=\s+Alternatieven|\s+Condities)/i
     ]);
 
+  // Forza verkoopprijs: gebruik de eerste geldige conditieprijs als basisprijs.
+  // JSON-LD kan daarnaast een directe offers.price bevatten.
+  let productPrice = null;
+  const offerCandidates = [];
+  const offers = product?.offers;
+  if (Array.isArray(offers)) offerCandidates.push(...offers);
+  else if (offers && typeof offers === "object") offerCandidates.push(offers);
+  for (const offer of offerCandidates) {
+    const n = forzaParseEuro(offer?.price);
+    if (Number.isFinite(n)) { productPrice = n; break; }
+  }
+  if (!Number.isFinite(productPrice)) {
+    const firstConditionPrice = conditions.find(c => Number.isFinite(Number(c.price)));
+    if (firstConditionPrice) productPrice = Number(firstConditionPrice.price);
+  }
+
   const sku = String(product?.sku || "").trim();
   const brand = String(
     product?.brand?.name ||
@@ -1297,6 +1313,7 @@ function forzaExtractTest(html, sourceUrl) {
       sku,
       color,
       storage: memoryValues,
+      price: Number.isFinite(productPrice) ? productPrice : null,
       conditions,
       battery,
       stock: stock.length ? Math.max(...stock) : null,
