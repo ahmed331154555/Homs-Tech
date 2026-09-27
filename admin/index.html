@@ -5186,8 +5186,8 @@ function forzaRenderVariantManager(modelLabel, variants){
   tbody.innerHTML=clean.map((v,i)=>{
     const exists=forzaCurrentPhoneIndex(v.productName)>=0;
     const btn=exists
-      ? '<span class="tag" style="background:#dcfce7;color:#166534">✓ Al toegevoegd</span>'
-      : `<button class="btn btn-light" type="button" data-forza-add="${i}">➕ Toevoegen</button>`;
+      ? `<button class="btn btn-light" type="button" data-forza-add="${i}">💶 Forza-prijs</button>`
+      : `<button class="btn btn-light" type="button" data-forza-add="${i}">➕ Toevoegen + prijs</button>`;
     return `<tr>
       <td style="padding:9px;border-bottom:1px solid #edf2f7;font-weight:800">${forzaAdminEsc(modelLabel)}</td>
       <td style="padding:9px;border-bottom:1px solid #edf2f7">${forzaAdminEsc(v.storage)}</td>
@@ -5209,7 +5209,7 @@ function forzaRenderVariantManager(modelLabel, variants){
 async function forzaAddVariant(item,modelLabel,button){
   const status=document.getElementById("forzaVariantManagerStatus");
   if(button) button.disabled=true;
-  if(status) status.textContent=`${item.productName} wordt exact gelezen van Forza...`;
+  if(status) status.textContent=`${item.productName} wordt exact gelezen van Forza (gegevens + prijs)...`;
   try{
     const url=`/api/forza-test?model=${encodeURIComponent(document.getElementById("forzaTestModelSelect")?.value||"")}&variant=${encodeURIComponent(item.productName)}`;
     const r=await fetch(url,{credentials:"same-origin",headers:{"Accept":"application/json"}});
@@ -5220,10 +5220,52 @@ async function forzaAddVariant(item,modelLabel,button){
     const productName=String(p.name||item.productName).trim();
     const images=Array.isArray(p.images)?p.images.slice(0,4):[];
     if(!images.length) throw new Error("Geen exacte foto's voor deze variant gevonden. Er is niets toegevoegd.");
+
+    const conditionRows=Array.isArray(p.conditions)?p.conditions
+      .map(c=>({label:String(c?.name||c?.label||'').trim(),basePrice:Number(c?.price) }))
+      .filter(c=>c.label && Number.isFinite(c.basePrice) && c.basePrice>=0):[];
+    const directPrice=Number(p.price);
+    const basePrice=conditionRows.length ? conditionRows[0].basePrice : (Number.isFinite(directPrice)&&directPrice>=0 ? directPrice : null);
+    if(!Number.isFinite(basePrice)) throw new Error("Forza heeft voor deze variant geen geldige verkoopprijs teruggegeven. Er is niets gewijzigd.");
+
+    const batteryRows=Array.isArray(p.battery)?p.battery
+      .map(b=>({label:String(b?.name||b?.label||'').trim(),priceDelta:Number(b?.delta)}))
+      .filter(b=>b.label && Number.isFinite(b.priceDelta)) : [];
+
+    const existing=forzaCurrentPhoneIndex(productName);
+    const existingPhone=existing>=0 ? data.phones[existing] : null;
+
+    if(existing>=0 && existingPhone){
+      // Bestaand product: alleen Forza-prijsdata bijwerken in de huidige Admin-lijst.
+      // Nog niets naar de database schrijven tot de gebruiker zelf op Opslaan drukt.
+      existingPhone.price=basePrice;
+      if(conditionRows.length){
+        existingPhone.conditionOptions=conditionRows.map(c=>({label:c.label,basePrice:c.basePrice,active:true}));
+      }
+      if(batteryRows.length){
+        existingPhone.batteryOptions=batteryRows.map(b=>({label:b.label,priceDelta:b.priceDelta,active:true}));
+      }
+      existingPhone.forzaPriceMatrix={};
+      conditionRows.forEach(c=>{
+        existingPhone.forzaPriceMatrix[`${item.storage}|${c.label}|standaard`]=c.basePrice;
+        const batt=batteryRows.find(b=>b.label.toLowerCase()==='nieuw');
+        if(batt) existingPhone.forzaPriceMatrix[`${item.storage}|${c.label}|nieuw`]=c.basePrice+batt.priceDelta;
+      });
+      existingPhone.forzaPriceMatrixSource="Forza public website";
+      existingPhone.forzaPriceMatrixUpdatedAt=new Date().toISOString();
+      existingPhone.forzaSourceUrl=String(payload.exactVariantSourceUrl||item.sourceUrl||existingPhone.forzaSourceUrl||"");
+      existingPhone.forzaProductData={...(existingPhone.forzaProductData||{}),price:basePrice,conditions:p.conditions||[],battery:p.battery||[],sourceUrl:existingPhone.forzaSourceUrl,syncedAt:new Date().toISOString()};
+      renderPhones();
+      markChanged();
+      if(status) status.textContent=`✓ ${productName}: prijs van Forza (${basePrice.toFixed(2).replace('.',',')} €) staat klaar. Nog niet opgeslagen.`;
+      if(button && button.parentElement) button.parentElement.innerHTML=`<span class="tag" style="background:#dcfce7;color:#166534">✓ Forza-prijs klaar — wacht op Opslaan</span>`;
+      return;
+    }
+
     const normalized={
       name:productName,
       brand:String(p.brand||"Apple"),
-      price:Number.isFinite(Number(p.price))?Number(p.price):0,
+      price:basePrice,
       storage:[String(item.storage)],
       color:String(item.color),
       condition:"Zo goed als nieuw",
@@ -5235,15 +5277,28 @@ async function forzaAddVariant(item,modelLabel,button){
       category:"Smartphones",
       connectivity:"",
       processor:"",
-      memory:"",
+      memory:String(item.storage),
       gpu:"",
       screenSize:"",
       releaseYear:"2021",
       images,
       conditionDetails:[],
       specifications:p.specs||p.specifications||{},
+      conditionOptions:conditionRows.length ? conditionRows.map(c=>({label:c.label,basePrice:c.basePrice,active:true})) : [{label:"Zo goed als nieuw",basePrice:basePrice,active:true}],
+      storageOptions:[{label:String(item.storage),priceDelta:0,active:true}],
+      colorOptions:[{label:String(item.color),priceDelta:0,active:true}],
+      batteryOptions:batteryRows.length ? batteryRows.map(b=>({label:b.label,priceDelta:b.priceDelta,active:true})) : [{label:"Standaard",priceDelta:0,active:true}],
+      forzaPriceMatrix:Object.fromEntries(conditionRows.flatMap(c=>{
+        const rows=[[`${item.storage}|${c.label}|standaard`,c.basePrice]];
+        const batt=batteryRows.find(b=>b.label.toLowerCase()==='nieuw');
+        if(batt) rows.push([`${item.storage}|${c.label}|nieuw`,c.basePrice+batt.priceDelta]);
+        return rows;
+      })),
+      forzaPriceMatrixSource:"Forza public website",
+      forzaPriceMatrixUpdatedAt:new Date().toISOString(),
       forzaSourceUrl:String(payload.exactVariantSourceUrl||item.sourceUrl||""),
       forzaImportedAt:new Date().toISOString(),
+      forzaProductData:{name:productName,brand:String(p.brand||"Apple"),sku:String(p.sku||""),color:String(item.color),storage:[String(item.storage)],price:basePrice,conditions:p.conditions||[],battery:p.battery||[],stock:p.stock??null,specs:p.specs||[],description:String(p.description||""),images,sourceUrl:String(payload.exactVariantSourceUrl||item.sourceUrl||""),syncedAt:new Date().toISOString()},
       catalogBrand:"Apple",
       catalogFamily:"iPhone 13",
       catalogModel:modelLabel,
@@ -5251,26 +5306,17 @@ async function forzaAddVariant(item,modelLabel,button){
       catalogColor:String(item.color),
       catalogKey:`apple|iphone 13|${modelLabel}|${item.storage}|${item.color}`.toLowerCase()
     };
-    const existing=forzaCurrentPhoneIndex(productName);
-    if(existing>=0){
-      if(status) status.textContent=`${productName} bestaat al in HOMS TECH.`;
-      return;
-    }
     if(!Array.isArray(data.phones)) data.phones=[];
     data.phones.push(normalized);
     renderPhones();
     markChanged();
-    if(status) status.textContent=`✓ ${productName} is toegevoegd aan de huidige Admin-lijst. Nog niet naar de database opgeslagen.`;
-    // Re-render current table so the row becomes "Al toegevoegd".
-    const currentRows=Array.from(document.querySelectorAll("#forzaVariantRows [data-forza-add]"));
-    // Keep the button disabled and replace its parent label.
-    if(button && button.parentElement) button.parentElement.innerHTML='<span class="tag" style="background:#dcfce7;color:#166534">✓ Toegevoegd — wacht op Opslaan</span>';
+    if(status) status.textContent=`✓ ${productName} أضيف بسعر Forza ${basePrice.toFixed(2).replace('.',',')} €. لسه ما انحفظ بقاعدة البيانات.`;
+    if(button && button.parentElement) button.parentElement.innerHTML='<span class="tag" style="background:#dcfce7;color:#166534">✓ مضاف + سعر Forza جاهز</span>';
   }catch(error){
     if(status) status.textContent=`✕ ${error.message||"Toevoegen mislukt. Er is niets opgeslagen."}`;
     if(button) button.disabled=false;
   }
 }
-
 async function loadForzaTest(){
   const status=document.getElementById("forzaTestStatus");
   const content=document.getElementById("forzaTestContent");
