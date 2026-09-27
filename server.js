@@ -1638,6 +1638,17 @@ async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl) {
           return { url, parsed, images: [...new Set(images)].slice(0, 4) };
         }
 
+        // Exact product pages can expose the real gallery in JSON-LD even when
+        // the rendered <img> tags are lazy-loaded or missing from the HTML
+        // returned to the server. Because this is already the exact variant
+        // URL, the JSON-LD image list is safe to use as the variant gallery.
+        const jsonLdImages = Array.isArray(parsed?.product?.images)
+          ? [...new Set(parsed.product.images.filter(v => /^https?:\/\//i.test(String(v))))]
+          : [];
+        if (jsonLdImages.length >= 4) {
+          return { url, parsed, images: jsonLdImages.slice(0, 4) };
+        }
+
         const jinaImages = await forzaFetchJinaGallery(url, productName);
         if (jinaImages.length >= 1) {
           return { url, parsed, images: jinaImages.slice(0, 4) };
