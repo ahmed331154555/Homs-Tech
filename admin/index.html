@@ -5084,7 +5084,7 @@ async function updateHomsPricesFromForza(){
       status.className="status success";
       status.textContent=`✓ ${payload.message || "Forza-prijzen bijgewerkt."} Klik opnieuw op ‘Vergelijk met HOMS TECH’ om te controleren.`;
     }
-    await loadSiteData();
+    await loadData();
     compareForzaWithHoms();
   }catch(error){
     if(status){
