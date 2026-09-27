@@ -1705,6 +1705,16 @@ const FORZA_TEST_MODELS = {
       "256GB": "https://www.forza-refurbished.nl/iphone-12-256gb-zwart"
     }
   }
+,  "iphone-13": {
+    label: "iPhone 13",
+    sourceUrl: "https://www.forza-refurbished.nl/refurbished-iphone/iphone-13",
+    storages: ["128GB", "256GB", "512GB"],
+    fallbacks: {
+      "128GB": "https://www.forza-refurbished.nl/iphone-13-128-gb-zwart",
+      "256GB": "https://www.forza-refurbished.nl/iphone-13-256-gb-zwart",
+      "512GB": "https://www.forza-refurbished.nl/iphone-13-512-gb-zwart"
+    }
+  }
 };
 
 function forzaGetTestModel(modelKey) {
