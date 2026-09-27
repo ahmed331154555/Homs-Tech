@@ -2152,6 +2152,8 @@ app.put("/api/admin/forza/full-sync", requirePermission("site.save"), async (req
   } finally { client.release(); }
 });
 
+app.get("/api/forza-version", requirePermission("phones.view"), (req, res) => res.json({success:true,version:"V30",bulkImport:true}));
+
 app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) => {
   const requestedModel = String(req.query.model || "iphone-11").trim().toLowerCase();
   const modelConfig = forzaGetTestModel(requestedModel);
