@@ -1463,73 +1463,68 @@ function forzaExtractVariantGalleryImages(html, productName) {
   if (!wanted) return [];
   const wantedTokens = wanted.split(" ").filter(Boolean);
   const wantedColor = wantedTokens[wantedTokens.length - 1] || "";
+  const wantedStorage = (wanted.match(/\b\d+\s*(?:gb|tb)\b/) || [""])[0].replace(/\s+/g, "");
+  // Tokenize the model separately from storage. Product names can be
+  // written as "64 GB" (two tokens), while gallery alts often omit storage.
+  // Do NOT require the separate "64" / "gb" tokens as model identity.
   const wantedModelTokens = wantedTokens.filter(t =>
     !/^\d+$/.test(t) && !/^(?:gb|tb)$/.test(t) && t !== wantedColor
   );
   const compact = value => forzaImageMatchKey(value).replace(/\s+/g, "");
 
-  const candidates = [];
+  const images = [];
   const seen = new Set();
-  const addCandidate = (value, label) => {
+  const imgTags = String(html || "").match(/<img\b[^>]*>/gi) || [];
+
+  const addUrl = value => {
     if (!value) return;
-    const urls = String(value).match(/https?:\/\/[^\s,]+/gi) || [];
+    const cleaned = String(value).trim().replace(/&amp;/gi, "&");
+    const urls = cleaned.match(/https?:\/\/[^\s,]+/gi) || [];
     for (const raw of urls) {
-      let url = raw.replace(/&amp;/gi, "&").replace(/["')]+$/g, "");
-      try {
-        const parsed = new URL(url);
-        parsed.searchParams.delete("width");
-        parsed.searchParams.delete("w");
-        parsed.searchParams.delete("quality");
-        parsed.searchParams.delete("q");
-        url = parsed.toString();
-      } catch {}
+      const url = raw.replace(/["')]+$/g, "");
       if (!/^https?:\/\//i.test(url)) continue;
-      if (!forzaIsLikelyImageUrl(url)) continue;
-      if (forzaImageUrlVariantMismatch(url, wantedColor, "")) continue;
-      const key = url.toLowerCase();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      candidates.push({ url, label: forzaImageMatchKey(label || "") });
+      if (!seen.has(url)) {
+        seen.add(url);
+        images.push(url);
+      }
     }
   };
 
-  // First inspect real <img> elements because Forza exposes the gallery
-  // position in alt text: generic, voorkant/front, achterkant/back.
-  const imgTags = String(html || "").match(/<img\b[^>]*>/gi) || [];
   for (const tag of imgTags) {
     const attrs = {};
     const attrRe = /([:\w-]+)\s*=\s*["']([^"']*)["']/gi;
     let m;
     while ((m = attrRe.exec(tag))) attrs[m[1].toLowerCase()] = m[2];
-    const descriptive = [attrs.alt, attrs.title, attrs["data-alt"], attrs["data-title"], attrs["aria-label"]].filter(Boolean);
+
+    const descriptive = [
+      attrs.alt, attrs.title, attrs["data-alt"], attrs["data-title"], attrs["aria-label"]
+    ].filter(Boolean);
     if (!descriptive.length) continue;
+
     const text = descriptive.map(forzaImageMatchKey).join(" ");
     const key = compact(text);
+
+    // Exclude Forza's generic cross-colour gallery image.
     if (/kleuren|colors|colour/.test(key)) continue;
+
+    // Exact variant identity: model + colour must be present. Storage is
+    // preferred when available, but Forza sometimes omits storage from the
+    // gallery alt text on the exact variant page.
     const hasModel = wantedModelTokens.every(token => key.includes(token));
     const hasColor = !!wantedColor && key.includes(wantedColor);
+    const hasStorage = !!wantedStorage && key.includes(wantedStorage);
     if (!hasModel || !hasColor) continue;
-    addCandidate(attrs.src, text);
-    addCandidate(attrs["data-src"], text);
-    addCandidate(attrs["data-lazy-src"], text);
-    addCandidate(attrs.srcset, text);
-    addCandidate(attrs["data-srcset"], text);
+    if (hasStorage || !wantedStorage) {
+      addUrl(attrs.src);
+      addUrl(attrs["data-src"]);
+      addUrl(attrs["data-lazy-src"]);
+      addUrl(attrs.srcset);
+      addUrl(attrs["data-srcset"]);
+    }
+    if (images.length >= 4) break;
   }
 
-  // Add structured gallery entries, but do not let them replace the
-  // explicitly labelled front/back candidates found above.
-  const structured = forzaExtractStructuredGalleryImages(html, productName);
-  for (const url of structured) addCandidate(url, "");
-
-  const front = candidates.filter(c => /voorkant|front/.test(c.label));
-  const back = candidates.filter(c => /achterkant|back/.test(c.label));
-  const other = candidates.filter(c => !/voorkant|front|achterkant|back/.test(c.label));
-  const ordered = [];
-  const pushUnique = c => { if (c && !ordered.some(x => x.url === c.url)) ordered.push(c); };
-  front.forEach(pushUnique);
-  back.forEach(pushUnique);
-  other.forEach(pushUnique);
-  return ordered.slice(0, 4).map(c => c.url);
+  return [...new Set(images)].slice(0, 4);
 }
 
 function forzaVariantSlugCandidates(productName) {
@@ -1764,51 +1759,45 @@ async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl) {
   for (const url of candidates) {
     if (seen.has(url)) continue;
     seen.add(url);
-    try {
-      let page = null;
-      for (let attempt = 0; attempt < 2; attempt++) {
-        try {
-          page = await forzaFetchPublicPage(url);
-          if (page.response.ok || page.response.status !== 429) break;
-        } catch { page = null; }
-        await new Promise(r => setTimeout(r, 250 * (attempt + 1)));
-      }
-      if (!page) continue;
 
+    try {
+      const page = await forzaFetchPublicPage(url);
+
+      // Whether Forza answers directly or via a server-side 429, keep the
+      // fallback tied to THIS exact variant URL. Never use the overview gallery.
       if (page.response.ok) {
         const parsed = forzaExtractTest(page.html, url);
         const wanted = forzaImageMatchKey(productName);
         const got = forzaImageMatchKey(parsed?.product?.name || '');
+
         const wantedModel = wanted.replace(/\b\d+\s*(?:gb|tb)\b/g, '').trim();
         const gotModel = got.replace(/\b\d+\s*(?:gb|tb)\b/g, '').trim();
-        if (wantedModel && gotModel && !gotModel.includes(wantedModel) && !wantedModel.includes(gotModel)) continue;
+        if (wantedModel && gotModel &&
+            !gotModel.includes(wantedModel) && !wantedModel.includes(gotModel)) continue;
 
         const images = forzaExtractVariantGalleryImages(page.html, productName);
-        // Accept the direct HTML immediately only when we have the full set.
-        // If it is partial, ask Jina for the same exact variant page and merge
-        // the two sources instead of stopping after a generic thumbnail.
         if (images.length >= 4) {
-          return { url, parsed, images: images.slice(0, 4) };
+          return { url, parsed, images: [...new Set(images)].slice(0, 4) };
         }
 
-        // If the exact HTML exposes only part of the gallery, use Jina on THIS
-        // exact product URL only. Never use the model overview gallery here.
         const jinaImages = await forzaFetchJinaGallery(url, productName);
-        const mergedImages = [...new Set([...(Array.isArray(images) ? images : []), ...(Array.isArray(jinaImages) ? jinaImages : [])])];
-        if (mergedImages.length >= 1) {
-          return { url, parsed, images: mergedImages.slice(0, 4) };
+        if (jinaImages.length >= 4) {
+          return { url, parsed, images: jinaImages.slice(0, 4) };
         }
       }
 
       const jinaImages = await forzaFetchJinaGallery(url, productName);
-      if (jinaImages.length >= 1) {
+      if (jinaImages.length >= 4) {
         return { url, parsed: page.response.ok ? forzaExtractTest(page.html, url) : null, images: jinaImages.slice(0, 4) };
       }
     } catch {
       const jinaImages = await forzaFetchJinaGallery(url, productName);
-      if (jinaImages.length >= 1) return { url, parsed: null, images: jinaImages.slice(0, 4) };
+      if (jinaImages.length >= 4) {
+        return { url, parsed: null, images: jinaImages.slice(0, 4) };
+      }
     }
   }
+
   return null;
 }
 
