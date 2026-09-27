@@ -1737,6 +1737,8 @@ function canonicalPhoneOptionLabel(key,label){
 }
 
 function normalizePhoneOptions(phone){
+    // Per-product control: when false, Forza Full Sync must never replace the manual images.
+    if(phone.forzaImagesEnabled === undefined) phone.forzaImagesEnabled = true;
     const defaults={
       conditionOptions:[
         {label:"Zichtbaar gebruikt",enabled:true,active:true,available:true,basePrice:0},
@@ -2386,6 +2388,10 @@ function renderPhones(){
 
         <div class="card" style="margin-top:16px">
           <div class="card-title">📷 Productfoto's</div>
+          <label style="display:flex;align-items:flex-start;gap:9px;margin:10px 0 12px;padding:11px 12px;background:#f4f8ff;border:1px solid #dce9ff;border-radius:10px;font-weight:800">
+            <input type="checkbox" ${phone.forzaImagesEnabled!==false?'checked':''} onchange="data.phones[${selectedPhoneIndex}].forzaImagesEnabled=this.checked;markChanged()" style="margin-top:2px">
+            <span>Forza-afbeeldingen automatisch bijwerken<br><small style="font-weight:500;color:#64748b">Uit = jouw handmatig aangepaste foto's blijven behouden bij Forza Full Sync.</small></span>
+          </label>
           <div class="images-grid">${phone.images.map((img,j)=>`
             <div class="image-box">
               ${img?`<img src="${esc(img)}" class="image-preview">`:`<div class="empty-preview">Geen foto</div>`}
@@ -5041,7 +5047,7 @@ function compareForzaWithHoms(){
   const updateBtn=document.getElementById("forzaUpdatePricesBtn");
   const fullSyncBtn=document.getElementById("forzaFullSyncBtn");
   if(updateBtn) updateBtn.style.display = phone ? "inline-flex" : "none";
-  if(fullSyncBtn) fullSyncBtn.style.display = phone && rows.length===18 && rows.every(r=>Number.isFinite(Number(r.price))) ? "inline-flex" : "none";
+  if(fullSyncBtn) fullSyncBtn.style.display = phone ? "inline-flex" : "none";
 
   if(phone){
     status.className="status success";
@@ -5170,7 +5176,7 @@ async function fullSyncHomsFromForza(){
         productName:modelProduct,
         targetPhoneName:phone.name,
         rows,
-        product:{name:modelProduct,brand,sku,color,stock,specs,description,images,sourceUrl}
+        product:{name:modelProduct,brand,sku,color,stock,specs,description,images,sourceUrl,allowImages:phone.forzaImagesEnabled!==false}
       })
     });
     const payload=await r.json().catch(()=>({}));
@@ -5198,11 +5204,12 @@ function forzaUpdateVariantSelector(){
   const colors=["Zwart","Wit","Blauw","Groen","Paars","Rood"];
   // Current public Forza catalogue: unavailable combinations stay visible but
   // are disabled and marked, so the admin can see the complete iPhone 12 matrix.
-  const available=new Set([
-    "iPhone 12 64GB Zwart","iPhone 12 64GB Blauw","iPhone 12 64GB Groen","iPhone 12 64GB Paars",
-    "iPhone 12 128GB Zwart","iPhone 12 128GB Wit","iPhone 12 128GB Blauw","iPhone 12 128GB Rood",
-    "iPhone 12 256GB Zwart","iPhone 12 256GB Wit","iPhone 12 256GB Blauw","iPhone 12 256GB Groen","iPhone 12 256GB Paars","iPhone 12 256GB Rood"
-  ]);
+  // Alle 18 combinaties blijven selecteerbaar. Beschikbaarheid wordt niet
+  // meer vooraf geblokkeerd in de test-selector; Forza zelf bepaalt of een
+  // exacte publieke variant gelezen kan worden.
+  const available=new Set(
+    storages.flatMap(s=>colors.map(c=>`iPhone 12 ${s} ${c}`))
+  );
   const options=storages.flatMap(s=>colors.map(c=>{
     const name=`iPhone 12 ${s} ${c}`;
     const ok=available.has(name);
