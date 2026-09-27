@@ -5196,12 +5196,13 @@ function forzaUpdateVariantSelector(){
   }
   const storages=["64GB","128GB","256GB"];
   const colors=["Zwart","Wit","Blauw","Groen","Paars","Rood"];
-  // Current public Forza catalogue: unavailable combinations stay visible but
-  // are disabled and marked, so the admin can see the complete iPhone 12 matrix.
+  // Current verified public Forza catalogue snapshot: all 18 iPhone 12
+  // storage+colour combinations remain visible. Only temporarily unavailable
+  // combinations are crossed/disabled; they are NOT removed from the list.
   const available=new Set([
     "iPhone 12 64GB Zwart","iPhone 12 64GB Blauw","iPhone 12 64GB Groen","iPhone 12 64GB Paars",
-    "iPhone 12 128GB Zwart","iPhone 12 128GB Wit","iPhone 12 128GB Blauw","iPhone 12 128GB Rood",
-    "iPhone 12 256GB Zwart","iPhone 12 256GB Wit","iPhone 12 256GB Blauw","iPhone 12 256GB Groen","iPhone 12 256GB Paars","iPhone 12 256GB Rood"
+    "iPhone 12 128GB Zwart","iPhone 12 128GB Wit","iPhone 12 128GB Blauw","iPhone 12 128GB Groen","iPhone 12 128GB Rood",
+    "iPhone 12 256GB Zwart","iPhone 12 256GB Wit","iPhone 12 256GB Rood"
   ]);
   const options=storages.flatMap(s=>colors.map(c=>{
     const name=`iPhone 12 ${s} ${c}`;
