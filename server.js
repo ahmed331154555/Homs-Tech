@@ -1301,6 +1301,97 @@ function forzaExtractTest(html, sourceUrl) {
   };
 }
 
+
+function forzaImageMatchKey(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/\bblack\b/g, "zwart")
+    .replace(/\bwhite\b/g, "wit")
+    .replace(/\bpurple\b/g, "paars")
+    .replace(/\bred\b/g, "rood")
+    .replace(/\bblue\b/g, "blauw")
+    .replace(/\bgreen\b/g, "groen")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function forzaVariantSlugCandidates(productName) {
+  const raw = String(productName || "").trim();
+  if (!raw) return [];
+  const normalized = raw
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/\//g, " ")
+    .replace(/\bblack\b/ig, "zwart")
+    .replace(/\bwhite\b/ig, "wit")
+    .replace(/\bpurple\b/ig, "paars")
+    .replace(/\bred\b/ig, "rood")
+    .replace(/\bblue\b/ig, "blauw")
+    .replace(/\bgreen\b/ig, "groen")
+    .replace(/\s+/g, " ")
+    .trim();
+  const compactGb = normalized.replace(/\b(\d+)\s+GB\b/ig, "$1GB");
+  const hyphenGb = normalized.replace(/\b(\d+)\s+GB\b/ig, "$1-gb");
+  const variants = [normalized, hyphenGb, compactGb]
+    .map(v => v.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""));
+  return [...new Set(variants)].map(slug => `https://www.forza-refurbished.nl/${slug}`);
+}
+
+function forzaFindVariantLink(html, productName, baseUrl) {
+  const wanted = forzaImageMatchKey(productName);
+  if (!wanted) return "";
+  const wantedTokens = wanted.split(" ").filter(Boolean);
+  const anchors = String(html || "").match(/<a\b[^>]*href=["'][^"']+["'][^>]*>[\s\S]{0,1200}?<\/a>/gi) || [];
+  let bestUrl = "";
+  let bestScore = 0;
+  for (const anchor of anchors) {
+    const hrefMatch = anchor.match(/href=["']([^"']+)["']/i);
+    if (!hrefMatch) continue;
+    let absolute;
+    try { absolute = new URL(hrefMatch[1], baseUrl).toString(); } catch { continue; }
+    if (!/forza-refurbished\.nl/i.test(absolute)) continue;
+    const text = forzaImageMatchKey(forzaStripHtml(anchor));
+    if (!text) continue;
+    let score = 0;
+    if (text === wanted) score = 1000;
+    else {
+      const matched = wantedTokens.filter(t => text.split(" ").includes(t)).length;
+      score = matched * 20;
+      if (text.includes(wanted)) score += 200;
+      if (/\b\d+\s*(?:gb|tb)\b/i.test(wanted) && /\b\d+\s*(?:gb|tb)\b/i.test(text)) score += 10;
+    }
+    if (score > bestScore) { bestScore = score; bestUrl = absolute; }
+  }
+  return bestScore >= Math.max(60, wantedTokens.length * 20) ? bestUrl : "";
+}
+
+async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl) {
+  const discovered = forzaFindVariantLink(overviewHtml, productName, overviewUrl);
+  const candidates = [discovered, ...forzaVariantSlugCandidates(productName)].filter(Boolean);
+  const seen = new Set();
+  for (const url of candidates) {
+    if (seen.has(url)) continue;
+    seen.add(url);
+    try {
+      const page = await forzaFetchPublicPage(url);
+      if (!page.response.ok) continue;
+      const parsed = forzaExtractTest(page.html, url);
+      const wanted = forzaImageMatchKey(productName);
+      const got = forzaImageMatchKey(parsed?.product?.name || "");
+      const wantedModel = wanted.replace(/\b\d+\s*(?:gb|tb)\b/g, "").trim();
+      const gotModel = got.replace(/\b\d+\s*(?:gb|tb)\b/g, "").trim();
+      if (wantedModel && gotModel && !gotModel.includes(wantedModel) && !wantedModel.includes(gotModel)) continue;
+      const images = Array.isArray(parsed?.product?.images) ? parsed.product.images : [];
+      if (!images.length) continue;
+      return { url, parsed, images: [...new Set(images)].slice(0, 4) };
+    } catch {
+      // Try the next exact-variant candidate.
+    }
+  }
+  return null;
+}
+
 async function forzaFetchPublicPage(sourceUrl) {
   const response = await fetch(sourceUrl, {
     method: "GET",
@@ -1734,7 +1825,7 @@ app.put("/api/admin/forza/full-sync", requirePermission("site.save"), async (req
     phone.forzaPriceMatrixSource = "Forza public website";
     phone.forzaPriceMatrixUpdatedAt = new Date().toISOString();
 
-    const images = Array.isArray(product.images) ? product.images.filter(x => typeof x === "string" && /^https?:\/\//i.test(x)).slice(0,12) : [];
+    const images = Array.isArray(product.images) ? [...new Set(product.images.filter(x => typeof x === "string" && /^https?:\/\//i.test(x)))].slice(0,4) : [];
     const specs = Array.isArray(product.specs) ? product.specs.slice(0,20) : [];
     if (product.brand) phone.brand = String(product.brand);
     if (product.sku) phone.sku = String(product.sku);
@@ -1793,6 +1884,26 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
     }
 
     let result = forzaExtractTest(mainPage.html, sourceUrl);
+
+    // IMPORTANT: after reading the model landing page, resolve the exact
+    // color/storage product page so its images belong to ONE HOMS TECH
+    // product. The webshop allows exactly four images per phone.
+    const exactProductName = String(result?.product?.name || "").trim();
+    const exactVariant = exactProductName
+      ? await forzaFetchExactVariant(exactProductName, mainPage.html, sourceUrl)
+      : null;
+    if (exactVariant?.parsed?.product) {
+      const overviewProduct = result.product || {};
+      result.product = {
+        ...overviewProduct,
+        ...exactVariant.parsed.product,
+        images: exactVariant.images,
+        sourceUrl: exactVariant.url,
+        canonical: exactVariant.parsed.product.canonical || exactVariant.url,
+        overviewSourceUrl: sourceUrl
+      };
+      result.exactVariantSourceUrl = exactVariant.url;
+    }
 
     // IMPORTANT: the model selector is authoritative. Some Forza landing pages
     // can return/redirect to a different product page. Never expose that wrong
