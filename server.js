@@ -1484,6 +1484,27 @@ async function forzaFetchJinaGallery(url, productName) {
       if (images.length >= 4) break;
     }
 
+    // Some Forza pages returned by Jina can expose the gallery as HTML img tags
+    // instead of markdown. Still stay strictly on this exact variant page and
+    // require model + color in the image description or URL.
+    if (images.length === 0) {
+      const htmlImg = /<img\b[^>]*>/gi;
+      let tag;
+      while ((tag = htmlImg.exec(markdown))) {
+        const attrs = tag[0];
+        const desc = forzaImageMatchKey((attrs.match(/(?:alt|title|data-alt|data-title)=['\"]([^'\"]*)/i) || [,''])[1]);
+        const src = (attrs.match(/(?:src|data-src|data-lazy-src)=['\"]([^'\"]+)['\"]/i) || [,''])[1];
+        const key = forzaImageMatchKey(`${desc} ${src}`);
+        if (!src || /kleuren|colors|colour/.test(key)) continue;
+        const hasModel = wantedModelTokens.every(token => key.includes(token));
+        const hasColor = !!wantedColor && key.includes(wantedColor);
+        if (!hasModel || !hasColor) continue;
+        const imageUrl = src.replace(/&amp;/gi, '&');
+        if (!seen.has(imageUrl)) { seen.add(imageUrl); images.push(imageUrl); }
+        if (images.length >= 4) break;
+      }
+    }
+
     return images.slice(0, 4);
   } catch {
     return [];
@@ -1568,18 +1589,18 @@ async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl) {
         }
 
         const jinaImages = await forzaFetchJinaGallery(url, productName);
-        if (jinaImages.length >= 4) {
+        if (jinaImages.length >= 1) {
           return { url, parsed, images: jinaImages.slice(0, 4) };
         }
       }
 
       const jinaImages = await forzaFetchJinaGallery(url, productName);
-      if (jinaImages.length >= 4) {
+      if (jinaImages.length >= 1) {
         return { url, parsed: page.response.ok ? forzaExtractTest(page.html, url) : null, images: jinaImages.slice(0, 4) };
       }
     } catch {
       const jinaImages = await forzaFetchJinaGallery(url, productName);
-      if (jinaImages.length >= 4) {
+      if (jinaImages.length >= 1) {
         return { url, parsed: null, images: jinaImages.slice(0, 4) };
       }
     }
@@ -2106,19 +2127,19 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
 
     if (variantConfig) {
       const exactVariant = await forzaFetchExactVariant(variantConfig.productName, mainPage.html, sourceUrl);
-      if (!exactVariant || !exactVariant.parsed) {
+      if (!exactVariant || !(exactVariant.images || []).length) {
         return res.status(502).json({
           success:false, readOnly:true, testModel:requestedModel, testModelLabel:modelConfig.label,
           variant:variantConfig, sourceUrl, error:"Exacte Forza-variant kon niet worden gelezen. Er is niets opgeslagen."
         });
       }
-      const parsed = exactVariant.parsed;
+      const parsed = exactVariant.parsed || { product:{}, testModel:requestedModel, testModelLabel:modelConfig.label };
       const product = {
         ...(parsed.product || {}),
         name: variantConfig.productName,
         storage: [variantConfig.storage],
         color: variantConfig.color,
-        images: (exactVariant.images || parsed.product?.images || []).slice(0,4),
+        images: exactVariant.images.slice(0,4),
         sourceUrl: exactVariant.url,
         canonical: parsed.product?.canonical || exactVariant.url
       };
