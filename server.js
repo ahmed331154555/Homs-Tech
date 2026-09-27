@@ -2072,14 +2072,15 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
     const exactVariant = exactProductName
       ? await forzaFetchExactVariant(exactProductName, mainPage.html, sourceUrl)
       : null;
-    if (exactVariant?.parsed?.product) {
+    if (exactVariant?.images?.length) {
       const overviewProduct = result.product || {};
+      const exactProduct = exactVariant.parsed?.product || {};
       result.product = {
         ...overviewProduct,
-        ...exactVariant.parsed.product,
-        images: exactVariant.images,
+        ...exactProduct,
+        images: exactVariant.images.slice(0, 4),
         sourceUrl: exactVariant.url,
-        canonical: exactVariant.parsed.product.canonical || exactVariant.url,
+        canonical: exactProduct.canonical || exactVariant.url,
         overviewSourceUrl: sourceUrl
       };
       result.exactVariantSourceUrl = exactVariant.url;
