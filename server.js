@@ -1323,25 +1323,46 @@ function forzaExtractVariantGalleryImages(html, productName) {
   const wantedTokens = wanted.split(" ").filter(Boolean);
   const wantedColor = wantedTokens[wantedTokens.length - 1] || "";
   const wantedStorage = (wanted.match(/\b\d+\s*(?:gb|tb)\b/) || [""])[0].replace(/\s+/g, "");
-  // Tokenize the model separately from storage. Product names can be
-  // written as "64 GB" (two tokens), while gallery alts often omit storage.
-  // Do NOT require the separate "64" / "gb" tokens as model identity.
   const wantedModelTokens = wantedTokens.filter(t =>
     !/^\d+$/.test(t) && !/^(?:gb|tb)$/.test(t) && t !== wantedColor
   );
   const compact = value => forzaImageMatchKey(value).replace(/\s+/g, "");
-
+  const otherColors = ["zwart","wit","blauw","groen","paars","rood"].filter(c => c !== wantedColor);
   const images = [];
   const seen = new Set();
   const imgTags = String(html || "").match(/<img\b[^>]*>/gi) || [];
 
+  const normalizeImageUrl = value => {
+    let u = String(value || "").trim().replace(/&amp;/gi, "&");
+    // Responsive srcsets can contain several URLs. Keep each URL, but remove
+    // tracking parameters so the same underlying image is not counted twice.
+    try {
+      const parsed = new URL(u);
+      parsed.searchParams.delete("width");
+      parsed.searchParams.delete("w");
+      parsed.searchParams.delete("quality");
+      parsed.searchParams.delete("q");
+      return parsed.toString();
+    } catch { return u; }
+  };
+
+  const urlLooksLikeWrongVariant = url => {
+    const key = compact(url);
+    // Never accept a URL that explicitly names another colour.
+    if (otherColors.some(c => key.includes(c))) return true;
+    // If the URL explicitly contains a storage, it must be the requested one.
+    const storages = [...key.matchAll(/(\d+)(gb|tb)/g)].map(m => `${m[1]}${m[2]}`);
+    if (wantedStorage && storages.some(s => s !== wantedStorage)) return true;
+    return false;
+  };
+
   const addUrl = value => {
     if (!value) return;
-    const cleaned = String(value).trim().replace(/&amp;/gi, "&");
-    const urls = cleaned.match(/https?:\/\/[^\s,]+/gi) || [];
+    const urls = String(value).match(/https?:\/\/[^\s,]+/gi) || [];
     for (const raw of urls) {
-      const url = raw.replace(/["')]+$/g, "");
+      const url = normalizeImageUrl(raw.replace(/["')]+$/g, ""));
       if (!/^https?:\/\//i.test(url)) continue;
+      if (urlLooksLikeWrongVariant(url)) continue;
       if (!seen.has(url)) {
         seen.add(url);
         images.push(url);
@@ -1362,26 +1383,27 @@ function forzaExtractVariantGalleryImages(html, productName) {
 
     const text = descriptive.map(forzaImageMatchKey).join(" ");
     const key = compact(text);
-
-    // Exclude Forza's generic cross-colour gallery image.
     if (/kleuren|colors|colour/.test(key)) continue;
 
-    // Exact variant identity: model + colour must be present. Storage is
-    // preferred when available, but Forza sometimes omits storage from the
-    // gallery alt text on the exact variant page.
     const hasModel = wantedModelTokens.every(token => key.includes(token));
     const hasColor = !!wantedColor && key.includes(wantedColor);
-    const hasStorage = !!wantedStorage && key.includes(wantedStorage);
     if (!hasModel || !hasColor) continue;
-    // Exact product URL already establishes the storage variant.
-    // Forza gallery alt text can omit storage (for example: "iPhone 12 Zwart").
-    // Therefore storage is only a positive signal, never a requirement.
+
+    // If the descriptive text itself explicitly contains another storage,
+    // reject it. This catches bad/mislabelled Forza gallery entries such as a
+    // 256GB page exposing an image labelled 128GB.
+    if (wantedStorage) {
+      const textStorages = [...key.matchAll(/(\d+)(gb|tb)/g)].map(m => `${m[1]}${m[2]}`);
+      if (textStorages.some(s => s !== wantedStorage)) continue;
+    }
+
+    const before = images.length;
     addUrl(attrs.src);
     addUrl(attrs["data-src"]);
     addUrl(attrs["data-lazy-src"]);
     addUrl(attrs.srcset);
     addUrl(attrs["data-srcset"]);
-    if (images.length >= 4) break;
+    if (images.length > before && images.length >= 4) break;
   }
 
   return [...new Set(images)].slice(0, 4);
@@ -1462,6 +1484,7 @@ async function forzaFetchJinaGallery(url, productName) {
     const wantedModelTokens = wantedTokens.filter(
       t => !/^\d+$/.test(t) && !/^(?:gb|tb)$/.test(t) && t !== wantedColor
     );
+    const otherColors = ["zwart","wit","blauw","groen","paars","rood"].filter(c => c !== wantedColor);
 
     const images = [];
     const seen = new Set();
@@ -1483,6 +1506,12 @@ async function forzaFetchJinaGallery(url, productName) {
       // be required in the image alt text.
 
       const imageUrl = m[2].replace(/&amp;/gi, "&");
+      const imageKey = forzaImageMatchKey(imageUrl).replace(/\s+/g, "");
+      if (otherColors.some(c => imageKey.includes(c))) continue;
+      if (wantedStorage) {
+        const urlStorages = [...imageKey.matchAll(/(\d+)(gb|tb)/g)].map(x => `${x[1]}${x[2]}`);
+        if (urlStorages.some(s => s !== wantedStorage)) continue;
+      }
       if (!seen.has(imageUrl)) {
         seen.add(imageUrl);
         images.push(imageUrl);
@@ -1662,17 +1691,10 @@ async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl) {
           return { url, parsed, images: jinaImages.slice(0, 4) };
         }
 
-        // JSON-LD is only a last resort. Keep it behind the exact-page
-        // gallery/Jina methods so generic images cannot replace the real
-        // colour gallery when the page exposes the proper gallery.
-        const jsonLdImages = Array.isArray(parsed?.product?.images)
-          ? [...new Set(parsed.product.images.filter(v => /^https?:\/\//i.test(String(v))))]
-          : [];
+        // Never fall back to JSON-LD images here. Some Forza product pages
+        // expose a generic/cross-colour image in JSON-LD, which can mix colours.
         if (images.length >= 1) {
           return { url, parsed, images: [...new Set(images)].slice(0, 4) };
-        }
-        if (jsonLdImages.length >= 1) {
-          return { url, parsed, images: jsonLdImages.slice(0, 4) };
         }
       }
 
