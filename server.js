@@ -1317,7 +1317,7 @@ function forzaImageMatchKey(value) {
     .trim();
 }
 
-// V25: V16 exact-variant fetching + V10 gallery extraction.
+// V27: V16 exact-variant fetching + V10 gallery extraction.
 function forzaExtractVariantGalleryImages(html, productName) {
   const wanted = forzaImageMatchKey(productName);
   if (!wanted) return [];
