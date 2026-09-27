@@ -1482,17 +1482,57 @@ async function forzaFetchJinaGallery(url, productName) {
   }
 }
 
-async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl) {
-  const discovered = forzaFindVariantLink(overviewHtml, productName, overviewUrl);
-  // Forza's current iPhone URLs commonly use 64gb/128gb/256gb without
-  // the extra hyphen, so try those before the discovered link.
-  const compactCandidates = forzaVariantSlugCandidates(productName);
-  const candidates = [
-    ...compactCandidates.filter(u => /-\d+(?:gb|tb)-/i.test(u)),
-    discovered,
-    ...compactCandidates
-  ].filter(Boolean);
+function forzaBuildExactVariantNames(productName, overviewHtml) {
+  const names = new Set();
+  const raw = String(productName || '').trim();
+  if (raw) names.add(raw);
 
+  // iPhone 12 can expose a generic JSON-LD product name on the model page.
+  // Reconstruct the concrete variant from the page's visible Kleur + Geheugen
+  // values, using the same information that the iPhone 11 test successfully
+  // uses to reach a concrete Forza product page.
+  const clean = forzaStripHtml(overviewHtml || '');
+  const color = forzaFirstMatch(clean, [
+    /Kleur:\s*([^|]{1,80}?)(?=\s+\+?\s*€|\s+Geheugen|\s+Productconditie)/i
+  ]);
+  const memory = forzaFirstMatch(clean, [
+    /Geheugen\s+(?:64GB|128GB|256GB)\s+(?:64GB|128GB|256GB)?/i
+  ]);
+
+  let storage = '';
+  const rawStorage = String(raw).match(/\b\d+\s*(?:GB|TB)\b/i);
+  if (rawStorage) storage = rawStorage[0].replace(/\s+/g, '');
+  if (!storage) {
+    const memMatch = clean.match(/Geheugen\s+([0-9]+)\s*(GB|TB)/i);
+    if (memMatch) storage = `${memMatch[1]}${memMatch[2].toUpperCase()}`;
+  }
+
+  let model = raw.match(/\biPhone\s+\d+(?:\s+(?:Pro|Pro Max|Plus|Mini|SE))?/i)?.[0] || '';
+  if (!model) model = clean.match(/\biPhone\s+\d+(?:\s+(?:Pro|Pro Max|Plus|Mini|SE))?/i)?.[0] || '';
+
+  if (model && storage && color) names.add(`${model} ${storage} ${color}`);
+  return [...names];
+}
+
+function forzaExactUrlCandidates(productName, overviewHtml, overviewUrl) {
+  const names = forzaBuildExactVariantNames(productName, overviewHtml);
+  const urls = [];
+  const add = u => { if (u && !urls.includes(u)) urls.push(u); };
+
+  // First use an exact URL reconstructed from the concrete model/storage/color,
+  // then the exact link discovered on the Forza model page, then the legacy
+  // slug candidates. This mirrors the successful concrete-page approach used
+  // by the iPhone 11 test instead of relying on the mixed overview gallery.
+  for (const name of names) {
+    for (const u of forzaVariantSlugCandidates(name)) add(u);
+  }
+  const discovered = forzaFindVariantLink(overviewHtml, names[0] || productName, overviewUrl);
+  add(discovered);
+  return urls;
+}
+
+async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl) {
+  const candidates = forzaExactUrlCandidates(productName, overviewHtml, overviewUrl);
   const seen = new Set();
 
   for (const url of candidates) {
@@ -1502,73 +1542,41 @@ async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl) {
     try {
       const page = await forzaFetchPublicPage(url);
 
+      // Whether Forza answers directly or via a server-side 429, keep the
+      // fallback tied to THIS exact variant URL. Never use the overview gallery.
       if (page.response.ok) {
         const parsed = forzaExtractTest(page.html, url);
         const wanted = forzaImageMatchKey(productName);
-        const got = forzaImageMatchKey(parsed?.product?.name || "");
+        const got = forzaImageMatchKey(parsed?.product?.name || '');
 
-        const wantedModel = wanted.replace(/\b\d+\s*(?:gb|tb)\b/g, "").trim();
-        const gotModel = got.replace(/\b\d+\s*(?:gb|tb)\b/g, "").trim();
+        const wantedModel = wanted.replace(/\b\d+\s*(?:gb|tb)\b/g, '').trim();
+        const gotModel = got.replace(/\b\d+\s*(?:gb|tb)\b/g, '').trim();
         if (wantedModel && gotModel &&
-            !gotModel.includes(wantedModel) && !wantedModel.includes(gotModel)) {
-          continue;
-        }
-
-        const wantedStorage =
-          (wanted.match(/\b\d+\s*(?:gb|tb)\b/) || [""])[0].replace(/\s+/g, "");
-        const gotStorage =
-          (got.match(/\b\d+\s*(?:gb|tb)\b/) || [""])[0].replace(/\s+/g, "");
-        const wantedColor = wanted.split(" ").slice(-1)[0] || "";
-        const gotColor =
-          forzaImageMatchKey(parsed?.product?.color || "").split(" ")[0] || "";
-
-        if (wantedStorage && gotStorage && wantedStorage !== gotStorage) continue;
-        if (wantedColor && gotColor && wantedColor !== gotColor) continue;
+            !gotModel.includes(wantedModel) && !wantedModel.includes(gotModel)) continue;
 
         const images = forzaExtractVariantGalleryImages(page.html, productName);
         if (images.length >= 4) {
-          return {
-            url,
-            parsed,
-            images: [...new Set(images)].slice(0, 4)
-          };
+          return { url, parsed, images: [...new Set(images)].slice(0, 4) };
         }
 
-        // If direct HTML was returned but its image markup is not exposed,
-        // try the same exact URL through the reader fallback.
         const jinaImages = await forzaFetchJinaGallery(url, productName);
         if (jinaImages.length >= 4) {
-          return {
-            url,
-            parsed,
-            images: jinaImages.slice(0, 4)
-          };
+          return { url, parsed, images: jinaImages.slice(0, 4) };
         }
-      } else {
-        // Direct Forza fetch can return 429 from a server IP. The reader
-        // fallback is still tied to this exact variant URL.
-        const jinaImages = await forzaFetchJinaGallery(url, productName);
-        if (jinaImages.length >= 4) {
-          return {
-            url,
-            parsed: null,
-            images: jinaImages.slice(0, 4)
-          };
-        }
+      }
+
+      const jinaImages = await forzaFetchJinaGallery(url, productName);
+      if (jinaImages.length >= 4) {
+        return { url, parsed: page.response.ok ? forzaExtractTest(page.html, url) : null, images: jinaImages.slice(0, 4) };
       }
     } catch {
       const jinaImages = await forzaFetchJinaGallery(url, productName);
       if (jinaImages.length >= 4) {
-        return {
-          url,
-          parsed: null,
-          images: jinaImages.slice(0, 4)
-        };
+        return { url, parsed: null, images: jinaImages.slice(0, 4) };
       }
     }
   }
 
-  // Important safety rule: never return overview images here.
   return null;
 }
 
