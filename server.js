@@ -1570,11 +1570,19 @@ const FORZA_IPHONE12_EXACT_URLS = {
   "iPhone 12 256GB Rood": "https://www.forza-refurbished.nl/iphone-12-256gb-rood"
 };
 
+// Current public Forza iPhone 12 catalogue snapshot:
+// 12 combinations are currently in stock; 6 remain listed but are
+// temporarily unavailable. 64/128/256 GB are the only capacities.
 const FORZA_IPHONE12_CURRENT_VARIANTS = new Set([
   "iPhone 12 64GB Zwart", "iPhone 12 64GB Blauw", "iPhone 12 64GB Groen", "iPhone 12 64GB Paars",
-  "iPhone 12 128GB Zwart", "iPhone 12 128GB Wit", "iPhone 12 128GB Blauw", "iPhone 12 128GB Rood",
-  "iPhone 12 256GB Zwart", "iPhone 12 256GB Wit", "iPhone 12 256GB Blauw", "iPhone 12 256GB Groen",
-  "iPhone 12 256GB Paars", "iPhone 12 256GB Rood"
+  "iPhone 12 128GB Zwart", "iPhone 12 128GB Wit", "iPhone 12 128GB Blauw", "iPhone 12 128GB Groen", "iPhone 12 128GB Rood",
+  "iPhone 12 256GB Zwart", "iPhone 12 256GB Wit", "iPhone 12 256GB Rood"
+]);
+
+const FORZA_IPHONE12_UNAVAILABLE_VARIANTS = new Set([
+  "iPhone 12 64GB Wit", "iPhone 12 64GB Rood",
+  "iPhone 12 128GB Paars",
+  "iPhone 12 256GB Blauw", "iPhone 12 256GB Groen", "iPhone 12 256GB Paars"
 ]);
 
 function forzaExactUrlCandidates(productName, overviewHtml, overviewUrl) {
@@ -1642,16 +1650,29 @@ async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl) {
         // the rendered <img> tags are lazy-loaded or missing from the HTML
         // returned to the server. Because this is already the exact variant
         // URL, the JSON-LD image list is safe to use as the variant gallery.
+        // IMPORTANT: JSON-LD can contain a generic/cross-colour product image
+        // even on an exact colour page. Do not use it as the primary gallery,
+        // because that can produce e.g. 3 black images + 1 white image.
+        // Prefer the exact-page gallery parser, then Jina's rendered gallery.
+        const jinaImages = await forzaFetchJinaGallery(url, productName);
+        if (jinaImages.length >= 4) {
+          return { url, parsed, images: jinaImages.slice(0, 4) };
+        }
+        if (jinaImages.length >= 1 && images.length === 0) {
+          return { url, parsed, images: jinaImages.slice(0, 4) };
+        }
+
+        // JSON-LD is only a last resort. Keep it behind the exact-page
+        // gallery/Jina methods so generic images cannot replace the real
+        // colour gallery when the page exposes the proper gallery.
         const jsonLdImages = Array.isArray(parsed?.product?.images)
           ? [...new Set(parsed.product.images.filter(v => /^https?:\/\//i.test(String(v))))]
           : [];
-        if (jsonLdImages.length >= 4) {
-          return { url, parsed, images: jsonLdImages.slice(0, 4) };
+        if (images.length >= 1) {
+          return { url, parsed, images: [...new Set(images)].slice(0, 4) };
         }
-
-        const jinaImages = await forzaFetchJinaGallery(url, productName);
-        if (jinaImages.length >= 1) {
-          return { url, parsed, images: jinaImages.slice(0, 4) };
+        if (jsonLdImages.length >= 1) {
+          return { url, parsed, images: jsonLdImages.slice(0, 4) };
         }
       }
 
