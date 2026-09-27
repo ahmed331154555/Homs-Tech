@@ -1629,6 +1629,29 @@ function forzaGetTestModel(modelKey) {
   return FORZA_TEST_MODELS[String(modelKey || "").trim().toLowerCase()] || null;
 }
 
+// V12: exact iPhone 12 variant matrix from the current Forza catalog.
+// 64/128/256 GB exist; 512 GB and 1 TB are intentionally unavailable.
+const FORZA_IPHONE12_VARIANTS = [
+  ["64GB",  ["Zwart","Wit","Blauw","Groen","Paars","Rood"]],
+  ["128GB", ["Zwart","Wit","Blauw","Groen","Paars","Rood"]],
+  ["256GB", ["Zwart","Wit","Blauw","Groen","Paars","Rood"]]
+].flatMap(([storage, colors]) => colors.map(color => ({
+  model: "iPhone 12", storage, color,
+  productName: `iPhone 12 ${storage} ${color}`
+})));
+
+function forzaNormalizeVariantName(value) {
+  return String(value || "")
+    .replace(/\b(64|128|256)\s*GB\b/ig, "$1GB")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function forzaFindIphone12Variant(value) {
+  const wanted = forzaNormalizeVariantName(value).toLowerCase();
+  return FORZA_IPHONE12_VARIANTS.find(v => forzaNormalizeVariantName(v.productName).toLowerCase() === wanted) || null;
+}
+
 function forzaExtractStorageLinks(html, baseUrl, fallbackMap = {}, allowedStorages = ["64GB", "128GB", "256GB"]) {
   const found = new Map();
   const source = String(html || "");
@@ -2065,10 +2088,47 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
       error: "Onbekend Forza-testmodel. Kies iPhone 11 of iPhone 12."
     });
   }
+  const requestedVariant = String(req.query.variant || "").trim();
+  const variantConfig = requestedModel === "iphone-12" && requestedVariant
+    ? forzaFindIphone12Variant(requestedVariant)
+    : null;
+  if (requestedModel === "iphone-12" && requestedVariant && !variantConfig) {
+    return res.status(400).json({
+      success: false, readOnly: true,
+      error: "Onbekende iPhone 12 variant. Kies een variant uit de Forza-lijst."
+    });
+  }
+
   const sourceUrl = modelConfig.sourceUrl;
 
   try {
     const mainPage = await forzaFetchPublicPage(sourceUrl);
+
+    if (variantConfig) {
+      const exactVariant = await forzaFetchExactVariant(variantConfig.productName, mainPage.html, sourceUrl);
+      if (!exactVariant || !exactVariant.parsed) {
+        return res.status(502).json({
+          success:false, readOnly:true, testModel:requestedModel, testModelLabel:modelConfig.label,
+          variant:variantConfig, sourceUrl, error:"Exacte Forza-variant kon niet worden gelezen. Er is niets opgeslagen."
+        });
+      }
+      const parsed = exactVariant.parsed;
+      const product = {
+        ...(parsed.product || {}),
+        name: variantConfig.productName,
+        storage: [variantConfig.storage],
+        color: variantConfig.color,
+        images: (exactVariant.images || parsed.product?.images || []).slice(0,4),
+        sourceUrl: exactVariant.url,
+        canonical: parsed.product?.canonical || exactVariant.url
+      };
+      return res.json({
+        success:true, readOnly:true, testModel:requestedModel, testModelLabel:modelConfig.label,
+        sourceUrl, exactVariantSourceUrl:exactVariant.url,
+        variant:variantConfig,
+        result:{...parsed, product, testModel:requestedModel, testModelLabel:modelConfig.label, allowedStorages:modelConfig.storages}
+      });
+    }
 
     if (!mainPage.response.ok) {
       return res.status(502).json({
