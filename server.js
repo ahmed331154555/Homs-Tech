@@ -1181,17 +1181,42 @@ function forzaExtractTest(html, sourceUrl) {
     "Zichtbaar gebruikt"
   ];
 
-  for (const name of conditionNames) {
+  // Forza's public page can render the condition price either directly
+  // after the condition name or with extra labels/elements in between.
+  // Keep the direct match first, then use a bounded fallback that stops
+  // before the next condition. This is especially important for the
+  // 64GB page, which can have a slightly different rendered structure.
+  for (let i = 0; i < conditionNames.length; i++) {
+    const name = conditionNames[i];
     const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const pattern = new RegExp(
+    const directPattern = new RegExp(
       escaped + "\\s+(?:Meest gekozen\\s+)?€\\s*([0-9]+(?:[.,][0-9]{1,2})?)",
       "i"
     );
-    const match = clean.match(pattern);
-    conditions.push({
-      name,
-      price: match ? forzaParseEuro(match[1]) : null
-    });
+
+    let price = null;
+    const directMatch = clean.match(directPattern);
+    if (directMatch) {
+      price = forzaParseEuro(directMatch[1]);
+    } else {
+      const nextNames = conditionNames.slice(i + 1);
+      const stopPattern = nextNames.length
+        ? new RegExp(nextNames.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") , "i")
+        : null;
+      const nameMatch = clean.match(new RegExp(escaped, "i"));
+      if (nameMatch) {
+        const start = nameMatch.index + nameMatch[0].length;
+        let segment = clean.slice(start, start + 220);
+        if (stopPattern) {
+          const stop = segment.search(stopPattern);
+          if (stop >= 0) segment = segment.slice(0, stop);
+        }
+        const euroMatch = segment.match(/€\\s*([0-9]+(?:[.,][0-9]{1,2})?)/i);
+        if (euroMatch) price = forzaParseEuro(euroMatch[1]);
+      }
+    }
+
+    conditions.push({ name, price });
   }
 
   const battery = [];
@@ -1275,6 +1300,83 @@ function forzaExtractTest(html, sourceUrl) {
     }
   };
 }
+
+async function forzaFetchPublicPage(sourceUrl) {
+  const response = await fetch(sourceUrl, {
+    method: "GET",
+    redirect: "follow",
+    headers: {
+      "User-Agent": "Mozilla/5.0 (compatible; HOMS-TECH public product test)",
+      "Accept": "text/html,application/xhtml+xml"
+    }
+  });
+
+  const html = await response.text();
+  return { response, html };
+}
+
+const FORZA_TEST_MODELS = {
+  "iphone-11": {
+    label: "iPhone 11",
+    sourceUrl: "https://www.forza-refurbished.nl/refurbished-iphone/iphone-11",
+    storages: ["64GB", "128GB", "256GB"],
+    fallbacks: {
+      "64GB": "https://www.forza-refurbished.nl/iphone-11-64-gb-paars",
+      "128GB": "https://www.forza-refurbished.nl/iphone-11-128gb-paars",
+      "256GB": "https://www.forza-refurbished.nl/iphone-11-256gb-purple"
+    }
+  },
+  "iphone-12": {
+    label: "iPhone 12",
+    sourceUrl: "https://www.forza-refurbished.nl/refurbished-iphone/iphone-12",
+    storages: ["64GB", "128GB", "256GB"],
+    fallbacks: {
+      "64GB": "https://www.forza-refurbished.nl/iphone-12",
+      "128GB": "https://www.forza-refurbished.nl/iphone-12-128gb-zwart",
+      "256GB": "https://www.forza-refurbished.nl/iphone-12-256gb-zwart"
+    }
+  }
+};
+
+function forzaGetTestModel(modelKey) {
+  return FORZA_TEST_MODELS[String(modelKey || "").trim().toLowerCase()] || null;
+}
+
+function forzaExtractStorageLinks(html, baseUrl, fallbackMap = {}, allowedStorages = ["64GB", "128GB", "256GB"]) {
+  const found = new Map();
+  const source = String(html || "");
+  const anchorPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>[\s\S]{0,500}?((?:64|128|256)\s*GB)[\s\S]{0,500}?<\/a>/gi;
+  let match;
+
+  while ((match = anchorPattern.exec(source))) {
+    const href = match[1];
+    const storage = forzaCleanText(match[2]).replace(/\s+/g, "");
+    try {
+      const absolute = new URL(href, baseUrl).toString();
+      if (!found.has(storage)) found.set(storage, absolute);
+    } catch {
+      // Ignore malformed links.
+    }
+  }
+
+  // Only use explicit public-page fallbacks from the whitelisted model config.
+  for (const [storage, url] of Object.entries(fallbackMap || {})) {
+    // For this fixed read-only test, prefer the known exact Purple variant
+    // over a generic link discovered in the landing-page HTML.
+    found.set(storage, url);
+  }
+
+  return allowedStorages
+    .filter(storage => found.has(storage))
+    .map(storage => ({ storage, url: found.get(storage) }));
+}
+
+function forzaSelectedStorage(result) {
+  const title = String(result?.product?.name || "");
+  const match = title.match(/\b(64|128|256)\s*GB\b/i);
+  return match ? `${match[1]}GB` : "";
+}
+
 
 // Forza -> HOMS TECH price update.
 // This endpoint is intentionally separate from the read-only test endpoint.
@@ -1514,34 +1616,88 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
 });
 
 app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) => {
-  const sourceUrl = "https://www.forza-refurbished.nl/refurbished-iphone/iphone-11";
+  const requestedModel = String(req.query.model || "iphone-11").trim().toLowerCase();
+  const modelConfig = forzaGetTestModel(requestedModel);
+  if (!modelConfig) {
+    return res.status(400).json({
+      success: false,
+      readOnly: true,
+      error: "Onbekend Forza-testmodel. Kies iPhone 11 of iPhone 12."
+    });
+  }
+  const sourceUrl = modelConfig.sourceUrl;
 
   try {
-    const response = await fetch(sourceUrl, {
-      method: "GET",
-      redirect: "follow",
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; HOMS-TECH public product test)",
-        "Accept": "text/html,application/xhtml+xml"
-      }
-    });
+    const mainPage = await forzaFetchPublicPage(sourceUrl);
 
-    const html = await response.text();
-
-    if (!response.ok) {
+    if (!mainPage.response.ok) {
       return res.status(502).json({
         success: false,
         readOnly: true,
         sourceUrl,
-        error: `Forza returned HTTP ${response.status}`
+        error: `Forza returned HTTP ${mainPage.response.status}`
       });
     }
 
-    const result = forzaExtractTest(html, sourceUrl);
+    const result = forzaExtractTest(mainPage.html, sourceUrl);
+    const storageLinks = forzaExtractStorageLinks(
+      mainPage.html,
+      sourceUrl,
+      modelConfig.fallbacks,
+      modelConfig.storages
+    );
+    const storageVariants = [];
 
+    for (const variant of storageLinks) {
+      try {
+        const page = variant.url === sourceUrl
+          ? mainPage
+          : await forzaFetchPublicPage(variant.url);
+
+        if (!page.response.ok) {
+          storageVariants.push({
+            storage: variant.storage,
+            sourceUrl: variant.url,
+            success: false,
+            error: `Forza returned HTTP ${page.response.status}`
+          });
+          continue;
+        }
+
+        const variantResult = forzaExtractTest(page.html, variant.url);
+        const detectedStorage = forzaSelectedStorage(variantResult) || variant.storage;
+
+        storageVariants.push({
+          storage: detectedStorage,
+          sourceUrl: variant.url,
+          success: true,
+          conditions: variantResult.product.conditions || [],
+          battery: variantResult.product.battery || [],
+          stock: variantResult.product.stock,
+          productName: variantResult.product.name || result.product.name
+        });
+      } catch (variantError) {
+        storageVariants.push({
+          storage: variant.storage,
+          sourceUrl: variant.url,
+          success: false,
+          error: String(variantError?.message || variantError)
+        });
+      }
+    }
+
+    result.storageVariants = storageVariants;
+    result.product.storageVariants = storageVariants;
+
+    result.testModel = requestedModel;
+    result.testModelLabel = modelConfig.label;
+    result.allowedStorages = modelConfig.storages;
     return res.json({
       success: true,
       readOnly: true,
+      testModel: requestedModel,
+      testModelLabel: modelConfig.label,
+      sourceUrl,
       result
     });
   } catch (error) {
