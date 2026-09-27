@@ -1320,12 +1320,11 @@ function forzaImageMatchKey(value) {
 function forzaExtractVariantGalleryImages(html, productName) {
   const wanted = forzaImageMatchKey(productName);
   if (!wanted) return [];
-
-  // Forza's gallery alt text can use "64GB" while the product title uses
-  // "64 GB". Compare a compact key so storage is matched reliably.
-  const compactKey = value => forzaImageMatchKey(value).replace(/\s+/g, "");
-  const wantedCompact = compactKey(productName);
-  if (!wantedCompact) return [];
+  const wantedTokens = wanted.split(" ").filter(Boolean);
+  const wantedColor = wantedTokens[wantedTokens.length - 1] || "";
+  const wantedModelTokens = wantedTokens.filter(t => !/^\d+(?:gb|tb)$/.test(t) && t !== wantedColor);
+  const wantedStorage = (wanted.match(/\b\d+\s*(?:gb|tb)\b/) || [""])[0].replace(/\s+/g, "");
+  const compact = value => forzaImageMatchKey(value).replace(/\s+/g, "");
 
   const images = [];
   const seen = new Set();
@@ -1334,8 +1333,6 @@ function forzaExtractVariantGalleryImages(html, productName) {
   const addUrl = value => {
     if (!value) return;
     const cleaned = String(value).trim().replace(/&amp;/gi, "&");
-    // srcset can contain multiple URLs; take the largest-looking candidate
-    // when possible, otherwise the first valid URL.
     const urls = cleaned.match(/https?:\/\/[^\s,]+/gi) || [];
     for (const raw of urls) {
       const url = raw.replace(/["')]+$/g, "");
@@ -1349,37 +1346,41 @@ function forzaExtractVariantGalleryImages(html, productName) {
 
   for (const tag of imgTags) {
     const attrs = {};
-    const attrRe = /([:\\w-]+)\s*=\s*["']([^"']*)["']/gi;
+    const attrRe = /([:\w-]+)\s*=\s*["']([^"']*)["']/gi;
     let m;
     while ((m = attrRe.exec(tag))) attrs[m[1].toLowerCase()] = m[2];
 
     const descriptive = [
-      attrs.alt,
-      attrs.title,
-      attrs["data-alt"],
-      attrs["data-title"],
-      attrs["aria-label"]
+      attrs.alt, attrs.title, attrs["data-alt"], attrs["data-title"], attrs["aria-label"]
     ].filter(Boolean);
+    if (!descriptive.length) continue;
 
-    // Never accept a generic page/brand image. The image must explicitly name
-    // this exact model + storage + color in its accessibility/title metadata.
-    const exact = descriptive.some(text => {
-      const key = compactKey(text);
-      return key.includes(wantedCompact);
-    });
-    if (!exact) continue;
+    const text = descriptive.map(forzaImageMatchKey).join(" ");
+    const key = compact(text);
 
-    addUrl(attrs.src);
-    addUrl(attrs["data-src"]);
-    addUrl(attrs["data-lazy-src"]);
-    addUrl(attrs.srcset);
-    addUrl(attrs["data-srcset"]);
+    // Exclude Forza's generic cross-colour gallery image.
+    if (/kleuren|colors|colour/.test(key)) continue;
 
+    // Exact variant identity: model + colour must be present. Storage is
+    // preferred when available, but Forza sometimes omits storage from the
+    // gallery alt text on the exact variant page.
+    const hasModel = wantedModelTokens.every(token => key.includes(token));
+    const hasColor = !!wantedColor && key.includes(wantedColor);
+    const hasStorage = !!wantedStorage && key.includes(wantedStorage);
+    if (!hasModel || !hasColor) continue;
+    if (hasStorage || !wantedStorage) {
+      addUrl(attrs.src);
+      addUrl(attrs["data-src"]);
+      addUrl(attrs["data-lazy-src"]);
+      addUrl(attrs.srcset);
+      addUrl(attrs["data-srcset"]);
+    }
     if (images.length >= 4) break;
   }
 
-  return images.slice(0, 4);
+  return [...new Set(images)].slice(0, 4);
 }
+
 function forzaVariantSlugCandidates(productName) {
   const raw = String(productName || "").trim();
   if (!raw) return [];
