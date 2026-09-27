@@ -1373,13 +1373,14 @@ function forzaExtractVariantGalleryImages(html, productName) {
     const hasColor = !!wantedColor && key.includes(wantedColor);
     const hasStorage = !!wantedStorage && key.includes(wantedStorage);
     if (!hasModel || !hasColor) continue;
-    if (hasStorage || !wantedStorage) {
-      addUrl(attrs.src);
-      addUrl(attrs["data-src"]);
-      addUrl(attrs["data-lazy-src"]);
-      addUrl(attrs.srcset);
-      addUrl(attrs["data-srcset"]);
-    }
+    // Exact product URL already establishes the storage variant.
+    // Forza gallery alt text can omit storage (for example: "iPhone 12 Zwart").
+    // Therefore storage is only a positive signal, never a requirement.
+    addUrl(attrs.src);
+    addUrl(attrs["data-src"]);
+    addUrl(attrs["data-lazy-src"]);
+    addUrl(attrs.srcset);
+    addUrl(attrs["data-srcset"]);
     if (images.length >= 4) break;
   }
 
