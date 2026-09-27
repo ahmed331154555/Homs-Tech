@@ -5285,8 +5285,11 @@ async function fullSyncHomsFromForza(){
     if(status){status.className="status error";status.textContent="HOMS TECH-product niet gevonden. Er is niets gewijzigd.";}
     return;
   }
-  if(rows.length!==18 || rows.some(r=>!Number.isFinite(Number(r.price)))){
-    if(status){status.className="status error";status.textContent="Full Sync gestopt: niet alle 18 Forza-prijzen zijn beschikbaar.";}
+  if((rows.length!==6 && rows.length!==18) || rows.some(r=>!Number.isFinite(Number(r.price)))){
+    if(status){
+      status.className="status error";
+      status.textContent="Full Sync gestopt: kies 6 prijzen voor één opslagvariant of alle 18 prijzen.";
+    }
     return;
   }
 
