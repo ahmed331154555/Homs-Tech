@@ -1375,6 +1375,9 @@ textarea{
           <option value="iphone-11">iPhone 11</option>
           <option value="iphone-12">iPhone 12</option>
           <option value="iphone-13">iPhone 13</option>
+          <option value="iphone-13-mini">iPhone 13 Mini</option>
+          <option value="iphone-13-pro">iPhone 13 Pro</option>
+          <option value="iphone-13-pro-max">iPhone 13 Pro Max</option>
         </select>
         <span class="small">Alleen lezen van de publieke Forza-pagina. Er wordt niets opgeslagen.</span>
       </div>
@@ -1444,6 +1447,33 @@ textarea{
         <div class="card">
           <h3 style="margin-top:0">Beschrijving</h3>
           <div id="forzaTestDescription" class="small" style="white-space:pre-wrap;line-height:1.6"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px" id="forzaVariantManagerCard">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+          <div>
+            <h3 style="margin:0">📱 iPhone 13 — apparaten afzonderlijk toevoegen</h3>
+            <div class="small" style="margin-top:4px">
+              Kies per model, geheugen en kleur. Elke rij is één afzonderlijk HOMS TECH-product met eigen Forza-pagina en maximaal 4 eigen foto's.
+              <strong>Toevoegen gebeurt eerst alleen in deze Admin-pagina; pas «Wijzigingen opslaan» schrijft het naar HOMS TECH.</strong>
+            </div>
+          </div>
+        </div>
+        <div id="forzaVariantManagerStatus" class="status info" style="margin-top:12px">Nog geen varianten geladen.</div>
+        <div style="overflow:auto;margin-top:12px">
+          <table style="width:100%;border-collapse:collapse;min-width:900px">
+            <thead>
+              <tr>
+                <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Model</th>
+                <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Geheugen</th>
+                <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Kleur</th>
+                <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Forza</th>
+                <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">HOMS TECH</th>
+              </tr>
+            </thead>
+            <tbody id="forzaVariantRows"></tbody>
+          </table>
         </div>
       </div>
 
@@ -5122,6 +5152,125 @@ async function updateHomsPricesFromForza(){
   }
 }
 
+function forzaVariantKey(model, storage, color){
+  return [model,storage,color].map(v=>String(v||"").trim().toLowerCase()).join("|");
+}
+
+function forzaCurrentPhoneIndex(productName){
+  const wanted=String(productName||"").trim().toLowerCase();
+  if(!Array.isArray(data.phones)) return -1;
+  return data.phones.findIndex(p=>String(p?.name||"").trim().toLowerCase()===wanted);
+}
+
+function forzaRenderVariantManager(modelLabel, variants){
+  const tbody=document.getElementById("forzaVariantRows");
+  const status=document.getElementById("forzaVariantManagerStatus");
+  if(!tbody) return;
+  const rows=Array.isArray(variants)?variants:[];
+  if(!rows.length){
+    tbody.innerHTML='<tr><td colspan="5" class="small" style="padding:12px">Geen afzonderlijke varianten gevonden op deze Forza-pagina.</td></tr>';
+    if(status) status.textContent="Geen afzonderlijke varianten gevonden.";
+    return;
+  }
+  const dedupe=new Map();
+  rows.forEach(v=>{
+    const storage=String(v?.storage||"").trim();
+    const color=String(v?.color||"").trim();
+    const productName=String(v?.productName||"").trim();
+    if(!storage||!color||!productName) return;
+    dedupe.set(forzaVariantKey(modelLabel,storage,color),{...v,storage,color,productName});
+  });
+  const clean=[...dedupe.values()].sort((a,b)=>{
+    return `${a.storage}|${a.color}`.localeCompare(`${b.storage}|${b.color}`,'nl',{numeric:true});
+  });
+  tbody.innerHTML=clean.map((v,i)=>{
+    const exists=forzaCurrentPhoneIndex(v.productName)>=0;
+    const btn=exists
+      ? '<span class="tag" style="background:#dcfce7;color:#166534">✓ Al toegevoegd</span>'
+      : `<button class="btn btn-light" type="button" data-forza-add="${i}">➕ Toevoegen</button>`;
+    return `<tr>
+      <td style="padding:9px;border-bottom:1px solid #edf2f7;font-weight:800">${forzaAdminEsc(modelLabel)}</td>
+      <td style="padding:9px;border-bottom:1px solid #edf2f7">${forzaAdminEsc(v.storage)}</td>
+      <td style="padding:9px;border-bottom:1px solid #edf2f7">${forzaAdminEsc(v.color)}</td>
+      <td style="padding:9px;border-bottom:1px solid #edf2f7"><a href="${forzaAdminEsc(v.sourceUrl||'#')}" target="_blank" rel="noopener noreferrer">Forza ↗</a></td>
+      <td style="padding:9px;border-bottom:1px solid #edf2f7">${btn}</td>
+    </tr>`;
+  }).join("");
+  tbody.querySelectorAll("[data-forza-add]").forEach(btn=>{
+    btn.addEventListener("click",async()=>{
+      const item=clean[Number(btn.dataset.forzaAdd)];
+      if(!item) return;
+      await forzaAddVariant(item,modelLabel,btn);
+    });
+  });
+  if(status) status.textContent=`${clean.length} afzonderlijke variant(en) gevonden voor ${modelLabel}.`;
+}
+
+async function forzaAddVariant(item,modelLabel,button){
+  const status=document.getElementById("forzaVariantManagerStatus");
+  if(button) button.disabled=true;
+  if(status) status.textContent=`${item.productName} wordt exact gelezen van Forza...`;
+  try{
+    const url=`/api/forza-test?model=${encodeURIComponent(document.getElementById("forzaTestModelSelect")?.value||"")}&variant=${encodeURIComponent(item.productName)}`;
+    const r=await fetch(url,{credentials:"same-origin",headers:{"Accept":"application/json"}});
+    const payload=await r.json().catch(()=>({}));
+    if(!r.ok || payload.success===false) throw new Error(payload.error||`Variant lezen mislukt (HTTP ${r.status})`);
+    const x=forzaAdminFindResult(payload);
+    const p=x.product&&typeof x.product==="object"?x.product:x;
+    const productName=String(p.name||item.productName).trim();
+    const images=Array.isArray(p.images)?p.images.slice(0,4):[];
+    if(!images.length) throw new Error("Geen exacte foto's voor deze variant gevonden. Er is niets toegevoegd.");
+    const normalized={
+      name:productName,
+      brand:String(p.brand||"Apple"),
+      price:Number.isFinite(Number(p.price))?Number(p.price):0,
+      storage:[String(item.storage)],
+      color:String(item.color),
+      condition:"Zo goed als nieuw",
+      warranty:"3 jaar",
+      description:String(p.description||""),
+      subtitle:"",
+      sku:String(p.sku||""),
+      stock:Number.isFinite(Number(p.stock))?Number(p.stock):0,
+      category:"Smartphones",
+      connectivity:"",
+      processor:"",
+      memory:"",
+      gpu:"",
+      screenSize:"",
+      releaseYear:"2021",
+      images,
+      conditionDetails:[],
+      specifications:p.specs||p.specifications||{},
+      forzaSourceUrl:String(payload.exactVariantSourceUrl||item.sourceUrl||""),
+      forzaImportedAt:new Date().toISOString(),
+      catalogBrand:"Apple",
+      catalogFamily:"iPhone 13",
+      catalogModel:modelLabel,
+      catalogStorage:String(item.storage),
+      catalogColor:String(item.color),
+      catalogKey:`apple|iphone 13|${modelLabel}|${item.storage}|${item.color}`.toLowerCase()
+    };
+    const existing=forzaCurrentPhoneIndex(productName);
+    if(existing>=0){
+      if(status) status.textContent=`${productName} bestaat al in HOMS TECH.`;
+      return;
+    }
+    if(!Array.isArray(data.phones)) data.phones=[];
+    data.phones.push(normalized);
+    renderPhones();
+    markChanged();
+    if(status) status.textContent=`✓ ${productName} is toegevoegd aan de huidige Admin-lijst. Nog niet naar de database opgeslagen.`;
+    // Re-render current table so the row becomes "Al toegevoegd".
+    const currentRows=Array.from(document.querySelectorAll("#forzaVariantRows [data-forza-add]"));
+    // Keep the button disabled and replace its parent label.
+    if(button && button.parentElement) button.parentElement.innerHTML='<span class="tag" style="background:#dcfce7;color:#166534">✓ Toegevoegd — wacht op Opslaan</span>';
+  }catch(error){
+    if(status) status.textContent=`✕ ${error.message||"Toevoegen mislukt. Er is niets opgeslagen."}`;
+    if(button) button.disabled=false;
+  }
+}
+
 async function loadForzaTest(){
   const status=document.getElementById("forzaTestStatus");
   const content=document.getElementById("forzaTestContent");
@@ -5174,6 +5323,7 @@ async function loadForzaTest(){
     document.getElementById("forzaTestStock").textContent=forzaAdminDisplayValue(stock);
     document.getElementById("forzaTestReadOnly").textContent=readOnly?"✓ READ ONLY — niets opgeslagen":"Controleer: read-only status ontbreekt";
     forzaAdminRenderList(document.getElementById("forzaTestStorage"),storage);
+    forzaRenderVariantManager(modelLabel, colorVariants);
     const colorBox=document.getElementById("forzaTestColors");
     if(colorBox){
       const labels=[...new Map((Array.isArray(colorVariants)?colorVariants:[]).map(v=>[String(v.color||"").toLowerCase(),String(v.color||"")])).values()].filter(Boolean);
