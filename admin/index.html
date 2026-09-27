@@ -996,13 +996,6 @@ textarea{
 .buyback-v1-shell .buyback-v1-title p{margin-top:4px}
 .buyback-v1-brand-badge{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
-
-<style id="homs-admin-auto-catalog">
-.admin-auto-catalog{margin:16px 0 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:18px;padding:18px}
-.admin-auto-catalog h3{margin:0 0 6px;font-size:20px}.admin-auto-catalog .help{color:#64748b;font-size:13px;margin-bottom:14px}
-.hac-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.hac-btn{border:1px solid #dbe3ee;background:#fff;border-radius:12px;padding:13px;text-align:left;cursor:pointer;font-weight:800}.hac-btn:hover{border-color:#2563eb}.hac-btn small{display:block;color:#64748b;font-weight:400;margin-top:4px}.hac-back{border:0;background:#eaf1ff;color:#2563eb;border-radius:9px;padding:8px 12px;font-weight:800;cursor:pointer;margin-bottom:12px}.hac-active{display:inline-flex;gap:8px;align-items:center;background:#eef6ff;color:#2563eb;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800;margin-bottom:12px}
-@media(max-width:900px){.hac-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:550px){.hac-grid{grid-template-columns:1fr}}
-</style>
 </head>
 
 <body>
@@ -1138,7 +1131,6 @@ textarea{
       </button>
     </div>
 
-    <div id="adminAutoCatalog"></div>
     <div id="phonesList"></div>
   </section>
 
@@ -1379,36 +1371,12 @@ textarea{
     <div class="card" style="margin:12px 0 14px">
       <label for="forzaTestModelSelect" style="font-weight:800;display:block;margin-bottom:7px">Forza model testen</label>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <select id="forzaTestModelSelect" class="input" style="min-width:240px;max-width:260px" onchange="forzaUpdateVariantSelector(); loadForzaTest()">
+        <select id="forzaTestModelSelect" class="input" style="min-width:240px;max-width:360px">
           <option value="iphone-11">iPhone 11</option>
           <option value="iphone-12">iPhone 12</option>
+          <option value="iphone-13">iPhone 13</option>
         </select>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <label style="font-size:12px;font-weight:800;color:#64748b">Opslag</label>
-          <select id="forzaTestStorageSelect" class="input" style="min-width:125px" onchange="forzaAxisChanged()">
-            <option value="64GB">64 GB</option>
-            <option value="128GB">128 GB</option>
-            <option value="256GB">256 GB</option>
-          </select>
-          <label style="font-size:12px;font-weight:800;color:#64748b">Kleur</label>
-          <select id="forzaTestColorSelect" class="input" style="min-width:135px" onchange="forzaAxisChanged()">
-            <option value="Zwart">Zwart</option>
-            <option value="Wit">Wit</option>
-            <option value="Blauw">Blauw</option>
-            <option value="Groen">Groen</option>
-            <option value="Paars">Paars</option>
-            <option value="Rood">Rood</option>
-          </select>
-          <select id="forzaTestVariantSelect" class="input" style="display:none">
-            <option value="">Kies iPhone 12 variant</option>
-          </select>
-        </div>
-        <label style="display:flex;align-items:center;gap:7px;font-weight:800">
-          <input type="checkbox" id="forzaBulkImagesEnabled" checked>
-          📷 Forza-foto's meenemen bij nieuwe toestellen
-        </label>
-        <button class="btn btn-green" type="button" onclick="forzaBulkAddAllVariants()">➕ Voeg alle Forza-varianten toe</button>
-        <span class="small">Alleen lezen van de publieke Forza-pagina. Er wordt niets opgeslagen tot je op de knop hierboven drukt.</span>
+        <span class="small">Alleen lezen van de publieke Forza-pagina. Er wordt niets opgeslagen.</span>
       </div>
     </div>
 
@@ -1513,12 +1481,6 @@ textarea{
             </div>
             <button id="forzaUpdatePricesBtn" class="btn btn-green" onclick="updateHomsPricesFromForza()" style="display:none">
               🔄 Forza-prijzen bijwerken
-            </button>
-            <button id="forzaFullSyncBtn" class="btn btn-green" onclick="fullSyncHomsFromForza()" style="display:none">
-              📥 Forza Full Sync
-            </button>
-            <button id="forzaCreateProductBtn" class="btn btn-light" onclick="createNewHomsProductFromForza()" style="display:none">
-              ➕ Opslaan als nieuw HOMS TECH-product
             </button>
           </div>
           <div style="overflow:auto;margin-top:12px">
@@ -1634,8 +1596,7 @@ function showPage(page){
     if(page==="webshop-orders")loadWebshopOrders();
     if(page==="buyback")renderBuybackPhones();
     if(page==="buyback-orders")loadBuybackOrders();
-    if(page==="forza-test")forzaUpdateVariantSelector();
-loadForzaTest();
+    if(page==="forza-test")loadForzaTest();
     if(page==="admins")loadAdmins();
   }
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
@@ -1770,8 +1731,6 @@ function canonicalPhoneOptionLabel(key,label){
 }
 
 function normalizePhoneOptions(phone){
-    // Per-product control: when false, Forza Full Sync must never replace the manual images.
-    if(phone.forzaImagesEnabled === undefined) phone.forzaImagesEnabled = true;
     const defaults={
       conditionOptions:[
         {label:"Zichtbaar gebruikt",enabled:true,active:true,available:true,basePrice:0},
@@ -2328,27 +2287,7 @@ function deleteService(i){
 
 /* ---------------- PHONES ---------------- */
 
-let adminCatalogState={level:"brand",brand:"",family:"",variant:""};
-function hacName(p){return String(p?.name||p?.model||"").replace(/\s+/g," ").trim()}
-function hacBrand(p){const raw=(String(p?.brand||"")+" "+hacName(p)).toLowerCase();if(raw.includes("samsung")||raw.includes("galaxy"))return "Samsung";if(raw.includes("ipad"))return "iPad";if(raw.includes("iphone")||raw.includes("apple"))return "iPhone";return String(p?.brand||"").trim()||"Overige"}
-function hacFamily(p){const n=hacName(p),l=n.toLowerCase();if(l.includes("iphone")){const m=l.match(/iphone\s+(se|[0-9]{1,2})/i);if(m)return m[1].toLowerCase()==="se"?"iPhone SE":"iPhone "+m[1]}if(l.includes("galaxy")){const m=l.match(/galaxy\s+([a-z])\s*([0-9]+)/i);if(m)return "Galaxy "+m[1].toUpperCase()+m[2];return "Samsung Galaxy"}if(l.includes("ipad"))return "iPad";return hacBrand(p)}
-function hacVariant(p){const n=hacName(p),l=n.toLowerCase();if(l.includes("iphone")){const m=l.match(/iphone\s+(se|[0-9]{1,2})(?:\s+(mini|plus|pro\s+max|pro))?/i);if(m){let b=m[1].toLowerCase()==="se"?"iPhone SE":"iPhone "+m[1];let x=(m[2]||"").replace(/\s+/g," ").trim();return x?b+" "+x.replace(/\b\w/g,c=>c.toUpperCase()):b}}return n}
-function hacChooseBrand(b){adminCatalogState={level:"family",brand:b,family:"",variant:""};hacRender()}
-function hacChooseFamily(f){adminCatalogState={level:"variant",brand:adminCatalogState.brand,family:f,variant:""};hacRender()}
-function hacChooseVariant(v){adminCatalogState={level:"products",brand:adminCatalogState.brand,family:adminCatalogState.family,variant:v};hacRender()}
-function hacBack(){if(adminCatalogState.level==="products")adminCatalogState={level:"variant",brand:adminCatalogState.brand,family:adminCatalogState.family,variant:""};else if(adminCatalogState.level==="variant")adminCatalogState={level:"family",brand:adminCatalogState.brand,family:"",variant:""};else adminCatalogState={level:"brand",brand:"",family:"",variant:""};hacRender()}
-function hacSelectFirst(filter){const i=data.phones.findIndex(filter);if(i>=0){selectedPhoneIndex=i;renderPhones()}}
-function hacRender(){const box=document.getElementById("adminAutoCatalog");if(!box)return;const phones=Array.isArray(data.phones)?data.phones:[];let h='<div class="admin-auto-catalog"><h3>📂 Automatische indeling</h3><div class="help">Kies merk → model → uitvoering. Daarna wordt het eerste bijpassende product geopend in de bestaande editor. Deze indeling verandert geen prijzen of producten.</div>';
-const escv=v=>typeof esc==='function'?esc(v):String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
-if(adminCatalogState.level==='brand'){const bs=[...new Set(phones.map(hacBrand))].sort();h+='<div class="hac-grid">'+bs.map(b=>`<button class="hac-btn" onclick="hacChooseBrand('${escv(b)}')">${escv(b)}<small>${phones.filter(p=>hacBrand(p)===b).length} producten</small></button>`).join('')+'</div>'}
-else if(adminCatalogState.level==='family'){const a=phones.filter(p=>hacBrand(p)===adminCatalogState.brand);const fs=[...new Set(a.map(hacFamily))].sort((x,y)=>x.localeCompare(y,undefined,{numeric:true}));h+='<button class="hac-back" onclick="hacBack()">← Terug</button><div class="hac-active">'+escv(adminCatalogState.brand)+'</div><div class="hac-grid">'+fs.map(f=>`<button class="hac-btn" onclick="hacChooseFamily('${escv(f)}')">${escv(f)}<small>${a.filter(p=>hacFamily(p)===f).length} producten</small></button>`).join('')+'</div>'}
-else if(adminCatalogState.level==='variant'){const a=phones.filter(p=>hacBrand(p)===adminCatalogState.brand&&hacFamily(p)===adminCatalogState.family);const vs=[...new Set(a.map(hacVariant))].sort((x,y)=>x.localeCompare(y,undefined,{numeric:true}));h+='<button class="hac-back" onclick="hacBack()">← Terug</button><div class="hac-active">'+escv(adminCatalogState.family)+'</div><div class="hac-grid">'+vs.map(v=>`<button class="hac-btn" onclick="hacChooseVariant('${escv(v)}')">${escv(v)}<small>${a.filter(p=>hacVariant(p)===v).length} varianten</small></button>`).join('')+'</div>'}
-else{const a=phones.filter(p=>hacBrand(p)===adminCatalogState.brand&&hacFamily(p)===adminCatalogState.family&&hacVariant(p)===adminCatalogState.variant);h+='<button class="hac-back" onclick="hacBack()">← Terug</button><div class="hac-active">'+escv(adminCatalogState.variant)+'</div><div class="hac-grid">'+a.map(p=>{const i=phones.indexOf(p);return `<button class="hac-btn" onclick="selectedPhoneIndex=${i};renderPhones()"><strong>${escv(hacName(p))}</strong><small>${escv(p.storage||'')} ${escv(p.color||'')}</small></button>`}).join('')+'</div>'}
-h+='</div>';box.innerHTML=h}
-function mountHac(){hacRender()}
-
 function renderPhones(){
-  mountHac();
   const box=document.getElementById("phonesList");
   if(!box) return;
   if(!Array.isArray(data.phones)) data.phones=[];
@@ -2357,15 +2296,13 @@ function renderPhones(){
     return;
   }
   if(selectedPhoneIndex>=data.phones.length) selectedPhoneIndex=data.phones.length-1;
-  if(adminCatalogState.level==='products'){const fi=data.phones.findIndex(p=>hacBrand(p)===adminCatalogState.brand&&hacFamily(p)===adminCatalogState.family&&hacVariant(p)===adminCatalogState.variant);if(fi>=0&&(!data.phones[selectedPhoneIndex]||hacVariant(data.phones[selectedPhoneIndex])!==adminCatalogState.variant))selectedPhoneIndex=fi;}
   const phone=data.phones[selectedPhoneIndex];
   normalizePhoneOptions(phone);
   while(!Array.isArray(phone.images)) phone.images=[];
   while(phone.images.length<4) phone.images.push("");
   if(!Array.isArray(phone.specifications)) phone.specifications=[];
 
-  const filteredPhones=adminCatalogState.level==='products'?data.phones.filter(p=>hacBrand(p)===adminCatalogState.brand&&hacFamily(p)===adminCatalogState.family&&hacVariant(p)===adminCatalogState.variant):data.phones;
-  const list=filteredPhones.map(x=>{const i=data.phones.indexOf(x);return `<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">🛒 ${esc(x.name||'Nieuw product')}<small>${esc(x.brand||'')} · ${esc(x.storage||'')} ${esc(x.color||'')} · ${esc(x.category||'Smartphones')}</small></button>`}).join('');
+  const list=data.phones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">🛒 ${esc(x.name||'Nieuw product')}<small>${esc(x.brand||'')} · ${esc(x.category||'Smartphones')}</small></button>`).join('');
 
   const optionEditor=(key,title,help)=>{
     const opts=phone[key]||[];
@@ -2443,10 +2380,6 @@ function renderPhones(){
 
         <div class="card" style="margin-top:16px">
           <div class="card-title">📷 Productfoto's</div>
-          <label style="display:flex;align-items:flex-start;gap:9px;margin:10px 0 12px;padding:11px 12px;background:#f4f8ff;border:1px solid #dce9ff;border-radius:10px;font-weight:800">
-            <input type="checkbox" ${phone.forzaImagesEnabled!==false?'checked':''} onchange="data.phones[${selectedPhoneIndex}].forzaImagesEnabled=this.checked;markChanged()" style="margin-top:2px">
-            <span>Forza-afbeeldingen automatisch bijwerken<br><small style="font-weight:500;color:#64748b">Uit = jouw handmatig aangepaste foto's blijven behouden bij Forza Full Sync.</small></span>
-          </label>
           <div class="images-grid">${phone.images.map((img,j)=>`
             <div class="image-box">
               ${img?`<img src="${esc(img)}" class="image-preview">`:`<div class="empty-preview">Geen foto</div>`}
@@ -5060,143 +4993,6 @@ function forzaComparePrice(phone, row){
   return base + storageDelta + batteryDelta;
 }
 
-function forzaVariantIdentity(){
-  const product=forzaPreviewModel?.product || {};
-  const name=String(forzaAdminPick(product,["name","productName","title"]) || "").trim();
-  const color=String(forzaAdminPick(product,["color","colour","colorName"]) || "").trim();
-  const variantSelect=document.getElementById("forzaTestVariantSelect");
-  const variantValue=variantSelect?.value || "";
-  const storageMatch=(name.match(/(64|128|256)\s*GB/i) || variantValue.match(/(64|128|256)\s*GB/i));
-  const storage=storageMatch ? `${storageMatch[1]}GB` : "";
-  const cleanColor=(color || (variantValue.match(/\b(Zwart|Wit|Blauw|Groen|Paars|Rood)\b/i)||[])[1] || "").toLowerCase();
-  const cleanName=forzaCompareNormalize(name);
-  return {name, color:cleanColor, storage, cleanName};
-}
-
-function forzaPhoneIdentity(phone){
-  const name=String(phone?.name || "").trim();
-  const color=String(phone?.color || "").trim().toLowerCase();
-  const storageMatch=(name.match(/(64|128|256)\s*GB/i) || []);
-  const storage=storageMatch[1] ? `${storageMatch[1]}GB` : "";
-  return {name,color:forzaCompareNormalize(name),storage};
-}
-
-function forzaCompareFindExactPhone(){
-  if(!Array.isArray(data?.phones) || !forzaPreviewModel) return null;
-  const target=forzaVariantIdentity();
-  if(!target.cleanName) return null;
-  // 1) Exact product name match.
-  let found=data.phones.find(phone=>forzaCompareNormalize(phone?.name||"")===target.cleanName);
-  if(found) return found;
-  // 2) Exact model + storage + colour, using the stored product fields.
-  const targetModel=forzaCompareModelKey(target.name);
-  found=data.phones.find(phone=>{
-    const id=forzaPhoneIdentity(phone);
-    const pm=forzaCompareModelKey(phone?.name||"");
-    return pm && pm===targetModel && id.storage===target.storage && id.color===target.color;
-  });
-  return found || null;
-}
-
-function forzaCompareFindTemplatePhone(){
-  if(!Array.isArray(data?.phones) || !forzaPreviewModel) return null;
-  const target=forzaVariantIdentity();
-  const targetModel=forzaCompareModelKey(target.name);
-  const brand=forzaCompareNormalize(forzaPreviewModel?.product?.brand || "");
-  let best=null,bestScore=-1;
-  data.phones.forEach(phone=>{
-    const pm=forzaCompareModelKey(phone?.name||"");
-    if(!pm || !targetModel) return;
-    let score=0;
-    if(pm===targetModel) score+=100;
-    else if(pm.includes(targetModel)||targetModel.includes(pm)) score+=60;
-    if(brand && forzaCompareNormalize(phone?.brand||"")===brand) score+=20;
-    if(score>bestScore){bestScore=score;best=phone;}
-  });
-  return bestScore>=60 ? best : null;
-}
-
-function forzaApplyVariantPricesToNewPhone(phone, rows){
-  if(!phone) return;
-  const target=forzaVariantIdentity();
-  const storage=target.storage;
-  if(!storage) return;
-  const matrix={...(phone.forzaPriceMatrix||{})};
-  rows.forEach(row=>{
-    const price=Number(row.price);
-    if(!Number.isFinite(price)) return;
-    const c=forzaCompareConditionKey(row.condition);
-    const b=forzaCompareBatteryKey(row.battery);
-    matrix[`${storage}|${c}|${b}`]=price;
-  });
-  phone.forzaPriceMatrix=matrix;
-  phone.forzaPriceMatrixSource="Forza public website";
-  phone.forzaPriceMatrixUpdatedAt=new Date().toISOString();
-  // Keep the existing HOMS pricing model intact, but update the selected
-  // storage's base/battery values from the exact Forza variant when possible.
-  normalizePhoneOptions(phone);
-  const getC=k=>phone.conditionOptions.find(o=>forzaCompareConditionKey(o?.label)===k);
-  const getB=k=>phone.batteryOptions.find(o=>forzaCompareBatteryKey(o?.label)===k);
-  const std=(key)=>matrix[`${storage}|${key}|standaard`];
-  ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"].forEach(c=>{
-    const v=std(c); const opt=getC(c);
-    if(opt && Number.isFinite(Number(v))){
-      if(storage==="64GB") opt.basePrice=Number(v);
-    }
-  });
-  const newPrice=matrix[`${storage}|zo goed als nieuw|nieuw`];
-  const stdPrice=matrix[`${storage}|zo goed als nieuw|standaard`];
-  const bat=getB("nieuw");
-  if(bat && Number.isFinite(Number(newPrice)) && Number.isFinite(Number(stdPrice))) bat.priceDelta=Number(newPrice)-Number(stdPrice);
-}
-
-async function createNewHomsProductFromForza(){
-  const status=document.getElementById("forzaCompareStatus");
-  const btn=document.getElementById("forzaCreateProductBtn");
-  if(!forzaPreviewModel){ if(status){status.className="status error";status.textContent="Lees eerst de actuele Forza-data.";} return; }
-  const existing=forzaCompareFindExactPhone();
-  if(existing){ if(status){status.className="status info";status.textContent=`Dit Forza-product bestaat al in HOMS TECH: ${existing.name}. Gebruik Forza Full Sync voor dit bestaande product.`;} return; }
-  const rows=forzaAdminBuildPreview().filter(r=>Number.isFinite(Number(r.price)));
-  if(!rows.length){ if(status){status.className="status error";status.textContent="Er zijn geen leesbare Forza-prijzen voor deze variant. Er is niets opgeslagen.";} return; }
-  const template=forzaCompareFindTemplatePhone();
-  if(!template){ if(status){status.className="status error";status.textContent="Geen bestaand HOMS TECH-product van hetzelfde model gevonden om als basis te gebruiken. Er is niets opgeslagen.";} return; }
-  const product=forzaPreviewModel.product || {};
-  const name=String(forzaAdminPick(product,["name","productName","title"]) || "Nieuw Forza-product").trim();
-  const brand=String(forzaAdminPick(product,["brand","brandName"]) || template.brand || "").trim();
-  const color=String(forzaAdminPick(product,["color","colour","colorName"]) || "").trim();
-  const sku=String(forzaAdminPick(product,["sku","SKU","productSku","productSKU","articleNumber","article_number","mpn","productCode","product_code"]) || "").trim();
-  const stockRaw=forzaAdminPick(product,["stock","visibleStock","maxVisibleStock","availability","inventory"]);
-  const stock=Number.isFinite(Number(stockRaw)) ? Number(stockRaw) : Number(template.stock||0);
-  const images=forzaAdminArray(product.images || product.imageUrls || product.photos || product.gallery).filter(v=>typeof v==="string" && /^https?:\/\//i.test(v)).slice(0,4);
-  const specs=forzaAdminArray(product.specs || product.specifications || product.attributes).slice(0,20);
-  const description=String(forzaAdminPick(product,["description","shortDescription","longDescription"]) || template.description || "");
-  const sourceUrl=String(forzaAdminPick(product,["sourceUrl","canonical","url"]) || "");
-  const newPhone=JSON.parse(JSON.stringify(template));
-  newPhone.name=name;
-  newPhone.brand=brand;
-  newPhone.color=color;
-  newPhone.sku=sku;
-  newPhone.stock=stock;
-  newPhone.description=description;
-  newPhone.images=images.length ? images : ["","","",""];
-  newPhone.forzaImages=images.slice(0,4);
-  newPhone.forzaImagesEnabled=true;
-  newPhone.forzaSourceUrl=sourceUrl;
-  newPhone.forzaProductData={name,brand,sku,color,storage:product.storage||[],stock,specs,description,images:images.slice(0,4),sourceUrl,syncedAt:new Date().toISOString()};
-  forzaApplyVariantPricesToNewPhone(newPhone, rows);
-  data.phones.push(newPhone);
-  selectedPhoneIndex=data.phones.length-1;
-  markChanged();
-  if(status){status.className="status info";status.textContent=`تم تجهيز ${name} كجهاز جديد. سيتم حفظه في HOMS TECH الآن...`;}
-  if(btn)btn.disabled=true;
-  try{
-    await save(false);
-    if(status){status.className="status success";status.textContent=`✓ تم حفظ ${name} كجهاز جديد. الصور من Forza موجودة حالياً ويمكنك تعديلها يدوياً ثم إطفاء خيار تحديث صور Forza.`;}
-  }catch(error){
-    if(status){status.className="status error";status.textContent=`✗ فشل حفظ الجهاز الجديد: ${error.message||error}`;}
-  }finally{ if(btn)btn.disabled=false; }
-}
-
 function compareForzaWithHoms(){
   const status=document.getElementById("forzaCompareStatus");
   const content=document.getElementById("forzaCompareContent");
@@ -5211,7 +5007,7 @@ function compareForzaWithHoms(){
 
   const rows=forzaAdminBuildPreview();
   const modelProduct=forzaAdminPick(forzaPreviewModel.product,["name","productName","title"])||"Niet gevonden";
-  const phone=forzaCompareFindExactPhone();
+  const phone=forzaCompareFindPhone(modelProduct);
 
   rowsEl.innerHTML=rows.map(row=>{
     const forzaPrice=Number.isFinite(Number(row.price)) ? Number(row.price) : null;
@@ -5237,18 +5033,14 @@ function compareForzaWithHoms(){
 
   content.style.display="block";
   const updateBtn=document.getElementById("forzaUpdatePricesBtn");
-  const fullSyncBtn=document.getElementById("forzaFullSyncBtn");
-  const createBtn=document.getElementById("forzaCreateProductBtn");
   if(updateBtn) updateBtn.style.display = phone ? "inline-flex" : "none";
-  if(fullSyncBtn) fullSyncBtn.style.display = phone ? "inline-flex" : "none";
-  if(createBtn) createBtn.style.display = phone ? "none" : (forzaCompareFindTemplatePhone() ? "inline-flex" : "none");
 
   if(phone){
     status.className="status success";
-    status.textContent="✓ هذا الـForza-variant موجود بالفعل في HOMS TECH. يمكنك تحديثه عبر Full Sync بعد اكتمال الـ18 سعر.";
+    status.textContent="✓ Vergelijking gemaakt. Alleen lezen: er is niets opgeslagen en geen HOMS TECH-prijs gewijzigd.";
   }else{
     status.className="status info";
-    status.textContent="ℹ️ هذا الـForza-variant غير موجود في HOMS TECH. يمكنك حفظه كجهاز جديد؛ سيتم استخدام أسعار هذا الـvariant فقط، بدون اشتراط 18 سعراً.";
+    status.textContent="ℹ️ Forza-data is gelezen, maar er is nog geen passend HOMS TECH-product gevonden om mee te vergelijken.";
   }
 }
 
@@ -5262,7 +5054,7 @@ async function updateHomsPricesFromForza(){
 
   const rows=forzaAdminBuildPreview();
   const modelProduct=forzaAdminPick(forzaPreviewModel.product,["name","productName","title"])||"Niet gevonden";
-  const phone=forzaCompareFindExactPhone();
+  const phone=forzaCompareFindPhone(modelProduct);
   if(!phone){
     if(status){status.className="status error";status.textContent="HOMS TECH-product niet gevonden. Er is niets gewijzigd.";}
     return;
@@ -5322,222 +5114,6 @@ async function updateHomsPricesFromForza(){
   }
 }
 
-
-async function fullSyncHomsFromForza(){
-  const status=document.getElementById("forzaCompareStatus");
-  const btn=document.getElementById("forzaFullSyncBtn");
-  if(!forzaPreviewModel){
-    if(status){status.className="status error";status.textContent="Lees eerst de actuele Forza-data.";}
-    return;
-  }
-  const rows=forzaAdminBuildPreview();
-  const modelProduct=forzaAdminPick(forzaPreviewModel.product,["name","productName","title"])||"Niet gevonden";
-  const phone=forzaCompareFindExactPhone();
-  if(!phone){
-    if(status){status.className="status error";status.textContent="HOMS TECH-product niet gevonden. Er is niets gewijzigd.";}
-    return;
-  }
-  if((rows.length!==6 && rows.length!==18) || rows.some(r=>!Number.isFinite(Number(r.price)))){
-    if(status){
-      status.className="status error";
-      status.textContent="Full Sync gestopt: kies 6 prijzen voor één opslagvariant of alle 18 prijzen.";
-    }
-    return;
-  }
-
-  const images=forzaAdminArray(forzaPreviewModel.product.images || forzaPreviewModel.product.imageUrls || forzaPreviewModel.product.photos || forzaPreviewModel.product.gallery)
-    .filter(v=>typeof v==="string" && /^https?:\/\//i.test(v)).slice(0,4);
-  const specs=forzaAdminArray(forzaPreviewModel.product.specs || forzaPreviewModel.product.specifications || forzaPreviewModel.product.attributes).slice(0,20);
-  const description=forzaAdminPick(forzaPreviewModel.product,["description","shortDescription","longDescription"]) || "";
-  const brand=forzaAdminPick(forzaPreviewModel.product,["brand","brandName"]) || "";
-  const sku=forzaAdminPick(forzaPreviewModel.product,["sku","SKU","productSku","productSKU","articleNumber","article_number","mpn","productCode","product_code"]) || "";
-  const color=forzaAdminPick(forzaPreviewModel.product,["color","colour","colorName"]) || "";
-  const stock=forzaAdminPick(forzaPreviewModel.product,["stock","availability","inventory"]) ;
-  const sourceUrl=forzaAdminPick(forzaPreviewModel.product,["sourceUrl","canonical","url"]) || "";
-
-  const confirmed=window.confirm(
-    `Full Sync voor "${phone.name}"?\n\n`+
-    `Dit werkt ALLEEN dit product bij met de gelezen Forza-data:\n`+
-    `• 18 prijzen\n• productgegevens${images.length?`\n• ${images.length} afbeeldingen (maximaal 4)`:""}${specs.length?`\n• ${specs.length} specificaties`:""}${description?"\n• beschrijving":""}\n\n`+
-    `Andere HOMS TECH-producten worden niet gewijzigd.`
-  );
-  if(!confirmed)return;
-
-  if(btn)btn.disabled=true;
-  if(status){status.className="status info";status.textContent="Forza Full Sync wordt uitgevoerd...";}
-  try{
-    const r=await fetch("/api/admin/forza/full-sync",{
-      method:"PUT",credentials:"same-origin",
-      headers:{"Content-Type":"application/json","Accept":"application/json"},
-      body:JSON.stringify({
-        productName:modelProduct,
-        targetPhoneName:phone.name,
-        rows,
-        product:{name:modelProduct,brand,sku,color,stock,specs,description,images,sourceUrl,allowImages:phone.forzaImagesEnabled!==false}
-      })
-    });
-    const payload=await r.json().catch(()=>({}));
-    if(!r.ok || payload.success===false) throw new Error(payload.error || `Full Sync mislukt (HTTP ${r.status})`);
-    if(status){status.className="status success";status.textContent=`✓ ${payload.message || "Forza Full Sync voltooid."}`;}
-    await loadData();
-    compareForzaWithHoms();
-  }catch(error){
-    if(status){status.className="status error";status.textContent=`✗ ${error.message || "Full Sync mislukt."}`;}
-  }finally{
-    if(btn)btn.disabled=false;
-  }
-}
-
-function forzaUpdateVariantSelector(){
-  const model=document.getElementById("forzaTestModelSelect");
-  const variant=document.getElementById("forzaTestVariantSelect");
-  const storage=document.getElementById("forzaTestStorageSelect");
-  const color=document.getElementById("forzaTestColorSelect");
-  if(!model||!variant)return;
-
-  if(model.value!=="iphone-12"){
-    if(storage)storage.style.display="none";
-    if(color)color.style.display="none";
-    variant.value="";
-    return;
-  }
-
-  if(storage)storage.style.display="inline-block";
-  if(color)color.style.display="inline-block";
-
-  const storages=["64GB","128GB","256GB"];
-  const colors=["Zwart","Wit","Blauw","Groen","Paars","Rood"];
-  const currentStorage=storages.includes(storage?.value) ? storage.value : "64GB";
-  const currentColor=colors.includes(color?.value) ? color.value : "Zwart";
-  if(storage)storage.value=currentStorage;
-  if(color)color.value=currentColor;
-
-  const exact=`iPhone 12 ${currentStorage} ${currentColor}`;
-  variant.innerHTML=`<option value="${forzaAdminEsc(exact)}">${forzaAdminEsc(exact)}</option>`;
-  variant.value=exact;
-}
-
-let forzaAxisLoadToken=0;
-function forzaAxisChanged(){
-  forzaUpdateVariantSelector();
-  const model=document.getElementById("forzaTestModelSelect");
-  if(model?.value==="iphone-12"){
-    loadForzaTest();
-  }
-}
-
-
-async function forzaBulkAddAllVariants(){
-  const status=document.getElementById("forzaTestStatus");
-  const btn=document.querySelector('button[onclick="forzaBulkAddAllVariants()"]');
-  const modelSelect=document.getElementById("forzaTestModelSelect");
-  const model=String(modelSelect?.value||"").trim().toLowerCase();
-  const includeImages=document.getElementById("forzaBulkImagesEnabled")?.checked!==false;
-  if(model!=="iphone-12"){
-    if(status){status.className="status error";status.textContent="الإضافة الجماعية حالياً متاحة لـ iPhone 12 فقط.";}
-    return;
-  }
-  if(!Array.isArray(data?.phones)){
-    if(status){status.className="status error";status.textContent="HOMS TECH-productcatalogus kon niet worden geladen.";}
-    return;
-  }
-
-  const variants=[
-    "iPhone 12 64GB Zwart","iPhone 12 64GB Wit","iPhone 12 64GB Blauw","iPhone 12 64GB Groen","iPhone 12 64GB Paars","iPhone 12 64GB Rood",
-    "iPhone 12 128GB Zwart","iPhone 12 128GB Wit","iPhone 12 128GB Blauw","iPhone 12 128GB Groen","iPhone 12 128GB Paars","iPhone 12 128GB Rood",
-    "iPhone 12 256GB Zwart","iPhone 12 256GB Wit","iPhone 12 256GB Blauw","iPhone 12 256GB Groen","iPhone 12 256GB Paars","iPhone 12 256GB Rood"
-  ];
-
-  const oldPreview=forzaPreviewModel;
-  const oldVariant=document.getElementById("forzaTestVariantSelect")?.value||"";
-  const added=[];
-  const skipped=[];
-  const failed=[];
-  if(btn)btn.disabled=true;
-  if(status){status.className="status info";status.textContent=`Forza wordt gelezen: 0/${variants.length}...`}
-
-  try{
-    for(let i=0;i<variants.length;i++){
-      const variantName=variants[i];
-      if(status)status.textContent=`Forza wordt gelezen: ${i+1}/${variants.length} — ${variantName}`;
-      const existing=data.phones.find(phone=>forzaCompareNormalize(phone?.name||"")===forzaCompareNormalize(variantName));
-      if(existing){skipped.push(`${variantName} (bestaat al)`);continue;}
-
-      let payload=null;
-      try{
-        const r=await fetch(`/api/forza-test?model=iphone-12&variant=${encodeURIComponent(variantName)}`,{credentials:"same-origin",headers:{"Accept":"application/json"}});
-        payload=await r.json().catch(()=>({}));
-        if(!r.ok || payload.success===false) throw new Error(payload.error||`HTTP ${r.status}`);
-      }catch(e){
-        failed.push(`${variantName} (${e.message||"Forza niet gelezen"})`);
-        continue;
-      }
-
-      const x=forzaAdminFindResult(payload);
-      const product=x?.product || payload?.result?.product || {};
-      const storage=forzaAdminPick(product,["storage","storageOptions","memory","memoryOptions"]) ?? x.storageOptions ?? [];
-      const conditions=forzaAdminPick(product,["conditions","conditionPrices","conditionOptions"]) ?? x.conditions ?? x.conditionPrices ?? [];
-      const battery=forzaAdminPick(product,["battery","batteryOptions","batteries"]) ?? x.batteryOptions ?? [];
-      const storageVariants=forzaAdminPick(product,["storageVariants"]) ?? x.storageVariants ?? [];
-      forzaPreviewModel={product,storage,conditions,battery,storageVariants};
-      const rows=forzaAdminBuildPreview().filter(r=>Number.isFinite(Number(r.price)));
-      if(!rows.length){failed.push(`${variantName} (geen prijzen)`);continue;}
-
-      const template=forzaCompareFindTemplatePhone();
-      if(!template){failed.push(`${variantName} (geen bestaand model als basis)`);continue;}
-
-      const name=String(forzaAdminPick(product,["name","productName","title"])||variantName).trim();
-      const brand=String(forzaAdminPick(product,["brand","brandName"])||template.brand||"").trim();
-      const color=String(forzaAdminPick(product,["color","colour","colorName"])||variantName.match(/\b(Zwart|Wit|Blauw|Groen|Paars|Rood)\b/i)?.[1]||"").trim();
-      const sku=String(forzaAdminPick(product,["sku","SKU","productSku","productSKU","articleNumber","article_number","mpn","productCode","product_code"])||"").trim();
-      const stockRaw=forzaAdminPick(product,["stock","visibleStock","maxVisibleStock","availability","inventory"]);
-      const stock=Number.isFinite(Number(stockRaw))?Number(stockRaw):Number(template.stock||0);
-      const sourceUrl=String(forzaAdminPick(product,["sourceUrl","canonical","url"])||"");
-      const images=forzaAdminArray(product.images||product.imageUrls||product.photos||product.gallery).filter(v=>typeof v==="string"&&/^https?:\/\//i.test(v)).slice(0,4);
-      const specs=forzaAdminArray(product.specs||product.specifications||product.attributes).slice(0,20);
-      const description=String(forzaAdminPick(product,["description","shortDescription","longDescription"])||template.description||"");
-
-      const newPhone=JSON.parse(JSON.stringify(template));
-      newPhone.name=name; newPhone.brand=brand; newPhone.color=color; newPhone.sku=sku; newPhone.stock=stock;
-      newPhone.description=description;
-      newPhone.images=includeImages && images.length ? images : ["","","",""];
-      newPhone.forzaImages=includeImages ? images.slice(0,4) : [];
-      newPhone.forzaImagesEnabled=includeImages;
-      newPhone.forzaSourceUrl=sourceUrl;
-      newPhone.forzaProductData={name,brand,sku,color,storage:product.storage||[],stock,specs,description,images:includeImages?images.slice(0,4):[],sourceUrl,syncedAt:new Date().toISOString()};
-      forzaApplyVariantPricesToNewPhone(newPhone,rows);
-      data.phones.push(newPhone);
-      added.push(name);
-    }
-
-    selectedPhoneIndex=added.length?data.phones.length-1:selectedPhoneIndex;
-    if(added.length){
-      markChanged();
-      await save(false);
-    }
-    if(status){
-      status.className=failed.length?"status info":"status success";
-      status.textContent=`✓ تم إضافة ${added.length} جهاز جديد. الموجود مسبقاً: ${skipped.length}. لم يتمكن Forza من قراءة: ${failed.length}.`;
-    }
-    if(added.length) renderPhones();
-    if(failed.length) console.warn("Forza bulk import skipped:",failed);
-  }catch(error){
-    if(status){status.className="status error";status.textContent=`✗ فشل الإضافة الجماعية: ${error.message||error}`;}
-  }finally{
-    forzaPreviewModel=oldPreview;
-    const select=document.getElementById("forzaTestVariantSelect");
-    if(select)select.value=oldVariant;
-    const m=oldVariant.match(/^iPhone 12 (64GB|128GB|256GB) (Zwart|Wit|Blauw|Groen|Paars|Rood)$/i);
-    if(m){
-      const s=document.getElementById("forzaTestStorageSelect");
-      const c=document.getElementById("forzaTestColorSelect");
-      if(s)s.value=m[1];
-      if(c)c.value=m[2].charAt(0).toUpperCase()+m[2].slice(1).toLowerCase();
-    }
-    if(btn)btn.disabled=false;
-  }
-}
-
 async function loadForzaTest(){
   const status=document.getElementById("forzaTestStatus");
   const content=document.getElementById("forzaTestContent");
@@ -5548,25 +5124,8 @@ async function loadForzaTest(){
   status.textContent="Forza wordt opnieuw gelezen...";
   try{
     const modelSelect=document.getElementById("forzaTestModelSelect");
-    const variantSelect=document.getElementById("forzaTestVariantSelect");
-    const storageSelect=document.getElementById("forzaTestStorageSelect");
-    const colorSelect=document.getElementById("forzaTestColorSelect");
     const selectedModel=modelSelect ? modelSelect.value : "iphone-11";
-    let selectedVariant=(selectedModel==="iphone-12" && variantSelect) ? variantSelect.value : "";
-    if(selectedModel==="iphone-12"){
-      const storage=storageSelect?.value || "64GB";
-      const color=colorSelect?.value || "Zwart";
-      selectedVariant=`iPhone 12 ${storage} ${color}`;
-      if(variantSelect){
-        variantSelect.innerHTML=`<option value="${forzaAdminEsc(selectedVariant)}">${forzaAdminEsc(selectedVariant)}</option>`;
-        variantSelect.value=selectedVariant;
-      }
-    }
-    if(selectedModel==="iphone-12" && !selectedVariant){
-      throw new Error("Kies eerst de exacte iPhone 12 opslag + kleur.");
-    }
-    const query=`/api/forza-test?model=${encodeURIComponent(selectedModel)}${selectedVariant?`&variant=${encodeURIComponent(selectedVariant)}`:""}`;
-    const r=await fetch(query,{credentials:"same-origin",headers:{"Accept":"application/json"}});
+    const r=await fetch(`/api/forza-test?model=${encodeURIComponent(selectedModel)}`,{credentials:"same-origin",headers:{"Accept":"application/json"}});
     const payload=await r.json().catch(()=>({}));
     if(!r.ok || payload.success===false){
       throw new Error(payload.error || (r.status===401||r.status===403 ? "Geen toegang tot Forza Test Import." : `Forza test mislukt (HTTP ${r.status})`));
