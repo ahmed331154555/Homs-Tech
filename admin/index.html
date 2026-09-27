@@ -1371,9 +1371,12 @@ textarea{
     <div class="card" style="margin:12px 0 14px">
       <label for="forzaTestModelSelect" style="font-weight:800;display:block;margin-bottom:7px">Forza model testen</label>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <select id="forzaTestModelSelect" class="input" style="min-width:240px;max-width:360px">
+        <select id="forzaTestModelSelect" class="input" style="min-width:240px;max-width:260px" onchange="forzaUpdateVariantSelector()">
           <option value="iphone-11">iPhone 11</option>
           <option value="iphone-12">iPhone 12</option>
+        </select>
+        <select id="forzaTestVariantSelect" class="input" style="min-width:300px;max-width:420px;display:none">
+          <option value="">Kies iPhone 12 variant</option>
         </select>
         <span class="small">Alleen lezen van de publieke Forza-pagina. Er wordt niets opgeslagen.</span>
       </div>
@@ -1598,7 +1601,8 @@ function showPage(page){
     if(page==="webshop-orders")loadWebshopOrders();
     if(page==="buyback")renderBuybackPhones();
     if(page==="buyback-orders")loadBuybackOrders();
-    if(page==="forza-test")loadForzaTest();
+    if(page==="forza-test")forzaUpdateVariantSelector();
+loadForzaTest();
     if(page==="admins")loadAdmins();
   }
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
@@ -5181,6 +5185,21 @@ async function fullSyncHomsFromForza(){
   }
 }
 
+function forzaUpdateVariantSelector(){
+  const model=document.getElementById("forzaTestModelSelect");
+  const select=document.getElementById("forzaTestVariantSelect");
+  if(!model||!select)return;
+  if(model.value!=="iphone-12"){
+    select.style.display="none";
+    select.innerHTML='<option value="">Kies variant</option>';
+    return;
+  }
+  const storages=["64GB","128GB","256GB"];
+  const colors=["Zwart","Wit","Blauw","Groen","Paars","Rood"];
+  select.innerHTML='<option value="">Kies iPhone 12 variant</option>'+storages.flatMap(s=>colors.map(c=>`<option value="iPhone 12 ${s} ${c}">${s.replace("GB"," GB")} — ${c}</option>`)).join("");
+  select.style.display="inline-block";
+}
+
 async function loadForzaTest(){
   const status=document.getElementById("forzaTestStatus");
   const content=document.getElementById("forzaTestContent");
@@ -5191,8 +5210,14 @@ async function loadForzaTest(){
   status.textContent="Forza wordt opnieuw gelezen...";
   try{
     const modelSelect=document.getElementById("forzaTestModelSelect");
+    const variantSelect=document.getElementById("forzaTestVariantSelect");
     const selectedModel=modelSelect ? modelSelect.value : "iphone-11";
-    const r=await fetch(`/api/forza-test?model=${encodeURIComponent(selectedModel)}`,{credentials:"same-origin",headers:{"Accept":"application/json"}});
+    const selectedVariant=(selectedModel==="iphone-12" && variantSelect) ? variantSelect.value : "";
+    if(selectedModel==="iphone-12" && !selectedVariant){
+      throw new Error("Kies eerst de exacte iPhone 12 opslag + kleur.");
+    }
+    const query=`/api/forza-test?model=${encodeURIComponent(selectedModel)}${selectedVariant?`&variant=${encodeURIComponent(selectedVariant)}`:""}`;
+    const r=await fetch(query,{credentials:"same-origin",headers:{"Accept":"application/json"}});
     const payload=await r.json().catch(()=>({}));
     if(!r.ok || payload.success===false){
       throw new Error(payload.error || (r.status===401||r.status===403 ? "Geen toegang tot Forza Test Import." : `Forza test mislukt (HTTP ${r.status})`));
