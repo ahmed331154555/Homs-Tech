@@ -1315,7 +1315,34 @@ async function forzaFetchPublicPage(sourceUrl) {
   return { response, html };
 }
 
-function forzaExtractStorageLinks(html, baseUrl) {
+const FORZA_TEST_MODELS = {
+  "iphone-11": {
+    label: "iPhone 11",
+    sourceUrl: "https://www.forza-refurbished.nl/refurbished-iphone/iphone-11",
+    storages: ["64GB", "128GB", "256GB"],
+    fallbacks: {
+      "64GB": "https://www.forza-refurbished.nl/iphone-11-64-gb-paars",
+      "128GB": "https://www.forza-refurbished.nl/iphone-11-128gb-paars",
+      "256GB": "https://www.forza-refurbished.nl/iphone-11-256gb-purple"
+    }
+  },
+  "iphone-12": {
+    label: "iPhone 12",
+    sourceUrl: "https://www.forza-refurbished.nl/refurbished-iphone/iphone-12",
+    storages: ["64GB", "128GB", "256GB"],
+    fallbacks: {
+      "64GB": "https://www.forza-refurbished.nl/iphone-12",
+      "128GB": "https://www.forza-refurbished.nl/iphone-12-128gb-zwart",
+      "256GB": "https://www.forza-refurbished.nl/iphone-12-256gb-zwart"
+    }
+  }
+};
+
+function forzaGetTestModel(modelKey) {
+  return FORZA_TEST_MODELS[String(modelKey || "").trim().toLowerCase()] || null;
+}
+
+function forzaExtractStorageLinks(html, baseUrl, fallbackMap = {}, allowedStorages = ["64GB", "128GB", "256GB"]) {
   const found = new Map();
   const source = String(html || "");
   const anchorPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>[\s\S]{0,500}?((?:64|128|256)\s*GB)[\s\S]{0,500}?<\/a>/gi;
@@ -1332,23 +1359,14 @@ function forzaExtractStorageLinks(html, baseUrl) {
     }
   }
 
-  // These are only safe public-page fallbacks for the three variants of this
-  // fixed iPhone 11 test. No arbitrary user URL is accepted.
-  const fallbacks = {
-    // Use the exact public Purple variant for all three storage sizes so the
-    // test never mixes the generic/Black landing page with the Purple variants.
-    "64GB": "https://www.forza-refurbished.nl/iphone-11-64-gb-paars",
-    "128GB": "https://www.forza-refurbished.nl/iphone-11-128gb-paars",
-    "256GB": "https://www.forza-refurbished.nl/iphone-11-256gb-purple"
-  };
-
-  for (const [storage, url] of Object.entries(fallbacks)) {
+  // Only use explicit public-page fallbacks from the whitelisted model config.
+  for (const [storage, url] of Object.entries(fallbackMap || {})) {
     // For this fixed read-only test, prefer the known exact Purple variant
     // over a generic link discovered in the landing-page HTML.
     found.set(storage, url);
   }
 
-  return ["64GB", "128GB", "256GB"]
+  return allowedStorages
     .filter(storage => found.has(storage))
     .map(storage => ({ storage, url: found.get(storage) }));
 }
@@ -1598,7 +1616,16 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
 });
 
 app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) => {
-  const sourceUrl = "https://www.forza-refurbished.nl/refurbished-iphone/iphone-11";
+  const requestedModel = String(req.query.model || "iphone-11").trim().toLowerCase();
+  const modelConfig = forzaGetTestModel(requestedModel);
+  if (!modelConfig) {
+    return res.status(400).json({
+      success: false,
+      readOnly: true,
+      error: "Onbekend Forza-testmodel. Kies iPhone 11 of iPhone 12."
+    });
+  }
+  const sourceUrl = modelConfig.sourceUrl;
 
   try {
     const mainPage = await forzaFetchPublicPage(sourceUrl);
@@ -1613,7 +1640,12 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
     }
 
     const result = forzaExtractTest(mainPage.html, sourceUrl);
-    const storageLinks = forzaExtractStorageLinks(mainPage.html, sourceUrl);
+    const storageLinks = forzaExtractStorageLinks(
+      mainPage.html,
+      sourceUrl,
+      modelConfig.fallbacks,
+      modelConfig.storages
+    );
     const storageVariants = [];
 
     for (const variant of storageLinks) {
@@ -1657,9 +1689,15 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
     result.storageVariants = storageVariants;
     result.product.storageVariants = storageVariants;
 
+    result.testModel = requestedModel;
+    result.testModelLabel = modelConfig.label;
+    result.allowedStorages = modelConfig.storages;
     return res.json({
       success: true,
       readOnly: true,
+      testModel: requestedModel,
+      testModelLabel: modelConfig.label,
+      sourceUrl,
       result
     });
   } catch (error) {
