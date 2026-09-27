@@ -1181,42 +1181,17 @@ function forzaExtractTest(html, sourceUrl) {
     "Zichtbaar gebruikt"
   ];
 
-  // Forza's public page can render the condition price either directly
-  // after the condition name or with extra labels/elements in between.
-  // Keep the direct match first, then use a bounded fallback that stops
-  // before the next condition. This is especially important for the
-  // 64GB page, which can have a slightly different rendered structure.
-  for (let i = 0; i < conditionNames.length; i++) {
-    const name = conditionNames[i];
+  for (const name of conditionNames) {
     const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const directPattern = new RegExp(
+    const pattern = new RegExp(
       escaped + "\\s+(?:Meest gekozen\\s+)?€\\s*([0-9]+(?:[.,][0-9]{1,2})?)",
       "i"
     );
-
-    let price = null;
-    const directMatch = clean.match(directPattern);
-    if (directMatch) {
-      price = forzaParseEuro(directMatch[1]);
-    } else {
-      const nextNames = conditionNames.slice(i + 1);
-      const stopPattern = nextNames.length
-        ? new RegExp(nextNames.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") , "i")
-        : null;
-      const nameMatch = clean.match(new RegExp(escaped, "i"));
-      if (nameMatch) {
-        const start = nameMatch.index + nameMatch[0].length;
-        let segment = clean.slice(start, start + 220);
-        if (stopPattern) {
-          const stop = segment.search(stopPattern);
-          if (stop >= 0) segment = segment.slice(0, stop);
-        }
-        const euroMatch = segment.match(/€\\s*([0-9]+(?:[.,][0-9]{1,2})?)/i);
-        if (euroMatch) price = forzaParseEuro(euroMatch[1]);
-      }
-    }
-
-    conditions.push({ name, price });
+    const match = clean.match(pattern);
+    conditions.push({
+      name,
+      price: match ? forzaParseEuro(match[1]) : null
+    });
   }
 
   const battery = [];
@@ -1301,83 +1276,6 @@ function forzaExtractTest(html, sourceUrl) {
   };
 }
 
-async function forzaFetchPublicPage(sourceUrl) {
-  const response = await fetch(sourceUrl, {
-    method: "GET",
-    redirect: "follow",
-    headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; HOMS-TECH public product test)",
-      "Accept": "text/html,application/xhtml+xml"
-    }
-  });
-
-  const html = await response.text();
-  return { response, html };
-}
-
-const FORZA_TEST_MODELS = {
-  "iphone-11": {
-    label: "iPhone 11",
-    sourceUrl: "https://www.forza-refurbished.nl/refurbished-iphone/iphone-11",
-    storages: ["64GB", "128GB", "256GB"],
-    fallbacks: {
-      "64GB": "https://www.forza-refurbished.nl/iphone-11-64-gb-paars",
-      "128GB": "https://www.forza-refurbished.nl/iphone-11-128gb-paars",
-      "256GB": "https://www.forza-refurbished.nl/iphone-11-256gb-purple"
-    }
-  },
-  "iphone-12": {
-    label: "iPhone 12",
-    sourceUrl: "https://www.forza-refurbished.nl/refurbished-iphone/iphone-12",
-    storages: ["64GB", "128GB", "256GB"],
-    fallbacks: {
-      "64GB": "https://www.forza-refurbished.nl/iphone-12",
-      "128GB": "https://www.forza-refurbished.nl/iphone-12-128gb-zwart",
-      "256GB": "https://www.forza-refurbished.nl/iphone-12-256gb-zwart"
-    }
-  }
-};
-
-function forzaGetTestModel(modelKey) {
-  return FORZA_TEST_MODELS[String(modelKey || "").trim().toLowerCase()] || null;
-}
-
-function forzaExtractStorageLinks(html, baseUrl, fallbackMap = {}, allowedStorages = ["64GB", "128GB", "256GB"]) {
-  const found = new Map();
-  const source = String(html || "");
-  const anchorPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>[\s\S]{0,500}?((?:64|128|256)\s*GB)[\s\S]{0,500}?<\/a>/gi;
-  let match;
-
-  while ((match = anchorPattern.exec(source))) {
-    const href = match[1];
-    const storage = forzaCleanText(match[2]).replace(/\s+/g, "");
-    try {
-      const absolute = new URL(href, baseUrl).toString();
-      if (!found.has(storage)) found.set(storage, absolute);
-    } catch {
-      // Ignore malformed links.
-    }
-  }
-
-  // Only use explicit public-page fallbacks from the whitelisted model config.
-  for (const [storage, url] of Object.entries(fallbackMap || {})) {
-    // For this fixed read-only test, prefer the known exact Purple variant
-    // over a generic link discovered in the landing-page HTML.
-    found.set(storage, url);
-  }
-
-  return allowedStorages
-    .filter(storage => found.has(storage))
-    .map(storage => ({ storage, url: found.get(storage) }));
-}
-
-function forzaSelectedStorage(result) {
-  const title = String(result?.product?.name || "");
-  const match = title.match(/\b(64|128|256)\s*GB\b/i);
-  return match ? `${match[1]}GB` : "";
-}
-
-
 // Forza -> HOMS TECH price update.
 // This endpoint is intentionally separate from the read-only test endpoint.
 // It changes ONLY the matched phone's condition/storage/battery price options
@@ -1386,6 +1284,7 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
   const body = req.body || {};
   const productName = String(body.productName || "").trim();
   const targetPhoneName = String(body.targetPhoneName || "").trim();
+  const sourceProduct = body.sourceProduct && typeof body.sourceProduct === "object" ? body.sourceProduct : null;
   const rows = Array.isArray(body.rows) ? body.rows : [];
 
   const norm = (v) => String(v ?? "")
@@ -1503,30 +1402,37 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     }
 
     const wantedModel = modelKey(productName);
-    const wantedTarget = norm(targetPhoneName || productName);
+    const wantedTarget = norm(targetPhoneName);
     let bestIndex = -1;
     let bestScore = -1;
 
-    data.phones.forEach((phone, index) => {
-      if (!phone || typeof phone !== "object") return;
-      const phoneName = norm(phone.name || "");
-      const pk = modelKey(phone.name || "");
-      if (!pk || !wantedModel) return;
+    // Prefer the exact HOMS TECH product selected in Admin. This prevents
+    // iPhone 12 updates from accidentally landing on another product.
+    if (wantedTarget) {
+      data.phones.forEach((phone, index) => {
+        if (!phone || typeof phone !== "object") return;
+        if (norm(phone.name || "") === wantedTarget) {
+          bestIndex = index;
+          bestScore = 1000;
+        }
+      });
+    }
 
-      // Prefer the exact HOMS TECH product selected by the comparison UI.
-      // Only fall back to model-level matching when an exact product name is
-      // not available. This prevents iPhone 12 variants from being mixed.
-      let score = 0;
-      if (wantedTarget && phoneName === wantedTarget) score = 1000;
-      else if (wantedTarget && (phoneName.includes(wantedTarget) || wantedTarget.includes(phoneName))) score = 900;
-      else if (pk === wantedModel) score = 100;
-      else if (pk.includes(wantedModel) || wantedModel.includes(pk)) score = 60;
-      if (norm(phone.brand) === "apple") score += 10;
-      if (score > bestScore) {
-        bestScore = score;
-        bestIndex = index;
-      }
-    });
+    if (bestIndex < 0) {
+      data.phones.forEach((phone, index) => {
+        if (!phone || typeof phone !== "object") return;
+        const pk = modelKey(phone.name || "");
+        if (!pk || !wantedModel) return;
+        let score = 0;
+        if (pk === wantedModel) score = 100;
+        else if (pk.includes(wantedModel) || wantedModel.includes(pk)) score = 60;
+        if (norm(phone.brand) === "apple") score += 10;
+        if (score > bestScore) {
+          bestScore = score;
+          bestIndex = index;
+        }
+      });
+    }
 
     if (bestIndex < 0 || bestScore < 60) {
       await client.query("ROLLBACK");
@@ -1590,6 +1496,46 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     phone.forzaPriceMatrixSource = "Forza public website";
     phone.forzaPriceMatrixUpdatedAt = new Date().toISOString();
 
+    // Full Forza product sync: keep the existing price logic above, then
+    // copy the public product data into the selected HOMS TECH product.
+    // Images are kept as URLs (first 4 for the webshop gallery, all images
+    // preserved in forzaImages) so the database does not grow with binaries.
+    if (sourceProduct) {
+      const sourceImages = Array.isArray(sourceProduct.images)
+        ? sourceProduct.images.filter(v => /^https?:\/\//i.test(String(v))).map(String)
+        : [];
+      const sourceSpecs = Array.isArray(sourceProduct.specs)
+        ? sourceProduct.specs.filter(v => String(v || "").trim()).map((v, i) => ({ label: `Forza ${i + 1}`, value: String(v) }))
+        : [];
+
+      if (String(sourceProduct.name || "").trim()) phone.name = String(sourceProduct.name).trim();
+      if (String(sourceProduct.brand || "").trim()) phone.brand = String(sourceProduct.brand).trim();
+      if (String(sourceProduct.sku || "").trim()) phone.sku = String(sourceProduct.sku).trim();
+      if (sourceProduct.stock !== null && sourceProduct.stock !== undefined && Number.isFinite(Number(sourceProduct.stock))) {
+        phone.stock = Number(sourceProduct.stock);
+      }
+      if (String(sourceProduct.description || "").trim()) phone.description = String(sourceProduct.description).trim();
+      if (String(sourceProduct.color || "").trim()) phone.color = String(sourceProduct.color).trim();
+      if (Array.isArray(sourceProduct.storage) && sourceProduct.storage.length) phone.storage = sourceProduct.storage.join(", ");
+      if (sourceSpecs.length) phone.specifications = sourceSpecs;
+      if (sourceImages.length) phone.images = sourceImages.slice(0, 4);
+      phone.forzaImages = sourceImages;
+      phone.forzaProductData = {
+        sourceUrl: String(sourceProduct.sourceUrl || ""),
+        canonical: String(sourceProduct.canonical || ""),
+        name: String(sourceProduct.name || ""),
+        brand: String(sourceProduct.brand || ""),
+        sku: String(sourceProduct.sku || ""),
+        color: String(sourceProduct.color || ""),
+        storage: Array.isArray(sourceProduct.storage) ? sourceProduct.storage : [],
+        stock: sourceProduct.stock ?? null,
+        images: sourceImages,
+        specs: Array.isArray(sourceProduct.specs) ? sourceProduct.specs : [],
+        description: String(sourceProduct.description || "")
+      };
+      phone.forzaFullSyncAt = new Date().toISOString();
+    }
+
     const after = {
       conditions: phone.conditionOptions.map(o => ({label:o.label, basePrice:o.basePrice})),
       storage: phone.storageOptions.map(o => ({label:o.label, priceDelta:o.priceDelta})),
@@ -1601,19 +1547,6 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
       "UPDATE site_settings SET data = $1 WHERE id = 1",
       [JSON.stringify(data)]
     );
-
-    // Verify the exact matrix is present in the same transaction before commit.
-    const verify = await client.query("SELECT data FROM site_settings WHERE id = 1 FOR UPDATE");
-    const verifyData = verify.rows[0]?.data || {};
-    const verifyPhones = Array.isArray(verifyData.phones) ? verifyData.phones : [];
-    const verifyPhone = verifyPhones.find(p => p && p.name === phone.name);
-    const verifyMatrix = verifyPhone?.forzaPriceMatrix || {};
-    const verifyOk = Object.entries(forzaPriceMatrix).every(([key, value]) => Number(verifyMatrix[key]) === Number(value));
-    if (!verifyOk) {
-      await client.query("ROLLBACK");
-      return res.status(500).json({ success:false, error:"Forza-prijzen konden niet veilig worden geverifieerd. Geen wijziging opgeslagen." });
-    }
-
     await client.query("COMMIT");
 
     res.json({
@@ -1621,9 +1554,11 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
       readOnly: false,
       updatedProduct: phone.name,
       sourceProduct: productName,
+      fullSync: !!sourceProduct,
+      syncedImages: sourceProduct && Array.isArray(sourceProduct.images) ? sourceProduct.images.length : 0,
       before,
       after,
-      message: "Forza-prijzen zijn bijgewerkt. Alleen de prijsopties van dit product zijn gewijzigd."
+      message: sourceProduct ? "Forza-product en prijzen zijn volledig bijgewerkt." : "Forza-prijzen zijn bijgewerkt. Alleen de prijsopties van dit product zijn gewijzigd."
     });
   } catch (error) {
     try { await client.query("ROLLBACK"); } catch {}
@@ -1638,88 +1573,34 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
 });
 
 app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) => {
-  const requestedModel = String(req.query.model || "iphone-11").trim().toLowerCase();
-  const modelConfig = forzaGetTestModel(requestedModel);
-  if (!modelConfig) {
-    return res.status(400).json({
-      success: false,
-      readOnly: true,
-      error: "Onbekend Forza-testmodel. Kies iPhone 11 of iPhone 12."
-    });
-  }
-  const sourceUrl = modelConfig.sourceUrl;
+  const sourceUrl = "https://www.forza-refurbished.nl/refurbished-iphone/iphone-11";
 
   try {
-    const mainPage = await forzaFetchPublicPage(sourceUrl);
+    const response = await fetch(sourceUrl, {
+      method: "GET",
+      redirect: "follow",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; HOMS-TECH public product test)",
+        "Accept": "text/html,application/xhtml+xml"
+      }
+    });
 
-    if (!mainPage.response.ok) {
+    const html = await response.text();
+
+    if (!response.ok) {
       return res.status(502).json({
         success: false,
         readOnly: true,
         sourceUrl,
-        error: `Forza returned HTTP ${mainPage.response.status}`
+        error: `Forza returned HTTP ${response.status}`
       });
     }
 
-    const result = forzaExtractTest(mainPage.html, sourceUrl);
-    const storageLinks = forzaExtractStorageLinks(
-      mainPage.html,
-      sourceUrl,
-      modelConfig.fallbacks,
-      modelConfig.storages
-    );
-    const storageVariants = [];
+    const result = forzaExtractTest(html, sourceUrl);
 
-    for (const variant of storageLinks) {
-      try {
-        const page = variant.url === sourceUrl
-          ? mainPage
-          : await forzaFetchPublicPage(variant.url);
-
-        if (!page.response.ok) {
-          storageVariants.push({
-            storage: variant.storage,
-            sourceUrl: variant.url,
-            success: false,
-            error: `Forza returned HTTP ${page.response.status}`
-          });
-          continue;
-        }
-
-        const variantResult = forzaExtractTest(page.html, variant.url);
-        const detectedStorage = forzaSelectedStorage(variantResult) || variant.storage;
-
-        storageVariants.push({
-          storage: detectedStorage,
-          sourceUrl: variant.url,
-          success: true,
-          conditions: variantResult.product.conditions || [],
-          battery: variantResult.product.battery || [],
-          stock: variantResult.product.stock,
-          productName: variantResult.product.name || result.product.name
-        });
-      } catch (variantError) {
-        storageVariants.push({
-          storage: variant.storage,
-          sourceUrl: variant.url,
-          success: false,
-          error: String(variantError?.message || variantError)
-        });
-      }
-    }
-
-    result.storageVariants = storageVariants;
-    result.product.storageVariants = storageVariants;
-
-    result.testModel = requestedModel;
-    result.testModelLabel = modelConfig.label;
-    result.allowedStorages = modelConfig.storages;
     return res.json({
       success: true,
       readOnly: true,
-      testModel: requestedModel,
-      testModelLabel: modelConfig.label,
-      sourceUrl,
       result
     });
   } catch (error) {
