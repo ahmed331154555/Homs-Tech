@@ -1556,14 +1556,8 @@ function forzaExtractVariantGalleryImages(html, productName) {
   );
   const compact = value => forzaImageMatchKey(value).replace(/\s+/g, "");
 
-  // Prefer the structured Forza/Magento/Fotorama gallery. This is the same
-  // gallery path that was working for the iPhone 11 and avoids depending on
-  // whichever <img> tags happen to appear first in the HTML.
-  const structured = forzaExtractStructuredGalleryImages(html, productName);
-  if (structured.length >= 4) return structured.slice(0, 4);
-
-  const images = [...structured];
-  const seen = new Set(images);
+  const images = [];
+  const seen = new Set();
   const imgTags = String(html || "").match(/<img\b[^>]*>/gi) || [];
 
   const addUrl = value => {
