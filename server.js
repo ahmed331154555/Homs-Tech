@@ -1322,8 +1322,13 @@ function forzaExtractVariantGalleryImages(html, productName) {
   if (!wanted) return [];
   const wantedTokens = wanted.split(" ").filter(Boolean);
   const wantedColor = wantedTokens[wantedTokens.length - 1] || "";
-  const wantedModelTokens = wantedTokens.filter(t => !/^\d+(?:gb|tb)$/.test(t) && t !== wantedColor);
   const wantedStorage = (wanted.match(/\b\d+\s*(?:gb|tb)\b/) || [""])[0].replace(/\s+/g, "");
+  // Tokenize the model separately from storage. Product names can be
+  // written as "64 GB" (two tokens), while gallery alts often omit storage.
+  // Do NOT require the separate "64" / "gb" tokens as model identity.
+  const wantedModelTokens = wantedTokens.filter(t =>
+    !/^\d+$/.test(t) && !/^(?:gb|tb)$/.test(t) && t !== wantedColor
+  );
   const compact = value => forzaImageMatchKey(value).replace(/\s+/g, "");
 
   const images = [];
@@ -1449,7 +1454,7 @@ async function forzaFetchJinaGallery(url, productName) {
     const wantedColor = wantedTokens[wantedTokens.length - 1] || "";
     const wantedStorage = (wanted.match(/\b\d+\s*(?:gb|tb)\b/) || [""])[0].replace(/\s+/g, "");
     const wantedModelTokens = wantedTokens.filter(
-      t => !/^\d+(?:gb|tb)$/.test(t) && t !== wantedColor
+      t => !/^\d+$/.test(t) && !/^(?:gb|tb)$/.test(t) && t !== wantedColor
     );
 
     const images = [];
