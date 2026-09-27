@@ -996,6 +996,13 @@ textarea{
 .buyback-v1-shell .buyback-v1-title p{margin-top:4px}
 .buyback-v1-brand-badge{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
+
+<style id="homs-admin-auto-catalog">
+.admin-auto-catalog{margin:16px 0 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:18px;padding:18px}
+.admin-auto-catalog h3{margin:0 0 6px;font-size:20px}.admin-auto-catalog .help{color:#64748b;font-size:13px;margin-bottom:14px}
+.hac-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.hac-btn{border:1px solid #dbe3ee;background:#fff;border-radius:12px;padding:13px;text-align:left;cursor:pointer;font-weight:800}.hac-btn:hover{border-color:#2563eb}.hac-btn small{display:block;color:#64748b;font-weight:400;margin-top:4px}.hac-back{border:0;background:#eaf1ff;color:#2563eb;border-radius:9px;padding:8px 12px;font-weight:800;cursor:pointer;margin-bottom:12px}.hac-active{display:inline-flex;gap:8px;align-items:center;background:#eef6ff;color:#2563eb;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800;margin-bottom:12px}
+@media(max-width:900px){.hac-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:550px){.hac-grid{grid-template-columns:1fr}}
+</style>
 </head>
 
 <body>
@@ -1131,6 +1138,7 @@ textarea{
       </button>
     </div>
 
+    <div id="adminAutoCatalog"></div>
     <div id="phonesList"></div>
   </section>
 
@@ -2320,7 +2328,27 @@ function deleteService(i){
 
 /* ---------------- PHONES ---------------- */
 
+let adminCatalogState={level:"brand",brand:"",family:"",variant:""};
+function hacName(p){return String(p?.name||p?.model||"").replace(/\s+/g," ").trim()}
+function hacBrand(p){const raw=(String(p?.brand||"")+" "+hacName(p)).toLowerCase();if(raw.includes("samsung")||raw.includes("galaxy"))return "Samsung";if(raw.includes("ipad"))return "iPad";if(raw.includes("iphone")||raw.includes("apple"))return "iPhone";return String(p?.brand||"").trim()||"Overige"}
+function hacFamily(p){const n=hacName(p),l=n.toLowerCase();if(l.includes("iphone")){const m=l.match(/iphone\s+(se|[0-9]{1,2})/i);if(m)return m[1].toLowerCase()==="se"?"iPhone SE":"iPhone "+m[1]}if(l.includes("galaxy")){const m=l.match(/galaxy\s+([a-z])\s*([0-9]+)/i);if(m)return "Galaxy "+m[1].toUpperCase()+m[2];return "Samsung Galaxy"}if(l.includes("ipad"))return "iPad";return hacBrand(p)}
+function hacVariant(p){const n=hacName(p),l=n.toLowerCase();if(l.includes("iphone")){const m=l.match(/iphone\s+(se|[0-9]{1,2})(?:\s+(mini|plus|pro\s+max|pro))?/i);if(m){let b=m[1].toLowerCase()==="se"?"iPhone SE":"iPhone "+m[1];let x=(m[2]||"").replace(/\s+/g," ").trim();return x?b+" "+x.replace(/\b\w/g,c=>c.toUpperCase()):b}}return n}
+function hacChooseBrand(b){adminCatalogState={level:"family",brand:b,family:"",variant:""};hacRender()}
+function hacChooseFamily(f){adminCatalogState={level:"variant",brand:adminCatalogState.brand,family:f,variant:""};hacRender()}
+function hacChooseVariant(v){adminCatalogState={level:"products",brand:adminCatalogState.brand,family:adminCatalogState.family,variant:v};hacRender()}
+function hacBack(){if(adminCatalogState.level==="products")adminCatalogState={level:"variant",brand:adminCatalogState.brand,family:adminCatalogState.family,variant:""};else if(adminCatalogState.level==="variant")adminCatalogState={level:"family",brand:adminCatalogState.brand,family:"",variant:""};else adminCatalogState={level:"brand",brand:"",family:"",variant:""};hacRender()}
+function hacSelectFirst(filter){const i=data.phones.findIndex(filter);if(i>=0){selectedPhoneIndex=i;renderPhones()}}
+function hacRender(){const box=document.getElementById("adminAutoCatalog");if(!box)return;const phones=Array.isArray(data.phones)?data.phones:[];let h='<div class="admin-auto-catalog"><h3>📂 Automatische indeling</h3><div class="help">Kies merk → model → uitvoering. Daarna wordt het eerste bijpassende product geopend in de bestaande editor. Deze indeling verandert geen prijzen of producten.</div>';
+const escv=v=>typeof esc==='function'?esc(v):String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+if(adminCatalogState.level==='brand'){const bs=[...new Set(phones.map(hacBrand))].sort();h+='<div class="hac-grid">'+bs.map(b=>`<button class="hac-btn" onclick="hacChooseBrand('${escv(b)}')">${escv(b)}<small>${phones.filter(p=>hacBrand(p)===b).length} producten</small></button>`).join('')+'</div>'}
+else if(adminCatalogState.level==='family'){const a=phones.filter(p=>hacBrand(p)===adminCatalogState.brand);const fs=[...new Set(a.map(hacFamily))].sort((x,y)=>x.localeCompare(y,undefined,{numeric:true}));h+='<button class="hac-back" onclick="hacBack()">← Terug</button><div class="hac-active">'+escv(adminCatalogState.brand)+'</div><div class="hac-grid">'+fs.map(f=>`<button class="hac-btn" onclick="hacChooseFamily('${escv(f)}')">${escv(f)}<small>${a.filter(p=>hacFamily(p)===f).length} producten</small></button>`).join('')+'</div>'}
+else if(adminCatalogState.level==='variant'){const a=phones.filter(p=>hacBrand(p)===adminCatalogState.brand&&hacFamily(p)===adminCatalogState.family);const vs=[...new Set(a.map(hacVariant))].sort((x,y)=>x.localeCompare(y,undefined,{numeric:true}));h+='<button class="hac-back" onclick="hacBack()">← Terug</button><div class="hac-active">'+escv(adminCatalogState.family)+'</div><div class="hac-grid">'+vs.map(v=>`<button class="hac-btn" onclick="hacChooseVariant('${escv(v)}')">${escv(v)}<small>${a.filter(p=>hacVariant(p)===v).length} varianten</small></button>`).join('')+'</div>'}
+else{const a=phones.filter(p=>hacBrand(p)===adminCatalogState.brand&&hacFamily(p)===adminCatalogState.family&&hacVariant(p)===adminCatalogState.variant);h+='<button class="hac-back" onclick="hacBack()">← Terug</button><div class="hac-active">'+escv(adminCatalogState.variant)+'</div><div class="hac-grid">'+a.map(p=>{const i=phones.indexOf(p);return `<button class="hac-btn" onclick="selectedPhoneIndex=${i};renderPhones()"><strong>${escv(hacName(p))}</strong><small>${escv(p.storage||'')} ${escv(p.color||'')}</small></button>`}).join('')+'</div>'}
+h+='</div>';box.innerHTML=h}
+function mountHac(){hacRender()}
+
 function renderPhones(){
+  mountHac();
   const box=document.getElementById("phonesList");
   if(!box) return;
   if(!Array.isArray(data.phones)) data.phones=[];
@@ -2329,13 +2357,15 @@ function renderPhones(){
     return;
   }
   if(selectedPhoneIndex>=data.phones.length) selectedPhoneIndex=data.phones.length-1;
+  if(adminCatalogState.level==='products'){const fi=data.phones.findIndex(p=>hacBrand(p)===adminCatalogState.brand&&hacFamily(p)===adminCatalogState.family&&hacVariant(p)===adminCatalogState.variant);if(fi>=0&&(!data.phones[selectedPhoneIndex]||hacVariant(data.phones[selectedPhoneIndex])!==adminCatalogState.variant))selectedPhoneIndex=fi;}
   const phone=data.phones[selectedPhoneIndex];
   normalizePhoneOptions(phone);
   while(!Array.isArray(phone.images)) phone.images=[];
   while(phone.images.length<4) phone.images.push("");
   if(!Array.isArray(phone.specifications)) phone.specifications=[];
 
-  const list=data.phones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">🛒 ${esc(x.name||'Nieuw product')}<small>${esc(x.brand||'')} · ${esc(x.category||'Smartphones')}</small></button>`).join('');
+  const filteredPhones=adminCatalogState.level==='products'?data.phones.filter(p=>hacBrand(p)===adminCatalogState.brand&&hacFamily(p)===adminCatalogState.family&&hacVariant(p)===adminCatalogState.variant):data.phones;
+  const list=filteredPhones.map(x=>{const i=data.phones.indexOf(x);return `<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">🛒 ${esc(x.name||'Nieuw product')}<small>${esc(x.brand||'')} · ${esc(x.storage||'')} ${esc(x.color||'')} · ${esc(x.category||'Smartphones')}</small></button>`}).join('');
 
   const optionEditor=(key,title,help)=>{
     const opts=phone[key]||[];
