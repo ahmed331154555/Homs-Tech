@@ -1407,6 +1407,14 @@ textarea{
           <div id="forzaTestStorage" class="tag-list" style="display:flex;flex-wrap:wrap;gap:7px"></div>
         </div>
         <div class="card">
+          <h3 style="margin-top:0">Kleuren / varianten</h3>
+          <div id="forzaTestColors" class="tag-list" style="display:flex;flex-wrap:wrap;gap:7px"></div>
+          <div id="forzaTestColorCount" class="small" style="margin-top:8px"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-bottom:14px">
+        <div class="card">
           <h3 style="margin-top:0">Conditie & prijs</h3>
           <div id="forzaTestConditions"></div>
         </div>
@@ -5153,7 +5161,8 @@ async function loadForzaTest(){
     const readOnly=payload.readOnly ?? x.readOnly ?? true;
 
     const storageVariants=forzaAdminPick(product,["storageVariants"]) ?? x.storageVariants ?? [];
-    forzaPreviewModel={product,storage,conditions,battery,storageVariants};
+    const colorVariants=forzaAdminPick(product,["colorVariants"]) ?? x.colorVariants ?? [];
+    forzaPreviewModel={product,storage,conditions,battery,storageVariants,colorVariants};
     const previewContent=document.getElementById("forzaPreviewContent");
     const previewStatus=document.getElementById("forzaPreviewStatus");
     if(previewContent)previewContent.style.display="none";
@@ -5165,6 +5174,13 @@ async function loadForzaTest(){
     document.getElementById("forzaTestStock").textContent=forzaAdminDisplayValue(stock);
     document.getElementById("forzaTestReadOnly").textContent=readOnly?"✓ READ ONLY — niets opgeslagen":"Controleer: read-only status ontbreekt";
     forzaAdminRenderList(document.getElementById("forzaTestStorage"),storage);
+    const colorBox=document.getElementById("forzaTestColors");
+    if(colorBox){
+      const labels=[...new Map((Array.isArray(colorVariants)?colorVariants:[]).map(v=>[String(v.color||"").toLowerCase(),String(v.color||"")])).values()].filter(Boolean);
+      colorBox.innerHTML=labels.length ? labels.map(c=>`<span class="tag">${forzaAdminEsc(c)}</span>`).join("") : `<span class="small">Geen kleurvarianten gevonden.</span>`;
+      const count=document.getElementById("forzaTestColorCount");
+      if(count)count.textContent=labels.length ? `${labels.length} kleur(en) gevonden via Forza` : "";
+    }
     forzaAdminRenderConditions(document.getElementById("forzaTestConditions"),conditions);
     forzaAdminRenderBattery(document.getElementById("forzaTestBattery"),battery);
     forzaAdminRenderImages(document.getElementById("forzaTestImages"),images);
