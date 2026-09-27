@@ -1371,13 +1371,30 @@ textarea{
     <div class="card" style="margin:12px 0 14px">
       <label for="forzaTestModelSelect" style="font-weight:800;display:block;margin-bottom:7px">Forza model testen</label>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <select id="forzaTestModelSelect" class="input" style="min-width:240px;max-width:260px" onchange="forzaUpdateVariantSelector()">
+        <select id="forzaTestModelSelect" class="input" style="min-width:240px;max-width:260px" onchange="forzaUpdateVariantSelector(); loadForzaTest()">
           <option value="iphone-11">iPhone 11</option>
           <option value="iphone-12">iPhone 12</option>
         </select>
-        <select id="forzaTestVariantSelect" class="input" style="min-width:300px;max-width:420px;display:none">
-          <option value="">Kies iPhone 12 variant</option>
-        </select>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <label style="font-size:12px;font-weight:800;color:#64748b">Opslag</label>
+          <select id="forzaTestStorageSelect" class="input" style="min-width:125px" onchange="forzaAxisChanged()">
+            <option value="64GB">64 GB</option>
+            <option value="128GB">128 GB</option>
+            <option value="256GB">256 GB</option>
+          </select>
+          <label style="font-size:12px;font-weight:800;color:#64748b">Kleur</label>
+          <select id="forzaTestColorSelect" class="input" style="min-width:135px" onchange="forzaAxisChanged()">
+            <option value="Zwart">Zwart</option>
+            <option value="Wit">Wit</option>
+            <option value="Blauw">Blauw</option>
+            <option value="Groen">Groen</option>
+            <option value="Paars">Paars</option>
+            <option value="Rood">Rood</option>
+          </select>
+          <select id="forzaTestVariantSelect" class="input" style="display:none">
+            <option value="">Kies iPhone 12 variant</option>
+          </select>
+        </div>
         <label style="display:flex;align-items:center;gap:7px;font-weight:800">
           <input type="checkbox" id="forzaBulkImagesEnabled" checked>
           📷 Forza-foto's meenemen bij nieuwe toestellen
@@ -5343,31 +5360,40 @@ async function fullSyncHomsFromForza(){
 
 function forzaUpdateVariantSelector(){
   const model=document.getElementById("forzaTestModelSelect");
-  const select=document.getElementById("forzaTestVariantSelect");
-  if(!model||!select)return;
+  const variant=document.getElementById("forzaTestVariantSelect");
+  const storage=document.getElementById("forzaTestStorageSelect");
+  const color=document.getElementById("forzaTestColorSelect");
+  if(!model||!variant)return;
+
   if(model.value!=="iphone-12"){
-    select.style.display="none";
-    select.innerHTML='<option value="">Kies variant</option>';
+    if(storage)storage.style.display="none";
+    if(color)color.style.display="none";
+    variant.value="";
     return;
   }
+
+  if(storage)storage.style.display="inline-block";
+  if(color)color.style.display="inline-block";
+
   const storages=["64GB","128GB","256GB"];
   const colors=["Zwart","Wit","Blauw","Groen","Paars","Rood"];
-  // Current public Forza catalogue: unavailable combinations stay visible but
-  // are disabled and marked, so the admin can see the complete iPhone 12 matrix.
-  // Alle 18 combinaties blijven selecteerbaar. Beschikbaarheid wordt niet
-  // meer vooraf geblokkeerd in de test-selector; Forza zelf bepaalt of een
-  // exacte publieke variant gelezen kan worden.
-  const available=new Set(
-    storages.flatMap(s=>colors.map(c=>`iPhone 12 ${s} ${c}`))
-  );
-  const options=storages.flatMap(s=>colors.map(c=>{
-    const name=`iPhone 12 ${s} ${c}`;
-    const ok=available.has(name);
-    const label=`${s.replace("GB"," GB")} — ${c}${ok?"":" — Niet beschikbaar"}`;
-    return `<option value="${name}"${ok?"":" disabled"}>${label}</option>`;
-  }));
-  select.innerHTML='<option value="">Kies iPhone 12 variant</option>'+options.join("");
-  select.style.display="inline-block";
+  const currentStorage=storages.includes(storage?.value) ? storage.value : "64GB";
+  const currentColor=colors.includes(color?.value) ? color.value : "Zwart";
+  if(storage)storage.value=currentStorage;
+  if(color)color.value=currentColor;
+
+  const exact=`iPhone 12 ${currentStorage} ${currentColor}`;
+  variant.innerHTML=`<option value="${forzaAdminEsc(exact)}">${forzaAdminEsc(exact)}</option>`;
+  variant.value=exact;
+}
+
+let forzaAxisLoadToken=0;
+function forzaAxisChanged(){
+  forzaUpdateVariantSelector();
+  const model=document.getElementById("forzaTestModelSelect");
+  if(model?.value==="iphone-12"){
+    loadForzaTest();
+  }
 }
 
 
@@ -5471,6 +5497,13 @@ async function forzaBulkAddAllVariants(){
     forzaPreviewModel=oldPreview;
     const select=document.getElementById("forzaTestVariantSelect");
     if(select)select.value=oldVariant;
+    const m=oldVariant.match(/^iPhone 12 (64GB|128GB|256GB) (Zwart|Wit|Blauw|Groen|Paars|Rood)$/i);
+    if(m){
+      const s=document.getElementById("forzaTestStorageSelect");
+      const c=document.getElementById("forzaTestColorSelect");
+      if(s)s.value=m[1];
+      if(c)c.value=m[2].charAt(0).toUpperCase()+m[2].slice(1).toLowerCase();
+    }
     if(btn)btn.disabled=false;
   }
 }
@@ -5486,8 +5519,19 @@ async function loadForzaTest(){
   try{
     const modelSelect=document.getElementById("forzaTestModelSelect");
     const variantSelect=document.getElementById("forzaTestVariantSelect");
+    const storageSelect=document.getElementById("forzaTestStorageSelect");
+    const colorSelect=document.getElementById("forzaTestColorSelect");
     const selectedModel=modelSelect ? modelSelect.value : "iphone-11";
-    const selectedVariant=(selectedModel==="iphone-12" && variantSelect) ? variantSelect.value : "";
+    let selectedVariant=(selectedModel==="iphone-12" && variantSelect) ? variantSelect.value : "";
+    if(selectedModel==="iphone-12"){
+      const storage=storageSelect?.value || "64GB";
+      const color=colorSelect?.value || "Zwart";
+      selectedVariant=`iPhone 12 ${storage} ${color}`;
+      if(variantSelect){
+        variantSelect.innerHTML=`<option value="${forzaAdminEsc(selectedVariant)}">${forzaAdminEsc(selectedVariant)}</option>`;
+        variantSelect.value=selectedVariant;
+      }
+    }
     if(selectedModel==="iphone-12" && !selectedVariant){
       throw new Error("Kies eerst de exacte iPhone 12 opslag + kleur.");
     }
