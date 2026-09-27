@@ -1421,13 +1421,18 @@ function forzaFindVariantLink(html, productName, baseUrl) {
     try { absolute = new URL(hrefMatch[1], baseUrl).toString(); } catch { continue; }
     if (!/forza-refurbished\.nl/i.test(absolute)) continue;
     const text = forzaImageMatchKey(forzaStripHtml(anchor));
-    if (!text) continue;
+    const hrefKey = forzaImageMatchKey(absolute);
+    if (!text && !hrefKey) continue;
     let score = 0;
     if (text === wanted) score = 1000;
     else {
-      const matched = wantedTokens.filter(t => text.split(" ").includes(t)).length;
-      score = matched * 20;
+      const textTokens = text.split(" ");
+      const hrefTokens = hrefKey.split(" ");
+      const matchedText = wantedTokens.filter(t => textTokens.includes(t)).length;
+      const matchedHref = wantedTokens.filter(t => hrefTokens.includes(t)).length;
+      score = matchedText * 20 + matchedHref * 35;
       if (text.includes(wanted)) score += 200;
+      if (hrefKey.includes(wanted.replace(/ /g, "-"))) score += 250;
       if (/\b\d+\s*(?:gb|tb)\b/i.test(wanted) && /\b\d+\s*(?:gb|tb)\b/i.test(text)) score += 10;
     }
     if (score > bestScore) { bestScore = score; bestUrl = absolute; }
@@ -1543,6 +1548,34 @@ function forzaBuildExactVariantNames(productName, overviewHtml) {
   return [...names];
 }
 
+// V14: explicit Forza product URLs for the iPhone 12 variants currently listed
+// in Forza's public iPhone catalogue. These are only exact-product URLs; they
+// are never used as a source for overview/gallery fallback.
+const FORZA_IPHONE12_EXACT_URLS = {
+  "iPhone 12 64GB Zwart": "https://www.forza-refurbished.nl/iphone-12-64gb-zwart",
+  "iPhone 12 64GB Blauw": "https://www.forza-refurbished.nl/iphone-12-64gb-blauw",
+  "iPhone 12 64GB Groen": "https://www.forza-refurbished.nl/iphone-12-64gb-groen",
+  "iPhone 12 64GB Paars": "https://www.forza-refurbished.nl/iphone-12-64gb-paars",
+  "iPhone 12 64GB Rood": "https://www.forza-refurbished.nl/iphone-12-64gb-rood",
+  "iPhone 12 128GB Zwart": "https://www.forza-refurbished.nl/iphone-12-128gb-zwart",
+  "iPhone 12 128GB Wit": "https://www.forza-refurbished.nl/iphone-12-128gb-wit",
+  "iPhone 12 128GB Blauw": "https://www.forza-refurbished.nl/iphone-12-128gb-blauw",
+  "iPhone 12 128GB Rood": "https://www.forza-refurbished.nl/iphone-12-128gb-rood",
+  "iPhone 12 256GB Zwart": "https://www.forza-refurbished.nl/iphone-12-256gb-zwart",
+  "iPhone 12 256GB Wit": "https://www.forza-refurbished.nl/iphone-12-256gb-wit",
+  "iPhone 12 256GB Blauw": "https://www.forza-refurbished.nl/iphone-12-256gb-blauw",
+  "iPhone 12 256GB Groen": "https://www.forza-refurbished.nl/iphone-12-256gb-groen",
+  "iPhone 12 256GB Paars": "https://www.forza-refurbished.nl/iphone-12-256gb-paars",
+  "iPhone 12 256GB Rood": "https://www.forza-refurbished.nl/iphone-12-256gb-rood"
+};
+
+const FORZA_IPHONE12_CURRENT_VARIANTS = new Set([
+  "iPhone 12 64GB Zwart", "iPhone 12 64GB Blauw", "iPhone 12 64GB Groen", "iPhone 12 64GB Paars",
+  "iPhone 12 128GB Zwart", "iPhone 12 128GB Wit", "iPhone 12 128GB Blauw", "iPhone 12 128GB Rood",
+  "iPhone 12 256GB Zwart", "iPhone 12 256GB Wit", "iPhone 12 256GB Blauw", "iPhone 12 256GB Groen",
+  "iPhone 12 256GB Paars", "iPhone 12 256GB Rood"
+]);
+
 function forzaExactUrlCandidates(productName, overviewHtml, overviewUrl) {
   const names = forzaBuildExactVariantNames(productName, overviewHtml);
   const urls = [];
@@ -1553,6 +1586,12 @@ function forzaExactUrlCandidates(productName, overviewHtml, overviewUrl) {
   // slug candidates. This mirrors the successful concrete-page approach used
   // by the iPhone 11 test instead of relying on the mixed overview gallery.
   for (const name of names) {
+    const canonicalName = forzaNormalizeVariantName(name);
+    // Prefer an exact known Forza product URL when the current catalogue has
+    // this concrete variant. Then keep the generic V10 slug discovery as a
+    // fallback for future/changed Forza URLs.
+    const exact = FORZA_IPHONE12_EXACT_URLS[canonicalName];
+    if (exact) add(exact);
     for (const u of forzaVariantSlugCandidates(name)) add(u);
   }
   const discovered = forzaFindVariantLink(overviewHtml, names[0] || productName, overviewUrl);
@@ -1569,7 +1608,17 @@ async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl) {
     seen.add(url);
 
     try {
-      const page = await forzaFetchPublicPage(url);
+      let page = null;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          page = await forzaFetchPublicPage(url);
+          if (page.response.ok || page.response.status !== 429) break;
+        } catch {
+          page = null;
+        }
+        await new Promise(r => setTimeout(r, 250 * (attempt + 1)));
+      }
+      if (!page) continue;
 
       // Whether Forza answers directly or via a server-side 429, keep the
       // fallback tied to THIS exact variant URL. Never use the overview gallery.
