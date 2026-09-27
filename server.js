@@ -1346,6 +1346,33 @@ function forzaImageUrlVariantMismatch(url, wantedColor, wantedStorage) {
   }
 }
 
+function forzaIsLikelyImageUrl(value) {
+  try {
+    const u = new URL(String(value));
+    if (!/^https?:$/i.test(u.protocol)) return false;
+    const path = u.pathname.toLowerCase();
+    const host = u.hostname.toLowerCase();
+    if (/\.(?:jpe?g|png|webp|gif|avif|bmp|svg)$/i.test(path)) return true;
+    if (/\/media\/|\/catalog\/product\/|\/product-images?\/|\/images?\//i.test(path)) return true;
+    if (/(?:image|img|media|cdn|static)/i.test(host) && !/\/product(?:\/|$)/i.test(path)) return true;
+    return false;
+  } catch { return false; }
+}
+
+function forzaClientImageUrl(req, sourceUrl) {
+  const raw = String(sourceUrl || '').trim();
+  if (!raw || !/^https?:\/\//i.test(raw)) return '';
+  const encoded = encodeURIComponent(raw);
+  return `${req.protocol}://${req.get('host')}/api/forza-image?url=${encoded}`;
+}
+
+function forzaClientImageUrls(req, images) {
+  return [...new Set((Array.isArray(images) ? images : [])
+    .filter(v => typeof v === 'string' && /^https?:\/\//i.test(v))
+    .map(v => forzaClientImageUrl(req, v))
+    .filter(Boolean))].slice(0, 4);
+}
+
 function forzaExtractStructuredGalleryImages(html, productName) {
   const wanted = forzaImageMatchKey(productName);
   if (!wanted) return [];
@@ -1372,6 +1399,7 @@ function forzaExtractStructuredGalleryImages(html, productName) {
         url = parsed.toString();
       } catch {}
       if (!/^https?:\/\//i.test(url)) continue;
+      if (!forzaIsLikelyImageUrl(url)) continue;
       if (forzaImageUrlVariantMismatch(url, wantedColor, wantedStorage)) continue;
       if (!seen.has(url)) { seen.add(url); images.push(url); }
     }
@@ -1463,6 +1491,7 @@ function forzaExtractVariantGalleryImages(html, productName) {
         url = parsed.toString();
       } catch {}
       if (!/^https?:\/\//i.test(url)) continue;
+      if (!forzaIsLikelyImageUrl(url)) continue;
       if (forzaImageUrlVariantMismatch(url, wantedColor, wantedStorage)) continue;
       if (!seen.has(url)) { seen.add(url); images.push(url); }
     }
@@ -1593,6 +1622,8 @@ async function forzaFetchJinaGallery(url, productName) {
       // be required in the image alt text.
 
       const imageUrl = m[2].replace(/&amp;/gi, "&");
+      if (!forzaIsLikelyImageUrl(imageUrl)) continue;
+      if (forzaImageUrlVariantMismatch(imageUrl, wantedColor, wantedStorage)) continue;
       if (!seen.has(imageUrl)) {
         seen.add(imageUrl);
         images.push(imageUrl);
@@ -1616,6 +1647,8 @@ async function forzaFetchJinaGallery(url, productName) {
         const hasColor = !!wantedColor && key.includes(wantedColor);
         if (!hasModel || !hasColor) continue;
         const imageUrl = src.replace(/&amp;/gi, '&');
+        if (!forzaIsLikelyImageUrl(imageUrl)) continue;
+        if (forzaImageUrlVariantMismatch(imageUrl, wantedColor, wantedStorage)) continue;
         if (!seen.has(imageUrl)) { seen.add(imageUrl); images.push(imageUrl); }
         if (images.length >= 4) break;
       }
@@ -2259,6 +2292,44 @@ app.put("/api/admin/forza/full-sync", requirePermission("site.save"), async (req
   } finally { client.release(); }
 });
 
+app.get("/api/forza-image", async (req, res) => {
+  const raw = String(req.query.url || "").trim();
+  if (!raw || !/^https?:\/\//i.test(raw)) return res.status(400).end();
+  let target;
+  try { target = new URL(raw); } catch { return res.status(400).end(); }
+  const host = target.hostname.toLowerCase();
+  if (!(host === "forza-refurbished.nl" || host.endsWith(".forza-refurbished.nl"))) {
+    return res.status(403).end();
+  }
+  if (!forzaIsLikelyImageUrl(target.toString())) return res.status(400).end();
+  try {
+    const upstream = await fetch(target.toString(), {
+      method: "GET",
+      redirect: "follow",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; HOMS-TECH Forza image proxy)",
+        "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+        "Referer": "https://www.forza-refurbished.nl/"
+      }
+    });
+    if (!upstream.ok) return res.status(upstream.status).end();
+    const finalUrl = String(upstream.url || "");
+    let finalHost = "";
+    try { finalHost = new URL(finalUrl).hostname.toLowerCase(); } catch {}
+    if (!(finalHost === "forza-refurbished.nl" || finalHost.endsWith(".forza-refurbished.nl"))) return res.status(403).end();
+    const contentType = String(upstream.headers.get("content-type") || "");
+    if (!/^image\//i.test(contentType)) return res.status(415).end();
+    const buffer = Buffer.from(await upstream.arrayBuffer());
+    res.set("Content-Type", contentType.split(";")[0]);
+    res.set("Cache-Control", "public, max-age=86400, s-maxage=86400");
+    res.set("X-Content-Type-Options", "nosniff");
+    res.send(buffer);
+  } catch (error) {
+    console.error("Forza image proxy error:", error?.message || error);
+    res.status(502).end();
+  }
+});
+
 app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) => {
   const requestedModel = String(req.query.model || "iphone-11").trim().toLowerCase();
   const modelConfig = forzaGetTestModel(requestedModel);
@@ -2299,7 +2370,7 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
         name: variantConfig.productName,
         storage: [variantConfig.storage],
         color: variantConfig.color,
-        images: exactVariant.images.slice(0,4),
+        images: forzaClientImageUrls(req, exactVariant.images),
         sourceUrl: exactVariant.url,
         canonical: parsed.product?.canonical || exactVariant.url
       };
@@ -2335,7 +2406,7 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
       result.product = {
         ...overviewProduct,
         ...exactProduct,
-        images: exactVariant.images.slice(0, 4),
+        images: forzaClientImageUrls(req, exactVariant.images),
         sourceUrl: exactVariant.url,
         canonical: exactProduct.canonical || exactVariant.url,
         overviewSourceUrl: sourceUrl
