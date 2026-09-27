@@ -2017,6 +2017,7 @@ app.put("/api/admin/forza/full-sync", requirePermission("site.save"), async (req
   const targetPhoneName = String(body.targetPhoneName || "").trim();
   const rows = Array.isArray(body.rows) ? body.rows : [];
   const product = body.product && typeof body.product === "object" ? body.product : {};
+  const allowImages = product.allowImages !== false;
 
   const norm = (v) => String(v ?? "")
     .toLowerCase()
@@ -2126,7 +2127,7 @@ app.put("/api/admin/forza/full-sync", requirePermission("site.save"), async (req
     phone.forzaPriceMatrixSource = "Forza public website";
     phone.forzaPriceMatrixUpdatedAt = new Date().toISOString();
 
-    const images = Array.isArray(product.images) ? [...new Set(product.images.filter(x => typeof x === "string" && /^https?:\/\//i.test(x)))].slice(0,4) : [];
+    const images = allowImages && Array.isArray(product.images) ? [...new Set(product.images.filter(x => typeof x === "string" && /^https?:\/\//i.test(x)))].slice(0,4) : [];
     const specs = Array.isArray(product.specs) ? product.specs.slice(0,20) : [];
     if (product.brand) phone.brand = String(product.brand);
     if (product.sku) phone.sku = String(product.sku);
@@ -2134,7 +2135,8 @@ app.put("/api/admin/forza/full-sync", requirePermission("site.save"), async (req
     if (product.description) phone.description = String(product.description);
     if (Number.isFinite(Number(product.stock))) phone.stock = Number(product.stock);
     if (specs.length) phone.specifications = specs;
-    if (images.length) { phone.images = images.slice(0,4); phone.forzaImages = images; }
+    if (allowImages && images.length) { phone.images = images.slice(0,4); phone.forzaImages = images; }
+    phone.forzaImagesEnabled = allowImages;
     phone.forzaSourceUrl = String(product.sourceUrl || product.canonical || "");
     phone.forzaProductData = {
       name: product.name || productName,
@@ -2145,14 +2147,14 @@ app.put("/api/admin/forza/full-sync", requirePermission("site.save"), async (req
       stock: product.stock ?? null,
       specs,
       description: product.description || "",
-      images,
+      images: allowImages ? images : (Array.isArray(phone.images) ? phone.images.slice(0,4) : []),
       sourceUrl: product.sourceUrl || product.canonical || "",
       syncedAt: new Date().toISOString()
     };
 
     await client.query("UPDATE site_settings SET data = $1 WHERE id = 1", [JSON.stringify(data)]);
     await client.query("COMMIT");
-    res.json({success:true,readOnly:false,updatedProduct:phone.name,sourceProduct:productName,message:"Forza Full Sync voltooid: prijzen, productgegevens en afbeeldingen zijn bijgewerkt."});
+    res.json({success:true,readOnly:false,updatedProduct:phone.name,sourceProduct:productName,message:allowImages ? "Forza Full Sync voltooid: prijzen, productgegevens en afbeeldingen zijn bijgewerkt." : "Forza Full Sync voltooid: prijzen en productgegevens zijn bijgewerkt; bestaande HOMS TECH-foto's zijn behouden."});
   } catch (error) {
     try { await client.query("ROLLBACK"); } catch {}
     console.error("Forza full sync error:", error);
