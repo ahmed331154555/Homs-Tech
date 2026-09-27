@@ -1487,6 +1487,9 @@ textarea{
             <button id="forzaFullSyncBtn" class="btn btn-green" onclick="fullSyncHomsFromForza()" style="display:none">
               📥 Forza Full Sync
             </button>
+            <button id="forzaCreateProductBtn" class="btn btn-light" onclick="createNewHomsProductFromForza()" style="display:none">
+              ➕ Opslaan als nieuw HOMS TECH-product
+            </button>
           </div>
           <div style="overflow:auto;margin-top:12px">
             <table style="width:100%;border-collapse:collapse;min-width:980px">
@@ -5005,6 +5008,143 @@ function forzaComparePrice(phone, row){
   return base + storageDelta + batteryDelta;
 }
 
+function forzaVariantIdentity(){
+  const product=forzaPreviewModel?.product || {};
+  const name=String(forzaAdminPick(product,["name","productName","title"]) || "").trim();
+  const color=String(forzaAdminPick(product,["color","colour","colorName"]) || "").trim();
+  const variantSelect=document.getElementById("forzaTestVariantSelect");
+  const variantValue=variantSelect?.value || "";
+  const storageMatch=(name.match(/(64|128|256)\s*GB/i) || variantValue.match(/(64|128|256)\s*GB/i));
+  const storage=storageMatch ? `${storageMatch[1]}GB` : "";
+  const cleanColor=(color || (variantValue.match(/\b(Zwart|Wit|Blauw|Groen|Paars|Rood)\b/i)||[])[1] || "").toLowerCase();
+  const cleanName=forzaCompareNormalize(name);
+  return {name, color:cleanColor, storage, cleanName};
+}
+
+function forzaPhoneIdentity(phone){
+  const name=String(phone?.name || "").trim();
+  const color=String(phone?.color || "").trim().toLowerCase();
+  const storageMatch=(name.match(/(64|128|256)\s*GB/i) || []);
+  const storage=storageMatch[1] ? `${storageMatch[1]}GB` : "";
+  return {name,color:forzaCompareNormalize(name),storage};
+}
+
+function forzaCompareFindExactPhone(){
+  if(!Array.isArray(data?.phones) || !forzaPreviewModel) return null;
+  const target=forzaVariantIdentity();
+  if(!target.cleanName) return null;
+  // 1) Exact product name match.
+  let found=data.phones.find(phone=>forzaCompareNormalize(phone?.name||"")===target.cleanName);
+  if(found) return found;
+  // 2) Exact model + storage + colour, using the stored product fields.
+  const targetModel=forzaCompareModelKey(target.name);
+  found=data.phones.find(phone=>{
+    const id=forzaPhoneIdentity(phone);
+    const pm=forzaCompareModelKey(phone?.name||"");
+    return pm && pm===targetModel && id.storage===target.storage && id.color===target.color;
+  });
+  return found || null;
+}
+
+function forzaCompareFindTemplatePhone(){
+  if(!Array.isArray(data?.phones) || !forzaPreviewModel) return null;
+  const target=forzaVariantIdentity();
+  const targetModel=forzaCompareModelKey(target.name);
+  const brand=forzaCompareNormalize(forzaPreviewModel?.product?.brand || "");
+  let best=null,bestScore=-1;
+  data.phones.forEach(phone=>{
+    const pm=forzaCompareModelKey(phone?.name||"");
+    if(!pm || !targetModel) return;
+    let score=0;
+    if(pm===targetModel) score+=100;
+    else if(pm.includes(targetModel)||targetModel.includes(pm)) score+=60;
+    if(brand && forzaCompareNormalize(phone?.brand||"")===brand) score+=20;
+    if(score>bestScore){bestScore=score;best=phone;}
+  });
+  return bestScore>=60 ? best : null;
+}
+
+function forzaApplyVariantPricesToNewPhone(phone, rows){
+  if(!phone) return;
+  const target=forzaVariantIdentity();
+  const storage=target.storage;
+  if(!storage) return;
+  const matrix={...(phone.forzaPriceMatrix||{})};
+  rows.forEach(row=>{
+    const price=Number(row.price);
+    if(!Number.isFinite(price)) return;
+    const c=forzaCompareConditionKey(row.condition);
+    const b=forzaCompareBatteryKey(row.battery);
+    matrix[`${storage}|${c}|${b}`]=price;
+  });
+  phone.forzaPriceMatrix=matrix;
+  phone.forzaPriceMatrixSource="Forza public website";
+  phone.forzaPriceMatrixUpdatedAt=new Date().toISOString();
+  // Keep the existing HOMS pricing model intact, but update the selected
+  // storage's base/battery values from the exact Forza variant when possible.
+  normalizePhoneOptions(phone);
+  const getC=k=>phone.conditionOptions.find(o=>forzaCompareConditionKey(o?.label)===k);
+  const getB=k=>phone.batteryOptions.find(o=>forzaCompareBatteryKey(o?.label)===k);
+  const std=(key)=>matrix[`${storage}|${key}|standaard`];
+  ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"].forEach(c=>{
+    const v=std(c); const opt=getC(c);
+    if(opt && Number.isFinite(Number(v))){
+      if(storage==="64GB") opt.basePrice=Number(v);
+    }
+  });
+  const newPrice=matrix[`${storage}|zo goed als nieuw|nieuw`];
+  const stdPrice=matrix[`${storage}|zo goed als nieuw|standaard`];
+  const bat=getB("nieuw");
+  if(bat && Number.isFinite(Number(newPrice)) && Number.isFinite(Number(stdPrice))) bat.priceDelta=Number(newPrice)-Number(stdPrice);
+}
+
+async function createNewHomsProductFromForza(){
+  const status=document.getElementById("forzaCompareStatus");
+  const btn=document.getElementById("forzaCreateProductBtn");
+  if(!forzaPreviewModel){ if(status){status.className="status error";status.textContent="Lees eerst de actuele Forza-data.";} return; }
+  const existing=forzaCompareFindExactPhone();
+  if(existing){ if(status){status.className="status info";status.textContent=`Dit Forza-product bestaat al in HOMS TECH: ${existing.name}. Gebruik Forza Full Sync voor dit bestaande product.`;} return; }
+  const rows=forzaAdminBuildPreview().filter(r=>Number.isFinite(Number(r.price)));
+  if(!rows.length){ if(status){status.className="status error";status.textContent="Er zijn geen leesbare Forza-prijzen voor deze variant. Er is niets opgeslagen.";} return; }
+  const template=forzaCompareFindTemplatePhone();
+  if(!template){ if(status){status.className="status error";status.textContent="Geen bestaand HOMS TECH-product van hetzelfde model gevonden om als basis te gebruiken. Er is niets opgeslagen.";} return; }
+  const product=forzaPreviewModel.product || {};
+  const name=String(forzaAdminPick(product,["name","productName","title"]) || "Nieuw Forza-product").trim();
+  const brand=String(forzaAdminPick(product,["brand","brandName"]) || template.brand || "").trim();
+  const color=String(forzaAdminPick(product,["color","colour","colorName"]) || "").trim();
+  const sku=String(forzaAdminPick(product,["sku","SKU","productSku","productSKU","articleNumber","article_number","mpn","productCode","product_code"]) || "").trim();
+  const stockRaw=forzaAdminPick(product,["stock","visibleStock","maxVisibleStock","availability","inventory"]);
+  const stock=Number.isFinite(Number(stockRaw)) ? Number(stockRaw) : Number(template.stock||0);
+  const images=forzaAdminArray(product.images || product.imageUrls || product.photos || product.gallery).filter(v=>typeof v==="string" && /^https?:\/\//i.test(v)).slice(0,4);
+  const specs=forzaAdminArray(product.specs || product.specifications || product.attributes).slice(0,20);
+  const description=String(forzaAdminPick(product,["description","shortDescription","longDescription"]) || template.description || "");
+  const sourceUrl=String(forzaAdminPick(product,["sourceUrl","canonical","url"]) || "");
+  const newPhone=JSON.parse(JSON.stringify(template));
+  newPhone.name=name;
+  newPhone.brand=brand;
+  newPhone.color=color;
+  newPhone.sku=sku;
+  newPhone.stock=stock;
+  newPhone.description=description;
+  newPhone.images=images.length ? images : ["","","",""];
+  newPhone.forzaImages=images.slice(0,4);
+  newPhone.forzaImagesEnabled=true;
+  newPhone.forzaSourceUrl=sourceUrl;
+  newPhone.forzaProductData={name,brand,sku,color,storage:product.storage||[],stock,specs,description,images:images.slice(0,4),sourceUrl,syncedAt:new Date().toISOString()};
+  forzaApplyVariantPricesToNewPhone(newPhone, rows);
+  data.phones.push(newPhone);
+  selectedPhoneIndex=data.phones.length-1;
+  markChanged();
+  if(status){status.className="status info";status.textContent=`تم تجهيز ${name} كجهاز جديد. سيتم حفظه في HOMS TECH الآن...`;}
+  if(btn)btn.disabled=true;
+  try{
+    await save(false);
+    if(status){status.className="status success";status.textContent=`✓ تم حفظ ${name} كجهاز جديد. الصور من Forza موجودة حالياً ويمكنك تعديلها يدوياً ثم إطفاء خيار تحديث صور Forza.`;}
+  }catch(error){
+    if(status){status.className="status error";status.textContent=`✗ فشل حفظ الجهاز الجديد: ${error.message||error}`;}
+  }finally{ if(btn)btn.disabled=false; }
+}
+
 function compareForzaWithHoms(){
   const status=document.getElementById("forzaCompareStatus");
   const content=document.getElementById("forzaCompareContent");
@@ -5019,7 +5159,7 @@ function compareForzaWithHoms(){
 
   const rows=forzaAdminBuildPreview();
   const modelProduct=forzaAdminPick(forzaPreviewModel.product,["name","productName","title"])||"Niet gevonden";
-  const phone=forzaCompareFindPhone(modelProduct);
+  const phone=forzaCompareFindExactPhone();
 
   rowsEl.innerHTML=rows.map(row=>{
     const forzaPrice=Number.isFinite(Number(row.price)) ? Number(row.price) : null;
@@ -5046,15 +5186,17 @@ function compareForzaWithHoms(){
   content.style.display="block";
   const updateBtn=document.getElementById("forzaUpdatePricesBtn");
   const fullSyncBtn=document.getElementById("forzaFullSyncBtn");
+  const createBtn=document.getElementById("forzaCreateProductBtn");
   if(updateBtn) updateBtn.style.display = phone ? "inline-flex" : "none";
   if(fullSyncBtn) fullSyncBtn.style.display = phone ? "inline-flex" : "none";
+  if(createBtn) createBtn.style.display = phone ? "none" : (forzaCompareFindTemplatePhone() ? "inline-flex" : "none");
 
   if(phone){
     status.className="status success";
-    status.textContent="✓ Vergelijking gemaakt. Alleen lezen: er is niets opgeslagen en geen HOMS TECH-prijs gewijzigd.";
+    status.textContent="✓ هذا الـForza-variant موجود بالفعل في HOMS TECH. يمكنك تحديثه عبر Full Sync بعد اكتمال الـ18 سعر.";
   }else{
     status.className="status info";
-    status.textContent="ℹ️ Forza-data is gelezen, maar er is nog geen passend HOMS TECH-product gevonden om mee te vergelijken.";
+    status.textContent="ℹ️ هذا الـForza-variant غير موجود في HOMS TECH. يمكنك حفظه كجهاز جديد؛ سيتم استخدام أسعار هذا الـvariant فقط، بدون اشتراط 18 سعراً.";
   }
 }
 
@@ -5068,7 +5210,7 @@ async function updateHomsPricesFromForza(){
 
   const rows=forzaAdminBuildPreview();
   const modelProduct=forzaAdminPick(forzaPreviewModel.product,["name","productName","title"])||"Niet gevonden";
-  const phone=forzaCompareFindPhone(modelProduct);
+  const phone=forzaCompareFindExactPhone();
   if(!phone){
     if(status){status.className="status error";status.textContent="HOMS TECH-product niet gevonden. Er is niets gewijzigd.";}
     return;
@@ -5138,7 +5280,7 @@ async function fullSyncHomsFromForza(){
   }
   const rows=forzaAdminBuildPreview();
   const modelProduct=forzaAdminPick(forzaPreviewModel.product,["name","productName","title"])||"Niet gevonden";
-  const phone=forzaCompareFindPhone(modelProduct);
+  const phone=forzaCompareFindExactPhone();
   if(!phone){
     if(status){status.className="status error";status.textContent="HOMS TECH-product niet gevonden. Er is niets gewijzigd.";}
     return;
