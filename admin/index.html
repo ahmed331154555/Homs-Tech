@@ -1368,6 +1368,17 @@ textarea{
       <button class="btn btn-light" id="forzaTestReloadBtn" onclick="loadForzaTest()">↻ Forza opnieuw lezen</button>
     </div>
 
+    <div class="card" style="margin:12px 0 14px">
+      <label for="forzaTestModelSelect" style="font-weight:800;display:block;margin-bottom:7px">Forza model testen</label>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <select id="forzaTestModelSelect" class="input" style="min-width:240px;max-width:360px">
+          <option value="iphone-11">iPhone 11</option>
+          <option value="iphone-12">iPhone 12</option>
+        </select>
+        <span class="small">Alleen lezen van de publieke Forza-pagina. Er wordt niets opgeslagen.</span>
+      </div>
+    </div>
+
     <div id="forzaTestStatus" class="status info" style="margin-bottom:14px">Nog niet geladen.</div>
 
     <div id="forzaTestContent" style="display:none">
@@ -5105,7 +5116,9 @@ async function loadForzaTest(){
   status.className="status info";
   status.textContent="Forza wordt opnieuw gelezen...";
   try{
-    const r=await fetch("/api/forza-test",{credentials:"same-origin",headers:{"Accept":"application/json"}});
+    const modelSelect=document.getElementById("forzaTestModelSelect");
+    const selectedModel=modelSelect ? modelSelect.value : "iphone-11";
+    const r=await fetch(`/api/forza-test?model=${encodeURIComponent(selectedModel)}`,{credentials:"same-origin",headers:{"Accept":"application/json"}});
     const payload=await r.json().catch(()=>({}));
     if(!r.ok || payload.success===false){
       throw new Error(payload.error || (r.status===401||r.status===403 ? "Geen toegang tot Forza Test Import." : `Forza test mislukt (HTTP ${r.status})`));
@@ -5113,6 +5126,7 @@ async function loadForzaTest(){
 
     const x=forzaAdminFindResult(payload);
     const product=x.product && typeof x.product==="object" ? x.product : x;
+    const modelLabel=payload.testModelLabel || x.testModelLabel || selectedModel;
     const name=forzaAdminPick(product,["name","productName","title"]) ?? "Niet gevonden";
     const brand=forzaAdminPick(product,["brand","brandName"]) ?? "Niet gevonden";
     const sku=forzaAdminPick(product,["sku","SKU","productSku","productSKU","articleNumber","article_number","mpn","productCode","product_code"])
@@ -5153,7 +5167,7 @@ async function loadForzaTest(){
     document.getElementById("forzaTestRaw").textContent=JSON.stringify(payload,null,2);
     content.style.display="block";
     status.className="status success";
-    status.textContent="✓ Forza succesvol gelezen — alleen-lezen test. Er is niets naar de HOMS TECH-productdatabase geschreven.";
+    status.textContent=`✓ ${modelLabel} succesvol gelezen — alleen-lezen test. Er is niets naar de HOMS TECH-productdatabase geschreven.`;
   }catch(error){
     content.style.display="none";
     status.className="status error";
