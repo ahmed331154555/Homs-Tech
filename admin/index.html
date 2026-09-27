@@ -2340,7 +2340,44 @@ function renderPhones(){
   while(phone.images.length<4) phone.images.push("");
   if(!Array.isArray(phone.specifications)) phone.specifications=[];
 
-  const list=data.phones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">🛒 ${esc(x.name||'Nieuw product')}<small>${esc(x.brand||'')} · ${esc(x.category||'Smartphones')}</small></button>`).join('');
+  // Dynamische apparaat-hiërarchie: Merk → Familie → Model → Geheugen → Kleur.
+  // Sorteert alleen de weergave; data.phones en de opgeslagen indexen worden niet gewijzigd.
+  const storageOrder = value => {
+    const m = String(value||'').match(/(\d+(?:[.,]\d+)?)\s*(GB|TB)/i);
+    if(!m) return 999999;
+    const n = Number(String(m[1]).replace(',','.'));
+    return m[2].toUpperCase()==='TB' ? n*1024 : n;
+  };
+  const colorOrder = value => {
+    const map={zwart:1,wit:2,rood:3,groen:4,blauw:5,roze:6,paars:7,goud:8,zilver:9,black:1,white:2,red:3,green:4,blue:5,pink:6,purple:7,gold:8,silver:9};
+    return map[String(value||'').trim().toLowerCase()] || 99;
+  };
+  const hierarchyValue = (x,key,fallback='') => String(x?.[key] ?? fallback).trim();
+  const sortedPhoneEntries = data.phones.map((x,i)=>({x,i})).sort((a,b)=>{
+    const A=a.x,B=b.x;
+    const brandA=hierarchyValue(A,'catalogBrand',A.brand||'Onbekend');
+    const brandB=hierarchyValue(B,'catalogBrand',B.brand||'Onbekend');
+    const familyA=hierarchyValue(A,'catalogFamily',A.category||A.name||'');
+    const familyB=hierarchyValue(B,'catalogFamily',B.category||B.name||'');
+    const modelA=hierarchyValue(A,'catalogModel',A.name||'');
+    const modelB=hierarchyValue(B,'catalogModel',B.name||'');
+    return brandA.localeCompare(brandB,'nl') || familyA.localeCompare(familyB,'nl',{numeric:true}) || modelA.localeCompare(modelB,'nl',{numeric:true}) || storageOrder(A.catalogStorage||A.storage) - storageOrder(B.catalogStorage||B.storage) || colorOrder(A.catalogColor||A.color) - colorOrder(B.catalogColor||B.color) || String(A.name||'').localeCompare(String(B.name||''),'nl',{numeric:true});
+  });
+  let lastBrand='', lastFamily='', lastModel='';
+  const list=sortedPhoneEntries.map(({x,i})=>{
+    const brand=hierarchyValue(x,'catalogBrand',x.brand||'Onbekend');
+    const family=hierarchyValue(x,'catalogFamily',x.category||'Apparaten');
+    const model=hierarchyValue(x,'catalogModel',x.name||'Model');
+    let html='';
+    if(brand!==lastBrand){ html+=`<div class="editor-list-group" style="padding:10px 12px 6px;font-weight:900;font-size:12px;color:#475569;text-transform:uppercase;border-top:1px solid #e2e8f0;margin-top:6px">${esc(brand)}</div>`; lastBrand=brand; lastFamily=''; lastModel=''; }
+    if(family!==lastFamily){ html+=`<div class="editor-list-group" style="padding:5px 12px 4px;font-weight:800;color:#64748b">↳ ${esc(family)}</div>`; lastFamily=family; lastModel=''; }
+    if(model!==lastModel && model!==family){ html+=`<div class="editor-list-group" style="padding:4px 12px 4px 24px;font-weight:800;color:#334155">↳ ${esc(model)}</div>`; lastModel=model; }
+    const storage=x.catalogStorage || (Array.isArray(x.storage)?x.storage.join(', '):x.storage) || '';
+    const color=x.catalogColor || x.color || '';
+    const sub=[storage,color].filter(Boolean).join(' · ') || x.category || 'Smartphones';
+    html+=`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">🛒 ${esc(x.name||'Nieuw product')}<small>${esc(sub)}</small></button>`;
+    return html;
+  }).join('');
 
   const optionEditor=(key,title,help)=>{
     const opts=phone[key]||[];
