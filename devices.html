@@ -448,54 +448,58 @@ text-align:center
 }
 
 }
+.product-stock{margin:8px 0 0;font-size:13px;font-weight:800}.product-stock.in-stock{color:#2563eb}.product-stock.sold-out{color:#dc2626}</style>
+<link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20260922-final-header">
+<style>
+/* HOMS TECH FINAL HEADER OVERRIDE — self-contained */
+/* HOMS TECH TOPBAR FINAL POLISH */
+.ht-topbar{background:#071d2d!important;color:#dbeafe!important;border-bottom:1px solid rgba(255,255,255,.08)!important;font-size:12px!important;}
+.ht-topbar .ht-container{min-height:34px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:18px!important;}
+.ht-topinfo{display:flex!important;align-items:center!important;justify-content:center!important;gap:22px!important;white-space:nowrap!important;}
+.ht-topinfo span{display:inline-flex!important;align-items:center!important;gap:6px!important;line-height:1!important;color:#dbeafe!important;}
+.ht-topinfo span b{font-size:11px!important;color:#60a5fa!important;font-weight:900!important;}
+.ht-rating{display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;color:#fff!important;font-weight:700!important;white-space:nowrap!important;}
+@media(max-width:900px){.ht-topbar .ht-container{padding:0 14px!important}.ht-topinfo{gap:12px!important;overflow:hidden!important}.ht-topinfo span:nth-child(n+3){display:none!important}.ht-rating{font-size:11px!important}}
+
+.ht-header{position:sticky!important;top:0!important;z-index:9999!important;background:#fff!important;color:#172330!important;border-bottom:1px solid #e2e8f0!important;box-shadow:0 4px 18px rgba(7,29,45,.06)!important;}
+.ht-header *{box-sizing:border-box!important;}
+.ht-header .ht-container{max-width:1180px!important;margin:0 auto!important;padding:0 18px!important;}
+.ht-header .ht-header-main{min-height:76px!important;display:flex!important;align-items:center!important;gap:22px!important;background:#fff!important;}
+.ht-header .ht-brand{display:flex!important;align-items:center!important;flex:0 0 auto!important;background:transparent!important;padding:0!important;}
+.ht-header .ht-brand img{width:154px!important;max-width:154px!important;height:auto!important;display:block!important;object-fit:contain!important;}
+.ht-header .ht-search{height:42px!important;display:flex!important;align-items:center!important;flex:1!important;max-width:500px!important;background:#f4f7fa!important;border:1px solid #e1e7ee!important;border-radius:10px!important;overflow:hidden!important;margin-left:10px!important;padding:0!important;}
+.ht-header .ht-search span{font-size:23px!important;color:#64748b!important;padding-left:13px!important;}
+.ht-header .ht-search input{border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;width:100%!important;padding:0 10px!important;color:#172330!important;}
+.ht-header .ht-search button{height:100%!important;border:0!important;background:#2563eb!important;color:#fff!important;font-weight:800!important;padding:0 17px!important;cursor:pointer!important;border-radius:0!important;}
+.ht-header .ht-actions{display:flex!important;align-items:center!important;gap:16px!important;margin-left:auto!important;white-space:nowrap!important;}
+.ht-header .ht-actions a{background:transparent!important;color:#334155!important;text-decoration:none!important;font-size:13px!important;font-weight:750!important;padding:6px 0!important;border-radius:0!important;}
+.ht-header .ht-actions a:hover{background:transparent!important;color:#2563eb!important;}
+.ht-header .ht-nav{display:flex!important;align-items:center!important;gap:5px!important;min-height:46px!important;overflow:auto!important;background:#fff!important;padding:0!important;margin:0!important;}
+.ht-header .ht-nav a{background:transparent!important;color:#334155!important;text-decoration:none!important;font-size:14px!important;font-weight:750!important;padding:9px 13px!important;border-radius:9px!important;white-space:nowrap!important;}
+.ht-header .ht-nav a:hover,.ht-header .ht-nav a.active{background:#edf4ff!important;color:#2563eb!important;}
+@media(max-width:900px){.ht-header .ht-actions a:nth-child(1),.ht-header .ht-actions a:nth-child(2){display:none!important}.ht-header .ht-header-main{flex-wrap:wrap!important;padding:10px 0!important}.ht-header .ht-search{order:3!important;max-width:none!important;flex-basis:100%!important;margin:0 0 4px!important}.ht-header .ht-nav{padding-bottom:7px!important}}
+@media(max-width:560px){.ht-header .ht-container{padding:0 12px!important}.ht-header .ht-brand img{width:138px!important;max-width:138px!important}.ht-header .ht-actions{gap:10px!important}.ht-header .ht-actions a{font-size:12px!important}.ht-header .ht-nav a{font-size:12px!important;padding:8px 10px!important}}
 </style>
 
-<style id="homs-auto-catalog">
-.catalog-shell{display:grid;gap:22px}
-.catalog-level{background:#fff;border-radius:20px;padding:22px;box-shadow:0 8px 25px rgba(15,23,42,.07);border:1px solid #e8edf4}
-.catalog-title{font-size:22px;font-weight:800;margin-bottom:14px}
-.catalog-back{display:inline-flex;align-items:center;gap:7px;border:0;background:#eef4ff;color:#2563eb;padding:9px 13px;border-radius:10px;font-weight:800;cursor:pointer;margin-bottom:16px}
-.catalog-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.catalog-card{border:1px solid #dfe6ef;background:#fff;border-radius:14px;padding:16px;text-align:left;cursor:pointer;transition:.18s}
-.catalog-card:hover{border-color:#2563eb;transform:translateY(-2px);box-shadow:0 7px 18px rgba(37,99,235,.10)}
-.catalog-card strong{display:block;font-size:17px}
-.catalog-card small{display:block;color:#64748b;margin-top:4px}
-.catalog-card .count{display:inline-block;margin-top:10px;background:#eff6ff;color:#2563eb;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:800}
-.catalog-product-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-.catalog-product{background:#fff;border:1px solid #e5eaf1;border-radius:18px;overflow:hidden;box-shadow:0 7px 22px rgba(15,23,42,.06)}
-.catalog-product .product-image{height:230px}
-.catalog-product .product-info{padding:17px}
-.catalog-product h4{font-size:18px;margin:4px 0 10px}
-.catalog-product .meta-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
-.catalog-product .meta-pills span{background:#f1f5f9;color:#475569;border-radius:999px;padding:5px 9px;font-size:12px}
-.catalog-product .open-product{display:flex;justify-content:space-between;align-items:center;color:#2563eb;font-weight:800;border-top:1px solid #e5e7eb;padding-top:12px}
-.catalog-empty{padding:28px;text-align:center;color:#64748b;background:#f8fafc;border-radius:14px}
-.catalog-note{color:#64748b;font-size:13px;margin-top:8px}
-@media(max-width:900px){.catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:550px){.catalog-grid,.catalog-product-grid{grid-template-columns:1fr}.catalog-level{padding:15px}.catalog-product .product-image{height:210px}}
-</style>
 
-</head>
+<style id="homs-topbar-marquee-final">
+/* HOMS TECH TOPBAR — exactly four messages, one pass, left-to-right order */
+.ht-topbar,.topbar{height:42px!important;background:#071d2d!important;color:#eaf4ff!important;overflow:hidden!important;width:100%!important;}
+.ht-topbar .ht-container,.topbar .container,.topbar .wrap{height:100%!important;max-width:1180px!important;margin:0 auto!important;overflow:hidden!important;}
+.ht-marquee,.top-info{height:100%!important;width:max-content!important;display:flex!important;align-items:center!important;gap:44px!important;white-space:nowrap!important;animation:htMarqueeOneWay 15s linear infinite!important;will-change:transform!important;}
+.ht-marquee-track{display:flex!important;align-items:center!important;gap:44px!important;white-space:nowrap!important;}
+.ht-marquee-item,.top-info span{font-size:14px!important;font-weight:800!important;letter-spacing:.1px!important;white-space:nowrap!important;color:#eaf4ff!important;}
+.ht-marquee-item b,.top-info span:before{color:#60a5fa!important;margin-right:7px!important;font-weight:900!important;}
+@keyframes htMarqueeOneWay{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
+@media(max-width:700px){.ht-topbar,.topbar{height:38px!important}.ht-marquee,.top-info{gap:28px!important;animation-duration:13s!important}.ht-marquee-track{gap:28px!important}.ht-marquee-item,.top-info span{font-size:13px!important}}
+@media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
+</style></head>
 
 <body>
 
-<header>
-<div class="nav">
-
-<a href="index.html">
-<img src="assets/homs-tech-logo.png" class="logo" alt="HOMS TECH">
-</a>
-
-<nav>
-<a href="index.html">Home</a>
-<a href="about.html">Over ons</a>
-<a href="repair.html">Reparaties</a>
-<a href="devices.html" class="active">Apparaten</a>
-<a href="prices.html">Prijzen</a>
-</nav>
-
-</div>
-</header>
+<div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div></div>
+<header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a class="active" href="devices.html">Zoek</a><a href="devices.html">NL⌄</a><a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a><a href="used.html">Tweedehands</a><a href="gsm-services.html">GSM Services</a>
+   <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a></nav></div></header>
 
 
 <section class="hero">
@@ -724,229 +728,102 @@ return "tel:" + n.replace(/[^\d+]/g,"");
 }
 
 
-
-let catalogState = {level:"brand", brand:"", family:"", variant:""};
-
-function cleanText(v){
-  return String(v ?? "").replace(/\s+/g," ").trim();
-}
-
-function productName(p){
-  return cleanText(p.name || p.model || "Smartphone");
-}
-
-function detectBrand(p){
-  const raw=(cleanText(p.brand)+" "+productName(p)).toLowerCase();
-  if(raw.includes("samsung") || raw.includes("galaxy")) return "Samsung";
-  if(raw.includes("ipad")) return "iPad";
-  if(raw.includes("macbook") || raw.includes("mac ")) return "Mac";
-  if(raw.includes("watch") || raw.includes("apple watch")) return "Watch";
-  if(raw.includes("iphone") || raw.includes("apple")) return "iPhone";
-  return cleanText(p.brand) || "Overige";
-}
-
-function detectFamily(p){
-  const n=productName(p);
-  const low=n.toLowerCase();
-
-  if(low.includes("iphone")){
-    const m=low.match(/iphone\s+(se|[0-9]{1,2})/i);
-    if(m){
-      if(m[1].toLowerCase()==="se") return "iPhone SE";
-      return "iPhone "+m[1];
-    }
-  }
-
-  if(low.includes("ipad")){
-    const m=low.match(/ipad\s+(pro|air|mini)?\s*\(?([0-9]+)?/i);
-    if(m) return cleanText("iPad "+(m[1]||""));
-    return "iPad";
-  }
-
-  if(low.includes("galaxy")){
-    const m=low.match(/galaxy\s+([a-z])\s*([0-9]+)/i);
-    if(m) return "Galaxy "+m[1].toUpperCase()+m[2];
-    const z=low.match(/galaxy\s+(z\s*(?:fold|flip)\s*[0-9]+)/i);
-    if(z) return "Galaxy "+cleanText(z[1]).replace(/\s+/g," ");
-    return "Samsung Galaxy";
-  }
-
-  return detectBrand(p);
-}
-
-function detectVariant(p){
-  const n=productName(p);
-  const low=n.toLowerCase();
-
-  if(low.includes("iphone")){
-    const m=low.match(/iphone\s+(se|[0-9]{1,2})(?:\s+(mini|plus|pro\s+max|pro))?/i);
-    if(m){
-      let base="iPhone "+m[1].toUpperCase();
-      if(m[1].toLowerCase()==="se") base="iPhone SE";
-      const suffix=(m[2]||"").replace(/\s+/g," ").trim();
-      return suffix ? base+" "+suffix.replace(/\b\w/g,c=>c.toUpperCase()) : base;
-    }
-  }
-
-  // For Samsung/iPad/etc., the product name itself is the useful model variant.
-  // Storage/color are shown as separate pills below.
-  return n;
-}
-
-function productImage(p){
-  return p.image || p.imageUrl || (Array.isArray(p.images) && p.images[0]) || "";
-}
-
-function productPrice(p){
-  return p.price || p.salePrice || p.sellPrice || p.verkoopprijs || "";
-}
-
-function makeProductCard(p){
-  const image=productImage(p);
-  const storage=p.storage || p.geheugen || "";
-  const color=p.color || p.kleur || p.colour || "";
-  const condition=p.condition || p.conditie || "";
-  const url="product.html?type=phone&id="+encodeURIComponent(p._index);
-
-  return `
-  <a class="catalog-product" href="${url}">
-    <div class="product-image">
-      ${image
-        ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(productName(p))}">`
-        : `<div class="device-placeholder">📱</div>`}
-    </div>
-    <div class="product-info">
-      <div class="brand">${escapeHtml(p.brand || detectBrand(p))}</div>
-      <h4>${escapeHtml(productName(p))}</h4>
-      <div class="meta-pills">
-        ${storage ? `<span>${escapeHtml(storage)}</span>` : ""}
-        ${color ? `<span>${escapeHtml(color)}</span>` : ""}
-        ${condition ? `<span>${escapeHtml(condition)}</span>` : ""}
-      </div>
-      ${productPrice(p)
-        ? `<div class="sale-price">€${escapeHtml(String(productPrice(p)).replace(/^€\s*/,""))}</div>`
-        : `<div class="sale-price contact-price">Prijs op aanvraag</div>`}
-      <div class="open-product">Bekijk product <span>→</span></div>
-    </div>
-  </a>`;
-}
-
-function renderCatalog(){
-  const grid=document.getElementById("devicesGrid");
-  const all=window.htDevices || [];
-
-  if(!all.length){
-    grid.innerHTML=`<div class="empty"><h3>Geen apparaten beschikbaar</h3><p>Neem contact met ons op voor het actuele aanbod.</p></div>`;
-    return;
-  }
-
-  const brands=[...new Set(all.map(d=>detectBrand(d)))].sort((a,b)=>{
-    const order=["iPhone","Samsung","iPad","Mac","Watch","Overige"];
-    return (order.indexOf(a)<0?99:order.indexOf(a))-(order.indexOf(b)<0?99:order.indexOf(b)) || a.localeCompare(b);
-  });
-
-  let html=`<div class="catalog-shell">`;
-
-  if(catalogState.level==="brand"){
-    html+=`<div class="catalog-level">
-      <div class="catalog-title">Kies een apparaatcategorie</div>
-      <div class="catalog-grid">
-        ${brands.map(b=>{
-          const count=all.filter(p=>detectBrand(p)===b).length;
-          const label=b==="iPhone"?"Apple iPhone":b;
-          return `<button class="catalog-card" onclick="catalogChooseBrand('${escapeHtml(b)}')">
-            <strong>${escapeHtml(label)}</strong>
-            <small>Bekijk alle modellen</small>
-            <span class="count">${count} ${count===1?"product":"producten"}</span>
-          </button>`;
-        }).join("")}
-      </div>
-    </div>`;
-  }
-
-  if(catalogState.level==="family"){
-    const items=all.filter(p=>detectBrand(p)===catalogState.brand);
-    const families=[...new Set(items.map(d=>detectFamily(d)))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:"base"}));
-    html+=`<div class="catalog-level">
-      <button class="catalog-back" onclick="catalogBack()">← Terug</button>
-      <div class="catalog-title">${escapeHtml(catalogState.brand==="iPhone"?"Apple iPhone":catalogState.brand)}</div>
-      <div class="catalog-grid">
-        ${families.map(f=>{
-          const count=items.filter(p=>detectFamily(p)===f).length;
-          return `<button class="catalog-card" onclick="catalogChooseFamily('${escapeHtml(f)}')">
-            <strong>${escapeHtml(f)}</strong>
-            <small>Pro · Pro Max · Plus · Mini waar aanwezig</small>
-            <span class="count">${count} ${count===1?"product":"producten"}</span>
-          </button>`;
-        }).join("")}
-      </div>
-    </div>`;
-  }
-
-  if(catalogState.level==="variant"){
-    const items=all.filter(p=>detectBrand(p)===catalogState.brand && detectFamily(p)===catalogState.family);
-    const variants=[...new Set(items.map(d=>detectVariant(d)))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:"base"}));
-
-    html+=`<div class="catalog-level">
-      <button class="catalog-back" onclick="catalogBack()">← Terug</button>
-      <div class="catalog-title">${escapeHtml(catalogState.family)}</div>
-      <div class="catalog-note">Kies het exacte model. Daarna zie je alleen de beschikbare geheugens en kleuren.</div>
-      <div class="catalog-grid" style="margin-top:14px">
-        ${variants.map(v=>{
-          const count=items.filter(p=>detectVariant(p)===v).length;
-          return `<button class="catalog-card" onclick="catalogChooseVariant('${escapeHtml(v)}')">
-            <strong>${escapeHtml(v)}</strong>
-            <small>Geheugen en kleuren</small>
-            <span class="count">${count} ${count===1?"product":"producten"}</span>
-          </button>`;
-        }).join("")}
-      </div>
-    </div>`;
-  }
-
-  if(catalogState.level==="products"){
-    const items=all.filter(p=>detectBrand(p)===catalogState.brand && detectFamily(p)===catalogState.family && detectVariant(p)===catalogState.variant);
-
-    html+=`<div class="catalog-level">
-      <button class="catalog-back" onclick="catalogBack()">← Terug</button>
-      <div class="catalog-title">${escapeHtml(catalogState.variant)}</div>
-      <div class="catalog-note">Alleen producten die daadwerkelijk in HOMS TECH staan worden getoond.</div>
-      <div class="catalog-product-grid" style="margin-top:18px">
-        ${items.length ? items.map(makeProductCard).join("") : `<div class="catalog-empty">Geen producten gevonden.</div>`}
-      </div>
-    </div>`;
-  }
-
-  html+=`</div>`;
-  grid.innerHTML=html;
-}
-
-function catalogChooseBrand(brand){
-  catalogState={level:"family",brand,family:"",variant:""};
-  renderCatalog();
-}
-
-function catalogChooseFamily(family){
-  catalogState={level:"variant",brand:catalogState.brand,family,variant:""};
-  renderCatalog();
-}
-
-function catalogChooseVariant(variant){
-  catalogState={level:"products",brand:catalogState.brand,family:catalogState.family,variant};
-  renderCatalog();
-}
-
-function catalogBack(){
-  if(catalogState.level==="products") catalogState={level:"variant",brand:catalogState.brand,family:catalogState.family,variant:""};
-  else if(catalogState.level==="variant") catalogState={level:"family",brand:catalogState.brand,family:"",variant:""};
-  else catalogState={level:"brand",brand:"",family:"",variant:""};
-  renderCatalog();
+function startingConditionPrice(device){
+const options = Array.isArray(device.conditionOptions) ? device.conditionOptions.filter(x=>x && x.active!==false && x.available!==false) : [];
+const prices = options.map(x=>{
+  if(x.basePrice!==undefined && x.basePrice!==null && x.basePrice!=="") return Number(String(x.basePrice).replace(/€/g,"").replace(/\s/g,"").replace(",","."))||0;
+  if(x.conditionBasePrice!==undefined && x.conditionBasePrice!==null && x.conditionBasePrice!=="") return Number(String(x.conditionBasePrice).replace(/€/g,"").replace(/\s/g,"").replace(",","."))||0;
+  return 0;
+}).filter(n=>n>0);
+return prices.length ? Math.min(...prices) : Number(device.price || device.salePrice || 0) || 0;
 }
 
 function renderDevices(devices){
-  window.htDevices=devices || [];
-  catalogState={level:"brand",brand:"",family:"",variant:""};
-  renderCatalog();
+
+const grid = document.getElementById("devicesGrid");
+
+if(!devices.length){
+
+grid.innerHTML = `
+<div class="empty">
+<h3>Geen telefoons beschikbaar</h3>
+<p>Neem contact met ons op voor het actuele aanbod.</p>
+</div>
+`;
+
+return;
+}
+
+grid.innerHTML = devices.map(device => {
+
+const image =
+device.image ||
+device.imageUrl ||
+(Array.isArray(device.images) && device.images[0]) ||
+"";
+
+const storage = device.storage || device.geheugen || "";
+const color = device.color || device.kleur || "";
+const condition = device.condition || device.conditie || "";
+const salePrice = startingConditionPrice(device);
+const stock = Number(device.stock || 0);
+
+const productUrl =
+"product.html?type=phone&id=" +
+encodeURIComponent(device._index);
+
+return `
+<a class="device-card sales-card"
+   href="${productUrl}"
+   aria-label="Bekijk ${escapeHtml(device.name)}">
+
+<div class="product-image">
+${
+image
+?
+`<img src="${escapeHtml(image)}" alt="${escapeHtml(device.name)}">`
+:
+`<div class="device-placeholder">📱</div>`
+}
+</div>
+
+<div class="product-info">
+
+<div class="brand">
+${escapeHtml(device.brand)}
+</div>
+
+<h3>
+${escapeHtml(device.name)}
+</h3>
+
+<div class="product-meta">
+${storage ? `<span>${escapeHtml(storage)}</span>` : ""}
+${color ? `<span>${escapeHtml(color)}</span>` : ""}
+${condition ? `<span>${escapeHtml(condition)}</span>` : ""}
+</div>
+
+${
+salePrice
+?
+`<div class="sale-price">Vanaf €${escapeHtml(String(salePrice).replace(".00", ""))}</div>`
+:
+`<div class="sale-price contact-price">Prijs op aanvraag</div>`
+}
+
+<div class="product-stock ${stock>0?'in-stock':'sold-out'}">${stock>0?'✓ Op voorraad':'Uitverkocht'}</div>
+
+<div class="product-action">
+Bekijk product <span>→</span>
+</div>
+
+</div>
+
+</a>
+`;
+
+}).join("");
+
 }
 
 async function loadSite(){
@@ -1014,11 +891,14 @@ devices = data.phones.map((phone, index) => ({
         storage: phone.storage || phone.geheugen || "",
         color: phone.color || phone.kleur || "",
         condition: phone.condition || phone.conditie || "",
+        conditionOptions: Array.isArray(phone.conditionOptions) ? phone.conditionOptions : [],
+        stock: Number(phone.stock || 0),
+        active: phone.active !== false,
         warranty: phone.warranty || phone.garantie || "",
         description: phone.description || "",
         image: phone.image || phone.imageUrl || "",
         images: Array.isArray(phone.images) ? phone.images : []
-      }));
+      })).filter(phone => phone.active);
 
 }
 
