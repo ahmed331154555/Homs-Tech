@@ -4978,8 +4978,21 @@ function forzaCompareModelKey(value){
 
 function forzaCompareFindPhone(forzaProduct){
   if(!Array.isArray(data?.phones)) return null;
+  const wanted=forzaCompareNormalize(forzaProduct);
+
+  // First choice must always be the exact HOMS TECH product.
+  // A model-only match is unsafe when several iPhone 13 variants exist.
+  const exact=data.phones.find(phone=>
+    phone && typeof phone==="object" &&
+    forzaCompareNormalize(phone.name || "")===wanted
+  );
+  if(exact) return exact;
+
   const modelKey=forzaCompareModelKey(forzaProduct);
   const brandKey=forzaCompareNormalize(forzaPreviewModel?.product?.brand || "");
+  const productText=forzaCompareNormalize(forzaProduct);
+  const storageMatch=String(forzaProduct||"").match(/\b(\d+)\s*(GB|TB)\b/i);
+  const storageKey=storageMatch ? `${storageMatch[1]}${storageMatch[2].toUpperCase()}` : "";
   let best=null, bestScore=-1;
   for(const phone of data.phones){
     if(!phone || typeof phone!=="object") continue;
@@ -4988,6 +5001,13 @@ function forzaCompareFindPhone(forzaProduct){
     let score=0;
     if(phoneKey===modelKey) score+=100;
     else if(phoneKey.includes(modelKey) || modelKey.includes(phoneKey)) score+=60;
+
+    const phoneStorage=Array.isArray(phone.storage) ? phone.storage.map(forzaCompareStorageKey) : [forzaCompareStorageKey(phone.storage || phone.memory || "")];
+    if(storageKey && phoneStorage.includes(storageKey)) score+=80;
+
+    const phoneColor=forzaCompareNormalize(phone.color || "");
+    if(phoneColor && productText.includes(phoneColor)) score+=70;
+
     const pBrand=forzaCompareNormalize(phone.brand || "");
     if(brandKey && pBrand && pBrand===brandKey) score+=20;
     if(score>bestScore){bestScore=score;best=phone;}
