@@ -1385,6 +1385,7 @@ function forzaSelectedStorage(result) {
 app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async (req, res) => {
   const body = req.body || {};
   const productName = String(body.productName || "").trim();
+  const targetPhoneName = String(body.targetPhoneName || "").trim();
   const rows = Array.isArray(body.rows) ? body.rows : [];
 
   const norm = (v) => String(v ?? "")
@@ -1502,15 +1503,23 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     }
 
     const wantedModel = modelKey(productName);
+    const wantedTarget = norm(targetPhoneName || productName);
     let bestIndex = -1;
     let bestScore = -1;
 
     data.phones.forEach((phone, index) => {
       if (!phone || typeof phone !== "object") return;
+      const phoneName = norm(phone.name || "");
       const pk = modelKey(phone.name || "");
       if (!pk || !wantedModel) return;
+
+      // Prefer the exact HOMS TECH product selected by the comparison UI.
+      // Only fall back to model-level matching when an exact product name is
+      // not available. This prevents iPhone 12 variants from being mixed.
       let score = 0;
-      if (pk === wantedModel) score = 100;
+      if (wantedTarget && phoneName === wantedTarget) score = 1000;
+      else if (wantedTarget && (phoneName.includes(wantedTarget) || wantedTarget.includes(phoneName))) score = 900;
+      else if (pk === wantedModel) score = 100;
       else if (pk.includes(wantedModel) || wantedModel.includes(pk)) score = 60;
       if (norm(phone.brand) === "apple") score += 10;
       if (score > bestScore) {
@@ -1592,6 +1601,19 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
       "UPDATE site_settings SET data = $1 WHERE id = 1",
       [JSON.stringify(data)]
     );
+
+    // Verify the exact matrix is present in the same transaction before commit.
+    const verify = await client.query("SELECT data FROM site_settings WHERE id = 1 FOR UPDATE");
+    const verifyData = verify.rows[0]?.data || {};
+    const verifyPhones = Array.isArray(verifyData.phones) ? verifyData.phones : [];
+    const verifyPhone = verifyPhones.find(p => p && p.name === phone.name);
+    const verifyMatrix = verifyPhone?.forzaPriceMatrix || {};
+    const verifyOk = Object.entries(forzaPriceMatrix).every(([key, value]) => Number(verifyMatrix[key]) === Number(value));
+    if (!verifyOk) {
+      await client.query("ROLLBACK");
+      return res.status(500).json({ success:false, error:"Forza-prijzen konden niet veilig worden geverifieerd. Geen wijziging opgeslagen." });
+    }
+
     await client.query("COMMIT");
 
     res.json({
