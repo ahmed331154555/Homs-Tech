@@ -1317,6 +1317,51 @@ function forzaImageMatchKey(value) {
     .trim();
 }
 
+function forzaExtractVariantGalleryImages(html, productName) {
+  const wanted = forzaImageMatchKey(productName);
+  if (!wanted) return [];
+  const wantedTokens = wanted.split(" ").filter(Boolean);
+  const images = [];
+  const imgTags = String(html || "").match(/<img\b[^>]*>/gi) || [];
+
+  const addUrl = (value) => {
+    if (!value) return;
+    const cleaned = String(value).trim().replace(/&amp;/gi, "&");
+    const match = cleaned.match(/https?:\/\/[^\s,]+/i);
+    if (match) images.push(match[0].replace(/["')]+$/g, ""));
+  };
+
+  for (const tag of imgTags) {
+    const attrs = {};
+    const attrRe = /([:\w-]+)\s*=\s*["']([^"']*)["']/gi;
+    let m;
+    while ((m = attrRe.exec(tag))) attrs[m[1].toLowerCase()] = m[2];
+
+    const descriptive = [attrs.alt, attrs.title, attrs["data-alt"], attrs["data-title"]]
+      .filter(Boolean)
+      .map(forzaImageMatchKey);
+    if (!descriptive.length) continue;
+
+    let score = 0;
+    for (const text of descriptive) {
+      if (text === wanted) score = Math.max(score, 1000);
+      else {
+        const matched = wantedTokens.filter(t => text.split(" ").includes(t)).length;
+        score = Math.max(score, matched * 20 + (text.includes(wanted) ? 200 : 0));
+      }
+    }
+    if (score < Math.max(60, wantedTokens.length * 20)) continue;
+
+    addUrl(attrs.src);
+    addUrl(attrs["data-src"]);
+    addUrl(attrs["data-lazy-src"]);
+    if (attrs.srcset) addUrl(attrs.srcset.split(",")[0]);
+    if (attrs["data-srcset"]) addUrl(attrs["data-srcset"].split(",")[0]);
+  }
+
+  return [...new Set(images)].slice(0, 4);
+}
+
 function forzaVariantSlugCandidates(productName) {
   const raw = String(productName || "").trim();
   if (!raw) return [];
@@ -1382,7 +1427,22 @@ async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl) {
       const wantedModel = wanted.replace(/\b\d+\s*(?:gb|tb)\b/g, "").trim();
       const gotModel = got.replace(/\b\d+\s*(?:gb|tb)\b/g, "").trim();
       if (wantedModel && gotModel && !gotModel.includes(wantedModel) && !wantedModel.includes(gotModel)) continue;
-      const images = Array.isArray(parsed?.product?.images) ? parsed.product.images : [];
+
+      // The exact variant must also match storage and color. This prevents
+      // a same-model page for another color/storage from being accepted.
+      const wantedStorage = (wanted.match(/\b\d+\s*(?:gb|tb)\b/) || [""])[0].replace(/\s+/g, "");
+      const gotStorage = (got.match(/\b\d+\s*(?:gb|tb)\b/) || [""])[0].replace(/\s+/g, "");
+      const wantedColor = wanted.split(" ").slice(-1)[0] || "";
+      const gotColor = forzaImageMatchKey(parsed?.product?.color || "").split(" ")[0] || "";
+      if (wantedStorage && gotStorage && wantedStorage !== gotStorage) continue;
+      if (wantedColor && gotColor && wantedColor !== gotColor) continue;
+
+      // Prefer gallery images whose alt/title explicitly identifies this exact
+      // variant. Only fall back to JSON-LD images if the page does not expose
+      // variant-labelled gallery URLs.
+      const galleryImages = forzaExtractVariantGalleryImages(page.html, productName);
+      const fallbackImages = Array.isArray(parsed?.product?.images) ? parsed.product.images : [];
+      const images = galleryImages.length ? galleryImages : fallbackImages;
       if (!images.length) continue;
       return { url, parsed, images: [...new Set(images)].slice(0, 4) };
     } catch {
