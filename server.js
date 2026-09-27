@@ -1471,7 +1471,10 @@ async function forzaFetchJinaGallery(url, productName) {
       const hasColor = !!wantedColor && key.includes(wantedColor);
       const hasStorage = !!wantedStorage && key.includes(wantedStorage);
       if (!hasModel || !hasColor) continue;
-      if (wantedStorage && !hasStorage) continue;
+      // Forza's exact iPhone 12 64GB Wit gallery uses alt text such as
+      // "iPhone 12 Wit refurbished" without repeating "64GB". The exact
+      // page URL already establishes the storage variant, so storage must NOT
+      // be required in the image alt text.
 
       const imageUrl = m[2].replace(/&amp;/gi, "&");
       if (!seen.has(imageUrl)) {
