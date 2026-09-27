@@ -1773,6 +1773,78 @@ function forzaExtractStorageLinks(html, baseUrl, fallbackMap = {}, allowedStorag
     .map(storage => ({ storage, url: found.get(storage) }));
 }
 
+function forzaExtractColorLinks(html, baseUrl, modelConfig = {}) {
+  const found = new Map();
+  const source = String(html || "");
+  const modelSlug = String(modelConfig.label || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  const allowedStorages = Array.isArray(modelConfig.storages) ? modelConfig.storages : [];
+  const storagePattern = allowedStorages.length
+    ? new RegExp(`(?:${allowedStorages.map(x => String(x).replace(/GB/i, "[- ]*GB")).join("|")})`, "i")
+    : /\b\d+[- ]*GB\b/i;
+
+  const anchorPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]{0,900}?)<\/a>/gi;
+  let match;
+  while ((match = anchorPattern.exec(source))) {
+    const href = String(match[1] || "");
+    const text = forzaCleanText(forzaStripHtml(match[2] || ""));
+    if (!href || !text) continue;
+    const haystack = `${href} ${text}`.toLowerCase();
+    if (modelSlug && !haystack.includes(modelSlug.replace(/-/g, " ")) && !haystack.includes(modelSlug)) continue;
+    const storageMatch = haystack.match(storagePattern);
+    if (!storageMatch) continue;
+
+    let absolute;
+    try { absolute = new URL(href, baseUrl).toString(); } catch { continue; }
+
+    const storage = forzaCleanText(storageMatch[0]).replace(/[- ]*GB/i, "GB").replace(/\s+/g, "");
+    // Color is intentionally discovered from the public variant URL/title rather
+    // than a fixed iPhone 13 color matrix. This keeps the test generic for future models.
+    const slug = absolute.toLowerCase().split("?")[0].replace(/\/$/, "").split("/").pop() || "";
+    const colorPart = slug.replace(new RegExp(`.*?${modelSlug}-?`, "i"), "").replace(/(?:^|-)(?:\d+[- ]*gb)(?:-|$)/i, "").replace(/^-+|-+$/g, "");
+    const color = forzaCleanText((colorPart || text).replace(/\b\d+\s*gb\b/ig, "").trim());
+    if (!color) continue;
+
+    const key = `${storage.toLowerCase()}|${color.toLowerCase()}`;
+    if (!found.has(key)) found.set(key, {storage, color, sourceUrl:absolute});
+  }
+
+  return [...found.values()].slice(0, 80);
+}
+
+async function forzaDiscoverColorVariants(html, baseUrl, modelConfig) {
+  const links = forzaExtractColorLinks(html, baseUrl, modelConfig);
+  const verified = [];
+  for (const item of links) {
+    try {
+      const page = item.sourceUrl === baseUrl ? {response:{ok:true,status:200},html} : await forzaFetchPublicPage(item.sourceUrl);
+      if (!page.response.ok) continue;
+      const parsed = forzaExtractTest(page.html, item.sourceUrl);
+      const product = parsed.product || {};
+      const storage = forzaSelectedStorage(parsed) || item.storage;
+      const color = String(product.color || item.color || "").trim();
+      const name = String(product.name || "").trim();
+      if (!name || !/iphone\s+\d+/i.test(name)) continue;
+      verified.push({
+        storage,
+        color,
+        productName:name,
+        sourceUrl:item.sourceUrl,
+        stock:product.stock,
+        images:Array.isArray(product.images) ? product.images.slice(0,4) : []
+      });
+    } catch {}
+  }
+  const seen = new Set();
+  return verified.filter(v => {
+    const key = `${String(v.storage).toLowerCase()}|${String(v.color).toLowerCase()}`;
+    if (seen.has(key)) return false;
+    seen.add(key); return true;
+  });
+}
+
 function forzaSelectedStorage(result) {
   const title = String(result?.product?.name || "");
   const match = title.match(/\b(64|128|256)\s*GB\b/i);
@@ -2171,7 +2243,7 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
     return res.status(400).json({
       success: false,
       readOnly: true,
-      error: "Onbekend Forza-testmodel. Kies iPhone 11 of iPhone 12."
+      error: "Onbekend Forza-testmodel. Kies een model uit de Forza-testlijst."
     });
   }
   const requestedVariant = String(req.query.variant || "").trim();
@@ -2326,6 +2398,10 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
         error: `Forza returned ${result?.product?.name || "een ander product"} terwijl ${modelConfig.label} was geselecteerd. Er is niets opgeslagen.`
       });
     }
+
+    const colorVariants = await forzaDiscoverColorVariants(mainPage.html, sourceUrl, modelConfig);
+    result.colorVariants = colorVariants;
+    result.product.colorVariants = colorVariants;
 
     result.storageVariants = storageVariants;
     result.product.storageVariants = storageVariants;
