@@ -1320,48 +1320,66 @@ function forzaImageMatchKey(value) {
 function forzaExtractVariantGalleryImages(html, productName) {
   const wanted = forzaImageMatchKey(productName);
   if (!wanted) return [];
-  const wantedTokens = wanted.split(" ").filter(Boolean);
+
+  // Forza's gallery alt text can use "64GB" while the product title uses
+  // "64 GB". Compare a compact key so storage is matched reliably.
+  const compactKey = value => forzaImageMatchKey(value).replace(/\s+/g, "");
+  const wantedCompact = compactKey(productName);
+  if (!wantedCompact) return [];
+
   const images = [];
+  const seen = new Set();
   const imgTags = String(html || "").match(/<img\b[^>]*>/gi) || [];
 
-  const addUrl = (value) => {
+  const addUrl = value => {
     if (!value) return;
     const cleaned = String(value).trim().replace(/&amp;/gi, "&");
-    const match = cleaned.match(/https?:\/\/[^\s,]+/i);
-    if (match) images.push(match[0].replace(/["')]+$/g, ""));
+    // srcset can contain multiple URLs; take the largest-looking candidate
+    // when possible, otherwise the first valid URL.
+    const urls = cleaned.match(/https?:\/\/[^\s,]+/gi) || [];
+    for (const raw of urls) {
+      const url = raw.replace(/["')]+$/g, "");
+      if (!/^https?:\/\//i.test(url)) continue;
+      if (!seen.has(url)) {
+        seen.add(url);
+        images.push(url);
+      }
+    }
   };
 
   for (const tag of imgTags) {
     const attrs = {};
-    const attrRe = /([:\w-]+)\s*=\s*["']([^"']*)["']/gi;
+    const attrRe = /([:\\w-]+)\s*=\s*["']([^"']*)["']/gi;
     let m;
     while ((m = attrRe.exec(tag))) attrs[m[1].toLowerCase()] = m[2];
 
-    const descriptive = [attrs.alt, attrs.title, attrs["data-alt"], attrs["data-title"]]
-      .filter(Boolean)
-      .map(forzaImageMatchKey);
-    if (!descriptive.length) continue;
+    const descriptive = [
+      attrs.alt,
+      attrs.title,
+      attrs["data-alt"],
+      attrs["data-title"],
+      attrs["aria-label"]
+    ].filter(Boolean);
 
-    let score = 0;
-    for (const text of descriptive) {
-      if (text === wanted) score = Math.max(score, 1000);
-      else {
-        const matched = wantedTokens.filter(t => text.split(" ").includes(t)).length;
-        score = Math.max(score, matched * 20 + (text.includes(wanted) ? 200 : 0));
-      }
-    }
-    if (score < Math.max(60, wantedTokens.length * 20)) continue;
+    // Never accept a generic page/brand image. The image must explicitly name
+    // this exact model + storage + color in its accessibility/title metadata.
+    const exact = descriptive.some(text => {
+      const key = compactKey(text);
+      return key.includes(wantedCompact);
+    });
+    if (!exact) continue;
 
     addUrl(attrs.src);
     addUrl(attrs["data-src"]);
     addUrl(attrs["data-lazy-src"]);
-    if (attrs.srcset) addUrl(attrs.srcset.split(",")[0]);
-    if (attrs["data-srcset"]) addUrl(attrs["data-srcset"].split(",")[0]);
+    addUrl(attrs.srcset);
+    addUrl(attrs["data-srcset"]);
+
+    if (images.length >= 4) break;
   }
 
-  return [...new Set(images)].slice(0, 4);
+  return images.slice(0, 4);
 }
-
 function forzaVariantSlugCandidates(productName) {
   const raw = String(productName || "").trim();
   if (!raw) return [];
@@ -1440,10 +1458,10 @@ async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl) {
       // Prefer gallery images whose alt/title explicitly identifies this exact
       // variant. Only fall back to JSON-LD images if the page does not expose
       // variant-labelled gallery URLs.
-      const galleryImages = forzaExtractVariantGalleryImages(page.html, productName);
-      const fallbackImages = Array.isArray(parsed?.product?.images) ? parsed.product.images : [];
-      const images = galleryImages.length ? galleryImages : fallbackImages;
-      if (!images.length) continue;
+      const images = forzaExtractVariantGalleryImages(page.html, productName);
+      // Safety: if exact variant-labelled gallery images cannot be extracted,
+      // return no images instead of risking images from another color/storage.
+      if (images.length < 1) continue;
       return { url, parsed, images: [...new Set(images)].slice(0, 4) };
     } catch {
       // Try the next exact-variant candidate.
