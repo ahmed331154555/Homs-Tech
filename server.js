@@ -1458,6 +1458,90 @@ function forzaExtractStructuredGalleryImages(html, productName) {
   return ordered.slice(0, 8).map(c => c.url);
 }
 
+function forzaExtractStructuredGalleryImages(html, productName) {
+  const wanted = forzaImageMatchKey(productName);
+  if (!wanted) return [];
+  const wantedTokens = wanted.split(" ").filter(Boolean);
+  const wantedColor = wantedTokens[wantedTokens.length - 1] || "";
+  const wantedStorage = (wanted.match(/\b\d+\s*(?:gb|tb)\b/) || [""])[0].replace(/\s+/g, "");
+  const wantedModelTokens = wantedTokens.filter(t =>
+    !/^\d+$/.test(t) && !/^(?:gb|tb)$/.test(t) && t !== wantedColor
+  );
+
+  const images = [];
+  const seen = new Set();
+  const addUrl = value => {
+    if (!value) return;
+    const values = String(value).match(/https?:\/\/[^\s,"'<>]+/gi) || [];
+    for (const raw of values) {
+      let url = raw.replace(/&amp;/gi, "&").replace(/[)\]}]+$/g, "");
+      try {
+        const parsed = new URL(url);
+        parsed.searchParams.delete("width");
+        parsed.searchParams.delete("w");
+        parsed.searchParams.delete("quality");
+        parsed.searchParams.delete("q");
+        url = parsed.toString();
+      } catch {}
+      if (!/^https?:\/\//i.test(url)) continue;
+      if (forzaImageUrlVariantMismatch(url, wantedColor, wantedStorage)) continue;
+      if (!seen.has(url)) { seen.add(url); images.push(url); }
+    }
+  };
+
+  const labelKeys = new Set([
+    "alt","caption","title","label","name","description","text","aria-label",
+    "data-alt","data-title","productname","product_name"
+  ]);
+  const urlKeys = new Set([
+    "full","img","image","src","url","thumb","thumbnail","large","medium",
+    "small","fullimage","imageurl","image_url","data-src","data-lazy-src"
+  ]);
+
+  const walk = (value, inheritedLabel = "", seenObjects = new Set()) => {
+    if (value === null || value === undefined) return;
+    if (typeof value !== "object") return;
+    if (seenObjects.has(value)) return;
+    seenObjects.add(value);
+
+    let ownLabel = inheritedLabel;
+    const urls = [];
+    for (const [key, child] of Object.entries(value)) {
+      const k = String(key || "").toLowerCase();
+      if (labelKeys.has(k) && typeof child === "string") ownLabel += " " + child;
+      if (urlKeys.has(k) && typeof child === "string") urls.push(child);
+      if (urlKeys.has(k) && Array.isArray(child)) child.forEach(x => { if (typeof x === "string") urls.push(x); });
+    }
+
+    const labelKey = forzaImageMatchKey(ownLabel).replace(/\s+/g, "");
+    const generic = /kleuren|colors|colour/.test(labelKey);
+    const hasModel = wantedModelTokens.every(token => labelKey.includes(token));
+    const hasColor = !!wantedColor && labelKey.includes(wantedColor);
+    if (!generic && hasModel && hasColor) urls.forEach(addUrl);
+
+    for (const child of Object.values(value)) {
+      if (child && typeof child === "object") walk(child, ownLabel, seenObjects);
+    }
+  };
+
+  // Magento/Forza commonly places the gallery in text/x-magento-init JSON.
+  const scripts = String(html || "").match(/<script\b[^>]*>[\s\S]*?<\/script>/gi) || [];
+  for (const script of scripts) {
+    const typeMatch = script.match(/type=["']([^"']+)["']/i);
+    const body = script.replace(/^<script\b[^>]*>/i, "").replace(/<\/script>\s*$/i, "").trim();
+    if (!body || !/json|magento-init|gallery|fotorama/i.test((typeMatch?.[1] || "") + " " + body.slice(0, 2000))) continue;
+    try {
+      walk(JSON.parse(body));
+    } catch {
+      // Ignore non-JSON script blocks.
+    }
+    if (images.length >= 4) return [...new Set(images)].slice(0, 4);
+  }
+
+  return [...new Set(images)].slice(0, 4);
+}
+
+
 function forzaExtractVariantGalleryImages(html, productName) {
   const wanted = forzaImageMatchKey(productName);
   if (!wanted) return [];
@@ -1472,8 +1556,14 @@ function forzaExtractVariantGalleryImages(html, productName) {
   );
   const compact = value => forzaImageMatchKey(value).replace(/\s+/g, "");
 
-  const images = [];
-  const seen = new Set();
+  // Prefer the structured Forza/Magento/Fotorama gallery. This is the same
+  // gallery path that was working for the iPhone 11 and avoids depending on
+  // whichever <img> tags happen to appear first in the HTML.
+  const structured = forzaExtractStructuredGalleryImages(html, productName);
+  if (structured.length >= 4) return structured.slice(0, 4);
+
+  const images = [...structured];
+  const seen = new Set(images);
   const imgTags = String(html || "").match(/<img\b[^>]*>/gi) || [];
 
   const addUrl = value => {
