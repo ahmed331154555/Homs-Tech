@@ -4930,8 +4930,11 @@ function renderForzaPreview(){
     <td style="padding:9px;border-bottom:1px solid #edf2f7"><span style="font-size:12px;font-weight:800">${forzaAdminEsc(row.status)}</span></td>
   </tr>`).join("");
   content.style.display="block";
-  status.className="status success";
-  status.textContent=`✓ Preview gemaakt: ${rows.length} mogelijke regels. Geen enkele regel is opgeslagen. Elke opslag gebruikt alleen de prijzen van de bijbehorende Forza-pagina; ontbrekende prijzen blijven leeg.`;
+  const missingPrices=rows.filter(r=>!Number.isFinite(Number(r.price))).length;
+  status.className=missingPrices ? "status info" : "status success";
+  status.textContent=missingPrices
+    ? `✓ Preview gemaakt: ${rows.length} regels. ${missingPrices} prijs(en) ontbreken op de bijbehorende Forza-pagina; die blijven leeg. Er is niets opgeslagen.`
+    : `✓ Preview gemaakt: ${rows.length} regels. Alle prijzen zijn geldig uit Forza gelezen. Er is niets opgeslagen.`;
 }
 
 
@@ -4945,8 +4948,8 @@ function forzaCompareNormalize(value){
 }
 
 function forzaCompareStorageKey(value){
-  const m=String(value ?? "").match(/(\d+)\s*gb/i);
-  return m ? `${m[1]}GB` : forzaCompareNormalize(value).replace(/\s+/g,"").toUpperCase();
+  const m=String(value ?? "").match(/(\d+)\s*(gb|tb)/i);
+  return m ? `${m[1]}${m[2].toUpperCase()}` : forzaCompareNormalize(value).replace(/\s+/g,"").toUpperCase();
 }
 
 function forzaCompareConditionKey(value){
@@ -5239,6 +5242,7 @@ async function forzaAddVariant(item,modelLabel,button){
       // Bestaand product: alleen Forza-prijsdata bijwerken in de huidige Admin-lijst.
       // Nog niets naar de database schrijven tot de gebruiker zelf op Opslaan drukt.
       existingPhone.price=basePrice;
+      existingPhone.forzaPrice=basePrice;
       if(conditionRows.length){
         existingPhone.conditionOptions=conditionRows.map(c=>({label:c.label,basePrice:c.basePrice,active:true}));
       }
@@ -5266,6 +5270,7 @@ async function forzaAddVariant(item,modelLabel,button){
       name:productName,
       brand:String(p.brand||"Apple"),
       price:basePrice,
+      forzaPrice:basePrice,
       storage:[String(item.storage)],
       color:String(item.color),
       condition:"Zo goed als nieuw",
