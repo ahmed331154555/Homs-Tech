@@ -1732,6 +1732,10 @@ const FORZA_TEST_MODELS = {
     label: "iPhone 13",
     sourceUrl: "https://www.forza-refurbished.nl/refurbished-iphone/iphone-13",
     storages: ["128GB", "256GB", "512GB"],
+    // The current Forza iPhone 13 overview contains exactly these six colors.
+    // This prevents unrelated product links (for example a gold device) from
+    // being mistaken for an iPhone 13 overview variant.
+    allowedColors: ["Zwart", "Wit", "Rood", "Groen", "Blauw", "Roze"],
     fallbacks: {
       "128GB": "https://www.forza-refurbished.nl/iphone-13-128-gb-zwart",
       "256GB": "https://www.forza-refurbished.nl/iphone-13-256-gb-zwart",
@@ -1865,6 +1869,14 @@ function forzaExtractColorLinks(html, baseUrl, modelConfig = {}) {
     const color = colorFromSlug(absolute) || forzaCleanText(text).replace(/\b\d+\s*(?:GB|TB)\b/ig, "").trim();
     if (!color) return;
 
+    // If a model explicitly defines its catalog colors, only accept those
+    // colors from the overview. This keeps the discovered variant list tied
+    // to the actual model catalog instead of unrelated site links.
+    if (Array.isArray(modelConfig.allowedColors) && modelConfig.allowedColors.length) {
+      const allowed = new Set(modelConfig.allowedColors.map(c => String(c).trim().toLowerCase()));
+      if (!allowed.has(String(color).trim().toLowerCase())) return;
+    }
+
     const key = `${storage.toLowerCase()}|${color.toLowerCase()}`;
     if (!found.has(key)) found.set(key, {storage, color, sourceUrl:absolute, sourceUrls:[absolute]});
     else if (!found.get(key).sourceUrls.includes(absolute)) found.get(key).sourceUrls.push(absolute);
@@ -1910,6 +1922,10 @@ async function forzaDiscoverColorVariants(html, baseUrl, modelConfig) {
         const color = String(product.color || item.color || "").trim();
         const name = String(product.name || "").trim();
         if (!name || !/iphone\s+\d+/i.test(name)) continue;
+        if (Array.isArray(modelConfig.allowedColors) && modelConfig.allowedColors.length) {
+          const allowed = new Set(modelConfig.allowedColors.map(c => String(c).trim().toLowerCase()));
+          if (!allowed.has(color.toLowerCase())) continue;
+        }
         verified.push({
           storage,
           color,
