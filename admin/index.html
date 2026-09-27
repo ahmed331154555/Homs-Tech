@@ -1481,7 +1481,9 @@ textarea{
             <button id="forzaUpdatePricesBtn" class="btn btn-green" onclick="updateHomsPricesFromForza()" style="display:none">
               🔄 Forza-prijzen bijwerken
             </button>
-<button id="forzaSyncAllBtn" class="btn btn-primary" type="button" onclick="syncForzaProductToHoms()" style="display:none;margin-left:8px">📥 Forza → HOMS TECH: alles synchroniseren</button>
+            <button id="forzaFullSyncBtn" class="btn btn-green" onclick="fullSyncHomsFromForza()" style="display:none">
+              📥 Forza Full Sync
+            </button>
           </div>
           <div style="overflow:auto;margin-top:12px">
             <table style="width:100%;border-collapse:collapse;min-width:980px">
@@ -5033,7 +5035,9 @@ function compareForzaWithHoms(){
 
   content.style.display="block";
   const updateBtn=document.getElementById("forzaUpdatePricesBtn");
+  const fullSyncBtn=document.getElementById("forzaFullSyncBtn");
   if(updateBtn) updateBtn.style.display = phone ? "inline-flex" : "none";
+  if(fullSyncBtn) fullSyncBtn.style.display = phone && rows.length===18 && rows.every(r=>Number.isFinite(Number(r.price))) ? "inline-flex" : "none";
 
   if(phone){
     status.className="status success";
@@ -5042,47 +5046,6 @@ function compareForzaWithHoms(){
     status.className="status info";
     status.textContent="ℹ️ Forza-data is gelezen, maar er is nog geen passend HOMS TECH-product gevonden om mee te vergelijken.";
   }
-}
-
-async function syncForzaProductToHoms(){
-  const status=document.getElementById("forzaCompareStatus");
-  const btn=document.getElementById("forzaSyncAllBtn");
-  if(!forzaPreviewModel){
-    if(status){status.className="status error";status.textContent="Lees eerst de actuele Forza-data.";}
-    return;
-  }
-  const rows=forzaAdminBuildPreview();
-  const product=forzaPreviewModel.product || {};
-  const modelProduct=forzaAdminPick(product,["name","productName","title"])||"Niet gevonden";
-  const phone=forzaCompareFindPhone(modelProduct);
-  if(!phone){
-    if(status){status.className="status error";status.textContent="HOMS TECH-product niet gevonden. Er is niets gewijzigd.";}
-    return;
-  }
-  const images=Array.isArray(product.images)?product.images:[];
-  const confirmed=window.confirm(
-    `Forza-product volledig synchroniseren naar "${phone.name}"?\n\n`+
-    `Dit synchroniseert prijzen, naam, merk, SKU, voorraad, beschrijving, specificaties en maximaal 4 productfoto's.\n`+
-    `Alle Forza-foto's worden daarnaast bewaard in forzaImages.\n\n`+
-    `Andere HOMS TECH-producten blijven ongewijzigd.`
-  );
-  if(!confirmed)return;
-  if(btn)btn.disabled=true;
-  if(status){status.className="status info";status.textContent="Forza-product wordt volledig gesynchroniseerd...";}
-  try{
-    const r=await fetch("/api/admin/forza/update-prices",{
-      method:"PUT",credentials:"same-origin",
-      headers:{"Content-Type":"application/json","Accept":"application/json"},
-      body:JSON.stringify({productName:modelProduct,targetPhoneName:phone.name,rows,sourceProduct:{...product,sourceUrl:forzaPreviewModel.sourceUrl||product.sourceUrl||""}})
-    });
-    const payload=await r.json().catch(()=>({}));
-    if(!r.ok || payload.success===false) throw new Error(payload.error||`Synchronisatie mislukt (HTTP ${r.status})`);
-    if(status){status.className="status success";status.textContent=`✓ ${payload.message||"Forza-product volledig gesynchroniseerd."} (${images.length} foto's gelezen)`;}
-    await loadData();
-    compareForzaWithHoms();
-  }catch(error){
-    if(status){status.className="status error";status.textContent=`✗ ${error.message||"Synchronisatie mislukt. Er is niets gewijzigd."}`;}
-  }finally{if(btn)btn.disabled=false;}
 }
 
 async function updateHomsPricesFromForza(){
@@ -5155,6 +5118,69 @@ async function updateHomsPricesFromForza(){
   }
 }
 
+
+async function fullSyncHomsFromForza(){
+  const status=document.getElementById("forzaCompareStatus");
+  const btn=document.getElementById("forzaFullSyncBtn");
+  if(!forzaPreviewModel){
+    if(status){status.className="status error";status.textContent="Lees eerst de actuele Forza-data.";}
+    return;
+  }
+  const rows=forzaAdminBuildPreview();
+  const modelProduct=forzaAdminPick(forzaPreviewModel.product,["name","productName","title"])||"Niet gevonden";
+  const phone=forzaCompareFindPhone(modelProduct);
+  if(!phone){
+    if(status){status.className="status error";status.textContent="HOMS TECH-product niet gevonden. Er is niets gewijzigd.";}
+    return;
+  }
+  if(rows.length!==18 || rows.some(r=>!Number.isFinite(Number(r.price)))){
+    if(status){status.className="status error";status.textContent="Full Sync gestopt: niet alle 18 Forza-prijzen zijn beschikbaar.";}
+    return;
+  }
+
+  const images=forzaAdminArray(forzaPreviewModel.product.images || forzaPreviewModel.product.imageUrls || forzaPreviewModel.product.photos || forzaPreviewModel.product.gallery)
+    .filter(v=>typeof v==="string" && /^https?:\/\//i.test(v)).slice(0,12);
+  const specs=forzaAdminArray(forzaPreviewModel.product.specs || forzaPreviewModel.product.specifications || forzaPreviewModel.product.attributes).slice(0,20);
+  const description=forzaAdminPick(forzaPreviewModel.product,["description","shortDescription","longDescription"]) || "";
+  const brand=forzaAdminPick(forzaPreviewModel.product,["brand","brandName"]) || "";
+  const sku=forzaAdminPick(forzaPreviewModel.product,["sku","SKU","productSku","productSKU","articleNumber","article_number","mpn","productCode","product_code"]) || "";
+  const color=forzaAdminPick(forzaPreviewModel.product,["color","colour","colorName"]) || "";
+  const stock=forzaAdminPick(forzaPreviewModel.product,["stock","availability","inventory"]) ;
+  const sourceUrl=forzaAdminPick(forzaPreviewModel.product,["sourceUrl","canonical","url"]) || "";
+
+  const confirmed=window.confirm(
+    `Full Sync voor "${phone.name}"?\n\n`+
+    `Dit werkt ALLEEN dit product bij met de gelezen Forza-data:\n`+
+    `• 18 prijzen\n• productgegevens${images.length?`\n• ${images.length} afbeeldingen`:""}${specs.length?`\n• ${specs.length} specificaties`:""}${description?"\n• beschrijving":""}\n\n`+
+    `Andere HOMS TECH-producten worden niet gewijzigd.`
+  );
+  if(!confirmed)return;
+
+  if(btn)btn.disabled=true;
+  if(status){status.className="status info";status.textContent="Forza Full Sync wordt uitgevoerd...";}
+  try{
+    const r=await fetch("/api/admin/forza/full-sync",{
+      method:"PUT",credentials:"same-origin",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({
+        productName:modelProduct,
+        targetPhoneName:phone.name,
+        rows,
+        product:{name:modelProduct,brand,sku,color,stock,specs,description,images,sourceUrl}
+      })
+    });
+    const payload=await r.json().catch(()=>({}));
+    if(!r.ok || payload.success===false) throw new Error(payload.error || `Full Sync mislukt (HTTP ${r.status})`);
+    if(status){status.className="status success";status.textContent=`✓ ${payload.message || "Forza Full Sync voltooid."}`;}
+    await loadData();
+    compareForzaWithHoms();
+  }catch(error){
+    if(status){status.className="status error";status.textContent=`✗ ${error.message || "Full Sync mislukt."}`;}
+  }finally{
+    if(btn)btn.disabled=false;
+  }
+}
+
 async function loadForzaTest(){
   const status=document.getElementById("forzaTestStatus");
   const content=document.getElementById("forzaTestContent");
@@ -5213,8 +5239,6 @@ async function loadForzaTest(){
     document.getElementById("forzaTestDescription").textContent=typeof description==="object"?JSON.stringify(description,null,2):String(description);
     document.getElementById("forzaTestSource").innerHTML=sourceUrl && /^https?:\/\//i.test(String(sourceUrl)) ? `<a href="${forzaAdminEsc(sourceUrl)}" target="_blank" rel="noopener noreferrer">${forzaAdminEsc(sourceUrl)}</a>` : forzaAdminEsc(sourceUrl);
     document.getElementById("forzaTestRaw").textContent=JSON.stringify(payload,null,2);
-    const syncAllBtn=document.getElementById("forzaSyncAllBtn");
-    if(syncAllBtn) syncAllBtn.style.display="inline-block";
     content.style.display="block";
     status.className="status success";
     status.textContent=`✓ ${modelLabel} succesvol gelezen — alleen-lezen test. Er is niets naar de HOMS TECH-productdatabase geschreven.`;
