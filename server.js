@@ -1378,14 +1378,13 @@ function forzaExtractStructuredGalleryImages(html, productName) {
   if (!wanted) return [];
   const wantedTokens = wanted.split(" ").filter(Boolean);
   const wantedColor = wantedTokens[wantedTokens.length - 1] || "";
-  const wantedStorage = (wanted.match(/\b\d+\s*(?:gb|tb)\b/) || [""])[0].replace(/\s+/g, "");
   const wantedModelTokens = wantedTokens.filter(t =>
     !/^\d+$/.test(t) && !/^(?:gb|tb)$/.test(t) && t !== wantedColor
   );
 
-  const images = [];
+  const candidates = [];
   const seen = new Set();
-  const addUrl = value => {
+  const addCandidate = (value, label) => {
     if (!value) return;
     const values = String(value).match(/https?:\/\/[^\s,"'<>]+/gi) || [];
     for (const raw of values) {
@@ -1400,8 +1399,11 @@ function forzaExtractStructuredGalleryImages(html, productName) {
       } catch {}
       if (!/^https?:\/\//i.test(url)) continue;
       if (!forzaIsLikelyImageUrl(url)) continue;
-      if (forzaImageUrlVariantMismatch(url, wantedColor, wantedStorage)) continue;
-      if (!seen.has(url)) { seen.add(url); images.push(url); }
+      if (forzaImageUrlVariantMismatch(url, wantedColor, "")) continue;
+      const key = url.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      candidates.push({ url, label: forzaImageMatchKey(label || "") });
     }
   };
 
@@ -1415,11 +1417,8 @@ function forzaExtractStructuredGalleryImages(html, productName) {
   ]);
 
   const walk = (value, inheritedLabel = "", seenObjects = new Set()) => {
-    if (value === null || value === undefined) return;
-    if (typeof value !== "object") return;
-    if (seenObjects.has(value)) return;
+    if (!value || typeof value !== "object" || seenObjects.has(value)) return;
     seenObjects.add(value);
-
     let ownLabel = inheritedLabel;
     const urls = [];
     for (const [key, child] of Object.entries(value)) {
@@ -1428,33 +1427,35 @@ function forzaExtractStructuredGalleryImages(html, productName) {
       if (urlKeys.has(k) && typeof child === "string") urls.push(child);
       if (urlKeys.has(k) && Array.isArray(child)) child.forEach(x => { if (typeof x === "string") urls.push(x); });
     }
-
     const labelKey = forzaImageMatchKey(ownLabel).replace(/\s+/g, "");
     const generic = /kleuren|colors|colour/.test(labelKey);
     const hasModel = wantedModelTokens.every(token => labelKey.includes(token));
     const hasColor = !!wantedColor && labelKey.includes(wantedColor);
-    if (!generic && hasModel && hasColor) urls.forEach(addUrl);
-
+    if (!generic && hasModel && hasColor) urls.forEach(u => addCandidate(u, ownLabel));
     for (const child of Object.values(value)) {
       if (child && typeof child === "object") walk(child, ownLabel, seenObjects);
     }
   };
 
-  // Magento/Forza commonly places the gallery in text/x-magento-init JSON.
   const scripts = String(html || "").match(/<script\b[^>]*>[\s\S]*?<\/script>/gi) || [];
   for (const script of scripts) {
     const typeMatch = script.match(/type=["']([^"']+)["']/i);
     const body = script.replace(/^<script\b[^>]*>/i, "").replace(/<\/script>\s*$/i, "").trim();
-    if (!body || !/json|magento-init|gallery|fotorama/i.test((typeMatch?.[1] || "") + " " + body.slice(0, 2000))) continue;
-    try {
-      walk(JSON.parse(body));
-    } catch {
-      // Ignore non-JSON script blocks.
-    }
-    if (images.length >= 4) return [...new Set(images)].slice(0, 4);
+    if (!body || !/json|magento-init|gallery|fotorama/i.test((typeMatch?.[1] || "") + " " + body.slice(0, 3000))) continue;
+    try { walk(JSON.parse(body)); } catch {}
   }
 
-  return [...new Set(images)].slice(0, 4);
+  // Prefer the actual Forza gallery positions explicitly labelled front/back.
+  // This prevents the generic first thumbnail from crowding out the rear image.
+  const front = candidates.filter(c => /voorkant|front/.test(c.label));
+  const back = candidates.filter(c => /achterkant|back/.test(c.label));
+  const other = candidates.filter(c => !/voorkant|front|achterkant|back/.test(c.label));
+  const ordered = [];
+  const pushUnique = c => { if (c && !ordered.some(x => x.url === c.url)) ordered.push(c); };
+  front.forEach(pushUnique);
+  back.forEach(pushUnique);
+  other.forEach(pushUnique);
+  return ordered.slice(0, 8).map(c => c.url);
 }
 
 function forzaExtractVariantGalleryImages(html, productName) {
@@ -1462,22 +1463,14 @@ function forzaExtractVariantGalleryImages(html, productName) {
   if (!wanted) return [];
   const wantedTokens = wanted.split(" ").filter(Boolean);
   const wantedColor = wantedTokens[wantedTokens.length - 1] || "";
-  const wantedStorage = (wanted.match(/\b\d+\s*(?:gb|tb)\b/) || [""])[0].replace(/\s+/g, "");
   const wantedModelTokens = wantedTokens.filter(t =>
     !/^\d+$/.test(t) && !/^(?:gb|tb)$/.test(t) && t !== wantedColor
   );
   const compact = value => forzaImageMatchKey(value).replace(/\s+/g, "");
 
-  // First read the actual structured gallery data. This avoids JSON-LD's
-  // generic product image list, which can contain a photo from another colour.
-  const structured = forzaExtractStructuredGalleryImages(html, productName);
-  if (structured.length >= 4) return structured.slice(0, 4);
-
-  const images = [...structured];
-  const seen = new Set(images);
-  const imgTags = String(html || "").match(/<img\b[^>]*>/gi) || [];
-
-  const addUrl = value => {
+  const candidates = [];
+  const seen = new Set();
+  const addCandidate = (value, label) => {
     if (!value) return;
     const urls = String(value).match(/https?:\/\/[^\s,]+/gi) || [];
     for (const raw of urls) {
@@ -1492,38 +1485,51 @@ function forzaExtractVariantGalleryImages(html, productName) {
       } catch {}
       if (!/^https?:\/\//i.test(url)) continue;
       if (!forzaIsLikelyImageUrl(url)) continue;
-      if (forzaImageUrlVariantMismatch(url, wantedColor, wantedStorage)) continue;
-      if (!seen.has(url)) { seen.add(url); images.push(url); }
+      if (forzaImageUrlVariantMismatch(url, wantedColor, "")) continue;
+      const key = url.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      candidates.push({ url, label: forzaImageMatchKey(label || "") });
     }
   };
 
+  // First inspect real <img> elements because Forza exposes the gallery
+  // position in alt text: generic, voorkant/front, achterkant/back.
+  const imgTags = String(html || "").match(/<img\b[^>]*>/gi) || [];
   for (const tag of imgTags) {
     const attrs = {};
     const attrRe = /([:\w-]+)\s*=\s*["']([^"']*)["']/gi;
     let m;
     while ((m = attrRe.exec(tag))) attrs[m[1].toLowerCase()] = m[2];
-
-    const descriptive = [
-      attrs.alt, attrs.title, attrs["data-alt"], attrs["data-title"], attrs["aria-label"]
-    ].filter(Boolean);
+    const descriptive = [attrs.alt, attrs.title, attrs["data-alt"], attrs["data-title"], attrs["aria-label"]].filter(Boolean);
     if (!descriptive.length) continue;
-
     const text = descriptive.map(forzaImageMatchKey).join(" ");
     const key = compact(text);
     if (/kleuren|colors|colour/.test(key)) continue;
     const hasModel = wantedModelTokens.every(token => key.includes(token));
     const hasColor = !!wantedColor && key.includes(wantedColor);
     if (!hasModel || !hasColor) continue;
-
-    addUrl(attrs.src);
-    addUrl(attrs["data-src"]);
-    addUrl(attrs["data-lazy-src"]);
-    addUrl(attrs.srcset);
-    addUrl(attrs["data-srcset"]);
-    if (images.length >= 4) break;
+    addCandidate(attrs.src, text);
+    addCandidate(attrs["data-src"], text);
+    addCandidate(attrs["data-lazy-src"], text);
+    addCandidate(attrs.srcset, text);
+    addCandidate(attrs["data-srcset"], text);
   }
 
-  return [...new Set(images)].slice(0, 4);
+  // Add structured gallery entries, but do not let them replace the
+  // explicitly labelled front/back candidates found above.
+  const structured = forzaExtractStructuredGalleryImages(html, productName);
+  for (const url of structured) addCandidate(url, "");
+
+  const front = candidates.filter(c => /voorkant|front/.test(c.label));
+  const back = candidates.filter(c => /achterkant|back/.test(c.label));
+  const other = candidates.filter(c => !/voorkant|front|achterkant|back/.test(c.label));
+  const ordered = [];
+  const pushUnique = c => { if (c && !ordered.some(x => x.url === c.url)) ordered.push(c); };
+  front.forEach(pushUnique);
+  back.forEach(pushUnique);
+  other.forEach(pushUnique);
+  return ordered.slice(0, 4).map(c => c.url);
 }
 
 function forzaVariantSlugCandidates(productName) {
@@ -1778,15 +1784,19 @@ async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl) {
         if (wantedModel && gotModel && !gotModel.includes(wantedModel) && !wantedModel.includes(gotModel)) continue;
 
         const images = forzaExtractVariantGalleryImages(page.html, productName);
-        if (images.length >= 1) {
+        // Accept the direct HTML immediately only when we have the full set.
+        // If it is partial, ask Jina for the same exact variant page and merge
+        // the two sources instead of stopping after a generic thumbnail.
+        if (images.length >= 4) {
           return { url, parsed, images: images.slice(0, 4) };
         }
 
-        // If the exact HTML does not expose the gallery, use Jina on THIS exact
-        // product URL only. Never use the model overview gallery here.
+        // If the exact HTML exposes only part of the gallery, use Jina on THIS
+        // exact product URL only. Never use the model overview gallery here.
         const jinaImages = await forzaFetchJinaGallery(url, productName);
-        if (jinaImages.length >= 1) {
-          return { url, parsed, images: jinaImages.slice(0, 4) };
+        const mergedImages = [...new Set([...(Array.isArray(images) ? images : []), ...(Array.isArray(jinaImages) ? jinaImages : [])])];
+        if (mergedImages.length >= 1) {
+          return { url, parsed, images: mergedImages.slice(0, 4) };
         }
       }
 
