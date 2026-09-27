@@ -5196,7 +5196,20 @@ function forzaUpdateVariantSelector(){
   }
   const storages=["64GB","128GB","256GB"];
   const colors=["Zwart","Wit","Blauw","Groen","Paars","Rood"];
-  select.innerHTML='<option value="">Kies iPhone 12 variant</option>'+storages.flatMap(s=>colors.map(c=>`<option value="iPhone 12 ${s} ${c}">${s.replace("GB"," GB")} — ${c}</option>`)).join("");
+  // Current public Forza catalogue: unavailable combinations stay visible but
+  // are disabled and marked, so the admin can see the complete iPhone 12 matrix.
+  const available=new Set([
+    "iPhone 12 64GB Zwart","iPhone 12 64GB Blauw","iPhone 12 64GB Groen","iPhone 12 64GB Paars",
+    "iPhone 12 128GB Zwart","iPhone 12 128GB Wit","iPhone 12 128GB Blauw","iPhone 12 128GB Rood",
+    "iPhone 12 256GB Zwart","iPhone 12 256GB Wit","iPhone 12 256GB Blauw","iPhone 12 256GB Groen","iPhone 12 256GB Paars","iPhone 12 256GB Rood"
+  ]);
+  const options=storages.flatMap(s=>colors.map(c=>{
+    const name=`iPhone 12 ${s} ${c}`;
+    const ok=available.has(name);
+    const label=`${s.replace("GB"," GB")} — ${c}${ok?"":" — Niet beschikbaar"}`;
+    return `<option value="${name}"${ok?"":" disabled"}>${label}</option>`;
+  }));
+  select.innerHTML='<option value="">Kies iPhone 12 variant</option>'+options.join("");
   select.style.display="inline-block";
 }
 
