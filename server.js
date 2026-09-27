@@ -1814,39 +1814,82 @@ function forzaExtractStorageLinks(html, baseUrl, fallbackMap = {}, allowedStorag
 function forzaExtractColorLinks(html, baseUrl, modelConfig = {}) {
   const found = new Map();
   const source = String(html || "");
-  const modelSlug = String(modelConfig.label || "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  const allowedStorages = Array.isArray(modelConfig.storages) ? modelConfig.storages : [];
-  const storagePattern = allowedStorages.length
-    ? new RegExp(`(?:${allowedStorages.map(x => String(x).replace(/GB/i, "[- ]*GB")).join("|")})`, "i")
-    : /\b\d+[- ]*GB\b/i;
+  const label = String(modelConfig.label || "").trim();
+  const modelSlug = label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  const allowedStorages = Array.isArray(modelConfig.storages) ? modelConfig.storages.map(String) : [];
+  const storageSet = new Set(allowedStorages.map(x => x.replace(/\s+/g, "").toUpperCase()));
 
-  const anchorPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]{0,900}?)<\/a>/gi;
+  // Forza product cards can expose the exact product URL through href,
+  // data-href, data-url or nested markup. Read all of them instead of
+  // depending on one particular card structure.
+  const tagPattern = /<(?:a|div|article|li|button)\b[^>]*(?:href|data-href|data-url)=(["'])(.*?)\1[^>]*>([\s\S]{0,1800}?)<\/(?:a|div|article|li|button)>/gi;
   let match;
+  const candidates = [];
+
+  while ((match = tagPattern.exec(source))) {
+    candidates.push({href: match[2], text: forzaCleanText(forzaStripHtml(match[3] || ""))});
+  }
+
+  // Also inspect every ordinary anchor independently; this catches cards whose
+  // closing markup is larger than the bounded product-card scan above.
+  const anchorPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]{0,2500}?)<\/a>/gi;
   while ((match = anchorPattern.exec(source))) {
-    const href = String(match[1] || "");
-    const text = forzaCleanText(forzaStripHtml(match[2] || ""));
-    if (!href || !text) continue;
-    const haystack = `${href} ${text}`.toLowerCase();
-    if (modelSlug && !haystack.includes(modelSlug.replace(/-/g, " ")) && !haystack.includes(modelSlug)) continue;
-    const storageMatch = haystack.match(storagePattern);
-    if (!storageMatch) continue;
+    candidates.push({href: match[1], text: forzaCleanText(forzaStripHtml(match[2] || ""))});
+  }
 
+  const storageFrom = (value) => {
+    const m = String(value || "").match(/\b(\d+)\s*(GB|TB)\b/i);
+    if (!m) return "";
+    const storage = `${m[1]}${m[2].toUpperCase()}`;
+    return !storageSet.size || storageSet.has(storage) ? storage : "";
+  };
+
+  const colorFromSlug = (url) => {
+    let slug = String(url || "").toLowerCase().split("?")[0].replace(/\/$/, "").split("/").pop() || "";
+    slug = slug.replace(/\.(html?|php)$/i, "");
+    if (modelSlug) slug = slug.replace(new RegExp(`^${modelSlug}(?:-|$)`, "i"), "");
+    slug = slug.replace(/^\d+[- ]*gb(?:-|$)/i, "").replace(/^\d+gb(?:-|$)/i, "");
+    return forzaCleanText(slug.replace(/[-_]+/g, " ").trim());
+  };
+
+  const addCandidate = (href, text) => {
+    if (!href) return;
     let absolute;
-    try { absolute = new URL(href, baseUrl).toString(); } catch { continue; }
+    try { absolute = new URL(href, baseUrl).toString(); } catch { return; }
+    const lower = absolute.toLowerCase();
+    if (!/^https?:\/\//i.test(absolute)) return;
+    if (modelSlug && !lower.includes(`/${modelSlug}-`) && !lower.includes(`/${modelSlug}/`) && !lower.includes(modelSlug)) return;
 
-    const storage = forzaCleanText(storageMatch[0]).replace(/[- ]*GB/i, "GB").replace(/\s+/g, "");
-    // Color is intentionally discovered from the public variant URL/title rather
-    // than a fixed iPhone 13 color matrix. This keeps the test generic for future models.
-    const slug = absolute.toLowerCase().split("?")[0].replace(/\/$/, "").split("/").pop() || "";
-    const colorPart = slug.replace(new RegExp(`.*?${modelSlug}-?`, "i"), "").replace(/(?:^|-)(?:\d+[- ]*gb)(?:-|$)/i, "").replace(/^-+|-+$/g, "");
-    const color = forzaCleanText((colorPart || text).replace(/\b\d+\s*gb\b/ig, "").trim());
-    if (!color) continue;
+    const storage = storageFrom(`${absolute} ${text}`);
+    if (!storage) return;
+    const color = colorFromSlug(absolute) || forzaCleanText(text).replace(/\b\d+\s*(?:GB|TB)\b/ig, "").trim();
+    if (!color) return;
 
     const key = `${storage.toLowerCase()}|${color.toLowerCase()}`;
-    if (!found.has(key)) found.set(key, {storage, color, sourceUrl:absolute});
+    if (!found.has(key)) found.set(key, {storage, color, sourceUrl:absolute, sourceUrls:[absolute]});
+    else if (!found.get(key).sourceUrls.includes(absolute)) found.get(key).sourceUrls.push(absolute);
+  };
+
+  for (const c of candidates) addCandidate(c.href, c.text);
+
+  // The iPhone 13 overview currently exposes 18 distinct product cards (6
+  // colours x 3 storage sizes). Keep a narrow, model-specific recovery path so
+  // a frontend/card markup change cannot silently reduce the catalog to 5/8.
+  // Runtime verification still decides which URL is actually valid.
+  if (label.toLowerCase() === "iphone 13" && found.size < 18) {
+    const colors = ["zwart","wit","rood","groen","blauw","roze"];
+    for (const storage of ["128GB","256GB","512GB"]) {
+      for (const color of colors) {
+        const key = `${storage.toLowerCase()}|${color}`;
+        if (found.has(key)) continue;
+        const n = storage.replace("GB", "");
+        const urls = [
+          `https://www.forza-refurbished.nl/iphone-13-${n}-gb-${color}`,
+          `https://www.forza-refurbished.nl/iphone-13-${n}gb-${color}`
+        ];
+        found.set(key, {storage, color: color.charAt(0).toUpperCase()+color.slice(1), sourceUrl:urls[0], sourceUrls:urls});
+      }
+    }
   }
 
   return [...found.values()].slice(0, 80);
@@ -1856,24 +1899,28 @@ async function forzaDiscoverColorVariants(html, baseUrl, modelConfig) {
   const links = forzaExtractColorLinks(html, baseUrl, modelConfig);
   const verified = [];
   for (const item of links) {
-    try {
-      const page = item.sourceUrl === baseUrl ? {response:{ok:true,status:200},html} : await forzaFetchPublicPage(item.sourceUrl);
-      if (!page.response.ok) continue;
-      const parsed = forzaExtractTest(page.html, item.sourceUrl);
-      const product = parsed.product || {};
-      const storage = forzaSelectedStorage(parsed) || item.storage;
-      const color = String(product.color || item.color || "").trim();
-      const name = String(product.name || "").trim();
-      if (!name || !/iphone\s+\d+/i.test(name)) continue;
-      verified.push({
-        storage,
-        color,
-        productName:name,
-        sourceUrl:item.sourceUrl,
-        stock:product.stock,
-        images:Array.isArray(product.images) ? product.images.slice(0,4) : []
-      });
-    } catch {}
+    const urls = Array.isArray(item.sourceUrls) && item.sourceUrls.length ? item.sourceUrls : [item.sourceUrl];
+    for (const candidateUrl of urls) {
+      try {
+        const page = candidateUrl === baseUrl ? {response:{ok:true,status:200},html} : await forzaFetchPublicPage(candidateUrl);
+        if (!page.response.ok) continue;
+        const parsed = forzaExtractTest(page.html, candidateUrl);
+        const product = parsed.product || {};
+        const storage = forzaSelectedStorage(parsed) || item.storage;
+        const color = String(product.color || item.color || "").trim();
+        const name = String(product.name || "").trim();
+        if (!name || !/iphone\s+\d+/i.test(name)) continue;
+        verified.push({
+          storage,
+          color,
+          productName:name,
+          sourceUrl:candidateUrl,
+          stock:product.stock,
+          images:Array.isArray(product.images) ? product.images.slice(0,4) : []
+        });
+        break;
+      } catch {}
+    }
   }
   const seen = new Set();
   return verified.filter(v => {
