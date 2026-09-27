@@ -1914,8 +1914,9 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     .trim();
 
   const storageKey = (v) => {
-    const m = String(v ?? "").match(/(\d+)\s*gb/i);
-    return m ? `${m[1]}GB` : "";
+    const raw = String(v ?? "").trim();
+    const m = raw.match(/(\d+)\s*(gb|tb)/i);
+    return m ? `${m[1]}${m[2].toUpperCase()}` : "";
   };
 
   const conditionKey = (v) => {
@@ -1947,9 +1948,13 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     price: money(r.price)
   }));
 
-  if (cleanRows.some(r => !["64GB","128GB","256GB"].includes(r.storage) ||
-      !["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"].includes(r.condition) ||
-      !["standaard","nieuw"].includes(r.battery) ||
+  const allowedStorages = [...new Set(cleanRows.map(r => r.storage).filter(Boolean))];
+  const allowedConditions = ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"];
+  const allowedBatteries = ["standaard","nieuw"];
+
+  if (!allowedStorages.length || cleanRows.some(r => !allowedStorages.includes(r.storage) ||
+      !allowedConditions.includes(r.condition) ||
+      !allowedBatteries.includes(r.battery) ||
       r.price === null || r.price < 0)) {
     return res.status(400).json({
       success: false,
@@ -1960,9 +1965,9 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
   const actual = cleanRows.map(r => `${r.storage}|${r.condition}|${r.battery}`);
   const uniqueActual = new Set(actual);
   const allExpected = [];
-  for (const storage of ["64GB","128GB","256GB"]) {
-    for (const condition of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) {
-      for (const battery of ["standaard","nieuw"]) allExpected.push(`${storage}|${condition}|${battery}`);
+  for (const storage of allowedStorages) {
+    for (const condition of allowedConditions) {
+      for (const battery of allowedBatteries) allExpected.push(`${storage}|${condition}|${battery}`);
     }
   }
   const selectedStorage = cleanRows.length===6 ? cleanRows[0].storage : "";
@@ -2031,7 +2036,7 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
         return res.status(400).json({ success:false, error:`Conditie "${key}" ontbreekt. Geen wijziging uitgevoerd.` });
       }
     }
-    for (const key of ["64GB","128GB","256GB"]) {
+    for (const key of allowedStorages) {
       if (!findStorage(key)) {
         await client.query("ROLLBACK");
         return res.status(400).json({ success:false, error:`Opslag "${key}" ontbreekt. Geen wijziging uitgevoerd.` });
@@ -2053,15 +2058,16 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     const mergedMatrix = {...previousMatrix, ...incomingMatrix};
     if (validEighteen) {
       const getIncoming=(s,c,b)=>incomingMatrix[`${s}|${c}|${b}`];
+      const baseStorage=allowedStorages[0];
       const bases={};
-      for (const c of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) bases[c]=getIncoming("64GB",c,"standaard");
-      const batteryDelta=getIncoming("64GB","zo goed als nieuw","nieuw")-bases["zo goed als nieuw"];
-      const storageDeltas={};
-      for (const st of ["64GB","128GB","256GB"]) storageDeltas[st]=getIncoming(st,"zo goed als nieuw","standaard")-bases["zo goed als nieuw"];
-      for (const key of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) findCondition(key).basePrice=bases[key];
-      findStorage("64GB").priceDelta=0;
-      findStorage("128GB").priceDelta=storageDeltas["128GB"];
-      findStorage("256GB").priceDelta=storageDeltas["256GB"];
+      for (const c of allowedConditions) bases[c]=getIncoming(baseStorage,c,"standaard");
+      const batteryDelta=getIncoming(baseStorage,"zo goed als nieuw","nieuw")-bases["zo goed als nieuw"];
+      for (const key of allowedConditions) findCondition(key).basePrice=bases[key];
+      for (const st of allowedStorages) {
+        const opt=findStorage(st);
+        if (!opt) continue;
+        opt.priceDelta=st===baseStorage ? 0 : getIncoming(st,"zo goed als nieuw","standaard")-bases["zo goed als nieuw"];
+      }
       findBattery("standaard").priceDelta=0;
       findBattery("nieuw").priceDelta=batteryDelta;
     } else {
@@ -2143,8 +2149,9 @@ app.put("/api/admin/forza/full-sync", requirePermission("site.save"), async (req
     .replace(/\s+/g, " ")
     .trim();
   const storageKey = (v) => {
-    const m = String(v ?? "").match(/(\d+)\s*gb/i);
-    return m ? `${m[1]}GB` : "";
+    const raw = String(v ?? "").trim();
+    const m = raw.match(/(\d+)\s*(gb|tb)/i);
+    return m ? `${m[1]}${m[2].toUpperCase()}` : "";
   };
   const conditionKey = (v) => {
     const x = norm(v);
