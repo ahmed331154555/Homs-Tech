@@ -1026,6 +1026,12 @@ app.get("/admin/", (req, res) => {
 
 function forzaCleanText(value) {
   return String(value || "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&#160;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&apos;/gi, "'")
     .replace(/\u00a0/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -1542,8 +1548,8 @@ function forzaBuildExactVariantNames(productName, overviewHtml) {
     if (memMatch) storage = `${memMatch[1]}${memMatch[2].toUpperCase()}`;
   }
 
-  let model = raw.match(/\biPhone\s+\d+(?:\s+(?:Pro|Pro Max|Plus|Mini|SE))?/i)?.[0] || '';
-  if (!model) model = clean.match(/\biPhone\s+\d+(?:\s+(?:Pro|Pro Max|Plus|Mini|SE))?/i)?.[0] || '';
+  let model = raw.match(/\biPhone\s+\d+(?:\s+(?:Pro Max|Pro|Plus|Mini|SE))?/i)?.[0] || '';
+  if (!model) model = clean.match(/\biPhone\s+\d+(?:\s+(?:Pro Max|Pro|Plus|Mini|SE))?/i)?.[0] || '';
 
   if (model && storage && color) names.add(`${model} ${storage} ${color}`);
   return [...names];
@@ -1714,6 +1720,21 @@ const FORZA_TEST_MODELS = {
       "256GB": "https://www.forza-refurbished.nl/iphone-13-256-gb-zwart",
       "512GB": "https://www.forza-refurbished.nl/iphone-13-512-gb-zwart"
     }
+  } ,
+  "iphone-13-mini": {
+    label: "iPhone 13 Mini",
+    sourceUrl: "https://www.forza-refurbished.nl/refurbished-iphone/iphone-13-mini-overzicht",
+    storages: ["128GB", "256GB", "512GB"]
+  },
+  "iphone-13-pro": {
+    label: "iPhone 13 Pro",
+    sourceUrl: "https://www.forza-refurbished.nl/refurbished-iphone/iphone-13-pro-overzicht",
+    storages: ["128GB", "256GB", "512GB", "1TB"]
+  },
+  "iphone-13-pro-max": {
+    label: "iPhone 13 Pro Max",
+    sourceUrl: "https://www.forza-refurbished.nl/refurbished-iphone/iphone-13-pro-max-overzicht",
+    storages: ["128GB", "256GB", "512GB", "1TB"]
   }
 };
 
@@ -1747,7 +1768,7 @@ function forzaFindIphone12Variant(value) {
 function forzaExtractStorageLinks(html, baseUrl, fallbackMap = {}, allowedStorages = ["64GB", "128GB", "256GB"]) {
   const found = new Map();
   const source = String(html || "");
-  const anchorPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>[\s\S]{0,500}?((?:64|128|256)\s*GB)[\s\S]{0,500}?<\/a>/gi;
+  const anchorPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>[\s\S]{0,700}?((?:\d+)\s*(?:GB|TB))[\s\S]{0,700}?<\/a>/gi;
   let match;
 
   while ((match = anchorPattern.exec(source))) {
@@ -1847,8 +1868,8 @@ async function forzaDiscoverColorVariants(html, baseUrl, modelConfig) {
 
 function forzaSelectedStorage(result) {
   const title = String(result?.product?.name || "");
-  const match = title.match(/\b(64|128|256)\s*GB\b/i);
-  return match ? `${match[1]}GB` : "";
+  const match = title.match(/\b(\d+)\s*(GB|TB)\b/i);
+  return match ? `${match[1]}${match[2].toUpperCase()}` : "";
 }
 
 
@@ -2247,13 +2268,23 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
     });
   }
   const requestedVariant = String(req.query.variant || "").trim();
-  const variantConfig = requestedModel === "iphone-12" && requestedVariant
-    ? forzaFindIphone12Variant(requestedVariant)
+  const variantConfig = requestedVariant
+    ? {
+        model: modelConfig.label,
+        storage: (requestedVariant.match(/\b(\d+)\s*(GB|TB)\b/i) || ["","",""])[1]
+          ? `${requestedVariant.match(/\b(\d+)\s*(GB|TB)\b/i)[1]}${requestedVariant.match(/\b(\d+)\s*(GB|TB)\b/i)[2].toUpperCase()}`
+          : "",
+        color: requestedVariant
+          .replace(new RegExp("^" + String(modelConfig.label).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*", "i"), "")
+          .replace(/\b\d+\s*(?:GB|TB)\b/i, "")
+          .trim(),
+        productName: requestedVariant
+      }
     : null;
-  if (requestedModel === "iphone-12" && requestedVariant && !variantConfig) {
+  if (requestedVariant && !variantConfig.storage) {
     return res.status(400).json({
-      success: false, readOnly: true,
-      error: "Onbekende iPhone 12 variant. Kies een variant uit de Forza-lijst."
+      success:false, readOnly:true,
+      error:"Ongeldige Forza-variant. Kies een volledige opslag/kleurenvariant."
     });
   }
 
@@ -2263,6 +2294,9 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
     const mainPage = await forzaFetchPublicPage(sourceUrl);
 
     if (variantConfig) {
+      if (!new RegExp("^" + String(modelConfig.label).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i").test(variantConfig.productName)) {
+        return res.status(400).json({success:false,readOnly:true,error:"Variant hoort niet bij het geselecteerde model."});
+      }
       const exactVariant = await forzaFetchExactVariant(variantConfig.productName, mainPage.html, sourceUrl);
       if (!exactVariant || !(exactVariant.images || []).length) {
         return res.status(502).json({
