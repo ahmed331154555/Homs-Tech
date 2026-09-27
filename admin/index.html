@@ -1375,13 +1375,7 @@ textarea{
           <option value="iphone-11">iPhone 11</option>
           <option value="iphone-12">iPhone 12</option>
         </select>
-        <select id="forzaTestStorageSelect" class="input" style="min-width:150px;max-width:180px;display:none" onchange="forzaVariantSelectionChanged()">
-          <option value="">Kies opslag</option>
-        </select>
-        <select id="forzaTestColorSelect" class="input" style="min-width:150px;max-width:180px;display:none" onchange="forzaVariantSelectionChanged()">
-          <option value="">Kies kleur</option>
-        </select>
-        <select id="forzaTestVariantSelect" class="input" style="display:none">
+        <select id="forzaTestVariantSelect" class="input" style="min-width:300px;max-width:420px;display:none">
           <option value="">Kies iPhone 12 variant</option>
         </select>
         <label style="display:flex;align-items:center;gap:7px;font-weight:800">
@@ -5347,75 +5341,33 @@ async function fullSyncHomsFromForza(){
   }
 }
 
-function forzaSyncVariantSelectorsFromCombined(value){
-  const storageSelect=document.getElementById("forzaTestStorageSelect");
-  const colorSelect=document.getElementById("forzaTestColorSelect");
-  const m=String(value||"").match(/(64|128|256)GB\s+(.+)$/i);
-  if(storageSelect)storageSelect.value=m?`${m[1]}GB`:"";
-  if(colorSelect)colorSelect.value=m?m[2]:"";
-}
-
-function forzaSetCombinedVariantFromSelectors(){
-  const storage=document.getElementById("forzaTestStorageSelect")?.value||"";
-  const color=document.getElementById("forzaTestColorSelect")?.value||"";
-  const combined=document.getElementById("forzaTestVariantSelect");
-  if(!combined)return "";
-  const value=storage&&color?`iPhone 12 ${storage} ${color}`:"";
-  combined.value=value;
-  return value;
-}
-
-function forzaVariantSelectionChanged(){
-  const model=document.getElementById("forzaTestModelSelect")?.value||"";
-  if(model!=="iphone-12")return;
-  const value=forzaSetCombinedVariantFromSelectors();
-  if(!value)return;
-  // Read the exact Forza page for the selected Storage + Color.
-  // This is READ ONLY; nothing is saved until the user explicitly saves/adds.
-  loadForzaTest();
-}
-
 function forzaUpdateVariantSelector(){
   const model=document.getElementById("forzaTestModelSelect");
-  const combined=document.getElementById("forzaTestVariantSelect");
-  const storageSelect=document.getElementById("forzaTestStorageSelect");
-  const colorSelect=document.getElementById("forzaTestColorSelect");
-  if(!model||!combined)return;
+  const select=document.getElementById("forzaTestVariantSelect");
+  if(!model||!select)return;
   if(model.value!=="iphone-12"){
-    combined.innerHTML='<option value="">Kies variant</option>';
-    combined.value="";
-    combined.style.display="none";
-    if(storageSelect){storageSelect.style.display="none";storageSelect.innerHTML='<option value="">Kies opslag</option>';}
-    if(colorSelect){colorSelect.style.display="none";colorSelect.innerHTML='<option value="">Kies kleur</option>';}
+    select.style.display="none";
+    select.innerHTML='<option value="">Kies variant</option>';
     return;
   }
-
   const storages=["64GB","128GB","256GB"];
   const colors=["Zwart","Wit","Blauw","Groen","Paars","Rood"];
-  const variants=storages.flatMap(storage=>colors.map(color=>`iPhone 12 ${storage} ${color}`));
-
-  // Keep the combined selector as an internal compatibility field. The admin
-  // now chooses Storage and Color separately, just like the Forza product page.
-  combined.innerHTML='<option value="">Kies iPhone 12 variant</option>'+variants.map(v=>`<option value="${v}">${v}</option>`).join("");
-  combined.style.display="none";
-
-  if(storageSelect){
-    const previous=storageSelect.value;
-    storageSelect.innerHTML='<option value="">Opslag</option>'+storages.map(s=>`<option value="${s}">${s.replace("GB"," GB")}</option>`).join("");
-    storageSelect.style.display="inline-block";
-    if(previous)storageSelect.value=previous;
-  }
-  if(colorSelect){
-    const previous=colorSelect.value;
-    colorSelect.innerHTML='<option value="">Kleur</option>'+colors.map(c=>`<option value="${c}">${c}</option>`).join("");
-    colorSelect.style.display="inline-block";
-    if(previous)colorSelect.value=previous;
-  }
-
-  // Preserve the currently selected exact variant when opening the page.
-  const current=combined.value || "iPhone 12 64GB Zwart";
-  forzaSyncVariantSelectorsFromCombined(current);
-  combined.value=current;
+  // Current public Forza catalogue: unavailable combinations stay visible but
+  // are disabled and marked, so the admin can see the complete iPhone 12 matrix.
+  // Alle 18 combinaties blijven selecteerbaar. Beschikbaarheid wordt niet
+  // meer vooraf geblokkeerd in de test-selector; Forza zelf bepaalt of een
+  // exacte publieke variant gelezen kan worden.
+  const available=new Set(
+    storages.flatMap(s=>colors.map(c=>`iPhone 12 ${s} ${c}`))
+  );
+  const options=storages.flatMap(s=>colors.map(c=>{
+    const name=`iPhone 12 ${s} ${c}`;
+    const ok=available.has(name);
+    const label=`${s.replace("GB"," GB")} — ${c}${ok?"":" — Niet beschikbaar"}`;
+    return `<option value="${name}"${ok?"":" disabled"}>${label}</option>`;
+  }));
+  select.innerHTML='<option value="">Kies iPhone 12 variant</option>'+options.join("");
+  select.style.display="inline-block";
 }
 
 
