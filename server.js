@@ -1317,231 +1317,7 @@ function forzaImageMatchKey(value) {
     .trim();
 }
 
-function forzaImageUrlVariantMismatch(url, wantedColor, wantedStorage) {
-  try {
-    const parsed = new URL(String(url || ""));
-    // Only inspect the path/filename. Do NOT inspect the full CDN URL or query
-    // string: CDNs can contain unrelated colour words in folders/parameters.
-    const path = decodeURIComponent(parsed.pathname || "").toLowerCase();
-    const normalized = path.replace(/[^a-z0-9]+/g, " ").trim();
-    const tokens = normalized.split(/\s+/).filter(Boolean);
-    const colors = ["zwart","wit","blauw","groen","paars","rood"];
-    const otherColors = colors.filter(c => c !== wantedColor);
-    const filename = (path.split("/").pop() || "").replace(/\.[a-z0-9]+$/i, "");
-    const fileKey = filename.replace(/[^a-z0-9]+/g, " ").trim();
-    const fileTokens = fileKey.split(/\s+/).filter(Boolean);
-
-    // Strong evidence only: a complete colour token in the filename/path.
-    if (otherColors.some(c => fileTokens.includes(c))) return true;
-    if (otherColors.some(c => tokens.includes(c) && /iphone|galaxy|samsung|apple/.test(normalized))) return true;
-
-    if (wantedStorage) {
-      const storages = [...normalized.matchAll(/\b(\d+)\s*(gb|tb)\b/g)]
-        .map(m => `${m[1]}${m[2]}`);
-      if (storages.some(s => s !== wantedStorage)) return true;
-    }
-    return false;
-  } catch {
-    return false;
-  }
-}
-
-function forzaIsLikelyImageUrl(value) {
-  try {
-    const u = new URL(String(value));
-    if (!/^https?:$/i.test(u.protocol)) return false;
-    const path = u.pathname.toLowerCase();
-    const host = u.hostname.toLowerCase();
-    if (/\.(?:jpe?g|png|webp|gif|avif|bmp|svg)$/i.test(path)) return true;
-    if (/\/media\/|\/catalog\/product\/|\/product-images?\/|\/images?\//i.test(path)) return true;
-    if (/(?:image|img|media|cdn|static)/i.test(host) && !/\/product(?:\/|$)/i.test(path)) return true;
-    return false;
-  } catch { return false; }
-}
-
-function forzaClientImageUrl(req, sourceUrl) {
-  const raw = String(sourceUrl || '').trim();
-  if (!raw || !/^https?:\/\//i.test(raw)) return '';
-  const encoded = encodeURIComponent(raw);
-  return `${req.protocol}://${req.get('host')}/api/forza-image?url=${encoded}`;
-}
-
-function forzaClientImageUrls(req, images) {
-  return [...new Set((Array.isArray(images) ? images : [])
-    .filter(v => typeof v === 'string' && /^https?:\/\//i.test(v))
-    .map(v => forzaClientImageUrl(req, v))
-    .filter(Boolean))].slice(0, 4);
-}
-
-function forzaExtractStructuredGalleryImages(html, productName) {
-  const wanted = forzaImageMatchKey(productName);
-  if (!wanted) return [];
-  const wantedTokens = wanted.split(" ").filter(Boolean);
-  const wantedColor = wantedTokens[wantedTokens.length - 1] || "";
-  const wantedModelTokens = wantedTokens.filter(t =>
-    !/^\d+$/.test(t) && !/^(?:gb|tb)$/.test(t) && t !== wantedColor
-  );
-
-  const candidates = [];
-  const seen = new Set();
-  const addCandidate = (value, label) => {
-    if (!value) return;
-    const values = String(value).match(/https?:\/\/[^\s,"'<>]+/gi) || [];
-    for (const raw of values) {
-      let url = raw.replace(/&amp;/gi, "&").replace(/[)\]}]+$/g, "");
-      try {
-        const parsed = new URL(url);
-        parsed.searchParams.delete("width");
-        parsed.searchParams.delete("w");
-        parsed.searchParams.delete("quality");
-        parsed.searchParams.delete("q");
-        url = parsed.toString();
-      } catch {}
-      if (!/^https?:\/\//i.test(url)) continue;
-      if (!forzaIsLikelyImageUrl(url)) continue;
-      if (forzaImageUrlVariantMismatch(url, wantedColor, "")) continue;
-      const key = url.toLowerCase();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      candidates.push({ url, label: forzaImageMatchKey(label || "") });
-    }
-  };
-
-  const labelKeys = new Set([
-    "alt","caption","title","label","name","description","text","aria-label",
-    "data-alt","data-title","productname","product_name"
-  ]);
-  const urlKeys = new Set([
-    "full","img","image","src","url","thumb","thumbnail","large","medium",
-    "small","fullimage","imageurl","image_url","data-src","data-lazy-src"
-  ]);
-
-  const walk = (value, inheritedLabel = "", seenObjects = new Set()) => {
-    if (!value || typeof value !== "object" || seenObjects.has(value)) return;
-    seenObjects.add(value);
-    let ownLabel = inheritedLabel;
-    const urls = [];
-    for (const [key, child] of Object.entries(value)) {
-      const k = String(key || "").toLowerCase();
-      if (labelKeys.has(k) && typeof child === "string") ownLabel += " " + child;
-      if (urlKeys.has(k) && typeof child === "string") urls.push(child);
-      if (urlKeys.has(k) && Array.isArray(child)) child.forEach(x => { if (typeof x === "string") urls.push(x); });
-    }
-    const labelKey = forzaImageMatchKey(ownLabel).replace(/\s+/g, "");
-    const generic = /kleuren|colors|colour/.test(labelKey);
-    const hasModel = wantedModelTokens.every(token => labelKey.includes(token));
-    const hasColor = !!wantedColor && labelKey.includes(wantedColor);
-    if (!generic && hasModel && hasColor) urls.forEach(u => addCandidate(u, ownLabel));
-    for (const child of Object.values(value)) {
-      if (child && typeof child === "object") walk(child, ownLabel, seenObjects);
-    }
-  };
-
-  const scripts = String(html || "").match(/<script\b[^>]*>[\s\S]*?<\/script>/gi) || [];
-  for (const script of scripts) {
-    const typeMatch = script.match(/type=["']([^"']+)["']/i);
-    const body = script.replace(/^<script\b[^>]*>/i, "").replace(/<\/script>\s*$/i, "").trim();
-    if (!body || !/json|magento-init|gallery|fotorama/i.test((typeMatch?.[1] || "") + " " + body.slice(0, 3000))) continue;
-    try { walk(JSON.parse(body)); } catch {}
-  }
-
-  // Prefer the actual Forza gallery positions explicitly labelled front/back.
-  // This prevents the generic first thumbnail from crowding out the rear image.
-  const front = candidates.filter(c => /voorkant|front/.test(c.label));
-  const back = candidates.filter(c => /achterkant|back/.test(c.label));
-  const other = candidates.filter(c => !/voorkant|front|achterkant|back/.test(c.label));
-  const ordered = [];
-  const pushUnique = c => { if (c && !ordered.some(x => x.url === c.url)) ordered.push(c); };
-  front.forEach(pushUnique);
-  back.forEach(pushUnique);
-  other.forEach(pushUnique);
-  return ordered.slice(0, 8).map(c => c.url);
-}
-
-function forzaExtractStructuredGalleryImages(html, productName) {
-  const wanted = forzaImageMatchKey(productName);
-  if (!wanted) return [];
-  const wantedTokens = wanted.split(" ").filter(Boolean);
-  const wantedColor = wantedTokens[wantedTokens.length - 1] || "";
-  const wantedStorage = (wanted.match(/\b\d+\s*(?:gb|tb)\b/) || [""])[0].replace(/\s+/g, "");
-  const wantedModelTokens = wantedTokens.filter(t =>
-    !/^\d+$/.test(t) && !/^(?:gb|tb)$/.test(t) && t !== wantedColor
-  );
-
-  const images = [];
-  const seen = new Set();
-  const addUrl = value => {
-    if (!value) return;
-    const values = String(value).match(/https?:\/\/[^\s,"'<>]+/gi) || [];
-    for (const raw of values) {
-      let url = raw.replace(/&amp;/gi, "&").replace(/[)\]}]+$/g, "");
-      try {
-        const parsed = new URL(url);
-        parsed.searchParams.delete("width");
-        parsed.searchParams.delete("w");
-        parsed.searchParams.delete("quality");
-        parsed.searchParams.delete("q");
-        url = parsed.toString();
-      } catch {}
-      if (!/^https?:\/\//i.test(url)) continue;
-      if (forzaImageUrlVariantMismatch(url, wantedColor, wantedStorage)) continue;
-      if (!seen.has(url)) { seen.add(url); images.push(url); }
-    }
-  };
-
-  const labelKeys = new Set([
-    "alt","caption","title","label","name","description","text","aria-label",
-    "data-alt","data-title","productname","product_name"
-  ]);
-  const urlKeys = new Set([
-    "full","img","image","src","url","thumb","thumbnail","large","medium",
-    "small","fullimage","imageurl","image_url","data-src","data-lazy-src"
-  ]);
-
-  const walk = (value, inheritedLabel = "", seenObjects = new Set()) => {
-    if (value === null || value === undefined) return;
-    if (typeof value !== "object") return;
-    if (seenObjects.has(value)) return;
-    seenObjects.add(value);
-
-    let ownLabel = inheritedLabel;
-    const urls = [];
-    for (const [key, child] of Object.entries(value)) {
-      const k = String(key || "").toLowerCase();
-      if (labelKeys.has(k) && typeof child === "string") ownLabel += " " + child;
-      if (urlKeys.has(k) && typeof child === "string") urls.push(child);
-      if (urlKeys.has(k) && Array.isArray(child)) child.forEach(x => { if (typeof x === "string") urls.push(x); });
-    }
-
-    const labelKey = forzaImageMatchKey(ownLabel).replace(/\s+/g, "");
-    const generic = /kleuren|colors|colour/.test(labelKey);
-    const hasModel = wantedModelTokens.every(token => labelKey.includes(token));
-    const hasColor = !!wantedColor && labelKey.includes(wantedColor);
-    if (!generic && hasModel && hasColor) urls.forEach(addUrl);
-
-    for (const child of Object.values(value)) {
-      if (child && typeof child === "object") walk(child, ownLabel, seenObjects);
-    }
-  };
-
-  // Magento/Forza commonly places the gallery in text/x-magento-init JSON.
-  const scripts = String(html || "").match(/<script\b[^>]*>[\s\S]*?<\/script>/gi) || [];
-  for (const script of scripts) {
-    const typeMatch = script.match(/type=["']([^"']+)["']/i);
-    const body = script.replace(/^<script\b[^>]*>/i, "").replace(/<\/script>\s*$/i, "").trim();
-    if (!body || !/json|magento-init|gallery|fotorama/i.test((typeMatch?.[1] || "") + " " + body.slice(0, 2000))) continue;
-    try {
-      walk(JSON.parse(body));
-    } catch {
-      // Ignore non-JSON script blocks.
-    }
-    if (images.length >= 4) return [...new Set(images)].slice(0, 4);
-  }
-
-  return [...new Set(images)].slice(0, 4);
-}
-
-
+// V25: V16 exact-variant fetching + V10 gallery extraction.
 function forzaExtractVariantGalleryImages(html, productName) {
   const wanted = forzaImageMatchKey(productName);
   if (!wanted) return [];
@@ -1707,8 +1483,6 @@ async function forzaFetchJinaGallery(url, productName) {
       // be required in the image alt text.
 
       const imageUrl = m[2].replace(/&amp;/gi, "&");
-      if (!forzaIsLikelyImageUrl(imageUrl)) continue;
-      if (forzaImageUrlVariantMismatch(imageUrl, wantedColor, wantedStorage)) continue;
       if (!seen.has(imageUrl)) {
         seen.add(imageUrl);
         images.push(imageUrl);
@@ -1732,8 +1506,6 @@ async function forzaFetchJinaGallery(url, productName) {
         const hasColor = !!wantedColor && key.includes(wantedColor);
         if (!hasModel || !hasColor) continue;
         const imageUrl = src.replace(/&amp;/gi, '&');
-        if (!forzaIsLikelyImageUrl(imageUrl)) continue;
-        if (forzaImageUrlVariantMismatch(imageUrl, wantedColor, wantedStorage)) continue;
         if (!seen.has(imageUrl)) { seen.add(imageUrl); images.push(imageUrl); }
         if (images.length >= 4) break;
       }
@@ -1798,19 +1570,11 @@ const FORZA_IPHONE12_EXACT_URLS = {
   "iPhone 12 256GB Rood": "https://www.forza-refurbished.nl/iphone-12-256gb-rood"
 };
 
-// Current public Forza iPhone 12 catalogue snapshot:
-// 12 combinations are currently in stock; 6 remain listed but are
-// temporarily unavailable. 64/128/256 GB are the only capacities.
 const FORZA_IPHONE12_CURRENT_VARIANTS = new Set([
   "iPhone 12 64GB Zwart", "iPhone 12 64GB Blauw", "iPhone 12 64GB Groen", "iPhone 12 64GB Paars",
-  "iPhone 12 128GB Zwart", "iPhone 12 128GB Wit", "iPhone 12 128GB Blauw", "iPhone 12 128GB Groen", "iPhone 12 128GB Rood",
-  "iPhone 12 256GB Zwart", "iPhone 12 256GB Wit", "iPhone 12 256GB Rood"
-]);
-
-const FORZA_IPHONE12_UNAVAILABLE_VARIANTS = new Set([
-  "iPhone 12 64GB Wit", "iPhone 12 64GB Rood",
-  "iPhone 12 128GB Paars",
-  "iPhone 12 256GB Blauw", "iPhone 12 256GB Groen", "iPhone 12 256GB Paars"
+  "iPhone 12 128GB Zwart", "iPhone 12 128GB Wit", "iPhone 12 128GB Blauw", "iPhone 12 128GB Rood",
+  "iPhone 12 256GB Zwart", "iPhone 12 256GB Wit", "iPhone 12 256GB Blauw", "iPhone 12 256GB Groen",
+  "iPhone 12 256GB Paars", "iPhone 12 256GB Rood"
 ]);
 
 function forzaExactUrlCandidates(productName, overviewHtml, overviewUrl) {
@@ -1845,7 +1609,17 @@ async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl) {
     seen.add(url);
 
     try {
-      const page = await forzaFetchPublicPage(url);
+      let page = null;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          page = await forzaFetchPublicPage(url);
+          if (page.response.ok || page.response.status !== 429) break;
+        } catch {
+          page = null;
+        }
+        await new Promise(r => setTimeout(r, 250 * (attempt + 1)));
+      }
+      if (!page) continue;
 
       // Whether Forza answers directly or via a server-side 429, keep the
       // fallback tied to THIS exact variant URL. Never use the overview gallery.
@@ -1864,19 +1638,30 @@ async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl) {
           return { url, parsed, images: [...new Set(images)].slice(0, 4) };
         }
 
+        // Exact product pages can expose the real gallery in JSON-LD even when
+        // the rendered <img> tags are lazy-loaded or missing from the HTML
+        // returned to the server. Because this is already the exact variant
+        // URL, the JSON-LD image list is safe to use as the variant gallery.
+        const jsonLdImages = Array.isArray(parsed?.product?.images)
+          ? [...new Set(parsed.product.images.filter(v => /^https?:\/\//i.test(String(v))))]
+          : [];
+        if (jsonLdImages.length >= 4) {
+          return { url, parsed, images: jsonLdImages.slice(0, 4) };
+        }
+
         const jinaImages = await forzaFetchJinaGallery(url, productName);
-        if (jinaImages.length >= 4) {
+        if (jinaImages.length >= 1) {
           return { url, parsed, images: jinaImages.slice(0, 4) };
         }
       }
 
       const jinaImages = await forzaFetchJinaGallery(url, productName);
-      if (jinaImages.length >= 4) {
+      if (jinaImages.length >= 1) {
         return { url, parsed: page.response.ok ? forzaExtractTest(page.html, url) : null, images: jinaImages.slice(0, 4) };
       }
     } catch {
       const jinaImages = await forzaFetchJinaGallery(url, productName);
-      if (jinaImages.length >= 4) {
+      if (jinaImages.length >= 1) {
         return { url, parsed: null, images: jinaImages.slice(0, 4) };
       }
     }
@@ -2375,44 +2160,6 @@ app.put("/api/admin/forza/full-sync", requirePermission("site.save"), async (req
   } finally { client.release(); }
 });
 
-app.get("/api/forza-image", async (req, res) => {
-  const raw = String(req.query.url || "").trim();
-  if (!raw || !/^https?:\/\//i.test(raw)) return res.status(400).end();
-  let target;
-  try { target = new URL(raw); } catch { return res.status(400).end(); }
-  const host = target.hostname.toLowerCase();
-  if (!(host === "forza-refurbished.nl" || host.endsWith(".forza-refurbished.nl"))) {
-    return res.status(403).end();
-  }
-  if (!forzaIsLikelyImageUrl(target.toString())) return res.status(400).end();
-  try {
-    const upstream = await fetch(target.toString(), {
-      method: "GET",
-      redirect: "follow",
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; HOMS-TECH Forza image proxy)",
-        "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-        "Referer": "https://www.forza-refurbished.nl/"
-      }
-    });
-    if (!upstream.ok) return res.status(upstream.status).end();
-    const finalUrl = String(upstream.url || "");
-    let finalHost = "";
-    try { finalHost = new URL(finalUrl).hostname.toLowerCase(); } catch {}
-    if (!(finalHost === "forza-refurbished.nl" || finalHost.endsWith(".forza-refurbished.nl"))) return res.status(403).end();
-    const contentType = String(upstream.headers.get("content-type") || "");
-    if (!/^image\//i.test(contentType)) return res.status(415).end();
-    const buffer = Buffer.from(await upstream.arrayBuffer());
-    res.set("Content-Type", contentType.split(";")[0]);
-    res.set("Cache-Control", "public, max-age=86400, s-maxage=86400");
-    res.set("X-Content-Type-Options", "nosniff");
-    res.send(buffer);
-  } catch (error) {
-    console.error("Forza image proxy error:", error?.message || error);
-    res.status(502).end();
-  }
-});
-
 app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) => {
   const requestedModel = String(req.query.model || "iphone-11").trim().toLowerCase();
   const modelConfig = forzaGetTestModel(requestedModel);
@@ -2453,7 +2200,7 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
         name: variantConfig.productName,
         storage: [variantConfig.storage],
         color: variantConfig.color,
-        images: forzaClientImageUrls(req, exactVariant.images),
+        images: exactVariant.images.slice(0,4),
         sourceUrl: exactVariant.url,
         canonical: parsed.product?.canonical || exactVariant.url
       };
@@ -2489,7 +2236,7 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
       result.product = {
         ...overviewProduct,
         ...exactProduct,
-        images: forzaClientImageUrls(req, exactVariant.images),
+        images: exactVariant.images.slice(0, 4),
         sourceUrl: exactVariant.url,
         canonical: exactProduct.canonical || exactVariant.url,
         overviewSourceUrl: sourceUrl
