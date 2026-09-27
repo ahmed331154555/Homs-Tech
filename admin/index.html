@@ -1378,7 +1378,12 @@ textarea{
         <select id="forzaTestVariantSelect" class="input" style="min-width:300px;max-width:420px;display:none">
           <option value="">Kies iPhone 12 variant</option>
         </select>
-        <span class="small">Alleen lezen van de publieke Forza-pagina. Er wordt niets opgeslagen.</span>
+        <label style="display:flex;align-items:center;gap:7px;font-weight:800">
+          <input type="checkbox" id="forzaBulkImagesEnabled" checked>
+          📷 Forza-foto's meenemen bij nieuwe toestellen
+        </label>
+        <button class="btn btn-green" type="button" onclick="forzaBulkAddAllVariants()">➕ Voeg alle Forza-varianten toe</button>
+        <span class="small">Alleen lezen van de publieke Forza-pagina. Er wordt niets opgeslagen tot je op de knop hierboven drukt.</span>
       </div>
     </div>
 
@@ -5363,6 +5368,111 @@ function forzaUpdateVariantSelector(){
   }));
   select.innerHTML='<option value="">Kies iPhone 12 variant</option>'+options.join("");
   select.style.display="inline-block";
+}
+
+
+async function forzaBulkAddAllVariants(){
+  const status=document.getElementById("forzaTestStatus");
+  const btn=document.querySelector('button[onclick="forzaBulkAddAllVariants()"]');
+  const modelSelect=document.getElementById("forzaTestModelSelect");
+  const model=String(modelSelect?.value||"").trim().toLowerCase();
+  const includeImages=document.getElementById("forzaBulkImagesEnabled")?.checked!==false;
+  if(model!=="iphone-12"){
+    if(status){status.className="status error";status.textContent="الإضافة الجماعية حالياً متاحة لـ iPhone 12 فقط.";}
+    return;
+  }
+  if(!Array.isArray(data?.phones)){
+    if(status){status.className="status error";status.textContent="HOMS TECH-productcatalogus kon niet worden geladen.";}
+    return;
+  }
+
+  const variants=[
+    "iPhone 12 64GB Zwart","iPhone 12 64GB Wit","iPhone 12 64GB Blauw","iPhone 12 64GB Groen","iPhone 12 64GB Paars","iPhone 12 64GB Rood",
+    "iPhone 12 128GB Zwart","iPhone 12 128GB Wit","iPhone 12 128GB Blauw","iPhone 12 128GB Groen","iPhone 12 128GB Paars","iPhone 12 128GB Rood",
+    "iPhone 12 256GB Zwart","iPhone 12 256GB Wit","iPhone 12 256GB Blauw","iPhone 12 256GB Groen","iPhone 12 256GB Paars","iPhone 12 256GB Rood"
+  ];
+
+  const oldPreview=forzaPreviewModel;
+  const oldVariant=document.getElementById("forzaTestVariantSelect")?.value||"";
+  const added=[];
+  const skipped=[];
+  const failed=[];
+  if(btn)btn.disabled=true;
+  if(status){status.className="status info";status.textContent=`Forza wordt gelezen: 0/${variants.length}...`}
+
+  try{
+    for(let i=0;i<variants.length;i++){
+      const variantName=variants[i];
+      if(status)status.textContent=`Forza wordt gelezen: ${i+1}/${variants.length} — ${variantName}`;
+      const existing=data.phones.find(phone=>forzaCompareNormalize(phone?.name||"")===forzaCompareNormalize(variantName));
+      if(existing){skipped.push(`${variantName} (bestaat al)`);continue;}
+
+      let payload=null;
+      try{
+        const r=await fetch(`/api/forza-test?model=iphone-12&variant=${encodeURIComponent(variantName)}`,{credentials:"same-origin",headers:{"Accept":"application/json"}});
+        payload=await r.json().catch(()=>({}));
+        if(!r.ok || payload.success===false) throw new Error(payload.error||`HTTP ${r.status}`);
+      }catch(e){
+        failed.push(`${variantName} (${e.message||"Forza niet gelezen"})`);
+        continue;
+      }
+
+      const x=forzaAdminFindResult(payload);
+      const product=x?.product || payload?.result?.product || {};
+      const storage=forzaAdminPick(product,["storage","storageOptions","memory","memoryOptions"]) ?? x.storageOptions ?? [];
+      const conditions=forzaAdminPick(product,["conditions","conditionPrices","conditionOptions"]) ?? x.conditions ?? x.conditionPrices ?? [];
+      const battery=forzaAdminPick(product,["battery","batteryOptions","batteries"]) ?? x.batteryOptions ?? [];
+      const storageVariants=forzaAdminPick(product,["storageVariants"]) ?? x.storageVariants ?? [];
+      forzaPreviewModel={product,storage,conditions,battery,storageVariants};
+      const rows=forzaAdminBuildPreview().filter(r=>Number.isFinite(Number(r.price)));
+      if(!rows.length){failed.push(`${variantName} (geen prijzen)`);continue;}
+
+      const template=forzaCompareFindTemplatePhone();
+      if(!template){failed.push(`${variantName} (geen bestaand model als basis)`);continue;}
+
+      const name=String(forzaAdminPick(product,["name","productName","title"])||variantName).trim();
+      const brand=String(forzaAdminPick(product,["brand","brandName"])||template.brand||"").trim();
+      const color=String(forzaAdminPick(product,["color","colour","colorName"])||variantName.match(/\b(Zwart|Wit|Blauw|Groen|Paars|Rood)\b/i)?.[1]||"").trim();
+      const sku=String(forzaAdminPick(product,["sku","SKU","productSku","productSKU","articleNumber","article_number","mpn","productCode","product_code"])||"").trim();
+      const stockRaw=forzaAdminPick(product,["stock","visibleStock","maxVisibleStock","availability","inventory"]);
+      const stock=Number.isFinite(Number(stockRaw))?Number(stockRaw):Number(template.stock||0);
+      const sourceUrl=String(forzaAdminPick(product,["sourceUrl","canonical","url"])||"");
+      const images=forzaAdminArray(product.images||product.imageUrls||product.photos||product.gallery).filter(v=>typeof v==="string"&&/^https?:\/\//i.test(v)).slice(0,4);
+      const specs=forzaAdminArray(product.specs||product.specifications||product.attributes).slice(0,20);
+      const description=String(forzaAdminPick(product,["description","shortDescription","longDescription"])||template.description||"");
+
+      const newPhone=JSON.parse(JSON.stringify(template));
+      newPhone.name=name; newPhone.brand=brand; newPhone.color=color; newPhone.sku=sku; newPhone.stock=stock;
+      newPhone.description=description;
+      newPhone.images=includeImages && images.length ? images : ["","","",""];
+      newPhone.forzaImages=includeImages ? images.slice(0,4) : [];
+      newPhone.forzaImagesEnabled=includeImages;
+      newPhone.forzaSourceUrl=sourceUrl;
+      newPhone.forzaProductData={name,brand,sku,color,storage:product.storage||[],stock,specs,description,images:includeImages?images.slice(0,4):[],sourceUrl,syncedAt:new Date().toISOString()};
+      forzaApplyVariantPricesToNewPhone(newPhone,rows);
+      data.phones.push(newPhone);
+      added.push(name);
+    }
+
+    selectedPhoneIndex=added.length?data.phones.length-1:selectedPhoneIndex;
+    if(added.length){
+      markChanged();
+      await save(false);
+    }
+    if(status){
+      status.className=failed.length?"status info":"status success";
+      status.textContent=`✓ تم إضافة ${added.length} جهاز جديد. الموجود مسبقاً: ${skipped.length}. لم يتمكن Forza من قراءة: ${failed.length}.`;
+    }
+    if(added.length) renderPhones();
+    if(failed.length) console.warn("Forza bulk import skipped:",failed);
+  }catch(error){
+    if(status){status.className="status error";status.textContent=`✗ فشل الإضافة الجماعية: ${error.message||error}`;}
+  }finally{
+    forzaPreviewModel=oldPreview;
+    const select=document.getElementById("forzaTestVariantSelect");
+    if(select)select.value=oldVariant;
+    if(btn)btn.disabled=false;
+  }
 }
 
 async function loadForzaTest(){
