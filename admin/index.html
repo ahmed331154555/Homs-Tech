@@ -1064,7 +1064,6 @@ textarea{
     <button class="nav-btn" data-page="services" onclick="showPage('services')">🔧 Diensten</button>
     <button class="nav-btn" data-page="phones" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
     <button class="nav-btn" data-page="forza-test" data-permission="phones.view" onclick="showPage('forza-test')">🧪 Forza Test Import</button>
-    <button class="nav-btn" data-page="mobico-test" data-permission="phones.view" onclick="showPage('mobico-test')">🧪 Mobico Test Import</button>
     <button class="nav-btn" data-page="buyback" data-permission="buyback.view" onclick="showPage('buyback')">📥 Uw toestel verkopen</button>
     <button class="nav-btn" data-page="buyback-orders" data-permission="buyback_orders.view" onclick="showPage('buyback-orders')">📥 Verkoopaanvragen</button>
 
@@ -1636,79 +1635,6 @@ textarea{
     </div>
   </section>
 
-
-  <!-- MOBICO TEST IMPORT — ADMIN ONLY / READ ONLY -->
-  <section class="section admin-page" id="page-mobico-test" data-permission="phones.view">
-    <div class="section-head">
-      <div>
-        <h2>🧪 Mobico Test Import</h2>
-        <p>Losstaande Mobico-test. Alleen lezen — er wordt niets opgeslagen in HOMS TECH en Forza blijft volledig apart.</p>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <button class="btn btn-light" id="mobicoTestReloadBtn" onclick="loadMobicoTest()">↻ Mobico lezen</button>
-      </div>
-    </div>
-
-    <div class="card" style="margin:12px 0 14px">
-      <label for="mobicoTestModelSelect" style="font-weight:800;display:block;margin-bottom:7px">Mobico model</label>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <select id="mobicoTestModelSelect" class="input" style="min-width:240px;max-width:360px">
-          <option value="iphone-11">iPhone 11</option>
-          <option value="iphone-11-pro">iPhone 11 Pro</option>
-          <option value="iphone-11-pro-max">iPhone 11 Pro Max</option>
-          <option value="iphone-12-mini">iPhone 12 Mini</option>
-          <option value="iphone-12">iPhone 12</option>
-          <option value="iphone-12-pro">iPhone 12 Pro</option>
-          <option value="iphone-12-pro-max">iPhone 12 Pro Max</option>
-          <option value="iphone-13-mini">iPhone 13 Mini</option>
-          <option value="iphone-13">iPhone 13</option>
-          <option value="iphone-13-pro">iPhone 13 Pro</option>
-          <option value="iphone-13-pro-max">iPhone 13 Pro Max</option>
-          <option value="iphone-14" selected>iPhone 14</option>
-          <option value="iphone-14-plus">iPhone 14 Plus</option>
-          <option value="iphone-14-pro">iPhone 14 Pro</option>
-          <option value="iphone-14-pro-max">iPhone 14 Pro Max</option>
-          <option value="iphone-15">iPhone 15</option>
-          <option value="iphone-15-plus">iPhone 15 Plus</option>
-          <option value="iphone-15-pro">iPhone 15 Pro</option>
-          <option value="iphone-15-pro-max">iPhone 15 Pro Max</option>
-          <option value="iphone-16e">iPhone 16e</option>
-          <option value="iphone-16">iPhone 16</option>
-          <option value="iphone-16-plus">iPhone 16 Plus</option>
-          <option value="iphone-16-pro">iPhone 16 Pro</option>
-          <option value="iphone-16-pro-max">iPhone 16 Pro Max</option>
-          <option value="iphone-17e">iPhone 17e</option>
-          <option value="iphone-17">iPhone 17</option>
-          <option value="iphone-air">iPhone Air</option>
-          <option value="iphone-17-pro">iPhone 17 Pro</option>
-          <option value="iphone-17-pro-max">iPhone 17 Pro Max</option>
-        </select>
-        <input id="mobicoTestUrl" class="input" style="min-width:420px;flex:1" value="https://mobico.nl/product/iphone-14-128gb-middernacht/?batterij=standaard&staat=als-nieuw&via=swap" placeholder="Mobico product URL" />
-        <span class="small">Plak een Mobico-productlink. Deze test blijft volledig los van Forza.</span>
-      </div>
-    </div>
-
-    <div id="mobicoTestStatus" class="status info" style="margin-bottom:14px">Nog niet geladen.</div>
-    <div id="mobicoTestContent" style="display:none">
-      <div class="grid grid-3" style="margin-bottom:14px">
-        <div class="card"><div class="small">Product</div><h3 id="mobicoTestName" style="margin:5px 0 0"></h3></div>
-        <div class="card"><div class="small">Kleur / opslag</div><div id="mobicoTestColorStorage" style="font-weight:800;margin-top:5px"></div></div>
-        <div class="card"><div class="small">Prijs / voorraad</div><div id="mobicoTestPriceStock" style="font-weight:900;font-size:18px;margin-top:5px"></div></div>
-      </div>
-      <div class="grid grid-2" style="margin-bottom:14px">
-        <div class="card"><h3 style="margin-top:0">Opslag</h3><div id="mobicoTestStorage" class="tag-list" style="display:flex;flex-wrap:wrap;gap:7px"></div></div>
-        <div class="card"><h3 style="margin-top:0">Kleuren / varianten</h3><div id="mobicoTestColors" class="tag-list" style="display:flex;flex-wrap:wrap;gap:7px"></div><div id="mobicoTestColorCount" class="small" style="margin-top:8px"></div></div>
-      </div>
-      <div class="grid grid-2" style="margin-bottom:14px">
-        <div class="card"><h3 style="margin-top:0">Conditie & prijs</h3><div id="mobicoTestConditions"></div></div>
-        <div class="card"><h3 style="margin-top:0">Batterij</h3><div id="mobicoTestBattery"></div></div>
-      </div>
-      <div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">📷 Afbeeldingen</h3><div id="mobicoTestImages" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px"></div></div>
-      <div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">🔗 Mobico-varianten gevonden</h3><div id="mobicoTestVariants" style="overflow:auto"></div></div>
-      <div class="card"><h3 style="margin-top:0">Ruwe testdata</h3><pre id="mobicoTestRaw" style="white-space:pre-wrap;overflow:auto;max-height:420px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;font-size:11px"></pre></div>
-    </div>
-  </section>
-
   
   <!-- SAVE -->
   <div class="save-bar">
@@ -1749,7 +1675,7 @@ const PAGE_PERMISSIONS = {
   general:"general.view",services:"services.view",phones:"phones.view",categories:"categories.view",
   used:"used.view",why:"why.view",customers:"customers.view",orders:"orders.view",
   "webshop-orders":"webshop_orders.view",gsm:"gsm.view",search:"search",admins:"admins.manage",
-  buyback:"buyback.view", "buyback-orders":"buyback_orders.view", "forza-test":"phones.view", "mobico-test":"phones.view"
+  buyback:"buyback.view", "buyback-orders":"buyback_orders.view", "forza-test":"phones.view"
 };
 
 const ADMIN_PERMISSION_LABELS = {
@@ -1767,7 +1693,7 @@ const ADMIN_PERMISSION_LABELS = {
 function hasPermission(p){return currentUser.role==="superadmin"||currentUser.permissions.includes("*")||currentUser.permissions.includes(p);}
 function canEditSite(){return hasPermission("site.save");}
 function firstAllowedPage(){
-  const pages=["general","services","phones","forza-test","mobico-test","buyback","buyback-orders","categories","used","why","customers","orders","webshop-orders","gsm","search","admins"];
+  const pages=["general","services","phones","forza-test","buyback","buyback-orders","categories","used","why","customers","orders","webshop-orders","gsm","search","admins"];
   return pages.find(p=>hasPermission(PAGE_PERMISSIONS[p]))||null;
 }
 function applyPermissionUI(){
@@ -1797,7 +1723,6 @@ function showPage(page){
     if(page==="buyback")renderBuybackPhones();
     if(page==="buyback-orders")loadBuybackOrders();
     if(page==="forza-test")loadForzaTest();
-    if(page==="mobico-test")loadMobicoTest();
     if(page==="admins")loadAdmins();
   }
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
@@ -5855,65 +5780,6 @@ async function loadForzaTest(){
 
 
 
-// ================= MOBICO READ-ONLY TEST =================
-function mobicoEsc(value){
-  return String(value ?? "").replace(/[&<>'"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[ch]));
-}
-function mobicoMoney(value){
-  const n=Number(value);
-  return Number.isFinite(n) ? new Intl.NumberFormat("nl-NL",{style:"currency",currency:"EUR"}).format(n) : "Niet gevonden";
-}
-function mobicoRenderTags(el,items){
-  if(!el)return;
-  const arr=Array.isArray(items)?items:[];
-  el.innerHTML=arr.length ? arr.map(v=>`<span class="tag">${mobicoEsc(typeof v==="object" ? (v.label||v.name||v.value||JSON.stringify(v)) : v)}</span>`).join("") : `<span class="small">Niet gevonden.</span>`;
-}
-function mobicoRenderOptions(el,items){
-  if(!el)return;
-  const arr=Array.isArray(items)?items:[];
-  el.innerHTML=arr.length ? arr.map(v=>{
-    const label=typeof v==="object"?(v.label||v.name||v.value||"Optie"):String(v);
-    const price=typeof v==="object" && Number.isFinite(Number(v.price)) ? ` — ${mobicoMoney(v.price)}` : "";
-    return `<div class="card" style="margin-bottom:7px"><strong>${mobicoEsc(label)}</strong>${price?`<div class="small">${mobicoEsc(price)}</div>`:""}</div>`;
-  }).join("") : `<span class="small">Niet gevonden.</span>`;
-}
-async function loadMobicoTest(){
-  const status=document.getElementById("mobicoTestStatus");
-  const content=document.getElementById("mobicoTestContent");
-  const btn=document.getElementById("mobicoTestReloadBtn");
-  if(!status||!content)return;
-  if(btn)btn.disabled=true;
-  status.className="status info";
-  status.textContent="Mobico wordt gelezen...";
-  try{
-    const model=document.getElementById("mobicoTestModelSelect")?.value||"iphone-13";
-    const url=document.getElementById("mobicoTestUrl")?.value?.trim()||"";
-    const r=await fetch(`/api/mobico-test?model=${encodeURIComponent(model)}&url=${encodeURIComponent(url)}`,{credentials:"same-origin",headers:{"Accept":"application/json"}});
-    const payload=await r.json().catch(()=>({}));
-    if(!r.ok||payload.success===false)throw new Error(payload.error||`Mobico test mislukt (HTTP ${r.status})`);
-    const p=payload.result||{};
-    document.getElementById("mobicoTestName").textContent=p.name||"Niet gevonden";
-    document.getElementById("mobicoTestColorStorage").textContent=`${p.color||"Niet gevonden"} · ${p.storage||"Niet gevonden"}`;
-    document.getElementById("mobicoTestPriceStock").textContent=`${mobicoMoney(p.price)} · ${p.stockText||"Voorraad niet gevonden"}`;
-    mobicoRenderTags(document.getElementById("mobicoTestStorage"),p.storages||[]);
-    mobicoRenderTags(document.getElementById("mobicoTestColors"),p.colors||[]);
-    document.getElementById("mobicoTestColorCount").textContent=`${(p.colors||[]).length} kleur/variant-link(s) gevonden`;
-    mobicoRenderOptions(document.getElementById("mobicoTestConditions"),p.conditions||[]);
-    mobicoRenderOptions(document.getElementById("mobicoTestBattery"),p.battery||[]);
-    const imgs=Array.isArray(p.images)?p.images.filter(Boolean):[];
-    document.getElementById("mobicoTestImages").innerHTML=imgs.length?imgs.map(src=>`<a href="${mobicoEsc(src)}" target="_blank" rel="noopener noreferrer"><img src="${mobicoEsc(src)}" alt="Mobico" style="max-width:140px;max-height:140px;object-fit:contain;border:1px solid #ddd;border-radius:8px"></a>`).join(""):"<span class=\"small\">Geen afbeeldingen gevonden.</span>";
-    const variants=Array.isArray(p.variants)?p.variants:[];
-    document.getElementById("mobicoTestVariants").innerHTML=variants.length?`<table style="width:100%;border-collapse:collapse;min-width:720px"><thead><tr><th style="text-align:left;padding:8px;border-bottom:1px solid #e2e8f0">Product</th><th style="text-align:left;padding:8px;border-bottom:1px solid #e2e8f0">Opslag</th><th style="text-align:left;padding:8px;border-bottom:1px solid #e2e8f0">Kleur</th><th style="text-align:left;padding:8px;border-bottom:1px solid #e2e8f0">Link</th></tr></thead><tbody>${variants.map(v=>`<tr><td style="padding:8px;border-bottom:1px solid #edf2f7">${mobicoEsc(v.name||"")}</td><td style="padding:8px;border-bottom:1px solid #edf2f7">${mobicoEsc(v.storage||"")}</td><td style="padding:8px;border-bottom:1px solid #edf2f7">${mobicoEsc(v.color||"")}</td><td style="padding:8px;border-bottom:1px solid #edf2f7"><a href="${mobicoEsc(v.url||"")}" target="_blank" rel="noopener noreferrer">open</a></td></tr>`).join("")}</tbody></table>`:"<span class=\"small\">Geen andere Mobico-varianten gevonden.</span>";
-    document.getElementById("mobicoTestRaw").textContent=JSON.stringify(payload,null,2);
-    content.style.display="block";
-    status.className="status success";
-    status.textContent=`✓ ${p.name||model} succesvol gelezen — alleen-lezen. Forza is niet gewijzigd en er is niets opgeslagen.`;
-  }catch(error){
-    content.style.display="none";
-    status.className="status error";
-    status.textContent="✕ "+(error?.message||"Mobico test mislukt.");
-  }finally{if(btn)btn.disabled=false;}
-}
 
 function renderAll(){
 
