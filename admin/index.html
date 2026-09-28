@@ -4938,6 +4938,10 @@ async function showBuybackDetails(id){
 
 
 
+function forzaAdminFindResult(payload){
+  return payload?.result || payload?.data?.result || payload?.data || payload || {};
+}
+
 function forzaAdminNormalizeOption(item, index, type){
   if(item && typeof item === "object"){
     const name = forzaAdminPick(item,["name","label","title","condition","option","battery","storage","memory"]) ?? `${type} ${index+1}`;
