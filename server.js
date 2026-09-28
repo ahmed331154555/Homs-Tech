@@ -2547,6 +2547,164 @@ async function forzaFetchExactVariantFromUrl(productName, exactUrl) {
   } catch { return null; }
 }
 
+
+// =====================================================
+// MOBICO READ-ONLY TEST (kept completely separate from Forza)
+// =====================================================
+const MOBICO_TEST_MODELS = {
+  "iphone-11":"iPhone 11","iphone-11-pro":"iPhone 11 Pro","iphone-11-pro-max":"iPhone 11 Pro Max",
+  "iphone-12-mini":"iPhone 12 Mini","iphone-12":"iPhone 12","iphone-12-pro":"iPhone 12 Pro","iphone-12-pro-max":"iPhone 12 Pro Max",
+  "iphone-13-mini":"iPhone 13 Mini","iphone-13":"iPhone 13","iphone-13-pro":"iPhone 13 Pro","iphone-13-pro-max":"iPhone 13 Pro Max",
+  "iphone-14":"iPhone 14","iphone-14-plus":"iPhone 14 Plus","iphone-14-pro":"iPhone 14 Pro","iphone-14-pro-max":"iPhone 14 Pro Max",
+  "iphone-15":"iPhone 15","iphone-15-plus":"iPhone 15 Plus","iphone-15-pro":"iPhone 15 Pro","iphone-15-pro-max":"iPhone 15 Pro Max",
+  "iphone-16e":"iPhone 16e","iphone-16":"iPhone 16","iphone-16-plus":"iPhone 16 Plus","iphone-16-pro":"iPhone 16 Pro","iphone-16-pro-max":"iPhone 16 Pro Max",
+  "iphone-17e":"iPhone 17e","iphone-17":"iPhone 17","iphone-air":"iPhone Air","iphone-17-pro":"iPhone 17 Pro","iphone-17-pro-max":"iPhone 17 Pro Max"
+};
+
+function mobicoDecode(value){
+  return String(value || "")
+    .replace(/&#39;|&apos;/gi,"'").replace(/&quot;/gi,'"').replace(/&amp;/gi,"&")
+    .replace(/&nbsp;/gi," ").replace(/&#x2F;/gi,"/").replace(/&#47;/gi,"/");
+}
+function mobicoClean(value){
+  return mobicoDecode(String(value || "").replace(/<script[\s\S]*?<\/script>/gi," ").replace(/<style[\s\S]*?<\/style>/gi," ").replace(/<[^>]+>/g," "))
+    .replace(/\s+/g," ").trim();
+}
+function mobicoEuro(value){
+  const m=String(value || "").replace(/\u00a0/g," ").match(/(?:€\s*)?([0-9]{1,4}(?:[.,][0-9]{1,2})?)/);
+  if(!m)return null;
+  const n=Number(m[1].replace(/\./g,"").replace(",","."));
+  return Number.isFinite(n)?n:null;
+}
+function mobicoMoneyFromText(value){
+  const m=String(value || "").match(/€\s*([0-9]{1,4}(?:[.,][0-9]{1,2})?)/);
+  return m ? mobicoEuro(m[0]) : null;
+}
+function mobicoSlug(value){
+  return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+}
+function mobicoHtmlAttr(html, attr, value){
+  const re=new RegExp(`<meta\\b[^>]*${attr}=["']${value}["'][^>]*>`,`i`);
+  const m=String(html||"").match(re); return m?m[0]:"";
+}
+function mobicoMeta(html,name){
+  const source=String(html||"");
+  const a=source.match(new RegExp(`<meta\\b[^>]*name=["']${name.replace(/[.*+?^${}()|[\\]\\]/g,"\\$&")}["'][^>]*content=["']([^"']+)["']`,`i`));
+  const b=source.match(new RegExp(`<meta\\b[^>]*property=["']${name.replace(/[.*+?^${}()|[\\]\\]/g,"\\$&")}["'][^>]*content=["']([^"']+)["']`,`i`));
+  const c=source.match(new RegExp(`<meta\\b[^>]*content=["']([^"']+)["'][^>]*property=["']${name.replace(/[.*+?^${}()|[\\]\\]/g,"\\$&")}["']`,`i`));
+  return mobicoDecode((a&&a[1])||(b&&b[1])||(c&&c[1])||"");
+}
+function mobicoFindSection(text,startLabel,endLabel){
+  const s=String(text||"");
+  const a=s.toLowerCase().indexOf(String(startLabel||"").toLowerCase());
+  if(a<0)return "";
+  const from=s.slice(a);
+  const b=endLabel ? from.toLowerCase().indexOf(String(endLabel).toLowerCase(),String(startLabel).length) : -1;
+  return b>=0 ? from.slice(0,b) : from.slice(0,2500);
+}
+function mobicoParseOptionLines(section,names){
+  const out=[];
+  const src=String(section||"");
+  for(const name of names){
+    const re=new RegExp(`\\b${name.replace(/[.*+?^${}()|[\\]\\]/g,"\\$&")}\\b(?:\\s*([+-])\\s*€\\s*([0-9]+(?:[.,][0-9]+)?))?`,"ig");
+    let m;
+    while((m=re.exec(src))){
+      const delta=m[2] ? Number(m[2].replace(",","."))*(m[1]==="-"?-1:1) : 0;
+      if(!out.some(x=>x.label.toLowerCase()===name.toLowerCase()))out.push({label:name,delta});
+    }
+  }
+  return out;
+}
+function mobicoExtractVariants(html,baseUrl,modelLabel){
+  const source=String(html||"");
+  const modelSlug=mobicoSlug(modelLabel);
+  const wantedPrefix=`${modelSlug}-`;
+  const map=new Map();
+  const re=/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+  let m;
+  while((m=re.exec(source))){
+    let absolute="";
+    try{absolute=new URL(m[1],baseUrl).toString();}catch{continue;}
+    if(!/^https?:\/\/mobico\.nl\/product\//i.test(absolute))continue;
+    let slug="";
+    try{slug=decodeURIComponent(new URL(absolute).pathname.split("/").filter(Boolean).pop()||"").toLowerCase();}catch{continue;}
+    if(!slug.startsWith(wantedPrefix))continue;
+    const sm=slug.match(new RegExp(`^${wantedPrefix.replace(/[.*+?^${}()|[\\]\\]/g,"\\$&")}(\\d+)(gb|tb)(?:-(.+))?$`));
+    if(!sm)continue;
+    const storage=`${sm[1]}${sm[2].toUpperCase()}`;
+    const color=sm[3] ? sm[3].replace(/-/g," ").replace(/\b\w/g,c=>c.toUpperCase()) : "";
+    const text=mobicoClean(m[2]);
+    const name=text && /iphone/i.test(text) ? text : `${modelLabel} ${storage}${color?` ${color}`:""}`;
+    map.set(absolute,{name,storage,color,url:absolute});
+  }
+  return [...map.values()];
+}
+function mobicoParseProduct(html,sourceUrl,modelLabel){
+  const text=mobicoClean(html);
+  const title=mobicoMeta(html,"og:title") || ((String(html).match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)||[])[1] ? mobicoClean((String(html).match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)||[])[1]) : "");
+  const name=title.replace(/\s*\|.*$/g,"").replace(/\s+kopen\s*$/i,"").trim() || modelLabel;
+  const productStorage=(name.match(/\b(\d+)\s*(GB|TB)\b/i)||[]);
+  const storage=productStorage[1] ? `${productStorage[1]}${productStorage[2].toUpperCase()}` : "";
+  const colorMatch=text.match(/Kleur\s*:\s*([^|]{2,50}?)(?=\s+(?:Staat|Goed|Heel goed|Als nieuw|Nieuwstaat|Batterij)\b)/i);
+  const color=colorMatch ? colorMatch[1].trim() : (name.match(/\\b(?:Middernacht|Midnight|Zwart|Wit|Blauw|Rood|Groen|Roze|Paars|Geel|Goud|Zilver|Titanium|Natural Titanium|Desert Titanium|Black Titanium|White Titanium|Blue Titanium)\\b/i)||[])[0] || "";
+  const price=mobicoMoneyFromText(text.slice(Math.max(0,text.indexOf(name)),Math.max(0,text.indexOf(name))+600));
+  const storageSection=mobicoFindSection(text,"Opslag","Kleur");
+  const storageOptionMatches=storageSection.match(/\b(\d+)\s*(GB|TB)\b(?:\s*([+-])\s*€\s*([0-9]+(?:[.,][0-9]+)?))?/gi)||[];
+  const storageOptions=[];
+  for(const raw of storageOptionMatches){
+    const sm=raw.match(/\b(\d+)\s*(GB|TB)\b/i); if(!sm) continue;
+    const deltaMatch=raw.match(/([+-])\s*€\s*([0-9]+(?:[.,][0-9]+)?)/i);
+    const delta=deltaMatch ? Number(deltaMatch[2].replace(",","."))*(deltaMatch[1]==="-"?-1:1) : 0;
+    const label=`${sm[1]}${sm[2].toUpperCase()}`;
+    if(!storageOptions.some(x=>x.label===label)) storageOptions.push({label,delta,price:Number.isFinite(price)?price+delta:null});
+  }
+  const storageNames=storageOptions.map(x=>x.label);
+  const stateSection=mobicoFindSection(text,"Staat","Batterij");
+  const conditionNames=["Goed","Heel goed","Als nieuw","Nieuwstaat"];
+  const conditions=mobicoParseOptionLines(stateSection,conditionNames).map(x=>({label:x.label,delta:x.delta,price:Number.isFinite(price)?price+x.delta:null}));
+  const batterySection=mobicoFindSection(text,"Batterij","Wil je een apparaat");
+  const battery=mobicoParseOptionLines(batterySection,["Standaard","Nieuw"]).map(x=>{
+    if(x.label.toLowerCase()==="nieuw"){
+      const tail=batterySection.match(/\bNieuw\b[\s\S]{0,90}?([+-])\s*€\s*([0-9]+(?:[.,][0-9]+)?)/i);
+      if(tail) x.delta=Number(tail[2].replace(",","."))*(tail[1]==="-"?-1:1);
+    }
+    return {...x,price:Number.isFinite(price)?price+x.delta:null};
+  });
+  const stockIndex=text.indexOf("In winkelwagen");
+  const afterCart=stockIndex>=0 ? text.slice(stockIndex,stockIndex+500) : text.slice(0,1000);
+  const stockText=/Bijna uitverkocht/i.test(afterCart)?"Bijna uitverkocht":/Op voorraad/i.test(afterCart)?"Op voorraad":/In nabestelling/i.test(afterCart)?"In nabestelling":/Direct leverbaar/i.test(afterCart)?"Direct leverbaar":"Niet gevonden";
+  const images=[];
+  const og=mobicoMeta(html,"og:image"); if(og)images.push(og);
+  const imgRe=/<img\b[^>]*src=["']([^"']+)["'][^>]*>/gi; let im;
+  while((im=imgRe.exec(String(html))) && images.length<8){try{const u=new URL(mobicoDecode(im[1]),sourceUrl).toString();if(/^https?:\/\//i.test(u))images.push(u);}catch{}}
+  const variants=mobicoExtractVariants(html,sourceUrl,modelLabel);
+  const colors=[...new Set(variants.map(v=>v.color).filter(Boolean))];
+  const storages=[...new Set([...storageNames,...variants.map(v=>v.storage).filter(Boolean)])];
+  const description=mobicoMeta(html,"description");
+  return {name,color,storage,price,stockText,storages,storageOptions,colors,conditions,battery,images:[...new Set(images)].slice(0,6),variants,description,sourceUrl};
+}
+
+app.get("/api/mobico-test", requirePermission("phones.view"), async (req,res)=>{
+  const modelKey=String(req.query.model||"iphone-13").trim().toLowerCase();
+  const modelLabel=MOBICO_TEST_MODELS[modelKey];
+  const sourceUrl=String(req.query.url||"").trim();
+  if(!modelLabel)return res.status(400).json({success:false,readOnly:true,error:"Onbekend Mobico-testmodel."});
+  if(!/^https?:\/\/mobico\.nl\/product\//i.test(sourceUrl))return res.status(400).json({success:false,readOnly:true,error:"Gebruik een geldige Mobico-productlink (https://mobico.nl/product/...)."});
+  try{
+    const page=await fetch(sourceUrl,{method:"GET",redirect:"follow",headers:{"User-Agent":"Mozilla/5.0 (compatible; HOMS-TECH Mobico read-only test)","Accept":"text/html,application/xhtml+xml"}});
+    const html=await page.text();
+    if(!page.ok)return res.status(502).json({success:false,readOnly:true,sourceUrl,error:`Mobico returned HTTP ${page.status}`});
+    const result=mobicoParseProduct(html,sourceUrl,modelLabel);
+    const detectedModel=(result.name.match(/^(iPhone(?: SE)?(?: Air)?(?: \d+)?(?: (?:Mini|Plus|Pro Max|Pro|e))?)/i)||[])[1]||"";
+    if(detectedModel && mobicoSlug(detectedModel)!==mobicoSlug(modelLabel))return res.status(502).json({success:false,readOnly:true,error:`Mobico gaf ${result.name} terug terwijl ${modelLabel} was geselecteerd.`,result});
+    res.json({success:true,readOnly:true,testModel:modelKey,testModelLabel:modelLabel,sourceUrl,result});
+  }catch(error){
+    console.error("MOBICO TEST IMPORT ERROR:",error);
+    res.status(502).json({success:false,readOnly:true,sourceUrl,error:"Mobico test request failed.",details:String(error?.message||error)});
+  }
+});
+
 app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) => {
   const requestedModel = String(req.query.model || "iphone-11").trim().toLowerCase();
   const modelConfig = forzaGetTestModel(requestedModel);
