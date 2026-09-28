@@ -2589,23 +2589,41 @@ function mobicoExtractBasePrice(html,text,name){
     return Number.isFinite(n) && n>=100 && n<10000 ? n : null;
   };
 
-  // Mobico's product page puts the real base price immediately after the
-  // product title in the rendered text. Do NOT read the first euro amount
-  // from raw HTML after <h1>: hidden/option markup can contain +€50/+€60.
+  // IMPORTANT: On Mobico the base price is the standalone euro amount
+  // between the product title and the "Opslag" heading. Storage upgrades
+  // (+ €50 / + €110) come after "Opslag" and must never become the base price.
   const title=String(name||"").trim();
+  const pickStandalone=(section)=>{
+    const src=String(section||"");
+    const re=/(^|[^+\d])€\s*([0-9]{2,4}(?:[.,][0-9]{1,2})?)/g;
+    let m;
+    while((m=re.exec(src))){
+      const n=add(`€ ${m[2]}`);
+      if(n!==null)return n;
+    }
+    return null;
+  };
+
   if(title){
-    const idx=pageText.toLowerCase().indexOf(title.toLowerCase());
+    const lower=pageText.toLowerCase();
+    const idx=lower.indexOf(title.toLowerCase());
     if(idx>=0){
-      const near=pageText.slice(idx+title.length,idx+title.length+500);
-      const matches=near.match(/€\s*[0-9]{2,4}(?:[.,][0-9]{1,2})?/g)||[];
-      for(const raw of matches){
-        const n=add(raw);
-        if(n!==null) return n;
-      }
+      const beforeStorage=pageText.slice(idx+title.length);
+      const stop=beforeStorage.search(/\bOpslag\b/i);
+      const header=stop>=0 ? beforeStorage.slice(0,stop) : beforeStorage.slice(0,1200);
+      const n=pickStandalone(header);
+      if(n!==null)return n;
     }
   }
 
-  // Prefer structured product-price metadata when present.
+  // Same rule using the first product block, in case the exact title differs
+  // slightly between og:title and the visible h1.
+  const productBlock=mobicoFindSection(pageText,"Product","Opslag");
+  const blockPrice=pickStandalone(productBlock);
+  if(blockPrice!==null)return blockPrice;
+
+  // Prefer structured product-price metadata only as a fallback. Some hidden
+  // Mobico metadata has previously contained an unrelated formatted amount.
   const structured=[
     /<meta\b[^>]*(?:property|name)=["'](?:product:price:amount|price)["'][^>]*content=["']([^"']+)["']/i,
     /<[^>]+itemprop=["']price["'][^>]*content=["']([^"']+)["']/i,
@@ -2616,17 +2634,13 @@ function mobicoExtractBasePrice(html,text,name){
     const m=source.match(re);
     if(m){
       const n=add(m[1]);
-      if(n!==null) return n;
+      if(n!==null)return n;
     }
   }
 
-  // Fallback: first realistic euro amount on the page text.
-  const matches=pageText.match(/€\s*[0-9]{2,4}(?:[.,][0-9]{1,2})?/g)||[];
-  for(const raw of matches){
-    const n=add(raw);
-    if(n!==null) return n;
-  }
-  return null;
+  // Last fallback: only accept a standalone euro amount, never an amount
+  // immediately following '+' because those are option surcharges.
+  return pickStandalone(pageText);
 }
 
 function mobicoSlug(value){
