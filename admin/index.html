@@ -5308,7 +5308,7 @@ function compareForzaWithHoms(){
   const phone=forzaCompareFindPhone(modelProduct);
 
   rowsEl.innerHTML=rows.map(row=>{
-    const forzaPrice=Number.isFinite(Number(row.price)) ? Number(row.price) : null;
+    const forzaPrice=row.price!==null && row.price!==undefined && Number.isFinite(Number(row.price)) ? Number(row.price) : null;
     const homsPrice=forzaComparePrice(phone,row);
     const diff=forzaPrice!==null && homsPrice!==null ? forzaPrice-homsPrice : null;
     let statusText="Geen passend HOMS TECH-product gevonden";
@@ -5417,9 +5417,35 @@ function forzaVariantKey(model, storage, color){
 }
 
 function forzaCurrentPhoneIndex(productName){
-  const wanted=String(productName||"").trim().toLowerCase();
+  const wanted=String(productName||"").trim();
   if(!Array.isArray(data.phones)) return -1;
-  return data.phones.findIndex(p=>String(p?.name||"").trim().toLowerCase()===wanted);
+  const exact=wanted.toLowerCase();
+  const exactIndex=data.phones.findIndex(p=>String(p?.name||"").trim().toLowerCase()===exact);
+  if(exactIndex>=0) return exactIndex;
+
+  // Forza uses "iPhone 11 64 GB Paars", while HOMS TECH can use
+  // "iPhone 11 Paars 64GB". Match the same model + storage + color without
+  // changing the existing HOMS TECH product name.
+  const storageMatch=wanted.match(/\b(\d+)\s*(GB|TB)\b/i);
+  const wantedStorage=storageMatch ? `${storageMatch[1]}${storageMatch[2].toUpperCase()}` : "";
+  const wantedModel=forzaCompareModelKey(wanted);
+  const colorWords=["paars","purple","zwart","black","wit","white","rood","red","blauw","blue","groen","green","geel","yellow","oranje","orange","roze","pink","zilver","silver","goud","gold","space grey","spacegray","titanium zwart","natural titanium","desert titanium","blue titanium","white titanium","midnight","starlight","teal","ultramarijn","ultramarine","coral"];
+  const wantedText=forzaCompareNormalize(wanted);
+  const wantedColor=[...colorWords].sort((a,b)=>b.length-a.length).find(c=>wantedText.includes(forzaCompareNormalize(c))) || "";
+  let best=-1;
+  data.phones.forEach((phone,i)=>{
+    const name=String(phone?.name||"");
+    const model=forzaCompareModelKey(name);
+    if(!model || model!==wantedModel) return;
+    const storageList=Array.isArray(phone?.storage) ? phone.storage : [phone?.storage,phone?.memory];
+    const hasStorage=!wantedStorage || storageList.some(v=>forzaCompareStorageKey(v)===wantedStorage) || forzaCompareStorageKey(name)===wantedStorage;
+    if(!hasStorage) return;
+    const phoneColor=forzaCompareNormalize(phone?.color||"");
+    const nameText=forzaCompareNormalize(name);
+    const hasColor=!wantedColor || (phoneColor ? phoneColor===forzaCompareNormalize(wantedColor) : nameText.includes(forzaCompareNormalize(wantedColor)));
+    if(hasColor){ best=i; }
+  });
+  return best;
 }
 
 function forzaRenderVariantManager(modelLabel, variants){
