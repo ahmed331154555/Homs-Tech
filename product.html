@@ -363,7 +363,82 @@ function selectProductOption(key,label){
     priceEl.textContent=money(calculateTotal(currentProduct));
   }
 }
+
+function forzaModelKey(phone){
+  if(!phone) return "";
+  const explicit=phone.catalogFamily||phone.catalogModel||phone.model||"";
+  if(explicit) return String(explicit).toLowerCase().replace(/\s+/g," ").trim();
+  let name=String(phone.name||"");
+  name=name.replace(/\b\d+\s*(?:GB|TB)\b/ig," ").replace(/\s+/g," ").trim();
+  return name.toLowerCase();
+}
+function forzaStorageKey(phone){
+  const value=phone?.catalogStorage || (Array.isArray(phone?.storage)?phone.storage[0]:phone?.storage) || phone?.memory || "";
+  const m=String(value).match(/\b(\d+)\s*(GB|TB)\b/i);
+  return m ? `${m[1]}${m[2].toUpperCase()}` : String(value).toLowerCase().replace(/\s+/g,"");
+}
+function forzaColorKey(phone){
+  return String(phone?.catalogColor || phone?.color || phone?.kleur || "").toLowerCase().replace(/\s+/g," ").trim();
+}
+function forzaPhoneAvailable(phone){
+  if(!phone || phone.active===false) return false;
+  if(phone.stock===undefined || phone.stock===null || phone.stock==="") return true;
+  return Number(phone.stock)>0;
+}
+function forzaSiblingPhones(product){
+  if(!currentData || !Array.isArray(currentData.phones) || !product) return [];
+  const model=forzaModelKey(product);
+  const brand=String(product.brand||"").toLowerCase().trim();
+  return currentData.phones.map((phone,index)=>({phone,index}))
+    .filter(x=>x.phone && x.phone!==product && forzaModelKey(x.phone)===model && (!brand || !x.phone.brand || String(x.phone.brand).toLowerCase().trim()===brand));
+}
+function forzaNavigateToPhone(index){
+  if(!Number.isInteger(index) || index<0) return;
+  const u=new URL("product.html",location.href);
+  u.searchParams.set("id",String(index));
+  location.href=u.toString();
+}
+function renderForzaSiblingSection(key,title){
+  const siblings=forzaSiblingPhones(currentProduct);
+  if(!siblings.length) return "";
+  const currentStorage=forzaStorageKey(currentProduct);
+  const currentColor=forzaColorKey(currentProduct);
+  const matches=siblings.filter(x=> key==='color' ? forzaStorageKey(x.phone)===currentStorage : forzaColorKey(x.phone)===currentColor);
+  const current={phone:currentProduct,index:id};
+  const all=[current,...matches];
+  const map=new Map();
+  for(const item of all){
+    const label=key==='color' ? (item.phone.catalogColor||item.phone.color||item.phone.kleur||"") : (item.phone.catalogStorage||((Array.isArray(item.phone.storage)?item.phone.storage[0]:item.phone.storage)||item.phone.memory||""));
+    if(label && !map.has(String(label).toLowerCase())) map.set(String(label).toLowerCase(),{...item,label:String(label)});
+  }
+  const list=[...map.values()];
+  if(list.length<2) return "";
+  const currentLabel=key==='color'?currentColor:currentStorage;
+  return `<div class="option-section forza-sibling-section"><div class="option-title">${esc(title)}</div><div class="option-grid">${list.map(item=>{
+    const normalized=item.label.toLowerCase().replace(/\s+/g," ").trim();
+    const active=normalized===currentLabel;
+    const available=forzaPhoneAvailable(item.phone);
+    const price=Number(item.phone.price||0);
+    return `<button type="button" class="option-btn ${active?"active":""} ${available?"":"unavailable"}" ${available?`onclick="forzaNavigateToPhone(${item.index})"`:"disabled"}>${key==='color'?`<span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${forzaColorCss(item.label)};border:1px solid #cbd5e1;margin-right:6px;vertical-align:-1px"></span>`:""}${esc(item.label)}${price>0?`<small>${money(price)}</small>`:""}${available?"":" <span class=\"sold-x\">✕</span>"}</button>`;
+  }).join("")}</div><div style="margin-top:6px;color:#64748b;font-size:12px">Kies een andere ${key==='color'?"kleur":"geheugen"}; HOMS TECH opent automatisch de juiste uitvoering.</div></div>`;
+}
+function forzaColorCss(label){
+  const v=String(label||"").toLowerCase();
+  if(/rood|red/.test(v)) return "#ef4444";
+  if(/blauw|blue/.test(v)) return "#3b82f6";
+  if(/groen|green/.test(v)) return "#22c55e";
+  if(/roze|pink/.test(v)) return "#f472b6";
+  if(/paars|purple/.test(v)) return "#a855f7";
+  if(/geel|yellow|goud|gold/.test(v)) return "#facc15";
+  if(/wit|white|zilver|silver/.test(v)) return "#fff";
+  if(/oranje|orange/.test(v)) return "#f97316";
+  return "#111827";
+}
 function renderOptionSection(key,title,list){
+  if((key==='color' || key==='storage') && Array.isArray(currentData?.phones) && currentData.phones.length){
+    const siblingHtml=renderForzaSiblingSection(key,title);
+    if(siblingHtml) return siblingHtml;
+  }
   const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
   const raw=Array.isArray(currentProduct[map[key]]) ? currentProduct[map[key]] : [];
   const base=raw.length?raw:effectiveOptions(currentProduct,key);
