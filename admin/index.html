@@ -1035,6 +1035,16 @@ textarea{
 .buyback-v1-shell .buyback-v1-title p{margin-top:4px}
 .buyback-v1-brand-badge{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
+
+<style id="homs-phone-catalog-v33">
+/* V33: only Apple / Samsung / iPad tabs + optional custom groups; let the page scroll naturally */
+.phone-catalog-sidebar{overflow:visible!important;min-height:0!important;}
+.phone-folder-list{max-height:none!important;overflow:visible!important;min-height:0!important;}
+.phone-brand-tabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:8px;}
+.phone-brand-add{border-style:dashed!important;background:#f8fafc!important;color:#2563eb!important;}
+.phone-brand-add:hover{background:#eff6ff!important;border-color:#93c5fd!important;}
+@media(min-width:1100px){.phone-catalog-sidebar{min-height:0!important;height:auto!important;}}
+</style>
 </head>
 
 <body>
@@ -2110,7 +2120,9 @@ function renderGeneral(){
 let selectedServiceIndex=0;
 let selectedPhoneIndex=0;
 let phoneTreeSearch="";
-let phoneTreeBrand="Alle";
+let phoneTreeBrand="Apple";
+let phoneTreeCustomGroups=[];
+try{phoneTreeCustomGroups=JSON.parse(localStorage.getItem("homsTechPhoneGroups")||"[]").filter(Boolean);}catch(e){phoneTreeCustomGroups=[];}
 let selectedUsedPhoneIndex=0;
 let selectedWhyIndex=0;
 let selectedGsmServiceIndex=0;
@@ -2176,13 +2188,11 @@ function phoneFolderInfo(phone){
   const text=`${rawBrand} ${rawCategory} ${rawName}`.toLowerCase();
 
   let group='Overige';
-  if(/ipad/.test(text) || /tablet/.test(rawCategory.toLowerCase()) && /apple/.test(text)) group='iPad';
+  const customMatch=phoneTreeCustomGroups.find(g=>text.includes(String(g).toLowerCase()));
+  if(customMatch) group=customMatch;
+  else if(/ipad/.test(text) || /tablet/.test(rawCategory.toLowerCase()) && /apple/.test(text)) group='iPad';
   else if(/samsung/.test(text)) group='Samsung';
   else if(/apple|iphone|macbook|ipad|airpods|apple watch/.test(text)) group='Apple';
-  else if(/macbook|mac\s/.test(text)) group='Mac';
-  else if(/xiaomi|redmi|poco/.test(text)) group='Xiaomi';
-  else if(/google pixel/.test(text)) group='Google';
-  else if(/oneplus/.test(text)) group='OnePlus';
 
   const storageMatch=rawName.match(/(?:^|[\s\-_])(64|128|256|512)\s*GB\b|(?:^|[\s\-_])1\s*TB\b/i);
   const storage=String(phone?.storage||phone?.geheugen||'').trim() || (storageMatch ? storageMatch[0].trim().replace(/^[-_\s]+/,'') : '');
@@ -2235,7 +2245,7 @@ function renderPhoneFolderTree(){
     storages.get(info.storage).push({phone,i,info});
   });
 
-  const groupOrder=['Apple','Samsung','iPad','Mac','Xiaomi','Google','OnePlus','Overige'];
+  const groupOrder=['Apple','Samsung','iPad',...phoneTreeCustomGroups,'Mac','Xiaomi','Google','OnePlus','Overige'];
   const groupsSorted=[...groups.entries()].sort((a,b)=>{
     const ai=groupOrder.indexOf(a[0]), bi=groupOrder.indexOf(b[0]);
     if(ai!==-1 || bi!==-1) return (ai===-1?999:ai)-(bi===-1?999:bi);
@@ -2286,6 +2296,19 @@ function renderPhoneFolderTree(){
 
 function setPhoneTreeBrand(brand){
   phoneTreeBrand=brand;
+  renderPhones();
+}
+
+function addPhoneTreeGroup(){
+  const name=prompt('Naam van de nieuwe groep, bijvoorbeeld Xiaomi of Google:');
+  const clean=String(name||'').trim();
+  if(!clean) return;
+  if(['Apple','Samsung','iPad'].some(x=>x.toLowerCase()===clean.toLowerCase()) || phoneTreeCustomGroups.some(x=>x.toLowerCase()===clean.toLowerCase())){
+    phoneTreeBrand=clean; renderPhones(); return;
+  }
+  phoneTreeCustomGroups.push(clean);
+  try{localStorage.setItem('homsTechPhoneGroups',JSON.stringify(phoneTreeCustomGroups));}catch(e){}
+  phoneTreeBrand=clean;
   renderPhones();
 }
 
@@ -2345,7 +2368,8 @@ function renderPhones(){
         </div>
         <div class="phone-tree-search"><span>⌕</span><input value="${esc(phoneTreeSearch)}" placeholder="Zoek model, kleur, geheugen..." oninput="phoneTreeSearch=this.value;renderPhones()"/><button type="button" onclick="phoneTreeSearch='';renderPhones()" aria-label="Zoekopdracht wissen">×</button></div>
         <div class="phone-brand-tabs">
-          ${['Alle','Apple','Samsung','iPad','Mac','Xiaomi','Google','OnePlus','Overige'].map(b=>`<button type="button" class="phone-brand-tab ${phoneTreeBrand===b?'active':''}" onclick="setPhoneTreeBrand('${b}')">${phoneTreeBrandIcon(b)} ${b}</button>`).join('')}
+          ${['Apple','Samsung','iPad',...phoneTreeCustomGroups].map(b=>`<button type="button" class="phone-brand-tab ${phoneTreeBrand===b?'active':''}" onclick="setPhoneTreeBrand('${b.replace(/'/g,"\\'")}')">${phoneTreeBrandIcon(b)} ${esc(b)}</button>`).join('')}
+          <button type="button" class="phone-brand-tab phone-brand-add" onclick="addPhoneTreeGroup()">＋ Toevoegen</button>
         </div>
         <div class="phone-tree-hint">Merk <span>›</span> model <span>›</span> geheugen <span>›</span> kleur</div>
         <div class="phone-folder-list">${list}</div>
