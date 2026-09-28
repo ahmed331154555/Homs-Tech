@@ -2584,22 +2584,30 @@ function mobicoMoneyFromText(value){
 function mobicoExtractBasePrice(html,text,name){
   const source=String(html||"");
   const pageText=String(text||"").replace(/\u00a0/g," ");
-  const candidates=[];
-  const add=(raw,sourceType)=>{
+  const add=(raw)=>{
     const n=mobicoEuro(raw);
-    if(Number.isFinite(n) && n>=50 && n<10000) candidates.push({n,sourceType});
+    return Number.isFinite(n) && n>=50 && n<10000 ? n : null;
   };
 
-  // 1) Prefer the visible price close to the product title.
-  const idx=pageText.toLowerCase().indexOf(String(name||"").toLowerCase());
-  if(idx>=0){
-    const near=pageText.slice(idx,idx+2200);
-    const matches=near.match(/€\s*[0-9]{2,4}(?:[.,][0-9]{1,2})?/g)||[];
-    for(const raw of matches) add(raw,"title");
+  // 1) Read the price structurally from the product H1 block.
+  // Mobico currently renders the base price directly after the H1.
+  const h1Re=/<h1\b[^>]*>([\s\S]*?)<\/h1>/i;
+  const h1=source.match(h1Re);
+  if(h1){
+    const h1Text=mobicoClean(h1[1]);
+    const h1Name=String(name||"").trim();
+    if(!h1Name || h1Text.toLowerCase().includes(h1Name.toLowerCase()) || h1Text.toLowerCase().includes("iphone")){
+      const afterH1=source.slice((h1.index||0)+h1[0].length,(h1.index||0)+h1[0].length+5000);
+      const euros=afterH1.match(/€\s*[0-9]{2,4}(?:[.,][0-9]{1,2})?/g)||[];
+      // The first euro amount after H1 is the product's base price on Mobico.
+      for(const raw of euros){
+        const n=add(raw);
+        if(n!==null) return n;
+      }
+    }
   }
-  if(candidates.length) return candidates[0].n;
 
-  // 2) Structured product price, but ignore unrealistic values such as 29900.
+  // 2) Prefer structured product-price metadata.
   const structured=[
     /<meta\b[^>]*(?:property|name)=["'](?:product:price:amount|price)["'][^>]*content=["']([^"']+)["']/i,
     /<[^>]+itemprop=["']price["'][^>]*content=["']([^"']+)["']/i,
@@ -2609,16 +2617,29 @@ function mobicoExtractBasePrice(html,text,name){
   for(const re of structured){
     const m=source.match(re);
     if(m){
-      const n=mobicoEuro(m[1]);
-      if(Number.isFinite(n) && n>=50 && n<10000) return n;
+      const n=add(m[1]);
+      if(n!==null) return n;
     }
   }
 
-  // 3) Fallback: first realistic euro amount in the page text.
+  // 3) Fallback: locate the exact product title in cleaned page text,
+  // but choose the first price of at least 100 euros. This avoids picking
+  // storage/condition surcharges such as + €50 or + €60.
+  const idx=pageText.toLowerCase().indexOf(String(name||"").toLowerCase());
+  if(idx>=0){
+    const near=pageText.slice(idx,idx+1800);
+    const matches=near.match(/€\s*[0-9]{2,4}(?:[.,][0-9]{1,2})?/g)||[];
+    for(const raw of matches){
+      const n=add(raw);
+      if(n!==null && n>=100) return n;
+    }
+  }
+
+  // 4) Last fallback: first realistic product-sized euro amount.
   const matches=pageText.match(/€\s*[0-9]{2,4}(?:[.,][0-9]{1,2})?/g)||[];
   for(const raw of matches){
-    const n=mobicoEuro(raw);
-    if(Number.isFinite(n) && n>=50 && n<10000) return n;
+    const n=add(raw);
+    if(n!==null && n>=100) return n;
   }
   return null;
 }
