@@ -2008,16 +2008,18 @@ function forzaExtractColorVariants(html, baseUrl, modelConfig) {
     while ((u = urlRe.exec(attrs))) addCandidate(u[1], text);
   }
 
+  // Do NOT use a large neighbouring DOM context for product-card links.
+  // On Forza's current markup, that context can contain the previous card's
+  // colour (often "Zwart"), which makes every discovered variant inherit
+  // the same colour. The URL itself already contains the exact colour slug,
+  // so attribute-only fallback is safer.
   const tagRe = /<(?:article|div|li|button)[^>]*>/gi;
   let tag;
   while ((tag = tagRe.exec(source))) {
     const attrs = tag[0];
-    const textStart = Math.max(0, tag.index - 50);
-    const textEnd = Math.min(source.length, tag.index + 1800);
-    const context = source.slice(textStart, textEnd);
     const urlRe = /(?:href|data-href|data-url|data-product-url|data-product-link|data-link|data-redirect)\s*=\s*["']([^"']+)["']/gi;
     let u;
-    while ((u = urlRe.exec(attrs))) addCandidate(u[1], context);
+    while ((u = urlRe.exec(attrs))) addCandidate(u[1], "");
   }
 
   // Also scan the raw HTML for absolute/escaped Forza product URLs. This
