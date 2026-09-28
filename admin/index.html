@@ -689,6 +689,25 @@ textarea{
 .bb-protocol7-settings{margin-top:18px;padding:18px;border:1px solid #dfe6ee;border-radius:18px;background:linear-gradient(180deg,#fbfdff,#f7f9fc);box-shadow:0 8px 24px rgba(15,23,42,.06)}.bb-protocol7-title{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #e6ebf1}.bb-protocol7-title h4{margin:0 0 4px}.bb-protocol7-badge{font-size:11px;font-weight:800;letter-spacing:.08em;padding:7px 10px;border-radius:999px;background:#eef4ff;color:#315b9b}.bb-proto7-card{margin-top:12px;padding:14px;border:1px solid #e1e7ef;border-radius:14px;background:#fff}.bb-proto7-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.bb-proto7-row{display:grid;grid-template-columns:minmax(180px,1fr) 130px 110px 48px;gap:9px;align-items:center;margin-bottom:9px}.bb-proto7-row.bb-proto7-check{grid-template-columns:minmax(0,1fr) 100px 48px}.bb-proto7-switch{display:inline-flex;align-items:center;gap:7px;font-weight:700;white-space:nowrap}.bb-proto7-switch input{accent-color:#315b9b}.bb-proto7-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.bb-proto7-card .card-title{font-weight:800}.bb-proto7-card input,.bb-proto7-card textarea{width:100%;box-sizing:border-box}.bb-proto7-card textarea{min-height:78px;resize:vertical}@media(max-width:700px){.bb-protocol7-title,.bb-proto7-card-head{align-items:flex-start;flex-direction:column}.bb-proto7-row,.bb-proto7-row.bb-proto7-check,.bb-proto7-two{grid-template-columns:1fr}.bb-proto7-row button{justify-self:start}}
 
 .bb-protocol8-settings{margin-top:18px;padding:18px;border:1px solid #dfe6ee;border-radius:18px;background:linear-gradient(180deg,#fbfdff,#f7f9fc);box-shadow:0 8px 24px rgba(15,23,42,.06)}.bb-protocol8-title{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #e6ebf1}.bb-protocol8-title h4{margin:0 0 4px}.bb-protocol8-badge{font-size:11px;font-weight:800;letter-spacing:.08em;padding:7px 10px;border-radius:999px;background:#eef4ff;color:#315b9b}.bb-proto8-card{margin-top:12px;padding:14px;border:1px solid #e1e7ef;border-radius:14px;background:#fff}.bb-proto8-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.bb-proto8-row{display:grid;grid-template-columns:minmax(180px,1fr) 130px 110px 48px;gap:9px;align-items:center;margin-bottom:9px}.bb-proto8-row.bb-proto8-check{grid-template-columns:minmax(0,1fr) 100px 48px}.bb-proto8-switch{display:inline-flex;align-items:center;gap:7px;font-weight:700;white-space:nowrap}.bb-proto8-switch input{accent-color:#315b9b}.bb-proto8-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.bb-proto8-card .card-title{font-weight:800}.bb-proto8-card input,.bb-proto8-card textarea{width:100%;box-sizing:border-box}.bb-proto8-card textarea{min-height:78px;resize:vertical}@media(max-width:700px){.bb-protocol8-title,.bb-proto8-card-head{align-items:flex-start;flex-direction:column}.bb-proto8-row,.bb-proto8-row.bb-proto8-check,.bb-proto8-two{grid-template-columns:1fr}.bb-proto8-row button{justify-self:start}}
+/* HOMS TECH — hierarchical product folders */
+.phone-folder-list{display:flex;flex-direction:column;gap:6px}
+.phone-folder{border:1px solid #e5eaf1;border-radius:12px;background:#fff;overflow:hidden}
+.phone-folder>summary{list-style:none;cursor:pointer;padding:11px 12px;font-weight:800;color:#172033;display:flex;align-items:center;gap:8px;background:#f8fafc}
+.phone-folder>summary::-webkit-details-marker{display:none}
+.phone-folder>summary:before{content:'▸';font-size:12px;color:#64748b;transition:.15s ease}
+.phone-folder[open]>summary:before{transform:rotate(90deg)}
+.phone-folder>summary:hover{background:#eef7f1}
+.phone-folder-count{margin-left:auto;font-size:11px;color:#64748b;font-weight:700}
+.phone-folder-children{padding:6px 7px 7px;border-top:1px solid #edf2f7}
+.phone-folder-model>summary{background:#fff;font-size:13px}
+.phone-folder-storage>summary{background:#fbfcfe;font-size:12px;padding:9px 10px}
+.phone-folder-products{padding:4px 0 0}
+.phone-folder-products .editor-list-item{margin:0 0 4px;padding:10px 11px}
+.phone-folder-products .editor-list-item:last-child{margin-bottom:0}
+.phone-folder-products .editor-list-item.active{background:#25d366;color:#fff}
+.phone-folder-products .editor-list-item small{font-size:11px}
+@media(max-width:750px){.editor-layout{grid-template-columns:1fr}.editor-list{min-height:0}}
+
 </style>
 <style>
 .permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -2124,7 +2143,94 @@ function deleteService(i){
 }
 
 
+
+
 /* ---------------- PHONES ---------------- */
+
+function phoneFolderInfo(phone){
+  const rawName=String(phone?.name||'Nieuw product').trim();
+  const rawBrand=String(phone?.brand||'').trim();
+  const rawCategory=String(phone?.category||'').trim();
+  const text=`${rawBrand} ${rawCategory} ${rawName}`.toLowerCase();
+
+  let group='Overige';
+  if(/ipad/.test(text) || /tablet/.test(rawCategory.toLowerCase()) && /apple/.test(text)) group='iPad';
+  else if(/samsung/.test(text)) group='Samsung';
+  else if(/apple|iphone|macbook|ipad|airpods|apple watch/.test(text)) group='Apple';
+  else if(/macbook|mac\s/.test(text)) group='Mac';
+  else if(/xiaomi|redmi|poco/.test(text)) group='Xiaomi';
+  else if(/google pixel/.test(text)) group='Google';
+  else if(/oneplus/.test(text)) group='OnePlus';
+
+  const storageMatch=rawName.match(/(?:^|[\s\-_])(64|128|256|512)\s*GB\b|(?:^|[\s\-_])1\s*TB\b/i);
+  const storage=String(phone?.storage||phone?.geheugen||'').trim() || (storageMatch ? storageMatch[0].trim().replace(/^[-_\s]+/,'') : '');
+
+  const colors=[
+    'space grey','space gray','midnight','starlight','deep purple','natural titanium','black titanium','white titanium',
+    'zwart','wit','blauw','groen','rood','roze','paars','geel','oranje','bruin','grijs','goud','zilver','koraal',
+    'black','white','blue','green','red','pink','purple','yellow','orange','brown','grey','gray','gold','silver','coral'
+  ];
+  let color=String(phone?.color||phone?.kleur||'').trim();
+  if(!color){
+    const lower=rawName.toLowerCase();
+    color=colors.find(c=>lower.includes(c)) || '';
+  }
+
+  let model=rawName;
+  if(storage) model=model.replace(new RegExp(storage.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'ig'),' ');
+  if(color) model=model.replace(new RegExp(color.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'ig'),' ');
+  model=model.replace(/\s+/g,' ').replace(/\s*[-|–—]\s*/g,' ').trim();
+  if(!model) model=rawName;
+
+  return {group,model,storage:storage||'Algemeen',color:color||'Algemeen'};
+}
+
+function renderPhoneFolderTree(){
+  const groups=new Map();
+  data.phones.forEach((phone,i)=>{
+    const info=phoneFolderInfo(phone);
+    if(!groups.has(info.group)) groups.set(info.group,new Map());
+    const models=groups.get(info.group);
+    if(!models.has(info.model)) models.set(info.model,new Map());
+    const storages=models.get(info.model);
+    if(!storages.has(info.storage)) storages.set(info.storage,[]);
+    storages.get(info.storage).push({phone,i,info});
+  });
+
+  const groupOrder=['Apple','Samsung','iPad','Mac','Xiaomi','Google','OnePlus','Overige'];
+  const groupsSorted=[...groups.entries()].sort((a,b)=>{
+    const ai=groupOrder.indexOf(a[0]), bi=groupOrder.indexOf(b[0]);
+    if(ai!==-1 || bi!==-1) return (ai===-1?999:ai)-(bi===-1?999:bi);
+    return a[0].localeCompare(b[0]);
+  });
+
+  return groupsSorted.map(([group,models])=>{
+    const total=[...models.values()].reduce((n,arr)=>n+[...arr.values()].reduce((m,x)=>m+x.length,0),0);
+    const modelHtml=[...models.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true,sensitivity:'base'})).map(([model,storages])=>{
+      const modelTotal=[...storages.values()].reduce((n,x)=>n+x.length,0);
+      const storageHtml=[...storages.entries()].sort((a,b)=>{
+        const rank=v=>v==='Algemeen'?9999:(/1\s*TB/i.test(v)?1024:parseInt(v,10)||9998);
+        return rank(a[0])-rank(b[0]) || a[0].localeCompare(b[0]);
+      }).map(([storage,items])=>{
+        const productHtml=items.sort((a,b)=>a.info.color.localeCompare(b.info.color,undefined,{numeric:true,sensitivity:'base'})).map(({phone,i,info})=>
+          `<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">📱 ${esc(info.color==='Algemeen'?(phone.name||'Nieuw product'):info.color)}<small>${esc(phone.name||'Nieuw product')} · ${esc(phone.category||'Smartphones')}</small></button>`
+        ).join('');
+        return `<details class="phone-folder phone-folder-storage" ${items.some(x=>x.i===selectedPhoneIndex)?'open':''}>
+          <summary>💾 ${esc(storage)}<span class="phone-folder-count">${items.length}</span></summary>
+          <div class="phone-folder-children phone-folder-products">${productHtml}</div>
+        </details>`;
+      }).join('');
+      return `<details class="phone-folder phone-folder-model" ${[...storages.values()].some(arr=>arr.some(x=>x.i===selectedPhoneIndex))?'open':''}>
+        <summary>📱 ${esc(model)}<span class="phone-folder-count">${modelTotal}</span></summary>
+        <div class="phone-folder-children">${storageHtml}</div>
+      </details>`;
+    }).join('');
+    return `<details class="phone-folder phone-folder-brand" ${[...models.values()].some(storages=>[...storages.values()].some(arr=>arr.some(x=>x.i===selectedPhoneIndex)))?'open':''}>
+      <summary>📁 ${esc(group)}<span class="phone-folder-count">${total}</span></summary>
+      <div class="phone-folder-children">${modelHtml}</div>
+    </details>`;
+  }).join('');
+}
 
 function renderPhones(){
   const box=document.getElementById("phonesList");
@@ -2141,7 +2247,7 @@ function renderPhones(){
   while(phone.images.length<4) phone.images.push("");
   if(!Array.isArray(phone.specifications)) phone.specifications=[];
 
-  const list=data.phones.map((x,i)=>`<button type="button" class="editor-list-item ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">🛒 ${esc(x.name||'Nieuw product')}<small>${esc(x.brand||'')} · ${esc(x.category||'Smartphones')}</small></button>`).join('');
+  const list=renderPhoneFolderTree();
 
   const optionEditor=(key,title,help)=>{
     const opts=phone[key]||[];
@@ -2173,8 +2279,9 @@ function renderPhones(){
   box.innerHTML=`
     <div class="editor-layout">
       <div class="editor-list">
-        <div class="editor-list-title">Producten</div>
-        ${list}
+        <div class="editor-list-title">Producten georganiseerd</div>
+        <div class="small" style="padding:0 10px 10px;color:#64748b">Merk → model → geheugen → kleur</div>
+        <div class="phone-folder-list">${list}</div>
       </div>
       <div class="editor-panel">
         <div class="card-head">
