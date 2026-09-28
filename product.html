@@ -119,6 +119,12 @@ nav{justify-content:center}
 @media(max-width:700px){.ht-topbar,.topbar{height:38px!important}.ht-marquee,.top-info{gap:28px!important;animation-duration:13s!important}.ht-marquee-track{gap:28px!important}.ht-marquee-item,.top-info span{font-size:13px!important}}
 @media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
 </style>
+<style id="homs-forza-availability-ui">
+.availability-badge{display:inline-block;margin-left:7px;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:800;vertical-align:middle}
+.availability-badge.ok{background:#dcfce7;color:#166534}
+.availability-badge.no{background:#fee2e2;color:#991b1b}
+.option-btn.unavailable{opacity:.48;cursor:not-allowed;text-decoration:none}
+</style>
 <style id="homs-product-forza-polish-v2">
 /* HOMS TECH product detail — Forza-inspired layout polish, blue only */
 .product{max-width:1280px;grid-template-columns:minmax(0,46%) minmax(0,54%);gap:38px;padding:38px 42px;border:1px solid #e7edf5;box-shadow:0 12px 36px rgba(15,23,42,.07)}
@@ -183,6 +189,28 @@ nav{justify-content:center}
 @media(max-width:800px){.spec-list{grid-template-columns:1fr}}
 </style>
 
+
+<style id="homs-condition-help-v1">
+.condition-help-link{display:inline-flex;align-items:center;gap:5px;margin-left:8px;padding:2px 8px;border:1px solid #2563eb;border-radius:999px;background:#eff6ff;color:#2563eb;font-size:12px;font-weight:800;cursor:pointer;vertical-align:middle}
+.condition-help-link:hover{background:#2563eb;color:#fff}
+.condition-modal{position:fixed;inset:0;z-index:20000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(7,29,45,.72)}
+.condition-modal.open{display:flex}
+.condition-modal-card{width:min(1050px,96vw);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;box-shadow:0 24px 70px rgba(0,0,0,.3);padding:24px}
+.condition-modal-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:18px}
+.condition-modal-head h2{font-size:24px;color:#111827}
+.condition-modal-close{width:38px;height:38px;border:0;border-radius:50%;background:#eef4fb;color:#1e3a5f;font-size:24px;cursor:pointer;font-weight:800}
+.condition-modal-close:hover{background:#2563eb;color:#fff}
+.condition-help-intro{color:#64748b;font-size:13px;margin:-8px 0 18px}
+.condition-help-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.condition-help-item{border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;background:#f8fafc}
+.condition-help-item img{width:100%;height:260px;display:block;object-fit:cover;background:#fff}
+.condition-help-item-body{padding:14px 16px 16px}
+.condition-help-item h3{font-size:17px;color:#111827;margin-bottom:5px}
+.condition-help-item p{font-size:13px;color:#64748b}
+.condition-help-note{margin-top:18px;padding:12px 14px;border-radius:11px;background:#eff6ff;color:#1e3a5f;font-size:12px}
+@media(max-width:700px){.condition-modal-card{padding:17px;border-radius:16px}.condition-help-grid{grid-template-columns:1fr}.condition-help-item img{height:230px}.condition-modal-head h2{font-size:20px}}
+</style>
+
 </head>
 <body>
 
@@ -203,6 +231,35 @@ nav{justify-content:center}
 </div>
 </div>
 </footer>
+
+<div id="conditionHelpModal" class="condition-modal" role="dialog" aria-modal="true" aria-labelledby="conditionHelpTitle" onclick="closeConditionHelp(event)">
+  <div class="condition-modal-card" onclick="event.stopPropagation()">
+    <div class="condition-modal-head">
+      <h2 id="conditionHelpTitle">Wat is dat? – Productcondities</h2>
+      <button type="button" class="condition-modal-close" onclick="closeConditionHelp()" aria-label="Sluiten">×</button>
+    </div>
+    <p class="condition-help-intro">Voorbeelden om het verschil tussen de productcondities duidelijk te maken. De foto's zijn voorbeelden; het exacte uiterlijk kan per toestel verschillen.</p>
+    <div class="condition-help-grid">
+      <article class="condition-help-item">
+        <img src="assets/condition-info/zo-goed-als-nieuw.jpg" alt="Voorbeeld Zo goed als nieuw">
+        <div class="condition-help-item-body"><h3>Zo goed als nieuw</h3><p>Minimale gebruikerssporen en een zeer nette staat.</p></div>
+      </article>
+      <article class="condition-help-item">
+        <img src="assets/condition-info/licht-gebruikt.jpg" alt="Voorbeeld Licht gebruikt">
+        <div class="condition-help-item-body"><h3>Licht gebruikt</h3><p>Kleine zichtbare gebruikerssporen, zoals lichte krasjes.</p></div>
+      </article>
+      <article class="condition-help-item">
+        <img src="assets/condition-info/zichtbaar-gebruikt.jpg" alt="Voorbeeld Zichtbaar gebruikt">
+        <div class="condition-help-item-body"><h3>Zichtbaar gebruikt</h3><p>Duidelijkere cosmetische gebruikerssporen of beschadigingen.</p></div>
+      </article>
+      <article class="condition-help-item">
+        <img src="assets/condition-info/face-id-touch-id.jpg" alt="Voorbeeld Face ID / Touch ID probleem">
+        <div class="condition-help-item-body"><h3>Face ID / Touch ID</h3><p>Voorbeeld van een toestel waarbij biometrische herkenning niet werkt.</p></div>
+      </article>
+    </div>
+    <div class="condition-help-note">De beschikbare condities en eventuele functionele gebreken worden altijd bij het betreffende toestel vermeld.</div>
+  </div>
+</div>
 
 <script>
 const params = new URLSearchParams(location.search);
@@ -302,148 +359,79 @@ function conditionBasePrice(option, product){
   if(option.conditionBasePrice!==undefined && option.conditionBasePrice!==null && option.conditionBasePrice!=="") return num(option.conditionBasePrice);
   return num(product?.price || product?.salePrice || product?.sellPrice || 0) + optionDelta(option);
 }
-function normalizeVariantText(v){
-  return String(v??"")
-    .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-    .replace(/\b(geheugen|memory|opslag|storage)\b/g," ")
-    .replace(/\b(64|128|256|512|1024)\s*gb\b/g," ")
-    .replace(/\b(1)\s*tb\b/g," ")
-    .replace(/\b(black|zwart|white|wit|blue|blauw|green|groen|red|rood|purple|paars|yellow|geel|pink|roze|orange|oranje)\b/g," ")
-    .replace(/[^a-z0-9]+/g," ")
-    .replace(/\s+/g," ")
-    .trim();
-}
-
-const VARIANT_COLOR_ALIASES={
-  zwart:["zwart","black"], wit:["wit","white"], blauw:["blauw","blue"],
-  groen:["groen","green"], rood:["rood","red"], paars:["paars","purple"],
-  geel:["geel","yellow"], roze:["roze","pink"], oranje:["oranje","orange"]
-};
-function canonicalColor(v){
-  const x=String(v??"").toLowerCase().trim();
-  for(const [key,aliases] of Object.entries(VARIANT_COLOR_ALIASES)){
-    if(aliases.some(a=>x===a || x.includes(a))) return key;
-  }
-  return x;
-}
-function productStorage(p){
-  const direct=p?.storage ?? p?.geheugen ?? p?.memorySize ?? "";
-  const m=String(direct).match(/(64|128|256|512|1024)\s*(GB|TB)/i);
-  if(m) return m[2].toUpperCase()==="TB" ? `${m[1]}TB` : `${m[1]}GB`;
-  const n=String(p?.name||"").match(/\b(64|128|256|512)\s*GB\b/i);
-  if(n) return `${n[1]}GB`;
-  const tb=String(p?.name||"").match(/\b1\s*TB\b/i);
-  return tb ? "1TB" : "";
-}
-function productColor(p){
-  const direct=p?.color ?? p?.kleur ?? "";
-  if(direct) return canonicalColor(direct);
-  const name=String(p?.name||"");
-  for(const key of Object.keys(VARIANT_COLOR_ALIASES)){
-    if(VARIANT_COLOR_ALIASES[key].some(a=>new RegExp(`\\b${a}\\b`,"i").test(name))) return key;
-  }
-  return "";
-}
-function productVariantFamily(p){
-  const explicit=p?.modelFamily ?? p?.model ?? p?.series ?? p?.family ?? "";
-  const source=explicit || p?.name || "";
-  return normalizeVariantText(source);
-}
-function variantProductsFor(product,data){
-  const list=Array.isArray(data?.phones)?data.phones:[];
-  const family=productVariantFamily(product);
-  if(!family) return [];
-  return list.map((p,i)=>({p,i}))
-    .filter(({p})=>productVariantFamily(p)===family);
-}
-function variantAxisValues(product,data,key){
-  const rows=variantProductsFor(product,data);
-  const values=[];
-  for(const {p} of rows){
-    const value=key==="storage"?productStorage(p):productColor(p);
-    if(value && !values.includes(value)) values.push(value);
-  }
-  return values;
-}
-function findExactVariant(product,data,wantedStorage,wantedColor){
-  const rows=variantProductsFor(product,data);
-  const currentCondition=selectedOptions.condition;
-  let candidates=rows.filter(({p})=>{
-    const s=productStorage(p), c=productColor(p);
-    return (!wantedStorage || s===wantedStorage) && (!wantedColor || c===wantedColor);
-  });
-  if(!candidates.length) return null;
-  if(currentCondition){
-    const sameCondition=candidates.find(({p})=>String(p.condition||p.conditie||"").trim()===String(currentCondition).trim());
-    if(sameCondition) return sameCondition;
-  }
-  return candidates[0];
-}
-function switchToVariant(next){
-  if(!next || !currentData) return;
-  const nextProduct=next.p;
-  const nextId=next.i;
-  const keep={...selectedOptions};
-  currentProduct=nextProduct;
-  selectedOptions={};
-  ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{
-    const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
-    const raw=Array.isArray(nextProduct[map[key]])?nextProduct[map[key]]:[];
-    const list=(raw.length?raw:effectiveOptions(nextProduct,key)).filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false&&x.available!==false));
-    const wanted=keep[key];
-    if(wanted && list.some(x=>x.label===wanted)) selectedOptions[key]=wanted;
-    else if(key==="storage") selectedOptions[key]=productStorage(nextProduct) || list[0]?.label || "";
-    else if(key==="color") selectedOptions[key]=productColor(nextProduct) || list[0]?.label || "";
-    else if(list.length) selectedOptions[key]=list[0].label;
-  });
-  const url=new URL(location.href);
-  url.searchParams.set("id",String(nextId));
-  history.pushState({productId:nextId},"",url.pathname+url.search);
-  renderProductBody();
-}
 function selectProductOption(key,label){
-  if((key==="storage" || key==="color") && currentData && currentProduct){
-    const wantedStorage=key==="storage" ? label : productStorage(currentProduct);
-    const wantedColor=key==="color" ? canonicalColor(label) : productColor(currentProduct);
-    const next=findExactVariant(currentProduct,currentData,wantedStorage,wantedColor);
-    if(next){ switchToVariant(next); return; }
-    // No exact combination in HOMS TECH: do not mix another variant's data.
-    return;
-  }
   selectedOptions[key]=label;
+  // Recalculate immediately so the main price always follows the selected condition.
   renderProductBody();
   const priceEl=document.getElementById("selectedConditionPrice");
-  if(priceEl && currentProduct) priceEl.textContent=money(calculateTotal(currentProduct));
+  if(priceEl && currentProduct){
+    const selectedCondition=effectiveOptions(currentProduct,"condition").find(x=>x.label===selectedOptions.condition);
+    priceEl.textContent=money(calculateTotal(currentProduct));
+  }
 }
+let forzaAvailabilityState = { loaded:false, loading:false, variants:{}, model:"" };
+function forzaNorm(v){return String(v??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();}
+function forzaModelFromProduct(product){
+  const text=String(product?.name||"");
+  const m=text.match(/iPhone\s+\d+(?:\s+(?:Pro\s+Max|Pro|Mini|Plus|SE))?/i);
+  return m?m[0]:text;
+}
+function forzaAvailabilityKey(storage,color){return `${forzaNorm(storage).replace(/\s+/g,"")}|${forzaNorm(color)}`;}
+function forzaGetVariantAvailability(storage,color){return forzaAvailabilityState.variants[forzaAvailabilityKey(storage,color)];}
+function forzaOptionAvailability(key,label){
+  const variants=forzaAvailabilityState.variants||{};
+  const storage=selectedOptions.storage||"";
+  const color=selectedOptions.color||"";
+  if(key==='storage'){
+    if(color) return variants[forzaAvailabilityKey(label,color)]?.available===true;
+    return Object.keys(variants).some(k=>k.startsWith(forzaNorm(label).replace(/\s+/g,"")+"|") && variants[k]?.available===true);
+  }
+  if(key==='color'){
+    if(storage) return variants[forzaAvailabilityKey(storage,label)]?.available===true;
+    return Object.keys(variants).some(k=>k.endsWith(`|${forzaNorm(label)}`) && variants[k]?.available===true);
+  }
+  return true;
+}
+async function loadForzaAvailability(product){
+  if(!product) return;
+  const model=forzaModelFromProduct(product);
+  if(!model || forzaAvailabilityState.loading) return;
+  forzaAvailabilityState={...forzaAvailabilityState,loading:true,model};
+  try{
+    const r=await fetch(`/api/forza-availability?model=${encodeURIComponent(model)}`,{credentials:'same-origin',headers:{'Accept':'application/json'}});
+    const payload=await r.json().catch(()=>({}));
+    if(!r.ok || payload.success===false) throw new Error(payload.error||`HTTP ${r.status}`);
+    forzaAvailabilityState={loaded:true,loading:false,model,variants:payload.variants||{}};
+    if(currentProduct===product) renderProductBody();
+  }catch(e){
+    console.warn('HOMS TECH Forza availability:',e);
+    forzaAvailabilityState={loaded:false,loading:false,model,variants:{}};
+  }
+}
+
 function renderOptionSection(key,title,list){
   const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
-  if((key==="storage" || key==="color") && currentData && currentProduct){
-    const values=variantAxisValues(currentProduct,currentData,key);
-    const currentValue=key==="storage"?productStorage(currentProduct):productColor(currentProduct);
-    list=values.map(value=>({
-      label:value,
-      active:true,
-      enabled:true,
-      available:true,
-      _variantValue:value
-    }));
-    if(currentValue && !list.some(x=>x.label===currentValue)) list.unshift({label:currentValue,active:true,enabled:true,available:true,_variantValue:currentValue});
-  }else{
-    const raw=Array.isArray(currentProduct[map[key]]) ? currentProduct[map[key]] : [];
-    const base=raw.length?raw:effectiveOptions(currentProduct,key);
-    list=base.filter(x=>x&&x.label&&(x.active!==false && x.enabled!==false));
-  }
+  const raw=Array.isArray(currentProduct[map[key]]) ? currentProduct[map[key]] : [];
+  const base=raw.length?raw:effectiveOptions(currentProduct,key);
+  list=base.filter(x=>x&&x.label&&(x.active!==false && x.enabled!==false));
   if(!list.length) return "";
   const available=list.filter(x=>x.available!==false);
   if(!selectedOptions[key] || !available.some(x=>x.label===selectedOptions[key])) selectedOptions[key]=available[0]?.label || "";
-  return `<div class="option-section"><div class="option-title">${esc(title)}</div><div class="option-grid">${list.map(x=>{
+  return `<div class="option-section"><div class="option-title">${esc(title)}${key==='condition'?`<button type="button" class="condition-help-link" onclick="openConditionHelp()">ⓘ Wat is dat?</button>`:''}</div><div class="option-grid">${list.map(x=>{
     const active=x.label===selectedOptions[key];
-    const availableNow=x.available!==false;
+    let availableNow=x.available!==false;
+    let stockChecked=false;
+    if((key==='storage'||key==='color') && forzaAvailabilityState.loaded){
+      availableNow=forzaOptionAvailability(key,x.label);
+      stockChecked=true;
+    }
     const priceLabel=key==='condition'
       ? (conditionBasePrice(x,currentProduct)>0 ? `<small>${money(conditionBasePrice(x,currentProduct))}</small>` : '')
       : (key==='storage' ? '' : (optionDelta(x)!==0 ? `<small>${optionDelta(x)>0?'+':''}${money(optionDelta(x))}</small>` : ''));
-    return `<button type="button" class="option-btn ${active?"active":""} ${availableNow?"":"unavailable"}" ${availableNow?`onclick="selectProductOption('${esc(key)}','${esc(x.label)}')"`:'disabled'}>${esc(x.label)}${priceLabel}${availableNow?"":" <span class=\"sold-x\">✕</span>"}</button>`;
+    const badge=stockChecked ? `<span class="availability-badge ${availableNow?'ok':'no'}">${availableNow?'متوفر':'غير متوفر'}</span>` : '';
+    const clickAttr=availableNow ? `onclick="selectProductOption('${esc(key)}','${esc(x.label)}')"` : 'disabled';
+    const soldX=availableNow ? "" : " <span class=\"sold-x\">✕</span>";
+    return `<button type="button" class="option-btn ${active?"active":""} ${availableNow?"":"unavailable"}" ${clickAttr}>${esc(x.label)}${priceLabel}${badge}${soldX}</button>`;
   }).join("")}</div>${key==='condition'?'<div style="margin-top:7px;color:#64748b;font-size:12px">De gekozen staat bepaalt de basisprijs. Opslag, kleur, batterij en andere opties worden daarna als +/- prijsverschil toegevoegd.</div>':''}</div>`;
 }
 let galleryImagesState=[];
@@ -559,12 +547,29 @@ function renderProductBody(){
   </div></div>`;
 }
 
+
+function openConditionHelp(){
+  const modal=document.getElementById("conditionHelpModal");
+  if(!modal) return;
+  modal.classList.add("open");
+  document.body.style.overflow="hidden";
+}
+function closeConditionHelp(event){
+  if(event && event.target && event.target.id!=="conditionHelpModal") return;
+  const modal=document.getElementById("conditionHelpModal");
+  if(!modal) return;
+  modal.classList.remove("open");
+  document.body.style.overflow="";
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape") closeConditionHelp();});
+
 function render(product,data){
   if(!product){document.getElementById("productArea").innerHTML=`<div class="empty"><h2>Product niet gevonden</h2><p>Dit apparaat bestaat niet of is niet meer beschikbaar.</p></div>`;return;}
   currentProduct=product; currentData=data;
   selectedOptions={};
   ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'}; const raw=Array.isArray(product[map[key]])?product[map[key]]:[]; const list=(raw.length?raw:effectiveOptions(product,key)).filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false&&x.available!==false)); if(list.length) selectedOptions[key]=list[0].label;});
   renderProductBody();
+  loadForzaAvailability(product);
 }
 async function load(){
 try{
@@ -591,26 +596,6 @@ document.getElementById("productArea").innerHTML=
 `<div class="empty"><h2>Product kan niet worden geladen</h2><p>Probeer het opnieuw.</p></div>`;
 }
 }
-
-window.addEventListener("popstate",()=>{
-  const nextId=Number(new URLSearchParams(location.search).get("id"));
-  if(!currentData || !Number.isInteger(nextId) || nextId<0) return;
-  const list=type==="used"?(Array.isArray(currentData.usedPhones)?currentData.usedPhones:[]):(Array.isArray(currentData.phones)?currentData.phones:[]);
-  const p=list[nextId];
-  if(p){
-    currentProduct=p;
-    selectedOptions={};
-    ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{
-      const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
-      const raw=Array.isArray(p[map[key]])?p[map[key]]:[];
-      const list2=(raw.length?raw:effectiveOptions(p,key)).filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false&&x.available!==false));
-      if(key==="storage") selectedOptions[key]=productStorage(p)||list2[0]?.label||"";
-      else if(key==="color") selectedOptions[key]=productColor(p)||list2[0]?.label||"";
-      else if(list2.length) selectedOptions[key]=list2[0].label;
-    });
-    renderProductBody();
-  }
-});
 
 load();
 </script>
