@@ -4942,6 +4942,121 @@ function forzaAdminFindResult(payload){
   return payload?.result || payload?.data?.result || payload?.data || payload || {};
 }
 
+function forzaAdminPick(obj, keys){
+  if(!obj || typeof obj !== "object") return undefined;
+  for(const key of (Array.isArray(keys) ? keys : [])){
+    if(Object.prototype.hasOwnProperty.call(obj,key) && obj[key] !== undefined && obj[key] !== null && obj[key] !== "") return obj[key];
+  }
+  return undefined;
+}
+
+function forzaAdminDeepPick(obj, keys, depth=0){
+  if(!obj || typeof obj !== "object" || depth>6) return undefined;
+  const direct=forzaAdminPick(obj,keys);
+  if(direct!==undefined) return direct;
+  if(Array.isArray(obj)){
+    for(const item of obj){
+      const found=forzaAdminDeepPick(item,keys,depth+1);
+      if(found!==undefined) return found;
+    }
+    return undefined;
+  }
+  for(const value of Object.values(obj)){
+    if(value && typeof value === "object"){
+      const found=forzaAdminDeepPick(value,keys,depth+1);
+      if(found!==undefined) return found;
+    }
+  }
+  return undefined;
+}
+
+function forzaAdminArray(value){
+  if(Array.isArray(value)) return value;
+  if(value===undefined || value===null || value==="") return [];
+  if(typeof value === "object"){
+    const nested=forzaAdminPick(value,["items","options","values","data","results"]);
+    if(Array.isArray(nested)) return nested;
+    return Object.entries(value).map(([key,val])=>{
+      if(val && typeof val === "object") return {...val, name:val.name ?? val.label ?? key};
+      return {name:key,value:val};
+    });
+  }
+  return [value];
+}
+
+function forzaAdminEsc(value){
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/\"/g,"&quot;")
+    .replace(/'/g,"&#39;");
+}
+
+function forzaAdminDisplayValue(value){
+  if(value===undefined || value===null || value==="") return "Niet gevonden";
+  if(typeof value === "object") return JSON.stringify(value);
+  return String(value);
+}
+
+function forzaAdminMoney(value){
+  const n=forzaAdminNumericPrice(value);
+  return n===null ? "Niet gevonden" : `€ ${n.toFixed(2).replace(".",",")}`;
+}
+
+function forzaAdminRenderList(el,value){
+  if(!el) return;
+  const arr=forzaAdminArray(value);
+  el.innerHTML=arr.length ? arr.map((v,i)=>{
+    const item=forzaAdminNormalizeOption(v,i,"Optie");
+    return `<span class="tag">${forzaAdminEsc(item.name)}${item.price!==undefined ? ` — ${forzaAdminEsc(forzaAdminMoney(item.price))}` : ""}</span>`;
+  }).join(" ") : `<span class="small">Geen gegevens gevonden.</span>`;
+}
+
+function forzaAdminRenderConditions(el,value){
+  if(!el) return;
+  const arr=forzaAdminArray(value);
+  el.innerHTML=arr.length ? arr.map((v,i)=>{
+    const item=forzaAdminNormalizeOption(v,i,"Conditie");
+    return `<div class="card"><strong>${forzaAdminEsc(item.name)}</strong><div class="small">${item.price!==undefined ? forzaAdminEsc(forzaAdminMoney(item.price)) : "Prijs niet gevonden"}</div></div>`;
+  }).join("") : `<div class="small">Geen condities gevonden.</div>`;
+}
+
+function forzaAdminRenderBattery(el,value){
+  if(!el) return;
+  const arr=forzaAdminArray(value);
+  el.innerHTML=arr.length ? arr.map((v,i)=>{
+    const item=forzaAdminNormalizeOption(v,i,"Batterij");
+    return `<span class="tag">${forzaAdminEsc(item.name)}${item.price!==undefined ? ` — ${forzaAdminEsc(forzaAdminMoney(item.price))}` : ""}</span>`;
+  }).join(" ") : `<span class="small">Geen batterijgegevens gevonden.</span>`;
+}
+
+function forzaAdminRenderImages(el,value){
+  if(!el) return;
+  const arr=forzaAdminArray(value).map(v=>typeof v === "string" ? v : forzaAdminPick(v,["url","src","image","imageUrl","href"])).filter(Boolean);
+  el.innerHTML=arr.length ? arr.map(src=>`<a href="${forzaAdminEsc(src)}" target="_blank" rel="noopener noreferrer"><img src="${forzaAdminEsc(src)}" alt="Forza" style="max-width:120px;max-height:120px;object-fit:contain;margin:5px;border:1px solid #ddd;border-radius:8px"></a>`).join("") : `<span class="small">Geen afbeeldingen gevonden.</span>`;
+}
+
+function forzaAdminRenderSpecs(el,value){
+  if(!el) return;
+  if(!value || (typeof value !== "object" && !Array.isArray(value))){
+    el.innerHTML=`<div class="small">Geen specificaties gevonden.</div>`;
+    return;
+  }
+  if(Array.isArray(value)){
+    el.innerHTML=value.map((v,i)=>{
+      if(v && typeof v === "object"){
+        const name=forzaAdminPick(v,["name","label","title","key"]) ?? `Specificatie ${i+1}`;
+        const val=forzaAdminPick(v,["value","text","description"]) ?? JSON.stringify(v);
+        return `<div class="card"><strong>${forzaAdminEsc(name)}</strong><div class="small">${forzaAdminEsc(val)}</div></div>`;
+      }
+      return `<div class="card">${forzaAdminEsc(v)}</div>`;
+    }).join("");
+    return;
+  }
+  el.innerHTML=Object.entries(value).map(([k,v])=>`<div class="card"><strong>${forzaAdminEsc(k)}</strong><div class="small">${forzaAdminEsc(typeof v === "object" ? JSON.stringify(v) : v)}</div></div>`).join("");
+}
+
 function forzaAdminNormalizeOption(item, index, type){
   if(item && typeof item === "object"){
     const name = forzaAdminPick(item,["name","label","title","condition","option","battery","storage","memory"]) ?? `${type} ${index+1}`;
