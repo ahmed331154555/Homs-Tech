@@ -2583,7 +2583,23 @@ function mobicoMoneyFromText(value){
 }
 function mobicoExtractBasePrice(html,text,name){
   const source=String(html||"");
-  // 1) Structured product price (most reliable when present).
+  const pageText=String(text||"").replace(/\u00a0/g," ");
+  const candidates=[];
+  const add=(raw,sourceType)=>{
+    const n=mobicoEuro(raw);
+    if(Number.isFinite(n) && n>=50 && n<10000) candidates.push({n,sourceType});
+  };
+
+  // 1) Prefer the visible price close to the product title.
+  const idx=pageText.toLowerCase().indexOf(String(name||"").toLowerCase());
+  if(idx>=0){
+    const near=pageText.slice(idx,idx+2200);
+    const matches=near.match(/€\s*[0-9]{2,4}(?:[.,][0-9]{1,2})?/g)||[];
+    for(const raw of matches) add(raw,"title");
+  }
+  if(candidates.length) return candidates[0].n;
+
+  // 2) Structured product price, but ignore unrealistic values such as 29900.
   const structured=[
     /<meta\b[^>]*(?:property|name)=["'](?:product:price:amount|price)["'][^>]*content=["']([^"']+)["']/i,
     /<[^>]+itemprop=["']price["'][^>]*content=["']([^"']+)["']/i,
@@ -2592,18 +2608,18 @@ function mobicoExtractBasePrice(html,text,name){
   ];
   for(const re of structured){
     const m=source.match(re);
-    if(m){ const n=mobicoEuro(m[1]); if(Number.isFinite(n)) return n; }
+    if(m){
+      const n=mobicoEuro(m[1]);
+      if(Number.isFinite(n) && n>=50 && n<10000) return n;
+    }
   }
-  // 2) Visible price immediately around the product title.
-  const idx=String(text||"").toLowerCase().indexOf(String(name||"").toLowerCase());
-  if(idx>=0){
-    const near=String(text||"").slice(idx,idx+1800);
-    const n=mobicoMoneyFromText(near);
-    if(Number.isFinite(n)) return n;
+
+  // 3) Fallback: first realistic euro amount in the page text.
+  const matches=pageText.match(/€\s*[0-9]{2,4}(?:[.,][0-9]{1,2})?/g)||[];
+  for(const raw of matches){
+    const n=mobicoEuro(raw);
+    if(Number.isFinite(n) && n>=50 && n<10000) return n;
   }
-  // 3) First realistic euro amount in the page text (avoid tiny accessory amounts).
-  const matches=String(text||"").match(/€\s*[0-9]{2,4}(?:[.,][0-9]{1,2})?/g)||[];
-  for(const raw of matches){ const n=mobicoEuro(raw); if(Number.isFinite(n) && n>=50) return n; }
   return null;
 }
 function mobicoSlug(value){
