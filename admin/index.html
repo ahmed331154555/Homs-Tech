@@ -1429,7 +1429,10 @@ textarea{
         <h2>🧪 Forza Test Import</h2>
         <p>Publieke Forza-productgegevens lezen en controleren. Alleen lezen — er wordt niets opgeslagen in HOMS TECH.</p>
       </div>
-      <button class="btn btn-light" id="forzaTestReloadBtn" onclick="loadForzaTest()">↻ Forza opnieuw lezen</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="btn btn-light" id="forzaTestReloadBtn" onclick="loadForzaTest()">↻ Forza opnieuw lezen</button>
+        <button class="btn btn-green" id="forzaBulkImportBtn" onclick="forzaBulkImportAll()">🚀 Alle Forza-telefoons importeren</button>
+      </div>
     </div>
 
     <div class="card" style="margin:12px 0 14px">
@@ -1517,10 +1520,10 @@ textarea{
       <div class="card" style="margin-bottom:14px" id="forzaVariantManagerCard">
         <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
           <div>
-            <h3 style="margin:0">📱 iPhone 13 — apparaten afzonderlijk toevoegen</h3>
+            <h3 style="margin:0">📱 Forza-varianten</h3>
             <div class="small" style="margin-top:4px">
-              Kies per model, geheugen en kleur. Elke rij is één afzonderlijk HOMS TECH-product met eigen Forza-pagina en maximaal 4 eigen foto's.
-              <strong>Toevoegen gebeurt eerst alleen in deze Admin-pagina; pas «Wijzigingen opslaan» schrijft het naar HOMS TECH.</strong>
+              Handmatig kun je hier nog steeds per model, geheugen en kleur werken. Voor alles tegelijk gebruik je bovenaan <strong>Alle Forza-telefoons importeren</strong>.
+              <strong>De import werkt eerst alleen in deze Admin-pagina; pas «Wijzigingen opslaan» schrijft de wijzigingen naar HOMS TECH.</strong>
             </div>
           </div>
         </div>
@@ -5488,12 +5491,12 @@ async function forzaAddVariant(item,modelLabel,button){
       forzaSourceUrl:String(payload.exactVariantSourceUrl||item.sourceUrl||""),
       forzaImportedAt:new Date().toISOString(),
       forzaProductData:{name:productName,brand:String(p.brand||"Apple"),sku:String(p.sku||""),color:String(item.color),storage:[String(item.storage)],price:basePrice,conditions:p.conditions||[],battery:p.battery||[],stock:p.stock??null,specs:p.specs||[],description:String(p.description||""),images,sourceUrl:String(payload.exactVariantSourceUrl||item.sourceUrl||""),syncedAt:new Date().toISOString()},
-      catalogBrand:"Apple",
-      catalogFamily:"iPhone 13",
+      catalogBrand:String(p.brand||"Apple"),
+      catalogFamily:modelLabel,
       catalogModel:modelLabel,
       catalogStorage:String(item.storage),
       catalogColor:String(item.color),
-      catalogKey:`apple|iphone 13|${modelLabel}|${item.storage}|${item.color}`.toLowerCase()
+      catalogKey:`${String(p.brand||"Apple").toLowerCase()}|${String(modelLabel).toLowerCase()}|${item.storage}|${item.color}`.toLowerCase()
     };
     if(!Array.isArray(data.phones)) data.phones=[];
     data.phones.push(normalized);
@@ -5506,6 +5509,93 @@ async function forzaAddVariant(item,modelLabel,button){
     if(button) button.disabled=false;
   }
 }
+async function forzaBulkImportAll(){
+  const btn=document.getElementById("forzaBulkImportBtn");
+  const status=document.getElementById("forzaVariantManagerStatus");
+  const select=document.getElementById("forzaTestModelSelect");
+  const models=select ? [...select.options].map(o=>({key:o.value,label:o.textContent.trim()})) : [];
+  if(!models.length){
+    if(status) status.textContent="Geen Forza-modellen gevonden.";
+    return;
+  }
+  if(!Array.isArray(data.phones)) data.phones=[];
+
+  const ok=window.confirm(
+    `Forza-import voor alle ${models.length} modellen starten?\n\n`+
+    `Het systeem leest alle beschikbare geheugen/kleuren en de Forza-prijs per variant.\n`+
+    `Er wordt tijdens de import niets direct naar de database opgeslagen.\n`+
+    `Na afloop moet je één keer op «Wijzigingen opslaan» drukken.`
+  );
+  if(!ok) return;
+
+  if(btn) btn.disabled=true;
+  const previousModel=select?.value || "";
+  let imported=0, updated=0, skipped=0, failed=0;
+  const errors=[];
+
+  try{
+    for(let mi=0; mi<models.length; mi++){
+      const model=models[mi];
+      if(select) select.value=model.key;
+      if(status) status.textContent=`⏳ ${mi+1}/${models.length}: ${model.label} wordt gelezen...`;
+
+      let payload;
+      try{
+        const r=await fetch(`/api/forza-test?model=${encodeURIComponent(model.key)}`,{credentials:"same-origin",headers:{"Accept":"application/json"}});
+        payload=await r.json().catch(()=>({}));
+        if(!r.ok || payload.success===false) throw new Error(payload.error||`HTTP ${r.status}`);
+      }catch(e){
+        failed++;
+        errors.push(`${model.label}: ${e.message||e}`);
+        continue;
+      }
+
+      const x=forzaAdminFindResult(payload);
+      const modelLabel=payload.testModelLabel || model.label;
+      let variants=Array.isArray(x.colorVariants) ? x.colorVariants.slice() : [];
+      if(!variants.length && x.product && Array.isArray(x.product.colorVariants)) variants=x.product.colorVariants.slice();
+      if(!variants.length){
+        failed++;
+        errors.push(`${model.label}: geen Forza-varianten gevonden`);
+        continue;
+      }
+
+      const seen=new Set();
+      variants=variants.filter(v=>{
+        const key=`${String(v.storage||"").replace(/\s+/g,"").toUpperCase()}|${String(v.color||"").toLowerCase()}`;
+        if(!v?.productName || seen.has(key)) return false;
+        seen.add(key); return true;
+      });
+
+      for(let vi=0; vi<variants.length; vi++){
+        const item=variants[vi];
+        if(status) status.textContent=`⏳ ${model.label}: ${vi+1}/${variants.length} — ${item.productName}`;
+        const before=forzaCurrentPhoneIndex(String(item.productName||""));
+        try{
+          await forzaAddVariant(item,modelLabel,null);
+          const after=forzaCurrentPhoneIndex(String(item.productName||""));
+          if(after>=0 && before>=0) updated++; else if(after>=0) imported++; else skipped++;
+        }catch(e){
+          failed++;
+          errors.push(`${item.productName}: ${e.message||e}`);
+        }
+      }
+    }
+  }finally{
+    if(select && previousModel) select.value=previousModel;
+    renderPhones();
+    markChanged();
+    if(btn) btn.disabled=false;
+  }
+
+  const summary=`✓ Klaar. Nieuw: ${imported} · Bijgewerkt: ${updated} · Overgeslagen: ${skipped} · Fouten: ${failed}.`;
+  if(status){
+    status.className=failed ? "status info" : "status success";
+    status.textContent=errors.length ? `${summary} ${errors.slice(0,4).join(" | ")}${errors.length>4?" …":""}` : `${summary} Alles staat klaar. Druk nu één keer op «Wijzigingen opslaan».`;
+  }
+  if(errors.length) console.warn("Forza bulk import:",errors);
+}
+
 async function loadForzaTest(){
   const status=document.getElementById("forzaTestStatus");
   const content=document.getElementById("forzaTestContent");
