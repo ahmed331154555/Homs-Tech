@@ -2588,59 +2588,68 @@ function mobicoExtractBasePrice(html,text,name){
     const n=mobicoEuro(raw);
     return Number.isFinite(n) && n>=100 && n<10000 ? n : null;
   };
-
-  // IMPORTANT: On Mobico the base price is the standalone euro amount
-  // between the product title and the "Opslag" heading. Storage upgrades
-  // (+ €50 / + €110) come after "Opslag" and must never become the base price.
-  const title=String(name||"").trim();
-  const pickStandalone=(section)=>{
-    const src=String(section||"");
+  const standalone=(src)=>{
     const re=/(^|[^+\d])€\s*([0-9]{2,4}(?:[.,][0-9]{1,2})?)/g;
     let m;
-    while((m=re.exec(src))){
+    while((m=re.exec(String(src||"")))){
       const n=add(`€ ${m[2]}`);
       if(n!==null)return n;
     }
     return null;
   };
 
+  // Mobico's visible product block is: exact product title -> base price -> Opslag.
+  // Find the LAST exact title occurrence before the first Opslag heading, then
+  // read only the small text window immediately after that title. This avoids
+  // picking storage surcharges such as + €50 / + €110 or unrelated prices later.
+  const title=String(name||"").replace(/\s*\|.*$/g,"").trim();
   if(title){
     const lower=pageText.toLowerCase();
-    const idx=lower.indexOf(title.toLowerCase());
-    if(idx>=0){
-      const beforeStorage=pageText.slice(idx+title.length);
-      const stop=beforeStorage.search(/\bOpslag\b/i);
-      const header=stop>=0 ? beforeStorage.slice(0,stop) : beforeStorage.slice(0,1200);
-      const n=pickStandalone(header);
+    const needle=title.toLowerCase();
+    let pos=-1, from=0, hit;
+    while((hit=lower.indexOf(needle,from))>=0){
+      pos=hit; from=hit+needle.length;
+    }
+    if(pos>=0){
+      const tail=pageText.slice(pos+needle.length);
+      const stop=tail.search(/\bOpslag\b/i);
+      const block=stop>=0 ? tail.slice(0,Math.min(stop,500)) : tail.slice(0,500);
+      const n=standalone(block);
       if(n!==null)return n;
     }
   }
 
-  // Same rule using the first product block, in case the exact title differs
-  // slightly between og:title and the visible h1.
-  const productBlock=mobicoFindSection(pageText,"Product","Opslag");
-  const blockPrice=pickStandalone(productBlock);
-  if(blockPrice!==null)return blockPrice;
+  // Raw HTML fallback: locate an h1 containing the product title and only
+  // inspect the following 3000 characters up to the next Opslag heading.
+  if(title){
+    const h1re=/<h1\b[^>]*>([\s\S]*?)<\/h1>/ig;
+    let hm;
+    while((hm=h1re.exec(source))){
+      const h1=mobicoClean(hm[1]);
+      if(h1 && h1.toLowerCase().includes(title.toLowerCase().replace(/\s+/g," "))){
+        const tail=source.slice(hm.index+hm[0].length, hm.index+hm[0].length+3000);
+        const stop=tail.search(/Opslag/i);
+        const block=stop>=0 ? tail.slice(0,stop) : tail;
+        const n=standalone(mobicoClean(block));
+        if(n!==null)return n;
+      }
+    }
+  }
 
-  // Prefer structured product-price metadata only as a fallback. Some hidden
-  // Mobico metadata has previously contained an unrelated formatted amount.
+  // Structured metadata is only a fallback. Reject values that are clearly
+  // option surcharges by never accepting a value prefixed with '+'.
   const structured=[
-    /<meta\b[^>]*(?:property|name)=["'](?:product:price:amount|price)["'][^>]*content=["']([^"']+)["']/i,
-    /<[^>]+itemprop=["']price["'][^>]*content=["']([^"']+)["']/i,
+    /<meta\b[^>]*(?:property|name)=["'](?:product:price:amount|price)["'][^>]*content=["']([^"']+)["'][^>]*>/i,
+    /<[^>]+itemprop=["']price["'][^>]*content=["']([^"']+)["'][^>]*>/i,
     /<[^>]+content=["']([^"']+)["'][^>]*itemprop=["']price["'][^>]*>/i,
     /["']price["']\s*:\s*["']([0-9]+(?:[.,][0-9]{1,2})?)["']/i
   ];
   for(const re of structured){
     const m=source.match(re);
-    if(m){
-      const n=add(m[1]);
-      if(n!==null)return n;
-    }
+    if(m){ const n=add(m[1]); if(n!==null)return n; }
   }
 
-  // Last fallback: only accept a standalone euro amount, never an amount
-  // immediately following '+' because those are option surcharges.
-  return pickStandalone(pageText);
+  return standalone(pageText);
 }
 
 function mobicoSlug(value){
