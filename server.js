@@ -2577,8 +2577,34 @@ function mobicoEuro(value){
   return Number.isFinite(n)?n:null;
 }
 function mobicoMoneyFromText(value){
-  const m=String(value || "").match(/€\s*([0-9]{1,4}(?:[.,][0-9]{1,2})?)/);
+  const s=String(value || "").replace(/\u00a0/g," ");
+  const m=s.match(/€\s*([0-9]{1,4}(?:[.,][0-9]{1,2})?)/);
   return m ? mobicoEuro(m[0]) : null;
+}
+function mobicoExtractBasePrice(html,text,name){
+  const source=String(html||"");
+  // 1) Structured product price (most reliable when present).
+  const structured=[
+    /<meta\b[^>]*(?:property|name)=["'](?:product:price:amount|price)["'][^>]*content=["']([^"']+)["']/i,
+    /<[^>]+itemprop=["']price["'][^>]*content=["']([^"']+)["']/i,
+    /<[^>]+content=["']([^"']+)["'][^>]*itemprop=["']price["'][^>]*>/i,
+    /["']price["']\s*:\s*["']([0-9]+(?:[.,][0-9]{1,2})?)["']/i
+  ];
+  for(const re of structured){
+    const m=source.match(re);
+    if(m){ const n=mobicoEuro(m[1]); if(Number.isFinite(n)) return n; }
+  }
+  // 2) Visible price immediately around the product title.
+  const idx=String(text||"").toLowerCase().indexOf(String(name||"").toLowerCase());
+  if(idx>=0){
+    const near=String(text||"").slice(idx,idx+1800);
+    const n=mobicoMoneyFromText(near);
+    if(Number.isFinite(n)) return n;
+  }
+  // 3) First realistic euro amount in the page text (avoid tiny accessory amounts).
+  const matches=String(text||"").match(/€\s*[0-9]{2,4}(?:[.,][0-9]{1,2})?/g)||[];
+  for(const raw of matches){ const n=mobicoEuro(raw); if(Number.isFinite(n) && n>=50) return n; }
+  return null;
 }
 function mobicoSlug(value){
   return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
@@ -2648,7 +2674,7 @@ function mobicoParseProduct(html,sourceUrl,modelLabel){
   const storage=productStorage[1] ? `${productStorage[1]}${productStorage[2].toUpperCase()}` : "";
   const colorMatch=text.match(/Kleur\s*:\s*([^|]{2,50}?)(?=\s+(?:Staat|Goed|Heel goed|Als nieuw|Nieuwstaat|Batterij)\b)/i);
   const color=colorMatch ? colorMatch[1].trim() : (name.match(/\\b(?:Middernacht|Midnight|Zwart|Wit|Blauw|Rood|Groen|Roze|Paars|Geel|Goud|Zilver|Titanium|Natural Titanium|Desert Titanium|Black Titanium|White Titanium|Blue Titanium)\\b/i)||[])[0] || "";
-  const price=mobicoMoneyFromText(text.slice(Math.max(0,text.indexOf(name)),Math.max(0,text.indexOf(name))+600));
+  const price=mobicoExtractBasePrice(html,text,name);
   const storageSection=mobicoFindSection(text,"Opslag","Kleur");
   const storageOptionMatches=storageSection.match(/\b(\d+)\s*(GB|TB)\b(?:\s*([+-])\s*€\s*([0-9]+(?:[.,][0-9]+)?))?/gi)||[];
   const storageOptions=[];
