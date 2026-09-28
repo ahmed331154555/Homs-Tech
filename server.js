@@ -1687,7 +1687,7 @@ async function forzaFetchPublicPage(sourceUrl) {
 const FORZA_TEST_MODELS = {
   "iphone-se-2022": {
     label: "iPhone SE (2022)",
-    sourceUrl: "https://www.forza-refurbished.nl/refurbished-iphone/iphone-se-2022-overzicht",
+    sourceUrl: "https://www.forza-refurbished.nl/refurbished-iphone/se-2022-overzicht",
     storages: [],
     colors: []
   },
@@ -1987,33 +1987,40 @@ function forzaFindIphone12Variant(value) {
   return FORZA_IPHONE12_VARIANTS.find(v => forzaNormalizeVariantName(v.productName).toLowerCase() === wanted) || null;
 }
 
-function forzaExtractStorageLinks(html, baseUrl, fallbackMap = {}, allowedStorages = ["64GB", "128GB", "256GB"]) {
+function forzaExtractStorageLinks(html, baseUrl, fallbackMap = {}, allowedStorages = ["64GB", "128GB", "256GB"], preferredColor = "") {
   const found = new Map();
   const source = String(html || "");
-  const anchorPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>[\s\S]{0,500}?((?:64|128|256)\s*GB)[\s\S]{0,500}?<\/a>/gi;
+  const basePath = new URL(baseUrl).pathname.replace(/\/$/, "");
+  const rawBaseSlug = decodeURIComponent(basePath.split("/").pop() || "").toLowerCase();
+  const baseSlug = rawBaseSlug.replace(/-overzicht$/i, "");
+  const modelSlugs = new Set([baseSlug, baseSlug.startsWith("iphone-") ? baseSlug : `iphone-${baseSlug}`]);
+  const colorSlug = String(preferredColor || "").toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const hrefPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>/gi;
   let match;
-
-  while ((match = anchorPattern.exec(source))) {
-    const href = match[1];
-    const storage = forzaCleanText(match[2]).replace(/\s+/g, "");
+  const candidates = [];
+  while ((match = hrefPattern.exec(source))) {
     try {
-      const absolute = new URL(href, baseUrl).toString();
-      if (!found.has(storage)) found.set(storage, absolute);
-    } catch {
-      // Ignore malformed links.
-    }
+      const absolute = new URL(match[1], baseUrl).toString();
+      const pathSlug = decodeURIComponent(new URL(absolute).pathname.split("/").pop() || "").toLowerCase();
+      const matchesModel = [...modelSlugs].some(slug => slug && pathSlug.startsWith(slug + "-"));
+      if (!matchesModel) continue;
+      const sm = pathSlug.match(/-(64|128|256)(?:-?gb)(?:-|$)/i);
+      if (!sm) continue;
+      const storage = `${sm[1]}GB`;
+      if (!allowedStorages.includes(storage)) continue;
+      candidates.push({storage, absolute, colorMatch: !!colorSlug && pathSlug.endsWith("-" + colorSlug)});
+    } catch {}
   }
-
-  // Only use explicit public-page fallbacks from the whitelisted model config.
-  for (const [storage, url] of Object.entries(fallbackMap || {})) {
-    // For this fixed read-only test, prefer the known exact Purple variant
-    // over a generic link discovered in the landing-page HTML.
-    found.set(storage, url);
+  for (const storage of allowedStorages) {
+    const sameColor = candidates.find(c => c.storage === storage && c.colorMatch);
+    const any = candidates.find(c => c.storage === storage);
+    const chosen = sameColor || any;
+    if (chosen) found.set(storage, chosen.absolute);
   }
-
-  return allowedStorages
-    .filter(storage => found.has(storage))
-    .map(storage => ({ storage, url: found.get(storage) }));
+  for (const [storage, url] of Object.entries(fallbackMap || {})) if (url) found.set(storage, url);
+  return allowedStorages.filter(storage => found.has(storage)).map(storage => ({storage, url:found.get(storage)}));
 }
 
 function forzaSelectedStorage(result) {
@@ -2542,11 +2549,18 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
     const resultModelNumber = String(result?.product?.name || "")
       .match(/\biPhone\s+(\d+)\b/i)?.[1] || "";
 
+    const dynamicStorages = Array.isArray(result?.product?.storage)
+      ? result.product.storage.map(v => String(v || "").replace(/\s+/g, "").toUpperCase()).filter(Boolean)
+      : [];
+    const allowedStorages = modelConfig.storages.length
+      ? modelConfig.storages
+      : (dynamicStorages.length ? dynamicStorages : ["64GB", "128GB", "256GB"]);
     const storageLinks = forzaExtractStorageLinks(
       mainPage.html,
       sourceUrl,
       modelConfig.fallbacks,
-      modelConfig.storages
+      allowedStorages,
+      result?.product?.color || ""
     );
     const storageVariants = [];
 
@@ -2621,9 +2635,9 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
 
     result.testModel = requestedModel;
     result.testModelLabel = modelConfig.label;
-    result.allowedStorages = modelConfig.storages.length
-      ? modelConfig.storages
-      : [...new Set(colorVariants.map(v=>v.storage).filter(Boolean))];
+    result.allowedStorages = allowedStorages.length
+      ? allowedStorages
+      : storageVariants.map(v => v.storage).filter(Boolean);
     return res.json({
       success: true,
       readOnly: true,
