@@ -711,6 +711,7 @@ textarea{
 @media(max-width:750px){.phone-catalog-sidebar{min-height:0}.phone-folder-list{max-height:none}.phone-brand-tabs{flex-wrap:nowrap}.editor-layout{grid-template-columns:1fr}}
 /* HOMS TECH — hierarchical product folders */
 .phone-folder-list{display:flex;flex-direction:column;gap:6px}
+.phone-product-row-wrap{display:flex;align-items:stretch;gap:4px;width:100%}.phone-product-row-wrap .phone-product-row{flex:1;min-width:0}.phone-product-delete{width:36px;flex:0 0 36px;border:1px solid #fecaca;background:#fff1f2;color:#dc2626;border-radius:9px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}.phone-product-delete:hover{background:#fee2e2;border-color:#fca5a5}.phone-product-delete:focus-visible{outline:2px solid #ef4444;outline-offset:1px}
 .phone-folder{border:1px solid #e5eaf1;border-radius:12px;background:#fff;overflow:hidden}
 .phone-folder>summary{list-style:none;cursor:pointer;padding:11px 12px;font-weight:800;color:#172033;display:flex;align-items:center;gap:8px;background:#f8fafc}
 .phone-folder>summary::-webkit-details-marker{display:none}
@@ -2271,11 +2272,14 @@ function renderPhoneFolderTree(){
           const title=info.color==='Algemeen'?(phone.name||'Nieuw product'):info.color;
           const stock=Number(phone.stock||0);
           const price=Number(phone.price||0);
-          return `<button type="button" class="phone-product-row ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">
-            <span class="phone-product-dot" aria-hidden="true"></span>
-            <span class="phone-product-main"><b>${esc(title)}</b><small>${esc(phone.name||'Nieuw product')}</small></span>
-            <span class="phone-product-meta">${stock>0?`<em>${stock}</em>`:'<em class="empty-stock">0</em>'}${price>0?`<strong>€${price.toFixed(0)}</strong>`:''}</span>
-          </button>`;
+          return `<div class="phone-product-row-wrap">
+            <button type="button" class="phone-product-row ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">
+              <span class="phone-product-dot" aria-hidden="true"></span>
+              <span class="phone-product-main"><b>${esc(title)}</b><small>${esc(phone.name||'Nieuw product')}</small></span>
+              <span class="phone-product-meta">${stock>0?`<em>${stock}</em>`:'<em class="empty-stock">0</em>'}${price>0?`<strong>€${price.toFixed(0)}</strong>`:''}</span>
+            </button>
+            <button type="button" class="phone-product-delete" onclick="event.stopPropagation();deletePhone(${i})" title="Product verwijderen" aria-label="Product verwijderen">🗑</button>
+          </div>`;
         }).join('');
         return `<details class="phone-folder phone-folder-storage" ${storageOpen?'open':''}>
           <summary><span class="folder-chevron">›</span><span class="folder-storage-icon">▦</span><span>${esc(storage)}</span><span class="phone-folder-count">${items.length}</span></summary>
