@@ -5079,15 +5079,29 @@ function forzaAdminBuildPreview(){
   const storageArr=forzaAdminArray(storage).map((v,i)=>forzaAdminNormalizeOption(v,i,"Opslag"));
   const conditionArr=forzaAdminArray(conditions).map((v,i)=>forzaAdminNormalizeOption(v,i,"Conditie"));
   const batteryArr=forzaAdminArray(battery).map((v,i)=>forzaAdminNormalizeOption(v,i,"Batterij"));
-  const finalStorage=storageArr.length?storageArr:[{name:"Niet gevonden",price:undefined}];
   const finalConditions=conditionArr.length?conditionArr:[{name:"Niet gevonden",price:undefined}];
   const finalBattery=batteryArr.length?batteryArr:[{name:"Standaard / niet gevonden",price:0}];
   const variantMap=new Map();
   for(const variant of forzaAdminArray(storageVariants)){
     if(!variant || typeof variant!=="object")continue;
-    const key=String(variant.storage||"").replace(/\s+/g,"").toUpperCase();
+    const rawStorage=forzaAdminPick(variant,["storage","memory","capacity","name"])
+      ?? String(forzaAdminPick(variant,["productName","product","title"])||"").match(/\b\d+\s*(?:GB|TB)\b/i)?.[0];
+    const key=String(rawStorage||"").replace(/\s+/g,"").toUpperCase();
     if(key)variantMap.set(key,variant);
   }
+
+  // Forza kan de opslag soms alleen via storageVariants teruggeven.
+  // Gebruik die lijst als de gewone storage-lijst leeg is of alleen "Niet gevonden" bevat.
+  const validStorageArr=storageArr.filter(v=>{
+    const key=String(v.name||"").replace(/\s+/g,"").toUpperCase();
+    return /^(?:\d+)(?:GB|TB)$/.test(key);
+  });
+  const variantStorageNames=[...variantMap.keys()]
+    .filter(key=>/^(?:\d+)(?:GB|TB)$/.test(key))
+    .map(key=>({name:key,price:undefined}));
+  const finalStorage=validStorageArr.length
+    ? validStorageArr
+    : (variantStorageNames.length ? variantStorageNames : [{name:"Niet gevonden",price:undefined}]);
   const rows=[];
 
   // Elke opslag krijgt alleen de conditieprijzen van zijn eigen Forza-pagina.
