@@ -5320,6 +5320,8 @@ function compareForzaWithHoms(){
   const rows=forzaAdminBuildPreview();
   const modelProduct=forzaAdminPick(forzaPreviewModel.product,["name","productName","title"])||"Niet gevonden";
   const phone=forzaCompareFindPhone(modelProduct);
+  window.forzaCompareMatchedPhone=phone||null;
+  window.forzaCompareMatchedProduct=modelProduct;
 
   rowsEl.innerHTML=rows.map(row=>{
     const forzaPrice=row.price!==null && row.price!==undefined && Number.isFinite(Number(row.price)) ? Number(row.price) : null;
@@ -5366,7 +5368,13 @@ async function updateHomsPricesFromForza(){
 
   const rows=forzaAdminBuildPreview();
   const modelProduct=forzaAdminPick(forzaPreviewModel.product,["name","productName","title"])||"Niet gevonden";
-  const phone=forzaCompareFindPhone(modelProduct);
+  // Gebruik eerst dezelfde HOMS TECH-match die in de vergelijking is gevonden.
+  // Dit voorkomt dat de update-knop een al gevonden product opnieuw verkeerd matcht.
+  const cachedPhone=window.forzaCompareMatchedPhone;
+  const cachedName=window.forzaCompareMatchedProduct;
+  const phone=(cachedPhone && cachedName && forzaCompareNormalize(cachedName)===forzaCompareNormalize(modelProduct))
+    ? cachedPhone
+    : forzaCompareFindPhone(modelProduct);
   if(!phone){
     if(status){status.className="status error";status.textContent="HOMS TECH-product niet gevonden. Er is niets gewijzigd.";}
     return;
