@@ -1734,7 +1734,7 @@ const FORZA_IPHONE12_VARIANTS = [
 
 function forzaNormalizeVariantName(value) {
   return String(value || "")
-    .replace(/\b(\d+)\s*GB\b/ig, "$1GB")
+    .replace(/\b(64|128|256)\s*GB\b/ig, "$1GB")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -1837,7 +1837,7 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     price: money(r.price)
   }));
 
-  if (cleanRows.some(r => !["64GB","128GB","256GB"].includes(r.storage) ||
+  if (cleanRows.some(r => !/^\d+GB$/.test(r.storage) ||
       !["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"].includes(r.condition) ||
       !["standaard","nieuw"].includes(r.battery) ||
       r.price === null || r.price < 0)) {
@@ -1849,8 +1849,9 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
 
   const actual = cleanRows.map(r => `${r.storage}|${r.condition}|${r.battery}`);
   const uniqueActual = new Set(actual);
+  const storageKeys = [...new Set(cleanRows.map(r => r.storage))].sort((a,b) => parseInt(a) - parseInt(b));
   const allExpected = [];
-  for (const storage of ["64GB","128GB","256GB"]) {
+  for (const storage of storageKeys) {
     for (const condition of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) {
       for (const battery of ["standaard","nieuw"]) allExpected.push(`${storage}|${condition}|${battery}`);
     }
@@ -1858,7 +1859,7 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
   const selectedStorage = cleanRows.length===6 ? cleanRows[0].storage : "";
   const selectedExpected = selectedStorage ? ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"].flatMap(c=>["standaard","nieuw"].map(b=>`${selectedStorage}|${c}|${b}`)) : [];
   const validSix = cleanRows.length===6 && !!selectedStorage && uniqueActual.size===6 && selectedExpected.every(k=>uniqueActual.has(k));
-  const validEighteen = cleanRows.length===18 && uniqueActual.size===18 && allExpected.every(k=>uniqueActual.has(k));
+  const validEighteen = cleanRows.length===18 && storageKeys.length===3 && uniqueActual.size===18 && allExpected.every(k=>uniqueActual.has(k));
   if (!validSix && !validEighteen) {
     return res.status(400).json({
       success: false,
@@ -1921,7 +1922,7 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
         return res.status(400).json({ success:false, error:`Conditie "${key}" ontbreekt. Geen wijziging uitgevoerd.` });
       }
     }
-    for (const key of ["64GB","128GB","256GB"]) {
+    for (const key of storageKeys) {
       if (!findStorage(key)) {
         await client.query("ROLLBACK");
         return res.status(400).json({ success:false, error:`Opslag "${key}" ontbreekt. Geen wijziging uitgevoerd.` });
@@ -1943,15 +1944,14 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     const mergedMatrix = {...previousMatrix, ...incomingMatrix};
     if (validEighteen) {
       const getIncoming=(s,c,b)=>incomingMatrix[`${s}|${c}|${b}`];
+      const baseStorage=storageKeys[0];
       const bases={};
-      for (const c of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) bases[c]=getIncoming("64GB",c,"standaard");
-      const batteryDelta=getIncoming("64GB","zo goed als nieuw","nieuw")-bases["zo goed als nieuw"];
+      for (const c of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) bases[c]=getIncoming(baseStorage,c,"standaard");
+      const batteryDelta=getIncoming(baseStorage,"zo goed als nieuw","nieuw")-bases["zo goed als nieuw"];
       const storageDeltas={};
-      for (const st of ["64GB","128GB","256GB"]) storageDeltas[st]=getIncoming(st,"zo goed als nieuw","standaard")-bases["zo goed als nieuw"];
+      for (const st of storageKeys) storageDeltas[st]=getIncoming(st,"zo goed als nieuw","standaard")-bases["zo goed als nieuw"];
       for (const key of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) findCondition(key).basePrice=bases[key];
-      findStorage("64GB").priceDelta=0;
-      findStorage("128GB").priceDelta=storageDeltas["128GB"];
-      findStorage("256GB").priceDelta=storageDeltas["256GB"];
+      for (const st of storageKeys) findStorage(st).priceDelta=st===baseStorage ? 0 : storageDeltas[st];
       findBattery("standaard").priceDelta=0;
       findBattery("nieuw").priceDelta=batteryDelta;
     } else {
