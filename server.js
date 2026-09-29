@@ -1890,8 +1890,71 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
       return res.status(400).json({ success: false, error: "Telefooncatalogus ontbreekt." });
     }
 
+    // Match the selected Forza variant to the HOMS TECH model.
+    // HOMS TECH products can store the model name separately from their
+    // storage/color options, while Forza sends the full variant name.
     const wantedExact = norm(productName);
-    const bestIndex = data.phones.findIndex(phone => norm(phone?.name || "") === wantedExact);
+    const wantedStorage = storageKey(productName);
+    const colorKey = (v) => norm(v)
+      .replace(/\b(paars|purple)\b/g, "paars")
+      .replace(/\b(zwart|black)\b/g, "zwart")
+      .replace(/\b(wit|white)\b/g, "wit")
+      .replace(/\b(rood|red)\b/g, "rood")
+      .replace(/\b(blauw|blue)\b/g, "blauw")
+      .replace(/\b(groen|green)\b/g, "groen")
+      .trim();
+    const wantedColor = colorKey(productName)
+      .replace(/\b\d+\s*(?:gb|tb)\b/g, " ")
+      .replace(/\b(iphone|ipad)\b/g, " ")
+      .replace(/\b\d+\b/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    let bestIndex = -1;
+    let bestScore = -1;
+    data.phones.forEach((phone, index) => {
+      if (!phone || typeof phone !== "object") return;
+      const phoneName = norm(phone.name || "");
+      const phoneModel = modelKey(phone.name || "");
+      const wantedModel = modelKey(productName);
+      if (!phoneModel || !wantedModel) return;
+
+      // Match the actual device model even when HOMS TECH stores the brand
+      // in the product name (for example "Apple iPhone 14") while Forza
+      // sends the variant name (for example "iPhone 14 128 GB Zwart").
+      const modelCore = v => norm(v)
+        .replace(/\bapple\b/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      const phoneModelCore = modelCore(phoneModel);
+      const wantedModelCore = modelCore(wantedModel);
+
+      let score = 0;
+      if (phoneModelCore === wantedModelCore) score += 100;
+      else if (phoneModelCore.includes(wantedModelCore) || wantedModelCore.includes(phoneModelCore)) score += 60;
+      else return;
+
+      // Exact full-name match remains strongest when the catalog stores variants as separate products.
+      if (phoneName === wantedExact) score += 1000;
+
+      if (wantedStorage) {
+        const storageOptions = Array.isArray(phone.storageOptions) ? phone.storageOptions : [];
+        if (storageOptions.some(o => storageKey(o?.label) === wantedStorage)) score += 40;
+        if (phoneName.includes(wantedStorage.toLowerCase())) score += 20;
+      }
+
+      if (wantedColor) {
+        const colorOptions = Array.isArray(phone.colorOptions) ? phone.colorOptions : [];
+        if (colorOptions.some(o => colorKey(o?.label) === wantedColor)) score += 30;
+        if (phoneName.includes(wantedColor)) score += 15;
+      }
+
+      if (norm(phone.brand) === "apple" || /iphone/.test(phoneName)) score += 5;
+      if (score > bestScore) {
+        bestScore = score;
+        bestIndex = index;
+      }
+    });
 
     if (bestIndex < 0) {
       await client.query("ROLLBACK");
