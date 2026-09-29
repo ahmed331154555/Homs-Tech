@@ -364,21 +364,29 @@ function selectProductOption(key,label){
   }
 }
 
+function forzaNormalizeVariantText(value){
+  return String(value||"")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/\s+/g," ").trim();
+}
 function forzaModelKey(phone){
   if(!phone) return "";
   const explicit=phone.catalogFamily||phone.catalogModel||phone.model||"";
-  if(explicit) return String(explicit).toLowerCase().replace(/\s+/g," ").trim();
-  let name=String(phone.name||"");
-  name=name.replace(/\b\d+\s*(?:GB|TB)\b/ig," ").replace(/\s+/g," ").trim();
-  return name.toLowerCase();
+  let value=explicit || phone.name || "";
+  value=forzaNormalizeVariantText(value)
+    .replace(/\b\d+\s*(?:gb|tb)\b/ig," ")
+    .replace(/\b(paars|purple|zwart|black|wit|white|rood|red|blauw|blue|groen|green|geel|yellow|oranje|orange|roze|pink|zilver|silver|goud|gold)\b/ig," ")
+    .replace(/\s+/g," ").trim();
+  return value;
 }
 function forzaStorageKey(phone){
   const value=phone?.catalogStorage || (Array.isArray(phone?.storage)?phone.storage[0]:phone?.storage) || phone?.memory || "";
   const m=String(value).match(/\b(\d+)\s*(GB|TB)\b/i);
-  return m ? `${m[1]}${m[2].toUpperCase()}` : String(value).toLowerCase().replace(/\s+/g,"");
+  return m ? `${m[1]}${m[2].toUpperCase()}` : "";
 }
 function forzaColorKey(phone){
-  return String(phone?.catalogColor || phone?.color || phone?.kleur || "").toLowerCase().replace(/\s+/g," ").trim();
+  return forzaNormalizeVariantText(phone?.catalogColor || phone?.color || phone?.kleur || "");
 }
 function forzaPhoneAvailable(phone){
   if(!phone || phone.active===false) return false;
@@ -388,9 +396,19 @@ function forzaPhoneAvailable(phone){
 function forzaSiblingPhones(product){
   if(!currentData || !Array.isArray(currentData.phones) || !product) return [];
   const model=forzaModelKey(product);
-  const brand=String(product.brand||"").toLowerCase().trim();
+  const brand=forzaNormalizeVariantText(product.brand||"");
   return currentData.phones.map((phone,index)=>({phone,index}))
-    .filter(x=>x.phone && x.phone!==product && forzaModelKey(x.phone)===model && (!brand || !x.phone.brand || String(x.phone.brand).toLowerCase().trim()===brand));
+    .filter(x=>{
+      if(!x.phone || forzaModelKey(x.phone)!==model) return false;
+      const phoneBrand=forzaNormalizeVariantText(x.phone.brand||"");
+      return !brand || !phoneBrand || phoneBrand===brand;
+    });
+}
+function forzaNavigateToPhone(index){
+  if(!Number.isInteger(index) || index<0) return;
+  const u=new URL("product.html",location.href);
+  u.searchParams.set("id",String(index));
+  location.href=u.toString();
 }
 function forzaNavigateToPhone(index){
   if(!Number.isInteger(index) || index<0) return;
