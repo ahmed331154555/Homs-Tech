@@ -1704,6 +1704,16 @@ const FORZA_TEST_MODELS = {
       "128GB": "https://www.forza-refurbished.nl/iphone-12-128gb-zwart",
       "256GB": "https://www.forza-refurbished.nl/iphone-12-256gb-zwart"
     }
+  },
+  "iphone-14": {
+    label: "iPhone 14",
+    sourceUrl: "https://www.forza-refurbished.nl/refurbished-iphone/iphone-14-overzicht",
+    storages: ["128GB", "256GB", "512GB"],
+    fallbacks: {
+      "128GB": "https://www.forza-refurbished.nl/iphone-14-128-gb-zwart",
+      "256GB": "https://www.forza-refurbished.nl/iphone-14-256-gb-zwart",
+      "512GB": "https://www.forza-refurbished.nl/iphone-14-512gb-wit"
+    }
   }
 };
 
@@ -1724,7 +1734,7 @@ const FORZA_IPHONE12_VARIANTS = [
 
 function forzaNormalizeVariantName(value) {
   return String(value || "")
-    .replace(/\b(64|128|256)\s*GB\b/ig, "$1GB")
+    .replace(/\b(\d+)\s*GB\b/ig, "$1GB")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -1737,7 +1747,7 @@ function forzaFindIphone12Variant(value) {
 function forzaExtractStorageLinks(html, baseUrl, fallbackMap = {}, allowedStorages = ["64GB", "128GB", "256GB"]) {
   const found = new Map();
   const source = String(html || "");
-  const anchorPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>[\s\S]{0,500}?((?:64|128|256)\s*GB)[\s\S]{0,500}?<\/a>/gi;
+  const anchorPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>[\s\S]{0,500}?(\d+\s*GB)[\s\S]{0,500}?<\/a>/gi;
   let match;
 
   while ((match = anchorPattern.exec(source))) {
@@ -1765,7 +1775,7 @@ function forzaExtractStorageLinks(html, baseUrl, fallbackMap = {}, allowedStorag
 
 function forzaSelectedStorage(result) {
   const title = String(result?.product?.name || "");
-  const match = title.match(/\b(64|128|256)\s*GB\b/i);
+  const match = title.match(/\b(\d+)\s*GB\b/i);
   return match ? `${match[1]}GB` : "";
 }
 
@@ -1792,8 +1802,6 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     .replace(/\b(paars|purple|zwart|black|wit|white|rood|red|blauw|blue|groen|green)\b/ig, " ")
     .replace(/\s+/g, " ")
     .trim();
-
-  const colorKey = (v) => norm(v).replace(/\b(esim|sim|dual sim)\b/ig, " ").replace(/\s+/g, " ").trim();
 
   const storageKey = (v) => {
     const m = String(v ?? "").match(/(\d+)\s*gb/i);
@@ -1829,13 +1837,9 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     price: money(r.price)
   }));
 
-  const storageValues = [...new Set(cleanRows.map(r => r.storage).filter(Boolean))];
-  const conditionValues = ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"];
-  const batteryValues = ["standaard","nieuw"];
-
-  if (cleanRows.some(r => !/^\d+(?:GB|TB)$/.test(r.storage) ||
-      !conditionValues.includes(r.condition) ||
-      !batteryValues.includes(r.battery) ||
+  if (cleanRows.some(r => !["64GB","128GB","256GB"].includes(r.storage) ||
+      !["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"].includes(r.condition) ||
+      !["standaard","nieuw"].includes(r.battery) ||
       r.price === null || r.price < 0)) {
     return res.status(400).json({
       success: false,
@@ -1846,7 +1850,7 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
   const actual = cleanRows.map(r => `${r.storage}|${r.condition}|${r.battery}`);
   const uniqueActual = new Set(actual);
   const allExpected = [];
-  for (const storage of storageValues) {
+  for (const storage of ["64GB","128GB","256GB"]) {
     for (const condition of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) {
       for (const battery of ["standaard","nieuw"]) allExpected.push(`${storage}|${condition}|${battery}`);
     }
@@ -1886,36 +1890,9 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     }
 
     const wantedExact = norm(productName);
-    const wantedModel = modelKey(productName);
-    const wantedStorageMatch = String(productName).match(/\b(\d+)\s*(GB|TB)\b/i);
-    const wantedStorage = wantedStorageMatch ? `${wantedStorageMatch[1]}${wantedStorageMatch[2].toUpperCase()}` : "";
-    const colorWords = ["paars","purple","zwart","black","wit","white","rood","red","blauw","blue","groen","green","geel","yellow","oranje","orange","roze","pink","zilver","silver","goud","gold","space grey","spacegray","titanium zwart","natural titanium","desert titanium","blue titanium","white titanium","midnight","starlight","teal","ultramarijn","ultramarine","coral"];
-    const wantedColor = [...colorWords].sort((a,b)=>b.length-a.length).find(c=>wantedExact.includes(norm(c))) || "";
+    const bestIndex = data.phones.findIndex(phone => norm(phone?.name || "") === wantedExact);
 
-    let bestIndex = -1;
-    let bestScore = -1;
-    data.phones.forEach((phone,index)=>{
-      if(!phone || typeof phone!=="object") return;
-      const exact=norm(phone.name||"")===wantedExact;
-      if(exact){ bestIndex=index; bestScore=1000; return; }
-      const pk=modelKey(phone.name||"");
-      if(!pk || !wantedModel) return;
-      let score=0;
-      if(pk===wantedModel) score+=100;
-      else if(pk.includes(wantedModel) || wantedModel.includes(pk)) score+=60;
-      if(norm(phone.brand)==="apple" && /iphone/i.test(productName)) score+=10;
-      const phoneStorages=Array.isArray(phone.storage)
-        ? phone.storage.map(storageKey)
-        : [storageKey(phone.storage || phone.memory || phone.name || "")];
-      if(wantedStorage && phoneStorages.includes(wantedStorage)) score+=80;
-      const phoneColor=colorKey(phone.color||"");
-      const phoneName=norm(phone.name||"");
-      if(wantedColor && phoneColor && phoneColor===colorKey(wantedColor)) score+=70;
-      else if(wantedColor && phoneName.includes(norm(wantedColor))) score+=70;
-      if(score>bestScore){bestScore=score;bestIndex=index;}
-    });
-
-    if (bestIndex < 0 || bestScore < 100) {
+    if (bestIndex < 0) {
       await client.query("ROLLBACK");
       return res.status(404).json({
         success: false,
@@ -1944,7 +1921,7 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
         return res.status(400).json({ success:false, error:`Conditie "${key}" ontbreekt. Geen wijziging uitgevoerd.` });
       }
     }
-    for (const key of storageValues) {
+    for (const key of ["64GB","128GB","256GB"]) {
       if (!findStorage(key)) {
         await client.query("ROLLBACK");
         return res.status(400).json({ success:false, error:`Opslag "${key}" ontbreekt. Geen wijziging uitgevoerd.` });
@@ -1966,14 +1943,15 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     const mergedMatrix = {...previousMatrix, ...incomingMatrix};
     if (validEighteen) {
       const getIncoming=(s,c,b)=>incomingMatrix[`${s}|${c}|${b}`];
-      const baseStorage=storageValues[0];
       const bases={};
-      for (const c of conditionValues) bases[c]=getIncoming(baseStorage,c,"standaard");
-      const batteryDelta=getIncoming(baseStorage,"zo goed als nieuw","nieuw")-bases["zo goed als nieuw"];
+      for (const c of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) bases[c]=getIncoming("64GB",c,"standaard");
+      const batteryDelta=getIncoming("64GB","zo goed als nieuw","nieuw")-bases["zo goed als nieuw"];
       const storageDeltas={};
-      for (const st of storageValues) storageDeltas[st]=getIncoming(st,"zo goed als nieuw","standaard")-bases["zo goed als nieuw"];
-      for (const key of conditionValues) findCondition(key).basePrice=bases[key];
-      storageValues.forEach((st,i)=>{ const option=findStorage(st); if(option) option.priceDelta=i===0?0:storageDeltas[st]; });
+      for (const st of ["64GB","128GB","256GB"]) storageDeltas[st]=getIncoming(st,"zo goed als nieuw","standaard")-bases["zo goed als nieuw"];
+      for (const key of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) findCondition(key).basePrice=bases[key];
+      findStorage("64GB").priceDelta=0;
+      findStorage("128GB").priceDelta=storageDeltas["128GB"];
+      findStorage("256GB").priceDelta=storageDeltas["256GB"];
       findBattery("standaard").priceDelta=0;
       findBattery("nieuw").priceDelta=batteryDelta;
     } else {
