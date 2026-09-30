@@ -363,110 +363,21 @@ function selectProductOption(key,label){
     priceEl.textContent=money(calculateTotal(currentProduct));
   }
 }
-
-function forzaNormalizeVariantText(value){
-  return String(value||"")
-    .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-    .replace(/\s+/g," ").trim();
-}
-function forzaModelKey(phone){
-  if(!phone) return "";
-  const explicit=phone.catalogFamily||phone.catalogModel||phone.model||"";
-  let value=explicit || phone.name || "";
-  value=forzaNormalizeVariantText(value)
-    .replace(/\b\d+\s*(?:gb|tb)\b/ig," ")
-    .replace(/\b(paars|purple|zwart|black|wit|white|rood|red|blauw|blue|groen|green|geel|yellow|oranje|orange|roze|pink|zilver|silver|goud|gold)\b/ig," ")
-    .replace(/\s+/g," ").trim();
-  return value;
-}
-function forzaStorageKey(phone){
-  const value=phone?.catalogStorage || (Array.isArray(phone?.storage)?phone.storage[0]:phone?.storage) || phone?.memory || "";
-  const m=String(value).match(/\b(\d+)\s*(GB|TB)\b/i);
-  return m ? `${m[1]}${m[2].toUpperCase()}` : "";
-}
-function forzaColorKey(phone){
-  return forzaNormalizeVariantText(phone?.catalogColor || phone?.color || phone?.kleur || "");
-}
-function forzaPhoneAvailable(phone){
-  if(!phone || phone.active===false) return false;
-  if(phone.stock===undefined || phone.stock===null || phone.stock==="") return true;
-  return Number(phone.stock)>0;
-}
-function forzaSiblingPhones(product){
-  if(!currentData || !Array.isArray(currentData.phones) || !product) return [];
-  const model=forzaModelKey(product);
-  const brand=forzaNormalizeVariantText(product.brand||"");
-  return currentData.phones.map((phone,index)=>({phone,index}))
-    .filter(x=>{
-      if(!x.phone || forzaModelKey(x.phone)!==model) return false;
-      const phoneBrand=forzaNormalizeVariantText(x.phone.brand||"");
-      return !brand || !phoneBrand || phoneBrand===brand;
-    });
-}
-function forzaNavigateToPhone(index){
-  if(!Number.isInteger(index) || index<0) return;
-  const u=new URL("product.html",location.href);
-  u.searchParams.set("id",String(index));
-  location.href=u.toString();
-}
-function forzaNavigateToPhone(index){
-  if(!Number.isInteger(index) || index<0) return;
-  const u=new URL("product.html",location.href);
-  u.searchParams.set("id",String(index));
-  location.href=u.toString();
-}
-function renderForzaSiblingSection(key,title){
-  const siblings=forzaSiblingPhones(currentProduct);
-  if(!siblings.length) return "";
-  const currentStorage=forzaStorageKey(currentProduct);
-  const currentColor=forzaColorKey(currentProduct);
-  const matches=siblings.filter(x=> key==='color' ? forzaStorageKey(x.phone)===currentStorage : forzaColorKey(x.phone)===currentColor);
-  const current={phone:currentProduct,index:id};
-  const all=[current,...matches];
-  const map=new Map();
-  for(const item of all){
-    const label=key==='color' ? (item.phone.catalogColor||item.phone.color||item.phone.kleur||"") : (item.phone.catalogStorage||((Array.isArray(item.phone.storage)?item.phone.storage[0]:item.phone.storage)||item.phone.memory||""));
-    if(label && !map.has(String(label).toLowerCase())) map.set(String(label).toLowerCase(),{...item,label:String(label)});
-  }
-  const list=[...map.values()];
-  if(list.length<2) return "";
-  const currentLabel=key==='color'?currentColor:currentStorage;
-  return `<div class="option-section forza-sibling-section"><div class="option-title">${esc(title)}</div><div class="option-grid">${list.map(item=>{
-    const normalized=item.label.toLowerCase().replace(/\s+/g," ").trim();
-    const active=normalized===currentLabel;
-    const available=forzaPhoneAvailable(item.phone);
-    const price=Number(item.phone.price||0);
-    return `<button type="button" class="option-btn ${active?"active":""} ${available?"":"unavailable"}" ${available?`onclick="forzaNavigateToPhone(${item.index})"`:"disabled"}>${key==='color'?`<span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${forzaColorCss(item.label)};border:1px solid #cbd5e1;margin-right:6px;vertical-align:-1px"></span>`:""}${esc(item.label)}${price>0?`<small>${money(price)}</small>`:""}${available?"":" <span class=\"sold-x\">✕</span>"}</button>`;
-  }).join("")}</div><div style="margin-top:6px;color:#64748b;font-size:12px">Kies een andere ${key==='color'?"kleur":"geheugen"}; HOMS TECH opent automatisch de juiste uitvoering.</div></div>`;
-}
-function forzaColorCss(label){
-  const v=String(label||"").toLowerCase();
-  if(/rood|red/.test(v)) return "#ef4444";
-  if(/blauw|blue/.test(v)) return "#3b82f6";
-  if(/groen|green/.test(v)) return "#22c55e";
-  if(/roze|pink/.test(v)) return "#f472b6";
-  if(/paars|purple/.test(v)) return "#a855f7";
-  if(/geel|yellow|goud|gold/.test(v)) return "#facc15";
-  if(/wit|white|zilver|silver/.test(v)) return "#fff";
-  if(/oranje|orange/.test(v)) return "#f97316";
-  return "#111827";
-}
 function renderOptionSection(key,title,list){
-  if((key==='color' || key==='storage') && Array.isArray(currentData?.phones) && currentData.phones.length){
-    const siblingHtml=renderForzaSiblingSection(key,title);
-    if(siblingHtml) return siblingHtml;
-  }
   const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
   const raw=Array.isArray(currentProduct[map[key]]) ? currentProduct[map[key]] : [];
   const base=raw.length?raw:effectiveOptions(currentProduct,key);
   list=base.filter(x=>x&&x.label&&(x.active!==false && x.enabled!==false));
   if(!list.length) return "";
-  const available=list.filter(x=>x.available!==false);
+  // Storage and color availability must follow the actual options imported from Forza.
+  // Do not let a stale `available:false` flag from an older variant disable a real
+  // storage/color option. Other option types keep their explicit availability.
+  const availabilityControlled = key!=="storage" && key!=="color";
+  const available=list.filter(x=>!availabilityControlled || x.available!==false);
   if(!selectedOptions[key] || !available.some(x=>x.label===selectedOptions[key])) selectedOptions[key]=available[0]?.label || "";
   return `<div class="option-section"><div class="option-title">${esc(title)}${key==='condition'?`<button type="button" class="condition-help-link" onclick="openConditionHelp()">ⓘ Wat is dat?</button>`:''}</div><div class="option-grid">${list.map(x=>{
     const active=x.label===selectedOptions[key];
-    const availableNow=x.available!==false;
+    const availableNow=(key==="storage" || key==="color") ? true : x.available!==false;
     const priceLabel=key==='condition'
       ? (conditionBasePrice(x,currentProduct)>0 ? `<small>${money(conditionBasePrice(x,currentProduct))}</small>` : '')
       : (key==='storage' ? '' : (optionDelta(x)!==0 ? `<small>${optionDelta(x)>0?'+':''}${money(optionDelta(x))}</small>` : ''));
@@ -606,7 +517,7 @@ function render(product,data){
   if(!product){document.getElementById("productArea").innerHTML=`<div class="empty"><h2>Product niet gevonden</h2><p>Dit apparaat bestaat niet of is niet meer beschikbaar.</p></div>`;return;}
   currentProduct=product; currentData=data;
   selectedOptions={};
-  ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'}; const raw=Array.isArray(product[map[key]])?product[map[key]]:[]; const list=(raw.length?raw:effectiveOptions(product,key)).filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false&&x.available!==false)); if(list.length) selectedOptions[key]=list[0].label;});
+  ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'}; const raw=Array.isArray(product[map[key]])?product[map[key]]:[]; const list=(raw.length?raw:effectiveOptions(product,key)).filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false&&((key==="storage"||key==="color")||x.available!==false))); if(list.length) selectedOptions[key]=list[0].label;});
   renderProductBody();
 }
 async function load(){
