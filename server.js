@@ -1752,7 +1752,7 @@ async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl, pr
         // generic/lazy-loaded ALT text even though the page itself is exact.
         // Read the gallery from that exact page first, so blue/yellow/purple/etc.
         // can never inherit the overview/black gallery.
-        const exactPageImages = forzaExtractExactPageGalleryImages(page.html);
+        const exactPageImages = forzaExtractExactPageGalleryImages(page.html, productName);
         if (exactPageImages.length >= 4) {
           return { url, parsed, images: exactPageImages.slice(0, 4) };
         }
