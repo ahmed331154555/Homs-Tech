@@ -1920,21 +1920,28 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     return Number.isFinite(n) ? Math.round(n * 100) / 100 : null;
   };
 
-  if (!productName || ![6,18].includes(rows.length)) {
+  // New detailed color/storage preview: 18 exact variants × 3 conditions = 54 rows.
+  // Each row carries its exact Forza product name so every HOMS TECH color/storage
+  // product can be updated independently in one transaction.
+  const isDetailedVariantUpdate = rows.length === 54 && rows.every(r => String(r?.product || "").trim());
+
+  if (!productName || (!isDetailedVariantUpdate && ![6,18].includes(rows.length))) {
     return res.status(400).json({
       success: false,
-      error: "Forza-update vereist 6 regels voor één gekozen opslag of 18 regels voor alle opslagvarianten."
+      error: "Forza-update vereist 6 regels voor één opslag, 18 regels voor het oude totaal of 54 regels voor alle kleur/opslag-varianten."
     });
   }
 
   const cleanRows = rows.map(r => ({
+    product: String(r?.product || productName).trim(),
+    color: String(r?.color || "").trim(),
     storage: storageKey(r.storage),
     condition: conditionKey(r.condition),
     battery: batteryKey(r.battery),
     price: money(r.price)
   }));
 
-  if (cleanRows.some(r => !["64GB","128GB","256GB"].includes(r.storage) ||
+  if (cleanRows.some(r => !["64GB","128GB","256GB","512GB"].includes(r.storage) ||
       !["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"].includes(r.condition) ||
       !["standaard","nieuw"].includes(r.battery) ||
       r.price === null || r.price < 0)) {
@@ -1942,6 +1949,25 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
       success: false,
       error: "De Forza-preview bevat ontbrekende of ongeldige prijzen."
     });
+  }
+
+  if (isDetailedVariantUpdate) {
+    const groups = new Map();
+    for (const row of cleanRows) {
+      const key = norm(row.product);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(row);
+    }
+    if (groups.size !== 18 || [...groups.values()].some(group => {
+      const storages = new Set(group.map(r => r.storage));
+      const conditions = new Set(group.map(r => r.condition));
+      return group.length !== 3 || storages.size !== 1 || conditions.size !== 3;
+    })) {
+      return res.status(400).json({
+        success: false,
+        error: "De gedetailleerde Forza-preview moet 18 kleur/opslag-varianten met elk 3 condities bevatten."
+      });
+    }
   }
 
   const actual = cleanRows.map(r => `${r.storage}|${r.condition}|${r.battery}`);
@@ -1956,7 +1982,7 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
   const selectedExpected = selectedStorage ? ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"].flatMap(c=>["standaard","nieuw"].map(b=>`${selectedStorage}|${c}|${b}`)) : [];
   const validSix = cleanRows.length===6 && !!selectedStorage && uniqueActual.size===6 && selectedExpected.every(k=>uniqueActual.has(k));
   const validEighteen = cleanRows.length===18 && uniqueActual.size===18 && allExpected.every(k=>uniqueActual.has(k));
-  if (!validSix && !validEighteen) {
+  if (!isDetailedVariantUpdate && !validSix && !validEighteen) {
     return res.status(400).json({
       success: false,
       error: "De preview moet compleet zijn: 6 regels voor één opslag of alle 18 storage/conditie/batterij-combinaties."
@@ -1984,6 +2010,78 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     if (!Array.isArray(data.phones)) {
       await client.query("ROLLBACK");
       return res.status(400).json({ success: false, error: "Telefooncatalogus ontbreekt." });
+    }
+
+    if (isDetailedVariantUpdate) {
+      const updated = [];
+      const missing = [];
+
+      for (const [groupKey, groupRows] of new Map(cleanRows.reduce((acc, row) => {
+        const key = norm(row.product);
+        if (!acc.has(key)) acc.set(key, []);
+        acc.get(key).push(row);
+        return acc;
+      }, new Map()).entries())) {
+        const wanted = groupRows[0].product;
+        const phoneIndex = data.phones.findIndex(phone => norm(phone?.name || "") === groupKey);
+        if (phoneIndex < 0) {
+          missing.push(wanted);
+          continue;
+        }
+        const phone = data.phones[phoneIndex];
+        if (!Array.isArray(phone.conditionOptions) || !Array.isArray(phone.storageOptions) || !Array.isArray(phone.batteryOptions)) {
+          missing.push(`${wanted} (prijsopties ontbreken)`);
+          continue;
+        }
+
+        const findCondition = key => phone.conditionOptions.find(o => conditionKey(o?.label) === key);
+        const storage = groupRows[0].storage;
+        const findStorage = key => phone.storageOptions.find(o => storageKey(o?.label) === key);
+        const storageOption = findStorage(storage);
+        if (!storageOption) {
+          missing.push(`${wanted} (opslag ${storage} ontbreekt)`);
+          continue;
+        }
+
+        for (const row of groupRows) {
+          const condition = findCondition(row.condition);
+          if (!condition) {
+            missing.push(`${wanted} (conditie ${row.condition} ontbreekt)`);
+            break;
+          }
+        }
+        if (missing.length && missing[missing.length-1].startsWith(wanted)) continue;
+
+        const matrix = (phone.forzaPriceMatrix && typeof phone.forzaPriceMatrix === "object") ? {...phone.forzaPriceMatrix} : {};
+        for (const row of groupRows) {
+          matrix[`${storage}|${row.condition}|${row.battery}`] = row.price;
+          const condition = findCondition(row.condition);
+          if (row.battery === "standaard") condition.basePrice = row.price;
+        }
+        phone.forzaPriceMatrix = matrix;
+        phone.forzaPriceMatrixSource = "Forza public website";
+        phone.forzaPriceMatrixUpdatedAt = new Date().toISOString();
+        updated.push(wanted);
+      }
+
+      if (missing.length) {
+        await client.query("ROLLBACK");
+        return res.status(400).json({
+          success: false,
+          error: `Niet alle Forza-varianten konden worden gekoppeld. Geen wijziging uitgevoerd: ${missing.join(", ")}`
+        });
+      }
+
+      await client.query("UPDATE site_settings SET data = $1 WHERE id = 1", [JSON.stringify(data)]);
+      await client.query("COMMIT");
+      return res.json({
+        success: true,
+        readOnly: false,
+        updatedProducts: updated,
+        updatedCount: updated.length,
+        sourceProduct: productName,
+        message: `Forza-prijzen zijn bijgewerkt voor ${updated.length} kleur/opslag-varianten. Alleen deze varianten zijn gewijzigd.`
+      });
     }
 
     const wantedExact = norm(productName);
