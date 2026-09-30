@@ -1585,6 +1585,7 @@ textarea{
                 <tr>
                   <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Product</th>
                   <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Opslag</th>
+                  <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Kleur</th>
                   <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Conditie</th>
                   <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Batterij</th>
                   <th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Prijs</th>
@@ -5075,6 +5076,7 @@ function forzaAdminNumericPrice(value){
 
 function forzaAdminBuildPreview(){
   if(!forzaPreviewModel)return [];
+  if(Array.isArray(forzaPreviewModel._detailedPreviewRows) && forzaPreviewModel._detailedPreviewRows.length) return forzaPreviewModel._detailedPreviewRows;
   const {product,storage,conditions,battery,storageVariants}=forzaPreviewModel;
   const storageArr=forzaAdminArray(storage).map((v,i)=>forzaAdminNormalizeOption(v,i,"Opslag"));
   const conditionArr=forzaAdminArray(conditions).map((v,i)=>forzaAdminNormalizeOption(v,i,"Conditie"));
@@ -5155,7 +5157,92 @@ function forzaAdminBuildPreview(){
   return rows;
 }
 
-function renderForzaPreview(){
+async function forzaAdminBuildDetailedPreview(){
+  if(!forzaPreviewModel) return null;
+  const variants=Array.isArray(forzaPreviewModel.colorVariants) ? forzaPreviewModel.colorVariants.slice() : [];
+  if(!variants.length) return null;
+
+  const modelKey=document.getElementById("forzaTestModelSelect")?.value || "";
+  if(!modelKey) return null;
+
+  const cleanVariants=[];
+  const seen=new Set();
+  for(const v of variants){
+    const storage=String(v?.storage||"").trim();
+    const color=String(v?.color||"").trim();
+    const productName=String(v?.productName||"").trim();
+    if(!storage||!color||!productName) continue;
+    const key=`${storage.replace(/\s+/g,"").toUpperCase()}|${color.toLowerCase()}`;
+    if(seen.has(key)) continue;
+    seen.add(key);
+    cleanVariants.push({...v,storage,color,productName});
+  }
+
+  const results=new Array(cleanVariants.length);
+  let cursor=0;
+  async function worker(){
+    while(true){
+      const index=cursor++;
+      if(index>=cleanVariants.length) return;
+      const item=cleanVariants[index];
+      try{
+        const url=`/api/forza-test?model=${encodeURIComponent(modelKey)}&variant=${encodeURIComponent(item.productName)}&variantUrl=${encodeURIComponent(item.sourceUrl||"")}`;
+        const r=await fetch(url,{credentials:"same-origin",headers:{"Accept":"application/json"}});
+        const payload=await r.json().catch(()=>({}));
+        if(!r.ok || payload.success===false) throw new Error(payload.error||`HTTP ${r.status}`);
+        const x=forzaAdminFindResult(payload);
+        const p=x.product&&typeof x.product==="object"?x.product:x;
+        const conditions=forzaAdminArray(
+          forzaAdminPick(p,["conditions","conditionPrices","conditionOptions"]) ??
+          x.conditions ?? x.conditionPrices ?? []
+        ).map((v,i)=>forzaAdminNormalizeOption(v,i,"Conditie"));
+        const batteries=forzaAdminArray(
+          forzaAdminPick(p,["battery","batteryOptions","batteries"]) ?? x.batteryOptions ?? []
+        ).map((v,i)=>forzaAdminNormalizeOption(v,i,"Batterij"));
+        results[index]={ok:true,item,p,conditions,battery:batteries[0] || {name:"Standaard",price:0}};
+      }catch(error){
+        results[index]={ok:false,item,error:String(error?.message||error||"Variant lezen mislukt")};
+      }
+    }
+  }
+  await Promise.all(Array.from({length:Math.min(4,cleanVariants.length)},()=>worker()));
+
+  const rows=[];
+  for(const result of results){
+    const {item}=result;
+    if(result.ok){
+      const exactName=String(result.p?.name||result.p?.productName||result.p?.title||item.productName).trim();
+      const conditions=result.conditions.length ? result.conditions : [{name:"Niet gevonden",price:undefined}];
+      const battery=result.battery || {name:"Standaard",price:0};
+      for(const co of conditions){
+        const base=forzaAdminNumericPrice(co.price);
+        const delta=forzaAdminNumericPrice(battery.price);
+        rows.push({
+          product:exactName,
+          storage:item.storage,
+          color:item.color,
+          condition:co.name,
+          battery:battery.name,
+          price:base!==null ? base+(delta!==null?delta:0) : null,
+          status:base!==null ? "Preview — exacte kleur/opslag gelezen" : "Preview — prijs niet gelezen"
+        });
+      }
+    }else{
+      rows.push({
+        product:item.productName,
+        storage:item.storage,
+        color:item.color,
+        condition:"Niet gelezen",
+        battery:"Niet gelezen",
+        price:null,
+        status:`Preview — ${result.error}`
+      });
+    }
+  }
+  return rows;
+}
+
+async function renderForzaPreview(){
   const status=document.getElementById("forzaPreviewStatus");
   const content=document.getElementById("forzaPreviewContent");
   const rowsEl=document.getElementById("forzaPreviewRows");
@@ -5166,7 +5253,11 @@ function renderForzaPreview(){
     status.textContent="Lees eerst de Forza-data met ‘Forza opnieuw lezen’.";
     return;
   }
-  const rows=forzaAdminBuildPreview();
+
+  const detailedRows=await forzaAdminBuildDetailedPreview();
+  const rows=detailedRows && detailedRows.length ? detailedRows : forzaAdminBuildPreview();
+  forzaPreviewModel._detailedPreviewRows=rows;
+
   summary.innerHTML=[
     ["Product",forzaAdminPick(forzaPreviewModel.product,["name","productName","title"])||"Niet gevonden"],
     ["Voorbeeldregels",String(rows.length)],
@@ -5175,6 +5266,7 @@ function renderForzaPreview(){
   rowsEl.innerHTML=rows.map(row=>`<tr>
     <td style="padding:9px;border-bottom:1px solid #edf2f7">${forzaAdminEsc(row.product)}</td>
     <td style="padding:9px;border-bottom:1px solid #edf2f7">${forzaAdminEsc(row.storage)}</td>
+    <td style="padding:9px;border-bottom:1px solid #edf2f7">${forzaAdminEsc(row.color||"")}</td>
     <td style="padding:9px;border-bottom:1px solid #edf2f7">${forzaAdminEsc(row.condition)}</td>
     <td style="padding:9px;border-bottom:1px solid #edf2f7">${forzaAdminEsc(row.battery)}</td>
     <td style="padding:9px;border-bottom:1px solid #edf2f7;font-weight:800">${row.price!==null?forzaAdminEsc(forzaAdminMoney(row.price)):"Niet gevonden"}</td>
@@ -5184,8 +5276,8 @@ function renderForzaPreview(){
   const missingPrices=rows.filter(r=>!Number.isFinite(Number(r.price))).length;
   status.className=missingPrices ? "status info" : "status success";
   status.textContent=missingPrices
-    ? `✓ Preview gemaakt: ${rows.length} regels. ${missingPrices} prijs(en) ontbreken op de bijbehorende Forza-pagina; die blijven leeg. Er is niets opgeslagen.`
-    : `✓ Preview gemaakt: ${rows.length} regels. Alle prijzen zijn geldig uit Forza gelezen. Er is niets opgeslagen.`;
+    ? `✓ Preview gemaakt: ${rows.length} regels. ${missingPrices} prijs(en) ontbreken op de exacte Forza-variant; die blijven leeg. Er is niets opgeslagen.`
+    : `✓ Preview gemaakt: ${rows.length} regels. Alle kleuren, geheugens en prijzen zijn exact per Forza-variant gelezen. Er is niets opgeslagen.`;
 }
 
 
