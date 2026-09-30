@@ -1600,8 +1600,11 @@ function forzaExactUrlCandidates(productName, overviewHtml, overviewUrl) {
   return urls;
 }
 
-async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl) {
+async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl, preferredUrl = "") {
   const candidates = forzaExactUrlCandidates(productName, overviewHtml, overviewUrl);
+  if (preferredUrl && /^https?:\/\//i.test(preferredUrl)) {
+    candidates.unshift(preferredUrl);
+  }
   const seen = new Set();
 
   for (const url of candidates) {
@@ -1744,10 +1747,104 @@ function forzaFindIphone12Variant(value) {
   return FORZA_IPHONE12_VARIANTS.find(v => forzaNormalizeVariantName(v.productName).toLowerCase() === wanted) || null;
 }
 
+
+function forzaExtractColorVariantLinks(html, baseUrl, modelLabel, allowedStorages = []) {
+  const source = String(html || "");
+  const anchors = source.match(/<a\b[^>]*href=["'][^"']+["'][^>]*>[\s\S]{0,1800}?<\/a>/gi) || [];
+  const model = String(modelLabel || "").trim();
+  if (!model) return [];
+
+  // These are only aliases used to recognize the colour on the public
+  // Forza catalogue. The stored/displayed colour stays in HOMS TECH's
+  // normal Dutch naming so existing products keep matching correctly.
+  const colors = [
+    ["Natural titanium", ["natural titanium"]],
+    ["Desert titanium", ["desert titanium"]],
+    ["Blue titanium", ["blue titanium"]],
+    ["White titanium", ["white titanium"]],
+    ["Black titanium", ["black titanium"]],
+    ["Titanium zwart", ["titanium zwart"]],
+    ["Spacegrijs", ["space gray", "space grey", "spacegray", "spacegrijs"]],
+    ["Midnight", ["midnight"]],
+    ["Starlight", ["starlight"]],
+    ["Zwart", ["zwart", "black"]],
+    ["Wit", ["wit", "white"]],
+    ["Blauw", ["blauw", "blue"]],
+    ["Paars", ["paars", "purple", "violet"]],
+    ["Rood", ["rood", "red", "product red"]],
+    ["Geel", ["geel", "yellow"]],
+    ["Groen", ["groen", "green"]],
+    ["Roze", ["roze", "pink"]],
+    ["Oranje", ["oranje", "orange"]],
+    ["Koraal", ["koraal", "coral"]],
+    ["Goud", ["goud", "gold"]],
+    ["Zilver", ["zilver", "silver"]],
+    ["Grijs", ["grijs", "gray", "grey"]]
+  ];
+
+  const storageSet = new Set((allowedStorages || []).map(v => String(v).replace(/\s+/g, "").toUpperCase()));
+  const modelNumber = model.match(/\biPhone\s+(\d+)\b/i)?.[1] || "";
+  const found = new Map();
+
+  for (const anchor of anchors) {
+    const hrefMatch = anchor.match(/href=["']([^"']+)["']/i);
+    if (!hrefMatch) continue;
+    let url;
+    try { url = new URL(hrefMatch[1], baseUrl).toString(); } catch { continue; }
+    if (!/forza-refurbished\.nl/i.test(url)) continue;
+
+    const text = forzaStripHtml(anchor);
+    const combined = `${text} ${url}`.toLowerCase();
+    if (modelNumber && !new RegExp(`\\biphone[-\\s]*${modelNumber}\\b`, "i").test(combined)) continue;
+
+    const storageMatch = combined.match(/\b(\d+)\s*gb\b/i);
+    if (!storageMatch) continue;
+    const storage = `${storageMatch[1]}GB`;
+    if (storageSet.size && !storageSet.has(storage)) continue;
+
+    let color = "";
+    for (const [display, aliases] of colors) {
+      if (aliases.some(alias => combined.includes(alias))) {
+        color = display;
+        break;
+      }
+    }
+    if (!color) continue;
+
+    const productName = `${model} ${storage} ${color}`;
+    const key = `${storage}|${color}`.toLowerCase();
+    if (!found.has(key)) found.set(key, {storage, color, productName, sourceUrl: url});
+  }
+
+  // The iPhone 14 overview can be rendered client-side and therefore may not
+  // expose every colour card in the server HTML. For this model only, use the
+  // documented six public colours as URL candidates; the exact-page reader
+  // will discard any URL that does not actually exist.
+  if (/^iphone\s+14$/i.test(model)) {
+    const knownColors = ["Zwart", "Wit", "Blauw", "Paars", "Rood", "Geel"];
+    for (const storage of storageSet) {
+      for (const color of knownColors) {
+        const key = `${storage}|${color}`.toLowerCase();
+        if (found.has(key)) continue;
+        found.set(key, {
+          storage,
+          color,
+          productName: `${model} ${storage} ${color}`,
+          sourceUrl: `https://www.forza-refurbished.nl/iphone-14-${storage.toLowerCase()}-${color.toLowerCase()}`
+        });
+      }
+    }
+  }
+
+  return [...found.values()].sort((a, b) =>
+    `${a.storage}|${a.color}`.localeCompare(`${b.storage}|${b.color}`, "nl", {numeric:true})
+  );
+}
+
 function forzaExtractStorageLinks(html, baseUrl, fallbackMap = {}, allowedStorages = ["64GB", "128GB", "256GB"]) {
   const found = new Map();
   const source = String(html || "");
-  const anchorPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>[\s\S]{0,500}?((?:64|128|256)\s*GB)[\s\S]{0,500}?<\/a>/gi;
+  const anchorPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>[\s\S]{0,500}?((?:\d+)\s*GB)[\s\S]{0,500}?<\/a>/gi;
   let match;
 
   while ((match = anchorPattern.exec(source))) {
@@ -1775,7 +1872,7 @@ function forzaExtractStorageLinks(html, baseUrl, fallbackMap = {}, allowedStorag
 
 function forzaSelectedStorage(result) {
   const title = String(result?.product?.name || "");
-  const match = title.match(/\b(64|128|256)\s*GB\b/i);
+  const match = title.match(/\b(\d+)\s*GB\b/i);
   return match ? `${match[1]}GB` : "";
 }
 
@@ -1789,76 +1886,229 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
   const productName = String(body.productName || "").trim();
   const rows = Array.isArray(body.rows) ? body.rows : [];
 
-  const norm = (v) => String(v ?? "").toLowerCase().replace(/&nbsp;/g, " ").replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
-  const storageKey = (v) => { const m=String(v ?? "").match(/(\d+)\s*gb/i); return m ? `${m[1]}GB` : ""; };
-  const conditionKey = (v) => { const x=norm(v); if(x.includes("zo goed als nieuw"))return "zo goed als nieuw"; if(x.includes("licht gebruikt"))return "licht gebruikt"; if(x.includes("zichtbaar gebruikt"))return "zichtbaar gebruikt"; return x; };
+  const norm = (v) => String(v ?? "")
+    .toLowerCase()
+    .replace(/&nbsp;/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const modelKey = (v) => norm(v)
+    .replace(/\b\d+\s*(?:gb|tb)\b/ig, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\b(paars|purple|zwart|black|wit|white|rood|red|blauw|blue|groen|green)\b/ig, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const storageKey = (v) => {
+    const m = String(v ?? "").match(/(\d+)\s*gb/i);
+    return m ? `${m[1]}GB` : "";
+  };
+
+  const conditionKey = (v) => {
+    const x = norm(v);
+    if (x.includes("zo goed als nieuw")) return "zo goed als nieuw";
+    if (x.includes("licht gebruikt")) return "licht gebruikt";
+    if (x.includes("zichtbaar gebruikt")) return "zichtbaar gebruikt";
+    return x;
+  };
+
   const batteryKey = (v) => norm(v).includes("nieuw") ? "nieuw" : "standaard";
-  const money = (v) => { const n=Number(v); return Number.isFinite(n) ? Math.round(n*100)/100 : null; };
-  const modelKey = (v) => norm(v).replace(/\b\d+\s*(?:gb|tb)\b/ig," ").replace(/\b(paars|purple|zwart|black|wit|white|rood|red|blauw|blue|groen|green|geel|yellow)\b/ig," ").replace(/\s+/g," ").trim();
-  const extractColor = (v) => { const x=norm(v); return ["paars","purple","zwart","black","wit","white","rood","red","blauw","blue","groen","green","geel","yellow"].find(c=>x.includes(c)) || ""; };
 
-  if(!productName || ![6,18].includes(rows.length)) return res.status(400).json({success:false,error:"Forza-update vereist 6 regels voor één gekozen opslag of 18 regels voor alle opslagvarianten."});
+  const money = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? Math.round(n * 100) / 100 : null;
+  };
 
-  const cleanRows=rows.map(r=>({storage:storageKey(r.storage),condition:conditionKey(r.condition),battery:batteryKey(r.battery),price:money(r.price)}));
-  const allowedConditions=["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"];
-  const allowedBatteries=["standaard","nieuw"];
-  const storages=[...new Set(cleanRows.map(r=>r.storage).filter(Boolean))];
-  if(!storages.length || cleanRows.some(r=>!/^\d+GB$/.test(r.storage)||!allowedConditions.includes(r.condition)||!allowedBatteries.includes(r.battery)||r.price===null||r.price<0)) return res.status(400).json({success:false,error:"De Forza-preview bevat ontbrekende of ongeldige prijzen."});
+  if (!productName || ![6,18].includes(rows.length)) {
+    return res.status(400).json({
+      success: false,
+      error: "Forza-update vereist 6 regels voor één gekozen opslag of 18 regels voor alle opslagvarianten."
+    });
+  }
 
-  const actual=cleanRows.map(r=>`${r.storage}|${r.condition}|${r.battery}`);
-  const uniqueActual=new Set(actual);
-  const expected=storages.flatMap(s=>allowedConditions.flatMap(c=>allowedBatteries.map(b=>`${s}|${c}|${b}`)));
-  if(cleanRows.length!==expected.length || uniqueActual.size!==expected.length || !expected.every(k=>uniqueActual.has(k))) return res.status(400).json({success:false,error:"De preview moet compleet zijn voor alle gevonden opslag/conditie/batterij-combinaties."});
+  const cleanRows = rows.map(r => ({
+    storage: storageKey(r.storage),
+    condition: conditionKey(r.condition),
+    battery: batteryKey(r.battery),
+    price: money(r.price)
+  }));
 
-  const incomingMatrix={};
-  for(const r of cleanRows) incomingMatrix[`${r.storage}|${r.condition}|${r.battery}`]=r.price;
+  if (cleanRows.some(r => !["64GB","128GB","256GB"].includes(r.storage) ||
+      !["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"].includes(r.condition) ||
+      !["standaard","nieuw"].includes(r.battery) ||
+      r.price === null || r.price < 0)) {
+    return res.status(400).json({
+      success: false,
+      error: "De Forza-preview bevat ontbrekende of ongeldige prijzen."
+    });
+  }
 
-  const client=await pool.connect();
-  try{
+  const actual = cleanRows.map(r => `${r.storage}|${r.condition}|${r.battery}`);
+  const uniqueActual = new Set(actual);
+  const allExpected = [];
+  for (const storage of ["64GB","128GB","256GB"]) {
+    for (const condition of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) {
+      for (const battery of ["standaard","nieuw"]) allExpected.push(`${storage}|${condition}|${battery}`);
+    }
+  }
+  const selectedStorage = cleanRows.length===6 ? cleanRows[0].storage : "";
+  const selectedExpected = selectedStorage ? ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"].flatMap(c=>["standaard","nieuw"].map(b=>`${selectedStorage}|${c}|${b}`)) : [];
+  const validSix = cleanRows.length===6 && !!selectedStorage && uniqueActual.size===6 && selectedExpected.every(k=>uniqueActual.has(k));
+  const validEighteen = cleanRows.length===18 && uniqueActual.size===18 && allExpected.every(k=>uniqueActual.has(k));
+  if (!validSix && !validEighteen) {
+    return res.status(400).json({
+      success: false,
+      error: "De preview moet compleet zijn: 6 regels voor één opslag of alle 18 storage/conditie/batterij-combinaties."
+    });
+  }
+
+  const getPrice = (storage, condition, battery) => {
+    const r = cleanRows.find(x => x.storage === storage && x.condition === condition && x.battery === battery);
+    return r ? r.price : null;
+  };
+
+  const incomingMatrix = {};
+  for (const r of cleanRows) incomingMatrix[`${r.storage}|${r.condition}|${r.battery}`] = r.price;
+
+  const client = await pool.connect();
+  try {
     await client.query("BEGIN");
-    const result=await client.query("SELECT data FROM site_settings WHERE id = 1 FOR UPDATE");
-    if(!result.rows.length){await client.query("ROLLBACK");return res.status(404).json({success:false,error:"Websitegegevens niet gevonden."});}
-    const data=result.rows[0].data||{};
-    if(!Array.isArray(data.phones)){await client.query("ROLLBACK");return res.status(400).json({success:false,error:"Telefooncatalogus ontbreekt."});}
+    const result = await client.query("SELECT data FROM site_settings WHERE id = 1 FOR UPDATE");
+    if (!result.rows.length) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ success: false, error: "Websitegegevens niet gevonden." });
+    }
 
-    const wanted=norm(productName), wantedModel=modelKey(productName), wantedColor=extractColor(productName);
-    let bestIndex=data.phones.findIndex(p=>norm(p?.name||"")===wanted);
-    if(bestIndex<0){
-      let bestScore=-1;
-      data.phones.forEach((phone,i)=>{
-        const name=String(phone?.name||""), nm=norm(name), pm=modelKey(name);
-        let score=0;
-        if(pm===wantedModel)score+=100; else if(pm.includes(wantedModel)||wantedModel.includes(pm))score+=60;
-        if(wantedColor && extractColor(name)===wantedColor)score+=30;
-        const productStorages=Array.isArray(phone?.storage)?phone.storage.map(storageKey):[storageKey(phone?.storage||phone?.memory||"")];
-        const wantedStorage=storageKey(productName);
-        if(wantedStorage && productStorages.includes(wantedStorage))score+=40;
-        if(nm.includes("iphone 14") && wantedModel.includes("iphone 14"))score+=10;
-        if(score>bestScore){bestScore=score;bestIndex=i;}
+    const data = result.rows[0].data || {};
+    if (!Array.isArray(data.phones)) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ success: false, error: "Telefooncatalogus ontbreekt." });
+    }
+
+    const wantedExact = norm(productName);
+    const bestIndex = data.phones.findIndex(phone => norm(phone?.name || "") === wantedExact);
+
+    if (bestIndex < 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({
+        success: false,
+        error: `HOMS TECH-product niet gevonden voor "${productName}". Geen wijziging uitgevoerd.`
       });
     }
-    if(bestIndex<0){await client.query("ROLLBACK");return res.status(404).json({success:false,error:`HOMS TECH-product niet gevonden voor "${productName}". Geen wijziging uitgevoerd.`});}
 
-    const phone=data.phones[bestIndex];
-    // IMPORTANT: do not rewrite condition/storage/battery options here.
-    // They use an additive price model and cannot represent every Forza matrix.
-    // Save the exact Forza matrix only; the Admin comparison already gives this matrix priority.
-    const previousMatrix=(phone.forzaPriceMatrix&&typeof phone.forzaPriceMatrix==="object")?{...phone.forzaPriceMatrix}:{};
-    phone.forzaPriceMatrix={...previousMatrix,...incomingMatrix};
-    phone.forzaPriceMatrixSource="Forza public website";
-    phone.forzaPriceMatrixUpdatedAt=new Date().toISOString();
-    data.phones[bestIndex]=phone;
+    const phone = data.phones[bestIndex];
+    if (!Array.isArray(phone.conditionOptions) ||
+        !Array.isArray(phone.storageOptions) ||
+        !Array.isArray(phone.batteryOptions)) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({
+        success: false,
+        error: "Dit product heeft geen complete prijsopties. Geen wijziging uitgevoerd."
+      });
+    }
 
-    await client.query("UPDATE site_settings SET data = $1 WHERE id = 1",[JSON.stringify(data)]);
+    const findCondition = key => phone.conditionOptions.find(o => conditionKey(o?.label) === key);
+    const findStorage = key => phone.storageOptions.find(o => storageKey(o?.label) === key);
+    const findBattery = key => phone.batteryOptions.find(o => batteryKey(o?.label) === key);
+
+    for (const key of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) {
+      if (!findCondition(key)) {
+        await client.query("ROLLBACK");
+        return res.status(400).json({ success:false, error:`Conditie "${key}" ontbreekt. Geen wijziging uitgevoerd.` });
+      }
+    }
+    for (const key of ["64GB","128GB","256GB"]) {
+      if (!findStorage(key)) {
+        await client.query("ROLLBACK");
+        return res.status(400).json({ success:false, error:`Opslag "${key}" ontbreekt. Geen wijziging uitgevoerd.` });
+      }
+    }
+    if (!findBattery("standaard") || !findBattery("nieuw")) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ success:false, error:"Batterijopties ontbreken. Geen wijziging uitgevoerd." });
+    }
+
+    const before = {
+      conditions: phone.conditionOptions.map(o => ({label:o.label, basePrice:o.basePrice})),
+      storage: phone.storageOptions.map(o => ({label:o.label, priceDelta:o.priceDelta})),
+      battery: phone.batteryOptions.map(o => ({label:o.label, priceDelta:o.priceDelta})),
+      forzaPriceMatrix: phone.forzaPriceMatrix || null
+    };
+
+    const previousMatrix = (phone.forzaPriceMatrix && typeof phone.forzaPriceMatrix === "object") ? {...phone.forzaPriceMatrix} : {};
+    const mergedMatrix = {...previousMatrix, ...incomingMatrix};
+    if (validEighteen) {
+      const getIncoming=(s,c,b)=>incomingMatrix[`${s}|${c}|${b}`];
+      const bases={};
+      for (const c of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) bases[c]=getIncoming("64GB",c,"standaard");
+      const batteryDelta=getIncoming("64GB","zo goed als nieuw","nieuw")-bases["zo goed als nieuw"];
+      const storageDeltas={};
+      for (const st of ["64GB","128GB","256GB"]) storageDeltas[st]=getIncoming(st,"zo goed als nieuw","standaard")-bases["zo goed als nieuw"];
+      for (const key of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) findCondition(key).basePrice=bases[key];
+      findStorage("64GB").priceDelta=0;
+      findStorage("128GB").priceDelta=storageDeltas["128GB"];
+      findStorage("256GB").priceDelta=storageDeltas["256GB"];
+      findBattery("standaard").priceDelta=0;
+      findBattery("nieuw").priceDelta=batteryDelta;
+    } else {
+      // A single selected storage can be updated safely without requiring the other 12 prices.
+      const st=selectedStorage;
+      const base64Std=(previousMatrix[`${st}|zo goed als nieuw|standaard`] ?? findCondition("zo goed als nieuw").basePrice);
+      const incomingBase=getPrice(st,"zo goed als nieuw","standaard");
+      if (st==="64GB") {
+        for (const c of ["zo goed als nieuw","licht gebruikt","zichtbaar gebruikt"]) {
+          const v=getPrice(st,c,"standaard"); if (v!==null) findCondition(c).basePrice=v;
+        }
+      } else if (incomingBase!==null && Number.isFinite(Number(base64Std))) {
+        findStorage(st).priceDelta=Number(incomingBase)-Number(base64Std);
+      }
+      const ns=getPrice(st,"zo goed als nieuw","nieuw"), ss=getPrice(st,"zo goed als nieuw","standaard");
+      if (ns!==null && ss!==null) findBattery("nieuw").priceDelta=Number(ns)-Number(ss);
+    }
+
+    phone.forzaPriceMatrix = mergedMatrix;
+    phone.forzaPriceMatrixSource = "Forza public website";
+    phone.forzaPriceMatrixUpdatedAt = new Date().toISOString();
+
+    const after = {
+      conditions: phone.conditionOptions.map(o => ({label:o.label, basePrice:o.basePrice})),
+      storage: phone.storageOptions.map(o => ({label:o.label, priceDelta:o.priceDelta})),
+      battery: phone.batteryOptions.map(o => ({label:o.label, priceDelta:o.priceDelta})),
+      forzaPriceMatrix: phone.forzaPriceMatrix
+    };
+
+    await client.query(
+      "UPDATE site_settings SET data = $1 WHERE id = 1",
+      [JSON.stringify(data)]
+    );
     await client.query("COMMIT");
-    res.json({success:true,readOnly:false,updatedProduct:phone.name,sourceProduct:productName,message:"De exacte Forza-prijzen zijn opgeslagen voor HOMS TECH.",updatedMatrix:Object.keys(incomingMatrix).length});
-  }catch(error){
-    try{await client.query("ROLLBACK");}catch{}
-    console.error("Forza price update error:",error);
-    res.status(500).json({success:false,error:"Forza-prijzen bijwerken mislukt. Geen wijziging is bevestigd."});
-  }finally{client.release();}
+
+    res.json({
+      success: true,
+      readOnly: false,
+      updatedProduct: phone.name,
+      sourceProduct: productName,
+      before,
+      after,
+      message: "Forza-prijzen zijn bijgewerkt. Alleen de prijsopties van dit product zijn gewijzigd."
+    });
+  } catch (error) {
+    try { await client.query("ROLLBACK"); } catch {}
+    console.error("Forza price update error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Forza-prijzen konden niet worden bijgewerkt."
+    });
+  } finally {
+    client.release();
+  }
 });
 
+
+// Forza -> HOMS TECH FULL SYNC.
+// Explicit admin action only. Updates one exact HOMS TECH product with the
+// already-read Forza prices plus non-empty product metadata/images.
 app.put("/api/admin/forza/full-sync", requirePermission("site.save"), async (req, res) => {
   const body = req.body || {};
   const productName = String(body.productName || "").trim();
@@ -2018,10 +2268,11 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
     return res.status(400).json({
       success: false,
       readOnly: true,
-      error: "Onbekend Forza-testmodel. Kies een geldig Forza-testmodel."
+      error: "Onbekend Forza-testmodel. Kies iPhone 11, iPhone 12 of iPhone 14."
     });
   }
   const requestedVariant = String(req.query.variant || "").trim();
+  const requestedVariantUrl = String(req.query.variantUrl || "").trim();
   const variantConfig = requestedModel === "iphone-12" && requestedVariant
     ? forzaFindIphone12Variant(requestedVariant)
     : null;
@@ -2036,6 +2287,37 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
 
   try {
     const mainPage = await forzaFetchPublicPage(sourceUrl);
+
+    // Generic exact-variant reader used by the Admin colour/storage importer.
+    // The Admin passes the exact Forza product URL discovered on the model page;
+    // this keeps each colour + storage combination independent.
+    if (requestedVariant && requestedVariantUrl && !variantConfig) {
+      let safeVariantUrl = "";
+      try {
+        const u = new URL(requestedVariantUrl);
+        if (/^https?:$/i.test(u.protocol) && /(^|\.)forza-refurbished\.nl$/i.test(u.hostname)) {
+          safeVariantUrl = u.toString();
+        }
+      } catch {}
+      if (!safeVariantUrl) {
+        return res.status(400).json({success:false,readOnly:true,error:"Ongeldige Forza-variant URL."});
+      }
+      const exactVariant = await forzaFetchExactVariant(requestedVariant, mainPage.html, sourceUrl, safeVariantUrl);
+      if (!exactVariant || !exactVariant.parsed) {
+        return res.status(502).json({success:false,readOnly:true,testModel:requestedModel,testModelLabel:modelConfig.label,sourceUrl:safeVariantUrl,error:"Exacte Forza-variant kon niet worden gelezen. Er is niets opgeslagen."});
+      }
+      const parsed = exactVariant.parsed || {product:{}};
+      const product = {
+        ...(parsed.product || {}),
+        name: requestedVariant,
+        storage: [String(requestedVariant.match(/\b\d+\s*(?:GB|TB)\b/i)?.[0] || "").replace(/\s+/g, "")],
+        color: String(requestedVariant.replace(/^.*?\b\d+\s*(?:GB|TB)\b\s*/i, "").trim()),
+        images: exactVariant.images?.length ? exactVariant.images.slice(0,4) : (parsed.product?.images || []),
+        sourceUrl: exactVariant.url,
+        canonical: parsed.product?.canonical || exactVariant.url
+      };
+      return res.json({success:true,readOnly:true,testModel:requestedModel,testModelLabel:modelConfig.label,sourceUrl,exactVariantSourceUrl:exactVariant.url,result:{...parsed,product,testModel:requestedModel,testModelLabel:modelConfig.label,allowedStorages:modelConfig.storages}});
+    }
 
     if (variantConfig) {
       const exactVariant = await forzaFetchExactVariant(variantConfig.productName, mainPage.html, sourceUrl);
@@ -2176,6 +2458,16 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
 
     result.storageVariants = storageVariants;
     result.product.storageVariants = storageVariants;
+
+    // Discover every public colour + storage combination on the selected
+    // Forza model page. Do not invent colours: only links actually present
+    // on Forza are returned. Each item is later read from its exact product
+    // page when the Admin imports it.
+    const discoveredColorVariants = forzaExtractColorVariantLinks(
+      mainPage.html, sourceUrl, modelConfig.label, modelConfig.storages
+    );
+    result.colorVariants = discoveredColorVariants;
+    result.product.colorVariants = discoveredColorVariants;
 
     result.testModel = requestedModel;
     result.testModelLabel = modelConfig.label;
