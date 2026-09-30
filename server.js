@@ -1318,60 +1318,115 @@ function forzaImageMatchKey(value) {
 }
 
 // V29: V16 exact-variant fetching + V10 gallery extraction.
-function forzaExtractExactPageGalleryImages(html) {
-  const images = [];
-  const seen = new Set();
-  const add = value => {
+function forzaExtractExactPageGalleryImages(html, productName = "") {
+  const exactImages = [];
+  const genericImages = [];
+  const seenExact = new Set();
+  const seenGeneric = new Set();
+
+  const wanted = forzaImageMatchKey(productName);
+  const wantedTokens = wanted.split(" ").filter(Boolean);
+  const wantedColor = wantedTokens[wantedTokens.length - 1] || "";
+  const wantedModelTokens = wantedTokens.filter(token =>
+    !/^\d+$/.test(token) && !/^(?:gb|tb)$/.test(token) && token !== wantedColor
+  );
+  const compact = value => forzaImageMatchKey(value).replace(/\s+/g, "");
+
+  const add = (value, target, seen) => {
     if (!value) return;
     const raw = String(value).replace(/&amp;/gi, "&");
     const urls = raw.match(/https?:\/\/[^\s,"'<>]+/gi) || [];
     for (const u0 of urls) {
       const u = u0.replace(/[)\]}]+$/g, "");
       if (!/^https?:\/\//i.test(u)) continue;
-      if (!seen.has(u)) { seen.add(u); images.push(u); }
+      if (!seen.has(u)) {
+        seen.add(u);
+        target.push(u);
+      }
     }
   };
 
-  // Exact Forza product pages expose the gallery through normal/lazy img
-  // attributes. Because this helper is called only after the exact product
-  // URL has been selected, these images belong to that exact color/storage.
+  const addImgAttrs = (attrs) => {
+    const descriptive = [
+      attrs.alt, attrs.title, attrs["data-alt"], attrs["data-title"], attrs["aria-label"]
+    ].filter(Boolean);
+    const srcValues = [attrs.src, attrs["data-src"], attrs["data-lazy-src"], attrs.srcset, attrs["data-srcset"]];
+    const text = descriptive.map(forzaImageMatchKey).join(" ");
+    const urlText = srcValues.filter(Boolean).join(" ");
+    const key = compact(`${text} ${urlText}`);
+
+    if (/kleuren|colors|colour|logo|trustpilot|keurmerk|oplader|garantie/.test(key)) return;
+
+    // On an exact Forza product page, model + colour is the important identity.
+    // Storage is deliberately NOT required because Forza can reuse a 128GB
+    // gallery label on the 256GB/512GB page while the page URL is exact.
+    const hasModel = wantedModelTokens.length > 0 && wantedModelTokens.every(token => key.includes(token));
+    const hasColor = !!wantedColor && key.includes(wantedColor);
+
+    if (hasModel && hasColor) {
+      srcValues.forEach(v => add(v, exactImages, seenExact));
+    } else {
+      srcValues.forEach(v => add(v, genericImages, seenGeneric));
+    }
+  };
+
+  // First inspect every image tag and PRIORITIZE images whose alt/title/URL
+  // explicitly identifies the selected model + colour. This prevents the
+  // site's logo, generic product-condition photos, or another colour's first
+  // gallery image from being returned simply because it appears earlier HTML.
   const imgTags = String(html || "").match(/<img\b[^>]*>/gi) || [];
   for (const tag of imgTags) {
     const attrs = {};
     const re = /([:\w-]+)\s*=\s*["']([^"']*)["']/gi;
     let m;
     while ((m = re.exec(tag))) attrs[m[1].toLowerCase()] = m[2];
-    add(attrs.src);
-    add(attrs["data-src"]);
-    add(attrs["data-lazy-src"]);
-    add(attrs.srcset);
-    add(attrs["data-srcset"]);
-    if (images.length >= 8) break;
+    addImgAttrs(attrs);
   }
 
-  // Also inspect JSON-LD image arrays on the exact page.
+  // JSON-LD can contain the real gallery when the image tags are lazy-loaded.
+  // Keep the same model+colour preference when possible.
   const scripts = String(html || "").match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/gi) || [];
+  const walk = value => {
+    if (!value) return;
+    if (Array.isArray(value)) { value.forEach(walk); return; }
+    if (typeof value !== "object") return;
+
+    if (value.image) {
+      const vals = Array.isArray(value.image) ? value.image : [value.image];
+      for (const item of vals) {
+        if (typeof item === "string") {
+          const key = compact(item);
+          const hasModel = wantedModelTokens.length > 0 && wantedModelTokens.every(token => key.includes(token));
+          const hasColor = !!wantedColor && key.includes(wantedColor);
+          add(item, hasModel && hasColor ? exactImages : genericImages,
+              hasModel && hasColor ? seenExact : seenGeneric);
+        } else if (item && typeof item === "object") {
+          const candidate = item.url || item.contentUrl || item.src;
+          if (candidate) {
+            const key = compact(candidate);
+            const hasModel = wantedModelTokens.length > 0 && wantedModelTokens.every(token => key.includes(token));
+            const hasColor = !!wantedColor && key.includes(wantedColor);
+            add(candidate, hasModel && hasColor ? exactImages : genericImages,
+                hasModel && hasColor ? seenExact : seenGeneric);
+          }
+        }
+      }
+    }
+    Object.values(value).forEach(v => {
+      if (v && typeof v === "object") walk(v);
+    });
+  };
+
   for (const script of scripts) {
     const body = script.replace(/^.*?>/s, "").replace(/<\/script>\s*$/i, "");
-    try {
-      const data = JSON.parse(body);
-      const walk = value => {
-        if (!value) return;
-        if (Array.isArray(value)) { value.forEach(walk); return; }
-        if (typeof value !== "object") return;
-        if (value.image) {
-          if (Array.isArray(value.image)) value.image.forEach(add);
-          else if (typeof value.image === "string") add(value.image);
-        }
-        Object.values(value).forEach(v => {
-          if (v && typeof v === "object") walk(v);
-        });
-      };
-      walk(data);
-    } catch {}
-    if (images.length >= 8) break;
+    try { walk(JSON.parse(body)); } catch {}
   }
-  return [...new Set(images)].slice(0, 8);
+
+  // Exact colour matches always win. Generic exact-page images are only a
+  // last fallback; they still come from the selected product URL, never from
+  // the overview page.
+  const result = exactImages.length ? exactImages : genericImages;
+  return [...new Set(result)].slice(0, 8);
 }
 
 function forzaExtractVariantGalleryImages(html, productName) {
