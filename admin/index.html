@@ -5523,21 +5523,29 @@ async function updateHomsPricesFromForza(){
   if(status){status.className="status info";status.textContent="Forza-prijzen van alle kleur/opslag-varianten worden bijgewerkt...";}
 
   try{
-    const modelProduct=forzaAdminPick(forzaPreviewModel.product,["name","productName","title"])||"Forza varianten";
-    const r=await fetch("/api/admin/forza/update-prices",{
-      method:"PUT",
-      credentials:"same-origin",
-      headers:{"Content-Type":"application/json","Accept":"application/json"},
-      body:JSON.stringify({productName:modelProduct,rows})
-    });
-    const payload=await r.json().catch(()=>({}));
-    if(!r.ok || payload.success===false){
-      throw new Error(payload.error || `Bijwerken mislukt (HTTP ${r.status})`);
+    // Iedere kleur + opslag is een afzonderlijk HOMS TECH-product.
+    // Stuur daarom de 3 conditieregels per exact product apart naar de server.
+    const targets=matched.filter(group=>group.rows.some(row=>differences.some(d=>d.row===row)));
+    let done=0;
+    for(const group of targets){
+      const productName=String(group.productName||group.rows[0]?.product||"").trim();
+      const productRows=group.rows;
+      const r=await fetch("/api/admin/forza/update-prices",{
+        method:"PUT",
+        credentials:"same-origin",
+        headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body:JSON.stringify({productName,rows:productRows})
+      });
+      const payload=await r.json().catch(()=>({}));
+      if(!r.ok || payload.success===false){
+        throw new Error(payload.error || `Bijwerken mislukt voor ${productName} (HTTP ${r.status})`);
+      }
+      done++;
+      if(status)status.textContent=`Forza-prijzen bijwerken: ${done}/${targets.length} varianten klaar...`;
     }
-
     if(status){
       status.className="status success";
-      status.textContent=`✓ ${payload.message || `Forza-prijzen bijgewerkt voor ${matched.length} varianten.`} Klik opnieuw op ‘Vergelijk met HOMS TECH’ om te controleren.`;
+      status.textContent=`✓ Forza-prijzen bijgewerkt voor ${done} kleur/opslag-varianten. Klik opnieuw op ‘Vergelijk met HOMS TECH’ om te controleren.`;
     }
     await loadData();
     compareForzaWithHoms();
