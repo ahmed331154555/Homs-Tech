@@ -5459,46 +5459,71 @@ async function updateHomsPricesFromForza(){
   }
 
   const rows=forzaAdminBuildPreview();
-  const modelProduct=forzaAdminPick(forzaPreviewModel.product,["name","productName","title"])||"Niet gevonden";
-  // Gebruik eerst dezelfde HOMS TECH-match die in de vergelijking is gevonden.
-  // Dit voorkomt dat de update-knop een al gevonden product opnieuw verkeerd matcht.
-  const cachedPhone=window.forzaCompareMatchedPhone;
-  const cachedName=window.forzaCompareMatchedProduct;
-  const phone=(cachedPhone && cachedName && forzaCompareNormalize(cachedName)===forzaCompareNormalize(modelProduct))
-    ? cachedPhone
-    : forzaCompareFindPhone(modelProduct);
-  if(!phone){
-    if(status){status.className="status error";status.textContent="HOMS TECH-product niet gevonden. Er is niets gewijzigd.";}
+  const detailed=rows.length===54 && rows.every(r=>r && r.product && r.storage && r.condition && Number.isFinite(Number(r.price)));
+  if(!detailed){
+    if(status){status.className="status error";status.textContent="De gedetailleerde Forza-preview is niet compleet (verwacht 54 geldige regels). Er is niets gewijzigd.";}
     return;
   }
 
-  const different=rows.filter(row=>{
-    const fp=Number(row.price);
-    const hp=forzaComparePrice(phone,row);
-    return Number.isFinite(fp) && Number.isFinite(hp) && Math.abs(fp-hp)>0.009;
-  });
+  // Match every exact color + storage row to its own HOMS TECH product.
+  // Do not compare all variants against the first selected product.
+  const groups=new Map();
+  for(const row of rows){
+    const key=forzaCompareNormalize(row.product);
+    if(!groups.has(key))groups.set(key,[]);
+    groups.get(key).push(row);
+  }
+  const variants=[...groups.values()];
+  const unmatched=[];
+  const differences=[];
+  const matched=[];
 
-  if(!different.length){
-    if(status){status.className="status success";status.textContent="✓ Alle Forza-prijzen zijn al gelijk aan HOMS TECH. Er is niets te wijzigen.";}
+  for(const group of variants){
+    const productName=String(group[0].product||"").trim();
+    const phone=forzaCompareFindPhone(productName);
+    if(!phone){unmatched.push(productName);continue;}
+    matched.push({productName,phone,rows:group});
+    for(const row of group){
+      const fp=Number(row.price);
+      const hp=forzaComparePrice(phone,row);
+      if(Number.isFinite(fp) && (!Number.isFinite(hp) || Math.abs(fp-hp)>0.009)){
+        differences.push({row,phone,homsPrice:Number.isFinite(hp)?hp:null});
+      }
+    }
+  }
+
+  if(unmatched.length){
+    if(status){
+      status.className="status error";
+      status.textContent=`Niet alle Forza-varianten zijn in HOMS TECH gevonden (${unmatched.length}). Er is niets gewijzigd. Ontbrekend: ${unmatched.slice(0,4).join(", ")}${unmatched.length>4?" …":""}`;
+    }
     return;
   }
 
-  const list=different.map(row=>{
-    const fp=Number(row.price), hp=forzaComparePrice(phone,row);
-    return `${row.storage} – ${row.condition} – ${row.battery}: HOMS TECH ${forzaAdminMoney(hp)} → Forza ${forzaAdminMoney(fp)}`;
+  if(!differences.length){
+    if(status){status.className="status success";status.textContent=`✓ Alle ${matched.length} Forza-kleur/opslagvarianten hebben al dezelfde prijzen. Er is niets te wijzigen.`;}
+    return;
+  }
+
+  const list=differences.slice(0,30).map(x=>{
+    const fp=Number(x.row.price);
+    const hp=x.homsPrice;
+    return `${x.row.product} — ${x.row.condition}: HOMS TECH ${hp===null?"Niet gevonden":forzaAdminMoney(hp)} → Forza ${forzaAdminMoney(fp)}`;
   }).join("\n");
+  const more=differences.length>30?`\n… en ${differences.length-30} verschil(len) meer.`:"";
 
   const confirmed=window.confirm(
-    `Forza heeft ${different.length} prijsverschil(len).\n\n${list}\n\n`+
-    `Wil je de prijsopties van "${modelProduct}" bijwerken?\n\n`+
-    `Er wordt alleen dit product bijgewerkt. Andere producten blijven ongewijzigd.`
+    `Forza heeft ${differences.length} prijsverschil(len) in ${matched.length} kleur/opslag-varianten.\n\n${list}${more}\n\n`+
+    `Wil je alle gevonden kleur/opslag-varianten bijwerken?\n\n`+
+    `Alleen deze exacte Forza-varianten worden gewijzigd.`
   );
   if(!confirmed)return;
 
   if(btn)btn.disabled=true;
-  if(status){status.className="status info";status.textContent="Forza-prijzen worden bijgewerkt...";}
+  if(status){status.className="status info";status.textContent="Forza-prijzen van alle kleur/opslag-varianten worden bijgewerkt...";}
 
   try{
+    const modelProduct=forzaAdminPick(forzaPreviewModel.product,["name","productName","title"])||"Forza varianten";
     const r=await fetch("/api/admin/forza/update-prices",{
       method:"PUT",
       credentials:"same-origin",
@@ -5512,7 +5537,7 @@ async function updateHomsPricesFromForza(){
 
     if(status){
       status.className="status success";
-      status.textContent=`✓ ${payload.message || "Forza-prijzen bijgewerkt."} Klik opnieuw op ‘Vergelijk met HOMS TECH’ om te controleren.`;
+      status.textContent=`✓ ${payload.message || `Forza-prijzen bijgewerkt voor ${matched.length} varianten.`} Klik opnieuw op ‘Vergelijk met HOMS TECH’ om te controleren.`;
     }
     await loadData();
     compareForzaWithHoms();
