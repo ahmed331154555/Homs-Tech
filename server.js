@@ -1211,7 +1211,7 @@ function forzaExtractTest(html, sourceUrl) {
           const stop = segment.search(stopPattern);
           if (stop >= 0) segment = segment.slice(0, stop);
         }
-        const euroMatch = segment.match(/€\\s*([0-9]+(?:[.,][0-9]{1,2})?)/i);
+        const euroMatch = segment.match(/€\s*([0-9]+(?:[.,][0-9]{1,2})?)/i);
         if (euroMatch) price = forzaParseEuro(euroMatch[1]);
       }
     }
@@ -1752,7 +1752,7 @@ async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl, pr
         // generic/lazy-loaded ALT text even though the page itself is exact.
         // Read the gallery from that exact page first, so blue/yellow/purple/etc.
         // can never inherit the overview/black gallery.
-        const exactPageImages = forzaExtractExactPageGalleryImages(page.html);
+        const exactPageImages = forzaExtractExactPageGalleryImages(page.html, productName);
         if (exactPageImages.length >= 4) {
           return { url, parsed, images: exactPageImages.slice(0, 4) };
         }
