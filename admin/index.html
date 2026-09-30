@@ -5411,18 +5411,21 @@ function compareForzaWithHoms(){
 
   const rows=forzaAdminBuildPreview();
   const modelProduct=forzaAdminPick(forzaPreviewModel.product,["name","productName","title"])||"Niet gevonden";
-  const phone=forzaCompareFindPhone(modelProduct);
-  window.forzaCompareMatchedPhone=phone||null;
+  window.forzaCompareMatchedPhone=null;
   window.forzaCompareMatchedProduct=modelProduct;
 
   rowsEl.innerHTML=rows.map(row=>{
+    // Every Forza color + storage is its own HOMS TECH product.
+    // Never reuse one matched phone for the whole preview.
+    const rowPhone=forzaCompareFindPhone(row.product);
     const forzaPrice=row.price!==null && row.price!==undefined && Number.isFinite(Number(row.price)) ? Number(row.price) : null;
-    const homsPrice=forzaComparePrice(phone,row);
+    const homsPrice=forzaComparePrice(rowPhone,row);
+    if(rowPhone && !window.forzaCompareMatchedPhone) window.forzaCompareMatchedPhone=rowPhone;
     const diff=forzaPrice!==null && homsPrice!==null ? forzaPrice-homsPrice : null;
     let statusText="Geen passend HOMS TECH-product gevonden";
-    if(phone && homsPrice!==null){
+    if(rowPhone && homsPrice!==null){
       statusText = diff===0 ? "Gelijk" : (diff>0 ? "Forza hoger" : "Forza lager");
-    } else if(phone){
+    } else if(rowPhone){
       statusText="HOMS TECH-optie niet gevonden";
     }
     return `<tr>
@@ -5439,11 +5442,12 @@ function compareForzaWithHoms(){
 
   content.style.display="block";
   const updateBtn=document.getElementById("forzaUpdatePricesBtn");
-  if(updateBtn) updateBtn.style.display = phone ? "inline-flex" : "none";
+  const matchedCount=rows.filter(row=>forzaCompareFindPhone(row.product)).length;
+  if(updateBtn) updateBtn.style.display = matchedCount ? "inline-flex" : "none";
 
-  if(phone){
+  if(matchedCount){
     status.className="status success";
-    status.textContent="✓ Vergelijking gemaakt. Alleen lezen: er is niets opgeslagen en geen HOMS TECH-prijs gewijzigd.";
+    status.textContent=`✓ Vergelijking gemaakt: ${matchedCount} Forza-regels gekoppeld aan hun exacte HOMS TECH-variant. Alleen lezen; er is niets opgeslagen.`;
   }else{
     status.className="status info";
     status.textContent="ℹ️ Forza-data is gelezen, maar er is nog geen passend HOMS TECH-product gevonden om mee te vergelijken.";
