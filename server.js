@@ -1893,12 +1893,30 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
     .replace(/\s+/g, " ")
     .trim();
 
-  const modelKey = (v) => norm(v)
-    .replace(/\b\d+\s*(?:gb|tb)\b/ig, " ")
-    .replace(/\s+/g, " ")
-    .replace(/\b(paars|purple|zwart|black|wit|white|rood|red|blauw|blue|groen|green)\b/ig, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  const colorAliases = [
+    "natural titanium","desert titanium","blue titanium","white titanium","black titanium",
+    "titanium zwart","space grey","spacegray","midnight","starlight","ultramarijn","ultramarine",
+    "paars","purple","zwart","black","wit","white","rood","red","blauw","blue","groen","green",
+    "geel","yellow","oranje","orange","roze","pink","zilver","silver","goud","gold","grijs","grey","gray","koraal","coral"
+  ];
+  const colorKey = (v) => {
+    const x = norm(v);
+    const hit = [...colorAliases].sort((a,b)=>b.length-a.length).find(alias => x.includes(norm(alias)));
+    if (!hit) return "";
+    const map = {
+      purple:"paars", black:"zwart", white:"wit", red:"rood", blue:"blauw", green:"groen", yellow:"geel",
+      orange:"oranje", pink:"roze", silver:"zilver", gold:"goud", grey:"grijs", gray:"grijs", coral:"koraal",
+      spacegray:"space grey", "titanium zwart":"titanium zwart", "black titanium":"black titanium"
+    };
+    return map[hit] || hit;
+  };
+  const modelKey = (v) => {
+    let x = norm(v).replace(/\b\d+\s*(?:gb|tb)\b/ig, " ");
+    for (const alias of colorAliases.sort((a,b)=>b.length-a.length)) {
+      x = x.replace(new RegExp(`\\b${alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "ig"), " ");
+    }
+    return x.replace(/\s+/g, " ").trim();
+  };
 
   const storageKey = (v) => {
     const m = String(v ?? "").match(/(\d+)\s*gb/i);
@@ -2023,7 +2041,40 @@ app.put("/api/admin/forza/update-prices", requirePermission("site.save"), async 
         return acc;
       }, new Map()).entries())) {
         const wanted = groupRows[0].product;
-        const phoneIndex = data.phones.findIndex(phone => norm(phone?.name || "") === groupKey);
+        const wantedStorage = groupRows[0].storage;
+        const wantedModel = modelKey(wanted);
+        const wantedColor = colorKey(wanted);
+
+        // First try the exact product name. If HOMS TECH stores the same
+        // variant with a different word order (for example "Blauw 128GB"
+        // instead of "128GB Blauw"), fall back to model + storage + color.
+        let phoneIndex = data.phones.findIndex(phone => norm(phone?.name || "") === groupKey);
+        if (phoneIndex < 0) {
+          let bestIndex = -1;
+          let bestScore = -1;
+          for (let i = 0; i < data.phones.length; i++) {
+            const candidate = data.phones[i];
+            if (!candidate || typeof candidate !== "object") continue;
+            const candidateModel = modelKey(candidate.name || "");
+            if (!candidateModel || candidateModel !== wantedModel) continue;
+
+            const storages = Array.isArray(candidate.storage)
+              ? candidate.storage.map(storageKey)
+              : Array.isArray(candidate.storageOptions)
+                ? candidate.storageOptions.map(o => storageKey(o?.label))
+                : [storageKey(candidate.storage || candidate.memory || "")];
+            const hasStorage = storages.includes(wantedStorage);
+            if (!hasStorage) continue;
+
+            const candidateColor = colorKey(candidate.color || candidate.name || "");
+            let score = 100;
+            if (candidateColor && wantedColor && candidateColor === wantedColor) score += 100;
+            else if (wantedColor && candidateColor && candidateColor !== wantedColor) continue;
+            else if (wantedColor && !candidateColor) continue;
+            if (score > bestScore) { bestScore = score; bestIndex = i; }
+          }
+          phoneIndex = bestIndex;
+        }
         if (phoneIndex < 0) {
           missing.push(wanted);
           continue;
