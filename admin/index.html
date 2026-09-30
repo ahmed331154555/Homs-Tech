@@ -1412,11 +1412,11 @@ textarea{
     <div class="section-head">
       <div>
         <h2>🧪 Forza Test Import</h2>
-        <p>Publieke Forza-productgegevens lezen en controleren. Alleen lezen — er wordt niets opgeslagen in HOMS TECH.</p>
+        <p>Publieke Forza-productgegevens lezen en per gekozen model toevoegen aan HOMS TECH. Wijzigingen worden pas opgeslagen na «Wijzigingen opslaan».</p>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <button class="btn btn-light" id="forzaTestReloadBtn" onclick="loadForzaTest()">↻ Forza opnieuw lezen</button>
-        <button class="btn btn-green" id="forzaBulkImportBtn" onclick="forzaBulkImportAll()">🚀 Alle iPhones van Forza importeren</button>
+        <button class="btn btn-green" id="forzaImportSelectedModelBtn" onclick="forzaImportSelectedModel()">➕ Dit model volledig toevoegen</button>
       </div>
     </div>
 
@@ -1455,7 +1455,7 @@ textarea{
           <option value="iphone-17-pro">iPhone 17 Pro</option>
           <option value="iphone-17-pro-max">iPhone 17 Pro Max</option>
         </select>
-        <span class="small">Alleen lezen van de publieke Forza-pagina. Er wordt niets opgeslagen.</span>
+        <span class="small">Kies één model. Met «Dit model volledig toevoegen» worden alle beschikbare geheugens en kleuren van alleen dit model toegevoegd.</span>
       </div>
     </div>
 
@@ -1542,7 +1542,7 @@ textarea{
           <div>
             <h3 style="margin:0">📱 Forza-varianten</h3>
             <div class="small" style="margin-top:4px">
-              Handmatig kun je hier nog steeds per model, geheugen en kleur werken. Voor alles tegelijk gebruik je bovenaan <strong>Alle Forza-telefoons importeren</strong>.
+              Per model kun je hier alle gevonden geheugens en kleuren tegelijk toevoegen. Daarna kun je de producten afzonderlijk aanpassen.
               <strong>De import werkt eerst alleen in deze Admin-pagina; pas «Wijzigingen opslaan» schrijft de wijzigingen naar HOMS TECH.</strong>
             </div>
           </div>
@@ -5639,6 +5639,8 @@ function forzaRenderVariantManager(modelLabel, variants){
   if(status) status.textContent=`${clean.length} afzonderlijke variant(en) gevonden voor ${modelLabel}.`;
 }
 
+const HOMS_FORZA_PRICE_ADJUSTMENT = 10;
+
 async function forzaAddVariant(item,modelLabel,button){
   const status=document.getElementById("forzaVariantManagerStatus");
   if(button) button.disabled=true;
@@ -5661,9 +5663,11 @@ async function forzaAddVariant(item,modelLabel,button){
       .map(c=>({label:String(c?.name||c?.label||'').trim(),basePrice:Number(c?.price) }))
       .filter(c=>c.label && Number.isFinite(c.basePrice) && c.basePrice>=0):[];
     const directPrice=Number(p.price);
-    // De prijs is NIET de reden om een exacte variant te weigeren.
-    // Foto's, opslag, kleur, voorraad en productinformatie zijn leidend.
+    // Forza-prijs blijft als referentie exact bewaard. De verkoopprijs van HOMS TECH
+    // staat standaard €10 hoger. De gebruiker kan hem daarna zelf aanpassen.
     const forzaBasePrice=conditionRows.length ? conditionRows[0].basePrice : (Number.isFinite(directPrice)&&directPrice>=0 ? directPrice : null);
+    const homsPrice=Number.isFinite(forzaBasePrice) ? forzaBasePrice + HOMS_FORZA_PRICE_ADJUSTMENT : null;
+    const homsConditionRows=conditionRows.map(c=>({label:c.label,basePrice:c.basePrice + HOMS_FORZA_PRICE_ADJUSTMENT}));
 
     const batteryRows=Array.isArray(p.battery)?p.battery
       .map(b=>({label:String(b?.name||b?.label||'').trim(),priceDelta:Number(b?.delta)}))
@@ -5674,7 +5678,7 @@ async function forzaAddVariant(item,modelLabel,button){
 
     if(existing>=0 && existingPhone){
       // Bestaand product: neem de EXACTE Forza-variantinformatie over.
-      // De huidige HOMS TECH-verkoopprijs blijft onaangeroerd; Forza-prijs is alleen referentie.
+      // Forza-prijs blijft als referentie; HOMS TECH-prijs wordt standaard Forza + €10.
       existingPhone.name=productName;
       existingPhone.brand=String(p.brand||existingPhone.brand||"Apple");
       existingPhone.storage=[String(item.storage)];
@@ -5686,12 +5690,13 @@ async function forzaAddVariant(item,modelLabel,button){
       existingPhone.specifications=p.specs||p.specifications||existingPhone.specifications||{};
       existingPhone.storageOptions=[{label:String(item.storage),priceDelta:0,active:true}];
       existingPhone.colorOptions=[{label:String(item.color),priceDelta:0,active:true}];
-      if(conditionRows.length){
-        existingPhone.conditionOptions=conditionRows.map(c=>({label:c.label,basePrice:c.basePrice,active:true}));
+      if(homsConditionRows.length){
+        existingPhone.conditionOptions=homsConditionRows.map(c=>({label:c.label,basePrice:c.basePrice,active:true}));
       }
       if(batteryRows.length){
         existingPhone.batteryOptions=batteryRows.map(b=>({label:b.label,priceDelta:b.priceDelta,active:true}));
       }
+      if(Number.isFinite(homsPrice)) existingPhone.price=homsPrice;
       existingPhone.forzaPrice=Number.isFinite(forzaBasePrice) ? forzaBasePrice : existingPhone.forzaPrice;
       existingPhone.forzaPriceMatrix={};
       conditionRows.forEach(c=>{
@@ -5731,7 +5736,7 @@ async function forzaAddVariant(item,modelLabel,button){
     const normalized={
       name:productName,
       brand:String(p.brand||"Apple"),
-      price:Number.isFinite(forzaBasePrice) ? forzaBasePrice : 0,
+      price:Number.isFinite(homsPrice) ? homsPrice : 0,
       forzaPrice:Number.isFinite(forzaBasePrice) ? forzaBasePrice : 0,
       storage:[String(item.storage)],
       color:String(item.color),
@@ -5751,7 +5756,7 @@ async function forzaAddVariant(item,modelLabel,button){
       images:importImages ? forzaImages.slice(0,4) : ["","","",""],
       conditionDetails:[],
       specifications:p.specs||p.specifications||{},
-      conditionOptions:conditionRows.length ? conditionRows.map(c=>({label:c.label,basePrice:c.basePrice,active:true})) : [{label:"Zo goed als nieuw",basePrice:Number.isFinite(forzaBasePrice)?forzaBasePrice:0,active:true}],
+      conditionOptions:homsConditionRows.length ? homsConditionRows.map(c=>({label:c.label,basePrice:c.basePrice,active:true})) : [{label:"Zo goed als nieuw",basePrice:Number.isFinite(homsPrice)?homsPrice:0,active:true}],
       storageOptions:[{label:String(item.storage),priceDelta:0,active:true}],
       colorOptions:[{label:String(item.color),priceDelta:0,active:true}],
       batteryOptions:batteryRows.length ? batteryRows.map(b=>({label:b.label,priceDelta:b.priceDelta,active:true})) : [{label:"Standaard",priceDelta:0,active:true}],
@@ -5784,6 +5789,78 @@ async function forzaAddVariant(item,modelLabel,button){
     if(button) button.disabled=false;
   }
 }
+async function forzaImportSelectedModel(){
+  const btn=document.getElementById("forzaImportSelectedModelBtn");
+  const status=document.getElementById("forzaVariantManagerStatus");
+  const select=document.getElementById("forzaTestModelSelect");
+  const modelKey=select?.value||"";
+  const modelLabel=select?.selectedOptions?.[0]?.textContent?.trim()||modelKey;
+  if(!modelKey){
+    if(status) status.textContent="Kies eerst een model.";
+    return;
+  }
+  if(!forzaPreviewModel){
+    await loadForzaTest();
+  }
+
+  const ok=window.confirm(
+    `Alle beschikbare geheugens en kleuren van ${modelLabel} toevoegen?\n\n`+
+    `Alleen dit model wordt geïmporteerd. Andere iPhone-modellen blijven onaangeraakt.\n`+
+    `De HOMS TECH-prijs wordt standaard Forza + €${HOMS_FORZA_PRICE_ADJUSTMENT}.\n`+
+    `Je kunt de prijzen daarna zelf aanpassen.`
+  );
+  if(!ok) return;
+
+  if(btn) btn.disabled=true;
+  try{
+    if(status) status.textContent=`⏳ ${modelLabel}: Forza-varianten worden opgehaald...`;
+    const r=await fetch(`/api/forza-test?model=${encodeURIComponent(modelKey)}`,{credentials:"same-origin",headers:{"Accept":"application/json"}});
+    const payload=await r.json().catch(()=>({}));
+    if(!r.ok || payload.success===false) throw new Error(payload.error||`HTTP ${r.status}`);
+
+    const x=forzaAdminFindResult(payload);
+    let variants=Array.isArray(x.colorVariants)?x.colorVariants.slice():[];
+    if(!variants.length && x.product && Array.isArray(x.product.colorVariants)) variants=x.product.colorVariants.slice();
+    const dedupe=new Map();
+    variants.forEach(v=>{
+      const storage=String(v?.storage||"").trim();
+      const color=String(v?.color||"").trim();
+      const productName=String(v?.productName||"").trim();
+      if(!storage||!color||!productName)return;
+      dedupe.set(forzaVariantKey(modelLabel,storage,color),{...v,storage,color,productName});
+    });
+    variants=[...dedupe.values()];
+    if(!variants.length) throw new Error(`Geen afzonderlijke geheugen/kleur-varianten gevonden voor ${modelLabel}.`);
+
+    let done=0,failed=0;
+    const errors=[];
+    for(let i=0;i<variants.length;i++){
+      const item=variants[i];
+      if(status) status.textContent=`⏳ ${modelLabel}: ${i+1}/${variants.length} — ${item.storage} ${item.color}`;
+      const before=forzaCurrentPhoneIndex(item.productName);
+      await forzaAddVariant(item,modelLabel,null);
+      const after=forzaCurrentPhoneIndex(item.productName);
+      if(after>=0){
+        done++;
+      }else{
+        failed++;
+        errors.push(item.productName);
+      }
+    }
+    renderPhones();
+    markChanged();
+    if(status){
+      status.className=failed?"status info":"status success";
+      status.textContent=`✓ ${modelLabel}: ${done} variant(en) klaar. HOMS TECH-prijs = Forza + €${HOMS_FORZA_PRICE_ADJUSTMENT}.`+(failed?` ${failed} mislukt.`:" Alles staat klaar; druk op «Wijzigingen opslaan». ");
+    }
+    if(errors.length) console.warn("Forza model import errors:",errors);
+  }catch(error){
+    if(status){status.className="status error";status.textContent=`✕ ${error.message||"Model import mislukt."}`;}
+  }finally{
+    if(btn) btn.disabled=false;
+  }
+}
+
 async function forzaBulkImportAll(){
   const btn=document.getElementById("forzaBulkImportBtn");
   const status=document.getElementById("forzaVariantManagerStatus");
