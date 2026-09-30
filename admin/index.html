@@ -5459,9 +5459,20 @@ async function updateHomsPricesFromForza(){
   }
 
   const rows=forzaAdminBuildPreview();
-  const detailed=rows.length===54 && rows.every(r=>r && r.product && r.storage && r.condition && Number.isFinite(Number(r.price)));
+  const variantGroups=new Map();
+  for(const row of rows){
+    const key=[row.product,row.storage,row.color].map(v=>String(v||"").trim().toLowerCase()).join("|");
+    if(!variantGroups.has(key)) variantGroups.set(key,[]);
+    variantGroups.get(key).push(row);
+  }
+  const expectedVariants=Array.isArray(forzaPreviewModel.colorVariants)
+    ? new Set(forzaPreviewModel.colorVariants.map(v=>[v?.productName,v?.storage,v?.color].map(x=>String(x||"").trim().toLowerCase()).join("|")).filter(Boolean)).size
+    : variants.size;
+  const expectedRows=expectedVariants*3;
+  const detailed=rows.length>0 && rows.every(r=>r && r.product && r.storage && r.condition && Number.isFinite(Number(r.price))) &&
+    (expectedVariants ? variantGroups.size===expectedVariants && rows.length===expectedRows : true);
   if(!detailed){
-    if(status){status.className="status error";status.textContent="De gedetailleerde Forza-preview is niet compleet (verwacht 54 geldige regels). Er is niets gewijzigd.";}
+    if(status){status.className="status error";status.textContent=`De gedetailleerde Forza-preview is niet compleet (verwacht ${expectedRows || "een dynamisch aantal"} geldige regels). Er is niets gewijzigd.`;}
     return;
   }
 
