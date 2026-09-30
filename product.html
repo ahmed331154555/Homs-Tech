@@ -259,6 +259,7 @@ nav{justify-content:center}
 const params = new URLSearchParams(location.search);
 const type = params.get("type") || "phone";
 const id = Number(params.get("id"));
+let currentProductId = id;
 
 function esc(v){
 return String(v ?? "")
@@ -353,20 +354,106 @@ function conditionBasePrice(option, product){
   if(option.conditionBasePrice!==undefined && option.conditionBasePrice!==null && option.conditionBasePrice!=="") return num(option.conditionBasePrice);
   return num(product?.price || product?.salePrice || product?.sellPrice || 0) + optionDelta(option);
 }
+function normalizeStorageValue(v){
+  return String(v ?? "").replace(/\s+/g, "").toLowerCase();
+}
+function normalizeColorValue(v){
+  return String(v ?? "").trim().toLowerCase();
+}
+function productModelIdentity(product){
+  if(!product) return "";
+  const explicit=product.catalogFamily || product.catalogModel || product.catalogKey;
+  if(explicit) return String(explicit).toLowerCase().trim();
+  let name=String(product.name||"");
+  name=name.replace(/\b\d+\s*(?:GB|TB)\b/ig, "");
+  const colors=["zwart","wit","blauw","rood","groen","geel","paars","goud","zilver","rose","roze","oranje","bruin","grijs","space grey","silver","gold","purple","blue","white","black","green","red"];
+  const colorPattern=new RegExp("\\s+(?:"+colors.map(c=>c.replace(/[-/\\^$*+?.()|[\]{}]/g,"\\$&")).join("|")+")$","i");
+  name=name.replace(colorPattern,"");
+  return name.replace(/\s{2,}/g," ").trim().toLowerCase();
+}
+function currentProductSiblings(){
+  if(!currentData || !currentProduct) return [];
+  const list=type==="used" ? (Array.isArray(currentData.usedPhones)?currentData.usedPhones:[]) : (Array.isArray(currentData.phones)?currentData.phones:(Array.isArray(currentData.devices)?currentData.devices:[]));
+  const identity=productModelIdentity(currentProduct);
+  return list.map((p,i)=>({p,i})).filter(({p})=>productModelIdentity(p)===identity);
+}
+function findVariantProduct(storage,color){
+  const siblings=currentProductSiblings();
+  const s=normalizeStorageValue(storage), c=normalizeColorValue(color);
+  let hit=siblings.find(({p})=>{
+    const ps=Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"";
+    const pc=p.color||p.kleur||"";
+    return normalizeStorageValue(ps)===s && normalizeColorValue(pc)===c;
+  });
+  if(hit) return hit;
+  hit=siblings.find(({p})=>{
+    const ps=Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"";
+    return normalizeStorageValue(ps)===s;
+  });
+  if(hit) return hit;
+  return siblings.find(({p})=>{
+    const pc=p.color||p.kleur||"";
+    return normalizeColorValue(pc)===c;
+  }) || null;
+}
+function switchToProductVariant(hit){
+  if(!hit || !hit.p) return false;
+  const old={...selectedOptions};
+  currentProduct=hit.p;
+  currentProductId=hit.i;
+  const storage=Array.isArray(hit.p.storage)?hit.p.storage[0]:hit.p.storage||hit.p.geheugen||"";
+  const color=hit.p.color||hit.p.kleur||"";
+  selectedOptions={...old};
+  if(storage) selectedOptions.storage=String(storage);
+  if(color) selectedOptions.color=String(color);
+  const conditions=effectiveOptions(currentProduct,"condition");
+  if(!conditions.some(x=>x.label===selectedOptions.condition)) selectedOptions.condition=conditions[0]?.label||"";
+  const batteries=effectiveOptions(currentProduct,"battery");
+  if(!batteries.some(x=>x.label===selectedOptions.battery)) selectedOptions.battery=batteries[0]?.label||"";
+  const vats=effectiveOptions(currentProduct,"vat");
+  if(!vats.some(x=>x.label===selectedOptions.vat)) selectedOptions.vat=vats[0]?.label||"";
+  const trades=effectiveOptions(currentProduct,"tradeIn");
+  if(!trades.some(x=>x.label===selectedOptions.tradeIn)) selectedOptions.tradeIn=trades[0]?.label||"";
+  const url=new URL(location.href);
+  url.searchParams.set("type",type);
+  url.searchParams.set("id",String(currentProductId));
+  history.replaceState({},"",url.toString());
+  renderProductBody();
+  return true;
+}
 function selectProductOption(key,label){
+  if(key==="storage" || key==="color"){
+    const storage=key==="storage" ? label : selectedOptions.storage;
+    const color=key==="color" ? label : selectedOptions.color;
+    const hit=findVariantProduct(storage,color);
+    if(switchToProductVariant(hit)) return;
+  }
   selectedOptions[key]=label;
-  // Recalculate immediately so the main price always follows the selected condition.
   renderProductBody();
   const priceEl=document.getElementById("selectedConditionPrice");
-  if(priceEl && currentProduct){
-    const selectedCondition=effectiveOptions(currentProduct,"condition").find(x=>x.label===selectedOptions.condition);
-    priceEl.textContent=money(calculateTotal(currentProduct));
-  }
+  if(priceEl && currentProduct) priceEl.textContent=money(calculateTotal(currentProduct));
 }
 function renderOptionSection(key,title,list){
   const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
   const raw=Array.isArray(currentProduct[map[key]]) ? currentProduct[map[key]] : [];
-  const base=raw.length?raw:effectiveOptions(currentProduct,key);
+  let base=raw.length?raw:effectiveOptions(currentProduct,key);
+  // For storage/color, build the choices from all real variants of this model.
+  // Each imported Forza variant is a separate product, so selecting an option
+  // must switch to that exact product instead of only changing the button style.
+  if(key==="storage" || key==="color"){
+    const siblings=currentProductSiblings();
+    const seen=new Set();
+    const variantOptions=[];
+    for(const {p} of siblings){
+      const value=key==="storage" ? (Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"") : (p.color||p.kleur||"");
+      if(!value) continue;
+      const norm=key==="storage" ? normalizeStorageValue(value) : normalizeColorValue(value);
+      if(seen.has(norm)) continue;
+      seen.add(norm);
+      variantOptions.push({label:String(value),priceDelta:0,active:true,available:true});
+    }
+    if(variantOptions.length) base=variantOptions;
+  }
   list=base.filter(x=>x&&x.label&&(x.active!==false && x.enabled!==false));
   if(!list.length) return "";
   // Storage and color availability must follow the actual options imported from Forza.
@@ -411,10 +498,10 @@ function addCurrentProductToCart(){
   const options={};
   ["storage","color","condition","battery","vat","tradeIn"].forEach(k=>{if(selectedOptions[k]) options[k]=selectedOptions[k]});
   const items=readCart();
-  const key=String(type)+"|"+String(id)+"|"+JSON.stringify(options);
+  const key=String(type)+"|"+String(currentProductId)+"|"+JSON.stringify(options);
   const found=items.find(x=>x.key===key);
   if(found) found.qty=Number(found.qty||1)+1;
-  else items.push({key,type,id,name:currentProduct.name||"Smartphone",brand:currentProduct.brand||"",image:(Array.isArray(currentProduct.images)&&currentProduct.images[0])||currentProduct.image||"",options,unitPrice:total,qty:1});
+  else items.push({key,type,id:currentProductId,name:currentProduct.name||"Smartphone",brand:currentProduct.brand||"",image:(Array.isArray(currentProduct.images)&&currentProduct.images[0])||currentProduct.image||"",options,unitPrice:total,qty:1});
   writeCart(items);
   const msg=document.getElementById("cartAdded"); if(msg){msg.style.display="block";msg.textContent="✓ Toegevoegd aan winkelwagen";setTimeout(()=>msg.style.display="none",2200)}
 }
