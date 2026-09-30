@@ -1318,6 +1318,62 @@ function forzaImageMatchKey(value) {
 }
 
 // V29: V16 exact-variant fetching + V10 gallery extraction.
+function forzaExtractExactPageGalleryImages(html) {
+  const images = [];
+  const seen = new Set();
+  const add = value => {
+    if (!value) return;
+    const raw = String(value).replace(/&amp;/gi, "&");
+    const urls = raw.match(/https?:\/\/[^\s,"'<>]+/gi) || [];
+    for (const u0 of urls) {
+      const u = u0.replace(/[)\]}]+$/g, "");
+      if (!/^https?:\/\//i.test(u)) continue;
+      if (!seen.has(u)) { seen.add(u); images.push(u); }
+    }
+  };
+
+  // Exact Forza product pages expose the gallery through normal/lazy img
+  // attributes. Because this helper is called only after the exact product
+  // URL has been selected, these images belong to that exact color/storage.
+  const imgTags = String(html || "").match(/<img\b[^>]*>/gi) || [];
+  for (const tag of imgTags) {
+    const attrs = {};
+    const re = /([:\w-]+)\s*=\s*["']([^"']*)["']/gi;
+    let m;
+    while ((m = re.exec(tag))) attrs[m[1].toLowerCase()] = m[2];
+    add(attrs.src);
+    add(attrs["data-src"]);
+    add(attrs["data-lazy-src"]);
+    add(attrs.srcset);
+    add(attrs["data-srcset"]);
+    if (images.length >= 8) break;
+  }
+
+  // Also inspect JSON-LD image arrays on the exact page.
+  const scripts = String(html || "").match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/gi) || [];
+  for (const script of scripts) {
+    const body = script.replace(/^.*?>/s, "").replace(/<\/script>\s*$/i, "");
+    try {
+      const data = JSON.parse(body);
+      const walk = value => {
+        if (!value) return;
+        if (Array.isArray(value)) { value.forEach(walk); return; }
+        if (typeof value !== "object") return;
+        if (value.image) {
+          if (Array.isArray(value.image)) value.image.forEach(add);
+          else if (typeof value.image === "string") add(value.image);
+        }
+        Object.values(value).forEach(v => {
+          if (v && typeof v === "object") walk(v);
+        });
+      };
+      walk(data);
+    } catch {}
+    if (images.length >= 8) break;
+  }
+  return [...new Set(images)].slice(0, 8);
+}
+
 function forzaExtractVariantGalleryImages(html, productName) {
   const wanted = forzaImageMatchKey(productName);
   if (!wanted) return [];
@@ -1636,15 +1692,21 @@ async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl, pr
         if (wantedModel && gotModel &&
             !gotModel.includes(wantedModel) && !wantedModel.includes(gotModel)) continue;
 
+        // The URL is already the concrete Forza color/storage page. Do not
+        // require the color to be repeated in every image ALT: Forza can use
+        // generic/lazy-loaded ALT text even though the page itself is exact.
+        // Read the gallery from that exact page first, so blue/yellow/purple/etc.
+        // can never inherit the overview/black gallery.
+        const exactPageImages = forzaExtractExactPageGalleryImages(page.html);
+        if (exactPageImages.length >= 4) {
+          return { url, parsed, images: exactPageImages.slice(0, 4) };
+        }
+
         const images = forzaExtractVariantGalleryImages(page.html, productName);
         if (images.length >= 4) {
           return { url, parsed, images: [...new Set(images)].slice(0, 4) };
         }
 
-        // Exact product pages can expose the real gallery in JSON-LD even when
-        // the rendered <img> tags are lazy-loaded or missing from the HTML
-        // returned to the server. Because this is already the exact variant
-        // URL, the JSON-LD image list is safe to use as the variant gallery.
         const jsonLdImages = Array.isArray(parsed?.product?.images)
           ? [...new Set(parsed.product.images.filter(v => /^https?:\/\//i.test(String(v))))]
           : [];
