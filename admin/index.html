@@ -5661,8 +5661,9 @@ async function forzaAddVariant(item,modelLabel,button){
       .map(c=>({label:String(c?.name||c?.label||'').trim(),basePrice:Number(c?.price) }))
       .filter(c=>c.label && Number.isFinite(c.basePrice) && c.basePrice>=0):[];
     const directPrice=Number(p.price);
-    const basePrice=conditionRows.length ? conditionRows[0].basePrice : (Number.isFinite(directPrice)&&directPrice>=0 ? directPrice : null);
-    if(!Number.isFinite(basePrice)) throw new Error("Forza heeft voor deze variant geen geldige verkoopprijs teruggegeven. Er is niets gewijzigd.");
+    // De prijs is NIET de reden om een exacte variant te weigeren.
+    // Foto's, opslag, kleur, voorraad en productinformatie zijn leidend.
+    const forzaBasePrice=conditionRows.length ? conditionRows[0].basePrice : (Number.isFinite(directPrice)&&directPrice>=0 ? directPrice : null);
 
     const batteryRows=Array.isArray(p.battery)?p.battery
       .map(b=>({label:String(b?.name||b?.label||'').trim(),priceDelta:Number(b?.delta)}))
@@ -5672,42 +5673,66 @@ async function forzaAddVariant(item,modelLabel,button){
     const existingPhone=existing>=0 ? data.phones[existing] : null;
 
     if(existing>=0 && existingPhone){
-      // Bestaand product: alleen Forza-prijsdata bijwerken in de huidige Admin-lijst.
-      // Nog niets naar de database schrijven tot de gebruiker zelf op Opslaan drukt.
-      existingPhone.price=basePrice;
-      existingPhone.forzaPrice=basePrice;
+      // Bestaand product: neem de EXACTE Forza-variantinformatie over.
+      // De huidige HOMS TECH-verkoopprijs blijft onaangeroerd; Forza-prijs is alleen referentie.
+      existingPhone.name=productName;
+      existingPhone.brand=String(p.brand||existingPhone.brand||"Apple");
+      existingPhone.storage=[String(item.storage)];
+      existingPhone.memory=String(item.storage);
+      existingPhone.color=String(item.color);
+      existingPhone.sku=String(p.sku||existingPhone.sku||"");
+      existingPhone.stock=Number.isFinite(Number(p.stock)) ? Number(p.stock) : existingPhone.stock;
+      existingPhone.description=String(p.description||existingPhone.description||"");
+      existingPhone.specifications=p.specs||p.specifications||existingPhone.specifications||{};
+      existingPhone.storageOptions=[{label:String(item.storage),priceDelta:0,active:true}];
+      existingPhone.colorOptions=[{label:String(item.color),priceDelta:0,active:true}];
       if(conditionRows.length){
         existingPhone.conditionOptions=conditionRows.map(c=>({label:c.label,basePrice:c.basePrice,active:true}));
       }
       if(batteryRows.length){
         existingPhone.batteryOptions=batteryRows.map(b=>({label:b.label,priceDelta:b.priceDelta,active:true}));
       }
+      existingPhone.forzaPrice=Number.isFinite(forzaBasePrice) ? forzaBasePrice : existingPhone.forzaPrice;
       existingPhone.forzaPriceMatrix={};
       conditionRows.forEach(c=>{
-        existingPhone.forzaPriceMatrix[`${item.storage}|${c.label}|standaard`]=c.basePrice;
+        if(Number.isFinite(c.basePrice)) existingPhone.forzaPriceMatrix[`${item.storage}|${c.label}|standaard`]=c.basePrice;
         const batt=batteryRows.find(b=>b.label.toLowerCase()==='nieuw');
-        if(batt) existingPhone.forzaPriceMatrix[`${item.storage}|${c.label}|nieuw`]=c.basePrice+batt.priceDelta;
+        if(batt && Number.isFinite(c.basePrice) && Number.isFinite(batt.priceDelta)) existingPhone.forzaPriceMatrix[`${item.storage}|${c.label}|nieuw`]=c.basePrice+batt.priceDelta;
       });
       existingPhone.forzaPriceMatrixSource="Forza public website";
       existingPhone.forzaPriceMatrixUpdatedAt=new Date().toISOString();
       existingPhone.forzaSourceUrl=String(payload.exactVariantSourceUrl||item.sourceUrl||existingPhone.forzaSourceUrl||"");
+      existingPhone.forzaImportedAt=new Date().toISOString();
       if(importImages && forzaImages.length){
         existingPhone.images=forzaImages.slice(0,4);
-        existingPhone.forzaProductData={...(existingPhone.forzaProductData||{}),images:forzaImages.slice(0,4)};
       }
-      existingPhone.forzaProductData={...(existingPhone.forzaProductData||{}),price:basePrice,conditions:p.conditions||[],battery:p.battery||[],sourceUrl:existingPhone.forzaSourceUrl,syncedAt:new Date().toISOString()};
+      existingPhone.forzaProductData={
+        ...(existingPhone.forzaProductData||{}),
+        name:productName,brand:existingPhone.brand,sku:existingPhone.sku,color:existingPhone.color,
+        storage:[String(item.storage)],price:Number.isFinite(forzaBasePrice)?forzaBasePrice:null,
+        conditions:p.conditions||[],battery:p.battery||[],stock:p.stock??null,
+        specs:p.specs||p.specifications||[],description:existingPhone.description,
+        images:importImages ? forzaImages.slice(0,4) : (existingPhone.forzaProductData?.images||[]),
+        sourceUrl:existingPhone.forzaSourceUrl,syncedAt:new Date().toISOString()
+      };
+      existingPhone.catalogBrand=existingPhone.brand;
+      existingPhone.catalogModel=modelLabel;
+      existingPhone.catalogFamily=modelLabel;
+      existingPhone.catalogStorage=String(item.storage);
+      existingPhone.catalogColor=String(item.color);
+      existingPhone.catalogKey=`${existingPhone.brand.toLowerCase()}|${String(modelLabel).toLowerCase()}|${item.storage}|${item.color}`.toLowerCase();
       renderPhones();
       markChanged();
-      if(status) status.textContent=`✓ ${productName}: prijs van Forza (${basePrice.toFixed(2).replace('.',',')} €) staat klaar. Nog niet opgeslagen.`;
-      if(button && button.parentElement) button.parentElement.innerHTML=`<span class="tag" style="background:#dcfce7;color:#166534">✓ Forza-prijs klaar — wacht op Opslaan</span>`;
+      if(status) status.textContent=`✓ ${productName}: exacte Forza-foto's, kleur, opslag, voorraad en gegevens staan klaar. Nog niet opgeslagen.`;
+      if(button && button.parentElement) button.parentElement.innerHTML=`<span class="tag" style="background:#dcfce7;color:#166534">✓ Exacte Forza-gegevens klaar — wacht op Opslaan</span>`;
       return;
     }
 
     const normalized={
       name:productName,
       brand:String(p.brand||"Apple"),
-      price:basePrice,
-      forzaPrice:basePrice,
+      price:Number.isFinite(forzaBasePrice) ? forzaBasePrice : 0,
+      forzaPrice:Number.isFinite(forzaBasePrice) ? forzaBasePrice : 0,
       storage:[String(item.storage)],
       color:String(item.color),
       condition:"Zo goed als nieuw",
@@ -5722,11 +5747,11 @@ async function forzaAddVariant(item,modelLabel,button){
       memory:String(item.storage),
       gpu:"",
       screenSize:"",
-      releaseYear:"2021",
+      releaseYear:({"iPhone 11":"2019","iPhone 12":"2020","iPhone 14":"2022"}[modelLabel] || ""),
       images:importImages ? forzaImages.slice(0,4) : ["","","",""],
       conditionDetails:[],
       specifications:p.specs||p.specifications||{},
-      conditionOptions:conditionRows.length ? conditionRows.map(c=>({label:c.label,basePrice:c.basePrice,active:true})) : [{label:"Zo goed als nieuw",basePrice:basePrice,active:true}],
+      conditionOptions:conditionRows.length ? conditionRows.map(c=>({label:c.label,basePrice:c.basePrice,active:true})) : [{label:"Zo goed als nieuw",basePrice:Number.isFinite(forzaBasePrice)?forzaBasePrice:0,active:true}],
       storageOptions:[{label:String(item.storage),priceDelta:0,active:true}],
       colorOptions:[{label:String(item.color),priceDelta:0,active:true}],
       batteryOptions:batteryRows.length ? batteryRows.map(b=>({label:b.label,priceDelta:b.priceDelta,active:true})) : [{label:"Standaard",priceDelta:0,active:true}],
@@ -5740,7 +5765,7 @@ async function forzaAddVariant(item,modelLabel,button){
       forzaPriceMatrixUpdatedAt:new Date().toISOString(),
       forzaSourceUrl:String(payload.exactVariantSourceUrl||item.sourceUrl||""),
       forzaImportedAt:new Date().toISOString(),
-      forzaProductData:{name:productName,brand:String(p.brand||"Apple"),sku:String(p.sku||""),color:String(item.color),storage:[String(item.storage)],price:basePrice,conditions:p.conditions||[],battery:p.battery||[],stock:p.stock??null,specs:p.specs||[],description:String(p.description||""),images:importImages ? forzaImages.slice(0,4) : [],sourceUrl:String(payload.exactVariantSourceUrl||item.sourceUrl||""),syncedAt:new Date().toISOString()},
+      forzaProductData:{name:productName,brand:String(p.brand||"Apple"),sku:String(p.sku||""),color:String(item.color),storage:[String(item.storage)],price:Number.isFinite(forzaBasePrice)?forzaBasePrice:null,conditions:p.conditions||[],battery:p.battery||[],stock:p.stock??null,specs:p.specs||[],description:String(p.description||""),images:importImages ? forzaImages.slice(0,4) : [],sourceUrl:String(payload.exactVariantSourceUrl||item.sourceUrl||""),syncedAt:new Date().toISOString()},
       catalogBrand:String(p.brand||"Apple"),
       catalogFamily:modelLabel,
       catalogModel:modelLabel,
@@ -5752,7 +5777,7 @@ async function forzaAddVariant(item,modelLabel,button){
     data.phones.push(normalized);
     renderPhones();
     markChanged();
-    if(status) status.textContent=`✓ ${productName} أضيف بسعر Forza ${basePrice.toFixed(2).replace('.',',')} €. لسه ما انحفظ بقاعدة البيانات.`;
+    if(status) status.textContent=`✓ ${productName}: exacte Forza-foto's, kleur, opslag, voorraad en gegevens toegevoegd. Nog niet opgeslagen.`;
     if(button && button.parentElement) button.parentElement.innerHTML='<span class="tag" style="background:#dcfce7;color:#166534">✓ مضاف + سعر Forza جاهز</span>';
   }catch(error){
     if(status) status.textContent=`✕ ${error.message||"Toevoegen mislukt. Er is niets opgeslagen."}`;
