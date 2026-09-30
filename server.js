@@ -1752,7 +1752,7 @@ async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl, pr
         // generic/lazy-loaded ALT text even though the page itself is exact.
         // Read the gallery from that exact page first, so blue/yellow/purple/etc.
         // can never inherit the overview/black gallery.
-        const exactPageImages = forzaExtractExactPageGalleryImages(page.html, productName);
+        const exactPageImages = forzaExtractExactPageGalleryImages(page.html);
         if (exactPageImages.length >= 4) {
           return { url, parsed, images: exactPageImages.slice(0, 4) };
         }
@@ -1838,7 +1838,82 @@ const FORZA_TEST_MODELS = {
 };
 
 function forzaGetTestModel(modelKey) {
-  return FORZA_TEST_MODELS[String(modelKey || "").trim().toLowerCase()] || null;
+  const key = String(modelKey || "").trim().toLowerCase();
+  const existing = FORZA_TEST_MODELS[key];
+  if (existing) return existing;
+
+  // Keep the Admin model list authoritative: every model already present in
+  // the dropdown can be tested/imported one-by-one. The overview URL is used
+  // only to discover the real storage/colour variants; we never invent a
+  // colour or storage combination.
+  const labels = {
+    "iphone-se-2022": "iPhone SE (2022)",
+    "iphone-11-pro": "iPhone 11 Pro",
+    "iphone-11-pro-max": "iPhone 11 Pro Max",
+    "iphone-12-mini": "iPhone 12 Mini",
+    "iphone-12-pro": "iPhone 12 Pro",
+    "iphone-12-pro-max": "iPhone 12 Pro Max",
+    "iphone-13-mini": "iPhone 13 Mini",
+    "iphone-13": "iPhone 13",
+    "iphone-13-pro": "iPhone 13 Pro",
+    "iphone-13-pro-max": "iPhone 13 Pro Max",
+    "iphone-14-plus": "iPhone 14 Plus",
+    "iphone-14-pro": "iPhone 14 Pro",
+    "iphone-14-pro-max": "iPhone 14 Pro Max",
+    "iphone-15": "iPhone 15",
+    "iphone-15-plus": "iPhone 15 Plus",
+    "iphone-15-pro": "iPhone 15 Pro",
+    "iphone-15-pro-max": "iPhone 15 Pro Max",
+    "iphone-16e": "iPhone 16e",
+    "iphone-16": "iPhone 16",
+    "iphone-16-plus": "iPhone 16 Plus",
+    "iphone-16-pro": "iPhone 16 Pro",
+    "iphone-16-pro-max": "iPhone 16 Pro Max",
+    "iphone-17e": "iPhone 17e",
+    "iphone-17": "iPhone 17",
+    "iphone-air": "iPhone Air",
+    "iphone-17-pro": "iPhone 17 Pro",
+    "iphone-17-pro-max": "iPhone 17 Pro Max"
+  };
+  const overviewPaths = {
+    "iphone-se-2022": "se-2022-overzicht",
+    "iphone-11-pro": "iphone-11-pro-overzicht",
+    "iphone-11-pro-max": "iphone-11-pro-max",
+    "iphone-12-mini": "iphone-12-mini-overzicht",
+    "iphone-12-pro": "iphone-12-pro-overzicht",
+    "iphone-12-pro-max": "iphone-12-pro-max-overzicht",
+    "iphone-13-mini": "iphone-13-mini-overzicht",
+    "iphone-13": "iphone-13-overzicht",
+    "iphone-13-pro": "iphone-13-pro-overzicht",
+    "iphone-13-pro-max": "iphone-13-pro-max-overzicht",
+    "iphone-14-plus": "iphone-14-plus-overzicht",
+    "iphone-14-pro": "iphone-14-pro-overzicht",
+    "iphone-14-pro-max": "iphone-14-pro-max-overzicht",
+    "iphone-15": "iphone-15-overzicht",
+    "iphone-15-plus": "iphone-15-plus-overzicht",
+    "iphone-15-pro": "iphone-15-pro",
+    "iphone-15-pro-max": "iphone-15-pro-max",
+    "iphone-16e": "iphone-16e-overzicht",
+    "iphone-16": "iphone-16-overzicht",
+    "iphone-16-plus": "iphone-16-plus-overzicht",
+    "iphone-16-pro": "iphone-16-pro-overzicht",
+    "iphone-16-pro-max": "iphone-16-pro-max-overzicht",
+    "iphone-17e": "iphone-17-e-overzicht",
+    "iphone-17": "iphone-17-overzicht",
+    "iphone-air": "iphone-air-overzicht",
+    "iphone-17-pro": "iphone-17-pro-overzicht",
+    "iphone-17-pro-max": "iphone-17-pro-max-overzicht"
+  };
+  if (!labels[key] || !overviewPaths[key]) return null;
+  return {
+    label: labels[key],
+    sourceUrl: `https://www.forza-refurbished.nl/refurbished-iphone/${overviewPaths[key]}`,
+    // The actual variants are discovered from the selected Forza overview.
+    // This broad whitelist is only for storage parsing; missing storages are
+    // filtered out because they must exist on Forza's page.
+    storages: ["64GB", "128GB", "256GB", "512GB", "1TB", "2TB"],
+    fallbacks: {}
+  };
 }
 
 // V12: exact iPhone 12 variant matrix from the current Forza catalog.
@@ -2433,7 +2508,7 @@ app.get("/api/forza-test", requirePermission("phones.view"), async (req, res) =>
     return res.status(400).json({
       success: false,
       readOnly: true,
-      error: "Onbekend Forza-testmodel. Kies iPhone 11, iPhone 12 of iPhone 14."
+      error: "Onbekend Forza-testmodel. Kies een model uit de Admin-lijst."
     });
   }
   const requestedVariant = String(req.query.variant || "").trim();
