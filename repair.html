@@ -717,8 +717,17 @@
     dateInput.min = localToday;
   }
 
+  let availabilityRequestId = 0;
+  let availabilityController = null;
+
   async function loadRepairAvailability(){
-    if(currentMethod !== "home" || !dateInput.value) return;
+    const requestedDate = dateInput?.value || "";
+    if(currentMethod !== "home" || !requestedDate) return;
+
+    const requestId = ++availabilityRequestId;
+    if (availabilityController) availabilityController.abort();
+    availabilityController = new AbortController();
+
     availabilityMessage.textContent = "Beschikbaarheid controleren...";
     availabilityMessage.style.color = "#64748b";
     [...timeSelect.options].forEach(o => {
@@ -726,8 +735,13 @@
       o.textContent = o.value || "Kies een tijdstip";
     });
     try {
-      const r = await fetch("/api/repair/availability?date=" + encodeURIComponent(dateInput.value), {credentials:"same-origin"});
+      const r = await fetch("/api/repair/availability?date=" + encodeURIComponent(requestedDate), {
+        credentials:"same-origin",
+        cache:"no-store",
+        signal: availabilityController.signal
+      });
       const data = await r.json().catch(()=>({}));
+      if (requestId !== availabilityRequestId || dateInput.value !== requestedDate) return;
       if(!r.ok) throw new Error(data.error || "Beschikbaarheid kon niet worden geladen.");
       const booked = new Set(data.booked || []);
       let available = 0;
@@ -741,9 +755,14 @@
         }
       });
       if (timeSelect.value && booked.has(timeSelect.value)) timeSelect.value = "";
-      availabilityMessage.textContent = available ? "Groene tijden zijn beschikbaar." : "Deze dag is volgeboekt. Kies een andere datum.";
+      const shownDate = requestedDate.split("-").reverse().join("-");
+      availabilityMessage.textContent = available
+        ? `Beschikbaarheid voor ${shownDate}: ${available} tijdstip(pen) beschikbaar.`
+        : `Deze dag (${shownDate}) is volgeboekt. Kies een andere datum.`;
       availabilityMessage.style.color = available ? "#16a34a" : "#dc2626";
     } catch(error) {
+      if (error?.name === "AbortError") return;
+      if (requestId !== availabilityRequestId || dateInput.value !== requestedDate) return;
       availabilityMessage.textContent = error.message || "Beschikbaarheid kon niet worden geladen.";
       availabilityMessage.style.color = "#dc2626";
     }
@@ -787,10 +806,22 @@
     }
 
     if(currentMethod === "home") {
-      await loadRepairAvailability();
-      const selectedOption = [...timeSelect.options].find(o => o.value === selectedTime);
-      if(!selectedOption || selectedOption.disabled){
-        showError("Dit tijdstip is helaas al bezet. Kies een ander tijdstip.");
+      // Re-check the exact date/time immediately before sending. This prevents
+      // stale browser state from allowing a slot that another customer just took.
+      try {
+        const check = await fetch("/api/repair/availability?date=" + encodeURIComponent(date), {
+          credentials:"same-origin",
+          cache:"no-store"
+        });
+        const checkData = await check.json().catch(()=>({}));
+        if(!check.ok) throw new Error(checkData.error || "Beschikbaarheid kon niet worden gecontroleerd.");
+        if((checkData.booked || []).includes(selectedTime)){
+          await loadRepairAvailability();
+          showError("Dit tijdstip is helaas al bezet. Kies een ander tijdstip.");
+          return;
+        }
+      } catch(error) {
+        showError(error.message || "Beschikbaarheid kon niet worden gecontroleerd.");
         return;
       }
     }
