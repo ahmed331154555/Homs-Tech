@@ -1046,47 +1046,6 @@ textarea{
 .phone-brand-add:hover{background:#eff6ff!important;border-color:#93c5fd!important;}
 @media(min-width:1100px){.phone-catalog-sidebar{min-height:0!important;height:auto!important;}}
 </style>
-
-<style id="homs-repair-order-ui">
-.repair-order-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  margin-left:7px;padding:4px 8px;border-radius:999px;
-  background:#e8f7ef;color:#078451;font-size:10px;font-weight:900;
-}
-.repair-order-section{
-  margin-top:12px;padding:13px;
-  border:1px solid #e5eaf1;border-radius:12px;background:#fff;
-}
-.repair-order-section-title{
-  display:flex;align-items:center;gap:7px;
-  margin-bottom:10px;font-size:12px;font-weight:900;color:#172033;
-}
-.repair-order-grid{
-  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;
-}
-.repair-order-field{
-  background:#f8fafc;border:1px solid #edf1f5;border-radius:9px;padding:9px 10px;
-}
-.repair-order-field strong{
-  display:block;font-size:9px;letter-spacing:.35px;text-transform:uppercase;
-  color:#7a8797;margin-bottom:3px;
-}
-.repair-order-field span{
-  display:block;font-size:12px;color:#27364a;white-space:normal;overflow-wrap:anywhere;
-}
-.repair-order-problem{
-  margin-top:9px;padding:10px 11px;border-radius:9px;
-  background:#fffbeb;border:1px solid #fde68a;font-size:12px;color:#27364a;
-  white-space:pre-wrap;overflow-wrap:anywhere;
-}
-@media(max-width:900px){
-  .repair-order-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-}
-@media(max-width:550px){
-  .repair-order-grid{grid-template-columns:1fr}
-}
-</style>
-
 </head>
 
 <body>
@@ -4365,7 +4324,6 @@ function renderOrderSummary(id,orders,kind){
     <div class="order-stat stat-cancel"><div class="stat-icon">✓</div><div><b>${cancelled}</b><span>Geannuleerd</span></div></div>`;
 }
 
-
 function parseRepairOrderNotes(notes){
   const result={method:"",device:"",address:"",city:"",date:"",time:"",problem:""};
   String(notes||"").split(/\r?\n/).forEach(line=>{
@@ -4388,44 +4346,53 @@ function renderGsmOrders(){
   const box=document.getElementById('ordersList'); if(!box)return;
   const q=(document.getElementById('gsmOrderSearch')?.value||'').trim().toLowerCase();
   const filter=document.getElementById('gsmOrderStatusFilter')?.value||'';
-  const filtered=adminGsmOrdersCache.filter(o=>(!q||orderSearchText(o).includes(q))&&(!filter||o.status===filter));
+  const filtered=adminGsmOrdersCache.filter(o=>
+    (!q||orderSearchText(o).includes(q))&&(!filter||o.status===filter)
+  );
+
   renderOrderSummary('gsmOrderSummary',adminGsmOrdersCache,'gsm');
+
   const status=document.getElementById('ordersStatus');
   if(status){
     status.className='order-count';
     status.textContent=`${filtered.length} van ${adminGsmOrdersCache.length} bestelling(en) zichtbaar`;
   }
+
   if(!filtered.length){
     box.innerHTML='<div class="order-empty">Geen bestellingen gevonden met deze zoekopdracht.</div>';
     return;
   }
 
   box.innerHTML=filtered.map(order=>{
-    const created=order.created_at?new Date(order.created_at).toLocaleString('nl-NL'):'';
+    const date=order.created_at?new Date(order.created_at).toLocaleString('nl-NL'):'';
     const price=order.price?'€ '+esc(order.price):'Op aanvraag';
     const statusLabel=order.status||'Nieuw';
-    const isRepair=String(order.service_category||'').toLowerCase()==='reparatie'
-      || String(order.service_group||'').toLowerCase().includes('aan huis')
-      || String(order.notes||'').includes('Methode: Reparatie aan huis')
-      || String(order.notes||'').includes('Methode: Toestel opsturen');
 
-    const repair=isRepair ? parseRepairOrderNotes(order.notes||'') : null;
+    const notes=String(order.notes||'');
+    const isRepair=
+      String(order.service_category||'').toLowerCase()==='reparatie' ||
+      String(order.service_group||'').toLowerCase().includes('aan huis') ||
+      notes.includes('Methode: Reparatie aan huis') ||
+      notes.includes('Methode: Toestel opsturen');
+
+    const repair=isRepair ? parseRepairOrderNotes(notes) : null;
 
     const repairBlock=isRepair ? `
-      <div class="repair-order-section">
-        <div class="repair-order-section-title">🔧 Reparatiegegevens
-          <span class="repair-order-badge">${esc(repair.method||order.service_group||'Reparatie')}</span>
+      <div style="margin-top:14px;padding:14px;border:1px solid #e5eaf1;border-radius:12px;background:#f8fafc">
+        <div style="font-weight:800;color:#172033;margin-bottom:10px">
+          🔧 Reparatiegegevens
+          ${repair.method?`<span style="display:inline-block;margin-left:7px;padding:4px 8px;border-radius:999px;background:#e8f7ef;color:#078451;font-size:10px">${esc(repair.method)}</span>`:''}
         </div>
-        <div class="repair-order-grid">
-          <div class="repair-order-field"><strong>Toestel</strong><span>${esc(repair.device||'-')}</span></div>
-          <div class="repair-order-field"><strong>Service</strong><span>${esc(order.service_name||'-')}</span></div>
-          <div class="repair-order-field"><strong>IMEI / Serienummer</strong><span>${esc(order.imei||'-')}</span></div>
-          ${repair.address ? `<div class="repair-order-field"><strong>Adres</strong><span>${esc(repair.address)}</span></div>` : ''}
-          ${repair.city ? `<div class="repair-order-field"><strong>Postcode / plaats</strong><span>${esc(repair.city)}</span></div>` : ''}
-          ${repair.date ? `<div class="repair-order-field"><strong>Gewenste datum</strong><span>${esc(repair.date)}</span></div>` : ''}
-          ${repair.time ? `<div class="repair-order-field"><strong>Gewenste tijd</strong><span>${esc(repair.time)}</span></div>` : ''}
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px">
+          <div style="padding:9px;background:#fff;border:1px solid #edf1f5;border-radius:9px"><small style="display:block;color:#7a8797;font-weight:800">Toestel</small><span>${esc(repair.device||'-')}</span></div>
+          <div style="padding:9px;background:#fff;border:1px solid #edf1f5;border-radius:9px"><small style="display:block;color:#7a8797;font-weight:800">Service</small><span>${esc(order.service_name||'-')}</span></div>
+          <div style="padding:9px;background:#fff;border:1px solid #edf1f5;border-radius:9px"><small style="display:block;color:#7a8797;font-weight:800">IMEI / Serienummer</small><span>${esc(order.imei||'-')}</span></div>
+          ${repair.address?`<div style="padding:9px;background:#fff;border:1px solid #edf1f5;border-radius:9px"><small style="display:block;color:#7a8797;font-weight:800">Adres</small><span>${esc(repair.address)}</span></div>`:''}
+          ${repair.city?`<div style="padding:9px;background:#fff;border:1px solid #edf1f5;border-radius:9px"><small style="display:block;color:#7a8797;font-weight:800">Postcode / plaats</small><span>${esc(repair.city)}</span></div>`:''}
+          ${repair.date?`<div style="padding:9px;background:#fff;border:1px solid #edf1f5;border-radius:9px"><small style="display:block;color:#7a8797;font-weight:800">Gewenste datum</small><span>${esc(repair.date)}</span></div>`:''}
+          ${repair.time?`<div style="padding:9px;background:#fff;border:1px solid #edf1f5;border-radius:9px"><small style="display:block;color:#7a8797;font-weight:800">Gewenste tijd</small><span>${esc(repair.time)}</span></div>`:''}
         </div>
-        ${repair.problem ? `<div class="repair-order-problem"><strong>Probleem:</strong> ${esc(repair.problem)}</div>` : ''}
+        ${repair.problem?`<div style="margin-top:9px;padding:10px 11px;border-radius:9px;background:#fffbeb;border:1px solid #fde68a"><strong>Probleem:</strong> ${esc(repair.problem)}</div>`:''}
       </div>
     ` : '';
 
@@ -4435,7 +4402,7 @@ function renderGsmOrders(){
           <div class="order-number">#${esc(order.id)}</div>
           <div>
             <div class="order-title">${esc(order.service_name||'GSM Service')}</div>
-            <div class="order-meta">${esc(order.service_group||order.service_category||'GSM Service')} · ${esc(created)}</div>
+            <div class="order-meta">${esc(order.service_group||order.service_category||'GSM Service')} · ${esc(date)}</div>
           </div>
         </div>
         <div class="order-actions">
@@ -4446,7 +4413,6 @@ function renderGsmOrders(){
           ${hasPermission('orders.delete')?`<button class="btn btn-red order-delete-btn" onclick="deleteGsmOrder(${Number(order.id)})">▣ Verwijderen</button>`:''}
         </div>
       </div>
-
       <div class="order-main">
         <div class="order-grid">
           <div class="order-info"><strong>Klant</strong><span>${esc(order.name||'-')}</span></div>
@@ -4456,10 +4422,8 @@ function renderGsmOrders(){
           <div class="order-info"><strong>IMEI / Serienummer</strong><span>${esc(order.imei||'-')}</span></div>
           <div class="order-info"><strong>Categorie</strong><span>${esc(order.service_category||'-')}</span></div>
         </div>
-
         ${repairBlock}
-
-        ${!isRepair && order.notes?`<div class="order-notes"><strong>Opmerking</strong><br>${esc(order.notes)}</div>`:''}
+        ${!isRepair&&notes?`<div class="order-notes"><strong>Opmerking</strong><br>${esc(notes)}</div>`:''}
       </div>
     </article>`;
   }).join('');
@@ -4863,38 +4827,41 @@ function showOrderDetails(title, data){
   document.body.appendChild(modal);
 }
 
-async async function showGsmOrderDetails(id){
+async function showGsmOrderDetails(id){
   try{
     const r=await fetch("/api/admin/orders",{credentials:"same-origin"});
     const result=await r.json().catch(()=>({}));
     if(!r.ok) throw new Error(result.error||"Order kon niet worden geladen.");
+
     const order=(result.orders||[]).find(x=>Number(x.id)===Number(id));
     if(!order) throw new Error("Order niet gevonden.");
 
-    const isRepair=String(order.service_category||'').toLowerCase()==='reparatie'
-      || String(order.notes||'').includes('Methode: Reparatie aan huis')
-      || String(order.notes||'').includes('Methode: Toestel opsturen');
+    const notes=String(order.notes||'');
+    const isRepair=
+      String(order.service_category||'').toLowerCase()==='reparatie' ||
+      String(order.service_group||'').toLowerCase().includes('aan huis') ||
+      notes.includes('Methode: Reparatie aan huis') ||
+      notes.includes('Methode: Toestel opsturen');
 
     if(isRepair){
-      const p=parseRepairOrderNotes(order.notes||'');
-      const detail={
-        "Order": "#"+order.id,
-        "Status": order.status||"Nieuw",
-        "Service": order.service_name||"-",
-        "Methode": p.method||order.service_group||"-",
-        "Klant": order.name||"-",
-        "E-mail": order.email||"-",
-        "Telefoon": order.phone||"-",
-        "Toestel": p.device||"-",
-        "IMEI / Serienummer": order.imei||"-",
-        "Adres": p.address||"-",
-        "Postcode / plaats": p.city||"-",
-        "Gewenste datum": p.date||"-",
-        "Gewenste tijd": p.time||"-",
-        "Probleem": p.problem||"-",
-        "Aangemaakt": order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"-"
-      };
-      showOrderDetails("Reparatie Order #"+id, detail);
+      const p=parseRepairOrderNotes(notes);
+      showOrderDetails("Reparatie Order #"+id,{
+        "Order":"#"+order.id,
+        "Status":order.status||"Nieuw",
+        "Service":order.service_name||"-",
+        "Methode":p.method||order.service_group||"-",
+        "Klant":order.name||"-",
+        "E-mail":order.email||"-",
+        "Telefoon":order.phone||"-",
+        "Toestel":p.device||"-",
+        "IMEI / Serienummer":order.imei||"-",
+        "Adres":p.address||"-",
+        "Postcode / plaats":p.city||"-",
+        "Gewenste datum":p.date||"-",
+        "Gewenste tijd":p.time||"-",
+        "Probleem":p.problem||"-",
+        "Aangemaakt":order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"-"
+      });
       return;
     }
 
