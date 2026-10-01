@@ -4377,10 +4377,10 @@ function renderGsmOrders(){
   const box=document.getElementById('ordersList'); if(!box)return;
   const q=(document.getElementById('gsmOrderSearch')?.value||'').trim().toLowerCase();
   const filter=document.getElementById('gsmOrderStatusFilter')?.value||'';
-  const filtered=adminGsmOrdersCache.filter(o=>(!q||orderSearchText(o).includes(q))&&(!filter||o.status===filter));
-  renderOrderSummary('gsmOrderSummary',adminGsmOrdersCache,'gsm');
+  const gsmOnly=adminGsmOrdersCache.filter(o=>!isRepairOrder(o)); const filtered=gsmOnly.filter(o=>(!q||orderSearchText(o).includes(q))&&(!filter||o.status===filter));
+  renderOrderSummary('gsmOrderSummary',gsmOnly,'gsm');
   const status=document.getElementById('ordersStatus');
-  if(status){status.className='order-count';status.textContent=`${filtered.length} van ${adminGsmOrdersCache.length} bestelling(en) zichtbaar`}
+  if(status){status.className='order-count';status.textContent=`${filtered.length} van ${gsmOnly.length} GSM bestelling(en) zichtbaar`}
   if(!filtered.length){box.innerHTML='<div class="order-empty">Geen bestellingen gevonden met deze zoekopdracht.</div>';return;}
   box.innerHTML=filtered.map(order=>{
     const date=order.created_at?new Date(order.created_at).toLocaleString('nl-NL'):'';
@@ -4423,7 +4423,7 @@ async function loadOrders(){
   try{
     const r=await fetch('/api/admin/orders'); const result=await r.json();
     if(!r.ok)throw new Error(result.error||'Bestellingen konden niet worden geladen');
-    adminGsmOrdersCache=result.orders||[]; renderGsmOrders();
+    adminGsmOrdersCache=(result.orders||[]).filter(o=>!isRepairOrder(o)); renderGsmOrders();
   }catch(e){status.className='status error';status.textContent='✕ '+e.message;}
 }
 
