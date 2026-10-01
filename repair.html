@@ -767,7 +767,7 @@
     const address = document.getElementById("address").value.trim();
     const city = document.getElementById("city").value.trim();
     const date = document.getElementById("date").value;
-    const time = document.getElementById("time").value;
+    const selectedTime = document.getElementById("time").value;
     const imei = document.getElementById("imei").value.trim();
     const notes = document.getElementById("notes").value.trim();
 
@@ -781,14 +781,14 @@
       return;
     }
 
-    if(currentMethod === "home" && (!date || !time)){
+    if(currentMethod === "home" && (!date || !selectedTime)){
       showError("Kies een datum en een beschikbaar tijdstip voor uw afspraak.");
       return;
     }
 
     if(currentMethod === "home") {
       await loadRepairAvailability();
-      const selectedOption = [...time.options].find(o => o.value === time);
+      const selectedOption = [...timeSelect.options].find(o => o.value === selectedTime);
       if(!selectedOption || selectedOption.disabled){
         showError("Dit tijdstip is helaas al bezet. Kies een ander tijdstip.");
         return;
@@ -805,7 +805,7 @@
       currentMethod === "home" ? `Adres: ${address}` : "",
       currentMethod === "home" ? `Postcode/plaats: ${city}` : "",
       currentMethod === "home" && date ? `Gewenste datum: ${date}` : "",
-      currentMethod === "home" && time ? `Gewenste tijd: ${time}` : "",
+      currentMethod === "home" && selectedTime ? `Gewenste tijd: ${selectedTime}` : "",
       notes ? `Probleem: ${notes}` : ""
     ].filter(Boolean).join("\n");
 
@@ -826,7 +826,7 @@
           imei,
           notes:details,
           appointmentDate: currentMethod === "home" ? date : "",
-          appointmentTime: currentMethod === "home" ? time : ""
+          appointmentTime: currentMethod === "home" ? selectedTime : ""
         })
       });
 
