@@ -4423,7 +4423,7 @@ async function loadOrders(){
   try{
     const r=await fetch('/api/admin/orders'); const result=await r.json();
     if(!r.ok)throw new Error(result.error||'Bestellingen konden niet worden geladen');
-    adminGsmOrdersCache=(result.orders||[]).filter(o=>!isRepairOrder(o)); renderGsmOrders();
+    adminGsmOrdersCache=result.orders||[]; renderGsmOrders();
   }catch(e){status.className='status error';status.textContent='✕ '+e.message;}
 }
 
@@ -4464,11 +4464,30 @@ async function updateOrderStatus(id,statusValue){
 let repairOrdersCache=[];
 
 function isRepairOrder(order){
-  const notes=String(order?.notes||"");
-  return String(order?.service_category||"").toLowerCase()==="reparatie"
-    || String(order?.service_group||"").toLowerCase().includes("aan huis")
-    || notes.includes("Methode: Reparatie aan huis")
-    || notes.includes("Methode: Toestel opsturen");
+  const notes=String(order?.notes||"").toLowerCase();
+  const category=String(order?.service_category||"").toLowerCase();
+  const group=String(order?.service_group||"").toLowerCase();
+  const service=String(order?.service_name||"").toLowerCase();
+
+  // Repair forms use these fields in the order notes. This is deliberately
+  // broader than one exact Dutch phrase so old/new repair orders stay separate.
+  const repairNoteFields=[
+    "methode:",
+    "toestel:",
+    "gewenste datum:",
+    "gewenste tijd:",
+    "probleem:"
+  ];
+  const hasRepairNotes=repairNoteFields.some(key=>notes.includes(key));
+
+  return hasRepairNotes
+    || category.includes("repar")
+    || category.includes("repair")
+    || group.includes("repar")
+    || group.includes("repair")
+    || group.includes("aan huis")
+    || service.includes("reparatie")
+    || service.includes("repair");
 }
 
 function parseRepairOrderNotesForPage(notes){
