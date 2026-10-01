@@ -84,55 +84,31 @@
     }
     .hero-photo{
       position:absolute;
-      inset:0 0 0 43%;
-      background:
-        radial-gradient(circle at 70% 28%,rgba(255,255,255,.18),transparent 20%),
-        linear-gradient(135deg,rgba(28,65,82,.15),rgba(3,18,31,.08));
+      inset:0 0 0 40%;
       overflow:hidden;
+      background:#0a2234;
     }
-    .hero-photo .van{
-      position:absolute;
-      width:min(62vw,700px);
-      height:250px;
-      right:4%;
-      bottom:82px;
-      border-radius:80px 38px 24px 26px;
-      background:linear-gradient(155deg,#152c3a 0%,#263e4a 58%,#0d1e2a 100%);
-      box-shadow:0 30px 45px rgba(0,0,0,.30);
-      transform:skewX(-2deg);
-    }
-    .hero-photo .van:before{
+    .hero-photo:after{
       content:"";
       position:absolute;
-      left:11%;
-      top:26px;
-      width:43%;
-      height:83px;
-      border-radius:25px 12px 8px 8px;
-      background:linear-gradient(135deg,#6e8c9a,#182d39 70%);
-      border:3px solid rgba(255,255,255,.13);
+      inset:0;
+      background:linear-gradient(
+        90deg,
+        rgba(3,18,31,.96) 0%,
+        rgba(3,18,31,.72) 18%,
+        rgba(3,18,31,.18) 55%,
+        rgba(3,18,31,.05) 100%
+      );
+      pointer-events:none;
     }
-    .hero-photo .van:after{
-      content:"HOMS TECH";
-      position:absolute;
-      right:8%;
-      top:82px;
-      font-size:28px;
-      font-weight:900;
-      letter-spacing:-1px;
-      color:#fff;
-      text-shadow:0 3px 12px #0008;
+    .hero-photo img{
+      width:100%;
+      height:100%;
+      display:block;
+      object-fit:cover;
+      object-position:center;
     }
-    .wheel{
-      position:absolute;width:72px;height:72px;border-radius:50%;
-      bottom:-25px;background:#0b1116;border:12px solid #52606a;
-      box-shadow:inset 0 0 0 8px #121b21;
-    }
-    .wheel.one{left:15%}.wheel.two{right:14%}
-    .van-mark{
-      position:absolute;right:8%;top:127px;color:#20d976;font-weight:800;font-size:12px;
-      letter-spacing:.4px;
-    }
+    .hero-photo img[src=""]{display:none}
 
     .hero-inner{
       position:relative;z-index:2;
@@ -300,7 +276,15 @@
       .ht-header .ht-header-main{flex-wrap:wrap!important;padding:10px 0!important}
       .ht-header .ht-search{order:3!important;max-width:none!important;flex-basis:100%!important;margin:0 0 4px!important}
       .hero-inner{grid-template-columns:1fr;padding-top:60px}
-      .hero-photo{inset:0;opacity:.48}
+      .hero-photo{inset:0;opacity:.62}
+      .hero-photo:after{
+        background:linear-gradient(
+          90deg,
+          rgba(3,18,31,.94) 0%,
+          rgba(3,18,31,.62) 55%,
+          rgba(3,18,31,.35) 100%
+        );
+      }
       .options{grid-template-columns:1fr}
       .steps{gap:25px}
       .services-grid{grid-template-columns:1fr 1fr}
@@ -378,12 +362,9 @@
 
   <main>
     <section class="repair-hero">
+      <!-- Upload the real van image to assets/repair-van-hero.png -->
       <div class="hero-photo" aria-hidden="true">
-        <div class="van">
-          <div class="wheel one"></div>
-          <div class="wheel two"></div>
-          <div class="van-mark">REPARATIE AAN HUIS · SNELLE SERVICE · DOOR HEEL NEDERLAND</div>
-        </div>
+        <img src="assets/repair-van-hero.png" alt="" loading="eager" fetchpriority="high">
       </div>
 
       <div class="hero-inner">
