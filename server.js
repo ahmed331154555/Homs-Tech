@@ -165,6 +165,17 @@ async function initDatabase() {
   `);
 
   await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS username TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS appointment_date DATE`);
+  await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS appointment_time TEXT`);
+  await pool.query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS service_orders_repair_appointment_unique
+    ON service_orders (appointment_date, appointment_time)
+    WHERE service_category = 'Reparatie'
+      AND service_group = 'Aan huis'
+      AND appointment_date IS NOT NULL
+      AND appointment_time IS NOT NULL
+      AND status <> 'Geannuleerd'
+  `);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS webshop_orders (
@@ -658,6 +669,28 @@ app.post("/api/customer/logout", (req, res) => {
 
 // ---------------- GSM SERVICE ORDERS ----------------
 
+app.get("/api/repair/availability", async (req, res) => {
+  try {
+    const date = String(req.query.date || "").trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({ error: "Ongeldige datum." });
+    }
+    const result = await pool.query(`
+      SELECT appointment_time FROM service_orders
+      WHERE service_category = 'Reparatie'
+        AND service_group = 'Aan huis'
+        AND appointment_date = $1::date
+        AND appointment_time IS NOT NULL
+        AND status <> 'Geannuleerd'
+      ORDER BY appointment_time
+    `, [date]);
+    res.json({ success:true, date, booked: result.rows.map(r => r.appointment_time) });
+  } catch (error) {
+    console.error("Repair availability error:", error);
+    res.status(500).json({ error: "Beschikbaarheid kon niet worden geladen." });
+  }
+});
+
 app.post("/api/orders", async (req, res) => {
   try {
     const {
@@ -670,7 +703,9 @@ app.post("/api/orders", async (req, res) => {
       phone = "",
       username = "",
       imei = "",
-      notes = ""
+      notes = "",
+      appointmentDate = "",
+      appointmentTime = ""
     } = req.body || {};
 
     const clean = {
@@ -683,8 +718,22 @@ app.post("/api/orders", async (req, res) => {
       phone: String(phone || "").trim(),
       username: String(username || "").trim(),
       imei: String(imei || "").trim(),
-      notes: String(notes || "").trim()
+      notes: String(notes || "").trim(),
+      appointmentDate: String(appointmentDate || "").trim(),
+      appointmentTime: String(appointmentTime || "").trim()
     };
+
+    const isHomeRepair = clean.serviceCategory.toLowerCase() === "reparatie"
+      && clean.serviceGroup.toLowerCase() === "aan huis";
+
+    if (isHomeRepair) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(clean.appointmentDate)) {
+        return res.status(400).json({ error: "Kies een datum voor uw afspraak." });
+      }
+      if (!/^\d{2}:\d{2} - \d{2}:\d{2}$/.test(clean.appointmentTime)) {
+        return res.status(400).json({ error: "Kies een beschikbaar tijdstip." });
+      }
+    }
 
     if (!clean.serviceName || !clean.name || !clean.email || !clean.phone) {
       return res.status(400).json({
@@ -709,21 +758,13 @@ app.post("/api/orders", async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO service_orders
-       (customer_id, service_category, service_name, service_group, price, name, email, phone, username, imei, notes)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-       RETURNING id, status, created_at`,
+       (customer_id, service_category, service_name, service_group, price, name, email, phone, username, imei, notes, appointment_date, appointment_time)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+       RETURNING id, status, created_at, appointment_date, appointment_time`,
       [
-        customerId,
-        clean.serviceCategory,
-        clean.serviceName,
-        clean.serviceGroup,
-        clean.price,
-        clean.name,
-        clean.email,
-        clean.phone,
-        clean.username,
-        clean.imei,
-        clean.notes
+        customerId, clean.serviceCategory, clean.serviceName, clean.serviceGroup,
+        clean.price, clean.name, clean.email, clean.phone, clean.username, clean.imei,
+        clean.notes, isHomeRepair ? clean.appointmentDate : null, isHomeRepair ? clean.appointmentTime : null
       ]
     );
 
@@ -733,9 +774,10 @@ app.post("/api/orders", async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      error: "Bestelling kon niet worden aangemaakt."
-    });
+    if (error && error.code === "23505" && error.constraint === "service_orders_repair_appointment_unique") {
+      return res.status(409).json({ error: "Dit tijdstip is helaas al bezet. Kies een ander tijdstip." });
+    }
+    res.status(500).json({ error: "Bestelling kon niet worden aangemaakt." });
   }
 });
 
@@ -1318,39 +1360,6 @@ function forzaImageMatchKey(value) {
 }
 
 // V29: V16 exact-variant fetching + V10 gallery extraction.
-function forzaIsUsableProductImage(url, descriptiveText, productName) {
-  const rawUrl = String(url || "").trim();
-  if (!/^https?:\/\//i.test(rawUrl)) return false;
-  const urlKey = forzaImageMatchKey(rawUrl).replace(/\s+/g, "");
-  const descKey = forzaImageMatchKey(descriptiveText || "").replace(/\s+/g, "");
-  const combined = `${urlKey} ${descKey}`;
-
-  // Reject site-wide assets/placeholders that can accidentally be exposed
-  // through an exact product page (flags, logos, badges, payment/review art,
-  // loading images, etc.).
-  if (/(?:vlag|flag|nederland|netherlands|logo|icon|badge|keurmerk|trustpilot|review|payment|ideal|mollie|placeholder|no[-_ ]?image|default[-_ ]?image|spinner|loading|avatar|usps|service)/i.test(combined)) {
-    return false;
-  }
-  if (/\bdata:image\//i.test(rawUrl)) return false;
-
-  const wanted = forzaImageMatchKey(productName || "");
-  if (!wanted) return false;
-  const wantedTokens = wanted.split(" ").filter(Boolean);
-  const wantedColor = wantedTokens[wantedTokens.length - 1] || "";
-  const wantedModelTokens = wantedTokens.filter(t =>
-    !/^\d+$/.test(t) && !/^(?:gb|tb)$/.test(t) && t !== wantedColor
-  );
-  const identity = `${descKey} ${urlKey}`;
-  if (!wantedColor || !identity.includes(wantedColor)) return false;
-  if (!wantedModelTokens.every(token => identity.includes(token))) return false;
-
-  const wantedStorage = (wanted.match(/\b\d+\s*(?:gb|tb)\b/) || [""])[0].replace(/\s+/g, "");
-  const explicitStorages = identity.match(/\b\d+(?:gb|tb)\b/g) || [];
-  if (wantedStorage && explicitStorages.length && !explicitStorages.includes(wantedStorage)) return false;
-
-  return true;
-}
-
 function forzaExtractVariantGalleryImages(html, productName) {
   const wanted = forzaImageMatchKey(productName);
   if (!wanted) return [];
@@ -1396,8 +1405,6 @@ function forzaExtractVariantGalleryImages(html, productName) {
 
     const text = descriptive.map(forzaImageMatchKey).join(" ");
     const key = compact(text);
-    const candidateUrls = [attrs.src, attrs["data-src"], attrs["data-lazy-src"], attrs.srcset, attrs["data-srcset"]].filter(Boolean);
-    if (!candidateUrls.some(u => forzaIsUsableProductImage(String(u).split(/\s+/)[0], text, productName))) continue;
 
     // Exclude Forza's generic cross-colour gallery image.
     if (/kleuren|colors|colour/.test(key)) continue;
@@ -1408,19 +1415,13 @@ function forzaExtractVariantGalleryImages(html, productName) {
     const hasModel = wantedModelTokens.every(token => key.includes(token));
     const hasColor = !!wantedColor && key.includes(wantedColor);
     const hasStorage = !!wantedStorage && key.includes(wantedStorage);
-    const explicitStorages = key.match(/\b\d+(?:gb|tb)\b/g) || [];
     if (!hasModel || !hasColor) continue;
-    // If the image description explicitly names a storage, it must be the
-    // requested storage. If storage is omitted, the exact product URL remains
-    // the authority for the variant.
-    if (wantedStorage && explicitStorages.length && !hasStorage) continue;
-    for (const value of [attrs.src, attrs["data-src"], attrs["data-lazy-src"], attrs.srcset, attrs["data-srcset"]]) {
-      if (!value) continue;
-      const rawUrls = String(value).match(/https?:\/\/[^\s,]+/gi) || [];
-      for (const candidate of rawUrls) {
-        const cleanCandidate = candidate.replace(/["')]+$/g, "");
-        if (forzaIsUsableProductImage(cleanCandidate, text, productName)) addUrl(cleanCandidate);
-      }
+    if (hasStorage || !wantedStorage) {
+      addUrl(attrs.src);
+      addUrl(attrs["data-src"]);
+      addUrl(attrs["data-lazy-src"]);
+      addUrl(attrs.srcset);
+      addUrl(attrs["data-srcset"]);
     }
     if (images.length >= 4) break;
   }
@@ -1513,17 +1514,11 @@ async function forzaFetchJinaGallery(url, productName) {
       const alt = forzaImageMatchKey(m[1] || "");
       const key = alt.replace(/\s+/g, "");
       if (!alt || /kleuren|colors|colour/.test(key)) continue;
-      if (!forzaIsUsableProductImage(m[2], alt, productName)) continue;
 
       const hasModel = wantedModelTokens.every(token => key.includes(token));
       const hasColor = !!wantedColor && key.includes(wantedColor);
       const hasStorage = !!wantedStorage && key.includes(wantedStorage);
-      const explicitStorages = key.match(/\b\d+(?:gb|tb)\b/g) || [];
       if (!hasModel || !hasColor) continue;
-      // Never allow an explicitly labelled image from another storage.
-      // When storage is omitted from the alt text, the exact page URL is the
-      // authority for the storage variant.
-      if (wantedStorage && explicitStorages.length && !hasStorage) continue;
       // Forza's exact iPhone 12 64GB Wit gallery uses alt text such as
       // "iPhone 12 Wit refurbished" without repeating "64GB". The exact
       // page URL already establishes the storage variant, so storage must NOT
@@ -1549,13 +1544,9 @@ async function forzaFetchJinaGallery(url, productName) {
         const src = (attrs.match(/(?:src|data-src|data-lazy-src)=['\"]([^'\"]+)['\"]/i) || [,''])[1];
         const key = forzaImageMatchKey(`${desc} ${src}`);
         if (!src || /kleuren|colors|colour/.test(key)) continue;
-        if (!forzaIsUsableProductImage(src, desc, productName)) continue;
         const hasModel = wantedModelTokens.every(token => key.includes(token));
         const hasColor = !!wantedColor && key.includes(wantedColor);
-        const explicitStorages = key.match(/\b\d+(?:gb|tb)\b/g) || [];
-        const hasStorage = !!wantedStorage && explicitStorages.includes(wantedStorage);
         if (!hasModel || !hasColor) continue;
-        if (wantedStorage && explicitStorages.length && !hasStorage) continue;
         const imageUrl = src.replace(/&amp;/gi, '&');
         if (!seen.has(imageUrl)) { seen.add(imageUrl); images.push(imageUrl); }
         if (images.length >= 4) break;
@@ -1687,6 +1678,17 @@ async function forzaFetchExactVariant(productName, overviewHtml, overviewUrl) {
         const images = forzaExtractVariantGalleryImages(page.html, productName);
         if (images.length >= 4) {
           return { url, parsed, images: [...new Set(images)].slice(0, 4) };
+        }
+
+        // Exact product pages can expose the real gallery in JSON-LD even when
+        // the rendered <img> tags are lazy-loaded or missing from the HTML
+        // returned to the server. Because this is already the exact variant
+        // URL, the JSON-LD image list is safe to use as the variant gallery.
+        const jsonLdImages = Array.isArray(parsed?.product?.images)
+          ? [...new Set(parsed.product.images.filter(v => /^https?:\/\//i.test(String(v))))]
+          : [];
+        if (jsonLdImages.length >= 4) {
+          return { url, parsed, images: jsonLdImages.slice(0, 4) };
         }
 
         const jinaImages = await forzaFetchJinaGallery(url, productName);
@@ -2637,6 +2639,13 @@ async function forzaFetchExactVariantFromUrl(productName, exactUrl) {
       const parsed = forzaExtractTest(page.html, url);
       let images = forzaExtractVariantGalleryImages(page.html, productName);
 
+      // On some current Forza pages the gallery is represented in JSON-LD
+      // instead of normal <img> tags. Because we are already on the exact
+      // concrete variant page, these images are safe to use.
+      if (!images.length && Array.isArray(parsed?.product?.images)) {
+        images = parsed.product.images.filter(v => /^https?:\/\//i.test(String(v)));
+      }
+
       // Final fallback: read the exact page through Jina, but still filter by
       // the requested model + colour. Never fall back to the overview page.
       if (!images.length) images = await forzaFetchJinaGallery(url, productName);
@@ -2989,158 +2998,13 @@ app.get("/api/public/forza-stock", async (req, res) => {
   }
 });
 
-
-// =====================================================
-// FORZA IMAGE REPAIR — ONE TIME / IMAGES ONLY
-// Repairs existing iPhone variant images in site_settings.
-// It does NOT change prices, stock, specs, names, storage,
-// colors, ordering, or any other product fields.
-// Enable with FORZA_REPAIR_IMAGES_ONCE=1, then set it back to 0.
-// =====================================================
-async function runForzaImageRepairOnce() {
-  if (String(process.env.FORZA_REPAIR_IMAGES_ONCE || "") !== "1") return;
-
-  console.log("FORZA IMAGE REPAIR STARTED");
-
-  try {
-    const result = await pool.query("SELECT data FROM site_settings WHERE id = 1");
-    if (!result.rows.length) {
-      console.log("FORZA IMAGE REPAIR: site_settings row not found.");
-      return;
-    }
-
-    const data = result.rows[0].data || {};
-    const phones = Array.isArray(data.phones) ? data.phones : [];
-
-    const targets = phones.filter(phone => {
-      const name = String(phone?.name || "").trim();
-      return /^iPhone .+ \d+\s*(?:GB|TB) .+$/i.test(name);
-    });
-
-    if (!targets.length) {
-      console.log("FORZA IMAGE REPAIR: no exact iPhone variants found.");
-      return;
-    }
-
-    const overviewCache = new Map();
-
-    async function getOverviewForPhone(phoneName) {
-      const modelMatch = String(phoneName).match(
-        /^\s*(iPhone\s+\d+(?:\s+(?:Pro Max|Pro|Plus|Mini|SE))?)/i
-      );
-      if (!modelMatch) return null;
-
-      const modelLabel = modelMatch[1]
-        .replace(/\s+/g, " ")
-        .trim();
-
-      const modelKey = Object.keys(FORZA_TEST_MODELS).find(key =>
-        String(FORZA_TEST_MODELS[key]?.label || "").toLowerCase() === modelLabel.toLowerCase()
-      );
-      if (!modelKey) return null;
-
-      if (overviewCache.has(modelKey)) return overviewCache.get(modelKey);
-
-      const config = forzaGetTestModel(modelKey);
-      if (!config?.sourceUrl) return null;
-
-      try {
-        const page = await forzaFetchPublicPage(config.sourceUrl);
-        if (!page.response.ok) {
-          overviewCache.set(modelKey, null);
-          return null;
-        }
-        const value = { html: page.html, url: config.sourceUrl };
-        overviewCache.set(modelKey, value);
-        return value;
-      } catch {
-        overviewCache.set(modelKey, null);
-        return null;
-      }
-    }
-
-    let changed = 0;
-    let kept = 0;
-    let failed = 0;
-    let nextIndex = 0;
-
-    async function worker(workerId) {
-      while (true) {
-        const index = nextIndex++;
-        if (index >= targets.length) return;
-
-        const phone = targets[index];
-        const name = String(phone?.name || "").trim();
-
-        try {
-          const overview = await getOverviewForPhone(name);
-          if (!overview) {
-            failed++;
-            console.log(`FORZA IMAGE REPAIR [${workerId}] NO OVERVIEW: ${name}`);
-            continue;
-          }
-
-          const exact = await forzaFetchExactVariant(
-            name,
-            overview.html,
-            overview.url
-          );
-
-          if (!exact || !Array.isArray(exact.images) || exact.images.length < 1) {
-            kept++;
-            console.log(`FORZA IMAGE REPAIR [${workerId}] KEPT: ${name}`);
-            continue;
-          }
-
-          // Only the images field is replaced. Everything else is preserved.
-          phone.images = [...new Set(exact.images)].slice(0, 4);
-          changed++;
-          console.log(`FORZA IMAGE REPAIR [${workerId}] FIXED: ${name}`);
-        } catch (error) {
-          failed++;
-          console.log(
-            `FORZA IMAGE REPAIR [${workerId}] ERROR: ${name} — ${String(error?.message || error)}`
-          );
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 180));
-      }
-    }
-
-    const workers = Array.from(
-      { length: Math.min(4, targets.length) },
-      (_, i) => worker(i + 1)
-    );
-
-    await Promise.all(workers);
-
-    await pool.query(
-      "UPDATE site_settings SET data = $1 WHERE id = 1",
-      [JSON.stringify(data)]
-    );
-
-    console.log(
-      `FORZA IMAGE REPAIR FINISHED: targets=${targets.length}, fixed=${changed}, kept=${kept}, failed=${failed}`
-    );
-  } catch (error) {
-    console.error("FORZA IMAGE REPAIR ERROR:", error);
-  }
-}
-
 // Start server
 initDatabase()
-  .then(async () => {
+  .then(() => {
     app.listen(PORT, () => {
       console.log(
         `HOMS TECH running on port ${PORT}`
       );
-      // Run the optional image repair only after the web service is listening,
-      // so a long Forza repair cannot make Render fail the deployment health check.
-      setImmediate(() => {
-        runForzaImageRepairOnce().catch(error => {
-          console.error("FORZA IMAGE REPAIR BACKGROUND ERROR:", error);
-        });
-      });
     });
   })
   .catch((error) => {

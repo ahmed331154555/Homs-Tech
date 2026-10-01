@@ -533,13 +533,19 @@
             <div class="field" id="timeField">
               <label for="time">Gewenste tijd</label>
               <select id="time">
-                <option value="">Geen voorkeur</option>
-                <option>09:00 - 11:00</option>
-                <option>11:00 - 13:00</option>
-                <option>13:00 - 15:00</option>
-                <option>15:00 - 17:00</option>
-                <option>17:00 - 19:00</option>
+                <option value="">Kies een tijdstip</option>
+                <option>09:00 - 10:00</option>
+                <option>10:00 - 11:00</option>
+                <option>11:00 - 12:00</option>
+                <option>12:00 - 13:00</option>
+                <option>13:00 - 14:00</option>
+                <option>14:00 - 15:00</option>
+                <option>15:00 - 16:00</option>
+                <option>16:00 - 17:00</option>
+                <option>17:00 - 18:00</option>
+                <option>18:00 - 19:00</option>
               </select>
+              <div id="availabilityMessage" style="margin-top:8px;font-size:12px;color:#64748b"></div>
             </div>
 
             <div class="field full">
@@ -700,6 +706,55 @@
     el.style.display="block";
   }
 
+  const dateInput = document.getElementById("date");
+  const timeSelect = document.getElementById("time");
+  const availabilityMessage = document.getElementById("availabilityMessage");
+
+  if (dateInput) {
+    const today = new Date();
+    const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+      .toISOString().slice(0,10);
+    dateInput.min = localToday;
+  }
+
+  async function loadRepairAvailability(){
+    if(currentMethod !== "home" || !dateInput.value) return;
+    availabilityMessage.textContent = "Beschikbaarheid controleren...";
+    availabilityMessage.style.color = "#64748b";
+    [...timeSelect.options].forEach(o => {
+      o.disabled = false;
+      o.textContent = o.value || "Kies een tijdstip";
+    });
+    try {
+      const r = await fetch("/api/repair/availability?date=" + encodeURIComponent(dateInput.value), {credentials:"same-origin"});
+      const data = await r.json().catch(()=>({}));
+      if(!r.ok) throw new Error(data.error || "Beschikbaarheid kon niet worden geladen.");
+      const booked = new Set(data.booked || []);
+      let available = 0;
+      [...timeSelect.options].forEach(o => {
+        if(!o.value) return;
+        if(booked.has(o.value)) {
+          o.disabled = true;
+          o.textContent = o.value + " — Bezet";
+        } else {
+          available++;
+        }
+      });
+      if (timeSelect.value && booked.has(timeSelect.value)) timeSelect.value = "";
+      availabilityMessage.textContent = available ? "Groene tijden zijn beschikbaar." : "Deze dag is volgeboekt. Kies een andere datum.";
+      availabilityMessage.style.color = available ? "#16a34a" : "#dc2626";
+    } catch(error) {
+      availabilityMessage.textContent = error.message || "Beschikbaarheid kon niet worden geladen.";
+      availabilityMessage.style.color = "#dc2626";
+    }
+  }
+
+  dateInput?.addEventListener("change", loadRepairAvailability);
+  timeSelect?.addEventListener("change", function(){
+    const selected = timeSelect.options[timeSelect.selectedIndex];
+    if(selected && selected.disabled) timeSelect.value = "";
+  });
+
   document.getElementById("repairForm").addEventListener("submit", async function(e){
     e.preventDefault();
 
@@ -724,6 +779,20 @@
     if(currentMethod === "home" && (!address || !city)){
       showError("Vul uw adres en postcode/plaats in voor een afspraak aan huis.");
       return;
+    }
+
+    if(currentMethod === "home" && (!date || !time)){
+      showError("Kies een datum en een beschikbaar tijdstip voor uw afspraak.");
+      return;
+    }
+
+    if(currentMethod === "home") {
+      await loadRepairAvailability();
+      const selectedOption = [...time.options].find(o => o.value === time);
+      if(!selectedOption || selectedOption.disabled){
+        showError("Dit tijdstip is helaas al bezet. Kies een ander tijdstip.");
+        return;
+      }
     }
 
     btn.disabled=true;
@@ -755,7 +824,9 @@
           phone,
           username:"",
           imei,
-          notes:details
+          notes:details,
+          appointmentDate: currentMethod === "home" ? date : "",
+          appointmentTime: currentMethod === "home" ? time : ""
         })
       });
 
