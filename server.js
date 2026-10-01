@@ -1837,7 +1837,7 @@ const FORZA_TEST_MODELS = {
   },
   "iphone-17e": {
     label: "iPhone 17e",
-    sourceUrl: "https://www.forza-refurbished.nl/refurbished-iphone/iphone-17e-overzicht",
+    sourceUrl: "https://www.forza-refurbished.nl/refurbished-iphone/iphone-17-series",
     storages: [],
     colors: []
   },
