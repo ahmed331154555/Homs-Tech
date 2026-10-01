@@ -3,886 +3,811 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Reparaties - HOMS TECH</title>
 
+  <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20260922-final-header">
+
   <style>
-    *{
-      box-sizing:border-box;
-      margin:0;
-      padding:0;
+    :root{
+      --navy:#071d2d;
+      --navy2:#0b2b42;
+      --blue:#1597e5;
+      --green:#19d66b;
+      --green2:#10b957;
+      --ink:#102338;
+      --muted:#64748b;
+      --bg:#f5f8fb;
+      --line:#e3ebf2;
+      --white:#fff;
+      --shadow:0 18px 45px rgba(7,29,45,.10);
     }
 
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
     body{
+      margin:0;
       font-family:Arial,Helvetica,sans-serif;
-      background:#f5f7fa;
-      color:#111827;
-      line-height:1.6;
+      background:var(--bg);
+      color:var(--ink);
+      line-height:1.55;
     }
+    a{text-decoration:none;color:inherit}
+    button,input,select,textarea{font:inherit}
 
-    a{
-      text-decoration:none;
-      color:inherit;
+    /* Existing HOMS TECH header */
+    .ht-topbar{background:#071d2d!important;color:#eaf4ff!important;border-bottom:1px solid rgba(255,255,255,.08)!important;font-size:12px!important}
+    .ht-topbar .ht-container{height:42px!important;max-width:1180px!important;margin:0 auto!important;overflow:hidden!important}
+    .ht-marquee{height:100%!important;width:max-content!important;display:flex!important;align-items:center!important;gap:44px!important;white-space:nowrap!important;animation:htMarqueeOneWay 15s linear infinite!important}
+    .ht-marquee-item{font-size:14px!important;font-weight:800!important;color:#eaf4ff!important}
+    .ht-marquee-item b{color:#60a5fa!important;margin-right:7px}
+    @keyframes htMarqueeOneWay{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
+    @media(prefers-reduced-motion:reduce){.ht-marquee{animation:none!important;transform:none!important;margin:auto!important}}
+
+    .ht-header{
+      position:sticky!important;top:0!important;z-index:9999!important;
+      background:#fff!important;color:#172330!important;
+      border-bottom:1px solid #e2e8f0!important;
+      box-shadow:0 4px 18px rgba(7,29,45,.06)!important;
     }
+    .ht-header *{box-sizing:border-box!important}
+    .ht-header .ht-container{max-width:1180px!important;margin:0 auto!important;padding:0 18px!important}
+    .ht-header .ht-header-main{min-height:76px!important;display:flex!important;align-items:center!important;gap:22px!important;background:#fff!important}
+    .ht-header .ht-brand{display:flex!important;align-items:center!important;flex:0 0 auto!important}
+    .ht-header .ht-brand img{width:154px!important;height:auto!important;display:block!important}
+    .ht-header .ht-search{height:42px!important;display:flex!important;align-items:center!important;flex:1!important;max-width:500px!important;background:#f4f7fa!important;border:1px solid #e1e7ee!important;border-radius:10px!important;overflow:hidden!important;margin-left:10px!important}
+    .ht-header .ht-search span{font-size:23px!important;color:#64748b!important;padding-left:13px!important}
+    .ht-header .ht-search input{border:0!important;outline:0!important;background:transparent!important;width:100%!important;padding:0 10px!important}
+    .ht-header .ht-search button{height:100%!important;border:0!important;background:#2563eb!important;color:#fff!important;font-weight:800!important;padding:0 17px!important;cursor:pointer!important}
+    .ht-header .ht-actions{display:flex!important;align-items:center!important;gap:16px!important;margin-left:auto!important;white-space:nowrap!important}
+    .ht-header .ht-actions a{color:#334155!important;font-size:13px!important;font-weight:750!important;padding:6px 0!important}
+    .ht-header .ht-actions a:hover{color:#2563eb!important}
+    .ht-header .ht-nav{display:flex!important;align-items:center!important;gap:5px!important;min-height:46px!important;overflow:auto!important}
+    .ht-header .ht-nav a{color:#334155!important;font-size:14px!important;font-weight:750!important;padding:9px 13px!important;border-radius:9px!important;white-space:nowrap!important}
+    .ht-header .ht-nav a:hover,.ht-header .ht-nav a.active{background:#edf4ff!important;color:#2563eb!important}
 
-    header{
-      position:sticky;
-      top:0;
-      z-index:1000;
-      background:#111827;
-      color:white;
-      box-shadow:0 2px 10px rgba(0,0,0,.15);
-    }
-
-    .nav{
-      max-width:1200px;
-      margin:auto;
-      min-height:72px;
-      padding:0 20px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:20px;
-    }
-
-    .logo{
-      width:170px;
-      height:auto;
-      display:block;
-    }
-
-    nav{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      flex-wrap:wrap;
-    }
-
-    nav a{
-      padding:10px 14px;
-      border-radius:10px;
+    /* Hero */
+    .repair-hero{
+      position:relative;
+      min-height:600px;
+      overflow:hidden;
       color:#fff;
-      font-weight:600;
-      font-size:15px;
-      transition:.2s;
-    }
-
-    nav a:hover,
-    nav a.active{
-      background:#2563eb;
-    }
-
-    .hero{
       background:
-        radial-gradient(
-          circle at 75% 35%,
-          rgba(37,99,235,.35),
-          transparent 35%
-        ),
-        linear-gradient(135deg,#07101f,#1b2b43);
-
-      color:white;
-      padding:75px 20px;
+        linear-gradient(90deg,rgba(3,18,31,.97) 0%,rgba(3,18,31,.90) 42%,rgba(3,18,31,.34) 72%,rgba(3,18,31,.15) 100%),
+        linear-gradient(135deg,#102d42 0%,#173f57 55%,#0b2537 100%);
+    }
+    .repair-hero:after{
+      content:"";
+      position:absolute;inset:auto 0 0;
+      height:115px;
+      background:linear-gradient(to top,rgba(245,248,251,1),rgba(245,248,251,0));
+      pointer-events:none;
+    }
+    .hero-photo{
+      position:absolute;
+      inset:0 0 0 43%;
+      background:
+        radial-gradient(circle at 70% 28%,rgba(255,255,255,.18),transparent 20%),
+        linear-gradient(135deg,rgba(28,65,82,.15),rgba(3,18,31,.08));
+      overflow:hidden;
+    }
+    .hero-photo .van{
+      position:absolute;
+      width:min(62vw,700px);
+      height:250px;
+      right:4%;
+      bottom:82px;
+      border-radius:80px 38px 24px 26px;
+      background:linear-gradient(155deg,#152c3a 0%,#263e4a 58%,#0d1e2a 100%);
+      box-shadow:0 30px 45px rgba(0,0,0,.30);
+      transform:skewX(-2deg);
+    }
+    .hero-photo .van:before{
+      content:"";
+      position:absolute;
+      left:11%;
+      top:26px;
+      width:43%;
+      height:83px;
+      border-radius:25px 12px 8px 8px;
+      background:linear-gradient(135deg,#6e8c9a,#182d39 70%);
+      border:3px solid rgba(255,255,255,.13);
+    }
+    .hero-photo .van:after{
+      content:"HOMS TECH";
+      position:absolute;
+      right:8%;
+      top:82px;
+      font-size:28px;
+      font-weight:900;
+      letter-spacing:-1px;
+      color:#fff;
+      text-shadow:0 3px 12px #0008;
+    }
+    .wheel{
+      position:absolute;width:72px;height:72px;border-radius:50%;
+      bottom:-25px;background:#0b1116;border:12px solid #52606a;
+      box-shadow:inset 0 0 0 8px #121b21;
+    }
+    .wheel.one{left:15%}.wheel.two{right:14%}
+    .van-mark{
+      position:absolute;right:8%;top:127px;color:#20d976;font-weight:800;font-size:12px;
+      letter-spacing:.4px;
     }
 
     .hero-inner{
-      max-width:1200px;
-      margin:auto;
-      display:grid;
-      grid-template-columns:1.2fr .8fr;
-      align-items:center;
-      gap:50px;
+      position:relative;z-index:2;
+      max-width:1180px;margin:auto;padding:78px 18px 125px;
+      display:grid;grid-template-columns:1.05fr .95fr;align-items:center;
     }
-
-    .hero h1{
-      font-size:48px;
-      line-height:1.15;
-      margin-bottom:20px;
-    }
-
-    .hero h1 span{
-      color:#60a5fa;
-    }
-
-    .hero p{
-      color:#dbe4f0;
-      font-size:18px;
-      max-width:700px;
-      margin-bottom:25px;
-    }
-
-    .buttons{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-
-    .btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:13px 22px;
-      border-radius:10px;
-      font-weight:700;
-      border:2px solid transparent;
-      transition:.2s;
-    }
-
-    .green{
-      background:#16c766;
-      color:white;
-    }
-
-    .green:hover{
-      background:#0eae56;
-    }
-
-    .white{
-      background:white;
-      color:#2563eb;
-    }
-
-    .white:hover{
-      background:#eff6ff;
-    }
-
-    .section{
-      max-width:1200px;
-      margin:auto;
-      padding:70px 20px;
-    }
-
-    .section-title{
-      text-align:center;
-      margin-bottom:45px;
-    }
-
-    .section-title h2{
-      font-size:34px;
-      margin-bottom:10px;
-    }
-
-    .section-title p{
-      color:#6b7280;
-      max-width:700px;
-      margin:auto;
-    }
-
-    .line{
-      width:65px;
-      height:4px;
-      background:#2563eb;
-      border-radius:10px;
-      margin:14px auto 0;
-    }
-
-    .services-grid{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:22px;
-    }
-
-    .service-card{
-      background:white;
-      border-radius:18px;
-      padding:28px;
-      box-shadow:0 8px 25px rgba(15,23,42,.07);
-      transition:.2s;
-    }
-
-    .service-card:hover{
-      transform:translateY(-4px);
-      box-shadow:0 12px 30px rgba(15,23,42,.11);
-    }
-
-    .service-icon{
-      width:58px;
-      height:58px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:#eff6ff;
-      border-radius:15px;
-      font-size:30px;
-      margin-bottom:18px;
-    }
-
-    .service-card h3{
-      font-size:21px;
-      margin-bottom:10px;
-    }
-
-    .service-card p{
-      color:#6b7280;
-    }
-
-    .empty{
-      grid-column:1/-1;
-      background:white;
-      border-radius:18px;
-      padding:40px;
-      text-align:center;
-      color:#6b7280;
-    }
-
-    .banner{
-      background:linear-gradient(135deg,#162438,#25364d);
-      color:white;
-      border-radius:22px;
-      padding:40px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:25px;
-    }
-
-    .banner h2{
-      font-size:30px;
-      margin-bottom:8px;
-    }
-
-    .banner p{
-      color:#dbe4f0;
-    }
-
-    .contact{
-      background:#111827;
-      color:white;
-      border-radius:22px;
-      padding:40px;
-      text-align:center;
-    }
-
-    .contact h2{
-      font-size:30px;
-      margin-bottom:10px;
-    }
-
-    .contact p{
-      color:#d1d5db;
+    .eyebrow{
+      display:flex;align-items:center;gap:10px;
+      text-transform:uppercase;font-size:13px;font-weight:900;letter-spacing:.5px;
       margin-bottom:22px;
     }
+    .eyebrow i{display:block;width:42px;height:4px;border-radius:20px;background:var(--green)}
+    .hero-title{font-size:clamp(42px,5.1vw,72px);line-height:1.02;margin:0 0 20px;font-weight:900;letter-spacing:-2px}
+    .hero-title span{color:#159eea}
+    .hero-sub{font-size:20px;max-width:570px;color:#d9e8f1;margin:0 0 27px}
+    .hero-checks{display:grid;gap:11px;margin-bottom:30px}
+    .hero-check{display:flex;align-items:center;gap:10px;font-weight:700;color:#f2f8fb}
+    .hero-check b{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--green);color:#062116;font-size:14px}
 
-    footer{
-      background:#0b1422;
-      color:#cbd5e1;
-      padding:35px 20px;
-      margin-top:20px;
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+    .btn-main{
+      display:inline-flex;align-items:center;justify-content:center;gap:9px;
+      border:0;border-radius:14px;padding:14px 22px;font-weight:900;cursor:pointer;
+      transition:.2s;
     }
+    .btn-green{background:var(--green);color:#042516;box-shadow:0 12px 25px rgba(25,214,107,.22)}
+    .btn-green:hover{background:var(--green2);transform:translateY(-2px)}
+    .btn-light{background:#fff;color:#12304a}
+    .btn-light:hover{background:#eef6fb}
 
-    .footer-inner{
-      max-width:1200px;
-      margin:auto;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:20px;
-      flex-wrap:wrap;
+    /* Main option cards */
+    .wrap{max-width:1180px;margin:auto;padding:0 18px}
+    .options{
+      position:relative;z-index:5;
+      margin-top:-58px;
+      display:grid;grid-template-columns:1fr 1fr;gap:18px;
     }
+    .option-card{
+      background:#fff;border:1px solid #e5edf3;border-radius:24px;padding:25px;
+      box-shadow:var(--shadow);display:grid;grid-template-columns:1fr 170px;gap:20px;
+      min-height:305px;
+    }
+    .option-card.send{background:linear-gradient(135deg,#fff,#f3f9ff)}
+    .option-icon{
+      width:58px;height:58px;border-radius:16px;display:grid;place-items:center;
+      font-size:29px;background:#e8fff2;color:#087b3a;margin-bottom:15px
+    }
+    .send .option-icon{background:#e9f4ff;color:#1672b8}
+    .option-card h2{font-size:25px;margin:0 0 8px}
+    .option-card p{color:#64748b;margin:0 0 13px}
+    .ticks{display:grid;gap:7px;margin-bottom:18px}
+    .tick{display:flex;gap:8px;align-items:center;color:#526273;font-size:14px}
+    .tick b{color:#0fc766}
+    .option-img{
+      border-radius:17px;min-height:250px;
+      background:linear-gradient(145deg,#eaf1f6,#dce8ef);
+      display:flex;align-items:flex-end;justify-content:center;overflow:hidden;
+      position:relative;
+    }
+    .option-img .box{
+      width:112px;height:145px;border-radius:9px 9px 15px 15px;
+      background:linear-gradient(145deg,#c99763,#a66d3d);
+      box-shadow:0 18px 28px #1232;
+      position:relative;margin-bottom:30px;
+    }
+    .option-img .box:after{content:"HOMS TECH";position:absolute;left:12px;top:55px;color:#173044;font-weight:900;font-size:12px}
+    .option-img .phone{
+      width:80px;height:150px;border-radius:18px 18px 12px 12px;
+      background:linear-gradient(145deg,#1a3040,#0a1721);
+      border:5px solid #172a38;box-shadow:0 18px 28px #1234;
+      transform:rotate(-9deg);position:relative;z-index:2;margin:0 0 35px 15px;
+    }
+    .option-img .phone:after{content:"";position:absolute;inset:8px;border-radius:11px;background:linear-gradient(145deg,#2b83ba,#0c2d48)}
 
-    .footer-name{
-      color:white;
-      font-size:20px;
-      font-weight:800;
+    /* How it works */
+    .section{padding:82px 0}
+    .section-head{text-align:center;margin-bottom:48px}
+    .section-kicker{font-size:13px;color:#188fe0;font-weight:900;letter-spacing:1.2px;text-transform:uppercase}
+    .section-head h2{font-size:39px;line-height:1.1;margin:8px 0 10px;letter-spacing:-1px}
+    .section-head p{color:#718096;max-width:680px;margin:auto}
+    .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:45px;position:relative}
+    .steps:before{
+      content:"";position:absolute;top:58px;left:18%;right:18%;height:3px;background:#dcecf7;z-index:0
     }
+    .step{text-align:center;position:relative;z-index:1}
+    .step-icon{
+      width:112px;height:112px;border-radius:50%;margin:0 auto 18px;
+      display:grid;place-items:center;background:#eff8ff;border:10px solid #fff;
+      box-shadow:0 0 0 1px #e0edf6;font-size:40px;position:relative
+    }
+    .step-num{
+      position:absolute;right:-2px;top:-3px;width:32px;height:32px;border-radius:50%;
+      background:#168fe0;color:#fff;display:grid;place-items:center;font-weight:900;font-size:14px
+    }
+    .step h3{font-size:21px;margin:0 0 7px}.step p{color:#6b7785;max-width:280px;margin:auto}
 
-    .footer-links{
-      display:flex;
-      gap:18px;
-      flex-wrap:wrap;
+    /* Services */
+    .services-section{background:#fff;padding:80px 0;border-top:1px solid #edf2f6;border-bottom:1px solid #edf2f6}
+    .services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .service-card{
+      background:#fff;border:1px solid #e5edf3;border-radius:18px;padding:23px;
+      box-shadow:0 8px 25px rgba(7,29,45,.055);transition:.2s
     }
+    .service-card:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(7,29,45,.10)}
+    .service-card .ico{
+      width:50px;height:50px;border-radius:14px;background:#edf8ff;display:grid;place-items:center;
+      font-size:25px;margin-bottom:15px
+    }
+    .service-card h3{margin:0 0 7px;font-size:19px}.service-card p{margin:0 0 18px;color:#6b7785;font-size:14px}
+    .service-card button{width:100%;border:0;border-radius:10px;background:#eafbf2;color:#078143;padding:11px;font-weight:900;cursor:pointer}
+    .service-card button:hover{background:#d6f7e5}
 
-    .footer-links a:hover{
-      color:white;
+    /* Form modal */
+    .modal-backdrop{
+      position:fixed;inset:0;background:rgba(2,15,25,.68);backdrop-filter:blur(6px);
+      display:none;align-items:center;justify-content:center;padding:18px;z-index:10050
     }
+    .modal-backdrop.open{display:flex}
+    .modal{
+      width:min(820px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:24px;
+      box-shadow:0 30px 80px rgba(0,0,0,.3)
+    }
+    .modal-head{
+      padding:22px 25px;border-bottom:1px solid #e8eef3;display:flex;align-items:center;justify-content:space-between;gap:15px
+    }
+    .modal-head h2{margin:0;font-size:25px}.close{border:0;background:#eef3f6;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:20px}
+    .form-body{padding:25px}
+    .method-switch{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
+    .method-switch button{
+      border:2px solid #e3ebf2;background:#fff;border-radius:13px;padding:14px;font-weight:900;cursor:pointer;color:#405365
+    }
+    .method-switch button.active{border-color:#18c96a;background:#edfff5;color:#087b3a}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+    .field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}
+    .field label{font-size:13px;font-weight:900;color:#314457}
+    .field input,.field select,.field textarea{
+      width:100%;border:1px solid #d9e3ea;border-radius:11px;padding:12px 13px;outline:0;background:#fbfdff;color:#172a3a
+    }
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:#55aee1;box-shadow:0 0 0 3px #e9f6ff}
+    .field textarea{min-height:95px;resize:vertical}
+    .form-note{background:#f1f7fb;border-radius:12px;padding:12px 14px;color:#587083;font-size:13px;margin:18px 0}
+    .submit-row{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-top:20px}
+    .submit-btn{border:0;background:var(--green);color:#062116;border-radius:12px;padding:14px 20px;font-weight:900;cursor:pointer}
+    .submit-btn:disabled{opacity:.6;cursor:wait}
+    .form-error{display:none;color:#b42318;background:#fff1f0;border-radius:10px;padding:10px 12px;font-size:13px;margin-top:12px}
+    .success-box{display:none;padding:35px;text-align:center}
+    .success-icon{width:72px;height:72px;border-radius:50%;background:#e8fff2;color:#0a9a4e;display:grid;place-items:center;font-size:35px;margin:0 auto 15px}
+    .order-number{display:inline-block;background:#edf7ff;color:#0c70ad;padding:8px 12px;border-radius:9px;font-weight:900;margin:8px 0 15px}
+
+    /* Bottom features */
+    .features{
+      background:var(--navy);color:#fff;border-radius:24px;padding:30px;
+      display:grid;grid-template-columns:repeat(4,1fr);gap:20px
+    }
+    .feature{display:flex;align-items:center;gap:14px;padding:8px 18px;border-right:1px solid rgba(255,255,255,.13)}
+    .feature:last-child{border-right:0}
+    .feature .ficon{font-size:30px;color:var(--green)}.feature strong{display:block}.feature small{color:#b8c9d5}
+
+    footer{margin-top:75px;background:#061522;color:#c8d6df;padding:40px 18px}
+    .footer-inner{max-width:1180px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+    .footer-name{color:#fff;font-size:21px;font-weight:900}
 
     @media(max-width:900px){
-
-      .hero-inner{
-        grid-template-columns:1fr;
-      }
-
-      .hero h1{
-        font-size:40px;
-      }
-
-      .services-grid{
-        grid-template-columns:1fr 1fr;
-      }
-
-      nav a{
-        padding:8px 9px;
-        font-size:14px;
-      }
+      .ht-header .ht-actions a:nth-child(1),.ht-header .ht-actions a:nth-child(2){display:none!important}
+      .ht-header .ht-header-main{flex-wrap:wrap!important;padding:10px 0!important}
+      .ht-header .ht-search{order:3!important;max-width:none!important;flex-basis:100%!important;margin:0 0 4px!important}
+      .hero-inner{grid-template-columns:1fr;padding-top:60px}
+      .hero-photo{inset:0;opacity:.48}
+      .options{grid-template-columns:1fr}
+      .steps{gap:25px}
+      .services-grid{grid-template-columns:1fr 1fr}
+      .features{grid-template-columns:1fr 1fr}
+      .feature:nth-child(2){border-right:0}
     }
-
-    @media(max-width:550px){
-
-      .nav{
-        flex-direction:column;
-        padding:12px 15px;
-      }
-
-      nav{
-        justify-content:center;
-      }
-
-      .hero{
-        padding:55px 18px;
-      }
-
-      .hero h1{
-        font-size:32px;
-      }
-
-      .hero p{
-        font-size:16px;
-      }
-
-      .section{
-        padding:50px 16px;
-      }
-
-      .section-title h2{
-        font-size:28px;
-      }
-
-      .services-grid{
-        grid-template-columns:1fr;
-      }
-
-      .banner{
-        padding:28px 22px;
-        flex-direction:column;
-        align-items:flex-start;
-      }
-
-      .contact{
-        padding:30px 20px;
-      }
-
-      .footer-inner{
-        flex-direction:column;
-        text-align:center;
-      }
+    @media(max-width:600px){
+      .ht-header .ht-brand img{width:138px!important}
+      .ht-header .ht-nav a{font-size:12px!important;padding:8px 10px!important}
+      .repair-hero{min-height:650px}
+      .hero-inner{padding:52px 15px 120px}
+      .hero-title{font-size:42px}
+      .hero-sub{font-size:17px}
+      .wrap{padding:0 14px}
+      .option-card{grid-template-columns:1fr;padding:20px}
+      .option-img{min-height:170px}
+      .option-img .box{margin-bottom:15px}.option-img .phone{margin-bottom:20px}
+      .section{padding:60px 0}
+      .section-head h2{font-size:30px}
+      .steps{grid-template-columns:1fr}
+      .steps:before{display:none}
+      .services-grid{grid-template-columns:1fr}
+      .form-grid{grid-template-columns:1fr}
+      .field.full{grid-column:auto}
+      .submit-row{flex-direction:column;align-items:stretch}
+      .features{grid-template-columns:1fr;padding:22px}
+      .feature{border-right:0;border-bottom:1px solid rgba(255,255,255,.13);padding:12px 0}
+      .feature:last-child{border-bottom:0}
+      .ht-marquee{gap:28px!important}
+      .ht-marquee-item{font-size:13px!important}
     }
   </style>
-<link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20260922-final-header">
-<style>
-/* HOMS TECH FINAL HEADER OVERRIDE — self-contained */
-/* HOMS TECH TOPBAR FINAL POLISH */
-.ht-topbar{background:#071d2d!important;color:#dbeafe!important;border-bottom:1px solid rgba(255,255,255,.08)!important;font-size:12px!important;}
-.ht-topbar .ht-container{min-height:34px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:18px!important;}
-.ht-topinfo{display:flex!important;align-items:center!important;justify-content:center!important;gap:22px!important;white-space:nowrap!important;}
-.ht-topinfo span{display:inline-flex!important;align-items:center!important;gap:6px!important;line-height:1!important;color:#dbeafe!important;}
-.ht-topinfo span b{font-size:11px!important;color:#60a5fa!important;font-weight:900!important;}
-.ht-rating{display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;color:#fff!important;font-weight:700!important;white-space:nowrap!important;}
-@media(max-width:900px){.ht-topbar .ht-container{padding:0 14px!important}.ht-topinfo{gap:12px!important;overflow:hidden!important}.ht-topinfo span:nth-child(n+3){display:none!important}.ht-rating{font-size:11px!important}}
-
-.ht-header{position:sticky!important;top:0!important;z-index:9999!important;background:#fff!important;color:#172330!important;border-bottom:1px solid #e2e8f0!important;box-shadow:0 4px 18px rgba(7,29,45,.06)!important;}
-.ht-header *{box-sizing:border-box!important;}
-.ht-header .ht-container{max-width:1180px!important;margin:0 auto!important;padding:0 18px!important;}
-.ht-header .ht-header-main{min-height:76px!important;display:flex!important;align-items:center!important;gap:22px!important;background:#fff!important;}
-.ht-header .ht-brand{display:flex!important;align-items:center!important;flex:0 0 auto!important;background:transparent!important;padding:0!important;}
-.ht-header .ht-brand img{width:154px!important;max-width:154px!important;height:auto!important;display:block!important;object-fit:contain!important;}
-.ht-header .ht-search{height:42px!important;display:flex!important;align-items:center!important;flex:1!important;max-width:500px!important;background:#f4f7fa!important;border:1px solid #e1e7ee!important;border-radius:10px!important;overflow:hidden!important;margin-left:10px!important;padding:0!important;}
-.ht-header .ht-search span{font-size:23px!important;color:#64748b!important;padding-left:13px!important;}
-.ht-header .ht-search input{border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;width:100%!important;padding:0 10px!important;color:#172330!important;}
-.ht-header .ht-search button{height:100%!important;border:0!important;background:#2563eb!important;color:#fff!important;font-weight:800!important;padding:0 17px!important;cursor:pointer!important;border-radius:0!important;}
-.ht-header .ht-actions{display:flex!important;align-items:center!important;gap:16px!important;margin-left:auto!important;white-space:nowrap!important;}
-.ht-header .ht-actions a{background:transparent!important;color:#334155!important;text-decoration:none!important;font-size:13px!important;font-weight:750!important;padding:6px 0!important;border-radius:0!important;}
-.ht-header .ht-actions a:hover{background:transparent!important;color:#2563eb!important;}
-.ht-header .ht-nav{display:flex!important;align-items:center!important;gap:5px!important;min-height:46px!important;overflow:auto!important;background:#fff!important;padding:0!important;margin:0!important;}
-.ht-header .ht-nav a{background:transparent!important;color:#334155!important;text-decoration:none!important;font-size:14px!important;font-weight:750!important;padding:9px 13px!important;border-radius:9px!important;white-space:nowrap!important;}
-.ht-header .ht-nav a:hover,.ht-header .ht-nav a.active{background:#edf4ff!important;color:#2563eb!important;}
-@media(max-width:900px){.ht-header .ht-actions a:nth-child(1),.ht-header .ht-actions a:nth-child(2){display:none!important}.ht-header .ht-header-main{flex-wrap:wrap!important;padding:10px 0!important}.ht-header .ht-search{order:3!important;max-width:none!important;flex-basis:100%!important;margin:0 0 4px!important}.ht-header .ht-nav{padding-bottom:7px!important}}
-@media(max-width:560px){.ht-header .ht-container{padding:0 12px!important}.ht-header .ht-brand img{width:138px!important;max-width:138px!important}.ht-header .ht-actions{gap:10px!important}.ht-header .ht-actions a{font-size:12px!important}.ht-header .ht-nav a{font-size:12px!important;padding:8px 10px!important}}
-</style>
-
-
-<style id="homs-topbar-marquee-final">
-/* HOMS TECH TOPBAR — exactly four messages, one pass, left-to-right order */
-.ht-topbar,.topbar{height:42px!important;background:#071d2d!important;color:#eaf4ff!important;overflow:hidden!important;width:100%!important;}
-.ht-topbar .ht-container,.topbar .container,.topbar .wrap{height:100%!important;max-width:1180px!important;margin:0 auto!important;overflow:hidden!important;}
-.ht-marquee,.top-info{height:100%!important;width:max-content!important;display:flex!important;align-items:center!important;gap:44px!important;white-space:nowrap!important;animation:htMarqueeOneWay 15s linear infinite!important;will-change:transform!important;}
-.ht-marquee-track{display:flex!important;align-items:center!important;gap:44px!important;white-space:nowrap!important;}
-.ht-marquee-item,.top-info span{font-size:14px!important;font-weight:800!important;letter-spacing:.1px!important;white-space:nowrap!important;color:#eaf4ff!important;}
-.ht-marquee-item b,.top-info span:before{color:#60a5fa!important;margin-right:7px!important;font-weight:900!important;}
-@keyframes htMarqueeOneWay{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
-@media(max-width:700px){.ht-topbar,.topbar{height:38px!important}.ht-marquee,.top-info{gap:28px!important;animation-duration:13s!important}.ht-marquee-track{gap:28px!important}.ht-marquee-item,.top-info span{font-size:13px!important}}
-@media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
-</style></head>
+</head>
 
 <body>
+  <div class="ht-topbar">
+    <div class="ht-container">
+      <div class="ht-marquee">
+        <span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span>
+        <span class="ht-marquee-item"><b>✓</b>Snel geleverd</span>
+        <span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span>
+        <span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span>
+      </div>
+    </div>
+  </div>
 
-<div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div></div>
-<header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="devices.html">Zoek</a><a href="devices.html">NL⌄</a><a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a class="active" href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a><a href="used.html">Tweedehands</a><a href="gsm-services.html">GSM Services</a>
-   <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a></nav></div></header>
+  <header class="ht-header">
+    <div class="ht-container">
+      <div class="ht-header-main">
+        <a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>
+        <form class="ht-search" action="devices.html" method="get">
+          <span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken">
+          <button type="submit">Zoek</button>
+        </form>
+        <div class="ht-actions">
+          <a href="devices.html">Zoek</a>
+          <a href="devices.html">NL⌄</a>
+          <a href="account.html">♙ Mijn account</a>
+          <a href="cart.html">🛒 Winkelwagen</a>
+        </div>
+      </div>
+      <nav class="ht-nav">
+        <a href="index.html">Home</a>
+        <a href="about.html">Over ons</a>
+        <a class="active" href="repair.html">Reparaties</a>
+        <a href="devices.html">Apparaten</a>
+        <a href="prices.html">Prijzen</a>
+        <a href="used.html">Tweedehands</a>
+        <a href="gsm-services.html">GSM Services</a>
+        <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a>
+        <a href="account.html">Mijn account</a>
+      </nav>
+    </div>
+  </header>
 
-
-<section class="hero">
-
-  <div class="hero-inner">
-
-    <div>
-
-      <h1>
-        Onze <span>reparaties</span>
-      </h1>
-
-      <p>
-        Professionele telefoonreparatie aan huis.
-        Wij helpen u snel met verschillende soorten
-        smartphoneproblemen.
-      </p>
-
-      <div class="buttons">
-
-        <a
-          class="btn green"
-          data-wa
-          href="#"
-          target="_blank"
-        >
-          💬 WhatsApp
-        </a>
-
-        <a
-          class="btn white"
-          data-phone
-          href="#"
-        >
-          📞 Bel ons
-        </a>
-
+  <main>
+    <section class="repair-hero">
+      <div class="hero-photo" aria-hidden="true">
+        <div class="van">
+          <div class="wheel one"></div>
+          <div class="wheel two"></div>
+          <div class="van-mark">REPARATIE AAN HUIS · SNELLE SERVICE · DOOR HEEL NEDERLAND</div>
+        </div>
       </div>
 
+      <div class="hero-inner">
+        <div>
+          <div class="eyebrow"><i></i> Snel / Betrouwbaar / Professioneel</div>
+          <h1 class="hero-title">Uw telefoon kapot?<br>Wij lossen het <span>voor u op.</span></h1>
+          <p class="hero-sub">Kies de reparatieservice die bij u past. Aan huis of stuur uw toestel veilig naar HOMS TECH.</p>
+
+          <div class="hero-checks">
+            <div class="hero-check"><b>✓</b>Originele en hoogwaardige onderdelen</div>
+            <div class="hero-check"><b>✓</b>Ervaren monteurs</div>
+            <div class="hero-check"><b>✓</b>Snelle en betrouwbare service</div>
+            <div class="hero-check"><b>✓</b>Door heel Nederland</div>
+          </div>
+
+          <div class="hero-actions">
+            <button class="btn-main btn-green" type="button" onclick="openRepair('home')">Afspraak aan huis maken →</button>
+            <button class="btn-main btn-light" type="button" onclick="openRepair('send')">Toestel opsturen</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="wrap">
+      <section class="options">
+        <article class="option-card">
+          <div>
+            <div class="option-icon">⌂</div>
+            <h2>Reparatie aan huis</h2>
+            <p>Onze monteur komt bij u thuis of op locatie om uw telefoon te repareren. Snel, makkelijk en zonder dat u de deur uit hoeft.</p>
+            <div class="ticks">
+              <div class="tick"><b>✓</b>Bij u thuis of op werk</div>
+              <div class="tick"><b>✓</b>Vaak dezelfde dag nog</div>
+              <div class="tick"><b>✓</b>Geen verzendkosten</div>
+              <div class="tick"><b>✓</b>Veilig en betrouwbaar</div>
+            </div>
+            <button class="btn-main btn-green" type="button" onclick="openRepair('home')">Afspraak aan huis maken →</button>
+          </div>
+          <div class="option-img" aria-hidden="true"><div class="phone"></div></div>
+        </article>
+
+        <article class="option-card send">
+          <div>
+            <div class="option-icon">▣</div>
+            <h2>Stuur uw toestel naar ons</h2>
+            <p>Liever uw telefoon opsturen? Geen probleem. U meldt uw reparatie online aan en wij houden u op de hoogte.</p>
+            <div class="ticks">
+              <div class="tick"><b>✓</b>Eenvoudig en veilig aanmelden</div>
+              <div class="tick"><b>✓</b>Snelle reparatie</div>
+              <div class="tick"><b>✓</b>U ontvangt uw toestel terug</div>
+              <div class="tick"><b>✓</b>Status wordt in het systeem opgeslagen</div>
+            </div>
+            <button class="btn-main btn-green" type="button" onclick="openRepair('send')">Reparatie aanmelden →</button>
+          </div>
+          <div class="option-img" aria-hidden="true"><div class="box"></div></div>
+        </article>
+      </section>
     </div>
 
-  </div>
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="section-kicker">Hoe het werkt</div>
+          <h2>Repareren in 3 eenvoudige stappen</h2>
+          <p>Snel, duidelijk en zonder gedoe.</p>
+        </div>
 
-</section>
+        <div class="steps">
+          <div class="step">
+            <div class="step-icon">☝️<span class="step-num">1</span></div>
+            <h3>Kies uw service</h3>
+            <p>Kies voor reparatie aan huis of stuur uw toestel naar ons.</p>
+          </div>
+          <div class="step">
+            <div class="step-icon">▣<span class="step-num">2</span></div>
+            <h3>Maak een afspraak</h3>
+            <p>Vul uw gegevens in. Uw aanvraag wordt direct naar HOMS TECH gestuurd.</p>
+          </div>
+          <div class="step">
+            <div class="step-icon">🔧<span class="step-num">3</span></div>
+            <h3>Wij repareren uw toestel</h3>
+            <p>Uw aanvraag komt in het HOMS TECH systeem en kan vanuit Admin worden opgevolgd.</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
+    <section class="services-section">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="section-kicker">Onze services</div>
+          <h2>Wat kunnen wij repareren?</h2>
+          <p>Deze services worden rechtstreeks uit de HOMS TECH website-instellingen geladen.</p>
+        </div>
+        <div id="servicesGrid" class="services-grid"></div>
+      </div>
+    </section>
 
-<section class="section">
+    <section class="section">
+      <div class="wrap">
+        <div class="features">
+          <div class="feature"><div class="ficon">⚡</div><div><strong>Snelle service</strong><small>Vaak dezelfde dag gerepareerd</small></div></div>
+          <div class="feature"><div class="ficon">♢</div><div><strong>Betrouwbaar</strong><small>Originele en hoogwaardige onderdelen</small></div></div>
+          <div class="feature"><div class="ficon">⚙</div><div><strong>Ervaren monteurs</strong><small>Jarenlange ervaring</small></div></div>
+          <div class="feature"><div class="ficon">⌖</div><div><strong>Door heel Nederland</strong><small>Reparatie aan huis of opsturen</small></div></div>
+        </div>
+      </div>
+    </section>
+  </main>
 
-  <div class="section-title">
-
-    <h2>Wat kunnen wij repareren?</h2>
-
-    <p>
-      Bekijk onze reparaties en neem contact met ons op
-      voor meer informatie.
-    </p>
-
-    <div class="line"></div>
-
-  </div>
-
-
-  <div id="servicesGrid" class="services-grid"></div>
-
-</section>
-
-
-<section class="section">
-
-  <div class="banner">
-
-    <div>
-
-      <h2>
-        Reparatie nodig?
-      </h2>
-
-      <p>
-        Neem contact met ons op en bespreek uw probleem.
-      </p>
-
-    </div>
-
-    <a
-      class="btn green"
-      data-wa
-      href="#"
-      target="_blank"
-    >
-      💬 WhatsApp
-    </a>
-
-  </div>
-
-</section>
-
-
-<section class="section">
-
-  <div class="contact">
-
-    <h2>
-      Snel hulp nodig?
-    </h2>
-
-    <p>
-      Neem vandaag nog contact op met HOMS TECH.
-    </p>
-
-    <div
-      class="buttons"
-      style="justify-content:center;"
-    >
-
-      <a
-        class="btn green"
-        data-wa
-        href="#"
-        target="_blank"
-      >
-        💬 WhatsApp
-      </a>
-
-      <a
-        class="btn white"
-        data-phone
-        href="#"
-      >
-        📞 Bel nu
-      </a>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<footer>
-
-  <div class="footer-inner">
-
-    <div>
-
-      <div
-        class="footer-name"
-        data-name
-      >
-        HOMS TECH
+  <div id="repairModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="repairTitle">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="repairTitle">Reparatie aanmelden</h2>
+        <button class="close" type="button" onclick="closeRepair()" aria-label="Sluiten">×</button>
       </div>
 
-      <div data-tag>
-        Telefoonreparatie aan huis
+      <div id="repairFormView" class="form-body">
+        <div class="method-switch">
+          <button id="methodHome" type="button" onclick="setMethod('home')">⌂ Reparatie aan huis</button>
+          <button id="methodSend" type="button" onclick="setMethod('send')">▣ Toestel opsturen</button>
+        </div>
+
+        <form id="repairForm">
+          <div class="form-grid">
+            <div class="field">
+              <label for="service">Reparatie</label>
+              <select id="service" required></select>
+            </div>
+            <div class="field">
+              <label for="device">Toestel / model</label>
+              <input id="device" type="text" placeholder="Bijv. iPhone 14 Pro" required>
+            </div>
+
+            <div class="field">
+              <label for="name">Naam *</label>
+              <input id="name" type="text" autocomplete="name" required>
+            </div>
+            <div class="field">
+              <label for="phone">Telefoon *</label>
+              <input id="phone" type="tel" autocomplete="tel" required>
+            </div>
+
+            <div class="field">
+              <label for="email">E-mail *</label>
+              <input id="email" type="email" autocomplete="email" required>
+            </div>
+            <div class="field">
+              <label for="imei">IMEI (optioneel)</label>
+              <input id="imei" type="text" inputmode="numeric" placeholder="15 cijfers">
+            </div>
+
+            <div class="field" id="addressField">
+              <label for="address">Adres *</label>
+              <input id="address" type="text" autocomplete="street-address" placeholder="Straat + huisnummer">
+            </div>
+            <div class="field" id="cityField">
+              <label for="city">Postcode en plaats *</label>
+              <input id="city" type="text" autocomplete="postal-code" placeholder="Bijv. 3011AA Rotterdam">
+            </div>
+
+            <div class="field" id="dateField">
+              <label for="date">Gewenste datum</label>
+              <input id="date" type="date">
+            </div>
+            <div class="field" id="timeField">
+              <label for="time">Gewenste tijd</label>
+              <select id="time">
+                <option value="">Geen voorkeur</option>
+                <option>09:00 - 11:00</option>
+                <option>11:00 - 13:00</option>
+                <option>13:00 - 15:00</option>
+                <option>15:00 - 17:00</option>
+                <option>17:00 - 19:00</option>
+              </select>
+            </div>
+
+            <div class="field full">
+              <label for="notes">Probleem / extra informatie</label>
+              <textarea id="notes" placeholder="Beschrijf kort wat er met uw toestel aan de hand is..."></textarea>
+            </div>
+          </div>
+
+          <div id="formError" class="form-error"></div>
+
+          <div class="form-note">
+            Uw aanvraag wordt rechtstreeks naar de HOMS TECH server gestuurd via <strong>/api/orders</strong> en opgeslagen als service order. Er wordt geen localStorage gebruikt.
+          </div>
+
+          <div class="submit-row">
+            <span style="font-size:12px;color:#718096">* verplichte velden</span>
+            <button id="submitBtn" class="submit-btn" type="submit">Aanvraag versturen →</button>
+          </div>
+        </form>
       </div>
 
+      <div id="successView" class="success-box">
+        <div class="success-icon">✓</div>
+        <h2>Aanvraag ontvangen</h2>
+        <p>Uw reparatieaanvraag is succesvol opgeslagen.</p>
+        <div id="orderNumber" class="order-number"></div>
+        <p style="color:#64748b;font-size:14px">HOMS TECH kan deze aanvraag nu vanuit het Admin-systeem opvolgen.</p>
+        <button class="btn-main btn-green" type="button" onclick="closeRepair()">Sluiten</button>
+      </div>
     </div>
-
-
-    <div class="footer-links">
-
-      <a href="index.html">Home</a>
-      <a href="about.html">Over ons</a>
-      <a href="repair.html">Reparaties</a>
-      <a href="devices.html">Apparaten</a>
-      <a href="prices.html">Prijzen</a>
-
-    </div>
-
   </div>
 
-</footer>
-
+  <footer>
+    <div class="footer-inner">
+      <div>
+        <div class="footer-name" data-name>HOMS TECH</div>
+        <div data-tag>Telefoonreparatie aan huis</div>
+      </div>
+      <div>
+        <a href="index.html">Home</a> ·
+        <a href="about.html">Over ons</a> ·
+        <a href="repair.html">Reparaties</a> ·
+        <a href="devices.html">Apparaten</a>
+      </div>
+    </div>
+  </footer>
 
 <script>
+  let siteData = {};
+  let services = [];
+  let currentMethod = "home";
 
   const defaultServices = [
-
-    [
-      "🖥️",
-      "Scherm vervangen",
-      "Wij vervangen beschadigde of gebarsten schermen."
-    ],
-
-    [
-      "🔋",
-      "Batterij vervangen",
-      "Een nieuwe batterij voor een langere gebruiksduur."
-    ],
-
-    [
-      "🔌",
-      "Laadconnector reparatie",
-      "Problemen met opladen of de laadpoort."
-    ],
-
-    [
-      "📷",
-      "Camera reparatie",
-      "Problemen met de camera of cameraglas."
-    ],
-
-    [
-      "💻",
-      "Software reparatie",
-      "Hulp bij softwareproblemen en storingen."
-    ],
-
-    [
-      "🔧",
-      "Andere reparaties",
-      "Ook voor andere smartphoneproblemen kunt u bij ons terecht."
-    ]
-
+    ["🖥️","Scherm vervangen","Beschadigd of gebarsten scherm."],
+    ["🔋","Batterij vervangen","Nieuwe batterij voor een langere gebruiksduur."],
+    ["🔌","Laadconnector reparatie","Problemen met opladen of de laadpoort."],
+    ["📷","Camera reparatie","Problemen met camera of cameraglas."],
+    ["💻","Software reparatie","Hulp bij softwareproblemen en storingen."],
+    ["🔧","Andere reparaties","Ook voor andere smartphoneproblemen."]
   ];
 
-
-  function escapeHtml(value){
-
-    return String(value ?? "")
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;")
+  function esc(v){
+    return String(v ?? "")
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
       .replace(/'/g,"&#039;");
-
   }
 
-
-  function whatsappLink(number){
-
-    let n = String(number || "")
-      .replace(/\D/g,"");
-
-    if(!n){
-      return "#";
-    }
-
-    return "https://wa.me/" + n;
-
+  function normalizeServices(input){
+    if(!Array.isArray(input) || !input.length) return defaultServices;
+    return input.map((s)=>{
+      if(Array.isArray(s)) return [s[0] || "🔧", s[1] || "Reparatie", s[2] || ""];
+      if(typeof s === "object") return [s.icon || "🔧", s.name || s.title || "Reparatie", s.description || ""];
+      return ["🔧", String(s), ""];
+    });
   }
 
+  function renderServices(){
+    services = normalizeServices(siteData.services);
+    const grid = document.getElementById("servicesGrid");
+    const select = document.getElementById("service");
 
-  function phoneLink(number){
+    grid.innerHTML = services.map((s,i)=>`
+      <article class="service-card">
+        <div class="ico">${esc(s[0])}</div>
+        <h3>${esc(s[1])}</h3>
+        <p>${esc(s[2])}</p>
+        <button type="button" onclick="openRepair('home',${i})">Deze reparatie kiezen →</button>
+      </article>
+    `).join("");
 
-    let n = String(number || "")
-      .trim();
-
-    if(!n){
-      return "#";
-    }
-
-    return "tel:" + n.replace(/[^\d+]/g,"");
-
+    select.innerHTML = services.map((s,i)=>`<option value="${i}">${esc(s[1])}</option>`).join("");
   }
-
 
   async function loadSite(){
-
     try{
+      const response = await fetch("/api/site", {headers:{Accept:"application/json"}});
+      if(!response.ok) throw new Error("API error");
+      siteData = await response.json();
 
-      const response = await fetch("/api/site");
-
-      if(!response.ok){
-        throw new Error("API error");
-      }
-
-      const data = await response.json();
-
-
-      /*
-        Bedrijfsnaam
-      */
-
-      document
-        .querySelectorAll("[data-name]")
-        .forEach(el=>{
-
-          el.textContent =
-            data.businessName ||
-            data.siteName ||
-            "HOMS TECH";
-
-        });
-
-
-      /*
-        Tagline
-      */
-
-      document
-        .querySelectorAll("[data-tag]")
-        .forEach(el=>{
-
-          el.textContent =
-            data.tagline ||
-            "Telefoonreparatie aan huis";
-
-        });
-
-
-      /*
-        WhatsApp
-      */
-
-      document
-        .querySelectorAll("[data-wa]")
-        .forEach(el=>{
-
-          el.href =
-            whatsappLink(data.whatsapp);
-
-        });
-
-
-      /*
-        Telefoon
-      */
-
-      document
-        .querySelectorAll("[data-phone]")
-        .forEach(el=>{
-
-          el.href =
-            phoneLink(data.phone);
-
-        });
-
-
-      /*
-        Services uit Admin
-      */
-
-      let services =
-        Array.isArray(data.services)
-          ? data.services
-          : [];
-
-
-      /*
-        Ondersteuning voor oude database
-        waarin services strings zijn.
-      */
-
-      services = services.map(service=>{
-
-        if(Array.isArray(service)){
-
-          return [
-            service[0] || "🔧",
-            service[1] || "Reparatie",
-            service[2] || ""
-          ];
-
-        }
-
-        return [
-          "🔧",
-          String(service),
-          ""
-        ];
-
+      document.querySelectorAll("[data-name]").forEach(el=>{
+        el.textContent = siteData.businessName || siteData.siteName || "HOMS TECH";
+      });
+      document.querySelectorAll("[data-tag]").forEach(el=>{
+        el.textContent = siteData.tagline || "Telefoonreparatie aan huis";
       });
 
-
-      if(!services.length){
-
-        services = defaultServices;
-
-      }
-
-
-      const grid =
-        document.getElementById("servicesGrid");
-
-
-      grid.innerHTML =
-        services.map(service=>{
-
-          return `
-
-            <div class="service-card">
-
-              <div class="service-icon">
-                ${escapeHtml(service[0])}
-              </div>
-
-              <h3>
-                ${escapeHtml(service[1])}
-              </h3>
-
-              <p>
-                ${escapeHtml(service[2])}
-              </p>
-
-            </div>
-
-          `;
-
-        }).join("");
-
-
+      renderServices();
     }catch(error){
-
-      console.error(
-        "HOMS TECH:",
-        error
-      );
-
-
-      /*
-        Fallback als API niet beschikbaar is.
-      */
-
-      document
-        .querySelectorAll("[data-name]")
-        .forEach(el=>{
-          el.textContent = "HOMS TECH";
-        });
-
-
-      document
-        .querySelectorAll("[data-tag]")
-        .forEach(el=>{
-          el.textContent =
-            "Telefoonreparatie aan huis";
-        });
-
-
-      const grid =
-        document.getElementById("servicesGrid");
-
-
-      grid.innerHTML =
-        defaultServices.map(service=>{
-
-          return `
-
-            <div class="service-card">
-
-              <div class="service-icon">
-                ${escapeHtml(service[0])}
-              </div>
-
-              <h3>
-                ${escapeHtml(service[1])}
-              </h3>
-
-              <p>
-                ${escapeHtml(service[2])}
-              </p>
-
-            </div>
-
-          `;
-
-        }).join("");
-
+      console.error("HOMS TECH /api/site:", error);
+      siteData = {};
+      renderServices();
     }
-
   }
 
+  function openRepair(method="home", serviceIndex=null){
+    document.getElementById("repairModal").classList.add("open");
+    document.body.style.overflow="hidden";
+    document.getElementById("repairFormView").style.display="block";
+    document.getElementById("successView").style.display="none";
+    document.getElementById("formError").style.display="none";
+    document.getElementById("repairForm").reset();
+
+    if(!services.length) renderServices();
+    setMethod(method);
+
+    if(serviceIndex !== null && services[serviceIndex]){
+      document.getElementById("service").value = String(serviceIndex);
+    }
+  }
+
+  function closeRepair(){
+    document.getElementById("repairModal").classList.remove("open");
+    document.body.style.overflow="";
+  }
+
+  function setMethod(method){
+    currentMethod = method;
+    document.getElementById("methodHome").classList.toggle("active",method==="home");
+    document.getElementById("methodSend").classList.toggle("active",method==="send");
+
+    const home = method === "home";
+    document.getElementById("addressField").style.display = home ? "flex" : "none";
+    document.getElementById("cityField").style.display = home ? "flex" : "none";
+    document.getElementById("dateField").style.display = home ? "flex" : "none";
+    document.getElementById("timeField").style.display = home ? "flex" : "none";
+
+    document.getElementById("address").required = home;
+    document.getElementById("city").required = home;
+
+    document.getElementById("repairTitle").textContent =
+      home ? "Afspraak aan huis aanvragen" : "Reparatie aanmelden";
+  }
+
+  function showError(message){
+    const el = document.getElementById("formError");
+    el.textContent = message;
+    el.style.display="block";
+  }
+
+  document.getElementById("repairForm").addEventListener("submit", async function(e){
+    e.preventDefault();
+
+    const btn = document.getElementById("submitBtn");
+    const service = services[Number(document.getElementById("service").value)];
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const device = document.getElementById("device").value.trim();
+    const address = document.getElementById("address").value.trim();
+    const city = document.getElementById("city").value.trim();
+    const date = document.getElementById("date").value;
+    const time = document.getElementById("time").value;
+    const imei = document.getElementById("imei").value.trim();
+    const notes = document.getElementById("notes").value.trim();
+
+    if(!service || !name || !email || !phone || !device){
+      showError("Vul alle verplichte gegevens in.");
+      return;
+    }
+
+    if(currentMethod === "home" && (!address || !city)){
+      showError("Vul uw adres en postcode/plaats in voor een afspraak aan huis.");
+      return;
+    }
+
+    btn.disabled=true;
+    btn.textContent="Aanvraag wordt verstuurd...";
+    document.getElementById("formError").style.display="none";
+
+    const details = [
+      `Methode: ${currentMethod === "home" ? "Reparatie aan huis" : "Toestel opsturen"}`,
+      `Toestel: ${device}`,
+      currentMethod === "home" ? `Adres: ${address}` : "",
+      currentMethod === "home" ? `Postcode/plaats: ${city}` : "",
+      currentMethod === "home" && date ? `Gewenste datum: ${date}` : "",
+      currentMethod === "home" && time ? `Gewenste tijd: ${time}` : "",
+      notes ? `Probleem: ${notes}` : ""
+    ].filter(Boolean).join("\n");
+
+    try{
+      const response = await fetch("/api/orders",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Accept":"application/json"},
+        credentials:"same-origin",
+        body:JSON.stringify({
+          serviceCategory:"Reparatie",
+          serviceName:service[1],
+          serviceGroup:currentMethod === "home" ? "Aan huis" : "Opsturen",
+          price:"",
+          name,
+          email,
+          phone,
+          username:"",
+          imei,
+          notes:details
+        })
+      });
+
+      const data = await response.json().catch(()=>({}));
+
+      if(!response.ok || !data.success){
+        throw new Error(data.error || "De aanvraag kon niet worden opgeslagen.");
+      }
+
+      const id = data.order?.id;
+      document.getElementById("orderNumber").textContent =
+        id ? `Ordernummer: HT-${String(id).padStart(5,"0")}` : "Aanvraag succesvol opgeslagen";
+
+      document.getElementById("repairFormView").style.display="none";
+      document.getElementById("successView").style.display="block";
+    }catch(error){
+      console.error("Repair order:",error);
+      showError(error.message || "Er ging iets mis. Probeer het opnieuw.");
+    }finally{
+      btn.disabled=false;
+      btn.textContent="Aanvraag versturen →";
+    }
+  });
+
+  document.getElementById("repairModal").addEventListener("click",function(e){
+    if(e.target === this) closeRepair();
+  });
+
+  document.addEventListener("keydown",function(e){
+    if(e.key === "Escape") closeRepair();
+  });
 
   loadSite();
-
 </script>
-
 </body>
 </html>
