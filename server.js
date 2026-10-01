@@ -1318,6 +1318,39 @@ function forzaImageMatchKey(value) {
 }
 
 // V29: V16 exact-variant fetching + V10 gallery extraction.
+function forzaIsUsableProductImage(url, descriptiveText, productName) {
+  const rawUrl = String(url || "").trim();
+  if (!/^https?:\/\//i.test(rawUrl)) return false;
+  const urlKey = forzaImageMatchKey(rawUrl).replace(/\s+/g, "");
+  const descKey = forzaImageMatchKey(descriptiveText || "").replace(/\s+/g, "");
+  const combined = `${urlKey} ${descKey}`;
+
+  // Reject site-wide assets/placeholders that can accidentally be exposed
+  // through an exact product page (flags, logos, badges, payment/review art,
+  // loading images, etc.).
+  if (/(?:vlag|flag|nederland|netherlands|logo|icon|badge|keurmerk|trustpilot|review|payment|ideal|mollie|placeholder|no[-_ ]?image|default[-_ ]?image|spinner|loading|avatar|usps|service)/i.test(combined)) {
+    return false;
+  }
+  if (/\bdata:image\//i.test(rawUrl)) return false;
+
+  const wanted = forzaImageMatchKey(productName || "");
+  if (!wanted) return false;
+  const wantedTokens = wanted.split(" ").filter(Boolean);
+  const wantedColor = wantedTokens[wantedTokens.length - 1] || "";
+  const wantedModelTokens = wantedTokens.filter(t =>
+    !/^\d+$/.test(t) && !/^(?:gb|tb)$/.test(t) && t !== wantedColor
+  );
+  const identity = `${descKey} ${urlKey}`;
+  if (!wantedColor || !identity.includes(wantedColor)) return false;
+  if (!wantedModelTokens.every(token => identity.includes(token))) return false;
+
+  const wantedStorage = (wanted.match(/\b\d+\s*(?:gb|tb)\b/) || [""])[0].replace(/\s+/g, "");
+  const explicitStorages = identity.match(/\b\d+(?:gb|tb)\b/g) || [];
+  if (wantedStorage && explicitStorages.length && !explicitStorages.includes(wantedStorage)) return false;
+
+  return true;
+}
+
 function forzaExtractVariantGalleryImages(html, productName) {
   const wanted = forzaImageMatchKey(productName);
   if (!wanted) return [];
@@ -1363,6 +1396,8 @@ function forzaExtractVariantGalleryImages(html, productName) {
 
     const text = descriptive.map(forzaImageMatchKey).join(" ");
     const key = compact(text);
+    const candidateUrls = [attrs.src, attrs["data-src"], attrs["data-lazy-src"], attrs.srcset, attrs["data-srcset"]].filter(Boolean);
+    if (!candidateUrls.some(u => forzaIsUsableProductImage(String(u).split(/\s+/)[0], text, productName))) continue;
 
     // Exclude Forza's generic cross-colour gallery image.
     if (/kleuren|colors|colour/.test(key)) continue;
@@ -1379,12 +1414,13 @@ function forzaExtractVariantGalleryImages(html, productName) {
     // requested storage. If storage is omitted, the exact product URL remains
     // the authority for the variant.
     if (wantedStorage && explicitStorages.length && !hasStorage) continue;
-    {
-      addUrl(attrs.src);
-      addUrl(attrs["data-src"]);
-      addUrl(attrs["data-lazy-src"]);
-      addUrl(attrs.srcset);
-      addUrl(attrs["data-srcset"]);
+    for (const value of [attrs.src, attrs["data-src"], attrs["data-lazy-src"], attrs.srcset, attrs["data-srcset"]]) {
+      if (!value) continue;
+      const rawUrls = String(value).match(/https?:\/\/[^\s,]+/gi) || [];
+      for (const candidate of rawUrls) {
+        const cleanCandidate = candidate.replace(/["')]+$/g, "");
+        if (forzaIsUsableProductImage(cleanCandidate, text, productName)) addUrl(cleanCandidate);
+      }
     }
     if (images.length >= 4) break;
   }
@@ -1477,6 +1513,7 @@ async function forzaFetchJinaGallery(url, productName) {
       const alt = forzaImageMatchKey(m[1] || "");
       const key = alt.replace(/\s+/g, "");
       if (!alt || /kleuren|colors|colour/.test(key)) continue;
+      if (!forzaIsUsableProductImage(m[2], alt, productName)) continue;
 
       const hasModel = wantedModelTokens.every(token => key.includes(token));
       const hasColor = !!wantedColor && key.includes(wantedColor);
@@ -1512,6 +1549,7 @@ async function forzaFetchJinaGallery(url, productName) {
         const src = (attrs.match(/(?:src|data-src|data-lazy-src)=['\"]([^'\"]+)['\"]/i) || [,''])[1];
         const key = forzaImageMatchKey(`${desc} ${src}`);
         if (!src || /kleuren|colors|colour/.test(key)) continue;
+        if (!forzaIsUsableProductImage(src, desc, productName)) continue;
         const hasModel = wantedModelTokens.every(token => key.includes(token));
         const hasColor = !!wantedColor && key.includes(wantedColor);
         const explicitStorages = key.match(/\b\d+(?:gb|tb)\b/g) || [];
@@ -3048,7 +3086,7 @@ async function runForzaImageRepairOnce() {
             overview.url
           );
 
-          if (!exact || !Array.isArray(exact.images) || exact.images.length < 2) {
+          if (!exact || !Array.isArray(exact.images) || exact.images.length < 1) {
             kept++;
             console.log(`FORZA IMAGE REPAIR [${workerId}] KEPT: ${name}`);
             continue;
@@ -3092,11 +3130,17 @@ async function runForzaImageRepairOnce() {
 // Start server
 initDatabase()
   .then(async () => {
-    await runForzaImageRepairOnce();
     app.listen(PORT, () => {
       console.log(
         `HOMS TECH running on port ${PORT}`
       );
+      // Run the optional image repair only after the web service is listening,
+      // so a long Forza repair cannot make Render fail the deployment health check.
+      setImmediate(() => {
+        runForzaImageRepairOnce().catch(error => {
+          console.error("FORZA IMAGE REPAIR BACKGROUND ERROR:", error);
+        });
+      });
     });
   })
   .catch((error) => {
