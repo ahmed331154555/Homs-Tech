@@ -131,7 +131,11 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 @keyframes htMarqueeOneWay{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
 @media(max-width:700px){.ht-topbar,.topbar{height:38px!important}.ht-marquee,.top-info{gap:28px!important;animation-duration:13s!important}.ht-marquee-track{gap:28px!important}.ht-marquee-item,.top-info span{font-size:13px!important}}
 @media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
-</style></head>
+<style id="homs-header-links-fix">
+.ht-header{position:relative!important;z-index:1000!important;}
+.ht-header .ht-actions{position:relative!important;z-index:1002!important;}
+.ht-header .ht-actions a{pointer-events:auto!important;cursor:pointer!important;}
+</style></style></head>
 <body>
 
 <div class="topbar"><div class="container"><div class="top-info"><span>1 jaar garantie</span><span>Snel geleverd</span><span>Betrouwbare service</span><span>Betaalbare prijzen</span></div></div></div>
@@ -140,9 +144,9 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
  <div class="container">
   <div class="header-main">
    <a class="brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>
-   <label class="search">⌕ <input placeholder="Waar ben je naar op zoek?"></label>
+   <form class="search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form>
    <div class="header-actions">
-    <span>Zoek⌄</span><span>NL⌄</span><span>♙ Mijn Account</span><span>🛒 Winkelwagen</span>
+    <a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a>
    </div>
   </div>
   <nav class="nav">
