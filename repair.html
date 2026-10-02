@@ -717,53 +717,109 @@
     dateInput.min = localToday;
   }
 
+  const REPAIR_SLOTS = [
+    "09:00 - 10:00",
+    "10:00 - 11:00",
+    "11:00 - 12:00",
+    "12:00 - 13:00",
+    "13:00 - 14:00",
+    "14:00 - 15:00",
+    "15:00 - 16:00",
+    "16:00 - 17:00",
+    "17:00 - 18:00",
+    "18:00 - 19:00"
+  ];
+
   let availabilityRequestId = 0;
   let availabilityController = null;
+
+  function resetRepairTimeOptions(){
+    if(!timeSelect) return;
+
+    // Rebuild all slots whenever the date changes.
+    // This prevents a "Bezet" state from a previous date
+    // from carrying over to the newly selected date.
+    timeSelect.innerHTML = '<option value="">Kies een tijdstip</option>';
+
+    REPAIR_SLOTS.forEach(slot => {
+      timeSelect.appendChild(new Option(slot, slot));
+    });
+
+    timeSelect.value = "";
+  }
 
   async function loadRepairAvailability(){
     const requestedDate = dateInput?.value || "";
     if(currentMethod !== "home" || !requestedDate) return;
 
     const requestId = ++availabilityRequestId;
+
     if (availabilityController) availabilityController.abort();
     availabilityController = new AbortController();
 
+    // Always start with a completely fresh list for the new date.
+    resetRepairTimeOptions();
+
     availabilityMessage.textContent = "Beschikbaarheid controleren...";
     availabilityMessage.style.color = "#64748b";
-    [...timeSelect.options].forEach(o => {
-      o.disabled = false;
-      o.textContent = o.value || "Kies een tijdstip";
-    });
+
     try {
       const r = await fetch("/api/repair/availability?date=" + encodeURIComponent(requestedDate), {
         credentials:"same-origin",
         cache:"no-store",
         signal: availabilityController.signal
       });
+
       const data = await r.json().catch(()=>({}));
+
       if (requestId !== availabilityRequestId || dateInput.value !== requestedDate) return;
-      if(!r.ok) throw new Error(data.error || "Beschikbaarheid kon niet worden geladen.");
-      const booked = new Set(data.booked || []);
+
+      if(!r.ok) {
+        throw new Error(data.error || "Beschikbaarheid kon niet worden geladen.");
+      }
+
+      // Normalize values coming from the server so that whitespace/type
+      // differences cannot make a slot appear incorrectly occupied.
+      const booked = new Set(
+        Array.isArray(data.booked)
+          ? data.booked.map(value => String(value).trim())
+          : []
+      );
+
       let available = 0;
-      [...timeSelect.options].forEach(o => {
-        if(!o.value) return;
-        if(booked.has(o.value)) {
-          o.disabled = true;
-          o.textContent = o.value + " — Bezet";
+
+      [...timeSelect.options].forEach(option => {
+        if(!option.value) return;
+
+        const slot = String(option.value).trim();
+
+        if(booked.has(slot)) {
+          option.disabled = true;
+          option.textContent = slot + " — Bezet";
         } else {
+          option.disabled = false;
+          option.textContent = slot;
           available++;
         }
       });
-      if (timeSelect.value && booked.has(timeSelect.value)) timeSelect.value = "";
+
+      // Never keep a previous selection after changing the date.
+      timeSelect.value = "";
+
       const shownDate = requestedDate.split("-").reverse().join("-");
+
       availabilityMessage.textContent = available
         ? `Beschikbaarheid voor ${shownDate}: ${available} tijdstip(pen) beschikbaar.`
         : `Deze dag (${shownDate}) is volgeboekt. Kies een andere datum.`;
+
       availabilityMessage.style.color = available ? "#16a34a" : "#dc2626";
+
     } catch(error) {
       if (error?.name === "AbortError") return;
       if (requestId !== availabilityRequestId || dateInput.value !== requestedDate) return;
-      availabilityMessage.textContent = error.message || "Beschikbaarheid kon niet worden geladen.";
+
+      availabilityMessage.textContent =
+        error.message || "Beschikbaarheid kon niet worden geladen.";
       availabilityMessage.style.color = "#dc2626";
     }
   }
