@@ -27,15 +27,19 @@ header{background:#fff;border-bottom:1px solid var(--line)}
 .header-main{height:76px;display:flex;align-items:center;gap:25px}
 .brand img{width:158px;height:auto;display:block}
 .search{width:275px;height:37px;border:1px solid #d9e0e5;background:#fafafa;display:flex;align-items:center;padding:0 12px;color:#7b8790}
-.search input{border:0;outline:0;background:transparent;width:100%;font-size:12px}
-.header-actions{margin-left:auto;display:flex;gap:22px;align-items:center;font-size:12px;font-weight:600}
+.search input{border:0;outline:0;background:transparent;width:100%;font-size:12px;min-width:0}
+.search button{border:0;background:var(--blue);color:#fff;font-size:11px;font-weight:800;padding:7px 12px;border-radius:5px;cursor:pointer}
+.header-actions{margin-left:auto;display:flex;gap:20px;align-items:center;font-size:12px;font-weight:700}
+.header-actions a{color:var(--text);white-space:nowrap}
+.header-actions a:hover{color:var(--blue)}
 .nav{height:45px;display:flex;align-items:center;gap:27px;font-size:12px;font-weight:700;overflow-x:auto;white-space:nowrap}
 .nav a:hover,.nav .active{color:var(--blue)}
 .nav .active{background:#edf4ff;padding:8px 11px;border-radius:5px}
 
 /* HERO */
 .hero{background:linear-gradient(120deg,#071925,#173c55);color:#fff}
-.hero-inner{min-height:330px;display:grid;grid-template-columns:1.35fr .65fr;align-items:center;gap:25px}
+.hero-inner{min-height:285px;display:grid;grid-template-columns:1.45fr .55fr;align-items:center;gap:25px}
+.hero h1{letter-spacing:-1.2px}
 .hero h1{font-size:46px;line-height:1.02;margin:0 0 14px;font-weight:900}
 .hero h1 span{color:var(--blue2)}
 .hero p{max-width:610px;color:#d6e3eb;font-size:15px;line-height:1.65}
@@ -131,11 +135,7 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 @keyframes htMarqueeOneWay{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
 @media(max-width:700px){.ht-topbar,.topbar{height:38px!important}.ht-marquee,.top-info{gap:28px!important;animation-duration:13s!important}.ht-marquee-track{gap:28px!important}.ht-marquee-item,.top-info span{font-size:13px!important}}
 @media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
-<style id="homs-header-links-fix">
-.ht-header{position:relative!important;z-index:1000!important;}
-.ht-header .ht-actions{position:relative!important;z-index:1002!important;}
-.ht-header .ht-actions a{pointer-events:auto!important;cursor:pointer!important;}
-</style></style></head>
+</style></head>
 <body>
 
 <div class="topbar"><div class="container"><div class="top-info"><span>1 jaar garantie</span><span>Snel geleverd</span><span>Betrouwbare service</span><span>Betaalbare prijzen</span></div></div></div>
@@ -144,9 +144,14 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
  <div class="container">
   <div class="header-main">
    <a class="brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>
-   <form class="search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form>
+   <form class="search" action="devices.html" method="get" role="search">
+    <span aria-hidden="true">⌕</span>
+    <input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken">
+    <button type="submit">Zoek</button>
+   </form>
    <div class="header-actions">
-    <a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a>
+    <a href="account.html">♙ Mijn account</a>
+    <a href="cart.html">🛒 Winkelwagen</a>
    </div>
   </div>
   <nav class="nav">
@@ -264,13 +269,26 @@ function common(){
  document.querySelectorAll("[data-wa]").forEach(a=>a.href=wa());
  document.querySelectorAll("[data-phone]").forEach(a=>a.href=data.phone?"tel:"+String(data.phone).replace(/[^\d+]/g,""):"#");
 }
+function isUsableHeroText(value, fallback){
+ const v=String(value||"").replace(/\\s+/g," ").trim();
+ if(!v) return fallback;
+ // Ignore accidental/test/gibberish text saved from the admin panel.
+ const letters=(v.match(/[A-Za-zÀ-ÿ]/g)||[]).length;
+ const vowels=(v.match(/[AEIOUaeiouÀ-ÿ]/g)||[]).length;
+ const repeated=/^(?:([A-Za-z])\\1{2,}|[A-Za-z]{2,4})+$/.test(v.replace(/[^A-Za-z]/g,""));
+ if(v.length>140 || letters<5 || repeated || (letters>=8 && vowels/letters<0.16)) return fallback;
+ return v;
+}
 function renderHero(){
- const title=data.heroTitle||defaults.heroTitle;
+ const title=isUsableHeroText(data.heroTitle,defaults.heroTitle);
  const p=title.split("!");
- document.getElementById("heroTop").textContent=(p[0]||"Is uw telefoon kapot?")+"!";
- document.getElementById("heroBottom").textContent=(p.slice(1).join("!").trim()||"Wij komen naar u toe!").replace(/!$/,"")+"!";
- document.getElementById("heroText").textContent=data.heroText||defaults.heroText;
- document.getElementById("areas").textContent=(data.areas||defaults.areas)+" · Professionele reparatie aan huis";
+ const top=(p[0]||"Is uw telefoon kapot?").trim();
+ const bottom=(p.slice(1).join("!").trim()||"Wij komen naar u toe!").replace(/!$/,"").trim();
+ document.getElementById("heroTop").textContent=top.endsWith("?")?top:top+"!";
+ document.getElementById("heroBottom").textContent=bottom+"!";
+ document.getElementById("heroText").textContent=isUsableHeroText(data.heroText,defaults.heroText);
+ const area=isUsableHeroText(data.areas,defaults.areas);
+ document.getElementById("areas").textContent=area+" · Professionele reparatie aan huis";
 }
 function renderCategories(){
  const box=document.getElementById("categories");box.innerHTML="";
