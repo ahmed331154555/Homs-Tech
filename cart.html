@@ -6,7 +6,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;background:#f5f7fa;color:#111827;line-height:1.6}a{text-decoration:none;color:inherit}
 header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{max-width:1200px;margin:auto;min-height:72px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:20px}.logo{width:170px;display:block}nav{display:flex;gap:6px;flex-wrap:wrap}nav a{padding:10px 14px;border-radius:10px;color:#fff;font-weight:600}nav a:hover{background:#2563eb}.cart-link{background:#dc2626!important;color:#fff!important;font-weight:800}.cart-count{display:inline-flex;min-width:21px;height:21px;align-items:center;justify-content:center;background:#fff;color:#dc2626;border-radius:999px;font-size:12px;margin-left:4px;padding:0 5px}
-.section{max-width:1100px;margin:auto;padding:50px 20px}.page-title{font-size:36px;margin-bottom:25px}.empty{background:#fff;border-radius:20px;padding:55px 25px;text-align:center;box-shadow:0 8px 30px rgba(15,23,42,.07)}.empty p{color:#64748b;margin:8px 0 20px}.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 20px;border-radius:11px;font-weight:800;border:0;cursor:pointer}.red{background:#dc2626;color:#fff}.gray{background:#eef2f7;color:#111827}.cart-item{background:#fff;border-radius:18px;padding:18px;display:grid;grid-template-columns:105px 1fr auto;gap:20px;align-items:center;margin-bottom:14px;box-shadow:0 5px 20px rgba(15,23,42,.06)}.item-img{width:105px;height:105px;border-radius:14px;background:#f8fafc;object-fit:contain;padding:8px}.item-title{font-size:20px;font-weight:800}.item-brand{color:#2563eb;font-weight:700}.opts{margin-top:8px;color:#64748b;font-size:14px}.qty{display:flex;align-items:center;gap:8px;margin-top:12px}.qty button{width:32px;height:32px;border:1px solid #dbe3ec;background:#fff;border-radius:8px;cursor:pointer;font-weight:800}.qty span{min-width:25px;text-align:center;font-weight:800}.remove{color:#dc2626;background:none;border:0;cursor:pointer;font-weight:800;margin-left:12px}.item-price{font-size:20px;font-weight:900;white-space:nowrap}.summary{margin-top:22px;background:#111827;color:#fff;border-radius:18px;padding:22px;display:flex;justify-content:space-between;align-items:center;gap:20px}.summary-total{font-size:28px;font-weight:900}.summary small{color:#cbd5e1;display:block}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}@media(max-width:700px){.nav{flex-direction:column;padding:12px 15px}.cart-item{grid-template-columns:80px 1fr}.item-img{width:80px;height:80px}.item-price{grid-column:2}.summary{flex-direction:column;align-items:stretch}.summary .btn{width:100%}}
+#cartArea{display:block!important;visibility:visible!important;min-height:120px}.section{max-width:1100px;margin:auto;padding:50px 20px}.page-title{font-size:36px;margin-bottom:25px}.empty{background:#fff;border-radius:20px;padding:55px 25px;text-align:center;box-shadow:0 8px 30px rgba(15,23,42,.07)}.empty p{color:#64748b;margin:8px 0 20px}.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 20px;border-radius:11px;font-weight:800;border:0;cursor:pointer}.red{background:#dc2626;color:#fff}.gray{background:#eef2f7;color:#111827}.cart-item{background:#fff;border-radius:18px;padding:18px;display:grid;grid-template-columns:105px 1fr auto;gap:20px;align-items:center;margin-bottom:14px;box-shadow:0 5px 20px rgba(15,23,42,.06)}.item-img{width:105px;height:105px;border-radius:14px;background:#f8fafc;object-fit:contain;padding:8px}.item-title{font-size:20px;font-weight:800}.item-brand{color:#2563eb;font-weight:700}.opts{margin-top:8px;color:#64748b;font-size:14px}.qty{display:flex;align-items:center;gap:8px;margin-top:12px}.qty button{width:32px;height:32px;border:1px solid #dbe3ec;background:#fff;border-radius:8px;cursor:pointer;font-weight:800}.qty span{min-width:25px;text-align:center;font-weight:800}.remove{color:#dc2626;background:none;border:0;cursor:pointer;font-weight:800;margin-left:12px}.item-price{font-size:20px;font-weight:900;white-space:nowrap}.summary{margin-top:22px;background:#111827;color:#fff;border-radius:18px;padding:22px;display:flex;justify-content:space-between;align-items:center;gap:20px}.summary-total{font-size:28px;font-weight:900}.summary small{color:#cbd5e1;display:block}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}@media(max-width:700px){.nav{flex-direction:column;padding:12px 15px}.cart-item{grid-template-columns:80px 1fr}.item-img{width:80px;height:80px}.item-price{grid-column:2}.summary{flex-direction:column;align-items:stretch}.summary .btn{width:100%}}
 </style><link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20260922-final-header">
 <style>
 /* HOMS TECH FINAL HEADER OVERRIDE — self-contained */
@@ -51,23 +51,182 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
 @keyframes htMarqueeOneWay{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
 @media(max-width:700px){.ht-topbar,.topbar{height:38px!important}.ht-marquee,.top-info{gap:28px!important;animation-duration:13s!important}.ht-marquee-track{gap:28px!important}.ht-marquee-item,.top-info span{font-size:13px!important}}
 @media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
-<style id="homs-header-links-fix">
-.ht-header{position:relative!important;z-index:1000!important;}
-.ht-header .ht-actions{position:relative!important;z-index:1002!important;}
-.ht-header .ht-actions a{pointer-events:auto!important;cursor:pointer!important;}
-</style></style></head><body>
+</style></head><body>
 <div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div></div>
-<header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="account.html">♙ Mijn account</a><a class="active" href="cart.html">🛒 Winkelwagen</a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a><a href="used.html">Tweedehands</a><a href="gsm-services.html">GSM Services</a>
+<header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="account.html">♙ Mijn account</a><a class="active" href="cart.html">🛒 Winkelwagen <span id="cartCount" class="cart-count">0</span></a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a><a href="used.html">Tweedehands</a><a href="gsm-services.html">GSM Services</a>
    <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a></nav></div></header>
-<main class="section"><h1 class="page-title">🛒 Winkelwagen</h1><div id="cartArea"></div></main>
+<main class="section">
+  <h1 class="page-title">🛒 Winkelwagen</h1>
+  <div id="cartArea">
+    <div class="empty">
+      <h2>Je winkelwagen is leeg</h2>
+      <p>Voeg eerst een telefoon toe aan je winkelwagen.</p>
+      <a class="btn red" href="devices.html">📱 Bekijk telefoons</a>
+    </div>
+  </div>
+</main>
+
 <script>
-function readCart(){try{return JSON.parse(localStorage.getItem('homsTechCart')||'[]')}catch(e){return []}}
-function saveCart(items){localStorage.setItem('homsTechCart',JSON.stringify(items));render()}
-function money(n){return '€'+Number(n||0).toFixed(2).replace('.00','').replace('.',',')}
-function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
-function optionsText(o){return Object.entries(o||{}).map(([k,v])=>{const m={storage:'Geheugen',color:'Kleur',condition:'Conditie',battery:'Batterij',vat:'BTW',tradeIn:'Inruil'};return `<div><strong>${m[k]||k}:</strong> ${esc(v)}</div>`}).join('')}
-function changeQty(i,d){const x=readCart();if(!x[i])return;x[i].qty=Math.max(1,Number(x[i].qty||1)+d);saveCart(x)}
-function removeItem(i){const x=readCart();x.splice(i,1);saveCart(x)}
-function render(){const items=readCart();document.getElementById('cartCount').textContent=items.reduce((n,x)=>n+Number(x.qty||1),0);const area=document.getElementById('cartArea');if(!items.length){area.innerHTML=`<div class="empty"><h2>Je winkelwagen is leeg</h2><p>Voeg eerst een telefoon toe aan je winkelwagen.</p><a class="btn red" href="devices.html">📱 Bekijk telefoons</a></div>`;return}let total=0;area.innerHTML=items.map((x,i)=>{const line=Number(x.unitPrice||0)*Number(x.qty||1);total+=line;const img=x.image?`<img class="item-img" src="${esc(x.image)}" alt="">`:`<div class="item-img" style="display:flex;align-items:center;justify-content:center;font-size:40px">📱</div>`;return `<div class="cart-item">${img}<div><div class="item-brand">${esc(x.brand)}</div><div class="item-title">${esc(x.name)}</div><div class="opts">${optionsText(x.options)}</div><div class="qty"><button onclick="changeQty(${i},-1)">−</button><span>${x.qty}</span><button onclick="changeQty(${i},1)">+</button><button class="remove" onclick="removeItem(${i})">🗑️ Verwijderen</button></div></div><div class="item-price">${money(line)}</div></div>`}).join('')+`<div class="summary"><div><small>Totaal</small><div class="summary-total">${money(total)}</div></div><div class="actions"><a class="btn gray" href="devices.html">← Verder winkelen</a><a class="btn red" href="checkout.html">Naar afrekenen →</a></div></div>`}
-render();
-</script></body></html>
+(function(){
+  "use strict";
+
+  const CART_KEY = "homsTechCart";
+
+  function readCart(){
+    try{
+      const raw = localStorage.getItem(CART_KEY);
+      const data = raw ? JSON.parse(raw) : [];
+      return Array.isArray(data) ? data : [];
+    }catch(error){
+      console.error("HOMS TECH cart read error:", error);
+      return [];
+    }
+  }
+
+  function saveCart(items){
+    try{
+      localStorage.setItem(CART_KEY, JSON.stringify(items));
+    }catch(error){
+      console.error("HOMS TECH cart save error:", error);
+    }
+    render();
+  }
+
+  function money(value){
+    return "€" + Number(value || 0).toFixed(2).replace(".00","").replace(".",",");
+  }
+
+  function esc(value){
+    return String(value ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
+  function optionsText(options){
+    const labels = {
+      storage:"Geheugen",
+      color:"Kleur",
+      condition:"Conditie",
+      battery:"Batterij",
+      vat:"BTW",
+      tradeIn:"Inruil"
+    };
+
+    if(!options || typeof options !== "object") return "";
+
+    return Object.entries(options)
+      .filter(([_, value]) => String(value ?? "").trim() !== "")
+      .map(([key,value]) =>
+        "<div><strong>" + esc(labels[key] || key) + ":</strong> " + esc(value) + "</div>"
+      )
+      .join("");
+  }
+
+  function updateCartCount(items){
+    const count = items.reduce((total,item) => {
+      return total + Math.max(1, Number(item?.qty || 1));
+    }, 0);
+
+    const el = document.getElementById("cartCount");
+    if(el) el.textContent = String(count);
+  }
+
+  window.changeQty = function(index, delta){
+    const items = readCart();
+    if(!items[index]) return;
+
+    items[index].qty = Math.max(
+      1,
+      Number(items[index].qty || 1) + Number(delta || 0)
+    );
+
+    saveCart(items);
+  };
+
+  window.removeItem = function(index){
+    const items = readCart();
+    if(!items[index]) return;
+
+    items.splice(index,1);
+    saveCart(items);
+  };
+
+  function render(){
+    const area = document.getElementById("cartArea");
+    if(!area) return;
+
+    const items = readCart();
+    updateCartCount(items);
+
+    if(!items.length){
+      area.innerHTML =
+        '<div class="empty">' +
+          '<h2>Je winkelwagen is leeg</h2>' +
+          '<p>Voeg eerst een telefoon toe aan je winkelwagen.</p>' +
+          '<a class="btn red" href="devices.html">📱 Bekijk telefoons</a>' +
+        '</div>';
+      return;
+    }
+
+    let total = 0;
+
+    const rows = items.map((item,index) => {
+      const qty = Math.max(1, Number(item.qty || 1));
+      const unitPrice = Number(item.unitPrice ?? item.price ?? 0);
+      const lineTotal = unitPrice * qty;
+      total += lineTotal;
+
+      const image = item.image
+        ? '<img class="item-img" src="' + esc(item.image) + '" alt="' + esc(item.name || "Smartphone") + '">'
+        : '<div class="item-img" style="display:flex;align-items:center;justify-content:center;font-size:40px">📱</div>';
+
+      return (
+        '<div class="cart-item">' +
+          image +
+          '<div>' +
+            '<div class="item-brand">' + esc(item.brand || "") + '</div>' +
+            '<div class="item-title">' + esc(item.name || "Smartphone") + '</div>' +
+            '<div class="opts">' + optionsText(item.options) + '</div>' +
+            '<div class="qty">' +
+              '<button type="button" onclick="changeQty(' + index + ',-1)">−</button>' +
+              '<span>' + qty + '</span>' +
+              '<button type="button" onclick="changeQty(' + index + ',1)">+</button>' +
+              '<button type="button" class="remove" onclick="removeItem(' + index + ')">🗑️ Verwijderen</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="item-price">' + money(lineTotal) + '</div>' +
+        '</div>'
+      );
+    }).join("");
+
+    area.innerHTML =
+      rows +
+      '<div class="summary">' +
+        '<div><small>Totaal</small><div class="summary-total">' + money(total) + '</div></div>' +
+        '<div class="actions">' +
+          '<a class="btn gray" href="devices.html">← Verder winkelen</a>' +
+          '<a class="btn red" href="checkout.html">Naar afrekenen →</a>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function start(){
+    render();
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", start);
+  }else{
+    start();
+  }
+
+  window.addEventListener("storage", function(event){
+    if(event.key === CART_KEY) render();
+  });
+})();
+</script>
+</body>
+</html>
