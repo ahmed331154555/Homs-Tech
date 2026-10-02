@@ -55,15 +55,147 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
 <div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div></div>
 <header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="account.html">♙ Mijn account</a><a class="active" href="cart.html">🛒 Winkelwagen <span id="cartCount" class="cart-count">0</span></a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a><a href="used.html">Tweedehands</a><a href="gsm-services.html">GSM Services</a>
    <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a></nav></div></header>
-<main class="section"><h1 class="page-title">🛒 Winkelwagen</h1><div id="cartArea"></div></main>
+<main class="section"><h1 class="page-title">🛒 Winkelwagen</h1><div id="cartArea"><div class="empty"><h2>Je winkelwagen is leeg</h2><p>Voeg eerst een telefoon toe aan je winkelwagen.</p><a class="btn red" href="devices.html">📱 Bekijk telefoons</a></div></div></main>
 <script>
-function readCart(){try{return JSON.parse(localStorage.getItem('homsTechCart')||'[]')}catch(e){return []}}
-function saveCart(items){localStorage.setItem('homsTechCart',JSON.stringify(items));render()}
-function money(n){return '€'+Number(n||0).toFixed(2).replace('.00','').replace('.',',')}
-function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
-function optionsText(o){return Object.entries(o||{}).map(([k,v])=>{const m={storage:'Geheugen',color:'Kleur',condition:'Conditie',battery:'Batterij',vat:'BTW',tradeIn:'Inruil'};return `<div><strong>${m[k]||k}:</strong> ${esc(v)}</div>`}).join('')}
-function changeQty(i,d){const x=readCart();if(!x[i])return;x[i].qty=Math.max(1,Number(x[i].qty||1)+d);saveCart(x)}
-function removeItem(i){const x=readCart();x.splice(i,1);saveCart(x)}
-function render(){const items=readCart();const count=document.getElementById('cartCount');if(count)count.textContent=items.reduce((n,x)=>n+Number(x.qty||1),0);const area=document.getElementById('cartArea');if(!items.length){area.innerHTML=`<div class="empty"><h2>Je winkelwagen is leeg</h2><p>Voeg eerst een telefoon toe aan je winkelwagen.</p><a class="btn red" href="devices.html">📱 Bekijk telefoons</a></div>`;return}let total=0;area.innerHTML=items.map((x,i)=>{const line=Number(x.unitPrice||0)*Number(x.qty||1);total+=line;const img=x.image?`<img class="item-img" src="${esc(x.image)}" alt="">`:`<div class="item-img" style="display:flex;align-items:center;justify-content:center;font-size:40px">📱</div>`;return `<div class="cart-item">${img}<div><div class="item-brand">${esc(x.brand)}</div><div class="item-title">${esc(x.name)}</div><div class="opts">${optionsText(x.options)}</div><div class="qty"><button onclick="changeQty(${i},-1)">−</button><span>${x.qty}</span><button onclick="changeQty(${i},1)">+</button><button class="remove" onclick="removeItem(${i})">🗑️ Verwijderen</button></div></div><div class="item-price">${money(line)}</div></div>`}).join('')+`<div class="summary"><div><small>Totaal</small><div class="summary-total">${money(total)}</div></div><div class="actions"><a class="btn gray" href="devices.html">← Verder winkelen</a><a class="btn red" href="checkout.html">Naar afrekenen →</a></div></div>`}
-render();
+(function(){
+  "use strict";
+
+  function readCart(){
+    try{
+      const raw = localStorage.getItem("homsTechCart");
+      if(!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter(x => x && typeof x === "object") : [];
+    }catch(e){
+      return [];
+    }
+  }
+
+  function saveCart(items){
+    try{
+      localStorage.setItem("homsTechCart", JSON.stringify(Array.isArray(items) ? items : []));
+    }catch(e){}
+    render();
+  }
+
+  function money(n){
+    return "€" + Number(n || 0).toFixed(2).replace(".00","").replace(".",",");
+  }
+
+  function esc(v){
+    return String(v ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
+  function optionsText(o){
+    if(!o || typeof o !== "object") return "";
+    const labels = {
+      storage:"Geheugen",
+      color:"Kleur",
+      condition:"Conditie",
+      battery:"Batterij",
+      vat:"BTW",
+      tradeIn:"Inruil"
+    };
+    return Object.entries(o).map(([k,v]) =>
+      "<div><strong>" + esc(labels[k] || k) + ":</strong> " + esc(v) + "</div>"
+    ).join("");
+  }
+
+  function updateCount(items){
+    const count = items.reduce((n,x) => n + Math.max(1, Number(x.qty || 1)), 0);
+    const el = document.getElementById("cartCount");
+    if(el) el.textContent = count;
+  }
+
+  window.changeQty = function(i,d){
+    const items = readCart();
+    if(!items[i]) return;
+    items[i].qty = Math.max(1, Number(items[i].qty || 1) + Number(d || 0));
+    saveCart(items);
+  };
+
+  window.removeItem = function(i){
+    const items = readCart();
+    if(!items[i]) return;
+    items.splice(i,1);
+    saveCart(items);
+  };
+
+  function render(){
+    const area = document.getElementById("cartArea");
+    if(!area) return;
+
+    try{
+      const items = readCart();
+      updateCount(items);
+
+      if(!items.length){
+        area.innerHTML =
+          '<div class="empty">' +
+            '<h2>Je winkelwagen is leeg</h2>' +
+            '<p>Voeg eerst een telefoon toe aan je winkelwagen.</p>' +
+            '<a class="btn red" href="devices.html">📱 Bekijk telefoons</a>' +
+          '</div>';
+        return;
+      }
+
+      let total = 0;
+      const rows = items.map((x,i) => {
+        const qty = Math.max(1, Number(x.qty || 1));
+        const unit = Number(x.unitPrice || 0);
+        const line = unit * qty;
+        total += line;
+
+        const img = x.image
+          ? '<img class="item-img" src="' + esc(x.image) + '" alt="">'
+          : '<div class="item-img" style="display:flex;align-items:center;justify-content:center;font-size:40px">📱</div>';
+
+        return '<div class="cart-item">' +
+          img +
+          '<div>' +
+            '<div class="item-brand">' + esc(x.brand || "") + '</div>' +
+            '<div class="item-title">' + esc(x.name || "Smartphone") + '</div>' +
+            '<div class="opts">' + optionsText(x.options) + '</div>' +
+            '<div class="qty">' +
+              '<button type="button" onclick="changeQty(' + i + ',-1)">−</button>' +
+              '<span>' + qty + '</span>' +
+              '<button type="button" onclick="changeQty(' + i + ',1)">+</button>' +
+              '<button type="button" class="remove" onclick="removeItem(' + i + ')">🗑️ Verwijderen</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="item-price">' + money(line) + '</div>' +
+        '</div>';
+      }).join("");
+
+      area.innerHTML = rows +
+        '<div class="summary">' +
+          '<div><small>Totaal</small><div class="summary-total">' + money(total) + '</div></div>' +
+          '<div class="actions">' +
+            '<a class="btn gray" href="devices.html">← Verder winkelen</a>' +
+            '<a class="btn red" href="checkout.html">Naar afrekenen →</a>' +
+          '</div>' +
+        '</div>';
+    }catch(error){
+      console.error("HOMS TECH cart error:", error);
+      area.innerHTML =
+        '<div class="empty">' +
+          '<h2>Winkelwagen kon niet worden geladen</h2>' +
+          '<p>Ververs de pagina en probeer opnieuw.</p>' +
+          '<a class="btn red" href="devices.html">📱 Bekijk telefoons</a>' +
+        '</div>';
+    }
+  }
+
+  window.addEventListener("storage", render);
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", render);
+  }else{
+    render();
+  }
+})();
 </script></body></html>
