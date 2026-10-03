@@ -1345,11 +1345,22 @@ textarea{
   </section>
 
   <!-- GSM SERVICES -->
-  <section class="section admin-page" id="page-gsm">
+  <section class="section admin-page" id="page-gsm" data-permission="gsm.view">
     <div class="section-head">
       <div>
         <h2>🛠️ GSM Services</h2>
-        <p>Beheer per categorie de services met naam, details en prijs.</p>
+        <p>Beheer IMEI, Remote, Server, FRP en Firmware services vanuit één GSM-paneel.</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;border:1px solid #dbeafe;background:linear-gradient(135deg,#f8fbff,#fff)">
+      <div class="card-head" style="align-items:flex-start">
+        <div>
+          <div class="card-title" style="font-size:18px">↻ Easy-Unlocker import / sync</div>
+          <div class="small">Haalt de publieke catalogus van IMEI, Remote en Server op en zet de services in HOMS TECH. HOMS-prijzen blijven apart van de bronprijs.</div>
+          <div id="gsmImportStatus" class="small" style="margin-top:7px">Nog geen import uitgevoerd.</div>
+        </div>
+        <button id="gsmImportBtn" class="btn btn-green" data-permission="gsm.import" type="button" onclick="importEasyGsm()">↻ Importeren & synchroniseren</button>
       </div>
     </div>
 
@@ -1731,7 +1742,7 @@ const ADMIN_PERMISSION_LABELS = {
   "orders.delete":"GSM Orders verwijderen",
   "buyback.view":"Inkooptelefoons bekijken","buyback.update":"Inkooptelefoons wijzigen",
   "buyback_orders.view":"Verkoopaanvragen bekijken","buyback_orders.update":"Verkoopaanvraag-status wijzigen","buyback_orders.delete":"Verkoopaanvragen verwijderen",
-  "gsm.view":"GSM Services bekijken","site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
+  "gsm.view":"GSM Services bekijken","gsm.import":"GSM Services importeren","site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
 };
 
 function hasPermission(p){return currentUser.role==="superadmin"||currentUser.permissions.includes("*")||currentUser.permissions.includes(p);}
@@ -1748,7 +1759,8 @@ function applyPermissionUI(){
     if(!["general","services","phones","buyback","categories","used","why","gsm"].includes(n))return;
     page.querySelectorAll("input,textarea").forEach(el=>el.disabled=!canEditSite());
     page.querySelectorAll("button").forEach(btn=>{
-      if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=!canEditSite();
+      if(btn.id==="gsmImportBtn") btn.disabled=!hasPermission("gsm.import");
+      else if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||"")) btn.disabled=!canEditSite();
     });
   });
   document.querySelectorAll(".order-status-select").forEach(el=>{
@@ -1838,9 +1850,19 @@ function normalizeGsmService(x){
     shortDescription:x.shortDescription || "",
     details:x.details || x.description || "",
     price:x.price || "",
+    sourcePrice:x.sourcePrice || "",
+    sourceCurrency:x.sourceCurrency || "USD",
+    priceCurrency:x.priceCurrency || "EUR",
+    deliveryTime:x.deliveryTime || "",
     active:x.active !== false,
+    hot:x.hot === true,
     requiresUsername:x.requiresUsername === true,
-    requiresImei:x.requiresImei === true
+    requiresImei:x.requiresImei === true,
+    requiresSerial:x.requiresSerial === true,
+    source:x.source || "",
+    sourceId:x.sourceId || "",
+    sourceUrl:x.sourceUrl || "",
+    lastSynced:x.lastSynced || ""
   };
 }
 
@@ -4250,6 +4272,29 @@ function deleteUsedPhone(i){
 }
 
 
+async function importEasyGsm(){
+  const btn=document.getElementById("gsmImportBtn");
+  const status=document.getElementById("gsmImportStatus");
+  if(!btn)return;
+  if(!hasPermission("gsm.import")){setStatus("✕ Je hebt geen toestemming om GSM-services te importeren.","error");return;}
+  btn.disabled=true;
+  if(status)status.textContent="Easy-Unlocker catalogus wordt opgehaald...";
+  try{
+    const r=await fetch("/api/admin/gsm/import-easy",{method:"POST",headers:{"Accept":"application/json"},credentials:"same-origin"});
+    const raw=await r.text(); let result={}; try{result=raw?JSON.parse(raw):{}}catch{}
+    if(!r.ok)throw new Error(result.error||"Import mislukt");
+    data=result.data||data;
+    normalizeData();
+    renderGsmServices();
+    const pages=(result.pages||[]).map(x=>`${x.key}: ${x.count}`).join(" • ");
+    if(status)status.textContent=`✓ ${result.total||0} services verwerkt — nieuw: ${result.added||0}, bijgewerkt: ${result.updated||0}. ${pages}`;
+    setStatus("✓ GSM-services geïmporteerd en opgeslagen","success");
+  }catch(e){
+    if(status)status.textContent="✕ "+e.message;
+    setStatus("✕ Easy-Unlocker import mislukt","error");
+  }finally{btn.disabled=false;}
+}
+
 /* ---------------- GSM SERVICES ---------------- */
 
 const gsmServiceCategories=[
@@ -4295,13 +4340,16 @@ function renderGsmServices(){
         <div class="grid">
           <div class="field"><label>Groep / bestandsnaam</label><input value="${esc(service.group || category[1].replace(/^[^ ]+ /,''))}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].group=this.value;markChanged();renderGsmServices()" placeholder="Bijv. INPRO RAMDISK A12/A13"></div>
           <div class="field"><label>Status</label><select onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].active=this.value==='Actief';markChanged()"><option value="Actief" ${service.active!==false?'selected':''}>Actief</option><option value="Inactief" ${service.active===false?'selected':''}>Inactief</option></select></div>
-          <div class="field" style="display:flex;flex-direction:column;gap:8px;justify-content:flex-end"><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresUsername===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresUsername=this.checked;markChanged()" style="width:18px;height:18px"> Gebruikersnaam klant verplicht</label><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresImei===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresImei=this.checked;markChanged()" style="width:18px;height:18px"> IMEI / Serienummer klant verplicht</label></div>
+          <div class="field" style="display:flex;flex-direction:column;gap:8px;justify-content:flex-end"><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresUsername===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresUsername=this.checked;markChanged()" style="width:18px;height:18px"> Gebruikersnaam verplicht</label><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresImei===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresImei=this.checked;markChanged()" style="width:18px;height:18px"> IMEI verplicht</label><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresSerial===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresSerial=this.checked;markChanged()" style="width:18px;height:18px"> Serienummer verplicht</label><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.hot===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].hot=this.checked;markChanged()" style="width:18px;height:18px"> HOT service</label></div>
           <div class="field"><label>Naam service</label><input value="${esc(service.name||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].name=this.value;markChanged();renderGsmServices()"></div>
-          <div class="field"><label>Prijs (€)</label><input value="${esc(service.price||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].price=this.value;markChanged()"></div>
+          <div class="field"><label>HOMS TECH prijs (€)</label><input value="${esc(service.price||'')}" placeholder="Leeg = bronprijs tonen" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].price=this.value;markChanged()"></div>
+          <div class="field"><label>Bronprijs</label><input value="${esc(service.sourcePrice||'')} ${esc(service.sourceCurrency||'')}" readonly></div>
+          <div class="field"><label>Levertijd / uitvoering</label><input value="${esc(service.deliveryTime||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].deliveryTime=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1"><label>Korte beschrijving</label><input value="${esc(service.shortDescription||'')}" placeholder="Bijv. Xiaomi / Redmi / Poco" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].shortDescription=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1"><label>Volledige beschrijving</label><textarea oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].details=this.value;markChanged()">${esc(service.details||'')}</textarea></div>
           <div class="field"><label>Service icon</label><input value="${esc(service.icon||'🔧')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].icon=this.value;markChanged();renderGsmServices()"></div>
         </div>
+        <div style="margin-top:10px;padding:11px 13px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;font-size:11px;color:#64748b"><strong style="color:#334155">Bron:</strong> ${esc(service.source||'Handmatig')} ${service.sourceId?`• ID: ${esc(service.sourceId)}`:''}${service.sourceUrl?`<br><a href="${esc(service.sourceUrl)}" target="_blank" rel="noopener" style="color:#2563eb">Open bronpagina</a>`:''}${service.lastSynced?`<br>Laatste sync: ${esc(service.lastSynced)}`:''}</div>
         <div class="actions" style="margin-top:8px"><button type="button" class="btn btn-green" onclick="saveGsmServiceEditor('${category[0]}',${selectedGsmServiceIndex})">Opslaan</button></div>
       </div>`;
   }else{
@@ -4327,7 +4375,7 @@ async function saveGsmServiceEditor(category,i){
 function addGsmService(key){
   if(!data.gsmServices[key]) data.gsmServices[key]=[];
   const categoryLabel=(gsmServiceCategories.find(x=>x[0]===key)||[key,key])[1].replace(/^[^ ]+ /,'');
-  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",group:categoryLabel,shortDescription:"",details:"",price:"",active:true,requiresUsername:false,requiresImei:false});
+  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",group:categoryLabel,shortDescription:"",details:"",price:"",sourcePrice:"",sourceCurrency:"USD",priceCurrency:"EUR",deliveryTime:"",active:true,hot:false,requiresUsername:false,requiresImei:false,requiresSerial:false,source:"",sourceId:"",sourceUrl:""});
   gsmActiveCategory=key;
   selectedGsmServiceIndex=data.gsmServices[key].length-1;
   renderGsmServices();
