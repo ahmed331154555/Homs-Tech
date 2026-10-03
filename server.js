@@ -174,6 +174,7 @@ async function initDatabase() {
   await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS required_fields TEXT DEFAULT '[]'`);
   await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS source_price TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS source_currency TEXT DEFAULT 'USD'`);
+  await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS extra_fields TEXT DEFAULT '{}'`);
   await pool.query(`
     CREATE UNIQUE INDEX IF NOT EXISTS service_orders_repair_appointment_unique
     ON service_orders (appointment_date, appointment_time)
@@ -290,16 +291,56 @@ app.get("/api/site", async (req, res) => {
 });
 
 // ---------------- EASY-UNLOCKER PUBLIC GSM CATALOG IMPORT ----------------
-function easyDecodeHtml(value){return String(value||"").replace(/<script[\s\S]*?<\/script>/gi," ").replace(/<style[\s\S]*?<\/style>/gi," ").replace(/<br\s*\/?>/gi," ").replace(/&nbsp;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/&lt;/gi,"<").replace(/&gt;/gi,">").replace(/&#(\d+);/g,(_,n)=>{try{return String.fromCodePoint(Number(n))}catch{return ""}}).replace(/&#x([0-9a-f]+);/gi,(_,n)=>{try{return String.fromCodePoint(parseInt(n,16))}catch{return ""}})}
+function easyDecodeHtml(value){return String(value||"").replace(/<script[\s\S]*?<\/script>/gi," ").replace(/<style[\s\S]*?<\/style>/gi," ").replace(/<br\s*\/?>(?=.)/gi," ").replace(/&nbsp;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/&lt;/gi,"<").replace(/&gt;/gi,">").replace(/&#(\d+);/g,(_,n)=>{try{return String.fromCodePoint(Number(n))}catch{return ""}}).replace(/&#x([0-9a-f]+);/gi,(_,n)=>{try{return String.fromCodePoint(parseInt(n,16))}catch{return ""}})}
 function easyText(value){return easyDecodeHtml(String(value||"").replace(/<[^>]+>/g," ")).replace(/\s+/g," ").trim()}
 function easySlug(value){return String(value||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,180)}
+function easyStableSourceId(baseCategory,group,name){return `easy-${baseCategory}-${easySlug(group)}-${easySlug(name)}`}
 function easyInferCategory(baseCategory,group,name){const hay=`${group||""} ${name||""}`.toLowerCase();if(/\bfrp\b|factory reset protection|google frp|samsung frp/.test(hay))return"frp";if(/firmware|flash|flasher|schematic|software/.test(hay))return"firmware";return baseCategory}
 function easyParseMoney(value){const m=String(value||"").replace(/,/g,".").match(/(?:\$|€|£|usd|eur|gbp)?\s*([0-9]+(?:\.[0-9]+)?)/i);return m?Number(m[1]):null}
 function easyExtractDelivery(cells){const text=`${cells.slice(1,-1).join(" ")} ${cells[0]||""}`;const m=text.match(/(?:instant|[0-9]+\s*(?:-\s*[0-9]+)?\s*(?:minutes?|miniutes?|hours?|days?|weeks?|months?|years?))/i);return m?m[0].trim():""}
-function easyParseCatalogPage(html,pageUrl,baseCategory){const out=[];const tables=String(html||"").match(/<table\b[^>]*>[\s\S]*?<\/table>/gi)||[];for(const table of tables){const start=String(html).indexOf(table);const before=String(html).slice(Math.max(0,start-3500),start);const headings=[...before.matchAll(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/gi)];const group=headings.length?easyText(headings[headings.length-1][1]):"General";const rows=table.match(/<tr\b[^>]*>[\s\S]*?<\/tr>/gi)||[];for(const row of rows){const cells=[...row.matchAll(/<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/gi)].map(m=>easyText(m[1])).filter(Boolean);if(cells.length<2||/^(price|service)$/i.test(cells[0]))continue;const price=easyParseMoney(cells[cells.length-1]);if(!cells[0]||price===null)continue;const name=cells[0],category=easyInferCategory(baseCategory,group,name);out.push({source:"easy-unlocker",sourceId:`easy-${baseCategory}-${easySlug(group)}-${easySlug(name)}-${price}`,sourceUrl:pageUrl,sourceGroup:group,sourceName:name,name,group,shortDescription:"",details:name,icon:category==="imei"?"📱":category==="remote"?"🖥️":category==="server"?"🛠️":category==="frp"?"🔐":"💻",price:"",sourcePrice:String(price),sourceCurrency:"USD",priceCurrency:"EUR",deliveryTime:easyExtractDelivery(cells),active:true,hot:false,requiresUsername:false,requiresImei:false,requiresSerial:false,category})}}const unique=new Map();out.forEach(x=>unique.set(x.sourceId,x));return[...unique.values()]}
+function easyGuessOrderFields(group,name){
+  const hay=`${group||""} ${name||""}`.toLowerCase();
+  const fields=[];
+  const add=(key,label,type="text",required=false,autoFromEmail=false,placeholder="")=>fields.push({key,label,type,required,autoFromEmail,placeholder});
+  // The public catalog does not expose every service's private order form. These are conservative field hints from the service name.
+  if(/\bimei\b/.test(hay)) add("imei","IMEI","text",true,false,"Enter IMEI");
+  if(/\bserial\b|\[sn\]|\bs\/n\b/.test(hay)) add("serial","Serial / SN","text",true,false,"Enter serial number");
+  if(/\bmodel\b/.test(hay)) add("model","Model","text",true,false,"Enter model");
+  if(/alcatel worldwide database #2/i.test(name||"")){
+    return [
+      {key:"imei",label:"IMEI",type:"text",required:true,autoFromEmail:false,placeholder:"Enter IMEI"},
+      {key:"model",label:"Model",type:"text",required:true,autoFromEmail:false,placeholder:"Enter model"},
+      {key:"notes",label:"Notes",type:"text",required:false,autoFromEmail:false,placeholder:"Additional information"},
+      {key:"comments",label:"Comments",type:"textarea",required:false,autoFromEmail:false,placeholder:"For your reference"},
+      {key:"response_email",label:"Response e-mail",type:"email",required:true,autoFromEmail:true,placeholder:"Customer e-mail for the reply"}
+    ];
+  }
+  return fields;
+}
+function easyParseCatalogPage(html,pageUrl,baseCategory){
+  const out=[];const tables=String(html||"").match(/<table\b[^>]*>[\s\S]*?<\/table>/gi)||[];
+  for(const table of tables){
+    const start=String(html).indexOf(table);const before=String(html).slice(Math.max(0,start-3500),start);
+    const headings=[...before.matchAll(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/gi)];
+    const group=headings.length?easyText(headings[headings.length-1][1]):"General";
+    const rows=table.match(/<tr\b[^>]*>[\s\S]*?<\/tr>/gi)||[];
+    for(const row of rows){
+      const cells=[...row.matchAll(/<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/gi)].map(m=>easyText(m[1])).filter(Boolean);
+      if(cells.length<2||/^(price|service)$/i.test(cells[0]))continue;
+      const price=easyParseMoney(cells[cells.length-1]);if(!cells[0]||price===null)continue;
+      const name=cells[0],category=easyInferCategory(baseCategory,group,name),formFields=easyGuessOrderFields(group,name);
+      const requiredFields=formFields.filter(f=>f.required).map(f=>f.key);
+      const hasUser=/\b(username|user name|login)\b/i.test(`${group} ${name}`);
+      if(hasUser && !requiredFields.includes("username")) {formFields.push({key:"username",label:"Username",type:"text",required:true,autoFromEmail:true,placeholder:"Username / e-mail"});requiredFields.push("username")}
+      out.push({source:"easy-unlocker",sourceId:easyStableSourceId(baseCategory,group,name),sourceUrl:pageUrl,sourceGroup:group,sourceName:name,name,group,shortDescription:"",details:name,icon:category==="imei"?"📱":category==="remote"?"🖥️":category==="server"?"🛠️":category==="frp"?"🔐":"💻",price:"",sourcePrice:String(price),sourceCurrency:"USD",priceCurrency:"EUR",deliveryTime:easyExtractDelivery(cells),active:true,hot:false,requiresUsername:hasUser,requiresImei:requiredFields.includes("imei"),requiresSerial:requiredFields.includes("serial"),requiredFields,formFields,instructions:"",usernameFromEmail:hasUser,category});
+    }
+  }
+  const unique=new Map();out.forEach(x=>unique.set(x.sourceId,x));return[...unique.values()]
+}
 const EASY_PUBLIC_GSM_PAGES=[{key:"imei",url:"https://easy-unlocker.com/resellerpricing/imei"},{key:"remote",url:"https://easy-unlocker.com/resellerpricing/remote"},{key:"server",url:"https://easy-unlocker.com/resellerpricing/server"}];
-async function fetchEasyPublicCatalog(){const results=await Promise.all(EASY_PUBLIC_GSM_PAGES.map(async page=>{const response=await fetch(page.url,{headers:{"User-Agent":"HOMS-TECH-GSM-Importer/1.0"}});if(!response.ok)throw new Error(`Easy-Unlocker ${page.key}: HTTP ${response.status}`);const html=await response.text();return{...page,services:easyParseCatalogPage(html,page.url,page.key)}}));const all=results.flatMap(x=>x.services),unique=new Map();all.forEach(x=>unique.set(x.sourceId,x));return{pages:results.map(x=>({key:x.key,url:x.url,count:x.services.length})),services:[...unique.values()]}}
-app.post("/api/admin/gsm/import-easy",requirePermission("gsm.import"),async(req,res)=>{try{const catalog=await fetchEasyPublicCatalog();const current=await pool.query("SELECT data FROM site_settings WHERE id=1");if(!current.rows.length)return res.status(404).json({error:"Websitegegevens ontbreken."});const data=current.rows[0].data||{};if(!data.gsmServices||typeof data.gsmServices!=="object")data.gsmServices={};["imei","remote","server","frp","firmware"].forEach(k=>{if(!Array.isArray(data.gsmServices[k]))data.gsmServices[k]=[]});const existing=new Map();Object.entries(data.gsmServices).forEach(([category,list])=>list.forEach((item,index)=>{if(item?.source==="easy-unlocker"&&item?.sourceId)existing.set(item.sourceId,{category,index})}));let added=0,updated=0;for(const incoming of catalog.services){const target=incoming.category;if(!Array.isArray(data.gsmServices[target]))data.gsmServices[target]=[];const hit=existing.get(incoming.sourceId);if(hit&&hit.category===target&&data.gsmServices[target][hit.index]){const old=data.gsmServices[target][hit.index];data.gsmServices[target][hit.index]={...old,...incoming,price:old.price||"",active:old.active!==false,hot:old.hot===true,requiresUsername:old.requiresUsername===true,requiresImei:old.requiresImei===true,requiresSerial:old.requiresSerial===true,lastSynced:new Date().toISOString()};updated++}else if(!hit){data.gsmServices[target].push({...incoming,lastSynced:new Date().toISOString()});added++}}data.gsmImport={source:"easy-unlocker",lastImportedAt:new Date().toISOString(),pages:catalog.pages,count:catalog.services.length};await pool.query("UPDATE site_settings SET data=$1 WHERE id=1",[JSON.stringify(data)]);res.json({success:true,added,updated,total:catalog.services.length,pages:catalog.pages,data})}catch(e){console.error("Easy GSM import error:",e);res.status(502).json({error:`Easy-Unlocker import mislukt: ${e.message}`})}});
+async function fetchEasyPublicCatalog(){const results=await Promise.all(EASY_PUBLIC_GSM_PAGES.map(async page=>{const response=await fetch(page.url,{headers:{"User-Agent":"HOMS-TECH-GSM-Importer/2.0"}});if(!response.ok)throw new Error(`Easy-Unlocker ${page.key}: HTTP ${response.status}`);const html=await response.text();return{...page,services:easyParseCatalogPage(html,page.url,page.key)}}));const all=results.flatMap(x=>x.services),unique=new Map();all.forEach(x=>unique.set(x.sourceId,x));return{pages:results.map(x=>({key:x.key,url:x.url,count:x.services.length})),services:[...unique.values()]}}
+app.post("/api/admin/gsm/import-easy",requirePermission("gsm.import"),async(req,res)=>{try{const catalog=await fetchEasyPublicCatalog();const current=await pool.query("SELECT data FROM site_settings WHERE id=1");if(!current.rows.length)return res.status(404).json({error:"Websitegegevens ontbreken."});const data=current.rows[0].data||{};if(!data.gsmServices||typeof data.gsmServices!=="object")data.gsmServices={};["imei","remote","server","frp","firmware"].forEach(k=>{if(!Array.isArray(data.gsmServices[k]))data.gsmServices[k]=[]});const existing=new Map();Object.entries(data.gsmServices).forEach(([category,list])=>list.forEach((item,index)=>{if(item?.source!=="easy-unlocker")return;const stable=item.sourceId||easyStableSourceId(category,item.group||"General",item.name||"");existing.set(stable,{category,index});const legacy=String(item.sourceId||"");const m=legacy.match(/^(easy-[^-]+-[^-]+(?:-[^-]+)+)-[0-9]+(?:\.[0-9]+)?$/);if(m)existing.set(m[1],{category,index})}));let added=0,updated=0;for(const incoming of catalog.services){const target=incoming.category;if(!Array.isArray(data.gsmServices[target]))data.gsmServices[target]=[];const hit=existing.get(incoming.sourceId);if(hit&&hit.category===target&&data.gsmServices[target][hit.index]){const old=data.gsmServices[target][hit.index];const legacySameAsUsd=String(old.price||"").trim()!==""&&String(old.price||"").trim()===String(old.sourcePrice||"").trim()&&String(old.sourceCurrency||"").toUpperCase()==="USD";data.gsmServices[target][hit.index]={...old,...incoming,price:legacySameAsUsd?"":String(old.price||"").trim(),priceCurrency:"EUR",sourcePrice:String(incoming.sourcePrice||old.sourcePrice||"").trim(),sourceCurrency:"USD",active:old.active!==false,hot:old.hot===true,requiresUsername:old.requiresUsername===true||incoming.requiresUsername===true,requiresImei:old.requiresImei===true||incoming.requiresImei===true,requiresSerial:old.requiresSerial===true||incoming.requiresSerial===true,requiredFields:Array.isArray(old.requiredFields)&&old.requiredFields.length?old.requiredFields:(incoming.requiredFields||[]),formFields:Array.isArray(old.formFields)&&old.formFields.length?old.formFields:(incoming.formFields||[]),instructions:String(old.instructions||""),usernameFromEmail:old.usernameFromEmail===true||incoming.usernameFromEmail===true,lastSynced:new Date().toISOString()};updated++}else if(!hit){data.gsmServices[target].push({...incoming,lastSynced:new Date().toISOString()});added++}}data.gsmImport={source:"easy-unlocker",lastImportedAt:new Date().toISOString(),pages:catalog.pages,count:catalog.services.length};await pool.query("UPDATE site_settings SET data=$1 WHERE id=1",[JSON.stringify(data)]);res.json({success:true,added,updated,total:catalog.services.length,pages:catalog.pages,data})}catch(e){console.error("Easy GSM import error:",e);res.status(502).json({error:`Easy-Unlocker import mislukt: ${e.message}`})}});
+
 
 // Admin login + permissions
 const ADMIN_PERMISSION_NAMES = {
@@ -741,7 +782,8 @@ app.post("/api/orders", async (req, res) => {
       serviceSourceId = "",
       priceCurrency = "EUR",
       appointmentDate = "",
-      appointmentTime = ""
+      appointmentTime = "",
+      extraFields = {}
     } = req.body || {};
 
     const clean = {
@@ -759,7 +801,8 @@ app.post("/api/orders", async (req, res) => {
       serviceSourceId: String(serviceSourceId || "").trim(),
       priceCurrency: String(priceCurrency || "EUR").trim().toUpperCase(),
       appointmentDate: String(appointmentDate || "").trim(),
-      appointmentTime: String(appointmentTime || "").trim()
+      appointmentTime: String(appointmentTime || "").trim(),
+      extraFields: (extraFields && typeof extraFields === "object") ? extraFields : {}
     };
 
     const isHomeRepair =
@@ -829,8 +872,23 @@ app.post("/api/orders", async (req, res) => {
         }
       } catch(e) { console.error("GSM catalog lookup error:",e); }
     }
+    if (matchedService) {
+      const formFields = Array.isArray(matchedService.formFields) ? matchedService.formFields : [];
+      const extra = { ...clean.extraFields };
+      for (const field of formFields) {
+        if (!field || !field.key) continue;
+        if (field.autoFromEmail === true && String(extra[field.key] || "").trim() === "") extra[field.key] = clean.email;
+        if (field.required === true && String(extra[field.key] || "").trim() === "") {
+          return res.status(400).json({error:`Vul het verplichte veld in: ${field.label || field.key}.`});
+        }
+      }
+      clean.extraFields = extra;
+      if (matchedService.usernameFromEmail === true && !clean.username) clean.username = clean.email;
+    }
     const serviceInstructions = String(matchedService?.instructions || "").trim();
-    const requiredFieldsSnapshot = JSON.stringify(Array.isArray(matchedService?.requiredFields) ? matchedService.requiredFields : []);
+    const requiredFieldList = Array.isArray(matchedService?.requiredFields) ? [...matchedService.requiredFields] : [];
+    for (const f of (Array.isArray(matchedService?.formFields) ? matchedService.formFields : [])) if (f?.required && f?.key && !requiredFieldList.includes(f.key)) requiredFieldList.push(f.key);
+    const requiredFieldsSnapshot = JSON.stringify(requiredFieldList);
     const sourcePriceSnapshot = String(matchedService?.sourcePrice || "").trim();
     const sourceCurrencySnapshot = String(matchedService?.sourceCurrency || "USD").trim().toUpperCase();
 
@@ -844,15 +902,15 @@ app.post("/api/orders", async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO service_orders
-       (customer_id, service_category, service_name, service_group, price, name, email, phone, username, imei, notes, service_source_id, service_source_url, price_currency, appointment_date, appointment_time, service_instructions, required_fields, source_price, source_currency)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
+       (customer_id, service_category, service_name, service_group, price, name, email, phone, username, imei, notes, service_source_id, service_source_url, price_currency, appointment_date, appointment_time, service_instructions, required_fields, source_price, source_currency, extra_fields)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
        RETURNING id, status, created_at, appointment_date, appointment_time`,
       [
         customerId, clean.serviceCategory, clean.serviceName, clean.serviceGroup, clean.price,
         clean.name, clean.email, clean.phone, clean.username, clean.imei, clean.notes,
         clean.serviceSourceId, matchedService?.sourceUrl || "", clean.priceCurrency,
         isHomeRepair ? clean.appointmentDate : null, isHomeRepair ? clean.appointmentTime : null,
-        serviceInstructions, requiredFieldsSnapshot, sourcePriceSnapshot, sourceCurrencySnapshot
+        serviceInstructions, requiredFieldsSnapshot, sourcePriceSnapshot, sourceCurrencySnapshot, JSON.stringify(clean.extraFields || {})
       ]
     );
 
@@ -1223,7 +1281,7 @@ app.delete("/api/admin/webshop-orders/:id", requirePermission("webshop_orders.de
 app.get("/api/customer/orders", requireCustomerAuth, async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, service_category, service_name, service_group, price, price_currency, source_price, source_currency, service_instructions, required_fields, service_source_id, service_source_url, name, email, phone, username, imei, notes, status, created_at
+      `SELECT id, service_category, service_name, service_group, price, price_currency, source_price, source_currency, service_instructions, required_fields, extra_fields, service_source_id, service_source_url, name, email, phone, username, imei, notes, status, created_at
        FROM service_orders
        WHERE customer_id = $1
        ORDER BY created_at DESC`,
@@ -1240,7 +1298,7 @@ app.get("/api/customer/orders", requireCustomerAuth, async (req, res) => {
 app.get("/api/admin/orders", requirePermission("orders.view"), async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, customer_id, service_category, service_name, service_group, price, price_currency, source_price, source_currency, service_instructions, required_fields, service_source_id, service_source_url, name, email, phone, username, imei, notes, status, created_at
+      `SELECT id, customer_id, service_category, service_name, service_group, price, price_currency, source_price, source_currency, service_instructions, required_fields, extra_fields, service_source_id, service_source_url, name, email, phone, username, imei, notes, status, created_at
        FROM service_orders
        ORDER BY created_at DESC`
     );
