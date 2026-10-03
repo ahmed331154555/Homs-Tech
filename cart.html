@@ -110,6 +110,23 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
   }
 </style>
 
+
+<style id="homs-tech-cart-delete-final">
+  .qty .remove, .qty .delete-cart-btn {
+    width:34px !important; height:34px !important; min-width:34px !important;
+    margin-left:6px !important; padding:0 !important;
+    display:inline-flex !important; align-items:center !important; justify-content:center !important;
+    border:1px solid #e2e8f0 !important; border-radius:9px !important;
+    background:#fff !important; color:#64748b !important;
+    font-size:15px !important; font-weight:400 !important; line-height:1 !important;
+  }
+  .qty .remove:hover, .qty .delete-cart-btn:hover {
+    color:#dc2626 !important; border-color:#fecaca !important; background:#fff5f5 !important;
+  }
+  .empty .btn.red {
+    background:#2563eb !important; background-color:#2563eb !important; color:#fff !important;
+  }
+</style>
 </head><body>
 <div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div></div>
 <header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="account.html">♙ Mijn account</a><a class="active" href="cart.html">🛒 Winkelwagen <span id="cartCount" class="cart-count">0</span></a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a><a href="used.html">Tweedehands</a><a href="gsm-services.html">GSM Services</a>
@@ -253,7 +270,7 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
               '<button type="button" onclick="changeQty(' + index + ',-1)">−</button>' +
               '<span>' + qty + '</span>' +
               '<button type="button" onclick="changeQty(' + index + ',1)">+</button>' +
-              '<button type="button" class="remove" onclick="removeItem(' + index + ')">🗑️ Verwijderen</button>' +
+              '<button type="button" class="remove delete-cart-btn" onclick="removeItem(' + index + ')" aria-label="Verwijder product" title="Verwijder product">🗑</button>' +
             '</div>' +
           '</div>' +
           '<div class="item-price">' + money(lineTotal) + '</div>' +
