@@ -58,13 +58,23 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 #submitBtn:hover,.btn.blue:hover{background:#1d4ed8!important;background-color:#1d4ed8!important}
 .btn.gray{background:#fff!important;background-color:#fff!important;color:#2563eb!important;border:1px solid #2563eb!important}
 </style>
+
+<style id="homs-tech-paypal">
+.payment-box{margin-top:22px;padding:20px;border:1px solid #e2e8f0;border-radius:16px;background:#f8fafc}
+.payment-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:16px}
+.payment-head h3{margin:0 0 6px;font-size:20px}
+.payment-head p{margin:0;color:#64748b;font-size:14px;line-height:1.5}
+.payment-order{font-weight:900;color:#2563eb;white-space:nowrap}
+#paypal-button-container{max-width:520px}
+@media(max-width:560px){.payment-head{flex-direction:column}.payment-order{white-space:normal}}
+</style>
 </head>
 <body>
 <div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div></div>
 <header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="devices.html">Zoek</a><a href="devices.html">NL⌄</a><a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a><a href="used.html">Tweedehands</a><a href="gsm-services.html">GSM Services</a>
    <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a></nav></div></header>
 <main class="wrap">
-<h1 class="title">Afrekenen</h1><p class="subtitle">Vul uw gegevens in. Daarna ontvangt HOMS TECH uw bestelling.</p>
+<h1 class="title">Afrekenen</h1><p class="subtitle">Vul uw gegevens in en ga daarna veilig verder met PayPal.</p>
 <div id="checkoutContent" class="layout">
 <section class="card"><h2>📦 Uw gegevens</h2><div id="accountNote" class="account-note hidden"></div><form id="checkoutForm"><div class="grid">
 <div class="field"><label for="name">Naam *</label><input id="name" required></div>
@@ -74,7 +84,22 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 <div class="field"><label for="street">Straat *</label><input id="street" required></div>
 <div class="field"><label for="houseNumber">Huisnummer *</label><input id="houseNumber" required></div>
 <div class="field full"><label for="city">Plaats *</label><input id="city" required></div>
-</div><div id="status" class="status"></div><button id="submitBtn" class="btn blue submit" type="submit">🛍️ Bestelling plaatsen</button></form></section>
+</div><div id="status" class="status"></div>
+<button id="submitBtn" class="btn blue submit" type="submit">→ Doorgaan naar betaling</button>
+</form>
+
+<div id="paymentBox" class="payment-box hidden">
+  <div class="payment-head">
+    <div>
+      <h3>💳 Betaling</h3>
+      <p>Betaal veilig met PayPal. Voor deze test gebruiken we de PayPal Sandbox.</p>
+    </div>
+    <div id="paymentOrderLabel" class="payment-order"></div>
+  </div>
+  <div id="paypal-button-container"></div>
+  <div id="paymentStatus" class="status"></div>
+</div>
+</section>
 <section class="card"><h2>🛒 Uw bestelling</h2><div id="items"></div><div class="total"><span>Totaal</span><span id="total">€0</span></div><a class="btn gray submit" href="cart.html">← Terug naar winkelwagen</a></section>
 </div>
 <div id="success" class="card success-box hidden"><div class="check">✅</div><h2>Bedankt voor uw bestelling!</h2><p>Uw bestelling is succesvol ontvangen door HOMS TECH.</p><div id="orderNumber" class="order-number"></div><a class="btn blue" href="index.html">Terug naar Home</a></div>
@@ -84,15 +109,15 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   "use strict";
 
   const CART_KEY = "homsTechCart";
+  let pendingOrderId = null;
+  let paypalRendered = false;
 
   function readCart(){
     try{
       const raw = localStorage.getItem(CART_KEY);
       const data = raw ? JSON.parse(raw) : [];
       return Array.isArray(data) ? data : [];
-    }catch(e){
-      return [];
-    }
+    }catch(e){ return []; }
   }
 
   function money(n){
@@ -101,49 +126,31 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 
   function esc(v){
     return String(v ?? "")
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;")
-      .replace(/'/g,"&#039;");
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
   }
 
   function optionsText(o){
-    const m = {
-      storage:"Geheugen",
-      color:"Kleur",
-      condition:"Conditie",
-      battery:"Batterij",
-      vat:"BTW",
-      tradeIn:"Inruil"
-    };
-
+    const m = {storage:"Geheugen",color:"Kleur",condition:"Conditie",battery:"Batterij",vat:"BTW",tradeIn:"Inruil"};
     if(!o || typeof o !== "object") return "";
-
     return Object.entries(o)
       .filter(([_,v]) => String(v ?? "").trim() !== "")
-      .map(([k,v]) => (m[k] || k) + ": " + esc(v))
-      .join(" • ");
+      .map(([k,v]) => (m[k] || k) + ": " + esc(v)).join(" • ");
   }
 
   function renderItems(){
     const items = readCart();
     const box = document.getElementById("items");
     const totalEl = document.getElementById("total");
-
     if(!box || !totalEl) return;
 
     if(!items.length){
-      box.innerHTML =
-        '<div style="padding:20px;background:#f8fafc;border-radius:12px">' +
-          'Je winkelwagen is leeg. <a href="devices.html" style="color:#2563eb;font-weight:800">Bekijk telefoons</a>' +
-        '</div>';
+      box.innerHTML = '<div style="padding:20px;background:#f8fafc;border-radius:12px">Je winkelwagen is leeg. <a href="devices.html" style="color:#2563eb;font-weight:800">Bekijk telefoons</a></div>';
       totalEl.textContent = "€0";
       return;
     }
 
     let total = 0;
-
     box.innerHTML = items.map(item => {
       const qty = Math.max(1, Number(item.qty || 1));
       const price = Number(item.unitPrice ?? item.price ?? 0);
@@ -154,14 +161,10 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
         ? '<img src="' + esc(item.image) + '" alt="" style="width:68px;height:68px;object-fit:contain;border-radius:10px">'
         : '<div style="width:68px;height:68px;border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-size:28px">📱</div>';
 
-      return '<div class="item">' +
-        image +
-        '<div>' +
-          '<div class="item-title">' + esc(item.name || "Smartphone") + '</div>' +
-          '<div class="item-meta">' + optionsText(item.options) + '<br>Aantal: ' + qty + '</div>' +
-        '</div>' +
-        '<div class="item-price">' + money(line) + '</div>' +
-      '</div>';
+      return '<div class="item">' + image +
+        '<div><div class="item-title">' + esc(item.name || "Smartphone") + '</div>' +
+        '<div class="item-meta">' + optionsText(item.options) + '<br>Aantal: ' + qty + '</div></div>' +
+        '<div class="item-price">' + money(line) + '</div></div>';
     }).join("");
 
     totalEl.textContent = money(total);
@@ -169,12 +172,8 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 
   async function prefill(){
     try{
-      const r = await fetch("/api/customer/me", {
-        cache:"no-store",
-        credentials:"same-origin"
-      });
+      const r = await fetch("/api/customer/me",{cache:"no-store",credentials:"same-origin"});
       if(!r.ok) return;
-
       const d = await r.json();
       if(!d.authenticated || !d.customer) return;
 
@@ -199,80 +198,168 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
     s.className = "status " + (type || "");
   }
 
+  function showPaymentStatus(msg,type){
+    const s = document.getElementById("paymentStatus");
+    if(!s) return;
+    s.textContent = msg;
+    s.className = "status " + (type || "");
+  }
+
+  async function loadPayPalSdk(){
+    const configResponse = await fetch("/api/paypal/config",{cache:"no-store"});
+    const config = await configResponse.json().catch(()=>({}));
+    if(!configResponse.ok || !config.enabled || !config.clientId){
+      throw new Error(config.error || "PayPal is nog niet geconfigureerd.");
+    }
+
+    if(window.paypal) return;
+
+    await new Promise((resolve,reject)=>{
+      const script = document.createElement("script");
+      const host = config.mode === "live" ? "https://www.paypal.com" : "https://www.sandbox.paypal.com";
+      script.src = host + "/sdk/js?client-id=" + encodeURIComponent(config.clientId) +
+        "&currency=EUR&intent=capture&components=buttons";
+      script.onload = resolve;
+      script.onerror = () => reject(new Error("PayPal kon niet worden geladen."));
+      document.head.appendChild(script);
+    });
+  }
+
+  async function createLocalOrder(){
+    const items = readCart();
+    if(!items.length){
+      location.href = "cart.html";
+      return null;
+    }
+
+    const payload = {
+      name: document.getElementById("name").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      phone: document.getElementById("phone").value.trim(),
+      street: document.getElementById("street").value.trim(),
+      houseNumber: document.getElementById("houseNumber").value.trim(),
+      postcode: document.getElementById("postcode").value.trim(),
+      city: document.getElementById("city").value.trim(),
+      items
+    };
+
+    const r = await fetch("/api/webshop/orders",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      credentials:"same-origin",
+      body:JSON.stringify(payload)
+    });
+
+    const result = await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(result.error || "Bestelling kon niet worden aangemaakt.");
+    return result.order;
+  }
+
+  async function renderPayPalButton(){
+    if(paypalRendered || !pendingOrderId) return;
+    await loadPayPalSdk();
+
+    if(!window.paypal || !window.paypal.Buttons){
+      throw new Error("PayPal knop kon niet worden geïnitialiseerd.");
+    }
+
+    paypalRendered = true;
+
+    window.paypal.Buttons({
+      style:{layout:"vertical",shape:"rect",label:"paypal"},
+      createOrder: async function(){
+        const r = await fetch("/api/paypal/create-order",{
+          method:"POST",
+          headers:{"Content-Type":"application/json","Accept":"application/json"},
+          credentials:"same-origin",
+          body:JSON.stringify({orderId:pendingOrderId})
+        });
+        const result = await r.json().catch(()=>({}));
+        if(!r.ok || !result.id) throw new Error(result.error || "PayPal betaling kon niet worden gestart.");
+        return result.id;
+      },
+      onApprove: async function(data){
+        showPaymentStatus("Betaling wordt bevestigd...","success");
+        try{
+          const r = await fetch("/api/paypal/capture-order",{
+            method:"POST",
+            headers:{"Content-Type":"application/json","Accept":"application/json"},
+            credentials:"same-origin",
+            body:JSON.stringify({orderId:pendingOrderId,paypalOrderId:data.orderID})
+          });
+          const result = await r.json().catch(()=>({}));
+          if(!r.ok || !result.paid) throw new Error(result.error || "PayPal betaling kon niet worden bevestigd.");
+
+          localStorage.removeItem(CART_KEY);
+          localStorage.removeItem("homsTechPendingWebshopOrderId");
+
+          document.getElementById("checkoutContent").classList.add("hidden");
+          document.getElementById("success").classList.remove("hidden");
+          document.getElementById("orderNumber").textContent = "Bestelnummer #" + pendingOrderId;
+        }catch(error){
+          showPaymentStatus("✕ " + (error.message || "Betaling kon niet worden bevestigd."),"error");
+        }
+      },
+      onCancel: async function(){
+        showPaymentStatus("De PayPal betaling is geannuleerd. Je bestelling is nog niet betaald.","error");
+        try{
+          await fetch("/api/paypal/cancel-order",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            credentials:"same-origin",
+            body:JSON.stringify({orderId:pendingOrderId})
+          });
+        }catch(e){}
+      },
+      onError: function(error){
+        console.error("PayPal error:",error);
+        showPaymentStatus("✕ PayPal kon de betaling niet voltooien. Probeer opnieuw.","error");
+      }
+    }).render("#paypal-button-container");
+  }
+
   async function submitOrder(event){
     event.preventDefault();
 
     const items = readCart();
-    if(!items.length){
-      location.href = "cart.html";
-      return;
-    }
+    if(!items.length){ location.href="cart.html"; return; }
 
     const btn = document.getElementById("submitBtn");
-    if(btn){
-      btn.disabled = true;
-      btn.textContent = "Bestelling plaatsen...";
-    }
-
+    if(btn){ btn.disabled=true; btn.textContent="Bestelling voorbereiden..."; }
     showStatus("","");
 
     try{
-      const payload = {
-        name: document.getElementById("name").value.trim(),
-        email: document.getElementById("email").value.trim(),
-        phone: document.getElementById("phone").value.trim(),
-        street: document.getElementById("street").value.trim(),
-        houseNumber: document.getElementById("houseNumber").value.trim(),
-        postcode: document.getElementById("postcode").value.trim(),
-        city: document.getElementById("city").value.trim(),
-        items
-      };
+      const order = await createLocalOrder();
+      pendingOrderId = Number(order?.id || 0);
+      if(!pendingOrderId) throw new Error("Geen geldig ordernummer ontvangen.");
 
-      const r = await fetch("/api/webshop/orders", {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "Accept":"application/json"
-        },
-        credentials:"same-origin",
-        body:JSON.stringify(payload)
-      });
+      localStorage.setItem("homsTechPendingWebshopOrderId",String(pendingOrderId));
+      document.getElementById("paymentOrderLabel").textContent = "Order #" + pendingOrderId;
+      document.getElementById("paymentBox").classList.remove("hidden");
+      document.getElementById("submitBtn").classList.add("hidden");
 
-      const result = await r.json().catch(() => ({}));
-
-      if(!r.ok){
-        throw new Error(result.error || "Bestelling kon niet worden geplaatst.");
-      }
-
-      localStorage.removeItem(CART_KEY);
-
-      document.getElementById("checkoutContent").classList.add("hidden");
-      document.getElementById("success").classList.remove("hidden");
-      document.getElementById("orderNumber").textContent =
-        "Bestelnummer #" + (result.order?.id || "");
-
+      showPaymentStatus("PayPal laden...","success");
+      await renderPayPalButton();
+      showPaymentStatus("Kies PayPal om veilig af te rekenen.","success");
+      document.getElementById("paymentBox").scrollIntoView({behavior:"smooth",block:"center"});
     }catch(error){
-      showStatus("✕ " + (error.message || "Bestelling kon niet worden geplaatst."),"error");
-
+      showStatus("✕ " + (error.message || "Bestelling kon niet worden aangemaakt."),"error");
       if(btn){
-        btn.disabled = false;
-        btn.textContent = "🛍️ Bestelling plaatsen";
+        btn.disabled=false;
+        btn.textContent="→ Doorgaan naar betaling";
       }
     }
   }
 
   function start(){
-    const form = document.getElementById("checkoutForm");
-    if(form) form.addEventListener("submit", submitOrder);
+    const form=document.getElementById("checkoutForm");
+    if(form) form.addEventListener("submit",submitOrder);
     renderItems();
     prefill();
   }
 
-  if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", start);
-  }else{
-    start();
-  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",start);
+  else start();
 })();
 </script>
 </body>

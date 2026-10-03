@@ -195,6 +195,11 @@ async function initDatabase() {
     )
   `);
 
+  // Payment fields for webshop checkout / PayPal.
+  await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'Unpaid'`);
+  await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS paypal_order_id TEXT DEFAULT ''`);
+
   const result = await pool.query(
     "SELECT id FROM site_settings WHERE id = 1"
   );
@@ -870,23 +875,251 @@ app.post("/api/webshop/orders", async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO webshop_orders
-       (customer_id, name, email, phone, street, house_number, postcode, city, items, total)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-       RETURNING id, status, created_at`,
-      [customerId, name, email, phone, street, houseNumber, postcode, city, JSON.stringify(safeItems), total.toFixed(2)]
+       (customer_id, name, email, phone, street, house_number, postcode, city, items, total, payment_method, payment_status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+       RETURNING id, status, payment_method, payment_status, paypal_order_id, created_at`,
+      [
+        customerId, name, email, phone, street, houseNumber, postcode, city,
+        JSON.stringify(safeItems), total.toFixed(2), "PayPal", "Unpaid"
+      ]
     );
 
     res.status(201).json({ success: true, order: result.rows[0] });
   } catch (error) {
-    console.error(error);
+    console.error("Create webshop order error:", error);
     res.status(500).json({ error: "Webshop bestelling kon niet worden opgeslagen." });
+  }
+});
+
+function getPayPalBaseUrl() {
+  return String(process.env.PAYPAL_MODE || "sandbox").toLowerCase() === "live"
+    ? "https://api-m.paypal.com"
+    : "https://api-m.sandbox.paypal.com";
+}
+
+async function getPayPalAccessToken() {
+  const clientId = String(process.env.PAYPAL_CLIENT_ID || "").trim();
+  const clientSecret = String(process.env.PAYPAL_CLIENT_SECRET || "").trim();
+
+  if (!clientId || !clientSecret) {
+    throw new Error("PayPal is nog niet geconfigureerd op de server.");
+  }
+
+  const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+  const response = await fetch(`${getPayPalBaseUrl()}/v1/oauth2/token`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Basic ${auth}`,
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: "grant_type=client_credentials"
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.access_token) {
+    throw new Error(`PayPal authenticatie mislukt (${response.status}).`);
+  }
+  return data.access_token;
+}
+
+// Frontend only receives the public client ID; the secret never leaves the server.
+app.get("/api/paypal/config", (req, res) => {
+  const clientId = String(process.env.PAYPAL_CLIENT_ID || "").trim();
+  if (!clientId) {
+    return res.status(503).json({ enabled: false, error: "PayPal is nog niet geconfigureerd." });
+  }
+
+  res.json({
+    enabled: true,
+    clientId,
+    mode: String(process.env.PAYPAL_MODE || "sandbox").toLowerCase() === "live" ? "live" : "sandbox"
+  });
+});
+
+app.post("/api/paypal/create-order", async (req, res) => {
+  try {
+    const localOrderId = Number(req.body?.orderId);
+    if (!Number.isInteger(localOrderId) || localOrderId < 1) {
+      return res.status(400).json({ error: "Ongeldig webshop ordernummer." });
+    }
+
+    const local = await pool.query(
+      `SELECT id, name, email, total, payment_status
+       FROM webshop_orders
+       WHERE id = $1`,
+      [localOrderId]
+    );
+
+    if (!local.rows.length) {
+      return res.status(404).json({ error: "Webshop bestelling niet gevonden." });
+    }
+
+    const order = local.rows[0];
+    if (order.payment_status === "Paid") {
+      return res.status(409).json({ error: "Deze bestelling is al betaald." });
+    }
+
+    const total = Number(order.total);
+    if (!Number.isFinite(total) || total <= 0) {
+      return res.status(400).json({ error: "Het orderbedrag is ongeldig." });
+    }
+
+    const accessToken = await getPayPalAccessToken();
+
+    const response = await fetch(`${getPayPalBaseUrl()}/v2/checkout/orders`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+        "PayPal-Request-Id": `homs-tech-${localOrderId}-${Date.now()}`
+      },
+      body: JSON.stringify({
+        intent: "CAPTURE",
+        purchase_units: [{
+          reference_id: `HOMS-${localOrderId}`,
+          description: `HOMS TECH bestelling #${localOrderId}`,
+          custom_id: String(localOrderId),
+          amount: {
+            currency_code: "EUR",
+            value: total.toFixed(2)
+          }
+        }],
+        application_context: {
+          brand_name: "HOMS TECH",
+          user_action: "PAY_NOW",
+          shipping_preference: "NO_SHIPPING"
+        }
+      })
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.id) {
+      console.error("PayPal create order response:", response.status, data);
+      return res.status(502).json({ error: "PayPal kon de betaling niet starten." });
+    }
+
+    await pool.query(
+      `UPDATE webshop_orders
+       SET paypal_order_id = $1, payment_method = 'PayPal', payment_status = 'Pending'
+       WHERE id = $2`,
+      [String(data.id), localOrderId]
+    );
+
+    res.json({ success: true, id: data.id, orderId: localOrderId });
+  } catch (error) {
+    console.error("PayPal create order error:", error);
+    res.status(500).json({ error: error.message || "PayPal betaling kon niet worden gestart." });
+  }
+});
+
+app.post("/api/paypal/capture-order", async (req, res) => {
+  try {
+    const localOrderId = Number(req.body?.orderId);
+    const paypalOrderId = String(req.body?.paypalOrderId || "").trim();
+
+    if (!Number.isInteger(localOrderId) || localOrderId < 1 || !paypalOrderId) {
+      return res.status(400).json({ error: "Ongeldige PayPal betaalgegevens." });
+    }
+
+    const local = await pool.query(
+      `SELECT id, total, paypal_order_id, payment_status
+       FROM webshop_orders
+       WHERE id = $1`,
+      [localOrderId]
+    );
+
+    if (!local.rows.length) {
+      return res.status(404).json({ error: "Webshop bestelling niet gevonden." });
+    }
+
+    const order = local.rows[0];
+
+    if (String(order.paypal_order_id || "") !== paypalOrderId) {
+      return res.status(400).json({ error: "PayPal order komt niet overeen met de webshop bestelling." });
+    }
+
+    if (order.payment_status === "Paid") {
+      return res.json({ success: true, paid: true, orderId: localOrderId });
+    }
+
+    const accessToken = await getPayPalAccessToken();
+
+    const response = await fetch(
+      `${getPayPalBaseUrl()}/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}/capture`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        },
+        body: "{}"
+      }
+    );
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      console.error("PayPal capture response:", response.status, data);
+      return res.status(502).json({ error: "PayPal kon de betaling niet bevestigen." });
+    }
+
+    const captureStatus = String(data.status || "").toUpperCase();
+    const capture = data.purchase_units?.[0]?.payments?.captures?.[0];
+    const captureState = String(capture?.status || "").toUpperCase();
+
+    if (captureStatus !== "COMPLETED" || captureState !== "COMPLETED") {
+      await pool.query(
+        `UPDATE webshop_orders SET payment_status = $1 WHERE id = $2`,
+        ["Failed", localOrderId]
+      );
+      return res.status(402).json({ error: "PayPal betaling is niet voltooid.", paypalStatus: captureStatus });
+    }
+
+    await pool.query(
+      `UPDATE webshop_orders
+       SET payment_status = 'Paid', payment_method = 'PayPal'
+       WHERE id = $1`,
+      [localOrderId]
+    );
+
+    res.json({
+      success: true,
+      paid: true,
+      orderId: localOrderId,
+      paypalOrderId,
+      captureId: capture?.id || null
+    });
+  } catch (error) {
+    console.error("PayPal capture error:", error);
+    res.status(500).json({ error: error.message || "PayPal betaling kon niet worden bevestigd." });
+  }
+});
+
+app.post("/api/paypal/cancel-order", async (req, res) => {
+  try {
+    const localOrderId = Number(req.body?.orderId);
+    if (!Number.isInteger(localOrderId) || localOrderId < 1) {
+      return res.status(400).json({ error: "Ongeldig ordernummer." });
+    }
+
+    await pool.query(
+      `UPDATE webshop_orders
+       SET payment_status = CASE WHEN payment_status <> 'Paid' THEN 'Cancelled' ELSE payment_status END
+       WHERE id = $1`,
+      [localOrderId]
+    );
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("PayPal cancel error:", error);
+    res.status(500).json({ error: "Betaling kon niet worden bijgewerkt." });
   }
 });
 
 app.get("/api/admin/webshop-orders", requirePermission("webshop_orders.view"), async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, customer_id, name, email, phone, street, house_number, postcode, city, items, total, status, created_at
+      `SELECT id, customer_id, name, email, phone, street, house_number, postcode, city, items, total, status,
+              payment_method, payment_status, paypal_order_id, created_at
        FROM webshop_orders
        ORDER BY created_at DESC`
     );
