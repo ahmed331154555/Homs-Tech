@@ -317,6 +317,19 @@ function easyGuessOrderFields(group,name){
   }
   return fields;
 }
+function normalizeGsmFormFields(service){
+  const name=String(service?.name||'').trim();
+  if(/alcatel worldwide database #2/i.test(name)){
+    return [
+      {key:'imei',label:'IMEI',type:'text',required:true,autoFromEmail:false,placeholder:'Enter IMEI'},
+      {key:'model',label:'MODEL',type:'text',required:true,autoFromEmail:false,placeholder:'Enter model'},
+      {key:'notes',label:'Notes',type:'text',required:false,autoFromEmail:false,placeholder:'Additional information'},
+      {key:'comments',label:'Comments',type:'textarea',required:false,autoFromEmail:false,placeholder:'For your reference'},
+      {key:'response_email',label:'Response e-mail',type:'email',required:true,autoFromEmail:true,placeholder:'Customer e-mail for the reply'}
+    ];
+  }
+  return Array.isArray(service?.formFields)?service.formFields:[];
+}
 function easyParseCatalogPage(html,pageUrl,baseCategory){
   const out=[];const tables=String(html||"").match(/<table\b[^>]*>[\s\S]*?<\/table>/gi)||[];
   for(const table of tables){
@@ -339,7 +352,7 @@ function easyParseCatalogPage(html,pageUrl,baseCategory){
 }
 const EASY_PUBLIC_GSM_PAGES=[{key:"imei",url:"https://easy-unlocker.com/resellerpricing/imei"},{key:"remote",url:"https://easy-unlocker.com/resellerpricing/remote"},{key:"server",url:"https://easy-unlocker.com/resellerpricing/server"}];
 async function fetchEasyPublicCatalog(){const results=await Promise.all(EASY_PUBLIC_GSM_PAGES.map(async page=>{const response=await fetch(page.url,{headers:{"User-Agent":"HOMS-TECH-GSM-Importer/2.0"}});if(!response.ok)throw new Error(`Easy-Unlocker ${page.key}: HTTP ${response.status}`);const html=await response.text();return{...page,services:easyParseCatalogPage(html,page.url,page.key)}}));const all=results.flatMap(x=>x.services),unique=new Map();all.forEach(x=>unique.set(x.sourceId,x));return{pages:results.map(x=>({key:x.key,url:x.url,count:x.services.length})),services:[...unique.values()]}}
-app.post("/api/admin/gsm/import-easy",requirePermission("gsm.import"),async(req,res)=>{try{const catalog=await fetchEasyPublicCatalog();const current=await pool.query("SELECT data FROM site_settings WHERE id=1");if(!current.rows.length)return res.status(404).json({error:"Websitegegevens ontbreken."});const data=current.rows[0].data||{};if(!data.gsmServices||typeof data.gsmServices!=="object")data.gsmServices={};["imei","remote","server","frp","firmware"].forEach(k=>{if(!Array.isArray(data.gsmServices[k]))data.gsmServices[k]=[]});const existing=new Map();Object.entries(data.gsmServices).forEach(([category,list])=>list.forEach((item,index)=>{if(item?.source!=="easy-unlocker")return;const stable=item.sourceId||easyStableSourceId(category,item.group||"General",item.name||"");existing.set(stable,{category,index});const legacy=String(item.sourceId||"");const m=legacy.match(/^(easy-[^-]+-[^-]+(?:-[^-]+)+)-[0-9]+(?:\.[0-9]+)?$/);if(m)existing.set(m[1],{category,index})}));let added=0,updated=0;for(const incoming of catalog.services){const target=incoming.category;if(!Array.isArray(data.gsmServices[target]))data.gsmServices[target]=[];const hit=existing.get(incoming.sourceId);if(hit&&hit.category===target&&data.gsmServices[target][hit.index]){const old=data.gsmServices[target][hit.index];const legacySameAsUsd=String(old.price||"").trim()!==""&&String(old.price||"").trim()===String(old.sourcePrice||"").trim()&&String(old.sourceCurrency||"").toUpperCase()==="USD";data.gsmServices[target][hit.index]={...old,...incoming,price:legacySameAsUsd?"":String(old.price||"").trim(),priceCurrency:"EUR",sourcePrice:String(incoming.sourcePrice||old.sourcePrice||"").trim(),sourceCurrency:"USD",active:old.active!==false,hot:old.hot===true,requiresUsername:old.requiresUsername===true||incoming.requiresUsername===true,requiresImei:old.requiresImei===true||incoming.requiresImei===true,requiresSerial:old.requiresSerial===true||incoming.requiresSerial===true,requiredFields:Array.isArray(old.requiredFields)&&old.requiredFields.length?old.requiredFields:(incoming.requiredFields||[]),formFields:Array.isArray(old.formFields)&&old.formFields.length?old.formFields:(incoming.formFields||[]),instructions:String(old.instructions||""),usernameFromEmail:old.usernameFromEmail===true||incoming.usernameFromEmail===true,lastSynced:new Date().toISOString()};updated++}else if(!hit){data.gsmServices[target].push({...incoming,lastSynced:new Date().toISOString()});added++}}data.gsmImport={source:"easy-unlocker",lastImportedAt:new Date().toISOString(),pages:catalog.pages,count:catalog.services.length};await pool.query("UPDATE site_settings SET data=$1 WHERE id=1",[JSON.stringify(data)]);res.json({success:true,added,updated,total:catalog.services.length,pages:catalog.pages,data})}catch(e){console.error("Easy GSM import error:",e);res.status(502).json({error:`Easy-Unlocker import mislukt: ${e.message}`})}});
+app.post("/api/admin/gsm/import-easy",requirePermission("gsm.import"),async(req,res)=>{try{const catalog=await fetchEasyPublicCatalog();const current=await pool.query("SELECT data FROM site_settings WHERE id=1");if(!current.rows.length)return res.status(404).json({error:"Websitegegevens ontbreken."});const data=current.rows[0].data||{};if(!data.gsmServices||typeof data.gsmServices!=="object")data.gsmServices={};["imei","remote","server","frp","firmware"].forEach(k=>{if(!Array.isArray(data.gsmServices[k]))data.gsmServices[k]=[]});const existing=new Map();Object.entries(data.gsmServices).forEach(([category,list])=>list.forEach((item,index)=>{if(item?.source!=="easy-unlocker")return;const stable=item.sourceId||easyStableSourceId(category,item.group||"General",item.name||"");existing.set(stable,{category,index});const legacy=String(item.sourceId||"");const m=legacy.match(/^(easy-[^-]+-[^-]+(?:-[^-]+)+)-[0-9]+(?:\.[0-9]+)?$/);if(m)existing.set(m[1],{category,index})}));let added=0,updated=0;for(const incoming of catalog.services){const target=incoming.category;if(!Array.isArray(data.gsmServices[target]))data.gsmServices[target]=[];const hit=existing.get(incoming.sourceId);if(hit&&hit.category===target&&data.gsmServices[target][hit.index]){const old=data.gsmServices[target][hit.index];const legacySameAsUsd=String(old.price||"").trim()!==""&&String(old.price||"").trim()===String(old.sourcePrice||"").trim()&&String(old.sourceCurrency||"").toUpperCase()==="USD";data.gsmServices[target][hit.index]={...old,...incoming,price:legacySameAsUsd?"":String(old.price||"").trim(),priceCurrency:"EUR",sourcePrice:String(incoming.sourcePrice||old.sourcePrice||"").trim(),sourceCurrency:"USD",active:old.active!==false,hot:old.hot===true,requiresUsername:old.requiresUsername===true||incoming.requiresUsername===true,requiresImei:old.requiresImei===true||incoming.requiresImei===true,requiresSerial:old.requiresSerial===true||incoming.requiresSerial===true,requiredFields:Array.isArray(old.requiredFields)&&old.requiredFields.length?old.requiredFields:(incoming.requiredFields||[]),formFields:normalizeGsmFormFields({...old,...incoming,formFields:Array.isArray(old.formFields)&&old.formFields.length?old.formFields:(incoming.formFields||[]) }),instructions:String(old.instructions||""),usernameFromEmail:old.usernameFromEmail===true||incoming.usernameFromEmail===true,lastSynced:new Date().toISOString()};updated++}else if(!hit){data.gsmServices[target].push({...incoming,lastSynced:new Date().toISOString()});added++}}data.gsmImport={source:"easy-unlocker",lastImportedAt:new Date().toISOString(),pages:catalog.pages,count:catalog.services.length};await pool.query("UPDATE site_settings SET data=$1 WHERE id=1",[JSON.stringify(data)]);res.json({success:true,added,updated,total:catalog.services.length,pages:catalog.pages,data})}catch(e){console.error("Easy GSM import error:",e);res.status(502).json({error:`Easy-Unlocker import mislukt: ${e.message}`})}});
 
 
 // Admin login + permissions
@@ -862,13 +875,19 @@ app.post("/api/orders", async (req, res) => {
           // HOMS TECH customer price is always EUR. Never fall back to the USD source price.
           clean.price = String(matchedService.price || "").trim();
           clean.priceCurrency = "EUR";
+          const extra = { ...clean.extraFields };
+          // Dynamic order fields are the single source of truth for service-specific inputs.
+          if (!clean.imei && extra.imei) clean.imei = String(extra.imei).trim();
+          if (!clean.username && extra.username) clean.username = String(extra.username).trim();
+          if (!clean.serial && extra.serial) clean.serial = String(extra.serial).trim();
           const required = new Set(Array.isArray(matchedService.requiredFields) ? matchedService.requiredFields : []);
           if (matchedService.requiresUsername === true) required.add("username");
           if (matchedService.requiresImei === true) required.add("imei");
           if (matchedService.requiresSerial === true) required.add("serial");
           if (required.has("username") && !clean.username) return res.status(400).json({error:"Deze service vereist een gebruikersnaam."});
           if (required.has("imei") && !clean.imei) return res.status(400).json({error:"Deze service vereist een IMEI."});
-          if (required.has("serial") && !String(req.body?.serial || "").trim()) return res.status(400).json({error:"Deze service vereist een serienummer."});
+          if (required.has("serial") && !clean.serial) return res.status(400).json({error:"Deze service vereist een serienummer."});
+          clean.extraFields = extra;
         }
       } catch(e) { console.error("GSM catalog lookup error:",e); }
     }
