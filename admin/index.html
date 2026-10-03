@@ -4304,6 +4304,8 @@ async function importEasyGsm(){
 
 /* ---------------- GSM SERVICES ---------------- */
 
+let gsmServiceSearch="";
+
 const gsmServiceCategories=[
   ["imei","📱 IMEI Services"],
   ["remote","🛠️ Remote Service"],
@@ -4311,6 +4313,18 @@ const gsmServiceCategories=[
   ["frp","🔐 FRP Services"],
   ["firmware","💻 Firmware / Software"]
 ];
+
+function filterGsmServiceRows(){
+  const q=String(gsmServiceSearch||'').trim().toLowerCase();
+  document.querySelectorAll('.gsm-admin-service-row').forEach(row=>{
+    const hay=String(row.dataset.gsmSearch||'');
+    row.style.display=(!q || hay.includes(q))?'':'none';
+  });
+  document.querySelectorAll('.gsm-admin-group').forEach(group=>{
+    const rows=[...group.querySelectorAll('.gsm-admin-service-row')];
+    group.style.display=rows.some(r=>r.style.display!=='none')?'':'none';
+  });
+}
 
 function renderGsmServices(){
   const box=document.getElementById("gsmServicesList");
@@ -4320,7 +4334,7 @@ function renderGsmServices(){
   const list=data.gsmServices[category[0]] || [];
   if(selectedGsmServiceIndex>=list.length) selectedGsmServiceIndex=Math.max(0,list.length-1);
 
-  const tabs=gsmServiceCategories.map(c=>`<button type="button" class="gsm-admin-tab ${c[0]===activeKey?"active":""}" onclick="gsmActiveCategory='${c[0]}';selectedGsmServiceIndex=0;renderGsmServices()">${c[1]}</button>`).join('');
+  const tabs=gsmServiceCategories.map(c=>`<button type="button" class="gsm-admin-tab ${c[0]===activeKey?"active":""}" onclick="gsmActiveCategory='${c[0]}';selectedGsmServiceIndex=0;gsmServiceSearch='';renderGsmServices()">${c[1]}</button>`).join('');
   const grouped=new Map();
   list.forEach((service,i)=>{
     const groupName=(service.group||category[1].replace(/^[^ ]+ /,'')||"General").trim()||"General";
@@ -4332,7 +4346,7 @@ function renderGsmServices(){
       <div style="padding:9px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:900;color:#334155;display:flex;justify-content:space-between;align-items:center">
         <span>${esc(groupName)}</span><span style="font-size:11px;color:#64748b">${items.length}</span>
       </div>
-      ${items.map(({service,i})=>`<button type="button" class="editor-list-item ${i===selectedGsmServiceIndex?'active':''}" onclick="selectedGsmServiceIndex=${i};renderGsmServices()">${esc(service.icon||'🔧')} ${esc(service.name||'Nieuwe GSM Service')}<small>${service.price?('€ '+esc(service.price)):'Op aanvraag'}</small></button>`).join('')}
+      ${items.map(({service,i})=>`<button type="button" class="editor-list-item gsm-admin-service-row ${i===selectedGsmServiceIndex?'active':''}" data-gsm-search="${esc(((service.name||'')+' '+(service.group||'')+' '+(service.sourcePrice||'')).toLowerCase())}" onclick="selectedGsmServiceIndex=${i};renderGsmServices()">${esc(service.icon||'🔧')} ${esc(service.name||'Nieuwe GSM Service')}<small>${service.price?('€ '+esc(service.price)):'Op aanvraag'}${service.sourcePrice?` · $${esc(service.sourcePrice)}`:''}</small></button>`).join('')}
     </div>`).join('') : '<div class="small" style="padding:10px">Nog geen services in deze categorie.</div>';
   const service=list[selectedGsmServiceIndex];
 
@@ -4350,7 +4364,7 @@ function renderGsmServices(){
           <div class="field" style="display:flex;flex-direction:column;gap:8px;justify-content:flex-end"><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresUsername===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresUsername=this.checked;markChanged()" style="width:18px;height:18px"> Gebruikersnaam verplicht</label><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresImei===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresImei=this.checked;markChanged()" style="width:18px;height:18px"> IMEI verplicht</label><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresSerial===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresSerial=this.checked;markChanged()" style="width:18px;height:18px"> Serienummer verplicht</label><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.hot===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].hot=this.checked;markChanged()" style="width:18px;height:18px"> HOT service</label></div>
           <div class="field"><label>Naam service</label><input value="${esc(service.name||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].name=this.value;markChanged();renderGsmServices()"></div>
           <div class="field"><label>HOMS TECH prijs (€)</label><input value="${esc(service.price||'')}" placeholder="Leeg = bronprijs tonen" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].price=this.value;markChanged()"></div>
-          <div class="field"><label>Bronprijs</label><input value="${esc(service.sourcePrice||'')} ${esc(service.sourceCurrency||'')}" readonly></div>
+          <div class="field"><label>Bronprijs (USD)</label><input type="number" min="0" step="0.01" value="${esc(service.sourcePrice||'')}" placeholder="USD prijs" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].sourcePrice=this.value;data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].sourceCurrency='USD';markChanged()"><div class="small" style="margin-top:4px">Deze USD-prijs is de bronprijs van Easy-Unlocker. Je kunt hem handmatig aanpassen.</div></div>
           <div class="field"><label>Levertijd / uitvoering</label><input value="${esc(service.deliveryTime||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].deliveryTime=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1"><label>Korte beschrijving</label><input value="${esc(service.shortDescription||'')}" placeholder="Bijv. Xiaomi / Redmi / Poco" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].shortDescription=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1"><label>Volledige beschrijving</label><textarea oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].details=this.value;markChanged()">${esc(service.details||'')}</textarea></div>
@@ -4375,18 +4389,12 @@ function renderGsmServices(){
     editor='<div class="editor-panel editor-empty">Kies links een service of klik op + Nieuwe service.</div>';
   }
 
-  const gsmPriceTool=`<div class="gsm-price-tool" style="margin:12px 0;padding:14px 16px;border:1px solid #dbe4ef;border-radius:12px;background:#f8fafc">
-    <div style="font-weight:900;color:#0f172a;margin-bottom:4px">💶 HOMS TECH prijzen instellen</div>
-    <div style="font-size:12px;color:#64748b;margin-bottom:10px">De bronprijs in USD wordt nooit automatisch gebruikt als verkoopprijs. Hier stel je uitsluitend de HOMS TECH verkoopprijs in EUR in.</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <input id="gsmBulkPrice" type="number" min="0" step="0.01" placeholder="EUR prijs" style="max-width:130px">
-      <button type="button" class="btn btn-light" onclick="setGsmBulkPrice('${category[0]}',false)">Lege prijzen vullen</button>
-      <button type="button" class="btn btn-blue" onclick="setGsmBulkPrice('${category[0]}',true)">Alle prijzen vervangen</button>
-      <button type="button" class="btn btn-light" onclick="clearGsmBulkPrices('${category[0]}')">Prijzen wissen</button>
-    </div>
-    <div style="font-size:11px;color:#64748b;margin-top:8px">Categorie: <strong>${esc(category[1])}</strong> · valuta: EUR</div>
+  const gsmSearchTool=`<div class="gsm-price-tool" style="margin:12px 0;padding:14px 16px;border:1px solid #dbe4ef;border-radius:12px;background:#f8fafc">
+    <div style="font-weight:900;color:#0f172a;margin-bottom:4px">🔎 Zoek GSM-service</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:10px">Zoek op naam, groep of USD bronprijs binnen de gekozen categorie.</div>
+    <input id="gsmServiceSearch" type="search" value="${esc(gsmServiceSearch)}" placeholder="Bijv. Alcatel, FRP, iCloud, 15..." oninput="gsmServiceSearch=this.value;filterGsmServiceRows()" style="width:100%;max-width:620px">
   </div>`;
-  box.innerHTML=`${gsmPriceTool}<div class="gsm-admin-tabs">${tabs}</div><div class="gsm-editor-layout"><div class="editor-list"><div class="card-head" style="margin-bottom:8px"><div class="editor-list-title" style="padding:0">${esc(category[1])}</div><button class="btn btn-green" type="button" onclick="addGsmService('${category[0]}')">+ Nieuwe service</button></div>${rows}</div>${editor}</div>`;
+  box.innerHTML=`${gsmSearchTool}<div class="gsm-admin-tabs">${tabs}</div><div class="gsm-editor-layout"><div class="editor-list"><div class="card-head" style="margin-bottom:8px"><div class="editor-list-title" style="padding:0">${esc(category[1])}</div><button class="btn btn-green" type="button" onclick="addGsmService('${category[0]}')">+ Nieuwe service</button></div>${rows}</div>${editor}</div>`;
 }
 
 function setGsmBulkPrice(category,replaceAll){
