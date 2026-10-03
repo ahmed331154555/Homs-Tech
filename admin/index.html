@@ -4375,7 +4375,45 @@ function renderGsmServices(){
     editor='<div class="editor-panel editor-empty">Kies links een service of klik op + Nieuwe service.</div>';
   }
 
-  box.innerHTML=`<div class="gsm-admin-tabs">${tabs}</div><div class="gsm-editor-layout"><div class="editor-list"><div class="card-head" style="margin-bottom:8px"><div class="editor-list-title" style="padding:0">${esc(category[1])}</div><button class="btn btn-green" type="button" onclick="addGsmService('${category[0]}')">+ Nieuwe service</button></div>${rows}</div>${editor}</div>`;
+  const gsmPriceTool=`<div class="gsm-price-tool" style="margin:12px 0;padding:14px 16px;border:1px solid #dbe4ef;border-radius:12px;background:#f8fafc">
+    <div style="font-weight:900;color:#0f172a;margin-bottom:4px">💶 HOMS TECH prijzen instellen</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:10px">De bronprijs in USD wordt nooit automatisch gebruikt als verkoopprijs. Hier stel je uitsluitend de HOMS TECH verkoopprijs in EUR in.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <input id="gsmBulkPrice" type="number" min="0" step="0.01" placeholder="EUR prijs" style="max-width:130px">
+      <button type="button" class="btn btn-light" onclick="setGsmBulkPrice('${category[0]}',false)">Lege prijzen vullen</button>
+      <button type="button" class="btn btn-blue" onclick="setGsmBulkPrice('${category[0]}',true)">Alle prijzen vervangen</button>
+      <button type="button" class="btn btn-light" onclick="clearGsmBulkPrices('${category[0]}')">Prijzen wissen</button>
+    </div>
+    <div style="font-size:11px;color:#64748b;margin-top:8px">Categorie: <strong>${esc(category[1])}</strong> · valuta: EUR</div>
+  </div>`;
+  box.innerHTML=`${gsmPriceTool}<div class="gsm-admin-tabs">${tabs}</div><div class="gsm-editor-layout"><div class="editor-list"><div class="card-head" style="margin-bottom:8px"><div class="editor-list-title" style="padding:0">${esc(category[1])}</div><button class="btn btn-green" type="button" onclick="addGsmService('${category[0]}')">+ Nieuwe service</button></div>${rows}</div>${editor}</div>`;
+}
+
+function setGsmBulkPrice(category,replaceAll){
+  const input=document.getElementById('gsmBulkPrice');
+  const value=String(input?.value||'').trim();
+  if(value==='' || !Number.isFinite(Number(value)) || Number(value)<0){alert('Vul eerst een geldige EUR-prijs in.');return}
+  const list=data.gsmServices?.[category];
+  if(!Array.isArray(list)) return;
+  let changed=0;
+  list.forEach(s=>{
+    if(replaceAll || String(s.price||'').trim()===''){
+      s.price=Number(value).toFixed(2).replace(/\.00$/,'');
+      s.priceCurrency='EUR';
+      changed++;
+    }
+  });
+  markChanged();
+  renderGsmServices();
+  alert(changed+' HOMS TECH prijzen ingesteld op € '+Number(value).toFixed(2));
+}
+function clearGsmBulkPrices(category){
+  const list=data.gsmServices?.[category];
+  if(!Array.isArray(list)) return;
+  if(!confirm('Alle HOMS TECH prijzen in deze categorie wissen? De bronprijzen blijven behouden.')) return;
+  list.forEach(s=>{s.price='';s.priceCurrency='EUR'});
+  markChanged();
+  renderGsmServices();
 }
 
 function openGsmServiceEditor(category,i){
