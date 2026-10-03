@@ -1353,17 +1353,6 @@ textarea{
       </div>
     </div>
 
-    <div class="card" style="margin-bottom:16px;border:1px solid #dbeafe;background:linear-gradient(135deg,#f8fbff,#fff)">
-      <div class="card-head" style="align-items:flex-start">
-        <div>
-          <div class="card-title" style="font-size:18px">↻ Easy-Unlocker import / sync</div>
-          <div class="small">Haalt de publieke catalogus van IMEI, Remote en Server op en zet de services in HOMS TECH. HOMS-prijzen blijven apart van de bronprijs.</div>
-          <div id="gsmImportStatus" class="small" style="margin-top:7px">Nog geen import uitgevoerd.</div>
-        </div>
-        <button id="gsmImportBtn" class="btn btn-green" data-permission="gsm.import" type="button" onclick="importEasyGsm()">↻ Importeren & synchroniseren</button><button class="btn btn-light" data-permission="gsm.import" type="button" onclick="checkEasyGsm()">🔎 Controleren vóór import</button>
-      </div>
-    </div>
-
     <div id="gsmServicesList"></div>
   </section>
 
@@ -1742,7 +1731,7 @@ const ADMIN_PERMISSION_LABELS = {
   "orders.delete":"GSM Orders verwijderen",
   "buyback.view":"Inkooptelefoons bekijken","buyback.update":"Inkooptelefoons wijzigen",
   "buyback_orders.view":"Verkoopaanvragen bekijken","buyback_orders.update":"Verkoopaanvraag-status wijzigen","buyback_orders.delete":"Verkoopaanvragen verwijderen",
-  "gsm.view":"GSM Services bekijken","gsm.import":"GSM Services importeren","site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
+  "gsm.view":"GSM Services bekijken","site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
 };
 
 function hasPermission(p){return currentUser.role==="superadmin"||currentUser.permissions.includes("*")||currentUser.permissions.includes(p);}
