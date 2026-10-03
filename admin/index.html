@@ -5006,6 +5006,32 @@ async function deleteAdmin(id){
 
 /* ---------------- ORDER DETAILS / DELETE ---------------- */
 
+function formatOrderValue(key, value){
+  if(value===null || value===undefined) return "-";
+  if(key === "items" && Array.isArray(value)){
+    if(!value.length) return "Geen producten";
+    return value.map((item, index)=>{
+      if(item && typeof item === "object") {
+        const name=item.name || item.productName || item.title || "Product";
+        const qty=Number(item.qty || item.quantity || 1);
+        const price=Number(item.unitPrice ?? item.price ?? 0);
+        const options=item.options && typeof item.options === "object"
+          ? Object.entries(item.options).filter(([,v])=>v!==null&&v!==undefined&&String(v)!=="").map(([k,v])=>`${k}: ${v}`).join(" · ")
+          : (item.options ? String(item.options) : "");
+        const lineTotal=price*qty;
+        const parts=[`<strong>${esc(name)}</strong>`, `Aantal: ${esc(qty)}`];
+        if(options) parts.push(esc(options));
+        if(price) parts.push(`€ ${esc(price.toFixed(2).replace(".",","))} p/st.`);
+        if(lineTotal) parts.push(`<strong>€ ${esc(lineTotal.toFixed(2).replace(".",","))}</strong>`);
+        return `<div style="padding:12px;border:1px solid #e5eaf1;border-radius:12px;background:#f8fafc;margin-bottom:8px">${parts.join("<br>")}</div>`;
+      }
+      return `<div style="padding:8px 0">${esc(String(item))}</div>`;
+    }).join("");
+  }
+  if(typeof value === "object") return esc(JSON.stringify(value, null, 2));
+  return esc(String(value));
+}
+
 function showOrderDetails(title, data){
   const existing=document.getElementById("orderDetailsModal");
   if(existing) existing.remove();
@@ -5016,7 +5042,7 @@ function showOrderDetails(title, data){
   const rows=Object.entries(data||{}).map(([k,v])=>`
     <div style="padding:10px 0;border-bottom:1px solid #e5eaf1">
       <strong>${esc(k)}</strong><br>
-      <span style="white-space:pre-wrap">${esc(v===null||v===undefined?"":String(v))}</span>
+      <div style="margin-top:5px;white-space:pre-wrap">${formatOrderValue(k,v)}</div>
     </div>`).join("");
   modal.innerHTML=`
     <div style="background:#fff;border-radius:16px;max-width:760px;width:100%;max-height:90vh;overflow:auto;padding:22px">
