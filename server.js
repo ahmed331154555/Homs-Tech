@@ -170,6 +170,10 @@ async function initDatabase() {
   await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS service_source_id TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS service_source_url TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS price_currency TEXT DEFAULT 'EUR'`);
+  await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS service_instructions TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS required_fields TEXT DEFAULT '[]'`);
+  await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS source_price TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS source_currency TEXT DEFAULT 'USD'`);
   await pool.query(`
     CREATE UNIQUE INDEX IF NOT EXISTS service_orders_repair_appointment_unique
     ON service_orders (appointment_date, appointment_time)
@@ -732,6 +736,7 @@ app.post("/api/orders", async (req, res) => {
       phone = "",
       username = "",
       imei = "",
+      serial = "",
       notes = "",
       serviceSourceId = "",
       priceCurrency = "EUR",
@@ -749,6 +754,7 @@ app.post("/api/orders", async (req, res) => {
       phone: String(phone || "").trim(),
       username: String(username || "").trim(),
       imei: String(imei || "").trim(),
+      serial: String(serial || "").trim(),
       notes: String(notes || "").trim(),
       serviceSourceId: String(serviceSourceId || "").trim(),
       priceCurrency: String(priceCurrency || "EUR").trim().toUpperCase(),
@@ -799,23 +805,34 @@ app.post("/api/orders", async (req, res) => {
       });
     }
 
+    let matchedService = null;
     if (clean.serviceSourceId) {
       try {
         const site = await pool.query("SELECT data FROM site_settings WHERE id = 1");
         const gsm = site.rows[0]?.data?.gsmServices || {};
-        let matched = null;
         for (const list of Object.values(gsm)) {
           if (!Array.isArray(list)) continue;
           const found = list.find(x => String(x?.sourceId || "") === clean.serviceSourceId);
-          if (found) { matched = found; break; }
+          if (found) { matchedService = found; break; }
         }
-        if (matched) {
-          if (String(matched.price || "").trim()) { clean.price=String(matched.price).trim(); clean.priceCurrency=String(matched.priceCurrency||"EUR").toUpperCase(); }
-          else if (String(matched.sourcePrice || "").trim()) { clean.price=String(matched.sourcePrice).trim(); clean.priceCurrency=String(matched.sourceCurrency||"USD").toUpperCase(); }
-          else clean.price="";
+        if (matchedService) {
+          // HOMS TECH customer price is always EUR. Never fall back to the USD source price.
+          clean.price = String(matchedService.price || "").trim();
+          clean.priceCurrency = "EUR";
+          const required = new Set(Array.isArray(matchedService.requiredFields) ? matchedService.requiredFields : []);
+          if (matchedService.requiresUsername === true) required.add("username");
+          if (matchedService.requiresImei === true) required.add("imei");
+          if (matchedService.requiresSerial === true) required.add("serial");
+          if (required.has("username") && !clean.username) return res.status(400).json({error:"Deze service vereist een gebruikersnaam."});
+          if (required.has("imei") && !clean.imei) return res.status(400).json({error:"Deze service vereist een IMEI."});
+          if (required.has("serial") && !String(req.body?.serial || "").trim()) return res.status(400).json({error:"Deze service vereist een serienummer."});
         }
-      } catch(e) { console.error("GSM catalog price lookup error:",e); }
+      } catch(e) { console.error("GSM catalog lookup error:",e); }
     }
+    const serviceInstructions = String(matchedService?.instructions || "").trim();
+    const requiredFieldsSnapshot = JSON.stringify(Array.isArray(matchedService?.requiredFields) ? matchedService.requiredFields : []);
+    const sourcePriceSnapshot = String(matchedService?.sourcePrice || "").trim();
+    const sourceCurrencySnapshot = String(matchedService?.sourceCurrency || "USD").trim().toUpperCase();
 
     let customerId = null;
     try {
@@ -827,26 +844,15 @@ app.post("/api/orders", async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO service_orders
-       (customer_id, service_category, service_name, service_group, price, name, email, phone, username, imei, notes, service_source_id, service_source_url, price_currency, appointment_date, appointment_time)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+       (customer_id, service_category, service_name, service_group, price, name, email, phone, username, imei, notes, service_source_id, service_source_url, price_currency, appointment_date, appointment_time, service_instructions, required_fields, source_price, source_currency)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
        RETURNING id, status, created_at, appointment_date, appointment_time`,
       [
-        customerId,
-        clean.serviceCategory,
-        clean.serviceName,
-        clean.serviceGroup,
-        clean.price,
-        clean.name,
-        clean.email,
-        clean.phone,
-        clean.username,
-        clean.imei,
-        clean.notes,
-        clean.serviceSourceId,
-        "",
-        clean.priceCurrency,
-        isHomeRepair ? clean.appointmentDate : null,
-        isHomeRepair ? clean.appointmentTime : null
+        customerId, clean.serviceCategory, clean.serviceName, clean.serviceGroup, clean.price,
+        clean.name, clean.email, clean.phone, clean.username, clean.imei, clean.notes,
+        clean.serviceSourceId, matchedService?.sourceUrl || "", clean.priceCurrency,
+        isHomeRepair ? clean.appointmentDate : null, isHomeRepair ? clean.appointmentTime : null,
+        serviceInstructions, requiredFieldsSnapshot, sourcePriceSnapshot, sourceCurrencySnapshot
       ]
     );
 
@@ -1217,7 +1223,7 @@ app.delete("/api/admin/webshop-orders/:id", requirePermission("webshop_orders.de
 app.get("/api/customer/orders", requireCustomerAuth, async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, service_category, service_name, service_group, price, name, email, phone, username, imei, notes, status, created_at
+      `SELECT id, service_category, service_name, service_group, price, price_currency, source_price, source_currency, service_instructions, required_fields, service_source_id, service_source_url, name, email, phone, username, imei, notes, status, created_at
        FROM service_orders
        WHERE customer_id = $1
        ORDER BY created_at DESC`,
@@ -1234,7 +1240,7 @@ app.get("/api/customer/orders", requireCustomerAuth, async (req, res) => {
 app.get("/api/admin/orders", requirePermission("orders.view"), async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, customer_id, service_category, service_name, service_group, price, name, email, phone, username, imei, notes, status, created_at
+      `SELECT id, customer_id, service_category, service_name, service_group, price, price_currency, source_price, source_currency, service_instructions, required_fields, service_source_id, service_source_url, name, email, phone, username, imei, notes, status, created_at
        FROM service_orders
        ORDER BY created_at DESC`
     );
