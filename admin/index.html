@@ -1360,7 +1360,7 @@ textarea{
           <div class="small">Haalt de publieke catalogus van IMEI, Remote en Server op en zet de services in HOMS TECH. HOMS-prijzen blijven apart van de bronprijs.</div>
           <div id="gsmImportStatus" class="small" style="margin-top:7px">Nog geen import uitgevoerd.</div>
         </div>
-        <button id="gsmImportBtn" class="btn btn-green" data-permission="gsm.import" type="button" onclick="importEasyGsm()">↻ Importeren & synchroniseren</button>
+        <button id="gsmImportBtn" class="btn btn-green" data-permission="gsm.import" type="button" onclick="importEasyGsm()">↻ Importeren & synchroniseren</button><button class="btn btn-light" data-permission="gsm.import" type="button" onclick="checkEasyGsm()">🔎 Controleren vóór import</button>
       </div>
     </div>
 
@@ -1859,6 +1859,9 @@ function normalizeGsmService(x){
     requiresUsername:x.requiresUsername === true,
     requiresImei:x.requiresImei === true,
     requiresSerial:x.requiresSerial === true,
+    requiredFields:Array.isArray(x.requiredFields)?x.requiredFields:[],
+    instructions:x.instructions || '',
+    usernameFromEmail:x.usernameFromEmail === true,
     source:x.source || "",
     sourceId:x.sourceId || "",
     sourceUrl:x.sourceUrl || "",
@@ -4272,6 +4275,8 @@ function deleteUsedPhone(i){
 }
 
 
+async function checkEasyGsm(){try{setStatus('Easy-Unlocker wordt gecontroleerd...','info');const r=await fetch('/api/admin/gsm/check-easy',{credentials:'same-origin'});const q=await r.json().catch(()=>({}));if(!r.ok)throw new Error(q.error||'Controle mislukt');const pages=(q.pages||[]).map(p=>`${p.key}: ${p.count}`).join(' · ');alert(`Easy-Unlocker CHECK\n\nBron: ${q.totalSource}\nNieuw: ${q.newCount}\nBestaand/te updaten: ${q.updatedCount}\nCategorie wijzigen: ${q.movedCount}\nZonder bronprijs: ${q.sourceMissingPrice}\nZonder instructies op publieke bron: ${q.sourceMissingInstruction}\nMet herkende verplichte velden: ${q.sourceHasRequiredFields}\n\n${pages}\n\nDeze controle verandert niets.`);setStatus('✓ Controle klaar — niets gewijzigd','success')}catch(e){setStatus('✕ '+e.message,'error')}}
+
 async function importEasyGsm(){
   const btn=document.getElementById("gsmImportBtn");
   const status=document.getElementById("gsmImportStatus");
@@ -4347,6 +4352,9 @@ function renderGsmServices(){
           <div class="field"><label>Levertijd / uitvoering</label><input value="${esc(service.deliveryTime||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].deliveryTime=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1"><label>Korte beschrijving</label><input value="${esc(service.shortDescription||'')}" placeholder="Bijv. Xiaomi / Redmi / Poco" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].shortDescription=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1"><label>Volledige beschrijving</label><textarea oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].details=this.value;markChanged()">${esc(service.details||'')}</textarea></div>
+          <div class="field" style="grid-column:1/-1"><label>Orderinstructies</label><textarea placeholder="Instructies voor de klant voor deze service..." oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].instructions=this.value;markChanged()">${esc(service.instructions||'')}</textarea></div>
+          <div class="field"><label>Username automatisch = e-mail</label><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" ${service.usernameFromEmail===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].usernameFromEmail=this.checked;markChanged()"> E-mail als username gebruiken</label></div>
+          <div class="field"><label>Verplichte velden</label><div style="display:flex;gap:10px;flex-wrap:wrap;font-size:12px">${['email','username','imei','serial'].map(f=>`<label style="display:flex;align-items:center;gap:5px"><input type="checkbox" ${service.requiredFields.includes(f)?'checked':''} onchange="toggleGsmRequiredField('${category[0]}',${selectedGsmServiceIndex},'${f}',this.checked)">${f}</label>`).join('')}</div></div>
           <div class="field"><label>Service icon</label><input value="${esc(service.icon||'🔧')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].icon=this.value;markChanged();renderGsmServices()"></div>
         </div>
         <div style="margin-top:10px;padding:11px 13px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;font-size:11px;color:#64748b"><strong style="color:#334155">Bron:</strong> ${esc(service.source||'Handmatig')} ${service.sourceId?`• ID: ${esc(service.sourceId)}`:''}${service.sourceUrl?`<br><a href="${esc(service.sourceUrl)}" target="_blank" rel="noopener" style="color:#2563eb">Open bronpagina</a>`:''}${service.lastSynced?`<br>Laatste sync: ${esc(service.lastSynced)}`:''}</div>
@@ -4372,10 +4380,12 @@ async function saveGsmServiceEditor(category,i){
   await save();
 }
 
+function toggleGsmRequiredField(category,index,field,checked){const s=data.gsmServices?.[category]?.[index];if(!s)return;if(!Array.isArray(s.requiredFields))s.requiredFields=[];s.requiredFields=s.requiredFields.filter(v=>v!==field);if(checked)s.requiredFields.push(field);if(field==='username')s.requiresUsername=checked;if(field==='imei')s.requiresImei=checked;if(field==='serial')s.requiresSerial=checked;markChanged();renderGsmServices()}
+
 function addGsmService(key){
   if(!data.gsmServices[key]) data.gsmServices[key]=[];
   const categoryLabel=(gsmServiceCategories.find(x=>x[0]===key)||[key,key])[1].replace(/^[^ ]+ /,'');
-  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",group:categoryLabel,shortDescription:"",details:"",price:"",sourcePrice:"",sourceCurrency:"USD",priceCurrency:"EUR",deliveryTime:"",active:true,hot:false,requiresUsername:false,requiresImei:false,requiresSerial:false,source:"",sourceId:"",sourceUrl:""});
+  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",group:categoryLabel,shortDescription:"",details:"",price:"",sourcePrice:"",sourceCurrency:"USD",priceCurrency:"EUR",deliveryTime:"",active:true,hot:false,requiresUsername:false,requiresImei:false,requiresSerial:false,requiredFields:[],instructions:'',usernameFromEmail:false,source:"",sourceId:"",sourceUrl:""});
   gsmActiveCategory=key;
   selectedGsmServiceIndex=data.gsmServices[key].length-1;
   renderGsmServices();
