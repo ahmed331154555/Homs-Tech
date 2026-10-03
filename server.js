@@ -167,6 +167,9 @@ async function initDatabase() {
   await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS username TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS appointment_date DATE`);
   await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS appointment_time TEXT`);
+  await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS service_source_id TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS service_source_url TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS price_currency TEXT DEFAULT 'EUR'`);
   await pool.query(`
     CREATE UNIQUE INDEX IF NOT EXISTS service_orders_repair_appointment_unique
     ON service_orders (appointment_date, appointment_time)
@@ -282,6 +285,18 @@ app.get("/api/site", async (req, res) => {
   }
 });
 
+// ---------------- EASY-UNLOCKER PUBLIC GSM CATALOG IMPORT ----------------
+function easyDecodeHtml(value){return String(value||"").replace(/<script[\s\S]*?<\/script>/gi," ").replace(/<style[\s\S]*?<\/style>/gi," ").replace(/<br\s*\/?>/gi," ").replace(/&nbsp;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/&lt;/gi,"<").replace(/&gt;/gi,">").replace(/&#(\d+);/g,(_,n)=>{try{return String.fromCodePoint(Number(n))}catch{return ""}}).replace(/&#x([0-9a-f]+);/gi,(_,n)=>{try{return String.fromCodePoint(parseInt(n,16))}catch{return ""}})}
+function easyText(value){return easyDecodeHtml(String(value||"").replace(/<[^>]+>/g," ")).replace(/\s+/g," ").trim()}
+function easySlug(value){return String(value||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,180)}
+function easyInferCategory(baseCategory,group,name){const hay=`${group||""} ${name||""}`.toLowerCase();if(/\bfrp\b|factory reset protection|google frp|samsung frp/.test(hay))return"frp";if(/firmware|flash|flasher|schematic|software/.test(hay))return"firmware";return baseCategory}
+function easyParseMoney(value){const m=String(value||"").replace(/,/g,".").match(/(?:\$|€|£|usd|eur|gbp)?\s*([0-9]+(?:\.[0-9]+)?)/i);return m?Number(m[1]):null}
+function easyExtractDelivery(cells){const text=`${cells.slice(1,-1).join(" ")} ${cells[0]||""}`;const m=text.match(/(?:instant|[0-9]+\s*(?:-\s*[0-9]+)?\s*(?:minutes?|miniutes?|hours?|days?|weeks?|months?|years?))/i);return m?m[0].trim():""}
+function easyParseCatalogPage(html,pageUrl,baseCategory){const out=[];const tables=String(html||"").match(/<table\b[^>]*>[\s\S]*?<\/table>/gi)||[];for(const table of tables){const start=String(html).indexOf(table);const before=String(html).slice(Math.max(0,start-3500),start);const headings=[...before.matchAll(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/gi)];const group=headings.length?easyText(headings[headings.length-1][1]):"General";const rows=table.match(/<tr\b[^>]*>[\s\S]*?<\/tr>/gi)||[];for(const row of rows){const cells=[...row.matchAll(/<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/gi)].map(m=>easyText(m[1])).filter(Boolean);if(cells.length<2||/^(price|service)$/i.test(cells[0]))continue;const price=easyParseMoney(cells[cells.length-1]);if(!cells[0]||price===null)continue;const name=cells[0],category=easyInferCategory(baseCategory,group,name);out.push({source:"easy-unlocker",sourceId:`easy-${baseCategory}-${easySlug(group)}-${easySlug(name)}-${price}`,sourceUrl:pageUrl,sourceGroup:group,sourceName:name,name,group,shortDescription:"",details:name,icon:category==="imei"?"📱":category==="remote"?"🖥️":category==="server"?"🛠️":category==="frp"?"🔐":"💻",price:"",sourcePrice:String(price),sourceCurrency:"USD",priceCurrency:"EUR",deliveryTime:easyExtractDelivery(cells),active:true,hot:false,requiresUsername:false,requiresImei:false,requiresSerial:false,category})}}const unique=new Map();out.forEach(x=>unique.set(x.sourceId,x));return[...unique.values()]}
+const EASY_PUBLIC_GSM_PAGES=[{key:"imei",url:"https://easy-unlocker.com/resellerpricing/imei"},{key:"remote",url:"https://easy-unlocker.com/resellerpricing/remote"},{key:"server",url:"https://easy-unlocker.com/resellerpricing/server"}];
+async function fetchEasyPublicCatalog(){const results=await Promise.all(EASY_PUBLIC_GSM_PAGES.map(async page=>{const response=await fetch(page.url,{headers:{"User-Agent":"HOMS-TECH-GSM-Importer/1.0"}});if(!response.ok)throw new Error(`Easy-Unlocker ${page.key}: HTTP ${response.status}`);const html=await response.text();return{...page,services:easyParseCatalogPage(html,page.url,page.key)}}));const all=results.flatMap(x=>x.services),unique=new Map();all.forEach(x=>unique.set(x.sourceId,x));return{pages:results.map(x=>({key:x.key,url:x.url,count:x.services.length})),services:[...unique.values()]}}
+app.post("/api/admin/gsm/import-easy",requirePermission("gsm.import"),async(req,res)=>{try{const catalog=await fetchEasyPublicCatalog();const current=await pool.query("SELECT data FROM site_settings WHERE id=1");if(!current.rows.length)return res.status(404).json({error:"Websitegegevens ontbreken."});const data=current.rows[0].data||{};if(!data.gsmServices||typeof data.gsmServices!=="object")data.gsmServices={};["imei","remote","server","frp","firmware"].forEach(k=>{if(!Array.isArray(data.gsmServices[k]))data.gsmServices[k]=[]});const existing=new Map();Object.entries(data.gsmServices).forEach(([category,list])=>list.forEach((item,index)=>{if(item?.source==="easy-unlocker"&&item?.sourceId)existing.set(item.sourceId,{category,index})}));let added=0,updated=0;for(const incoming of catalog.services){const target=incoming.category;if(!Array.isArray(data.gsmServices[target]))data.gsmServices[target]=[];const hit=existing.get(incoming.sourceId);if(hit&&hit.category===target&&data.gsmServices[target][hit.index]){const old=data.gsmServices[target][hit.index];data.gsmServices[target][hit.index]={...old,...incoming,price:old.price||"",active:old.active!==false,hot:old.hot===true,requiresUsername:old.requiresUsername===true,requiresImei:old.requiresImei===true,requiresSerial:old.requiresSerial===true,lastSynced:new Date().toISOString()};updated++}else if(!hit){data.gsmServices[target].push({...incoming,lastSynced:new Date().toISOString()});added++}}data.gsmImport={source:"easy-unlocker",lastImportedAt:new Date().toISOString(),pages:catalog.pages,count:catalog.services.length};await pool.query("UPDATE site_settings SET data=$1 WHERE id=1",[JSON.stringify(data)]);res.json({success:true,added,updated,total:catalog.services.length,pages:catalog.pages,data})}catch(e){console.error("Easy GSM import error:",e);res.status(502).json({error:`Easy-Unlocker import mislukt: ${e.message}`})}});
+
 // Admin login + permissions
 const ADMIN_PERMISSION_NAMES = {
   "general.view":"Algemeen bekijken","services.view":"Diensten bekijken",
@@ -289,7 +304,7 @@ const ADMIN_PERMISSION_NAMES = {
   "used.view":"Gebruikte telefoons bekijken","why.view":"Waarom HOMS TECH bekijken",
   "customers.view":"Klanten bekijken","orders.view":"GSM Orders bekijken",
   "orders.update":"GSM Order-status wijzigen","webshop_orders.view":"Webshop bestellingen bekijken",
-  "webshop_orders.update":"Webshop order-status wijzigen","gsm.view":"GSM Services bekijken",
+  "webshop_orders.update":"Webshop order-status wijzigen","gsm.view":"GSM Services bekijken","gsm.import":"GSM Services importeren",
   "site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
 };
 
@@ -718,6 +733,8 @@ app.post("/api/orders", async (req, res) => {
       username = "",
       imei = "",
       notes = "",
+      serviceSourceId = "",
+      priceCurrency = "EUR",
       appointmentDate = "",
       appointmentTime = ""
     } = req.body || {};
@@ -733,6 +750,8 @@ app.post("/api/orders", async (req, res) => {
       username: String(username || "").trim(),
       imei: String(imei || "").trim(),
       notes: String(notes || "").trim(),
+      serviceSourceId: String(serviceSourceId || "").trim(),
+      priceCurrency: String(priceCurrency || "EUR").trim().toUpperCase(),
       appointmentDate: String(appointmentDate || "").trim(),
       appointmentTime: String(appointmentTime || "").trim()
     };
@@ -780,6 +799,24 @@ app.post("/api/orders", async (req, res) => {
       });
     }
 
+    if (clean.serviceSourceId) {
+      try {
+        const site = await pool.query("SELECT data FROM site_settings WHERE id = 1");
+        const gsm = site.rows[0]?.data?.gsmServices || {};
+        let matched = null;
+        for (const list of Object.values(gsm)) {
+          if (!Array.isArray(list)) continue;
+          const found = list.find(x => String(x?.sourceId || "") === clean.serviceSourceId);
+          if (found) { matched = found; break; }
+        }
+        if (matched) {
+          if (String(matched.price || "").trim()) { clean.price=String(matched.price).trim(); clean.priceCurrency=String(matched.priceCurrency||"EUR").toUpperCase(); }
+          else if (String(matched.sourcePrice || "").trim()) { clean.price=String(matched.sourcePrice).trim(); clean.priceCurrency=String(matched.sourceCurrency||"USD").toUpperCase(); }
+          else clean.price="";
+        }
+      } catch(e) { console.error("GSM catalog price lookup error:",e); }
+    }
+
     let customerId = null;
     try {
       if (req.cookies.customerToken) {
@@ -790,8 +827,8 @@ app.post("/api/orders", async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO service_orders
-       (customer_id, service_category, service_name, service_group, price, name, email, phone, username, imei, notes, appointment_date, appointment_time)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+       (customer_id, service_category, service_name, service_group, price, name, email, phone, username, imei, notes, service_source_id, service_source_url, price_currency, appointment_date, appointment_time)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
        RETURNING id, status, created_at, appointment_date, appointment_time`,
       [
         customerId,
@@ -805,6 +842,9 @@ app.post("/api/orders", async (req, res) => {
         clean.username,
         clean.imei,
         clean.notes,
+        clean.serviceSourceId,
+        "",
+        clean.priceCurrency,
         isHomeRepair ? clean.appointmentDate : null,
         isHomeRepair ? clean.appointmentTime : null
       ]
