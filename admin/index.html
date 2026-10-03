@@ -1862,6 +1862,7 @@ function normalizeGsmService(x){
     requiredFields:Array.isArray(x.requiredFields)?x.requiredFields:[],
     formFields:Array.isArray(x.formFields)?x.formFields:[],
     instructions:x.instructions || '',
+    serviceMeta:(x.serviceMeta&&typeof x.serviceMeta==='object')?x.serviceMeta:{},
     usernameFromEmail:x.usernameFromEmail === true,
     source:x.source || "",
     sourceId:x.sourceId || "",
@@ -4354,6 +4355,14 @@ function renderGsmServices(){
           <div class="field" style="grid-column:1/-1"><label>Korte beschrijving</label><input value="${esc(service.shortDescription||'')}" placeholder="Bijv. Xiaomi / Redmi / Poco" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].shortDescription=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1"><label>Volledige beschrijving</label><textarea oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].details=this.value;markChanged()">${esc(service.details||'')}</textarea></div>
           <div class="field" style="grid-column:1/-1"><label>Orderinstructies</label><textarea placeholder="Instructies voor de klant voor deze service..." oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].instructions=this.value;markChanged()">${esc(service.instructions||'')}</textarea></div>
+          <div class="field" style="grid-column:1/-1"><label>Service details voor klant</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px">
+            <input placeholder="Delivery time" value="${esc(service.serviceMeta?.deliveryTime||service.deliveryTime||'')}" oninput="setGsmMeta('${category[0]}',${selectedGsmServiceIndex},'deliveryTime',this.value)">
+            <input placeholder="Availability" value="${esc(service.serviceMeta?.availability||'')}" oninput="setGsmMeta('${category[0]}',${selectedGsmServiceIndex},'availability',this.value)">
+            <input placeholder="Refund" value="${esc(service.serviceMeta?.refund||'')}" oninput="setGsmMeta('${category[0]}',${selectedGsmServiceIndex},'refund',this.value)">
+            <input placeholder="Warning" value="${esc(service.serviceMeta?.warning||'')}" oninput="setGsmMeta('${category[0]}',${selectedGsmServiceIndex},'warning',this.value)">
+            <textarea style="grid-column:1/-1" placeholder="Supported Models" oninput="setGsmMeta('${category[0]}',${selectedGsmServiceIndex},'supportedModels',this.value)">${esc(service.serviceMeta?.supportedModels||'')}</textarea>
+            <textarea style="grid-column:1/-1" placeholder="Extra note" oninput="setGsmMeta('${category[0]}',${selectedGsmServiceIndex},'note',this.value)">${esc(service.serviceMeta?.note||'')}</textarea>
+          </div></div>
           <div class="field"><label>Username automatisch = e-mail</label><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" ${service.usernameFromEmail===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].usernameFromEmail=this.checked;markChanged()"> E-mail als username gebruiken</label></div>
           <div class="field"><label>Verplichte velden</label><div style="display:flex;gap:10px;flex-wrap:wrap;font-size:12px">${['email','username','imei','serial'].map(f=>`<label style="display:flex;align-items:center;gap:5px"><input type="checkbox" ${service.requiredFields.includes(f)?'checked':''} onchange="toggleGsmRequiredField('${category[0]}',${selectedGsmServiceIndex},'${f}',this.checked)">${f}</label>`).join('')}</div></div>
           <div class="field" style="grid-column:1/-1"><label>Velden van de order</label><div style="padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px">${renderGsmFormFieldsEditor(category[0],selectedGsmServiceIndex,service)}</div></div>
@@ -4382,6 +4391,7 @@ async function saveGsmServiceEditor(category,i){
   await save();
 }
 
+function setGsmMeta(category,index,key,value){const s=data.gsmServices?.[category]?.[index];if(!s)return;if(!s.serviceMeta||typeof s.serviceMeta!=='object')s.serviceMeta={};s.serviceMeta[key]=value;markChanged()}
 function renderGsmFormFieldsEditor(category,index,service){
   const fields=Array.isArray(service.formFields)?service.formFields:[];
   const row=(f,i)=>`<div style="display:grid;grid-template-columns:1.1fr 1.5fr 100px 75px 120px 32px;gap:7px;align-items:center;margin-bottom:7px"><input placeholder="key" value="${esc(f.key||'')}" oninput="updateGsmFormField('${category}',${index},${i},'key',this.value)"><input placeholder="Label" value="${esc(f.label||'')}" oninput="updateGsmFormField('${category}',${index},${i},'label',this.value)"><select onchange="updateGsmFormField('${category}',${index},${i},'type',this.value)"><option value="text" ${f.type==='text'?'selected':''}>text</option><option value="email" ${f.type==='email'?'selected':''}>email</option><option value="textarea" ${f.type==='textarea'?'selected':''}>textarea</option></select><label style="font-size:11px"><input type="checkbox" ${f.required?'checked':''} onchange="updateGsmFormField('${category}',${index},${i},'required',this.checked)"> verplicht</label><label style="font-size:11px"><input type="checkbox" ${f.autoFromEmail?'checked':''} onchange="updateGsmFormField('${category}',${index},${i},'autoFromEmail',this.checked)"> auto e-mail</label><button type="button" class="btn btn-light" onclick="removeGsmFormField('${category}',${index},${i})">×</button></div>`;
@@ -4396,7 +4406,7 @@ function toggleGsmRequiredField(category,index,field,checked){const s=data.gsmSe
 function addGsmService(key){
   if(!data.gsmServices[key]) data.gsmServices[key]=[];
   const categoryLabel=(gsmServiceCategories.find(x=>x[0]===key)||[key,key])[1].replace(/^[^ ]+ /,'');
-  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",group:categoryLabel,shortDescription:"",details:"",price:"",sourcePrice:"",sourceCurrency:"USD",priceCurrency:"EUR",deliveryTime:"",active:true,hot:false,requiresUsername:false,requiresImei:false,requiresSerial:false,requiredFields:[],formFields:[],instructions:'',usernameFromEmail:false,source:"",sourceId:"",sourceUrl:""});
+  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",group:categoryLabel,shortDescription:"",details:"",price:"",sourcePrice:"",sourceCurrency:"USD",priceCurrency:"EUR",deliveryTime:"",active:true,hot:false,requiresUsername:false,requiresImei:false,requiresSerial:false,requiredFields:[],formFields:[],instructions:'',serviceMeta:{deliveryTime:"",availability:"",refund:"",warning:"",supportedModels:"",note:""},usernameFromEmail:false,source:"",sourceId:"",sourceUrl:""});
   gsmActiveCategory=key;
   selectedGsmServiceIndex=data.gsmServices[key].length-1;
   renderGsmServices();
