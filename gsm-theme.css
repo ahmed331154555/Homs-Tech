@@ -122,3 +122,43 @@
  .gsm-theme .gsmnav .nav a{padding:13px 15px!important;font-size:12px!important}
 }
 @media(prefers-reduced-motion:reduce){.gsm-theme *,.gsm-theme *:before,.gsm-theme *:after{animation:none!important;transition:none!important}}
+
+/* V8.1 — HOMS TECH premium unified GSM shell */
+.gsm-theme .ht-topbar{background:var(--ht-navy)!important;color:#eaf5ff!important;border-bottom:1px solid rgba(255,255,255,.08)!important}
+.gsm-theme .ht-marquee{color:#dcecff!important}
+.gsm-theme .ht-marquee-item b{color:#55c8e3!important}
+.gsm-theme .ht-header{background:rgba(255,255,255,.97)!important;border-bottom:1px solid var(--ht-line)!important;box-shadow:0 8px 28px rgba(7,29,45,.07)!important;position:relative!important;z-index:100!important}
+.gsm-theme .ht-header-main{max-width:1240px!important;margin:0 auto!important}
+.gsm-theme .ht-brand img{filter:none!important;max-height:46px!important;width:auto!important}
+.gsm-theme .ht-search{background:#fff!important;border:1px solid #d7e4ee!important;box-shadow:0 5px 18px rgba(7,29,45,.05)!important}
+.gsm-theme .ht-search button{background:linear-gradient(135deg,var(--ht-blue),var(--ht-blue2))!important;color:#fff!important}
+.gsm-theme .ht-actions a{color:#334155!important}
+.gsm-theme .ht-actions a:hover{color:var(--ht-blue)!important}
+.gsm-theme .ht-nav{background:#fff!important;border-top:1px solid #edf3f7!important}
+.gsm-theme .ht-nav a{color:#334155!important}
+.gsm-theme .ht-nav a:hover,.gsm-theme .ht-nav a.active{color:var(--ht-blue)!important;background:#edf5ff!important;border-radius:9px}
+.gsm-theme .hero .hero-inner{position:relative;z-index:1}
+.gsm-theme .hero h1{color:var(--ht-navy)!important}
+.gsm-theme .hero h1 span{color:var(--ht-blue)!important}
+.gsm-theme .hero p{color:var(--ht-muted)!important}
+.gsm-theme .hero .btn,.gsm-theme .hero .button{transition:transform .2s,box-shadow .2s,background .2s}
+.gsm-theme .hero .btn:hover,.gsm-theme .hero .button:hover{transform:translateY(-2px)}
+.gsm-theme .hero .btn.primary,.gsm-theme .hero .btn.blue{background:linear-gradient(135deg,var(--ht-blue),var(--ht-blue2))!important;color:#fff!important}
+.gsm-theme .hero .btn.secondary{background:#fff!important;color:var(--ht-navy)!important;border:1px solid #c9dce9!important}
+.gsm-theme .gsm-shell{background:#fff!important;border-radius:16px!important;overflow:hidden!important}
+.gsm-theme .gsm-head{border-bottom:1px solid var(--ht-line)!important}
+.gsm-theme .gsm-head:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,rgba(25,118,210,.035),transparent 55%,rgba(32,184,212,.04))}
+.gsm-theme .tabs{gap:8px!important}
+.gsm-theme .toolbar input,.gsm-theme .toolbar select,.gsm-theme .filter-wrap input,.gsm-theme .filter-wrap select{background:#fff!important;border:1px solid #d5e3ed!important;color:#263b4d!important}
+.gsm-theme .toolbar input:focus,.gsm-theme .toolbar select:focus,.gsm-theme .filter-wrap input:focus,.gsm-theme .filter-wrap select:focus{outline:none!important;border-color:#8fc4ed!important;box-shadow:0 0 0 3px rgba(25,118,210,.08)!important}
+.gsm-theme .row{transition:background .18s,transform .18s,box-shadow .18s!important}
+.gsm-theme .row:hover{transform:translateX(2px)!important;box-shadow:inset 3px 0 0 var(--ht-blue)!important}
+.gsm-theme .row .price{color:#fff!important}
+.gsm-theme .order{box-shadow:0 16px 35px rgba(7,29,45,.13)!important}
+.gsm-theme .modal{backdrop-filter:blur(6px)!important}
+.gsm-theme .modal-box{background:#fff!important;color:var(--ht-text)!important}
+.gsm-theme .order-form label{color:#496176!important}
+.gsm-theme .order-form input,.gsm-theme .order-form textarea,.gsm-theme .order-form select{border-color:#d6e3ec!important;background:#fff!important;color:#183149!important}
+.gsm-theme .order-form input:focus,.gsm-theme .order-form textarea:focus,.gsm-theme .order-form select:focus{outline:none!important;border-color:#8fc4ed!important;box-shadow:0 0 0 3px rgba(25,118,210,.08)!important}
+.gsm-theme .footer-logo img{filter:none!important}
+@media(max-width:900px){.gsm-theme .ht-nav{overflow-x:auto}.gsm-theme .ht-nav a{white-space:nowrap}}
