@@ -414,6 +414,30 @@ const APPLE_IPHONE15_COLOR_IMAGES = {
   "zwart": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-finish-select-202309-6-1inch-black?wid=5120&hei=2880&fmt=p-jpg&qlt=80"
 };
 
+const APPLE_IPHONE14PRO_COLOR_IMAGES = {
+  "goud": "https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/iphone-14-pro-finish-select-202209-6-1inch-gold?wid=5120&hei=2880&fmt=p-jpg&qlt=80",
+  "paars": "https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/iphone-14-pro-finish-select-202209-6-1inch-deeppurple?wid=5120&hei=2880&fmt=p-jpg&qlt=80",
+  "zilver": "https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/iphone-14-pro-finish-select-202209-6-1inch-silver?wid=5120&hei=2880&fmt=p-jpg&qlt=80",
+  "zwart": "https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/iphone-14-pro-finish-select-202209-6-1inch-spaceblack?wid=5120&hei=2880&fmt=p-jpg&qlt=80"
+};
+const APPLE_IPHONE14PROMAX_COLOR_IMAGES = {
+  "goud": "https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/iphone-14-pro-finish-select-202209-6-7inch-gold?wid=5120&hei=2880&fmt=p-jpg&qlt=80",
+  "paars": "https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/iphone-14-pro-finish-select-202209-6-7inch-deeppurple?wid=5120&hei=2880&fmt=p-jpg&qlt=80",
+  "zilver": "https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/iphone-14-pro-finish-select-202209-6-7inch-silver?wid=5120&hei=2880&fmt=p-jpg&qlt=80",
+  "zwart": "https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/iphone-14-pro-finish-select-202209-6-7inch-spaceblack?wid=5120&hei=2880&fmt=p-jpg&qlt=80"
+};
+
+function appleColorImage(product,color){
+  const normalized=normalizeColorValue(color);
+  const name=String(product?.name||"").toLowerCase();
+  const family=String(product?.catalogFamily||product?.catalogModel||"").toLowerCase();
+  const identity=name+" "+family;
+  if(/iphone\s*14\s*pro\s*max/.test(identity)) return APPLE_IPHONE14PROMAX_COLOR_IMAGES[normalized] || "";
+  if(/iphone\s*14\s*pro/.test(identity)) return APPLE_IPHONE14PRO_COLOR_IMAGES[normalized] || "";
+  if(isIPhone15Product(product)) return APPLE_IPHONE15_COLOR_IMAGES[normalized] || "";
+  return "";
+}
+
 function isIPhone15Product(product){
   const name=String(product?.name||"").toLowerCase();
   const family=String(product?.catalogFamily||product?.catalogModel||"").toLowerCase();
@@ -427,8 +451,9 @@ function switchToProductVariant(hit){
   currentProductId=hit.i;
   const storage=Array.isArray(hit.p.storage)?hit.p.storage[0]:hit.p.storage||hit.p.geheugen||"";
   const color=hit.p.color||hit.p.kleur||"";
-  if(isIPhone15Product(hit.p) && APPLE_IPHONE15_COLOR_IMAGES[normalizeColorValue(color)]){
-    currentProduct={...hit.p,images:[APPLE_IPHONE15_COLOR_IMAGES[normalizeColorValue(color)]]};
+  const appleImage=appleColorImage(hit.p,color);
+  if(appleImage){
+    currentProduct={...hit.p,images:[appleImage]};
   }
   selectedOptions={...old};
   if(storage) selectedOptions.storage=String(storage);
@@ -462,9 +487,8 @@ function selectProductOption(key,label){
 }
 function colorVariantImage(label){
   const normalizedLabel=normalizeColorValue(label);
-  if(isIPhone15Product(currentProduct) && APPLE_IPHONE15_COLOR_IMAGES[normalizedLabel]){
-    return APPLE_IPHONE15_COLOR_IMAGES[normalizedLabel];
-  }
+  const appleImage=appleColorImage(currentProduct,label);
+  if(appleImage) return appleImage;
   const storage=selectedOptions.storage || (Array.isArray(currentProduct?.storage)?currentProduct.storage[0]:currentProduct?.storage||currentProduct?.geheugen||'');
   const hit=findVariantProduct(storage,label) || currentProductSiblings().find(({p})=>normalizeColorValue(p.color||p.kleur||'')===normalizedLabel);
   if(!hit || !hit.p) return '';
