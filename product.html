@@ -396,6 +396,20 @@ function findVariantProduct(storage,color){
     return normalizeColorValue(pc)===c;
   }) || null;
 }
+const APPLE_IPHONE15_COLOR_IMAGES = {
+  "blauw": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-finish-select-202309-6-1inch-blue?wid=5120&hei=2880&fmt=p-jpg&qlt=80",
+  "geel": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-finish-select-202309-6-1inch-yellow?wid=5120&hei=2880&fmt=p-jpg&qlt=80",
+  "groen": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-finish-select-202309-6-1inch-green?wid=5120&hei=2880&fmt=p-jpg&qlt=80",
+  "roze": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-finish-select-202309-6-1inch-pink?wid=5120&hei=2880&fmt=p-jpg&qlt=80",
+  "zwart": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-finish-select-202309-6-1inch-black?wid=5120&hei=2880&fmt=p-jpg&qlt=80"
+};
+
+function isIPhone15Product(product){
+  const name=String(product?.name||"").toLowerCase();
+  const family=String(product?.catalogFamily||product?.catalogModel||"").toLowerCase();
+  return /iphone\s*15(?:\s|$)/i.test(name) || /iphone\s*15(?:\s|$)/i.test(family);
+}
+
 function switchToProductVariant(hit){
   if(!hit || !hit.p) return false;
   const old={...selectedOptions};
@@ -403,6 +417,9 @@ function switchToProductVariant(hit){
   currentProductId=hit.i;
   const storage=Array.isArray(hit.p.storage)?hit.p.storage[0]:hit.p.storage||hit.p.geheugen||"";
   const color=hit.p.color||hit.p.kleur||"";
+  if(isIPhone15Product(hit.p) && APPLE_IPHONE15_COLOR_IMAGES[normalizeColorValue(color)]){
+    currentProduct={...hit.p,images:[APPLE_IPHONE15_COLOR_IMAGES[normalizeColorValue(color)]]};
+  }
   selectedOptions={...old};
   if(storage) selectedOptions.storage=String(storage);
   if(color) selectedOptions.color=String(color);
@@ -434,10 +451,12 @@ function selectProductOption(key,label){
   if(priceEl && currentProduct) priceEl.textContent=money(calculateTotal(currentProduct));
 }
 function colorVariantImage(label){
-  // Prefer the exact storage + color variant. This prevents e.g. a 128 GB
-  // color button from showing the image belonging to the 256 GB variant.
+  const normalizedLabel=normalizeColorValue(label);
+  if(isIPhone15Product(currentProduct) && APPLE_IPHONE15_COLOR_IMAGES[normalizedLabel]){
+    return APPLE_IPHONE15_COLOR_IMAGES[normalizedLabel];
+  }
   const storage=selectedOptions.storage || (Array.isArray(currentProduct?.storage)?currentProduct.storage[0]:currentProduct?.storage||currentProduct?.geheugen||'');
-  const hit=findVariantProduct(storage,label) || currentProductSiblings().find(({p})=>normalizeColorValue(p.color||p.kleur||'')===normalizeColorValue(label));
+  const hit=findVariantProduct(storage,label) || currentProductSiblings().find(({p})=>normalizeColorValue(p.color||p.kleur||'')===normalizedLabel);
   if(!hit || !hit.p) return '';
   const imgs=Array.isArray(hit.p.images)?hit.p.images.filter(Boolean):[];
   return imgs[0] || hit.p.image || hit.p.imageUrl || '';
