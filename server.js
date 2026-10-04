@@ -1414,10 +1414,26 @@ app.delete("/api/admin/orders/:id", requirePermission("orders.delete"), async (r
 });
 
 
-function requireSiteOrPhoneUpdate(req,res,next){
+async function refreshAdminUserFromDb(user){
+  if(!user) return null;
+  if(user.role==="superadmin" || user.username===String(process.env.ADMIN_USERNAME||"") || user.permissions?.includes("*")) return user;
   try{
-    const user=getAdminFromRequest(req);
+    const q=await pool.query(`SELECT id,username,role,permissions,active FROM admin_users WHERE id=$1 OR LOWER(username)=LOWER($2) LIMIT 1`,[user.id||0,user.username||""]);
+    if(!q.rows.length || !q.rows[0].active) return null;
+    const a=q.rows[0];
+    return {id:a.id,username:a.username,role:a.role||"admin",permissions:Array.isArray(a.permissions)?a.permissions:[]};
+  }catch(e){
+    console.error("Refresh admin permissions error:",e);
+    return user;
+  }
+}
+
+async function requireSiteOrPhoneUpdate(req,res,next){
+  try{
+    let user=getAdminFromRequest(req);
     if(!user) return res.status(401).json({error:"Not authenticated"});
+    user=await refreshAdminUserFromDb(user);
+    if(!user) return res.status(401).json({error:"Admin account is inactive or no longer exists."});
     if(user.role==="superadmin" || user.username===String(process.env.ADMIN_USERNAME||"") || user.permissions.includes("*") || user.permissions.includes("site.save")){
       req.admin=user; return next();
     }
