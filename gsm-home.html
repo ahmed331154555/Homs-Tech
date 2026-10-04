@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GSM Services | HOMS TECH</title>
+<title>HOMS TECH GSM Services</title>
 <meta name="description" content="HOMS TECH GSM Services — IMEI, FRP, Remote, Server en Firmware services.">
 <style>
 :root{
@@ -270,6 +270,95 @@ h1{
  .actions .btn{width:100%}
  .stats{margin-top:32px}
 }
+
+
+
+/* HOMS TECH LIGHT THEME — V9.2
+   Keeps the V9.1 GSM home structure/animations, changes only the visual theme
+   to the same light white / navy / HOMS blue palette used by the webshop.
+*/
+:root{
+  --bg:#f7f7f4;
+  --bg2:#ffffff;
+  --panel:#ffffff;
+  --line:#e5e9ed;
+  --text:#172330;
+  --muted:#667784;
+  --blue:#2563eb;
+  --blue2:#60a5fa;
+  --cyan:#38bdf8;
+  --green:#22c55e;
+  --shadow:0 24px 70px rgba(15,35,55,.12);
+}
+body{
+  background:
+    radial-gradient(900px 500px at 88% 8%,rgba(37,99,235,.09),transparent 62%),
+    radial-gradient(700px 420px at 8% 55%,rgba(96,165,250,.07),transparent 64%),
+    linear-gradient(180deg,#ffffff 0%,#f7f7f4 58%,#ffffff 100%);
+  color:var(--text);
+}
+.topline{background:#071d2d;border-bottom:1px solid #071d2d}
+.ticker{color:#dbeafe}
+.ticker span:before{color:#4ade80}
+.header{background:rgba(255,255,255,.94);border-bottom:1px solid #e5e9ed;box-shadow:0 5px 24px rgba(15,35,55,.06)}
+.brand img{filter:none}
+.navlinks>a,.dropbtn{color:#425466}
+.navlinks>a:hover,.dropbtn:hover{color:#071d2d;background:#f1f5f9}
+.navlinks>a.active{color:#2563eb;background:#eff6ff;box-shadow:inset 0 0 0 1px #dbeafe}
+.login-btn{color:#1d4ed8;background:#eff6ff;border-color:#bfdbfe}
+.login-btn:hover{background:#dbeafe}
+.user-pill{background:#fff;border-color:#dbe4ec;color:#334155;box-shadow:0 5px 18px rgba(15,35,55,.06)}
+.menu{background:#fff;color:#334155;border-color:#dbe4ec}
+.navlinks.mobile-open{background:#fff;border-color:#dbe4ec;box-shadow:0 20px 50px rgba(15,35,55,.14)}
+.hero{min-height:700px}
+.hero:before{background-image:linear-gradient(rgba(7,29,45,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(7,29,45,.035) 1px,transparent 1px);mask-image:linear-gradient(to bottom,rgba(0,0,0,.6),transparent 90%)}
+.orb.one{background:rgba(37,99,235,.09)}
+.orb.two{background:rgba(96,165,250,.08)}
+.eyebrow{color:#2563eb}
+.eyebrow i{background:#22c55e;box-shadow:0 0 15px rgba(34,197,94,.35)}
+h1{color:#172330}
+.gradient{background:linear-gradient(110deg,#071d2d 0%,#2563eb 55%,#38bdf8 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:#667784}
+.btn{border-color:#dbe4ec}
+.btn-primary{background:linear-gradient(135deg,#2563eb,#3b82f6);border-color:#2563eb;color:#fff;box-shadow:0 12px 30px rgba(37,99,235,.20)}
+.btn-primary:hover{background:#1d4ed8}
+.btn-ghost{background:#fff;color:#1d4ed8;border-color:#bfdbfe}
+.btn-ghost:hover{background:#eff6ff}
+.stats{gap:12px}
+.stat{background:#fff;border-color:#e1e8ef;box-shadow:0 8px 25px rgba(15,35,55,.05)}
+.stat b{color:#172330}
+.stat span{color:#71808d}
+.glass{border-color:#dbe4ec;background:linear-gradient(145deg,#ffffff,#f5f9fd);box-shadow:0 30px 80px rgba(15,35,55,.14)}
+.window{background:#fff;border-color:#e3eaf0}
+.windowbar{background:#f5f8fb;border-bottom-color:#e3eaf0}
+.dot{background:#cbd5e1}
+.url{background:#fff;border-color:#e3eaf0;color:#94a3b8}
+.windowbody{background:linear-gradient(180deg,#fff,#f8fbff)}
+.lock{background:linear-gradient(145deg,#eff6ff,#e0f2fe);border-color:#bfdbfe;box-shadow:0 0 60px rgba(37,99,235,.12)}
+.lock svg{stroke:#2563eb}
+.status{color:#2563eb}
+.visual-title{color:#172330}
+.visual-copy{color:#667784}
+.progress{background:#e8eef4}
+.progress i{background:linear-gradient(90deg,#2563eb,#38bdf8)}
+.card-foot{color:#82919d}
+.badge{color:#16a34a}
+.tools{background:#fff;border-color:#e5e9ed}
+.tool{background:#f8fafc;border-color:#e1e8ef;color:#64748b}
+.tool b{color:#071d2d}
+.section{background:transparent}
+.section-kicker{color:#2563eb}
+.section h2{color:#172330}
+.section-head p{color:#667784}
+.card{background:#fff;border-color:#e1e8ef;box-shadow:0 8px 26px rgba(15,35,55,.05)}
+.card:hover{border-color:#bfdbfe;box-shadow:0 18px 45px rgba(15,35,55,.10)}
+.card-icon{background:#eff6ff;color:#2563eb;border-color:#dbeafe}
+.card h3{color:#172330}
+.card p{color:#667784}
+.card a{color:#2563eb}
+.footer{background:#fff;border-top-color:#e5e9ed;color:#71808d}
+.footer a{color:#2563eb}
+@media(max-width:820px){.menu{display:block}.navlinks.mobile-open{top:66px}}
 
 </style>
 </head>
