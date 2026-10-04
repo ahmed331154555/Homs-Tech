@@ -1643,7 +1643,7 @@ textarea{
       <div class="small">✓ Wijzigingen worden opgeslagen wanneer jij op «Wijzigingen opslaan» drukt.</div>
     </div>
 
-    <button id="saveBtn" data-permission="site.save" class="btn btn-green" onclick="save()" style="font-size:16px;padding:13px 25px">
+    <button id="saveBtn" class="btn btn-green" onclick="save()" style="font-size:16px;padding:13px 25px">
       💾 Wijzigingen opslaan
     </button>
   </div>
@@ -4593,7 +4593,7 @@ function deleteWhy(i){
 /* ---------------- SAVE ---------------- */
 
 async function save(isAuto=false){
-  if(!canEditSite()){setStatus("✕ Je hebt geen toestemming om wijzigingen op te slaan.","error");return;}
+  if(!canEditCurrentPage()){setStatus("✕ Je hebt geen toestemming om wijzigingen op te slaan.","error");return;}
   if(isAuto) autoSaveAgain=false;
   if(loading) return;
   loading=true;
