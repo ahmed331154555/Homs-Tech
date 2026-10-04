@@ -371,7 +371,7 @@ app.post("/api/admin/gsm/import-easy",requirePermission("gsm.import"),async(req,
 // Admin login + permissions
 const ADMIN_PERMISSION_NAMES = {
   "general.view":"Algemeen bekijken","services.view":"Diensten bekijken",
-  "phones.view":"Telefoons & prijzen bekijken","categories.view":"Apparaten & categorieën bekijken",
+  "phones.view":"Telefoons & prijzen bekijken","phones.update":"Telefoons & prijzen wijzigen","categories.view":"Apparaten & categorieën bekijken",
   "used.view":"Gebruikte telefoons bekijken","why.view":"Waarom HOMS TECH bekijken",
   "customers.view":"Klanten bekijken","orders.view":"GSM Orders bekijken",
   "orders.update":"GSM Order-status wijzigen","webshop_orders.view":"Webshop bestellingen bekijken",
@@ -1414,8 +1414,36 @@ app.delete("/api/admin/orders/:id", requirePermission("orders.delete"), async (r
 });
 
 
-app.put("/api/site", requirePermission("site.save"), async (req, res) => {
+function requireSiteOrPhoneUpdate(req,res,next){
+  try{
+    const user=getAdminFromRequest(req);
+    if(!user) return res.status(401).json({error:"Not authenticated"});
+    if(user.role==="superadmin" || user.username===String(process.env.ADMIN_USERNAME||"") || user.permissions.includes("*") || user.permissions.includes("site.save")){
+      req.admin=user; return next();
+    }
+    const section=String(req.headers["x-homs-admin-section"]||"").trim().toLowerCase();
+    if(section==="phones" && user.permissions.includes("phones.update")){
+      req.admin=user; return next();
+    }
+    return res.status(403).json({error:"Geen toestemming voor deze wijziging."});
+  }catch(e){ return res.status(401).json({error:"Not authenticated"}); }
+}
+
+app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
   try {
+    const section=String(req.headers["x-homs-admin-section"]||"").trim().toLowerCase();
+    if(section==="phones" && req.admin.permissions && req.admin.permissions.includes("phones.update") && !req.admin.permissions.includes("site.save") && req.admin.role!=="superadmin" && !req.admin.permissions.includes("*")){
+      const current=await pool.query("SELECT data FROM site_settings WHERE id=1");
+      const existing=current.rows[0]?.data || {};
+      const incoming=req.body || {};
+      const keys=new Set([...Object.keys(existing),...Object.keys(incoming)]);
+      for(const key of keys){
+        if(key==="phones") continue;
+        if(JSON.stringify(existing[key])!==JSON.stringify(incoming[key])){
+          return res.status(403).json({error:"Deze admin mag alleen Telefoons & prijzen wijzigen."});
+        }
+      }
+    }
     await pool.query(
       "UPDATE site_settings SET data = $1 WHERE id = 1",
       [JSON.stringify(req.body)]
