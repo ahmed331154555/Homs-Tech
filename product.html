@@ -434,8 +434,10 @@ function selectProductOption(key,label){
   if(priceEl && currentProduct) priceEl.textContent=money(calculateTotal(currentProduct));
 }
 function colorVariantImage(label){
-  const target=normalizeColorValue(label);
-  const hit=currentProductSiblings().find(({p})=>normalizeColorValue(p.color||p.kleur||'')===target);
+  // Prefer the exact storage + color variant. This prevents e.g. a 128 GB
+  // color button from showing the image belonging to the 256 GB variant.
+  const storage=selectedOptions.storage || (Array.isArray(currentProduct?.storage)?currentProduct.storage[0]:currentProduct?.storage||currentProduct?.geheugen||'');
+  const hit=findVariantProduct(storage,label) || currentProductSiblings().find(({p})=>normalizeColorValue(p.color||p.kleur||'')===normalizeColorValue(label));
   if(!hit || !hit.p) return '';
   const imgs=Array.isArray(hit.p.images)?hit.p.images.filter(Boolean):[];
   return imgs[0] || hit.p.image || hit.p.imageUrl || '';
