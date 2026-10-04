@@ -445,16 +445,17 @@ function colorVariantImage(label){
 function renderOptionSection(key,title,list){
   const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
   const raw=Array.isArray(currentProduct[map[key]]) ? currentProduct[map[key]] : [];
-  let base=raw.length?raw:effectiveOptions(currentProduct,key);
-  // For storage/color, build the choices from all real variants of this model.
-  // Each imported Forza variant is a separate product, so selecting an option
-  // must switch to that exact product instead of only changing the button style.
+  let base=raw.length ? raw : effectiveOptions(currentProduct,key);
+
   if(key==="storage" || key==="color"){
     const siblings=currentProductSiblings();
     const seen=new Set();
     const variantOptions=[];
-    for(const {p} of siblings){
-      const value=key==="storage" ? (Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"") : (p.color||p.kleur||"");
+    for(const item of siblings){
+      const p=item.p;
+      const value=key==="storage"
+        ? (Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"")
+        : (p.color||p.kleur||"");
       if(!value) continue;
       const norm=key==="storage" ? normalizeStorageValue(value) : normalizeColorValue(value);
       if(seen.has(norm)) continue;
@@ -463,26 +464,56 @@ function renderOptionSection(key,title,list){
     }
     if(variantOptions.length) base=variantOptions;
   }
-  list=base.filter(x=>x&&x.label&&(x.active!==false && x.enabled!==false));
-  if(!list.length) return "";
-  // Storage and color availability must follow the actual options imported from Forza.
-  // Do not let a stale `available:false` flag from an older variant disable a real
-  // storage/color option. Other option types keep their explicit availability.
-  const availabilityControlled = key!=="storage" && key!=="color";
-  const available=list.filter(x=>!availabilityControlled || x.available!==false);
-  if(!selectedOptions[key] || !available.some(x=>x.label===selectedOptions[key])) selectedOptions[key]=available[0]?.label || "";
-  return `<div class="option-section"><div class="option-title">${esc(title)}${key==='condition'?`<button type="button" class="condition-help-link" onclick="openConditionHelp()">ⓘ Wat is dat?</button>`:''}</div><div class="option-grid">${list.map(x=>{
+
+  const items=base.filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false));
+  if(!items.length) return "";
+
+  const availabilityControlled=key!=="storage" && key!=="color";
+  const available=items.filter(x=>!availabilityControlled || x.available!==false);
+  if(!selectedOptions[key] || !available.some(x=>x.label===selectedOptions[key])){
+    selectedOptions[key]=available[0]?.label || "";
+  }
+
+  const buttons=items.map(x=>{
     const active=x.label===selectedOptions[key];
     const availableNow=(key==="storage" || key==="color") ? true : x.available!==false;
-    const priceLabel=key==='condition'
-      ? (conditionBasePrice(x,currentProduct)>0 ? `<small>${money(conditionBasePrice(x,currentProduct))}</small>` : '')
-      : (key==='storage' ? '' : (optionDelta(x)!==0 ? `<small>${optionDelta(x)>0?'+':''}${money(optionDelta(x))}</small>` : ''));
+
+    let priceLabel="";
+    if(key==="condition"){
+      const cp=conditionBasePrice(x,currentProduct);
+      if(cp>0) priceLabel="<small>"+money(cp)+"</small>";
+    }else if(key!=="storage"){
+      const delta=optionDelta(x);
+      if(delta!==0) priceLabel="<small>"+(delta>0?"+":"")+money(delta)+"</small>";
+    }
+
     if(key==="color"){
       const img=colorVariantImage(x.label);
-      return `<button type="button" class="option-btn color-option-btn ${active?"active":""}" onclick="selectProductOption('color','${esc(x.label)}')" aria-label="Kleur ${esc(x.label)}">${img?`<img class="color-option-image" src="${esc(img)}" alt="${esc(x.label)}">`:""}<span class="color-option-label">${esc(x.label)}</span></button>`;
+      return '<button type="button" class="option-btn color-option-btn '+(active?"active":"")+
+        '" onclick="selectProductOption(\'color\',\''+esc(x.label)+'\')" aria-label="Kleur '+esc(x.label)+'">'+
+        (img?'<img class="color-option-image" src="'+esc(img)+'" alt="'+esc(x.label)+'">':"")+
+        '<span class="color-option-label">'+esc(x.label)+"</span></button>";
     }
-    return `<button type="button" class="option-btn ${active?"active":""} ${availableNow?"":"unavailable"}" ${availableNow?`onclick="selectProductOption('${esc(key)}','${esc(x.label)}')"`:'disabled'}>${esc(x.label)}${priceLabel}${availableNow?"":" <span class="sold-x">✕</span>"}</button>`;
-  }).join("")}</div>${key==='condition'?'<div style="margin-top:7px;color:#64748b;font-size:12px">De gekozen staat bepaalt de basisprijs. Opslag, kleur, batterij en andere opties worden daarna als +/- prijsverschil toegevoegd.</div>':''}</div>`;
+
+    const click=availableNow
+      ? ' onclick="selectProductOption(\''+esc(key)+'\',\''+esc(x.label)+'\')"'
+      : ' disabled';
+
+    return '<button type="button" class="option-btn '+(active?"active":"")+
+      (availableNow?"":" unavailable")+'"'+click+'>'+esc(x.label)+priceLabel+
+      (availableNow?"":' <span class="sold-x">✕</span>')+'</button>';
+  }).join("");
+
+  const help=key==="condition"
+    ? '<button type="button" class="condition-help-link" onclick="openConditionHelp()">ⓘ Wat is dat?</button>'
+    : "";
+
+  const note=key==="condition"
+    ? '<div style="margin-top:7px;color:#64748b;font-size:12px">De gekozen staat bepaalt de basisprijs. Opslag, kleur, batterij en andere opties worden daarna als +/- prijsverschil toegevoegd.</div>'
+    : "";
+
+  return '<div class="option-section"><div class="option-title">'+esc(title)+help+
+    '</div><div class="option-grid">'+buttons+'</div>'+note+'</div>';
 }
 let galleryImagesState=[];
 let galleryIndex=0;
