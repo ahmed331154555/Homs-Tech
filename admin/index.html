@@ -1046,16 +1046,6 @@ textarea{
 .phone-brand-add:hover{background:#eff6ff!important;border-color:#93c5fd!important;}
 @media(min-width:1100px){.phone-catalog-sidebar{min-height:0!important;height:auto!important;}}
 </style>
-
-<style id="homs-repair-orders-page">
-#page-repair-orders .section-head{margin-bottom:18px}
-#page-repair-orders .section-head h2{font-size:24px;letter-spacing:-.4px;margin-bottom:5px}
-#page-repair-orders .section-head p{color:#64748b;margin:0;font-size:13px}
-#page-repair-orders .order-card{margin-bottom:14px}
-#page-repair-orders .order-info span{white-space:normal;overflow-wrap:anywhere}
-@media(max-width:900px){#repairOrderSummary{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
-@media(max-width:550px){#repairOrderSummary{grid-template-columns:1fr!important}}
-</style>
 </head>
 
 <body>
@@ -1082,7 +1072,6 @@ textarea{
     <button class="nav-btn" data-page="why" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
     <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
     <button class="nav-btn" data-page="orders" onclick="showPage('orders')">📋 GSM Orders</button>
-    <button class="nav-btn" data-page="repair-orders" onclick="showPage('repair-orders')">🔧 Repair Orders</button>
     <button class="nav-btn" data-page="webshop-orders" onclick="showPage('webshop-orders')">🛍️ Webshop Bestellingen</button>
     <button class="nav-btn" data-page="gsm" onclick="showPage('gsm')">🛠️ GSM Services</button>
     <button class="nav-btn" data-page="search" data-permission="search" onclick="showPage('search')">🔎 Zoeken</button>
@@ -1295,39 +1284,6 @@ textarea{
     <div id="ordersList" class="orders-list"></div>
   </section>
 
-
-  <!-- REPAIR ORDERS -->
-  <section class="section admin-page" id="page-repair-orders">
-    <div class="section-head">
-      <div>
-        <h2>🔧 Repair Orders</h2>
-        <p>Alleen reparatieaanvragen van de HOMS TECH reparatiepagina.</p>
-      </div>
-      <button class="btn btn-light" onclick="loadRepairOrders()">↻ Vernieuwen</button>
-    </div>
-
-    <div id="repairOrderSummary" class="order-summary"></div>
-
-    <div class="orders-toolbar">
-      <div class="orders-search">
-        <input id="repairOrderSearch" type="search"
-          placeholder="Zoeken op klant, e-mail, telefoon, toestel, IMEI, adres..."
-          oninput="renderRepairOrders()">
-      </div>
-      <select id="repairOrderStatusFilter" class="order-filter" onchange="renderRepairOrders()">
-        <option value="">Alle statussen</option>
-        <option>Nieuw</option>
-        <option>In behandeling</option>
-        <option>Voltooid</option>
-        <option>Geannuleerd</option>
-      </select>
-      <button class="order-filter-btn" onclick="clearRepairOrderFilters()">↻ Filters wissen</button>
-    </div>
-
-    <div id="repairOrdersStatus" class="status info" style="margin-bottom:10px"></div>
-    <div id="repairOrdersList" class="orders-list"></div>
-  </section>
-
   <!-- WEBSHOP ORDERS -->
   <section class="section admin-page" id="page-webshop-orders">
     <div class="section-head">
@@ -1345,11 +1301,11 @@ textarea{
   </section>
 
   <!-- GSM SERVICES -->
-  <section class="section admin-page" id="page-gsm" data-permission="gsm.view">
+  <section class="section admin-page" id="page-gsm">
     <div class="section-head">
       <div>
         <h2>🛠️ GSM Services</h2>
-        <p>Beheer IMEI, Remote, Server, FRP en Firmware services vanuit één GSM-paneel.</p>
+        <p>Beheer per categorie de services met naam, details en prijs.</p>
       </div>
     </div>
 
@@ -1718,13 +1674,13 @@ let buybackCatalogDeleteLock = false;
 const PAGE_PERMISSIONS = {
   general:"general.view",services:"services.view",phones:"phones.view",categories:"categories.view",
   used:"used.view",why:"why.view",customers:"customers.view",orders:"orders.view",
-  "webshop-orders":"webshop_orders.view","repair-orders":"orders.view",gsm:"gsm.view",search:"search",admins:"admins.manage",
+  "webshop-orders":"webshop_orders.view",gsm:"gsm.view",search:"search",admins:"admins.manage",
   buyback:"buyback.view", "buyback-orders":"buyback_orders.view", "forza-test":"phones.view"
 };
 
 const ADMIN_PERMISSION_LABELS = {
   "general.view":"Algemeen bekijken","services.view":"Diensten bekijken",
-  "phones.view":"Telefoons & prijzen bekijken","categories.view":"Apparaten & categorieën bekijken",
+  "phones.view":"Telefoons & prijzen bekijken","phones.update":"Telefoons & prijzen wijzigen","categories.view":"Apparaten & categorieën bekijken",
   "used.view":"Gebruikte telefoons bekijken","why.view":"Waarom HOMS TECH bekijken",
   "customers.view":"Klanten bekijken","orders.view":"GSM Orders bekijken","orders.update":"GSM Order-status wijzigen",
   "webshop_orders.view":"Webshop bestellingen bekijken","webshop_orders.update":"Webshop order-status wijzigen","webshop_orders.delete":"Webshop bestellingen verwijderen",
@@ -1736,27 +1692,26 @@ const ADMIN_PERMISSION_LABELS = {
 
 function hasPermission(p){return currentUser.role==="superadmin"||currentUser.permissions.includes("*")||currentUser.permissions.includes(p);}
 function canEditSite(){return hasPermission("site.save");}
+function canEditCurrentPage(){
+  if(currentPage==="phones") return hasPermission("phones.update") || canEditSite();
+  return canEditSite();
+}
 function firstAllowedPage(){
-  const pages=["general","services","phones","forza-test","buyback","buyback-orders","categories","used","why","customers","orders","repair-orders","webshop-orders","gsm","search","admins"];
+  const pages=["general","services","phones","forza-test","buyback","buyback-orders","categories","used","why","customers","orders","webshop-orders","gsm","search","admins"];
   return pages.find(p=>hasPermission(PAGE_PERMISSIONS[p]))||null;
 }
 function applyPermissionUI(){
   document.querySelectorAll("[data-permission]").forEach(el=>el.style.display=hasPermission(el.dataset.permission)?"":"none");
-  const saveBtn=document.getElementById("saveBtn"); if(saveBtn) saveBtn.style.display=canEditSite()?"":"none";
+  const saveBtn=document.getElementById("saveBtn"); if(saveBtn) saveBtn.style.display=canEditCurrentPage()?"":"none";
   document.querySelectorAll(".admin-page").forEach(page=>{
     const n=(page.id||"").replace(/^page-/,"");
     if(!["general","services","phones","buyback","categories","used","why","gsm"].includes(n))return;
-    page.querySelectorAll("input,textarea").forEach(el=>el.disabled=!canEditSite());
+    page.querySelectorAll("input,textarea").forEach(el=>el.disabled=!canEditCurrentPage());
     page.querySelectorAll("button").forEach(btn=>{
-      if(btn.id==="gsmImportBtn") btn.disabled=!hasPermission("gsm.import");
-      else if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||"")) btn.disabled=!canEditSite();
+      if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=!canEditCurrentPage();
     });
   });
-  document.querySelectorAll(".order-status-select").forEach(el=>{
-    const page=el.closest(".admin-page")?.id||"";
-    const permission=page==="page-orders"||page==="page-repair-orders"?"orders.update":"webshop_orders.update";
-    el.disabled=!hasPermission(permission);
-  });
+  document.querySelectorAll(".order-status-select").forEach(el=>el.disabled=!hasPermission(el.closest("#page-orders")?"orders.update":"webshop_orders.update"));
 }
 function showPage(page){
   if(!hasPermission(PAGE_PERMISSIONS[page]||""))page=firstAllowedPage();
@@ -1768,7 +1723,6 @@ function showPage(page){
     target.classList.add("active");
     if(page==="customers")loadCustomers();
     if(page==="orders")loadOrders();
-    if(page==="repair-orders")loadRepairOrders();
     if(page==="webshop-orders")loadWebshopOrders();
     if(page==="buyback")renderBuybackPhones();
     if(page==="buyback-orders")loadBuybackOrders();
@@ -1839,24 +1793,9 @@ function normalizeGsmService(x){
     shortDescription:x.shortDescription || "",
     details:x.details || x.description || "",
     price:x.price || "",
-    sourcePrice:x.sourcePrice || "",
-    sourceCurrency:x.sourceCurrency || "USD",
-    priceCurrency:x.priceCurrency || "EUR",
-    deliveryTime:x.deliveryTime || "",
     active:x.active !== false,
-    hot:x.hot === true,
     requiresUsername:x.requiresUsername === true,
-    requiresImei:x.requiresImei === true,
-    requiresSerial:x.requiresSerial === true,
-    requiredFields:Array.isArray(x.requiredFields)?x.requiredFields:[],
-    formFields:Array.isArray(x.formFields)?x.formFields:[],
-    instructions:x.instructions || '',
-    serviceMeta:(x.serviceMeta&&typeof x.serviceMeta==='object')?x.serviceMeta:{},
-    usernameFromEmail:x.usernameFromEmail === true,
-    source:x.source || "",
-    sourceId:x.sourceId || "",
-    sourceUrl:x.sourceUrl || "",
-    lastSynced:x.lastSynced || ""
+    requiresImei:x.requiresImei === true
   };
 }
 
@@ -4266,34 +4205,7 @@ function deleteUsedPhone(i){
 }
 
 
-async function checkEasyGsm(){try{setStatus('Easy-Unlocker wordt gecontroleerd...','info');const r=await fetch('/api/admin/gsm/check-easy',{credentials:'same-origin'});const q=await r.json().catch(()=>({}));if(!r.ok)throw new Error(q.error||'Controle mislukt');const pages=(q.pages||[]).map(p=>`${p.key}: ${p.count}`).join(' · ');alert(`Easy-Unlocker CHECK\n\nBron: ${q.totalSource}\nNieuw: ${q.newCount}\nBestaand/te updaten: ${q.updatedCount}\nCategorie wijzigen: ${q.movedCount}\nZonder bronprijs: ${q.sourceMissingPrice}\nZonder instructies op publieke bron: ${q.sourceMissingInstruction}\nMet herkende verplichte velden: ${q.sourceHasRequiredFields}\n\n${pages}\n\nDeze controle verandert niets.`);setStatus('✓ Controle klaar — niets gewijzigd','success')}catch(e){setStatus('✕ '+e.message,'error')}}
-
-async function importEasyGsm(){
-  const btn=document.getElementById("gsmImportBtn");
-  const status=document.getElementById("gsmImportStatus");
-  if(!btn)return;
-  if(!hasPermission("gsm.import")){setStatus("✕ Je hebt geen toestemming om GSM-services te importeren.","error");return;}
-  btn.disabled=true;
-  if(status)status.textContent="Easy-Unlocker catalogus wordt opgehaald...";
-  try{
-    const r=await fetch("/api/admin/gsm/import-easy",{method:"POST",headers:{"Accept":"application/json"},credentials:"same-origin"});
-    const raw=await r.text(); let result={}; try{result=raw?JSON.parse(raw):{}}catch{}
-    if(!r.ok)throw new Error(result.error||"Import mislukt");
-    data=result.data||data;
-    normalizeData();
-    renderGsmServices();
-    const pages=(result.pages||[]).map(x=>`${x.key}: ${x.count}`).join(" • ");
-    if(status)status.textContent=`✓ ${result.total||0} services verwerkt — nieuw: ${result.added||0}, bijgewerkt: ${result.updated||0}. ${pages}`;
-    setStatus("✓ GSM-services geïmporteerd en opgeslagen","success");
-  }catch(e){
-    if(status)status.textContent="✕ "+e.message;
-    setStatus("✕ Easy-Unlocker import mislukt","error");
-  }finally{btn.disabled=false;}
-}
-
 /* ---------------- GSM SERVICES ---------------- */
-
-let gsmServiceSearch="";
 
 const gsmServiceCategories=[
   ["imei","📱 IMEI Services"],
@@ -4303,18 +4215,6 @@ const gsmServiceCategories=[
   ["firmware","💻 Firmware / Software"]
 ];
 
-function filterGsmServiceRows(){
-  const q=String(gsmServiceSearch||'').trim().toLowerCase();
-  document.querySelectorAll('.gsm-admin-service-row').forEach(row=>{
-    const hay=String(row.dataset.gsmSearch||'');
-    row.style.display=(!q || hay.includes(q))?'':'none';
-  });
-  document.querySelectorAll('.gsm-admin-group').forEach(group=>{
-    const rows=[...group.querySelectorAll('.gsm-admin-service-row')];
-    group.style.display=rows.some(r=>r.style.display!=='none')?'':'none';
-  });
-}
-
 function renderGsmServices(){
   const box=document.getElementById("gsmServicesList");
   if(!box) return;
@@ -4323,7 +4223,7 @@ function renderGsmServices(){
   const list=data.gsmServices[category[0]] || [];
   if(selectedGsmServiceIndex>=list.length) selectedGsmServiceIndex=Math.max(0,list.length-1);
 
-  const tabs=gsmServiceCategories.map(c=>`<button type="button" class="gsm-admin-tab ${c[0]===activeKey?"active":""}" onclick="gsmActiveCategory='${c[0]}';selectedGsmServiceIndex=0;gsmServiceSearch='';renderGsmServices()">${c[1]}</button>`).join('');
+  const tabs=gsmServiceCategories.map(c=>`<button type="button" class="gsm-admin-tab ${c[0]===activeKey?"active":""}" onclick="gsmActiveCategory='${c[0]}';selectedGsmServiceIndex=0;renderGsmServices()">${c[1]}</button>`).join('');
   const grouped=new Map();
   list.forEach((service,i)=>{
     const groupName=(service.group||category[1].replace(/^[^ ]+ /,'')||"General").trim()||"General";
@@ -4335,7 +4235,7 @@ function renderGsmServices(){
       <div style="padding:9px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:900;color:#334155;display:flex;justify-content:space-between;align-items:center">
         <span>${esc(groupName)}</span><span style="font-size:11px;color:#64748b">${items.length}</span>
       </div>
-      ${items.map(({service,i})=>`<button type="button" class="editor-list-item gsm-admin-service-row ${i===selectedGsmServiceIndex?'active':''}" data-gsm-search="${esc(((service.name||'')+' '+(service.group||'')+' '+(service.sourcePrice||'')).toLowerCase())}" onclick="selectedGsmServiceIndex=${i};renderGsmServices()">${esc(service.icon||'🔧')} ${esc(service.name||'Nieuwe GSM Service')}<small>${service.price?('€ '+esc(service.price)):'Op aanvraag'}${service.sourcePrice?` · $${esc(service.sourcePrice)}`:''}</small></button>`).join('')}
+      ${items.map(({service,i})=>`<button type="button" class="editor-list-item ${i===selectedGsmServiceIndex?'active':''}" onclick="selectedGsmServiceIndex=${i};renderGsmServices()">${esc(service.icon||'🔧')} ${esc(service.name||'Nieuwe GSM Service')}<small>${service.price?('€ '+esc(service.price)):'Op aanvraag'}</small></button>`).join('')}
     </div>`).join('') : '<div class="small" style="padding:10px">Nog geen services in deze categorie.</div>';
   const service=list[selectedGsmServiceIndex];
 
@@ -4350,67 +4250,20 @@ function renderGsmServices(){
         <div class="grid">
           <div class="field"><label>Groep / bestandsnaam</label><input value="${esc(service.group || category[1].replace(/^[^ ]+ /,''))}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].group=this.value;markChanged();renderGsmServices()" placeholder="Bijv. INPRO RAMDISK A12/A13"></div>
           <div class="field"><label>Status</label><select onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].active=this.value==='Actief';markChanged()"><option value="Actief" ${service.active!==false?'selected':''}>Actief</option><option value="Inactief" ${service.active===false?'selected':''}>Inactief</option></select></div>
-          <div class="field" style="display:flex;flex-direction:column;gap:8px;justify-content:flex-end"><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresUsername===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresUsername=this.checked;markChanged()" style="width:18px;height:18px"> Gebruikersnaam verplicht</label><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresImei===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresImei=this.checked;markChanged()" style="width:18px;height:18px"> IMEI verplicht</label><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresSerial===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresSerial=this.checked;markChanged()" style="width:18px;height:18px"> Serienummer verplicht</label><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.hot===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].hot=this.checked;markChanged()" style="width:18px;height:18px"> HOT service</label></div>
+          <div class="field" style="display:flex;flex-direction:column;gap:8px;justify-content:flex-end"><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresUsername===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresUsername=this.checked;markChanged()" style="width:18px;height:18px"> Gebruikersnaam klant verplicht</label><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresImei===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresImei=this.checked;markChanged()" style="width:18px;height:18px"> IMEI / Serienummer klant verplicht</label></div>
           <div class="field"><label>Naam service</label><input value="${esc(service.name||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].name=this.value;markChanged();renderGsmServices()"></div>
-          <div class="field"><label>HOMS TECH prijs (€)</label><input value="${esc(service.price||'')}" placeholder="Leeg = bronprijs tonen" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].price=this.value;markChanged()"></div>
-          <div class="field"><label>Bronprijs (USD)</label><input type="number" min="0" step="0.01" value="${esc(service.sourcePrice||'')}" placeholder="USD prijs" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].sourcePrice=this.value;data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].sourceCurrency='USD';markChanged()"><div class="small" style="margin-top:4px">Deze USD-prijs is de bronprijs van Easy-Unlocker. Je kunt hem handmatig aanpassen.</div></div>
-          <div class="field"><label>Levertijd / uitvoering</label><input value="${esc(service.deliveryTime||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].deliveryTime=this.value;markChanged()"></div>
+          <div class="field"><label>Prijs (€)</label><input value="${esc(service.price||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].price=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1"><label>Korte beschrijving</label><input value="${esc(service.shortDescription||'')}" placeholder="Bijv. Xiaomi / Redmi / Poco" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].shortDescription=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1"><label>Volledige beschrijving</label><textarea oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].details=this.value;markChanged()">${esc(service.details||'')}</textarea></div>
-          <div class="field" style="grid-column:1/-1"><label>Orderinstructies</label><textarea placeholder="Instructies voor de klant voor deze service..." oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].instructions=this.value;markChanged()">${esc(service.instructions||'')}</textarea></div>
-          <div class="field" style="grid-column:1/-1"><label>Service details voor klant</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px">
-            <input placeholder="Delivery time" value="${esc(service.serviceMeta?.deliveryTime||service.deliveryTime||'')}" oninput="setGsmMeta('${category[0]}',${selectedGsmServiceIndex},'deliveryTime',this.value)">
-            <input placeholder="Availability" value="${esc(service.serviceMeta?.availability||'')}" oninput="setGsmMeta('${category[0]}',${selectedGsmServiceIndex},'availability',this.value)">
-            <input placeholder="Refund" value="${esc(service.serviceMeta?.refund||'')}" oninput="setGsmMeta('${category[0]}',${selectedGsmServiceIndex},'refund',this.value)">
-            <input placeholder="Warning" value="${esc(service.serviceMeta?.warning||'')}" oninput="setGsmMeta('${category[0]}',${selectedGsmServiceIndex},'warning',this.value)">
-            <textarea style="grid-column:1/-1" placeholder="Supported Models" oninput="setGsmMeta('${category[0]}',${selectedGsmServiceIndex},'supportedModels',this.value)">${esc(service.serviceMeta?.supportedModels||'')}</textarea>
-            <textarea style="grid-column:1/-1" placeholder="Extra note" oninput="setGsmMeta('${category[0]}',${selectedGsmServiceIndex},'note',this.value)">${esc(service.serviceMeta?.note||'')}</textarea>
-          </div></div>
-          <div class="field"><label>Username automatisch = e-mail</label><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" ${service.usernameFromEmail===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].usernameFromEmail=this.checked;markChanged()"> E-mail als username gebruiken</label></div>
-          <div class="field"><label>Verplichte velden</label><div style="display:flex;gap:10px;flex-wrap:wrap;font-size:12px">${['email','username','imei','serial'].map(f=>`<label style="display:flex;align-items:center;gap:5px"><input type="checkbox" ${service.requiredFields.includes(f)?'checked':''} onchange="toggleGsmRequiredField('${category[0]}',${selectedGsmServiceIndex},'${f}',this.checked)">${f}</label>`).join('')}</div></div>
-          <div class="field" style="grid-column:1/-1"><label>Velden van de order</label><div style="padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px">${renderGsmFormFieldsEditor(category[0],selectedGsmServiceIndex,service)}</div></div>
           <div class="field"><label>Service icon</label><input value="${esc(service.icon||'🔧')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].icon=this.value;markChanged();renderGsmServices()"></div>
         </div>
-        <div style="margin-top:10px;padding:11px 13px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;font-size:11px;color:#64748b"><strong style="color:#334155">Bron:</strong> ${esc(service.source||'Handmatig')} ${service.sourceId?`• ID: ${esc(service.sourceId)}`:''}${service.sourceUrl?`<br><a href="${esc(service.sourceUrl)}" target="_blank" rel="noopener" style="color:#2563eb">Open bronpagina</a>`:''}${service.lastSynced?`<br>Laatste sync: ${esc(service.lastSynced)}`:''}</div>
         <div class="actions" style="margin-top:8px"><button type="button" class="btn btn-green" onclick="saveGsmServiceEditor('${category[0]}',${selectedGsmServiceIndex})">Opslaan</button></div>
       </div>`;
   }else{
     editor='<div class="editor-panel editor-empty">Kies links een service of klik op + Nieuwe service.</div>';
   }
 
-  const gsmSearchTool=`<div class="gsm-price-tool" style="margin:12px 0;padding:14px 16px;border:1px solid #dbe4ef;border-radius:12px;background:#f8fafc">
-    <div style="font-weight:900;color:#0f172a;margin-bottom:4px">🔎 Zoek GSM-service</div>
-    <div style="font-size:12px;color:#64748b;margin-bottom:10px">Zoek op naam, groep of USD bronprijs binnen de gekozen categorie.</div>
-    <input id="gsmServiceSearch" type="search" value="${esc(gsmServiceSearch)}" placeholder="Bijv. Alcatel, FRP, iCloud, 15..." oninput="gsmServiceSearch=this.value;filterGsmServiceRows()" style="width:100%;max-width:620px">
-  </div>`;
-  box.innerHTML=`${gsmSearchTool}<div class="gsm-admin-tabs">${tabs}</div><div class="gsm-editor-layout"><div class="editor-list"><div class="card-head" style="margin-bottom:8px"><div class="editor-list-title" style="padding:0">${esc(category[1])}</div><button class="btn btn-green" type="button" onclick="addGsmService('${category[0]}')">+ Nieuwe service</button></div>${rows}</div>${editor}</div>`;
-}
-
-function setGsmBulkPrice(category,replaceAll){
-  const input=document.getElementById('gsmBulkPrice');
-  const value=String(input?.value||'').trim();
-  if(value==='' || !Number.isFinite(Number(value)) || Number(value)<0){alert('Vul eerst een geldige EUR-prijs in.');return}
-  const list=data.gsmServices?.[category];
-  if(!Array.isArray(list)) return;
-  let changed=0;
-  list.forEach(s=>{
-    if(replaceAll || String(s.price||'').trim()===''){
-      s.price=Number(value).toFixed(2).replace(/\.00$/,'');
-      s.priceCurrency='EUR';
-      changed++;
-    }
-  });
-  markChanged();
-  renderGsmServices();
-  alert(changed+' HOMS TECH prijzen ingesteld op € '+Number(value).toFixed(2));
-}
-function clearGsmBulkPrices(category){
-  const list=data.gsmServices?.[category];
-  if(!Array.isArray(list)) return;
-  if(!confirm('Alle HOMS TECH prijzen in deze categorie wissen? De bronprijzen blijven behouden.')) return;
-  list.forEach(s=>{s.price='';s.priceCurrency='EUR'});
-  markChanged();
-  renderGsmServices();
+  box.innerHTML=`<div class="gsm-admin-tabs">${tabs}</div><div class="gsm-editor-layout"><div class="editor-list"><div class="card-head" style="margin-bottom:8px"><div class="editor-list-title" style="padding:0">${esc(category[1])}</div><button class="btn btn-green" type="button" onclick="addGsmService('${category[0]}')">+ Nieuwe service</button></div>${rows}</div>${editor}</div>`;
 }
 
 function openGsmServiceEditor(category,i){
@@ -4426,22 +4279,10 @@ async function saveGsmServiceEditor(category,i){
   await save();
 }
 
-function setGsmMeta(category,index,key,value){const s=data.gsmServices?.[category]?.[index];if(!s)return;if(!s.serviceMeta||typeof s.serviceMeta!=='object')s.serviceMeta={};s.serviceMeta[key]=value;markChanged()}
-function renderGsmFormFieldsEditor(category,index,service){
-  const fields=Array.isArray(service.formFields)?service.formFields:[];
-  const row=(f,i)=>`<div style="display:grid;grid-template-columns:1.1fr 1.5fr 100px 75px 120px 32px;gap:7px;align-items:center;margin-bottom:7px"><input placeholder="key" value="${esc(f.key||'')}" oninput="updateGsmFormField('${category}',${index},${i},'key',this.value)"><input placeholder="Label" value="${esc(f.label||'')}" oninput="updateGsmFormField('${category}',${index},${i},'label',this.value)"><select onchange="updateGsmFormField('${category}',${index},${i},'type',this.value)"><option value="text" ${f.type==='text'?'selected':''}>text</option><option value="email" ${f.type==='email'?'selected':''}>email</option><option value="textarea" ${f.type==='textarea'?'selected':''}>textarea</option></select><label style="font-size:11px"><input type="checkbox" ${f.required?'checked':''} onchange="updateGsmFormField('${category}',${index},${i},'required',this.checked)"> verplicht</label><label style="font-size:11px"><input type="checkbox" ${f.autoFromEmail?'checked':''} onchange="updateGsmFormField('${category}',${index},${i},'autoFromEmail',this.checked)"> auto e-mail</label><button type="button" class="btn btn-light" onclick="removeGsmFormField('${category}',${index},${i})">×</button></div>`;
-  return (fields.length?fields.map(row).join(''):'<div class="small">Geen extra velden.</div>')+`<button type="button" class="btn btn-light" style="margin-top:4px" onclick="addGsmFormField('${category}',${index})">+ Veld toevoegen</button>`;
-}
-function updateGsmFormField(category,index,i,key,value){const s=data.gsmServices?.[category]?.[index];if(!s)return;if(!Array.isArray(s.formFields))s.formFields=[];if(!s.formFields[i])s.formFields[i]={};s.formFields[i][key]=value;markChanged();renderGsmServices()}
-function addGsmFormField(category,index){const s=data.gsmServices?.[category]?.[index];if(!s)return;if(!Array.isArray(s.formFields))s.formFields=[];s.formFields.push({key:'field_'+(s.formFields.length+1),label:'Nieuw veld',type:'text',required:false,autoFromEmail:false,placeholder:''});markChanged();renderGsmServices()}
-function removeGsmFormField(category,index,i){const s=data.gsmServices?.[category]?.[index];if(!s)return;if(!Array.isArray(s.formFields))s.formFields=[];s.formFields.splice(i,1);markChanged();renderGsmServices()}
-
-function toggleGsmRequiredField(category,index,field,checked){const s=data.gsmServices?.[category]?.[index];if(!s)return;if(!Array.isArray(s.requiredFields))s.requiredFields=[];s.requiredFields=s.requiredFields.filter(v=>v!==field);if(checked)s.requiredFields.push(field);if(field==='username')s.requiresUsername=checked;if(field==='imei')s.requiresImei=checked;if(field==='serial')s.requiresSerial=checked;markChanged();renderGsmServices()}
-
 function addGsmService(key){
   if(!data.gsmServices[key]) data.gsmServices[key]=[];
   const categoryLabel=(gsmServiceCategories.find(x=>x[0]===key)||[key,key])[1].replace(/^[^ ]+ /,'');
-  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",group:categoryLabel,shortDescription:"",details:"",price:"",sourcePrice:"",sourceCurrency:"USD",priceCurrency:"EUR",deliveryTime:"",active:true,hot:false,requiresUsername:false,requiresImei:false,requiresSerial:false,requiredFields:[],formFields:[],instructions:'',serviceMeta:{deliveryTime:"",availability:"",refund:"",warning:"",supportedModels:"",note:""},usernameFromEmail:false,source:"",sourceId:"",sourceUrl:""});
+  data.gsmServices[key].push({icon:"🔧",name:"Nieuwe service",group:categoryLabel,shortDescription:"",details:"",price:"",active:true,requiresUsername:false,requiresImei:false});
   gsmActiveCategory=key;
   selectedGsmServiceIndex=data.gsmServices[key].length-1;
   renderGsmServices();
@@ -4491,10 +4332,10 @@ function renderGsmOrders(){
   const box=document.getElementById('ordersList'); if(!box)return;
   const q=(document.getElementById('gsmOrderSearch')?.value||'').trim().toLowerCase();
   const filter=document.getElementById('gsmOrderStatusFilter')?.value||'';
-  const gsmOnly=adminGsmOrdersCache.filter(o=>!isRepairOrder(o)); const filtered=gsmOnly.filter(o=>(!q||orderSearchText(o).includes(q))&&(!filter||o.status===filter));
-  renderOrderSummary('gsmOrderSummary',gsmOnly,'gsm');
+  const filtered=adminGsmOrdersCache.filter(o=>(!q||orderSearchText(o).includes(q))&&(!filter||o.status===filter));
+  renderOrderSummary('gsmOrderSummary',adminGsmOrdersCache,'gsm');
   const status=document.getElementById('ordersStatus');
-  if(status){status.className='order-count';status.textContent=`${filtered.length} van ${gsmOnly.length} GSM bestelling(en) zichtbaar`}
+  if(status){status.className='order-count';status.textContent=`${filtered.length} van ${adminGsmOrdersCache.length} bestelling(en) zichtbaar`}
   if(!filtered.length){box.innerHTML='<div class="order-empty">Geen bestellingen gevonden met deze zoekopdracht.</div>';return;}
   box.innerHTML=filtered.map(order=>{
     const date=order.created_at?new Date(order.created_at).toLocaleString('nl-NL'):'';
@@ -4570,221 +4411,6 @@ async function updateOrderStatus(id,statusValue){
   }finally{
     if(select)select.disabled=false;
   }
-}
-
-
-/* ---------------- REPAIR ORDERS ---------------- */
-
-let repairOrdersCache=[];
-
-function isRepairOrder(order){
-  const notes=String(order?.notes||"").toLowerCase();
-  const category=String(order?.service_category||"").toLowerCase();
-  const group=String(order?.service_group||"").toLowerCase();
-  const service=String(order?.service_name||"").toLowerCase();
-
-  // Repair forms use these fields in the order notes. This is deliberately
-  // broader than one exact Dutch phrase so old/new repair orders stay separate.
-  const repairNoteFields=[
-    "methode:",
-    "toestel:",
-    "gewenste datum:",
-    "gewenste tijd:",
-    "probleem:"
-  ];
-  const hasRepairNotes=repairNoteFields.some(key=>notes.includes(key));
-
-  return hasRepairNotes
-    || category.includes("repar")
-    || category.includes("repair")
-    || group.includes("repar")
-    || group.includes("repair")
-    || group.includes("aan huis")
-    || service.includes("reparatie")
-    || service.includes("repair");
-}
-
-function parseRepairOrderNotesForPage(notes){
-  const result={method:"",device:"",address:"",city:"",date:"",time:"",problem:""};
-  String(notes||"").split(/\r?\n/).forEach(line=>{
-    const m=line.match(/^([^:]+):\s*(.*)$/);
-    if(!m)return;
-    const key=m[1].trim().toLowerCase();
-    const value=m[2].trim();
-    if(key==="methode")result.method=value;
-    else if(key==="toestel")result.device=value;
-    else if(key==="adres")result.address=value;
-    else if(key==="postcode/plaats")result.city=value;
-    else if(key==="gewenste datum")result.date=value;
-    else if(key==="gewenste tijd")result.time=value;
-    else if(key==="probleem")result.problem=value;
-  });
-  return result;
-}
-
-function repairOrderSearchText(order){
-  const p=parseRepairOrderNotesForPage(order?.notes||"");
-  return [
-    order?.id,order?.name,order?.email,order?.phone,order?.imei,
-    order?.service_name,order?.service_group,order?.service_category,
-    p.method,p.device,p.address,p.city,p.date,p.time,p.problem
-  ].filter(Boolean).join(" ").toLowerCase();
-}
-
-function renderRepairSummary(orders){
-  const box=document.getElementById("repairOrderSummary");
-  if(!box)return;
-  const total=orders.length;
-  const nieuw=orders.filter(o=>(o.status||"Nieuw")==="Nieuw").length;
-  const bezig=orders.filter(o=>(o.status||"Nieuw")==="In behandeling").length;
-  const klaar=orders.filter(o=>(o.status||"Nieuw")==="Voltooid").length;
-  box.innerHTML=`
-    <div class="order-stat stat-total"><div class="stat-icon">🔧</div><div><b>${total}</b><span>Totaal reparaties</span></div></div>
-    <div class="order-stat stat-new"><div class="stat-icon">✓</div><div><b>${nieuw}</b><span>Nieuw</span></div></div>
-    <div class="order-stat stat-progress"><div class="stat-icon">◷</div><div><b>${bezig}</b><span>In behandeling</span></div></div>
-    <div class="order-stat stat-done"><div class="stat-icon">✓</div><div><b>${klaar}</b><span>Voltooid</span></div></div>`;
-}
-
-function renderRepairOrders(){
-  const box=document.getElementById("repairOrdersList");
-  if(!box)return;
-
-  const q=(document.getElementById("repairOrderSearch")?.value||"").trim().toLowerCase();
-  const filter=document.getElementById("repairOrderStatusFilter")?.value||"";
-  const filtered=repairOrdersCache.filter(o=>
-    (!q||repairOrderSearchText(o).includes(q)) &&
-    (!filter||(o.status||"Nieuw")===filter)
-  );
-
-  renderRepairSummary(repairOrdersCache);
-
-  const status=document.getElementById("repairOrdersStatus");
-  if(status){
-    status.className="status info";
-    status.textContent=`${filtered.length} van ${repairOrdersCache.length} reparatieorder(s) zichtbaar`;
-  }
-
-  if(!filtered.length){
-    box.innerHTML='<div class="order-empty">Geen reparatieorders gevonden.</div>';
-    return;
-  }
-
-  box.innerHTML=filtered.map(order=>{
-    const p=parseRepairOrderNotesForPage(order.notes||"");
-    const created=order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"";
-    const statusLabel=order.status||"Nieuw";
-    const price=order.price?`€ ${esc(order.price)}`:"Op aanvraag";
-
-    return `<article class="order-card">
-      <div class="order-card-head">
-        <div class="order-heading">
-          <div class="order-number">#${esc(order.id)}</div>
-          <div>
-            <div class="order-title">🔧 ${esc(order.service_name||"Reparatie")}</div>
-            <div class="order-meta">${esc(p.method||order.service_group||"Reparatie")} · ${esc(created)}</div>
-          </div>
-        </div>
-        <div class="order-actions">
-          <select class="order-status-select" data-order-id="${Number(order.id)}"
-            onchange="updateOrderStatus(${Number(order.id)},this.value)">
-            ${["Nieuw","In behandeling","Voltooid","Geannuleerd"].map(x=>
-              `<option value="${esc(x)}" ${statusLabel===x?"selected":""}>${esc(x)}</option>`).join("")}
-          </select>
-          <button class="btn btn-light" onclick="showRepairOrderDetails(${Number(order.id)})">◉ Details</button>
-          ${hasPermission("orders.delete")?`<button class="btn btn-red" onclick="deleteGsmOrder(${Number(order.id)})">▣ Verwijderen</button>`:""}
-        </div>
-      </div>
-
-      <div class="order-main">
-        <div class="order-grid">
-          <div class="order-info"><strong>Klant</strong><span>${esc(order.name||"-")}</span></div>
-          <div class="order-info"><strong>Telefoon</strong><span>${esc(order.phone||"-")}</span></div>
-          <div class="order-info"><strong>E-mail</strong><span>${esc(order.email||"-")}</span></div>
-          <div class="order-info"><strong>Toestel</strong><span>${esc(p.device||"-")}</span></div>
-          <div class="order-info order-price"><strong>Prijs</strong><span>${price}</span></div>
-          <div class="order-info"><strong>IMEI</strong><span>${esc(order.imei||"-")}</span></div>
-        </div>
-
-        <div style="margin-top:14px;padding:14px;border:1px solid #e5eaf1;border-radius:12px;background:#f8fafc">
-          <div style="font-weight:800;color:#172033;margin-bottom:10px">📅 Afspraak / verzending</div>
-          <div class="order-grid">
-            <div class="order-info"><strong>Methode</strong><span>${esc(p.method||order.service_group||"-")}</span></div>
-            <div class="order-info"><strong>Adres</strong><span>${esc(p.address||"-")}</span></div>
-            <div class="order-info"><strong>Postcode / plaats</strong><span>${esc(p.city||"-")}</span></div>
-            <div class="order-info"><strong>Datum</strong><span>${esc(p.date||"-")}</span></div>
-            <div class="order-info"><strong>Tijd</strong><span>${esc(p.time||"-")}</span></div>
-          </div>
-        </div>
-
-        ${p.problem?`<div class="order-notes"><strong>📝 Probleem</strong><br>${esc(p.problem)}</div>`:""}
-      </div>
-    </article>`;
-  }).join("");
-
-  applyPermissionUI();
-}
-
-async function loadRepairOrders(){
-  const box=document.getElementById("repairOrdersList");
-  const status=document.getElementById("repairOrdersStatus");
-  if(!box)return;
-
-  if(status){
-    status.className="status info";
-    status.textContent="Reparatieorders laden...";
-  }
-  box.innerHTML="";
-
-  try{
-    const r=await fetch("/api/admin/orders",{credentials:"same-origin"});
-    const result=await r.json().catch(()=>({}));
-    if(!r.ok)throw new Error(result.error||"Reparatieorders konden niet worden geladen.");
-    repairOrdersCache=(result.orders||[]).filter(isRepairOrder);
-    renderRepairOrders();
-  }catch(e){
-    if(status){
-      status.className="status error";
-      status.textContent="✕ "+e.message;
-    }
-  }
-}
-
-function clearRepairOrderFilters(){
-  const q=document.getElementById("repairOrderSearch");
-  const s=document.getElementById("repairOrderStatusFilter");
-  if(q)q.value="";
-  if(s)s.value="";
-  renderRepairOrders();
-}
-
-async function showRepairOrderDetails(id){
-  const order=repairOrdersCache.find(x=>Number(x.id)===Number(id));
-  if(!order){
-    await loadRepairOrders();
-  }
-  const found=repairOrdersCache.find(x=>Number(x.id)===Number(id));
-  if(!found){
-    alert("Reparatieorder niet gevonden.");
-    return;
-  }
-  const p=parseRepairOrderNotesForPage(found.notes||"");
-  showOrderDetails("Repair Order #"+id,{
-    "Order":"#"+found.id,
-    "Status":found.status||"Nieuw",
-    "Service":found.service_name||"-",
-    "Methode":p.method||found.service_group||"-",
-    "Klant":found.name||"-",
-    "E-mail":found.email||"-",
-    "Telefoon":found.phone||"-",
-    "Toestel":p.device||"-",
-    "IMEI / Serienummer":found.imei||"-",
-    "Adres":p.address||"-",
-    "Postcode / plaats":p.city||"-",
-    "Gewenste datum":p.date||"-",
-    "Gewenste tijd":p.time||"-",
-    "Probleem":p.problem||"-",
-    "Aangemaakt":found.created_at?new Date(found.created_at).toLocaleString("nl-NL"):"-"
-  });
 }
 
 /* ---------------- WEBSHOP ORDERS ---------------- */
@@ -4998,7 +4624,7 @@ async function save(isAuto=false){
 
     const r=await fetch("/api/site",{
       method:"PUT",
-      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      headers:{"Content-Type":"application/json","Accept":"application/json","X-Homs-Admin-Section":currentPage},
       credentials:"same-origin",
       body:JSON.stringify(data)
     });
@@ -5120,84 +4746,26 @@ async function deleteAdmin(id){
 
 /* ---------------- ORDER DETAILS / DELETE ---------------- */
 
-function orderFieldLabel(key){
-  const labels={
-    id:"Ordernummer", customer_id:"Klant-ID", name:"Naam", email:"E-mail", phone:"Telefoon",
-    street:"Straat", house_number:"Huisnummer", postcode:"Postcode", city:"Plaats",
-    total:"Totaal", status:"Status", payment_method:"Betaalmethode", payment_status:"Betaalstatus",
-    paypal_order_id:"PayPal order-ID", created_at:"Aangemaakt op"
-  };
-  return labels[key] || key;
-}
-
-function formatOrderValue(key, value){
-  if(value===null || value===undefined) return "-";
-  if(key === "items" && Array.isArray(value)){
-    if(!value.length) return '<div style="color:#64748b">Geen producten</div>';
-    return `<div style="display:grid;gap:12px">${value.map((item,index)=>{
-      if(!item || typeof item !== "object") return `<div style="padding:12px;border:1px solid #e5e7eb;border-radius:12px">${esc(String(item))}</div>`;
-      const name=item.name || item.productName || item.title || "Product";
-      const qty=Math.max(1,Number(item.qty || item.quantity || 1));
-      const price=Number(item.unitPrice ?? item.price ?? 0);
-      const lineTotal=price*qty;
-      const options=item.options && typeof item.options === "object"
-        ? Object.entries(item.options).filter(([,v])=>v!==null&&v!==undefined&&String(v)!=="")
-        : [];
-      const optionHtml=options.length
-        ? `<div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px">${options.map(([k,v])=>`<span style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:999px;padding:5px 9px;font-size:12px;color:#475569"><strong>${esc(k)}:</strong> ${esc(String(v))}</span>`).join("")}</div>`
-        : "";
-      const image=item.image ? `<img src="${esc(String(item.image))}" alt="" style="width:64px;height:64px;object-fit:contain;border:1px solid #e5e7eb;border-radius:10px;background:#fff;flex:none" onerror="this.style.display='none'">` : "";
-      return `<div style="border:1px solid #e2e8f0;border-radius:14px;padding:14px;background:#fff;box-shadow:0 2px 8px rgba(15,23,42,.04)">
-        <div style="display:flex;gap:12px;align-items:flex-start">
-          ${image}
-          <div style="min-width:0;flex:1">
-            <div style="font-weight:800;font-size:15px;color:#0f172a">${esc(name)}</div>
-            <div style="margin-top:6px;color:#64748b;font-size:13px">Aantal: <strong>${esc(qty)}</strong>${price ? ` · € ${esc(price.toFixed(2).replace('.',','))} p/st.` : ""}</div>
-            ${optionHtml}
-          </div>
-          <div style="font-weight:800;font-size:15px;white-space:nowrap;color:#0f172a">€ ${esc(lineTotal.toFixed(2).replace('.',','))}</div>
-        </div>
-      </div>`;
-    }).join("")}</div>`;
-  }
-  if(key === "total") return `<strong style="font-size:20px;color:#0f172a">€ ${esc(Number(value||0).toFixed(2).replace('.',','))}</strong>`;
-  if(key === "payment_status"){
-    const paid=String(value).toLowerCase()==="paid";
-    const cls=paid?"background:#dcfce7;color:#166534;border-color:#bbf7d0":"background:#fef3c7;color:#92400e;border-color:#fde68a";
-    return `<span style="display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid;${cls};font-weight:800">${esc(String(value))}</span>`;
-  }
-  if(key === "payment_method") return `<strong>${esc(String(value))}</strong>`;
-  if(key === "created_at"){
-    const d=new Date(value); return isNaN(d)?esc(String(value)):esc(d.toLocaleString("nl-NL"));
-  }
-  if(typeof value === "object") return `<pre style="margin:0;white-space:pre-wrap">${esc(JSON.stringify(value,null,2))}</pre>`;
-  return esc(String(value));
-}
-
 function showOrderDetails(title, data){
   const existing=document.getElementById("orderDetailsModal");
   if(existing) existing.remove();
 
   const modal=document.createElement("div");
   modal.id="orderDetailsModal";
-  modal.style.cssText="position:fixed;inset:0;background:rgba(15,23,42,.62);backdrop-filter:blur(3px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px;";
-  const entries=Object.entries(data||{});
-  const rows=entries.map(([k,v])=>{
-    const isItems=k==="items";
-    return `<div style="padding:13px 0;border-bottom:1px solid #e5e7eb">
-      <div style="font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#64748b;font-weight:800;margin-bottom:7px">${esc(orderFieldLabel(k))}</div>
-      <div style="color:#111827">${formatOrderValue(k,v)}</div>
-    </div>`;
-  }).join("");
+  modal.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;";
+  const rows=Object.entries(data||{}).map(([k,v])=>`
+    <div style="padding:10px 0;border-bottom:1px solid #e5eaf1">
+      <strong>${esc(k)}</strong><br>
+      <span style="white-space:pre-wrap">${esc(v===null||v===undefined?"":String(v))}</span>
+    </div>`).join("");
   modal.innerHTML=`
-    <div style="background:#fff;border-radius:20px;max-width:820px;width:100%;max-height:92vh;overflow:auto;box-shadow:0 25px 70px rgba(0,0,0,.25)">
-      <div style="position:sticky;top:0;z-index:2;background:#fff;border-bottom:1px solid #e5e7eb;padding:18px 22px;display:flex;justify-content:space-between;gap:12px;align-items:center">
-        <h2 style="margin:0;font-size:20px;color:#0f172a">${esc(title)}</h2>
-        <button class="btn btn-light" onclick="document.getElementById('orderDetailsModal').remove()" style="border-radius:10px">✕</button>
+    <div style="background:#fff;border-radius:16px;max-width:760px;width:100%;max-height:90vh;overflow:auto;padding:22px">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+        <h2 style="margin:0">${esc(title)}</h2>
+        <button class="btn btn-light" onclick="document.getElementById('orderDetailsModal').remove()">✕</button>
       </div>
-      <div style="padding:8px 22px 22px">${rows}</div>
+      <div style="margin-top:14px">${rows}</div>
     </div>`;
-  modal.addEventListener("click",e=>{if(e.target===modal) modal.remove();});
   document.body.appendChild(modal);
 }
 
