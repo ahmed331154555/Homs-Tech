@@ -4,546 +4,203 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>GSM Services | HOMS TECH</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f7fa;color:#111827;line-height:1.6}
-a{text-decoration:none}
-header{background:#111827;color:#fff;padding:13px 5%;display:flex;justify-content:space-between;align-items:center;gap:20px;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,.15)}
-.brand img{width:170px}.brand{display:block}
-nav{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
-nav a{color:#fff;font-weight:700;padding:10px 14px;border-radius:9px}
-nav a:hover,nav a.active{background:#2563eb}
-
-.hero{background:radial-gradient(circle at 75% 35%,rgba(37,99,235,.35),transparent 35%),linear-gradient(135deg,#07101f,#1b2b43);color:#fff;padding:58px 5%}
-.hero-inner{max-width:none;width:100%;margin:auto;text-align:center}
-.hero h1{font-size:clamp(40px,6vw,64px);line-height:1.08;margin:0 0 15px;font-weight:900}
-.hero h1 span{color:#60a5fa}.hero p{font-size:18px;max-width:760px;margin:0 auto 24px;color:#e5e7eb}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:10px;font-weight:800;border:0;cursor:pointer}
-.green{background:#16c766;color:#fff}
-
-.section{max-width:none;width:100%;margin:0;padding:42px 24px}
-.gsm-shell{width:100%;background:#fff;border:1px solid #e5e7eb;border-radius:18px;box-shadow:0 10px 35px rgba(15,23,42,.07);overflow:hidden}
-.gsm-head{padding:25px 25px 18px}
-.gsm-head h2{margin:0;font-size:30px;font-weight:900}
-.gsm-head p{margin:5px 0 0;color:#64748b}
-
-.tabs{display:flex;gap:9px;overflow-x:auto;padding:0 25px 16px;border-bottom:1px solid #e5e7eb}
-.tab{flex:0 0 auto;border:1px solid #dbe3ec;background:#fff;color:#334155;border-radius:9px;padding:10px 14px;font-weight:800;cursor:pointer;white-space:nowrap}
-.tab:hover{background:#f1f5f9}.tab.active{background:#2563eb;border-color:#2563eb;color:#fff}
-
-.info{margin:18px 25px;padding:13px 15px;border:1px solid #bfdbfe;border-left:3px solid #2563eb;border-radius:10px;background:#eff6ff;color:#1e3a8a;font-size:13px}
-.toolbar{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(220px,.7fr);gap:14px;padding:0 25px 18px}
-.search{display:flex;align-items:center;gap:10px;border:1px solid #dbe3ec;background:#fff;border-radius:10px;padding:0 13px}
-.search span{font-size:22px;color:#64748b}
-.search input{width:100%;border:0;outline:0;background:transparent;padding:13px 0;font-size:14px}
-#groupFilter{width:100%;border:1px solid #dbe3ec;background:#fff;color:#111827;border-radius:10px;padding:13px;outline:0}
-
-.browser{margin:0 25px 25px;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;background:#fff}
-.meta{padding:12px 15px;color:#64748b;font-size:12px;border-bottom:1px solid #e2e8f0}
-.group{border-bottom:1px solid #e2e8f0}.group:last-child{border-bottom:0}
-.group-head{display:flex;align-items:center;gap:10px;padding:13px 15px;background:#f8fafc;color:#1e293b;font-size:13px;font-weight:900;letter-spacing:.4px}
-.group-count{display:inline-flex;align-items:center;justify-content:center;min-width:25px;height:22px;padding:0 7px;border-radius:999px;background:#dbeafe;color:#2563eb;font-size:11px}
-.row{display:flex;align-items:center;gap:12px;min-height:62px;padding:10px 13px;border-top:1px solid #edf2f7;background:#fff;color:#1e293b;cursor:pointer;transition:background .15s,border-color .15s}
-.row:hover{background:#f8fbff}
-.icon{width:36px;height:36px;flex:0 0 36px;border-radius:8px;border:1px solid #dbe3ec;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-size:18px}
-.copy{min-width:0;flex:1}
-.name{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#172033}
-.sub{margin-top:3px;font-size:11px;color:#718096;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.price{flex:0 0 auto;border:1px solid #176fd1;background:#056bdc;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:900;min-width:62px;text-align:center}
-.arrow{flex:0 0 auto;color:#64748b;font-size:22px}
-.empty{padding:35px 20px;text-align:center;color:#64748b}
-
-.order{margin-top:30px;background:#111827;color:#fff;border-radius:18px;padding:34px 25px;text-align:center}
-.order h2{font-size:29px;margin:0 0 8px}.order p{color:#cbd5e1;max-width:700px;margin:0 auto 20px}
-
-footer{background:#0b1422;color:#fff;padding:38px 5%}
-.footer-inner{max-width:none;width:100%;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:25px}
-.footer-logo img{width:165px}.footer-center{text-align:center;color:#cbd5e1}
-
-.modal{position:fixed;inset:0;background:rgba(2,8,23,.65);display:none;align-items:center;justify-content:center;padding:20px;z-index:300}
-.modal.open{display:flex}
-.modal-box{width:min(620px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:18px;box-shadow:0 25px 80px rgba(0,0,0,.25);padding:25px}
-.modal-top{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;border-bottom:1px solid #e5e7eb;padding-bottom:15px;margin-bottom:18px}
-.modal-title{display:flex;gap:12px;align-items:center}
-.modal-icon{width:46px;height:46px;border-radius:10px;background:#eff6ff;border:1px solid #bfdbfe;display:flex;align-items:center;justify-content:center;font-size:23px}
-.modal h3{margin:0;font-size:22px}.modal-group{color:#64748b;font-size:12px;margin-top:3px}
-.close{border:0;background:#f1f5f9;border-radius:9px;width:38px;height:38px;font-size:22px;cursor:pointer}
-.detail{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:15px;margin-bottom:15px;white-space:pre-line}
-.modal-price{font-size:25px;font-weight:900;margin:8px 0 18px;color:#0f172a}
-.modal-actions{display:flex;gap:10px}.modal-actions .btn{flex:1}
-
-
-.order-form{display:grid;grid-template-columns:1fr 1fr;gap:13px;text-align:left;margin-top:18px}
-.order-form .field{display:flex;flex-direction:column;gap:6px}
-.order-form .field.full{grid-column:1/-1}
-.order-form label{font-size:13px;font-weight:800;color:#e5e7eb}
-.order-form input,.order-form textarea{width:100%;padding:12px 13px;border:1px solid #334155;border-radius:10px;background:#0f172a;color:#fff;outline:none;font:inherit}
-.order-form input:focus,.order-form textarea:focus{border-color:#60a5fa}
-.order-form textarea{min-height:95px;resize:vertical}
-.order-submit{margin-top:2px;width:100%;background:#16c766;color:#fff}
-.order-status{grid-column:1/-1;padding:11px 13px;border-radius:10px;font-size:13px;display:none}
-.order-status.success{display:block;background:#dcfce7;color:#166534}
-.order-status.error{display:block;background:#fee2e2;color:#991b1b}
-@media(max-width:550px){.order-form{grid-template-columns:1fr}.order-form .field.full{grid-column:auto}}
-
-@media(max-width:750px){
-  header{flex-wrap:wrap;justify-content:center}nav{order:3;width:100%}
-  .toolbar{grid-template-columns:1fr}
-  .row{min-height:58px}.name{font-size:13px}
-}
-@media(max-width:550px){
-  .brand img{width:150px}nav a{font-size:13px;padding:8px 9px}
-  .hero{padding:48px 5%}.hero h1{font-size:40px}
-  .gsm-head,.tabs,.toolbar{padding-left:15px;padding-right:15px}
-  .info{margin-left:15px;margin-right:15px}.browser{margin-left:15px;margin-right:15px}
-  .price{min-width:54px;padding:5px 7px}.modal-actions{flex-direction:column}
-  .footer-inner{flex-direction:column;text-align:center}
-}
-</style>
 <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20260922-final-header">
 <style>
-/* HOMS TECH FINAL HEADER OVERRIDE — self-contained */
-/* HOMS TECH TOPBAR FINAL POLISH */
-.ht-topbar{background:#071d2d!important;color:#dbeafe!important;border-bottom:1px solid rgba(255,255,255,.08)!important;font-size:12px!important;}
-.ht-topbar .ht-container{min-height:34px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:18px!important;}
-.ht-topinfo{display:flex!important;align-items:center!important;justify-content:center!important;gap:22px!important;white-space:nowrap!important;}
-.ht-topinfo span{display:inline-flex!important;align-items:center!important;gap:6px!important;line-height:1!important;color:#dbeafe!important;}
-.ht-topinfo span b{font-size:11px!important;color:#60a5fa!important;font-weight:900!important;}
-.ht-rating{display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;color:#fff!important;font-weight:700!important;white-space:nowrap!important;}
-@media(max-width:900px){.ht-topbar .ht-container{padding:0 14px!important}.ht-topinfo{gap:12px!important;overflow:hidden!important}.ht-topinfo span:nth-child(n+3){display:none!important}.ht-rating{font-size:11px!important}}
-
-.ht-header{position:sticky!important;top:0!important;z-index:9999!important;background:#fff!important;color:#172330!important;border-bottom:1px solid #e2e8f0!important;box-shadow:0 4px 18px rgba(7,29,45,.06)!important;}
-.ht-header *{box-sizing:border-box!important;}
-.ht-header .ht-container{max-width:1180px!important;margin:0 auto!important;padding:0 18px!important;}
-.ht-header .ht-header-main{min-height:76px!important;display:flex!important;align-items:center!important;gap:22px!important;background:#fff!important;}
-.ht-header .ht-brand{display:flex!important;align-items:center!important;flex:0 0 auto!important;background:transparent!important;padding:0!important;}
-.ht-header .ht-brand img{width:154px!important;max-width:154px!important;height:auto!important;display:block!important;object-fit:contain!important;}
-.ht-header .ht-search{height:42px!important;display:flex!important;align-items:center!important;flex:1!important;max-width:500px!important;background:#f4f7fa!important;border:1px solid #e1e7ee!important;border-radius:10px!important;overflow:hidden!important;margin-left:10px!important;padding:0!important;}
-.ht-header .ht-search span{font-size:23px!important;color:#64748b!important;padding-left:13px!important;}
-.ht-header .ht-search input{border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;width:100%!important;padding:0 10px!important;color:#172330!important;}
-.ht-header .ht-search button{height:100%!important;border:0!important;background:#2563eb!important;color:#fff!important;font-weight:800!important;padding:0 17px!important;cursor:pointer!important;border-radius:0!important;}
-.ht-header .ht-actions{display:flex!important;align-items:center!important;gap:16px!important;margin-left:auto!important;white-space:nowrap!important;}
-.ht-header .ht-actions a{background:transparent!important;color:#334155!important;text-decoration:none!important;font-size:13px!important;font-weight:750!important;padding:6px 0!important;border-radius:0!important;}
-.ht-header .ht-actions a:hover{background:transparent!important;color:#2563eb!important;}
-.ht-header .ht-nav{display:flex!important;align-items:center!important;gap:5px!important;min-height:46px!important;overflow:auto!important;background:#fff!important;padding:0!important;margin:0!important;}
-.ht-header .ht-nav a{background:transparent!important;color:#334155!important;text-decoration:none!important;font-size:14px!important;font-weight:750!important;padding:9px 13px!important;border-radius:9px!important;white-space:nowrap!important;}
-.ht-header .ht-nav a:hover,.ht-header .ht-nav a.active{background:#edf4ff!important;color:#2563eb!important;}
-@media(max-width:900px){.ht-header .ht-actions a:nth-child(1),.ht-header .ht-actions a:nth-child(2){display:none!important}.ht-header .ht-header-main{flex-wrap:wrap!important;padding:10px 0!important}.ht-header .ht-search{order:3!important;max-width:none!important;flex-basis:100%!important;margin:0 0 4px!important}.ht-header .ht-nav{padding-bottom:7px!important}}
-@media(max-width:560px){.ht-header .ht-container{padding:0 12px!important}.ht-header .ht-brand img{width:138px!important;max-width:138px!important}.ht-header .ht-actions{gap:10px!important}.ht-header .ht-actions a{font-size:12px!important}.ht-header .ht-nav a{font-size:12px!important;padding:8px 10px!important}}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#172033;line-height:1.45}
+a{text-decoration:none}
+/* HOMS header */
+.ht-topbar{height:40px;background:#071d2d;color:#eaf4ff;overflow:hidden;width:100%}
+.ht-topbar .ht-container{height:100%;max-width:1440px;margin:auto;overflow:hidden}
+.ht-marquee{height:100%;width:max-content;display:flex;align-items:center;gap:42px;white-space:nowrap;animation:marquee 15s linear infinite}
+.ht-marquee-item{font-size:13px;font-weight:800}.ht-marquee-item b{color:#60a5fa;margin-right:6px}
+@keyframes marquee{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
+.ht-header{position:sticky;top:0;z-index:1000;background:#fff;border-bottom:1px solid #e1e7ee;box-shadow:0 3px 15px rgba(7,29,45,.06)}
+.ht-container-main{max-width:1440px;margin:auto;padding:0 18px}
+.ht-header-main{min-height:74px;display:flex;align-items:center;gap:20px}
+.ht-brand img{width:154px;display:block}.ht-search{height:42px;display:flex;align-items:center;flex:1;max-width:500px;background:#f4f7fa;border:1px solid #e1e7ee;border-radius:9px;overflow:hidden}
+.ht-search span{font-size:22px;color:#64748b;padding-left:13px}.ht-search input{border:0;outline:0;background:transparent;width:100%;padding:0 10px}.ht-search button{height:100%;border:0;background:#2563eb;color:#fff;font-weight:800;padding:0 17px;cursor:pointer}
+.ht-actions{display:flex;gap:15px;margin-left:auto;white-space:nowrap}.ht-actions a{color:#334155;font-size:13px;font-weight:750}.ht-actions a:hover{color:#2563eb}
+.ht-nav{display:flex;gap:4px;overflow:auto;min-height:45px;align-items:center}.ht-nav a{color:#334155;font-size:13px;font-weight:750;padding:8px 11px;border-radius:8px;white-space:nowrap}.ht-nav a:hover,.ht-nav a.active{background:#edf4ff;color:#2563eb}
+/* GSM portal */
+.gsm-nav{background:#071d2d;color:#fff;border-bottom:1px solid #132c42}
+.gsm-nav-inner{max-width:1440px;margin:auto;padding:0 18px;display:flex;align-items:center;gap:5px;overflow:auto}
+.gsm-nav a{color:#dbeafe;font-weight:800;font-size:13px;padding:13px 15px;white-space:nowrap;border-bottom:3px solid transparent}.gsm-nav a:hover,.gsm-nav a.active{background:#102d46;color:#fff;border-bottom-color:#3b82f6}
+.gsm-nav .spacer{flex:1}.gsm-login{color:#fff!important;background:#2563eb;border-radius:7px;padding:8px 12px!important;border:0!important}
+.page{max-width:1440px;margin:auto;padding:28px 18px 50px}
+.breadcrumb{font-size:12px;color:#64748b;margin-bottom:8px}.breadcrumb b{color:#2563eb}
+.page-title{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:20px}.page-title h1{margin:0;font-size:31px;letter-spacing:-.5px}.page-title p{margin:5px 0 0;color:#64748b;font-size:13px}.live{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:900;white-space:nowrap}
+.filters{background:#fff;border:1px solid #dfe7ef;border-radius:10px;box-shadow:0 5px 20px rgba(15,23,42,.05);padding:14px;display:grid;grid-template-columns:minmax(0,1.7fr) minmax(180px,.65fr) auto;gap:10px;margin-bottom:18px}
+.input,.select{height:43px;border:1px solid #d7e0ea;background:#fff;border-radius:7px;padding:0 12px;outline:0;color:#172033;font-size:13px}.input:focus,.select:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.hot{height:43px;display:flex;align-items:center;gap:8px;border:1px solid #d7e0ea;border-radius:7px;padding:0 13px;font-size:12px;font-weight:800;color:#475569;white-space:nowrap}.hot input{accent-color:#2563eb}
+.layout{display:grid;grid-template-columns:225px minmax(0,1fr);gap:16px;align-items:start}
+.sidebar,.catalog{background:#fff;border:1px solid #dfe7ef;border-radius:10px;box-shadow:0 5px 20px rgba(15,23,42,.04)}
+.side-title{padding:13px 14px;border-bottom:1px solid #e5eaf0;font-size:13px;font-weight:900}.side-list{padding:7px}.side-btn{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;background:#fff;text-align:left;padding:10px 9px;border-radius:7px;color:#475569;font-size:12px;font-weight:750;cursor:pointer}.side-btn:hover,.side-btn.active{background:#edf4ff;color:#2563eb}.side-count{font-size:10px;color:#94a3b8}.side-btn.active .side-count{color:#2563eb}
+.catalog-top{padding:13px 15px;border-bottom:1px solid #e5eaf0;display:flex;justify-content:space-between;gap:10px;align-items:center}.catalog-top strong{font-size:13px}.catalog-meta{font-size:11px;color:#64748b}
+.group{border-bottom:1px solid #e7ecf2}.group:last-child{border-bottom:0}.group-head{background:#f8fafc;padding:11px 15px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e7ecf2}.group-head-left{display:flex;align-items:center;gap:8px;min-width:0}.group-icon{width:27px;height:27px;border-radius:6px;background:#eaf2ff;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:13px}.group-name{font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.group-count{font-size:10px;background:#e2e8f0;color:#475569;border-radius:999px;padding:3px 7px;font-weight:900}
+.service{display:grid;grid-template-columns:minmax(0,1fr) 110px 100px 30px;gap:12px;align-items:center;padding:11px 14px;border-top:1px solid #eef2f6;cursor:pointer}.service:hover{background:#f8fbff}.service-name{font-size:12px;font-weight:800;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.service-details{font-size:10px;color:#64748b;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.service-time{font-size:10px;color:#64748b;text-align:center}.price{font-size:12px;font-weight:900;color:#fff;background:#2563eb;border-radius:6px;padding:7px 8px;text-align:center;white-space:nowrap}.arrow{font-size:20px;color:#94a3b8;text-align:center}.empty{padding:45px 20px;text-align:center;color:#64748b;font-size:13px}
+.notice{margin-top:15px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:11px 13px;color:#1e3a8a;font-size:11px}
+.cta{margin-top:20px;background:#071d2d;color:#fff;border-radius:10px;padding:23px;display:flex;justify-content:space-between;align-items:center;gap:15px}.cta h2{margin:0 0 4px;font-size:20px}.cta p{margin:0;color:#cbd5e1;font-size:12px}.cta a{background:#16c766;color:#fff;padding:10px 15px;border-radius:7px;font-weight:900;font-size:12px;white-space:nowrap}
+footer{background:#071d2d;color:#cbd5e1;padding:30px 18px}.footer-inner{max-width:1440px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:20px}.footer-logo img{width:150px}.footer-center{text-align:right;font-size:11px}
+/* modal V7: white two-column service/order workspace */
+.modal{position:fixed;inset:0;background:rgba(2,8,23,.58);display:none;align-items:center;justify-content:center;padding:18px;z-index:5000}.modal.open{display:flex}
+.modal-box{width:min(1080px,96vw);max-height:92vh;overflow:auto;background:#fff;border-radius:14px;box-shadow:0 25px 80px rgba(0,0,0,.3);padding:0;color:#172033}
+.modal-top{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #e5e7eb;padding:16px 20px;margin:0;background:#fff;position:sticky;top:0;z-index:2}.modal-title{display:flex;gap:10px;align-items:center;min-width:0}.modal-icon{width:42px;height:42px;border-radius:8px;background:#edf4ff;color:#2563eb;display:flex;align-items:center;justify-content:center}.modal h3{margin:0;font-size:19px}.modal-group{font-size:11px;color:#64748b;margin-top:2px}.close{border:0;background:#f1f5f9;border-radius:7px;width:34px;height:34px;font-size:20px;cursor:pointer}
+.modal-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);gap:0}.modal-left{padding:20px;border-right:1px solid #e5e7eb}.modal-right{padding:20px;background:#fff}.modal-section-title{font-size:12px;font-weight:900;color:#0f2740;margin:0 0 10px}.modal-price{font-size:27px;font-weight:900;margin:0 0 14px;color:#2563eb}.detail{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px;font-size:12px;white-space:pre-line}.modal-instructions{background:#f8fafc;border:1px solid #dbeafe;border-left:4px solid #2563eb;border-radius:8px;padding:12px;font-size:12px;line-height:1.5;margin-bottom:12px}.service-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 12px}.service-meta-card{border:1px solid #e2e8f0;background:#f8fafc;border-radius:8px;padding:9px}.service-meta-label{font-size:9px;text-transform:uppercase;font-weight:900;color:#64748b}.service-meta-value{font-size:11px;font-weight:800;color:#172033;margin-top:3px}.service-warning{margin-top:8px;border:1px solid #fecaca;background:#fff1f2;color:#991b1b;border-radius:8px;padding:10px;font-size:11px;line-height:1.45}.service-support{margin-top:8px;border:1px solid #bbf7d0;background:#f0fdf4;color:#166534;border-radius:8px;padding:10px;font-size:10px;line-height:1.45}.service-support strong,.service-warning strong{display:block;margin-bottom:4px}.service-meta-note{font-size:10px;color:#64748b;margin-top:7px}.order-form{display:grid;grid-template-columns:1fr;gap:11px;text-align:left}.field{display:flex;flex-direction:column;gap:5px}.field.full{grid-column:1/-1}.field label{font-size:11px;font-weight:800;color:#334155}.field input,.field textarea{width:100%;padding:10px;border:1px solid #d7e0ea;border-radius:7px;outline:0;font:inherit;font-size:12px;box-sizing:border-box}.field textarea{min-height:85px;resize:vertical}.dynamic-fields{display:grid;grid-template-columns:1fr;gap:11px}.dynamic-field{display:flex;flex-direction:column;gap:5px}.dynamic-field.full{grid-column:auto}.dynamic-field label{font-size:11px;font-weight:800;color:#334155}.dynamic-field input,.dynamic-field textarea{width:100%;padding:10px;border:1px solid #d7e0ea;border-radius:7px;outline:0;font:inherit;font-size:12px;box-sizing:border-box}.dynamic-field textarea{min-height:70px;resize:vertical}.order-submit{border:0;background:#2563eb;color:#fff;padding:11px;border-radius:7px;font-weight:900;cursor:pointer}.order-status{grid-column:1/-1;padding:10px;border-radius:7px;font-size:11px;display:none}.order-status.success{display:block;background:#dcfce7;color:#166534}.order-status.error{display:block;background:#fee2e2;color:#991b1b}.modal-actions{display:flex;gap:9px;margin-top:12px}.modal-actions>*{flex:1}.modal-actions a,.modal-actions button{padding:10px;border:0;border-radius:7px;font-weight:900;cursor:pointer;text-align:center}.wa{background:#16c766;color:#fff}.cancel{background:#e2e8f0;color:#172033}
+@media(max-width:800px){.modal-layout{grid-template-columns:1fr}.modal-left{border-right:0;border-bottom:1px solid #e5e7eb}.service-meta{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.dynamic-fields,.order-form{grid-template-columns:1fr}.dynamic-field.full,.field.full{grid-column:auto}.modal-box{width:100%;max-height:95vh}.modal-top{padding:13px 14px}.modal-left,.modal-right{padding:14px}}
 </style>
-
-
-<style id="homs-topbar-marquee-final">
-/* HOMS TECH TOPBAR — exactly four messages, one pass, left-to-right order */
-.ht-topbar,.topbar{height:42px!important;background:#071d2d!important;color:#eaf4ff!important;overflow:hidden!important;width:100%!important;}
-.ht-topbar .ht-container,.topbar .container,.topbar .wrap{height:100%!important;max-width:1180px!important;margin:0 auto!important;overflow:hidden!important;}
-.ht-marquee,.top-info{height:100%!important;width:max-content!important;display:flex!important;align-items:center!important;gap:44px!important;white-space:nowrap!important;animation:htMarqueeOneWay 15s linear infinite!important;will-change:transform!important;}
-.ht-marquee-track{display:flex!important;align-items:center!important;gap:44px!important;white-space:nowrap!important;}
-.ht-marquee-item,.top-info span{font-size:14px!important;font-weight:800!important;letter-spacing:.1px!important;white-space:nowrap!important;color:#eaf4ff!important;}
-.ht-marquee-item b,.top-info span:before{color:#60a5fa!important;margin-right:7px!important;font-weight:900!important;}
-@keyframes htMarqueeOneWay{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
-@media(max-width:700px){.ht-topbar,.topbar{height:38px!important}.ht-marquee,.top-info{gap:28px!important;animation-duration:13s!important}.ht-marquee-track{gap:28px!important}.ht-marquee-item,.top-info span{font-size:13px!important}}
-@media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
-<style id="homs-header-links-fix">
-.ht-header{position:relative!important;z-index:1000!important;}
-.ht-header .ht-actions{position:relative!important;z-index:1002!important;}
-.ht-header .ht-actions a{pointer-events:auto!important;cursor:pointer!important;}
-</style></style>
-<style id="homs-gsm-v2">
-.gsm-title-line{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.gsm-title-line h2{margin:0}
-.live-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;background:#ecfdf5;border:1px solid #bbf7d0;color:#047857;font-size:10px;font-weight:900}
-.gsm-dashboard-v2{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 25px 18px}
-.gsm-stat-v2,.gsm-server-status{min-height:72px;border:1px solid #dbe5ef;border-radius:11px;background:#fff;display:flex;align-items:center;gap:11px;padding:11px 13px}
-.gsm-stat-v2 .stat-icon{width:36px;height:36px;border-radius:9px;background:#eff6ff;color:#2563eb;display:grid;place-items:center;font-weight:900}
-.gsm-stat-v2 b{display:block;font-size:20px;line-height:1.05;color:#0f172a}
-.gsm-stat-v2 small,.gsm-server-status small{display:block;color:#64748b;font-size:10px;font-weight:800;margin-top:3px;text-transform:uppercase}
-.gsm-server-status{background:#071d2d;border-color:#071d2d;color:#fff}
-.gsm-server-status b{display:block;font-size:12px}
-.gsm-server-status small{color:#b8c9d8}
-.pulse{width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 5px rgba(34,197,94,.12);flex:0 0 10px}
-.gsm-workspace{margin:0 25px 25px;border:1px solid #dce5ee;border-radius:12px;background:#f8fafc;display:grid;grid-template-columns:210px minmax(0,1fr);overflow:hidden}
-.gsm-side{background:#fff;border-right:1px solid #e2e8f0;padding:12px}
-.side-title{text-transform:uppercase;font-size:10px;letter-spacing:.8px;font-weight:900;color:#94a3b8;padding:7px 9px 10px}
-.side-link{width:100%;border:0;background:transparent;color:#475569;border-radius:8px;padding:10px 9px;display:flex;align-items:center;gap:9px;text-align:left;font-weight:800;font-size:12px;cursor:pointer;margin-bottom:3px}
-.side-link span{width:20px;text-align:center}
-.side-link b{margin-left:auto;font-size:10px;color:#94a3b8}
-.side-link:hover{background:#f1f5f9;color:#2563eb}
-.side-link.active{background:#edf4ff;color:#2563eb}
-.side-link.active b{color:#2563eb}
-.gsm-results{min-width:0;background:#fff}
-.results-head{min-height:50px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;padding:8px 14px}
-.results-head b{display:block;font-size:13px;color:#172033}
-.results-head span{display:block;font-size:10px;color:#94a3b8;margin-top:2px}
-.results-head .clear-filter{height:32px}
-.gsm-results #serviceGroups{padding:0}
-.gsm-results .group{border-bottom:1px solid #e5eaf0}
-.gsm-results .group-head{background:#f8fafc;padding:10px 13px;position:static}
-.gsm-results .row{min-height:58px;padding:8px 12px;border-top:1px solid #eef2f7}
-.gsm-results .row:hover{background:#f7fbff}
-.gsm-results .name{font-size:12px}
-.gsm-results .sub{font-size:10px}
-.gsm-results .price{min-width:68px;padding:6px 9px;border-radius:7px;font-size:11px}
-.filter-wrap{display:flex;gap:8px;width:100%}
-.filter-wrap select{flex:1;min-width:0}
-.clear-filter{border:1px solid #dbe3ec;background:#fff;color:#475569;border-radius:8px;padding:0 11px;font-weight:800;cursor:pointer;white-space:nowrap}
-.clear-filter:hover{border-color:#bfdbfe;color:#2563eb;background:#f8fbff}
-@media(max-width:900px){
- .gsm-dashboard-v2{grid-template-columns:repeat(2,1fr)}
- .gsm-workspace{grid-template-columns:1fr}
- .gsm-side{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border-right:0;border-bottom:1px solid #e2e8f0}
- .side-title{grid-column:1/-1}
- .side-link{margin:0}
-}
-@media(max-width:550px){
- .gsm-dashboard-v2{grid-template-columns:1fr 1fr;padding-left:15px;padding-right:15px}
- .gsm-server-status{grid-column:1/-1}
- .gsm-workspace{margin-left:15px;margin-right:15px}
- .gsm-side{grid-template-columns:1fr 1fr}
- .side-link{font-size:11px}
- .filter-wrap{flex-direction:column}
- .clear-filter{height:40px}
-}
-</style>
-
 </head>
 <body>
+<div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div>
+<header class="ht-header"><div class="ht-container-main"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a><a href="used.html">Tweedehands</a><a class="active" href="gsm-services.html">GSM Services</a><a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a></nav></div></header>
 
-<div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div></div>
-<header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div><nav class="ht-nav"><a href="gsm-home.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a><a href="used.html">Tweedehands</a><a class="active" href="gsm-services.html">GSM Services</a>
-   <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a></nav></div></header>
+<div class="gsm-nav"><div class="gsm-nav-inner"><a class="active" href="#all" onclick="selectCategory('all');return false">Reseller Pricing</a><a href="#remote" onclick="selectCategory('remote');return false">Remote Service</a><a href="#server" onclick="selectCategory('server');return false">Server Service</a><a href="#imei" onclick="selectCategory('imei');return false">IMEI Services</a><a href="#frp" onclick="selectCategory('frp');return false">FRP Services</a><a href="#firmware" onclick="selectCategory('firmware');return false">Firmware / Software</a><span class="spacer"></span><a id="gsmAccountLink" class="gsm-login" href="account.html">Login</a></div></div>
 
-<section class="hero">
-  <div class="hero-inner">
-    <h1>GSM <span>Services</span></h1>
-    <p>Professionele GSM-diensten van HOMS TECH. Kies een service, bekijk de prijs en stuur uw aanvraag rechtstreeks naar ons.</p>
-  </div>
-</section>
+<main class="page">
+  <div class="breadcrumb">HOMS TECH / <b>GSM Services</b></div>
+  <div class="page-title"><div><h1 id="pageTitle">Reseller Pricing / GSM Services</h1><p>GSM-services, tools, credits en remote diensten van HOMS TECH.</p></div><span class="live">● ONLINE SERVICES</span></div>
 
-<section class="section">
-  <div class="gsm-shell">
-    <div class="gsm-head">
-      <h2 id="pageTitle">GSM Services</h2>
-      <p>Bekijk onze services en beschikbare prijzen.</p>
-    </div>
-
-    <div id="tabs" class="tabs"></div>
-
-    <div class="info">
-      <strong>ℹ️</strong> Klik op een service om de details, prijs en besteloptie te bekijken.
-    </div>
-
-    <div class="toolbar">
-      <div class="search">
-        <span>⌕</span>
-        <input id="search" type="search" placeholder="Zoek in services..." oninput="renderServices()">
-      </div>
-      <select id="groupFilter" onchange="renderServices()">
-        <option value="">Alle groepen</option>
-      </select>
-    </div>
-
-    
-<div class="gsm-workspace">
-  <aside class="gsm-side">
-    <div class="side-title">Service menu</div>
-    <button class="side-link active" type="button" data-side="all" onclick="selectCategory('all')"><span>▦</span> Alle services <b id="sideAll">0</b></button>
-    <button class="side-link" type="button" data-side="imei" onclick="selectCategory('imei')"><span>📱</span> IMEI Services <b id="sideImei">0</b></button>
-    <button class="side-link" type="button" data-side="remote" onclick="selectCategory('remote')"><span>⚡</span> Remote <b id="sideRemote">0</b></button>
-    <button class="side-link" type="button" data-side="server" onclick="selectCategory('server')"><span>🖥</span> Server <b id="sideServer">0</b></button>
-    <button class="side-link" type="button" data-side="frp" onclick="selectCategory('frp')"><span>🔐</span> FRP <b id="sideFrp">0</b></button>
-    <button class="side-link" type="button" data-side="firmware" onclick="selectCategory('firmware')"><span>💻</span> Firmware <b id="sideFirmware">0</b></button>
-  </aside>
-  <main class="gsm-results">
-    <div class="results-head">
-      <div><b>Available services</b><span id="meta">Gegevens laden...</span></div>
-      <button class="clear-filter" type="button" onclick="clearGsmFilters()">Reset</button>
-    </div>
-    <div id="serviceGroups"></div>
-  </main>
-</div>
+  <div class="filters">
+    <input id="search" class="input" type="search" placeholder="Search Service" oninput="renderServices()">
+    <select id="groupFilter" class="select" onchange="renderServices()"><option value="">Alle groepen</option></select>
+    <label class="hot"><input id="hotOnly" type="checkbox" onchange="renderServices()"> Show only HOT Products</label>
   </div>
 
-  <div class="order">
-    <h2>Een GSM-service nodig?</h2>
-    <p>Kies hierboven een service of stuur ons direct uw aanvraag via WhatsApp.</p>
-    <a class="btn green" id="orderWhatsApp" href="#">💬 Aanvraag sturen</a>
+  <div class="layout">
+    <aside class="sidebar"><div class="side-title">Service Categories</div><div id="sideList" class="side-list"></div></aside>
+    <section class="catalog"><div class="catalog-top"><strong>Available Services</strong><span class="catalog-meta" id="meta">Gegevens laden...</span></div><div id="serviceGroups"></div></section>
   </div>
-</section>
 
-<footer>
-  <div class="footer-inner">
-    <div class="footer-logo"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></div>
-    <div class="footer-center"><strong>HOMS TECH</strong><br><span>GSM Services & Telefoonservice</span><br><br>© HOMS TECH — Alle rechten voorbehouden.</div>
-  </div>
-</footer>
+  <div class="notice">ℹ️ Selecteer een service om prijs, details en de aanvraagopties te bekijken. Prijzen en services worden rechtstreeks uit HOMS TECH geladen.</div>
+  <div class="cta"><div><h2>Een service nodig?</h2><p>Kies een service hierboven of stuur ons direct een aanvraag via WhatsApp.</p></div><a id="orderWhatsApp" href="#">💬 Aanvraag sturen</a></div>
+</main>
+
+<footer><div class="footer-inner"><div class="footer-logo"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></div><div class="footer-center"><strong>HOMS TECH</strong><br>GSM Services & Telefoonservice<br>© HOMS TECH — Alle rechten voorbehouden.</div></div></footer>
 
 <div class="modal" id="serviceModal" onclick="if(event.target===this)closeModal()">
   <div class="modal-box">
     <div class="modal-top">
-      <div class="modal-title">
-        <div class="modal-icon" id="modalIcon">🔧</div>
-        <div>
-          <h3 id="modalName">Service</h3>
-          <div class="modal-group" id="modalGroup"></div>
-        </div>
-      </div>
+      <div class="modal-title"><div class="modal-icon" id="modalIcon">🔧</div><div><h3 id="modalName">Service</h3><div class="modal-group" id="modalGroup"></div></div></div>
       <button class="close" type="button" onclick="closeModal()">×</button>
     </div>
-    <div class="detail" id="modalDetails"></div>
-    <div class="modal-price" id="modalPrice"></div>
-    <form class="order-form" id="serviceOrderForm">
-      <div class="field"><label>Naam *</label><input id="orderName" required autocomplete="name"></div>
-      <div class="field"><label>E-mail *</label><input id="orderEmail" type="email" required autocomplete="email"></div>
-      <div class="field"><label>Telefoon *</label><input id="orderPhone" required autocomplete="tel"></div>
-      <div class="field"><label>IMEI / Serienummer</label><input id="orderImei" autocomplete="off"></div>
-      <div class="field" id="orderUsernameField" style="display:none"><label>Gebruikersnaam *</label><input id="orderUsername" autocomplete="username"></div>
-      <div class="field full"><label>Opmerking</label><textarea id="orderNotes" placeholder="Vertel ons wat we voor u moeten doen..."></textarea></div>
-      <div id="orderStatus" class="order-status"></div>
-      <div class="field full"><button class="btn order-submit" type="submit">📤 Aanvraag versturen</button></div>
-    </form>
-    <div class="modal-actions">
-      <a class="btn green" id="modalWhatsApp" href="#">💬 Bestellen via WhatsApp</a>
-      <button class="btn" type="button" style="background:#e5e7eb;color:#111827" onclick="closeModal()">Sluiten</button>
+    <div class="modal-layout">
+      <div class="modal-left">
+        <div class="modal-section-title">Bestelling / aanvraag</div>
+        <div class="modal-price" id="modalPrice"></div>
+        <form class="order-form" id="serviceOrderForm">
+          <div class="field"><label>Naam *</label><input id="orderName" required autocomplete="name"></div>
+          <div class="field"><label>E-mail *</label><input id="orderEmail" type="email" required autocomplete="email"></div>
+          <div class="field"><label>Telefoon *</label><input id="orderPhone" required autocomplete="tel"></div>
+          <div id="dynamicOrderFields" class="dynamic-fields full" style="display:none"></div>
+          <div class="field full"><label>Opmerking</label><textarea id="orderNotes" placeholder="Vertel ons wat we voor u moeten doen..."></textarea></div>
+          <div id="orderStatus" class="order-status"></div>
+          <div class="field full"><button class="order-submit" type="submit">📤 Aanvraag versturen</button></div>
+        </form>
+        <div class="modal-actions"><a class="wa" id="modalWhatsApp" href="#">💬 Bestellen via WhatsApp</a><button class="cancel" type="button" onclick="closeModal()">Sluiten</button></div>
+      </div>
+      <div class="modal-right">
+        <div class="modal-section-title">Service details</div>
+        <div id="modalServiceMeta"></div>
+        <div id="modalInstructions" class="modal-instructions" style="display:none"></div>
+        <div class="detail" id="modalDetails"></div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-const categories=[
-  ["all","🔎 Alle services"],
-  ["imei","📱 IMEI Services"],
-  ["remote","🛠️ Remote Service"],
-  ["server","🔧 Server Service"],
-  ["frp","🔐 FRP Services"],
-  ["firmware","💻 Firmware / Software"]
-];
-
-let siteData={whatsapp:"",gsmServices:{}};
-let activeCategory="all";
-let allEntries=[];
-
-function esc(value){
-  return String(value ?? "").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-}
-function categoryLabel(key){
-  const found=categories.find(x=>x[0]===key);
-  return found ? found[1].replace(/^\S+\s/,"") : key;
-}
-function getEntries(){
-  const entries=[];
-  ["imei","remote","server","frp","firmware"].forEach(key=>{
-    const list=Array.isArray(siteData.gsmServices?.[key]) ? siteData.gsmServices[key] : [];
-    list.forEach((service,index)=>{
-      service=service||{};
-      if(service.active===false)return;
-      entries.push({category:key,index,service});
-    });
-  });
-  return entries;
-}
-function whatsappLink(service){
-  const number=String(siteData.whatsapp||"").replace(/\D/g,"");
-  if(!number)return"#";
-  const text="Hallo HOMS TECH, ik wil graag de volgende GSM-service bestellen:\n\nService: "+service.name+
-    "\nGroep: "+(service.group||"General")+
-    "\nPrijs: "+(service.price!=="" && service.price!=null ? "€ "+service.price : "Op aanvraag")+
-    "\n\nOpmerking: ";
-  return "https://wa.me/"+number+"?text="+encodeURIComponent(text);
-}
-function renderTabs(){
-  const box=document.getElementById("tabs");
-  const entries=getEntries();
-  box.innerHTML=categories.map(([key,label])=>{
-    const count=key==="all"?entries.length:entries.filter(x=>x.category===key).length;
-    return `<button type="button" class="tab ${key===activeCategory?"active":""}" onclick="selectCategory('${key}')">${label} <span style="opacity:.7;font-size:11px">(${count})</span></button>`;
-  }).join("");
-}
-function updateGroupFilter(baseEntries){
-  const select=document.getElementById("groupFilter");
-  const current=select.value;
-  const groups=[...new Set(baseEntries.map(x=>x.service.group||"General"))].sort((a,b)=>a.localeCompare(b));
-  select.innerHTML='<option value="">Alle groepen</option>'+groups.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join("");
-  if(groups.includes(current))select.value=current;
-}
-function selectCategory(key){
-  activeCategory=key;
-  document.getElementById("search").value="";
-  document.getElementById("groupFilter").value="";
-  renderServices();
-}
-function renderServices(){
-  renderTabs();
-  updateGsmSidebar();
-  const base=allEntries.filter(x=>activeCategory==="all"||x.category===activeCategory);
-  updateGroupFilter(base);
-  const search=document.getElementById("search").value.trim().toLowerCase();
-  const group=document.getElementById("groupFilter").value;
-  let entries=base.filter(x=>{
-    const s=x.service||{};
-    const hay=[s.name,s.details,s.group,x.category].join(" ").toLowerCase();
-    return !search || hay.includes(search);
-  });
-  if(group)entries=entries.filter(x=>(x.service.group||"General")===group);
-
-  document.getElementById("meta").textContent=`Toont ${entries.length} van ${base.length} services`;
-
-  const box=document.getElementById("serviceGroups");
-  if(!entries.length){
-    box.innerHTML='<div class="empty">Nog geen services in deze categorie.</div>';
-    return;
+const categories=[['all','Alle services'],['imei','IMEI Services'],['remote','Remote Service'],['server','Server Service'],['frp','FRP Services'],['firmware','Firmware / Software']];
+let siteData={whatsapp:'',gsmServices:{}};let activeCategory='all';let allEntries=[];let selectedServiceForOrder=null;
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function categoryLabel(k){const x=categories.find(a=>a[0]===k);return x?x[1]:k}
+function getEntries(){const out=[];['imei','remote','server','frp','firmware'].forEach(k=>{const list=Array.isArray(siteData.gsmServices?.[k])?siteData.gsmServices[k]:[];list.forEach((service,index)=>{service=service||{};if(service.active===false)return;out.push({category:k,index,service})})});return out}
+function whatsappLink(service){const n=String(siteData.whatsapp||'').replace(/\D/g,'');if(!n)return '#';const t='Hallo HOMS TECH, ik wil graag de volgende GSM-service bestellen:\n\nService: '+(service.name||'GSM Service')+'\nGroep: '+(service.group||'General')+'\nPrijs: '+displayPrice(service)+'\n\nOpmerking: ';return 'https://wa.me/'+n+'?text='+encodeURIComponent(t)}
+function renderSide(){const box=document.getElementById('sideList');const counts={};allEntries.forEach(x=>counts[x.category]=(counts[x.category]||0)+1);box.innerHTML=categories.map(([k,l])=>'<button type="button" class="side-btn '+(k===activeCategory?'active':'')+'" onclick="selectCategory(\''+k+'\')"><span>'+esc(l)+'</span><span class="side-count">'+(k==='all'?allEntries.length:(counts[k]||0))+'</span></button>').join('')}
+function updateGroupFilter(base){const s=document.getElementById('groupFilter'),current=s.value;const groups=[...new Set(base.map(x=>x.service.group||categoryLabel(x.category)))].sort((a,b)=>a.localeCompare(b));s.innerHTML='<option value="">Alle groepen</option>'+groups.map(g=>'<option value="'+esc(g)+'">'+esc(g)+'</option>').join('');if(groups.includes(current))s.value=current}
+function selectCategory(k){activeCategory=k;document.querySelectorAll('.gsm-nav a').forEach(a=>a.classList.remove('active'));const navMap={all:0,remote:1,server:2,imei:3,frp:4,firmware:5};const links=document.querySelectorAll('.gsm-nav a');if(links[navMap[k]])links[navMap[k]].classList.add('active');renderServices()}
+function displayPrice(s){if(s.price!==''&&s.price!=null)return '€ '+String(s.price);return 'Op aanvraag';}
+function displaySourcePrice(s){return s.sourcePrice!==''&&s.sourcePrice!=null?(s.sourceCurrency||'USD')+' '+s.sourcePrice:'';}
+function renderServices(){renderSide();const base=allEntries.filter(x=>activeCategory==='all'||x.category===activeCategory);updateGroupFilter(base);const q=document.getElementById('search').value.trim().toLowerCase();const g=document.getElementById('groupFilter').value;const hot=document.getElementById('hotOnly').checked;let entries=base.filter(x=>{const s=x.service||{};const hay=[s.name,s.details,s.group,s.sourceName,x.category].join(' ').toLowerCase();return(!q||hay.includes(q))&&(!g||(s.group||categoryLabel(x.category))===g)&&(!hot||s.hot===true)});document.getElementById('meta').textContent='Toont '+entries.length+' van '+base.length+' services';const box=document.getElementById('serviceGroups');if(!entries.length){box.innerHTML='<div class="empty">Geen services gevonden.</div>';return}const grouped=new Map();entries.forEach(e=>{const gn=e.service.group||categoryLabel(e.category);if(!grouped.has(gn))grouped.set(gn,[]);grouped.get(gn).push(e)});box.innerHTML=[...grouped.entries()].map(([gn,list])=>'<div class="group"><div class="group-head"><div class="group-head-left"><span class="group-icon">⚙</span><span class="group-name">'+esc(gn)+'</span></div><span class="group-count">'+list.length+'</span></div>'+list.map(e=>{const s=e.service;const details=s.shortDescription||s.details||categoryLabel(e.category);const time=s.deliveryTime||'';const hotBadge=s.hot===true?'<span style="margin-left:6px;color:#b45309;font-size:9px;font-weight:900">HOT</span>':'';return '<div class="service" onclick="openService(\''+e.category+'\','+e.index+')"><div><div class="service-name">'+esc(s.name||'Service')+hotBadge+'</div><div class="service-details">'+esc(details)+'</div></div><div class="service-time">'+esc(time)+'</div><div class="price">'+esc(displayPrice(s))+'</div><div class="arrow">›</div></div>'}).join('')+'</div>').join('')}
+async function prefillCustomerOrder(){try{const r=await fetch('/api/customer/me',{credentials:'same-origin'});const x=await r.json().catch(()=>({}));const link=document.getElementById('gsmAccountLink');if(link){if(x.authenticated&&x.customer){link.textContent='Mijn account';link.href='account.html';link.title=x.customer.name||x.customer.email||'Mijn account'}else{link.textContent='Login';link.href='account.html';link.title='Inloggen'}}if(!r.ok||!x.authenticated||!x.customer)return;const c=x.customer;['Name','Email','Phone'].forEach(k=>{const id='order'+k;const el=document.getElementById(id);if(el&&!el.value)el.value=c[k.toLowerCase()]||''})}catch{const link=document.getElementById('gsmAccountLink');if(link){link.textContent='Login';link.href='account.html'}}} 
+async function updateGsmAccountLink(){try{const r=await fetch('/api/customer/me',{credentials:'same-origin',cache:'no-store'});const x=await r.json().catch(()=>({}));const link=document.getElementById('gsmAccountLink');if(!link)return;if(x.authenticated&&x.customer){link.textContent='Mijn account';link.href='account.html';link.title=x.customer.name||x.customer.email||'Mijn account'}else{link.textContent='Login';link.href='account.html';link.title='Inloggen'}}catch{}}
+function getServiceFormFields(s){
+  let fields=Array.isArray(s.formFields)?s.formFields.slice():[];
+  const name=String(s?.name||'').trim();
+  const addIfMissing=(key,label,type='text',required=false,autoFromEmail=false,placeholder='')=>{
+    if(!fields.some(f=>String(f?.key||'')===key)) fields.push({key,label,type,required,autoFromEmail,placeholder});
+  };
+  // Exact public order form structure visible in the supplied Easy-Unlocker reference.
+  if(/alcatel worldwide database #2/i.test(name)){
+    return [
+      {key:'imei',label:'IMEI',type:'text',required:true,autoFromEmail:false,placeholder:'Enter IMEI',layout:'half'},
+      {key:'model',label:'MODEL',type:'text',required:true,autoFromEmail:false,placeholder:'Enter model',layout:'half'},
+      {key:'notes',label:'Notes',type:'text',required:false,autoFromEmail:false,placeholder:'Additional information',layout:'full'},
+      {key:'comments',label:'Comments',type:'textarea',required:false,autoFromEmail:false,placeholder:'For your reference',layout:'full'},
+      {key:'response_email',label:'Response e-mail',type:'email',required:true,autoFromEmail:true,placeholder:'Customer e-mail for the reply',layout:'full'}
+    ];
   }
-
-  const grouped=new Map();
-  entries.forEach(entry=>{
-    const groupName=entry.service.group||"General";
-    if(!grouped.has(groupName))grouped.set(groupName,[]);
-    grouped.get(groupName).push(entry);
-  });
-
-  box.innerHTML=[...grouped.entries()].map(([groupName,list])=>{
-    const rows=list.map(entry=>{
-      const s=entry.service;
-      const price=(s.price!=="" && s.price!=null) ? `€ ${esc(s.price)}` : "Op aanvraag";
-      const subtitle=s.details||categoryLabel(entry.category);
-      return `<div class="row" onclick="openService('${entry.category}',${entry.index})">
-        <div class="icon">${esc(s.icon||"🔧")}</div>
-        <div class="copy">
-          <div class="name">${esc(s.name||"Service")}</div>
-          <div class="sub">${esc(subtitle)}</div>
-        </div>
-        <div class="price">${price}</div>
-        <div class="arrow">›</div>
-      </div>`;
-    }).join("");
-    return `<div class="group"><div class="group-head"><span>${esc(groupName)}</span><span class="group-count">${list.length}</span></div>${rows}</div>`;
-  }).join("");
-}
-let selectedServiceForOrder=null;
-
-async function prefillCustomerOrder(){
-  try{
-    const r=await fetch("/api/customer/me",{credentials:"same-origin"});
-    if(!r.ok)return;
-    const result=await r.json();
-    if(!result.authenticated || !result.customer)return;
-    const c=result.customer;
-    if(!document.getElementById("orderName").value)document.getElementById("orderName").value=c.name||"";
-    if(!document.getElementById("orderEmail").value)document.getElementById("orderEmail").value=c.email||"";
-    if(!document.getElementById("orderPhone").value)document.getElementById("orderPhone").value=c.phone||"";
-  }catch{}
-}
-
-function openService(category,index){
-  const service=siteData.gsmServices?.[category]?.[index];
-  if(!service || service.active===false)return;
-  selectedServiceForOrder={category,index};
-  document.getElementById("modalIcon").textContent=service.icon||"🔧";
-  document.getElementById("modalName").textContent=service.name||"Service";
-  document.getElementById("modalGroup").textContent=(service.group||"General")+" • "+categoryLabel(category);
-  document.getElementById("modalDetails").textContent=service.details||"Meer informatie over deze service is op aanvraag beschikbaar.";
-  document.getElementById("modalPrice").textContent=(service.price!=="" && service.price!=null)?"€ "+service.price:"Prijs op aanvraag";
-  document.getElementById("modalWhatsApp").href=whatsappLink(service);
-  document.getElementById("orderStatus").className="order-status";
-  document.getElementById("orderStatus").textContent="";
-  const usernameField=document.getElementById("orderUsernameField");
-  const usernameInput=document.getElementById("orderUsername");
-  const needsUsername=service.requiresUsername===true;
-  usernameField.style.display=needsUsername?"flex":"none";
-  usernameInput.required=needsUsername;
-  usernameInput.value="";
-  document.getElementById("serviceOrderForm").reset();
-  document.getElementById("serviceModal").classList.add("open");
-  prefillCustomerOrder();
-}
-
-async function submitServiceOrder(event){
-  event.preventDefault();
-  const status=document.getElementById("orderStatus");
-  const button=document.querySelector("#serviceOrderForm .order-submit");
-  const selected=selectedServiceForOrder;
-  if(!selected)return;
-  const service=siteData.gsmServices?.[selected.category]?.[selected.index];
-  if(!service)return;
-  status.className="order-status";
-  status.textContent="Verzenden...";
-  status.style.display="block";
-  button.disabled=true;
-  try{
-    const r=await fetch("/api/orders",{
-      method:"POST",
-      credentials:"same-origin",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        serviceCategory:selected.category,
-        serviceName:service.name||"Service",
-        serviceGroup:service.group||"General",
-        price:service.price||"",
-        name:document.getElementById("orderName").value.trim(),
-        email:document.getElementById("orderEmail").value.trim(),
-        phone:document.getElementById("orderPhone").value.trim(),
-        username:document.getElementById("orderUsername").value.trim(),
-        imei:document.getElementById("orderImei").value.trim(),
-        notes:document.getElementById("orderNotes").value.trim()
-      })
-    });
-    const result=await r.json().catch(()=>({}));
-    if(!r.ok)throw new Error(result.error||"Aanvraag kon niet worden verzonden.");
-    status.className="order-status success";
-    status.textContent="✓ Aanvraag ontvangen. Uw ordernummer is #"+(result.order?.id||"")+". We nemen zo snel mogelijk contact met u op.";
-    document.getElementById("serviceOrderForm").reset();
-  }catch(error){
-    status.className="order-status error";
-    status.textContent="✕ "+error.message;
-  }finally{
-    button.disabled=false;
+  // Older records may only have the boolean flags. Turn them into dynamic fields so
+  // the same field is never rendered twice.
+  if(s.requiresImei===true) addIfMissing('imei','IMEI','text',true,false,'Enter IMEI');
+  if(s.requiresSerial===true) addIfMissing('serial','Serienummer','text',true,false,'Enter serial number');
+  if(s.requiresUsername===true) addIfMissing('username','Gebruikersnaam','text',true,s.usernameFromEmail===true,'Username / e-mail');
+  if(Array.isArray(s.requiredFields)){
+    for(const key of s.requiredFields){
+      if(key==='imei') addIfMissing('imei','IMEI','text',true,false,'Enter IMEI');
+      else if(key==='serial') addIfMissing('serial','Serienummer','text',true,false,'Enter serial number');
+      else if(key==='username') addIfMissing('username','Gebruikersnaam','text',true,s.usernameFromEmail===true,'Username / e-mail');
+    }
   }
+  return fields;
 }
-
-document.getElementById("serviceOrderForm").addEventListener("submit",submitServiceOrder);
-function closeModal(){
-  document.getElementById("serviceModal").classList.remove("open");
-  const f=document.getElementById("orderUsernameField");
-  if(f)f.style.display="none";
+function knownServiceMeta(s){
+  const name=String(s?.name||'');
+  if(/alcatel worldwide database #2/i.test(name))return {
+    deliveryTime:'1–12 hours', availability:'Available 24/7', refund:'No refund for bad requests',
+    warning:'The codes are originally from databases. The supplier does not provide a refund for wrong code / wrong request. Do not send verification or force a refund request.',
+    supportedModels:'', note:''
+  };
+  return null;
 }
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
-
-function clearGsmFilters(){document.getElementById("search").value="";document.getElementById("groupFilter").value="";renderServices();}
-
-function updateGsmSidebar(){
-  const entries=getEntries();
-  const count=k=>k==="all"?entries.length:entries.filter(x=>x.category===k).length;
-  [["All", "all"],["Imei","imei"],["Remote","remote"],["Server","server"],["Frp","frp"],["Firmware","firmware"]].forEach(([label,key])=>{
-    const el=document.getElementById("side"+label);
-    if(el)el.textContent=count(key);
-  });
-  document.querySelectorAll(".side-link").forEach(btn=>{
-    btn.classList.toggle("active",btn.dataset.side===activeCategory);
-  });
+function renderServiceMeta(s){
+  const box=document.getElementById('modalServiceMeta'); if(!box)return;
+  const meta=(s.serviceMeta && typeof s.serviceMeta==='object') ? s.serviceMeta : (knownServiceMeta(s)||{});
+  const has=meta.deliveryTime||meta.availability||meta.refund||meta.warning||meta.supportedModels;
+  if(!has){box.style.display='none';box.innerHTML='';return}
+  const cards=[];
+  if(meta.deliveryTime)cards.push(`<div class="service-meta-card"><div class="service-meta-label">Delivery time</div><div class="service-meta-value">${esc(meta.deliveryTime)}</div></div>`);
+  if(meta.availability)cards.push(`<div class="service-meta-card"><div class="service-meta-label">Availability</div><div class="service-meta-value">${esc(meta.availability)}</div></div>`);
+  if(meta.refund)cards.push(`<div class="service-meta-card"><div class="service-meta-label">Refund</div><div class="service-meta-value">${esc(meta.refund)}</div></div>`);
+  let html=cards.length?`<div class="service-meta">${cards.join('')}</div>`:'';
+  if(meta.warning)html+=`<div class="service-warning"><strong>⚠ Warning</strong>${esc(meta.warning)}</div>`;
+  if(meta.supportedModels)html+=`<div class="service-support"><strong>Supported Models</strong>${esc(meta.supportedModels)}</div>`;
+  if(meta.note)html+=`<div class="service-meta-note">${esc(meta.note)}</div>`;
+  box.innerHTML=html;box.style.display='block';
 }
-
-async function loadSite(){
-  try{
-    const r=await fetch("/api/site",{cache:"no-store"});
-    if(!r.ok)throw new Error("Websitegegevens konden niet worden geladen");
-    siteData=await r.json();
-  }catch(e){
-    siteData={whatsapp:"",gsmServices:{}};
-  }
-  if(!siteData.gsmServices || typeof siteData.gsmServices!=="object")siteData.gsmServices={};
-  ["imei","remote","server","frp","firmware"].forEach(key=>{
-    if(!Array.isArray(siteData.gsmServices[key]))siteData.gsmServices[key]=[];
-    siteData.gsmServices[key]=siteData.gsmServices[key].map(s=>({
-      ...(s||{}),
-      group:(s&&s.group)||categoryLabel(key),
-      requiresUsername:s&&s.requiresUsername===true
-    }));
-  });
-  allEntries=getEntries();
-  renderServices();
-  document.getElementById("orderWhatsApp").href=whatsappLink({name:"GSM Service - algemene aanvraag",group:"Algemeen",price:""});
+function renderDynamicOrderFields(s){
+  const box=document.getElementById('dynamicOrderFields'); if(!box)return;
+  const fields=getServiceFormFields(s);
+  const html=fields.map((f,i)=>{
+    const key=String(f.key||('field_'+i));
+    const id='extra_'+i;
+    const type=f.type==='textarea'?'textarea':(f.type==='email'?'email':'text');
+    const req=f.required?' required':'';
+    const ph=esc(f.placeholder||'');
+    const full=(f.layout==='full'||type==='textarea'||key==='response_email')?' full':'';
+    return `<div class="dynamic-field${full}"><label>${esc(f.label||key)}${f.required?' *':''}</label>${type==='textarea'?`<textarea id="${id}" data-extra-key="${esc(key)}" data-auto-email="${f.autoFromEmail?'1':'0'}"${req} placeholder="${ph}"></textarea>`:`<input id="${id}" type="${type}" data-extra-key="${esc(key)}" data-auto-email="${f.autoFromEmail?'1':'0'}"${req} placeholder="${ph}">`}</div>`;
+  }).join('');
+  box.innerHTML=html; box.style.display=fields.length?'grid':'none';
 }
+async function openService(category,index){const s=siteData.gsmServices?.[category]?.[index];if(!s||s.active===false)return;selectedServiceForOrder={category,index};document.getElementById('modalIcon').textContent=s.icon||'🔧';document.getElementById('modalName').textContent=s.name||'Service';document.getElementById('modalGroup').textContent=(s.group||categoryLabel(category))+' • '+categoryLabel(category);document.getElementById('modalDetails').textContent=s.details||'Meer informatie over deze service is op aanvraag beschikbaar.';const ins=document.getElementById('modalInstructions'),instruction=String(s.instructions||'').trim();if(instruction){ins.style.display='block';ins.innerHTML='<strong>Instructies voor deze service</strong><br>'+esc(instruction)}else{ins.style.display='none';ins.textContent=''}document.getElementById('modalPrice').textContent=displayPrice(s);renderServiceMeta(s);document.getElementById('modalWhatsApp').href=whatsappLink(s);const f=document.getElementById('serviceOrderForm');f.reset();renderDynamicOrderFields(s);document.getElementById('orderStatus').className='order-status';document.getElementById('orderStatus').textContent='';document.getElementById('serviceModal').classList.add('open');await prefillCustomerOrder();document.querySelectorAll('#dynamicOrderFields [data-auto-email="1"]').forEach(el=>{if(!el.value)el.value=document.getElementById('orderEmail').value.trim()})}
+
+async function submitServiceOrder(e){e.preventDefault();const st=document.getElementById('orderStatus'),btn=document.querySelector('.order-submit'),sel=selectedServiceForOrder;if(!sel)return;const s=siteData.gsmServices?.[sel.category]?.[sel.index];if(!s)return;st.className='order-status';st.textContent='Verzenden...';st.style.display='block';btn.disabled=true;try{const extraFields={};document.querySelectorAll('#dynamicOrderFields [data-extra-key]').forEach(el=>{extraFields[el.dataset.extraKey]=String(el.value||'').trim()});const r=await fetch('/api/orders',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({serviceCategory:sel.category,serviceName:s.name||'Service',serviceGroup:s.group||'General',price:s.price||'',priceCurrency:'EUR',serviceSourceId:s.sourceId||'',name:document.getElementById('orderName').value.trim(),email:document.getElementById('orderEmail').value.trim(),phone:document.getElementById('orderPhone').value.trim(),username:String(extraFields.username||'').trim(),imei:String(extraFields.imei||'').trim(),serial:String(extraFields.serial||'').trim(),notes:String(extraFields.notes||document.getElementById('orderNotes').value||'').trim(),extraFields})});const result=await r.json().catch(()=>({}));if(!r.ok)throw new Error(result.error||'Aanvraag kon niet worden verzonden.');st.className='order-status success';st.textContent='✓ Aanvraag ontvangen. Uw ordernummer is #'+(result.order?.id||'')+'. We nemen zo snel mogelijk contact met u op.';document.getElementById('serviceOrderForm').reset()}catch(err){st.className='order-status error';st.textContent='✕ '+err.message}finally{btn.disabled=false}}
+
+function closeModal(){document.getElementById('serviceModal').classList.remove('open')}
+document.getElementById('serviceOrderForm').addEventListener('submit',submitServiceOrder);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+async function loadSite(){try{const r=await fetch('/api/site',{cache:'no-store'});if(!r.ok)throw 0;siteData=await r.json()}catch{siteData={whatsapp:'',gsmServices:{}}}if(!siteData.gsmServices||typeof siteData.gsmServices!=='object')siteData.gsmServices={};['imei','remote','server','frp','firmware'].forEach(k=>{if(!Array.isArray(siteData.gsmServices[k]))siteData.gsmServices[k]=[];siteData.gsmServices[k]=siteData.gsmServices[k].map(s=>({...s,group:(s&&s.group)||categoryLabel(k),requiresUsername:s&&s.requiresUsername===true,requiresImei:s&&s.requiresImei===true,requiresSerial:s&&s.requiresSerial===true,hot:s&&s.hot===true,instructions:s?.instructions||'',requiredFields:Array.isArray(s?.requiredFields)?s.requiredFields:[],formFields:Array.isArray(s?.formFields)?s.formFields:[],serviceMeta:(s?.serviceMeta&&typeof s.serviceMeta==='object')?s.serviceMeta:{},usernameFromEmail:s?.usernameFromEmail===true}))});allEntries=getEntries();renderServices();document.getElementById('orderWhatsApp').href=whatsappLink({name:'GSM Service - algemene aanvraag',group:'Algemeen',price:''})}
 loadSite();
+updateGsmAccountLink();
 </script>
 </body>
 </html>
