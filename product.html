@@ -205,7 +205,7 @@ nav{justify-content:center}
 @media(max-width:700px){.condition-modal-card{padding:17px;border-radius:16px}.condition-help-grid{grid-template-columns:1fr}.condition-help-item img{height:230px}.condition-modal-head h2{font-size:20px}}
 </style>
 
-</head>
+<style id="homs-color-image-match-v1">.color-option-btn{position:relative;display:flex!important;align-items:center!important;gap:9px!important;min-height:68px!important;padding:7px 9px!important;text-align:left!important;overflow:hidden!important;background:#fff!important}.color-option-btn.active{border-color:#2563eb!important;background:#f5f9ff!important;box-shadow:0 0 0 2px rgba(37,99,235,.10)!important}.color-option-image{width:48px!important;height:54px!important;object-fit:contain!important;border-radius:7px!important;background:#f8fafc!important;flex:0 0 48px!important}.color-option-label{font-weight:800!important;font-size:12px!important;line-height:1.2!important;color:#111827!important}@media(max-width:480px){.color-option-btn{min-height:62px!important;gap:7px!important;padding:6px!important}.color-option-image{width:42px!important;height:48px!important;flex-basis:42px!important}.color-option-label{font-size:11px!important}}</style></head>
 <body>
 
 <div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div></div>
@@ -433,6 +433,13 @@ function selectProductOption(key,label){
   const priceEl=document.getElementById("selectedConditionPrice");
   if(priceEl && currentProduct) priceEl.textContent=money(calculateTotal(currentProduct));
 }
+function colorVariantImage(label){
+  const target=normalizeColorValue(label);
+  const hit=currentProductSiblings().find(({p})=>normalizeColorValue(p.color||p.kleur||'')===target);
+  if(!hit || !hit.p) return '';
+  const imgs=Array.isArray(hit.p.images)?hit.p.images.filter(Boolean):[];
+  return imgs[0] || hit.p.image || hit.p.imageUrl || '';
+}
 function renderOptionSection(key,title,list){
   const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
   const raw=Array.isArray(currentProduct[map[key]]) ? currentProduct[map[key]] : [];
@@ -468,7 +475,11 @@ function renderOptionSection(key,title,list){
     const priceLabel=key==='condition'
       ? (conditionBasePrice(x,currentProduct)>0 ? `<small>${money(conditionBasePrice(x,currentProduct))}</small>` : '')
       : (key==='storage' ? '' : (optionDelta(x)!==0 ? `<small>${optionDelta(x)>0?'+':''}${money(optionDelta(x))}</small>` : ''));
-    return `<button type="button" class="option-btn ${active?"active":""} ${availableNow?"":"unavailable"}" ${availableNow?`onclick="selectProductOption('${esc(key)}','${esc(x.label)}')"`:'disabled'}>${esc(x.label)}${priceLabel}${availableNow?"":" <span class=\"sold-x\">✕</span>"}</button>`;
+    if(key==="color"){
+      const img=colorVariantImage(x.label);
+      return `<button type="button" class="option-btn color-option-btn ${active?"active":""}" onclick="selectProductOption('color','${esc(x.label)}')" aria-label="Kleur ${esc(x.label)}">${img?`<img class="color-option-image" src="${esc(img)}" alt="${esc(x.label)}">`:""}<span class="color-option-label">${esc(x.label)}</span></button>`;
+    }
+    return `<button type="button" class="option-btn ${active?"active":""} ${availableNow?"":"unavailable"}" ${availableNow?`onclick="selectProductOption('${esc(key)}','${esc(x.label)}')"`:'disabled'}>${esc(x.label)}${priceLabel}${availableNow?"":" <span class="sold-x">✕</span>"}</button>`;
   }).join("")}</div>${key==='condition'?'<div style="margin-top:7px;color:#64748b;font-size:12px">De gekozen staat bepaalt de basisprijs. Opslag, kleur, batterij en andere opties worden daarna als +/- prijsverschil toegevoegd.</div>':''}</div>`;
 }
 let galleryImagesState=[];
