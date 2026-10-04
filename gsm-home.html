@@ -324,6 +324,154 @@ footer{
 }
 </style>
 
+
+<style id="homs-gsm-v6-layout">
+/* V6 — layout cleanup only. Palette stays exactly from V5. */
+.ht-header{background:#fff !important; color:#142033 !important; position:relative !important; z-index:50 !important}
+.ht-container{width:min(1240px,calc(100% - 40px)) !important}
+.ht-main{min-height:68px !important; gap:22px !important}
+.brand{min-width:150px !important}
+.brand img{max-width:145px !important;max-height:42px !important}
+.search{max-width:600px !important;height:42px !important}
+.search input{font-size:13px !important}
+.search button{padding:0 20px !important}
+.actions{font-size:12px !important;gap:15px !important}
+.main-nav{height:42px !important;gap:23px !important;font-size:13px !important}
+
+.gsm-bar{height:50px !important;background:#102a43 !important}
+.gsm-bar-inner{width:min(1240px,calc(100% - 40px)) !important;min-height:50px !important;gap:4px !important}
+.gsm-bar a{padding:9px 13px !important;font-size:12px !important;border-radius:8px !important}
+.gsm-bar a.active{background:#1677d2 !important;box-shadow:0 7px 18px rgba(22,119,210,.18) !important}
+.gsm-bar .login{margin-left:auto !important;background:#1b344d !important}
+
+.gsm-home{
+  min-height:0 !important;
+  background:linear-gradient(180deg,#fff 0%,#f5f9fd 100%) !important;
+}
+.gsm-home:before{opacity:.75 !important}
+
+.hero{
+  width:min(1240px,calc(100% - 40px)) !important;
+  min-height:500px !important;
+  height:auto !important;
+  grid-template-columns:minmax(0,1.08fr) minmax(430px,.92fr) !important;
+  gap:45px !important;
+  align-items:center !important;
+}
+.hero-copy{
+  padding:58px 0 42px !important;
+  max-width:650px !important;
+}
+.eyebrow{
+  margin-bottom:15px !important;
+  font-size:11px !important;
+  letter-spacing:2.2px !important;
+}
+.hero h1{
+  font-size:clamp(52px,5vw,72px) !important;
+  line-height:.98 !important;
+  letter-spacing:-3px !important;
+  min-height:145px !important;
+  margin:0 !important;
+}
+.hero p{
+  max-width:610px !important;
+  font-size:15px !important;
+  line-height:1.7 !important;
+  margin:20px 0 0 !important;
+}
+.buttons{margin-top:25px !important}
+.btn{min-height:46px !important;padding:0 20px !important}
+
+.stats{
+  margin-top:28px !important;
+  max-width:650px !important;
+  gap:10px !important;
+}
+.stat{
+  min-height:72px !important;
+  padding:14px 15px !important;
+  border-radius:11px !important;
+}
+.stat strong{font-size:23px !important}
+.stat span{font-size:8px !important;letter-spacing:1.15px !important}
+
+.hero-visual{
+  padding:30px 0 !important;
+  min-width:0 !important;
+}
+.glow{
+  width:390px !important;
+  height:390px !important;
+  opacity:.55 !important;
+}
+.service-card{
+  width:min(450px,100%) !important;
+  margin:0 auto !important;
+  border-radius:18px !important;
+}
+.card-top{height:36px !important}
+.card-body{padding:28px !important}
+.lock{width:68px !important;height:68px !important;margin:2px auto 15px !important}
+.card-body h3{font-size:21px !important;margin:18px 0 7px !important}
+.status{margin-top:24px !important;padding-top:15px !important}
+.progress{margin-top:18px !important}
+
+.tools-wrap{background:#fff !important}
+.tools{
+  width:min(1240px,calc(100% - 40px)) !important;
+  min-height:55px !important;
+  padding:12px 0 !important;
+}
+.tools-track{gap:8px !important}
+.chip{padding:7px 11px !important;border-radius:8px !important;font-size:11px !important}
+
+.availability{
+  width:min(1240px,calc(100% - 40px)) !important;
+  margin:12px auto 0 !important;
+  justify-content:center !important;
+}
+.availability span{padding:6px 10px !important;font-size:10px !important}
+
+.quick{
+  width:min(1240px,calc(100% - 40px)) !important;
+  margin:26px auto 55px !important;
+  gap:14px !important;
+}
+.quick-card{
+  min-height:122px !important;
+  padding:20px !important;
+  border-radius:14px !important;
+}
+.quick-card h3{font-size:15px !important}
+.quick-card p{font-size:12px !important;line-height:1.55 !important}
+.qicon{width:40px !important;height:40px !important;border-radius:11px !important}
+
+footer{margin-top:0 !important}
+
+@media(max-width:1100px){
+  .hero{grid-template-columns:1fr !important;gap:0 !important}
+  .hero-copy{max-width:760px !important;padding-bottom:20px !important}
+  .hero-visual{padding:15px 0 48px !important}
+  .service-card{max-width:500px !important}
+}
+@media(max-width:900px){
+  .ht-main{flex-wrap:wrap !important;padding:10px 0 !important}
+  .main-nav{overflow-x:auto !important}
+  .search{order:3;max-width:none;width:100% !important}
+}
+@media(max-width:620px){
+  .ht-container,.gsm-bar-inner,.hero,.tools,.quick,.availability{width:calc(100% - 22px) !important}
+  .hero{min-height:0 !important}
+  .hero-copy{padding:42px 0 18px !important}
+  .hero h1{font-size:42px !important;letter-spacing:-1.7px !important;min-height:125px !important}
+  .hero p{font-size:14px !important}
+  .stats{grid-template-columns:repeat(2,1fr) !important}
+  .hero-visual{padding:10px 0 38px !important}
+  .quick{grid-template-columns:1fr !important}
+}
+</style>
+
 </head>
 <body>
 <header class="ht-header">
