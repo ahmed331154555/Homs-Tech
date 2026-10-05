@@ -449,7 +449,12 @@ function renderProducts(){
   body.innerHTML="<h3>"+esc(p.name||"Apparaat")+"</h3><div class='meta'>"+esc(p.brand||"Refurbished")+"</div>"+(price?"<div class='price'>€ "+esc(String(price).replace(/^€\s*/,""))+"</div>":"");
   const link=document.createElement("a");link.className="buy";link.href="product.html?type=phone&id="+encodeURIComponent(p._index??idx);link.textContent="Bekijk apparaat";
   body.appendChild(link);card.appendChild(pic);card.appendChild(body);box.appendChild(card);
- });
+ };
+ chosen.forEach(renderOne);
+ if(chosen.length>1){
+  chosen.forEach(renderOne);
+  startPopularTicker(box);
+ }
 }
 function renderServices(){
  const box=document.getElementById("services");box.innerHTML="";
