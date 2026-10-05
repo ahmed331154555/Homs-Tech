@@ -1663,45 +1663,54 @@ function renderDeviceCategories(){
     return;
   }
 
-  box.innerHTML=data.deviceCategories.map((x,i)=>`
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-head">
-        <div>
-          <div class="card-title">${esc(x.title)}</div>
-          <div class="small">Homepage categorie</div>
-        </div>
-        <button class="btn btn-red" onclick="deleteDeviceCategory(${i})">Verwijderen</button>
+  const selected = window.selectedDeviceCategoryIndex ?? -1;
+  const list=data.deviceCategories.map((x,i)=>`
+    <button type="button" class="editor-list-item ${i===selected?'active':''}" onclick="selectedDeviceCategoryIndex=${i};renderDeviceCategories()">
+      🖼️ ${esc(x.title||'Nieuwe categorie')}
+      <small>${x.active!==false?'Actief':'Niet actief'}</small>
+    </button>
+  `).join('');
+
+  const x = selected>=0 && selected<data.deviceCategories.length ? data.deviceCategories[selected] : null;
+
+  box.innerHTML=`
+    <div class="editor-layout device-categories-editor">
+      <div class="editor-list">
+        <div class="editor-list-title">Categorieën</div>
+        ${list}
       </div>
-      <div class="grid">
-        <div class="field">
-          <label>Naam</label>
-          <input value="${esc(x.title)}" oninput="data.deviceCategories[${i}].title=this.value;markChanged()">
-        </div>
-        <div class="field">
-          <label>Link</label>
-          <input value="${esc(x.link)}" oninput="data.deviceCategories[${i}].link=this.value;markChanged()">
-        </div>
-        <div class="field">
-          <label>Tekst knop</label>
-          <input value="${esc(x.buttonText)}" oninput="data.deviceCategories[${i}].buttonText=this.value;markChanged()">
-        </div>
-        <div class="field">
-          <label>Actief</label>
-          <label style="display:flex;align-items:center;gap:8px;margin-top:9px">
-            <input type="checkbox" ${x.active!==false?'checked':''} onchange="data.deviceCategories[${i}].active=this.checked;markChanged()">
-            Tonen op homepage
-          </label>
-        </div>
-        <div class="field" style="grid-column:1/-1">
-          <label>Afbeelding</label>
-          <input type="file" accept="image/*" onchange="handleCategoryImage(event,${i})">
-          <input value="${esc(x.image)}" placeholder="Of plak een afbeelding URL" oninput="data.deviceCategories[${i}].image=this.value;markChanged()">
-          ${x.image?`<img src="${esc(x.image)}" alt="" style="display:block;width:220px;height:120px;object-fit:cover;border-radius:12px;margin-top:10px">`:""}
-          <div class="small">Upload een afbeelding of gebruik een URL. De gekozen afbeelding wordt in de website opgeslagen.</div>
-        </div>
+      <div class="editor-panel ${x?'':'editor-empty'}">
+        ${x ? `
+          <div class="card-head">
+            <div>
+              <div class="card-title" style="font-size:20px">🖼️ ${esc(x.title||'Nieuwe categorie')}</div>
+              <div class="small">Beheer de categorie van de homepage.</div>
+            </div>
+            <button class="btn btn-red" onclick="deleteDeviceCategory(${selected})">Verwijderen</button>
+          </div>
+          <div class="grid">
+            <div class="field"><label>Naam</label><input value="${esc(x.title)}" oninput="data.deviceCategories[${selected}].title=this.value;markChanged();renderDeviceCategories()"></div>
+            <div class="field"><label>Link</label><input value="${esc(x.link)}" oninput="data.deviceCategories[${selected}].link=this.value;markChanged()"></div>
+            <div class="field"><label>Tekst knop</label><input value="${esc(x.buttonText)}" oninput="data.deviceCategories[${selected}].buttonText=this.value;markChanged()"></div>
+            <div class="field"><label>Actief</label><label style="display:flex;align-items:center;gap:8px;margin-top:9px"><input type="checkbox" ${x.active!==false?'checked':''} onchange="data.deviceCategories[${selected}].active=this.checked;markChanged();renderDeviceCategories()"> Tonen op homepage</label></div>
+            <div class="field" style="grid-column:1/-1">
+              <label>Afbeelding</label>
+              <input type="file" accept="image/*" onchange="handleCategoryImage(event,${selected})">
+              <input value="${esc(x.image)}" placeholder="Of plak een afbeelding URL" oninput="data.deviceCategories[${selected}].image=this.value;markChanged()">
+              ${x.image?`<img src="${esc(x.image)}" alt="" style="display:block;width:220px;height:120px;object-fit:cover;border-radius:12px;margin-top:10px">`:""}
+              <div class="small">Upload een afbeelding of gebruik een URL. De gekozen afbeelding wordt in de website opgeslagen.</div>
+            </div>
+          </div>
+        ` : `
+          <div>
+            <div style="font-size:42px;margin-bottom:10px">🖼️</div>
+            <strong>Selecteer een categorie</strong>
+            <div class="small" style="margin-top:6px">Kies links een categorie om de instellingen te openen.</div>
+          </div>
+        `}
       </div>
     </div>
-  `).join("");
+  `;
 }
 
 function handleCategoryImage(event,i){
