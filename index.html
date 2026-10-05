@@ -498,6 +498,7 @@ function renderCategories(){
 function renderProducts(){
  const box=document.getElementById("products");
  box.innerHTML="";
+ box.classList.add("auto-moving");
  const sourcePhones=Array.isArray(data.phones)?data.phones:[];
  const startIndex=Math.max(0,sourcePhones.length-15);
  const chosen=sourcePhones.slice(startIndex).map((p,i)=>({p,idx:startIndex+i}));
