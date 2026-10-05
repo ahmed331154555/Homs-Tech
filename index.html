@@ -140,13 +140,11 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 #homePopularSection .products.auto-moving{overflow:hidden!important;display:block!important;position:relative;white-space:nowrap;scroll-behavior:auto!important;scrollbar-width:none;padding:3px 0 15px}
 #homeGsmSection .products.auto-moving::-webkit-scrollbar,
 #homePopularSection .products.auto-moving::-webkit-scrollbar{display:none}
-.home-motion-track{display:flex!important;flex:0 0 auto!important;flex-flow:row nowrap!important;align-items:stretch!important;gap:13px!important;width:max-content!important;min-width:max-content!important;height:auto!important;white-space:nowrap!important;will-change:transform;transform:translate3d(0,0,0)}
-.home-motion-track>.product{display:flex!important;flex:0 0 205px!important;width:205px!important;min-width:205px!important;max-width:205px!important}
-@media(max-width:600px){
- .home-motion-track>.product{flex-basis:205px!important;width:205px!important;min-width:205px!important;max-width:205px!important}
-}
+#homeGsmSection .products.auto-moving .home-motion-track,
+#homePopularSection .products.auto-moving .home-motion-track{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:stretch!important;gap:13px!important;width:max-content!important;min-width:max-content!important;height:auto!important;white-space:nowrap!important;will-change:transform;transform:translate3d(0,0,0)}
+#homePopularSection .products.auto-moving .home-motion-track>.product{display:flex!important;flex:0 0 205px!important;width:205px!important;min-width:205px!important;max-width:205px!important}
 @media(prefers-reduced-motion:reduce){
- .home-motion-track{transform:none!important}
+ #homePopularSection .products.auto-moving .home-motion-track{transform:none!important}
 }
 </style>
 </head>
@@ -460,43 +458,37 @@ function renderProducts(){
   box.innerHTML="<div style='padding:25px;color:#667784'>Geen apparaten beschikbaar.</div>";
   return;
  }
- const makeTrack=()=>{
-  const track=document.createElement("div");
-  track.className="home-motion-track";
-  chosen.forEach(({p,idx})=>{
-   if(typeof p==="string")p={name:p};
-   const img=p.image||(Array.isArray(p.images)?p.images[0]:"");
-   const card=document.createElement("article");
-   card.className="product";
-   card.style.cssText="flex:0 0 205px!important;width:205px!important;min-width:205px!important;max-width:205px!important;";
-   const pic=document.createElement("div");pic.className="product-img";
-   pic.innerHTML=img?'<img src="'+esc(img)+'" alt="'+esc(p.name||"")+'">':'<div class="phone-placeholder"></div>';
-   const body=document.createElement("div");body.className="product-body";
-   const price=p.price||p.salePrice||p.sellPrice||p.verkoopprijs||"";
-   body.innerHTML="<h3>"+esc(p.name||"Apparaat")+"</h3><div class='meta'>"+esc(p.brand||"Refurbished")+"</div>"+(price?"<div class='price'>€ "+esc(String(price).replace(/^€\s*/,""))+"</div>":"");
-   const link=document.createElement("a");
-   link.className="buy";
-   link.href="product.html?type=phone&id="+encodeURIComponent(p._index??idx);
-   link.textContent="Bekijk apparaat";
-   body.appendChild(link);card.appendChild(pic);card.appendChild(body);track.appendChild(card);
-  });
-  return track;
+ const track=document.createElement("div");
+ track.className="home-motion-track";
+ const addCard=({p,idx})=>{
+  if(typeof p==="string")p={name:p};
+  const img=p.image||(Array.isArray(p.images)?p.images[0]:"");
+  const card=document.createElement("article");
+  card.className="product";
+  const pic=document.createElement("div");pic.className="product-img";
+  pic.innerHTML=img?'<img src="'+esc(img)+'" alt="'+esc(p.name||"")+'">':'<div class="phone-placeholder"></div>';
+  const body=document.createElement("div");body.className="product-body";
+  const price=p.price||p.salePrice||p.sellPrice||p.verkoopprijs||"";
+  body.innerHTML="<h3>"+esc(p.name||"Apparaat")+"</h3><div class='meta'>"+esc(p.brand||"Refurbished")+"</div>"+(price?"<div class='price'>€ "+esc(String(price).replace(/^€\s*/,""))+"</div>":"");
+  const link=document.createElement("a");
+  link.className="buy";
+  link.href="product.html?type=phone&id="+encodeURIComponent(p._index??idx);
+  link.textContent="Bekijk apparaat";
+  body.appendChild(link);card.appendChild(pic);card.appendChild(body);track.appendChild(card);
  };
- const track1=makeTrack(),track2=makeTrack();
- const viewport=document.createElement("div");
- viewport.style.cssText="display:block;width:100%;overflow:hidden;";
- viewport.appendChild(track1);viewport.appendChild(track2);
- box.appendChild(viewport);
- let offset=0,last=performance.now(),paused=false;
+ chosen.forEach(addCard);
+ chosen.forEach(addCard);
+ box.appendChild(track);
+ let offset=0,last=performance.now(),paused=false,loopWidth=0;
  box.onmouseenter=()=>paused=true;box.onmouseleave=()=>paused=false;
+ function measure(){loopWidth=track.scrollWidth/2;}
+ requestAnimationFrame(measure);
  function frame(now){
   const dt=Math.min(50,now-last);last=now;
-  if(!paused){
+  if(!paused&&loopWidth>0){
    offset+=dt*0.038;
-   const distance=track1.getBoundingClientRect().width+13;
-   if(distance>0&&offset>=distance)offset-=distance;
-   track1.style.transform="translate3d("+(-offset)+"px,0,0)";
-   track2.style.transform="translate3d("+(-offset)+"px,0,0)";
+   if(offset>=loopWidth)offset-=loopWidth;
+   track.style.transform="translate3d("+(-offset)+"px,0,0)";
   }
   requestAnimationFrame(frame);
  }
