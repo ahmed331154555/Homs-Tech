@@ -137,10 +137,10 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 @media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
 </style><style id="homepage-gpu-motion">
 #homeGsmSection .products.auto-moving,
-#homePopularSection .products.auto-moving{overflow:hidden!important;display:block!important;position:relative;scroll-behavior:auto!important;scrollbar-width:none;padding:3px 0 15px}
+#homePopularSection .products.auto-moving{overflow:hidden!important;display:block!important;position:relative;white-space:nowrap;scroll-behavior:auto!important;scrollbar-width:none;padding:3px 0 15px}
 #homeGsmSection .products.auto-moving::-webkit-scrollbar,
 #homePopularSection .products.auto-moving::-webkit-scrollbar{display:none}
-.home-motion-track{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:stretch!important;gap:13px!important;width:max-content!important;min-width:max-content!important;height:auto!important;will-change:transform;transform:translate3d(0,0,0)}
+.home-motion-track{display:flex!important;flex-flow:row nowrap!important;align-items:stretch!important;gap:13px!important;width:max-content!important;min-width:max-content!important;height:auto!important;white-space:nowrap!important;will-change:transform;transform:translate3d(0,0,0)}
 .home-motion-track>.product{display:flex!important;flex:0 0 205px!important;width:205px!important;min-width:205px!important;max-width:205px!important}
 @media(max-width:600px){
  .home-motion-track>.product{flex-basis:205px!important;width:205px!important;min-width:205px!important;max-width:205px!important}
@@ -453,9 +453,9 @@ function renderCategories(){
 function renderProducts(){
  const box=document.getElementById("products");box.innerHTML="";
  const sourcePhones=Array.isArray(data.phones)?data.phones:[];
- const picks=Array.isArray(data.homepage?.popular?.indexes)?data.homepage.popular.indexes.map(Number).filter(Number.isFinite):[];
- let entries=picks.length?picks.map(idx=>({p:sourcePhones[idx],idx})).filter(x=>x.p):sourcePhones.map((p,idx)=>({p,idx}));
- const limit=Math.max(1,Math.min(50,Number(data.homepage?.popular?.limit)||12));
+ const startIndex=Math.max(0,sourcePhones.length-15);
+ const entries=sourcePhones.slice(startIndex).map((p,i)=>({p,idx:startIndex+i}));
+ const limit=15;
  if(!entries.length){
   box.innerHTML="<div style='padding:25px;color:#667784'>Geen apparaten beschikbaar.</div>";return;
  }
