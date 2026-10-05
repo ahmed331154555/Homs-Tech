@@ -3,645 +3,114 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GSM Home | HOMS TECH</title>
+<title>GSM Services | HOMS TECH</title>
+<meta name="description" content="HOMS TECH GSM Services — IMEI, FRP, iCloud, MDM, Remote, Server, Firmware en professionele GSM services.">
 <style>
-:root{
-  --bg:#050a12;--bg2:#07111f;--panel:rgba(10,21,38,.84);
-  --line:rgba(125,166,214,.16);--text:#f7fbff;--muted:#91a4bc;
-  --blue:#2f7cf6;--blue2:#69a7ff;--cyan:#2dd4bf;--green:#4ade80;
-  --shadow:0 28px 80px rgba(0,0,0,.28)
-}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text);background:var(--bg)}
-body{overflow-x:hidden}
-a{text-decoration:none;color:inherit}
-.ht-header{background:#fff;color:#142033;border-bottom:1px solid #e5eaf1;position:relative;z-index:20}
-.ht-container{width:min(1500px,calc(100% - 36px));margin:auto}
-.ht-main{min-height:78px;display:flex;align-items:center;gap:26px}
-.brand{display:flex;align-items:center;min-width:150px}
-.brand img{max-width:150px;max-height:46px;object-fit:contain}
-.search{flex:1;display:flex;max-width:650px;margin:auto;border:1px solid #dce3ec;border-radius:10px;overflow:hidden;background:#fff}
-.search span{padding:12px 0 12px 14px;color:#8090a5}
-.search input{border:0;outline:0;flex:1;padding:12px;background:transparent;font-size:14px}
-.search button{border:0;background:#0b5ed7;color:#fff;padding:0 22px;font-weight:700;cursor:pointer}
-.actions{display:flex;gap:18px;font-size:14px;white-space:nowrap}
-.actions a:hover{color:#0b5ed7}
-.main-nav{display:flex;gap:25px;align-items:center;height:46px;border-top:1px solid #f1f3f6;font-size:14px;overflow:auto}
-.main-nav a{white-space:nowrap;color:#39475a}
-.main-nav a:hover,.main-nav .active{color:#0b5ed7;font-weight:700}
+:root{--ink:#07111f;--nav:#0a1422;--blue:#1769e8;--blue2:#2f86ff;--cyan:#20c9b2;--line:#e5eaf1;--muted:#6f7e91;--soft:#f5f8fc;--white:#fff;--dark:#06101d;--dark2:#0a1828;--shadow:0 18px 55px rgba(8,30,65,.12)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink);background:#fff}a{text-decoration:none;color:inherit}.wrap{width:min(1460px,calc(100% - 40px));margin:auto}
+.topbar{background:#07111f;color:#aebdd0;font-size:12px}.topbar .wrap{min-height:38px;display:flex;align-items:center;justify-content:space-between;gap:18px}.toplinks{display:flex;gap:20px;align-items:center}.toplinks a:hover{color:#fff}
+header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}.head{min-height:76px;display:flex;align-items:center;gap:26px}.brand img{width:154px;max-height:48px;object-fit:contain}.search{flex:1;max-width:620px;margin:auto;display:flex;border:1px solid #dce3ec;border-radius:10px;overflow:hidden;background:#fff}.search span{padding:0 12px;display:flex;align-items:center;color:#7a899b}.search input{flex:1;border:0;outline:0;padding:13px 6px;font-size:14px}.search button{border:0;background:var(--blue);color:#fff;padding:0 21px;font-weight:800;cursor:pointer}.actions{display:flex;gap:18px;align-items:center;white-space:nowrap;font-size:13px}.actions a:hover{color:var(--blue)}
+.nav{border-top:1px solid #f1f3f6}.nav .wrap{display:flex;align-items:center;gap:25px;min-height:47px;overflow:auto}.nav a{font-size:13px;color:#425066;white-space:nowrap}.nav a:hover,.nav a.active{color:var(--blue);font-weight:800}
+.gsmnav{background:#0a1422;color:#c8d4e3}.gsmnav .wrap{display:flex;align-items:center;gap:7px;min-height:50px;overflow:auto}.gsmnav a{font-size:13px;padding:9px 13px;border-radius:8px;white-space:nowrap;color:#b7c6d8}.gsmnav a:hover,.gsmnav a.active{background:#1769e8;color:#fff}.gsmnav .login{margin-left:auto;background:#14253a;color:#fff}
 
-.gsm-bar{background:#0b1423;color:#dbe6f5;border-bottom:1px solid rgba(255,255,255,.05);position:relative;z-index:10}
-.gsm-bar-inner{width:min(1500px,calc(100% - 36px));margin:auto;display:flex;align-items:center;gap:7px;min-height:52px;overflow:auto}
-.gsm-bar a{padding:10px 14px;border-radius:9px;white-space:nowrap;color:#b9c8dc;font-size:13px;transition:.2s}
-.gsm-bar a:hover,.gsm-bar a.active{background:linear-gradient(135deg,#1559b8,#2f7cf6);color:#fff;box-shadow:0 8px 24px rgba(47,124,246,.2)}
-.gsm-bar .login{margin-left:auto;background:#17263b;color:#fff}
+.hero{background:radial-gradient(circle at 80% 18%,rgba(47,134,255,.18),transparent 28%),linear-gradient(135deg,#06101d,#0b1c30 62%,#07111f);color:#fff;overflow:hidden}.hero .wrap{min-height:590px;display:grid;grid-template-columns:1.08fr .92fr;align-items:center;gap:35px}.eyebrow{display:inline-flex;align-items:center;gap:8px;color:#7eb2ff;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:900;margin-bottom:20px}.dot{width:7px;height:7px;border-radius:50%;background:#27d4b8;box-shadow:0 0 15px #27d4b8}.hero h1{font-size:clamp(43px,5.4vw,78px);line-height:.98;letter-spacing:-3px;margin:0 0 24px;max-width:820px}.grad{background:linear-gradient(90deg,#fff,#71acff 58%,#2dd4bf);-webkit-background-clip:text;background-clip:text;color:transparent}.hero p{max-width:690px;color:#a9b8ca;line-height:1.75;font-size:16px;margin:0 0 30px}.buttons{display:flex;gap:12px;flex-wrap:wrap}.btn{min-height:48px;padding:0 21px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-weight:850;font-size:14px}.primary{background:#1769e8;color:#fff;box-shadow:0 13px 32px rgba(23,105,232,.3)}.secondary{border:1px solid rgba(255,255,255,.18);color:#fff;background:rgba(255,255,255,.04)}.green{background:#103b34;color:#73e6d2;border:1px solid rgba(45,212,191,.22)}
+.hero-panel{position:relative;min-height:410px;display:flex;align-items:center;justify-content:center}.glow{position:absolute;width:390px;height:390px;border-radius:50%;background:rgba(23,105,232,.18);filter:blur(35px)}.device{position:relative;width:min(430px,100%);border:1px solid rgba(255,255,255,.12);background:rgba(8,19,33,.82);border-radius:18px;padding:0;box-shadow:0 35px 90px rgba(0,0,0,.35);overflow:hidden}.device-head{height:45px;background:#101f32;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;padding:0 14px;gap:7px}.win{width:9px;height:9px;border-radius:50%;background:#718198}.device-title{margin-left:7px;font-size:11px;color:#91a3ba}.device-body{padding:25px}.status{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.status b{font-size:16px}.live{font-size:10px;color:#69e0c9;background:#103d35;padding:6px 9px;border-radius:20px}.service-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.07)}.service-row:last-child{border-bottom:0}.service-row span{color:#9fb0c3;font-size:12px}.service-row b{font-size:13px}.bar{height:7px;border-radius:9px;background:#17283d;margin-top:8px;overflow:hidden}.bar i{display:block;height:100%;width:82%;background:linear-gradient(90deg,#1769e8,#27d4b8);border-radius:9px}
 
-.gsm-home{position:relative;isolation:isolate;background:
- radial-gradient(circle at 78% 24%,rgba(47,124,246,.15),transparent 28%),
- radial-gradient(circle at 15% 75%,rgba(45,212,191,.07),transparent 25%),
- linear-gradient(180deg,#050a12 0%,#07111f 100%);
-overflow:hidden}
-.gsm-home:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(to bottom,#000,transparent 88%);pointer-events:none}
-.hero{width:min(1500px,calc(100% - 36px));margin:0 auto;min-height:650px;display:grid;grid-template-columns:1.08fr .92fr;gap:20px;align-items:center;position:relative;z-index:1}
-.hero-copy{padding:78px 30px 62px 58px}
-.eyebrow{font-size:11px;letter-spacing:2.8px;font-weight:900;color:#7ea4d4;margin-bottom:20px;text-transform:uppercase}
-.hero h1{font-size:clamp(42px,5.2vw,82px);line-height:.98;margin:0 0 22px;font-weight:950;letter-spacing:-3.4px;min-height:1.95em}
-.hero h1 .gradient{background:linear-gradient(90deg,#fff,#69a7ff 55%,#2dd4bf);-webkit-background-clip:text;background-clip:text;color:transparent}
-.hero p{max-width:650px;color:#9aabc0;font-size:16px;line-height:1.75;margin:0 0 30px}
-.buttons{display:flex;gap:12px;flex-wrap:wrap}
-.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:10px;font-weight:850;font-size:14px;border:1px solid transparent;transition:.22s;cursor:pointer}
-.btn-primary{background:linear-gradient(135deg,#2f7cf6,#1e63d6);color:#fff;box-shadow:0 12px 32px rgba(47,124,246,.26)}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 38px rgba(47,124,246,.34)}
-.btn-secondary{background:rgba(255,255,255,.035);border-color:rgba(154,185,221,.22);color:#eaf2fc}
-.btn-secondary:hover{background:rgba(255,255,255,.07)}
-.btn-green{background:#123b31;border-color:rgba(45,212,191,.24);color:#7cebd6}
-.btn-green:hover{transform:translateY(-2px);background:#154b3e}
+.stats{background:#fff;border-bottom:1px solid var(--line)}.stats .wrap{display:grid;grid-template-columns:repeat(4,1fr)}.stat{padding:27px 24px;border-right:1px solid var(--line)}.stat:last-child{border:0}.stat strong{display:block;font-size:30px;letter-spacing:-1px}.stat span{font-size:12px;color:var(--muted);display:block;margin-top:5px}
 
-.stats{display:grid;grid-template-columns:repeat(4,minmax(90px,1fr));gap:12px;margin-top:42px;max-width:760px}
-.stat{padding:15px 15px;border:1px solid var(--line);background:rgba(255,255,255,.025);border-radius:12px;backdrop-filter:blur(10px)}
-.stat strong{display:block;font-size:24px;color:#fff}
-.stat span{display:block;margin-top:4px;font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:#7f93ad;font-weight:800}
+.section{padding:88px 0}.section.soft{background:var(--soft)}.section.dark{background:var(--dark);color:#fff}.section-head{display:flex;justify-content:space-between;align-items:end;gap:25px;margin-bottom:36px}.kicker{font-size:11px;letter-spacing:2px;color:var(--blue);font-weight:900;text-transform:uppercase}.section.dark .kicker{color:#71acff}.section h2{font-size:clamp(30px,4vw,48px);line-height:1.05;letter-spacing:-1.7px;margin:9px 0 0}.section-head p{max-width:550px;color:var(--muted);line-height:1.65;margin:0}.section.dark .section-head p{color:#91a4b9}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{border:1px solid var(--line);background:#fff;border-radius:14px;padding:27px;box-shadow:0 8px 28px rgba(8,30,65,.04);transition:.2s}.card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:#cbd9ea}.card .icon{width:43px;height:43px;border-radius:10px;background:#eaf2ff;color:var(--blue);display:grid;place-items:center;font-weight:950;margin-bottom:20px}.card h3{margin:0 0 9px;font-size:19px}.card p{margin:0;color:var(--muted);font-size:13px;line-height:1.65}.card a{display:inline-block;margin-top:20px;color:var(--blue);font-weight:800;font-size:13px}
+.tool-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.tool{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.035);padding:19px;border-radius:11px}.tool b{display:block;margin-bottom:5px}.tool span{font-size:12px;color:#8ea1b7}
 
-.hero-visual{position:relative;display:flex;align-items:center;justify-content:center;padding:42px 50px}
-.glow{position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(47,124,246,.23),rgba(45,212,191,.05) 42%,rgba(47,124,246,0) 70%);filter:blur(4px);animation:pulse 5s ease-in-out infinite}
-.service-card{position:relative;width:min(490px,100%);background:linear-gradient(145deg,rgba(21,36,57,.92),rgba(7,16,29,.9));border:1px solid rgba(140,180,224,.2);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;backdrop-filter:blur(16px);transform:perspective(1000px) rotateY(-3deg);animation:float 6s ease-in-out infinite}
-.card-top{height:44px;background:rgba(255,255,255,.035);border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:7px;padding:0 15px;color:#748aa5;font-size:11px}
-.dot{width:8px;height:8px;border-radius:50%;background:#4b607a}
-.card-top span{margin-left:5px}
-.card-body{padding:42px 36px 34px}
-.lock{width:104px;height:104px;margin:3px auto 20px;border-radius:28px;background:linear-gradient(145deg,rgba(47,124,246,.18),rgba(45,212,191,.08));border:1px solid rgba(105,167,255,.2);color:#7db1ff;display:flex;align-items:center;justify-content:center;font-size:50px;box-shadow:0 0 60px rgba(47,124,246,.14);animation:lockGlow 3s ease-in-out infinite}
-.card-body h3{text-align:center;margin:0;font-size:20px}
-.card-body p{text-align:center;color:#8fa3bd;font-size:13px;line-height:1.55}
-.status{display:flex;justify-content:space-between;margin-top:30px;padding-top:18px;border-top:1px solid rgba(255,255,255,.09);font-size:11px;color:#7186a0}
-.status b{color:#4ade80}
-.progress{height:5px;background:#16263a;border-radius:99px;margin-top:22px;overflow:hidden}
-.progress i{display:block;height:100%;width:78%;background:linear-gradient(90deg,#2f7cf6,#2dd4bf);border-radius:99px;animation:progress 3.5s ease-in-out infinite alternate}
+.live-grid{display:grid;grid-template-columns:1fr 1fr;gap:55px;align-items:center}.checklist{display:grid;gap:13px;margin-top:25px}.check{display:flex;gap:11px;align-items:flex-start;font-size:14px;color:#334359}.check i{width:20px;height:20px;border-radius:50%;background:#e8f8f5;color:#159d87;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:900;flex:0 0 20px}.steps{border:1px solid var(--line);border-radius:16px;padding:8px;background:#fff;box-shadow:var(--shadow)}.step{display:grid;grid-template-columns:44px 1fr;gap:15px;padding:21px;border-bottom:1px solid var(--line)}.step:last-child{border:0}.num{width:36px;height:36px;border-radius:10px;background:#edf4ff;color:var(--blue);display:grid;place-items:center;font-weight:900}.step b{display:block;margin-bottom:5px}.step span{font-size:12px;color:var(--muted);line-height:1.5}
 
-.tools-wrap{border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07);background:rgba(3,9,17,.45)}
-.tools{width:min(1500px,calc(100% - 36px));margin:auto;display:flex;align-items:center;gap:10px;overflow:hidden;padding:16px 0}
-.tools-track{display:flex;gap:10px;animation:marquee 28s linear infinite;min-width:max-content}
-.tools-label{font-size:9px;letter-spacing:1.7px;text-transform:uppercase;color:#6f849e;font-weight:900;white-space:nowrap;margin-right:5px}
-.chip{background:rgba(255,255,255,.035);border:1px solid rgba(132,168,209,.16);border-radius:9px;padding:9px 13px;white-space:nowrap;font-size:11px;font-weight:750;color:#b9c9dc}
-.chip b{color:#54a4ff;margin-right:5px}
+.payments{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.pay{background:#fff;border:1px solid var(--line);padding:23px;border-radius:12px}.pay b{display:block;margin-bottom:7px}.pay span{font-size:12px;color:var(--muted);line-height:1.5}
+.support{background:linear-gradient(135deg,#0b1d31,#0b1422);color:#fff;border-radius:18px;padding:48px;display:flex;justify-content:space-between;gap:30px;align-items:center}.support p{color:#9eb0c4;line-height:1.65;max-width:680px;margin-bottom:0}
+footer{background:#050c15;color:#91a2b7;padding:50px 0 28px}.footer-grid{display:grid;grid-template-columns:1.3fr repeat(3,1fr);gap:45px;padding-bottom:35px}.footer-brand img{width:145px;background:#fff;border-radius:7px;padding:5px;margin-bottom:15px}.footer-grid h4{color:#fff;margin:0 0 15px;font-size:13px}.footer-grid a{display:block;font-size:12px;margin:10px 0}.footer-grid a:hover{color:#fff}.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:22px;font-size:11px;display:flex;justify-content:space-between;gap:20px}
 
-.quick{width:min(1500px,calc(100% - 36px));margin:34px auto 70px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.quick-card{background:linear-gradient(145deg,rgba(13,28,47,.86),rgba(8,18,31,.82));border:1px solid rgba(130,169,211,.14);border-radius:16px;padding:25px;display:flex;gap:15px;align-items:flex-start;box-shadow:0 14px 38px rgba(0,0,0,.12);transition:.22s}
-.quick-card:hover{transform:translateY(-4px);border-color:rgba(47,124,246,.36)}
-.qicon{width:44px;height:44px;border-radius:12px;background:rgba(47,124,246,.12);border:1px solid rgba(47,124,246,.18);color:#69a7ff;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
-.quick-card h3{margin:0 0 7px;font-size:16px}
-.quick-card p{margin:0;color:#8195ae;font-size:13px;line-height:1.6}
-.quick-card a{display:inline-block;margin-top:13px;color:#69a7ff;font-size:13px;font-weight:850}
-
-.availability{width:min(1500px,calc(100% - 36px));margin:0 auto 30px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
-.availability span{font-size:10px;color:#7890aa;border:1px solid rgba(130,169,211,.14);background:rgba(255,255,255,.025);padding:8px 11px;border-radius:999px}
-.availability b{color:#54dca3}
-
-footer{background:#030812;color:#8499b2;padding:30px 0;border-top:1px solid rgba(255,255,255,.07)}
-.footer-in{width:min(1500px,calc(100% - 36px));margin:auto;display:flex;justify-content:space-between;gap:20px;font-size:12px}.footer-in b{color:#dce8f6}
-
-@keyframes pulse{0%,100%{transform:scale(.94);opacity:.65}50%{transform:scale(1.05);opacity:1}}
-@keyframes float{0%,100%{transform:perspective(1000px) rotateY(-3deg) translateY(0)}50%{transform:perspective(1000px) rotateY(-3deg) translateY(-9px)}}
-@keyframes lockGlow{0%,100%{box-shadow:0 0 35px rgba(47,124,246,.12)}50%{box-shadow:0 0 65px rgba(45,212,191,.18)}}
-@keyframes progress{from{width:62%}to{width:92%}}
-@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-45%)}}
-@media(max-width:1000px){.hero{grid-template-columns:1fr}.hero-copy{padding:60px 28px 25px}.hero-visual{padding:20px 28px 55px}.stats{max-width:none}.quick{grid-template-columns:1fr}}
-@media(max-width:900px){.actions{display:none}.search{display:none}.hero h1{letter-spacing:-2px}.hero-visual{padding-left:10px;padding-right:10px}.service-card{transform:none}.gsm-bar .login{margin-left:0}.quick{margin-bottom:45px}}
-@media(max-width:620px){.ht-container,.gsm-bar-inner,.hero,.tools,.quick,.availability,.footer-in{width:min(100% - 22px,1500px)}.main-nav{gap:16px}.hero-copy{padding:46px 10px 20px}.hero h1{font-size:42px}.hero p{font-size:14px}.stats{grid-template-columns:repeat(2,1fr)}.hero-visual{padding-bottom:42px}.card-body{padding:32px 22px}.tools{overflow:hidden}.tools-label{display:none}}
-</style>
-
-<style id="homs-reference-exact">
-:root{
-  --ref-navy:#102a43;
-  --ref-blue:#1677d2;
-  --ref-blue2:#0b5cab;
-  --ref-cyan:#20a7c9;
-  --ref-bg:#f5f9fd;
-  --ref-card:#fff;
-  --ref-line:#dce8f2;
-  --ref-text:#172b3d;
-  --ref-muted:#6f8192;
-  --ref-soft:#eaf4ff;
-  --ref-green:#159a68;
-  --ref-shadow:0 18px 50px rgba(16,42,67,.12);
-}
-
-.gsm-home{
-  background:linear-gradient(180deg,#fff 0,#f5f9fd 100%) !important;
-  color:var(--ref-text) !important;
-}
-.gsm-home:before{
-  background-image:
-    linear-gradient(rgba(16,42,67,.014) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(16,42,67,.014) 1px,transparent 1px) !important;
-  background-size:44px 44px !important;
-  mask-image:linear-gradient(to bottom,#000,transparent 88%) !important;
-}
-
-/* Reference typography and spacing */
-.hero{
-  width:min(1240px,calc(100% - 40px)) !important;
-  min-height:470px !important;
-  grid-template-columns:1.08fr .92fr !important;
-  gap:52px !important;
-}
-.hero-copy{
-  padding:58px 0 40px 0 !important;
-}
-.eyebrow{
-  font-size:12px !important;
-  letter-spacing:2px !important;
-  color:var(--ref-blue) !important;
-  margin-bottom:16px !important;
-}
-.hero h1{
-  font-size:64px !important;
-  line-height:1.02 !important;
-  letter-spacing:-2.5px !important;
-  color:var(--ref-navy) !important;
-  min-height:132px !important;
-  margin:0 !important;
-}
-.hero h1 .gradient{
-  background:linear-gradient(90deg,var(--ref-blue2),var(--ref-blue),var(--ref-cyan)) !important;
-  -webkit-background-clip:text !important;
-  background-clip:text !important;
-  color:transparent !important;
-}
-.hero p{
-  font-size:18px !important;
-  color:var(--ref-muted) !important;
-  line-height:1.7 !important;
-  max-width:650px !important;
-  margin:22px 0 0 !important;
-}
-.buttons{margin-top:28px !important;gap:12px !important}
-.btn{min-height:48px !important;border-radius:9px !important;font-size:14px !important}
-.btn-primary{
-  background:var(--ref-blue) !important;
-  color:#fff !important;
-  box-shadow:0 10px 25px rgba(22,119,210,.2) !important;
-}
-.btn-secondary{
-  background:#fff !important;
-  color:var(--ref-navy) !important;
-  border:1px solid #cbdce9 !important;
-}
-.btn-green{
-  background:var(--ref-navy) !important;
-  border-color:var(--ref-navy) !important;
-  color:#fff !important;
-}
-
-/* Reference card */
-.hero-visual{padding:42px 10px !important}
-.service-card{
-  width:min(490px,100%) !important;
-  background:#fff !important;
-  border:1px solid var(--ref-line) !important;
-  border-radius:20px !important;
-  box-shadow:var(--ref-shadow) !important;
-  color:var(--ref-text) !important;
-  backdrop-filter:none !important;
-}
-.card-top{
-  height:38px !important;
-  background:#f2f7fb !important;
-  border-bottom:1px solid var(--ref-line) !important;
-  color:#748aa5 !important;
-}
-.dot{background:#c2d2df !important}
-.card-body{padding:30px !important}
-.lock{
-  width:74px !important;height:74px !important;
-  margin:3px auto 20px !important;
-  border-radius:20px !important;
-  background:#fff !important;
-  border:1px solid #dce9f2 !important;
-  box-shadow:0 12px 30px rgba(16,42,67,.1) !important;
-  color:var(--ref-blue) !important;
-}
-.card-body h3{
-  font-size:25px !important;
-  color:var(--ref-navy) !important;
-  margin:23px 0 8px !important;
-}
-.card-body p{
-  color:var(--ref-muted) !important;
-  font-size:13px !important;
-}
-.status{
-  margin-top:30px !important;
-  padding-top:18px !important;
-  border-top:1px solid var(--ref-line) !important;
-  color:#7186a0 !important;
-}
-.status b{color:var(--ref-green) !important}
-.progress{
-  height:7px !important;
-  background:#e8f0f5 !important;
-  margin-top:25px !important;
-}
-.progress i{
-  background:linear-gradient(90deg,var(--ref-blue),var(--ref-cyan)) !important;
-}
-
-/* Reference stats */
-.stats{
-  grid-template-columns:repeat(4,1fr) !important;
-  gap:15px !important;
-  margin-top:10px !important;
-  max-width:760px !important;
-}
-.stat{
-  background:#fff !important;
-  border:1px solid var(--ref-line) !important;
-  border-radius:13px !important;
-  padding:20px !important;
-  box-shadow:0 8px 25px rgba(16,42,67,.045) !important;
-}
-.stat strong{color:var(--ref-navy) !important;font-size:30px !important}
-.stat span{color:var(--ref-muted) !important}
-
-/* Reference tools strip */
-.tools-wrap{
-  border-top:1px solid var(--ref-line) !important;
-  border-bottom:1px solid var(--ref-line) !important;
-  background:#fff !important;
-}
-.tools{
-  width:min(1240px,calc(100% - 40px)) !important;
-  padding:16px 0 !important;
-}
-.tools-label{color:#6f8192 !important}
-.chip{
-  background:#f8fbfe !important;
-  border:1px solid #d6e5ef !important;
-  color:#496174 !important;
-}
-
-/* Reference quick cards */
-.quick{
-  width:min(1240px,calc(100% - 40px)) !important;
-  margin:34px auto 70px !important;
-  grid-template-columns:repeat(3,1fr) !important;
-  gap:17px !important;
-}
-.quick-card{
-  background:#fff !important;
-  border:1px solid var(--ref-line) !important;
-  border-radius:15px !important;
-  padding:23px !important;
-  box-shadow:0 8px 25px rgba(16,42,67,.045) !important;
-  color:var(--ref-text) !important;
-}
-.qicon{
-  background:var(--ref-soft) !important;
-  border:1px solid var(--ref-line) !important;
-  color:var(--ref-blue) !important;
-}
-.quick-card p{color:var(--ref-muted) !important}
-.quick-card a{color:var(--ref-blue) !important}
-
-/* Reference availability/footer */
-.availability span{
-  color:#7890aa !important;
-  border:1px solid var(--ref-line) !important;
-  background:#fff !important;
-}
-.availability b{color:var(--ref-green) !important}
-footer{
-  background:var(--ref-navy) !important;
-  color:#8499b2 !important;
-}
-
-@media(max-width:1000px){
-  .hero{width:min(100% - 40px,1240px) !important;gap:25px !important}
-}
-@media(max-width:620px){
-  .hero{width:calc(100% - 22px) !important}
-  .hero-copy{padding:40px 10px 20px !important}
-  .hero h1{font-size:42px !important;letter-spacing:-1.5px !important}
-}
-</style>
-
-
-<style id="homs-gsm-v6-layout">
-/* V6 — layout cleanup only. Palette stays exactly from V5. */
-.ht-header{background:#fff !important; color:#142033 !important; position:relative !important; z-index:50 !important}
-.ht-container{width:min(1240px,calc(100% - 40px)) !important}
-.ht-main{min-height:68px !important; gap:22px !important}
-.brand{min-width:150px !important}
-.brand img{max-width:145px !important;max-height:42px !important}
-.search{max-width:600px !important;height:42px !important}
-.search input{font-size:13px !important}
-.search button{padding:0 20px !important}
-.actions{font-size:12px !important;gap:15px !important}
-.main-nav{height:42px !important;gap:23px !important;font-size:13px !important}
-
-.gsm-bar{height:50px !important;background:#102a43 !important}
-.gsm-bar-inner{width:min(1240px,calc(100% - 40px)) !important;min-height:50px !important;gap:4px !important}
-.gsm-bar a{padding:9px 13px !important;font-size:12px !important;border-radius:8px !important}
-.gsm-bar a.active{background:#1677d2 !important;box-shadow:0 7px 18px rgba(22,119,210,.18) !important}
-.gsm-bar .login{margin-left:auto !important;background:#1b344d !important}
-
-.gsm-home{
-  min-height:0 !important;
-  background:linear-gradient(180deg,#fff 0%,#f5f9fd 100%) !important;
-}
-.gsm-home:before{opacity:.75 !important}
-
-.hero{
-  width:min(1240px,calc(100% - 40px)) !important;
-  min-height:500px !important;
-  height:auto !important;
-  grid-template-columns:minmax(0,1.08fr) minmax(430px,.92fr) !important;
-  gap:45px !important;
-  align-items:center !important;
-}
-.hero-copy{
-  padding:58px 0 42px !important;
-  max-width:650px !important;
-}
-.eyebrow{
-  margin-bottom:15px !important;
-  font-size:11px !important;
-  letter-spacing:2.2px !important;
-}
-.hero h1{
-  font-size:clamp(52px,5vw,72px) !important;
-  line-height:.98 !important;
-  letter-spacing:-3px !important;
-  min-height:145px !important;
-  margin:0 !important;
-}
-.hero p{
-  max-width:610px !important;
-  font-size:15px !important;
-  line-height:1.7 !important;
-  margin:20px 0 0 !important;
-}
-.buttons{margin-top:25px !important}
-.btn{min-height:46px !important;padding:0 20px !important}
-
-.stats{
-  margin-top:28px !important;
-  max-width:650px !important;
-  gap:10px !important;
-}
-.stat{
-  min-height:72px !important;
-  padding:14px 15px !important;
-  border-radius:11px !important;
-}
-.stat strong{font-size:23px !important}
-.stat span{font-size:8px !important;letter-spacing:1.15px !important}
-
-.hero-visual{
-  padding:30px 0 !important;
-  min-width:0 !important;
-}
-.glow{
-  width:390px !important;
-  height:390px !important;
-  opacity:.55 !important;
-}
-.service-card{
-  width:min(450px,100%) !important;
-  margin:0 auto !important;
-  border-radius:18px !important;
-}
-.card-top{height:36px !important}
-.card-body{padding:28px !important}
-.lock{width:68px !important;height:68px !important;margin:2px auto 15px !important}
-.card-body h3{font-size:21px !important;margin:18px 0 7px !important}
-.status{margin-top:24px !important;padding-top:15px !important}
-.progress{margin-top:18px !important}
-
-.tools-wrap{background:#fff !important}
-.tools{
-  width:min(1240px,calc(100% - 40px)) !important;
-  min-height:55px !important;
-  padding:12px 0 !important;
-}
-.tools-track{gap:8px !important}
-.chip{padding:7px 11px !important;border-radius:8px !important;font-size:11px !important}
-
-.availability{
-  width:min(1240px,calc(100% - 40px)) !important;
-  margin:12px auto 0 !important;
-  justify-content:center !important;
-}
-.availability span{padding:6px 10px !important;font-size:10px !important}
-
-.quick{
-  width:min(1240px,calc(100% - 40px)) !important;
-  margin:26px auto 55px !important;
-  gap:14px !important;
-}
-.quick-card{
-  min-height:122px !important;
-  padding:20px !important;
-  border-radius:14px !important;
-}
-.quick-card h3{font-size:15px !important}
-.quick-card p{font-size:12px !important;line-height:1.55 !important}
-.qicon{width:40px !important;height:40px !important;border-radius:11px !important}
-
-footer{margin-top:0 !important}
-
-@media(max-width:1100px){
-  .hero{grid-template-columns:1fr !important;gap:0 !important}
-  .hero-copy{max-width:760px !important;padding-bottom:20px !important}
-  .hero-visual{padding:15px 0 48px !important}
-  .service-card{max-width:500px !important}
-}
-@media(max-width:900px){
-  .ht-main{flex-wrap:wrap !important;padding:10px 0 !important}
-  .main-nav{overflow-x:auto !important}
-  .search{order:3;max-width:none;width:100% !important}
-}
-@media(max-width:620px){
-  .ht-container,.gsm-bar-inner,.hero,.tools,.quick,.availability{width:calc(100% - 22px) !important}
-  .hero{min-height:0 !important}
-  .hero-copy{padding:42px 0 18px !important}
-  .hero h1{font-size:42px !important;letter-spacing:-1.7px !important;min-height:125px !important}
-  .hero p{font-size:14px !important}
-  .stats{grid-template-columns:repeat(2,1fr) !important}
-  .hero-visual{padding:10px 0 38px !important}
-  .quick{grid-template-columns:1fr !important}
-}
-</style>
-
-<style id="homs-gsm-v7-layout">
-/* Clean Easy-style composition while preserving V6 colors */
-.gsm-home main{background:transparent !important}
-.hero{min-height:455px !important;grid-template-columns:minmax(0,1fr) minmax(430px,.82fr) !important;gap:62px !important;align-items:center !important}
-.hero-copy{padding:46px 0 30px !important;max-width:650px !important}
-.hero h1{font-size:clamp(50px,4.6vw,68px) !important;line-height:.99 !important;letter-spacing:-3px !important;margin-bottom:0 !important}
-.hero p{max-width:600px !important;margin-top:18px !important;margin-bottom:24px !important;font-size:14px !important;line-height:1.65 !important}
-.buttons{gap:10px !important}.btn{min-height:43px !important;padding:0 18px !important;font-size:12px !important}
-.stats{margin-top:25px !important;max-width:620px !important;gap:9px !important}.stat{min-height:67px !important;padding:12px 14px !important}.stat strong{font-size:21px !important}.stat span{font-size:8px !important}
-.hero-visual{padding:25px 0 35px !important}
-.service-card{width:min(445px,100%) !important;border-radius:18px !important;transform:none !important;box-shadow:0 18px 45px rgba(16,42,67,.12) !important}
-.service-card:hover{transform:translateY(-3px) !important}
-.card-top{height:34px !important;padding:0 13px !important;background:#f7fafc !important;border-bottom:1px solid #dce8f2 !important;color:#6f8192 !important}
-.dot{width:10px !important;height:10px !important;border:0 !important;padding:0 !important;cursor:pointer !important;display:block !important;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08) !important;transition:transform .15s,filter .15s !important}
-.dot:hover{transform:scale(1.2) !important;filter:brightness(1.06) !important}.dot-red{background:#ff5f57 !important}.dot-orange{background:#ffbd2e !important}.dot-green{background:#28c840 !important}
-.card-body{padding:30px 30px 25px !important}.lock{width:76px !important;height:76px !important;border-radius:22px !important;font-size:38px !important;margin:2px auto 15px !important}.card-body h3{font-size:19px !important}.card-body p{font-size:12px !important}.status{margin-top:20px !important;padding-top:14px !important}.progress{margin-top:15px !important}
-.service-card.is-minimized .card-body{display:none !important}.service-card.is-minimized{height:34px !important}.service-card.is-maximized{width:min(560px,100%) !important;transform:scale(1.035) !important;z-index:5 !important}
-.card-restore{display:none;position:absolute;right:18px;top:14px;border:1px solid #dce8f2;background:#fff;color:#1677d2;border-radius:8px;padding:7px 11px;font-size:11px;font-weight:800;cursor:pointer;z-index:20;box-shadow:0 6px 18px rgba(16,42,67,.1)}
-.service-card.is-closed{display:none !important}.hero-visual.has-restore .card-restore{display:block}
-.tools-wrap{background:#fff !important;border-top:1px solid #dce8f2 !important;border-bottom:1px solid #dce8f2 !important}
-.tools{width:min(1240px,calc(100% - 40px)) !important;justify-content:center !important;padding:11px 0 !important;min-height:47px !important}.tools-track{gap:8px !important}.chip{padding:7px 11px !important;font-size:10px !important}
-.availability{margin:10px auto 25px !important}.quick{width:min(1240px,calc(100% - 40px)) !important;margin:22px auto 46px !important;gap:13px !important}.quick-card{min-height:112px !important;padding:18px !important;border-radius:13px !important}.qicon{width:38px !important;height:38px !important}.quick-card p{font-size:11px !important;line-height:1.5 !important}.quick-card a{font-size:11px !important;margin-top:10px !important}
-footer{padding:22px 0 !important}
-@media(max-width:1000px){.hero{grid-template-columns:1fr !important;gap:5px !important}.hero-copy{padding-top:40px !important}.hero-visual{padding-top:0 !important}}
-@media(max-width:620px){.hero h1{font-size:42px !important;letter-spacing:-2px !important}.tools{justify-content:flex-start !important}.quick{grid-template-columns:1fr !important}}
+@media(max-width:950px){.head{flex-wrap:wrap;padding:12px 0}.search{order:3;max-width:none;flex-basis:100%}.actions{margin-left:auto}.hero .wrap{grid-template-columns:1fr;padding:55px 0}.hero-panel{min-height:350px}.cards{grid-template-columns:repeat(2,1fr)}.tool-grid{grid-template-columns:repeat(2,1fr)}.live-grid{grid-template-columns:1fr}.payments{grid-template-columns:repeat(2,1fr)}.footer-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:650px){.wrap{width:min(100% - 24px,1460px)}.topbar .wrap{justify-content:center}.toplinks{display:none}.head{gap:12px}.brand img{width:130px}.actions{gap:10px;font-size:12px}.nav .wrap{gap:17px}.gsmnav .wrap{min-height:47px}.hero h1{font-size:43px;letter-spacing:-2px}.hero .wrap{min-height:0;padding:62px 0 45px}.hero-panel{min-height:290px}.device{width:100%}.stats .wrap{grid-template-columns:repeat(2,1fr)}.stat{border-bottom:1px solid var(--line)}.section{padding:62px 0}.section-head{display:block}.section-head p{margin-top:16px}.cards,.tool-grid,.payments{grid-template-columns:1fr}.support{padding:30px;display:block}.support .buttons{margin-top:22px}.footer-grid{grid-template-columns:1fr 1fr;gap:28px}.footer-bottom{display:block}.footer-bottom span{display:block;margin-top:7px}}
 </style>
 </head>
 <body>
-<header class="ht-header">
-  <div class="ht-container ht-main">
-    <a class="brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>
-    <form class="search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button>Zoek</button></form>
-    <div class="actions"><a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div>
-  </div>
-  <div class="ht-container main-nav">
-    <a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a><a href="used.html">Tweedehands</a><a class="active" href="gsm-home.html">GSM Services</a><a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a>
-  </div>
+<div class="topbar"><div class="wrap"><span>HOMS TECH GSM — professionele services voor reparateurs</span><div class="toplinks"><a href="client-area.html">Client Area</a><a href="gsm-services.html">Services</a><a href="about.html">Support</a></div></div></div>
+
+<header>
+<div class="wrap head">
+<a class="brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>
+<form class="search" onsubmit="event.preventDefault();document.getElementById('services').scrollIntoView({behavior:'smooth'})"><span>⌕</span><input placeholder="Search GSM services, IMEI, FRP, iCloud..."><button>Search</button></form>
+<div class="actions"><a href="account.html" id="loginBtn">Login / Register</a><a href="cart.html">Winkelwagen</a><a href="client-area.html" id="userPill" style="display:none"><b id="userName">Client Area</b></a></div>
+</div>
+<nav class="nav"><div class="wrap"><a href="index.html">Webshop</a><a href="repair.html">Reparatie</a><a href="devices.html">Toestellen</a><a href="prices.html">Prijzen</a><a href="used.html">Refurbished</a><a href="gsm-home.html" class="active">GSM Services</a><a href="uw-toestel-verkopen.html">Uw toestel verkopen</a></div></nav>
 </header>
 
-<nav class="gsm-bar"><div class="gsm-bar-inner">
-  <a class="active" href="gsm-home.html">GSM Home</a>
-  <a href="gsm-services.html">Reseller Pricing</a>
-  <a href="gsm-services.html#remote">Remote Service</a>
-  <a href="gsm-services.html#server">Server Service</a>
-  <a href="gsm-services.html#imei">IMEI Services</a>
-  <a href="gsm-services.html#frp">FRP Services</a>
-  <a href="gsm-services.html#firmware">Firmware / Software</a>
-  <a id="loginBtn" class="login" href="account.html">Login</a>
-  <a id="userPill" class="login" href="client-area.html" style="display:none"><span id="userName">Client Area</span></a>
-</div></nav>
-
-<section class="gsm-home">
-<main>
-<section class="hero">
-  <div class="hero-copy">
-    <div class="eyebrow">HOMS TECH • PROFESSIONAL GSM SERVICES</div>
-    <h1 id="heroTitle">FRP. iCloud. IMEI.<br><span class="gradient">Solved fast.</span></h1>
-    <p id="heroText">Pay per service, choose the right tool and send your request through one trusted HOMS TECH panel — with clear pricing and support.</p>
-    <div class="buttons">
-      <a class="btn btn-primary" href="gsm-services.html">Browse services →</a>
-      <a class="btn btn-secondary" href="client-area.html">Client Area</a>
-      <a class="btn btn-green" id="waBtn" href="#">Talk to support</a>
-    </div>
-    <div class="stats">
-      <div class="stat"><strong id="serviceCount">—</strong><span>GSM SERVICES</span></div>
-      <div class="stat"><strong>1,200+</strong><span>SERVICES</span></div>
-      <div class="stat"><strong>48,400+</strong><span>REQUESTS HANDLED</span></div>
-      <div class="stat"><strong>24/7</strong><span>LIVE SUPPORT</span></div>
-    </div>
-  </div>
-
-  <div class="hero-visual" id="heroVisual">
-    <button class="card-restore" id="cardRestore">Show service card</button>
-    <div class="glow"></div>
-    <div class="service-card">
-      <div class="card-top"><button class="dot dot-red" id="cardClose" aria-label="Close"></button><button class="dot dot-orange" id="cardMin" aria-label="Minimize"></button><button class="dot dot-green" id="cardMax" aria-label="Maximize"></button><span>homs-tech • live services</span></div>
-      <div class="card-body">
-        <div class="lock">🔒</div>
-        <h3 id="cardTitle">GSM service online</h3>
-        <p id="cardText">IMEI / FRP / Remote services are ready.</p>
-        <div class="status"><span>HOMS TECH STATUS</span><b>● ONLINE</b></div>
-        <div class="progress"><i></i></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="tools-wrap"><div class="tools">
-  <div class="tools-track" id="toolsTrack">
-    <span class="chip"><b>▣</b> IMEI</span><span class="chip"><b>⌁</b> Remote</span><span class="chip"><b>⚒</b> Server</span><span class="chip"><b>◉</b> FRP</span><span class="chip"><b>▰</b> Firmware</span><span class="chip"><b>✓</b> 24/7 Service</span>
-    <span class="chip"><b>▣</b> IMEI</span><span class="chip"><b>⌁</b> Remote</span><span class="chip"><b>⚒</b> Server</span><span class="chip"><b>◉</b> FRP</span><span class="chip"><b>▰</b> Firmware</span><span class="chip"><b>✓</b> 24/7 Service</span>
-  </div>
+<div class="gsmnav"><div class="wrap">
+<a href="gsm-home.html" class="active">GSM Home</a><a href="gsm-services.html#remote">Remote Service</a><a href="gsm-services.html#server">Server / Credits</a><a href="gsm-services.html#imei">IMEI Services</a><a href="gsm-services.html#frp">FRP</a><a href="gsm-services.html#firmware">Firmware</a><a href="client-area.html" class="login">Client Area →</a>
 </div></div>
 
-<div class="availability">
-  <span><b>●</b> Online services</span>
-  <span><b>●</b> Fast processing</span>
-  <span><b>●</b> Secure requests</span>
+<main>
+<section class="hero"><div class="wrap">
+<div>
+<div class="eyebrow"><i class="dot"></i> Professional GSM Services</div>
+<h1>IMEI. FRP. iCloud.<br><span class="grad">Solved fast.</span></h1>
+<p>HOMS TECH brengt professionele GSM services samen in één duidelijke omgeving. Kies je service, bekijk de voorwaarden en volg je aanvraag via je Client Area.</p>
+<div class="buttons"><a class="btn primary" href="gsm-services.html">Browse services →</a><a class="btn secondary" href="client-area.html">Client Area</a><a class="btn green" id="waBtn" href="https://wa.me/">WhatsApp support</a></div>
 </div>
+<div class="hero-panel"><div class="glow"></div><div class="device">
+<div class="device-head"><i class="win"></i><i class="win"></i><i class="win"></i><span class="device-title">HOMS TECH / GSM SERVICE PANEL</span></div>
+<div class="device-body"><div class="status"><b>Service Center</b><span class="live">● ONLINE</span></div>
+<div class="service-row"><div><span>IMEI Services</span><div class="bar"><i style="width:91%"></i></div></div><b>Ready</b></div>
+<div class="service-row"><div><span>FRP / Google Lock</span><div class="bar"><i style="width:84%"></i></div></div><b>Ready</b></div>
+<div class="service-row"><div><span>Remote / Server</span><div class="bar"><i style="width:76%"></i></div></div><b>Ready</b></div>
+<div class="service-row"><div><span>Firmware / Tools</span><div class="bar"><i style="width:88%"></i></div></div><b>Ready</b></div>
+</div></div></div>
+</div></section>
 
-<section class="quick">
-  <div class="quick-card"><div class="qicon">▣</div><div><h3>IMEI Services</h3><p>Zoek en bestel beschikbare IMEI-services met de juiste ordervelden.</p><a href="gsm-services.html#imei">Browse IMEI services →</a></div></div>
-  <div class="quick-card"><div class="qicon">⚒</div><div><h3>Remote & Server</h3><p>Remote opdrachten en server/tools services vanuit hetzelfde GSM-paneel.</p><a href="gsm-services.html#remote">Browse services →</a></div></div>
-  <div class="quick-card"><div class="qicon">◉</div><div><h3>Client Area</h3><p>Bekijk uw aanvragen, statussen en eerdere GSM-bestellingen.</p><a href="client-area.html">Open Client Area →</a></div></div>
-</section>
+<section class="stats"><div class="wrap">
+<div class="stat"><strong id="serviceCount">1,200+</strong><span>GSM services in the system</span></div><div class="stat"><strong>24/7</strong><span>Service request access</span></div><div class="stat"><strong>1</strong><span>Professional HOMS TECH panel</span></div><div class="stat"><strong>NL</strong><span>Support from the Netherlands</span></div>
+</div></section>
+
+<section class="section" id="services"><div class="wrap">
+<div class="section-head"><div><div class="kicker">What we unlock</div><h2>Services built for the repair bench</h2></div><p>Van Samsung FRP tot IMEI, remote en server services. De servicepagina blijft de centrale plek voor actuele prijzen en beschikbare diensten.</p></div>
+<div class="cards">
+<article class="card"><div class="icon">IMEI</div><h3>IMEI Services</h3><p>Professionele IMEI-gerelateerde services voor ondersteunde toestellen en providers.</p><a href="gsm-services.html#imei">Bekijk IMEI →</a></article>
+<article class="card"><div class="icon">FRP</div><h3>FRP & Google Lock</h3><p>Bekijk beschikbare FRP-services per merk en model met duidelijke servicevoorwaarden.</p><a href="gsm-services.html#frp">Bekijk FRP →</a></article>
+<article class="card"><div class="icon">iC</div><h3>iCloud Services</h3><p>Een aparte servicecategorie voor ondersteunde Apple-workflows en aanvragen.</p><a href="gsm-services.html#imei">Bekijk services →</a></article>
+<article class="card"><div class="icon">MDM</div><h3>MDM</h3><p>Professionele MDM-services voor ondersteunde zakelijke en beheerde apparaten.</p><a href="gsm-services.html">Bekijk MDM →</a></article>
+<article class="card"><div class="icon">R</div><h3>Remote Service</h3><p>Start een remote aanvraag en volg de status via de HOMS TECH serviceflow.</p><a href="gsm-services.html#remote">Remote services →</a></article>
+<article class="card"><div class="icon">S</div><h3>Server & Credits</h3><p>Server-based tools en credits overzichtelijk verzameld op één servicepagina.</p><a href="gsm-services.html#server">Server services →</a></article>
+</div></div></section>
+
+<section class="section dark"><div class="wrap">
+<div class="section-head"><div><div class="kicker">Professional tools</div><h2>One panel. Multiple workflows.</h2></div><p>Houd je GSM workflow eenvoudig: kies de juiste service, lever de gevraagde gegevens aan en volg de aanvraag.</p></div>
+<div class="tool-grid"><div class="tool"><b>Samsung</b><span>FRP, IMEI, firmware & supported services</span></div><div class="tool"><b>Apple</b><span>iCloud, IMEI & supported workflows</span></div><div class="tool"><b>Android</b><span>Remote, FRP & server services</span></div><div class="tool"><b>Multi-brand</b><span>Service catalogus met actuele opties</span></div></div>
+</div></section>
+
+<section class="section"><div class="wrap live-grid">
+<div><div class="kicker">How it works</div><h2>Van aanvraag tot resultaat, duidelijk.</h2><p style="color:var(--muted);line-height:1.7">Geen ingewikkelde omwegen. De website brengt je van servicekeuze naar aanvraag en daarna naar statuscontrole in de Client Area.</p>
+<div class="checklist"><div class="check"><i>✓</i><span>Kies de juiste GSM service en controleer de voorwaarden.</span></div><div class="check"><i>✓</i><span>Vul de benodigde toestel- en aanvraaggegevens in.</span></div><div class="check"><i>✓</i><span>Volg je aanvraag en eerdere GSM-bestellingen via Client Area.</span></div><div class="check"><i>✓</i><span>Neem contact op met HOMS TECH support wanneer je hulp nodig hebt.</span></div></div></div>
+<div class="steps"><div class="step"><div class="num">01</div><div><b>Browse services</b><span>Open de actuele GSM servicecatalogus.</span></div></div><div class="step"><div class="num">02</div><div><b>Send request</b><span>Voer de gevraagde gegevens zorgvuldig in.</span></div></div><div class="step"><div class="num">03</div><div><b>Track status</b><span>Controleer je aanvraag vanuit Client Area.</span></div></div><div class="step"><div class="num">04</div><div><b>Get support</b><span>WhatsApp of support wanneer je vastloopt.</span></div></div></div>
+</div></section>
+
+<section class="section soft"><div class="wrap">
+<div class="section-head"><div><div class="kicker">Payment</div><h2>Clear service flow, simple checkout</h2></div><p>Betaal- en ordermogelijkheden kunnen per service verschillen. Controleer altijd de actuele servicepagina voordat je bestelt.</p></div>
+<div class="payments"><div class="pay"><b>Online checkout</b><span>Gebruik de beschikbare betaalmethode bij de betreffende service.</span></div><div class="pay"><b>Client Area</b><span>Bekijk aanvragen, orders en service status op één plek.</span></div><div class="pay"><b>WhatsApp</b><span>Voor vragen over een service of aanvraag staat support klaar.</span></div><div class="pay"><b>Europe / NL</b><span>HOMS TECH is gericht op klanten en reparateurs in Nederland en Europa.</span></div></div>
+</div></section>
+
+<section class="section"><div class="wrap"><div class="support"><div><div class="kicker">Support</div><h2>Need help with a service?</h2><p>Reach HOMS TECH support for questions about available GSM services, requests and the Client Area.</p></div><div class="buttons"><a class="btn green" id="waBtn2" href="https://wa.me/">WhatsApp support</a><a class="btn secondary" href="client-area.html">Open Client Area</a></div></div></div></section>
 </main>
-<footer><div class="footer-in"><span>© HOMS TECH — GSM Services & Webshop</span><span><b>GSM Support</b> • IMEI • Remote • Server • FRP • Firmware</span></div></footer>
-</section>
+
+<footer><div class="wrap">
+<div class="footer-grid"><div class="footer-brand"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"><div style="font-size:12px;line-height:1.7">GSM Services, phone repair and refurbished devices — HOMS TECH.</div></div>
+<div><h4>GSM Services</h4><a href="gsm-services.html#imei">IMEI Services</a><a href="gsm-services.html#frp">FRP</a><a href="gsm-services.html#remote">Remote Service</a><a href="gsm-services.html#server">Server / Credits</a></div>
+<div><h4>HOMS TECH</h4><a href="index.html">Webshop</a><a href="repair.html">Reparatie</a><a href="devices.html">Toestellen</a><a href="prices.html">Prijzen</a></div>
+<div><h4>Account</h4><a href="account.html">Login / Register</a><a href="client-area.html">Client Area</a><a href="cart.html">Winkelwagen</a><a href="about.html">Over ons / Support</a></div></div>
+<div class="footer-bottom"><span>© HOMS TECH — GSM Services & Webshop</span><span>IMEI • Remote • Server • FRP • iCloud • Firmware</span></div>
+</div></footer>
 
 <script>
-const heroSets=[
-  {title:'FRP. iCloud. IMEI.<br><span class="gradient">Solved fast.</span>',text:'Pay per service, choose the right tool and send your request through one trusted HOMS TECH panel — with clear pricing and support.',card:'GSM service online',cardText:'IMEI / FRP / Remote services are ready.'},
-  {title:'Every brand. One trusted<br><span class="gradient">GSM panel.</span>',text:'One professional panel for IMEI, remote, server, FRP and firmware services — simple ordering and clear service flow.',card:'Service request ready',cardText:'Your request flow is ready to continue.'},
-  {title:'Licensed tools. Reliable<br><span class="gradient">service flow.</span>',text:'Choose the right service, enter the required information and follow your request from the HOMS TECH Client Area.',card:'Request protected',cardText:'Secure service request and status tracking.'}
-];
-let heroIndex=0;
-setInterval(()=>{
-  heroIndex=(heroIndex+1)%heroSets.length;
-  const x=heroSets[heroIndex];
-  document.getElementById('heroTitle').innerHTML=x.title;
-  document.getElementById('heroText').textContent=x.text;
-  document.getElementById('cardTitle').textContent=x.card;
-  document.getElementById('cardText').textContent=x.cardText;
-},4200);
-
-(async()=>{
-  try{
-    const r=await fetch('/api/site',{credentials:'include'});
-    const d=await r.json();
-    const list=Array.isArray(d?.gsmServices)?d.gsmServices:[];
-    document.getElementById('serviceCount').textContent=list.length.toLocaleString('nl-NL') || '1,200+';
-    const wa=String(d?.settings?.whatsapp||d?.whatsapp||'').replace(/\D/g,'');
-    document.getElementById('waBtn').href=wa?'https://wa.me/'+wa:'https://wa.me/';
-  }catch(e){document.getElementById('serviceCount').textContent='1,200+'}
-})();
-
-(async()=>{
-  const login=document.getElementById('loginBtn');
-  const pill=document.getElementById('userPill');
-  const name=document.getElementById('userName');
-  try{
-    const r=await fetch('/api/customer/me',{credentials:'include'});
-    if(!r.ok) throw new Error('not logged');
-    const d=await r.json();
-    const u=d.customer||d.user||d;
-    const label=u.name||u.full_name||u.email||'Client Area';
-    login.style.display='none';
-    pill.style.display='inline-flex';
-    name.textContent=label;
-  }catch(e){
-    login.style.display='inline-flex';
-    pill.style.display='none';
-  }
-})();
-</script>
-
-<script id="card-window-controls">
-(()=>{
-  const card=document.querySelector('.service-card');
-  const visual=document.getElementById('heroVisual');
-  const close=document.getElementById('cardClose');
-  const min=document.getElementById('cardMin');
-  const max=document.getElementById('cardMax');
-  const restore=document.getElementById('cardRestore');
-  if(!card||!close||!min||!max||!restore)return;
-  close.addEventListener('click',()=>{card.classList.add('is-closed');visual.classList.add('has-restore');});
-  restore.addEventListener('click',()=>{card.classList.remove('is-closed');visual.classList.remove('has-restore');});
-  min.addEventListener('click',()=>{card.classList.toggle('is-minimized');});
-  max.addEventListener('click',()=>{card.classList.toggle('is-maximized');});
-})();
+(async()=>{try{const r=await fetch('/api/site',{credentials:'include'});const d=await r.json();const list=Array.isArray(d?.gsmServices)?d.gsmServices:[];document.getElementById('serviceCount').textContent=list.length?list.length.toLocaleString('nl-NL'):'1,200+';const wa=String(d?.settings?.whatsapp||d?.whatsapp||'').replace(/\D/g,'');if(wa){document.getElementById('waBtn').href='https://wa.me/'+wa;document.getElementById('waBtn2').href='https://wa.me/'+wa;}}catch(e){}})();
+(async()=>{const login=document.getElementById('loginBtn'),pill=document.getElementById('userPill'),name=document.getElementById('userName');try{const r=await fetch('/api/customer/me',{credentials:'include'});if(!r.ok)throw 0;const d=await r.json(),u=d.customer||d.user||d;login.style.display='none';pill.style.display='inline-flex';name.textContent=u.name||u.full_name||u.email||'Client Area';}catch(e){login.style.display='inline-flex';pill.style.display='none';}})();
 </script>
 </body>
 </html>
