@@ -79,7 +79,7 @@ header{background:#fff;border-bottom:1px solid var(--line)}
 
 /* PRODUCTS */
 .products{display:flex;gap:13px;overflow-x:auto;scroll-snap-type:x mandatory;padding:3px 2px 15px;scrollbar-width:thin;scroll-behavior:auto}
-.products.auto-moving{scroll-behavior:auto;overflow-x:hidden;cursor:default}
+.products.auto-moving{scroll-behavior:auto;overflow-x:hidden;cursor:default;scrollbar-width:none}.products.auto-moving::-webkit-scrollbar{display:none}
 .products.auto-moving .product{flex:0 0 205px}
 .products::-webkit-scrollbar{height:6px}.products::-webkit-scrollbar-thumb{background:#b9c7d2;border-radius:20px}
 .product{flex:0 0 205px;scroll-snap-align:start;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:0 4px 15px #071d2d0b}
@@ -220,7 +220,7 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 
 <section class="section" id="homePopularSection">
  <h2 class="section-title" id="popularTitle">Populaire apparaten</h2>
- <div class="product-nav"><button onclick="moveProducts(-1)">‹</button><button onclick="moveProducts(1)">›</button></div>
+ <div class="product-nav" id="popularNav" style="display:none"></div>
  <div id="products" class="products"></div>
 </section>
 
@@ -368,11 +368,33 @@ function startSimpleTicker(box){
  box.onmouseenter=()=>paused=true;box.onmouseleave=()=>paused=false;
  function tick(now){
   const dt=Math.min(50,now-last);last=now;
-  if(!paused){pos+=dt*0.035;const half=box.scrollWidth/2;if(half>box.clientWidth&&pos>=half)pos-=half;box.scrollLeft=pos;}
+  if(!paused){
+   pos+=dt*0.055;
+   const half=box.scrollWidth/2;
+   if(half>box.clientWidth&&pos>=half)pos-=half;
+   box.scrollLeft=pos;
+  }
   requestAnimationFrame(tick);
  }
  requestAnimationFrame(tick);
 }
+function startPopularTicker(box){
+ let pos=0,last=performance.now(),paused=false;
+ box.classList.add("auto-moving");
+ box.onmouseenter=()=>paused=true;box.onmouseleave=()=>paused=false;
+ function tick(now){
+  const dt=Math.min(50,now-last);last=now;
+  if(!paused){
+   pos+=dt*0.045;
+   const half=box.scrollWidth/2;
+   if(half>box.clientWidth&&pos>=half)pos-=half;
+   box.scrollLeft=pos;
+  }
+  requestAnimationFrame(tick);
+ }
+ requestAnimationFrame(tick);
+}
+
 function renderHomepageVisibility(){
  const c=data.homepage.categories,p=data.homepage.popular,v=data.homepage.homeVisit,s=data.homepage.services,w=data.homepage.why,f=data.homepage.footer;
  const set=(id,on)=>{const el=document.getElementById(id);if(el)el.style.display=on?"":"none";};
@@ -415,7 +437,8 @@ function renderProducts(){
  if(!entries.length){
   box.innerHTML="<div style='padding:25px;color:#667784'>Geen apparaten beschikbaar.</div>";return;
  }
- entries.slice(0,limit).forEach(({p,idx})=>{
+ const chosen=entries.slice(0,limit);
+ const renderOne=({p,idx})=>{
   if(typeof p==="string")p={name:p};
   const img=p.image||(Array.isArray(p.images)?p.images[0]:"");
   const card=document.createElement("article");card.className="product";
