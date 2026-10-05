@@ -137,16 +137,13 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 @media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
 </style><style id="homepage-gpu-motion">
 #homeGsmSection .products.auto-moving,
-#homePopularSection .products.auto-moving{overflow:hidden!important;display:flex!important;flex-wrap:nowrap!important;scroll-behavior:auto!important;scrollbar-width:none}
+#homePopularSection .products.auto-moving{overflow:hidden!important;display:block!important;scroll-behavior:auto!important;scrollbar-width:none}
 #homeGsmSection .products.auto-moving::-webkit-scrollbar,
 #homePopularSection .products.auto-moving::-webkit-scrollbar{display:none}
-#homeGsmSection .products.auto-moving.gpu-track,
-#homePopularSection .products.auto-moving.gpu-track{justify-content:flex-start;will-change:transform;transform:translate3d(0,0,0)}
-#homeGsmSection .products.auto-moving.gpu-track .product,
-#homePopularSection .products.auto-moving.gpu-track .product{flex:0 0 auto}
+.home-motion-track{display:flex!important;flex-wrap:nowrap!important;width:max-content;will-change:transform;transform:translate3d(0,0,0)}
+.home-motion-track>.product{flex:0 0 auto!important}
 @media (prefers-reduced-motion:reduce){
- #homeGsmSection .products.auto-moving.gpu-track,
- #homePopularSection .products.auto-moving.gpu-track{transform:none!important}
+ .home-motion-track{transform:none!important}
 }
 </style>
 </head>
@@ -374,43 +371,43 @@ function renderHomepageGsm(){
  section.style.display=g.enabled?"":"none";
  document.getElementById("gsmHomeTitle").textContent=g.title||"GSM Services";
  const items=Array.isArray(g.items)?g.items:[];
- box.innerHTML=items.concat(items).map(x=>`<a class="product" href="${esc(x.link||"gsm-services.html")}" style="min-height:72px;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;text-decoration:none;color:var(--navy)"><span style="font-size:24px;margin-right:7px">${esc(x.icon||"🔧")}</span><strong>${esc(x.label||"Service")}</strong></a>`).join("");
- if(items.length) startSimpleTicker(box);
+ if(!items.length){box.innerHTML="";return;}
+ const html=items.concat(items).map(x=>`<a class="product" href="${esc(x.link||"gsm-services.html")}" style="min-height:72px;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;text-decoration:none;color:var(--navy)"><span style="font-size:24px;margin-right:7px">${esc(x.icon||"🔧")}</span><strong>${esc(x.label||"Service")}</strong></a>`).join("");
+ box.innerHTML='<div class="home-motion-track">'+html+"</div>";
+ startSimpleTicker(box);
 }
 function startSimpleTicker(box){
- const items=[...box.children];
- if(items.length<2)return;
- box.classList.add("gpu-track");
- let paused=false;
+ const track=box.querySelector(".home-motion-track");
+ if(!track||track.children.length<2)return;
+ let paused=false,start=null,half=0;
  box.onmouseenter=()=>paused=true;box.onmouseleave=()=>paused=false;
- const speed=34;
- let start=null,half=0;
- const measure=()=>{half=box.scrollWidth/2;};
+ const measure=()=>{half=track.scrollWidth/2;};
  requestAnimationFrame(measure);
+ const speed=42;
  function frame(now){
   if(!start)start=now;
   if(!paused&&half>0){
-   let x=((now-start)*speed/1000)%half;
-   box.style.transform="translate3d("+(-x)+"px,0,0)";
+   const x=((now-start)*speed/1000)%half;
+   track.style.transform="translate3d("+(-x)+"px,0,0)";
   }
   requestAnimationFrame(frame);
  }
  requestAnimationFrame(frame);
 }
 function startPopularTicker(box){
- const items=[...box.children];
- if(items.length<2)return;
- box.classList.add("gpu-track");
+ const old=box.querySelector(".home-motion-track");
+ const track=old||(()=>{const t=document.createElement("div");t.className="home-motion-track";while(box.firstChild)t.appendChild(box.firstChild);box.appendChild(t);return t;})();
+ if(track.children.length<2)return;
  let paused=false,start=null,half=0;
  box.onmouseenter=()=>paused=true;box.onmouseleave=()=>paused=false;
- const measure=()=>{half=box.scrollWidth/2;};
+ const measure=()=>{half=track.scrollWidth/2;};
  requestAnimationFrame(measure);
- const speed=30;
+ const speed=38;
  function frame(now){
   if(!start)start=now;
   if(!paused&&half>0){
    const x=((now-start)*speed/1000)%half;
-   box.style.transform="translate3d("+(-x)+"px,0,0)";
+   track.style.transform="translate3d("+(-x)+"px,0,0)";
   }
   requestAnimationFrame(frame);
  }
@@ -475,6 +472,11 @@ function renderProducts(){
  chosen.forEach(renderOne);
  if(chosen.length>1){
   chosen.forEach(renderOne);
+  const nodes=[...box.children];
+  const track=document.createElement("div");
+  track.className="home-motion-track";
+  nodes.forEach(n=>track.appendChild(n));
+  box.appendChild(track);
   startPopularTicker(box);
  }
 }
