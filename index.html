@@ -625,7 +625,7 @@ async function loadSite(){
   if(r.ok){const x=await r.json();if(x&&typeof x==="object")data={...defaults,...x}}
  }catch(e){console.warn("Website data unavailable, using defaults.")}
  mergeHomepageSettings();
- common();renderTopBar();renderHero();renderBanners();renderHomepageGsm();renderHomepageVisibility();renderCategories();renderProducts();renderServices();renderWhy();startProductTicker();
+ common();renderTopBar();renderHero();renderBanners();renderHomepageGsm();renderHomepageVisibility();renderCategories();renderProducts();renderServices();renderWhy();
 }
 loadSite();
 </script>
