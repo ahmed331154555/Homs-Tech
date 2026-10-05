@@ -932,6 +932,94 @@ textarea{
 }
 </style>
 
+<style id="homs-admin-categories-mobile-fix">
+/* Mobile-only cleanup for Apparaten & categorieën. Desktop layout remains unchanged. */
+@media (max-width: 900px){
+  #page-categories{
+    width:100%;
+    max-width:100%;
+    box-sizing:border-box;
+  }
+  #page-categories .section-head{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:12px!important;
+  }
+  #page-categories .section-head .btn{
+    width:100%!important;
+    box-sizing:border-box!important;
+  }
+  #page-categories .card{
+    width:100%!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+    padding:14px!important;
+    margin-bottom:14px!important;
+    overflow:hidden!important;
+  }
+  #page-categories .card-head{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:10px!important;
+  }
+  #page-categories .card-head .btn{
+    width:100%!important;
+    box-sizing:border-box!important;
+  }
+  #page-categories .grid{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:12px!important;
+    width:100%!important;
+  }
+  #page-categories .field{
+    min-width:0!important;
+    width:100%!important;
+    box-sizing:border-box!important;
+  }
+  #page-categories .field input:not([type="checkbox"]),
+  #page-categories .field textarea,
+  #page-categories .field select{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+  #page-categories .field input[type="file"]{
+    width:100%!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+    font-size:12px!important;
+  }
+  #page-categories .field img{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    height:auto!important;
+    max-height:220px!important;
+    object-fit:contain!important;
+    box-sizing:border-box!important;
+  }
+  #page-categories .small{
+    overflow-wrap:anywhere!important;
+    word-break:break-word!important;
+  }
+}
+@media (max-width:480px){
+  #page-categories .card{
+    padding:12px!important;
+    border-radius:12px!important;
+  }
+  #page-categories .card-title{
+    font-size:16px!important;
+  }
+  #page-categories .field label{
+    font-size:12px!important;
+  }
+}
+</style>
 </head>
 
 <body>
