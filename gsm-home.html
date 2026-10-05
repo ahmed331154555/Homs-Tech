@@ -21,12 +21,13 @@
 .why{background:var(--dark);color:#fff;padding-top:0}.why .section-head p{color:#93a3b7}.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.reason{border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.035);border-radius:9px;padding:20px}.reason b{display:block;font-size:12px;margin-bottom:7px}.reason span{font-size:10px;color:#91a2b7;line-height:1.6}
 .support-wrap{padding:70px 0}.support{border-radius:11px;background:linear-gradient(135deg,#0b1d31,#07111f);color:#fff;padding:39px;display:flex;justify-content:space-between;align-items:center;gap:25px}.support h2{margin:8px 0;font-size:30px;letter-spacing:-1px}.support p{color:#97a8bb;font-size:11px;line-height:1.6;max-width:650px}.support .ghost{background:transparent}
 footer{background:#050b13;color:#8c9caf;padding:44px 0 22px}.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1.2fr;gap:40px;padding-bottom:30px}.footer-brand img{width:145px;background:#fff;border-radius:5px;padding:5px;margin-bottom:12px}.footer-brand p{font-size:10px;line-height:1.7;max-width:260px}.footer-grid h4{color:#fff;font-size:11px;margin:0 0 13px}.footer-grid a{display:block;font-size:10px;margin:8px 0}.footer-grid a:hover{color:#fff}.subscribe{display:flex;border:1px solid #223247;border-radius:6px;overflow:hidden;margin-top:10px}.subscribe input{min-width:0;flex:1;background:#0b1623;border:0;outline:0;color:#fff;padding:9px;font-size:10px}.subscribe button{border:0;background:var(--blue);color:#fff;padding:0 11px}.bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:18px;font-size:9px;display:flex;justify-content:space-between;gap:15px}
+.ticker{height:100%;overflow:hidden;white-space:nowrap}.ticker-track{height:100%;display:inline-flex;align-items:center;gap:42px;min-width:max-content;padding-left:100%;animation:tickerMove 24s linear infinite}.ticker-track span{font-size:9px;color:#a9b6c5}@keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}.hero .unlock{animation:floatCard 5s ease-in-out infinite}.hero h1,.hero p,.hero .buttons{animation:heroIn .7s ease both}.hero p{animation-delay:.08s}.hero .buttons{animation-delay:.16s}.service{transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}.service:hover{transform:translateY(-4px)}.bar i{animation:barPulse 2.6s ease-in-out infinite alternate;transform-origin:left}.step,.pay,.reason{animation:fadeUp .6s ease both}@keyframes floatCard{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}@keyframes heroIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}@keyframes barPulse{from{filter:brightness(.9)}to{filter:brightness(1.35)}}
 @media(max-width:1000px){.main-nav{display:none}.mobile-menu{display:block;margin-left:auto}.auth{margin-left:0}.hero .wrap{gap:35px}.service-grid{grid-template-columns:repeat(2,1fr)}.payment-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:700px){.wrap{width:calc(100% - 24px)}.utility-left span{display:none}.utility-right{gap:12px}.head{height:62px;gap:10px}.brand img{width:125px}.auth a{padding:8px 9px;font-size:9px}.hero .wrap{grid-template-columns:1fr;padding:55px 0 42px}.hero h1{font-size:42px;letter-spacing:-2.4px}.unlock{margin:5px 0 0}.stats .wrap{grid-template-columns:1fr 1fr}.stat{padding:18px 13px}.stat b{font-size:22px}.section{padding:55px 0}.section-head{display:block}.section-head p{margin-top:13px}.service-grid,.payment-grid,.why-grid{grid-template-columns:1fr}.live-grid{grid-template-columns:1fr;gap:35px}.support-wrap{padding:50px 0}.support{display:block;padding:28px}.support .buttons{margin-top:18px}.footer-grid{grid-template-columns:1fr 1fr;gap:25px}.bottom{display:block}.bottom span{display:block;margin-top:7px}}
 </style>
 </head>
 <body>
-<div class="utility"><div class="wrap"><div class="utility-left"><span>● HOMS TECH · Professional GSM Services</span><a href="about.html">Chat with us</a></div><div class="utility-right"><a href="#" onclick="return false">English</a><a href="#" onclick="return false">Nederlands</a><a href="#" onclick="return false">العربية</a></div></div></div>
+<div class="utility"><div class="ticker"><div class="ticker-track"><span>● HOMS TECH · Professional GSM Services</span><span>⚡ Fast GSM service workflow</span><span>🔧 FRP · IMEI · iCloud · MDM · Remote · Server</span><span>💬 Live support available</span><span>● HOMS TECH · Professional GSM Services</span><span>⚡ Fast GSM service workflow</span><span>🔧 FRP · IMEI · iCloud · MDM · Remote · Server</span><span>💬 Live support available</span></div></div></div>
 
 <header class="header"><div class="wrap head">
 <a class="brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>
@@ -36,7 +37,7 @@ footer{background:#050b13;color:#8c9caf;padding:44px 0 22px}.footer-grid{display
 <a href="gsm-services.html#server">Server Service · Tools · Credits</a>
 <a href="gsm-services.html#imei">IMEI Services · Unlock · FRP · iCloud</a>
 </nav>
-<div class="auth"><a href="account.html">Registration</a><a class="reg" href="account.html">Login</a></div>
+<div class="auth"><a href="account.html">Registration</a><a class="reg" id="accountLink" href="account.html">Login</a></div>
 <button class="mobile-menu" onclick="toggleMenu()">☰</button>
 </div>
 <div id="mobileNav" style="display:none;border-top:1px solid var(--line);background:#fff"><div class="wrap" style="padding:10px 0 15px;display:grid;gap:11px;font-size:11px;font-weight:750"><a href="prices.html">Reseller Pricing</a><a href="gsm-services.html#remote">Remote Service</a><a href="gsm-services.html#server">Server Service · Tools · Credits</a><a href="gsm-services.html#imei">IMEI Services · Unlock · FRP · iCloud</a><a href="client-area.html">Client Area</a></div></div>
@@ -55,7 +56,7 @@ footer{background:#050b13;color:#8c9caf;padding:44px 0 22px}.footer-grid{display
 <article class="service"><div class="icon">iC</div><h3>iCloud</h3><p>Apple serviceflows voor ondersteunde aanvragen en toestellen.</p><a href="gsm-services.html#imei">Browse service →</a></article>
 <article class="service"><div class="icon">IMEI</div><h3>IMEI Services</h3><p>IMEI-gerelateerde services voor ondersteunde toestellen en providers.</p><a href="gsm-services.html#imei">Browse service →</a></article>
 <article class="service"><div class="icon">S</div><h3>Server · Tools · Credits</h3><p>Server-based services, tools en credits in één overzicht.</p><a href="gsm-services.html#server">Browse service →</a></article>
-<article class="service"><div class="icon">MDM</div><h3>MDM Services</h3><p>Professionele MDM workflows voor ondersteunde managed devices.</p><a href="gsm-services.html">Browse service →</a></article>
+<article class="service"><div class="icon">MDM</div><h3>MDM Services</h3><p>Professionele MDM workflows voor ondersteunde managed devices.</p><a href="gsm-services.html#mdm">Browse service →</a></article>
 <article class="service"><div class="icon">R</div><h3>Remote Service</h3><p>Remote aanvragen met duidelijke serviceflow en statuscontrole.</p><a href="gsm-services.html#remote">Browse service →</a></article>
 <div class="extra service"><div class="icon">FW</div><h3>Firmware & Tools</h3><p>Firmware en tool-gerelateerde workflows voor repair technicians.</p><a href="gsm-services.html#firmware">Browse service →</a></div>
 <div class="extra service"><div class="icon">UN</div><h3>Unlock Services</h3><p>Ondersteunde unlock workflows via de actuele servicecatalogus.</p><a href="gsm-services.html#imei">Browse service →</a></div>
@@ -75,7 +76,31 @@ footer{background:#050b13;color:#8c9caf;padding:44px 0 22px}.footer-grid{display
 <script>
 function toggleMenu(){const n=document.getElementById('mobileNav');n.style.display=n.style.display==='none'?'block':'none'}
 function showMore(){document.querySelectorAll('.extra').forEach(x=>x.classList.add('show'));const b=document.getElementById('moreBtn');b.textContent='Show less ↑';b.onclick=()=>{document.querySelectorAll('.extra').forEach(x=>x.classList.remove('show'));b.textContent='Show more services ↓';b.onclick=showMore}}
-(async()=>{try{const r=await fetch('/api/site',{credentials:'include'});const d=await r.json();const list=Array.isArray(d?.gsmServices)?d.gsmServices:[];document.getElementById('serviceCount').textContent=list.length?list.length.toLocaleString('nl-NL'):'0';const wa=String(d?.settings?.whatsapp||d?.whatsapp||'').replace(/\D/g,'');if(wa)document.getElementById('waBtn').href='https://wa.me/'+wa}catch(e){}})();
+async function refreshAccountButton(){
+  const link=document.getElementById('accountLink'); if(!link)return;
+  try{
+    const r=await fetch('/api/customer/me',{credentials:'same-origin',cache:'no-store'});
+    if(!r.ok)return;
+    const d=await r.json();
+    if(d?.authenticated&&d?.customer){
+      link.textContent='Mijn account';
+      link.href='client-area.html';
+    }
+  }catch{}
+}
+(async()=>{
+  refreshAccountButton();
+  try{
+    const r=await fetch('/api/site',{credentials:'include',cache:'no-store'});
+    const d=await r.json();
+    const gs=d?.gsmServices;
+    let count=0;
+    if(gs&&typeof gs==='object') Object.values(gs).forEach(v=>{if(Array.isArray(v))count+=v.filter(s=>s&&s.active!==false).length});
+    document.getElementById('serviceCount').textContent=count?count.toLocaleString('nl-NL'):'0';
+    const wa=String(d?.settings?.whatsapp||d?.whatsapp||'').replace(/\D/g,'');
+    if(wa)document.getElementById('waBtn').href='https://wa.me/'+wa;
+  }catch(e){}
+})();
 </script>
 </body>
 </html>
