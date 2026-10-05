@@ -1072,6 +1072,34 @@ textarea{
 }
 </style>
 </style>
+
+<style id="homs-homepage-admin-settings">
+.homepage-admin-intro{margin-bottom:18px;padding:15px 17px;border:1px solid #dbe7f3;border-radius:14px;background:linear-gradient(135deg,#f8fbff,#f7fafc)}
+.homepage-admin-intro strong{display:block;font-size:17px;margin-bottom:4px}
+.homepage-accordion{display:flex;flex-direction:column;gap:10px}
+.homepage-acc-item{border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;background:#fff}
+.homepage-acc-head{width:100%;border:0;background:#fff;min-height:58px;padding:13px 16px;display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;color:#172033}
+.homepage-acc-head:hover{background:#f8fafc}
+.homepage-acc-head.open{background:#f8fbff}
+.homepage-acc-icon{width:38px;height:38px;border-radius:10px;background:#eef5ff;display:flex;align-items:center;justify-content:center;flex:0 0 38px;font-size:19px}
+.homepage-acc-title{flex:1;min-width:0}
+.homepage-acc-title strong{display:block;font-size:15px}
+.homepage-acc-title small{display:block;color:#64748b;margin-top:3px;font-size:12px}
+.homepage-acc-arrow{width:30px;height:30px;border-radius:8px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800}
+.homepage-acc-head.open .homepage-acc-arrow{background:#25d366;color:#fff}
+.homepage-acc-body{border-top:1px solid #e2e8f0;padding:17px;background:#fbfcfe}
+.homepage-acc-body>.card{margin-bottom:12px}
+.homepage-acc-body>.card:last-child{margin-bottom:0}
+.homepage-mini-list{display:flex;flex-direction:column;gap:8px}
+.homepage-mini-row{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:9px;align-items:center;padding:10px;border:1px solid #e2e8f0;border-radius:10px;background:#fff}
+.homepage-mini-row input,.homepage-mini-row textarea{width:100%;min-width:0}
+.homepage-mini-row .homepage-mini-actions{display:flex;gap:6px;align-items:center}
+.homepage-toggle{display:flex;align-items:center;gap:9px;font-weight:700}
+.homepage-toggle input{width:18px;height:18px;accent-color:#25d366}
+.homepage-preview-note{padding:10px 12px;border-radius:10px;background:#eff6ff;color:#315b9b;font-size:12px;margin-bottom:12px}
+.homepage-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:750px){.homepage-two{grid-template-columns:1fr}.homepage-acc-head{padding:12px}.homepage-acc-body{padding:12px}.homepage-mini-row{grid-template-columns:32px minmax(0,1fr)}.homepage-mini-actions{grid-column:2}.homepage-mini-actions .btn{flex:1}}
+</style>
 </head>
 
 <body>
@@ -1131,51 +1159,21 @@ textarea{
 <div id="dashboard" class="dashboard">
 <div class="container">
 
-  <!-- ALGEMEEN -->
+<!-- HOMEPAGE SETTINGS -->
   <section class="section admin-page active" id="page-general">
     <div class="section-head">
       <div>
-        <h2>⚙️ Algemene informatie</h2>
-        <p>Deze gegevens worden gebruikt op de website.</p>
+        <h2>🏠 Homepage instellingen</h2>
+        <p>Beheer alle onderdelen die zichtbaar zijn op de HOMS TECH homepage. Elke groep opent apart.</p>
       </div>
     </div>
 
-    <div class="grid">
-      <div class="field">
-        <label>Bedrijfsnaam</label>
-        <input data-u="businessName">
-      </div>
-
-      <div class="field">
-        <label>Tagline</label>
-        <input data-u="tagline">
-      </div>
-
-      <div class="field">
-        <label>Titel homepage</label>
-        <input data-u="heroTitle">
-      </div>
-
-      <div class="field">
-        <label>Telefoon</label>
-        <input data-u="phone">
-      </div>
-
-      <div class="field">
-        <label>WhatsApp</label>
-        <input data-u="whatsapp">
-      </div>
-
-      <div class="field">
-        <label>Werkgebieden</label>
-        <input data-u="areas">
-      </div>
-
-      <div class="field" style="grid-column:1/-1">
-        <label>Tekst homepage</label>
-        <textarea data-u="heroText"></textarea>
-      </div>
+    <div class="homepage-admin-intro">
+      <strong>Alles van de homepage op één plek</strong>
+      <div class="small">Klik op één onderdeel om het te openen. Er wordt niets automatisch aangepast: wijzigingen worden pas opgeslagen wanneer je onderaan op «Wijzigingen opslaan» drukt.</div>
     </div>
+
+    <div id="homepageSettingsAccordion" class="homepage-accordion"></div>
   </section>
 
   <!-- SERVICES -->
@@ -2430,6 +2428,299 @@ let selectedWhyIndex=0;
 let selectedGsmServiceIndex=0;
 let selectedDeviceCategoryIndex=-1;
 let gsmActiveCategory="imei";
+
+
+/* ---------------- HOMEPAGE SETTINGS ---------------- */
+let homepageOpenSection="hero";
+
+const HOMEPAGE_DEFAULTS={
+  topBar:{
+    enabled:true,
+    items:["1 jaar garantie","Snel geleverd","Betrouwbare service","Betaalbare prijzen"]
+  },
+  hero:{
+    enabled:true,
+    titleTop:"Is uw telefoon kapot?",
+    titleBottom:"Wij komen naar u toe!",
+    text:"Reparatie van alle soorten telefoons bij u thuis — snelle service, professioneel werk en betaalbare prijzen.",
+    button1Text:"💬 Afspraak via WhatsApp",
+    button1Link:"",
+    button2Text:"📞 Bel nu",
+    button2Link:"",
+    showDevice:true
+  },
+  banners:{
+    enabled:true,
+    buybackTitle:"Uw toestel verkopen?",
+    buybackText:"Heeft u een oude iPhone, Samsung, iPad of Mac? Laat HOMS TECH uw toestel beoordelen en ontvang een eerlijke prijs.",
+    buybackButton:"Bekijk wat uw toestel waard is →",
+    buybackLink:"/used.html",
+    buybackArt:"♻️📱",
+    refurbishedTitle:"Refurbished apparaten",
+    refurbishedText:"Geteste apparaten met duidelijke informatie en garantie.",
+    refurbishedButton:"Bekijk apparaten →",
+    refurbishedLink:"devices.html",
+    refurbishedArt:"📱"
+  },
+  gsm:{
+    enabled:true,
+    title:"GSM Services",
+    items:[
+      {icon:"▥",label:"IMEI Services",link:"gsm-services.html#imei"},
+      {icon:"🔒",label:"Unlock",link:"gsm-services.html#imei"},
+      {icon:"G",label:"FRP Services",link:"gsm-services.html#frp"},
+      {icon:"☁",label:"iCloud",link:"gsm-services.html#imei"},
+      {icon:"☁",label:"Server Services",link:"gsm-services.html#server"},
+      {icon:"⚡",label:"Server Credits",link:"gsm-services.html#server"}
+    ]
+  },
+  categories:{enabled:true,title:"Refurbished apparaten"},
+  popular:{enabled:true,title:"Populaire apparaten",limit:12,indexes:[]},
+  homeVisit:{
+    enabled:true,
+    title:"📍 Wij komen bij u thuis!",
+    text:"Rotterdam en omgeving · Professionele reparatie aan huis",
+    buttonText:"💬 WhatsApp"
+  },
+  services:{enabled:true,title:"Onze reparatie diensten"},
+  why:{enabled:true,title:"Waarom HOMS TECH?"},
+  footer:{
+    enabled:true,
+    description:"Refurbished apparaten · Reparatie aan huis · GSM Services",
+    area:"Rotterdam en omgeving",
+    contact:"WhatsApp · Telefoon · E-mail"
+  }
+};
+
+function mergeHomepageDefaults(target,source){
+  const out={...source,...(target||{})};
+  ["topBar","hero","banners","gsm","categories","popular","homeVisit","services","why","footer"].forEach(k=>{
+    if(source[k] && typeof source[k]==="object" && !Array.isArray(source[k])){
+      out[k]={...source[k],...(target&&typeof target[k]==="object"?target[k]:{})};
+    }
+  });
+  if(!Array.isArray(out.topBar.items))out.topBar.items=[...source.topBar.items];
+  if(!Array.isArray(out.gsm.items))out.gsm.items=source.gsm.items.map(x=>({...x}));
+  if(!Array.isArray(out.popular.indexes))out.popular.indexes=[];
+  return out;
+}
+
+function normalizeHomepageSettings(){
+  data.homepage=mergeHomepageDefaults(data.homepage,HOMEPAGE_DEFAULTS);
+  data.homepage.topBar.items=data.homepage.topBar.items.map(x=>String(x||"")).filter(Boolean);
+  data.homepage.gsm.items=data.homepage.gsm.items.map(x=>({
+    icon:String(x?.icon||"🔧"),
+    label:String(x?.label||"Service"),
+    link:String(x?.link||"gsm-services.html")
+  }));
+}
+
+function homepageInput(label,key,value,extra=""){
+  return `<div class="field"><label>${esc(label)}</label><input value="${esc(value??"")}" oninput="data.homepage.${key}=this.value;markChanged()" ${extra}></div>`;
+}
+function homepageToggle(path,label,checked){
+  return `<label class="homepage-toggle"><input type="checkbox" ${checked?"checked":""} onchange="data.homepage.${path}=this.checked;markChanged();renderHomepageSettings()"> ${esc(label)}</label>`;
+}
+function homepageAccordionItem(key,icon,title,subtitle,body){
+  const open=homepageOpenSection===key;
+  return `<div class="homepage-acc-item">
+    <button type="button" class="homepage-acc-head ${open?"open":""}" onclick="toggleHomepagePanel('${key}')">
+      <span class="homepage-acc-icon">${icon}</span>
+      <span class="homepage-acc-title"><strong>${esc(title)}</strong><small>${esc(subtitle)}</small></span>
+      <span class="homepage-acc-arrow">${open?"−":"+"}</span>
+    </button>
+    ${open?`<div class="homepage-acc-body">${body}</div>`:""}
+  </div>`;
+}
+function toggleHomepagePanel(key){
+  homepageOpenSection=homepageOpenSection===key?"":key;
+  renderHomepageSettings();
+}
+function homepageServiceEditor(){
+  if(!Array.isArray(data.services))data.services=[];
+  return `
+    <div class="homepage-preview-note">Deze lijst is dezelfde reparatiedienstenlijst die op de homepage wordt getoond.</div>
+    <div class="homepage-mini-list">
+      ${data.services.map((x,i)=>`<div class="homepage-mini-row">
+        <input value="${esc(x[0]||"🔧")}" aria-label="Icoon" oninput="data.services[${i}][0]=this.value;markChanged()">
+        <div><input value="${esc(x[1]||"")}" placeholder="Naam dienst" oninput="data.services[${i}][1]=this.value;markChanged()"><textarea rows="2" placeholder="Korte beschrijving" oninput="data.services[${i}][2]=this.value;markChanged()" style="margin-top:6px">${esc(x[2]||"")}</textarea></div>
+        <div class="homepage-mini-actions"><button class="btn btn-red" type="button" onclick="data.services.splice(${i},1);renderHomepageSettings();markChanged()">Verwijderen</button></div>
+      </div>`).join("")}
+    </div>
+    <button class="btn btn-green" type="button" style="margin-top:10px" onclick="data.services.push(["🔧","Nieuwe dienst",""]);renderHomepageSettings();homepageOpenSection='services';markChanged()">+ Dienst toevoegen</button>
+  `;
+}
+function homepageWhyEditor(){
+  if(!Array.isArray(data.why))data.why=[];
+  return `
+    <div class="homepage-mini-list">
+      ${data.why.map((x,i)=>`<div class="homepage-mini-row">
+        <input value="${esc(x[0]||"⭐")}" aria-label="Icoon" oninput="data.why[${i}][0]=this.value;markChanged()">
+        <div><input value="${esc(x[1]||"")}" placeholder="Titel" oninput="data.why[${i}][1]=this.value;markChanged()"><textarea rows="2" placeholder="Beschrijving" oninput="data.why[${i}][2]=this.value;markChanged()" style="margin-top:6px">${esc(x[2]||"")}</textarea></div>
+        <div class="homepage-mini-actions"><button class="btn btn-red" type="button" onclick="data.why.splice(${i},1);renderHomepageSettings();markChanged()">Verwijderen</button></div>
+      </div>`).join("")}
+    </div>
+    <button class="btn btn-green" type="button" style="margin-top:10px" onclick="data.why.push(["⭐","Nieuw voordeel",""]);renderHomepageSettings();homepageOpenSection='why';markChanged()">+ Voordeel toevoegen</button>
+  `;
+}
+function homepageCategoryEditor(){
+  normalizeDeviceCategories();
+  return `
+    <div class="homepage-preview-note">Dit zijn dezelfde homepage-categorieën die je al beheert. De bestaande categorie-editor blijft ongewijzigd.</div>
+    <div class="homepage-mini-list">
+      ${data.deviceCategories.map((x,i)=>`<div class="homepage-mini-row">
+        <span style="font-size:20px">🖼️</span>
+        <div>
+          <input value="${esc(x.title||"Nieuwe categorie")}" placeholder="Naam categorie" oninput="data.deviceCategories[${i}].title=this.value;markChanged()">
+          <div class="small" style="margin-top:5px">${x.active!==false?"✓ Zichtbaar op homepage":"○ Verborgen"}</div>
+        </div>
+        <div class="homepage-mini-actions"><button class="btn btn-light" type="button" onclick="selectedDeviceCategoryIndex=${i};showPage('categories')">Volledige instellingen</button></div>
+      </div>`).join("")}
+    </div>
+    <div class="small" style="margin-top:10px">Afbeeldingen, links en zichtbaarheid kun je hier via «Volledige instellingen» verder beheren.</div>
+  `;
+}
+function homepagePopularEditor(){
+  normalizeHomepageSettings();
+  const selected=new Set((data.homepage.popular.indexes||[]).map(Number));
+  const phones=Array.isArray(data.phones)?data.phones:[];
+  return `
+    <div class="homepage-two">
+      <div class="field"><label>Titel</label><input value="${esc(data.homepage.popular.title)}" oninput="data.homepage.popular.title=this.value;markChanged()"></div>
+      <div class="field"><label>Maximaal aantal</label><input type="number" min="1" max="50" value="${Number(data.homepage.popular.limit)||12}" oninput="data.homepage.popular.limit=Math.max(1,Math.min(50,Number(this.value)||12));markChanged()"></div>
+    </div>
+    <div class="homepage-preview-note">Kies eventueel specifieke telefoons. Laat alles uitgevinkt om automatisch de eerste beschikbare telefoons te tonen.</div>
+    <div class="homepage-mini-list">
+      ${phones.map((p,i)=>`<label class="homepage-mini-row" style="grid-template-columns:32px minmax(0,1fr)">
+        <input type="checkbox" ${selected.has(i)?"checked":""} onchange="toggleHomepagePopularPhone(${i},this.checked)" style="width:18px;height:18px;accent-color:#25d366">
+        <span><strong>${esc(p.name||"Apparaat")}</strong><small class="small" style="display:block">${esc(p.brand||"")}${p.storage?" · "+esc(p.storage):""}${p.color?" · "+esc(p.color):""}</small></span>
+      </label>`).join("") || '<div class="small">Geen telefoons toegevoegd.</div>'}
+    </div>`;
+}
+function toggleHomepagePopularPhone(i,checked){
+  normalizeHomepageSettings();
+  let arr=Array.isArray(data.homepage.popular.indexes)?data.homepage.popular.indexes:[];
+  arr=arr.map(Number).filter(Number.isFinite);
+  if(checked&&!arr.includes(i))arr.push(i);
+  if(!checked)arr=arr.filter(x=>x!==i);
+  data.homepage.popular.indexes=arr;
+  markChanged();
+}
+function homepageGsmEditor(){
+  normalizeHomepageSettings();
+  return `
+    <div class="homepage-preview-note">Deze balk kan onafhankelijk van de GSM-catalogus worden aangepast. De links mogen naar je bestaande GSM Services-categorieën wijzen.</div>
+    <div class="homepage-mini-list">
+      ${data.homepage.gsm.items.map((x,i)=>`<div class="homepage-mini-row">
+        <input value="${esc(x.icon)}" aria-label="Icoon" oninput="data.homepage.gsm.items[${i}].icon=this.value;markChanged()">
+        <div class="homepage-two"><input value="${esc(x.label)}" placeholder="Naam" oninput="data.homepage.gsm.items[${i}].label=this.value;markChanged()"><input value="${esc(x.link)}" placeholder="Link" oninput="data.homepage.gsm.items[${i}].link=this.value;markChanged()"></div>
+        <div class="homepage-mini-actions"><button class="btn btn-red" type="button" onclick="data.homepage.gsm.items.splice(${i},1);renderHomepageSettings();homepageOpenSection='gsm';markChanged()">Verwijderen</button></div>
+      </div>`).join("")}
+    </div>
+    <button class="btn btn-green" type="button" style="margin-top:10px" onclick="data.homepage.gsm.items.push({icon:'🔧',label:'Nieuwe service',link:'gsm-services.html'});renderHomepageSettings();homepageOpenSection='gsm';markChanged()">+ Service toevoegen</button>
+  `;
+}
+function renderHomepageSettings(){
+  normalizeHomepageSettings();
+  const box=document.getElementById("homepageSettingsAccordion");
+  if(!box)return;
+
+  const h=data.homepage.hero,b=data.homepage.banners,t=data.homepage.topBar,g=data.homepage.gsm,c=data.homepage.categories,p=data.homepage.popular,v=data.homepage.homeVisit,s=data.homepage.services,w=data.homepage.why,f=data.homepage.footer;
+
+  const heroBody=`
+    ${homepageToggle("hero.enabled","Hero tonen",h.enabled)}
+    <div class="homepage-two" style="margin-top:12px">
+      ${homepageInput("Titel regel 1","hero.titleTop",h.titleTop)}
+      ${homepageInput("Titel regel 2","hero.titleBottom",h.titleBottom)}
+    </div>
+    <div class="field"><label>Hero tekst</label><textarea oninput="data.homepage.hero.text=this.value;markChanged()">${esc(h.text)}</textarea></div>
+    <div class="homepage-two">
+      ${homepageInput("Knop 1 tekst","hero.button1Text",h.button1Text)}
+      ${homepageInput("Knop 1 link","hero.button1Link",h.button1Link)}
+      ${homepageInput("Knop 2 tekst","hero.button2Text",h.button2Text)}
+      ${homepageInput("Knop 2 link","hero.button2Link",h.button2Link)}
+    </div>
+    ${homepageToggle("hero.showDevice","Telefoonvorm in hero tonen",h.showDevice)}
+  `;
+
+  const topBody=`
+    ${homepageToggle("topBar.enabled","Bovenste balk tonen",t.enabled)}
+    <div class="homepage-mini-list" style="margin-top:12px">
+      ${t.items.map((x,i)=>`<div class="homepage-mini-row"><span style="font-size:18px">📢</span><input value="${esc(x)}" oninput="data.homepage.topBar.items[${i}]=this.value;markChanged()"><div class="homepage-mini-actions"><button class="btn btn-red" type="button" onclick="data.homepage.topBar.items.splice(${i},1);renderHomepageSettings();homepageOpenSection='topbar';markChanged()">حذف</button></div></div>`).join("")}
+    </div>
+    <button class="btn btn-green" type="button" style="margin-top:10px" onclick="data.homepage.topBar.items.push('Nieuw bericht');renderHomepageSettings();homepageOpenSection='topbar';markChanged()">+ Bericht toevoegen</button>
+  `;
+
+  const bannersBody=`
+    ${homepageToggle("banners.enabled","Banners tonen",b.enabled)}
+    <div class="card"><div class="card-title">♻️ Uw toestel verkopen</div><div class="grid">
+      ${homepageInput("Titel","banners.buybackTitle",b.buybackTitle)}
+      ${homepageInput("Knop","banners.buybackButton",b.buybackButton)}
+      <div class="field" style="grid-column:1/-1"><label>Tekst</label><textarea oninput="data.homepage.banners.buybackText=this.value;markChanged()">${esc(b.buybackText)}</textarea></div>
+      ${homepageInput("Link","banners.buybackLink",b.buybackLink)}
+      ${homepageInput("Icoon / art","banners.buybackArt",b.buybackArt)}
+    </div></div>
+    <div class="card"><div class="card-title">📱 Refurbished apparaten</div><div class="grid">
+      ${homepageInput("Titel","banners.refurbishedTitle",b.refurbishedTitle)}
+      ${homepageInput("Knop","banners.refurbishedButton",b.refurbishedButton)}
+      <div class="field" style="grid-column:1/-1"><label>Tekst</label><textarea oninput="data.homepage.banners.refurbishedText=this.value;markChanged()">${esc(b.refurbishedText)}</textarea></div>
+      ${homepageInput("Link","banners.refurbishedLink",b.refurbishedLink)}
+      ${homepageInput("Icoon / art","banners.refurbishedArt",b.refurbishedArt)}
+    </div></div>`;
+
+  const categoriesBody=`
+    ${homepageToggle("categories.enabled","Categorieën tonen",c.enabled)}
+    <div class="field" style="margin-top:12px"><label>Titel</label><input value="${esc(c.title)}" oninput="data.homepage.categories.title=this.value;markChanged()"></div>
+    ${homepageCategoryEditor()}`;
+
+  const popularBody=`
+    ${homepageToggle("popular.enabled","Populaire apparaten tonen",p.enabled)}
+    <div style="margin-top:12px">${homepagePopularEditor()}</div>`;
+
+  const visitBody=`
+    ${homepageToggle("homeVisit.enabled","Thuisservice-banner tonen",v.enabled)}
+    <div class="grid" style="margin-top:12px">
+      ${homepageInput("Titel","homeVisit.title",v.title)}
+      ${homepageInput("Knop","homeVisit.buttonText",v.buttonText)}
+      <div class="field" style="grid-column:1/-1"><label>Tekst</label><textarea oninput="data.homepage.homeVisit.text=this.value;markChanged()">${esc(v.text)}</textarea></div>
+    </div>`;
+
+  const servicesBody=`
+    ${homepageToggle("services.enabled","Reparaties tonen",s.enabled)}
+    <div class="field" style="margin-top:12px"><label>Titel</label><input value="${esc(s.title)}" oninput="data.homepage.services.title=this.value;markChanged()"></div>
+    <div style="margin-top:12px">${homepageServiceEditor()}</div>`;
+
+  const whyBody=`
+    ${homepageToggle("why.enabled","Waarom HOMS TECH tonen",w.enabled)}
+    <div class="field" style="margin-top:12px"><label>Titel</label><input value="${esc(w.title)}" oninput="data.homepage.why.title=this.value;markChanged()"></div>
+    <div style="margin-top:12px">${homepageWhyEditor()}</div>`;
+
+  const gsmBody=`
+    ${homepageToggle("gsm.enabled","GSM Services-balk tonen",g.enabled)}
+    <div class="field" style="margin-top:12px"><label>Titel</label><input value="${esc(g.title)}" oninput="data.homepage.gsm.title=this.value;markChanged()"></div>
+    <div style="margin-top:12px">${homepageGsmEditor()}</div>`;
+
+  const footerBody=`
+    ${homepageToggle("footer.enabled","Footer tonen",f.enabled)}
+    <div class="grid" style="margin-top:12px">
+      <div class="field"><label>Omschrijving</label><input value="${esc(f.description)}" oninput="data.homepage.footer.description=this.value;markChanged()"></div>
+      <div class="field"><label>Werkgebied</label><input value="${esc(f.area)}" oninput="data.homepage.footer.area=this.value;markChanged()"></div>
+      <div class="field" style="grid-column:1/-1"><label>Contactregel</label><input value="${esc(f.contact)}" oninput="data.homepage.footer.contact=this.value;markChanged()"></div>
+    </div>`;
+
+  box.innerHTML=
+    homepageAccordionItem("hero","🎯","Hero / Hoofdbanner","Titel, tekst en knoppen",heroBody)+
+    homepageAccordionItem("topbar","📢","Top Bar (bovenste balk)","Garantie, levering en vertrouwen",topBody)+
+    homepageAccordionItem("banners","🖼️","Banners","Uw toestel verkopen + Refurbished",bannersBody)+
+    homepageAccordionItem("gsm","⚙️","GSM Services","Beheer de bewegende GSM-balk",gsmBody)+
+    homepageAccordionItem("categories","🗂️","Refurbished apparaten","Categorieën en zichtbaarheid",categoriesBody)+
+    homepageAccordionItem("popular","📱","Populaire apparaten","Titel, aantal en selectie",popularBody)+
+    homepageAccordionItem("services","🔧","Reparaties","Titel en reparatiediensten",servicesBody)+
+    homepageAccordionItem("why","⭐","Waarom HOMS TECH","Voordelen وثيقة",whyBody)+
+    homepageAccordionItem("visit","📍","Wij komen bij u thuis","Thuisservice-banner",visitBody)+
+    homepageAccordionItem("footer","📞","Contact & Footer","Contactgegevens en footer",footerBody);
+}
+
 
 /* ---------------- SERVICES ---------------- */
 
@@ -4711,7 +5002,7 @@ async function save(isAuto=false){
     data=result.data || data;
 
     // Alleen de huidige pagina opnieuw tekenen. Geen renderAll-loop na opslaan.
-    if(currentPage==="general") renderGeneral();
+    if(currentPage==="general") renderHomepageSettings();
     else if(currentPage==="services") renderServices();
     else if(currentPage==="phones") renderPhones();
     else if(currentPage==="buyback") renderBuybackPhones();
@@ -5875,7 +6166,7 @@ async function loadForzaTest(){
 
 function renderAll(){
 
-  renderGeneral();
+  renderHomepageSettings();
   renderServices();
   renderPhones();
   renderBuybackPhones();
