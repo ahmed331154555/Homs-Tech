@@ -1045,6 +1045,32 @@ textarea{
 .phone-brand-add{border-style:dashed!important;background:#f8fafc!important;color:#2563eb!important;}
 .phone-brand-add:hover{background:#eff6ff!important;border-color:#93c5fd!important;}
 @media(min-width:1100px){.phone-catalog-sidebar{min-height:0!important;height:auto!important;}}
+<style id="homs-device-categories-accordion">
+.device-category-accordion{display:flex;flex-direction:column;gap:10px;width:100%}
+.device-category-item{width:100%;background:#fff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;box-sizing:border-box}
+.device-category-toggle{width:100%;min-height:64px;border:0;background:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;cursor:pointer;color:#172033}
+.device-category-toggle:hover{background:#f8fafc}
+.device-category-toggle-main{display:flex;align-items:center;gap:12px;min-width:0}
+.device-category-icon{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:#f1f5f9;border-radius:10px;flex:0 0 40px}
+.device-category-text{min-width:0}
+.device-category-text strong{display:block;font-size:15px;line-height:1.3;overflow-wrap:anywhere}
+.device-category-text small{display:block;color:#64748b;font-size:12px;margin-top:3px}
+.device-category-chevron{width:32px;height:32px;border-radius:9px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:800;flex:0 0 32px}
+.device-category-item.open .device-category-chevron{background:#22c55e;color:#fff}
+.device-category-content{border-top:1px solid #e2e8f0;padding:16px;background:#fbfcfe}
+.device-category-content .card-head{margin-bottom:14px}
+@media(max-width:900px){
+  .device-category-toggle{padding:12px}
+  .device-category-content{padding:13px}
+  .device-category-content .card-head{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:10px}
+  .device-category-content .card-head .btn{width:100%!important}
+  .device-category-content .grid{grid-template-columns:minmax(0,1fr)!important}
+  .device-category-content .field{min-width:0;width:100%;box-sizing:border-box}
+  .device-category-content .field input:not([type="checkbox"]),.device-category-content .field textarea,.device-category-content .field select{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+  .device-category-content .field input[type="file"]{width:100%;max-width:100%;font-size:12px;box-sizing:border-box}
+  .device-category-content .field img{width:100%!important;max-width:100%;height:auto!important;max-height:220px;object-fit:contain}
+}
+</style>
 </style>
 </head>
 
@@ -2021,6 +2047,7 @@ function renderDeviceCategories(){
   normalizeDeviceCategories();
   normalizeGlobalConditionDetails();
   renderGlobalConditionDetails();
+
   const box=document.getElementById("deviceCategoriesList");
   if(!box) return;
 
@@ -2029,45 +2056,80 @@ function renderDeviceCategories(){
     return;
   }
 
-  box.innerHTML=data.deviceCategories.map((x,i)=>`
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-head">
-        <div>
-          <div class="card-title">${esc(x.title)}</div>
-          <div class="small">Homepage categorie</div>
-        </div>
-        <button class="btn btn-red" onclick="deleteDeviceCategory(${i})">Verwijderen</button>
-      </div>
-      <div class="grid">
-        <div class="field">
-          <label>Naam</label>
-          <input value="${esc(x.title)}" oninput="data.deviceCategories[${i}].title=this.value;markChanged()">
-        </div>
-        <div class="field">
-          <label>Link</label>
-          <input value="${esc(x.link)}" oninput="data.deviceCategories[${i}].link=this.value;markChanged()">
-        </div>
-        <div class="field">
-          <label>Tekst knop</label>
-          <input value="${esc(x.buttonText)}" oninput="data.deviceCategories[${i}].buttonText=this.value;markChanged()">
-        </div>
-        <div class="field">
-          <label>Actief</label>
-          <label style="display:flex;align-items:center;gap:8px;margin-top:9px">
-            <input type="checkbox" ${x.active!==false?'checked':''} onchange="data.deviceCategories[${i}].active=this.checked;markChanged()">
-            Tonen op homepage
-          </label>
-        </div>
-        <div class="field" style="grid-column:1/-1">
-          <label>Afbeelding</label>
-          <input type="file" accept="image/*" onchange="handleCategoryImage(event,${i})">
-          <input value="${esc(x.image)}" placeholder="Of plak een afbeelding URL" oninput="data.deviceCategories[${i}].image=this.value;markChanged()">
-          ${x.image?`<img src="${esc(x.image)}" alt="" style="display:block;width:220px;height:120px;object-fit:cover;border-radius:12px;margin-top:10px">`:""}
-          <div class="small">Upload een afbeelding of gebruik een URL. De gekozen afbeelding wordt in de website opgeslagen.</div>
-        </div>
-      </div>
+  if(typeof selectedDeviceCategoryIndex!=="number") selectedDeviceCategoryIndex=-1;
+  if(selectedDeviceCategoryIndex>=data.deviceCategories.length) selectedDeviceCategoryIndex=-1;
+
+  box.innerHTML=`
+    <div class="device-category-accordion">
+      ${data.deviceCategories.map((x,i)=>{
+        const open=i===selectedDeviceCategoryIndex;
+        return `
+          <div class="device-category-item ${open?'open':''}">
+            <button type="button" class="device-category-toggle" onclick="toggleDeviceCategory(${i})">
+              <span class="device-category-toggle-main">
+                <span class="device-category-icon">🖼️</span>
+                <span class="device-category-text">
+                  <strong>${esc(x.title||"Nieuwe categorie")}</strong>
+                  <small>Homepage categorie</small>
+                </span>
+              </span>
+              <span class="device-category-chevron">${open?"−":"+"}</span>
+            </button>
+
+            ${open?`
+              <div class="device-category-content">
+                <div class="card-head">
+                  <div>
+                    <div class="card-title">${esc(x.title||"Nieuwe categorie")}</div>
+                    <div class="small">Beheer de categorie van de homepage.</div>
+                  </div>
+                  <button class="btn btn-red" onclick="deleteDeviceCategory(${i})">Verwijderen</button>
+                </div>
+
+                <div class="grid">
+                  <div class="field">
+                    <label>Naam</label>
+                    <input value="${esc(x.title)}" oninput="data.deviceCategories[${i}].title=this.value;markChanged()">
+                  </div>
+
+                  <div class="field">
+                    <label>Link</label>
+                    <input value="${esc(x.link)}" oninput="data.deviceCategories[${i}].link=this.value;markChanged()">
+                  </div>
+
+                  <div class="field">
+                    <label>Tekst knop</label>
+                    <input value="${esc(x.buttonText)}" oninput="data.deviceCategories[${i}].buttonText=this.value;markChanged()">
+                  </div>
+
+                  <div class="field">
+                    <label>Actief</label>
+                    <label style="display:flex;align-items:center;gap:8px;margin-top:9px">
+                      <input type="checkbox" ${x.active!==false?"checked":""} onchange="data.deviceCategories[${i}].active=this.checked;markChanged()">
+                      Tonen op homepage
+                    </label>
+                  </div>
+
+                  <div class="field" style="grid-column:1/-1">
+                    <label>Afbeelding</label>
+                    <input type="file" accept="image/*" onchange="handleCategoryImage(event,${i})">
+                    <input value="${esc(x.image)}" placeholder="Of plak een afbeelding URL" oninput="data.deviceCategories[${i}].image=this.value;markChanged()">
+                    ${x.image?`<img src="${esc(x.image)}" alt="" style="display:block;width:220px;height:120px;object-fit:cover;border-radius:12px;margin-top:10px">`:""}
+                    <div class="small">Upload een afbeelding of gebruik een URL. De gekozen afbeelding wordt in de website opgeslagen.</div>
+                  </div>
+                </div>
+              </div>
+            `:""}
+          </div>
+        `;
+      }).join("")}
     </div>
-  `).join("");
+  `;
+}
+
+function toggleDeviceCategory(i){
+  selectedDeviceCategoryIndex = selectedDeviceCategoryIndex===i ? -1 : i;
+  renderDeviceCategories();
 }
 
 function handleCategoryImage(event,i){
@@ -2091,6 +2153,7 @@ function addDeviceCategory(){
     buttonText:"Bekijk",
     active:true
   });
+  selectedDeviceCategoryIndex=data.deviceCategories.length-1;
   renderDeviceCategories();
   markChanged();
 }
@@ -2098,6 +2161,8 @@ function addDeviceCategory(){
 function deleteDeviceCategory(i){
   if(confirm("Deze categorie verwijderen?")){
     data.deviceCategories.splice(i,1);
+    if(selectedDeviceCategoryIndex===i) selectedDeviceCategoryIndex=-1;
+    else if(selectedDeviceCategoryIndex>i) selectedDeviceCategoryIndex--;
     renderDeviceCategories();
     markChanged();
   }
@@ -2363,6 +2428,7 @@ try{phoneTreeCustomGroups=JSON.parse(localStorage.getItem("homsTechPhoneGroups")
 let selectedUsedPhoneIndex=0;
 let selectedWhyIndex=0;
 let selectedGsmServiceIndex=0;
+let selectedDeviceCategoryIndex=-1;
 let gsmActiveCategory="imei";
 
 /* ---------------- SERVICES ---------------- */
