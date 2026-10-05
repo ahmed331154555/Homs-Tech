@@ -125,8 +125,13 @@ nav{justify-content:center}
 .gallery{position:sticky;top:145px;align-self:start}
 .gallery-wrap{background:#f8fafc;border:1px solid #e8eef5;border-radius:18px;min-height:500px}
 .main-image{height:500px;background:#f8fafc;border-radius:18px;padding:30px}
-.thumbs{justify-content:flex-start;padding:0 2px}
-.thumb{width:84px;height:84px;border-radius:12px;background:#fff}
+.thumbs{display:flex;flex-direction:column;gap:10px;justify-content:flex-start;align-items:flex-start;padding:12px 2px 0}
+.thumb-button{display:block;width:96px;height:96px;border:0;background:transparent;padding:0;cursor:pointer;border-radius:12px}
+.thumb{width:96px;height:96px;border-radius:12px;background:#fff;object-fit:cover;display:block}
+.thumb-button:hover .thumb{border-color:#2563eb}
+.thumb.active{border:2px solid #2563eb}
+@media(max-width:800px){.thumbs{flex-direction:row;flex-wrap:wrap;gap:8px}.thumb-button,.thumb{width:72px;height:72px}}
+@media(max-width:480px){.thumbs{gap:7px}.thumb-button,.thumb{width:64px;height:64px}}
 .info{min-width:0;padding:2px 0}
 .info h1{font-size:34px;letter-spacing:-.5px;margin-bottom:5px}
 .brand{font-size:14px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;color:#2563eb}
