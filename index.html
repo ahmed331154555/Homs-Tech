@@ -137,12 +137,15 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 @media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
 </style><style id="homepage-gpu-motion">
 #homeGsmSection .products.auto-moving,
-#homePopularSection .products.auto-moving{overflow:hidden!important;display:block!important;scroll-behavior:auto!important;scrollbar-width:none}
+#homePopularSection .products.auto-moving{overflow:hidden!important;display:block!important;position:relative;scroll-behavior:auto!important;scrollbar-width:none;padding:3px 0 15px}
 #homeGsmSection .products.auto-moving::-webkit-scrollbar,
 #homePopularSection .products.auto-moving::-webkit-scrollbar{display:none}
-.home-motion-track{display:flex!important;flex-wrap:nowrap!important;width:max-content;will-change:transform;transform:translate3d(0,0,0)}
-.home-motion-track>.product{flex:0 0 auto!important}
-@media (prefers-reduced-motion:reduce){
+.home-motion-track{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:stretch!important;gap:13px!important;width:max-content!important;min-width:max-content!important;height:auto!important;will-change:transform;transform:translate3d(0,0,0)}
+.home-motion-track>.product{display:flex!important;flex:0 0 205px!important;width:205px!important;min-width:205px!important;max-width:205px!important}
+@media(max-width:600px){
+ .home-motion-track>.product{flex-basis:205px!important;width:205px!important;min-width:205px!important;max-width:205px!important}
+}
+@media(prefers-reduced-motion:reduce){
  .home-motion-track{transform:none!important}
 }
 </style>
@@ -476,6 +479,7 @@ function renderProducts(){
   const track=document.createElement("div");
   track.className="home-motion-track";
   nodes.forEach(n=>track.appendChild(n));
+  box.innerHTML="";
   box.appendChild(track);
   startPopularTicker(box);
  }
