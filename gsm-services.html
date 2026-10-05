@@ -52,7 +52,7 @@ footer{background:#071d2d;color:#cbd5e1;padding:30px 18px}.footer-inner{max-widt
 <body>
 <header class="gsm-standalone-head"><div class="ht-container-main"><a class="gsm-brand" href="gsm-home.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><div class="gsm-brand-title">GSM SERVICES · PROFESSIONAL PLATFORM</div><a class="gsm-account" href="account.html">Mijn account</a></div></header>
 
-<div class="gsm-nav"><div class="gsm-nav-inner"><a href="gsm-home.html">GSM Home</a><a class="active" href="#all" onclick="selectCategory('all');return false">Reseller Pricing</a><a href="#remote" onclick="selectCategory('remote');return false">Remote Service</a><a href="#server" onclick="selectCategory('server');return false">Server Service</a><a href="#imei" onclick="selectCategory('imei');return false">IMEI Services</a><a href="#frp" onclick="selectCategory('frp');return false">FRP Services</a><a href="#firmware" onclick="selectCategory('firmware');return false">Firmware / Software</a><span class="spacer"></span><a class="gsm-login" href="account.html">Login</a></div></div>
+<div class="gsm-nav"><div class="gsm-nav-inner"><a href="gsm-home.html">GSM Home</a><a href="#all" onclick="selectCategory('all');return false">Reseller Pricing</a><a href="#remote" onclick="selectCategory('remote');return false">Remote Service</a><a href="#server" onclick="selectCategory('server');return false">Server Service</a><a href="#imei" onclick="selectCategory('imei');return false">IMEI Services</a><a href="#frp" onclick="selectCategory('frp');return false">FRP Services</a><a href="#firmware" onclick="selectCategory('firmware');return false">Firmware / Software</a><span class="spacer"></span><a class="gsm-login" id="gsmAccountLink" href="account.html">Login</a></div></div>
 
 <main class="page">
   <div class="breadcrumb">HOMS TECH / <b>GSM Services</b></div>
@@ -78,7 +78,7 @@ footer{background:#071d2d;color:#cbd5e1;padding:30px 18px}.footer-inner{max-widt
 <div class="modal" id="serviceModal" onclick="if(event.target===this)closeModal()"><div class="modal-box"><div class="modal-top"><div class="modal-title"><div class="modal-icon" id="modalIcon">🔧</div><div><h3 id="modalName">Service</h3><div class="modal-group" id="modalGroup"></div></div></div><button class="close" type="button" onclick="closeModal()">×</button></div><div class="detail" id="modalDetails"></div><div id="modalInstructions" class="detail" style="display:none;background:#f8fafc;border-left:4px solid #2563eb;margin-top:10px"></div><div class="modal-price" id="modalPrice"></div><form class="order-form" id="serviceOrderForm"><div class="field"><label>Naam *</label><input id="orderName" required autocomplete="name"></div><div class="field"><label>E-mail *</label><input id="orderEmail" type="email" required autocomplete="email"></div><div class="field"><label>Telefoon *</label><input id="orderPhone" required autocomplete="tel"></div><div class="field" id="orderImeiField" style="display:none"><label id="orderImeiLabel">IMEI *</label><input id="orderImei" inputmode="numeric"></div><div class="field" id="orderSerialField" style="display:none"><label id="orderSerialLabel">Serienummer *</label><input id="orderSerial"></div><div class="field" id="orderUsernameField" style="display:none"><label>Gebruikersnaam *</label><input id="orderUsername" autocomplete="username"></div><div id="dynamicOrderFields" class="field full" style="display:none"></div><div class="field full"><label>Opmerking</label><textarea id="orderNotes" placeholder="Vertel ons wat we voor u moeten doen..."></textarea></div><div id="orderStatus" class="order-status"></div><div class="field full"><button class="order-submit" type="submit">📤 Aanvraag versturen</button></div></form><div class="modal-actions"><a class="wa" id="modalWhatsApp" href="#">💬 Bestellen via WhatsApp</a><button class="cancel" type="button" onclick="closeModal()">Sluiten</button></div></div></div>
 
 <script>
-const categories=[['all','Alle services'],['imei','IMEI Services'],['remote','Remote Service'],['server','Server Service'],['frp','FRP Services'],['firmware','Firmware / Software']];
+const categories=[['all','Alle services'],['remote','Remote Service'],['server','Server Service'],['imei','IMEI Services'],['frp','FRP Services'],['firmware','Firmware / Software']];
 let siteData={whatsapp:'',gsmServices:{}};let activeCategory='all';let allEntries=[];let selectedServiceForOrder=null;
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function categoryLabel(k){const x=categories.find(a=>a[0]===k);return x?x[1]:k}
@@ -86,7 +86,25 @@ function getEntries(){const out=[];['imei','remote','server','frp','firmware'].f
 function whatsappLink(service){const n=String(siteData.whatsapp||'').replace(/\D/g,'');if(!n)return '#';const t='Hallo HOMS TECH, ik wil graag de volgende GSM-service bestellen:\n\nService: '+(service.name||'GSM Service')+'\nGroep: '+(service.group||'General')+'\nPrijs: '+displayPrice(service)+'\n\nOpmerking: ';return 'https://wa.me/'+n+'?text='+encodeURIComponent(t)}
 function renderSide(){const box=document.getElementById('sideList');const counts={};allEntries.forEach(x=>counts[x.category]=(counts[x.category]||0)+1);box.innerHTML=categories.map(([k,l])=>'<button type="button" class="side-btn '+(k===activeCategory?'active':'')+'" onclick="selectCategory(\''+k+'\')"><span>'+esc(l)+'</span><span class="side-count">'+(k==='all'?allEntries.length:(counts[k]||0))+'</span></button>').join('')}
 function updateGroupFilter(base){const s=document.getElementById('groupFilter'),current=s.value;const groups=[...new Set(base.map(x=>x.service.group||categoryLabel(x.category)))].sort((a,b)=>a.localeCompare(b));s.innerHTML='<option value="">Alle groepen</option>'+groups.map(g=>'<option value="'+esc(g)+'">'+esc(g)+'</option>').join('');if(groups.includes(current))s.value=current}
-function selectCategory(k){activeCategory=k;document.querySelectorAll('.gsm-nav a').forEach(a=>a.classList.remove('active'));const navMap={all:0,remote:1,server:2,imei:3,frp:4,firmware:5};const links=document.querySelectorAll('.gsm-nav a');if(links[navMap[k]])links[navMap[k]].classList.add('active');renderServices();try{history.replaceState(null,'','#'+k)}catch{}}
+function selectCategory(k){
+  if(k==='mdm')k='all';
+  activeCategory=k;
+  document.querySelectorAll('.gsm-nav a').forEach(a=>a.classList.remove('active'));
+  const navMap={all:1,remote:2,server:3,imei:4,frp:5,firmware:6};
+  const links=document.querySelectorAll('.gsm-nav a');
+  if(links[navMap[k]])links[navMap[k]].classList.add('active');
+  const titles={
+    all:'Reseller Pricing / GSM Services',
+    remote:'Remote Service',
+    server:'Server Service · Tools · Credits',
+    imei:'IMEI Services · Unlock · iCloud',
+    frp:'FRP Services',
+    firmware:'Firmware / Software'
+  };
+  document.getElementById('pageTitle').textContent=titles[k]||titles.all;
+  renderServices();
+  try{history.replaceState(null,'','#'+k)}catch{}
+}
 function displayPrice(s){if(s.price!==''&&s.price!=null)return '€ '+String(s.price);return 'Op aanvraag';}
 function displaySourcePrice(s){return s.sourcePrice!==''&&s.sourcePrice!=null?(s.sourceCurrency||'USD')+' '+s.sourcePrice:'';}
 function renderServices(){renderSide();const base=allEntries.filter(x=>activeCategory==='all'||x.category===activeCategory);updateGroupFilter(base);const q=document.getElementById('search').value.trim().toLowerCase();const g=document.getElementById('groupFilter').value;const hot=document.getElementById('hotOnly').checked;let entries=base.filter(x=>{const s=x.service||{};const hay=[s.name,s.details,s.group,s.sourceName,x.category].join(' ').toLowerCase();return(!q||hay.includes(q))&&(!g||(s.group||categoryLabel(x.category))===g)&&(!hot||s.hot===true)});document.getElementById('meta').textContent='Toont '+entries.length+' van '+base.length+' services';const box=document.getElementById('serviceGroups');if(!entries.length){box.innerHTML='<div class="empty">Geen services gevonden.</div>';return}const grouped=new Map();entries.forEach(e=>{const gn=e.service.group||categoryLabel(e.category);if(!grouped.has(gn))grouped.set(gn,[]);grouped.get(gn).push(e)});box.innerHTML=[...grouped.entries()].map(([gn,list])=>'<div class="group"><div class="group-head"><div class="group-head-left"><span class="group-icon">⚙</span><span class="group-name">'+esc(gn)+'</span></div><span class="group-count">'+list.length+'</span></div>'+list.map(e=>{const s=e.service;const details=s.shortDescription||s.details||categoryLabel(e.category);const time=s.deliveryTime||'';const hotBadge=s.hot===true?'<span style="margin-left:6px;color:#b45309;font-size:9px;font-weight:900">HOT</span>':'';return '<div class="service" onclick="openService(\''+e.category+'\','+e.index+')"><div><div class="service-name">'+esc(s.name||'Service')+hotBadge+'</div><div class="service-details">'+esc(details)+'</div></div><div class="service-time">'+esc(time)+'</div><div class="price">'+esc(displayPrice(s))+'</div><div class="arrow">›</div></div>'}).join('')+'</div>').join('')}
@@ -109,8 +127,23 @@ async function submitServiceOrder(e){e.preventDefault();const st=document.getEle
 function closeModal(){document.getElementById('serviceModal').classList.remove('open')}
 document.getElementById('serviceOrderForm').addEventListener('submit',submitServiceOrder);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 async function loadSite(){try{const r=await fetch('/api/site',{cache:'no-store'});if(!r.ok)throw 0;siteData=await r.json()}catch{siteData={whatsapp:'',gsmServices:{}}}if(!siteData.gsmServices||typeof siteData.gsmServices!=='object')siteData.gsmServices={};['imei','remote','server','frp','firmware'].forEach(k=>{if(!Array.isArray(siteData.gsmServices[k]))siteData.gsmServices[k]=[];siteData.gsmServices[k]=siteData.gsmServices[k].map(s=>({...s,group:(s&&s.group)||categoryLabel(k),requiresUsername:s&&s.requiresUsername===true,requiresImei:s&&s.requiresImei===true,requiresSerial:s&&s.requiresSerial===true,hot:s&&s.hot===true,instructions:s?.instructions||'',requiredFields:Array.isArray(s?.requiredFields)?s.requiredFields:[],formFields:Array.isArray(s?.formFields)?s.formFields:[],usernameFromEmail:s?.usernameFromEmail===true}))});allEntries=getEntries();renderServices();document.getElementById('orderWhatsApp').href=whatsappLink({name:'GSM Service - algemene aanvraag',group:'Algemeen',price:''})}
-const initialHash=String(location.hash||'').replace(/^#/,'').toLowerCase();const allowedHash=new Set(['imei','remote','server','frp','firmware']);if(allowedHash.has(initialHash))activeCategory=initialHash;
+const initialHash=String(location.hash||'').replace(/^#/,'').toLowerCase();
+const allowedHash=new Set(['all','imei','remote','server','frp','firmware']);
+if(allowedHash.has(initialHash))activeCategory=initialHash;
 loadSite();
+</script>
+<script>
+(async()=>{
+  try{
+    const r=await fetch('/api/customer/me',{credentials:'same-origin',cache:'no-store'});
+    if(!r.ok)return;
+    const d=await r.json();
+    if(d?.authenticated&&d?.customer){
+      const a=document.getElementById('gsmAccountLink');
+      if(a){a.textContent='Mijn account';a.href='client-area.html';}
+    }
+  }catch{}
+})();
 </script>
 </body>
 </html>
