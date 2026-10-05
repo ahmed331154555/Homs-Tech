@@ -135,7 +135,21 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 @keyframes htMarqueeOneWay{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
 @media(max-width:700px){.ht-topbar,.topbar{height:38px!important}.ht-marquee,.top-info{gap:28px!important;animation-duration:13s!important}.ht-marquee-track{gap:28px!important}.ht-marquee-item,.top-info span{font-size:13px!important}}
 @media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
-</style></head>
+</style><style id="homepage-gpu-motion">
+#homeGsmSection .products.auto-moving,
+#homePopularSection .products.auto-moving{overflow:hidden!important;display:flex!important;flex-wrap:nowrap!important;scroll-behavior:auto!important;scrollbar-width:none}
+#homeGsmSection .products.auto-moving::-webkit-scrollbar,
+#homePopularSection .products.auto-moving::-webkit-scrollbar{display:none}
+#homeGsmSection .products.auto-moving.gpu-track,
+#homePopularSection .products.auto-moving.gpu-track{justify-content:flex-start;will-change:transform;transform:translate3d(0,0,0)}
+#homeGsmSection .products.auto-moving.gpu-track .product,
+#homePopularSection .products.auto-moving.gpu-track .product{flex:0 0 auto}
+@media (prefers-reduced-motion:reduce){
+ #homeGsmSection .products.auto-moving.gpu-track,
+ #homePopularSection .products.auto-moving.gpu-track{transform:none!important}
+}
+</style>
+</head>
 <body>
 
 <div class="topbar" id="homeTopBar"><div class="container"><div class="top-info" id="homeTopInfo"></div></div></div>
@@ -364,35 +378,43 @@ function renderHomepageGsm(){
  if(items.length) startSimpleTicker(box);
 }
 function startSimpleTicker(box){
- let pos=0,last=performance.now(),paused=false;
+ const items=[...box.children];
+ if(items.length<2)return;
+ box.classList.add("gpu-track");
+ let paused=false;
  box.onmouseenter=()=>paused=true;box.onmouseleave=()=>paused=false;
- function tick(now){
-  const dt=Math.min(50,now-last);last=now;
-  if(!paused){
-   pos+=dt*0.055;
-   const half=box.scrollWidth/2;
-   if(half>box.clientWidth&&pos>=half)pos-=half;
-   box.scrollLeft=pos;
+ const speed=34;
+ let start=null,half=0;
+ const measure=()=>{half=box.scrollWidth/2;};
+ requestAnimationFrame(measure);
+ function frame(now){
+  if(!start)start=now;
+  if(!paused&&half>0){
+   let x=((now-start)*speed/1000)%half;
+   box.style.transform="translate3d("+(-x)+"px,0,0)";
   }
-  requestAnimationFrame(tick);
+  requestAnimationFrame(frame);
  }
- requestAnimationFrame(tick);
+ requestAnimationFrame(frame);
 }
 function startPopularTicker(box){
- let pos=0,last=performance.now(),paused=false;
- box.classList.add("auto-moving");
+ const items=[...box.children];
+ if(items.length<2)return;
+ box.classList.add("gpu-track");
+ let paused=false,start=null,half=0;
  box.onmouseenter=()=>paused=true;box.onmouseleave=()=>paused=false;
- function tick(now){
-  const dt=Math.min(50,now-last);last=now;
-  if(!paused){
-   pos+=dt*0.045;
-   const half=box.scrollWidth/2;
-   if(half>box.clientWidth&&pos>=half)pos-=half;
-   box.scrollLeft=pos;
+ const measure=()=>{half=box.scrollWidth/2;};
+ requestAnimationFrame(measure);
+ const speed=30;
+ function frame(now){
+  if(!start)start=now;
+  if(!paused&&half>0){
+   const x=((now-start)*speed/1000)%half;
+   box.style.transform="translate3d("+(-x)+"px,0,0)";
   }
-  requestAnimationFrame(tick);
+  requestAnimationFrame(frame);
  }
- requestAnimationFrame(tick);
+ requestAnimationFrame(frame);
 }
 
 function renderHomepageVisibility(){
