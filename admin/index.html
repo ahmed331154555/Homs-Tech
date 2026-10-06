@@ -2033,6 +2033,10 @@ function deleteDeviceCategory(i){
   }
 }
 
+const REMOVED_LEGACY_PHONE_NAMES = new Set(["iPhone 11","iPhone 11 Pro","iPhone 11 Pro Max","iPhone 12 Pro Max","iPhone 13","iPhone 13 Pro","iPhone 13 Pro Max","iPhone SE (2020)","iPhone 14","iPhone 14 Plus","iPhone 14 Pro","iPhone 14 Pro Max","iPhone SE (2022)","iPhone 15","iPhone 15 Plus","iPhone 15 Pro","iPhone 15 Pro Max","iPhone 16e","iPhone 16","iPhone 16 Plus","iPhone 16 Pro","iPhone 16 Pro Max","iPhone 17","iPhone Air","iPhone 17 Pro","iPhone 17 Pro Max"].map(x=>x.toLowerCase()));
+let removedLegacyPhonesPendingSave = 0;
+function isRemovedLegacyPhone(phone){const name=String(phone?.name||phone?.model||"").trim().toLowerCase();return REMOVED_LEGACY_PHONE_NAMES.has(name);}
+
 function normalizeData(){
 
   if(!data || typeof data!=="object"){
@@ -2138,6 +2142,10 @@ function normalizeData(){
     normalizePhoneOptions(phone);
     return phone;
   });
+
+  const beforePhoneCleanup=data.phones.length;
+  data.phones=data.phones.filter(x=>!isRemovedLegacyPhone(x));
+  removedLegacyPhonesPendingSave += beforePhoneCleanup-data.phones.length;
 
   data.phones.forEach(x=>{
     while(x.images.length<4) x.images.push("");
@@ -2250,6 +2258,12 @@ async function loadData(){
     renderAll();
 
     setStatus("✓ Gegevens geladen","success");
+
+    if(removedLegacyPhonesPendingSave>0){
+      const removed=removedLegacyPhonesPendingSave;
+      removedLegacyPhonesPendingSave=0;
+      setTimeout(async()=>{await save(true);setStatus("✓ "+removed+" oude standaard-iPhones verwijderd en opgeslagen","success");},0);
+    }
 
   }catch(e){
 
