@@ -1249,7 +1249,7 @@ textarea{
   <div class="admin-nav-inner">
     <button class="nav-btn active" data-page="general" onclick="showPage('general')">🏠 Homepage</button>
     <button class="nav-btn" data-page="services" onclick="showPage('services')">🔧 Diensten</button>
-    <button class="nav-btn" data-page="repair" data-permission="repair_page.view" onclick="showPage('repair')">🛠️ Reparatiepagina</button>
+    <button class="nav-btn" data-page="repair" data-permission="site.save" onclick="showPage('repair')">🛠️ Reparatiepagina</button>
     <button class="nav-btn" data-page="phones" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
     <button class="nav-btn" data-page="buyback" data-permission="buyback.view" onclick="showPage('buyback')">📥 Uw toestel verkopen</button>
     <button class="nav-btn" data-page="buyback-orders" data-permission="buyback_orders.view" onclick="showPage('buyback-orders')">📥 Verkoopaanvragen</button>
@@ -1326,7 +1326,7 @@ textarea{
   </section>
 
   <!-- REPARATIEPAGINA -->
-  <section class="section admin-page" id="page-repair" data-permission="repair_page.view">
+  <section class="section admin-page" id="page-repair">
     <div class="section-head">
       <div>
         <h2>🛠️ Reparatiepagina</h2>
@@ -1616,7 +1616,7 @@ let buybackCatalogDeleteLock = false;
 
 
 const PAGE_PERMISSIONS = {
-  general:"general.view",services:"services.view",repair:"repair_page.view",phones:"phones.view",categories:"categories.view",
+  general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",categories:"categories.view",
   used:"used.view",why:"why.view",customers:"customers.view",orders:"orders.view",
   "webshop-orders":"webshop_orders.view",gsm:"gsm.view",search:"search",admins:"admins.manage",
   buyback:"buyback.view", "buyback-orders":"buyback_orders.view"
