@@ -779,6 +779,36 @@ textarea{
   .phone-product-card-name{font-size:13px}
   .phone-product-price{font-size:16px}
 }
+
+/* HOMS TECH — PHONE FOLDERS + FOCUSED EDITOR */
+.phone-folder-list{overflow:visible!important;max-height:none!important;padding:0!important}
+.phone-folder-group{margin:0 0 28px}
+.phone-folder-group-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 13px;padding:0 3px}
+.phone-folder-group-title{font-size:17px;font-weight:900;color:#172033;display:flex;align-items:center;gap:9px}
+.phone-folder-group-count{font-size:12px;font-weight:800;color:#64748b;background:#f1f5f9;border-radius:999px;padding:6px 10px}
+.phone-folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:16px}
+.phone-model-folder{border:1px solid #e2e8f0;border-radius:18px;background:#fff;overflow:hidden;box-shadow:0 5px 18px rgba(15,23,42,.055);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+.phone-model-folder:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(15,23,42,.10);border-color:#cbd5e1}
+.phone-model-folder-cover{height:150px;background:linear-gradient(180deg,#f8fafc,#eef2f7);position:relative;display:flex;align-items:center;justify-content:center;padding:15px}
+.phone-model-folder-cover img{width:100%;height:100%;object-fit:contain;border-radius:12px}
+.phone-model-folder-icon{width:74px;height:74px;border-radius:18px;background:#fff;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900;color:#334155;box-shadow:0 6px 18px rgba(15,23,42,.07)}
+.phone-model-folder-count{position:absolute;right:10px;top:10px;background:#fff;border:1px solid #e2e8f0;border-radius:999px;padding:6px 9px;font-size:10px;font-weight:900;color:#475569}
+.phone-model-folder-body{padding:14px}
+.phone-model-folder-brand{font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-weight:900;color:#94a3b8;margin-bottom:4px}
+.phone-model-folder-name{font-size:16px;font-weight:900;color:#172033;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phone-folder-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;min-height:25px}
+.phone-folder-chip{font-size:10px;font-weight:800;color:#475569;background:#f1f5f9;border-radius:7px;padding:5px 7px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phone-folder-chip.more{color:#2563eb;background:#e8f0ff}
+.phone-model-folder-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid #edf1f5}
+.phone-model-folder-footer strong{font-size:14px;color:#172033}
+.phone-folder-edit{border:0;border-radius:9px;padding:8px 10px;background:#e8f0ff;color:#2563eb;font-weight:900;font-size:11px;cursor:pointer}
+.phone-folder-edit:hover{background:#dbeafe}
+.phone-edit-mode{grid-template-columns:1fr!important;gap:0!important}
+.phone-edit-mode .phone-catalog-sidebar{display:none!important}
+.phone-edit-mode .editor-panel{width:100%;min-width:0}
+.phone-back-catalog{margin-bottom:12px;padding:8px 11px;font-size:12px}
+@media(max-width:750px){.phone-folder-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.phone-model-folder-cover{height:125px;padding:10px}.phone-model-folder-body{padding:11px}.phone-model-folder-name{font-size:14px}.phone-model-folder-footer{align-items:stretch;flex-direction:column}.phone-folder-edit{width:100%}}
+@media(max-width:480px){.phone-folder-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.phone-model-folder-cover{height:105px}.phone-model-folder-count{font-size:9px;padding:5px 6px}.phone-model-folder-name{font-size:12px}.phone-folder-chip{font-size:9px;padding:4px 5px}.phone-model-folder-footer strong{font-size:12px}}
 </style>
 <style>
 .permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -2238,6 +2268,7 @@ function renderGeneral(){
 /* Editor selections */
 let selectedServiceIndex=0;
 let selectedPhoneIndex=0;
+let phoneEditOnly=false;
 let phoneTreeSearch="";
 let phoneTreeBrand="Apple";
 let phoneTreeCustomGroups=[];
@@ -2669,7 +2700,7 @@ function renderPhoneFolderTree(){
 
   return groupsSorted.map(([group,models])=>{
     const total=[...models.values()].reduce((n,items)=>n+items.length,0);
-    const modelHtml=[...models.entries()]
+    const folders=[...models.entries()]
       .sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true,sensitivity:'base'}))
       .map(([model,items])=>{
         items.sort((a,b)=>{
@@ -2677,50 +2708,59 @@ function renderPhoneFolderTree(){
           if(sa!==0) return sa;
           return String(a.info.color||'').localeCompare(String(b.info.color||''),undefined,{numeric:true,sensitivity:'base'});
         });
-        const cards=items.map(({phone,i,info})=>{
-          const stock=Number(phone.stock||0);
-          const price=Number(phone.price||0);
-          const img=Array.isArray(phone.images)?phone.images.find(Boolean):"";
-          const storage=info.storage && info.storage!=='Algemeen' ? info.storage : "";
-          const color=info.color && info.color!=='Algemeen' ? info.color : "";
-          const condition=phone.condition||"";
-          return `<article class="phone-product-card ${i===selectedPhoneIndex?'active':''}" onclick="selectedPhoneIndex=${i};renderPhones()">
-            <div class="phone-product-card-media">
-              ${img?`<img src="${esc(img)}" alt="${esc(phone.name||'Telefoon')}">`:'<div class="phone-product-card-placeholder">📱</div>'}
-              <span class="phone-product-card-badge">${esc(group)}</span>
-              <span class="phone-product-card-stock ${stock>0?'':'empty'}">${stock>0?'Voorraad '+stock:'Uitverkocht'}</span>
-            </div>
-            <div class="phone-product-card-body">
-              <div class="phone-product-card-name" title="${esc(phone.name||'Nieuw product')}">${esc(phone.name||'Nieuw product')}</div>
-              <div class="phone-product-meta">
-                ${storage?`<span class="phone-product-chip">💾 ${esc(storage)}</span>`:''}
-                ${color?`<span class="phone-product-chip">🎨 ${esc(color)}</span>`:''}
-                ${condition?`<span class="phone-product-chip">✓ ${esc(condition)}</span>`:''}
-              </div>
-              <div class="phone-product-card-bottom">
-                <div class="phone-product-price">${price>0?'€'+price.toFixed(2).replace('.',','):'Prijs op aanvraag'}</div>
-                ${phone.sku?`<div class="phone-product-sku">SKU ${esc(phone.sku)}</div>`:''}
-              </div>
-              <div class="phone-product-card-actions">
-                <button type="button" class="phone-product-card-edit" onclick="event.stopPropagation();selectedPhoneIndex=${i};renderPhones()">✎ Bewerken</button>
-                <button type="button" class="phone-product-card-delete" onclick="event.stopPropagation();deletePhone(${i})">🗑</button>
-              </div>
-            </div>
-          </article>`;
+        const first=items[0];
+        const img=(Array.isArray(first.phone.images)?first.phone.images.find(Boolean):"");
+        const prices=items.map(x=>Number(x.phone.price||0)).filter(x=>x>0);
+        const minPrice=prices.length?Math.min(...prices):0;
+        const maxPrice=prices.length?Math.max(...prices):0;
+        const priceText=minPrice && maxPrice && minPrice!==maxPrice
+          ? `€${minPrice.toFixed(0)} – €${maxPrice.toFixed(0)}`
+          : (minPrice ? `€${minPrice.toFixed(2).replace('.',',')}` : 'Prijs op aanvraag');
+
+        const variantChips=items.slice(0,4).map(({info})=>{
+          const parts=[info.storage&&info.storage!=='Algemeen'?info.storage:'',info.color&&info.color!=='Algemeen'?info.color:''].filter(Boolean);
+          return parts.length?`<span class="phone-folder-chip">${esc(parts.join(' · '))}</span>`:'';
         }).join('');
-        return `<div class="phone-grid-model">
-          <div class="phone-grid-model-title">${esc(model)} <span style="font-weight:600;color:#94a3b8">· ${items.length} variant${items.length===1?'':'en'}</span></div>
-          <div class="phone-card-grid">${cards}</div>
-        </div>`;
+        const more=items.length>4?`<span class="phone-folder-chip more">+${items.length-4}</span>`:'';
+
+        return `<article class="phone-model-folder">
+          <div class="phone-model-folder-cover">
+            ${img?`<img src="${esc(img)}" alt="${esc(model)}">`:`<div class="phone-model-folder-icon">${phoneTreeBrandIcon(group)}</div>`}
+            <span class="phone-model-folder-count">${items.length} ${items.length===1?'variant':'varianten'}</span>
+          </div>
+          <div class="phone-model-folder-body">
+            <div class="phone-model-folder-brand">${esc(group)}</div>
+            <div class="phone-model-folder-name" title="${esc(model)}">${esc(model)}</div>
+            <div class="phone-folder-chips">${variantChips}${more}</div>
+            <div class="phone-model-folder-footer">
+              <strong>${priceText}</strong>
+              <button type="button" class="phone-folder-edit" onclick="event.stopPropagation();openPhoneEditor(${first.i})">✎ Bewerken</button>
+            </div>
+          </div>
+        </article>`;
       }).join('');
-    return `<div class="phone-grid-group">
-      <div class="phone-grid-group-head">
-        <div class="phone-grid-group-title">${phoneTreeBrandIcon(group)} ${esc(group)}</div>
-        <span class="phone-grid-group-count">${total} producten</span>
+
+    return `<div class="phone-folder-group">
+      <div class="phone-folder-group-head">
+        <div class="phone-folder-group-title">${phoneTreeBrandIcon(group)} ${esc(group)}</div>
+        <span class="phone-folder-group-count">${total} producten · ${models.size} mappen</span>
       </div>
-      ${modelHtml}
+      <div class="phone-folder-grid">${folders}</div>
     </div>`;
   }).join('');
+}
+
+function openPhoneEditor(i){
+  selectedPhoneIndex=Number(i);
+  phoneEditOnly=true;
+  renderPhones();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function showPhoneCatalog(){
+  phoneEditOnly=false;
+  renderPhones();
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function setPhoneTreeBrand(brand){
@@ -2786,7 +2826,7 @@ function renderPhones(){
     </div>`).join('');
 
   box.innerHTML=`
-    <div class="editor-layout">
+    <div class="editor-layout ${phoneEditOnly?'phone-edit-mode':''}">
       <div class="editor-list phone-catalog-sidebar">
         <div class="phone-catalog-head">
           <div>
@@ -2805,7 +2845,9 @@ function renderPhones(){
       </div>
       <div class="editor-panel">
         <div class="card-head">
-          <div><div class="card-title" style="font-size:20px">🛒 ${esc(phone.name||'Nieuw product')}</div><div class="small">Dit is het verkoopsysteem van HOMS TECH. Staat los van Uw toestel verkopen / Protocol 1–8.</div></div>
+          <div>
+            ${phoneEditOnly?`<button type="button" class="btn btn-light phone-back-catalog" onclick="showPhoneCatalog()">← Terug naar telefoons</button>`:''}
+            <div class="card-title" style="font-size:20px">🛒 ${esc(phone.name||'Nieuw product')}</div><div class="small">Dit is het verkoopsysteem van HOMS TECH. Staat los van Uw toestel verkopen / Protocol 1–8.</div></div>
           <button class="btn btn-red" onclick="deletePhone(${selectedPhoneIndex})">Verwijderen</button>
         </div>
 
