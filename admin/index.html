@@ -1229,6 +1229,18 @@ textarea{
 #page-repair .repair-admin-image{display:grid;grid-template-columns:100px 1fr;gap:10px;align-items:center}
 #page-repair .repair-admin-image-preview{width:100px;height:80px;border:1px solid #dbe3ec;border-radius:10px;background:#f1f5f9;object-fit:cover;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:11px;text-align:center}
 #page-repair .repair-admin-image-preview img{width:100%;height:100%;object-fit:cover;border-radius:9px}
+#page-repair details.repair-admin-item{padding:0;overflow:hidden}
+#page-repair details.repair-admin-item>summary{list-style:none;cursor:pointer;padding:13px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fbfcfe}
+#page-repair details.repair-admin-item>summary::-webkit-details-marker{display:none}
+#page-repair details.repair-admin-item>summary:after{content:"＋";font-size:18px;font-weight:900;color:#64748b}
+#page-repair details.repair-admin-item[open]>summary{border-bottom:1px solid #e2e8f0;background:#f8fafc}
+#page-repair details.repair-admin-item[open]>summary:after{content:"−"}
+#page-repair .repair-admin-summary-title{display:flex;align-items:center;gap:9px;min-width:0}
+#page-repair .repair-admin-summary-title strong{font-size:13px}
+#page-repair .repair-admin-summary-meta{font-size:10px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#page-repair .repair-admin-item-body{padding:13px}
+#page-repair .repair-admin-summary-actions{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+#page-repair .repair-admin-summary-actions .btn{padding:7px 10px}
 #page-repair .repair-admin-note{padding:10px 12px;border:1px solid #dbeafe;background:#eff6ff;color:#315b9b;border-radius:10px;font-size:12px;margin-bottom:12px}
 @media(max-width:800px){#page-repair .repair-admin-grid,#page-repair .repair-admin-card-grid{grid-template-columns:1fr}#page-repair .repair-admin-grid .full{grid-column:auto}#page-repair .repair-admin-image{grid-template-columns:80px 1fr}#page-repair .repair-admin-image-preview{width:80px;height:70px}}
 </style>
@@ -2817,36 +2829,51 @@ function renderRepairPageAdmin(){
   const p=data.repairPage;
   const heroChecks=p.hero.checks.map((x,i)=>`<div class="repair-admin-line"><span class="repair-admin-icon">✓</span><input value="${esc(x)}" oninput="data.repairPage.hero.checks[${i}]=this.value;markChanged()"><button class="btn btn-red" type="button" onclick="deleteRepairCheck(${i})">×</button></div>`).join("");
   const optionCards=p.options.map((o,i)=>`
-    <div class="repair-admin-item">
-      <div class="repair-admin-item-head"><strong>Optie ${i+1}</strong><button class="btn btn-red" type="button" onclick="deleteRepairOption(${i})">Verwijderen</button></div>
-      <div class="repair-admin-grid">
-        ${repairField("Icoon",`<input value="${esc(o.icon)}" oninput="data.repairPage.options[${i}].icon=this.value;markChanged()">`)}
-        ${repairField("Knop actie",`<select onchange="data.repairPage.options[${i}].method=this.value;markChanged()"><option value="home" ${o.method==="home"?"selected":""}>Afspraak aan huis</option><option value="send" ${o.method==="send"?"selected":""}>Toestel opsturen</option></select>`)}
-        ${repairField("Titel",`<input value="${esc(o.title)}" oninput="data.repairPage.options[${i}].title=this.value;markChanged()">`,true)}
-        ${repairField("Beschrijving",`<textarea oninput="data.repairPage.options[${i}].description=this.value;markChanged()">${esc(o.description)}</textarea>`,true)}
-        ${repairField("Knoptekst",`<input value="${esc(o.button)}" oninput="data.repairPage.options[${i}].button=this.value;markChanged()">`,true)}
-        <div class="repair-admin-field full"><label>Voordelen in deze kaart</label><div class="repair-admin-ticks">${o.ticks.map((t,j)=>`<div class="repair-admin-line"><span class="repair-admin-icon">✓</span><input value="${esc(t)}" oninput="data.repairPage.options[${i}].ticks[${j}]=this.value;markChanged()"><button class="btn btn-red" type="button" onclick="deleteRepairTick(${i},${j})">×</button></div>`).join("")}</div><div class="repair-admin-actions"><button class="btn btn-light" type="button" onclick="addRepairTick(${i})">＋ Voordeel toevoegen</button></div></div>
-        <div class="repair-admin-field full"><label>Afbeelding</label><div class="repair-admin-image"><div>${renderRepairImagePreview(o.image)}</div><div><input type="file" accept="image/*" onchange="handleRepairImage('option',${i},event)"><div class="small">Max. 5 MB. Wordt op de kaart gebruikt.</div></div></div></div>
+    <details class="repair-admin-item">
+      <summary>
+        <div class="repair-admin-summary-title"><strong>🧩 Optie ${i+1}</strong><span class="repair-admin-summary-meta">${esc(o.title||"Nieuwe optie")} · ${o.method==="send"?"Toestel opsturen":"Afspraak aan huis"}</span></div>
+        <div class="repair-admin-summary-actions"><button class="btn btn-red" type="button" onclick="event.preventDefault();event.stopPropagation();deleteRepairOption(${i})">Verwijderen</button></div>
+      </summary>
+      <div class="repair-admin-item-body">
+        <div class="repair-admin-grid">
+          ${repairField("Icoon",`<input value="${esc(o.icon)}" oninput="data.repairPage.options[${i}].icon=this.value;markChanged()">`)}
+          ${repairField("Knop actie",`<select onchange="data.repairPage.options[${i}].method=this.value;markChanged()"><option value="home" ${o.method==="home"?"selected":""}>Afspraak aan huis</option><option value="send" ${o.method==="send"?"selected":""}>Toestel opsturen</option></select>`)}
+          ${repairField("Titel",`<input value="${esc(o.title)}" oninput="data.repairPage.options[${i}].title=this.value;markChanged()">`,true)}
+          ${repairField("Beschrijving",`<textarea oninput="data.repairPage.options[${i}].description=this.value;markChanged()">${esc(o.description)}</textarea>`,true)}
+          ${repairField("Knoptekst",`<input value="${esc(o.button)}" oninput="data.repairPage.options[${i}].button=this.value;markChanged()">`,true)}
+          <div class="repair-admin-field full"><label>Voordelen in deze kaart</label><div class="repair-admin-ticks">${o.ticks.map((t,j)=>`<div class="repair-admin-line"><span class="repair-admin-icon">✓</span><input value="${esc(t)}" oninput="data.repairPage.options[${i}].ticks[${j}]=this.value;markChanged()"><button class="btn btn-red" type="button" onclick="deleteRepairTick(${i},${j})">×</button></div>`).join("")}</div><div class="repair-admin-actions"><button class="btn btn-light" type="button" onclick="addRepairTick(${i})">＋ Voordeel toevoegen</button></div></div>
+          <div class="repair-admin-field full"><label>Afbeelding</label><div class="repair-admin-image"><div>${renderRepairImagePreview(o.image)}</div><div><input type="file" accept="image/*" onchange="handleRepairImage('option',${i},event)"><div class="small">Max. 5 MB. Wordt op de kaart gebruikt.</div></div></div></div>
+        </div>
       </div>
-    </div>`).join("");
+    </details>`).join("");
   const steps=p.steps.items.map((s,i)=>`
-    <div class="repair-admin-item">
-      <div class="repair-admin-item-head"><strong>Stap ${i+1}</strong><button class="btn btn-red" type="button" onclick="deleteRepairStep(${i})">Verwijderen</button></div>
-      <div class="repair-admin-grid">
-        ${repairField("Icoon",`<input value="${esc(s.icon)}" oninput="data.repairPage.steps.items[${i}].icon=this.value;markChanged()">`)}
-        ${repairField("Titel",`<input value="${esc(s.title)}" oninput="data.repairPage.steps.items[${i}].title=this.value;markChanged()">`)}
-        ${repairField("Beschrijving",`<textarea oninput="data.repairPage.steps.items[${i}].description=this.value;markChanged()">${esc(s.description)}</textarea>`,true)}
+    <details class="repair-admin-item">
+      <summary>
+        <div class="repair-admin-summary-title"><strong>🔢 Stap ${i+1}</strong><span class="repair-admin-summary-meta">${esc(s.title||"Nieuwe stap")}</span></div>
+        <div class="repair-admin-summary-actions"><button class="btn btn-red" type="button" onclick="event.preventDefault();event.stopPropagation();deleteRepairStep(${i})">Verwijderen</button></div>
+      </summary>
+      <div class="repair-admin-item-body">
+        <div class="repair-admin-grid">
+          ${repairField("Icoon",`<input value="${esc(s.icon)}" oninput="data.repairPage.steps.items[${i}].icon=this.value;markChanged()">`)}
+          ${repairField("Titel",`<input value="${esc(s.title)}" oninput="data.repairPage.steps.items[${i}].title=this.value;markChanged()">`)}
+          ${repairField("Beschrijving",`<textarea oninput="data.repairPage.steps.items[${i}].description=this.value;markChanged()">${esc(s.description)}</textarea>`,true)}
+        </div>
       </div>
-    </div>`).join("");
+    </details>`).join("");
   const features=p.features.map((x,i)=>`
-    <div class="repair-admin-item">
-      <div class="repair-admin-item-head"><strong>Voordeel ${i+1}</strong><button class="btn btn-red" type="button" onclick="deleteRepairFeature(${i})">Verwijderen</button></div>
-      <div class="repair-admin-grid">
-        ${repairField("Icoon",`<input value="${esc(x.icon)}" oninput="data.repairPage.features[${i}].icon=this.value;markChanged()">`)}
-        ${repairField("Titel",`<input value="${esc(x.title)}" oninput="data.repairPage.features[${i}].title=this.value;markChanged()">`)}
-        ${repairField("Korte tekst",`<input value="${esc(x.text)}" oninput="data.repairPage.features[${i}].text=this.value;markChanged()">`,true)}
+    <details class="repair-admin-item">
+      <summary>
+        <div class="repair-admin-summary-title"><strong>⭐ Voordeel ${i+1}</strong><span class="repair-admin-summary-meta">${esc(x.title||"Nieuw voordeel")}</span></div>
+        <div class="repair-admin-summary-actions"><button class="btn btn-red" type="button" onclick="event.preventDefault();event.stopPropagation();deleteRepairFeature(${i})">Verwijderen</button></div>
+      </summary>
+      <div class="repair-admin-item-body">
+        <div class="repair-admin-grid">
+          ${repairField("Icoon",`<input value="${esc(x.icon)}" oninput="data.repairPage.features[${i}].icon=this.value;markChanged()">`)}
+          ${repairField("Titel",`<input value="${esc(x.title)}" oninput="data.repairPage.features[${i}].title=this.value;markChanged()">`)}
+          ${repairField("Korte tekst",`<input value="${esc(x.text)}" oninput="data.repairPage.features[${i}].text=this.value;markChanged()">`,true)}
+        </div>
       </div>
-    </div>`).join("");
+    </details>`).join("");
   box.innerHTML=`
     <div class="repair-admin-note">كل تعديل هون بيأثر مباشرة على صفحة <strong>Reparaties</strong>. الصور والنصوص والخيارات محفوظة ضمن بيانات الموقع، والحفظ النهائي يتم من زر «Wijzigingen opslaan» أسفل لوحة التحكم.</div>
 
