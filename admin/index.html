@@ -2143,6 +2143,57 @@ function normalizeData(){
     if(x.image && !x.images[0]) x.images[0]=x.image;
   });
 
+  /*
+   * Legacy website products:
+   * Some older HOMS TECH installations can still have products in data.devices
+   * while the newer admin catalog uses data.phones. Keep any legacy product that
+   * is not already present in data.phones visible in the admin catalog, so products
+   * shown on the public website can be found and removed from one place.
+   */
+  if(Array.isArray(data.devices) && data.devices.length){
+    const phoneKeys=new Set(data.phones.map(p=>{
+      const brand=String(p.brand||"").trim().toLowerCase();
+      const name=String(p.name||p.model||"").trim().toLowerCase();
+      return brand+"|"+name;
+    }));
+    data.devices.forEach((legacy,i)=>{
+      const brand=String(legacy.brand||"Apple").trim();
+      const name=String(legacy.name||legacy.model||"").trim();
+      if(!name) return;
+      const key=brand.toLowerCase()+"|"+name.toLowerCase();
+      if(phoneKeys.has(key)) return;
+      phoneKeys.add(key);
+      const images=Array.isArray(legacy.images)?legacy.images.slice(0,4):[];
+      if(legacy.image && !images[0]) images[0]=legacy.image;
+      while(images.length<4) images.push("");
+      data.phones.push({
+        name,
+        brand,
+        price:legacy.price||legacy.salePrice||legacy.sellPrice||legacy.verkoopprijs||legacy.screen||"",
+        storage:legacy.storage||"",
+        color:legacy.color||legacy.colour||"",
+        condition:legacy.condition||"Nieuw",
+        warranty:legacy.warranty||"",
+        description:legacy.description||"",
+        subtitle:legacy.subtitle||"",
+        sku:legacy.sku||"",
+        stock:Number.isFinite(Number(legacy.stock))?Number(legacy.stock):0,
+        category:legacy.category||"Smartphones",
+        images,
+        specifications:Array.isArray(legacy.specifications)?legacy.specifications.slice(0,20):[],
+        conditionDetails:Array.isArray(legacy.conditionDetails)?legacy.conditionDetails.slice(0,10):[],
+        conditionOptions:legacy.conditionOptions,
+        storageOptions:legacy.storageOptions,
+        colorOptions:legacy.colorOptions,
+        batteryOptions:legacy.batteryOptions,
+        vatOptions:legacy.vatOptions,
+        tradeInOptions:legacy.tradeInOptions,
+        _legacyDeviceSource:true,
+        _legacyDeviceIndex:i
+      });
+    });
+  }
+
   /* gebruikte telefoons */
 
   if(!Array.isArray(data.usedPhones)){
