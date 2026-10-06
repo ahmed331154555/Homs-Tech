@@ -2127,6 +2127,7 @@ function normalizeData(){
       images:Array.isArray(x.images) ? x.images.slice(0,4) : [],
       conditionDetails:Array.isArray(x.conditionDetails) ? x.conditionDetails.slice(0,10) : [],
       specifications:Array.isArray(x.specifications) ? x.specifications.slice(0,20) : [],
+      active:x.active !== false,
       conditionOptions:x.conditionOptions,
       storageOptions:x.storageOptions,
       colorOptions:x.colorOptions,
@@ -2143,56 +2144,6 @@ function normalizeData(){
     if(x.image && !x.images[0]) x.images[0]=x.image;
   });
 
-  /*
-   * Legacy website products:
-   * Some older HOMS TECH installations can still have products in data.devices
-   * while the newer admin catalog uses data.phones. Keep any legacy product that
-   * is not already present in data.phones visible in the admin catalog, so products
-   * shown on the public website can be found and removed from one place.
-   */
-  if(Array.isArray(data.devices) && data.devices.length){
-    const phoneKeys=new Set(data.phones.map(p=>{
-      const brand=String(p.brand||"").trim().toLowerCase();
-      const name=String(p.name||p.model||"").trim().toLowerCase();
-      return brand+"|"+name;
-    }));
-    data.devices.forEach((legacy,i)=>{
-      const brand=String(legacy.brand||"Apple").trim();
-      const name=String(legacy.name||legacy.model||"").trim();
-      if(!name) return;
-      const key=brand.toLowerCase()+"|"+name.toLowerCase();
-      if(phoneKeys.has(key)) return;
-      phoneKeys.add(key);
-      const images=Array.isArray(legacy.images)?legacy.images.slice(0,4):[];
-      if(legacy.image && !images[0]) images[0]=legacy.image;
-      while(images.length<4) images.push("");
-      data.phones.push({
-        name,
-        brand,
-        price:legacy.price||legacy.salePrice||legacy.sellPrice||legacy.verkoopprijs||legacy.screen||"",
-        storage:legacy.storage||"",
-        color:legacy.color||legacy.colour||"",
-        condition:legacy.condition||"Nieuw",
-        warranty:legacy.warranty||"",
-        description:legacy.description||"",
-        subtitle:legacy.subtitle||"",
-        sku:legacy.sku||"",
-        stock:Number.isFinite(Number(legacy.stock))?Number(legacy.stock):0,
-        category:legacy.category||"Smartphones",
-        images,
-        specifications:Array.isArray(legacy.specifications)?legacy.specifications.slice(0,20):[],
-        conditionDetails:Array.isArray(legacy.conditionDetails)?legacy.conditionDetails.slice(0,10):[],
-        conditionOptions:legacy.conditionOptions,
-        storageOptions:legacy.storageOptions,
-        colorOptions:legacy.colorOptions,
-        batteryOptions:legacy.batteryOptions,
-        vatOptions:legacy.vatOptions,
-        tradeInOptions:legacy.tradeInOptions,
-        _legacyDeviceSource:true,
-        _legacyDeviceIndex:i
-      });
-    });
-  }
 
   /* gebruikte telefoons */
 
@@ -2338,7 +2289,7 @@ let selectedServiceIndex=0;
 let selectedPhoneIndex=0;
 let phoneEditOnly=false;
 let phoneTreeSearch="";
-let phoneTreeBrand="Apple";
+let phoneTreeBrand="Alle";
 let phoneTreeCustomGroups=[];
 try{phoneTreeCustomGroups=JSON.parse(localStorage.getItem("homsTechPhoneGroups")||"[]").filter(Boolean);}catch(e){phoneTreeCustomGroups=[];}
 let selectedUsedPhoneIndex=0;
@@ -2919,16 +2870,16 @@ function renderPhones(){
         <div class="phone-catalog-head">
           <div>
             <div class="phone-catalog-title">📦 Catalogus</div>
-            <div class="phone-catalog-subtitle">${data.phones.length} producten · netjes georganiseerd</div>
+            <div class="phone-catalog-subtitle">${data.phones.length} producten · zelfde catalogus als de website</div>
           </div>
           <span class="phone-catalog-total">${data.phones.length}</span>
         </div>
         <div class="phone-tree-search"><span>⌕</span><input value="${esc(phoneTreeSearch)}" placeholder="Zoek model, kleur, geheugen..." oninput="phoneTreeSearch=this.value;renderPhones()"/><button type="button" onclick="phoneTreeSearch='';renderPhones()" aria-label="Zoekopdracht wissen">×</button></div>
         <div class="phone-brand-tabs">
-          ${['Apple','Samsung','iPad',...phoneTreeCustomGroups].map(b=>`<button type="button" class="phone-brand-tab ${phoneTreeBrand===b?'active':''}" onclick="setPhoneTreeBrand('${b.replace(/'/g,"\\'")}')">${phoneTreeBrandIcon(b)} ${esc(b)}</button>`).join('')}
+          ${['Alle','Apple','Samsung','iPad',...phoneTreeCustomGroups].map(b=>`<button type="button" class="phone-brand-tab ${phoneTreeBrand===b?'active':''}" onclick="setPhoneTreeBrand('${b.replace(/'/g,"\\'")}')">${phoneTreeBrandIcon(b)} ${esc(b)}</button>`).join('')}
           <button type="button" class="phone-brand-tab phone-brand-add" onclick="addPhoneTreeGroup()">＋ Toevoegen</button>
         </div>
-        <div class="phone-tree-hint">Merk <span>›</span> model <span>›</span> geheugen <span>›</span> kleur</div>
+        <div class="phone-tree-hint">Website gebruikt <strong>data.phones</strong> · <span>Alle</span> toont elk product zonder merkfilter</div>
         <div class="phone-folder-list">${list}</div>
       </div>
       <div class="editor-panel">
