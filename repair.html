@@ -168,6 +168,8 @@
       display:flex;align-items:flex-end;justify-content:center;overflow:hidden;
       position:relative;
     }
+    .option-img.has-custom-image{background:#fff}
+    .option-img .custom-option-image{width:100%;height:100%;object-fit:cover;display:block}
     .option-img .box{
       width:112px;height:145px;border-radius:9px 9px 15px 15px;
       background:linear-gradient(145deg,#c99763,#a66d3d);
@@ -364,21 +366,16 @@
     <section class="repair-hero">
       <!-- Upload the real van image to assets/repair-van-hero.png -->
       <div class="hero-photo" aria-hidden="true">
-        <img src="assets/repair-van-hero.png" alt="" loading="eager" fetchpriority="high">
+        <img id="repairHeroImage" src="assets/repair-van-hero.png" alt="" loading="eager" fetchpriority="high">
       </div>
 
       <div class="hero-inner">
         <div>
-          <div class="eyebrow"><i></i> Snel / Betrouwbaar / Professioneel</div>
-          <h1 class="hero-title">Uw telefoon kapot?<br>Wij lossen het <span>voor u op.</span></h1>
-          <p class="hero-sub">Kies de reparatieservice die bij u past. Aan huis of stuur uw toestel veilig naar HOMS TECH.</p>
+          <div class="eyebrow"><i></i><span id="repairHeroEyebrow">Snel / Betrouwbaar / Professioneel</span></div>
+          <h1 class="hero-title"><span id="repairHeroTitle">Uw telefoon kapot?</span><br>Wij lossen het <span id="repairHeroAccent">voor u op.</span></h1>
+          <p class="hero-sub" id="repairHeroSubtitle">Kies de reparatieservice die bij u past. Aan huis of stuur uw toestel veilig naar HOMS TECH.</p>
 
-          <div class="hero-checks">
-            <div class="hero-check"><b>✓</b>Originele en hoogwaardige onderdelen</div>
-            <div class="hero-check"><b>✓</b>Ervaren monteurs</div>
-            <div class="hero-check"><b>✓</b>Snelle en betrouwbare service</div>
-            <div class="hero-check"><b>✓</b>Door heel Nederland</div>
-          </div>
+          <div class="hero-checks" id="repairHeroChecks"></div>
 
           <div class="hero-actions">
             <button class="btn-main btn-green" type="button" onclick="openRepair('home')">Afspraak aan huis maken →</button>
@@ -392,34 +389,24 @@
       <section class="options">
         <article class="option-card">
           <div>
-            <div class="option-icon">⌂</div>
-            <h2>Reparatie aan huis</h2>
-            <p>Onze monteur komt bij u thuis of op locatie om uw telefoon te repareren. Snel, makkelijk en zonder dat u de deur uit hoeft.</p>
-            <div class="ticks">
-              <div class="tick"><b>✓</b>Bij u thuis of op werk</div>
-              <div class="tick"><b>✓</b>Vaak dezelfde dag nog</div>
-              <div class="tick"><b>✓</b>Geen verzendkosten</div>
-              <div class="tick"><b>✓</b>Veilig en betrouwbaar</div>
-            </div>
-            <button class="btn-main btn-green" type="button" onclick="openRepair('home')">Afspraak aan huis maken →</button>
+            <div class="option-icon" id="repairOption1Icon">⌂</div>
+            <h2 id="repairOption1Title">Reparatie aan huis</h2>
+            <p id="repairOption1Description">Onze monteur komt bij u thuis of op locatie om uw telefoon te repareren. Snel, makkelijk en zonder dat u de deur uit hoeft.</p>
+            <div class="ticks" id="repairOption1Ticks"></div>
+            <button class="btn-main btn-green" id="repairOption1Button" type="button" onclick="openRepair('home')">Afspraak aan huis maken →</button>
           </div>
-          <div class="option-img" aria-hidden="true"><div class="phone"></div></div>
+          <div class="option-img" id="repairOption1Image" aria-hidden="true"><div class="phone"></div></div>
         </article>
 
         <article class="option-card send">
           <div>
-            <div class="option-icon">▣</div>
-            <h2>Stuur uw toestel naar ons</h2>
-            <p>Liever uw telefoon opsturen? Geen probleem. U meldt uw reparatie online aan en wij houden u op de hoogte.</p>
-            <div class="ticks">
-              <div class="tick"><b>✓</b>Eenvoudig en veilig aanmelden</div>
-              <div class="tick"><b>✓</b>Snelle reparatie</div>
-              <div class="tick"><b>✓</b>U ontvangt uw toestel terug</div>
-              <div class="tick"><b>✓</b>Status wordt in het systeem opgeslagen</div>
-            </div>
-            <button class="btn-main btn-green" type="button" onclick="openRepair('send')">Reparatie aanmelden →</button>
+            <div class="option-icon" id="repairOption2Icon">▣</div>
+            <h2 id="repairOption2Title">Stuur uw toestel naar ons</h2>
+            <p id="repairOption2Description">Liever uw telefoon opsturen? Geen probleem. U meldt uw reparatie online aan en wij houden u op de hoogte.</p>
+            <div class="ticks" id="repairOption2Ticks"></div>
+            <button class="btn-main btn-green" id="repairOption2Button" type="button" onclick="openRepair('send')">Reparatie aanmelden →</button>
           </div>
-          <div class="option-img" aria-hidden="true"><div class="box"></div></div>
+          <div class="option-img" id="repairOption2Image" aria-hidden="true"><div class="box"></div></div>
         </article>
       </section>
     </div>
@@ -427,37 +414,21 @@
     <section class="section">
       <div class="wrap">
         <div class="section-head">
-          <div class="section-kicker">Hoe het werkt</div>
-          <h2>Repareren in 3 eenvoudige stappen</h2>
-          <p>Snel, duidelijk en zonder gedoe.</p>
+          <div class="section-kicker" id="repairStepsKicker">Hoe het werkt</div>
+          <h2 id="repairStepsTitle">Repareren in 3 eenvoudige stappen</h2>
+          <p id="repairStepsSubtitle">Snel, duidelijk en zonder gedoe.</p>
         </div>
 
-        <div class="steps">
-          <div class="step">
-            <div class="step-icon">☝️<span class="step-num">1</span></div>
-            <h3>Kies uw service</h3>
-            <p>Kies voor reparatie aan huis of stuur uw toestel naar ons.</p>
-          </div>
-          <div class="step">
-            <div class="step-icon">▣<span class="step-num">2</span></div>
-            <h3>Maak een afspraak</h3>
-            <p>Vul uw gegevens in. Uw aanvraag wordt direct naar HOMS TECH gestuurd.</p>
-          </div>
-          <div class="step">
-            <div class="step-icon">🔧<span class="step-num">3</span></div>
-            <h3>Wij repareren uw toestel</h3>
-            <p>Uw aanvraag komt in het HOMS TECH systeem en kan vanuit Admin worden opgevolgd.</p>
-          </div>
-        </div>
+        <div class="steps" id="repairStepsList"></div>
       </div>
     </section>
 
     <section class="services-section">
       <div class="wrap">
         <div class="section-head">
-          <div class="section-kicker">Onze services</div>
-          <h2>Wat kunnen wij repareren?</h2>
-          <p>Deze services worden rechtstreeks uit de HOMS TECH website-instellingen geladen.</p>
+          <div class="section-kicker" id="repairServicesKicker">Onze services</div>
+          <h2 id="repairServicesTitle">Wat kunnen wij repareren?</h2>
+          <p id="repairServicesSubtitle">Deze services worden rechtstreeks uit de HOMS TECH website-instellingen geladen.</p>
         </div>
         <div id="servicesGrid" class="services-grid"></div>
       </div>
@@ -465,12 +436,7 @@
 
     <section class="section">
       <div class="wrap">
-        <div class="features">
-          <div class="feature"><div class="ficon">⚡</div><div><strong>Snelle service</strong><small>Vaak dezelfde dag gerepareerd</small></div></div>
-          <div class="feature"><div class="ficon">♢</div><div><strong>Betrouwbaar</strong><small>Originele en hoogwaardige onderdelen</small></div></div>
-          <div class="feature"><div class="ficon">⚙</div><div><strong>Ervaren monteurs</strong><small>Jarenlange ervaring</small></div></div>
-          <div class="feature"><div class="ficon">⌖</div><div><strong>Door heel Nederland</strong><small>Reparatie aan huis of opsturen</small></div></div>
-        </div>
+        <div class="features" id="repairFeaturesList"></div>
       </div>
     </section>
   </main>
@@ -614,6 +580,86 @@
       .replace(/'/g,"&#039;");
   }
 
+  const defaultRepairPage = {
+    hero:{eyebrow:"Snel / Betrouwbaar / Professioneel",title:"Uw telefoon kapot?",accent:"voor u op.",subtitle:"Kies de reparatieservice die bij u past. Aan huis of stuur uw toestel veilig naar HOMS TECH.",checks:["Originele en hoogwaardige onderdelen","Ervaren monteurs","Snelle en betrouwbare service","Door heel Nederland"],image:"assets/repair-van-hero.png"},
+    options:[
+      {icon:"⌂",title:"Reparatie aan huis",description:"Onze monteur komt bij u thuis of op locatie om uw telefoon te repareren. Snel, makkelijk en zonder dat u de deur uit hoeft.",ticks:["Bij u thuis of op werk","Vaak dezelfde dag nog","Geen verzendkosten","Veilig en betrouwbaar"],button:"Afspraak aan huis maken →",method:"home",image:""},
+      {icon:"▣",title:"Stuur uw toestel naar ons",description:"Liever uw telefoon opsturen? Geen probleem. U meldt uw reparatie online aan en wij houden u op de hoogte.",ticks:["Eenvoudig en veilig aanmelden","Snelle reparatie","U ontvangt uw toestel terug","Status wordt in het systeem opgeslagen"],button:"Reparatie aanmelden →",method:"send",image:""}
+    ],
+    steps:{
+      kicker:"Hoe het werkt",title:"Repareren in 3 eenvoudige stappen",subtitle:"Snel, duidelijk en zonder gedoe.",
+      items:[
+        {icon:"☝️",title:"Kies uw service",description:"Kies voor reparatie aan huis of stuur uw toestel naar ons."},
+        {icon:"▣",title:"Maak een afspraak",description:"Vul uw gegevens in. Uw aanvraag wordt direct naar HOMS TECH gestuurd."},
+        {icon:"🔧",title:"Wij repareren uw toestel",description:"Uw aanvraag komt in het HOMS TECH systeem en kan vanuit Admin worden opgevolgd."}
+      ]
+    },
+    servicesSection:{kicker:"Onze services",title:"Wat kunnen wij repareren?",subtitle:"Deze services worden rechtstreeks uit de HOMS TECH website-instellingen geladen."},
+    features:[
+      {icon:"⚡",title:"Snelle service",text:"Vaak dezelfde dag gerepareerd"},
+      {icon:"♢",title:"Betrouwbaar",text:"Originele en hoogwaardige onderdelen"},
+      {icon:"⚙",title:"Ervaren monteurs",text:"Jarenlange ervaring"},
+      {icon:"⌖",title:"Door heel Nederland",text:"Reparatie aan huis of opsturen"}
+    ]
+  };
+
+  function normalizeRepairPage(input){
+    const p=input && typeof input==="object" ? input : {};
+    const d=defaultRepairPage;
+    const hero={...d.hero,...(p.hero||{})};
+    hero.checks=Array.isArray(hero.checks)&&hero.checks.length ? hero.checks.slice(0,6).map(x=>String(x||"")).filter(Boolean) : d.hero.checks.slice();
+    const options=[0,1].map(i=>({...d.options[i],...(Array.isArray(p.options)?(p.options[i]||{}):{})}));
+    options.forEach(o=>{o.ticks=Array.isArray(o.ticks)&&o.ticks.length?o.ticks.slice(0,6).map(x=>String(x||"")).filter(Boolean):[];});
+    const steps={...d.steps,...(p.steps||{})};
+    steps.items=Array.isArray(steps.items)&&steps.items.length?steps.items.slice(0,6).map((x,i)=>({...d.steps.items[i%3],...x})):d.steps.items.map(x=>({...x}));
+    const servicesSection={...d.servicesSection,...(p.servicesSection||{})};
+    const features=Array.isArray(p.features)&&p.features.length?p.features.slice(0,8).map((x,i)=>({...d.features[i%4],...x})):d.features.map(x=>({...x}));
+    return {hero,options,steps,servicesSection,features};
+  }
+
+  function renderRepairPage(){
+    const p=normalizeRepairPage(siteData.repairPage);
+    siteData.repairPage=p;
+
+    document.getElementById("repairHeroEyebrow").textContent=p.hero.eyebrow;
+    document.getElementById("repairHeroTitle").textContent=p.hero.title;
+    document.getElementById("repairHeroAccent").textContent=p.hero.accent;
+    document.getElementById("repairHeroSubtitle").textContent=p.hero.subtitle;
+    const heroImg=document.getElementById("repairHeroImage");
+    if(heroImg) heroImg.src=p.hero.image||"assets/repair-van-hero.png";
+    document.getElementById("repairHeroChecks").innerHTML=p.hero.checks.map(x=>`<div class="hero-check"><b>✓</b>${esc(x)}</div>`).join("");
+
+    p.options.forEach((o,i)=>{
+      const n=i+1;
+      document.getElementById(`repairOption${n}Icon`).textContent=o.icon;
+      document.getElementById(`repairOption${n}Title`).textContent=o.title;
+      document.getElementById(`repairOption${n}Description`).textContent=o.description;
+      document.getElementById(`repairOption${n}Ticks`).innerHTML=o.ticks.map(x=>`<div class="tick"><b>✓</b>${esc(x)}</div>`).join("");
+      const btn=document.getElementById(`repairOption${n}Button`);
+      btn.textContent=o.button;
+      btn.onclick=()=>openRepair(o.method==="send"?"send":"home");
+      const box=document.getElementById(`repairOption${n}Image`);
+      if(o.image){
+        box.classList.add("has-custom-image");
+        box.innerHTML=`<img class="custom-option-image" src="${esc(o.image)}" alt="">`;
+      }else{
+        box.classList.remove("has-custom-image");
+        box.innerHTML=i===0?'<div class="phone"></div>':'<div class="box"></div>';
+      }
+    });
+
+    document.getElementById("repairStepsKicker").textContent=p.steps.kicker;
+    document.getElementById("repairStepsTitle").textContent=p.steps.title;
+    document.getElementById("repairStepsSubtitle").textContent=p.steps.subtitle;
+    document.getElementById("repairStepsList").innerHTML=p.steps.items.map((s,i)=>`<div class="step"><div class="step-icon">${esc(s.icon)}<span class="step-num">${i+1}</span></div><h3>${esc(s.title)}</h3><p>${esc(s.description)}</p></div>`).join("");
+
+    document.getElementById("repairServicesKicker").textContent=p.servicesSection.kicker;
+    document.getElementById("repairServicesTitle").textContent=p.servicesSection.title;
+    document.getElementById("repairServicesSubtitle").textContent=p.servicesSection.subtitle;
+
+    document.getElementById("repairFeaturesList").innerHTML=p.features.map(f=>`<div class="feature"><div class="ficon">${esc(f.icon)}</div><div><strong>${esc(f.title)}</strong><small>${esc(f.text)}</small></div></div>`).join("");
+  }
+
   function normalizeServices(input){
     if(!Array.isArray(input) || !input.length) return defaultServices;
     return input.map((s)=>{
@@ -653,10 +699,12 @@
         el.textContent = siteData.tagline || "Telefoonreparatie aan huis";
       });
 
+      renderRepairPage();
       renderServices();
     }catch(error){
       console.error("HOMS TECH /api/site:", error);
       siteData = {};
+      renderRepairPage();
       renderServices();
     }
   }
