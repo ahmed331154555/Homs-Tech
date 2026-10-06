@@ -822,6 +822,9 @@ textarea{
 .phone-folder-edit:hover{background:#dbeafe}
 .phone-catalog-only{width:100%}
 .phone-catalog-actions{display:flex;gap:8px;align-items:center}
+.phone-folder-image-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;margin-top:8px;padding:8px 10px;border:1px solid #d9e2ef;border-radius:8px;background:#fff;color:#475569;font-size:10px;font-weight:900;cursor:pointer}
+.phone-folder-image-btn:hover{background:#f5f8fc}
+.phone-folder-image-btn input{display:none}
 .phone-folder-add-phone{width:100%;margin-top:8px;border:1px dashed #b8c7dc;background:#f5f8fc;color:#2563eb;border-radius:9px;padding:9px 10px;font-size:11px;font-weight:900;cursor:pointer}
 .phone-folder-empty{padding:10px 4px;color:#64748b;font-size:11px;text-align:center}
 @media(max-width:700px){.phone-catalog-actions{flex-direction:column;align-items:stretch}.phone-catalog-actions .btn{width:100%}}
@@ -2116,7 +2119,8 @@ function normalizeData(){
   if(!Array.isArray(data.phoneFolders)) data.phoneFolders=[];
   data.phoneFolders=data.phoneFolders.map(x=>({
     group:String(x?.group||x?.brand||"Apple").trim()||"Apple",
-    model:String(x?.model||x?.name||"").trim()
+    model:String(x?.model||x?.name||"").trim(),
+    image:String(x?.image||"")
   })).filter(x=>x.model);
 
   data.phones=data.phones.map(x=>{
@@ -2765,7 +2769,8 @@ function renderPhoneFolderTree(){
         return String(a.info.color||'').localeCompare(String(b.info.color||''),undefined,{numeric:true,sensitivity:'base'});
       });
       const first=items[0];
-      const img=first&&Array.isArray(first.phone.images)?first.phone.images.find(Boolean):"";
+      const folderRecord=(data.phoneFolders||[]).find(x=>String(x.group||"").toLowerCase()===String(group||"").toLowerCase()&&String(x.model||"").toLowerCase()===String(model||"").toLowerCase());
+      const img=folderRecord?.image || (first&&Array.isArray(first.phone.images)?first.phone.images.find(Boolean):"");
       const prices=items.map(x=>Number(x.phone.price||0)).filter(x=>x>0);
       const minPrice=prices.length?Math.min(...prices):0, maxPrice=prices.length?Math.max(...prices):0;
       const priceText=minPrice&&maxPrice&&minPrice!==maxPrice?`€${minPrice.toFixed(0)} – €${maxPrice.toFixed(0)}`:(minPrice?`€${minPrice.toFixed(2).replace('.',',')}`:'Prijs op aanvraag');
@@ -2784,6 +2789,7 @@ function renderPhoneFolderTree(){
             <div class="phone-model-folder-name" title="${esc(model)}">${esc(model)}</div>
             <div class="phone-folder-chips">${items.slice(0,4).map(({info})=>{const p=[info.storage&&info.storage!=='Algemeen'?info.storage:'',info.color&&info.color!=='Algemeen'?info.color:''].filter(Boolean);return p.length?`<span class="phone-folder-chip">${esc(p.join(' · '))}</span>`:' ';}).join('')}${items.length>4?`<span class="phone-folder-chip more">+${items.length-4}</span>`:''}</div>
             <div class="phone-model-folder-footer"><strong>${priceText}</strong><span class="phone-folder-open">⌄ Bekijk varianten</span></div>
+            <label class="phone-folder-image-btn" onclick="event.stopPropagation()">📷 ${img?'Wijzig foto':'Foto toevoegen'}<input type="file" accept="image/*" hidden onchange="handlePhoneFolderImage(event,'${esc(group).replace(/'/g,"\\'")}','${esc(model).replace(/'/g,"\\'")}')"></label>
           </div>
         </summary>
         <div class="phone-model-folder-variants">${variants||'<div class="phone-folder-empty">Geen telefoon in deze map.</div>'}<button type="button" class="phone-folder-add-phone" onclick="event.stopPropagation();addPhoneInFolder('${esc(group).replace(/'/g,"\\'")}','${esc(model).replace(/'/g,"\\'")}')">＋ Telefoon toevoegen aan deze map</button></div>
@@ -2826,6 +2832,26 @@ function addPhoneTreeGroup(){
   phoneTreeBrand=cleanBrand;
   markChanged();
   renderPhones();
+}
+
+function handlePhoneFolderImage(event,group,model){
+  const file=event.target.files && event.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');event.target.value='';return;}
+  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}
+  if(!Array.isArray(data.phoneFolders)) data.phoneFolders=[];
+  let folder=data.phoneFolders.find(x=>String(x.group||'').toLowerCase()===String(group||'').toLowerCase()&&String(x.model||'').toLowerCase()===String(model||'').toLowerCase());
+  if(!folder){
+    folder={group:String(group||'Overige').trim()||'Overige',model:String(model||'').trim(),image:''};
+    data.phoneFolders.push(folder);
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    folder.image=reader.result;
+    markChanged();
+    renderPhones();
+  };
+  reader.readAsDataURL(file);
 }
 
 function addPhoneInFolder(group,model){
