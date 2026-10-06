@@ -386,29 +386,7 @@
     </section>
 
     <div class="wrap">
-      <section class="options">
-        <article class="option-card">
-          <div>
-            <div class="option-icon" id="repairOption1Icon">⌂</div>
-            <h2 id="repairOption1Title">Reparatie aan huis</h2>
-            <p id="repairOption1Description">Onze monteur komt bij u thuis of op locatie om uw telefoon te repareren. Snel, makkelijk en zonder dat u de deur uit hoeft.</p>
-            <div class="ticks" id="repairOption1Ticks"></div>
-            <button class="btn-main btn-green" id="repairOption1Button" type="button" onclick="openRepair('home')">Afspraak aan huis maken →</button>
-          </div>
-          <div class="option-img" id="repairOption1Image" aria-hidden="true"><div class="phone"></div></div>
-        </article>
-
-        <article class="option-card send">
-          <div>
-            <div class="option-icon" id="repairOption2Icon">▣</div>
-            <h2 id="repairOption2Title">Stuur uw toestel naar ons</h2>
-            <p id="repairOption2Description">Liever uw telefoon opsturen? Geen probleem. U meldt uw reparatie online aan en wij houden u op de hoogte.</p>
-            <div class="ticks" id="repairOption2Ticks"></div>
-            <button class="btn-main btn-green" id="repairOption2Button" type="button" onclick="openRepair('send')">Reparatie aanmelden →</button>
-          </div>
-          <div class="option-img" id="repairOption2Image" aria-hidden="true"><div class="box"></div></div>
-        </article>
-      </section>
+      <section class="options" id="repairOptionsList"></section>
     </div>
 
     <section class="section">
@@ -608,8 +586,10 @@
     const d=defaultRepairPage;
     const hero={...d.hero,...(p.hero||{})};
     hero.checks=Array.isArray(hero.checks)&&hero.checks.length ? hero.checks.slice(0,6).map(x=>String(x||"")).filter(Boolean) : d.hero.checks.slice();
-    const options=[0,1].map(i=>({...d.options[i],...(Array.isArray(p.options)?(p.options[i]||{}):{})}));
-    options.forEach(o=>{o.ticks=Array.isArray(o.ticks)&&o.ticks.length?o.ticks.slice(0,6).map(x=>String(x||"")).filter(Boolean):[];});
+    const options=Array.isArray(p.options)&&p.options.length
+      ? p.options.slice(0,6).map((x,i)=>({...d.options[i%2],...x}))
+      : d.options.map(x=>({...x}));
+    options.forEach(o=>{o.ticks=Array.isArray(o.ticks)?o.ticks.slice(0,6).map(x=>String(x||"")).filter(Boolean):[];});
     const steps={...d.steps,...(p.steps||{})};
     steps.items=Array.isArray(steps.items)&&steps.items.length?steps.items.slice(0,6).map((x,i)=>({...d.steps.items[i%3],...x})):d.steps.items.map(x=>({...x}));
     const servicesSection={...d.servicesSection,...(p.servicesSection||{})};
@@ -629,24 +609,21 @@
     if(heroImg) heroImg.src=p.hero.image||"assets/repair-van-hero.png";
     document.getElementById("repairHeroChecks").innerHTML=p.hero.checks.map(x=>`<div class="hero-check"><b>✓</b>${esc(x)}</div>`).join("");
 
-    p.options.forEach((o,i)=>{
-      const n=i+1;
-      document.getElementById(`repairOption${n}Icon`).textContent=o.icon;
-      document.getElementById(`repairOption${n}Title`).textContent=o.title;
-      document.getElementById(`repairOption${n}Description`).textContent=o.description;
-      document.getElementById(`repairOption${n}Ticks`).innerHTML=o.ticks.map(x=>`<div class="tick"><b>✓</b>${esc(x)}</div>`).join("");
-      const btn=document.getElementById(`repairOption${n}Button`);
-      btn.textContent=o.button;
-      btn.onclick=()=>openRepair(o.method==="send"?"send":"home");
-      const box=document.getElementById(`repairOption${n}Image`);
-      if(o.image){
-        box.classList.add("has-custom-image");
-        box.innerHTML=`<img class="custom-option-image" src="${esc(o.image)}" alt="">`;
-      }else{
-        box.classList.remove("has-custom-image");
-        box.innerHTML=i===0?'<div class="phone"></div>':'<div class="box"></div>';
-      }
-    });
+    document.getElementById("repairOptionsList").innerHTML=p.options.map((o,i)=>{
+      const sendClass=o.method==="send"?" send":"";
+      const fallback=i%2===0?'<div class="phone"></div>':'<div class="box"></div>';
+      const media=o.image?`<img class="custom-option-image" src="${esc(o.image)}" alt="">`:fallback;
+      return `<article class="option-card${sendClass}">
+        <div>
+          <div class="option-icon">${esc(o.icon)}</div>
+          <h2>${esc(o.title)}</h2>
+          <p>${esc(o.description)}</p>
+          <div class="ticks">${o.ticks.map(x=>`<div class="tick"><b>✓</b>${esc(x)}</div>`).join("")}</div>
+          <button class="btn-main btn-green" type="button" onclick="openRepair('${o.method==="send"?"send":"home"}')">${esc(o.button)}</button>
+        </div>
+        <div class="option-img ${o.image?'has-custom-image':''}" aria-hidden="true">${media}</div>
+      </article>`;
+    }).join("");
 
     document.getElementById("repairStepsKicker").textContent=p.steps.kicker;
     document.getElementById("repairStepsTitle").textContent=p.steps.title;
