@@ -1220,7 +1220,7 @@ textarea{
 #page-repair .repair-admin-line{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:7px;align-items:center}
 #page-repair .repair-admin-line input{width:100%}
 #page-repair .repair-admin-icon{font-size:20px;text-align:center}
-#page-repair .repair-admin-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#page-repair .repair-admin-card-grid{display:grid;grid-template-columns:1fr;gap:12px}
 #page-repair .repair-admin-item{border:1px solid #e2e8f0;border-radius:13px;background:#fbfcfe;padding:13px}
 #page-repair .repair-admin-item-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:10px}
 #page-repair .repair-admin-item-head strong{font-size:13px}
@@ -2823,6 +2823,18 @@ function deleteRepairFeature(i){
   if(data.repairPage.features.length<=1){alert("Er moet minstens één voordeel blijven staan.");return;}
   data.repairPage.features.splice(i,1);renderRepairPageAdmin();markChanged();
 }
+function enforceRepairAccordion(container){
+  if(!container)return;
+  container.querySelectorAll("details.repair-admin-item").forEach(d=>{
+    d.addEventListener("toggle",()=>{
+      if(!d.open)return;
+      container.querySelectorAll("details.repair-admin-item[open]").forEach(other=>{
+        if(other!==d)other.open=false;
+      });
+    });
+  });
+}
+
 function renderRepairPageAdmin(){
   const box=document.getElementById("repairPageEditor");
   if(!box)return;
@@ -2924,6 +2936,8 @@ function renderRepairPageAdmin(){
       <div class="repair-admin-body"><div class="repair-admin-card-grid">${features}</div></div>
     </div>
   `;
+  enforceRepairAccordion(box);
+
 }
 
 /* ---------------- PHONES ---------------- */
