@@ -136,10 +136,14 @@ async function initDatabase() {
       mime_type TEXT NOT NULL DEFAULT 'application/octet-stream',
       file_size BIGINT NOT NULL DEFAULT 0,
       file_data BYTEA,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      CHECK ((kind = 'folder' AND file_data IS NULL) OR (kind = 'file' AND file_data IS NOT NULL))
+      download_url TEXT NOT NULL DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
+  await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS download_url TEXT NOT NULL DEFAULT ''");
+  await pool.query("ALTER TABLE firmware_items DROP CONSTRAINT IF EXISTS firmware_items_check");
+  await pool.query("ALTER TABLE firmware_items DROP CONSTRAINT IF EXISTS firmware_items_storage_check");
+  await pool.query("ALTER TABLE firmware_items ADD CONSTRAINT firmware_items_storage_check CHECK ((kind = 'folder' AND file_data IS NULL AND download_url = '') OR (kind = 'file' AND ((file_data IS NOT NULL AND download_url = '') OR (file_data IS NULL AND download_url <> ''))))");
   await pool.query('CREATE INDEX IF NOT EXISTS firmware_items_parent_idx ON firmware_items(parent_id, kind, name)');
 
   await pool.query(`
@@ -593,7 +597,7 @@ app.get("/api/firmware/items", async (req,res) => {
       const parent = await pool.query("SELECT id,kind FROM firmware_items WHERE id=$1",[parentId]);
       if (!parent.rows.length || parent.rows[0].kind !== "folder") return res.status(404).json({error:"Folder not found"});
     }
-    const result = await pool.query("SELECT id,parent_id,kind,name,file_name,mime_type,file_size,created_at FROM firmware_items WHERE parent_id IS NOT DISTINCT FROM $1 ORDER BY CASE kind WHEN 'folder' THEN 0 ELSE 1 END, lower(name), id",[parentId]);
+    const result = await pool.query("SELECT id,parent_id,kind,name,file_name,mime_type,file_size,download_url,created_at FROM firmware_items WHERE parent_id IS NOT DISTINCT FROM $1 ORDER BY CASE kind WHEN 'folder' THEN 0 ELSE 1 END, lower(name), id",[parentId]);
     res.set("Cache-Control","no-store");
     res.json({items:result.rows});
   } catch(e) { console.error("Firmware list error:",e); res.status(500).json({error:"Could not load firmware folder"}); }
@@ -610,32 +614,20 @@ app.post("/api/admin/firmware/folders", requirePermission("site.save"), async (r
     res.status(201).json({item:r.rows[0]});
   } catch(e) { console.error("Firmware folder create error:",e); res.status(500).json({error:"Could not create folder"}); }
 });
-app.post("/api/admin/firmware/files/:parentId", requirePermission("site.save"), express.raw({type:"application/octet-stream",limit:"25mb"}), async (req,res) => {
+app.post("/api/admin/firmware/links/:parentId", requirePermission("site.save"), async (req,res) => {
   try {
     const parentId=Number(req.params.parentId);
-    if(!Number.isSafeInteger(parentId)||parentId<=0) return res.status(400).json({error:"Invalid folder"});
+    if(!Number.isSafeInteger(parentId)||parentId<=0)return res.status(400).json({error:"Invalid folder"});
     const p=await pool.query("SELECT kind FROM firmware_items WHERE id=$1",[parentId]);
     if(!p.rows.length||p.rows[0].kind!=="folder")return res.status(404).json({error:"Folder not found"});
-    if(!Buffer.isBuffer(req.body)||!req.body.length)return res.status(400).json({error:"Choose a non-empty file"});
-    let suppliedName=String(req.get("x-file-name")||"download.bin"); try { suppliedName=decodeURIComponent(suppliedName); } catch {} const fileName=suppliedName.replace(/[\\/\r\n\0]/g,"_").trim().slice(0,220)||"download.bin";
-    const mime=String(req.get("x-file-mime")||"application/octet-stream").slice(0,120);
-    const result=await pool.query("INSERT INTO firmware_items(parent_id,kind,name,file_name,mime_type,file_size,file_data) VALUES($1,'file',$2,$3,$4,$5,$6) RETURNING id,parent_id,kind,name,file_name,mime_type,file_size,created_at",[parentId,fileName,fileName,mime,req.body.length,req.body]);
+    const name=String(req.body?.name||"").trim().slice(0,220);
+    const url=String(req.body?.url||"").trim().slice(0,2048);
+    let parsed; try { parsed=new URL(url); } catch {}
+    if(!name)return res.status(400).json({error:"File name is required"});
+    if(!parsed||!["http:","https:"].includes(parsed.protocol))return res.status(400).json({error:"Enter a valid http or https download link"});
+    const result=await pool.query("INSERT INTO firmware_items(parent_id,kind,name,file_name,download_url) VALUES($1,'file',$2,$2,$3) RETURNING id,parent_id,kind,name,file_name,download_url,file_size,created_at",[parentId,name,url]);
     res.status(201).json({item:result.rows[0]});
-  } catch(e) { console.error("Firmware upload error:",e); res.status(e.status===413?413:500).json({error:e.status===413?"Maximum file size is 25 MB":"Could not save file"}); }
-});
-app.get("/api/firmware/download/:id", async (req,res) => {
-  try {
-    const id=Number(req.params.id);
-    if(!Number.isSafeInteger(id)||id<=0)return res.status(400).end();
-    const r=await pool.query("SELECT file_name,mime_type,file_size,file_data FROM firmware_items WHERE id=$1 AND kind='file'",[id]);
-    if(!r.rows.length)return res.status(404).json({error:"File not found"});
-    const f=r.rows[0],name=String(f.file_name||"download.bin").replace(/[\\r\\n"]/g,"_");
-    res.set("Content-Type","application/octet-stream");
-    res.set("Content-Length",String(f.file_size));
-    res.set("Content-Disposition",`attachment; filename="download.bin"; filename*=UTF-8''${encodeURIComponent(name)}`);
-    res.set("X-Content-Type-Options","nosniff");
-    res.send(f.file_data);
-  } catch(e) { console.error("Firmware download error:",e); res.status(500).json({error:"Download failed"}); }
+  } catch(e) { console.error("Firmware link create error:",e); res.status(500).json({error:"Could not save download link"}); }
 });
 app.delete("/api/admin/firmware/items/:id", requirePermission("site.save"), async (req,res) => {
   try {
