@@ -345,7 +345,7 @@ function easyDecodeHtml(value){return String(value||"").replace(/<script[\s\S]*?
 function easyText(value){return easyDecodeHtml(String(value||"").replace(/<[^>]+>/g," ")).replace(/\s+/g," ").trim()}
 function easySlug(value){return String(value||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,180)}
 function easyStableSourceId(baseCategory,group,name){return `easy-${baseCategory}-${easySlug(group)}-${easySlug(name)}`}
-function easyInferCategory(baseCategory,group,name){const hay=`${group||""} ${name||""}`.toLowerCase();if(/\bfrp\b|factory reset protection|google frp|samsung frp/.test(hay))return"frp";if(/firmware|flash|flasher|schematic|software/.test(hay))return"firmware";return baseCategory}
+function easyInferCategory(baseCategory,group,name){const hay=`${group||""} ${name||""}`.toLowerCase();if(/\bfrp\b|factory reset protection|google frp|samsung frp/.test(hay))return"frp";if(/firmware|flash|flasher|schematic|software/.test(hay))return null;return baseCategory}
 function easyParseMoney(value){const m=String(value||"").replace(/,/g,".").match(/(?:\$|€|£|usd|eur|gbp)?\s*([0-9]+(?:\.[0-9]+)?)/i);return m?Number(m[1]):null}
 function easyExtractDelivery(cells){const text=`${cells.slice(1,-1).join(" ")} ${cells[0]||""}`;const m=text.match(/(?:instant|[0-9]+\s*(?:-\s*[0-9]+)?\s*(?:minutes?|miniutes?|hours?|days?|weeks?|months?|years?))/i);return m?m[0].trim():""}
 function easyKnownServiceMeta(name){
@@ -404,11 +404,11 @@ function easyParseCatalogPage(html,pageUrl,baseCategory){
       const cells=[...row.matchAll(/<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/gi)].map(m=>easyText(m[1])).filter(Boolean);
       if(cells.length<2||/^(price|service)$/i.test(cells[0]))continue;
       const price=easyParseMoney(cells[cells.length-1]);if(!cells[0]||price===null)continue;
-      const name=cells[0],category=easyInferCategory(baseCategory,group,name),formFields=easyGuessOrderFields(group,name);
+      const name=cells[0],category=easyInferCategory(baseCategory,group,name);if(!category)continue;const formFields=easyGuessOrderFields(group,name);
       const requiredFields=formFields.filter(f=>f.required).map(f=>f.key);
       const hasUser=/\b(username|user name|login)\b/i.test(`${group} ${name}`);
       if(hasUser && !requiredFields.includes("username")) {formFields.push({key:"username",label:"Username",type:"text",required:true,autoFromEmail:true,placeholder:"Username / e-mail"});requiredFields.push("username")}
-      out.push({source:"easy-unlocker",sourceId:easyStableSourceId(baseCategory,group,name),sourceUrl:pageUrl,sourceGroup:group,sourceName:name,name,group,shortDescription:"",details:name,icon:category==="imei"?"📱":category==="remote"?"🖥️":category==="server"?"🛠️":category==="frp"?"🔐":"💻",price:"",sourcePrice:String(price),sourceCurrency:"USD",priceCurrency:"EUR",deliveryTime:easyExtractDelivery(cells),serviceMeta:easyKnownServiceMeta(name),active:true,hot:false,requiresUsername:hasUser,requiresImei:requiredFields.includes("imei"),requiresSerial:requiredFields.includes("serial"),requiredFields,formFields,instructions:"",usernameFromEmail:hasUser,category});
+      out.push({source:"easy-unlocker",sourceId:easyStableSourceId(baseCategory,group,name),sourceUrl:pageUrl,sourceGroup:group,sourceName:name,name,group,shortDescription:"",details:name,icon:category==="imei"?"📱":category==="remote"?"🖥️":category==="server"?"🛠️":category==="frp"?"🔐":"🛠️",price:"",sourcePrice:String(price),sourceCurrency:"USD",priceCurrency:"EUR",deliveryTime:easyExtractDelivery(cells),serviceMeta:easyKnownServiceMeta(name),active:true,hot:false,requiresUsername:hasUser,requiresImei:requiredFields.includes("imei"),requiresSerial:requiredFields.includes("serial"),requiredFields,formFields,instructions:"",usernameFromEmail:hasUser,category});
     }
   }
   const unique=new Map();out.forEach(x=>unique.set(x.sourceId,x));return[...unique.values()]
@@ -425,7 +425,7 @@ app.post("/api/admin/gsm/import-easy",requirePermission("gsm.import"),async(req,
   if(!current.rows.length)return res.status(404).json({error:"Websitegegevens ontbreken."});
   const data=current.rows[0].data||{};
   if(!data.gsmServices||typeof data.gsmServices!=="object")data.gsmServices={};
-  ["imei","remote","server","frp","firmware"].forEach(k=>{if(!Array.isArray(data.gsmServices[k]))data.gsmServices[k]=[]});
+  ["imei","remote","server","frp"].forEach(k=>{if(!Array.isArray(data.gsmServices[k]))data.gsmServices[k]=[]});
   const existing=new Map(); let deduplicated=0;
   for(const [category,list] of Object.entries(data.gsmServices)){
     if(!Array.isArray(list))continue;
