@@ -26,12 +26,12 @@ app.use(cookieParser());
 app.use((req, res, next) => {
   let pathname = String(req.path || "/");
   try { pathname = decodeURIComponent(pathname); } catch { return res.sendStatus(400); }
-  const segments = pathname.replace(/\\\\/g, "/").split("/").filter(Boolean).map(x => x.toLowerCase());
+  const segments = pathname.replace(/\\/g, "/").split("/").filter(Boolean).map(x => x.toLowerCase());
   const blocked = new Set(["server.js", "package.json", "package-lock.json", "render.yaml", "admin-index.html"]);
   if (segments.some(segment =>
     segment.startsWith(".") ||
     blocked.has(segment) ||
-    /\\.(?:zip|sql|bak|backup|log|db|sqlite|env)$/i.test(segment)
+    /\.(?:zip|sql|bak|backup|log|db|sqlite|env)$/i.test(segment)
   )) return res.sendStatus(404);
   next();
 });
@@ -1021,7 +1021,7 @@ app.post("/api/orders", async (req, res) => {
 
 // Recalculate webshop prices from the trusted catalog; never trust browser-supplied totals.
 function moneyNumber(value) {
-  const cleaned = String(value ?? "").replace(/[€\\s]/g, "").replace(",", ".");
+  const cleaned = String(value ?? "").replace(/[€\s]/g, "").replace(",", ".");
   const n = Number(cleaned);
   return Number.isFinite(n) ? n : NaN;
 }
@@ -1035,7 +1035,7 @@ function serverOptionDelta(option, key) {
     const n = moneyNumber(raw);
     if (Number.isFinite(n) && n !== 0) return n;
   }
-  const match = String(option.label || "").match(/([+-])\\s*€?\\s*(\\d+(?:[.,]\\d+)?)\\s*$/);
+  const match = String(option.label || "").match(/([+-])\s*€?\s*(\d+(?:[.,]\d+)?)\s*$/);
   if (match) {
     const amount = Number(match[2].replace(",", "."));
     return match[1] === "-" ? -amount : amount;
@@ -1075,7 +1075,7 @@ function priceProductFromCatalog(data, item) {
     if (Array.isArray(raw) && raw.length) return raw.filter(x => x && x.label && x.active !== false && x.enabled !== false);
     if (key === "storage" || key === "color") {
       const own = key === "storage" ? (Array.isArray(product.storage) ? product.storage[0] : product.storage || product.geheugen || "") : (product.color || product.kleur || "");
-      return own ? [{ label: String(own), active: true, enabled: true, available: true, priceDelta: 0 }] : [];
+      return own ? [{ label: String(own), active: true, enabled: true, available: true, priceDelta: 0 }] : serverOptionDefaults(key);
     }
     return serverOptionDefaults(key);
   };
@@ -1287,8 +1287,8 @@ app.post("/api/paypal/create-order", async (req, res) => {
     await pool.query(
       `UPDATE webshop_orders
        SET paypal_order_id = $1, payment_method = 'PayPal', payment_status = 'Pending'
-       WHERE id = $2`,
-      [String(data.id), localOrderId]
+       WHERE id = $2 AND checkout_token = $3`,
+      [String(data.id), localOrderId, checkoutToken]
     );
 
     res.json({ success: true, id: data.id, orderId: localOrderId });
