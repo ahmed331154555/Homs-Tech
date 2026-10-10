@@ -1,0 +1,31 @@
+name: GSM System Tests
+
+on:
+  push:
+    branches:
+      - build-gsm-system-2026-10-10
+  pull_request:
+    branches:
+      - build-gsm-system-2026-10-10
+
+permissions:
+  contents: read
+
+jobs:
+  gsm-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Check server syntax
+        run: node --check server.js
+      - name: Check provider syntax
+        run: node --check lib/gsm-provider.js
+      - name: Run GSM provider tests
+        run: npm run test:gsm
