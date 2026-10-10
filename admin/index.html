@@ -2133,13 +2133,13 @@ function normalizeData(){
     data.gsmServices={};
   }
 
-  ["imei","remote","server","frp","firmware"].forEach(key=>{
+  ["imei","remote","server","frp"].forEach(key=>{
     if(!Array.isArray(data.gsmServices[key])){
       data.gsmServices[key]=[];
     }
     data.gsmServices[key]=data.gsmServices[key].map(x=>{
       const service=normalizeGsmService(x);
-      if(!service.group) service.group=key==="imei"?"IMEI Services":key==="remote"?"Remote Service":key==="server"?"Server / Tools":key==="frp"?"FRP Services":"Firmware / Software";
+      if(!service.group) service.group=key==="imei"?"IMEI Services":key==="remote"?"Remote Service":key==="server"?"Server / Tools":key==="frp"?"FRP Services":"";
       return service;
     });
   });
@@ -4848,8 +4848,7 @@ const gsmServiceCategories=[
   ["server","🔧 Server Services"],
   ["imei","📱 IMEI Service"],
   ["remote","🛠️ Remote Orders"],
-  ["frp","🔎 FRP (verify availability)"],
-  ["firmware","💻 Firmware (verify availability)"]
+  ["frp","🔎 FRP (verify availability)"]
 ];
 let gsmProviderCategories=[];
 
