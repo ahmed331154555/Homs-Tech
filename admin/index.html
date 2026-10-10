@@ -1470,7 +1470,7 @@ textarea{
     <div id="gsmOrderSummary" class="order-summary"></div>
     <div class="orders-toolbar">
       <div class="orders-search"><input id="gsmOrderSearch" type="search" placeholder="Zoeken op klant, e-mail, telefoon, IMEI, order..." oninput="renderGsmOrders()"></div>
-      <select id="gsmOrderStatusFilter" class="order-filter" onchange="renderGsmOrders()"><option value="">Alle statussen</option><option>Nieuw</option><option>In behandeling</option><option>Voltooid</option><option>Geannuleerd</option></select>
+      <select id="gsmOrderStatusFilter" class="order-filter" onchange="renderGsmOrders()"><option value="">Alle statussen</option><option>Nieuw</option><option>In behandeling</option><option>Wacht op klant</option><option>Wacht op leverancier</option><option>Resultaat ontvangen</option><option>Mislukt</option><option>Voltooid</option><option>Geannuleerd</option></select>
       <button class="order-filter-btn" onclick="clearGsmOrderFilters()">↻ Filters wissen</button>
     </div>
     <div id="ordersStatus" class="status info" style="margin-bottom:10px"></div>
@@ -5123,7 +5123,7 @@ function renderGsmOrders(){
           </div>
         </div>
         <div class="order-actions">
-          <select class="order-status-select status-select-${statusLabel.replace(/\s+/g,'-').toLowerCase()}" data-order-id="${Number(order.id)}" onchange="updateOrderStatus(${Number(order.id)},this.value)">${['Nieuw','In behandeling','Voltooid','Geannuleerd'].map(x=>`<option value="${esc(x)}" ${statusLabel===x?'selected':''}>${esc(x)}</option>`).join('')}</select>
+          <select class="order-status-select status-select-${statusLabel.replace(/\s+/g,'-').toLowerCase()}" data-order-id="${Number(order.id)}" onchange="updateOrderStatus(${Number(order.id)},this.value)">${['Nieuw','In behandeling','Wacht op klant','Wacht op leverancier','Resultaat ontvangen','Mislukt','Voltooid','Geannuleerd'].map(x=>`<option value="${esc(x)}" ${statusLabel===x?'selected':''}>${esc(x)}</option>`).join('')}</select>
           <button class="btn btn-light order-detail-btn" onclick="showGsmOrderDetails(${Number(order.id)})">◉ Details</button>
           ${hasPermission('orders.delete')?`<button class="btn btn-red order-delete-btn" onclick="deleteGsmOrder(${Number(order.id)})">▣ Verwijderen</button>`:''}
         </div>
