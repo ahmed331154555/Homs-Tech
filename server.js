@@ -812,7 +812,7 @@ app.post("/api/customer/logout", (req, res) => {
 });
 
 // ---------------- GSM PROVIDER BOUNDARY ----------------
-const { getEasyUnlockerApiReadiness, GSM_CATEGORIES } = require("./lib/gsm-provider");
+const { getEasyUnlockerApiReadiness, GSM_CATEGORIES, validateDynamicFieldValues } = require("./lib/gsm-provider");
 
 // Admin-only status endpoint. It never returns credentials or makes upstream calls.
 app.get("/api/admin/gsm/provider-status", requirePermission("gsm.view"), async (req, res) => {
@@ -1046,14 +1046,17 @@ app.post("/api/orders", async (req, res) => {
         if (!field || !field.key) continue;
         if (field.autoFromEmail === true && String(extra[field.key] || "").trim() === "") extra[field.key] = clean.email;
         const fieldValue = String(extra[field.key] || "").trim();
-        if (field.required === true && fieldValue === "") {
-          return res.status(400).json({error:`Vul het verplichte veld in: ${field.label || field.key}.`});
-        }
-        // A dropdown must submit one of the configured options, not arbitrary text.
-        if (field.type === "select" && fieldValue && Array.isArray(field.options) &&
-            !field.options.some(option => String(option) === fieldValue)) {
-          return res.status(400).json({error:`اختيار غير صالح للحقل: ${field.label || field.key}.`});
-        }
+        // Validation is shared with unit tests so required fields and dropdown
+        // allowlists behave the same in the API and provider layer.
+      }
+      const validation = validateDynamicFieldValues(formFields, extra);
+      if (!validation.valid && validation.reason === "required") {
+        return res.status(400).json({error:`Vul het verplichte veld in: ${validation.label}.`});
+      }
+      if (!validation.valid && validation.reason === "invalid_option") {
+        return res.status(400).json({error:`Ongeldige keuze voor veld: ${validation.label}.`});
+      }
+      // 
       }
       clean.extraFields = extra;
       if (matchedService.usernameFromEmail === true && !clean.username) clean.username = clean.email;
