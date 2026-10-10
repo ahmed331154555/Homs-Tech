@@ -20,6 +20,13 @@
 - The admin labels for the three visible order categories now match the account wording. `FRP` and `Firmware` remain preserved as local catalog buckets but are explicitly marked for verification; they are not confirmed as top-level Easy-Unlocker order categories by the screenshots.
 - Do not create a `Retail Orders` service category from the history menu alone; it is currently verified as an order-history filter/category, not as a confirmed new-order menu item.
 
+## Server order form patterns observed in account screenshots
+- `SKUNLOCKER Activation Tool 6 Months Android Only` was shown at 21 credits with fields `Qnt`, `EMAIL`, `Notes`, `Comments`, and `Response e-mail`; delivery shown as 1–24 hours and cancellable.
+- `Piranha Tool 12 Months` was shown at 32 credits with `Email`, `Notes`, `Comments`, and `Response e-mail`; the page displayed quantity 1 and a delivery estimate of 1 minute.
+- `ShellTool - 12 Months Instant Activation` was shown at 38.5 credits with the same email/notes/comments/response-email pattern and a 1–2 minute delivery estimate.
+- The admin editor now offers an opt-in `Server-velden invullen` preset for server services. It adds common fields without replacing existing custom fields; it adds quantity only when the service name contains `SKUNLOCKER`. The preset is a convenience based on observed examples, not a supplier API schema.
+- Supplier credit prices, delivery estimates, and cancellation flags are observations from screenshots only; do not treat them as live prices or promise the same delivery time to HOMS TECH customers.
+
 ## Easy-Unlocker API status
 No upstream requests are enabled yet. Do not assume an API base URL, authentication scheme, endpoint, payload, or order-status model. Only implement an Easy-Unlocker adapter after receiving official documentation and confirming the account has API access.
 
