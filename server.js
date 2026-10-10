@@ -1167,19 +1167,20 @@ app.post("/api/webshop/orders", async (req, res) => {
       return res.status(400).json({ error: "Het totaalbedrag van uw bestelling is ongeldig." });
     }
     const checkoutToken = crypto.randomBytes(32).toString("hex");
+    const checkoutTokenHash = crypto.createHash("sha256").update(checkoutToken).digest("hex");
 
     const result = await pool.query(
       `INSERT INTO webshop_orders
        (customer_id, name, email, phone, street, house_number, postcode, city, items, total, checkout_token, payment_method, payment_status)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
-       RETURNING id, status, payment_method, payment_status, paypal_order_id, checkout_token, created_at`,
+       RETURNING id, status, payment_method, payment_status, paypal_order_id, created_at`,
       [
         customerId, name, email, phone, street, houseNumber, postcode, city,
-        JSON.stringify(safeItems), total.toFixed(2), checkoutToken, "PayPal", "Unpaid"
+        JSON.stringify(safeItems), total.toFixed(2), checkoutTokenHash, "PayPal", "Unpaid"
       ]
     );
 
-    res.status(201).json({ success: true, order: result.rows[0] });
+    res.status(201).json({ success: true, order: { ...result.rows[0], checkout_token: checkoutToken } });
   } catch (error) {
     console.error("Create webshop order error:", error);
     res.status(500).json({ error: "Webshop bestelling kon niet worden opgeslagen." });
@@ -1239,11 +1240,12 @@ app.post("/api/paypal/create-order", async (req, res) => {
       return res.status(400).json({ error: "Ongeldige checkoutgegevens." });
     }
 
+    const checkoutTokenHash = crypto.createHash("sha256").update(checkoutToken).digest("hex");
     const local = await pool.query(
       `SELECT id, name, email, total, payment_status
        FROM webshop_orders
        WHERE id = $1 AND checkout_token = $2`,
-      [localOrderId, checkoutToken]
+      [localOrderId, checkoutTokenHash]
     );
 
     if (!local.rows.length) {
@@ -1318,11 +1320,12 @@ app.post("/api/paypal/capture-order", async (req, res) => {
       return res.status(400).json({ error: "Ongeldige PayPal betaalgegevens." });
     }
 
+    const checkoutTokenHash = crypto.createHash("sha256").update(checkoutToken).digest("hex");
     const local = await pool.query(
       `SELECT id, total, paypal_order_id, payment_status
        FROM webshop_orders
        WHERE id = $1 AND checkout_token = $2`,
-      [localOrderId, checkoutToken]
+      [localOrderId, checkoutTokenHash]
     );
 
     if (!local.rows.length) {
@@ -1410,11 +1413,12 @@ app.post("/api/paypal/cancel-order", async (req, res) => {
       return res.status(400).json({ error: "Ongeldige checkoutgegevens." });
     }
 
+    const checkoutTokenHash = crypto.createHash("sha256").update(checkoutToken).digest("hex");
     await pool.query(
       `UPDATE webshop_orders
        SET payment_status = CASE WHEN payment_status <> 'Paid' THEN 'Cancelled' ELSE payment_status END
        WHERE id = $1 AND checkout_token = $2`,
-      [localOrderId, checkoutToken]
+      [localOrderId, checkoutTokenHash]
     );
 
     res.json({ success: true });
