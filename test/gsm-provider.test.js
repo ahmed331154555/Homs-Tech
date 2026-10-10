@@ -12,7 +12,8 @@ const {
 test("accepts only supported GSM categories", () => {
   assert.equal(normalizeCategory("IMEI"), "imei");
   assert.equal(normalizeCategory("unknown"), null);
-  assert.deepEqual(GSM_CATEGORIES, ["imei", "remote", "server", "frp", "firmware"]);
+  assert.equal(normalizeCategory("firmware"), null);
+  assert.deepEqual(GSM_CATEGORIES, ["imei", "remote", "server", "frp"]);
 });
 
 test("normalizes services and forces storefront currency to EUR", () => {
