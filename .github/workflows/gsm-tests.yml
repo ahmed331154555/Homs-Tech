@@ -27,5 +27,7 @@ jobs:
         run: node --check server.js
       - name: Check provider syntax
         run: node --check lib/gsm-provider.js
+      - name: Check admin inline JavaScript
+        run: node -e "const fs=require('node:fs');const html=fs.readFileSync('admin/index.html','utf8');const scripts=[...html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)].map(m=>m[1]).filter(s=>s.trim());scripts.forEach((s,i)=>{try{new Function(s)}catch(e){console.error('Admin inline script '+(i+1)+': '+e.message);process.exitCode=1}});console.log('Checked '+scripts.length+' inline script blocks')"
       - name: Run GSM provider tests
         run: npm run test:gsm
