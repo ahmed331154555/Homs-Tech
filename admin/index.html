@@ -1502,7 +1502,7 @@ textarea{
       </div>
       <div class="actions">
         <button type="button" class="btn btn-light" onclick="loadGsmProviderStatus()">↻ Status vernieuwen</button>
-        ${hasPermission("gsm.import")?'<button type="button" class="btn btn-green" id="gsmEasyImportButton" onclick="importEasyPublicGsmCatalog()">↻ Sync Easy-Unlocker catalogus</button>':''}
+        ${hasPermission("gsm.import")?'<button type="button" class="btn btn-green" id="gsmEasyImportButton" data-permission="gsm.import" onclick="importEasyPublicGsmCatalog()">↻ Sync Easy-Unlocker catalogus</button>':''}
       </div>
     </div>
     <div class="gsm-admin-note"><strong>Let op:</strong> synchronisatie leest de <u>publieke catalogus</u> van Easy-Unlocker, geen officiële reseller-API. De koppeling voor echte orderverwerking blijft uitgeschakeld tot de officiële API is bevestigd.</div>
@@ -1681,7 +1681,7 @@ function applyPermissionUI(){
     if(!["general","services","repair","phones","buyback","categories","used","why","gsm"].includes(n))return;
     page.querySelectorAll("input,textarea").forEach(el=>el.disabled=!canEditCurrentPage());
     page.querySelectorAll("button").forEach(btn=>{
-      if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=!canEditCurrentPage();
+      if(!btn.classList.contains("nav-btn")&&btn.id!=="gsmEasyImportButton"&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=!canEditCurrentPage();
     });
   });
   document.querySelectorAll(".order-status-select").forEach(el=>el.disabled=!hasPermission(el.closest("#page-orders")?"orders.update":"webshop_orders.update"));
@@ -4875,8 +4875,10 @@ async function importEasyPublicGsmCatalog(){
   if(button){button.disabled=true;button.textContent="Catalogus ophalen...";}
   if(status){status.style.display="block";status.className="status info";status.textContent="Eerst huidige wijzigingen opslaan en daarna de publieke catalogus ophalen...";}
   try{
-    const saved=await save();
-    if(saved!==true)throw new Error("Opslaan is niet bevestigd. Controleer de melding bovenaan en probeer opnieuw.");
+    if(canEditCurrentPage()){
+      const saved=await save();
+      if(saved!==true)throw new Error("Opslaan is niet bevestigd. Controleer de melding bovenaan en probeer opnieuw.");
+    }
     const response=await fetch("/api/admin/gsm/import-easy",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({})});
     const result=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(result.error||"Easy-Unlocker-catalogus kon niet worden gesynchroniseerd.");
