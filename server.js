@@ -976,10 +976,31 @@ app.post("/api/orders", async (req, res) => {
       try {
         const site = await pool.query("SELECT data FROM site_settings WHERE id = 1");
         const gsm = site.rows[0]?.data?.gsmServices || {};
-        for (const list of Object.values(gsm)) {
-          if (!Array.isArray(list)) continue;
-          const found = list.find(x => String(x?.sourceId || "") === clean.serviceSourceId);
-          if (found) { matchedService = found; break; }
+        if (clean.serviceSourceId) {
+          for (const list of Object.values(gsm)) {
+            if (!Array.isArray(list)) continue;
+            const found = list.find(x => String(x?.sourceId || "") === clean.serviceSourceId);
+            if (found) { matchedService = found; break; }
+          }
+        } else {
+          // Locally created services may not have a supplier sourceId. Match
+          // them against the saved catalog so client-supplied prices/fields
+          // cannot bypass the authoritative service configuration.
+          const category = String(clean.serviceCategory || "").trim().toLowerCase();
+          if (GSM_CATEGORIES.includes(category)) {
+            const list = Array.isArray(gsm[category]) ? gsm[category] : [];
+            const wantedName = clean.serviceName.toLowerCase();
+            const wantedGroup = clean.serviceGroup.toLowerCase();
+            const candidates = list.filter(item =>
+              item && item.active !== false &&
+              String(item.name || "").trim().toLowerCase() === wantedName &&
+              (!wantedGroup || String(item.group || "").trim().toLowerCase() === wantedGroup)
+            );
+            if (candidates.length > 1) {
+              return res.status(400).json({ error: "Deze service is niet uniek. Kies de service opnieuw." });
+            }
+            if (candidates.length === 1) matchedService = candidates[0];
+          }
         }
         if (matchedService) {
           // HOMS TECH customer price is always EUR. Never fall back to the USD source price.
