@@ -1282,6 +1282,7 @@ textarea{
     <button class="nav-btn" data-page="orders" onclick="showPage('orders')">📋 GSM Orders</button>
     <button class="nav-btn" data-page="webshop-orders" onclick="showPage('webshop-orders')">🛍️ Webshop Bestellingen</button>
     <button class="nav-btn" data-page="gsm" onclick="showPage('gsm')">🛠️ GSM Services</button>
+    <button class="nav-btn" data-page="firmware" data-permission="site.save" onclick="showPage('firmware')">📁 Firmware Library</button>
     <button class="nav-btn" data-page="search" data-permission="search" onclick="showPage('search')">🔎 Zoeken</button>
     <button class="nav-btn" data-page="admins" data-permission="admins.manage" onclick="showPage('admins')">👤 Admins</button>
   </div>
@@ -1512,6 +1513,18 @@ textarea{
     <div id="gsmServicesList"></div>
   </section>
 
+
+  <!-- FIRMWARE LIBRARY -->
+  <section class="admin-page" id="page-firmware">
+    <div class="section-head"><div><h2>📁 Firmware Library</h2><p>Beheer mappen en downloadlinks. Geen bestanden uploaden.</p></div><button class="btn" onclick="loadFirmwareAdmin()">↻ Vernieuwen</button></div>
+    <div class="card" style="margin-bottom:16px">
+      <div id="firmwareAdminBreadcrumb" style="margin-bottom:12px;font-size:13px;color:#64748b">Firmware / Hoofdmap</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px"><input id="firmwareFolderName" placeholder="Naam nieuwe map" maxlength="160" style="flex:1;min-width:180px"><button class="btn" onclick="createFirmwareFolder()">+ Nieuwe map</button></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><input id="firmwareLinkName" placeholder="Bestandsnaam" maxlength="220" style="flex:1;min-width:180px"><input id="firmwareLinkUrl" type="url" placeholder="Downloadlink (https://…)" style="flex:2;min-width:220px"><button class="btn" onclick="createFirmwareLink()">+ Downloadlink toevoegen</button></div>
+      <p style="font-size:12px;color:#64748b;margin-bottom:0">Open eerst een map om daarin een submap of downloadlink toe te voegen. De datum wordt automatisch opgeslagen.</p><div id="firmwareAdminStatus" class="status" style="margin-top:12px"></div>
+    </div><div class="card"><h3>Inhoud van de map</h3><div id="firmwareAdminItems">Laden…</div></div>
+  </section>
+
   <!-- WAAROM HOMS TECH -->
   <section class="section admin-page" id="page-why">
     <div class="section-head">
@@ -1646,7 +1659,7 @@ let buybackCatalogDeleteLock = false;
 const PAGE_PERMISSIONS = {
   general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",categories:"categories.view",
   used:"used.view",why:"why.view",customers:"customers.view",orders:"orders.view",
-  "webshop-orders":"webshop_orders.view",gsm:"gsm.view",search:"search",admins:"admins.manage",
+  "webshop-orders":"webshop_orders.view",gsm:"gsm.view",firmware:"site.save",search:"search",admins:"admins.manage",
   buyback:"buyback.view", "buyback-orders":"buyback_orders.view"
 };
 
@@ -1670,7 +1683,7 @@ function canEditCurrentPage(){
   return canEditSite();
 }
 function firstAllowedPage(){
-  const pages=["general","services","repair","phones","buyback","buyback-orders","categories","used","why","customers","orders","webshop-orders","gsm","search","admins"];
+  const pages=["general","services","repair","phones","buyback","buyback-orders","categories","used","why","customers","orders","webshop-orders","gsm","firmware","search","admins"];
   return pages.find(p=>hasPermission(PAGE_PERMISSIONS[p]))||null;
 }
 function applyPermissionUI(){
@@ -1701,10 +1714,27 @@ function showPage(page){
     if(page==="buyback-orders")loadBuybackOrders();
     if(page==="admins")loadAdmins();
     if(page==="gsm")loadGsmProviderStatus();
+    if(page==="firmware")loadFirmwareAdmin();
   }
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
   applyPermissionUI();
 }
+
+
+/* ---------------- FIRMWARE LIBRARY ---------------- */
+let firmwareAdminCurrent=null, firmwareAdminStack=[];
+function firmwareAdminEsc(v){return String(v||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function firmwareAdminDate(v){try{return new Intl.DateTimeFormat("nl-NL",{dateStyle:"medium",timeStyle:"short"}).format(new Date(v));}catch{return "";}}
+function firmwareAdminMessage(message,error){const el=document.getElementById("firmwareAdminStatus");if(!el)return;el.textContent=message;el.style.display="block";el.className="status "+(error?"error":"success");}
+async function firmwareAdminRequest(url,opts){const r=await fetch(url,Object.assign({credentials:"same-origin"},opts||{}));const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||"Actie mislukt");return data;}
+function renderFirmwareAdminCrumb(){const el=document.getElementById("firmwareAdminBreadcrumb");if(!el)return;el.innerHTML='<button onclick="firmwareAdminRoot()">Firmware / Hoofdmap</button>'+firmwareAdminStack.map((x,i)=>' / <button onclick="firmwareAdminLevel('+i+')">'+firmwareAdminEsc(x.name)+'</button>').join("");}
+async function loadFirmwareAdmin(){if(!hasPermission("site.save"))return;renderFirmwareAdminCrumb();const el=document.getElementById("firmwareAdminItems");if(!el)return;el.textContent="Laden…";try{const data=await firmwareAdminRequest("/api/firmware/items"+(firmwareAdminCurrent?"?parentId="+firmwareAdminCurrent:""));if(!data.items.length){el.innerHTML='<p style="color:#64748b">Deze map is leeg. Maak een map of open een bestaande map.</p>';return;}el.innerHTML='<div style="display:grid;gap:10px">'+data.items.map(x=>'<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid #dce5ee;border-radius:10px;padding:12px"><div style="display:flex;align-items:center;gap:10px"><span style="font-size:24px">'+(x.kind==="folder"?"📁":"🔗")+'</span><div><div style="font-weight:700;overflow-wrap:anywhere">'+firmwareAdminEsc(x.name)+'</div><div style="font-size:12px;color:#64748b">'+(x.kind==="folder"?"Map":"Downloadlink")+' · Toegevoegd '+firmwareAdminEsc(firmwareAdminDate(x.created_at))+'</div>'+(x.kind==="file"?'<a href="'+firmwareAdminEsc(x.download_url)+'" target="_blank" rel="noopener noreferrer">Link testen ↗</a>':"")+'</div></div><div>'+(x.kind==="folder"?'<button class="btn" onclick="openFirmwareAdminFolder('+x.id+',\''+firmwareAdminEsc(x.name)+'\')">Open map</button> ':"")+'<button class="btn danger" onclick="deleteFirmwareAdminItem('+x.id+',\''+x.kind+'\')">Verwijderen</button></div></div>').join("")+'</div>';}catch(e){el.textContent=e.message;}}
+async function createFirmwareFolder(){const name=document.getElementById("firmwareFolderName").value.trim();if(!name)return firmwareAdminMessage("Vul een mapnaam in.",true);try{await firmwareAdminRequest("/api/admin/firmware/folders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:name,parentId:firmwareAdminCurrent})});document.getElementById("firmwareFolderName").value="";firmwareAdminMessage("Map aangemaakt.");await loadFirmwareAdmin();}catch(e){firmwareAdminMessage(e.message,true);}}
+async function createFirmwareLink(){const name=document.getElementById("firmwareLinkName").value.trim(),url=document.getElementById("firmwareLinkUrl").value.trim();if(!firmwareAdminCurrent)return firmwareAdminMessage("Open eerst een map waarin de downloadlink komt.",true);if(!name||!url)return firmwareAdminMessage("Vul de bestandsnaam en downloadlink in.",true);try{await firmwareAdminRequest("/api/admin/firmware/links/"+firmwareAdminCurrent,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:name,url:url})});document.getElementById("firmwareLinkName").value="";document.getElementById("firmwareLinkUrl").value="";firmwareAdminMessage("Downloadlink toegevoegd.");await loadFirmwareAdmin();}catch(e){firmwareAdminMessage(e.message,true);}}
+async function deleteFirmwareAdminItem(id,kind){if(!confirm(kind==="folder"?"Deze map verwijderen? De map moet eerst leeg zijn.":"Deze downloadlink verwijderen?"))return;try{await firmwareAdminRequest("/api/admin/firmware/items/"+id,{method:"DELETE"});firmwareAdminMessage("Verwijderd.");await loadFirmwareAdmin();}catch(e){firmwareAdminMessage(e.message,true);}}
+function openFirmwareAdminFolder(id,name){firmwareAdminStack.push({id:id,name:name});firmwareAdminCurrent=id;loadFirmwareAdmin();}
+function firmwareAdminRoot(){firmwareAdminStack=[];firmwareAdminCurrent=null;loadFirmwareAdmin();}
+function firmwareAdminLevel(i){firmwareAdminStack=firmwareAdminStack.slice(0,i+1);firmwareAdminCurrent=firmwareAdminStack[firmwareAdminStack.length-1].id;loadFirmwareAdmin();}
 
 /* ---------------- LOGIN ---------------- */
 
