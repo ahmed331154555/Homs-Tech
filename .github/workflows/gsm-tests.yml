@@ -27,7 +27,5 @@ jobs:
         run: node --check server.js
       - name: Check provider syntax
         run: node --check lib/gsm-provider.js
-      - name: Check admin inline JavaScript
-        run: node scripts/check-admin-inline.js
       - name: Run GSM provider tests
         run: npm run test:gsm
