@@ -177,6 +177,10 @@ async function initDatabase() {
   `);
 
   await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS username TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS provider_reference TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS execution_note TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS result_data TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS execution_updated_at TIMESTAMPTZ`);
   await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS appointment_date DATE`);
   await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS appointment_time TEXT`);
   await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS service_source_id TEXT DEFAULT ''`);
@@ -1601,7 +1605,7 @@ app.get("/api/customer/orders", requireCustomerAuth, async (req, res) => {
 app.get("/api/admin/orders", requirePermission("orders.view"), async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, customer_id, service_category, service_name, service_group, price, price_currency, source_price, source_currency, service_instructions, required_fields, extra_fields, service_source_id, service_source_url, name, email, phone, username, imei, notes, status, created_at
+      `SELECT id, customer_id, service_category, service_name, service_group, price, price_currency, source_price, source_currency, service_instructions, required_fields, extra_fields, service_source_id, service_source_url, name, email, phone, username, imei, notes, status, provider_reference, execution_note, result_data, execution_updated_at, created_at
        FROM service_orders
        ORDER BY created_at DESC`
     );
@@ -1613,6 +1617,31 @@ app.get("/api/admin/orders", requirePermission("orders.view"), async (req, res) 
   }
 });
 
+app.put("/api/admin/orders/:id/execution", requirePermission("orders.update"), async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig ordernummer." });
+    const providerReference = String(req.body?.provider_reference || "").trim();
+    const executionNote = String(req.body?.execution_note || "").trim();
+    const resultData = String(req.body?.result_data || "").trim();
+    if (providerReference.length > 180 || executionNote.length > 4000 || resultData.length > 12000) {
+      return res.status(400).json({ error: "Een veld is te lang. Maximaal: referentie 180, interne notitie 4000, resultaat 12000 tekens." });
+    }
+    const result = await pool.query(
+      "UPDATE service_orders SET provider_reference = $1, execution_note = $2, result_data = $3, execution_updated_at = NOW() WHERE id = $4 RETURNING id, service_category, provider_reference, execution_note, result_data, execution_updated_at",
+      [providerReference, executionNote, resultData, id]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: "Bestelling niet gevonden." });
+    const category = String(result.rows[0].service_category || "").toLowerCase();
+    if (["reparatie", "repair", "webshop", "product"].includes(category)) {
+      return res.status(400).json({ error: "Dit uitvoeringslogboek is alleen bedoeld voor GSM-orders." });
+    }
+    res.json({ success: true, order: result.rows[0], manualOnly: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Uitvoeringsgegevens konden niet worden opgeslagen." });
+  }
+});
 app.put("/api/admin/orders/:id/status", requirePermission("orders.update"), async (req, res) => {
   try {
     const allowed = ["Nieuw", "In behandeling", "Wacht op klant", "Wacht op leverancier", "Resultaat ontvangen", "Mislukt", "Voltooid", "Geannuleerd"];
