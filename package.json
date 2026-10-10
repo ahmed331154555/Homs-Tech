@@ -4,7 +4,8 @@
   "description": "HOMS TECH phone repair website",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test:gsm": "node --test test/gsm-provider.test.js"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",
