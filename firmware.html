@@ -259,7 +259,8 @@ header{background:#061a36;border-bottom:0;box-shadow:0 4px 18px #03152b24}
   align-items:center;
   width:max-content;
   min-width:max-content;
-  animation:homsServiceMarquee 24s linear infinite;
+  transform:translateX(100vw);
+  animation:homsServiceMarquee 9s linear infinite;
   will-change:transform;
 }
 .topbar .top-info{
@@ -285,8 +286,8 @@ header{background:#061a36;border-bottom:0;box-shadow:0 4px 18px #03152b24}
   margin-right:8px;
 }
 @keyframes homsServiceMarquee{
-  from{transform:translateX(0)}
-  to{transform:translateX(-50%)}
+  from{transform:translateX(100vw)}
+  to{transform:translateX(-100%)}
 }
 .topbar:hover .marquee-track{animation-play-state:paused}
 @media(prefers-reduced-motion:reduce){
@@ -296,11 +297,11 @@ header{background:#061a36;border-bottom:0;box-shadow:0 4px 18px #03152b24}
   .topbar{height:29px;min-height:29px}
   .topbar .top-info{gap:25px;padding:0 13px}
   .topbar .top-info span{font-size:10px}
-  .topbar .marquee-track{animation-duration:19s}
+  .topbar .marquee-track{animation-duration:9s}
 }
 
 </style></head><body>
-<div class="topbar" id="homeTopBar" aria-label="Servicevoordelen"><div class="marquee-viewport"><div class="marquee-track"><div class="top-info" id="homeTopInfo"><span>1 jaar garantie</span><span>Snel geholpen</span><span>Betrouwbare service</span></div><div class="top-info" aria-hidden="true"><span>1 jaar garantie</span><span>Snel geholpen</span><span>Betrouwbare service</span></div></div></div></div>
+<div class="topbar" id="homeTopBar" aria-label="Servicevoordelen"><div class="marquee-viewport"><div class="marquee-track"><div class="top-info" id="homeTopInfo"><span>1 jaar garantie</span><span>Snel geholpen</span><span>Betrouwbare service</span></div></div></div></div>
 <header><div class="container"><div class="header-main">
 <a class="brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>
 <form class="search" id="siteSearch" role="search"><span aria-hidden="true">⌕</span><input id="siteSearchInput" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken in Firmware"><button type="submit">Zoek</button></form>
