@@ -959,6 +959,10 @@ app.post("/api/orders", async (req, res) => {
       }
     }
 
+    if (String(clean.serviceCategory || "").trim().toLowerCase() && !GSM_CATEGORIES.includes(String(clean.serviceCategory).trim().toLowerCase())) {
+      return res.status(400).json({ error: "Ongeldige GSM-servicecategorie." });
+    }
+
     if (!clean.serviceName || !clean.name || !clean.email || !clean.phone) {
       return res.status(400).json({
         error: "Vul naam, e-mail en telefoonnummer in."
@@ -976,12 +980,22 @@ app.post("/api/orders", async (req, res) => {
       const site = await pool.query("SELECT data FROM site_settings WHERE id = 1");
       const gsm = site.rows[0]?.data?.gsmServices || {};
       if (clean.serviceSourceId) {
-          for (const list of Object.values(gsm)) {
-            if (!Array.isArray(list)) continue;
-            const found = list.find(x => String(x?.sourceId || "") === clean.serviceSourceId);
-            if (found) { matchedService = found; break; }
+        for (const [categoryKey, list] of Object.entries(gsm)) {
+          if (!Array.isArray(list)) continue;
+          const found = list.find(x => String(x?.sourceId || "") === clean.serviceSourceId);
+          if (found) {
+            if (found.active === false) {
+              return res.status(400).json({ error: "Deze service is momenteel niet beschikbaar." });
+            }
+            if (GSM_CATEGORIES.includes(String(clean.serviceCategory || "").toLowerCase()) && categoryKey !== String(clean.serviceCategory).toLowerCase()) {
+              return res.status(400).json({ error: "Servicecategorie komt niet overeen." });
+            }
+            matchedService = found;
+            break;
           }
-        } else {
+        }
+        if (!matchedService) return res.status(400).json({ error: "Deze service bestaat niet meer. Vernieuw de pagina." });
+      } else {
           // Locally created services may not have a supplier sourceId. Match
           // them against the saved catalog so client-supplied prices/fields
           // cannot bypass the authoritative service configuration.
@@ -1019,7 +1033,10 @@ app.post("/api/orders", async (req, res) => {
           if (required.has("serial") && !clean.serial) return res.status(400).json({error:"Deze service vereist een serienummer."});
           clean.extraFields = extra;
       }
-    } catch(e) { console.error("GSM catalog lookup error:",e); }
+    } catch(e) {
+      console.error("GSM catalog lookup error:",e);
+      return res.status(500).json({ error: "Servicecatalogus kon niet worden gecontroleerd. Probeer het later opnieuw." });
+    }
     if (matchedService) {
       const formFields = Array.isArray(matchedService.formFields) ? matchedService.formFields : [];
       const extra = { ...clean.extraFields };
