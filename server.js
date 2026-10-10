@@ -818,7 +818,11 @@ const { getEasyUnlockerApiReadiness, GSM_CATEGORIES, validateDynamicFieldValues 
 app.get("/api/admin/gsm/provider-status", requirePermission("gsm.view"), async (req, res) => {
   try {
     const site = await pool.query("SELECT data FROM site_settings WHERE id = 1");
-    const catalog = site.rows[0]?.data?.gsmServices || {};
+    const savedData = site.rows[0]?.data || {};
+    const catalog = savedData.gsmServices || {};
+    const importMeta = savedData.gsmImport && typeof savedData.gsmImport === "object"
+      ? { source: String(savedData.gsmImport.source || ""), lastImportedAt: savedData.gsmImport.lastImportedAt || null, count: Number(savedData.gsmImport.count || 0), pages: Array.isArray(savedData.gsmImport.pages) ? savedData.gsmImport.pages.map(page => ({ key: String(page.key || ""), count: Number(page.count || 0) })) : [] }
+      : null;
     const categories = GSM_CATEGORIES.map(key => ({
       key,
       count: Array.isArray(catalog[key]) ? catalog[key].length : 0,
@@ -829,6 +833,7 @@ app.get("/api/admin/gsm/provider-status", requirePermission("gsm.view"), async (
       success: true,
       provider: getEasyUnlockerApiReadiness(),
       categories,
+      importMeta,
       totalServices: categories.reduce((sum, category) => sum + category.count, 0)
     });
   } catch (error) {
