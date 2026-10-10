@@ -4,6 +4,7 @@
 - Public catalog: `gsm-services.html` reads the existing `/api/site` payload and renders the configured local catalog.
 - Admin editor: `admin/index.html` already edits the `gsmServices` data in the existing site settings.
 - Orders: GSM service requests are stored by the existing `POST /api/orders` flow and listed in the existing GSM Orders admin view. The details view displays custom fields as readable JSON.
+- Manual execution log: admins with `orders.update` can save a supplier reference, internal note, and returned result/code on a GSM order using `PUT /api/admin/orders/:id/execution`. This is a HOMS TECH-only record and does not submit anything to the supplier. Inputs are length-limited and the server rejects common repair/webshop categories.
 - Manual order lifecycle: admins with `orders.update` can track `Nieuw`, `In behandeling`, `Wacht op klant`, `Wacht op leverancier`, `Resultaat ontvangen`, `Mislukt`, `Voltooid`, and `Geannuleerd`. These are HOMS TECH internal statuses only; they do not submit jobs to Easy-Unlocker or confirm supplier activity.
 - Server-side validation: catalog prices and required fields come from the saved service record; dropdown submissions are checked against the saved allowlist. The shared order endpoint continues to accept non-GSM repair categories.
 - Provider boundary: `lib/gsm-provider.js` validates supported categories and normalizes local service records. It is deliberately independent of the Easy-Unlocker protocol.
