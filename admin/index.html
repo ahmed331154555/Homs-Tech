@@ -507,6 +507,15 @@ textarea{
 .gsm-admin-arrow{font-size:22px;color:#64748b}
 .gsm-delete{flex:0 0 auto}
 
+.gsm-admin-note{margin:0 0 12px;padding:12px 14px;border:1px solid #bfdbfe;background:#eff6ff;color:#1e3a8a;border-radius:10px;font-size:12px;line-height:1.55}
+.gsm-category-overview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:0 0 16px}
+.gsm-category-card{display:flex;flex-direction:column;align-items:flex-start;gap:7px;text-align:left;min-width:0;padding:13px;border:1px solid #dbe3ee;border-radius:12px;background:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.03);transition:border-color .15s,background .15s}
+.gsm-category-card:hover,.gsm-category-card.active{border-color:#60a5fa;background:#eff6ff}
+.gsm-category-card strong{font-size:12px;color:#1e293b;line-height:1.3}
+.gsm-category-card .gsm-cat-count{font-size:24px;line-height:1;font-weight:900;color:#2563eb}
+.gsm-category-card small{font-size:10px;color:#64748b}
+@media(max-width:900px){.gsm-category-overview{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){.gsm-category-overview{grid-template-columns:repeat(2,minmax(0,1fr))}.gsm-category-card{padding:11px}.gsm-category-card .gsm-cat-count{font-size:21px}}
 .gsm-admin-tabs{display:flex;gap:8px;overflow-x:auto;margin:0 0 16px;padding:2px 0 8px}
 .gsm-admin-tab{flex:0 0 auto;border:1px solid #dbe2ea;background:#fff;color:#1f2937;padding:11px 15px;border-radius:10px;font-weight:800;cursor:pointer}
 .gsm-admin-tab.active{background:#2563eb;color:#fff;border-color:#2563eb}
@@ -1489,14 +1498,17 @@ textarea{
     <div class="section-head">
       <div>
         <h2>🛠️ GSM Services</h2>
-        <p>Beheer per categorie de services met naam, details en prijs.</p>
+        <p>Servicecatalogus, opties, klantprijzen en aanvragen — in één beheeromgeving.</p>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-light" onclick="loadGsmProviderStatus()">↻ Status vernieuwen</button>
+        ${hasPermission("gsm.import")?'<button type="button" class="btn btn-green" id="gsmEasyImportButton" onclick="importEasyPublicGsmCatalog()">↻ Sync Easy-Unlocker catalogus</button>':''}
       </div>
     </div>
-
+    <div class="gsm-admin-note"><strong>Let op:</strong> synchronisatie leest de <u>publieke catalogus</u> van Easy-Unlocker, geen officiële reseller-API. De koppeling voor echte orderverwerking blijft uitgeschakeld tot de officiële API is bevestigd.</div>
     <div id="gsmProviderStatus" class="status info" style="margin:0 0 14px" role="status" aria-live="polite">GSM-status wordt geladen...</div>
-    <div style="display:flex;justify-content:flex-end;margin:-5px 0 12px">
-      <button type="button" class="btn btn-light" onclick="loadGsmProviderStatus()">↻ Vernieuwen GSM-status</button>
-    </div>
+    <div id="gsmCategoryOverview" class="gsm-category-overview"></div>
+    <div id="gsmImportStatus" class="status info" style="display:none;margin:0 0 14px" role="status" aria-live="polite"></div>
     <div id="gsmServicesList"></div>
   </section>
 
@@ -4840,6 +4852,43 @@ const gsmServiceCategories=[
   ["firmware","💻 Firmware / Software"]
 ];
 
+function renderGsmCategoryOverview(categories){
+  const box=document.getElementById("gsmCategoryOverview");
+  if(!box)return;
+  const counts=new Map((Array.isArray(categories)?categories:[]).map(item=>[item.key,item]));
+  box.innerHTML=gsmServiceCategories.map(([key,label])=>{
+    const item=counts.get(key)||{};
+    const count=Number(item.count||0),active=Number(item.active||0);
+    return `<button type="button" class="gsm-category-card ${(gsmActiveCategory||"imei")===key?"active":""}" onclick="gsmActiveCategory='${key}';selectedGsmServiceIndex=0;renderGsmServices()">
+      <strong>${esc(label)}</strong><span class="gsm-cat-count">${count}</span><small>${active} actief · ${Math.max(0,count-active)} inactief</small>
+    </button>`;
+  }).join("");
+}
+
+async function importEasyPublicGsmCatalog(){
+  if(!hasPermission("gsm.import"))return;
+  const button=document.getElementById("gsmEasyImportButton");
+  const status=document.getElementById("gsmImportStatus");
+  if(!confirm("Synchroniseer de publieke Easy-Unlocker-catalogus? Bestaande HOMS TECH-prijzen en service-instellingen worden waar mogelijk behouden. Dit is geen officiële API-koppeling."))return;
+  if(button){button.disabled=true;button.textContent="Catalogus ophalen...";}
+  if(status){status.style.display="block";status.className="status info";status.textContent="Eerst huidige wijzigingen opslaan en daarna de publieke catalogus ophalen...";}
+  try{
+    const saved=await save();
+    if(saved!==true)throw new Error("Opslaan is niet bevestigd. Controleer de melding bovenaan en probeer opnieuw.");
+    const response=await fetch("/api/admin/gsm/import-easy",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({})});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Easy-Unlocker-catalogus kon niet worden gesynchroniseerd.");
+    if(result.data&&result.data.gsmServices)data.gsmServices=result.data.gsmServices;
+    renderGsmServices();
+    await loadGsmProviderStatus();
+    if(status){status.className="status success";status.textContent="✓ Sync voltooid: "+Number(result.added||0)+" nieuw, "+Number(result.updated||0)+" bijgewerkt, "+Number(result.total||0)+" services uit publieke pagina's. Controleer klantprijzen voordat je services publiceert.";}
+  }catch(error){
+    if(status){status.className="status error";status.textContent="✕ Sync mislukt: "+String(error.message||error);}
+  }finally{
+    if(button){button.disabled=false;button.textContent="↻ Sync Easy-Unlocker catalogus";}
+  }
+}
+
 async function loadGsmProviderStatus(){
   const box=document.getElementById("gsmProviderStatus");
   if(!box)return;
@@ -4850,6 +4899,7 @@ async function loadGsmProviderStatus(){
     const result=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(result.error||"Status kon niet worden geladen.");
     const categories=Array.isArray(result.categories)?result.categories:[];
+    renderGsmCategoryOverview(categories);
     const summary=categories.map(item=>item.key+": "+Number(item.active||0)+" actief / "+Number(item.count||0)+" totaal").join(" · ");
     const provider=result.provider||{};
     box.className="status "+(provider.apiCallsEnabled?"success":"info");
@@ -5280,9 +5330,9 @@ function deleteWhy(i){
 /* ---------------- SAVE ---------------- */
 
 async function save(isAuto=false){
-  if(!canEditCurrentPage()){setStatus("✕ Je hebt geen toestemming om wijzigingen op te slaan.","error");return;}
+  if(!canEditCurrentPage()){setStatus("✕ Je hebt geen toestemming om wijzigingen op te slaan.","error");return false;}
   if(isAuto) autoSaveAgain=false;
-  if(loading) return;
+  if(loading) return false;
   loading=true;
   setStatus("Opslaan...","info");
 
@@ -5343,8 +5393,10 @@ async function save(isAuto=false){
     else if(currentPage==="gsm") renderGsmServices();
 
     setStatus("✓ Alle wijzigingen zijn succesvol opgeslagen","success");
+    return true;
   }catch(e){
     setStatus("✕ Opslaan mislukt: "+e.message,"error");
+    return false;
   }finally{
     loading=false;
     autoSaveAgain=false;
