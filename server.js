@@ -811,6 +811,50 @@ app.post("/api/customer/logout", (req, res) => {
   });
 });
 
+// ---------------- GSM PROVIDER BOUNDARY ----------------
+const { getEasyUnlockerApiReadiness, GSM_CATEGORIES } = require("./lib/gsm-provider");
+
+// Admin-only status endpoint. It never returns credentials or makes upstream calls.
+app.get("/api/admin/gsm/provider-status", requirePermission("gsm.view"), async (req, res) => {
+  try {
+    const site = await pool.query("SELECT data FROM site_settings WHERE id = 1");
+    const catalog = site.rows[0]?.data?.gsmServices || {};
+    const categories = GSM_CATEGORIES.map(key => ({
+      key,
+      count: Array.isArray(catalog[key]) ? catalog[key].length : 0,
+      active: Array.isArray(catalog[key]) ? catalog[key].filter(item => item && item.active !== false).length : 0
+    }));
+    res.set("Cache-Control", "no-store");
+    res.json({
+      success: true,
+      provider: getEasyUnlockerApiReadiness(),
+      categories,
+      totalServices: categories.reduce((sum, category) => sum + category.count, 0)
+    });
+  } catch (error) {
+    console.error("GSM provider status error:", error);
+    res.status(500).json({ error: "GSM provider status kon niet worden geladen." });
+  }
+});
+
+// Admin-only catalog endpoint for the future provider adapter and integration tests.
+app.get("/api/admin/gsm/catalog", requirePermission("gsm.view"), async (req, res) => {
+  try {
+    const site = await pool.query("SELECT data FROM site_settings WHERE id = 1");
+    if (!site.rows.length) return res.status(404).json({ error: "Websitegegevens ontbreken." });
+    const catalog = site.rows[0]?.data?.gsmServices || {};
+    const result = {};
+    for (const category of GSM_CATEGORIES) {
+      result[category] = Array.isArray(catalog[category]) ? catalog[category] : [];
+    }
+    res.set("Cache-Control", "no-store");
+    res.json({ success: true, categories: result });
+  } catch (error) {
+    console.error("GSM admin catalog error:", error);
+    res.status(500).json({ error: "GSM catalogus kon niet worden geladen." });
+  }
+});
+
 // ---------------- GSM SERVICE ORDERS ----------------
 
 // ---------------- REPAIR / SERVICE ORDERS ----------------
