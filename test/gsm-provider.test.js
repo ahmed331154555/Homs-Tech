@@ -4,6 +4,7 @@ const {
   GSM_CATEGORIES,
   normalizeCategory,
   normalizeService,
+  validateDynamicFieldValues,
   createLocalGsmProvider,
   getEasyUnlockerApiReadiness
 } = require("../lib/gsm-provider");
@@ -61,6 +62,20 @@ test("rejects excessive or malformed prices and bounds long service names", () =
   assert.throws(() => normalizeService({ name: "Service", price: "1.234" }, "server"));
   const service = normalizeService({ name: "X".repeat(250) }, "server");
   assert.equal(service.name.length, 180);
+});
+
+test("validates required dynamic fields and enforces dropdown options", () => {
+  const fields = [
+    { key: "email", label: "Account e-mail", type: "email", required: true },
+    { key: "model", label: "Device model", type: "select", required: true, options: ["iPhone", "Samsung"] }
+  ];
+  assert.deepEqual(validateDynamicFieldValues(fields, {}), {
+    valid: false, key: "email", label: "Account e-mail", reason: "required"
+  });
+  assert.equal(validateDynamicFieldValues(fields, { email: "user@example.com", model: "iPhone" }).valid, true);
+  assert.deepEqual(validateDynamicFieldValues(fields, { email: "user@example.com", model: "Injected option" }), {
+    valid: false, key: "model", label: "Device model", reason: "invalid_option"
+  });
 });
 
 test("does not claim Easy-Unlocker API is ready without credentials", () => {
