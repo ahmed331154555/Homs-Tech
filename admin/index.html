@@ -4979,7 +4979,7 @@ function renderGsmServices(){
           <div class="field" style="grid-column:1/-1"><label>Volledige beschrijving</label><textarea oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].details=this.value;markChanged()">${esc(service.details||'')}</textarea></div>
           <div class="field" style="grid-column:1/-1"><label>Instructies voor de klant</label><textarea placeholder="Stappen of gegevens die de klant moet voorbereiden..." oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].instructions=this.value;markChanged()">${esc(service.instructions||'')}</textarea></div>
           <div class="field" style="grid-column:1/-1;border:1px solid #dbe3ee;border-radius:10px;padding:12px;background:#f8fafc">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px"><strong>Velden bij bestelling</strong><button type="button" class="btn btn-light" onclick="addGsmFormField('${category[0]}',${selectedGsmServiceIndex})">+ Veld toevoegen</button></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap"><strong>Velden bij bestelling</strong><div style="display:flex;gap:8px;flex-wrap:wrap">${category[0]==="server"?`<button type="button" class="btn btn-light" onclick="applyGsmServerFieldPreset('${category[0]}',${selectedGsmServiceIndex})">Server-velden invullen</button>`:""}<button type="button" class="btn btn-light" onclick="addGsmFormField('${category[0]}',${selectedGsmServiceIndex})">+ Veld toevoegen</button></div></div>
             <div class="small" style="margin-bottom:10px">Bepaal welke extra gegevens de klant moet invullen bij het bestellen van deze service.</div>
             ${renderGsmFormFields(service,category[0],selectedGsmServiceIndex)}
           </div>
@@ -5030,6 +5030,24 @@ async function saveGsmServiceEditor(category,i){
   await save();
 }
 
+function applyGsmServerFieldPreset(category,index){
+  if(category!=='server') return;
+  const service=data.gsmServices?.[category]?.[index]; if(!service) return;
+  if(!Array.isArray(service.formFields)) service.formFields=[];
+  const existing=new Set(service.formFields.map(f=>String(f?.key||'')));
+  const isSku=/skunlocker/i.test(String(service.name||''));
+  const preset=[];
+  if(isSku) preset.push({key:'quantity',label:'Quantity',type:'number',required:true,placeholder:'1',options:[]});
+  preset.push({key:'email',label:'Email',type:'email',required:true,placeholder:'Email for activation',options:[]});
+  preset.push({key:'notes',label:'Notes',type:'textarea',required:false,placeholder:'Additional information for this order',options:[]});
+  preset.push({key:'comments',label:'Comments',type:'textarea',required:false,placeholder:'Internal customer/order comment',options:[]});
+  preset.push({key:'response_email',label:'Response e-mail',type:'email',required:false,placeholder:'Email that should receive the response',options:[]});
+  const added=preset.filter(field=>!existing.has(field.key));
+  if(!added.length){alert('Deze standaardvelden zijn al aanwezig. Bestaande velden zijn niet gewijzigd.');return;}
+  service.formFields.push(...added);
+  gsmActiveCategory=category; selectedGsmServiceIndex=index; markChanged(); renderGsmServices();
+  alert(added.length+' standaardveld(en) toegevoegd. Controleer de velden en sla de wijzigingen op.');
+}
 function addGsmFormField(category,index){
   const service=data.gsmServices?.[category]?.[index];
   if(!service)return;
