@@ -5547,15 +5547,40 @@ function showOrderDetails(title, data){
 
 async function showGsmExecution(id){
   if(!hasPermission('orders.update')) return;
-  const ref=prompt('Referentie leverancier (optioneel):'); if(ref===null)return;
-  const note=prompt('Interne notitie (optioneel):'); if(note===null)return;
-  const data=prompt('Resultaat / ontvangen code (optioneel):'); if(data===null)return;
   try{
-    const r=await fetch('/api/admin/orders/'+encodeURIComponent(id)+'/execution',{method:'PUT',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider_reference:ref,execution_note:note,result_data:data})});
-    const result=await r.json().catch(()=>({})); if(!r.ok)throw new Error(result.error||'Opslaan mislukt.');
-    alert('Uitvoeringsgegevens opgeslagen. Dit verstuurt geen opdracht naar de leverancier.'); await loadOrders();
+    const r=await fetch('/api/admin/orders',{credentials:'same-origin'});
+    const result=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(result.error||'Order kon niet worden geladen.');
+    const order=(result.orders||[]).find(x=>Number(x.id)===Number(id));
+    if(!order) throw new Error('Order niet gevonden.');
+    const existing=document.getElementById('gsmExecutionModal'); if(existing) existing.remove();
+    const modal=document.createElement('div'); modal.id='gsmExecutionModal';
+    modal.style.cssText='position:fixed;inset:0;background:rgba(15,35,60,.55);z-index:10000;display:flex;align-items:center;justify-content:center;padding:18px';
+    modal.innerHTML='<div style="background:#fff;border-radius:16px;max-width:720px;width:100%;max-height:92vh;overflow:auto;padding:22px;color:#17324d">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2 style="margin:0">Uitvoering GSM-order #'+Number(order.id)+'</h2><button class="btn btn-light" type="button" onclick="document.getElementById(\'gsmExecutionModal\').remove()">✕</button></div>'+
+      '<p style="background:#eaf5ff;padding:10px 12px;border-radius:8px;margin:14px 0">Handmatige registratie in HOMS TECH. Dit verstuurt geen opdracht naar de leverancier.</p>'+
+      '<label style="display:block;font-weight:600;margin:12px 0 6px">Referentie leverancier</label><input id="gsmExecReference" maxlength="180" value="'+esc(order.provider_reference||'')+'" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #ccd8e5;border-radius:8px">'+
+      '<label style="display:block;font-weight:600;margin:12px 0 6px">Interne notitie</label><textarea id="gsmExecNote" maxlength="4000" rows="4" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #ccd8e5;border-radius:8px">'+esc(order.execution_note||'')+'</textarea>'+
+      '<label style="display:block;font-weight:600;margin:12px 0 6px">Resultaat / ontvangen code</label><textarea id="gsmExecResult" maxlength="12000" rows="6" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #ccd8e5;border-radius:8px">'+esc(order.result_data||'')+'</textarea>'+
+      '<div id="gsmExecMessage" style="margin-top:10px"></div><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button class="btn btn-light" type="button" onclick="document.getElementById(\'gsmExecutionModal\').remove()">Annuleren</button><button class="btn btn-primary" id="gsmExecSave" type="button" onclick="saveGsmExecution('+Number(order.id)+')">Opslaan</button></div>'+
+      (order.execution_updated_at?'<small style="display:block;margin-top:12px;color:#62758a">Laatst bijgewerkt: '+esc(new Date(order.execution_updated_at).toLocaleString('nl-NL'))+'</small>':'')+'</div>';
+    document.body.appendChild(modal);
   }catch(e){alert(e.message)}
 }
+
+async function saveGsmExecution(id){
+  if(!hasPermission('orders.update')) return;
+  const button=document.getElementById('gsmExecSave'), message=document.getElementById('gsmExecMessage');
+  if(button) button.disabled=true; if(message) message.textContent='Opslaan...';
+  try{
+    const r=await fetch('/api/admin/orders/'+encodeURIComponent(id)+'/execution',{method:'PUT',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider_reference:document.getElementById('gsmExecReference').value,execution_note:document.getElementById('gsmExecNote').value,result_data:document.getElementById('gsmExecResult').value})});
+    const result=await r.json().catch(()=>({})); if(!r.ok) throw new Error(result.error||'Opslaan mislukt.');
+    if(message) message.textContent='Opgeslagen. Dit is alleen een interne registratie.';
+    await loadOrders();
+    setTimeout(()=>{const el=document.getElementById('gsmExecutionModal');if(el)el.remove()},500);
+  }catch(e){if(message)message.textContent='Fout: '+e.message;if(button)button.disabled=false}
+}
+
 async function showGsmOrderDetails(id){
   try{
     const r=await fetch("/api/admin/orders",{credentials:"same-origin"});
