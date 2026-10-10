@@ -282,6 +282,9 @@ async function initDatabase() {
       [JSON.stringify(defaultData)]
     );
   }
+
+  // Firmware is not part of HOMS TECH GSM: remove its saved category from the catalog.
+  await pool.query("UPDATE site_settings SET data = data #- '{gsmServices,firmware}' WHERE id = 1");
 }
 
 // Public-facing settings omit supplier cost data and importer diagnostics.
