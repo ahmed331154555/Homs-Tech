@@ -3,7 +3,8 @@
 ## Current architecture
 - Public catalog: `gsm-services.html` reads the existing `/api/site` payload and renders the configured local catalog.
 - Admin editor: `admin/index.html` already edits the `gsmServices` data in the existing site settings.
-- Orders: GSM service requests are stored by the existing `POST /api/orders` flow and listed in the existing GSM Orders admin view.
+- Orders: GSM service requests are stored by the existing `POST /api/orders` flow and listed in the existing GSM Orders admin view. The details view displays custom fields as readable JSON.
+- Server-side validation: catalog prices and required fields come from the saved service record; dropdown submissions are checked against the saved allowlist. The shared order endpoint continues to accept non-GSM repair categories.
 - Provider boundary: `lib/gsm-provider.js` validates supported categories and normalizes local service records. It is deliberately independent of the Easy-Unlocker protocol.
 
 ## New protected endpoints
@@ -30,4 +31,4 @@ Expected future adapter contract:
 - Use test orders / sandbox capabilities before enabling real provider submissions.
 
 ## Tests
-Run `npm run test:gsm` to exercise the provider normalization and local catalog preservation tests.
+Run `npm run test:gsm` to exercise provider normalization, local catalog preservation, required dynamic fields, and dropdown allowlist validation. The GitHub Actions workflow also syntax-checks `server.js`, the provider, the storefront inline JavaScript, and the admin inline JavaScript.
