@@ -41,6 +41,28 @@ test("local provider reads and saves without losing other categories", async () 
   assert.equal((await provider.listServices()).server.length, 1);
 });
 
+test("normalizes dynamic select fields and limits unsafe field definitions", () => {
+  const service = normalizeService({
+    name: "Custom service",
+    formFields: [
+      { key: "device model!", label: "Model", type: "select", required: true, options: ["iPhone", "Samsung", "<script>"], autoFromEmail: false },
+      { key: "bad key", label: "Ignored invalid key", type: "unsupported" },
+      null
+    ]
+  }, "remote");
+  assert.equal(service.formFields.length, 1);
+  assert.equal(service.formFields[0].key, "devicemodel");
+  assert.equal(service.formFields[0].type, "select");
+  assert.equal(service.formFields[0].required, true);
+  assert.deepEqual(service.formFields[0].options, ["iPhone", "Samsung", "<script>"]);
+});
+
+test("rejects excessive or malformed prices and bounds long service names", () => {
+  assert.throws(() => normalizeService({ name: "Service", price: "1.234" }, "server"));
+  const service = normalizeService({ name: "X".repeat(250) }, "server");
+  assert.equal(service.name.length, 180);
+});
+
 test("does not claim Easy-Unlocker API is ready without credentials", () => {
   const result = getEasyUnlockerApiReadiness({});
   assert.equal(result.configured, false);
