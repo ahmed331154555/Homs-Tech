@@ -113,10 +113,20 @@ function renderDynamicOrderFields(s){
   const box=document.getElementById('dynamicOrderFields'); if(!box)return;
   const fields=Array.isArray(s.formFields)?s.formFields:[];
   const html=fields.map((f,i)=>{
-    const id='extra_'+i, type=f.type==='textarea'?'textarea':(f.type==='email'?'email':'text');
+    const id='extra_'+i, type=['text','email','number'].includes(f.type)?f.type:(f.type==='textarea'?'textarea':'text');
     const req=f.required?' required':'';
     const ph=esc(f.placeholder||'');
-    return `<div class="field" style="margin-top:8px"><label>${esc(f.label||f.key||'Veld')}${f.required?' *':''}</label>${type==='textarea'?`<textarea id="${id}" data-extra-key="${esc(f.key||'field_'+i)}" data-auto-email="${f.autoFromEmail?'1':'0'}"${req} placeholder="${ph}"></textarea>`:`<input id="${id}" type="${type}" data-extra-key="${esc(f.key||'field_'+i)}" data-auto-email="${f.autoFromEmail?'1':'0'}"${req} placeholder="${ph}">`}</div>`;
+    const key=esc(f.key||'field_'+i);
+    let control='';
+    if(f.type==='textarea'){
+      control=`<textarea id="${id}" data-extra-key="${key}" data-auto-email="${f.autoFromEmail?'1':'0'}"${req} placeholder="${ph}"></textarea>`;
+    }else if(f.type==='select'){
+      const options=Array.isArray(f.options)?f.options:[];
+      control=`<select id="${id}" data-extra-key="${key}" data-auto-email="${f.autoFromEmail?'1':'0'}"${req}><option value="">Kies een optie</option>${options.map(option=>`<option value="${esc(option)}">${esc(option)}</option>`).join('')}</select>`;
+    }else{
+      control=`<input id="${id}" type="${type}" data-extra-key="${key}" data-auto-email="${f.autoFromEmail?'1':'0'}"${req} placeholder="${ph}"${type==='number'?' step="any"':''}>`;
+    }
+    return `<div class="field" style="margin-top:8px"><label for="${id}">${esc(f.label||f.key||'Veld')}${f.required?' *':''}</label>${control}</div>`;
   }).join('');
   box.innerHTML=html; box.style.display=fields.length?'block':'none';
 }
