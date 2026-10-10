@@ -241,12 +241,70 @@ header{background:#061a36;border-bottom:0;box-shadow:0 4px 18px #03152b24}
   .foldericon{width:82px;height:64px}
 }
 
+
+/* Moving service ticker above the main header */
+.topbar{
+  display:block!important;
+  height:32px;
+  min-height:32px;
+  overflow:hidden;
+  background:#06142a;
+  color:#fff;
+  font-size:11px;
+  border-bottom:1px solid #153b61;
+}
+.topbar .marquee-viewport{width:100%;height:100%;overflow:hidden;display:flex;align-items:center}
+.topbar .marquee-track{
+  display:flex;
+  align-items:center;
+  width:max-content;
+  min-width:max-content;
+  animation:homsServiceMarquee 24s linear infinite;
+  will-change:transform;
+}
+.topbar .top-info{
+  display:flex;
+  flex:0 0 auto;
+  align-items:center;
+  gap:42px;
+  padding:0 21px;
+  white-space:nowrap;
+}
+.topbar .top-info span{
+  display:flex;
+  align-items:center;
+  font-size:11px;
+  font-weight:800;
+  color:#f2f7ff;
+}
+.topbar .top-info span:before{
+  content:"✓";
+  color:#25d9ff;
+  font-size:17px;
+  font-weight:900;
+  margin-right:8px;
+}
+@keyframes homsServiceMarquee{
+  from{transform:translateX(0)}
+  to{transform:translateX(-50%)}
+}
+.topbar:hover .marquee-track{animation-play-state:paused}
+@media(prefers-reduced-motion:reduce){
+  .topbar .marquee-track{animation:none}
+}
+@media(max-width:560px){
+  .topbar{height:29px;min-height:29px}
+  .topbar .top-info{gap:25px;padding:0 13px}
+  .topbar .top-info span{font-size:10px}
+  .topbar .marquee-track{animation-duration:19s}
+}
+
 </style></head><body>
-<div class="topbar" id="homeTopBar"><div class="container"><div class="top-info" id="homeTopInfo"><span>1 jaar garantie</span><span>Snel geholpen</span><span>Betrouwbare service</span></div></div></div>
+<div class="topbar" id="homeTopBar" aria-label="Servicevoordelen"><div class="marquee-viewport"><div class="marquee-track"><div class="top-info" id="homeTopInfo"><span>1 jaar garantie</span><span>Snel geholpen</span><span>Betrouwbare service</span></div><div class="top-info" aria-hidden="true"><span>1 jaar garantie</span><span>Snel geholpen</span><span>Betrouwbare service</span></div></div></div></div>
 <header><div class="container"><div class="header-main">
 <a class="brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>
 <form class="search" id="siteSearch" role="search"><span aria-hidden="true">⌕</span><input id="siteSearchInput" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken in Firmware"><button type="submit">Zoek</button></form>
-<div class="trustbar"><span><b>✓</b> 1 jaar garantie</span><span><b>✓</b> Snel geholpen</span><span><b>✓</b> Betrouwbare service</span></div><div class="header-actions"><a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div>
+<div class="header-actions"><a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div>
 <nav class="nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a><a href="/used.html">Tweedehands</a><a href="gsm-services.html">GSM Services</a><a class="active" href="firmware.html">Firmware Homs Tech</a><a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a></nav></div></header>
 <main class="page">
 <section class="intro"><div class="intro-copy"><small>HOMS TECH · DOWNLOAD CENTER</small><h1>Firmware <span>Homs Tech</span></h1><p>Alle firmware, tools en bestanden overzichtelijk per merk en map.</p><div class="hero-perks"><span><b>↓</b><strong>Originele bestanden</strong><small>Veilig en betrouwbaar</small></span><span><b>♢</b><strong>100% Veilig</strong><small>Gecontroleerde downloads</small></span><span><b>ϟ</b><strong>Altijd up-to-date</strong><small>Firmware en tools</small></span><span><b>☏</b><strong>Gratis support</strong><small>Hulp bij problemen</small></span></div></div>
