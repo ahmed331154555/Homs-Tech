@@ -5139,6 +5139,7 @@ function renderGsmOrders(){
           <div class="order-info"><strong>Categorie</strong><span>${esc(order.service_category||'-')}</span></div>
         </div>
         ${order.notes?`<div class="order-notes"><strong>Opmerking</strong><br>${esc(order.notes)}</div>`:''}
+        ${(order.provider_reference||order.execution_note||order.result_data)?`<div class="order-notes"><strong>Uitvoering geregistreerd</strong><br>${order.provider_reference?`Referentie: ${esc(order.provider_reference)} · `:''}${order.execution_updated_at?`Bijgewerkt: ${esc(new Date(order.execution_updated_at).toLocaleString('nl-NL'))}`:'Gegevens opgeslagen'}</div>`:''}
       </div>
     </article>`;
   }).join('');
