@@ -141,6 +141,7 @@ async function initDatabase() {
     )
   `);
   await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS download_url TEXT NOT NULL DEFAULT ''");
+  await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS description TEXT NOT NULL DEFAULT ''");
   await pool.query("ALTER TABLE firmware_items DROP CONSTRAINT IF EXISTS firmware_items_check");
   await pool.query("ALTER TABLE firmware_items DROP CONSTRAINT IF EXISTS firmware_items_storage_check");
   await pool.query("ALTER TABLE firmware_items ADD CONSTRAINT firmware_items_storage_check CHECK ((kind = 'folder' AND file_data IS NULL AND download_url = '') OR (kind = 'file' AND ((file_data IS NOT NULL AND download_url = '') OR (file_data IS NULL AND download_url <> ''))))");
@@ -597,7 +598,7 @@ app.get("/api/firmware/items", async (req,res) => {
       const parent = await pool.query("SELECT id,kind FROM firmware_items WHERE id=$1",[parentId]);
       if (!parent.rows.length || parent.rows[0].kind !== "folder") return res.status(404).json({error:"Folder not found"});
     }
-    const result = await pool.query("SELECT id,parent_id,kind,name,file_name,mime_type,file_size,download_url,created_at FROM firmware_items WHERE parent_id IS NOT DISTINCT FROM $1 ORDER BY CASE kind WHEN 'folder' THEN 0 ELSE 1 END, lower(name), id",[parentId]);
+    const result = await pool.query("SELECT id,parent_id,kind,name,file_name,mime_type,file_size,download_url,description,created_at FROM firmware_items WHERE parent_id IS NOT DISTINCT FROM $1 ORDER BY CASE kind WHEN 'folder' THEN 0 ELSE 1 END, lower(name), id",[parentId]);
     res.set("Cache-Control","no-store");
     res.json({items:result.rows});
   } catch(e) { console.error("Firmware list error:",e); res.status(500).json({error:"Could not load firmware folder"}); }
@@ -622,10 +623,11 @@ app.post("/api/admin/firmware/links/:parentId", requirePermission("site.save"), 
     if(!p.rows.length||p.rows[0].kind!=="folder")return res.status(404).json({error:"Folder not found"});
     const name=String(req.body?.name||"").trim().slice(0,220);
     const url=String(req.body?.url||"").trim().slice(0,2048);
+    const description=String(req.body?.description||"").trim().slice(0,2000);
     let parsed; try { parsed=new URL(url); } catch {}
     if(!name)return res.status(400).json({error:"File name is required"});
     if(!parsed||!["http:","https:"].includes(parsed.protocol))return res.status(400).json({error:"Enter a valid http or https download link"});
-    const result=await pool.query("INSERT INTO firmware_items(parent_id,kind,name,file_name,download_url) VALUES($1,'file',$2,$2,$3) RETURNING id,parent_id,kind,name,file_name,download_url,file_size,created_at",[parentId,name,url]);
+    const result=await pool.query("INSERT INTO firmware_items(parent_id,kind,name,file_name,download_url,description) VALUES($1,'file',$2,$2,$3,$4) RETURNING id,parent_id,kind,name,file_name,download_url,description,file_size,created_at",[parentId,name,url,description]);
     res.status(201).json({item:result.rows[0]});
   } catch(e) { console.error("Firmware link create error:",e); res.status(500).json({error:"Could not save download link"}); }
 });
