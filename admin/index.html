@@ -4905,7 +4905,9 @@ async function loadGsmProviderStatus(){
     const summary=categories.map(item=>item.key+": "+Number(item.active||0)+" actief / "+Number(item.count||0)+" totaal").join(" · ");
     const provider=result.provider||{};
     box.className="status "+(provider.apiCallsEnabled?"success":"info");
-    box.textContent="Catalogus: "+Number(result.totalServices||0)+" services. "+summary+". Easy-Unlocker API: "+(provider.apiCallsEnabled?"actief":"nog niet gekoppeld")+". "+String(provider.note||"");
+    const meta=result.importMeta||{};
+    const importedAt=meta.lastImportedAt?new Date(meta.lastImportedAt).toLocaleString("nl-NL"):"nog niet gesynchroniseerd";
+    box.textContent="Catalogus: "+Number(result.totalServices||0)+" services. "+summary+". Publieke Easy-Unlocker-sync: "+importedAt+". Officiële API: "+(provider.apiCallsEnabled?"actief":"nog niet gekoppeld")+". "+String(provider.note||"");
   }catch(error){
     box.className="status error";
     box.textContent="GSM-status fout: "+String(error.message||"onbekende fout");
