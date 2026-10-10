@@ -1493,6 +1493,10 @@ textarea{
       </div>
     </div>
 
+    <div id="gsmProviderStatus" class="status info" style="margin:0 0 14px" role="status" aria-live="polite">GSM-status wordt geladen...</div>
+    <div style="display:flex;justify-content:flex-end;margin:-5px 0 12px">
+      <button type="button" class="btn btn-light" onclick="loadGsmProviderStatus()">↻ Vernieuwen GSM-status</button>
+    </div>
     <div id="gsmServicesList"></div>
   </section>
 
@@ -1684,6 +1688,7 @@ function showPage(page){
     if(page==="buyback")renderBuybackPhones();
     if(page==="buyback-orders")loadBuybackOrders();
     if(page==="admins")loadAdmins();
+    if(page==="gsm")loadGsmProviderStatus();
   }
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
   applyPermissionUI();
@@ -4834,6 +4839,26 @@ const gsmServiceCategories=[
   ["frp","🔐 FRP Services"],
   ["firmware","💻 Firmware / Software"]
 ];
+
+async function loadGsmProviderStatus(){
+  const box=document.getElementById("gsmProviderStatus");
+  if(!box)return;
+  box.className="status info";
+  box.textContent="GSM-status wordt geladen...";
+  try{
+    const response=await fetch("/api/admin/gsm/provider-status",{credentials:"same-origin",cache:"no-store"});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Status kon niet worden geladen.");
+    const categories=Array.isArray(result.categories)?result.categories:[];
+    const summary=categories.map(item=>item.key+": "+Number(item.active||0)+" actief / "+Number(item.count||0)+" totaal").join(" · ");
+    const provider=result.provider||{};
+    box.className="status "+(provider.apiCallsEnabled?"success":"info");
+    box.textContent="Catalogus: "+Number(result.totalServices||0)+" services. "+summary+". Easy-Unlocker API: "+(provider.apiCallsEnabled?"actief":"nog niet gekoppeld")+". "+String(provider.note||"");
+  }catch(error){
+    box.className="status error";
+    box.textContent="GSM-status fout: "+String(error.message||"onbekende fout");
+  }
+}
 
 function renderGsmServices(){
   const box=document.getElementById("gsmServicesList");
