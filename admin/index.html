@@ -4960,7 +4960,10 @@ function renderGsmServices(){
       <div class="editor-panel">
         <div class="card-head">
           <div><div class="card-title" style="font-size:20px">🛠️ Service bewerken</div><div class="small">Vul de servicegegevens in en bewaar ze samen met de websitegegevens.</div></div>
-          <button class="btn btn-red" onclick="deleteGsmService('${category[0]}',${selectedGsmServiceIndex})">Verwijderen</button>
+          <div class="actions">
+            <button type="button" class="btn btn-light" onclick="duplicateGsmService('${category[0]}',${selectedGsmServiceIndex})">⧉ Kopiëren</button>
+            <button type="button" class="btn btn-red" onclick="deleteGsmService('${category[0]}',${selectedGsmServiceIndex})">Verwijderen</button>
+          </div>
         </div>
         <div class="grid">
           <div class="field"><label>Groep / bestandsnaam</label><input value="${esc(service.group || category[1].replace(/^[^ ]+ /,''))}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].group=this.value;markChanged();renderGsmServices()" placeholder="Bijv. INPRO RAMDISK A12/A13"></div>
@@ -4987,6 +4990,29 @@ function renderGsmServices(){
   }
 
   box.innerHTML=`<div class="gsm-admin-tabs">${tabs}</div><div class="gsm-editor-layout"><div class="editor-list"><div class="card-head" style="margin-bottom:8px"><div class="editor-list-title" style="padding:0">${esc(category[1])}</div><button class="btn btn-green" type="button" onclick="addGsmService('${category[0]}')">+ Nieuwe service</button></div>${rows}</div>${editor}</div>`;
+}
+
+function duplicateGsmService(category,index){
+  const list=data.gsmServices?.[category];
+  const original=Array.isArray(list)?list[index]:null;
+  if(!original)return;
+  const copy=JSON.parse(JSON.stringify(original));
+  copy.name=String(original.name||"Service")+" (kopie)";
+  copy.sourceId="";
+  copy.sourceUrl="";
+  copy.source="local-copy";
+  copy.price="";
+  copy.priceCurrency="EUR";
+  copy.sourcePrice="";
+  copy.sourceCurrency="";
+  copy.active=false;
+  copy.hot=false;
+  delete copy.lastSynced;
+  list.splice(index+1,0,copy);
+  gsmActiveCategory=category;
+  selectedGsmServiceIndex=index+1;
+  markChanged();
+  renderGsmServices();
 }
 
 function openGsmServiceEditor(category,i){
