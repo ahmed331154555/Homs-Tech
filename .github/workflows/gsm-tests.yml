@@ -29,5 +29,7 @@ jobs:
         run: node --check lib/gsm-provider.js
       - name: Check GSM storefront JavaScript
         run: node scripts/check-gsm-inline.js
+      - name: Check admin inline JavaScript
+        run: node scripts/check-admin-inline.js
       - name: Run GSM provider tests
         run: npm run test:gsm
