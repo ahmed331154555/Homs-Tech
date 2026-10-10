@@ -959,7 +959,9 @@ app.post("/api/orders", async (req, res) => {
       }
     }
 
-    if (String(clean.serviceCategory || "").trim().toLowerCase() && !GSM_CATEGORIES.includes(String(clean.serviceCategory).trim().toLowerCase())) {
+    // Repair orders share this endpoint. Only supplier-linked orders must always
+    // declare a supported GSM category; ordinary repair categories remain valid.
+    if (clean.serviceSourceId && !GSM_CATEGORIES.includes(clean.serviceCategory.toLowerCase())) {
       return res.status(400).json({ error: "Ongeldige GSM-servicecategorie." });
     }
 
@@ -1043,8 +1045,14 @@ app.post("/api/orders", async (req, res) => {
       for (const field of formFields) {
         if (!field || !field.key) continue;
         if (field.autoFromEmail === true && String(extra[field.key] || "").trim() === "") extra[field.key] = clean.email;
-        if (field.required === true && String(extra[field.key] || "").trim() === "") {
+        const fieldValue = String(extra[field.key] || "").trim();
+        if (field.required === true && fieldValue === "") {
           return res.status(400).json({error:`Vul het verplichte veld in: ${field.label || field.key}.`});
+        }
+        // A dropdown must submit one of the configured options, not arbitrary text.
+        if (field.type === "select" && fieldValue && Array.isArray(field.options) &&
+            !field.options.some(option => String(option) === fieldValue)) {
+          return res.status(400).json({error:`اختيار غير صالح للحقل: ${field.label || field.key}.`});
         }
       }
       clean.extraFields = extra;
