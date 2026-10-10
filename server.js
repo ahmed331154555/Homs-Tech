@@ -142,6 +142,7 @@ async function initDatabase() {
   `);
   await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS download_url TEXT NOT NULL DEFAULT ''");
   await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS description TEXT NOT NULL DEFAULT ''");
+  await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS download_count BIGINT NOT NULL DEFAULT 0");
   await pool.query("ALTER TABLE firmware_items DROP CONSTRAINT IF EXISTS firmware_items_check");
   await pool.query("ALTER TABLE firmware_items DROP CONSTRAINT IF EXISTS firmware_items_storage_check");
   await pool.query("ALTER TABLE firmware_items ADD CONSTRAINT firmware_items_storage_check CHECK ((kind = 'folder' AND file_data IS NULL AND download_url = '') OR (kind = 'file' AND ((file_data IS NOT NULL AND download_url = '') OR (file_data IS NULL AND download_url <> ''))))");
@@ -589,6 +590,36 @@ function requirePermission(permission){
 }
 
 // Firmware library: folders and durable file blobs stored in PostgreSQL.
+// Firmware highlights and tracked downloads.
+app.get("/api/firmware/highlights", async (req,res) => {
+  try {
+    const [recent, popular] = await Promise.all([
+      pool.query("SELECT id,name,created_at,download_count FROM firmware_items WHERE kind='file' ORDER BY created_at DESC,id DESC LIMIT 10"),
+      pool.query("SELECT id,name,created_at,download_count FROM firmware_items WHERE kind='file' ORDER BY download_count DESC,created_at DESC,id DESC LIMIT 10")
+    ]);
+    res.set("Cache-Control","no-store");
+    res.json({recent:recent.rows,popular:popular.rows});
+  } catch(e) { console.error("Firmware highlights error:",e); res.status(500).json({error:"Could not load firmware highlights"}); }
+});
+app.get("/api/firmware/download/:id", async (req,res) => {
+  try {
+    const id=Number(req.params.id);
+    if(!Number.isSafeInteger(id)||id<=0) return res.status(400).send("Invalid file");
+    const result=await pool.query("UPDATE firmware_items SET download_count=download_count+1 WHERE id=$1 AND kind='file' RETURNING id,name,file_name,mime_type,file_data,download_url", [id]);
+    if(!result.rows.length) return res.status(404).send("Firmware file not found");
+    const file=result.rows[0];
+    res.set("Cache-Control","no-store");
+    if(file.file_data){
+      res.type(file.mime_type||"application/octet-stream");
+      res.set("Content-Disposition",'attachment; filename="'+String(file.file_name||file.name||"firmware.bin").replace(/["\\\\\r\n]/g,"_")+'"');
+      return res.send(file.file_data);
+    }
+    let target;
+    try { target=new URL(file.download_url); } catch {}
+    if(!target||!["http:","https:"].includes(target.protocol)) return res.status(410).send("Download link is unavailable");
+    return res.redirect(302,target.toString());
+  } catch(e) { console.error("Firmware download error:",e); res.status(500).send("Could not start download"); }
+});
 app.get("/api/firmware/items", async (req,res) => {
   try {
     const parentRaw = String(req.query.parentId || "").trim();
