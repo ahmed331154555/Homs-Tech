@@ -1045,9 +1045,6 @@ app.post("/api/orders", async (req, res) => {
       for (const field of formFields) {
         if (!field || !field.key) continue;
         if (field.autoFromEmail === true && String(extra[field.key] || "").trim() === "") extra[field.key] = clean.email;
-        const fieldValue = String(extra[field.key] || "").trim();
-        // Validation is shared with unit tests so required fields and dropdown
-        // allowlists behave the same in the API and provider layer.
       }
       const validation = validateDynamicFieldValues(formFields, extra);
       if (!validation.valid && validation.reason === "required") {
@@ -1055,8 +1052,6 @@ app.post("/api/orders", async (req, res) => {
       }
       if (!validation.valid && validation.reason === "invalid_option") {
         return res.status(400).json({error:`Ongeldige keuze voor veld: ${validation.label}.`});
-      }
-      // 
       }
       clean.extraFields = extra;
       if (matchedService.usernameFromEmail === true && !clean.username) clean.username = clean.email;
