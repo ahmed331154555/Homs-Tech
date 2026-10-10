@@ -22,8 +22,20 @@ const pool = new Pool({
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 
-// Website files
-app.use(express.static(__dirname));
+// Never expose server code, deployment metadata, backups, or dotfiles through static hosting.
+app.use((req, res, next) => {
+  let pathname = String(req.path || "/");
+  try { pathname = decodeURIComponent(pathname); } catch { return res.sendStatus(400); }
+  const segments = pathname.replace(/\\/g, "/").split("/").filter(Boolean).map(x => x.toLowerCase());
+  const blocked = new Set(["server.js", "package.json", "package-lock.json", "render.yaml", "admin-index.html"]);
+  if (segments.some(segment =>
+    segment.startsWith(".") ||
+    blocked.has(segment) ||
+    /\.(?:zip|sql|bak|backup|log|db|sqlite|env)$/i.test(segment)
+  )) return res.sendStatus(404);
+  next();
+});
+app.use(express.static(__dirname, { dotfiles: "deny", index: "index.html" }));
 
 // Password hashing helpers
 function hashPassword(password) {
@@ -204,6 +216,7 @@ async function initDatabase() {
   `);
 
   // Payment fields for webshop checkout / PayPal.
+  await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS checkout_token TEXT NOT NULL DEFAULT ''`);
   await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'Unpaid'`);
   await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS paypal_order_id TEXT DEFAULT ''`);
@@ -267,6 +280,25 @@ async function initDatabase() {
   }
 }
 
+// Public-facing settings omit supplier cost data and importer diagnostics.
+function sanitizePublicSiteData(input) {
+  const data = input && typeof input === "object" ? { ...input } : {};
+  delete data.gsmImport;
+  if (data.gsmServices && typeof data.gsmServices === "object") {
+    const privateFields = new Set(["sourcePrice", "sourceCurrency", "sourceUrl", "sourceGroup", "sourceName", "lastSynced"]);
+    data.gsmServices = Object.fromEntries(Object.entries(data.gsmServices).map(([category, list]) => [
+      category,
+      Array.isArray(list) ? list.map(service => {
+        if (!service || typeof service !== "object") return service;
+        const clean = { ...service };
+        for (const key of privateFields) delete clean[key];
+        return clean;
+      }) : list
+    ]));
+  }
+  return data;
+}
+
 // Get website settings
 app.get("/api/site", async (req, res) => {
   try {
@@ -280,7 +312,21 @@ app.get("/api/site", async (req, res) => {
       });
     }
 
-    res.json(result.rows[0].data);
+    res.set("Cache-Control", "no-store");
+    let canViewPrivate = false;
+    try {
+      const user = getAdminFromRequest(req);
+      canViewPrivate = !!user && (
+        user.role === "superadmin" ||
+        user.username === String(process.env.ADMIN_USERNAME || "") ||
+        user.permissions?.includes("*") ||
+        user.permissions?.includes("gsm.view") ||
+        user.permissions?.includes("gsm.import") ||
+        user.permissions?.includes("site.save")
+      );
+    } catch {}
+    const data = result.rows[0].data;
+    res.json(canViewPrivate ? data : sanitizePublicSiteData(data));
   } catch (error) {
     console.error(error);
 
@@ -374,8 +420,11 @@ const ADMIN_PERMISSION_NAMES = {
   "phones.view":"Telefoons & prijzen bekijken","phones.update":"Telefoons & prijzen wijzigen","categories.view":"Apparaten & categorieën bekijken",
   "used.view":"Gebruikte telefoons bekijken","why.view":"Waarom HOMS TECH bekijken",
   "customers.view":"Klanten bekijken","orders.view":"GSM Orders bekijken",
-  "orders.update":"GSM Order-status wijzigen","webshop_orders.view":"Webshop bestellingen bekijken",
-  "webshop_orders.update":"Webshop order-status wijzigen","gsm.view":"GSM Services bekijken","gsm.import":"GSM Services importeren",
+  "orders.update":"GSM Order-status wijzigen","orders.delete":"GSM Orders verwijderen",
+  "webshop_orders.view":"Webshop bestellingen bekijken",
+  "webshop_orders.update":"Webshop order-status wijzigen","webshop_orders.delete":"Webshop bestellingen verwijderen",
+  "buyback_orders.view":"Inruil aanvragen bekijken","buyback_orders.update":"Inruil status wijzigen","buyback_orders.delete":"Inruil aanvragen verwijderen",
+  "gsm.view":"GSM Services bekijken","gsm.import":"GSM Services importeren",
   "site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
 };
 
@@ -973,6 +1022,110 @@ app.post("/api/orders", async (req, res) => {
   }
 });
 
+// Recalculate webshop prices from the trusted catalog; never trust browser-supplied totals.
+function moneyNumber(value) {
+  let cleaned = String(value ?? "").replace(/[€\s]/g, "").trim();
+  if (!cleaned) return NaN;
+  const comma = cleaned.lastIndexOf(",");
+  const dot = cleaned.lastIndexOf(".");
+  if (comma >= 0 && dot >= 0) {
+    cleaned = comma > dot ? cleaned.replace(/\./g, "").replace(",", ".") : cleaned.replace(/,/g, "");
+  } else if (comma >= 0) {
+    cleaned = /,\d{3}$/.test(cleaned) ? cleaned.replace(/,/g, "") : cleaned.replace(",", ".");
+  } else if (/\.\d{3}(?:\.\d{3})*$/.test(cleaned)) {
+    cleaned = cleaned.replace(/\./g, "");
+  }
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : NaN;
+}
+function serverOptionDelta(option, key) {
+  if (!option) return 0;
+  const label = String(option.label || "").toLowerCase();
+  if (key === "battery") return label.includes("nieuw") ? 30 : 0;
+  if (key === "vat") return label.includes("met btw") ? 10 : 0;
+  const raw = option.priceDelta ?? option.delta ?? option.priceAdjustment ?? option.extra ?? option.amount ?? option.value;
+  if (raw !== undefined && raw !== null && raw !== "") {
+    const n = moneyNumber(raw);
+    if (Number.isFinite(n) && n !== 0) return n;
+  }
+  const match = String(option.label || "").match(/([+-])\s*€?\s*(\d+(?:[.,]\d+)?)\s*$/);
+  if (match) {
+    const amount = Number(match[2].replace(",", "."));
+    return match[1] === "-" ? -amount : amount;
+  }
+  if (option.price !== undefined && option.price !== null && option.price !== "") {
+    const n = moneyNumber(option.price);
+    if (Number.isFinite(n)) return n;
+  }
+  return 0;
+}
+function serverOptionDefaults(key) {
+  const defaults = {
+    condition: ["Zichtbaar gebruikt", "Licht gebruikt", "Zo goed als nieuw"],
+    storage: ["64 GB", "128 GB", "256 GB", "512 GB", "1 TB"],
+    color: ["Zwart", "Wit", "Blauw", "Rood"],
+    battery: ["Standaard", "Nieuw (100%)"],
+    vat: ["Zonder BTW", "Met BTW"],
+    tradeIn: ["Nee", "Ja"]
+  };
+  return (defaults[key] || []).map(label => ({ label, active: true, enabled: true, available: true, priceDelta: 0 }));
+}
+function priceProductFromCatalog(data, item) {
+  const type = String(item?.type || "").toLowerCase();
+  const list = type === "used"
+    ? (Array.isArray(data.usedPhones) ? data.usedPhones : [])
+    : (Array.isArray(data.phones) && data.phones.length ? data.phones : (Array.isArray(data.devices) ? data.devices : []));
+  const id = Number(item?.id);
+  if (!Number.isInteger(id) || id < 0 || id >= list.length) return { error: "Een product in uw winkelwagen is verouderd. Verwijder het en voeg het opnieuw toe." };
+  const product = list[id];
+  if (!product || product.active === false || product.available === false || String(product.stockStatus || "").toLowerCase() === "sold") {
+    return { error: "Een product in uw winkelwagen is niet meer beschikbaar." };
+  }
+  const options = item.options && typeof item.options === "object" && !Array.isArray(item.options) ? item.options : {};
+  const getList = key => {
+    const map = { condition: "conditionOptions", storage: "storageOptions", color: "colorOptions", battery: "batteryOptions", vat: "vatOptions", tradeIn: "tradeInOptions" };
+    const raw = product[map[key]];
+    if (Array.isArray(raw) && raw.length) return raw.filter(x => x && x.label && x.active !== false && x.enabled !== false);
+    if (key === "storage" || key === "color") {
+      const own = key === "storage" ? (Array.isArray(product.storage) ? product.storage[0] : product.storage || product.geheugen || "") : (product.color || product.kleur || "");
+      return own ? [{ label: String(own), active: true, enabled: true, available: true, priceDelta: 0 }] : serverOptionDefaults(key);
+    }
+    return serverOptionDefaults(key);
+  };
+  const chosen = {};
+  for (const key of ["condition", "storage", "color", "battery", "vat", "tradeIn"]) {
+    const requested = String(options[key] ?? "");
+    if (!requested) continue;
+    const option = getList(key).find(x => String(x.label) === requested);
+    if (!option || (key !== "storage" && key !== "color" && option.available === false)) {
+      return { error: "Een gekozen productoptie is niet geldig of niet beschikbaar. Controleer uw winkelwagen." };
+    }
+    chosen[key] = option;
+  }
+  const condition = chosen.condition;
+  const base = condition && (condition.basePrice !== undefined || condition.conditionBasePrice !== undefined)
+    ? moneyNumber(condition.basePrice ?? condition.conditionBasePrice)
+    : moneyNumber(product.price ?? product.salePrice ?? product.sellPrice ?? 0);
+  if (!Number.isFinite(base) || base < 0) return { error: "De prijs van een product is ongeldig. Neem contact met ons op." };
+  let total = base;
+  for (const key of ["storage", "color", "battery", "vat", "tradeIn"]) total += serverOptionDelta(chosen[key], key);
+  total = Math.max(0, total);
+  if (!Number.isFinite(total) || total <= 0) return { error: "Dit product heeft momenteel geen geldige verkoopprijs." };
+  const qty = Number(item?.qty ?? 1);
+  if (!Number.isInteger(qty) || qty < 1 || qty > 99) return { error: "Kies een geldige hoeveelheid (1–99)." };
+  return {
+    item: {
+      name: String(product.name || "Smartphone"),
+      brand: String(product.brand || ""),
+      type,
+      id,
+      options: Object.fromEntries(Object.entries(options).filter(([key, value]) => ["storage", "color", "condition", "battery", "vat", "tradeIn"].includes(key) && String(value ?? "").trim() !== "")),
+      qty,
+      unitPrice: Math.round(total * 100) / 100
+    }
+  };
+}
+
 // ---------------- WEBSHOP ORDERS ----------------
 
 app.post("/api/webshop/orders", async (req, res) => {
@@ -1003,28 +1156,34 @@ app.post("/api/webshop/orders", async (req, res) => {
       }
     } catch {}
 
-    const safeItems = items.map(item => ({
-      name: String(item?.name || ""),
-      brand: String(item?.brand || ""),
-      options: item?.options && typeof item.options === "object" ? item.options : {},
-      qty: Math.max(1, Number(item?.qty || 1)),
-      unitPrice: Number(item?.unitPrice || 0)
-    }));
-
+    if (items.length > 50) return res.status(400).json({ error: "Te veel producten in één bestelling." });
+    const catalogResult = await pool.query("SELECT data FROM site_settings WHERE id = 1");
+    const catalogData = catalogResult.rows[0]?.data || {};
+    const safeItems = [];
+    for (const item of items) {
+      const priced = priceProductFromCatalog(catalogData, item);
+      if (priced.error) return res.status(400).json({ error: priced.error });
+      safeItems.push(priced.item);
+    }
     const total = safeItems.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
+    if (!Number.isFinite(total) || total <= 0 || total > 100000) {
+      return res.status(400).json({ error: "Het totaalbedrag van uw bestelling is ongeldig." });
+    }
+    const checkoutToken = crypto.randomBytes(32).toString("hex");
+    const checkoutTokenHash = crypto.createHash("sha256").update(checkoutToken).digest("hex");
 
     const result = await pool.query(
       `INSERT INTO webshop_orders
-       (customer_id, name, email, phone, street, house_number, postcode, city, items, total, payment_method, payment_status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+       (customer_id, name, email, phone, street, house_number, postcode, city, items, total, checkout_token, payment_method, payment_status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
        RETURNING id, status, payment_method, payment_status, paypal_order_id, created_at`,
       [
         customerId, name, email, phone, street, houseNumber, postcode, city,
-        JSON.stringify(safeItems), total.toFixed(2), "PayPal", "Unpaid"
+        JSON.stringify(safeItems), total.toFixed(2), checkoutTokenHash, "PayPal", "Unpaid"
       ]
     );
 
-    res.status(201).json({ success: true, order: result.rows[0] });
+    res.status(201).json({ success: true, order: { ...result.rows[0], checkout_token: checkoutToken } });
   } catch (error) {
     console.error("Create webshop order error:", error);
     res.status(500).json({ error: "Webshop bestelling kon niet worden opgeslagen." });
@@ -1079,15 +1238,17 @@ app.get("/api/paypal/config", (req, res) => {
 app.post("/api/paypal/create-order", async (req, res) => {
   try {
     const localOrderId = Number(req.body?.orderId);
-    if (!Number.isInteger(localOrderId) || localOrderId < 1) {
-      return res.status(400).json({ error: "Ongeldig webshop ordernummer." });
+    const checkoutToken = String(req.body?.checkoutToken || "").trim();
+    if (!Number.isInteger(localOrderId) || localOrderId < 1 || !/^[a-f0-9]{64}$/.test(checkoutToken)) {
+      return res.status(400).json({ error: "Ongeldige checkoutgegevens." });
     }
 
+    const checkoutTokenHash = crypto.createHash("sha256").update(checkoutToken).digest("hex");
     const local = await pool.query(
       `SELECT id, name, email, total, payment_status
        FROM webshop_orders
-       WHERE id = $1`,
-      [localOrderId]
+       WHERE id = $1 AND checkout_token = $2`,
+      [localOrderId, checkoutTokenHash]
     );
 
     if (!local.rows.length) {
@@ -1141,8 +1302,8 @@ app.post("/api/paypal/create-order", async (req, res) => {
     await pool.query(
       `UPDATE webshop_orders
        SET paypal_order_id = $1, payment_method = 'PayPal', payment_status = 'Pending'
-       WHERE id = $2`,
-      [String(data.id), localOrderId]
+       WHERE id = $2 AND checkout_token = $3`,
+      [String(data.id), localOrderId, checkoutToken]
     );
 
     res.json({ success: true, id: data.id, orderId: localOrderId });
@@ -1156,16 +1317,18 @@ app.post("/api/paypal/capture-order", async (req, res) => {
   try {
     const localOrderId = Number(req.body?.orderId);
     const paypalOrderId = String(req.body?.paypalOrderId || "").trim();
+    const checkoutToken = String(req.body?.checkoutToken || "").trim();
 
-    if (!Number.isInteger(localOrderId) || localOrderId < 1 || !paypalOrderId) {
+    if (!Number.isInteger(localOrderId) || localOrderId < 1 || !paypalOrderId || !/^[a-f0-9]{64}$/.test(checkoutToken)) {
       return res.status(400).json({ error: "Ongeldige PayPal betaalgegevens." });
     }
 
+    const checkoutTokenHash = crypto.createHash("sha256").update(checkoutToken).digest("hex");
     const local = await pool.query(
       `SELECT id, total, paypal_order_id, payment_status
        FROM webshop_orders
-       WHERE id = $1`,
-      [localOrderId]
+       WHERE id = $1 AND checkout_token = $2`,
+      [localOrderId, checkoutTokenHash]
     );
 
     if (!local.rows.length) {
@@ -1206,7 +1369,18 @@ app.post("/api/paypal/capture-order", async (req, res) => {
     const capture = data.purchase_units?.[0]?.payments?.captures?.[0];
     const captureState = String(capture?.status || "").toUpperCase();
 
-    if (captureStatus !== "COMPLETED" || captureState !== "COMPLETED") {
+    const captureAmount = moneyNumber(capture?.amount?.value);
+    const captureCurrency = String(capture?.amount?.currency_code || "").toUpperCase();
+    const expectedAmount = moneyNumber(order.total);
+    if (
+      data.id !== paypalOrderId ||
+      captureStatus !== "COMPLETED" ||
+      captureState !== "COMPLETED" ||
+      captureCurrency !== "EUR" ||
+      !Number.isFinite(captureAmount) ||
+      !Number.isFinite(expectedAmount) ||
+      Math.abs(captureAmount - expectedAmount) > 0.005
+    ) {
       await pool.query(
         `UPDATE webshop_orders SET payment_status = $1 WHERE id = $2`,
         ["Failed", localOrderId]
@@ -1237,15 +1411,17 @@ app.post("/api/paypal/capture-order", async (req, res) => {
 app.post("/api/paypal/cancel-order", async (req, res) => {
   try {
     const localOrderId = Number(req.body?.orderId);
-    if (!Number.isInteger(localOrderId) || localOrderId < 1) {
-      return res.status(400).json({ error: "Ongeldig ordernummer." });
+    const checkoutToken = String(req.body?.checkoutToken || "").trim();
+    if (!Number.isInteger(localOrderId) || localOrderId < 1 || !/^[a-f0-9]{64}$/.test(checkoutToken)) {
+      return res.status(400).json({ error: "Ongeldige checkoutgegevens." });
     }
 
+    const checkoutTokenHash = crypto.createHash("sha256").update(checkoutToken).digest("hex");
     await pool.query(
       `UPDATE webshop_orders
        SET payment_status = CASE WHEN payment_status <> 'Paid' THEN 'Cancelled' ELSE payment_status END
-       WHERE id = $1`,
-      [localOrderId]
+       WHERE id = $1 AND checkout_token = $2`,
+      [localOrderId, checkoutTokenHash]
     );
 
     res.json({ success: true });
