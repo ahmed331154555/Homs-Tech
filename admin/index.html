@@ -3140,6 +3140,21 @@ function addPhoneInFolder(group,model){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+// Re-render the phone editor without losing the active input or cursor position.
+function renderPhonesPreserveFocus(input){
+  const key = input?.dataset?.focusKey;
+  const start = typeof input?.selectionStart === "number" ? input.selectionStart : null;
+  const end = typeof input?.selectionEnd === "number" ? input.selectionEnd : null;
+  renderPhones();
+  if(!key) return;
+  const next = document.querySelector('[data-focus-key="' + key + '"]');
+  if(!next) return;
+  next.focus({preventScroll:true});
+  if(start !== null && end !== null && typeof next.setSelectionRange === "function"){
+    try{ next.setSelectionRange(start,end); }catch{}
+  }
+}
+
 function renderPhones(){
   const box=document.getElementById("phonesList");
   if(!box) return;
@@ -3191,7 +3206,7 @@ function renderPhones(){
           <div><div class="phone-catalog-title">📦 Catalogus</div><div class="phone-catalog-subtitle">${data.phones.length} producten · zelfde catalogus als de website</div></div>
           <div class="phone-catalog-actions"><button type="button" class="btn btn-light" onclick="addPhoneTreeGroup()">＋ Map toevoegen</button><button type="button" class="btn btn-green" onclick="addPhone()">＋ Telefoon toevoegen</button></div>
         </div>
-        <div class="phone-tree-search"><span>⌕</span><input value="${esc(phoneTreeSearch)}" placeholder="Zoek model, kleur, geheugen..." oninput="phoneTreeSearch=this.value;renderPhones()"/><button type="button" onclick="phoneTreeSearch='';renderPhones()" aria-label="Zoekopdracht wissen">×</button></div>
+        <div class="phone-tree-search"><span>⌕</span><input data-focus-key="phone-tree-search" value="${esc(phoneTreeSearch)}" placeholder="Zoek model, kleur, geheugen..." oninput="phoneTreeSearch=this.value;renderPhonesPreserveFocus(this)"/><button type="button" onclick="phoneTreeSearch='';renderPhones()" aria-label="Zoekopdracht wissen">×</button></div>
         <div class="phone-brand-tabs">${['Alle','Apple','Samsung','iPad',...phoneTreeCustomGroups].map(b=>`<button type="button" class="phone-brand-tab ${phoneTreeBrand===b?'active':''}" onclick="setPhoneTreeBrand('${b.replace(/'/g,"\\'")}')">${phoneTreeBrandIcon(b)} ${esc(b)}</button>`).join('')}<button type="button" class="phone-brand-tab phone-brand-add" onclick="addPhoneTreeGroup()">＋ Toevoegen</button></div>
         <div class="phone-tree-hint">Website gebruikt <strong>data.phones</strong> · <span>Alle</span> toont elk product zonder merkfilter</div>
         <div class="phone-folder-list">${list}</div>
@@ -3209,7 +3224,7 @@ function renderPhones(){
           </div>
           <span class="phone-catalog-total">${data.phones.length}</span>
         </div>
-        <div class="phone-tree-search"><span>⌕</span><input value="${esc(phoneTreeSearch)}" placeholder="Zoek model, kleur, geheugen..." oninput="phoneTreeSearch=this.value;renderPhones()"/><button type="button" onclick="phoneTreeSearch='';renderPhones()" aria-label="Zoekopdracht wissen">×</button></div>
+        <div class="phone-tree-search"><span>⌕</span><input data-focus-key="phone-tree-search" value="${esc(phoneTreeSearch)}" placeholder="Zoek model, kleur, geheugen..." oninput="phoneTreeSearch=this.value;renderPhonesPreserveFocus(this)"/><button type="button" onclick="phoneTreeSearch='';renderPhones()" aria-label="Zoekopdracht wissen">×</button></div>
         <div class="phone-brand-tabs">
           ${['Alle','Apple','Samsung','iPad',...phoneTreeCustomGroups].map(b=>`<button type="button" class="phone-brand-tab ${phoneTreeBrand===b?'active':''}" onclick="setPhoneTreeBrand('${b.replace(/'/g,"\\'")}')">${phoneTreeBrandIcon(b)} ${esc(b)}</button>`).join('')}
           <button type="button" class="phone-brand-tab phone-brand-add" onclick="addPhoneTreeGroup()">＋ Toevoegen</button>
@@ -3226,7 +3241,7 @@ function renderPhones(){
         </div>
 
         <div class="grid">
-          <div class="field"><label>Model / Productnaam</label><input value="${esc(phone.name||'')}" oninput="data.phones[${selectedPhoneIndex}].name=this.value;markChanged();renderPhones()"></div>
+          <div class="field"><label>Model / Productnaam</label><input data-focus-key="phone-name" value="${esc(phone.name||'')}" oninput="data.phones[${selectedPhoneIndex}].name=this.value;markChanged();renderPhonesPreserveFocus(this)"></div>
           <div class="field"><label>Merk</label><input value="${esc(phone.brand||'')}" oninput="data.phones[${selectedPhoneIndex}].brand=this.value;markChanged()"></div>
           <div class="field"><label>Subtitel</label><input value="${esc(phone.subtitle||'')}" placeholder="Krachtiger. Slimmer. Mooier." oninput="data.phones[${selectedPhoneIndex}].subtitle=this.value;markChanged()"></div>
           <div class="field"><label>Categorie</label><input value="${esc(phone.category||'Smartphones')}" placeholder="Smartphones / Tablets / MacBook..." oninput="data.phones[${selectedPhoneIndex}].category=this.value;markChanged()"></div>
