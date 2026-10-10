@@ -972,11 +972,10 @@ app.post("/api/orders", async (req, res) => {
     }
 
     let matchedService = null;
-    if (clean.serviceSourceId) {
-      try {
-        const site = await pool.query("SELECT data FROM site_settings WHERE id = 1");
-        const gsm = site.rows[0]?.data?.gsmServices || {};
-        if (clean.serviceSourceId) {
+    try {
+      const site = await pool.query("SELECT data FROM site_settings WHERE id = 1");
+      const gsm = site.rows[0]?.data?.gsmServices || {};
+      if (clean.serviceSourceId) {
           for (const list of Object.values(gsm)) {
             if (!Array.isArray(list)) continue;
             const found = list.find(x => String(x?.sourceId || "") === clean.serviceSourceId);
@@ -1019,9 +1018,8 @@ app.post("/api/orders", async (req, res) => {
           if (required.has("imei") && !clean.imei) return res.status(400).json({error:"Deze service vereist een IMEI."});
           if (required.has("serial") && !clean.serial) return res.status(400).json({error:"Deze service vereist een serienummer."});
           clean.extraFields = extra;
-        }
-      } catch(e) { console.error("GSM catalog lookup error:",e); }
-    }
+      }
+    } catch(e) { console.error("GSM catalog lookup error:",e); }
     if (matchedService) {
       const formFields = Array.isArray(matchedService.formFields) ? matchedService.formFields : [];
       const extra = { ...clean.extraFields };
