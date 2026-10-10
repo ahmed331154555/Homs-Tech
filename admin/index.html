@@ -4860,6 +4860,21 @@ async function loadGsmProviderStatus(){
   }
 }
 
+function renderGsmFormFields(service,category,index){
+  const fields=Array.isArray(service.formFields)?service.formFields:[];
+  if(!fields.length)return '<div class="small">Nog geen extra velden ingesteld.</div>';
+  return fields.map((field,fieldIndex)=>`
+    <div style="display:grid;grid-template-columns:1fr 1fr 130px auto;gap:8px;align-items:end;margin:8px 0;padding:10px;background:#fff;border:1px solid #e2e8f0;border-radius:8px">
+      <div class="field"><label>Label</label><input value="${esc(field.label||'')}" oninput="data.gsmServices['${category}'][${index}].formFields[${fieldIndex}].label=this.value;markChanged()"></div>
+      <div class="field"><label>Naam veld</label><input value="${esc(field.key||'')}" oninput="data.gsmServices['${category}'][${index}].formFields[${fieldIndex}].key=this.value.replace(/[^a-zA-Z0-9_-]/g,'');markChanged()"></div>
+      <div class="field"><label>Type</label><select onchange="data.gsmServices['${category}'][${index}].formFields[${fieldIndex}].type=this.value;markChanged()"><option value="text" ${field.type==='text'?'selected':''}>Tekst</option><option value="email" ${field.type==='email'?'selected':''}>E-mail</option><option value="number" ${field.type==='number'?'selected':''}>Nummer</option><option value="textarea" ${field.type==='textarea'?'selected':''}>Lange tekst</option></select></div>
+      <button type="button" class="btn btn-red" onclick="deleteGsmFormField('${category}',${index},${fieldIndex})">Verwijderen</button>
+      <div class="field" style="grid-column:1/3"><label>Placeholder</label><input value="${esc(field.placeholder||'')}" oninput="data.gsmServices['${category}'][${index}].formFields[${fieldIndex}].placeholder=this.value;markChanged()"></div>
+      <label style="display:flex;align-items:center;gap:7px;padding:8px"><input type="checkbox" ${field.required===true?'checked':''} onchange="data.gsmServices['${category}'][${index}].formFields[${fieldIndex}].required=this.checked;markChanged()"> Verplicht</label>
+      <label style="display:flex;align-items:center;gap:7px;padding:8px"><input type="checkbox" ${field.autoFromEmail===true?'checked':''} onchange="data.gsmServices['${category}'][${index}].formFields[${fieldIndex}].autoFromEmail=this.checked;markChanged()"> Vul e-mail automatisch in</label>
+    </div>`).join('');
+}
+
 function renderGsmServices(){
   const box=document.getElementById("gsmServicesList");
   if(!box) return;
@@ -4903,16 +4918,7 @@ function renderGsmServices(){
           <div class="field" style="grid-column:1/-1;border:1px solid #dbe3ee;border-radius:10px;padding:12px;background:#f8fafc">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px"><strong>Velden bij bestelling</strong><button type="button" class="btn btn-light" onclick="addGsmFormField('${category[0]}',${selectedGsmServiceIndex})">+ Veld toevoegen</button></div>
             <div class="small" style="margin-bottom:10px">Bepaal welke extra gegevens de klant moet invullen bij het bestellen van deze service.</div>
-            ${(Array.isArray(service.formFields)?service.formFields:[]).map((field,fieldIndex)=>`
-              <div style="display:grid;grid-template-columns:1fr 1fr 130px auto;gap:8px;align-items:end;margin:8px 0;padding:10px;background:#fff;border:1px solid #e2e8f0;border-radius:8px">
-                <div class="field"><label>Label</label><input value="${esc(field.label||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].formFields[${fieldIndex}].label=this.value;markChanged()"></div>
-                <div class="field"><label>Naam veld</label><input value="${esc(field.key||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].formFields[${fieldIndex}].key=this.value.replace(/[^a-zA-Z0-9_-]/g,'');markChanged()"></div>
-                <div class="field"><label>Type</label><select onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].formFields[${fieldIndex}].type=this.value;markChanged()"><option value="text" ${field.type==='text'?'selected':''}>Tekst</option><option value="email" ${field.type==='email'?'selected':''}>E-mail</option><option value="number" ${field.type==='number'?'selected':''}>Nummer</option><option value="textarea" ${field.type==='textarea'?'selected':''}>Lange tekst</option></select></div>
-                <button type="button" class="btn btn-red" onclick="deleteGsmFormField('${category[0]}',${selectedGsmServiceIndex},${fieldIndex})">Verwijderen</button>
-                <div class="field" style="grid-column:1/3"><label>Placeholder</label><input value="${esc(field.placeholder||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].formFields[${fieldIndex}].placeholder=this.value;markChanged()"></div>
-                <label style="display:flex;align-items:center;gap:7px;padding:8px"><input type="checkbox" ${field.required===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].formFields[${fieldIndex}].required=this.checked;markChanged()"> Verplicht</label>
-                <label style="display:flex;align-items:center;gap:7px;padding:8px"><input type="checkbox" ${field.autoFromEmail===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].formFields[${fieldIndex}].autoFromEmail=this.checked;markChanged()"> Vul e-mail automatisch in</label>
-              </div>`).join('') || '<div class="small">Nog geen extra velden ingesteld.</div>'}
+            ${renderGsmFormFields(service,category[0],selectedGsmServiceIndex)}
           </div>
           <div class="field"><label>Service icon</label><input value="${esc(service.icon||'🔧')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].icon=this.value;markChanged()"></div>
         </div>
