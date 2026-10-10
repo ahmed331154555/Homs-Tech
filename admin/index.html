@@ -4851,15 +4851,17 @@ const gsmServiceCategories=[
   ["frp","🔐 FRP Services"],
   ["firmware","💻 Firmware / Software"]
 ];
+let gsmProviderCategories=[];
 
 function renderGsmCategoryOverview(categories){
   const box=document.getElementById("gsmCategoryOverview");
   if(!box)return;
-  const counts=new Map((Array.isArray(categories)?categories:[]).map(item=>[item.key,item]));
+  if(Array.isArray(categories))gsmProviderCategories=categories;
+  const counts=new Map((Array.isArray(gsmProviderCategories)?gsmProviderCategories:[]).map(item=>[item.key,item]));
   box.innerHTML=gsmServiceCategories.map(([key,label])=>{
     const item=counts.get(key)||{};
     const count=Number(item.count||0),active=Number(item.active||0);
-    return `<button type="button" class="gsm-category-card ${(gsmActiveCategory||"imei")===key?"active":""}" onclick="gsmActiveCategory='${key}';selectedGsmServiceIndex=0;renderGsmServices()">
+    return `<button type="button" class="gsm-category-card ${(gsmActiveCategory||"imei")===key?"active":""}" onclick="gsmActiveCategory='${key}';selectedGsmServiceIndex=0;renderGsmCategoryOverview();renderGsmServices()">
       <strong>${esc(label)}</strong><span class="gsm-cat-count">${count}</span><small>${active} actief · ${Math.max(0,count-active)} inactief</small>
     </button>`;
   }).join("");
@@ -4963,9 +4965,12 @@ function renderGsmServices(){
           <div class="field"><label>Status</label><select onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].active=this.value==='Actief';markChanged()"><option value="Actief" ${service.active!==false?'selected':''}>Actief</option><option value="Inactief" ${service.active===false?'selected':''}>Inactief</option></select></div>
           <div class="field" style="display:flex;flex-direction:column;gap:8px;justify-content:flex-end"><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresUsername===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresUsername=this.checked;markChanged()" style="width:18px;height:18px"> Gebruikersnaam klant verplicht</label><label style="display:flex;align-items:center;gap:9px;margin:0;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;width:100%;background:#fff;cursor:pointer"><input type="checkbox" ${service.requiresImei===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].requiresImei=this.checked;markChanged()" style="width:18px;height:18px"> IMEI / Serienummer klant verplicht</label></div>
           <div class="field"><label>Naam service</label><input value="${esc(service.name||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].name=this.value;markChanged();renderGsmServices()"></div>
-          <div class="field"><label>Prijs (€)</label><input value="${esc(service.price||'')}" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].price=this.value;markChanged()"></div>
+          <div class="field"><label>Prijs klant (€)</label><input value="${esc(service.price||'')}" inputmode="decimal" placeholder="Leeg = op aanvraag" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].price=this.value;markChanged()"></div>
+          <div class="field"><label>Levertijd / verwerking</label><input value="${esc(service.deliveryTime||'')}" placeholder="Bijv. 5–30 minuten" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].deliveryTime=this.value;markChanged()"></div>
+          <label style="display:flex;align-items:center;gap:9px;padding:10px;border:1px solid #d7deea;border-radius:10px;background:#fff;cursor:pointer"><input type="checkbox" ${service.hot===true?'checked':''} onchange="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].hot=this.checked;markChanged()"> Markeer als HOT-product</label>
           <div class="field" style="grid-column:1/-1"><label>Korte beschrijving</label><input value="${esc(service.shortDescription||'')}" placeholder="Bijv. Xiaomi / Redmi / Poco" oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].shortDescription=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1"><label>Volledige beschrijving</label><textarea oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].details=this.value;markChanged()">${esc(service.details||'')}</textarea></div>
+          <div class="field" style="grid-column:1/-1"><label>Instructies voor de klant</label><textarea placeholder="Stappen of gegevens die de klant moet voorbereiden..." oninput="data.gsmServices['${category[0]}'][${selectedGsmServiceIndex}].instructions=this.value;markChanged()">${esc(service.instructions||'')}</textarea></div>
           <div class="field" style="grid-column:1/-1;border:1px solid #dbe3ee;border-radius:10px;padding:12px;background:#f8fafc">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px"><strong>Velden bij bestelling</strong><button type="button" class="btn btn-light" onclick="addGsmFormField('${category[0]}',${selectedGsmServiceIndex})">+ Veld toevoegen</button></div>
             <div class="small" style="margin-bottom:10px">Bepaal welke extra gegevens de klant moet invullen bij het bestellen van deze service.</div>
