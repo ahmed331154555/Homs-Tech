@@ -4885,7 +4885,7 @@ async function importEasyPublicGsmCatalog(){
     if(result.data&&result.data.gsmServices)data.gsmServices=result.data.gsmServices;
     renderGsmServices();
     await loadGsmProviderStatus();
-    if(status){status.className="status success";status.textContent="✓ Sync voltooid: "+Number(result.added||0)+" nieuw, "+Number(result.updated||0)+" bijgewerkt, "+Number(result.total||0)+" services uit publieke pagina's. Controleer klantprijzen voordat je services publiceert.";}
+    if(status){status.className="status success";status.textContent="✓ Sync voltooid: "+Number(result.added||0)+" nieuw, "+Number(result.updated||0)+" bijgewerkt, "+Number(result.deduplicated||0)+" dubbele diensten verwijderd, "+Number(result.total||0)+" services uit publieke pagina's. Controleer klantprijzen voordat je services publiceert.";}
   }catch(error){
     if(status){status.className="status error";status.textContent="✕ Sync mislukt: "+String(error.message||error);}
   }finally{
