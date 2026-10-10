@@ -420,8 +420,11 @@ const ADMIN_PERMISSION_NAMES = {
   "phones.view":"Telefoons & prijzen bekijken","phones.update":"Telefoons & prijzen wijzigen","categories.view":"Apparaten & categorieën bekijken",
   "used.view":"Gebruikte telefoons bekijken","why.view":"Waarom HOMS TECH bekijken",
   "customers.view":"Klanten bekijken","orders.view":"GSM Orders bekijken",
-  "orders.update":"GSM Order-status wijzigen","webshop_orders.view":"Webshop bestellingen bekijken",
-  "webshop_orders.update":"Webshop order-status wijzigen","gsm.view":"GSM Services bekijken","gsm.import":"GSM Services importeren",
+  "orders.update":"GSM Order-status wijzigen","orders.delete":"GSM Orders verwijderen",
+  "webshop_orders.view":"Webshop bestellingen bekijken",
+  "webshop_orders.update":"Webshop order-status wijzigen","webshop_orders.delete":"Webshop bestellingen verwijderen",
+  "buyback_orders.view":"Inruil aanvragen bekijken","buyback_orders.update":"Inruil status wijzigen","buyback_orders.delete":"Inruil aanvragen verwijderen",
+  "gsm.view":"GSM Services bekijken","gsm.import":"GSM Services importeren",
   "site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
 };
 
