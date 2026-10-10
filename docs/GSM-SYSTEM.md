@@ -13,6 +13,13 @@
 - `GET /api/admin/gsm/provider-status`: admin permission `gsm.view`; returns service counts and readiness without returning secrets or making upstream requests.
 - `GET /api/admin/gsm/catalog`: admin permission `gsm.view`; returns the local catalog for future adapter integration.
 
+## Categories verified from the user's account screenshots
+- The visible `Place an order` menu contains `Server services`, `IMEI Service`, and `Remote Orders`.
+- The visible `Order History` menu contains `IMEI Orders`, `Server Orders`, `Remote Orders`, `Retail Orders`, and `Advanced History`.
+- The server-service picker screenshot shows a service selector and examples of digital activation / tool-credit services; the exact full catalog and every option are not yet readable.
+- The admin labels for the three visible order categories now match the account wording. `FRP` and `Firmware` remain preserved as local catalog buckets but are explicitly marked for verification; they are not confirmed as top-level Easy-Unlocker order categories by the screenshots.
+- Do not create a `Retail Orders` service category from the history menu alone; it is currently verified as an order-history filter/category, not as a confirmed new-order menu item.
+
 ## Easy-Unlocker API status
 No upstream requests are enabled yet. Do not assume an API base URL, authentication scheme, endpoint, payload, or order-status model. Only implement an Easy-Unlocker adapter after receiving official documentation and confirming the account has API access.
 
