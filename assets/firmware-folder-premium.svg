@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 170" role="img" aria-label="HOMS TECH premium blue folder">
+<defs>
+ <linearGradient id="front" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#55d9ff"/><stop offset=".26" stop-color="#168fe8"/><stop offset=".62" stop-color="#0866c8"/><stop offset="1" stop-color="#062e70"/></linearGradient>
+ <linearGradient id="tab" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5ce1ff"/><stop offset="1" stop-color="#0871d4"/></linearGradient>
+ <linearGradient id="side" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#3bb9f5"/><stop offset="1" stop-color="#064a9c"/></linearGradient>
+ <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".62"/><stop offset="1" stop-color="#d9f8ff" stop-opacity=".05"/></linearGradient>
+ <filter id="shadow" x="-30%" y="-30%" width="170%" height="180%"><feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#032957" flood-opacity=".3"/></filter>
+ <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<ellipse cx="111" cy="149" rx="83" ry="10" fill="#0b6db5" opacity=".14"/>
+<g filter="url(#shadow)" transform="translate(14 5)">
+ <path d="M17 44V27Q17 17 28 17H74L91 31H171Q183 31 183 43V121Q183 132 171 132H29Q17 132 17 120Z" fill="#0b4f99" stroke="#64dfff" stroke-width="2"/>
+ <path d="M17 44V28Q17 18 28 18H73L89 32H170Q182 32 182 44V53H17Z" fill="url(#tab)" stroke="#7be8ff" stroke-width="1.5"/>
+ <path d="M10 53Q10 43 21 43H181Q194 43 194 56V125Q194 139 180 139H24Q10 139 10 125Z" fill="url(#front)" stroke="#72dcff" stroke-width="2"/>
+ <path d="M14 56Q14 48 23 48H180Q188 48 190 57L190 68H14Z" fill="url(#glass)" opacity=".65"/>
+ <path d="M15 123Q15 134 26 134H178Q187 134 189 125" fill="none" stroke="#8deaff" stroke-opacity=".48" stroke-width="1.5"/>
+ <g transform="translate(78 68)" filter="url(#glow)">
+  <rect x="0" y="0" width="35" height="38" rx="7" fill="#052f68" fill-opacity=".6" stroke="#8df1ff" stroke-width="1.5"/>
+  <rect x="5" y="5" width="25" height="28" rx="4" fill="none" stroke="#31dfff" stroke-width="1.2"/>
+  <path d="M13 12h9M17.5 8v17M12 20l5.5 5 5.5-5" stroke="#d8fbff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="17.5" cy="30" r="1.4" fill="#eaffff"/>
+ </g>
+ <text x="96" y="119" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="900" letter-spacing=".5" fill="#f2fdff">HOMS TECH</text>
+</g>
+</svg>
