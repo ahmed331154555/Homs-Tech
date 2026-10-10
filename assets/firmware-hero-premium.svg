@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 420">
+<defs>
+ <linearGradient id="back" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#42d5ff"/><stop offset=".45" stop-color="#087be7"/><stop offset="1" stop-color="#062c75"/></linearGradient>
+ <linearGradient id="mid" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b9f5ff"/><stop offset=".35" stop-color="#2baeff"/><stop offset="1" stop-color="#0752c3"/></linearGradient>
+ <linearGradient id="front" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#76e6ff"/><stop offset=".28" stop-color="#1594ff"/><stop offset=".7" stop-color="#075bce"/><stop offset="1" stop-color="#042d75"/></linearGradient>
+ <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".72"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+ <radialGradient id="aura"><stop stop-color="#008cff" stop-opacity=".6"/><stop offset="1" stop-color="#008cff" stop-opacity="0"/></radialGradient>
+ <filter id="shadow" x="-40%" y="-40%" width="190%" height="190%"><feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="#00102c" flood-opacity=".65"/></filter>
+ <filter id="glow"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<ellipse cx="324" cy="322" rx="260" ry="82" fill="url(#aura)"/>
+<g fill="none" stroke="#00bfff" stroke-width="4" opacity=".82" filter="url(#glow)">
+ <ellipse cx="318" cy="326" rx="258" ry="68" transform="rotate(-9 318 326)"/>
+ <ellipse cx="318" cy="326" rx="230" ry="54" transform="rotate(-9 318 326)" stroke="#55eaff" stroke-width="1.5"/>
+</g>
+<g filter="url(#shadow)">
+ <g transform="translate(214 42) rotate(9 110 120)">
+  <path d="M0 45V25Q0 10 16 10H94L116 29H205Q220 29 220 45V228Q220 242 205 242H15Q0 242 0 227Z" fill="url(#back)" stroke="#69dfff" stroke-width="3"/>
+  <path d="M0 45V25Q0 10 16 10H94L116 29H205Q220 29 220 45V59H0Z" fill="url(#shine)" opacity=".42"/>
+ </g>
+ <g transform="translate(160 74) rotate(4 125 120)">
+  <path d="M0 46V26Q0 10 16 10H96L119 30H225Q241 30 241 46V225Q241 241 225 241H16Q0 241 0 225Z" fill="url(#mid)" stroke="#8eeaff" stroke-width="3"/>
+  <path d="M0 46V26Q0 10 16 10H96L119 30H225Q241 30 241 46V58H0Z" fill="url(#shine)" opacity=".68"/>
+  <path d="M12 66H229" stroke="#e6fcff" stroke-opacity=".38" stroke-width="2"/>
+ </g>
+ <g transform="translate(126 108)">
+  <path d="M0 46V26Q0 10 16 10H95L117 30H229Q246 30 246 47V222Q246 240 229 240H17Q0 240 0 222Z" fill="url(#front)" stroke="#75e6ff" stroke-width="3"/>
+  <path d="M0 46V26Q0 10 16 10H95L117 30H229Q246 30 246 47V63H0Z" fill="url(#shine)" opacity=".7"/>
+  <path d="M14 67H231" stroke="#e9fcff" stroke-opacity=".42" stroke-width="2"/>
+  <rect x="51" y="92" width="144" height="102" rx="22" fill="#05499f" fill-opacity=".3" stroke="#8deaff" stroke-opacity=".55" stroke-width="2"/>
+  <g transform="translate(80 100)" filter="url(#glow)">
+   <path d="M32 18C37 4 54 0 65 9C77 5 90 13 90 26C105 27 111 39 105 51C102 58 94 61 86 61H24C10 61 3 51 7 39C10 29 20 24 32 26Z" fill="#f1fdff" stroke="#b8f5ff" stroke-width="2"/>
+   <path d="M56 27V67M42 52L56 67 70 52" fill="none" stroke="#0876e7" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="123" y="218" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="900" letter-spacing="1.2" fill="#e9fcff">HOMS TECH</text>
+ </g>
+</g>
+<g fill="#4ce7ff" filter="url(#glow)">
+ <circle cx="95" cy="154" r="4"/><circle cx="497" cy="124" r="3"/><circle cx="475" cy="270" r="4"/><circle cx="135" cy="285" r="2.5"/>
+</g>
+</svg>
