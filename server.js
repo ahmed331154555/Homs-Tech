@@ -617,7 +617,7 @@ app.post("/api/admin/firmware/files/:parentId", requirePermission("site.save"), 
     const p=await pool.query("SELECT kind FROM firmware_items WHERE id=$1",[parentId]);
     if(!p.rows.length||p.rows[0].kind!=="folder")return res.status(404).json({error:"Folder not found"});
     if(!Buffer.isBuffer(req.body)||!req.body.length)return res.status(400).json({error:"Choose a non-empty file"});
-    const fileName=String(req.get("x-file-name")||"download.bin").replace(/[\\/\r\n\0]/g,"_").trim().slice(0,220)||"download.bin";
+    let suppliedName=String(req.get("x-file-name")||"download.bin"); try { suppliedName=decodeURIComponent(suppliedName); } catch {} const fileName=suppliedName.replace(/[\\/\r\n\0]/g,"_").trim().slice(0,220)||"download.bin";
     const mime=String(req.get("x-file-mime")||"application/octet-stream").slice(0,120);
     const result=await pool.query("INSERT INTO firmware_items(parent_id,kind,name,file_name,mime_type,file_size,file_data) VALUES($1,'file',$2,$3,$4,$5,$6) RETURNING id,parent_id,kind,name,file_name,mime_type,file_size,created_at",[parentId,fileName,fileName,mime,req.body.length,req.body]);
     res.status(201).json({item:result.rows[0]});
