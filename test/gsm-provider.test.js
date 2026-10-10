@@ -46,7 +46,7 @@ test("normalizes dynamic select fields and limits unsafe field definitions", () 
     name: "Custom service",
     formFields: [
       { key: "device model!", label: "Model", type: "select", required: true, options: ["iPhone", "Samsung", "<script>"], autoFromEmail: false },
-      { key: "bad key", label: "Ignored invalid key", type: "unsupported" },
+      { key: "!!!", label: "Ignored invalid key", type: "unsupported" },
       null
     ]
   }, "remote");
