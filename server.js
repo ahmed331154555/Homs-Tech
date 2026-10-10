@@ -1615,7 +1615,7 @@ app.get("/api/admin/orders", requirePermission("orders.view"), async (req, res) 
 
 app.put("/api/admin/orders/:id/status", requirePermission("orders.update"), async (req, res) => {
   try {
-    const allowed = ["Nieuw", "In behandeling", "Voltooid", "Geannuleerd"];
+    const allowed = ["Nieuw", "In behandeling", "Wacht op klant", "Wacht op leverancier", "Resultaat ontvangen", "Mislukt", "Voltooid", "Geannuleerd"];
     const status = String(req.body?.status || "").trim();
 
     if (!allowed.includes(status)) {
