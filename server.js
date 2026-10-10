@@ -1627,15 +1627,16 @@ app.put("/api/admin/orders/:id/execution", requirePermission("orders.update"), a
     if (providerReference.length > 180 || executionNote.length > 4000 || resultData.length > 12000) {
       return res.status(400).json({ error: "Een veld is te lang. Maximaal: referentie 180, interne notitie 4000, resultaat 12000 tekens." });
     }
+    const existing = await pool.query("SELECT id, service_category FROM service_orders WHERE id = $1", [id]);
+    if (!existing.rows.length) return res.status(404).json({ error: "Bestelling niet gevonden." });
+    const category = String(existing.rows[0].service_category || "").toLowerCase();
+    if (["reparatie", "repair", "webshop", "product"].includes(category)) {
+      return res.status(400).json({ error: "Dit uitvoeringslogboek is alleen bedoeld voor GSM-orders." });
+    }
     const result = await pool.query(
       "UPDATE service_orders SET provider_reference = $1, execution_note = $2, result_data = $3, execution_updated_at = NOW() WHERE id = $4 RETURNING id, service_category, provider_reference, execution_note, result_data, execution_updated_at",
       [providerReference, executionNote, resultData, id]
     );
-    if (!result.rows.length) return res.status(404).json({ error: "Bestelling niet gevonden." });
-    const category = String(result.rows[0].service_category || "").toLowerCase();
-    if (["reparatie", "repair", "webshop", "product"].includes(category)) {
-      return res.status(400).json({ error: "Dit uitvoeringslogboek is alleen bedoeld voor GSM-orders." });
-    }
     res.json({ success: true, order: result.rows[0], manualOnly: true });
   } catch (error) {
     console.error(error);
