@@ -416,15 +416,60 @@ function openFolder(id,name){stack.push({id:Number(id),name});current=Number(id)
 bootLibrary();
 </script></body></html>
 <style>
-
-/* Final folder layout: compact horizontal cards, like the reference site */
-#grid.grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))!important;gap:12px!important;align-items:stretch!important}
-#grid.grid>.folder{grid-column:auto!important;display:flex!important;flex-direction:row!important;align-items:center!important;min-width:0!important;min-height:88px!important;height:auto!important;padding:10px 12px!important;gap:10px!important;box-sizing:border-box!important}
-#grid.grid>.folder .foldericon{width:58px!important;height:48px!important;flex:0 0 58px!important}
+/* HOMS TECH: compact folder grid matching the four-column reference */
+#grid.grid{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:9px!important;
+  align-items:stretch!important;
+}
+#grid.grid>.folder{
+  grid-column:auto!important;
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  min-width:0!important;
+  min-height:70px!important;
+  height:auto!important;
+  padding:8px 9px!important;
+  gap:8px!important;
+  border-radius:10px!important;
+  box-sizing:border-box!important;
+}
+#grid.grid>.folder .foldericon{
+  width:52px!important;
+  height:42px!important;
+  flex:0 0 52px!important;
+}
 #grid.grid>.folder .folderinfo{min-width:0!important;flex:1 1 auto!important}
-#grid.grid>.folder .foldername{font-size:13px!important;line-height:1.3!important;overflow-wrap:anywhere!important;word-break:normal!important}
-#grid.grid>.folder .desc{font-size:10px!important;line-height:1.35!important;overflow-wrap:anywhere!important}
-#grid.grid>.folder .folder-arrow{flex:0 0 24px!important;width:24px!important;height:24px!important;font-size:19px!important}
-@media(max-width:560px){#grid.grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr))!important;gap:9px!important}#grid.grid>.folder{min-height:76px!important;padding:8px!important;gap:7px!important}#grid.grid>.folder .foldericon{width:44px!important;height:38px!important;flex-basis:44px!important}}
-
+#grid.grid>.folder .foldername{
+  font-size:12px!important;
+  line-height:1.25!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
+#grid.grid>.folder .desc{
+  font-size:9px!important;
+  line-height:1.3!important;
+  margin-top:3px!important;
+  overflow-wrap:anywhere!important;
+}
+#grid.grid>.folder .folder-arrow{
+  flex:0 0 18px!important;
+  width:18px!important;
+  height:18px!important;
+  font-size:16px!important;
+}
+@media(max-width:1050px){
+  #grid.grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:720px){
+  #grid.grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  #grid.grid>.folder{min-height:66px!important;padding:7px!important;gap:6px!important}
+  #grid.grid>.folder .foldericon{width:43px!important;height:36px!important;flex-basis:43px!important}
+  #grid.grid>.folder .foldername{font-size:11px!important}
+}
+@media(max-width:390px){
+  #grid.grid{grid-template-columns:minmax(0,1fr)!important}
+}
 </style>
