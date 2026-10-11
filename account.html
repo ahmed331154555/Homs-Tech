@@ -139,6 +139,10 @@ input:focus{outline:3px solid rgba(37,99,235,.12);border-color:#2563eb}
 <h2>📋 Mijn GSM-service bestellingen</h2>
 <div id="myOrders" class="order-list"><div class="orders-empty">Bestellingen laden...</div></div>
 </div>
+<div class="orders">
+<h2>📥 Mijn firmware-downloads</h2>
+<div id="myFirmwareDownloads" class="order-list"><div class="orders-empty">Downloads laden...</div></div>
+</div>
 <div class="actions">
 <a class="btn blue" href="devices.html">📱 Bekijk telefoons</a>
 <button class="btn gray" id="logoutBtn" type="button">Uitloggen</button>
@@ -179,6 +183,7 @@ document.getElementById("customerEmail").textContent=c.email||"";
 document.getElementById("customerPhone").textContent=c.phone||"—";
 document.getElementById("customerAddress").textContent=c.address||"—";
 loadMyOrders();
+loadMyFirmwareDownloads();
 }
 
 async function api(url,options={}){
@@ -203,6 +208,27 @@ return `<div class="order-item"><div class="order-item-head"><div><div class="or
 }catch(e){box.innerHTML='<div class="orders-empty">Bestellingen konden niet worden geladen.</div>';}
 }
 
+async function loadMyFirmwareDownloads(){
+const box=document.getElementById("myFirmwareDownloads");
+if(!box)return;
+try{
+const data=await api("/api/customer/downloads");
+const downloads=data.downloads||[];
+if(!downloads.length){box.innerHTML='<div class="orders-empty">Nog geen firmwarebestanden gedownload.</div>';return;}
+box.innerHTML=downloads.map(item=>{
+const when=item.downloaded_at?new Date(item.downloaded_at).toLocaleString("nl-NL"):"";
+const link=item.firmware_item_id?'<a class="btn blue" style="display:inline-flex;margin-top:8px" href="/api/firmware/download/'+encodeURIComponent(item.firmware_item_id)+'">Opnieuw downloaden</a>':'<span class="order-detail">Bestand is niet meer beschikbaar.</span>';
+return '<div class="order-item"><div class="order-item-head"><div><div class="order-name">'+escapeHtml(item.file_name||"Firmwarebestand")+'</div><div class="order-date">'+escapeHtml(when)+'</div></div></div>'+link+'</div>';
+}).join("");
+}catch(e){box.innerHTML='<div class="orders-empty">Firmware-downloads konden niet worden geladen.</div>';}
+}
+
+function continueFirmwareDownloadAfterLogin(){
+const target=new URLSearchParams(window.location.search).get("returnTo")||"";
+if(/^\/api\/firmware\/download\/\d+$/.test(target)){window.location.replace(target);return true;}
+return false;
+}
+
 function escapeHtml(value){return String(value??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
 
 loginForm.addEventListener("submit",async e=>{
@@ -212,6 +238,7 @@ const data=await api("/api/customer/login",{method:"POST",body:JSON.stringify({
 email:loginEmail.value,password:loginPassword.value
 })});
 showMessage("Welkom terug!","success");
+if(continueFirmwareDownloadAfterLogin())return;
 showAccount(data.customer);
 }catch(err){showMessage(err.message);}
 });
@@ -222,6 +249,7 @@ try{
 const data=await api("/api/customer/register",{method:"POST",body:JSON.stringify({
 name:name.value,email:email.value,phone:phone.value,address:address.value,password:password.value
 })});
+if(continueFirmwareDownloadAfterLogin())return;
 showAccount(data.customer);
 }catch(err){showMessage(err.message);}
 });
@@ -234,7 +262,7 @@ accountCard.style.display="none";authCard.style.display="block";showLogin();
 (async()=>{
 try{
 const data=await api("/api/customer/me");
-if(data.authenticated)showAccount(data.customer);
+if(data.authenticated){if(continueFirmwareDownloadAfterLogin())return;showAccount(data.customer);}
 }catch{}
 })();
 </script>
