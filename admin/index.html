@@ -1545,6 +1545,25 @@ textarea{
 .firmware-context-menu button:hover{background:#edf6fc}
 .firmware-context-menu .context-danger{color:#b42318}
 .firmware-context-menu .context-divider{height:1px;background:#e8edf2;margin:5px 2px}
+/* Folders stay in a tile grid; files use a vertical list */
+#page-firmware .firmware-admin-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+#page-firmware .firmware-admin-card.folder{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;height:190px;min-height:190px;padding:14px 10px 10px;border:1px solid #d9e7f5;border-radius:12px;background:#fff;box-shadow:0 1px 3px #1b4b7410;text-align:center}
+#page-firmware .firmware-admin-card.folder>div:first-child{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:7px;width:100%;flex:1;min-height:0}
+#page-firmware .firmware-admin-card.folder .firmware-admin-icon{display:grid;place-items:center;width:76px;height:66px;flex:0 0 66px;font-size:52px;background:transparent;color:#147ac0;filter:none}
+#page-firmware .firmware-admin-card.folder .firmware-admin-name{display:block;width:100%;margin:0!important;color:#1769aa;font-size:13px;font-weight:750;line-height:1.3;text-align:center;overflow-wrap:anywhere;max-height:50px}
+#page-firmware .firmware-admin-card.folder .firmware-admin-meta{display:block;width:100%;font-size:10px;text-align:center;line-height:1.3;max-height:28px;overflow:hidden}
+#page-firmware .firmware-admin-card.folder .firmware-admin-actions{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;width:100%;margin-top:auto;padding-top:4px;border-top:1px solid #e7edf3}
+#page-firmware .firmware-admin-card.folder .firmware-admin-actions .btn{flex:1 1 42%;font-size:10px;min-height:27px;padding:4px 5px}
+#page-firmware .firmware-admin-card.file{display:grid;grid-template-columns:44px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;gap:3px 12px;width:100%;height:auto;min-height:78px;padding:11px 14px;border:1px solid #e1eaf2;border-radius:9px;background:#fff;box-shadow:0 1px 3px #1b4b7410;text-align:left}
+#page-firmware .firmware-admin-card.file>div:first-child{display:grid;grid-column:1/-1;grid-template-columns:44px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;gap:2px 12px;min-width:0;width:100%}
+#page-firmware .firmware-admin-card.file .firmware-admin-icon{grid-column:1;grid-row:1 / span 3;width:42px;height:42px;display:grid;place-items:center;font-size:31px;background:transparent;color:#5a7187;filter:none}
+#page-firmware .firmware-admin-card.file .firmware-admin-name{grid-column:2;grid-row:1;margin:0!important;min-width:0;color:#273f55;font-size:13px;font-weight:750;line-height:1.35;text-align:left;overflow-wrap:anywhere;max-height:none!important}
+#page-firmware .firmware-admin-card.file .firmware-admin-meta{grid-column:2;text-align:left;font-size:11px;line-height:1.35;max-height:none;overflow-wrap:anywhere}
+#page-firmware .firmware-admin-card.file .firmware-admin-tags{grid-column:2;justify-content:flex-start}
+#page-firmware .firmware-admin-card.file .firmware-admin-actions{grid-column:2;grid-row:2;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:6px;flex-wrap:wrap;width:auto;margin:6px 0 0;padding:0;border:0}
+#page-firmware .firmware-admin-card.file .firmware-admin-actions .btn{flex:0 0 auto;min-height:29px;font-size:11px;padding:5px 9px}
+@media(max-width:1000px){#page-firmware .firmware-admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){#page-firmware .firmware-admin-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#page-firmware .firmware-admin-card.folder{height:175px;min-height:175px;padding:9px 6px 7px}#page-firmware .firmware-admin-card.folder .firmware-admin-icon{width:60px;height:54px;flex-basis:54px;font-size:42px}#page-firmware .firmware-admin-card.file{grid-template-columns:34px minmax(0,1fr);padding:9px;gap:3px 8px}#page-firmware .firmware-admin-card.file>div:first-child{grid-template-columns:34px minmax(0,1fr);gap:2px 8px}#page-firmware .firmware-admin-card.file .firmware-admin-icon{width:32px;height:32px;font-size:24px}#page-firmware .firmware-admin-card.file .firmware-admin-actions{grid-column:1/-1;margin-top:7px}#page-firmware .firmware-admin-card.file .firmware-admin-actions .btn{font-size:10px;padding:4px 7px}}
 /* Vertical file list with blue folder labels */
 #page-firmware .firmware-admin-grid{display:flex;flex-direction:column;gap:7px;align-items:stretch}
 #page-firmware .firmware-admin-card,#page-firmware .firmware-admin-card.folder{display:grid;grid-template-columns:42px minmax(150px,1fr) auto;grid-template-rows:auto;align-items:center;gap:12px;width:100%;height:auto;min-height:64px;padding:10px 14px;border:1px solid #d9e7f5;border-radius:9px;background:#fff;box-shadow:0 1px 3px #1b4b7410;text-align:left}
