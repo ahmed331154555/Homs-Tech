@@ -175,6 +175,17 @@ async function initDatabase() {
   `);
 
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS firmware_download_history (
+      id BIGSERIAL PRIMARY KEY,
+      customer_id INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+      firmware_item_id BIGINT REFERENCES firmware_items(id) ON DELETE SET NULL,
+      file_name TEXT NOT NULL,
+      downloaded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  await pool.query("CREATE INDEX IF NOT EXISTS firmware_download_history_customer_date_idx ON firmware_download_history (customer_id, downloaded_at DESC)");
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS admin_users (
       id SERIAL PRIMARY KEY,
       username TEXT NOT NULL UNIQUE,
@@ -631,12 +642,29 @@ app.get("/api/firmware/detail/:id", async (req,res) => {
   } catch(e) { console.error("Firmware detail error:",e); res.status(500).json({error:"Could not load firmware details"}); }
 });
 app.get("/api/firmware/download/:id", async (req,res) => {
+  let client;
   try {
     const id=Number(req.params.id);
     if(!Number.isSafeInteger(id)||id<=0) return res.status(400).send("Invalid file");
-    const result=await pool.query("UPDATE firmware_items SET download_count=download_count+1 WHERE id=$1 AND kind='file' RETURNING id,name,file_name,mime_type,file_data,download_url", [id]);
-    if(!result.rows.length) return res.status(404).send("Firmware file not found");
+    let customerId;
+    try {
+      const token=req.cookies.customerToken;
+      if(!token) throw new Error("Missing customer session");
+      const decoded=jwt.verify(token,process.env.JWT_SECRET);
+      const customer=await pool.query("SELECT id FROM customers WHERE id=$1",[decoded.customerId]);
+      if(!customer.rows.length) throw new Error("Invalid customer session");
+      customerId=customer.rows[0].id;
+    } catch {
+      const returnTo="/firmware.html#file="+encodeURIComponent(id);
+      return res.redirect(302,"/account.html?returnTo="+encodeURIComponent(returnTo));
+    }
+    client=await pool.connect();
+    await client.query("BEGIN");
+    const result=await client.query("UPDATE firmware_items SET download_count=download_count+1 WHERE id=$1 AND kind='file' RETURNING id,name,file_name,mime_type,file_data,download_url",[id]);
+    if(!result.rows.length){await client.query("ROLLBACK");return res.status(404).send("Firmware file not found");}
     const file=result.rows[0];
+    await client.query("INSERT INTO firmware_download_history (customer_id,firmware_item_id,file_name) VALUES ($1,$2,$3)",[customerId,file.id,file.name||file.file_name||"Firmwarebestand"]);
+    await client.query("COMMIT");
     res.set("Cache-Control","no-store");
     if(file.file_data){
       res.type(file.mime_type||"application/octet-stream");
@@ -647,7 +675,11 @@ app.get("/api/firmware/download/:id", async (req,res) => {
     try { target=new URL(file.download_url); } catch {}
     if(!target||!["http:","https:"].includes(target.protocol)) return res.status(410).send("Download link is unavailable");
     return res.redirect(302,target.toString());
-  } catch(e) { console.error("Firmware download error:",e); res.status(500).send("Could not start download"); }
+  } catch(e) {
+    if(client){try{await client.query("ROLLBACK")}catch{}}
+    console.error("Firmware download error:",e);
+    return res.status(500).send("Could not start download");
+  } finally {if(client)client.release();}
 });
 app.get("/api/firmware/items", async (req,res) => {
   try {
@@ -1105,6 +1137,25 @@ app.get("/api/customer/me", async (req, res) => {
     res.status(401).json({
       authenticated: false
     });
+  }
+});
+
+// Per-customer firmware download history. Identity is derived only from the signed HttpOnly session.
+app.get("/api/customer/downloads", async (req,res) => {
+  try {
+    const token=req.cookies.customerToken;
+    if(!token)return res.status(401).json({error:"Log in om uw downloads te bekijken."});
+    const decoded=jwt.verify(token,process.env.JWT_SECRET);
+    const customer=await pool.query("SELECT id FROM customers WHERE id=$1",[decoded.customerId]);
+    if(!customer.rows.length)return res.status(401).json({error:"Log in om uw downloads te bekijken."});
+    const result=await pool.query(
+      "SELECT id,firmware_item_id,file_name,downloaded_at FROM firmware_download_history WHERE customer_id=$1 ORDER BY downloaded_at DESC,id DESC LIMIT 200",
+      [customer.rows[0].id]
+    );
+    res.set("Cache-Control","no-store");
+    res.json({downloads:result.rows});
+  } catch(e) {
+    res.status(401).json({error:"Log in om uw downloads te bekijken."});
   }
 });
 
