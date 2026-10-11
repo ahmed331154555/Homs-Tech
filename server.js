@@ -143,6 +143,7 @@ async function initDatabase() {
   await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS download_url TEXT NOT NULL DEFAULT ''");
   await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS description TEXT NOT NULL DEFAULT ''");
   await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS download_count BIGINT NOT NULL DEFAULT 0");
+  await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS visits BIGINT NOT NULL DEFAULT 0");
   await pool.query("ALTER TABLE firmware_items DROP CONSTRAINT IF EXISTS firmware_items_check");
   await pool.query("ALTER TABLE firmware_items DROP CONSTRAINT IF EXISTS firmware_items_storage_check");
   await pool.query("ALTER TABLE firmware_items ADD CONSTRAINT firmware_items_storage_check CHECK ((kind = 'folder' AND file_data IS NULL AND download_url = '') OR (kind = 'file' AND ((file_data IS NOT NULL AND download_url = '') OR (file_data IS NULL AND download_url <> ''))))");
@@ -600,6 +601,28 @@ app.get("/api/firmware/highlights", async (req,res) => {
     res.set("Cache-Control","no-store");
     res.json({recent:recent.rows,popular:popular.rows});
   } catch(e) { console.error("Firmware highlights error:",e); res.status(500).json({error:"Could not load firmware highlights"}); }
+});
+app.get("/api/firmware/detail/:id", async (req,res) => {
+  try {
+    const id=Number(req.params.id);
+    if(!Number.isSafeInteger(id)||id<=0)return res.status(400).json({error:"Invalid file"});
+    const viewed=await pool.query("UPDATE firmware_items SET visits=visits+1 WHERE id=$1 AND kind='file' RETURNING id", [id]);
+    if(!viewed.rows.length)return res.status(404).json({error:"Firmware file not found"});
+    const result=await pool.query(`
+      WITH RECURSIVE parents AS (
+        SELECT id,parent_id,name,0 AS depth FROM firmware_items WHERE id=$1
+        UNION ALL
+        SELECT p.id,p.parent_id,p.name,parents.depth+1 FROM firmware_items p JOIN parents ON parents.parent_id=p.id
+      )
+      SELECT f.id,f.parent_id,f.name,f.file_name,f.mime_type,f.file_size,f.description,f.download_url,f.created_at,
+             f.download_count,f.visits,
+             COALESCE((SELECT json_agg(json_build_object('id',id,'name',name) ORDER BY depth DESC) FROM parents WHERE depth>0),'[]'::json) AS folders
+      FROM firmware_items f WHERE f.id=$1 AND f.kind='file'
+    `,[id]);
+    if(!result.rows.length)return res.status(404).json({error:"Firmware file not found"});
+    res.set("Cache-Control","no-store");
+    res.json({item:result.rows[0]});
+  } catch(e) { console.error("Firmware detail error:",e); res.status(500).json({error:"Could not load firmware details"}); }
 });
 app.get("/api/firmware/download/:id", async (req,res) => {
   try {
