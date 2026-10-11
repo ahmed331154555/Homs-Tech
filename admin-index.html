@@ -1046,6 +1046,7 @@ textarea{
   }
 }
 </style>
+  <link rel="stylesheet" href="assets/admin-firmware-library.css">
 </head>
 
 <body>
@@ -1073,6 +1074,7 @@ textarea{
     <button class="nav-btn" data-page="orders" onclick="showPage('orders')">📋 GSM Orders</button>
     <button class="nav-btn" data-page="webshop-orders" onclick="showPage('webshop-orders')">🛍️ Webshop Bestellingen</button>
     <button class="nav-btn" data-page="gsm" onclick="showPage('gsm')">🛠️ GSM Services</button>
+    <button class="nav-btn" data-page="firmware-library" data-permission="site.save" onclick="showPage('firmware-library')">📁 Firmware Library</button>
     <button class="nav-btn" data-page="search" data-permission="search" onclick="showPage('search')">🔎 Zoeken</button>
     <button class="nav-btn" data-page="admins" data-permission="admins.manage" onclick="showPage('admins')">👤 Admins</button>
   </div>
@@ -1378,6 +1380,14 @@ textarea{
     </div>
   </div>
 
+
+  <section class="section admin-page" id="page-firmware-library" data-permission="site.save">
+    <div class="section-head"><div><h2>📁 Firmware Library</h2><p>Beheer mappen en bestanden. Mappen staan in blauwe tegels; bestanden blijven onder elkaar in een verticale lijst.</p></div><button class="btn btn-light" type="button" onclick="loadAdminFirmware()">↻ Vernieuwen</button></div>
+    <div class="fw-toolbar"><button class="btn btn-green" type="button" onclick="openFwModal('folder')">＋ Nieuwe map</button><button class="btn btn-light" type="button" onclick="openFwModal('link')">＋ Downloadlink</button><button class="btn btn-light" type="button" onclick="openFwModal('samfw')">⇩ SamFW import</button><input id="fwAdminSearch" type="search" placeholder="Zoek map of bestand…" oninput="renderAdminFirmware()"></div>
+    <div id="fwAdminCrumbs" class="fw-crumbs"></div><div id="fwAdminStatus" class="status info">Firmwarebibliotheek laden…</div><div id="fwAdminFolders"></div><div id="fwAdminFiles"></div>
+  </section>
+  <div class="fw-modal-backdrop" id="fwAdminModal" onclick="if(event.target===this)closeFwModal()"><div class="fw-modal" role="dialog" aria-modal="true" aria-labelledby="fwModalTitle"><div class="fw-modal-head"><h3 id="fwModalTitle">Firmware bewerken</h3><button class="fw-modal-close" type="button" onclick="closeFwModal()">×</button></div><form id="fwAdminForm" onsubmit="submitFwModal(event)"><div id="fwModalFields"></div><div id="fwModalStatus" class="fw-modal-status"></div><div class="fw-modal-actions"><button class="btn btn-light" type="button" onclick="closeFwModal()">Annuleren</button><button id="fwModalSave" class="btn btn-green" type="submit">Opslaan</button></div></form></div></div>
+
   <!-- VERKOOPAANVRAGEN -->
   <section class="section admin-page" id="page-buyback-orders" data-permission="buyback_orders.view">
     <div class="section-head">
@@ -1425,7 +1435,7 @@ let buybackQuestionOpenId = "";
 const PAGE_PERMISSIONS = {
   general:"general.view",services:"services.view",phones:"phones.view",categories:"categories.view",
   used:"used.view",why:"why.view",customers:"customers.view",orders:"orders.view",
-  "webshop-orders":"webshop_orders.view",gsm:"gsm.view",search:"search",admins:"admins.manage",
+  "webshop-orders":"webshop_orders.view",gsm:"gsm.view","firmware-library":"site.save",search:"search",admins:"admins.manage",
   buyback:"buyback.view", "buyback-orders":"buyback_orders.view"
 };
 
@@ -1444,7 +1454,7 @@ const ADMIN_PERMISSION_LABELS = {
 function hasPermission(p){return currentUser.role==="superadmin"||currentUser.permissions.includes("*")||currentUser.permissions.includes(p);}
 function canEditSite(){return hasPermission("site.save");}
 function firstAllowedPage(){
-  const pages=["general","services","phones","buyback","buyback-orders","categories","used","why","customers","orders","webshop-orders","gsm","search","admins"];
+  const pages=["general","services","phones","buyback","buyback-orders","categories","used","why","customers","orders","webshop-orders","gsm","firmware-library","search","admins"];
   return pages.find(p=>hasPermission(PAGE_PERMISSIONS[p]))||null;
 }
 function applyPermissionUI(){
@@ -1474,6 +1484,7 @@ function showPage(page){
     if(page==="buyback")renderBuybackPhones();
     if(page==="buyback-orders")loadBuybackOrders();
     if(page==="admins")loadAdmins();
+    if(page==="firmware-library"&&window.loadAdminFirmware)window.loadAdminFirmware();
   }
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
   applyPermissionUI();
@@ -3515,5 +3526,6 @@ checkLogin();
 
 </script>
 
+<script src="assets/admin-firmware-library.js"></script>
 </body>
 </html>
