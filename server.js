@@ -2010,6 +2010,72 @@ app.get("/api/customer/orders", requireCustomerAuth, async (req, res) => {
   }
 });
 
+// Public repair quote requests from the Prices page. Photos are limited and stored with the request.
+app.post("/api/repair-requests", async (req, res) => {
+  try {
+    const b = req.body || {};
+    const brand = String(b.brand || "").trim().slice(0, 80);
+    const model = String(b.model || "").trim().slice(0, 100);
+    const issue = String(b.issue || "").trim().slice(0, 3000);
+    const name = String(b.name || "").trim().slice(0, 120);
+    const email = String(b.email || "").trim().toLowerCase().slice(0, 254);
+    const phone = String(b.phone || "").trim().slice(0, 40);
+    if (!brand || !model || !issue || !name || !email || b.consent !== true) {
+      return res.status(400).json({ error: "Vul alle verplichte velden in en geef toestemming om contact op te nemen." });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "Vul een geldig e-mailadres in." });
+    }
+    const incomingPhotos = Array.isArray(b.photos) ? b.photos : [];
+    if (incomingPhotos.length > 4) return res.status(400).json({ error: "U kunt maximaal 4 foto's toevoegen." });
+    const photos = [];
+    const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/heic"]);
+    for (const photo of incomingPhotos) {
+      const type = String(photo?.type || "").toLowerCase();
+      const dataUrl = String(photo?.dataUrl || "");
+      const match = dataUrl.match(/^data:(image\/(?:jpeg|png|webp|heic));base64,([a-z0-9+/=]+)$/i);
+      if (!allowedTypes.has(type) || !match || match[1].toLowerCase() !== type) {
+        return res.status(400).json({ error: "Een foto heeft een ongeldig formaat." });
+      }
+      const bytes = Buffer.from(match[2], "base64");
+      if (!bytes.length || bytes.length > 2 * 1024 * 1024) {
+        return res.status(400).json({ error: "Elke foto mag maximaal 2 MB groot zijn." });
+      }
+      photos.push({ name: String(photo.name || "foto").replace(/[\\/\\r\\n]/g, "_").slice(0, 140), type, dataUrl });
+    }
+    const extraFields = JSON.stringify({ repairQuote: true, brand, model, photos });
+    const result = await pool.query(
+      `INSERT INTO service_orders
+       (service_category, service_name, service_group, price, name, email, phone, notes, status, extra_fields)
+       VALUES ('Reparatie', $1, 'Website aanvraag', 'Op aanvraag', $2, $3, $4, $5, 'Nieuw', $6)
+       RETURNING id, created_at`,
+      [brand + " " + model, name, email, phone, issue, extraFields]
+    );
+    const request = result.rows[0];
+
+    // Optional notification. Configure RESEND_API_KEY, RESEND_FROM_EMAIL and REPAIR_REQUEST_EMAIL in Render.
+    if (process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL && process.env.REPAIR_REQUEST_EMAIL) {
+      try {
+        const response = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: process.env.RESEND_FROM_EMAIL,
+            to: [process.env.REPAIR_REQUEST_EMAIL],
+            subject: `Nieuwe HOMS TECH reparatieaanvraag #${request.id}`,
+            html: `<div style="font-family:Arial,sans-serif;color:#203449"><h2>Nieuwe reparatieaanvraag #${request.id}</h2><p><b>Toestel:</b> ${escapeHtml(brand)} ${escapeHtml(model)}</p><p><b>Probleem:</b><br>${escapeHtml(issue).replace(/\\n/g,"<br>")}</p><p><b>Klant:</b> ${escapeHtml(name)}</p><p><b>E-mail:</b> ${escapeHtml(email)}</p><p><b>Telefoon:</b> ${escapeHtml(phone || "-")}</p><p>Bekijk de aanvraag in de HOMS TECH-admin. Foto's zijn opgeslagen bij de aanvraag.</p></div>`
+          })
+        });
+        if (!response.ok) console.error("Repair request notification failed:", response.status, await response.text().catch(() => ""));
+      } catch (mailError) { console.error("Repair request notification error:", mailError); }
+    }
+    res.status(201).json({ success: true, requestNo: request.id, createdAt: request.created_at });
+  } catch (error) {
+    console.error("Repair quote request error:", error);
+    res.status(500).json({ error: "De aanvraag kon niet worden opgeslagen. Probeer het later opnieuw." });
+  }
+});
+
 app.get("/api/admin/orders", requirePermission("orders.view"), async (req, res) => {
   try {
     const result = await pool.query(
