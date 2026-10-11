@@ -661,12 +661,13 @@ app.get("/api/firmware/items", async (req,res) => {
 app.post("/api/admin/firmware/folders", requirePermission("site.save"), async (req,res) => {
   try {
     const name=String(req.body?.name||"").trim().slice(0,160);
+    const description=String(req.body?.description||"").trim().slice(0,200);
     const raw=req.body?.parentId;
     const parentId=raw==null||raw===""?null:Number(raw);
     if(!name) return res.status(400).json({error:"Folder name is required"});
     if(parentId!==null && (!Number.isSafeInteger(parentId)||parentId<=0)) return res.status(400).json({error:"Invalid parent folder"});
     if(parentId!==null){const p=await pool.query("SELECT kind FROM firmware_items WHERE id=$1",[parentId]);if(!p.rows.length||p.rows[0].kind!=="folder")return res.status(404).json({error:"Parent folder not found"});}
-    const r=await pool.query("INSERT INTO firmware_items(parent_id,kind,name) VALUES($1,'folder',$2) RETURNING id,parent_id,kind,name,file_name,mime_type,file_size,created_at",[parentId,name]);
+    const r=await pool.query("INSERT INTO firmware_items(parent_id,kind,name,description) VALUES($1,'folder',$2,$3) RETURNING id,parent_id,kind,name,description,file_name,mime_type,file_size,created_at",[parentId,name,description]);
     res.status(201).json({item:r.rows[0]});
   } catch(e) { console.error("Firmware folder create error:",e); res.status(500).json({error:"Could not create folder"}); }
 });
@@ -695,9 +696,10 @@ app.put("/api/admin/firmware/folders/:id", requirePermission("site.save"), async
   try {
     const id=Number(req.params.id);
     const name=String(req.body?.name||"").trim().slice(0,160);
+    const description=String(req.body?.description||"").trim().slice(0,200);
     if(!Number.isSafeInteger(id)||id<=0)return res.status(400).json({error:"Invalid folder"});
     if(!name)return res.status(400).json({error:"Folder name is required"});
-    const result=await pool.query("UPDATE firmware_items SET name=$2 WHERE id=$1 AND kind='folder' RETURNING id,parent_id,kind,name,created_at",[id,name]);
+    const result=await pool.query("UPDATE firmware_items SET name=$2,description=$3 WHERE id=$1 AND kind='folder' RETURNING id,parent_id,kind,name,description,created_at",[id,name,description]);
     if(!result.rows.length)return res.status(404).json({error:"Folder not found"});
     res.json({item:result.rows[0]});
   } catch(e) { console.error("Firmware folder rename error:",e); res.status(500).json({error:"Could not rename folder"}); }
