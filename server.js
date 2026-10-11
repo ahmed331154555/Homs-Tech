@@ -2117,6 +2117,62 @@ app.put("/api/admin/orders/:id/execution", requirePermission("orders.update"), a
     res.status(500).json({ error: "Uitvoeringsgegevens konden niet worden opgeslagen." });
   }
 });
+app.post("/api/admin/repair-requests/:id/offer", requirePermission("orders.update"), async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const priceInput = String(req.body?.price ?? "").trim().replace(",", ".");
+    const price = Number(priceInput);
+    const message = String(req.body?.message || "").trim().slice(0, 3000);
+    const validity = String(req.body?.validity || "14 dagen").trim().slice(0, 80);
+    const duration = String(req.body?.duration || "In overleg").trim().slice(0, 120);
+    if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig aanvraagnummer." });
+    if (!priceInput || !Number.isFinite(price) || price < 0 || price > 100000) return res.status(400).json({ error: "Vul een geldige prijs in." });
+    if (!message) return res.status(400).json({ error: "Vul een bericht aan de klant in." });
+    if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL) {
+      return res.status(503).json({ error: "E-mail is nog niet ingesteld. Configureer RESEND_API_KEY en RESEND_FROM_EMAIL voordat u een offerte verstuurt." });
+    }
+
+    const found = await pool.query(
+      "SELECT id, name, email, service_category, service_name, notes, status, extra_fields FROM service_orders WHERE id = $1",
+      [id]
+    );
+    if (!found.rows.length) return res.status(404).json({ error: "Aanvraag niet gevonden." });
+    const order = found.rows[0];
+    let meta = {};
+    try { meta = JSON.parse(order.extra_fields || "{}"); } catch {}
+    if (meta.repairQuote !== true) return res.status(400).json({ error: "Dit is geen repair request." });
+    if (!order.email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(order.email)) {
+      return res.status(400).json({ error: "Het e-mailadres van de klant is ongeldig." });
+    }
+
+    const brand = String(meta.brand || "").trim();
+    const model = String(meta.model || order.service_name || "").trim();
+    const formattedPrice = price.toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const html = `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;padding:24px;color:#203449"><h2>Uw reparatieofferte van HOMS TECH</h2><p>Hallo ${escapeHtml(order.name)},</p><p>Bedankt voor uw reparatieaanvraag voor <b>${escapeHtml(brand)} ${escapeHtml(model)}</b>.</p><p><b>Uw omschrijving:</b><br>${escapeHtml(order.notes || "-").replace(/\\n/g,"<br>")}</p><div style="padding:18px;background:#f1f7ff;border-radius:12px;margin:20px 0"><div style="font-size:14px;color:#53677d">Voorgestelde reparatieprijs</div><div style="font-size:30px;font-weight:bold;color:#1459a6">€ ${formattedPrice}</div><p><b>Geschatte duur:</b> ${escapeHtml(duration)}</p><p><b>Offerte geldig:</b> ${escapeHtml(validity)}</p></div><p style="white-space:pre-wrap">${escapeHtml(message)}</p><p>Wilt u akkoord gaan of heeft u vragen? Beantwoord deze e-mail, dan helpen wij u verder.</p><p>Met vriendelijke groet,<br><b>HOMS TECH</b></p></div>`;
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: process.env.RESEND_FROM_EMAIL, to: [order.email], subject: `HOMS TECH reparatieofferte #${id} — € ${formattedPrice}`, html, reply_to: process.env.REPAIR_REQUEST_EMAIL || undefined })
+    });
+    const emailResult = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      console.error("Repair offer email failed:", response.status, emailResult);
+      return res.status(502).json({ error: "De e-mail kon niet worden verzonden. Controleer de e-mailinstellingen en probeer opnieuw." });
+    }
+
+    const offer = { price: formattedPrice, message, validity, duration, sentAt: new Date().toISOString(), emailId: emailResult.id || "" };
+    meta.offer = offer;
+    const updated = await pool.query(
+      "UPDATE service_orders SET price = $1, status = 'Wacht op klant', extra_fields = $2 WHERE id = $3 RETURNING id, price, status, extra_fields",
+      [formattedPrice, JSON.stringify(meta), id]
+    );
+    res.json({ success: true, emailSent: true, order: updated.rows[0] });
+  } catch (error) {
+    console.error("Repair offer error:", error);
+    res.status(500).json({ error: "De offerte kon niet worden verwerkt. Probeer het opnieuw." });
+  }
+});
+
 app.put("/api/admin/orders/:id/status", requirePermission("orders.update"), async (req, res) => {
   try {
     const allowed = ["Nieuw", "In behandeling", "Wacht op klant", "Wacht op leverancier", "Resultaat ontvangen", "Mislukt", "Voltooid", "Geannuleerd"];
