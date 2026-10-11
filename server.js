@@ -691,6 +691,17 @@ app.post("/api/admin/firmware/links/:parentId", requirePermission("site.save"), 
     res.status(201).json({item:result.rows[0]});
   } catch(e) { console.error("Firmware link create error:",e); res.status(500).json({error:"Could not save download link"}); }
 });
+app.put("/api/admin/firmware/folders/:id", requirePermission("site.save"), async (req,res) => {
+  try {
+    const id=Number(req.params.id);
+    const name=String(req.body?.name||"").trim().slice(0,160);
+    if(!Number.isSafeInteger(id)||id<=0)return res.status(400).json({error:"Invalid folder"});
+    if(!name)return res.status(400).json({error:"Folder name is required"});
+    const result=await pool.query("UPDATE firmware_items SET name=$2 WHERE id=$1 AND kind='folder' RETURNING id,parent_id,kind,name,created_at",[id,name]);
+    if(!result.rows.length)return res.status(404).json({error:"Folder not found"});
+    res.json({item:result.rows[0]});
+  } catch(e) { console.error("Firmware folder rename error:",e); res.status(500).json({error:"Could not rename folder"}); }
+});
 app.put("/api/admin/firmware/items/:id", requirePermission("site.save"), async (req,res) => {
   try {
     const id=Number(req.params.id);
