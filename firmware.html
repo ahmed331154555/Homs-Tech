@@ -338,9 +338,9 @@ header{background:#061a36;border-bottom:0;box-shadow:0 4px 18px #03152b24}
 .highlight-track{display:flex;align-items:stretch;gap:0;width:max-content;max-width:none;animation:firmwareTicker 18s linear infinite;will-change:transform}
 .highlight-row:hover .highlight-track{animation-play-state:paused}
 .highlight-sequence{display:flex;align-items:stretch;gap:10px;width:max-content;flex:none;padding-right:10px}
-.highlight-item{display:flex;flex-direction:column;justify-content:center;min-width:225px;max-width:285px;min-height:43px;padding:7px 12px;border:1px solid #b3dfff26;border-radius:9px;background:linear-gradient(120deg,#ffffff0e,#ffffff05);box-shadow:inset 0 1px #ffffff0b;transition:background .2s,border-color .2s,transform .2s}
+.highlight-item{display:flex;flex-direction:column;justify-content:center;flex:0 0 auto;width:max-content;min-width:225px;max-width:none;min-height:43px;padding:7px 14px;border:1px solid #b3dfff26;border-radius:9px;background:linear-gradient(120deg,#ffffff0e,#ffffff05);box-shadow:inset 0 1px #ffffff0b;transition:background .2s,border-color .2s,transform .2s}
 .highlight-item:hover{background:linear-gradient(120deg,#0879e844,#0c3b654f);border-color:#30caff8c;transform:translateY(-1px)}
-.highlight-file{display:block;max-width:255px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e4f3ff;font-size:11px;font-weight:850}
+.highlight-file{display:block;width:max-content;max-width:none;overflow:visible;text-overflow:clip;white-space:nowrap;color:#e4f3ff;font-size:11px;font-weight:850;line-height:1.35}
 .highlight-meta{display:flex;align-items:center;gap:10px;margin-top:4px;color:#9bb8d5;font-size:9px;white-space:nowrap}
 .highlight-downloads{color:#42e0f6;font-weight:900}
 .highlight-empty{display:block;padding:8px 12px;color:#a7c1da;font-size:11px}
@@ -348,7 +348,7 @@ header{background:#061a36;border-bottom:0;box-shadow:0 4px 18px #03152b24}
 .download-count-inline{font-size:10px;font-weight:600;opacity:.9}
 @media(prefers-reduced-motion:reduce){.highlight-track{animation:none}}
 @media(max-width:820px){.firmware-highlights{padding:10px}.highlight-row{grid-template-columns:125px minmax(0,1fr);gap:9px}.highlight-label{gap:7px}.highlight-label strong{font-size:11px}.highlight-item{min-width:190px}}
-@media(max-width:560px){.firmware-highlights{margin-bottom:15px;padding:8px;border-radius:12px}.highlight-row{grid-template-columns:99px minmax(0,1fr);gap:6px;min-height:45px}.highlight-symbol{width:24px;height:24px;font-size:15px;border-radius:7px}.highlight-label strong{font-size:10px}.highlight-item{min-width:165px;min-height:39px;padding:5px 8px}.highlight-file{font-size:10px;max-width:205px}.highlight-meta{font-size:8px}}
+@media(max-width:560px){.firmware-highlights{margin-bottom:15px;padding:8px;border-radius:12px}.highlight-row{grid-template-columns:99px minmax(0,1fr);gap:6px;min-height:45px}.highlight-symbol{width:24px;height:24px;font-size:15px;border-radius:7px}.highlight-label strong{font-size:10px}.highlight-item{min-width:165px;min-height:39px;padding:5px 8px}.highlight-file{font-size:10px}.highlight-meta{font-size:8px}}
 
 
 /* HOMS TECH brand palette polish for firmware detail page */
@@ -474,7 +474,7 @@ const grid=document.getElementById('grid'),crumbs=document.getElementById('crumb
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function date(v){try{const d=new Date(v);if(!Number.isFinite(d.getTime()))return '';return new Intl.DateTimeFormat('nl-NL',{day:'2-digit',month:'2-digit',year:'numeric'}).format(d)}catch{return ''}}
 function highlightDate(v){try{return new Intl.DateTimeFormat('nl-NL',{day:'2-digit',month:'short',year:'numeric'}).format(new Date(v))}catch{return ''}}
-function highlightCard(x){return '<a class="highlight-item" href="#file-'+encodeURIComponent(x.id)+'" onclick="openFile('+Number(x.id)+');return false" title="'+esc(x.name)+'"><span class="highlight-file">'+esc(x.name)+'</span><span class="highlight-meta"><span>'+esc(highlightDate(x.created_at))+'</span><span>Bekijk details ›</span></span></a>'}
+function highlightCard(x){const name=String(x.name||'Firmwarebestand');const fontSize=Math.max(8,Math.min(11,Math.floor(255/Math.max(1,name.length)*1.7)));const cardWidth=Math.max(225,Math.min(900,Math.ceil(name.length*fontSize*.62)+30));return '<a class="highlight-item" style="width:'+cardWidth+'px" href="#file-'+encodeURIComponent(x.id)+'" onclick="openFile('+Number(x.id)+');return false" title="'+esc(name)+'"><span class="highlight-file" style="font-size:'+fontSize+'px">'+esc(name)+'</span><span class="highlight-meta"><span>'+esc(highlightDate(x.created_at))+'</span><span>Bekijk details ›</span></span></a>'}
 function setTicker(id,items){const el=document.getElementById(id);if(!items||!items.length){el.innerHTML='<span class="highlight-empty">Nog geen bestanden beschikbaar</span>';el.style.animation='none';return}const cards=items.map(highlightCard).join('');el.innerHTML='<div class="highlight-sequence">'+cards+'</div><div class="highlight-sequence" aria-hidden="true">'+cards+'</div>';el.style.animation='firmwareTicker '+Math.max(13,Math.min(22,items.length*2.1))+'s linear infinite'}
 async function loadHighlights(){try{const r=await fetch('/api/firmware/highlights',{cache:'no-store'});const d=await r.json();if(!r.ok)throw Error(d.error||'Highlights laden mislukt');setTicker('recentFiles',d.recent||[]);setTicker('topFiles',d.popular||[])}catch(e){for(const id of ['recentFiles','topFiles'])document.getElementById(id).innerHTML='<span class="highlight-empty">Bestanden konden niet worden geladen</span>'}}
 function showCrumbs(){crumbs.innerHTML='<button onclick="goRoot()">Firmware</button>'+(String(query||'').trim()?' / Zoekresultaten voor: '+esc(String(query).trim()):stack.map((x,i)=>' / <button onclick="goLevel('+i+')">'+esc(x.name)+'</button>').join(''))}
