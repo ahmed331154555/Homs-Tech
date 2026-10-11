@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const path = require("path");
+const { importSamFwPage } = require("./lib/samfw-import");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -700,6 +701,29 @@ app.post("/api/admin/firmware/links/:parentId", requirePermission("site.save"), 
     const result=await pool.query("INSERT INTO firmware_items(parent_id,kind,name,file_name,download_url,description,file_size,tags) VALUES($1,'file',$2,$2,$3,$4,$5,$6) RETURNING id,parent_id,kind,name,file_name,download_url,description,file_size,tags,created_at",[parentId,name,url,description,fileSize,tags]);
     res.status(201).json({item:result.rows[0]});
   } catch(e) { console.error("Firmware link create error:",e); res.status(500).json({error:"Could not save download link"}); }
+});
+app.post("/api/admin/firmware/samfw/import", requirePermission("site.save"), async (req,res) => {
+  try {
+    const parentRaw=req.body?.parentId;
+    const parentId=parentRaw==null||parentRaw===""?null:Number(parentRaw);
+    if(parentId!==null && (!Number.isSafeInteger(parentId)||parentId<=0)) return res.status(400).json({error:"Invalid destination folder"});
+    if(parentId!==null){
+      const parent=await pool.query("SELECT kind FROM firmware_items WHERE id=$1",[parentId]);
+      if(!parent.rows.length||parent.rows[0].kind!=="folder") return res.status(404).json({error:"Destination folder not found"});
+    }
+    const imported=await importSamFwPage(req.body?.url);
+    const existing=await pool.query("SELECT id,name,parent_id FROM firmware_items WHERE kind='file' AND download_url=$1 LIMIT 1",[imported.sourceUrl]);
+    if(existing.rows.length) return res.status(200).json({success:true,duplicate:true,item:existing.rows[0],message:"This SamFW source page is already imported."});
+    const result=await pool.query(
+      "INSERT INTO firmware_items(parent_id,kind,name,file_name,download_url,description,file_size,tags) VALUES($1,'file',$2,$2,$3,$4,$5,$6) RETURNING id,parent_id,kind,name,file_name,download_url,description,file_size,tags,created_at",
+      [parentId,imported.name,imported.sourceUrl,imported.description,imported.fileSize,imported.tags]
+    );
+    res.status(201).json({success:true,duplicate:false,item:result.rows[0],note:"Saved the public source page, not a permanent direct-download URL."});
+  } catch(e) {
+    const status=e.statusCode||400;
+    if(status>=500) console.error("SamFW import error:",e);
+    res.status(status).json({error:e.message||"Could not import SamFW page"});
+  }
 });
 app.put("/api/admin/firmware/folders/:id", requirePermission("site.save"), async (req,res) => {
   try {
