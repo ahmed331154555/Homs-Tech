@@ -600,8 +600,8 @@ function requirePermission(permission){
 app.get("/api/firmware/highlights", async (req,res) => {
   try {
     const [recent, popular] = await Promise.all([
-      pool.query("SELECT id,name,created_at,download_count FROM firmware_items WHERE kind='file' ORDER BY created_at DESC,id DESC LIMIT 10"),
-      pool.query("SELECT id,name,created_at,download_count FROM firmware_items WHERE kind='file' ORDER BY download_count DESC,created_at DESC,id DESC LIMIT 10")
+      pool.query("SELECT id,name,created_at,download_count,is_new FROM firmware_items WHERE kind='file' ORDER BY created_at DESC,id DESC LIMIT 10"),
+      pool.query("SELECT id,name,created_at,download_count,is_new FROM firmware_items WHERE kind='file' ORDER BY download_count DESC,created_at DESC,id DESC LIMIT 10")
     ]);
     res.set("Cache-Control","no-store");
     res.json({recent:recent.rows,popular:popular.rows});
@@ -620,7 +620,7 @@ app.get("/api/firmware/detail/:id", async (req,res) => {
         SELECT p.id,p.parent_id,p.name,parents.depth+1 FROM firmware_items p JOIN parents ON parents.parent_id=p.id
       )
       SELECT f.id,f.parent_id,f.name,f.file_name,f.mime_type,f.file_size,f.description,f.download_url,f.created_at,
-             f.download_count,f.visits,f.tags,
+             f.download_count,f.visits,f.tags,f.is_new,
              COALESCE((SELECT json_agg(json_build_object('id',id,'name',name) ORDER BY depth DESC) FROM parents WHERE depth>0),'[]'::json) AS folders
       FROM firmware_items f WHERE f.id=$1 AND f.kind='file'
     `,[id]);
@@ -701,7 +701,7 @@ app.post("/api/admin/firmware/links/:parentId", requirePermission("site.save"), 
     if(!parsed||!["http:","https:"].includes(parsed.protocol))return res.status(400).json({error:"Enter a valid http or https download link"});
     if(!Number.isFinite(sizeMb)||sizeMb<0||sizeMb>1048576)return res.status(400).json({error:"File size must be between 0 and 1048576 MB"});
     const fileSize=Math.round(sizeMb*1024*1024);
-    const result=await pool.query("INSERT INTO firmware_items(parent_id,kind,name,file_name,download_url,description,file_size,tags) VALUES($1,'file',$2,$2,$3,$4,$5,$6) RETURNING id,parent_id,kind,name,file_name,download_url,description,file_size,tags,created_at",[parentId,name,url,description,fileSize,tags]);
+    const result=await pool.query("INSERT INTO firmware_items(parent_id,kind,name,file_name,download_url,description,file_size,tags,is_new) VALUES($1,'file',$2,$2,$3,$4,$5,$6,$7) RETURNING id,parent_id,kind,name,file_name,download_url,description,file_size,tags,is_new,created_at",[parentId,name,url,description,fileSize,tags,Boolean(req.body?.isNew)]);
     res.status(201).json({item:result.rows[0]});
   } catch(e) { console.error("Firmware link create error:",e); res.status(500).json({error:"Could not save download link"}); }
 });
@@ -800,7 +800,7 @@ app.put("/api/admin/firmware/items/:id", requirePermission("site.save"), async (
     if(!parsed||!["http:","https:"].includes(parsed.protocol))return res.status(400).json({error:"Enter a valid http or https download link"});
     if(!Number.isFinite(sizeMb)||sizeMb<0||sizeMb>1048576)return res.status(400).json({error:"File size must be between 0 and 1048576 MB"});
     const fileSize=Math.round(sizeMb*1024*1024);
-    const result=await pool.query("UPDATE firmware_items SET name=$2,file_name=$2,download_url=$3,description=$4,file_size=$5,tags=$6 WHERE id=$1 AND kind='file' RETURNING id,parent_id,kind,name,file_name,download_url,description,file_size,tags,created_at",[id,name,url,description,fileSize,tags]);
+    const result=await pool.query("UPDATE firmware_items SET name=$2,file_name=$2,download_url=$3,description=$4,file_size=$5,tags=$6,is_new=$7 WHERE id=$1 AND kind='file' RETURNING id,parent_id,kind,name,file_name,download_url,description,file_size,tags,is_new,created_at",[id,name,url,description,fileSize,tags,Boolean(req.body?.isNew)]);
     if(!result.rows.length)return res.status(404).json({error:"Firmware file not found"});
     res.json({item:result.rows[0]});
   } catch(e) { console.error("Firmware file update error:",e); res.status(500).json({error:"Could not update firmware file"}); }
