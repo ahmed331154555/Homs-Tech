@@ -416,60 +416,83 @@ function openFolder(id,name){stack.push({id:Number(id),name});current=Number(id)
 bootLibrary();
 </script></body></html>
 <style>
-/* HOMS TECH: compact folder grid matching the four-column reference */
+/* Compact overall page proportions, matching the reference screenshot */
+.container{max-width:1240px!important;padding-left:24px!important;padding-right:24px!important}
+.page{max-width:1240px!important;margin:14px auto 38px!important;padding:0 24px!important}
+.topbar,.topbar .container{min-height:27px!important}
+.topbar{font-size:10px!important}
+.header-main{min-height:62px!important;gap:20px!important}
+.brand img{width:175px!important;max-height:48px!important}
+.search{height:38px!important}
+.nav{min-height:39px!important;font-size:11px!important}
+.nav a{padding:11px 10px!important}
+.intro{min-height:205px!important;padding:27px 32px!important;border-radius:16px!important}
+.intro h1{font-size:clamp(32px,3.5vw,49px)!important;letter-spacing:-1.5px!important;margin:10px 0!important}
+.intro p{font-size:13px!important;max-width:510px!important}
+.intro small{font-size:10px!important}
+.intro-badge{margin-top:13px!important;padding:6px 10px!important}
+.hero-art{width:43%!important}
+.orbit{width:310px!important;height:82px!important;bottom:20px!important}
+.backfolder{width:140px!important;height:124px!important}
+.midfolder{width:158px!important;height:128px!important}
+.frontfolder{width:158px!important;height:124px!important}
+.cloud{font-size:52px!important}
+.cloud:after{left:17px!important;top:17px!important;font-size:32px!important}
+.searchbar{margin:-22px 18px 17px!important;padding:7px!important;border-radius:12px!important;gap:8px!important}
+.searchbar input{padding:9px 6px!important;font-size:12px!important}
+.searchbar button{padding:0 19px!important}
+.library-head{margin:10px 2px 11px!important}
 #grid.grid{
-  display:grid!important;
-  grid-template-columns:repeat(4,minmax(0,1fr))!important;
-  gap:9px!important;
-  align-items:stretch!important;
+ display:grid!important;
+ grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ gap:9px!important;
+ align-items:stretch!important;
 }
 #grid.grid>.folder{
-  grid-column:auto!important;
-  display:flex!important;
-  flex-direction:row!important;
-  align-items:center!important;
-  min-width:0!important;
-  min-height:70px!important;
-  height:auto!important;
-  padding:8px 9px!important;
-  gap:8px!important;
-  border-radius:10px!important;
-  box-sizing:border-box!important;
+ grid-column:auto!important;
+ display:flex!important;
+ flex-direction:row!important;
+ align-items:center!important;
+ min-width:0!important;
+ min-height:66px!important;
+ height:auto!important;
+ padding:8px 9px!important;
+ gap:8px!important;
+ border-radius:9px!important;
+ box-sizing:border-box!important;
 }
-#grid.grid>.folder .foldericon{
-  width:52px!important;
-  height:42px!important;
-  flex:0 0 52px!important;
-}
+#grid.grid>.folder .foldericon{width:47px!important;height:39px!important;flex:0 0 47px!important}
 #grid.grid>.folder .folderinfo{min-width:0!important;flex:1 1 auto!important}
-#grid.grid>.folder .foldername{
-  font-size:12px!important;
-  line-height:1.25!important;
-  overflow-wrap:anywhere!important;
-  word-break:normal!important;
+#grid.grid>.folder .foldername{font-size:11px!important;line-height:1.25!important;overflow-wrap:anywhere!important;word-break:normal!important}
+#grid.grid>.folder .desc{font-size:9px!important;line-height:1.3!important;margin-top:3px!important;overflow-wrap:anywhere!important}
+#grid.grid>.folder .folder-arrow{flex:0 0 16px!important;width:16px!important;height:16px!important;font-size:15px!important}
+#grid.grid>.file{grid-column:1/-1!important}
+.file{padding:10px 13px!important;column-gap:14px!important}
+.fileicon{height:40px!important;width:37px!important;font-size:19px!important}
+.filename{font-size:12px!important}
+.download{font-size:11px!important;padding:9px 13px!important}
+@media(max-width:1000px){
+ .container,.page{padding-left:16px!important;padding-right:16px!important}
+ #grid.grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ .intro{min-height:190px!important}
 }
-#grid.grid>.folder .desc{
-  font-size:9px!important;
-  line-height:1.3!important;
-  margin-top:3px!important;
-  overflow-wrap:anywhere!important;
-}
-#grid.grid>.folder .folder-arrow{
-  flex:0 0 18px!important;
-  width:18px!important;
-  height:18px!important;
-  font-size:16px!important;
-}
-@media(max-width:1050px){
-  #grid.grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-}
-@media(max-width:720px){
-  #grid.grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
-  #grid.grid>.folder{min-height:66px!important;padding:7px!important;gap:6px!important}
-  #grid.grid>.folder .foldericon{width:43px!important;height:36px!important;flex-basis:43px!important}
-  #grid.grid>.folder .foldername{font-size:11px!important}
+@media(max-width:700px){
+ .header-main{gap:10px!important;flex-wrap:wrap!important;padding-top:9px!important;padding-bottom:9px!important}
+ .brand img{width:140px!important}
+ .header-actions{font-size:10px!important;gap:9px!important}
+ .intro{min-height:175px!important;padding:22px!important}
+ .intro h1{font-size:32px!important}
+ .intro p{font-size:12px!important;max-width:70%!important}
+ .hero-art{opacity:.55!important;width:45%!important}
+ .searchbar{margin:12px 0 16px!important}
+ #grid.grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ #grid.grid>.folder{min-height:62px!important;padding:7px!important;gap:6px!important}
+ #grid.grid>.folder .foldericon{width:39px!important;height:34px!important;flex-basis:39px!important}
+ #grid.grid>.folder .foldername{font-size:10px!important}
+ .file{grid-template-columns:minmax(0,1fr)!important;row-gap:10px!important}
+ .file .download{justify-self:start!important}
 }
 @media(max-width:390px){
-  #grid.grid{grid-template-columns:minmax(0,1fr)!important}
+ #grid.grid{grid-template-columns:minmax(0,1fr)!important}
 }
 </style>
