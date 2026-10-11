@@ -601,8 +601,8 @@ function requirePermission(permission){
 app.get("/api/firmware/highlights", async (req,res) => {
   try {
     const [recent, popular] = await Promise.all([
-      pool.query("SELECT id,name,created_at,download_count,(is_new AND COALESCE(new_until,created_at + INTERVAL '6 days') > NOW()) AS is_new FROM firmware_items WHERE kind='file' ORDER BY created_at DESC,id DESC LIMIT 10"),
-      pool.query("SELECT id,name,created_at,download_count,(is_new AND COALESCE(new_until,created_at + INTERVAL '6 days') > NOW()) AS is_new FROM firmware_items WHERE kind='file' ORDER BY download_count DESC,created_at DESC,id DESC LIMIT 10")
+      pool.query("SELECT id,name,created_at,download_count,(is_new AND COALESCE(new_until,created_at + INTERVAL '6 days') > NOW()) AS is_new FROM firmware_items WHERE kind='file' ORDER BY created_at DESC,id DESC LIMIT 20"),
+      pool.query("SELECT id,name,created_at,download_count,(is_new AND COALESCE(new_until,created_at + INTERVAL '6 days') > NOW()) AS is_new FROM firmware_items WHERE kind='file' ORDER BY download_count DESC,created_at DESC,id DESC LIMIT 20")
     ]);
     res.set("Cache-Control","no-store");
     res.json({recent:recent.rows,popular:popular.rows});
