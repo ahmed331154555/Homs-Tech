@@ -1280,6 +1280,7 @@ textarea{
     <button class="nav-btn" data-page="why" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
     <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
     <button class="nav-btn" data-page="orders" onclick="showPage('orders')">📋 GSM Orders</button>
+    <button class="nav-btn" data-page="repair-requests" onclick="showPage('repair-requests')">🔧 Repair Requests</button>
     <button class="nav-btn" data-page="webshop-orders" onclick="showPage('webshop-orders')">🛍️ Webshop Bestellingen</button>
     <button class="nav-btn" data-page="gsm" onclick="showPage('gsm')">🛠️ GSM Services</button>
     <button class="nav-btn" data-page="firmware" data-permission="site.save" onclick="showPage('firmware')">📁 Firmware Library</button>
@@ -1476,6 +1477,14 @@ textarea{
     </div>
     <div id="ordersStatus" class="status info" style="margin-bottom:10px"></div>
     <div id="ordersList" class="orders-list"></div>
+  </section>
+
+  <!-- REPAIR REQUESTS — separate from GSM Orders -->
+  <section class="section admin-page" id="page-repair-requests">
+    <div class="section-head"><div><h2>🔧 Repair Requests</h2><p>Prijsaanvragen voor toestelreparaties, apart van GSM Orders.</p></div><button class="btn btn-light" onclick="loadOrders()">↻ Vernieuwen</button></div>
+    <div id="repairRequestSummary" class="order-summary"></div>
+    <div class="orders-toolbar"><div class="orders-search"><input id="repairRequestSearch" type="search" placeholder="Zoeken op klant, e-mail, telefoon, toestel..." oninput="renderRepairRequests()"></div><select id="repairRequestStatusFilter" class="order-filter" onchange="renderRepairRequests()"><option value="">Alle statussen</option><option>Nieuw</option><option>In behandeling</option><option>Wacht op klant</option><option>Wacht op leverancier</option><option>Resultaat ontvangen</option><option>Mislukt</option><option>Voltooid</option><option>Geannuleerd</option></select><button class="order-filter-btn" onclick="clearRepairRequestFilters()">↻ Filters wissen</button></div>
+    <div id="repairRequestsStatus" class="order-count"></div><div id="repairRequestsList" class="orders-list"></div>
   </section>
 
   <!-- WEBSHOP ORDERS -->
@@ -1740,7 +1749,7 @@ let buybackCatalogDeleteLock = false;
 
 const PAGE_PERMISSIONS = {
   general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",categories:"categories.view",
-  used:"used.view",why:"why.view",customers:"customers.view",orders:"orders.view",
+  used:"used.view",why:"why.view",customers:"customers.view",orders:"orders.view","repair-requests":"orders.view",
   "webshop-orders":"webshop_orders.view",gsm:"gsm.view",firmware:"site.save",search:"search",admins:"admins.manage",
   buyback:"buyback.view", "buyback-orders":"buyback_orders.view"
 };
@@ -1765,7 +1774,7 @@ function canEditCurrentPage(){
   return canEditSite();
 }
 function firstAllowedPage(){
-  const pages=["general","services","repair","phones","buyback","buyback-orders","categories","used","why","customers","orders","webshop-orders","gsm","firmware","search","admins"];
+  const pages=["general","services","repair","phones","buyback","buyback-orders","categories","used","why","customers","orders","repair-requests","webshop-orders","gsm","firmware","search","admins"];
   return pages.find(p=>hasPermission(PAGE_PERMISSIONS[p]))||null;
 }
 function applyPermissionUI(){
@@ -1779,7 +1788,7 @@ function applyPermissionUI(){
       if(!btn.classList.contains("nav-btn")&&btn.id!=="gsmEasyImportButton"&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=!canEditCurrentPage();
     });
   });
-  document.querySelectorAll(".order-status-select").forEach(el=>el.disabled=!hasPermission(el.closest("#page-orders")?"orders.update":"webshop_orders.update"));
+  document.querySelectorAll(".order-status-select").forEach(el=>{const page=el.closest(".admin-page")?.id||"";const permission=page==="page-orders"||page==="page-repair-requests"?"orders.update":"webshop_orders.update";el.disabled=!hasPermission(permission);});
 }
 function showPage(page){
   if(!hasPermission(PAGE_PERMISSIONS[page]||""))page=firstAllowedPage();
@@ -1791,7 +1800,7 @@ function showPage(page){
   if(target){
     target.classList.add("active");
     if(page==="customers")loadCustomers();
-    if(page==="orders")loadOrders();
+    if(page==="orders"||page==="repair-requests")loadOrders();
     if(page==="webshop-orders")loadWebshopOrders();
     if(page==="buyback")renderBuybackPhones();
     if(page==="buyback-orders")loadBuybackOrders();
@@ -5377,14 +5386,36 @@ function renderOrderSummary(id,orders,kind){
     <div class="order-stat stat-cancel"><div class="stat-icon">✓</div><div><b>${cancelled}</b><span>Geannuleerd</span></div></div>`;
 }
 
+function isRepairQuoteOrder(order){let meta={};try{meta=JSON.parse(order.extra_fields||'{}')}catch{}return meta.repairQuote===true;}
+function clearRepairRequestFilters(){const q=document.getElementById('repairRequestSearch'),f=document.getElementById('repairRequestStatusFilter');if(q)q.value='';if(f)f.value='';renderRepairRequests();}
+function renderRepairRequests(){
+ const box=document.getElementById('repairRequestsList');if(!box)return;
+ const requests=adminGsmOrdersCache.filter(isRepairQuoteOrder);
+ const q=(document.getElementById('repairRequestSearch')?.value||'').trim().toLowerCase();
+ const filter=document.getElementById('repairRequestStatusFilter')?.value||'';
+ const filtered=requests.filter(o=>{let m={};try{m=JSON.parse(o.extra_fields||'{}')}catch{}const text=orderSearchText(o)+' '+(m.brand||'')+' '+(m.model||'');return (!q||text.toLowerCase().includes(q))&&(!filter||o.status===filter)});
+ renderOrderSummary('repairRequestSummary',requests,'repair');
+ const status=document.getElementById('repairRequestsStatus');if(status){status.className='order-count';status.textContent=filtered.length+' van '+requests.length+' repair request(s) zichtbaar';}
+ if(!filtered.length){box.innerHTML='<div class="order-empty">Nog geen repair requests gevonden.</div>';return;}
+ box.innerHTML=filtered.map(order=>{
+  let meta={};try{meta=JSON.parse(order.extra_fields||'{}')}catch{}
+  const photos=Array.isArray(meta.photos)?meta.photos:[];
+  const date=order.created_at?new Date(order.created_at).toLocaleString('nl-NL'):'';
+  const photoHtml=photos.length?'<div class="order-notes"><strong>Foto\'s van het toestel ('+photos.length+')</strong><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">'+photos.map((p,i)=>'<a href="'+esc(p.dataUrl||'')+'" target="_blank" rel="noopener noreferrer" title="Open foto '+(i+1)+'"><img src="'+esc(p.dataUrl||'')+'" alt="Toestelfoto '+(i+1)+'" style="width:110px;height:90px;object-fit:cover;border:1px solid #dbe5ef;border-radius:9px"></a>').join('')+'</div></div>':'';
+  const statuses=['Nieuw','In behandeling','Wacht op klant','Wacht op leverancier','Resultaat ontvangen','Mislukt','Voltooid','Geannuleerd'];
+  const options=statuses.map(s=>'<option'+((order.status||'Nieuw')===s?' selected':'')+'>'+s+'</option>').join('');
+  return '<article class="order-card"><div class="order-card-head"><div><div class="order-title">🔧 #'+esc(order.id)+' · '+esc(meta.brand||'')+' '+esc(meta.model||order.service_name||'Reparatie')+'</div><div class="order-meta">'+esc(date)+' · '+esc(order.name||'')+'</div></div><div class="order-actions"><select class="order-status-select" data-order-id="'+esc(order.id)+'" onchange="updateOrderStatus('+Number(order.id)+',this.value)">'+options+'</select></div></div><div class="order-main"><div class="order-grid"><div class="order-info"><strong>Klant</strong><span>'+esc(order.name||'-')+'</span></div><div class="order-info"><strong>E-mail</strong><span>'+esc(order.email||'-')+'</span></div><div class="order-info"><strong>Telefoon</strong><span>'+esc(order.phone||'-')+'</span></div><div class="order-info"><strong>Status</strong><span>'+esc(order.status||'Nieuw')+'</span></div></div><div class="order-notes"><strong>Probleem / klacht</strong><br>'+esc(order.notes||'-')+'</div>'+photoHtml+'</div></article>';
+ }).join('');
+}
 function renderGsmOrders(){
   const box=document.getElementById('ordersList'); if(!box)return;
   const q=(document.getElementById('gsmOrderSearch')?.value||'').trim().toLowerCase();
   const filter=document.getElementById('gsmOrderStatusFilter')?.value||'';
-  const filtered=adminGsmOrdersCache.filter(o=>(!q||orderSearchText(o).includes(q))&&(!filter||o.status===filter));
-  renderOrderSummary('gsmOrderSummary',adminGsmOrdersCache,'gsm');
+  const gsmOrders=adminGsmOrdersCache.filter(o=>!isRepairQuoteOrder(o));
+  const filtered=gsmOrders.filter(o=>(!q||orderSearchText(o).includes(q))&&(!filter||o.status===filter));
+  renderOrderSummary('gsmOrderSummary',gsmOrders,'gsm');
   const status=document.getElementById('ordersStatus');
-  if(status){status.className='order-count';status.textContent=`${filtered.length} van ${adminGsmOrdersCache.length} bestelling(en) zichtbaar`}
+  if(status){status.className='order-count';status.textContent=`${filtered.length} van ${gsmOrders.length} bestelling(en) zichtbaar`}
   if(!filtered.length){box.innerHTML='<div class="order-empty">Geen bestellingen gevonden met deze zoekopdracht.</div>';return;}
   box.innerHTML=filtered.map(order=>{
     const date=order.created_at?new Date(order.created_at).toLocaleString('nl-NL'):'';
@@ -5437,8 +5468,8 @@ async function loadOrders(){
   try{
     const r=await fetch('/api/admin/orders'); const result=await r.json();
     if(!r.ok)throw new Error(result.error||'Bestellingen konden niet worden geladen');
-    adminGsmOrdersCache=result.orders||[]; renderGsmOrders();
-  }catch(e){status.className='status error';status.textContent='✕ '+e.message;}
+    adminGsmOrdersCache=result.orders||[]; renderGsmOrders(); renderRepairRequests();
+  }catch(e){if(status){status.className='status error';status.textContent='✕ '+e.message;}const rs=document.getElementById('repairRequestsStatus');if(rs){rs.className='status error';rs.textContent='✕ '+e.message;}}
 }
 
 async function updateOrderStatus(id,statusValue){
@@ -5456,6 +5487,7 @@ async function updateOrderStatus(id,statusValue){
     });
     const result=await r.json().catch(()=>({}));
     if(!r.ok) throw new Error(result.error||"Status kon niet worden gewijzigd");
+    const updated=adminGsmOrdersCache.find(o=>String(o.id)===String(id));if(updated)updated.status=statusValue;renderGsmOrders();renderRepairRequests();
     if(select){
       select.dataset.savedStatus=statusValue;
       select.classList.remove("is-saving");
