@@ -713,6 +713,47 @@ app.put("/api/admin/firmware/folders/:id", requirePermission("site.save"), async
     res.json({item:result.rows[0]});
   } catch(e) { console.error("Firmware folder rename error:",e); res.status(500).json({error:"Could not rename folder"}); }
 });
+app.get("/api/admin/firmware/folders", requirePermission("site.save"), async (req,res) => {
+  try {
+    const result = await pool.query("SELECT id,parent_id,name FROM firmware_items WHERE kind='folder' ORDER BY lower(name), id");
+    res.set("Cache-Control","no-store");
+    res.json({folders:result.rows});
+  } catch(e) {
+    console.error("Firmware folder picker error:",e);
+    res.status(500).json({error:"Could not load firmware folders"});
+  }
+});
+
+app.put("/api/admin/firmware/items/:id/move", requirePermission("site.save"), async (req,res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isSafeInteger(id) || id <= 0) return res.status(400).json({error:"Invalid file"});
+    const rawParentId = req.body?.parentId;
+    const parentId = rawParentId == null || rawParentId === "" ? null : Number(rawParentId);
+    if (parentId !== null && (!Number.isSafeInteger(parentId) || parentId <= 0)) {
+      return res.status(400).json({error:"Invalid destination folder"});
+    }
+    const existing = await pool.query("SELECT id,kind FROM firmware_items WHERE id=$1",[id]);
+    if (!existing.rows.length) return res.status(404).json({error:"Firmware item not found"});
+    if (existing.rows[0].kind !== "file") return res.status(400).json({error:"Only files can be moved"});
+    if (parentId !== null) {
+      const destination = await pool.query("SELECT id,kind FROM firmware_items WHERE id=$1",[parentId]);
+      if (!destination.rows.length || destination.rows[0].kind !== "folder") {
+        return res.status(404).json({error:"Destination folder not found"});
+      }
+    }
+    const result = await pool.query(
+      "UPDATE firmware_items SET parent_id=$2 WHERE id=$1 AND kind='file' RETURNING id,parent_id,kind,name,file_name,download_url,description,file_size,tags,created_at",
+      [id,parentId]
+    );
+    if (!result.rows.length) return res.status(404).json({error:"Firmware file not found"});
+    res.json({success:true,item:result.rows[0]});
+  } catch(e) {
+    console.error("Firmware move error:",e);
+    res.status(500).json({error:"Could not move firmware file"});
+  }
+});
+
 app.put("/api/admin/firmware/items/:id", requirePermission("site.save"), async (req,res) => {
   try {
     const id=Number(req.params.id);
