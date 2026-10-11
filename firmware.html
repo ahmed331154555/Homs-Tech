@@ -415,3 +415,16 @@ function openFolder(id,name){stack.push({id:Number(id),name});current=Number(id)
  async function bootLibrary(){const goRoot=new URLSearchParams(location.search).get('root')==='1';if(goRoot){stack=[];current=null;query='';searchType='all';try{sessionStorage.removeItem(LIB_STATE_KEY)}catch{}try{history.replaceState(null,'',location.pathname)}catch{}}else{try{const saved=JSON.parse(sessionStorage.getItem(LIB_STATE_KEY)||'null');if(saved&&Array.isArray(saved.stack)){stack=saved.stack;current=stack.length?Number(stack[stack.length-1].id):null;query=String(saved.query||'');searchType=saved.searchType||'all';document.getElementById('folderSearchInput').value=query;document.getElementById('folderSearchType').value=searchType}}catch{}}const folderHash=location.hash.match(/^#folder=(\d+)$/);if(folderHash&&(!current||Number(folderHash[1])!==current)){current=Number(folderHash[1]);if(!stack.length||Number(stack[stack.length-1].id)!==current)stack=[{id:current,name:'Map'}]}await load();const fileHash=location.hash.match(/^#file-(\d+)$/);if(fileHash)await openFile(Number(fileHash[1]));loadHighlights()}
 bootLibrary();
 </script></body></html>
+<style>
+
+/* Final folder layout: compact horizontal cards, like the reference site */
+#grid.grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))!important;gap:12px!important;align-items:stretch!important}
+#grid.grid>.folder{grid-column:auto!important;display:flex!important;flex-direction:row!important;align-items:center!important;min-width:0!important;min-height:88px!important;height:auto!important;padding:10px 12px!important;gap:10px!important;box-sizing:border-box!important}
+#grid.grid>.folder .foldericon{width:58px!important;height:48px!important;flex:0 0 58px!important}
+#grid.grid>.folder .folderinfo{min-width:0!important;flex:1 1 auto!important}
+#grid.grid>.folder .foldername{font-size:13px!important;line-height:1.3!important;overflow-wrap:anywhere!important;word-break:normal!important}
+#grid.grid>.folder .desc{font-size:10px!important;line-height:1.35!important;overflow-wrap:anywhere!important}
+#grid.grid>.folder .folder-arrow{flex:0 0 24px!important;width:24px!important;height:24px!important;font-size:19px!important}
+@media(max-width:560px){#grid.grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr))!important;gap:9px!important}#grid.grid>.folder{min-height:76px!important;padding:8px!important;gap:7px!important}#grid.grid>.folder .foldericon{width:44px!important;height:38px!important;flex-basis:44px!important}}
+
+</style>
