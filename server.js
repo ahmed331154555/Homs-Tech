@@ -657,7 +657,7 @@ app.get("/api/firmware/items", async (req,res) => {
     if(searchTerm){
       const kindRaw=String(req.query.kind||"all");
       const kind=["file","folder"].includes(kindRaw)?kindRaw:"all";
-      const pattern="%"+searchTerm.replace(/[\\%_]/g,"\\    const result = await pool.query("SELECT id,parent_id,kind,name,file_name,mime_type,file_size,download_url,description,tags,created_at FROM firmware_items WHERE parent_id IS NOT DISTINCT FROM $1 ORDER BY CASE kind WHEN 'folder' THEN 0 ELSE 1 END, lower(name), id",[parentId]);")+"%";
+      const pattern="%"+searchTerm+"%";
       const found=await pool.query("SELECT id,parent_id,kind,name,file_name,mime_type,file_size,download_url,description,tags,created_at FROM firmware_items WHERE (name ILIKE $1 OR file_name ILIKE $1 OR description ILIKE $1) AND ($2='all' OR kind=$2) ORDER BY CASE kind WHEN 'folder' THEN 0 ELSE 1 END, lower(name), id LIMIT 500",[pattern,kind]);
       res.set("Cache-Control","no-store");
       return res.json({items:found.rows,search:searchTerm});
