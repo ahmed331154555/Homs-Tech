@@ -1046,6 +1046,7 @@ app.post("/api/customer/logout", (req, res) => {
 
 // ---------------- GSM PROVIDER BOUNDARY ----------------
 const { getEasyUnlockerApiReadiness, GSM_CATEGORIES, validateDynamicFieldValues } = require("./lib/gsm-provider");
+const { createEasyUnlockerClient } = require("./lib/easy-unlocker-api");
 
 // Admin-only status endpoint. It never returns credentials or makes upstream calls.
 app.get("/api/admin/gsm/provider-status", requirePermission("gsm.view"), async (req, res) => {
@@ -1090,6 +1091,60 @@ app.get("/api/admin/gsm/catalog", requirePermission("gsm.view"), async (req, res
   } catch (error) {
     console.error("GSM admin catalog error:", error);
     res.status(500).json({ error: "GSM catalogus kon niet worden geladen." });
+  }
+});
+
+// Admin-only, read-only upstream probe. Returns response shape only, never the API key or full payload.
+app.get("/api/admin/gsm/easy-unlocker/test-services", requirePermission("gsm.import"), async (req, res) => {
+  const client = createEasyUnlockerClient();
+  if (!client.config.configured) {
+    return res.status(503).json({
+      success: false,
+      error: "Easy-Unlocker API settings are incomplete. No upstream request was sent.",
+      missingConfig: client.config.missing
+    });
+  }
+
+  try {
+    const response = await client.listServices();
+    const data = response.data;
+    const shape = { rootType: Array.isArray(data) ? "array" : data === null ? "null" : typeof data };
+    if (typeof data === "string") {
+      shape.contentLength = data.length;
+      shape.xmlTags = [...new Set([...data.matchAll(/<([A-Za-z_][\\w:.-]*)\\b/g)].map(match => match[1]))].slice(0, 30);
+    } else if (Array.isArray(data)) {
+      shape.count = data.length;
+      shape.firstItemKeys = data[0] && typeof data[0] === "object" ? Object.keys(data[0]).slice(0, 40) : [];
+    } else if (data && typeof data === "object") {
+      shape.topLevelKeys = Object.keys(data).slice(0, 50);
+      const arrays = [];
+      const inspect = (value, path, depth) => {
+        if (arrays.length >= 12 || depth > 3 || value == null) return;
+        if (Array.isArray(value)) {
+          arrays.push({
+            path,
+            count: value.length,
+            firstItemKeys: value[0] && typeof value[0] === "object" ? Object.keys(value[0]).slice(0, 40) : []
+          });
+          return;
+        }
+        if (typeof value === "object") {
+          for (const [key, child] of Object.entries(value).slice(0, 50)) inspect(child, path ? path + "." + key : key, depth + 1);
+        }
+      };
+      inspect(data, "", 0);
+      shape.arrays = arrays;
+    }
+    res.set("Cache-Control", "no-store");
+    return res.json({ success: true, httpStatus: response.status, contentType: response.contentType, shape });
+  } catch (error) {
+    const status = error?.code === "EASY_UNLOCKER_HTTP_ERROR" ? 502 : error?.name === "AbortError" ? 504 : 502;
+    console.error("Easy-Unlocker read-only probe failed:", error?.code || error?.name || "unknown");
+    return res.status(status).json({
+      success: false,
+      error: error?.name === "AbortError" ? "Easy-Unlocker API request timed out." : "Easy-Unlocker API request failed.",
+      upstreamStatus: Number.isInteger(error?.status) ? error.status : undefined
+    });
   }
 });
 
