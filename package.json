@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test:gsm": "node --test test/gsm-provider.test.js"
+    "test": "node --test test/*.test.js",
+    "test:gsm": "node --test test/gsm-provider.test.js",
+    "test:api": "node --test test/easy-unlocker-api.test.js"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",
