@@ -143,6 +143,9 @@ async function initDatabase() {
   `);
   await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS download_url TEXT NOT NULL DEFAULT ''");
   await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS description TEXT NOT NULL DEFAULT ''");
+  await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS thumbnail_url TEXT NOT NULL DEFAULT ''");
+  await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE");
+  await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS is_new BOOLEAN NOT NULL DEFAULT FALSE");
   await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS download_count BIGINT NOT NULL DEFAULT 0");
   await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS visits BIGINT NOT NULL DEFAULT 0");
   await pool.query("ALTER TABLE firmware_items ADD COLUMN IF NOT EXISTS tags TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[]");
@@ -659,11 +662,11 @@ app.get("/api/firmware/items", async (req,res) => {
       const kindRaw=String(req.query.kind||"all");
       const kind=["file","folder"].includes(kindRaw)?kindRaw:"all";
       const pattern="%"+searchTerm+"%";
-      const found=await pool.query("SELECT id,parent_id,kind,name,file_name,mime_type,file_size,download_url,description,tags,created_at FROM firmware_items WHERE (name ILIKE $1 OR file_name ILIKE $1 OR description ILIKE $1) AND ($2='all' OR kind=$2) ORDER BY CASE kind WHEN 'folder' THEN 0 ELSE 1 END, lower(name), id LIMIT 500",[pattern,kind]);
+      const found=await pool.query("SELECT id,parent_id,kind,name,file_name,mime_type,file_size,download_url,description,tags,thumbnail_url,is_active,is_new,created_at FROM firmware_items WHERE (name ILIKE $1 OR file_name ILIKE $1 OR description ILIKE $1) AND ($2='all' OR kind=$2) ORDER BY CASE kind WHEN 'folder' THEN 0 ELSE 1 END, lower(name), id LIMIT 500",[pattern,kind]);
       res.set("Cache-Control","no-store");
       return res.json({items:found.rows,search:searchTerm});
     }
-    const result = await pool.query("SELECT id,parent_id,kind,name,file_name,mime_type,file_size,download_url,description,tags,created_at FROM firmware_items WHERE parent_id IS NOT DISTINCT FROM $1 ORDER BY CASE kind WHEN 'folder' THEN 0 ELSE 1 END, lower(name), id",[parentId]);
+    const result = await pool.query("SELECT id,parent_id,kind,name,file_name,mime_type,file_size,download_url,description,tags,thumbnail_url,is_active,is_new,created_at FROM firmware_items WHERE parent_id IS NOT DISTINCT FROM $1 ORDER BY CASE kind WHEN 'folder' THEN 0 ELSE 1 END, lower(name), id",[parentId]);
     res.set("Cache-Control","no-store");
     res.json({items:result.rows});
   } catch(e) { console.error("Firmware list error:",e); res.status(500).json({error:"Could not load firmware folder"}); }
@@ -729,10 +732,14 @@ app.put("/api/admin/firmware/folders/:id", requirePermission("site.save"), async
   try {
     const id=Number(req.params.id);
     const name=String(req.body?.name||"").trim().slice(0,160);
-    const description=String(req.body?.description||"").trim().slice(0,200);
+    const description=String(req.body?.description||"").trim().slice(0,2000);
+    const thumbnailUrl=String(req.body?.thumbnailUrl||"").trim().slice(0,1000);
+    const isActive=req.body?.isActive!==false;
+    const isNew=req.body?.isNew===true;
     if(!Number.isSafeInteger(id)||id<=0)return res.status(400).json({error:"Invalid folder"});
     if(!name)return res.status(400).json({error:"Folder name is required"});
-    const result=await pool.query("UPDATE firmware_items SET name=$2,description=$3 WHERE id=$1 AND kind='folder' RETURNING id,parent_id,kind,name,description,created_at",[id,name,description]);
+    if(thumbnailUrl && !/^https:\/\//i.test(thumbnailUrl))return res.status(400).json({error:"Thumbnail must use HTTPS"});
+    const result=await pool.query("UPDATE firmware_items SET name=$2,description=$3,thumbnail_url=$4,is_active=$5,is_new=$6 WHERE id=$1 AND kind='folder' RETURNING id,parent_id,kind,name,description,thumbnail_url,is_active,is_new,created_at",[id,name,description,thumbnailUrl,isActive,isNew]);
     if(!result.rows.length)return res.status(404).json({error:"Folder not found"});
     res.json({item:result.rows[0]});
   } catch(e) { console.error("Firmware folder rename error:",e); res.status(500).json({error:"Could not rename folder"}); }
