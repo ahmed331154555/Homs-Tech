@@ -691,6 +691,26 @@ app.post("/api/admin/firmware/links/:parentId", requirePermission("site.save"), 
     res.status(201).json({item:result.rows[0]});
   } catch(e) { console.error("Firmware link create error:",e); res.status(500).json({error:"Could not save download link"}); }
 });
+app.put("/api/admin/firmware/items/:id", requirePermission("site.save"), async (req,res) => {
+  try {
+    const id=Number(req.params.id);
+    if(!Number.isSafeInteger(id)||id<=0)return res.status(400).json({error:"Invalid item"});
+    const name=String(req.body?.name||"").trim().slice(0,220);
+    const url=String(req.body?.url||"").trim().slice(0,2048);
+    const description=String(req.body?.description||"").trim().slice(0,2000);
+    const sizeMbRaw=String(req.body?.sizeMb??"").trim();
+    const sizeMb=sizeMbRaw===""?0:Number(sizeMbRaw);
+    const tags=Array.isArray(req.body?.tags)?req.body.tags.map(x=>String(x).trim().slice(0,60)).filter(Boolean).slice(0,20):String(req.body?.tags||"").split(",").map(x=>x.trim().slice(0,60)).filter(Boolean).slice(0,20);
+    let parsed; try { parsed=new URL(url); } catch {}
+    if(!name)return res.status(400).json({error:"File name is required"});
+    if(!parsed||!["http:","https:"].includes(parsed.protocol))return res.status(400).json({error:"Enter a valid http or https download link"});
+    if(!Number.isFinite(sizeMb)||sizeMb<0||sizeMb>1048576)return res.status(400).json({error:"File size must be between 0 and 1048576 MB"});
+    const fileSize=Math.round(sizeMb*1024*1024);
+    const result=await pool.query("UPDATE firmware_items SET name=$2,file_name=$2,download_url=$3,description=$4,file_size=$5,tags=$6 WHERE id=$1 AND kind='file' RETURNING id,parent_id,kind,name,file_name,download_url,description,file_size,tags,created_at",[id,name,url,description,fileSize,tags]);
+    if(!result.rows.length)return res.status(404).json({error:"Firmware file not found"});
+    res.json({item:result.rows[0]});
+  } catch(e) { console.error("Firmware file update error:",e); res.status(500).json({error:"Could not update firmware file"}); }
+});
 app.delete("/api/admin/firmware/items/:id", requirePermission("site.save"), async (req,res) => {
   try {
     const id=Number(req.params.id);
