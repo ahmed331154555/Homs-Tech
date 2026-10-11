@@ -655,7 +655,7 @@ app.get("/api/firmware/download/:id", async (req,res) => {
       if(!customer.rows.length) throw new Error("Invalid customer session");
       customerId=customer.rows[0].id;
     } catch {
-      const returnTo="/firmware.html#file="+encodeURIComponent(id);
+      const returnTo="/api/firmware/download/"+id;
       return res.redirect(302,"/account.html?returnTo="+encodeURIComponent(returnTo));
     }
     client=await pool.connect();
