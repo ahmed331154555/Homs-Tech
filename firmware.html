@@ -300,6 +300,28 @@ header{background:#061a36;border-bottom:0;box-shadow:0 4px 18px #03152b24}
   .topbar .marquee-track{animation-duration:9s}
 }
 
+
+/* Recent files + most downloaded files ticker */
+.firmware-highlights{margin:0 0 18px;padding:10px 14px;border:1px solid #173c63;border-radius:13px;background:linear-gradient(112deg,#06142a,#0a2342 72%,#082b4c);color:#f5f9ff;box-shadow:0 9px 24px #061a3020;overflow:hidden}
+.highlight-row{display:grid;grid-template-columns:145px minmax(0,1fr);align-items:center;gap:14px;min-height:42px}
+.highlight-row+.highlight-row{border-top:1px solid #ffffff16;margin-top:6px;padding-top:6px}
+.highlight-label{display:flex;align-items:center;gap:9px;font-size:12px;white-space:nowrap}
+.highlight-symbol{display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:#ffffff0c;color:#2bdcff;font-size:18px;font-weight:900}
+.highlight-label strong{font-size:12px;font-weight:900}
+.highlight-viewport{min-width:0;overflow:hidden}
+.highlight-track{display:flex;align-items:stretch;gap:9px;width:max-content;max-width:none;animation:firmwareTicker 24s linear infinite;will-change:transform}
+.highlight-row:hover .highlight-track{animation-play-state:paused}
+.highlight-item{display:flex;flex-direction:column;justify-content:center;min-width:205px;max-width:270px;padding:5px 10px;border:1px solid #ffffff1c;border-radius:7px;background:#ffffff0b;transition:background .2s,border-color .2s}
+.highlight-item:hover{background:#0b6ac24a;border-color:#30caff7d}
+.highlight-file{display:block;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#d7eaff;font-size:11px;font-weight:800}
+.highlight-meta{display:flex;align-items:center;gap:10px;margin-top:3px;color:#9db7d1;font-size:9px;white-space:nowrap}
+.highlight-downloads{color:#36dcf4;font-weight:900}
+.highlight-empty{padding:8px 0;color:#9db7d1;font-size:11px}
+@keyframes firmwareTicker{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+.download-count-inline{font-size:10px;font-weight:600;opacity:.9}
+@media(max-width:820px){.firmware-highlights{padding:9px 10px}.highlight-row{grid-template-columns:112px minmax(0,1fr);gap:8px}.highlight-label{gap:6px}.highlight-label strong{font-size:11px}.highlight-item{min-width:175px}}
+@media(max-width:560px){.firmware-highlights{margin-bottom:14px;padding:8px;border-radius:10px}.highlight-row{grid-template-columns:92px minmax(0,1fr);gap:6px;min-height:38px}.highlight-symbol{width:19px;height:19px;font-size:14px}.highlight-label strong{font-size:10px}.highlight-item{min-width:155px;padding:4px 7px}.highlight-file{font-size:10px;max-width:195px}.highlight-meta{font-size:8px}}
+
 </style></head><body>
 <div class="topbar" id="homeTopBar" aria-label="Servicevoordelen"><div class="marquee-viewport"><div class="marquee-track"><div class="top-info" id="homeTopInfo"><span>1 jaar garantie</span><span>Snel geholpen</span><span>Betrouwbare service</span></div></div></div></div>
 <header><div class="container"><div class="header-main">
@@ -310,6 +332,7 @@ header{background:#061a36;border-bottom:0;box-shadow:0 4px 18px #03152b24}
 <main class="page">
 <section class="intro"><div class="intro-copy"><small>HOMS TECH · DOWNLOAD CENTER</small><h1>Firmware <span>Homs Tech</span></h1><p>Alle firmware, tools en bestanden overzichtelijk per merk en map.</p><div class="hero-perks"><span><b>↓</b><strong>Originele bestanden</strong><small>Veilig en betrouwbaar</small></span><span><b>♢</b><strong>100% Veilig</strong><small>Gecontroleerde downloads</small></span><span><b>ϟ</b><strong>Altijd up-to-date</strong><small>Firmware en tools</small></span><span><b>☏</b><strong>Gratis support</strong><small>Hulp bij problemen</small></span></div></div>
 <img class="hero-art" src="assets/firmware-hero-premium.svg" alt="" aria-hidden="true" fetchpriority="high"></section>
+<section class="firmware-highlights" aria-label="Recent and popular firmware files"><div class="highlight-row"><div class="highlight-label"><span class="highlight-symbol">◷</span><strong>Recent Files</strong></div><div class="highlight-viewport"><div class="highlight-track" id="recentFiles"><span class="highlight-empty">Recent files verschijnen hier</span></div></div></div><div class="highlight-row"><div class="highlight-label"><span class="highlight-symbol">ϟ</span><strong>Top Files</strong></div><div class="highlight-viewport"><div class="highlight-track" id="topFiles"><span class="highlight-empty">Populairste bestanden verschijnen hier</span></div></div></div></section>
 <form class="searchbar" id="folderSearch"><span class="search-symbol" aria-hidden="true">⌕</span><input id="folderSearchInput" type="search" placeholder="Search Keyword — zoek op merk, model of bestand…" aria-label="Zoek in Firmware"><select id="folderSearchType" aria-label="Zoek in bestanden of mappen"><option value="all">Files / Folders</option><option value="folder">Folders</option><option value="file">Files</option></select><button type="submit">Zoek ⌕</button></form>
 <div class="library-head"><div class="crumb" id="crumbs"><button onclick="goRoot()">Firmware</button></div><div class="result-count" id="resultCount">Bibliotheek</div></div>
 <section class="grid" id="grid"><div class="empty"><span class="empty-icon">📁</span>Mappen worden geladen…</div></section>
@@ -320,6 +343,10 @@ header{background:#061a36;border-bottom:0;box-shadow:0 4px 18px #03152b24}
 const grid=document.getElementById('grid'),crumbs=document.getElementById('crumbs'),resultCount=document.getElementById('resultCount');let current=null,stack=[],allItems=[],query='',searchType='all';
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function date(v){try{return new Intl.DateTimeFormat('nl-NL',{dateStyle:'medium'}).format(new Date(v))}catch{return ''}}
+function highlightDate(v){try{return new Intl.DateTimeFormat('nl-NL',{day:'2-digit',month:'short',year:'numeric'}).format(new Date(v))}catch{return ''}}
+function highlightCard(x){const count=Number(x.download_count||0);return '<a class="highlight-item" href="/api/firmware/download/'+encodeURIComponent(x.id)+'" title="'+esc(x.name)+'"><span class="highlight-file">'+esc(x.name)+'</span><span class="highlight-meta"><span class="highlight-downloads">↓ '+count+' downloads</span><span>'+esc(highlightDate(x.created_at))+'</span></span></a>'}
+function setTicker(id,items){const el=document.getElementById(id);if(!items||!items.length){el.innerHTML='<span class="highlight-empty">Nog geen bestanden beschikbaar</span>';el.style.animation='none';return}el.innerHTML=items.map(highlightCard).join('');el.style.animationDuration=Math.max(14,items.length*4)+'s'}
+async function loadHighlights(){try{const r=await fetch('/api/firmware/highlights',{cache:'no-store'});const d=await r.json();if(!r.ok)throw Error(d.error||'Highlights laden mislukt');setTicker('recentFiles',d.recent||[]);setTicker('topFiles',d.popular||[])}catch(e){for(const id of ['recentFiles','topFiles'])document.getElementById(id).innerHTML='<span class="highlight-empty">Bestanden konden niet worden geladen</span>'}}
 function showCrumbs(){crumbs.innerHTML='<button onclick="goRoot()">Firmware</button>'+stack.map((x,i)=>' / <button onclick="goLevel('+i+')">'+esc(x.name)+'</button>').join('')}
 async function load(){showCrumbs();grid.innerHTML='<div class="empty">Mappen worden geladen…</div>';try{const q=current?'?parentId='+encodeURIComponent(current):'';const r=await fetch('/api/firmware/items'+q);const d=await r.json();if(!r.ok)throw Error(d.error||'Kon inhoud niet laden');allItems=d.items||[];render()}catch(e){grid.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}}
 function render(){
@@ -329,11 +356,11 @@ function render(){
  if(!items.length){grid.innerHTML='<div class="empty"><span class="empty-icon">'+(term?'⌕':'📂')+'</span>'+(term?'Geen resultaten gevonden. Probeer een andere zoekterm.':'Deze map is nog leeg.')+'</div>';return}
  grid.innerHTML=items.map(x=>x.kind==='folder'
  ? '<a class="folder" href="#" onclick="openFolder('+x.id+',\''+esc(x.name).replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\');return false"><span class="foldericon" aria-hidden="true"></span><span class="folderinfo"><span class="foldername">'+esc(x.name)+'</span><span class="desc">'+esc(x.description||'Open map en bekijk inhoud')+'</span></span><span class="folder-arrow">›</span></a>'
- : '<article class="file"><div class="filetop"><span class="fileicon">↓</span><span><span class="filename">'+esc(x.name)+'</span><span class="filedate">Toegevoegd '+esc(date(x.created_at))+'</span></span></div>'+(x.description?'<p class="filedesc">'+esc(x.description)+'</p>':'<p class="filedesc">Download via de opgeslagen externe link.</p>')+'<a class="download" href="'+esc(x.download_url||'#')+'" target="_blank" rel="noopener noreferrer">↓ Download bestand</a></article>'
+ : '<article class="file"><div class="filetop"><span class="fileicon">↓</span><span><span class="filename">'+esc(x.name)+'</span><span class="filedate">Toegevoegd '+esc(date(x.created_at))+'</span></span></div>'+(x.description?'<p class="filedesc">'+esc(x.description)+'</p>':'<p class="filedesc">Download via de opgeslagen externe link.</p>')+'<a class="download" href="/api/firmware/download/'+encodeURIComponent(x.id)+'">↓ Download bestand <span class="download-count-inline">· '+Number(x.download_count||0)+' downloads</span></a></article>'
  ).join('');
 }
 function openFolder(id,name){stack.push({id,name});current=id;query='';document.getElementById('folderSearchInput').value='';query='';load()}function goRoot(){stack=[];current=null;query='';document.getElementById('folderSearchInput').value='';load()}function goLevel(i){stack=stack.slice(0,i+1);current=stack[stack.length-1].id;query='';document.getElementById('folderSearchInput').value='';load()}
 document.getElementById('folderSearch').addEventListener('submit',e=>{e.preventDefault();query=document.getElementById('folderSearchInput').value;searchType=document.getElementById('folderSearchType').value;render()});
 document.getElementById('siteSearch').addEventListener('submit',e=>{e.preventDefault();query=document.getElementById('siteSearchInput').value;document.getElementById('folderSearchInput').value=query;render();document.querySelector('.page').scrollIntoView({behavior:'smooth'})});
-document.getElementById('folderSearchInput').addEventListener('input',e=>{query=e.target.value;searchType=document.getElementById('folderSearchType').value;render()});document.getElementById('folderSearchType').addEventListener('change',e=>{searchType=e.target.value;render()});load();
+document.getElementById('folderSearchInput').addEventListener('input',e=>{query=e.target.value;searchType=document.getElementById('folderSearchType').value;render()});document.getElementById('folderSearchType').addEventListener('change',e=>{searchType=e.target.value;render()});load();loadHighlights();
 </script></body></html>
