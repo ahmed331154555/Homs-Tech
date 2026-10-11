@@ -1932,7 +1932,7 @@ async function confirmFirmwareFileEdit(){
  const tags=String(document.getElementById("firmwareEditFileTags")?.value||"").split(",").map(x=>x.trim()).filter(Boolean);
  const description=String(document.getElementById("firmwareEditFileDescription")?.value||"").trim();
  if(!name||!url)return firmwareAdminMessage("Vul bestandsnaam en downloadlink in.",true);
- if(!/^https?:\\/\\//i.test(url))return firmwareAdminMessage("Vul een geldige downloadlink in.",true);
+ if(!/^https?:\/\//i.test(url))return firmwareAdminMessage("Vul een geldige downloadlink in.",true);
  const save=modal.querySelector(".firmware-edit-footer .btn-green");if(save)save.disabled=true;
  try{
   const result=await firmwareAdminRequest("/api/admin/firmware/items/"+id,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,url,sizeMb,tags,description})});
