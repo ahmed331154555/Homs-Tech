@@ -1538,7 +1538,26 @@ textarea{
   @media(max-width:1100px){#page-firmware .firmware-admin-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}}
   @media(max-width:850px){#page-firmware .firmware-admin-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}}
   @media(max-width:620px){#page-firmware .firmware-admin-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#page-firmware .firmware-admin-card{padding:9px}}
-  @media(max-width:380px){#page-firmware .firmware-admin-grid{grid-template-columns:1fr}#page-firmware .firmware-admin-form-grid{grid-template-columns:1fr}}  </style>
+  
+  /* GEM Flash-inspired folder tiles */
+  #page-firmware .firmware-admin-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;align-items:start}
+  #page-firmware .firmware-admin-card{position:relative;min-height:0;height:190px;padding:14px 10px 10px;border:1px solid transparent;border-radius:12px;background:transparent;box-shadow:none;justify-content:flex-start;align-items:center;text-align:center;gap:8px}
+  #page-firmware .firmware-admin-card:hover{transform:none;background:#f3f8fc;border-color:#d8e8f5;box-shadow:0 4px 14px #123a5a12}
+  #page-firmware .firmware-admin-card.folder{height:190px;min-height:0;aspect-ratio:auto}
+  #page-firmware .firmware-admin-card>div:first-child{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:7px;flex:1;min-height:0}
+  #page-firmware .firmware-admin-icon{display:grid;place-items:center;width:76px;height:66px;flex:0 0 66px;border-radius:7px;background:linear-gradient(145deg,#e6f5ff,#c8e6f7);font-size:52px;line-height:1;filter:drop-shadow(0 2px 1px #0a355515)}
+  #page-firmware .firmware-admin-card.folder .firmware-admin-icon{background:transparent;color:#1684a9}
+  #page-firmware .firmware-admin-name{display:block;width:100%;font-size:12px;font-weight:700;line-height:1.3;text-align:center;overflow-wrap:anywhere}
+  #page-firmware .firmware-admin-card.folder .firmware-admin-name{-webkit-line-clamp:3;min-height:0;max-height:48px}
+  #page-firmware .firmware-admin-meta{display:block;width:100%;font-size:10px;text-align:center;line-height:1.3;max-height:28px;overflow:hidden}
+  #page-firmware .firmware-admin-actions{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;width:100%;margin-top:auto;padding-top:4px;border-top:1px solid #e7edf3}
+  #page-firmware .firmware-admin-actions .btn{flex:1 1 42%;font-size:10px;min-height:27px;padding:4px 5px}
+  #page-firmware .firmware-admin-tags{justify-content:center}
+  @media(max-width:1200px){#page-firmware .firmware-admin-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+  @media(max-width:950px){#page-firmware .firmware-admin-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+  @media(max-width:720px){#page-firmware .firmware-admin-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}#page-firmware .firmware-admin-card{height:174px;padding:10px 6px 7px}#page-firmware .firmware-admin-icon{width:60px;height:54px;flex-basis:54px;font-size:42px}}
+  @media(max-width:480px){#page-firmware .firmware-admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:380px){#page-firmware .firmware-admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#page-firmware .firmware-admin-form-grid{grid-template-columns:1fr}}  </style>
   <section class="admin-page" id="page-firmware">
     <div class="section-head"><div><h2>📁 Firmware Library</h2><p>Beheer mappen en downloadlinks. Geen bestanden uploaden.</p></div><button class="btn" onclick="loadFirmwareAdmin()">↻ Vernieuwen</button></div>
     <div class="card" style="margin-bottom:16px">
