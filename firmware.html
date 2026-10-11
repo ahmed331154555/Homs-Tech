@@ -517,6 +517,7 @@ header{background:#061a36;border-bottom:0;box-shadow:0 4px 18px #03152b24}
 }
 
 </style>
+  <link rel="stylesheet" href="assets/homs-global-nav.css">
 </head><body>
 <div class="topbar" id="homeTopBar" aria-label="Servicevoordelen"><div class="marquee-viewport"><div class="marquee-track"><div class="top-info" id="homeTopInfo"><span>1 jaar garantie</span><span>Snel geholpen</span><span>Betrouwbare service</span></div></div></div></div>
 <header><div class="container"><div class="header-main">
@@ -565,5 +566,6 @@ function openFolder(id,name){stack.push({id:Number(id),name});current=Number(id)
  document.getElementById('folderSearchInput').addEventListener('input',e=>{query=e.target.value;searchType=document.getElementById('folderSearchType').value;saveLibraryState();load()});document.getElementById('folderSearchType').addEventListener('change',e=>{searchType=e.target.value;saveLibraryState();load()});
  async function bootLibrary(){const goRoot=new URLSearchParams(location.search).get('root')==='1';if(goRoot){stack=[];current=null;query='';searchType='all';try{sessionStorage.removeItem(LIB_STATE_KEY)}catch{}try{history.replaceState(null,'',location.pathname)}catch{}}else{try{const saved=JSON.parse(sessionStorage.getItem(LIB_STATE_KEY)||'null');if(saved&&Array.isArray(saved.stack)){stack=saved.stack;current=stack.length?Number(stack[stack.length-1].id):null;query=String(saved.query||'');searchType=saved.searchType||'all';document.getElementById('folderSearchInput').value=query;document.getElementById('folderSearchType').value=searchType}}catch{}}const folderHash=location.hash.match(/^#folder=(\d+)$/);if(folderHash&&(!current||Number(folderHash[1])!==current)){current=Number(folderHash[1]);if(!stack.length||Number(stack[stack.length-1].id)!==current)stack=[{id:current,name:'Map'}]}await load();const fileHash=location.hash.match(/^#file-(\d+)$/);if(fileHash)await openFile(Number(fileHash[1]));loadHighlights()}
 bootLibrary();
-</script></body>
+</script>  <script src="assets/homs-global-nav.js"></script>
+</body>
 </html>
