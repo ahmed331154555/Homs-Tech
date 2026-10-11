@@ -83,4 +83,13 @@ test("does not claim Easy-Unlocker API is ready without credentials", () => {
   const result = getEasyUnlockerApiReadiness({});
   assert.equal(result.configured, false);
   assert.equal(result.provider, "local");
+  assert.equal(result.apiCallsEnabled, false);
+});
+
+test("a key without documented endpoint and auth settings is not enough", () => {
+  const result = getEasyUnlockerApiReadiness({ EASY_UNLOCKER_API_KEY: "test-secret" });
+  assert.equal(result.configured, false);
+  assert.equal(result.apiCredentialsPresent, true);
+  assert.equal(result.apiCallsEnabled, false);
+  assert.equal(result.missingConfig.length, 3);
 });
