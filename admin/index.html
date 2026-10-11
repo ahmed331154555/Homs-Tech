@@ -5390,6 +5390,12 @@ function renderGsmOrders(){
     const date=order.created_at?new Date(order.created_at).toLocaleString('nl-NL'):'';
     const price=order.price?'€ '+esc(order.price):'Op aanvraag';
     const statusLabel=order.status||'Nieuw';
+    let repairMeta={};
+    try{repairMeta=JSON.parse(order.extra_fields||'{}')}catch{}
+    const isRepairQuote=repairMeta.repairQuote===true;
+    const repairPhotos=Array.isArray(repairMeta.photos)?repairMeta.photos:[];
+    const repairPhotosHtml=isRepairQuote&&repairPhotos.length?`<div class="order-notes"><strong>Foto's van het toestel</strong><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">${repairPhotos.map((photo,n)=>`<a href="${esc(photo.dataUrl||'')}" target="_blank" rel="noopener noreferrer" title="Open foto ${n+1}" style="display:block;border:1px solid #dbe5ef;border-radius:10px;overflow:hidden;width:120px;height:120px;background:#f8fafc"><img src="${esc(photo.dataUrl||'')}" alt="Reparatiefoto ${n+1}" style="width:100%;height:100%;object-fit:cover"></a>`).join('')}</div></div>`:'';
+    const repairDetails=isRepairQuote?`<div class="order-notes"><strong>Reparatieaanvraag via website</strong><br>Merk: ${esc(repairMeta.brand||'-')} · Model: ${esc(repairMeta.model||'-')} · Foto's: ${repairPhotos.length}</div>`:'';
     return `<article class="order-card">
       <div class="order-card-head">
         <div class="order-heading">
@@ -5415,7 +5421,9 @@ function renderGsmOrders(){
           <div class="order-info"><strong>IMEI / Serienummer</strong><span>${esc(order.imei||'-')}</span></div>
           <div class="order-info"><strong>Categorie</strong><span>${esc(order.service_category||'-')}</span></div>
         </div>
+        ${repairDetails}
         ${order.notes?`<div class="order-notes"><strong>Opmerking</strong><br>${esc(order.notes)}</div>`:''}
+        ${repairPhotosHtml}
         ${(order.provider_reference||order.execution_note||order.result_data)?`<div class="order-notes"><strong>Uitvoering geregistreerd</strong><br>${order.provider_reference?`Referentie: ${esc(order.provider_reference)} · `:''}${order.execution_updated_at?`Bijgewerkt: ${esc(new Date(order.execution_updated_at).toLocaleString('nl-NL'))}`:'Gegevens opgeslagen'}</div>`:''}
       </div>
     </article>`;
