@@ -1111,7 +1111,7 @@ app.get("/api/admin/gsm/easy-unlocker/test-services", requirePermission("gsm.imp
     const shape = { rootType: Array.isArray(data) ? "array" : data === null ? "null" : typeof data };
     if (typeof data === "string") {
       shape.contentLength = data.length;
-      shape.xmlTags = [...new Set([...data.matchAll(/<([A-Za-z_][\\w:.-]*)\\b/g)].map(match => match[1]))].slice(0, 30);
+      shape.xmlTags = [...new Set([...data.matchAll(/<([A-Za-z_][A-Za-z0-9_:.-]*)/g)].map(match => match[1]))].slice(0, 30);
     } else if (Array.isArray(data)) {
       shape.count = data.length;
       shape.firstItemKeys = data[0] && typeof data[0] === "object" ? Object.keys(data[0]).slice(0, 40) : [];
