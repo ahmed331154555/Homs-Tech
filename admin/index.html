@@ -2094,6 +2094,8 @@ function canonicalPhoneOptionLabel(key,label){
 }
 
 function normalizePhoneOptions(phone){
+    if(phone.pricingMode!=="variant") phone.pricingMode="legacy";
+    if(!Array.isArray(phone.variantPrices)) phone.variantPrices=[];
     const defaults={
       conditionOptions:[
         {label:"Zichtbaar gebruikt",enabled:true,active:true,available:true,basePrice:0},
@@ -2517,7 +2519,9 @@ function normalizeData(){
       colorOptions:x.colorOptions,
       batteryOptions:x.batteryOptions,
       vatOptions:x.vatOptions,
-      tradeInOptions:x.tradeInOptions
+      tradeInOptions:x.tradeInOptions,
+      pricingMode:x.pricingMode === "variant" ? "variant" : "legacy",
+      variantPrices:Array.isArray(x.variantPrices) ? x.variantPrices : []
     };
     normalizePhoneOptions(phone);
     return phone;
@@ -3469,6 +3473,22 @@ function renderPhones(){
     </div>`;
   };
 
+  const pricingModeEditor = `
+    <div class="card" style="margin-top:16px;border:1px solid #cfe0ff">
+      <div class="card-title">💶 Prijsinstelling voor dit product</div>
+      <div class="small" style="margin:7px 0 12px">Kies één methode. De oude methode blijft behouden. De nieuwe methode geeft iedere combinatie van conditie, kleur en opslag een eigen vaste prijs.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <label style="display:flex;gap:8px;align-items:center;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;background:white">
+          <input type="radio" name="pricingMode-${selectedPhoneIndex}" ${phone.pricingMode!=="variant"?"checked":""} onchange="setPhonePricingMode('legacy')"> Oude prijsberekening
+        </label>
+        <label style="display:flex;gap:8px;align-items:center;padding:10px 13px;border:1px solid #d7deea;border-radius:10px;background:white">
+          <input type="radio" name="pricingMode-${selectedPhoneIndex}" ${phone.pricingMode==="variant"?"checked":""} onchange="setPhonePricingMode('variant')"> Vaste prijs per combinatie
+        </label>
+        <button type="button" class="btn btn-light" onclick="generatePhoneVariantPrices(true)">Combinaties bijwerken</button>
+      </div>
+      ${phone.pricingMode==="variant" ? renderPhoneVariantPriceTable(phone) : '<div class="small" style="margin-top:10px">De bestaande basisprijs en prijsverschillen blijven actief.</div>'}
+    </div>`;
+
   const specs=phone.specifications.map((s,i)=>`
     <div style="display:grid;grid-template-columns:1fr 1fr 44px;gap:10px;align-items:center;margin-bottom:9px">
       <input value="${esc(s.label||'')}" placeholder="Specificatie" oninput="data.phones[${selectedPhoneIndex}].specifications[${i}].label=this.value;markChanged()">
@@ -3545,7 +3565,8 @@ function renderPhones(){
           <div style="margin-top:14px"><strong>Extra specificaties</strong>${specs}<button class="btn btn-light" type="button" onclick="data.phones[${selectedPhoneIndex}].specifications.push({label:'',value:''});renderPhones();markChanged()">+ Specificatie</button></div>
         </div>
 
-        ${optionEditor('conditionOptions','1. Productconditie','Hier zet je de ECHTE basisprijs per conditie. Bijvoorbeeld: Zo goed als nieuw €650, Licht gebruikt €520. De gekozen conditie wordt de basisprijs.')}
+        ${pricingModeEditor}
+        ${optionEditor('conditionOptions','1. Productconditie','Hier beheer je de beschikbare condities. In de nieuwe methode wordt de prijs per conditie + kleur + opslag apart ingesteld.')}
         ${optionEditor('storageOptions','2. Geheugen / opslag','Opslag is altijd een prijsverschil (+/-) bovenop de gekozen conditie.')}
         ${optionEditor('colorOptions','3. Kleur','Kleuren kunnen actief/beschikbaar worden gezet en een eigen +/- prijs krijgen.')}
         ${optionEditor('batteryOptions','4. Batterij','Batterij is altijd een prijsverschil (+/-). Bijvoorbeeld Nieuw (100%) +€30.')}
@@ -3586,6 +3607,40 @@ function removePhoneImage(i,j){
 
 function renderPhoneTitle(i){ renderPhones(); }
 
+
+function setPhonePricingMode(mode){
+  const phone=data.phones[selectedPhoneIndex]; if(!phone) return;
+  if(mode==="variant" && phone.pricingMode!=="variant" && (!Array.isArray(phone.variantPrices)||!phone.variantPrices.length)){
+    phone.pricingMode="legacy";
+    generatePhoneVariantPrices(false);
+  }
+  phone.pricingMode=mode==="variant"?"variant":"legacy";
+  renderPhones(); markChanged();
+}
+function generatePhoneVariantPrices(preserve=true){
+  const phone=data.phones[selectedPhoneIndex]; if(!phone) return;
+  const conditions=(phone.conditionOptions||[]).filter(x=>x&&x.label&&x.active!==false&&x.enabled!==false);
+  const colors=(phone.colorOptions||[]).filter(x=>x&&x.label&&x.active!==false&&x.enabled!==false);
+  const storages=(phone.storageOptions||[]).filter(x=>x&&x.label&&x.active!==false&&x.enabled!==false);
+  const old=Array.isArray(phone.variantPrices)?phone.variantPrices:[];
+  const oldByKey=new Map(old.map(x=>[JSON.stringify([x.condition,x.color,x.storage]),x]));
+  const rows=[];
+  for(const c of conditions) for(const col of colors) for(const st of storages){
+    const key=JSON.stringify([c.label,col.label,st.label]);
+    const previous=preserve?oldByKey.get(key):null;
+    const legacyBase=Number(c.basePrice ?? c.conditionBasePrice ?? phone.price ?? 0)||0;
+    const legacyPrice=Math.max(0,Math.round((legacyBase+(Number(st.priceDelta)||0)+(Number(col.priceDelta)||0))*100)/100);
+    rows.push(previous?{...previous,condition:c.label,color:col.label,storage:st.label}:{condition:c.label,color:col.label,storage:st.label,price:legacyPrice,active:true,available:true});
+  }
+  phone.variantPrices=rows;
+  if(preserve) { renderPhones(); markChanged(); }
+}
+function renderPhoneVariantPriceTable(phone){
+  const rows=Array.isArray(phone.variantPrices)?phone.variantPrices:[];
+  if(!rows.length) return '<div class="small" style="margin-top:12px">Geen combinaties gevonden. Klik op “Combinaties bijwerken”.</div>';
+  return '<div style="margin-top:14px;overflow:auto"><div class="small" style="margin-bottom:8px">Elke rij heeft een eigen vaste basisprijs. Batterij, BTW en inruil blijven eventuele toeslagen volgens de bestaande instellingen.</div><table style="width:100%;border-collapse:collapse;min-width:620px"><thead><tr><th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Conditie</th><th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Kleur</th><th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Opslag</th><th style="text-align:left;padding:9px;border-bottom:1px solid #e2e8f0">Vaste prijs (€)</th><th style="padding:9px;border-bottom:1px solid #e2e8f0">Beschikbaar</th></tr></thead><tbody>'+rows.map((r,i)=>'<tr><td style="padding:7px;border-bottom:1px solid #edf0f5">'+esc(r.condition)+'</td><td style="padding:7px;border-bottom:1px solid #edf0f5">'+esc(r.color)+'</td><td style="padding:7px;border-bottom:1px solid #edf0f5">'+esc(r.storage)+'</td><td style="padding:7px;border-bottom:1px solid #edf0f5"><input aria-label="Prijs '+esc(r.condition)+' '+esc(r.color)+' '+esc(r.storage)+'" type="number" min="0" step="0.01" value="'+esc(r.price??0)+'" style="width:120px;padding:8px;border:1px solid #cbd5e1;border-radius:8px" oninput="data.phones['+selectedPhoneIndex+'].variantPrices['+i+'].price=Number(this.value||0);markChanged()"></td><td style="text-align:center;padding:7px;border-bottom:1px solid #edf0f5"><input type="checkbox" '+(r.available!==false?'checked':'')+' onchange="data.phones['+selectedPhoneIndex+'].variantPrices['+i+'].available=this.checked;markChanged()"></td></tr>').join('')+'</tbody></table></div>';
+}
+
 function addPhone(){
   data.phones.push({
     name:"Nieuwe iPhone",
@@ -3608,7 +3663,9 @@ function addPhone(){
     releaseYear:"",
     images:["","","",""],
     conditionDetails:[],
-    specifications:[]
+    specifications:[],
+    pricingMode:"legacy",
+    variantPrices:[]
   });
   normalizePhoneOptions(data.phones[data.phones.length-1]);
   selectedPhoneIndex=data.phones.length-1;
