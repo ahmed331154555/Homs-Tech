@@ -1605,6 +1605,22 @@ function priceProductFromCatalog(data, item) {
     }
     chosen[key] = option;
   }
+  if(product.pricingMode==="variant"){
+    const row=(Array.isArray(product.variantPrices)?product.variantPrices:[]).find(x=>
+      x && String(x.condition)===String(chosen.condition?.label||"") &&
+      String(x.color)===String(chosen.color?.label||"") &&
+      String(x.storage)===String(chosen.storage?.label||"") &&
+      x.active!==false && x.available!==false
+    );
+    if(!row || !Number.isFinite(moneyNumber(row.price)) || moneyNumber(row.price)<=0){
+      return {error:"Deze combinatie van conditie, kleur en opslag is niet beschikbaar of heeft geen geldige prijs."};
+    }
+    let exact=moneyNumber(row.price);
+    for(const key of ["battery","vat","tradeIn"]) exact+=serverOptionDelta(chosen[key],key);
+    const qty=Number(item?.qty ?? 1);
+    if(!Number.isInteger(qty)||qty<1||qty>99) return {error:"Kies een geldige hoeveelheid (1–99)."};
+    return {item:{name:String(product.name||"Smartphone"),brand:String(product.brand||""),type,id,options:Object.fromEntries(Object.entries(options).filter(([key,value])=>["storage","color","condition","battery","vat","tradeIn"].includes(key)&&String(value??"").trim()!=="")),qty,unitPrice:Math.round(Math.max(0,exact)*100)/100}};
+  }
   const condition = chosen.condition;
   const base = condition && (condition.basePrice !== undefined || condition.conditionBasePrice !== undefined)
     ? moneyNumber(condition.basePrice ?? condition.conditionBasePrice)
