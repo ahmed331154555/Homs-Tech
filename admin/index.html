@@ -3664,11 +3664,12 @@ function addPhone(){
     images:["","","",""],
     conditionDetails:[],
     specifications:[],
-    pricingMode:"legacy",
+    pricingMode:"variant",
     variantPrices:[]
   });
   normalizePhoneOptions(data.phones[data.phones.length-1]);
   selectedPhoneIndex=data.phones.length-1;
+  generatePhoneVariantPrices(false);
   renderPhones();
   markChanged();
 }
