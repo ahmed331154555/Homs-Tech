@@ -351,6 +351,16 @@ function optionDelta(x){
 }
 function money(n){ return "€"+Number(n||0).toFixed(2).replace(".00","").replace(".",","); }
 function calculateTotal(product){
+  if(product && product.pricingMode==="variant"){
+    const row=(Array.isArray(product.variantPrices)?product.variantPrices:[]).find(x=>x && x.condition===selectedOptions.condition && x.color===selectedOptions.color && x.storage===selectedOptions.storage && x.active!==false && x.available!==false);
+    if(!row) return 0;
+    let exact=num(row.price);
+    ["battery","vat","tradeIn"].forEach(key=>{
+      const chosen=effectiveOptions(product,key).find(x=>x.label===selectedOptions[key]);
+      if(chosen) exact+=optionDelta(chosen);
+    });
+    return Math.max(0,exact);
+  }
   const conditions=effectiveOptions(product,"condition");
   const selectedCondition=conditions.find(x=>x.label===selectedOptions.condition);
   // The selected condition is the real base price. All other options are +/- deltas.
@@ -480,6 +490,13 @@ function switchToProductVariant(hit){
   return true;
 }
 function selectProductOption(key,label){
+  if(currentProduct && currentProduct.pricingMode==="variant" && (key==="storage" || key==="color" || key==="condition")){
+    selectedOptions[key]=label;
+    renderProductBody();
+    const priceEl=document.getElementById("selectedConditionPrice");
+    if(priceEl && currentProduct) priceEl.textContent=money(calculateTotal(currentProduct));
+    return;
+  }
   if(key==="storage" || key==="color"){
     const storage=key==="storage" ? label : selectedOptions.storage;
     const color=key==="color" ? label : selectedOptions.color;
@@ -493,6 +510,7 @@ function selectProductOption(key,label){
 }
 function colorVariantImage(label){
   const normalizedLabel=normalizeColorValue(label);
+  if(currentProduct && currentProduct.pricingMode==="variant") return (Array.isArray(currentProduct.images)?currentProduct.images.filter(Boolean)[0]:"") || currentProduct.image || "";
   const appleImage=appleColorImage(currentProduct,label);
   if(appleImage) return appleImage;
   const storage=selectedOptions.storage || (Array.isArray(currentProduct?.storage)?currentProduct.storage[0]:currentProduct?.storage||currentProduct?.geheugen||'');
@@ -505,8 +523,12 @@ function renderOptionSection(key,title,list){
   const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
   const raw=Array.isArray(currentProduct[map[key]]) ? currentProduct[map[key]] : [];
   let base=raw.length ? raw : effectiveOptions(currentProduct,key);
+  if(currentProduct.pricingMode==="variant" && ["condition","storage","color"].includes(key)){
+    const values=[...new Set((Array.isArray(currentProduct.variantPrices)?currentProduct.variantPrices:[]).filter(x=>x&&x.active!==false&&x.available!==false).map(x=>x[key]))];
+    if(values.length) base=values.map(label=>({label,active:true,enabled:true,available:true,priceDelta:0}));
+  }
 
-  if(key==="storage" || key==="color"){
+  if((key==="storage" || key==="color") && currentProduct.pricingMode!=="variant"){
     const siblings=currentProductSiblings();
     const seen=new Set();
     const variantOptions=[];
@@ -539,7 +561,9 @@ function renderOptionSection(key,title,list){
 
     let priceLabel="";
     if(key==="condition"){
-      const cp=conditionBasePrice(x,currentProduct);
+      const cp=currentProduct.pricingMode==="variant"
+        ? num((currentProduct.variantPrices||[]).find(r=>r.condition===x.label&&r.color===selectedOptions.color&&r.storage===selectedOptions.storage)?.price)
+        : conditionBasePrice(x,currentProduct);
       if(cp>0) priceLabel="<small>"+money(cp)+"</small>";
     }else if(key!=="storage"){
       const delta=optionDelta(x);
@@ -568,7 +592,9 @@ function renderOptionSection(key,title,list){
     : "";
 
   const note=key==="condition"
-    ? '<div style="margin-top:7px;color:#64748b;font-size:12px">De gekozen staat bepaalt de basisprijs. Opslag, kleur, batterij en andere opties worden daarna als +/- prijsverschil toegevoegd.</div>'
+    ? (currentProduct.pricingMode==="variant"
+      ? '<div style="margin-top:7px;color:#64748b;font-size:12px">De prijs hangt af van de gekozen conditie, kleur en opslag. Batterij, BTW en inruil kunnen nog een toeslag hebben.</div>'
+      : '<div style="margin-top:7px;color:#64748b;font-size:12px">De gekozen staat bepaalt de basisprijs. Opslag, kleur, batterij en andere opties worden daarna als +/- prijsverschil toegevoegd.</div>')
     : "";
 
   return '<div class="option-section"><div class="option-title">'+esc(title)+help+
