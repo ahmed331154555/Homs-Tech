@@ -361,6 +361,23 @@ text-align:center
 }
 
 }
+ 
+.repair-quote-card{max-width:900px;margin:0 auto;background:#fff;border:1px solid #e1eaf2;border-radius:20px;overflow:hidden;box-shadow:0 12px 35px rgba(15,35,55,.08)}
+.quote-intro{padding:30px 32px;background:linear-gradient(120deg,#0b2740,#164f7d);color:#fff}
+.quote-kicker{font-size:11px;letter-spacing:1.5px;font-weight:800;color:#93cfff}
+.quote-intro h3{font-size:28px;margin:8px 0 7px}.quote-intro p{max-width:680px;color:#dceeff;margin:0}
+#repairQuoteForm{padding:28px 32px}.quote-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.quote-grid label{display:flex;flex-direction:column;gap:7px;font-size:14px;font-weight:700;color:#24394b}
+.quote-grid input:not([type=checkbox]),.quote-grid select,.quote-grid textarea{width:100%;min-height:46px;border:1px solid #d6e1eb;border-radius:9px;padding:12px 13px;background:#fff;color:#203449;font:inherit;outline:none}
+.quote-grid textarea{min-height:120px;resize:vertical}
+.quote-grid input:focus,.quote-grid select:focus,.quote-grid textarea:focus{border-color:#2583c7;box-shadow:0 0 0 3px #2583c71c}
+.quote-full{grid-column:1/-1}.quote-grid small{font-size:12px;color:#738597;font-weight:400}
+.quote-consent{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:10px!important;font-weight:500!important;color:#526679!important}
+.quote-consent input{margin-top:4px;flex-shrink:0}
+.quote-submit{margin-top:22px;min-height:48px;border:0;cursor:pointer}.quote-submit:disabled{opacity:.6;cursor:wait}
+.quote-status{margin-top:13px;font-weight:700;color:#155b8b}.quote-photo-preview{display:flex;gap:8px;flex-wrap:wrap}.quote-photo-preview span{background:#eff7fd;border:1px solid #d9eaf7;border-radius:8px;padding:7px 10px;font-size:12px;color:#315a78}
+@media(max-width:650px){.quote-intro{padding:24px 20px}.quote-intro h3{font-size:23px}#repairQuoteForm{padding:22px 18px}.quote-grid{grid-template-columns:1fr;gap:15px}.quote-full{grid-column:auto}}
+
 </style>
 <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20260922-final-header">
 <style>
@@ -474,7 +491,25 @@ Neem contact met ons op voor meer informatie.
 
 </div>
 
-<div id="priceContainer"></div>
+<div id="priceContainer" style="display:none"></div>
+<div class="repair-quote-card">
+  <div class="quote-intro"><span class="quote-kicker">HOMS TECH REPARATIES</span><h3>Vraag een reparatieprijs aan</h3><p>Vertel ons wat er mis is met uw telefoon en upload foto's. Wij bekijken uw aanvraag en nemen contact met u op met een prijsvoorstel.</p></div>
+  <form id="repairQuoteForm">
+    <div class="quote-grid">
+      <label>Merk van uw toestel *<select name="brand" required><option value="">Kies merk</option><option>Apple</option><option>Samsung</option><option>Google</option><option>Huawei</option><option>Xiaomi</option><option>OnePlus</option><option>Oppo</option><option>Anders</option></select></label>
+      <label>Model van uw toestel *<input name="model" maxlength="100" placeholder="Bijv. iPhone 14 Pro" required></label>
+      <label class="quote-full">Wat is het probleem? *<textarea name="issue" maxlength="3000" placeholder="Beschrijf wat er met uw telefoon aan de hand is..." required></textarea></label>
+      <label class="quote-full">Foto's van het probleem (max. 4 foto's, 2 MB per foto)<input id="repairPhotos" name="photos" type="file" accept="image/jpeg,image/png,image/webp,image/heic" multiple><small>Voeg foto's toe van de schade of het probleem. Foto's zijn optioneel.</small></label>
+      <div id="repairPhotoPreview" class="quote-full quote-photo-preview" aria-live="polite"></div>
+      <label>Uw naam *<input name="name" autocomplete="name" maxlength="120" required></label>
+      <label>E-mailadres *<input name="email" type="email" autocomplete="email" maxlength="254" required></label>
+      <label class="quote-full">Telefoonnummer<input name="phone" type="tel" autocomplete="tel" maxlength="40" placeholder="Voor een snelle terugkoppeling"></label>
+      <label class="quote-consent quote-full"><input type="checkbox" name="consent" required><span>Ik ga ermee akkoord dat HOMS TECH mijn gegevens gebruikt om contact op te nemen over deze reparatieaanvraag.</span></label>
+    </div>
+    <button class="btn green quote-submit" type="submit">Prijsaanvraag verzenden</button>
+    <p id="repairQuoteStatus" class="quote-status" role="status" aria-live="polite"></p>
+  </form>
+</div>
 
 </section>
 
@@ -887,5 +922,42 @@ loadSite();
 </script>
 
   <script src="assets/homs-global-nav.js"></script>
+<script id="repair-quote-form-handler">
+(()=>{
+const form=document.getElementById("repairQuoteForm");
+if(!form)return;
+const fileInput=document.getElementById("repairPhotos");
+const preview=document.getElementById("repairPhotoPreview");
+const status=document.getElementById("repairQuoteStatus");
+const submit=form.querySelector('button[type="submit"]');
+const MAX_FILES=4, MAX_SIZE=2*1024*1024;
+function selectedFiles(){
+ const files=Array.from(fileInput.files||[]);
+ if(files.length>MAX_FILES) throw new Error("U kunt maximaal 4 foto's toevoegen.");
+ for(const f of files){
+  if(!/^image\/(jpeg|png|webp|heic)$/.test(f.type)) throw new Error("Gebruik JPG-, PNG-, WEBP- of HEIC-afbeeldingen.");
+  if(f.size>MAX_SIZE) throw new Error("Elke foto mag maximaal 2 MB groot zijn.");
+ }
+ return files;
+}
+fileInput.addEventListener("change",()=>{
+ try{const files=selectedFiles();preview.innerHTML=files.map(f=>'<span>📷 '+String(f.name).replace(/[&<>"]/g,'')+'</span>').join("");status.textContent="";}
+ catch(e){preview.textContent="";status.textContent=e.message;fileInput.value="";}
+});
+function asDataUrl(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve({name:file.name,type:file.type,dataUrl:r.result});r.onerror=()=>reject(new Error("Een foto kon niet worden gelezen."));r.readAsDataURL(file);});}
+form.addEventListener("submit",async e=>{
+ e.preventDefault();status.textContent="Uw aanvraag wordt verzonden...";submit.disabled=true;
+ try{
+  const files=selectedFiles();const fd=new FormData(form);
+  const payload={brand:fd.get("brand"),model:fd.get("model"),issue:fd.get("issue"),name:fd.get("name"),email:fd.get("email"),phone:fd.get("phone"),consent:fd.get("consent")==="on",photos:await Promise.all(files.map(asDataUrl))};
+  const response=await fetch("/api/repair-requests",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(result.error||"Verzenden is niet gelukt. Probeer het later opnieuw.");
+  form.reset();preview.textContent="";status.textContent="Bedankt! Uw aanvraag is ontvangen. Uw aanvraagnummer is "+result.requestNo+". We nemen contact met u op.";
+ }catch(err){status.textContent=err.message||"Er ging iets mis. Probeer het opnieuw.";}
+ finally{submit.disabled=false;}
+});
+})();
+</script>
 </body>
 </html>
