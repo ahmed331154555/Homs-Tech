@@ -354,7 +354,15 @@ showMessage(data.message||"Controleer je e-mail voor de bevestigingscode.","succ
 return;
 }
 showMessage("Registratie is gelukt, maar de verificatiestap ontbreekt. Probeer opnieuw.");
-}catch(err){showMessage(err.message);}
+}catch(err){
+const errorText=String(err.message||"");
+if(errorText.toLowerCase().includes("nog niet bevestigd")){
+showVerification(email);
+showMessage("Je account is al aangemaakt maar nog niet bevestigd. Vul de code in die je per e-mail hebt ontvangen. Werkt de code niet, kies dan ‘Nieuwe code aanvragen’.","success");
+return;
+}
+showMessage(errorText);
+}
 });
 
 verifyForm.addEventListener("submit",async e=>{
