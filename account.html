@@ -112,7 +112,24 @@ input:focus{outline:3px solid rgba(37,99,235,.12);border-color:#2563eb}
 <div class="field full"><label for="loginEmail">E-mail</label><input id="loginEmail" type="email" required autocomplete="email"></div>
 <div class="field full"><label for="loginPassword">Wachtwoord</label><input id="loginPassword" type="password" required autocomplete="current-password"></div>
 </div>
-<div class="actions"><button class="btn green" type="submit">Inloggen</button></div>
+<div class="actions"><button class="btn green" type="submit">Inloggen</button><button class="btn gray" id="forgotPasswordLink" type="button">Wachtwoord vergeten?</button></div>
+</form>
+
+<form id="forgotForm" style="display:none">
+  <h2 style="margin-bottom:10px">Wachtwoord vergeten?</h2>
+  <p class="subtitle">Vul je e-mailadres in. Als het bij ons bekend is, sturen we je een veilige resetlink.</p>
+  <div class="form"><div class="field full"><label for="forgotEmail">E-mail</label><input id="forgotEmail" type="email" required autocomplete="email"></div></div>
+  <div class="actions"><button class="btn green" type="submit">Resetlink aanvragen</button><button class="btn gray" id="backToLoginFromForgot" type="button">Terug naar inloggen</button></div>
+</form>
+
+<form id="resetForm" style="display:none">
+  <h2 style="margin-bottom:10px">Nieuw wachtwoord instellen</h2>
+  <p class="subtitle">Kies een nieuw wachtwoord van minimaal 8 tekens.</p>
+  <div class="form">
+    <div class="field full"><label for="newPassword">Nieuw wachtwoord</label><input id="newPassword" type="password" minlength="8" required autocomplete="new-password"></div>
+    <div class="field full"><label for="confirmPassword">Herhaal wachtwoord</label><input id="confirmPassword" type="password" minlength="8" required autocomplete="new-password"></div>
+  </div>
+  <div class="actions"><button class="btn green" type="submit">Wachtwoord wijzigen</button><button class="btn gray" id="backToLoginFromReset" type="button">Terug naar inloggen</button></div>
 </form>
 
 <form id="registerForm" style="display:none">
@@ -158,6 +175,13 @@ const loginTab=document.getElementById("loginTab");
 const registerTab=document.getElementById("registerTab");
 const loginForm=document.getElementById("loginForm");
 const registerForm=document.getElementById("registerForm");
+const forgotForm=document.getElementById("forgotForm");
+const resetForm=document.getElementById("resetForm");
+const resetToken=new URLSearchParams(window.location.search).get("reset")||"";
+
+function hideAuthForms(){
+  [loginForm,registerForm,forgotForm,resetForm].forEach(form=>{if(form)form.style.display="none";});
+}
 
 function showMessage(text,type="error"){
 message.textContent=text;
@@ -166,14 +190,23 @@ message.className="message "+type;
 
 function showLogin(){
 loginTab.classList.add("active");registerTab.classList.remove("active");
-loginForm.style.display="block";registerForm.style.display="none";message.className="message";
+hideAuthForms();loginForm.style.display="block";message.className="message";
 }
 function showRegister(){
 registerTab.classList.add("active");loginTab.classList.remove("active");
-loginForm.style.display="none";registerForm.style.display="block";message.className="message";
+hideAuthForms();registerForm.style.display="block";message.className="message";
+}
+function showForgot(){
+hideAuthForms();forgotForm.style.display="block";message.className="message";
+}
+function showReset(){
+hideAuthForms();resetForm.style.display="block";message.className="message";
 }
 loginTab.onclick=showLogin;
 registerTab.onclick=showRegister;
+document.getElementById("forgotPasswordLink").onclick=showForgot;
+document.getElementById("backToLoginFromForgot").onclick=showLogin;
+document.getElementById("backToLoginFromReset").onclick=showLogin;
 
 function showAccount(c){
 authCard.style.display="none";
@@ -244,6 +277,32 @@ showAccount(data.customer);
 }catch(err){showMessage(err.message);}
 });
 
+forgotForm.addEventListener("submit",async e=>{
+e.preventDefault();
+try{
+  const data=await api("/api/customer/forgot-password",{method:"POST",body:JSON.stringify({
+    email:document.getElementById("forgotEmail").value.trim()
+  })});
+  showMessage(data.message||"Als het e-mailadres bij ons bekend is, ontvang je een resetlink.","success");
+}catch(err){showMessage(err.message);}
+});
+
+resetForm.addEventListener("submit",async e=>{
+e.preventDefault();
+const password=document.getElementById("newPassword").value;
+const confirmation=document.getElementById("confirmPassword").value;
+if(password!==confirmation){showMessage("De wachtwoorden komen niet overeen.");return;}
+try{
+  const data=await api("/api/customer/reset-password",{method:"POST",body:JSON.stringify({
+    token:resetToken,password
+  })});
+  showMessage(data.message||"Je wachtwoord is gewijzigd.","success");
+  window.history.replaceState({},document.title,window.location.pathname);
+  resetForm.reset();
+  setTimeout(showLogin,1200);
+}catch(err){showMessage(err.message);}
+});
+
 registerForm.addEventListener("submit",async e=>{
 e.preventDefault();
 try{
@@ -265,6 +324,7 @@ accountCard.style.display="none";authCard.style.display="block";showLogin();
 };
 
 (async()=>{
+if(resetToken){showReset();return;}
 try{
 const data=await api("/api/customer/me");
 if(data.authenticated){if(continueFirmwareDownloadAfterLogin())return;showAccount(data.customer);}
