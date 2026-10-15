@@ -1059,8 +1059,8 @@ app.post("/api/customer/resend-verification", async (req, res) => {
     );
     if (!result.rows.length || result.rows[0].email_verified) return res.json({ success: true, message: "Als er een onbevestigd account bestaat, wordt een nieuwe code verstuurd." });
     const customer = result.rows[0];
-    if (customer.email_verification_expires_at && new Date(customer.email_verification_expires_at).getTime() > Date.now() - 14 * 60 * 1000) {
-      return res.status(429).json({ error: "Wacht even voordat je een nieuwe code aanvraagt." });
+    if (customer.email_verification_expires_at && new Date(customer.email_verification_expires_at).getTime() > Date.now()) {
+      return res.status(429).json({ error: "De huidige code is nog geldig. Controleer je e-mail of vraag een nieuwe code aan zodra deze is verlopen." });
     }
     const code = String(crypto.randomInt(100000, 1000000));
     const codeHash = crypto.createHash("sha256").update(code).digest("hex");
