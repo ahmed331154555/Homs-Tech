@@ -75,6 +75,44 @@ function verifyPassword(password, storedHash) {
 }
 
 // Send a welcome email through Resend
+async function sendCustomerVerificationEmail(customer, code) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error("RESEND_API_KEY is not configured");
+  }
+
+  const from = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      from,
+      to: [customer.email],
+      subject: "Bevestig je HOMS TECH-account",
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#222;line-height:1.6">
+          <h1 style="color:#0f2740">Bevestig je e-mailadres</h1>
+          <p>Hallo ${escapeHtml(customer.name || "klant")},</p>
+          <p>Bedankt dat je een account bij HOMS TECH aanmaakt. Vul deze code in op de accountpagina om je account te activeren:</p>
+          <p style="font-size:32px;font-weight:800;letter-spacing:8px;background:#f1f5f9;padding:18px;text-align:center;border-radius:12px">${escapeHtml(code)}</p>
+          <p>De code is 15 minuten geldig. Heb je dit account niet aangevraagd? Negeer deze e-mail dan.</p>
+          <p><strong>Team HOMS TECH</strong></p>
+          <p style="font-size:12px;color:#64748b">https://homs-tech.nl</p>
+        </div>
+      `
+    })
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(`Resend verification email error ${response.status}: ${JSON.stringify(data)}`);
+  }
+  console.log("Customer verification email sent:", data.id || "ok");
+}
+
 async function sendWelcomeEmail(customer) {
   const apiKey = process.env.RESEND_API_KEY;
 
