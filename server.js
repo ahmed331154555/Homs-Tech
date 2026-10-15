@@ -2350,7 +2350,7 @@ app.post("/api/admin/repair-requests/:id/offer", requirePermission("orders.updat
     let meta = {};
     try { meta = JSON.parse(order.extra_fields || "{}"); } catch {}
     if (meta.repairQuote !== true) return res.status(400).json({ error: "Dit is geen repair request." });
-    if (!order.email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(order.email)) {
+    if (!order.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(order.email || "").trim())) {
       return res.status(400).json({ error: "Het e-mailadres van de klant is ongeldig." });
     }
 
