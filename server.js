@@ -101,11 +101,11 @@ async function sendWelcomeEmail(customer) {
           <p>Hallo ${escapeHtml(customer.name)},</p>
           <p>Bedankt voor je registratie bij HOMS TECH!</p>
           <p>Je account is succesvol aangemaakt. Je kunt nu smartphones bekijken en je bestellingen volgen vanuit je account.</p>
-          <p style="margin:24px 0"><a href="https://homs-tech.onrender.com" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:bold">Bezoek HOMS TECH</a></p>
+          <p style="margin:24px 0"><a href="https://homs-tech.nl" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:bold">Bezoek HOMS TECH</a></p>
           <p>Wil je je wachtwoord wijzigen of ben je het vergeten? Ga naar de accountpagina en kies <strong>Wachtwoord vergeten</strong> om veilig een resetlink te ontvangen.</p>
           <p style="margin-top:28px"><strong>Team HOMS TECH</strong><br>Telefoonservice & smartphones</p>
           <hr style="border:0;border-top:1px solid #e5e7eb;margin:24px 0">
-          <p style="font-size:12px;color:#64748b">Website: <a href="https://homs-tech.onrender.com" style="color:#2563eb">https://homs-tech.onrender.com</a></p>
+          <p style="font-size:12px;color:#64748b">Website: <a href="https://homs-tech.nl" style="color:#2563eb">https://homs-tech.nl</a></p>
         </div>
       `
     })
@@ -1059,7 +1059,7 @@ app.post("/api/customer/forgot-password", async (req, res) => {
         [customer.id, tokenHash]
       );
       const from = process.env.RESEND_FROM_EMAIL || "noreply@homs-tech.nl";
-      const resetUrl = "https://homs-tech.onrender.com/account.html?reset=" + encodeURIComponent(rawToken);
+      const resetUrl = "https://homs-tech.nl/account.html?reset=" + encodeURIComponent(rawToken);
       const response = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { "Authorization": `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
@@ -1075,7 +1075,7 @@ app.post("/api/customer/forgot-password", async (req, res) => {
               <p><a href="${resetUrl}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:bold">Nieuw wachtwoord instellen</a></p>
               <p>Deze link is één uur geldig en kan maar één keer worden gebruikt. Heb je dit niet aangevraagd? Negeer deze e-mail dan.</p>
               <p style="margin-top:28px"><strong>Team HOMS TECH</strong></p>
-              <p style="font-size:12px;color:#64748b">Website: <a href="https://homs-tech.onrender.com">https://homs-tech.onrender.com</a></p>
+              <p style="font-size:12px;color:#64748b">Website: <a href="https://homs-tech.nl">https://homs-tech.nl</a></p>
             </div>
           `
         })
