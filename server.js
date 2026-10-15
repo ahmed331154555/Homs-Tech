@@ -96,12 +96,16 @@ async function sendWelcomeEmail(customer) {
       to: [customer.email],
       subject: "Welkom bij HOMS TECH",
       html: `
-        <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#222">
-          <h1 style="margin-bottom:8px">Welkom bij HOMS TECH 👋</h1>
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#222;line-height:1.6">
+          <h1 style="margin-bottom:8px;color:#0f2740">Welkom bij HOMS TECH 👋</h1>
           <p>Hallo ${escapeHtml(customer.name)},</p>
-          <p>Je account is succesvol aangemaakt.</p>
-          <p>Je kunt nu smartphones bekijken en later je bestellingen vanuit je account volgen.</p>
-          <p style="margin-top:28px"><strong>HOMS TECH</strong><br>Telefoonservice & smartphones</p>
+          <p>Bedankt voor je registratie bij HOMS TECH!</p>
+          <p>Je account is succesvol aangemaakt. Je kunt nu smartphones bekijken en je bestellingen volgen vanuit je account.</p>
+          <p style="margin:24px 0"><a href="https://homs-tech.nl" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:bold">Bezoek HOMS TECH</a></p>
+          <p>Wil je je wachtwoord wijzigen of ben je het vergeten? Ga naar de accountpagina en kies <strong>Wachtwoord vergeten</strong> om veilig een resetlink te ontvangen.</p>
+          <p style="margin-top:28px"><strong>Team HOMS TECH</strong><br>Telefoonservice & smartphones</p>
+          <hr style="border:0;border-top:1px solid #e5e7eb;margin:24px 0">
+          <p style="font-size:12px;color:#64748b">Website: <a href="https://homs-tech.nl" style="color:#2563eb">https://homs-tech.nl</a></p>
         </div>
       `
     })
@@ -173,6 +177,18 @@ async function initDatabase() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS customer_password_resets (
+      id BIGSERIAL PRIMARY KEY,
+      customer_id INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+      token_hash TEXT NOT NULL UNIQUE,
+      expires_at TIMESTAMPTZ NOT NULL,
+      used_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  await pool.query("CREATE INDEX IF NOT EXISTS customer_password_resets_customer_idx ON customer_password_resets (customer_id, created_at DESC)");
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS firmware_download_history (
@@ -1022,6 +1038,101 @@ app.post("/api/customer/register", async (req, res) => {
     res.status(500).json({
       error: "Account aanmaken mislukt."
     });
+  }
+});
+
+// Request a password reset. Always return the same response to avoid exposing registered emails.
+app.post("/api/customer/forgot-password", async (req, res) => {
+  const genericMessage = "Als dit e-mailadres bij ons bekend is, ontvang je een e-mail met een link om je wachtwoord opnieuw in te stellen.";
+  try {
+    const email = String((req.body || {}).email || "").trim().toLowerCase();
+    if (!email || email.length > 254) return res.status(200).json({ success: true, message: genericMessage });
+
+    const result = await pool.query("SELECT id, name, email FROM customers WHERE email = $1", [email]);
+    if (result.rows.length && process.env.RESEND_API_KEY) {
+      const customer = result.rows[0];
+      const rawToken = crypto.randomBytes(32).toString("hex");
+      const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+      await pool.query("UPDATE customer_password_resets SET used_at = NOW() WHERE customer_id = $1 AND used_at IS NULL", [customer.id]);
+      await pool.query(
+        "INSERT INTO customer_password_resets (customer_id, token_hash, expires_at) VALUES ($1, $2, NOW() + INTERVAL '1 hour')",
+        [customer.id, tokenHash]
+      );
+      const from = process.env.RESEND_FROM_EMAIL || "noreply@homs-tech.nl";
+      const resetUrl = "https://homs-tech.nl/account.html?reset=" + encodeURIComponent(rawToken);
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from,
+          to: [customer.email],
+          subject: "Wachtwoord opnieuw instellen - HOMS TECH",
+          html: `
+            <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#222;line-height:1.6">
+              <h1 style="color:#0f2740">Wachtwoord opnieuw instellen</h1>
+              <p>Hallo ${escapeHtml(customer.name)},</p>
+              <p>Je hebt gevraagd om je HOMS TECH-wachtwoord opnieuw in te stellen.</p>
+              <p><a href="${resetUrl}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:bold">Nieuw wachtwoord instellen</a></p>
+              <p>Deze link is één uur geldig en kan maar één keer worden gebruikt. Heb je dit niet aangevraagd? Negeer deze e-mail dan.</p>
+              <p style="margin-top:28px"><strong>Team HOMS TECH</strong></p>
+              <p style="font-size:12px;color:#64748b">Website: <a href="https://homs-tech.nl">https://homs-tech.nl</a></p>
+            </div>
+          `
+        })
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        console.error("Password reset email failed:", response.status, JSON.stringify(data));
+      }
+    }
+    return res.json({ success: true, message: genericMessage });
+  } catch (error) {
+    console.error("Forgot password error:", error.message);
+    return res.status(200).json({ success: true, message: genericMessage });
+  }
+});
+
+// Reset password using a single-use token that expires after one hour.
+app.post("/api/customer/reset-password", async (req, res) => {
+  try {
+    const token = String((req.body || {}).token || "").trim();
+    const password = String((req.body || {}).password || "");
+    if (!/^[a-f0-9]{64}$/i.test(token)) return res.status(400).json({ error: "Deze resetlink is ongeldig of verlopen." });
+    if (password.length < 8) return res.status(400).json({ error: "Het wachtwoord moet minimaal 8 tekens bevatten." });
+
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const result = await pool.query(
+      "SELECT id, customer_id FROM customer_password_resets WHERE token_hash = $1 AND used_at IS NULL AND expires_at > NOW()",
+      [tokenHash]
+    );
+    if (!result.rows.length) return res.status(400).json({ error: "Deze resetlink is ongeldig of verlopen." });
+
+    const reset = result.rows[0];
+    const passwordHash = await hashPassword(password);
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const locked = await client.query(
+        "SELECT id FROM customer_password_resets WHERE id = $1 AND used_at IS NULL AND expires_at > NOW() FOR UPDATE",
+        [reset.id]
+      );
+      if (!locked.rows.length) {
+        await client.query("ROLLBACK");
+        return res.status(400).json({ error: "Deze resetlink is ongeldig of verlopen." });
+      }
+      await client.query("UPDATE customers SET password_hash = $1 WHERE id = $2", [passwordHash, reset.customer_id]);
+      await client.query("UPDATE customer_password_resets SET used_at = NOW() WHERE customer_id = $1 AND used_at IS NULL", [reset.customer_id]);
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+    res.json({ success: true, message: "Je wachtwoord is gewijzigd. Je kunt nu inloggen." });
+  } catch (error) {
+    console.error("Reset password error:", error.message);
+    res.status(500).json({ error: "Wachtwoord wijzigen is niet gelukt. Probeer het opnieuw." });
   }
 });
 
