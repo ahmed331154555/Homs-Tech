@@ -1484,11 +1484,15 @@ textarea{
       <div id="customerCreatePanel" class="customer-form-panel" style="display:none">
         <h2 id="customerModalTitle">Nieuwe klant aanmaken</h2>
         <div class="grid">
-          <div class="field"><label>Naam</label><input id="newCustomerName" autocomplete="name"></div>
-          <div class="field"><label>E-mail</label><input id="newCustomerEmail" type="email" autocomplete="email"></div>
-          <div class="field"><label>Telefoon</label><input id="newCustomerPhone" autocomplete="tel"></div>
-          <div class="field"><label>Adres</label><input id="newCustomerAddress" autocomplete="street-address"></div>
-          <div class="field" style="grid-column:1/-1"><label>Tijdelijk wachtwoord (minimaal 8 tekens)</label><input id="newCustomerPassword" type="password" minlength="8" autocomplete="new-password"></div>
+          <div class="field"><label>Voornaam *</label><input id="newCustomerFirstName" autocomplete="given-name" required></div>
+          <div class="field"><label>Achternaam *</label><input id="newCustomerLastName" autocomplete="family-name" required></div>
+          <div class="field" style="grid-column:1/-1"><label>E-mail *</label><input id="newCustomerEmail" type="email" autocomplete="email" required></div>
+          <div class="field"><label>Postcode *</label><input id="newCustomerPostcode" autocomplete="postal-code" placeholder="2651GX" required></div>
+          <div class="field"><label>Huisnummer *</label><input id="newCustomerHouseNumber" autocomplete="address-line2" placeholder="71A" required></div>
+          <div class="field"><label>Straatnaam *</label><input id="newCustomerStreet" autocomplete="address-line1" placeholder="Castor" required></div>
+          <div class="field"><label>Plaatsnaam *</label><input id="newCustomerCity" autocomplete="address-level2" placeholder="Berkel en Rodenrijs" required></div>
+          <div class="field" style="grid-column:1/-1"><label>Telefoon (optioneel)</label><input id="newCustomerPhone" autocomplete="tel"></div>
+          <div class="field" style="grid-column:1/-1"><label>Tijdelijk wachtwoord (minimaal 8 tekens) *</label><input id="newCustomerPassword" type="password" minlength="8" autocomplete="new-password" required></div>
         </div>
         <div class="actions"><button class="btn btn-green" onclick="createCustomer()">Account aanmaken</button><button class="btn btn-light" onclick="closeCustomerModal()">Annuleren</button></div>
       </div>
@@ -1496,10 +1500,14 @@ textarea{
         <h2 id="customerEditTitle">Klantgegevens wijzigen</h2>
         <input id="editCustomerId" type="hidden">
         <div class="grid">
-          <div class="field"><label>Naam</label><input id="editCustomerName"></div>
-          <div class="field"><label>E-mail</label><input id="editCustomerEmail" type="email"></div>
-          <div class="field"><label>Telefoon</label><input id="editCustomerPhone"></div>
-          <div class="field"><label>Adres</label><input id="editCustomerAddress"></div>
+          <div class="field"><label>Voornaam *</label><input id="editCustomerFirstName" autocomplete="given-name" required></div>
+          <div class="field"><label>Achternaam *</label><input id="editCustomerLastName" autocomplete="family-name" required></div>
+          <div class="field" style="grid-column:1/-1"><label>E-mail *</label><input id="editCustomerEmail" type="email" autocomplete="email" required></div>
+          <div class="field"><label>Postcode</label><input id="editCustomerPostcode" autocomplete="postal-code" placeholder="2651GX"></div>
+          <div class="field"><label>Huisnummer</label><input id="editCustomerHouseNumber" autocomplete="address-line2" placeholder="71A"></div>
+          <div class="field"><label>Straatnaam</label><input id="editCustomerStreet" autocomplete="address-line1" placeholder="Castor"></div>
+          <div class="field"><label>Plaatsnaam</label><input id="editCustomerCity" autocomplete="address-level2" placeholder="Berkel en Rodenrijs"></div>
+          <div class="field" style="grid-column:1/-1"><label>Telefoon</label><input id="editCustomerPhone" autocomplete="tel"></div>
         </div>
         <div class="actions"><button class="btn btn-green" onclick="saveCustomerEdit()">Wijzigingen opslaan</button><button class="btn btn-light" onclick="editCustomerPassword(Number(document.getElementById('editCustomerId').value))">🔑 Wachtwoord instellen</button><button class="btn btn-red" onclick="deleteCustomer(Number(document.getElementById('editCustomerId').value))">🗑 Verwijderen</button></div>
       </div>
@@ -5682,7 +5690,7 @@ function closeCustomerModal(){
   document.body.style.overflow="";
 }
 function showCustomerCreateForm(){
-  ["newCustomerName","newCustomerEmail","newCustomerPhone","newCustomerAddress","newCustomerPassword"].forEach(id=>{document.getElementById(id).value="";});
+  ["newCustomerFirstName","newCustomerLastName","newCustomerEmail","newCustomerPostcode","newCustomerHouseNumber","newCustomerStreet","newCustomerCity","newCustomerPhone","newCustomerPassword"].forEach(id=>{document.getElementById(id).value="";});
   openCustomerModal("customerCreatePanel");
   document.getElementById("newCustomerName").focus();
 }
@@ -5695,25 +5703,70 @@ async function customerApi(url,method,body){
   if(!r.ok)throw new Error(result.error||"Actie mislukt.");
   return result;
 }
+function buildCustomerAddress(prefix){
+  const street=document.getElementById(prefix+"Street").value.trim();
+  const house=document.getElementById(prefix+"HouseNumber").value.trim();
+  const postcode=document.getElementById(prefix+"Postcode").value.trim().toUpperCase();
+  const city=document.getElementById(prefix+"City").value.trim();
+  const line1=[street,house].filter(Boolean).join(" ");
+  return [line1,[postcode,city].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+}
+function splitCustomerAddress(address){
+  const result={street:"",houseNumber:"",postcode:"",city:""};
+  const parts=String(address||"").split(",").map(x=>x.trim()).filter(Boolean);
+  if(parts.length){
+    const first=parts[0];
+    const match=first.match(/^(.*?)[,\s]+(\d+[A-Za-z]?(?:[-\s]\w+)?)$/);
+    if(match){result.street=match[1].trim();result.houseNumber=match[2].trim();}
+    else result.street=first;
+  }
+  if(parts.length>1){
+    const rest=parts.slice(1).join(" ");
+    const m=rest.match(/\b(\d{4}\s?[A-Za-z]{2})\b\s*(.*)$/);
+    if(m){result.postcode=m[1].replace(/\s/g,"").toUpperCase();result.city=m[2].trim();}
+    else result.city=rest;
+  }
+  return result;
+}
+function splitCustomerName(name){
+  const parts=String(name||"").trim().split(/\s+/).filter(Boolean);
+  return {firstName:parts.shift()||"",lastName:parts.join(" ")};
+}
 async function createCustomer(){
-  const body={name:document.getElementById("newCustomerName").value.trim(),email:document.getElementById("newCustomerEmail").value.trim(),phone:document.getElementById("newCustomerPhone").value.trim(),address:document.getElementById("newCustomerAddress").value.trim(),password:document.getElementById("newCustomerPassword").value};
-  try{await customerApi("/api/admin/customers","POST",body);document.getElementById("customerCreatePanel").querySelectorAll("input").forEach(x=>x.value="");hideCustomerCreateForm();await loadCustomers();setStatus("✓ Klantaccount aangemaakt","success");}
+  const firstName=document.getElementById("newCustomerFirstName").value.trim();
+  const lastName=document.getElementById("newCustomerLastName").value.trim();
+  const email=document.getElementById("newCustomerEmail").value.trim();
+  const password=document.getElementById("newCustomerPassword").value;
+  if(!firstName||!lastName||!email||!password){setStatus("✕ Vul voornaam, achternaam, e-mail en wachtwoord in.","error");return;}
+  if(password.length<8){setStatus("✕ Het wachtwoord moet minimaal 8 tekens bevatten.","error");return;}
+  const body={name:[firstName,lastName].filter(Boolean).join(" "),email,phone:document.getElementById("newCustomerPhone").value.trim(),address:buildCustomerAddress("newCustomer"),password};
+  try{await customerApi("/api/admin/customers","POST",body);document.getElementById("customerCreatePanel").querySelectorAll("input").forEach(x=>x.value="");closeCustomerModal();await loadCustomers();setStatus("✓ Klantaccount aangemaakt","success");}
   catch(e){setStatus("✕ "+e.message,"error");}
 }
 function editCustomer(id){
   const customer=(window.adminCustomersCache||[]).find(x=>Number(x.id)===Number(id));if(!customer)return;
   openCustomerModal("customerEditPanel");
   document.getElementById("editCustomerId").value=customer.id;
-  document.getElementById("editCustomerName").value=customer.name||"";
+  const name=splitCustomerName(customer.name);
+  document.getElementById("editCustomerFirstName").value=name.firstName;
+  document.getElementById("editCustomerLastName").value=name.lastName;
   document.getElementById("editCustomerEmail").value=customer.email||"";
   document.getElementById("editCustomerPhone").value=customer.phone||"";
-  document.getElementById("editCustomerAddress").value=customer.address||"";
+  const address=splitCustomerAddress(customer.address);
+  document.getElementById("editCustomerStreet").value=address.street;
+  document.getElementById("editCustomerHouseNumber").value=address.houseNumber;
+  document.getElementById("editCustomerPostcode").value=address.postcode;
+  document.getElementById("editCustomerCity").value=address.city;
   document.getElementById("customerEditTitle").textContent="Gegevens van "+(customer.name||"klant");
 }
 async function saveCustomerEdit(){
   const id=document.getElementById("editCustomerId").value;
-  const body={name:document.getElementById("editCustomerName").value.trim(),email:document.getElementById("editCustomerEmail").value.trim(),phone:document.getElementById("editCustomerPhone").value.trim(),address:document.getElementById("editCustomerAddress").value.trim()};
-  try{await customerApi("/api/admin/customers/"+encodeURIComponent(id),"PUT",body);hideCustomerEditForm();await loadCustomers();setStatus("✓ Klantgegevens opgeslagen","success");}
+  const firstName=document.getElementById("editCustomerFirstName").value.trim();
+  const lastName=document.getElementById("editCustomerLastName").value.trim();
+  const email=document.getElementById("editCustomerEmail").value.trim();
+  if(!firstName||!lastName||!email){setStatus("✕ Vul voornaam, achternaam en e-mail in.","error");return;}
+  const body={name:[firstName,lastName].filter(Boolean).join(" "),email,phone:document.getElementById("editCustomerPhone").value.trim(),address:buildCustomerAddress("editCustomer")};
+  try{await customerApi("/api/admin/customers/"+encodeURIComponent(id),"PUT",body);closeCustomerModal();await loadCustomers();setStatus("✓ Klantgegevens opgeslagen","success");}
   catch(e){setStatus("✕ "+e.message,"error");}
 }
 function editCustomerPassword(id){
