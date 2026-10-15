@@ -178,6 +178,12 @@ async function initDatabase() {
     )
   `);
 
+  // Existing accounts stay active. Public signups explicitly start unverified.
+  await pool.query("ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT TRUE");
+  await pool.query("ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verification_code_hash TEXT");
+  await pool.query("ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verification_expires_at TIMESTAMPTZ");
+  await pool.query("ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verification_attempts INTEGER NOT NULL DEFAULT 0");
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS customer_password_resets (
       id BIGSERIAL PRIMARY KEY,
@@ -948,96 +954,130 @@ app.get("/api/admin/search",requirePermission("search"),async(req,res)=>{
   }catch(e){console.error(e);res.status(500).json({error:"Zoeken mislukt."});}
 });
 
-// Customer registration
+// Customer self-registration: account remains inactive until email code is confirmed.
 app.post("/api/customer/register", async (req, res) => {
   try {
-    const {
-      name,
-      email,
-      phone = "",
-      address = "",
-      password
-    } = req.body || {};
-
+    const { name, email, phone = "", address = "", password } = req.body || {};
     const cleanName = String(name || "").trim();
     const cleanEmail = String(email || "").trim().toLowerCase();
     const cleanPhone = String(phone || "").trim();
     const cleanAddress = String(address || "").trim();
-
-    if (!cleanName || !cleanEmail || !password) {
-      return res.status(400).json({
-        error: "Vul naam, e-mail en wachtwoord in."
-      });
-    }
-
-    if (String(password).length < 8) {
-      return res.status(400).json({
-        error: "Het wachtwoord moet minimaal 8 tekens bevatten."
-      });
-    }
-
-    const existing = await pool.query(
-      "SELECT id FROM customers WHERE email = $1",
-      [cleanEmail]
-    );
-
+    if (!cleanName || !cleanEmail || !password) return res.status(400).json({ error: "Vul naam, e-mail en wachtwoord in." });
+    if (cleanEmail.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) return res.status(400).json({ error: "Vul een geldig e-mailadres in." });
+    if (String(password).length < 8) return res.status(400).json({ error: "Het wachtwoord moet minimaal 8 tekens bevatten." });
+    const existing = await pool.query("SELECT id, email_verified FROM customers WHERE email = $1", [cleanEmail]);
     if (existing.rows.length > 0) {
-      return res.status(409).json({
-        error: "Er bestaat al een account met dit e-mailadres."
-      });
+      if (!existing.rows[0].email_verified) return res.status(409).json({ error: "Voor dit e-mailadres is al een account aangemaakt maar nog niet bevestigd. Vraag een nieuwe code aan." });
+      return res.status(409).json({ error: "Er bestaat al een account met dit e-mailadres." });
     }
 
     const passwordHash = await hashPassword(String(password));
+    const code = String(crypto.randomInt(100000, 1000000));
+    const codeHash = crypto.createHash("sha256").update(code).digest("hex");
+    const client = await pool.connect();
+    let customer;
+    try {
+      await client.query("BEGIN");
+      const result = await client.query(
+        `INSERT INTO customers (name,email,phone,address,password_hash,email_verified,email_verification_code_hash,email_verification_expires_at,email_verification_attempts)
+         VALUES ($1,$2,$3,$4,$5,FALSE,$6,NOW() + INTERVAL '15 minutes',0)
+         RETURNING id,name,email,phone,address`,
+        [cleanName, cleanEmail, cleanPhone, cleanAddress, passwordHash, codeHash]
+      );
+      customer = result.rows[0];
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
 
-    const result = await pool.query(
-      `INSERT INTO customers
-        (name, email, phone, address, password_hash)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, name, email, phone, address`,
-      [
-        cleanName,
-        cleanEmail,
-        cleanPhone,
-        cleanAddress,
-        passwordHash
-      ]
-    );
+    try {
+      await sendCustomerVerificationEmail(customer, code);
+    } catch (emailError) {
+      console.error("Customer verification email failed:", emailError.message);
+      await pool.query("DELETE FROM customers WHERE id = $1 AND email_verified = FALSE", [customer.id]);
+      return res.status(503).json({ error: "De bevestigingsmail kon niet worden verstuurd. Controleer de e-mailinstellingen en probeer het opnieuw." });
+    }
 
-    const customer = result.rows[0];
-
-    // Do not block account creation if the email provider has a temporary error.
-    sendWelcomeEmail(customer).catch((error) => {
-      console.error("Welcome email failed:", error.message);
-    });
-
-    const customerToken = jwt.sign(
-      {
-        customerId: customer.id,
-        email: customer.email
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "30d"
-      }
-    );
-
-    res.cookie("customerToken", customerToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 30 * 24 * 60 * 60 * 1000
-    });
-
-    res.status(201).json({
-      success: true,
-      customer
-    });
+    res.status(201).json({ success: true, verificationRequired: true, email: customer.email, message: "We hebben een bevestigingscode naar je e-mailadres gestuurd." });
   } catch (error) {
-    console.error(error);
+    if (error.code === "23505") return res.status(409).json({ error: "Er bestaat al een account met dit e-mailadres." });
+    console.error("Customer registration error:", error);
+    res.status(500).json({ error: "Account aanmaken mislukt." });
+  }
+});
 
-    res.status(500).json({
-      error: "Account aanmaken mislukt."
+// Confirm public signup with the emailed six-digit code.
+app.post("/api/customer/verify-email", async (req, res) => {
+  try {
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    const code = String(req.body?.code || "").trim();
+    if (!email || !/^\d{6}$/.test(code)) return res.status(400).json({ error: "Vul je e-mailadres en de code van 6 cijfers in." });
+    const codeHash = crypto.createHash("sha256").update(code).digest("hex");
+    const result = await pool.query(
+      `UPDATE customers
+       SET email_verified = TRUE, email_verification_code_hash = NULL,
+           email_verification_expires_at = NULL, email_verification_attempts = 0
+       WHERE email = $1 AND email_verified = FALSE
+         AND email_verification_code_hash = $2
+         AND email_verification_expires_at > NOW()
+         AND email_verification_attempts < 5
+       RETURNING id,name,email,phone,address`,
+      [email, codeHash]
+    );
+    if (!result.rows.length) {
+      await pool.query(
+        "UPDATE customers SET email_verification_attempts = email_verification_attempts + 1 WHERE email = $1 AND email_verified = FALSE AND email_verification_expires_at > NOW()",
+        [email]
+      ).catch(() => {});
+      return res.status(400).json({ error: "De code is onjuist of verlopen. Vraag een nieuwe code aan." });
+    }
+    const customer = result.rows[0];
+    sendWelcomeEmail(customer).catch(error => console.error("Verified customer welcome email failed:", error.message));
+    const customerToken = jwt.sign({ customerId: customer.id, email: customer.email }, process.env.JWT_SECRET, { expiresIn: "30d" });
+    res.cookie("customerToken", customerToken, {
+      httpOnly: true, secure: process.env.NODE_ENV === "production",
+      sameSite: "lax", maxAge: 30 * 24 * 60 * 60 * 1000
     });
+    res.json({ success: true, customer, message: "Je e-mailadres is bevestigd en je account is nu actief." });
+  } catch (error) {
+    console.error("Customer email verification error:", error);
+    res.status(500).json({ error: "E-mailadres bevestigen is mislukt. Probeer het opnieuw." });
+  }
+});
+
+// Send a fresh code to an existing unverified signup.
+app.post("/api/customer/resend-verification", async (req, res) => {
+  try {
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    if (!email || email.length > 254) return res.status(400).json({ error: "Vul een geldig e-mailadres in." });
+    const result = await pool.query(
+      "SELECT id,name,email,email_verified,email_verification_expires_at FROM customers WHERE email = $1",
+      [email]
+    );
+    if (!result.rows.length || result.rows[0].email_verified) return res.json({ success: true, message: "Als er een onbevestigd account bestaat, wordt een nieuwe code verstuurd." });
+    const customer = result.rows[0];
+    if (customer.email_verification_expires_at && new Date(customer.email_verification_expires_at).getTime() > Date.now() - 14 * 60 * 1000) {
+      return res.status(429).json({ error: "Wacht even voordat je een nieuwe code aanvraagt." });
+    }
+    const code = String(crypto.randomInt(100000, 1000000));
+    const codeHash = crypto.createHash("sha256").update(code).digest("hex");
+    await pool.query(
+      "UPDATE customers SET email_verification_code_hash=$1,email_verification_expires_at=NOW()+INTERVAL '15 minutes',email_verification_attempts=0 WHERE id=$2 AND email_verified=FALSE",
+      [codeHash, customer.id]
+    );
+    try {
+      await sendCustomerVerificationEmail(customer, code);
+    } catch (emailError) {
+      console.error("Resend verification email failed:", emailError.message);
+      return res.status(503).json({ error: "De nieuwe code kon niet worden verstuurd. Probeer het later opnieuw." });
+    }
+    res.json({ success: true, message: "We hebben een nieuwe code naar je e-mailadres gestuurd." });
+  } catch (error) {
+    console.error("Resend customer verification error:", error);
+    res.status(500).json({ error: "Een nieuwe code aanvragen is mislukt." });
   }
 });
 
@@ -1153,7 +1193,7 @@ app.post("/api/customer/login", async (req, res) => {
     }
 
     const result = await pool.query(
-      `SELECT id, name, email, phone, address, password_hash
+      `SELECT id, name, email, phone, address, password_hash, email_verified
        FROM customers
        WHERE email = $1`,
       [cleanEmail]
@@ -1166,6 +1206,10 @@ app.post("/api/customer/login", async (req, res) => {
     }
 
     const customer = result.rows[0];
+
+    if (!customer.email_verified) {
+      return res.status(403).json({ error: "Bevestig eerst je e-mailadres met de code die we hebben gestuurd." });
+    }
 
     const valid = await verifyPassword(
       String(password),
@@ -2352,7 +2396,7 @@ app.post("/api/admin/customers", requirePermission("customers.view"), async (req
     if(!name||!email||password.length<8) return res.status(400).json({error:"Vul naam, e-mail en een wachtwoord van minimaal 8 tekens in."});
     const passwordHash=await hashPassword(password);
     const result=await pool.query(
-      "INSERT INTO customers (name,email,phone,address,password_hash) VALUES ($1,$2,$3,$4,$5) RETURNING id,name,email,phone,address,created_at",
+      "INSERT INTO customers (name,email,phone,address,password_hash,email_verified,email_verification_code_hash,email_verification_expires_at,email_verification_attempts) VALUES ($1,$2,$3,$4,$5,TRUE,NULL,NULL,0) RETURNING id,name,email,phone,address,created_at",
       [name,email,phone,address,passwordHash]
     );
     sendWelcomeEmail(result.rows[0]).catch(e=>console.error("Admin-created customer welcome email failed:",e.message));
