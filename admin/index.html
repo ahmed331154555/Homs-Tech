@@ -843,6 +843,19 @@ textarea{
 .phone-back-catalog{margin-bottom:12px;padding:8px 11px;font-size:12px}
 @media(max-width:750px){.phone-folder-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.phone-model-folder-cover{height:125px;padding:10px}.phone-model-folder-body{padding:11px}.phone-model-folder-name{font-size:14px}.phone-model-folder-footer{align-items:stretch;flex-direction:column}.phone-folder-edit{width:100%}}
 @media(max-width:480px){.phone-folder-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.phone-model-folder-cover{height:105px}.phone-model-folder-count{font-size:9px;padding:5px 6px}.phone-model-folder-name{font-size:12px}.phone-folder-chip{font-size:9px;padding:4px 5px}.phone-model-folder-footer strong{font-size:12px}}
+
+
+/* Customer management modal */
+.customer-modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.68);z-index:1200;align-items:center;justify-content:center;padding:18px;overflow-y:auto}
+.customer-modal-backdrop.show{display:flex}
+.customer-modal{position:relative;width:min(720px,100%);max-height:calc(100vh - 36px);overflow-y:auto;background:#fff;border-radius:18px;padding:28px;box-shadow:0 24px 70px rgba(0,0,0,.3)}
+.customer-modal-close{position:absolute;right:14px;top:12px;border:0;background:#eef2f7;color:#172033;width:36px;height:36px;border-radius:50%;font-size:24px;line-height:1}
+.customer-form-panel h2{margin:0 48px 22px 0;font-size:23px}
+.customer-card{cursor:pointer;transition:box-shadow .18s,border-color .18s}
+.customer-card:hover,.customer-card:focus{border-color:#25d366;box-shadow:0 8px 22px rgba(15,23,42,.09);outline:none}
+.customer-card-hint{font-size:12px;color:#64748b;margin-top:10px}
+@media(max-width:600px){.customer-modal-backdrop{padding:10px;align-items:center}.customer-modal{padding:23px 17px;max-height:calc(100vh - 20px)}.customer-modal .grid{grid-template-columns:1fr}.customer-modal .field[style*="grid-column"]{grid-column:auto!important}.customer-modal .actions{display:flex;flex-wrap:wrap}.customer-modal .actions .btn{flex:1 1 auto}}
+
 </style>
 <style>
 .permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -1462,37 +1475,43 @@ textarea{
       </div>
     </div>
     <div id="customersStatus" class="status info" style="margin-bottom:15px"></div>
-    <div id="customerCreatePanel" class="card" style="display:none;margin-bottom:16px">
-      <div class="card-head"><div class="card-title">Nieuwe klant aanmaken</div><button class="btn btn-light" onclick="hideCustomerCreateForm()">Sluiten</button></div>
-      <div class="grid">
-        <div class="field"><label>Naam</label><input id="newCustomerName" autocomplete="name"></div>
-        <div class="field"><label>E-mail</label><input id="newCustomerEmail" type="email" autocomplete="email"></div>
-        <div class="field"><label>Telefoon</label><input id="newCustomerPhone" autocomplete="tel"></div>
-        <div class="field"><label>Adres</label><input id="newCustomerAddress" autocomplete="street-address"></div>
-        <div class="field" style="grid-column:1/-1"><label>Tijdelijk wachtwoord (minimaal 8 tekens)</label><input id="newCustomerPassword" type="password" minlength="8" autocomplete="new-password"></div>
-      </div>
-      <div class="actions"><button class="btn btn-green" onclick="createCustomer()">Account aanmaken</button></div>
-    </div>
-    <div id="customerEditPanel" class="card" style="display:none;margin-bottom:16px">
-      <div class="card-head"><div class="card-title">Klantgegevens wijzigen</div><button class="btn btn-light" onclick="hideCustomerEditForm()">Sluiten</button></div>
-      <input id="editCustomerId" type="hidden">
-      <div class="grid">
-        <div class="field"><label>Naam</label><input id="editCustomerName"></div>
-        <div class="field"><label>E-mail</label><input id="editCustomerEmail" type="email"></div>
-        <div class="field"><label>Telefoon</label><input id="editCustomerPhone"></div>
-        <div class="field"><label>Adres</label><input id="editCustomerAddress"></div>
-      </div>
-      <div class="actions"><button class="btn btn-green" onclick="saveCustomerEdit()">Wijzigingen opslaan</button></div>
-    </div>
-    <div id="customerPasswordPanel" class="card" style="display:none;margin-bottom:16px">
-      <div class="card-head"><div class="card-title">Wachtwoord instellen</div><button class="btn btn-light" onclick="hideCustomerPasswordForm()">Sluiten</button></div>
-      <input id="passwordCustomerId" type="hidden">
-      <p class="small">Stel een tijdelijk wachtwoord in en deel dit veilig met de klant. Gebruik geen wachtwoord dat de klant elders gebruikt.</p>
-      <div class="field"><label>Nieuw tijdelijk wachtwoord (minimaal 8 tekens)</label><input id="adminCustomerPassword" type="password" minlength="8" autocomplete="new-password"></div>
-      <div class="actions"><button class="btn btn-green" onclick="saveCustomerPassword()">Wachtwoord opslaan</button></div>
-    </div>
     <div id="customersList"></div>
   </section>
+
+  <div id="customerModalBackdrop" class="customer-modal-backdrop" onclick="if(event.target===this)closeCustomerModal()">
+    <div class="customer-modal" role="dialog" aria-modal="true" aria-labelledby="customerModalTitle">
+      <button type="button" class="customer-modal-close" aria-label="Sluiten" onclick="closeCustomerModal()">×</button>
+      <div id="customerCreatePanel" class="customer-form-panel" style="display:none">
+        <h2 id="customerModalTitle">Nieuwe klant aanmaken</h2>
+        <div class="grid">
+          <div class="field"><label>Naam</label><input id="newCustomerName" autocomplete="name"></div>
+          <div class="field"><label>E-mail</label><input id="newCustomerEmail" type="email" autocomplete="email"></div>
+          <div class="field"><label>Telefoon</label><input id="newCustomerPhone" autocomplete="tel"></div>
+          <div class="field"><label>Adres</label><input id="newCustomerAddress" autocomplete="street-address"></div>
+          <div class="field" style="grid-column:1/-1"><label>Tijdelijk wachtwoord (minimaal 8 tekens)</label><input id="newCustomerPassword" type="password" minlength="8" autocomplete="new-password"></div>
+        </div>
+        <div class="actions"><button class="btn btn-green" onclick="createCustomer()">Account aanmaken</button><button class="btn btn-light" onclick="closeCustomerModal()">Annuleren</button></div>
+      </div>
+      <div id="customerEditPanel" class="customer-form-panel" style="display:none">
+        <h2 id="customerEditTitle">Klantgegevens wijzigen</h2>
+        <input id="editCustomerId" type="hidden">
+        <div class="grid">
+          <div class="field"><label>Naam</label><input id="editCustomerName"></div>
+          <div class="field"><label>E-mail</label><input id="editCustomerEmail" type="email"></div>
+          <div class="field"><label>Telefoon</label><input id="editCustomerPhone"></div>
+          <div class="field"><label>Adres</label><input id="editCustomerAddress"></div>
+        </div>
+        <div class="actions"><button class="btn btn-green" onclick="saveCustomerEdit()">Wijzigingen opslaan</button><button class="btn btn-light" onclick="editCustomerPassword(Number(document.getElementById('editCustomerId').value))">🔑 Wachtwoord instellen</button><button class="btn btn-red" onclick="deleteCustomer(Number(document.getElementById('editCustomerId').value))">🗑 Verwijderen</button></div>
+      </div>
+      <div id="customerPasswordPanel" class="customer-form-panel" style="display:none">
+        <h2 id="customerPasswordTitle">Wachtwoord instellen</h2>
+        <input id="passwordCustomerId" type="hidden">
+        <p class="small">Stel een tijdelijk wachtwoord in en deel dit veilig met de klant. Gebruik geen wachtwoord dat de klant elders gebruikt.</p>
+        <div class="field"><label>Nieuw tijdelijk wachtwoord (minimaal 8 tekens)</label><input id="adminCustomerPassword" type="password" minlength="8" autocomplete="new-password"></div>
+        <div class="actions"><button class="btn btn-green" onclick="saveCustomerPassword()">Wachtwoord opslaan</button><button class="btn btn-light" onclick="editCustomer(Number(document.getElementById('passwordCustomerId').value))">Terug naar klant</button></div>
+      </div>
+    </div>
+  </div>
 
   <!-- GSM ORDERS -->
   <section class="section admin-page" id="page-orders">
@@ -5650,10 +5669,26 @@ async function updateWebshopOrderStatus(id,statusValue){
 function hideCustomerPanels(){
   ["customerCreatePanel","customerEditPanel","customerPasswordPanel"].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display="none";});
 }
-function showCustomerCreateForm(){hideCustomerPanels();document.getElementById("customerCreatePanel").style.display="block";}
-function hideCustomerCreateForm(){document.getElementById("customerCreatePanel").style.display="none";}
-function hideCustomerEditForm(){document.getElementById("customerEditPanel").style.display="none";}
-function hideCustomerPasswordForm(){document.getElementById("customerPasswordPanel").style.display="none";}
+function openCustomerModal(panelId){
+  hideCustomerPanels();
+  const panel=document.getElementById(panelId);
+  if(panel)panel.style.display="block";
+  document.getElementById("customerModalBackdrop").classList.add("show");
+  document.body.style.overflow="hidden";
+}
+function closeCustomerModal(){
+  document.getElementById("customerModalBackdrop").classList.remove("show");
+  hideCustomerPanels();
+  document.body.style.overflow="";
+}
+function showCustomerCreateForm(){
+  ["newCustomerName","newCustomerEmail","newCustomerPhone","newCustomerAddress","newCustomerPassword"].forEach(id=>{document.getElementById(id).value="";});
+  openCustomerModal("customerCreatePanel");
+  document.getElementById("newCustomerName").focus();
+}
+function hideCustomerCreateForm(){closeCustomerModal();}
+function hideCustomerEditForm(){closeCustomerModal();}
+function hideCustomerPasswordForm(){closeCustomerModal();}
 async function customerApi(url,method,body){
   const r=await fetch(url,{method,credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:body===undefined?undefined:JSON.stringify(body)});
   const result=await r.json().catch(()=>({}));
@@ -5667,13 +5702,13 @@ async function createCustomer(){
 }
 function editCustomer(id){
   const customer=(window.adminCustomersCache||[]).find(x=>Number(x.id)===Number(id));if(!customer)return;
-  hideCustomerPanels();document.getElementById("customerEditPanel").style.display="block";
+  openCustomerModal("customerEditPanel");
   document.getElementById("editCustomerId").value=customer.id;
   document.getElementById("editCustomerName").value=customer.name||"";
   document.getElementById("editCustomerEmail").value=customer.email||"";
   document.getElementById("editCustomerPhone").value=customer.phone||"";
   document.getElementById("editCustomerAddress").value=customer.address||"";
-  document.getElementById("customerEditPanel").scrollIntoView({behavior:"smooth",block:"start"});
+  document.getElementById("customerEditTitle").textContent="Gegevens van "+(customer.name||"klant");
 }
 async function saveCustomerEdit(){
   const id=document.getElementById("editCustomerId").value;
@@ -5682,7 +5717,7 @@ async function saveCustomerEdit(){
   catch(e){setStatus("✕ "+e.message,"error");}
 }
 function editCustomerPassword(id){
-  hideCustomerPanels();document.getElementById("passwordCustomerId").value=id;document.getElementById("adminCustomerPassword").value="";document.getElementById("customerPasswordPanel").style.display="block";document.getElementById("customerPasswordPanel").scrollIntoView({behavior:"smooth",block:"start"});
+  document.getElementById("passwordCustomerId").value=id;document.getElementById("adminCustomerPassword").value="";const customer=(window.adminCustomersCache||[]).find(x=>Number(x.id)===Number(id));document.getElementById("customerPasswordTitle").textContent="Wachtwoord wijzigen"+(customer?" voor "+customer.name:"");openCustomerModal("customerPasswordPanel");
 }
 async function saveCustomerPassword(){
   const id=document.getElementById("passwordCustomerId").value,password=document.getElementById("adminCustomerPassword").value;
@@ -5720,7 +5755,7 @@ async function loadCustomers(){
     }
 
     box.innerHTML=customers.map(customer=>`
-      <div class="card" style="margin-bottom:12px">
+      <div class="card customer-card" role="button" tabindex="0" aria-label="Gegevens bekijken van ${esc(customer.name || "Klant")}" onclick="editCustomer(${Number(customer.id)})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();editCustomer(${Number(customer.id)});}">
         <div class="card-head">
           <div class="card-title">👤 ${esc(customer.name || "Klant")}</div>
           <div class="small">${esc(customer.created_at || "")}</div>
@@ -5730,11 +5765,7 @@ async function loadCustomers(){
           <div><strong>Telefoon</strong><br>${esc(customer.phone || "-")}</div>
           <div style="grid-column:1/-1"><strong>Adres</strong><br>${esc(customer.address || "-")}</div>
         </div>
-        <div class="actions">
-          <button class="btn btn-light" onclick="editCustomer(${Number(customer.id)})">✎ Bewerken</button>
-          <button class="btn btn-light" onclick="editCustomerPassword(${Number(customer.id)})">🔑 Wachtwoord instellen</button>
-          <button class="btn btn-red" onclick="deleteCustomer(${Number(customer.id)})">Verwijderen</button>
-        </div>
+        <div class="customer-card-hint">Klik om alle gegevens te bekijken en aan te passen →</div>
       </div>`).join("");
   }catch(e){
     status.className="status error";
