@@ -235,7 +235,8 @@ loginForm.addEventListener("submit",async e=>{
 e.preventDefault();
 try{
 const data=await api("/api/customer/login",{method:"POST",body:JSON.stringify({
-email:loginEmail.value,password:loginPassword.value
+email:document.getElementById("loginEmail").value.trim(),
+password:document.getElementById("loginPassword").value
 })});
 showMessage("Welkom terug!","success");
 if(continueFirmwareDownloadAfterLogin())return;
@@ -247,7 +248,11 @@ registerForm.addEventListener("submit",async e=>{
 e.preventDefault();
 try{
 const data=await api("/api/customer/register",{method:"POST",body:JSON.stringify({
-name:name.value,email:email.value,phone:phone.value,address:address.value,password:password.value
+name:document.getElementById("name").value.trim(),
+email:document.getElementById("email").value.trim(),
+phone:document.getElementById("phone").value.trim(),
+address:document.getElementById("address").value.trim(),
+password:document.getElementById("password").value
 })});
 if(continueFirmwareDownloadAfterLogin())return;
 showAccount(data.customer);
