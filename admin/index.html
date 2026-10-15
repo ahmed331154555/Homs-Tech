@@ -1487,10 +1487,10 @@ textarea{
           <div class="field"><label>Voornaam *</label><input id="newCustomerFirstName" autocomplete="given-name" required></div>
           <div class="field"><label>Achternaam *</label><input id="newCustomerLastName" autocomplete="family-name" required></div>
           <div class="field" style="grid-column:1/-1"><label>E-mail *</label><input id="newCustomerEmail" type="email" autocomplete="email" required></div>
-          <div class="field"><label>Postcode *</label><input id="newCustomerPostcode" autocomplete="postal-code" placeholder="2651GX" required></div>
-          <div class="field"><label>Huisnummer *</label><input id="newCustomerHouseNumber" autocomplete="address-line2" placeholder="71A" required></div>
-          <div class="field"><label>Straatnaam *</label><input id="newCustomerStreet" autocomplete="address-line1" placeholder="Castor" required></div>
-          <div class="field"><label>Plaatsnaam *</label><input id="newCustomerCity" autocomplete="address-level2" placeholder="Berkel en Rodenrijs" required></div>
+          <div class="field"><label>Postcode *</label><input id="newCustomerPostcode" autocomplete="postal-code"  required></div>
+          <div class="field"><label>Huisnummer *</label><input id="newCustomerHouseNumber" autocomplete="address-line2"  required></div>
+          <div class="field"><label>Straatnaam *</label><input id="newCustomerStreet" autocomplete="address-line1"  required></div>
+          <div class="field"><label>Plaatsnaam *</label><input id="newCustomerCity" autocomplete="address-level2"  required></div>
           <div class="field" style="grid-column:1/-1"><label>Telefoon (optioneel)</label><input id="newCustomerPhone" autocomplete="tel"></div>
           <div class="field" style="grid-column:1/-1"><label>Tijdelijk wachtwoord (minimaal 8 tekens) *</label><input id="newCustomerPassword" type="password" minlength="8" autocomplete="new-password" required></div>
         </div>
@@ -1503,10 +1503,10 @@ textarea{
           <div class="field"><label>Voornaam *</label><input id="editCustomerFirstName" autocomplete="given-name" required></div>
           <div class="field"><label>Achternaam *</label><input id="editCustomerLastName" autocomplete="family-name" required></div>
           <div class="field" style="grid-column:1/-1"><label>E-mail *</label><input id="editCustomerEmail" type="email" autocomplete="email" required></div>
-          <div class="field"><label>Postcode</label><input id="editCustomerPostcode" autocomplete="postal-code" placeholder="2651GX"></div>
-          <div class="field"><label>Huisnummer</label><input id="editCustomerHouseNumber" autocomplete="address-line2" placeholder="71A"></div>
-          <div class="field"><label>Straatnaam</label><input id="editCustomerStreet" autocomplete="address-line1" placeholder="Castor"></div>
-          <div class="field"><label>Plaatsnaam</label><input id="editCustomerCity" autocomplete="address-level2" placeholder="Berkel en Rodenrijs"></div>
+          <div class="field"><label>Postcode</label><input id="editCustomerPostcode" autocomplete="postal-code" ></div>
+          <div class="field"><label>Huisnummer</label><input id="editCustomerHouseNumber" autocomplete="address-line2" ></div>
+          <div class="field"><label>Straatnaam</label><input id="editCustomerStreet" autocomplete="address-line1" ></div>
+          <div class="field"><label>Plaatsnaam</label><input id="editCustomerCity" autocomplete="address-level2" ></div>
           <div class="field" style="grid-column:1/-1"><label>Telefoon</label><input id="editCustomerPhone" autocomplete="tel"></div>
         </div>
         <div class="actions"><button class="btn btn-green" onclick="saveCustomerEdit()">Wijzigingen opslaan</button><button class="btn btn-light" onclick="editCustomerPassword(Number(document.getElementById('editCustomerId').value))">🔑 Wachtwoord instellen</button><button class="btn btn-red" onclick="deleteCustomer(Number(document.getElementById('editCustomerId').value))">🗑 Verwijderen</button></div>
