@@ -134,13 +134,28 @@ input:focus{outline:3px solid rgba(37,99,235,.12);border-color:#2563eb}
 
 <form id="registerForm" style="display:none">
 <div class="form">
-<div class="field"><label for="name">Naam</label><input id="name" required autocomplete="name"></div>
-<div class="field"><label for="email">E-mail</label><input id="email" type="email" required autocomplete="email"></div>
-<div class="field"><label for="phone">Telefoon</label><input id="phone" autocomplete="tel"></div>
-<div class="field"><label for="address">Adres</label><input id="address" autocomplete="street-address"></div>
-<div class="field full"><label for="password">Wachtwoord (minimaal 8 tekens)</label><input id="password" type="password" minlength="8" required autocomplete="new-password"></div>
+<div class="field"><label for="firstName">Voornaam *</label><input id="firstName" required autocomplete="given-name"></div>
+<div class="field"><label for="lastName">Achternaam *</label><input id="lastName" required autocomplete="family-name"></div>
+<div class="field full"><label for="email">E-mail *</label><input id="email" type="email" required autocomplete="email"></div>
+<div class="field"><label for="postcode">Postcode *</label><input id="postcode" required autocomplete="postal-code" placeholder="2651GX"></div>
+<div class="field"><label for="houseNumber">Huisnummer *</label><input id="houseNumber" required autocomplete="address-line2" placeholder="71A"></div>
+<div class="field"><label for="street">Straatnaam *</label><input id="street" required autocomplete="address-line1" placeholder="Castor"></div>
+<div class="field"><label for="city">Plaatsnaam *</label><input id="city" required autocomplete="address-level2" placeholder="Berkel en Rodenrijs"></div>
+<div class="field full"><label for="phone">Telefoon (optioneel)</label><input id="phone" autocomplete="tel"></div>
+<div class="field full"><label for="password">Wachtwoord (minimaal 8 tekens) *</label><input id="password" type="password" minlength="8" required autocomplete="new-password"></div>
 </div>
 <div class="actions"><button class="btn green" type="submit">Account maken</button></div>
+<p class="subtitle" style="margin:14px 0 0;font-size:13px">Je ontvangt een bevestigingscode per e-mail om je account te activeren.</p>
+</form>
+
+<form id="verifyForm" style="display:none">
+  <h2 style="margin-bottom:10px">E-mailadres bevestigen</h2>
+  <p class="subtitle">We hebben een code van 6 cijfers gestuurd naar <strong id="verificationEmailLabel"></strong>. Vul de code hieronder in om je account te activeren.</p>
+  <div class="form">
+    <div class="field full"><label for="verificationCode">Bevestigingscode</label><input id="verificationCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" minlength="6" required placeholder="123456"></div>
+  </div>
+  <div class="actions"><button class="btn green" type="submit">Account activeren</button><button class="btn gray" id="resendVerificationBtn" type="button">Nieuwe code aanvragen</button></div>
+  <button class="btn gray" id="backToRegisterFromVerify" type="button" style="margin-top:12px">Terug naar registratie</button>
 </form>
 </div>
 
@@ -175,12 +190,14 @@ const loginTab=document.getElementById("loginTab");
 const registerTab=document.getElementById("registerTab");
 const loginForm=document.getElementById("loginForm");
 const registerForm=document.getElementById("registerForm");
+const verifyForm=document.getElementById("verifyForm");
+let pendingVerificationEmail="";
 const forgotForm=document.getElementById("forgotForm");
 const resetForm=document.getElementById("resetForm");
 const resetToken=new URLSearchParams(window.location.search).get("reset")||"";
 
 function hideAuthForms(){
-  [loginForm,registerForm,forgotForm,resetForm].forEach(form=>{if(form)form.style.display="none";});
+  [loginForm,registerForm,forgotForm,resetForm,verifyForm].forEach(form=>{if(form)form.style.display="none";});
 }
 
 function showMessage(text,type="error"){
@@ -196,6 +213,13 @@ function showRegister(){
 registerTab.classList.add("active");loginTab.classList.remove("active");
 hideAuthForms();registerForm.style.display="block";message.className="message";
 }
+function showVerification(email){
+pendingVerificationEmail=String(email||"").trim().toLowerCase();
+document.getElementById("verificationEmailLabel").textContent=pendingVerificationEmail;
+document.getElementById("verificationCode").value="";
+hideAuthForms();verifyForm.style.display="block";message.className="message";
+loginTab.classList.remove("active");registerTab.classList.remove("active");
+}
 function showForgot(){
 hideAuthForms();forgotForm.style.display="block";message.className="message";
 }
@@ -207,6 +231,7 @@ registerTab.onclick=showRegister;
 document.getElementById("forgotPasswordLink").onclick=showForgot;
 document.getElementById("backToLoginFromForgot").onclick=showLogin;
 document.getElementById("backToLoginFromReset").onclick=showLogin;
+document.getElementById("backToRegisterFromVerify").onclick=showRegister;
 
 function showAccount(c){
 authCard.style.display="none";
@@ -303,18 +328,52 @@ try{
 }catch(err){showMessage(err.message);}
 });
 
+function buildSignupAddress(){
+const street=document.getElementById("street").value.trim();
+const houseNumber=document.getElementById("houseNumber").value.trim();
+const postcode=document.getElementById("postcode").value.trim().toUpperCase();
+const city=document.getElementById("city").value.trim();
+return [street+" "+houseNumber,postcode+" "+city].filter(Boolean).join(", ");
+}
 registerForm.addEventListener("submit",async e=>{
 e.preventDefault();
+const firstName=document.getElementById("firstName").value.trim();
+const lastName=document.getElementById("lastName").value.trim();
+const email=document.getElementById("email").value.trim();
 try{
 const data=await api("/api/customer/register",{method:"POST",body:JSON.stringify({
-name:document.getElementById("name").value.trim(),
-email:document.getElementById("email").value.trim(),
+name:[firstName,lastName].filter(Boolean).join(" "),
+email,
 phone:document.getElementById("phone").value.trim(),
-address:document.getElementById("address").value.trim(),
+address:buildSignupAddress(),
 password:document.getElementById("password").value
 })});
+if(data.verificationRequired){
+showVerification(data.email||email);
+showMessage(data.message||"Controleer je e-mail voor de bevestigingscode.","success");
+return;
+}
+showMessage("Registratie is gelukt, maar de verificatiestap ontbreekt. Probeer opnieuw.");
+}catch(err){showMessage(err.message);}
+});
+
+verifyForm.addEventListener("submit",async e=>{
+e.preventDefault();
+try{
+const data=await api("/api/customer/verify-email",{method:"POST",body:JSON.stringify({
+email:pendingVerificationEmail,
+code:document.getElementById("verificationCode").value.trim()
+})});
+showMessage(data.message||"Je account is geactiveerd.","success");
 if(continueFirmwareDownloadAfterLogin())return;
 showAccount(data.customer);
+}catch(err){showMessage(err.message);}
+});
+
+document.getElementById("resendVerificationBtn").addEventListener("click",async()=>{
+try{
+const data=await api("/api/customer/resend-verification",{method:"POST",body:JSON.stringify({email:pendingVerificationEmail})});
+showMessage(data.message||"Als er een onbevestigd account bestaat, ontvang je een nieuwe code.","success");
 }catch(err){showMessage(err.message);}
 });
 
