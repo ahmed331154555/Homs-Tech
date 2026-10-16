@@ -478,20 +478,6 @@ href="#"
 
 <section class="section">
 
-<div class="section-title" style="display:none">
-
-<h2>Reparatieprijzen</h2>
-
-<p>
-Prijzen kunnen per apparaat en reparatie verschillen.
-Neem contact met ons op voor meer informatie.
-</p>
-
-<div class="line"></div>
-
-</div>
-
-<div id="priceContainer" style="display:none"></div>
 <div class="repair-quote-card" style="margin-top:40px">
   <div class="quote-intro"><span class="quote-kicker">HOMS TECH REPARATIES</span><h3>Vraag een reparatieprijs aan</h3><p>Staat uw toestel of reparatie er niet tussen? Vertel ons wat er mis is met uw telefoon en upload eventueel foto's. Wij bekijken uw aanvraag en sturen u een vrijblijvend prijsvoorstel.</p></div>
   <form id="repairQuoteForm">
@@ -662,27 +648,6 @@ return "tel:" + n.replace(/[^\d+]/g,"");
 }
 
 
-function price(value){
-
-if(
-value === undefined ||
-value === null ||
-String(value).trim() === ""
-){
-
-return `
-<span class="no-price">
-Op aanvraag
-</span>
-`;
-
-}
-
-return "€" + escapeHtml(value);
-
-}
-
-
 async function loadSite(){
 
 try{
@@ -741,178 +706,11 @@ phoneLink(data.phone);
 });
 
 
-/* Apparaten uit Admin */
-
-let devices = [];
-
-
-if(Array.isArray(data.phones)){
-
-devices = data.phones.map(phone=>({
-
-name:
-phone.name || "Smartphone",
-
-brand:
-phone.brand || "",
-
-screen:
-phone.screen || "",
-
-software:
-phone.software || "",
-
-hardware:
-phone.hardware || "",
-
-camera:
-phone.camera || ""
-
-}));
-
-}
-
-
-/* Oude structuur ondersteunen */
-
-else if(Array.isArray(data.devices)){
-
-devices = data.devices.map(device=>({
-
-name:
-device.name || "Smartphone",
-
-brand:
-device.brand || "",
-
-screen:
-device.price || "",
-
-software:"",
-hardware:"",
-camera:""
-
-}));
-
-}
-
-
-const container =
-document.getElementById("priceContainer");
-
-
-if(!devices.length){
-
-container.innerHTML = `
-
-<div class="empty">
-
-<h3>
-Nog geen prijzen beschikbaar
-</h3>
-
-<p>
-Neem contact met ons op voor de actuele prijzen.
-</p>
-
-</div>
-
-`;
-
-return;
-
-}
-
-
-/* Prijstabel */
-
-container.innerHTML = `
-
-<div class="table-wrap">
-
-<table class="price-table">
-
-<thead>
-
-<tr>
-
-<th>Apparaat</th>
-<th>Merk</th>
-<th>Scherm</th>
-<th>Software</th>
-<th>Hardware</th>
-<th>Camera</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-${devices.map(device=>`
-
-<tr>
-
-<td class="device-name">
-${escapeHtml(device.name)}
-</td>
-
-<td class="brand">
-${escapeHtml(device.brand)}
-</td>
-
-<td class="price-cell">
-${price(device.screen)}
-</td>
-
-<td class="price-cell">
-${price(device.software)}
-</td>
-
-<td class="price-cell">
-${price(device.hardware)}
-</td>
-
-<td class="price-cell">
-${price(device.camera)}
-</td>
-
-</tr>
-
-`).join("")}
-
-</tbody>
-
-</table>
-
-</div>
-
-`;
 
 }
 
 catch(error){
-
 console.error("HOMS TECH:",error);
-
-document
-.getElementById("priceContainer")
-.innerHTML = `
-
-<div class="empty">
-
-<h3>
-Prijzen kunnen momenteel niet worden geladen
-</h3>
-
-<p>
-Neem contact met ons op voor de actuele prijzen.
-</p>
-
-</div>
-
-`;
-
 }
 
 }
