@@ -491,10 +491,11 @@ Neem contact met ons op voor meer informatie.
 
 </div>
 
-<div id="priceContainer" style="display:none"></div>
-<div class="repair-quote-card">
-  <div class="quote-intro"><span class="quote-kicker">HOMS TECH REPARATIES</span><h3>Vraag een reparatieprijs aan</h3><p>Vertel ons wat er mis is met uw telefoon en upload foto's. Wij bekijken uw aanvraag en nemen contact met u op met een prijsvoorstel.</p></div>
+<div id="priceContainer"></div>
+<div class="repair-quote-card" style="margin-top:40px">
+  <div class="quote-intro"><span class="quote-kicker">HOMS TECH REPARATIES</span><h3>Vraag een reparatieprijs aan</h3><p>Staat uw toestel of reparatie er niet tussen? Vertel ons wat er mis is met uw telefoon en upload eventueel foto's. Wij bekijken uw aanvraag en sturen u een vrijblijvend prijsvoorstel.</p></div>
   <form id="repairQuoteForm">
+    <div style="display:none" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
     <div class="quote-grid">
       <label>Merk van uw toestel *<select name="brand" required><option value="">Kies merk</option><option>Apple</option><option>Samsung</option><option>Google</option><option>Huawei</option><option>Xiaomi</option><option>OnePlus</option><option>Oppo</option><option>Anders</option></select></label>
       <label>Model van uw toestel *<input name="model" maxlength="100" placeholder="Bijv. iPhone 14 Pro" required></label>
@@ -930,32 +931,117 @@ const fileInput=document.getElementById("repairPhotos");
 const preview=document.getElementById("repairPhotoPreview");
 const status=document.getElementById("repairQuoteStatus");
 const submit=form.querySelector('button[type="submit"]');
-const MAX_FILES=4, MAX_SIZE=2*1024*1024;
+const MAX_FILES = 4;
+const MAX_SINGLE_SIZE = 2 * 1024 * 1024; // 2 MB
+const MAX_TOTAL_SIZE = 6 * 1024 * 1024;  // 6 MB
+
 function selectedFiles(){
- const files=Array.from(fileInput.files||[]);
- if(files.length>MAX_FILES) throw new Error("U kunt maximaal 4 foto's toevoegen.");
- for(const f of files){
-  if(!/^image\/(jpeg|png|webp|heic)$/.test(f.type)) throw new Error("Gebruik JPG-, PNG-, WEBP- of HEIC-afbeeldingen.");
-  if(f.size>MAX_SIZE) throw new Error("Elke foto mag maximaal 2 MB groot zijn.");
- }
- return files;
+  const files = Array.from(fileInput.files || []);
+  if (files.length > MAX_FILES) throw new Error("U kunt maximaal 4 foto's toevoegen.");
+  let totalBytes = 0;
+  for (const f of files) {
+    if (!/^image\/(jpeg|png|webp|heic)$/i.test(f.type)) throw new Error("Gebruik JPG-, PNG-, WEBP- of HEIC-afbeeldingen.");
+    if (f.size > MAX_SINGLE_SIZE) throw new Error("Elke foto mag maximaal 2 MB groot zijn.");
+    totalBytes += f.size;
+  }
+  if (totalBytes > MAX_TOTAL_SIZE) throw new Error("De totale grootte van alle geselecteerde foto's mag maximaal 6 MB zijn.");
+  return files;
 }
-fileInput.addEventListener("change",()=>{
- try{const files=selectedFiles();preview.innerHTML=files.map(f=>'<span>📷 '+String(f.name).replace(/[&<>"]/g,'')+'</span>').join("");status.textContent="";}
- catch(e){preview.textContent="";status.textContent=e.message;fileInput.value="";}
+
+fileInput.addEventListener("change", () => {
+  try {
+    const files = selectedFiles();
+    preview.innerHTML = files.map(f => '<span>📷 ' + String(f.name).replace(/[&<>"]/g, '') + '</span>').join("");
+    status.textContent = "";
+  } catch (e) {
+    preview.textContent = "";
+    status.textContent = e.message;
+    fileInput.value = "";
+  }
 });
-function asDataUrl(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve({name:file.name,type:file.type,dataUrl:r.result});r.onerror=()=>reject(new Error("Een foto kon niet worden gelezen."));r.readAsDataURL(file);});}
-form.addEventListener("submit",async e=>{
- e.preventDefault();status.textContent="Uw aanvraag wordt verzonden...";submit.disabled=true;
- try{
-  const files=selectedFiles();const fd=new FormData(form);
-  const payload={brand:fd.get("brand"),model:fd.get("model"),issue:fd.get("issue"),name:fd.get("name"),email:fd.get("email"),phone:fd.get("phone"),consent:fd.get("consent")==="on",photos:await Promise.all(files.map(asDataUrl))};
-  const response=await fetch("/api/repair-requests",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-  const result=await response.json().catch(()=>({}));
-  if(!response.ok)throw new Error(result.error||"Verzenden is niet gelukt. Probeer het later opnieuw.");
-  form.reset();preview.textContent="";status.textContent="Bedankt! Uw aanvraag is ontvangen. Uw aanvraagnummer is "+result.requestNo+". We nemen contact met u op.";
- }catch(err){status.textContent=err.message||"Er ging iets mis. Probeer het opnieuw.";}
- finally{submit.disabled=false;}
+
+function asDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve({ name: file.name, type: file.type, dataUrl: r.result });
+    r.onerror = () => reject(new Error("Een foto kon niet worden gelezen."));
+    r.readAsDataURL(file);
+  });
+}
+
+function optimizePhoto(file) {
+  return new Promise((resolve, reject) => {
+    // Only optimize raster formats, fallback for HEIC
+    if (!/^image\/(jpeg|png|webp)$/i.test(file.type)) {
+      return asDataUrl(file).then(resolve, reject);
+    }
+    const img = new Image();
+    const objUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objUrl);
+      const MAX_DIM = 1400;
+      let w = img.width, h = img.height;
+      if (w > MAX_DIM || h > MAX_DIM) {
+        if (w > h) { h = Math.round((h * MAX_DIM) / w); w = MAX_DIM; }
+        else { w = Math.round((w * MAX_DIM) / h); h = MAX_DIM; }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+      resolve({ name: file.name.replace(/\.[^.]+$/, ".jpg"), type: "image/jpeg", dataUrl });
+    };
+    img.onerror = () => asDataUrl(file).then(resolve, reject);
+    img.src = objUrl;
+  });
+}
+
+form.addEventListener("submit", async e => {
+  e.preventDefault();
+  status.style.color = "#155b8b";
+  status.textContent = "Uw aanvraag wordt voorbereid en verzonden...";
+  submit.disabled = true;
+  try {
+    const files = selectedFiles();
+    const fd = new FormData(form);
+    const photos = await Promise.all(files.map(optimizePhoto));
+    const payload = {
+      brand: fd.get("brand"),
+      model: fd.get("model"),
+      issue: fd.get("issue"),
+      name: fd.get("name"),
+      email: fd.get("email"),
+      phone: fd.get("phone"),
+      website: fd.get("website") || "",
+      consent: fd.get("consent") === "on",
+      photos
+    };
+    const response = await fetch("/api/repair-requests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json().catch(() => ({}));
+    if (response.status === 413) {
+      throw new Error("De foto's zijn te groot om te verzenden. Kies kleinere foto's of voeg minder foto's toe.");
+    }
+    if (response.status === 429) {
+      throw new Error(result.error || "Te veel aanvragen vanaf uw netwerk. Wacht een kwartier en probeer het opnieuw.");
+    }
+    if (!response.ok) {
+      throw new Error(result.error || "Verzenden is niet gelukt. Probeer het later opnieuw.");
+    }
+    form.reset();
+    preview.textContent = "";
+    status.style.color = "#137547";
+    status.textContent = "Bedankt! Uw reparatieaanvraag is succesvol ontvangen. Uw aanvraagnummer is #" + result.requestNo + ". Wij nemen zo snel mogelijk contact met u op met een prijsvoorstel.";
+  } catch (err) {
+    status.style.color = "#b42318";
+    status.textContent = err.message || "Er ging iets mis. Probeer het opnieuw.";
+  } finally {
+    submit.disabled = false;
+  }
 });
 })();
 </script>
