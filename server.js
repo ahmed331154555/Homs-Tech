@@ -21,6 +21,12 @@ const pool = new Pool({
 });
 
 app.use(express.json({ limit: "50mb" }));
+app.use((err, req, res, next) => {
+  if (err?.type === "entity.too.large" || err?.status === 413) {
+    return res.status(413).json({ error: "Het geüploade bestand is te groot. Verklein de foto's en probeer opnieuw." });
+  }
+  next(err);
+});
 app.use(cookieParser());
 
 // Never expose server code, deployment metadata, backups, or dotfiles through static hosting.
@@ -2219,50 +2225,114 @@ app.get("/api/customer/orders", requireCustomerAuth, async (req, res) => {
   }
 });
 
+// Rate limiting map for public repair quote requests: IP -> array of timestamps
+const repairRequestRateLimits = new Map();
+function checkRepairRequestRateLimit(ip) {
+  const now = Date.now();
+  const windowMs = 15 * 60 * 1000; // 15 minutes window
+  const maxRequests = 5;
+  const timestamps = (repairRequestRateLimits.get(ip) || []).filter(t => now - t < windowMs);
+  if (timestamps.length >= maxRequests) {
+    return false;
+  }
+  timestamps.push(now);
+  repairRequestRateLimits.set(ip, timestamps);
+  // Periodic cleanup if map grows too large
+  if (repairRequestRateLimits.size > 5000) {
+    for (const [k, v] of repairRequestRateLimits.entries()) {
+      if (v.every(t => now - t >= windowMs)) repairRequestRateLimits.delete(k);
+    }
+  }
+  return true;
+}
+
 // Public repair quote requests from the Prices page. Photos are limited and stored with the request.
 app.post("/api/repair-requests", async (req, res) => {
   try {
     const b = req.body || {};
+
+    // 1. Honeypot check (anti-bot)
+    if (b.website) {
+      return res.status(201).json({ success: true, requestNo: Math.floor(10000 + Math.random() * 90000) });
+    }
+
+    // 2. Rate limiting check (per IP)
+    const clientIp = String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown").split(",")[0].trim();
+    if (!checkRepairRequestRateLimit(clientIp)) {
+      return res.status(429).json({ error: "Te veel aanvragen vanaf uw netwerk. Wacht 15 minuten en probeer het opnieuw." });
+    }
+
     const brand = String(b.brand || "").trim().slice(0, 80);
     const model = String(b.model || "").trim().slice(0, 100);
     const issue = String(b.issue || "").trim().slice(0, 3000);
     const name = String(b.name || "").trim().slice(0, 120);
     const email = String(b.email || "").trim().toLowerCase().slice(0, 254);
     const phone = String(b.phone || "").trim().slice(0, 40);
+
     if (!brand || !model || !issue || !name || !email || b.consent !== true) {
       return res.status(400).json({ error: "Vul alle verplichte velden in en geef toestemming om contact op te nemen." });
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: "Vul een geldig e-mailadres in." });
     }
+
+    // 3. Photo validation & size bounds
     const incomingPhotos = Array.isArray(b.photos) ? b.photos : [];
-    if (incomingPhotos.length > 4) return res.status(400).json({ error: "U kunt maximaal 4 foto's toevoegen." });
+    if (incomingPhotos.length > 4) {
+      return res.status(400).json({ error: "U kunt maximaal 4 foto's toevoegen." });
+    }
+
     const photos = [];
     const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/heic"]);
+    let totalPhotoBytes = 0;
+    const MAX_SINGLE_PHOTO = 2 * 1024 * 1024; // 2 MB
+    const MAX_TOTAL_PHOTOS = 6 * 1024 * 1024; // 6 MB combined
+
     for (const photo of incomingPhotos) {
       const type = String(photo?.type || "").toLowerCase();
       const dataUrl = String(photo?.dataUrl || "");
       const match = dataUrl.match(/^data:(image\/(?:jpeg|png|webp|heic));base64,([a-z0-9+/=]+)$/i);
       if (!allowedTypes.has(type) || !match || match[1].toLowerCase() !== type) {
-        return res.status(400).json({ error: "Een foto heeft een ongeldig formaat." });
+        return res.status(400).json({ error: "Een foto heeft een ongeldig formaat. Alleen JPG, PNG, WEBP en HEIC zijn toegestaan." });
       }
       const bytes = Buffer.from(match[2], "base64");
-      if (!bytes.length || bytes.length > 2 * 1024 * 1024) {
+      if (!bytes.length || bytes.length > MAX_SINGLE_PHOTO) {
         return res.status(400).json({ error: "Elke foto mag maximaal 2 MB groot zijn." });
       }
-      photos.push({ name: String(photo.name || "foto").replace(/[\\/\\r\\n]/g, "_").slice(0, 140), type, dataUrl });
+      totalPhotoBytes += bytes.length;
+      if (totalPhotoBytes > MAX_TOTAL_PHOTOS) {
+        return res.status(400).json({ error: "De totale grootte van alle foto's mag maximaal 6 MB zijn." });
+      }
+      photos.push({ name: String(photo.name || "foto").replace(/[\/\\r\\n]/g, "_").slice(0, 140), type, dataUrl });
     }
+
+    // 4. Link customer_id if user is authenticated or customer exists by email
+    let customerId = null;
+    if (req.cookies?.customer_token) {
+      try {
+        const decoded = jwt.verify(req.cookies.customer_token, process.env.JWT_SECRET || "customer-secret-key");
+        if (decoded?.customerId) customerId = decoded.customerId;
+      } catch {}
+    }
+    if (!customerId && email) {
+      try {
+        const custCheck = await pool.query("SELECT id FROM customers WHERE LOWER(email) = LOWER($1) LIMIT 1", [email]);
+        if (custCheck.rows.length) customerId = custCheck.rows[0].id;
+      } catch {}
+    }
+
+    // 5. Save order in PostgreSQL FIRST
     const extraFields = JSON.stringify({ repairQuote: true, brand, model, photos });
     const result = await pool.query(
       `INSERT INTO service_orders
-       (service_category, service_name, service_group, price, name, email, phone, notes, status, extra_fields)
-       VALUES ('Reparatie', $1, 'Website aanvraag', 'Op aanvraag', $2, $3, $4, $5, 'Nieuw', $6)
+       (customer_id, service_category, service_name, service_group, price, name, email, phone, notes, status, extra_fields)
+       VALUES ($1, 'Reparatie', $2, 'Website aanvraag', 'Op aanvraag', $3, $4, $5, $6, 'Nieuw', $7)
        RETURNING id, created_at`,
-      [brand + " " + model, name, email, phone, issue, extraFields]
+      [customerId, brand + " " + model, name, email, phone, issue, extraFields]
     );
     const request = result.rows[0];
 
-    // Optional notification. Configure RESEND_API_KEY, RESEND_FROM_EMAIL and REPAIR_REQUEST_EMAIL in Render.
+    // 6. Optional notification email (safe non-blocking try/catch)
     if (process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL && process.env.REPAIR_REQUEST_EMAIL) {
       try {
         const response = await fetch("https://api.resend.com/emails", {
@@ -2278,6 +2348,7 @@ app.post("/api/repair-requests", async (req, res) => {
         if (!response.ok) console.error("Repair request notification failed:", response.status, await response.text().catch(() => ""));
       } catch (mailError) { console.error("Repair request notification error:", mailError); }
     }
+
     res.status(201).json({ success: true, requestNo: request.id, createdAt: request.created_at });
   } catch (error) {
     console.error("Repair quote request error:", error);
@@ -2285,6 +2356,7 @@ app.post("/api/repair-requests", async (req, res) => {
   }
 });
 
+// Admin orders endpoint - sanitize extra_fields photos so heavy base64 strings don't bloat list memory
 app.get("/api/admin/orders", requirePermission("orders.view"), async (req, res) => {
   try {
     const result = await pool.query(
@@ -2293,10 +2365,59 @@ app.get("/api/admin/orders", requirePermission("orders.view"), async (req, res) 
        ORDER BY created_at DESC`
     );
 
-    res.json({ orders: result.rows });
+    const sanitizedOrders = result.rows.map(order => {
+      if (!order.extra_fields) return order;
+      try {
+        const meta = JSON.parse(order.extra_fields);
+        if (meta.repairQuote === true && Array.isArray(meta.photos)) {
+          const sanitizedPhotos = meta.photos.map((p, index) => ({
+            name: p.name || `foto-${index + 1}`,
+            type: p.type || "image/jpeg",
+            url: `/api/admin/repair-requests/${order.id}/photos/${index}`
+          }));
+          return {
+            ...order,
+            extra_fields: JSON.stringify({ ...meta, photos: sanitizedPhotos })
+          };
+        }
+      } catch {}
+      return order;
+    });
+
+    res.json({ orders: sanitizedOrders });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Bestellingen konden niet worden geladen." });
+  }
+});
+
+// Dedicated photo endpoint to serve images on-demand with caching
+app.get("/api/admin/repair-requests/:id/photos/:index", requirePermission("orders.view"), async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const index = Number(req.params.index);
+    if (!Number.isSafeInteger(id) || id < 1 || !Number.isSafeInteger(index) || index < 0) {
+      return res.status(400).send("Ongeldig verzoek.");
+    }
+    const result = await pool.query("SELECT extra_fields FROM service_orders WHERE id = $1", [id]);
+    if (!result.rows.length) return res.status(404).send("Aanvraag niet gevonden.");
+
+    let meta = {};
+    try { meta = JSON.parse(result.rows[0].extra_fields || "{}"); } catch {}
+    const photos = Array.isArray(meta.photos) ? meta.photos : [];
+    const photo = photos[index];
+    if (!photo || !photo.dataUrl) return res.status(404).send("Foto niet gevonden.");
+
+    const match = String(photo.dataUrl).match(/^data:([^;]+);base64,(.+)$/);
+    if (!match) return res.status(400).send("Fotoformaat ongeldig.");
+    const contentType = match[1];
+    const buffer = Buffer.from(match[2], "base64");
+    res.set("Content-Type", contentType);
+    res.set("Cache-Control", "private, max-age=86400");
+    res.send(buffer);
+  } catch (err) {
+    console.error("Photo serve error:", err);
+    res.status(500).send("Foto kon niet worden geladen.");
   }
 });
 
@@ -2326,6 +2447,8 @@ app.put("/api/admin/orders/:id/execution", requirePermission("orders.update"), a
     res.status(500).json({ error: "Uitvoeringsgegevens konden niet worden opgeslagen." });
   }
 });
+
+// Admin sends repair quote offer to customer
 app.post("/api/admin/repair-requests/:id/offer", requirePermission("orders.update"), async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -2334,12 +2457,12 @@ app.post("/api/admin/repair-requests/:id/offer", requirePermission("orders.updat
     const message = String(req.body?.message || "").trim().slice(0, 3000);
     const validity = String(req.body?.validity || "14 dagen").trim().slice(0, 80);
     const duration = String(req.body?.duration || "In overleg").trim().slice(0, 120);
+
     if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig aanvraagnummer." });
-    if (!priceInput || !Number.isFinite(price) || price < 0 || price > 100000) return res.status(400).json({ error: "Vul een geldige prijs in." });
-    if (!message) return res.status(400).json({ error: "Vul een bericht aan de klant in." });
-    if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL) {
-      return res.status(503).json({ error: "E-mail is nog niet ingesteld. Configureer RESEND_API_KEY en RESEND_FROM_EMAIL voordat u een offerte verstuurt." });
+    if (!priceInput || !Number.isFinite(price) || price < 0 || price > 100000) {
+      return res.status(400).json({ error: "Vul een geldige prijs in (tussen 0 en 100.000)." });
     }
+    if (!message) return res.status(400).json({ error: "Vul een bericht aan de klant in." });
 
     const found = await pool.query(
       "SELECT id, name, email, service_category, service_name, notes, status, extra_fields FROM service_orders WHERE id = $1",
@@ -2357,25 +2480,90 @@ app.post("/api/admin/repair-requests/:id/offer", requirePermission("orders.updat
     const brand = String(meta.brand || "").trim();
     const model = String(meta.model || order.service_name || "").trim();
     const formattedPrice = price.toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const html = `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;padding:24px;color:#203449"><h2>Uw reparatieofferte van HOMS TECH</h2><p>Hallo ${escapeHtml(order.name)},</p><p>Bedankt voor uw reparatieaanvraag voor <b>${escapeHtml(brand)} ${escapeHtml(model)}</b>.</p><p><b>Uw omschrijving:</b><br>${escapeHtml(order.notes || "-").replace(/\\n/g,"<br>")}</p><div style="padding:18px;background:#f1f7ff;border-radius:12px;margin:20px 0"><div style="font-size:14px;color:#53677d">Voorgestelde reparatieprijs</div><div style="font-size:30px;font-weight:bold;color:#1459a6">€ ${formattedPrice}</div><p><b>Geschatte duur:</b> ${escapeHtml(duration)}</p><p><b>Offerte geldig:</b> ${escapeHtml(validity)}</p></div><p style="white-space:pre-wrap">${escapeHtml(message)}</p><p>Wilt u akkoord gaan of heeft u vragen? Beantwoord deze e-mail, dan helpen wij u verder.</p><p>Met vriendelijke groet,<br><b>HOMS TECH</b></p></div>`;
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: process.env.RESEND_FROM_EMAIL, to: [order.email], subject: `HOMS TECH reparatieofferte #${id} — € ${formattedPrice}`, html, reply_to: process.env.REPAIR_REQUEST_EMAIL || undefined })
-    });
-    const emailResult = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      console.error("Repair offer email failed:", response.status, emailResult);
-      return res.status(502).json({ error: "De e-mail kon niet worden verzonden. Controleer de e-mailinstellingen en probeer opnieuw." });
-    }
+    const rawPrice = price.toFixed(2);
 
-    const offer = { price: formattedPrice, message, validity, duration, sentAt: new Date().toISOString(), emailId: emailResult.id || "" };
+    // Prepare offer object
+    const offer = {
+      price: formattedPrice,
+      rawPrice,
+      message,
+      validity,
+      duration,
+      updatedAt: new Date().toISOString(),
+      emailSent: false,
+      sentAt: null
+    };
     meta.offer = offer;
+
+    // 1. ALWAYS UPDATE DATABASE FIRST!
     const updated = await pool.query(
       "UPDATE service_orders SET price = $1, status = 'Wacht op klant', extra_fields = $2 WHERE id = $3 RETURNING id, price, status, extra_fields",
       [formattedPrice, JSON.stringify(meta), id]
     );
-    res.json({ success: true, emailSent: true, order: updated.rows[0] });
+    let updatedOrder = updated.rows[0];
+
+    // 2. CHECK RESEND CONFIGURATION
+    if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL) {
+      return res.json({
+        success: true,
+        emailSent: false,
+        warning: "Offerte is opgeslagen in het systeem, maar e-mail kon niet worden verzonden omdat RESEND_API_KEY nog niet is geconfigureerd. U kunt de klant telefonisch of via WhatsApp benaderen.",
+        order: updatedOrder
+      });
+    }
+
+    if (!order.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(order.email)) {
+      return res.json({
+        success: true,
+        emailSent: false,
+        warning: "Offerte is opgeslagen, maar het e-mailadres van de klant is ongeldig.",
+        order: updatedOrder
+      });
+    }
+
+    // 3. ATTEMPT EMAIL
+    try {
+      const html = `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;padding:24px;color:#203449"><h2>Uw reparatieofferte van HOMS TECH</h2><p>Hallo ${escapeHtml(order.name)},</p><p>Bedankt voor uw reparatieaanvraag voor <b>${escapeHtml(brand)} ${escapeHtml(model)}</b>.</p><p><b>Uw omschrijving:</b><br>${escapeHtml(order.notes || "-").replace(/\\n/g,"<br>")}</p><div style="padding:18px;background:#f1f7ff;border-radius:12px;margin:20px 0"><div style="font-size:14px;color:#53677d">Voorgestelde reparatieprijs</div><div style="font-size:30px;font-weight:bold;color:#1459a6">€ ${formattedPrice}</div><p><b>Geschatte duur:</b> ${escapeHtml(duration)}</p><p><b>Offerte geldig:</b> ${escapeHtml(validity)}</p></div><p style="white-space:pre-wrap">${escapeHtml(message)}</p><p>Wilt u akkoord gaan of heeft u vragen? Beantwoord deze e-mail, dan helpen wij u verder.</p><p>Met vriendelijke groet,<br><b>HOMS TECH</b></p></div>`;
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: process.env.RESEND_FROM_EMAIL,
+          to: [order.email],
+          subject: `HOMS TECH reparatieofferte #${id} — € ${formattedPrice}`,
+          html,
+          reply_to: process.env.REPAIR_REQUEST_EMAIL || undefined
+        })
+      });
+      const emailResult = await response.json().catch(() => ({}));
+      if (response.ok) {
+        meta.offer.emailSent = true;
+        meta.offer.sentAt = new Date().toISOString();
+        meta.offer.emailId = emailResult.id || "";
+        const finalUpdate = await pool.query(
+          "UPDATE service_orders SET extra_fields = $1 WHERE id = $2 RETURNING id, price, status, extra_fields",
+          [JSON.stringify(meta), id]
+        );
+        updatedOrder = finalUpdate.rows[0];
+        return res.json({ success: true, emailSent: true, order: updatedOrder });
+      } else {
+        console.error("Repair offer email failed:", response.status, emailResult);
+        return res.json({
+          success: true,
+          emailSent: false,
+          warning: "Offerte is opgeslagen in het systeem, maar de e-mail kon niet worden verzonden door een fout bij de mailprovider (status " + response.status + ").",
+          order: updatedOrder
+        });
+      }
+    } catch (mailError) {
+      console.error("Repair offer email error:", mailError);
+      return res.json({
+        success: true,
+        emailSent: false,
+        warning: "Offerte is opgeslagen in het systeem, maar de e-mail kon niet worden verzonden (" + (mailError.message || "netwerkfout") + ").",
+        order: updatedOrder
+      });
+    }
   } catch (error) {
     console.error("Repair offer error:", error);
     res.status(500).json({ error: "De offerte kon niet worden verwerkt. Probeer het opnieuw." });
