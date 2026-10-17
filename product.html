@@ -513,13 +513,25 @@ function colorVariantImage(label){
   const appleImage=appleColorImage(currentProduct,label);
   if(appleImage) return appleImage;
   const storage=selectedOptions.storage || (Array.isArray(currentProduct?.storage)?currentProduct.storage[0]:currentProduct?.storage||currentProduct?.geheugen||'');
-  const hit=findVariantProduct(storage,label) || currentProductSiblings().find(({p})=>normalizeColorValue(p.color||p.kleur||'')===normalizedLabel);
+  const siblings=currentProductSiblings();
+  const exact=findVariantProductExact(storage,label);
+  const colorMatch=siblings.find(({p})=>normalizeColorValue(p.color||p.kleur||'')===normalizedLabel);
+  const hit=exact || colorMatch;
   if(hit && hit.p){
     const imgs=Array.isArray(hit.p.images)?hit.p.images.filter(Boolean):[];
     const image=imgs[0] || hit.p.image || hit.p.imageUrl || '';
     if(image) return image;
   }
   return (Array.isArray(currentProduct?.images)?currentProduct.images.filter(Boolean)[0]:"") || currentProduct?.image || "";
+}
+function findVariantProductExact(storage,color){
+  const siblings=currentProductSiblings();
+  const s=normalizeStorageValue(storage), c=normalizeColorValue(color);
+  return siblings.find(({p})=>{
+    const ps=Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"";
+    const pc=p.color||p.kleur||"";
+    return normalizeStorageValue(ps)===s && normalizeColorValue(pc)===c;
+  }) || null;
 }
 function renderOptionSection(key,title,list){
   const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
