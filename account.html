@@ -39,6 +39,17 @@ input:focus{outline:3px solid rgba(37,99,235,.12);border-color:#2563eb}
 .info strong{display:block;margin-bottom:4px}
 .orders{margin-top:20px}.orders h2{margin-bottom:12px}.order-list{display:flex;flex-direction:column;gap:10px}.order-item{border:1px solid #e5e7eb;border-radius:12px;padding:14px;background:#f8fafc}.order-item-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.order-name{font-weight:900}.order-date{font-size:12px;color:#64748b}.order-status{padding:5px 9px;border-radius:999px;background:#e2e8f0;font-size:12px;font-weight:800}.order-detail{margin-top:8px;font-size:13px;color:#475569}.orders-empty{color:#64748b;padding:15px;background:#f8fafc;border-radius:10px}
 @media(max-width:650px){.nav{flex-direction:column;padding:12px 15px}.form,.account-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.section{padding:45px 16px}h1{font-size:31px}}
+
+.ht-site-footer{background:#071d2d;color:#fff;margin-top:36px;padding:38px 20px 18px;font-size:14px}
+.ht-footer-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr;gap:28px}
+.ht-footer-logo{font-size:24px;font-weight:900;letter-spacing:.3px;margin-bottom:10px}.ht-footer-logo span{color:#60a5fa}
+.ht-site-footer p{color:#cbd5e1;line-height:1.7;margin:8px 0 12px}.ht-site-footer h2{font-size:15px;margin:0 0 12px;color:#fff}
+.ht-site-footer ul{list-style:none;padding:0;margin:0}.ht-site-footer li{margin:0 0 8px}.ht-site-footer a{color:#e2e8f0;text-decoration:none}.ht-site-footer a:hover{color:#93c5fd;text-decoration:underline}
+.ht-site-footer .ht-footer-cta{display:inline-flex;background:#2563eb;color:#fff;border-radius:8px;padding:10px 13px;font-weight:700;margin-top:4px}
+.ht-footer-bottom{max-width:1200px;margin:26px auto 0;padding-top:14px;border-top:1px solid #334155;display:flex;justify-content:space-between;gap:12px;color:#cbd5e1;font-size:12px}
+@media(max-width:760px){.ht-footer-grid{grid-template-columns:1fr 1fr;gap:22px}.ht-footer-bottom{flex-direction:column}}
+@media(max-width:460px){.ht-footer-grid{grid-template-columns:1fr}}
+
 </style>
 <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20260922-final-header">
 <style>
@@ -398,6 +409,17 @@ if(data.authenticated){if(continueFirmwareDownloadAfterLogin())return;showAccoun
 }catch{}
 })();
 </script>
+
+<footer class="ht-site-footer" aria-label="Footer HOMS TECH">
+  <div class="ht-footer-grid">
+    <div><div class="ht-footer-logo">HOMS <span>TECH</span></div><p>Refurbished apparaten · Reparatie aan huis · GSM Services</p></div>
+    <div><h2>Snelle links</h2><ul><li><a href="index.html">Home</a></li><li><a href="devices.html">Apparaten</a></li><li><a href="repair.html">Reparaties</a></li><li><a href="prices.html">Prijzen</a></li></ul></div>
+    <div><h2>Service</h2><ul><li><a href="about.html">Over ons</a></li><li><a href="used.html">Tweedehands</a></li><li><a href="uw-toestel-verkopen.html">Uw toestel verkopen</a></li><li><a href="account.html">Mijn account</a></li></ul></div>
+    <div><h2>Hulp nodig?</h2><p>Bekijk onze reparaties of neem contact op via WhatsApp.</p><a class="ht-footer-cta" href="repair.html">Reparatie aanvragen →</a></div>
+  </div>
+  <div class="ht-footer-bottom"><span>© 2026 HOMS TECH</span><span>Refurbished · Reparatie · Service</span></div>
+</footer>
+
   <script src="assets/homs-global-nav.js"></script>
 </body>
 </html>
