@@ -7,6 +7,17 @@
 *{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;background:#f5f7fa;color:#111827;line-height:1.6}a{text-decoration:none;color:inherit}
 header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{max-width:1200px;margin:auto;min-height:72px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:20px}.logo{width:170px;display:block}nav{display:flex;gap:6px;flex-wrap:wrap}nav a{padding:10px 14px;border-radius:10px;color:#fff;font-weight:600}nav a:hover{background:#2563eb}.cart-link{background:#dc2626!important;color:#fff!important;font-weight:800}.cart-count{display:inline-flex;min-width:21px;height:21px;align-items:center;justify-content:center;background:#fff;color:#dc2626;border-radius:999px;font-size:12px;margin-left:4px;padding:0 5px}
 #cartArea{display:block!important;visibility:visible!important;min-height:120px}.section{max-width:1100px;margin:auto;padding:50px 20px}.page-title{font-size:36px;margin-bottom:25px}.empty{background:#fff;border-radius:20px;padding:55px 25px;text-align:center;box-shadow:0 8px 30px rgba(15,23,42,.07)}.empty p{color:#64748b;margin:8px 0 20px}.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 20px;border-radius:11px;font-weight:800;border:0;cursor:pointer}.red{background:#dc2626;color:#fff}.gray{background:#fff;color:#1d4ed8;border:1px solid #2563eb}.blue{background:#2563eb;color:#fff;box-shadow:0 5px 14px rgba(37,99,235,.22)}.cart-item{background:#fff;border-radius:18px;padding:18px;display:grid;grid-template-columns:105px 1fr auto;gap:20px;align-items:center;margin-bottom:14px;box-shadow:0 5px 20px rgba(15,23,42,.06)}.item-img{width:105px;height:105px;border-radius:14px;background:#f8fafc;object-fit:contain;padding:8px}.item-title{font-size:20px;font-weight:800}.item-brand{color:#2563eb;font-weight:700}.opts{margin-top:8px;color:#64748b;font-size:14px}.qty{display:flex;align-items:center;gap:8px;margin-top:12px}.qty button{width:32px;height:32px;border:1px solid #dbe3ec;background:#fff;border-radius:8px;cursor:pointer;font-weight:800}.qty span{min-width:25px;text-align:center;font-weight:800}.remove{color:#dc2626;background:none;border:0;cursor:pointer;font-weight:800;margin-left:12px}.item-price{font-size:20px;font-weight:900;white-space:nowrap}.summary{margin-top:22px;background:#111827;color:#fff;border-radius:18px;padding:22px 24px;display:flex;justify-content:space-between;align-items:center;gap:24px;box-shadow:0 8px 24px rgba(15,23,42,.12)}.summary-total{font-size:28px;font-weight:900}.summary small{color:#cbd5e1;display:block}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:0}.actions .btn{min-width:170px}.actions .blue:hover{filter:brightness(.94);transform:translateY(-1px)}.actions .gray:hover{background:#eff6ff}@media(max-width:700px){.nav{flex-direction:column;padding:12px 15px}.cart-item{grid-template-columns:80px 1fr}.item-img{width:80px;height:80px}.item-price{grid-column:2}.summary{flex-direction:column;align-items:stretch}.summary .btn{width:100%}}
+
+.ht-site-footer{background:#071d2d;color:#fff;margin-top:36px;padding:38px 20px 18px;font-size:14px}
+.ht-footer-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr;gap:28px}
+.ht-footer-logo{font-size:24px;font-weight:900;letter-spacing:.3px;margin-bottom:10px}.ht-footer-logo span{color:#60a5fa}
+.ht-site-footer p{color:#cbd5e1;line-height:1.7;margin:8px 0 12px}.ht-site-footer h2{font-size:15px;margin:0 0 12px;color:#fff}
+.ht-site-footer ul{list-style:none;padding:0;margin:0}.ht-site-footer li{margin:0 0 8px}.ht-site-footer a{color:#e2e8f0;text-decoration:none}.ht-site-footer a:hover{color:#93c5fd;text-decoration:underline}
+.ht-site-footer .ht-footer-cta{display:inline-flex;background:#2563eb;color:#fff;border-radius:8px;padding:10px 13px;font-weight:700;margin-top:4px}
+.ht-footer-bottom{max-width:1200px;margin:26px auto 0;padding-top:14px;border-top:1px solid #334155;display:flex;justify-content:space-between;gap:12px;color:#cbd5e1;font-size:12px}
+@media(max-width:760px){.ht-footer-grid{grid-template-columns:1fr 1fr;gap:22px}.ht-footer-bottom{flex-direction:column}}
+@media(max-width:460px){.ht-footer-grid{grid-template-columns:1fr}}
+
 </style><link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20260922-final-header">
 <style>
 /* HOMS TECH FINAL HEADER OVERRIDE — self-contained */
@@ -305,6 +316,17 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
   });
 })();
 </script>
+
+<footer class="ht-site-footer" aria-label="Footer HOMS TECH">
+  <div class="ht-footer-grid">
+    <div><div class="ht-footer-logo">HOMS <span>TECH</span></div><p>Refurbished apparaten · Reparatie aan huis · GSM Services</p></div>
+    <div><h2>Snelle links</h2><ul><li><a href="index.html">Home</a></li><li><a href="devices.html">Apparaten</a></li><li><a href="repair.html">Reparaties</a></li><li><a href="prices.html">Prijzen</a></li></ul></div>
+    <div><h2>Service</h2><ul><li><a href="about.html">Over ons</a></li><li><a href="used.html">Tweedehands</a></li><li><a href="uw-toestel-verkopen.html">Uw toestel verkopen</a></li><li><a href="account.html">Mijn account</a></li></ul></div>
+    <div><h2>Hulp nodig?</h2><p>Bekijk onze reparaties of neem contact op via WhatsApp.</p><a class="ht-footer-cta" href="repair.html">Reparatie aanvragen →</a></div>
+  </div>
+  <div class="ht-footer-bottom"><span>© 2026 HOMS TECH</span><span>Refurbished · Reparatie · Service</span></div>
+</footer>
+
   <script src="assets/homs-global-nav.js"></script>
 </body>
 </html>
