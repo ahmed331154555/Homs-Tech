@@ -1270,6 +1270,73 @@ textarea{
 
 
 
+<style id="homs-order-button-layout-only">
+/* Layout only: keep all existing HOMS TECH button colors */
+.webshop-order-card .order-card-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.webshop-order-card .order-heading{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:180px;
+  flex:1 1 240px;
+}
+.webshop-order-card .order-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+  flex:0 1 auto;
+  flex-wrap:nowrap;
+}
+.webshop-order-card .order-actions .order-status-select{
+  min-width:125px;
+  max-width:160px;
+  width:auto;
+  min-height:38px;
+  padding:8px 30px 8px 11px;
+  margin:0;
+}
+.webshop-order-card .order-actions .btn{
+  min-height:38px;
+  padding:9px 12px;
+  line-height:1.2;
+  white-space:nowrap;
+  margin:0;
+}
+@media(max-width:760px){
+  .webshop-order-card .order-card-head{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .webshop-order-card .order-actions{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:8px;
+    width:100%;
+  }
+  .webshop-order-card .order-actions .order-status-select{
+    grid-column:1 / -1;
+    width:100%;
+    max-width:none;
+  }
+  .webshop-order-card .order-actions .btn{
+    width:100%;
+    min-width:0;
+    white-space:normal;
+  }
+}
+@media(max-width:380px){
+  .webshop-order-card .order-actions{grid-template-columns:1fr}
+  .webshop-order-card .order-actions .order-status-select{grid-column:auto}
+}
+</style>
+
 </head>
 
 <body>
