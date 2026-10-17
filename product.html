@@ -490,6 +490,20 @@ function switchToProductVariant(hit){
   return true;
 }
 function selectProductOption(key,label){
+  if((key==="storage" || key==="color") && currentProduct){
+    const storage=key==="storage" ? label : selectedOptions.storage;
+    const color=key==="color" ? label : selectedOptions.color;
+    const siblings=currentProductSiblings();
+    const hasSeparateCatalogVariants=siblings.length>1 && siblings.some(({p})=>{
+      const s=Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"";
+      const col=p.color||p.kleur||"";
+      return !!(s||col);
+    });
+    if(hasSeparateCatalogVariants){
+      const hit=findVariantProductExact(storage,color);
+      if(hit && switchToProductVariant(hit)) return;
+    }
+  }
   if(currentProduct && currentProduct.pricingMode==="variant" && (key==="storage" || key==="color" || key==="condition")){
     selectedOptions[key]=label;
     renderProductBody();
@@ -537,7 +551,29 @@ function renderOptionSection(key,title,list){
   const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
   const raw=Array.isArray(currentProduct[map[key]]) ? currentProduct[map[key]] : [];
   let base=raw.length ? raw : effectiveOptions(currentProduct,key);
-  if(currentProduct.pricingMode==="variant" && ["condition","storage","color"].includes(key)){
+  const siblingProducts=currentProductSiblings();
+  const hasSeparateCatalogVariants=siblingProducts.length>1 && siblingProducts.some(({p})=>{
+    const s=Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"";
+    const col=p.color||p.kleur||"";
+    return !!(s||col);
+  });
+  if(hasSeparateCatalogVariants && (key==="storage" || key==="color")){
+    const seen=new Set();
+    const values=[];
+    siblingProducts.forEach(({p})=>{
+      const storage=Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"";
+      const color=p.color||p.kleur||"";
+      if(key==="storage" && normalizeColorValue(color)!==normalizeColorValue(selectedOptions.color)) return;
+      if(key==="color" && normalizeStorageValue(storage)!==normalizeStorageValue(selectedOptions.storage)) return;
+      const value=key==="storage"?storage:color;
+      if(!value) return;
+      const normalized=key==="storage"?normalizeStorageValue(value):normalizeColorValue(value);
+      if(seen.has(normalized)) return;
+      seen.add(normalized);
+      values.push(String(value));
+    });
+    if(values.length) base=values.map(label=>({label,active:true,enabled:true,available:true,priceDelta:0}));
+  } else if(currentProduct.pricingMode==="variant" && ["condition","storage","color"].includes(key)){
     const rows=(Array.isArray(currentProduct.variantPrices)?currentProduct.variantPrices:[])
       .filter(x=>x&&x.active!==false&&x.available!==false);
     const matchingRows=rows.filter(row=>{
