@@ -1451,6 +1451,7 @@ textarea{
     <button class="nav-btn" data-page="orders" onclick="showPage('orders')">📋 GSM Orders</button>
     <button class="nav-btn" data-page="repair-requests" onclick="showPage('repair-requests')">🔧 Repair Requests</button>
     <button class="nav-btn" data-page="webshop-orders" onclick="showPage('webshop-orders')">🛍️ Webshop Bestellingen</button>
+    <button class="nav-btn" data-page="order-settings" data-permission="site.save" onclick="showPage('order-settings')">📦 Orderinstellingen</button>
     <button class="nav-btn" data-page="gsm" onclick="showPage('gsm')">🛠️ GSM Services</button>
     <button class="nav-btn" data-page="firmware" data-permission="site.save" onclick="showPage('firmware')">📁 Firmware Library</button>
     <button class="nav-btn" data-page="search" data-permission="search" onclick="showPage('search')">🔎 Zoeken</button>
@@ -1718,6 +1719,40 @@ textarea{
     <div id="webshopOrdersList" class="orders-list"></div>
   </section>
 
+  <section class="section admin-page" id="page-order-settings">
+    <div class="section-head">
+      <div>
+        <h2>📦 Orderinstellingen</h2>
+        <p>Verzendinstellingen voor PostNL en DHL. API-sleutels worden veilig als servervariabelen ingesteld.</p>
+      </div>
+      <button class="btn" type="button" onclick="loadOrderSettings()">↻ Vernieuwen</button>
+    </div>
+    <div id="orderSettingsStatus" class="status info" style="margin-bottom:12px">Instellingen laden...</div>
+    <div class="card" style="padding:18px;margin-bottom:14px">
+      <h3 style="margin-top:0">Verzendbedrijven</h3>
+      <label style="display:flex;gap:10px;align-items:flex-start;margin:14px 0">
+        <input type="checkbox" id="orderPostnlEnabled" style="margin-top:4px">
+        <span><strong>PostNL</strong><br><small id="orderPostnlApiStatus">API-status controleren...</small></span>
+      </label>
+      <label style="display:flex;gap:10px;align-items:flex-start;margin:14px 0">
+        <input type="checkbox" id="orderDhlEnabled" style="margin-top:4px">
+        <span><strong>DHL</strong><br><small id="orderDhlApiStatus">API-status controleren...</small></span>
+      </label>
+      <button class="btn btn-primary" type="button" onclick="saveOrderSettings()">Instellingen opslaan</button>
+    </div>
+    <div class="card" style="padding:18px">
+      <h3 style="margin-top:0">API-koppeling instellen</h3>
+      <p>Vraag de API-gegevens aan via je zakelijke account bij PostNL en DHL. Plaats geheime sleutels niet in deze pagina, GitHub of de browser.</p>
+      <p><strong>Render Environment Variables:</strong></p>
+      <ul>
+        <li><strong>POSTNL_API_KEY</strong> — API-sleutel van PostNL</li>
+        <li><strong>DHL_API_KEY</strong> — API-token/sleutel van DHL Parcel</li>
+        <li><strong>DHL_API_BASE_URL</strong> — optioneel, alleen als DHL dit voor jouw account opgeeft</li>
+      </ul>
+      <p id="orderSettingsApiNote">Zolang de API-gegevens ontbreken, worden geen echte verzendlabels of trackingcodes aangemaakt. Deze pagina schakelt alleen de vervoerdersinstellingen in; de API-acties moeten na ontvangst van de gegevens worden getest.</p>
+    </div>
+  </section>
+
   <!-- GSM SERVICES -->
   <section class="section admin-page" id="page-gsm">
     <div class="section-head">
@@ -1965,7 +2000,7 @@ let buybackCatalogDeleteLock = false;
 const PAGE_PERMISSIONS = {
   general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",categories:"categories.view",
   used:"used.view",why:"why.view",customers:"customers.view",orders:"orders.view","repair-requests":"orders.view",
-  "webshop-orders":"webshop_orders.view",gsm:"gsm.view",firmware:"site.save",search:"search",admins:"admins.manage",
+  "webshop-orders":"webshop_orders.view","order-settings":"site.save",gsm:"gsm.view",firmware:"site.save",search:"search",admins:"admins.manage",
   buyback:"buyback.view", "buyback-orders":"buyback_orders.view"
 };
 
@@ -2017,6 +2052,7 @@ function showPage(page){
     if(page==="customers")loadCustomers();
     if(page==="orders"||page==="repair-requests")loadOrders();
     if(page==="webshop-orders")loadWebshopOrders();
+    if(page==="order-settings")loadOrderSettings();
     if(page==="buyback")renderBuybackPhones();
     if(page==="buyback-orders")loadBuybackOrders();
     if(page==="admins")loadAdmins();
@@ -5858,6 +5894,43 @@ function renderWebshopOrders(){
       </div>
     </article>`;
   }).join('');
+}
+
+async function orderSettingsRequest(method="GET",body){
+  const options={method,credentials:"same-origin",headers:{"Content-Type":"application/json"}};
+  if(body)options.body=JSON.stringify(body);
+  const response=await fetch("/api/admin/order-settings",options);
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data.error||"Instellingen konden niet worden geladen.");
+  return data;
+}
+function orderSettingsStatus(message,error=false){
+  const el=document.getElementById("orderSettingsStatus");
+  if(!el)return;
+  el.textContent=message;
+  el.className="status "+(error?"error":"success");
+}
+async function loadOrderSettings(){
+  try{
+    orderSettingsStatus("Instellingen laden...");
+    const data=await orderSettingsRequest();
+    document.getElementById("orderPostnlEnabled").checked=!!data.settings?.postnlEnabled;
+    document.getElementById("orderDhlEnabled").checked=!!data.settings?.dhlEnabled;
+    document.getElementById("orderPostnlApiStatus").textContent=data.api?.postnl?"API-sleutel gevonden op de server":"API-sleutel ontbreekt op de server";
+    document.getElementById("orderDhlApiStatus").textContent=data.api?.dhl?"API-sleutel gevonden op de server":"API-sleutel ontbreekt op de server";
+    orderSettingsStatus("Instellingen geladen.");
+  }catch(error){orderSettingsStatus(error.message,true);}
+}
+async function saveOrderSettings(){
+  try{
+    const data=await orderSettingsRequest("PUT",{
+      postnlEnabled:document.getElementById("orderPostnlEnabled").checked,
+      dhlEnabled:document.getElementById("orderDhlEnabled").checked
+    });
+    document.getElementById("orderPostnlEnabled").checked=!!data.settings?.postnlEnabled;
+    document.getElementById("orderDhlEnabled").checked=!!data.settings?.dhlEnabled;
+    orderSettingsStatus("Verzendinstellingen opgeslagen.");
+  }catch(error){orderSettingsStatus(error.message,true);}
 }
 
 async function loadWebshopOrders(){
