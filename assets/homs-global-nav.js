@@ -15,13 +15,16 @@
     'firmware.html':'firmware.html',
     'uw-toestel-verkopen.html':'uw-toestel-verkopen.html',
     'account.html':'account.html',
-    'client-area.html':'account.html'
+    'client-area.html':'account.html',
+    'cart.html':'cart.html',
+    'checkout.html':'cart.html'
   }[current] || '';
   var links = [
     ['Home','index.html'],
     ['Over ons','about.html'],
     ['Reparaties','repair.html'],
     ['Apparaten','devices.html'],
+    ['Winkelwagen','cart.html'],
     ['Prijzen','prices.html'],
     ['Tweedehands','used.html'],
     ['GSM Services','gsm-services.html'],
