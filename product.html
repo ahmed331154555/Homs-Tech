@@ -663,12 +663,17 @@ function renderOptionSection(key,title,list){
 
   const availabilityControlled=key!=="storage" && key!=="color";
   const available=items.filter(x=>!availabilityControlled || x.available!==false);
-  if(!selectedOptions[key] || !available.some(x=>x.label===selectedOptions[key])){
+  const sameOptionValue=(a,b)=>{
+    if(key==="storage") return normalizeStorageValue(a)===normalizeStorageValue(b);
+    if(key==="color") return normalizeColorValue(a)===normalizeColorValue(b);
+    return String(a??"")===String(b??"");
+  };
+  if(!selectedOptions[key] || !available.some(x=>sameOptionValue(x.label,selectedOptions[key]))){
     selectedOptions[key]=available[0]?.label || "";
   }
 
   const buttons=items.map(x=>{
-    const active=x.label===selectedOptions[key];
+    const active=sameOptionValue(x.label,selectedOptions[key]);
     const availableNow=(key==="storage" || key==="color") ? true : x.available!==false;
 
     let priceLabel="";
