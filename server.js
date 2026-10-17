@@ -325,6 +325,14 @@ async function initDatabase() {
     )
   `);
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS order_settings (
+      id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+      data JSONB NOT NULL DEFAULT '{"postnlEnabled":false,"dhlEnabled":false}'::jsonb,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
   // Payment fields for webshop checkout / PayPal.
   await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS checkout_token TEXT NOT NULL DEFAULT ''`);
   await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT ''`);
@@ -2146,6 +2154,43 @@ app.post("/api/paypal/cancel-order", async (req, res) => {
   } catch (error) {
     console.error("PayPal cancel error:", error);
     res.status(500).json({ error: "Betaling kon niet worden bijgewerkt." });
+  }
+});
+
+app.get("/api/admin/order-settings", requirePermission("site.save"), async (req,res) => {
+  try{
+    await pool.query("INSERT INTO order_settings (id,data) VALUES (1,$1::jsonb) ON CONFLICT (id) DO NOTHING", [JSON.stringify({postnlEnabled:false,dhlEnabled:false})]);
+    const result=await pool.query("SELECT data FROM order_settings WHERE id=1");
+    const settings=result.rows[0]?.data || {postnlEnabled:false,dhlEnabled:false};
+    res.json({
+      settings:{postnlEnabled:!!settings.postnlEnabled,dhlEnabled:!!settings.dhlEnabled},
+      api:{postnl:!!process.env.POSTNL_API_KEY,dhl:!!process.env.DHL_API_KEY}
+    });
+  }catch(error){
+    console.error("Order settings load error:",error);
+    res.status(500).json({error:"Orderinstellingen konden niet worden geladen."});
+  }
+});
+
+app.put("/api/admin/order-settings", requirePermission("site.save"), async (req,res) => {
+  try{
+    const postnlEnabled=req.body?.postnlEnabled===true;
+    const dhlEnabled=req.body?.dhlEnabled===true;
+    if(postnlEnabled && !process.env.POSTNL_API_KEY){
+      return res.status(400).json({error:"Voeg eerst POSTNL_API_KEY toe bij Render Environment Variables."});
+    }
+    if(dhlEnabled && !process.env.DHL_API_KEY){
+      return res.status(400).json({error:"Voeg eerst DHL_API_KEY toe bij Render Environment Variables."});
+    }
+    const settings={postnlEnabled,dhlEnabled};
+    await pool.query(
+      "INSERT INTO order_settings (id,data,updated_at) VALUES (1,$1::jsonb,NOW()) ON CONFLICT (id) DO UPDATE SET data=EXCLUDED.data,updated_at=NOW()",
+      [JSON.stringify(settings)]
+    );
+    res.json({success:true,settings,api:{postnl:!!process.env.POSTNL_API_KEY,dhl:!!process.env.DHL_API_KEY}});
+  }catch(error){
+    console.error("Order settings save error:",error);
+    res.status(500).json({error:"Orderinstellingen konden niet worden opgeslagen."});
   }
 });
 
