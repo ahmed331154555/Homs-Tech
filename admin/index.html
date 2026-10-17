@@ -3614,7 +3614,7 @@ function renderPhoneFolderTree(){
         });
       });
       const variants=[...actualRows,...optionRows].join('');
-      const variantCount=items.length;
+      const variantCount=items.length+optionRows.length;
       return `<details class="phone-model-folder">
         <summary class="phone-model-folder-summary">
           <div class="phone-model-folder-cover">${img?`<img src="${esc(img)}" alt="${esc(model)}">`:`<div class="phone-model-folder-icon">${phoneTreeBrandIcon(group)}</div>`}<span class="phone-model-folder-count">${variantCount} ${variantCount===1?'variant':'varianten'}</span></div>
