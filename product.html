@@ -403,8 +403,9 @@ function currentProductSiblings(){
   const records=list.map((p,i)=>({p,i}));
   const identity=productModelIdentity(currentProduct);
   const exact=records.filter(({p})=>productModelIdentity(p)===identity);
-  if(exact.length>1) return exact;
-  // Match imported records by model name if their catalog keys differ.
+  // Match imported records by visible model name too; different storage/color
+  // variants may carry different catalog keys in Admin.
+  //
   const modelName=(product)=>{
     let name=String(product && product.name || "");
     name=name.replace(/\b\d+\s*(?:GB|TB)\b/ig,"");
@@ -413,7 +414,9 @@ function currentProductSiblings(){
   };
   const target=modelName(currentProduct);
   const matches=records.filter(({p})=>modelName(p)===target);
-  return matches.length>1 ? matches : exact;
+  const combined=new Map();
+  [...exact,...matches].forEach(item=>combined.set(item.i,item));
+  return combined.size>1 ? [...combined.values()] : exact;
 }
 function findVariantProduct(storage,color){
   const siblings=currentProductSiblings();
@@ -623,7 +626,7 @@ function renderOptionSection(key,title,list){
       const color=p.color||p.kleur||"";
       return key==="color"
         ? normalizeStorageValue(storage)===normalizeStorageValue(selectedOptions.storage)
-        : normalizeColorValue(color)===normalizeColorValue(selectedOptions.color);
+        : true;
     });
     const existingValues=new Set(matchingRecords.map(({p})=>{
       const value=key==="color"?(p.color||p.kleur||""):(Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"");
