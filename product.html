@@ -489,13 +489,17 @@ function isIPhone15Product(product){
   return /iphone\s*15(?:\s|$)/i.test(name) || /iphone\s*15(?:\s|$)/i.test(family);
 }
 
-function switchToProductVariant(hit){
+function switchToProductVariant(hit,requestedStorage="",requestedColor=""){
   if(!hit || !hit.p) return false;
   const old={...selectedOptions};
   currentProduct=hit.p;
   currentProductId=hit.i;
-  const storage=Array.isArray(hit.p.storage)?hit.p.storage[0]:hit.p.storage||hit.p.geheugen||"";
-  const color=hit.p.color||hit.p.kleur||"";
+  const storedStorage=Array.isArray(hit.p.storage)?hit.p.storage[0]:hit.p.storage||hit.p.geheugen||"";
+  const storedColor=hit.p.color||hit.p.kleur||"";
+  // The clicked option is authoritative: some imported catalog records have
+  // stale/missing storage metadata even though the product name is correct.
+  const storage=String(requestedStorage||catalogVariantStorage(hit.p)||storedStorage||"");
+  const color=String(requestedColor||catalogVariantColor(hit.p)||storedColor||"");
   const appleImage=appleColorImage(hit.p,color);
   if(appleImage){
     currentProduct={...hit.p,images:[appleImage]};
@@ -530,7 +534,7 @@ function selectProductOption(key,label){
     });
     if(hasSeparateCatalogVariants){
       const hit=findVariantProductExact(storage,color);
-      if(hit && switchToProductVariant(hit)) return;
+      if(hit && switchToProductVariant(hit,storage,color)) return;
       // Never fall back to a different storage/color product when catalog
       // variants exist. Keep the user's selection responsive if one exact
       // combination is missing from the saved catalog.
