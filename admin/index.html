@@ -1422,6 +1422,7 @@ textarea{
 }
 </style>
 
+<style id="homs-order-accuracy-v2">.ht-order-detail-panel .ht-order-product-copy small{line-height:1.45;overflow-wrap:anywhere}.ht-order-detail-panel .ht-order-note{line-height:1.5}.ht-order-payment-state{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;background:#fef3c7;color:#92400e;font-size:12px;font-weight:800}.ht-order-payment-state.is-paid{background:#dcfce7;color:#166534}.ht-order-payment-state.is-failed{background:#fee2e2;color:#991b1b}.webshop-list-summary small{line-height:1.45}</style>
 </head>
 
 <body>
@@ -5826,6 +5827,7 @@ function renderWebshopOrders(){
     const date=order.created_at?new Date(order.created_at).toLocaleString('nl-NL'):'';
     const total=Number(order.total||0).toFixed(2).replace('.',',');
     const itemNames=items.map(x=>x.name||x.title||'Product').slice(0,2).join(' · ');
+    const totalUnits=items.reduce((sum,x)=>sum+Math.max(0,Number(x.qty||x.quantity||1)),0);
     const itemExtra=items.length>2?` + ${items.length-2}`:'';
     const statusLabel=order.status||'Nieuw';
     const payment=order.payment_status||'Onbekend';
@@ -6342,34 +6344,38 @@ async function showWebshopOrderDetails(id){
     const items=Array.isArray(order.items)?order.items:[];
     const address=[order.street,order.house_number].filter(Boolean).join(" ")+
       ([order.postcode,order.city].filter(Boolean).length?", "+[order.postcode,order.city].filter(Boolean).join(" "):"");
-    const money=value=>"€ "+Number(value||0).toFixed(2).replace(".",",");
+    const money=value=>"€ "+Number(value||0).toLocaleString("nl-NL",{minimumFractionDigits:2,maximumFractionDigits:2});
     const date=order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"-";
     const status=order.status||"Nieuw";
     const payment=order.payment_status||"Onbekend";
+    const paymentKey=String(payment).toLowerCase();
+    const paymentLabel=/^(paid|betaald|completed)$/.test(paymentKey)?"Betaald":(/^(pending)$/.test(paymentKey)?"In afwachting":(/^(unpaid|open)$/.test(paymentKey)?"Niet betaald":(/^(failed|mislukt)$/.test(paymentKey)?"Mislukt":(/^(cancelled|canceled|geannuleerd)$/.test(paymentKey)?"Geannuleerd":payment))));
+    const paymentClass=paymentLabel==="Betaald"?"is-paid":(["Mislukt","Geannuleerd"].includes(paymentLabel)?"is-failed":"");
     const itemRows=items.length?items.map((item,index)=>{
       const name=item.name||item.title||item.product_name||"Product";
       const image=item.image||item.image_url||item.thumbnail||item.product_image||"";
-      const quantity=Number(item.quantity||item.qty||1);
-      const price=Number(item.price||item.unit_price||item.amount||0);
-      const meta=[item.color||item.colour,item.storage,item.condition||item.product_condition,item.sku?"SKU: "+item.sku:""].filter(Boolean).join(" · ");
+      const quantity=Number(item.qty||item.quantity||1);
+      const price=Number(item.unitPrice??item.unit_price??item.price??0);
+      const options=item.options&&typeof item.options==="object"?item.options:{};
+      const meta=[options.condition||item.condition||item.product_condition,options.color||options.colour||item.color||item.colour,options.storage||item.storage,options.battery,options.vat,options.tradeIn,item.sku?"SKU: "+item.sku:""].filter(Boolean).join(" · ");
       return `<div class="ht-order-product-row">
         ${image?`<img src="${esc(image)}" alt="" loading="lazy" onerror="this.style.display='none'">`:'<div class="ht-order-product-placeholder">▣</div>'}
-        <div class="ht-order-product-copy"><strong>${esc(name)}</strong><small>${esc(meta||"")}</small><small>× ${quantity}${price? " · "+money(price):""}</small></div>
+        <div class="ht-order-product-copy"><strong>${esc(name)}</strong><small>${esc(meta||"")}</small><small>× ${quantity} · ${money(price)} per stuk</small></div>
         <strong class="ht-order-product-price">${money(price*quantity)}</strong>
       </div>`;
     }).join(""):'<div class="ht-order-empty-items">Geen productregels beschikbaar voor deze bestelling.</div>';
     const total=Number(order.total||0);
-    const subtotal=items.reduce((sum,item)=>sum+Number(item.price||item.unit_price||item.amount||0)*Number(item.quantity||item.qty||1),0);
+    const subtotal=items.reduce((sum,item)=>sum+Number(item.unitPrice??item.unit_price??item.price??0)*Number(item.qty||item.quantity||1),0);
     const modal=document.createElement("div");
     modal.id="orderDetailsModal";
     modal.className="ht-order-detail-overlay";
     modal.innerHTML=`<div class="ht-order-detail-panel" role="dialog" aria-modal="true" aria-label="Bestelling #${Number(order.id)}">
       <div class="ht-order-detail-top"><div><div class="ht-order-eyebrow">HOMS TECH · WEBSHOP</div><h2>Bestelling #${Number(order.id)}</h2><p>${esc(date)}</p></div><button type="button" class="btn btn-light" aria-label="Sluiten" onclick="document.getElementById('orderDetailsModal')?.remove()">✕</button></div>
-      <section class="ht-order-detail-section ht-order-status-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">✓</span><strong>Status van de bestelling</strong></div><div class="ht-order-status-grid"><label>Status bestelling<select class="order-status-select" data-webshop-order-id="${Number(order.id)}" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">${['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(x=>`<option value="${esc(x)}" ${status===x?'selected':''}>${esc(x)}</option>`).join('')}</select></label><div><span>Betaalstatus</span><strong>${esc(payment)}</strong></div></div></section>
+      <section class="ht-order-detail-section ht-order-status-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">✓</span><strong>Status van de bestelling</strong></div><div class="ht-order-status-grid"><label>Status bestelling<select class="order-status-select" data-webshop-order-id="${Number(order.id)}" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">${['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(x=>`<option value="${esc(x)}" ${status===x?'selected':''}>${esc(x)}</option>`).join('')}</select></label><div><span>Betaalstatus</span><strong><span class="ht-order-payment-state ${paymentClass}">${esc(paymentLabel)}</span></strong></div></div></section>
       <section class="ht-order-total-banner"><div><span>Totaal van de bestelling</span><small>${items.length} product(en)</small></div><strong>${money(total)}</strong></section>
-      <section class="ht-order-detail-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">▣</span><strong>Bestelde producten</strong><span class="ht-order-section-count">${items.length}</span></div><div class="ht-order-product-list">${itemRows}</div><div class="ht-order-totals"><div><span>Subtotaal producten</span><strong>${money(subtotal||total)}</strong></div><div class="ht-order-grand-total"><span>Totaal</span><strong>${money(total)}</strong></div></div></section>
+      <section class="ht-order-detail-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">▣</span><strong>Bestelde producten</strong><span class="ht-order-section-count">${items.reduce((sum,item)=>sum+Math.max(0,Number(item.qty||item.quantity||1)),0)} stuks</span></div><div class="ht-order-product-list">${itemRows}</div><div class="ht-order-totals"><div><span>Subtotaal producten</span><strong>${money(subtotal)}</strong></div>${Math.abs(subtotal-total)>0.009?`<div><span>Verschil / overige kosten (niet uitgesplitst)</span><strong>${money(total-subtotal)}</strong></div>`:""}<div class="ht-order-grand-total"><span>Totaal</span><strong>${money(total)}</strong></div></div></section>
       <section class="ht-order-detail-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">♙</span><strong>Klantgegevens</strong></div><div class="ht-order-customer-grid"><div><span>Naam</span><strong>${esc(order.name||"-")}</strong></div><div><span>E-mail</span><strong>${esc(order.email||"-")}</strong></div><div><span>Telefoon</span><strong>${esc(order.phone||"-")}</strong></div><div><span>Adres</span><strong>${esc(address.trim().replace(/^,\s*/,"")||"-")}</strong></div></div><div class="ht-order-contact-actions">${order.phone?`<a class="btn btn-light" href="tel:${esc(String(order.phone).replace(/[^+\d]/g,''))}">☎ Bellen</a>`:''}${order.email?`<a class="btn btn-light" href="mailto:${esc(order.email)}">✉ E-mail</a>`:''}${address.trim()?`<a class="btn btn-light" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address.trim())}">⌖ Kaart openen</a>`:''}</div></section>
-      <section class="ht-order-detail-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">▤</span><strong>Verzending en betaling</strong></div><div class="ht-order-customer-grid"><div><span>Verzendmethode</span><strong>${esc(order.shipping_method||order.shipping||"Niet geregistreerd")}</strong></div><div><span>Betaalmethode</span><strong>${esc(order.payment_method||"Niet geregistreerd")}</strong></div><div><span>Betaalstatus</span><strong>${esc(payment)}</strong></div><div><span>Betaalreferentie</span><strong>${esc(order.paypal_order_id||"—")}</strong></div></div><p class="ht-order-note">Verzend- of trackinggegevens worden alleen getoond wanneer deze in HOMS TECH beschikbaar zijn.</p></section>
+      <section class="ht-order-detail-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">▤</span><strong>Verzending en betaling</strong></div><div class="ht-order-customer-grid"><div><span>Verzendmethode</span><strong>${esc(order.shipping_method||order.shipping||"Niet geregistreerd")}</strong></div><div><span>Betaalmethode</span><strong>${esc(order.payment_method||"Niet geregistreerd")}</strong></div><div><span>Betaalstatus</span><strong>${esc(payment)}</strong></div><div><span>Betaalreferentie</span><strong>${esc(order.paypal_order_id||"Niet beschikbaar")}</strong></div></div><p class="ht-order-note">Alleen opgeslagen gegevens worden getoond. Verzendmethode en trackingnummer zijn niet opgeslagen in de huidige ordergegevens.</p></section>
       <div class="ht-order-detail-footer"><button class="btn btn-light" type="button" onclick="document.getElementById('orderDetailsModal')?.remove()">Sluiten</button><button class="btn btn-dark" type="button" onclick="window.print()">Afdrukken</button></div>
     </div>`;
     document.body.appendChild(modal);
