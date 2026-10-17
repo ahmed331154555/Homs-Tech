@@ -538,7 +538,15 @@ function renderOptionSection(key,title,list){
   const raw=Array.isArray(currentProduct[map[key]]) ? currentProduct[map[key]] : [];
   let base=raw.length ? raw : effectiveOptions(currentProduct,key);
   if(currentProduct.pricingMode==="variant" && ["condition","storage","color"].includes(key)){
-    const values=[...new Set((Array.isArray(currentProduct.variantPrices)?currentProduct.variantPrices:[]).filter(x=>x&&x.active!==false&&x.available!==false).map(x=>x[key]))];
+    const rows=(Array.isArray(currentProduct.variantPrices)?currentProduct.variantPrices:[])
+      .filter(x=>x&&x.active!==false&&x.available!==false);
+    const matchingRows=rows.filter(row=>{
+      if(key!=="storage" && normalizeStorageValue(row.storage)!==normalizeStorageValue(selectedOptions.storage)) return false;
+      if(key!=="color" && normalizeColorValue(row.color)!==normalizeColorValue(selectedOptions.color)) return false;
+      if(key!=="condition" && row.condition!==selectedOptions.condition) return false;
+      return true;
+    });
+    const values=[...new Set(matchingRows.map(x=>x[key]).filter(Boolean))];
     if(values.length) base=values.map(label=>({label,active:true,enabled:true,available:true,priceDelta:0}));
   }
 
