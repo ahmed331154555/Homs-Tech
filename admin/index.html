@@ -2256,15 +2256,25 @@ async function login(){
   const username=document.getElementById("username").value.trim();
   const password=document.getElementById("password").value;
   const status=document.getElementById("loginStatus");
-  status.className="status info";status.textContent="Inloggen...";
+  status.style.display="block";
+  status.className="status info";
+  status.textContent="Inloggen...";
   try{
-    const r=await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({username,password})});
-    const x=await r.json();
-    if(!r.ok)throw new Error(x.error||"Login mislukt");
-    await loadCurrentUser();status.className="status success";status.textContent="✓ Inloggen gelukt";
-    showDashboard();await loadData();
-  }catch(e){status.className="status error";status.textContent="✕ "+e.message;}
+    const r=await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",cache:"no-store",body:JSON.stringify({username,password})});
+    const x=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(x.error||("Inloggen mislukt (HTTP "+r.status+")"));
+    await loadCurrentUser();
+    status.className="status success";
+    status.textContent="✓ Inloggen gelukt";
+    showDashboard();
+    await loadData();
+  }catch(e){
+    status.style.display="block";
+    status.className="status error";
+    status.textContent="✕ "+(e&&e.message?e.message:"Inloggen mislukt");
+  }
 }
+window.login=login;
 
 async function logout(){
 
