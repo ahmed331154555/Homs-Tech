@@ -1712,7 +1712,8 @@ textarea{
     <div id="webshopOrderSummary" class="order-summary"></div>
     <div class="orders-toolbar">
       <div class="orders-search"><input id="webshopOrderSearch" type="search" placeholder="Zoeken op klant, e-mail, telefoon, ordernummer, postcode..." oninput="renderWebshopOrders()"></div>
-      <select id="webshopOrderStatusFilter" class="order-filter" onchange="renderWebshopOrders()"><option value="">Alle statussen</option><option>Nieuw</option><option>In behandeling</option><option>Verzonden</option><option>Voltooid</option><option>Geannuleerd</option></select>
+      <select id="webshopOrderStatusFilter" class="order-filter" onchange="renderWebshopOrders()"><option value="">Alle bestelstatussen</option><option>Nieuw</option><option>In behandeling</option><option>Verzonden</option><option>Voltooid</option><option>Geannuleerd</option></select>
+      <select id="webshopOrderPaymentFilter" class="order-filter" onchange="renderWebshopOrders()"><option value="">Alle betaalstatussen</option><option value="paid">Betaald</option><option value="unpaid">Niet betaald</option><option value="processing">In behandeling</option><option value="failed">Mislukt</option></select>
       <button class="order-filter-btn" onclick="clearWebshopOrderFilters()">↻ Filters wissen</button>
     </div>
     <div id="webshopOrdersStatus" class="status info" style="margin-bottom:10px"></div>
@@ -5679,8 +5680,8 @@ function clearGsmOrderFilters(){
   if(q)q.value=''; if(f)f.value=''; renderGsmOrders();
 }
 function clearWebshopOrderFilters(){
-  const q=document.getElementById('webshopOrderSearch'), f=document.getElementById('webshopOrderStatusFilter');
-  if(q)q.value=''; if(f)f.value=''; renderWebshopOrders();
+  const q=document.getElementById('webshopOrderSearch'), f=document.getElementById('webshopOrderStatusFilter'), p=document.getElementById('webshopOrderPaymentFilter');
+  if(q)q.value=''; if(f)f.value=''; if(p)p.value=''; renderWebshopOrders();
 }
 function renderOrderSummary(id,orders,kind){
   const box=document.getElementById(id); if(!box)return;
@@ -5853,7 +5854,15 @@ function renderWebshopOrders(){
   const box=document.getElementById('webshopOrdersList'); if(!box)return;
   const q=(document.getElementById('webshopOrderSearch')?.value||'').trim().toLowerCase();
   const filter=(document.getElementById('webshopOrderStatusFilter')?.value||'');
-  const filtered=adminWebshopOrdersCache.filter(o=>(!q||orderSearchText(o).includes(q))&&(!filter||o.status===filter));
+  const paymentFilter=(document.getElementById('webshopOrderPaymentFilter')?.value||'');
+  const filtered=adminWebshopOrdersCache.filter(o=>{
+    const payment=String(o.payment_status||'').toLowerCase();
+    const paid=['paid','betaald','completed'].includes(payment);
+    const failed=['failed','mislukt','cancelled','canceled','geannuleerd'].includes(payment);
+    const processing=['processing','pending','in behandeling','in afwachting'].includes(payment);
+    const paymentMatch=!paymentFilter||(paymentFilter==='paid'&&paid)||(paymentFilter==='unpaid'&&!paid&&!failed&&!processing)||(paymentFilter==='failed'&&failed)||(paymentFilter==='processing'&&processing);
+    return (!q||orderSearchText(o).includes(q))&&(!filter||o.status===filter)&&paymentMatch;
+  });
   renderOrderSummary('webshopOrderSummary',adminWebshopOrdersCache,'webshop');
   const status=document.getElementById('webshopOrdersStatus');
   if(status){status.className='order-count';status.textContent=`${filtered.length} van ${adminWebshopOrdersCache.length} webshop bestelling(en) zichtbaar`;}
@@ -6448,7 +6457,22 @@ async function showWebshopOrderDetails(id){
       <section class="ht-order-total-banner"><div><span>Totaal van de bestelling</span><small>${items.length} product(en)</small></div><strong>${money(total)}</strong></section>
       <section class="ht-order-detail-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">▣</span><strong>Bestelde producten</strong><span class="ht-order-section-count">${items.reduce((sum,item)=>sum+Math.max(0,Number(item.qty||item.quantity||1)),0)} stuks</span></div><div class="ht-order-product-list">${itemRows}</div><div class="ht-order-totals"><div><span>Subtotaal producten</span><strong>${money(subtotal)}</strong></div>${Math.abs(subtotal-total)>0.009?`<div><span>Verschil / overige kosten (niet uitgesplitst)</span><strong>${money(total-subtotal)}</strong></div>`:""}<div class="ht-order-grand-total"><span>Totaal</span><strong>${money(total)}</strong></div></div></section>
       <section class="ht-order-detail-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">♙</span><strong>Klantgegevens</strong></div><div class="ht-order-customer-grid"><div><span>Naam</span><strong>${esc(order.name||"-")}</strong></div><div><span>E-mail</span><strong>${esc(order.email||"-")}</strong></div><div><span>Telefoon</span><strong>${esc(order.phone||"-")}</strong></div><div><span>Adres</span><strong>${esc(address.trim().replace(/^,\s*/,"")||"-")}</strong></div></div><div class="ht-order-contact-actions">${order.phone?`<a class="btn btn-light" href="tel:${esc(String(order.phone).replace(/[^+\d]/g,''))}">☎ Bellen</a>`:''}${order.email?`<a class="btn btn-light" href="mailto:${esc(order.email)}">✉ E-mail</a>`:''}${address.trim()?`<a class="btn btn-light" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address.trim())}">⌖ Kaart openen</a>`:''}</div></section>
-      <section class="ht-order-detail-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">▤</span><strong>Verzending en betaling</strong></div><div class="ht-order-customer-grid"><div><span>Verzendmethode</span><strong>${esc(order.shipping_method||order.shipping||"Niet geregistreerd")}</strong></div><div><span>Betaalmethode</span><strong>${esc(order.payment_method||"Niet geregistreerd")}</strong></div><div><span>Betaalstatus</span><strong>${esc(payment)}</strong></div><div><span>Betaalreferentie</span><strong>${esc(order.paypal_order_id||"Niet beschikbaar")}</strong></div></div><p class="ht-order-note">Alleen opgeslagen gegevens worden getoond. Verzendmethode en trackingnummer zijn niet opgeslagen in de huidige ordergegevens.</p></section>
+      <section class="ht-order-detail-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">▤</span><strong>Verzending en betaling</strong></div>
+        <div class="ht-order-status-grid">
+          <label>Verzendbedrijf<select id="webshopShippingCarrier"><option value="">Nog niet gekozen</option><option value="PostNL" ${order.shipping_method==="PostNL"?"selected":""}>PostNL</option><option value="DHL" ${order.shipping_method==="DHL"?"selected":""}>DHL</option></select></label>
+          <label>Betaalstatus<select id="webshopPaymentStatus"><option value="Unpaid" ${/^(unpaid|open)$/i.test(payment)?"selected":""}>Niet betaald</option><option value="Processing" ${/^processing$/i.test(payment)?"selected":""}>In behandeling</option><option value="Paid" ${/^(paid|betaald|completed)$/i.test(payment)?"selected":""}>Betaald</option><option value="Failed" ${/^(failed|mislukt)$/i.test(payment)?"selected":""}>Mislukt</option></select></label>
+        </div>
+        <div class="ht-order-customer-grid" style="margin-top:12px">
+          <label>Trackingnummer<input id="webshopTrackingNumber" type="text" maxlength="160" value="${esc(order.tracking_number||"")}" placeholder="Trackingnummer van de vervoerder"></label>
+          <label>Tracking-URL<input id="webshopTrackingUrl" type="url" maxlength="1000" value="${esc(order.tracking_url||"")}" placeholder="https://..."></label>
+        </div>
+        <div class="ht-order-customer-grid" style="margin-top:12px">
+          <div><span>Betaalmethode</span><strong>${esc(order.payment_method||"Niet geregistreerd")}</strong></div>
+          <div><span>Betaalreferentie</span><strong>${esc(order.paypal_order_id||"Niet beschikbaar")}</strong></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn btn-primary" type="button" onclick="saveWebshopOrderShipping(${Number(order.id)})">Verzend- en betaalgegevens opslaan</button></div>
+        <p class="ht-order-note">De vervoerder en trackinggegevens worden alleen opgeslagen; een echt verzendlabel wordt pas beschikbaar nadat de API-koppeling met de vervoerder is geïmplementeerd en getest.</p>
+      </section>
       <div class="ht-order-detail-footer"><button class="btn btn-light" type="button" onclick="document.getElementById('orderDetailsModal')?.remove()">Sluiten</button><button class="btn btn-dark" type="button" onclick="window.print()">Afdrukken</button></div>
     </div>`;
     document.body.appendChild(modal);
@@ -6469,6 +6493,28 @@ async function deleteGsmOrder(id){
     await loadOrders();
     if(currentPage==="search") await adminSearch();
   }catch(e){ alert(e.message); }
+}
+
+async function saveWebshopOrderShipping(id){
+  if(!hasPermission("webshop_orders.update")){alert("Je hebt geen toestemming om deze bestelling te wijzigen.");return;}
+  const carrier=document.getElementById("webshopShippingCarrier")?.value||"";
+  const paymentStatus=document.getElementById("webshopPaymentStatus")?.value||"Unpaid";
+  const trackingNumber=(document.getElementById("webshopTrackingNumber")?.value||"").trim();
+  const trackingUrl=(document.getElementById("webshopTrackingUrl")?.value||"").trim();
+  if(carrier&&!["PostNL","DHL"].includes(carrier)){alert("Kies PostNL of DHL.");return;}
+  if(trackingUrl&&!trackingUrl.startsWith("https://")){alert("De tracking-URL moet beginnen met https://");return;}
+  try{
+    const response=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/shipping",{
+      method:"PUT",credentials:"same-origin",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({shipping_method:carrier,payment_status:paymentStatus,tracking_number:trackingNumber,tracking_url:trackingUrl})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Gegevens konden niet worden opgeslagen.");
+    await loadWebshopOrders();
+    showWebshopOrderDetails(id);
+    setStatus("✓ Verzend- en betaalgegevens opgeslagen voor bestelling #"+id,"success");
+  }catch(error){alert(error.message);}
 }
 
 async function deleteWebshopOrder(id){
