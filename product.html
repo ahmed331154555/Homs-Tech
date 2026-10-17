@@ -615,6 +615,22 @@ function renderOptionSection(key,title,list){
     }
     if(variantOptions.length) base=variantOptions;
   }
+  // For independently managed catalog products, only show a color/storage pair
+  // when that exact combination exists in the admin product list.
+  if(hasSeparateCatalogVariants && (key==="storage" || key==="color")){
+    const currentStorage=key==="storage" ? selectedOptions.storage : selectedOptions.storage;
+    const currentColor=key==="color" ? selectedOptions.color : selectedOptions.color;
+    const exactValues=new Set(siblingProducts.filter(({p})=>{
+      const s=Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"";
+      const col=p.color||p.kleur||"";
+      return normalizeStorageValue(s)===normalizeStorageValue(currentStorage) &&
+        normalizeColorValue(col)===normalizeColorValue(currentColor);
+    }).map(({p})=>key==="storage"?(Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||""):(p.color||p.kleur||""))
+      .filter(Boolean).map(v=>key==="storage"?normalizeStorageValue(v):normalizeColorValue(v)));
+    if(exactValues.size){
+      base=base.filter(option=>exactValues.has(key==="storage"?normalizeStorageValue(option.label):normalizeColorValue(option.label)));
+    }
+  }
 
   const items=base.filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false));
   if(!items.length) return "";
