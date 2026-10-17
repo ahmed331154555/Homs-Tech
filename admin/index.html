@@ -6449,11 +6449,11 @@ async function printWebshopShippingLabel(id){
     <hr class="rule">
     <section><div class="caption">Verzendgegevens</div><div class="meta">Vervoerder: <strong>${escLabel(carrier||"Zelf te kiezen bij verzending")}</strong></div><div class="meta">Ordernummer: <strong>#${Number(order.id)}</strong></div>${tracking?'<div class="meta">Trackingnummer</div><div class="tracking">'+escLabel(tracking)+'</div>':''}</section>
     <div class="spacer"></div><hr class="rule"><footer class="foot">Adreslabel van HOMS TECH. Dit is geen officieel betaald PostNL- of DHL-verzendlabel en bevat geen door de vervoerder aangemaakt verzendbewijs of barcode.</footer>
-  </main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),300));</script></body></html>`);
+  </main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),300));<\/script></body></html>`);
   w.document.close();
 }
 
-function showWebshopOrderDetails(id){
+async function showWebshopOrderDetails(id){
   try{
     const r=await fetch("/api/admin/webshop-orders",{credentials:"same-origin"});
     const result=await r.json().catch(()=>({}));
