@@ -3592,31 +3592,6 @@ function renderPhoneFolderTree(){
         return `<div class="phone-variant-row"><div class="phone-variant-main"><strong>${esc(label)}</strong><span>${esc(phone.condition||'')} ${price?'· €'+price.toFixed(2).replace('.',','):''}</span></div><button type="button" class="phone-variant-edit" onclick="event.stopPropagation();openPhoneEditor(${i})">✎ Bewerken</button></div>`;
       }).join('');
       const variantCount=items.length;
-      return `<div class="phone-variant-row"><div class="phone-variant-main"><strong>${esc(label)}</strong><span>${esc(phone.condition||'')} ${price?'· €'+price.toFixed(2).replace('.',','):''}</span></div><button type="button" class="phone-variant-edit" onclick="event.stopPropagation();openPhoneEditor(${i})">✎ Bewerken</button></div>`;
-      });
-      const optionRows=[];
-      items.forEach(({phone,i})=>{
-        const storages=(Array.isArray(phone.storageOptions)?phone.storageOptions:[]).filter(x=>x&&x.label&&x.active!==false&&x.enabled!==false);
-        const colors=(Array.isArray(phone.colorOptions)?phone.colorOptions:[]).filter(x=>x&&x.label&&x.active!==false&&x.enabled!==false);
-        const storageValues=storages.map(x=>String(x.label).trim());
-        const colorValues=colors.map(x=>String(x.label).trim());
-        if(!storageValues.length&&!colorValues.length) return;
-        const pairs=[];
-        if(storageValues.length&&colorValues.length) storageValues.forEach(s=>colorValues.forEach(col=>pairs.push([s,col])));
-        else if(storageValues.length) storageValues.forEach(s=>pairs.push([s,String(phone.color||phone.kleur||'')]));
-        else colorValues.forEach(col=>pairs.push([String(phone.storage||phone.geheugen||''),col]));
-        pairs.forEach(([storage,color])=>{
-          const key=JSON.stringify([String(storage||'').toLowerCase(),String(color||'').toLowerCase()]);
-          if(actualVariantKeys.has(key)) return;
-          actualVariantKeys.add(key);
-          const rowLabel=[storage,color].filter(Boolean).join(' · ')||String(phone.name||model);
-          const exactPrice=(Array.isArray(phone.variantPrices)?phone.variantPrices:[]).find(v=>String(v.storage||'').toLowerCase()===String(storage||'').toLowerCase()&&String(v.color||'').toLowerCase()===String(color||'').toLowerCase()&&v.active!==false&&v.available!==false);
-          const priceText=exactPrice&&Number(exactPrice.price)>0?'· €'+Number(exactPrice.price).toFixed(2).replace('.',','):'· optie binnen product';
-          optionRows.push(`<div class="phone-variant-row"><div class="phone-variant-main"><strong>${esc(rowLabel)}</strong><span>Webshop-optie ${priceText} · geen apart voorraadrecord</span></div><button type="button" class="phone-variant-edit" onclick="event.stopPropagation();openPhoneEditor(${i})">✎ Product bewerken</button></div>`);
-        });
-      });
-      const variants=[...actualRows,...optionRows].join('');
-      const variantCount=items.length+optionRows.length;
       return `<details class="phone-model-folder">
         <summary class="phone-model-folder-summary">
           <div class="phone-model-folder-cover">${img?`<img src="${esc(img)}" alt="${esc(model)}">`:`<div class="phone-model-folder-icon">${phoneTreeBrandIcon(group)}</div>`}<span class="phone-model-folder-count">${variantCount} ${variantCount===1?'variant':'varianten'}</span></div>
