@@ -3585,12 +3585,14 @@ function renderPhoneFolderTree(){
       const prices=items.map(x=>Number(x.phone.price||0)).filter(x=>x>0);
       const minPrice=prices.length?Math.min(...prices):0, maxPrice=prices.length?Math.max(...prices):0;
       const priceText=minPrice&&maxPrice&&minPrice!==maxPrice?`€${minPrice.toFixed(0)} – €${maxPrice.toFixed(0)}`:(minPrice?`€${minPrice.toFixed(2).replace('.',',')}`:'Prijs op aanvraag');
-      const actualVariantKeys=new Set(items.map(({info})=>JSON.stringify([String(info.storage||'').toLowerCase(),String(info.color||'').toLowerCase()])));
-      const actualRows=items.map(({phone,i,info})=>{
+      const variants=items.map(({phone,i,info})=>{
         const parts=[info.storage&&info.storage!=='Algemeen'?info.storage:'',info.color&&info.color!=='Algemeen'?info.color:''].filter(Boolean);
         const label=parts.length?parts.join(' · '):String(phone.name||model);
         const price=Number(phone.price||0);
         return `<div class="phone-variant-row"><div class="phone-variant-main"><strong>${esc(label)}</strong><span>${esc(phone.condition||'')} ${price?'· €'+price.toFixed(2).replace('.',','):''}</span></div><button type="button" class="phone-variant-edit" onclick="event.stopPropagation();openPhoneEditor(${i})">✎ Bewerken</button></div>`;
+      }).join('');
+      const variantCount=items.length;
+      return `<div class="phone-variant-row"><div class="phone-variant-main"><strong>${esc(label)}</strong><span>${esc(phone.condition||'')} ${price?'· €'+price.toFixed(2).replace('.',','):''}</span></div><button type="button" class="phone-variant-edit" onclick="event.stopPropagation();openPhoneEditor(${i})">✎ Bewerken</button></div>`;
       });
       const optionRows=[];
       items.forEach(({phone,i})=>{
