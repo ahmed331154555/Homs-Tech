@@ -6414,7 +6414,46 @@ async function showGsmOrderDetails(id){
   }
 }
 
-async function showWebshopOrderDetails(id){
+async function printWebshopShippingLabel(id){
+  const order=(adminWebshopOrdersCache||[]).find(item=>Number(item.id)===Number(id));
+  if(!order){alert("Bestelling niet gevonden. Vernieuw de bestellingen en probeer opnieuw.");return;}
+  const escLabel=value=>String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  const recipientName=String(order.name||"").trim();
+  const addressLine=[order.street,order.house_number].filter(Boolean).join(" ").trim();
+  const postcodeCity=[order.postcode,order.city].filter(Boolean).join(" ").trim();
+  if(!recipientName||!addressLine||!postcodeCity){alert("Het adres van de klant is niet volledig. Vul naam, straat/huisnummer, postcode en plaats in voordat je het label afdrukt.");return;}
+  const tracking=String(order.tracking_number||"").trim();
+  const carrier=["PostNL","DHL"].includes(order.shipping_method)?order.shipping_method:"";
+  const w=window.open("","_blank","width=900,height=700");
+  if(!w){alert("Sta pop-ups toe om het verzendlabel te kunnen afdrukken.");return;}
+  w.document.open();
+  w.document.write(`<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verzendlabel bestelling #${Number(order.id)}</title><style>
+    @page{size:100mm 150mm;margin:5mm}
+    *{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:0}
+    .label{width:90mm;min-height:140mm;border:1.5px solid #111;padding:5mm;display:flex;flex-direction:column;gap:5mm}
+    .brand{font-size:19pt;font-weight:800;letter-spacing:.5px;color:#145da0}
+    .sub{font-size:8pt;color:#555;margin-top:1mm}
+    .rule{border:0;border-top:1px solid #333;margin:0}
+    .caption{font-size:8pt;text-transform:uppercase;letter-spacing:.7px;color:#555;margin-bottom:2mm}
+    .recipient{font-size:16pt;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+    .address{font-size:13pt;line-height:1.4;overflow-wrap:anywhere}
+    .meta{font-size:9pt;line-height:1.5;overflow-wrap:anywhere}
+    .tracking{font-size:11pt;font-weight:700;overflow-wrap:anywhere}
+    .spacer{flex:1}.foot{font-size:7.5pt;color:#555}
+    @media screen{body{padding:10px;background:#eee}.label{background:white;margin:auto;box-shadow:0 2px 10px #bbb}}
+    @media print{body{padding:0}.label{box-shadow:none}}
+  </style></head><body><main class="label">
+    <header><div class="brand">HOMS TECH</div><div class="sub">Verzendlabel · bestelling #${Number(order.id)}</div></header>
+    <hr class="rule">
+    <section><div class="caption">Verzenden naar</div><div class="recipient">${escLabel(recipientName)}</div><div class="address">${escLabel(addressLine)}<br>${escLabel(postcodeCity)}<br>Nederland</div>${order.phone?'<div class="meta">Tel: '+escLabel(order.phone)+'</div>':''}</section>
+    <hr class="rule">
+    <section><div class="caption">Verzendgegevens</div><div class="meta">Vervoerder: <strong>${escLabel(carrier||"Zelf te kiezen bij verzending")}</strong></div><div class="meta">Ordernummer: <strong>#${Number(order.id)}</strong></div>${tracking?'<div class="meta">Trackingnummer</div><div class="tracking">'+escLabel(tracking)+'</div>':''}</section>
+    <div class="spacer"></div><hr class="rule"><footer class="foot">Adreslabel van HOMS TECH. Dit is geen officieel betaald PostNL- of DHL-verzendlabel en bevat geen door de vervoerder aangemaakt verzendbewijs of barcode.</footer>
+  </main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),300));</script></body></html>`);
+  w.document.close();
+}
+
+function showWebshopOrderDetails(id){
   try{
     const r=await fetch("/api/admin/webshop-orders",{credentials:"same-origin"});
     const result=await r.json().catch(()=>({}));
@@ -6473,7 +6512,7 @@ async function showWebshopOrderDetails(id){
         <div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn btn-primary" type="button" onclick="saveWebshopOrderShipping(${Number(order.id)})">Verzend- en betaalgegevens opslaan</button></div>
         <p class="ht-order-note">De vervoerder en trackinggegevens worden alleen opgeslagen; een echt verzendlabel wordt pas beschikbaar nadat de API-koppeling met de vervoerder is geïmplementeerd en getest.</p>
       </section>
-      <div class="ht-order-detail-footer"><button class="btn btn-light" type="button" onclick="document.getElementById('orderDetailsModal')?.remove()">Sluiten</button><button class="btn btn-dark" type="button" onclick="window.print()">Afdrukken</button></div>
+      <div class="ht-order-detail-footer"><button class="btn btn-light" type="button" onclick="document.getElementById('orderDetailsModal')?.remove()">Sluiten</button><button class="btn btn-light" type="button" onclick="printWebshopShippingLabel(${Number(order.id)})">Verzendlabel afdrukken</button><button class="btn btn-dark" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
     </div>`;
     document.body.appendChild(modal);
     modal.addEventListener("click",event=>{if(event.target===modal)modal.remove();});
