@@ -397,6 +397,20 @@ function productModelIdentity(product){
   name=name.replace(colorPattern,"");
   return name.replace(/\s{2,}/g," ").trim().toLowerCase();
 }
+function catalogVariantStorage(product){
+  const direct=Array.isArray(product?.storage)?product.storage[0]:product?.storage||product?.geheugen||"";
+  if(String(direct).trim()) return String(direct).trim();
+  const name=String(product?.name||"");
+  const match=name.match(/(?:^|[\\s\\-_])(64|128|256|512)\\s*GB\\b|(?:^|[\\s\\-_])1\\s*TB\\b/i);
+  return match?match[0].trim().replace(/^[-_\\s]+/,""):"";
+}
+function catalogVariantColor(product){
+  const direct=String(product?.color||product?.kleur||"").trim();
+  if(direct) return direct;
+  const name=String(product?.name||"").toLowerCase();
+  const colors=["space grey","space gray","midnight","starlight","deep purple","natural titanium","black titanium","white titanium","zwart","wit","blauw","groen","rood","roze","paars","geel","oranje","bruin","grijs","goud","zilver","koraal","black","white","blue","green","red","pink","purple","yellow","orange","brown","grey","gray","gold","silver","coral"];
+  return colors.find(color=>name.includes(color))||"";
+}
 function currentProductSiblings(){
   if(!currentData || !currentProduct) return [];
   const list=type==="used" ? (Array.isArray(currentData.usedPhones)?currentData.usedPhones:[]) : (Array.isArray(currentData.phones)?currentData.phones:(Array.isArray(currentData.devices)?currentData.devices:[]));
@@ -422,18 +436,18 @@ function findVariantProduct(storage,color){
   const siblings=currentProductSiblings();
   const s=normalizeStorageValue(storage), c=normalizeColorValue(color);
   let hit=siblings.find(({p})=>{
-    const ps=Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"";
-    const pc=p.color||p.kleur||"";
+    const ps=catalogVariantStorage(p);
+    const pc=catalogVariantColor(p);
     return normalizeStorageValue(ps)===s && normalizeColorValue(pc)===c;
   });
   if(hit) return hit;
   hit=siblings.find(({p})=>{
-    const ps=Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"";
+    const ps=catalogVariantStorage(p);
     return normalizeStorageValue(ps)===s;
   });
   if(hit) return hit;
   return siblings.find(({p})=>{
-    const pc=p.color||p.kleur||"";
+    const pc=catalogVariantColor(p);
     return normalizeColorValue(pc)===c;
   }) || null;
 }
@@ -510,8 +524,8 @@ function selectProductOption(key,label){
     const color=key==="color" ? label : selectedOptions.color;
     const siblings=currentProductSiblings();
     const hasSeparateCatalogVariants=siblings.length>1 && siblings.some(({p})=>{
-      const s=Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"";
-      const col=p.color||p.kleur||"";
+      const s=catalogVariantStorage(p);
+      const col=catalogVariantColor(p);
       return !!(s||col);
     });
     if(hasSeparateCatalogVariants){
@@ -557,8 +571,8 @@ function findVariantProductExact(storage,color){
   const siblings=currentProductSiblings();
   const s=normalizeStorageValue(storage), c=normalizeColorValue(color);
   return siblings.find(({p})=>{
-    const ps=Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"";
-    const pc=p.color||p.kleur||"";
+    const ps=catalogVariantStorage(p);
+    const pc=catalogVariantColor(p);
     return normalizeStorageValue(ps)===s && normalizeColorValue(pc)===c;
   }) || null;
 }
@@ -568,17 +582,16 @@ function renderOptionSection(key,title,list){
   let base=raw.length ? raw : effectiveOptions(currentProduct,key);
   const siblingProducts=currentProductSiblings();
   const hasSeparateCatalogVariants=siblingProducts.length>1 && siblingProducts.some(({p})=>{
-    const s=Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"";
-    const col=p.color||p.kleur||"";
+    const s=catalogVariantStorage(p);
+    const col=catalogVariantColor(p);
     return !!(s||col);
   });
   if(hasSeparateCatalogVariants && (key==="storage" || key==="color")){
     const seen=new Set();
     const values=[];
     siblingProducts.forEach(({p})=>{
-      const storage=Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"";
-      const color=p.color||p.kleur||"";
-      if(key==="storage" && normalizeColorValue(color)!==normalizeColorValue(selectedOptions.color)) return;
+      const storage=catalogVariantStorage(p);
+      const color=catalogVariantColor(p);
       if(key==="color" && normalizeStorageValue(storage)!==normalizeStorageValue(selectedOptions.storage)) return;
       const value=key==="storage"?storage:color;
       if(!value) return;
@@ -608,8 +621,8 @@ function renderOptionSection(key,title,list){
     for(const item of siblings){
       const p=item.p;
       const value=key==="storage"
-        ? (Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"")
-        : (p.color||p.kleur||"");
+        ? (catalogVariantStorage(p))
+        : (catalogVariantColor(p));
       if(!value) continue;
       const norm=key==="storage" ? normalizeStorageValue(value) : normalizeColorValue(value);
       if(seen.has(norm)) continue;
@@ -622,14 +635,14 @@ function renderOptionSection(key,title,list){
   // a real admin record matching the currently selected other dimension.
   if(hasSeparateCatalogVariants && (key==="storage" || key==="color")){
     const matchingRecords=siblingProducts.filter(({p})=>{
-      const storage=Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"";
-      const color=p.color||p.kleur||"";
+      const storage=catalogVariantStorage(p);
+      const color=catalogVariantColor(p);
       return key==="color"
         ? normalizeStorageValue(storage)===normalizeStorageValue(selectedOptions.storage)
         : true;
     });
     const existingValues=new Set(matchingRecords.map(({p})=>{
-      const value=key==="color"?(p.color||p.kleur||""):(Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"");
+      const value=key==="color"?(catalogVariantColor(p)):(catalogVariantStorage(p));
       return key==="color"?normalizeColorValue(value):normalizeStorageValue(value);
     }).filter(Boolean));
     if(existingValues.size){
