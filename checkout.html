@@ -8,6 +8,17 @@
 header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{max-width:1200px;margin:auto;min-height:72px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:20px}.logo{width:170px}.navlinks{display:flex;gap:8px;flex-wrap:wrap}.navlinks a{padding:10px 14px;border-radius:10px;font-weight:700}.navlinks a:hover{background:#243044}.cart{background:#dc2626}
 .wrap{max-width:1100px;margin:auto;padding:45px 20px 70px}.title{font-size:36px;margin:0 0 8px}.subtitle{color:#64748b;margin:0 0 28px}.layout{display:grid;grid-template-columns:1.35fr .85fr;gap:22px}.card{background:#fff;border-radius:18px;padding:24px;box-shadow:0 6px 25px rgba(15,23,42,.07)}h2{margin:0 0 20px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{display:flex;flex-direction:column;gap:7px}.field.full{grid-column:1/-1}label{font-weight:700;font-size:14px}input{width:100%;padding:13px 14px;border:1px solid #dbe3ec;border-radius:10px;font-size:15px;outline:none}input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}.account-note{background:#f1f5f9;padding:12px 14px;border-radius:10px;color:#475569;margin-bottom:18px;font-size:14px}.item{display:grid;grid-template-columns:68px 1fr auto;gap:12px;padding:13px 0;border-bottom:1px solid #e5e7eb}.item:last-child{border-bottom:0}.item img{width:68px;height:68px;object-fit:contain;background:#f8fafc;border-radius:10px}.item-title{font-weight:800}.item-meta{font-size:13px;color:#64748b;margin-top:4px}.item-price{font-weight:900;white-space:nowrap}.total{margin-top:18px;padding-top:18px;border-top:2px solid #e5e7eb;display:flex;justify-content:space-between;font-size:24px;font-weight:900}.btn{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:11px;padding:14px 20px;font-weight:800;cursor:pointer;font-size:15px}.red{background:#dc2626;color:#fff}.gray{background:#fff;color:#2563eb;border:1px solid #2563eb}.blue{background:#2563eb;color:#fff;border:1px solid #2563eb;box-shadow:0 5px 14px rgba(37,99,235,.18)}.submit{width:100%;margin-top:18px}.status{margin-top:14px;padding:12px 14px;border-radius:10px;display:none}.status.error{display:block;background:#fee2e2;color:#991b1b}.status.success{display:block;background:#dcfce7;color:#166534}.success-box{text-align:center;padding:35px 15px}.success-box .check{font-size:54px}.success-box h2{margin:10px 0}.order-number{font-weight:900;font-size:22px;margin:10px 0 20px}.hidden{display:none!important}
 @media(max-width:800px){.layout{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.nav{flex-direction:column;padding:12px 15px}.wrap{padding:30px 15px}.title{font-size:30px}}
+
+.ht-site-footer{background:#071d2d;color:#fff;margin-top:36px;padding:38px 20px 18px;font-size:14px}
+.ht-footer-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr;gap:28px}
+.ht-footer-logo{font-size:24px;font-weight:900;letter-spacing:.3px;margin-bottom:10px}.ht-footer-logo span{color:#60a5fa}
+.ht-site-footer p{color:#cbd5e1;line-height:1.7;margin:8px 0 12px}.ht-site-footer h2{font-size:15px;margin:0 0 12px;color:#fff}
+.ht-site-footer ul{list-style:none;padding:0;margin:0}.ht-site-footer li{margin:0 0 8px}.ht-site-footer a{color:#e2e8f0;text-decoration:none}.ht-site-footer a:hover{color:#93c5fd;text-decoration:underline}
+.ht-site-footer .ht-footer-cta{display:inline-flex;background:#2563eb;color:#fff;border-radius:8px;padding:10px 13px;font-weight:700;margin-top:4px}
+.ht-footer-bottom{max-width:1200px;margin:26px auto 0;padding-top:14px;border-top:1px solid #334155;display:flex;justify-content:space-between;gap:12px;color:#cbd5e1;font-size:12px}
+@media(max-width:760px){.ht-footer-grid{grid-template-columns:1fr 1fr;gap:22px}.ht-footer-bottom{flex-direction:column}}
+@media(max-width:460px){.ht-footer-grid{grid-template-columns:1fr}}
+
 </style>
 <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20260922-final-header">
 <style>
@@ -366,6 +377,17 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   else start();
 })();
 </script>
+
+<footer class="ht-site-footer" aria-label="Footer HOMS TECH">
+  <div class="ht-footer-grid">
+    <div><div class="ht-footer-logo">HOMS <span>TECH</span></div><p>Refurbished apparaten · Reparatie aan huis · GSM Services</p></div>
+    <div><h2>Snelle links</h2><ul><li><a href="index.html">Home</a></li><li><a href="devices.html">Apparaten</a></li><li><a href="repair.html">Reparaties</a></li><li><a href="prices.html">Prijzen</a></li></ul></div>
+    <div><h2>Service</h2><ul><li><a href="about.html">Over ons</a></li><li><a href="used.html">Tweedehands</a></li><li><a href="uw-toestel-verkopen.html">Uw toestel verkopen</a></li><li><a href="account.html">Mijn account</a></li></ul></div>
+    <div><h2>Hulp nodig?</h2><p>Bekijk onze reparaties of neem contact op via WhatsApp.</p><a class="ht-footer-cta" href="repair.html">Reparatie aanvragen →</a></div>
+  </div>
+  <div class="ht-footer-bottom"><span>© 2026 HOMS TECH</span><span>Refurbished · Reparatie · Service</span></div>
+</footer>
+
   <script src="assets/homs-global-nav.js"></script>
 </body>
 </html>
