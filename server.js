@@ -338,6 +338,9 @@ async function initDatabase() {
   await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'Unpaid'`);
   await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS paypal_order_id TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS shipping_method TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS tracking_number TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS tracking_url TEXT DEFAULT ''`);
 
   const result = await pool.query(
     "SELECT id FROM site_settings WHERE id = 1"
@@ -2191,6 +2194,33 @@ app.put("/api/admin/order-settings", requirePermission("site.save"), async (req,
   }catch(error){
     console.error("Order settings save error:",error);
     res.status(500).json({error:"Orderinstellingen konden niet worden opgeslagen."});
+  }
+});
+
+app.put("/api/admin/webshop-orders/:id/shipping", requirePermission("webshop_orders.update"), async (req,res) => {
+  try{
+    const id=Number(req.params.id);
+    if(!Number.isInteger(id)||id<1)return res.status(400).json({error:"Ongeldig order-ID."});
+    const body=req.body||{};
+    const carrier=String(body.shipping_method||"").trim();
+    const paymentStatus=String(body.payment_status||"Unpaid").trim();
+    const trackingNumber=String(body.tracking_number||"").trim().slice(0,160);
+    const trackingUrl=String(body.tracking_url||"").trim().slice(0,1000);
+    if(carrier&&!["PostNL","DHL"].includes(carrier))return res.status(400).json({error:"Kies alleen PostNL of DHL."});
+    if(!["Unpaid","Processing","Paid","Failed"].includes(paymentStatus))return res.status(400).json({error:"Ongeldige betaalstatus."});
+    if(trackingUrl&&!/^https:\/\//i.test(trackingUrl))return res.status(400).json({error:"De tracking-URL moet beginnen met https://"});
+    const result=await pool.query(
+      `UPDATE webshop_orders
+       SET shipping_method=$1, payment_status=$2, tracking_number=$3, tracking_url=$4
+       WHERE id=$5
+       RETURNING id,shipping_method,payment_status,tracking_number,tracking_url`,
+      [carrier,paymentStatus,trackingNumber,trackingUrl,id]
+    );
+    if(!result.rows.length)return res.status(404).json({error:"Bestelling niet gevonden."});
+    res.json({success:true,order:result.rows[0]});
+  }catch(error){
+    console.error("Save webshop shipping details error:",error);
+    res.status(500).json({error:"Verzend- en betaalgegevens konden niet worden opgeslagen."});
   }
 });
 
