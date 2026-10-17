@@ -531,6 +531,14 @@ function selectProductOption(key,label){
     if(hasSeparateCatalogVariants){
       const hit=findVariantProductExact(storage,color);
       if(hit && switchToProductVariant(hit)) return;
+      // Never fall back to a different storage/color product when catalog
+      // variants exist. Keep the user's selection responsive if one exact
+      // combination is missing from the saved catalog.
+      selectedOptions[key]=label;
+      renderProductBody();
+      const priceEl=document.getElementById("selectedConditionPrice");
+      if(priceEl && currentProduct) priceEl.textContent=money(calculateTotal(currentProduct));
+      return;
     }
   }
   if(currentProduct && currentProduct.pricingMode==="variant" && (key==="storage" || key==="color" || key==="condition")){
