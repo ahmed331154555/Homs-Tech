@@ -400,8 +400,28 @@ function productModelIdentity(product){
 function currentProductSiblings(){
   if(!currentData || !currentProduct) return [];
   const list=type==="used" ? (Array.isArray(currentData.usedPhones)?currentData.usedPhones:[]) : (Array.isArray(currentData.phones)?currentData.phones:(Array.isArray(currentData.devices)?currentData.devices:[]));
+  const records=list.map((p,i)=>({p,i}));
+  const identity=productModelIdentity(currentProduct);
+  const explicitMatches=records.filter(({p})=>productModelIdentity(p)===identity);
+  if(explicitMatches.length>1) return explicitMatches;
+  // Some imported variants have a different catalog key per color/storage.
+  // Fall back to the visible model name so the storefront can match real admin records.
+  const modelName=(product)=>{
+    let name=String(product?.name||"");
+    name=name.replace(/\\b\\d+\\s*(?:GB|TB)\\b/ig,"");
+    const colors=["space grey","space gray","midnight","starlight","deep purple","natural titanium","black titanium","white titanium","zwart","wit","blauw","rood","groen","geel","paars","goud","zilver","rose","roze","oranje","bruin","grijs","black","white","blue","green","red","purple","yellow","gold","silver","gray","grey"];
+    const colorPattern=new RegExp("\\s+(?:"+colors.map(x=>x.replace(/[-/\\\\^$*+?.()|[\\]{}]/g,"\\\\function currentProductSiblings(){
+  if(!currentData || !currentProduct) return [];
+  const list=type==="used" ? (Array.isArray(currentData.usedPhones)?currentData.usedPhones:[]) : (Array.isArray(currentData.phones)?currentData.phones:(Array.isArray(currentData.devices)?currentData.devices:[]));
   const identity=productModelIdentity(currentProduct);
   return list.map((p,i)=>({p,i})).filter(({p})=>productModelIdentity(p)===identity);
+}")).join("|")+")$","i");
+    name=name.replace(colorPattern,"");
+    return name.replace(/\\s+/g," ").trim().toLowerCase();
+  };
+  const currentName=modelName(currentProduct);
+  const nameMatches=records.filter(({p})=>modelName(p)===currentName);
+  return nameMatches.length>1 ? nameMatches : explicitMatches;
 }
 function findVariantProduct(storage,color){
   const siblings=currentProductSiblings();
