@@ -1337,6 +1337,91 @@ textarea{
 }
 </style>
 
+<style id="homs-webshop-order-detail-layout">
+/* HOMS TECH webshop order UI: preserve existing theme and button colors */
+.webshop-order-list-card{padding:15px 17px;border-radius:14px}
+.webshop-list-top,.webshop-order-identity,.webshop-list-bottom,.webshop-list-actions{display:flex;align-items:center;gap:10px}
+.webshop-list-top{justify-content:space-between}
+.webshop-order-identity{min-width:0;flex:1}
+.webshop-order-primary{min-width:0}
+.webshop-order-title-link{border:0;background:transparent;color:inherit;padding:0;font:inherit;font-weight:800;text-align:left;cursor:pointer}
+.webshop-order-title-link:hover{text-decoration:underline}
+.webshop-status-pill,.webshop-payment-pill{display:inline-flex;align-items:center;border-radius:999px;padding:6px 10px;background:#eef2f7;color:#334155;font-size:12px;font-weight:800;white-space:nowrap}
+.webshop-payment-pill.is-paid{background:#dcfce7;color:#166534}
+.webshop-payment-pill.is-pending{background:#fef3c7;color:#92400e}
+.webshop-list-customer{margin:12px 0 10px;font-weight:700}
+.webshop-list-summary{display:grid;grid-template-columns:minmax(0,2fr) minmax(100px,1fr);gap:10px;padding:12px;background:#f8fafc;border-radius:10px}
+.webshop-list-summary>div{min-width:0;display:flex;flex-direction:column;gap:3px}
+.webshop-list-summary span,.webshop-list-summary small{font-size:12px;color:#64748b}
+.webshop-list-summary strong{font-size:17px}
+.webshop-list-summary small{overflow-wrap:anywhere}
+.webshop-list-bottom{justify-content:space-between;flex-wrap:wrap;margin-top:12px}
+.webshop-list-actions{flex-wrap:wrap;justify-content:flex-end}
+.webshop-list-actions .btn,.webshop-list-actions .order-status-select{min-height:38px;margin:0}
+.ht-order-detail-overlay{position:fixed;inset:0;z-index:10020;background:rgba(15,23,42,.58);display:flex;align-items:flex-start;justify-content:center;padding:18px;overflow:auto}
+.ht-order-detail-panel{width:min(820px,100%);margin:auto;background:#f4f6f8;color:#172033;border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.3);padding:18px;max-height:none}
+.ht-order-detail-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:3px 2px 16px}
+.ht-order-detail-top h2{margin:3px 0;font-size:24px}
+.ht-order-detail-top p{margin:0;color:#64748b;font-size:12px}
+.ht-order-eyebrow{font-size:10px;letter-spacing:.12em;font-weight:900;color:#64748b}
+.ht-order-detail-section{background:#fff;border:1px solid #e2e8f0;border-radius:14px;margin:0 0 12px;overflow:hidden;box-shadow:0 2px 6px rgba(15,23,42,.04)}
+.ht-order-section-heading{display:flex;align-items:center;gap:9px;padding:13px 14px;border-bottom:1px solid #edf0f4;background:#fbfcfd}
+.ht-order-section-heading>strong{font-size:14px}
+.ht-order-section-icon{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#eef2f7;color:#475569;font-weight:900}
+.ht-order-section-count{margin-left:auto;font-size:11px;color:#64748b;background:#eef2f7;border-radius:20px;padding:4px 8px}
+.ht-order-status-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:14px}
+.ht-order-status-grid label,.ht-order-status-grid>div{display:flex;flex-direction:column;gap:7px;font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase}
+.ht-order-status-grid>div strong{font-size:15px;text-transform:none;color:#172033}
+.ht-order-status-grid select{width:100%;max-width:none}
+.ht-order-total-banner{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:19px;border-radius:15px;background:#f06423;color:#fff;margin:0 0 12px}
+.ht-order-total-banner div{display:flex;flex-direction:column;gap:5px}
+.ht-order-total-banner span{font-size:13px;font-weight:700}
+.ht-order-total-banner small{opacity:.85}
+.ht-order-total-banner>strong{font-size:30px;white-space:nowrap}
+.ht-order-product-list{padding:6px 14px}
+.ht-order-product-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #edf0f4;min-width:0}
+.ht-order-product-row:last-child{border-bottom:0}
+.ht-order-product-row img,.ht-order-product-placeholder{width:54px;height:54px;flex:0 0 54px;object-fit:contain;border-radius:9px;background:#f1f3f5}
+.ht-order-product-placeholder{display:flex;align-items:center;justify-content:center;color:#64748b}
+.ht-order-product-copy{display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}
+.ht-order-product-copy strong{font-size:14px;overflow-wrap:anywhere}
+.ht-order-product-copy small{font-size:11px;color:#64748b;overflow-wrap:anywhere}
+.ht-order-product-price{font-size:13px;white-space:nowrap}
+.ht-order-empty-items{padding:18px;color:#64748b;font-size:13px}
+.ht-order-totals{padding:10px 14px;border-top:1px solid #edf0f4}
+.ht-order-totals>div{display:flex;justify-content:space-between;gap:12px;padding:5px 0;font-size:12px;color:#64748b}
+.ht-order-totals .ht-order-grand-total{font-size:16px;font-weight:900;color:#172033;border-top:1px solid #edf0f4;margin-top:4px;padding-top:11px}
+.ht-order-customer-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:14px}
+.ht-order-customer-grid>div{display:flex;flex-direction:column;gap:4px;min-width:0;background:#f5f6f8;border-radius:9px;padding:10px}
+.ht-order-customer-grid span{font-size:10px;color:#64748b}
+.ht-order-customer-grid strong{font-size:13px;overflow-wrap:anywhere}
+.ht-order-contact-actions{display:flex;gap:8px;flex-wrap:wrap;padding:0 14px 14px}
+.ht-order-note{margin:0;padding:0 14px 14px;font-size:11px;color:#64748b}
+.ht-order-detail-footer{display:flex;justify-content:flex-end;gap:8px;padding:4px 0}
+@media(max-width:600px){
+ .webshop-order-list-card{padding:13px}
+ .webshop-list-top{align-items:flex-start}
+ .webshop-list-bottom{align-items:stretch;flex-direction:column}
+ .webshop-list-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}
+ .webshop-list-actions .order-status-select{grid-column:1/-1;width:100%;max-width:none}
+ .webshop-list-actions .btn{width:100%;min-width:0}
+ .ht-order-detail-overlay{padding:8px}
+ .ht-order-detail-panel{padding:10px;border-radius:14px}
+ .ht-order-detail-top h2{font-size:20px}
+ .ht-order-status-grid,.ht-order-customer-grid{grid-template-columns:1fr}
+ .ht-order-total-banner{padding:15px}
+ .ht-order-total-banner>strong{font-size:24px}
+ .ht-order-product-row{gap:8px}
+ .ht-order-product-row img,.ht-order-product-placeholder{width:46px;height:46px;flex-basis:46px}
+ .ht-order-product-price{font-size:12px}
+}
+@media print{
+ .ht-order-detail-overlay{position:static;display:block;background:#fff;padding:0;overflow:visible}
+ .ht-order-detail-panel{width:100%;box-shadow:none;background:#fff;padding:0}
+ .ht-order-detail-footer,.ht-order-detail-top button{display:none!important}
+}
+</style>
+
 </head>
 
 <body>
@@ -5730,43 +5815,43 @@ async function updateOrderStatus(id,statusValue){
 function renderWebshopOrders(){
   const box=document.getElementById('webshopOrdersList'); if(!box)return;
   const q=(document.getElementById('webshopOrderSearch')?.value||'').trim().toLowerCase();
-  const filter=document.getElementById('webshopOrderStatusFilter')?.value||'';
+  const filter=(document.getElementById('webshopOrderStatusFilter')?.value||'');
   const filtered=adminWebshopOrdersCache.filter(o=>(!q||orderSearchText(o).includes(q))&&(!filter||o.status===filter));
   renderOrderSummary('webshopOrderSummary',adminWebshopOrdersCache,'webshop');
   const status=document.getElementById('webshopOrdersStatus');
-  if(status){status.className='order-count';status.textContent=`${filtered.length} van ${adminWebshopOrdersCache.length} webshop bestelling(en) zichtbaar`}
+  if(status){status.className='order-count';status.textContent=`${filtered.length} van ${adminWebshopOrdersCache.length} webshop bestelling(en) zichtbaar`;}
   if(!filtered.length){box.innerHTML='<div class="order-empty">Geen webshop bestellingen gevonden met deze zoekopdracht.</div>';return;}
   box.innerHTML=filtered.map(order=>{
     const items=Array.isArray(order.items)?order.items:[];
     const date=order.created_at?new Date(order.created_at).toLocaleString('nl-NL'):'';
     const total=Number(order.total||0).toFixed(2).replace('.',',');
-    const address=[order.street,order.house_number,order.postcode,order.city].filter(Boolean).join(' ');
-    const itemNames=items.map(x=>x.name||'Product').slice(0,2).join(' · ');
+    const itemNames=items.map(x=>x.name||x.title||'Product').slice(0,2).join(' · ');
     const itemExtra=items.length>2?` + ${items.length-2}`:'';
     const statusLabel=order.status||'Nieuw';
-    return `<article class="order-card webshop-order-card">
-      <div class="order-card-head">
-        <div class="order-heading">
-          <div class="order-number">#${esc(order.id)}</div>
-          <div>
-            <div class="order-title">Webshop bestelling</div>
-            <div class="order-meta">${esc(date)} · ${esc(itemNames||'Geen productgegevens')}${itemExtra}</div>
+    const payment=order.payment_status||'Onbekend';
+    const paymentLabel=/paid|betaald|completed/i.test(payment)?'Betaald':(/pending|unpaid|open|wacht/i.test(payment)?'Openstaand':payment);
+    return `<article class="order-card webshop-order-card webshop-order-list-card">
+      <div class="webshop-list-top">
+        <div class="webshop-order-identity">
+          <span class="order-number">#${esc(order.id)}</span>
+          <div class="webshop-order-primary">
+            <button class="webshop-order-title-link" type="button" onclick="showWebshopOrderDetails(${Number(order.id)})">Webshop bestelling #${esc(order.id)}</button>
+            <div class="order-meta">${esc(date)}</div>
           </div>
         </div>
-        <div class="order-actions">
-          <select class="order-status-select status-select-${statusLabel.replace(/\s+/g,'-').toLowerCase()}" data-webshop-order-id="${Number(order.id)}" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">${['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(x=>`<option value="${esc(x)}" ${statusLabel===x?'selected':''}>${esc(x)}</option>`).join('')}</select>
+        <span class="webshop-status-pill">${esc(statusLabel)}</span>
+      </div>
+      <div class="webshop-list-customer">${esc(order.name||'Klant onbekend')}</div>
+      <div class="webshop-list-summary">
+        <div><span>Producten</span><strong>${items.length}</strong><small>${esc(itemNames||'Geen productgegevens')}${itemExtra}</small></div>
+        <div><span>Totaal</span><strong>€ ${esc(total)}</strong></div>
+      </div>
+      <div class="webshop-list-bottom">
+        <span class="webshop-payment-pill ${paymentLabel==='Betaald'?'is-paid':'is-pending'}">${esc(paymentLabel)}</span>
+        <div class="webshop-list-actions">
+          <select aria-label="Bestelstatus" class="order-status-select status-select-${statusLabel.replace(/\s+/g,'-').toLowerCase()}" data-webshop-order-id="${Number(order.id)}" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">${['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(x=>`<option value="${esc(x)}" ${statusLabel===x?'selected':''}>${esc(x)}</option>`).join('')}</select>
           <button class="btn btn-light order-detail-btn" onclick="showWebshopOrderDetails(${Number(order.id)})">◉ Details</button>
           ${hasPermission('webshop_orders.delete')?`<button class="btn btn-red order-delete-btn" onclick="deleteWebshopOrder(${Number(order.id)})">▣ Verwijderen</button>`:''}
-        </div>
-      </div>
-      <div class="order-main">
-        <div class="order-grid">
-          <div class="order-info"><strong>Klant</strong><span>${esc(order.name||'-')}</span></div>
-          <div class="order-info"><strong>E-mail</strong><span>${esc(order.email||'-')}</span></div>
-          <div class="order-info"><strong>Telefoon</strong><span>${esc(order.phone||'-')}</span></div>
-          <div class="order-info order-price"><strong>Totaal</strong><span>€ ${esc(total)}</span></div>
-          <div class="order-info order-address-compact"><strong>Adres</strong><span>${esc(address||'-')}</span></div>
-          <div class="order-info"><strong>Producten</strong><span>${esc(itemNames||'-')}${itemExtra}</span></div>
         </div>
       </div>
     </article>`;
@@ -6252,10 +6337,44 @@ async function showWebshopOrderDetails(id){
     if(!r.ok) throw new Error(result.error||"Bestelling kon niet worden geladen.");
     const order=(result.orders||[]).find(x=>Number(x.id)===Number(id));
     if(!order) throw new Error("Bestelling niet gevonden.");
-    showOrderDetails("Webshop Bestelling #"+id, order);
-  }catch(e){
-    alert(e.message);
-  }
+    const existing=document.getElementById("orderDetailsModal");
+    if(existing)existing.remove();
+    const items=Array.isArray(order.items)?order.items:[];
+    const address=[order.street,order.house_number].filter(Boolean).join(" ")+
+      ([order.postcode,order.city].filter(Boolean).length?", "+[order.postcode,order.city].filter(Boolean).join(" "):"");
+    const money=value=>"€ "+Number(value||0).toFixed(2).replace(".",",");
+    const date=order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"-";
+    const status=order.status||"Nieuw";
+    const payment=order.payment_status||"Onbekend";
+    const itemRows=items.length?items.map((item,index)=>{
+      const name=item.name||item.title||item.product_name||"Product";
+      const image=item.image||item.image_url||item.thumbnail||item.product_image||"";
+      const quantity=Number(item.quantity||item.qty||1);
+      const price=Number(item.price||item.unit_price||item.amount||0);
+      const meta=[item.color||item.colour,item.storage,item.condition||item.product_condition,item.sku?"SKU: "+item.sku:""].filter(Boolean).join(" · ");
+      return `<div class="ht-order-product-row">
+        ${image?`<img src="${esc(image)}" alt="" loading="lazy" onerror="this.style.display='none'">`:'<div class="ht-order-product-placeholder">▣</div>'}
+        <div class="ht-order-product-copy"><strong>${esc(name)}</strong><small>${esc(meta||"")}</small><small>× ${quantity}${price? " · "+money(price):""}</small></div>
+        <strong class="ht-order-product-price">${money(price*quantity)}</strong>
+      </div>`;
+    }).join(""):'<div class="ht-order-empty-items">Geen productregels beschikbaar voor deze bestelling.</div>';
+    const total=Number(order.total||0);
+    const subtotal=items.reduce((sum,item)=>sum+Number(item.price||item.unit_price||item.amount||0)*Number(item.quantity||item.qty||1),0);
+    const modal=document.createElement("div");
+    modal.id="orderDetailsModal";
+    modal.className="ht-order-detail-overlay";
+    modal.innerHTML=`<div class="ht-order-detail-panel" role="dialog" aria-modal="true" aria-label="Bestelling #${Number(order.id)}">
+      <div class="ht-order-detail-top"><div><div class="ht-order-eyebrow">HOMS TECH · WEBSHOP</div><h2>Bestelling #${Number(order.id)}</h2><p>${esc(date)}</p></div><button type="button" class="btn btn-light" aria-label="Sluiten" onclick="document.getElementById('orderDetailsModal')?.remove()">✕</button></div>
+      <section class="ht-order-detail-section ht-order-status-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">✓</span><strong>Status van de bestelling</strong></div><div class="ht-order-status-grid"><label>Status bestelling<select class="order-status-select" data-webshop-order-id="${Number(order.id)}" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">${['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(x=>`<option value="${esc(x)}" ${status===x?'selected':''}>${esc(x)}</option>`).join('')}</select></label><div><span>Betaalstatus</span><strong>${esc(payment)}</strong></div></div></section>
+      <section class="ht-order-total-banner"><div><span>Totaal van de bestelling</span><small>${items.length} product(en)</small></div><strong>${money(total)}</strong></section>
+      <section class="ht-order-detail-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">▣</span><strong>Bestelde producten</strong><span class="ht-order-section-count">${items.length}</span></div><div class="ht-order-product-list">${itemRows}</div><div class="ht-order-totals"><div><span>Subtotaal producten</span><strong>${money(subtotal||total)}</strong></div><div class="ht-order-grand-total"><span>Totaal</span><strong>${money(total)}</strong></div></div></section>
+      <section class="ht-order-detail-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">♙</span><strong>Klantgegevens</strong></div><div class="ht-order-customer-grid"><div><span>Naam</span><strong>${esc(order.name||"-")}</strong></div><div><span>E-mail</span><strong>${esc(order.email||"-")}</strong></div><div><span>Telefoon</span><strong>${esc(order.phone||"-")}</strong></div><div><span>Adres</span><strong>${esc(address.trim().replace(/^,\s*/,"")||"-")}</strong></div></div><div class="ht-order-contact-actions">${order.phone?`<a class="btn btn-light" href="tel:${esc(String(order.phone).replace(/[^+\d]/g,''))}">☎ Bellen</a>`:''}${order.email?`<a class="btn btn-light" href="mailto:${esc(order.email)}">✉ E-mail</a>`:''}${address.trim()?`<a class="btn btn-light" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address.trim())}">⌖ Kaart openen</a>`:''}</div></section>
+      <section class="ht-order-detail-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">▤</span><strong>Verzending en betaling</strong></div><div class="ht-order-customer-grid"><div><span>Verzendmethode</span><strong>${esc(order.shipping_method||order.shipping||"Niet geregistreerd")}</strong></div><div><span>Betaalmethode</span><strong>${esc(order.payment_method||"Niet geregistreerd")}</strong></div><div><span>Betaalstatus</span><strong>${esc(payment)}</strong></div><div><span>Betaalreferentie</span><strong>${esc(order.paypal_order_id||"—")}</strong></div></div><p class="ht-order-note">Verzend- of trackinggegevens worden alleen getoond wanneer deze in HOMS TECH beschikbaar zijn.</p></section>
+      <div class="ht-order-detail-footer"><button class="btn btn-light" type="button" onclick="document.getElementById('orderDetailsModal')?.remove()">Sluiten</button><button class="btn btn-dark" type="button" onclick="window.print()">Afdrukken</button></div>
+    </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener("click",event=>{if(event.target===modal)modal.remove();});
+  }catch(e){alert(e.message);}
 }
 
 async function deleteGsmOrder(id){
