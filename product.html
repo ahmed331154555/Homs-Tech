@@ -615,20 +615,22 @@ function renderOptionSection(key,title,list){
     }
     if(variantOptions.length) base=variantOptions;
   }
-  // For independently managed catalog products, only show a color/storage pair
-  // when that exact combination exists in the admin product list.
+  // For independently managed catalog products, only show values that have
+  // a real admin record matching the currently selected other dimension.
   if(hasSeparateCatalogVariants && (key==="storage" || key==="color")){
-    const currentStorage=key==="storage" ? selectedOptions.storage : selectedOptions.storage;
-    const currentColor=key==="color" ? selectedOptions.color : selectedOptions.color;
-    const exactValues=new Set(siblingProducts.filter(({p})=>{
-      const s=Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"";
-      const col=p.color||p.kleur||"";
-      return normalizeStorageValue(s)===normalizeStorageValue(currentStorage) &&
-        normalizeColorValue(col)===normalizeColorValue(currentColor);
-    }).map(({p})=>key==="storage"?(Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||""):(p.color||p.kleur||""))
-      .filter(Boolean).map(v=>key==="storage"?normalizeStorageValue(v):normalizeColorValue(v)));
-    if(exactValues.size){
-      base=base.filter(option=>exactValues.has(key==="storage"?normalizeStorageValue(option.label):normalizeColorValue(option.label)));
+    const matchingRecords=siblingProducts.filter(({p})=>{
+      const storage=Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"";
+      const color=p.color||p.kleur||"";
+      return key==="color"
+        ? normalizeStorageValue(storage)===normalizeStorageValue(selectedOptions.storage)
+        : normalizeColorValue(color)===normalizeColorValue(selectedOptions.color);
+    });
+    const existingValues=new Set(matchingRecords.map(({p})=>{
+      const value=key==="color"?(p.color||p.kleur||""):(Array.isArray(p.storage)?p.storage[0]:p.storage||p.geheugen||"");
+      return key==="color"?normalizeColorValue(value):normalizeStorageValue(value);
+    }).filter(Boolean));
+    if(existingValues.size){
+      base=base.filter(option=>existingValues.has(key==="color"?normalizeColorValue(option.label):normalizeStorageValue(option.label)));
     }
   }
 
