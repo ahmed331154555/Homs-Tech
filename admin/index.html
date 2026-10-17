@@ -1267,6 +1267,108 @@ textarea{
 @media(max-width:800px){#page-repair .repair-admin-grid,#page-repair .repair-admin-card-grid{grid-template-columns:1fr}#page-repair .repair-admin-grid .full{grid-column:auto}#page-repair .repair-admin-image{grid-template-columns:80px 1fr}#page-repair .repair-admin-image-preview{width:80px;height:70px}}
 </style>
 </style>
+
+<style id="homs-orders-dark-orange-refresh">
+/* HOMS ORDERS DARK ORANGE REFRESH — visual-only; existing order logic unchanged */
+.section:has(#webshopOrdersList),
+.section:has(#ordersList),
+.section:has(#gsmOrdersList) {
+  background:#111111;
+  color:#f8fafc;
+  border:1px solid #262626;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);
+}
+.section:has(#webshopOrdersList) .section-head,
+.section:has(#ordersList) .section-head,
+.section:has(#gsmOrdersList) .section-head {
+  border-bottom-color:#2d2d2d;
+}
+.section:has(#webshopOrdersList) .section-head h2,
+.section:has(#ordersList) .section-head h2,
+.section:has(#gsmOrdersList) .section-head h2 { color:#fff; }
+.section:has(#webshopOrdersList) .section-head p,
+.section:has(#ordersList) .section-head p,
+.section:has(#gsmOrdersList) .section-head p { color:#a3a3a3; }
+.section:has(#webshopOrdersList) .orders-search input,
+.section:has(#ordersList) .orders-search input,
+.section:has(#gsmOrdersList) .orders-search input,
+.section:has(#webshopOrdersList) .order-filter,
+.section:has(#ordersList) .order-filter,
+.section:has(#gsmOrdersList) .order-filter {
+  background:#202020;color:#f5f5f5;border-color:#343434;box-shadow:none;
+}
+.section:has(#webshopOrdersList) .order-filter-btn,
+.section:has(#ordersList) .order-filter-btn,
+.section:has(#gsmOrdersList) .order-filter-btn {
+  background:#71351d;color:#ffd0b4;
+}
+.section:has(#webshopOrdersList) .order-stat,
+.section:has(#ordersList) .order-stat,
+.section:has(#gsmOrdersList) .order-stat {
+  background:#1c1c1e;border-color:#303033;color:#fff;
+}
+.section:has(#webshopOrdersList) .order-stat span,
+.section:has(#ordersList) .order-stat span,
+.section:has(#gsmOrdersList) .order-stat span { color:#a3a3a3; }
+.section:has(#webshopOrdersList) .order-card,
+.section:has(#ordersList) .order-card,
+.section:has(#gsmOrdersList) .order-card {
+  background:#1c1c1e;border:1px solid #29292c;border-radius:20px;
+  color:#f8fafc;box-shadow:none;padding:0;overflow:hidden;
+}
+.section:has(#webshopOrdersList) .order-card-head,
+.section:has(#ordersList) .order-card-head,
+.section:has(#gsmOrdersList) .order-card-head {
+  background:#1c1c1e;border-bottom-color:#303033;
+}
+.section:has(#webshopOrdersList) .order-title,
+.section:has(#ordersList) .order-title,
+.section:has(#gsmOrdersList) .order-title { color:#fff; }
+.section:has(#webshopOrdersList) .order-meta,
+.section:has(#ordersList) .order-meta,
+.section:has(#gsmOrdersList) .order-meta { color:#a3a3a3; }
+.section:has(#webshopOrdersList) .order-info,
+.section:has(#ordersList) .order-info,
+.section:has(#gsmOrdersList) .order-info,
+.section:has(#webshopOrdersList) .webshop-order-items,
+.section:has(#webshopOrdersList) .webshop-order-address {
+  background:#252527;border-color:#333337;color:#f5f5f5;
+}
+.section:has(#webshopOrdersList) .order-info strong,
+.section:has(#ordersList) .order-info strong,
+.section:has(#gsmOrdersList) .order-info strong { color:#a3a3a3; }
+.section:has(#webshopOrdersList) .order-status-select,
+.section:has(#ordersList) .order-status-select,
+.section:has(#gsmOrdersList) .order-status-select {
+  background:#292929;color:#f5f5f5;border-color:#414141;
+}
+.section:has(#webshopOrdersList) .webshop-item { border-bottom-color:#383838; }
+.section:has(#webshopOrdersList) .webshop-item-meta { color:#a3a3a3; }
+.section:has(#webshopOrdersList) .order-empty,
+.section:has(#ordersList) .order-empty,
+.section:has(#gsmOrdersList) .order-empty {
+  background:#202020;color:#b5b5b5;
+}
+.section:has(#webshopOrdersList) .btn-light,
+.section:has(#ordersList) .btn-light,
+.section:has(#gsmOrdersList) .btn-light {
+  background:#303033;color:#f5f5f5;
+}
+.section:has(#webshopOrdersList) .btn-green,
+.section:has(#ordersList) .btn-green,
+.section:has(#gsmOrdersList) .btn-green {
+  background:#f06423;color:#fff;
+}
+@media(max-width:550px){
+  .section:has(#webshopOrdersList),
+  .section:has(#ordersList),
+  .section:has(#gsmOrdersList){padding:14px;border-radius:16px}
+  .section:has(#webshopOrdersList) .order-card,
+  .section:has(#ordersList) .order-card,
+  .section:has(#gsmOrdersList) .order-card{border-radius:16px}
+}
+</style>
+
 </head>
 
 <body>
