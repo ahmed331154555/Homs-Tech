@@ -674,8 +674,7 @@ function renderOptionSection(key,title,list){
   const items=base.filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false));
   if(!items.length) return "";
 
-  const availabilityControlled=key!=="storage" && key!=="color";
-  const available=items.filter(x=>!availabilityControlled || x.available!==false);
+  const available=items.filter(x=>x.available!==false);
   const sameOptionValue=(a,b)=>{
     if(key==="storage") return normalizeStorageValue(a)===normalizeStorageValue(b);
     if(key==="color") return normalizeColorValue(a)===normalizeColorValue(b);
@@ -687,7 +686,7 @@ function renderOptionSection(key,title,list){
 
   const buttons=items.map(x=>{
     const active=sameOptionValue(x.label,selectedOptions[key]);
-    const availableNow=(key==="storage" || key==="color") ? true : x.available!==false;
+    const availableNow=x.available!==false;
 
     let priceLabel="";
     if(key==="condition"){
@@ -702,8 +701,11 @@ function renderOptionSection(key,title,list){
 
     if(key==="color"){
       const img=colorVariantImage(x.label);
+      const click=availableNow
+        ? ' onclick="selectProductOption(\'color\',\''+esc(x.label)+'\')"'
+        : ' disabled';
       return '<button type="button" class="option-btn color-option-btn '+(active?"active":"")+
-        '" onclick="selectProductOption(\'color\',\''+esc(x.label)+'\')" aria-label="Kleur '+esc(x.label)+'">'+
+        (availableNow?"":" unavailable")+'"'+click+' aria-label="Kleur '+esc(x.label)+'">'+
         (img?'<img class="color-option-image" src="'+esc(img)+'" alt="'+esc(x.label)+'">':"")+
         '<span class="color-option-label">'+esc(x.label)+"</span></button>";
     }
