@@ -2538,9 +2538,6 @@ app.post("/api/admin/repair-requests/:id/offer", requirePermission("orders.updat
 
     const brand = String(meta.brand || "").trim();
     const model = String(meta.model || order.service_name || "").trim();
-    const formattedPrice = price.toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const rawPrice = price.toFixed(2);
-
     // Prepare offer object
     const offer = {
       price: formattedPrice,
