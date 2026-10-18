@@ -7,8 +7,11 @@ const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const path = require("path");
 const { importSamFwPage } = require("./lib/samfw-import");
+const { validateRepairQuotePayload, parseAndValidateOfferPrice } = require("./lib/repair-quote-validation");
 
 const app = express();
+// Render terminates TLS/proxies requests; trust its single front proxy so req.ip is client-specific.
+app.set("trust proxy", 1);
 const PORT = process.env.PORT || 3000;
 
 const pool = new Pool({
@@ -28,6 +31,38 @@ app.use((err, req, res, next) => {
   next(err);
 });
 app.use(cookieParser());
+
+// Small in-memory abuse limiter for public customer-account endpoints.
+// Limits reset on process restart; use a shared store if the service is later scaled horizontally.
+const customerAuthRateLimits = new Map();
+function customerAuthRateLimit({ windowMs, max, message }) {
+  return (req, res, next) => {
+    const now = Date.now();
+    const ip = String(req.ip || req.socket?.remoteAddress || "unknown");
+    const key = `${req.path}:${ip}`;
+    const current = (customerAuthRateLimits.get(key) || []).filter(ts => now - ts < windowMs);
+    if (current.length >= max) {
+      const retryAfter = Math.max(1, Math.ceil((windowMs - (now - current[0])) / 1000));
+      res.set("Retry-After", String(retryAfter));
+      return res.status(429).json({ error: message });
+    }
+    current.push(now);
+    customerAuthRateLimits.set(key, current);
+    if (customerAuthRateLimits.size > 5000) {
+      for (const [storedKey, timestamps] of customerAuthRateLimits.entries()) {
+        const live = timestamps.filter(ts => now - ts < windowMs);
+        if (live.length) customerAuthRateLimits.set(storedKey, live);
+        else customerAuthRateLimits.delete(storedKey);
+      }
+    }
+    next();
+  };
+}
+const limitCustomerLogin = customerAuthRateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: "Te veel inlogpogingen. Probeer het over 15 minuten opnieuw." });
+const limitCustomerRegister = customerAuthRateLimit({ windowMs: 60 * 60 * 1000, max: 5, message: "Te veel registratiepogingen. Probeer het later opnieuw." });
+const limitCustomerVerification = customerAuthRateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: "Te veel pogingen om het e-mailadres te bevestigen. Probeer het later opnieuw." });
+const limitCustomerResend = customerAuthRateLimit({ windowMs: 60 * 60 * 1000, max: 3, message: "Je hebt te vaak een nieuwe code aangevraagd. Probeer het over een uur opnieuw." });
+const limitCustomerPasswordReset = customerAuthRateLimit({ windowMs: 60 * 60 * 1000, max: 5, message: "Te veel aanvragen voor wachtwoordherstel. Probeer het later opnieuw." });
 
 // Never expose server code, deployment metadata, backups, or dotfiles through static hosting.
 app.use((req, res, next) => {
@@ -1010,7 +1045,7 @@ app.get("/api/admin/search",requirePermission("search"),async(req,res)=>{
 });
 
 // Customer self-registration: account remains inactive until email code is confirmed.
-app.post("/api/customer/register", async (req, res) => {
+app.post("/api/customer/register", limitCustomerRegister, async (req, res) => {
   try {
     const { name, email, phone = "", address = "", password } = req.body || {};
     const cleanName = String(name || "").trim();
@@ -1065,7 +1100,7 @@ app.post("/api/customer/register", async (req, res) => {
 });
 
 // Confirm public signup with the emailed six-digit code.
-app.post("/api/customer/verify-email", async (req, res) => {
+app.post("/api/customer/verify-email", limitCustomerVerification, async (req, res) => {
   try {
     const email = String(req.body?.email || "").trim().toLowerCase();
     const code = String(req.body?.code || "").trim();
@@ -1104,7 +1139,7 @@ app.post("/api/customer/verify-email", async (req, res) => {
 });
 
 // Send a fresh code to an existing unverified signup.
-app.post("/api/customer/resend-verification", async (req, res) => {
+app.post("/api/customer/resend-verification", limitCustomerResend, async (req, res) => {
   try {
     const email = String(req.body?.email || "").trim().toLowerCase();
     if (!email || email.length > 254) return res.status(400).json({ error: "Vul een geldig e-mailadres in." });
@@ -1137,7 +1172,7 @@ app.post("/api/customer/resend-verification", async (req, res) => {
 });
 
 // Request a password reset. Always return the same response to avoid exposing registered emails.
-app.post("/api/customer/forgot-password", async (req, res) => {
+app.post("/api/customer/forgot-password", limitCustomerPasswordReset, async (req, res) => {
   const genericMessage = "Als dit e-mailadres bij ons bekend is, ontvang je een e-mail met een link om je wachtwoord opnieuw in te stellen.";
   try {
     const email = String((req.body || {}).email || "").trim().toLowerCase();
@@ -1232,7 +1267,7 @@ app.post("/api/customer/reset-password", async (req, res) => {
 });
 
 // Customer login
-app.post("/api/customer/login", async (req, res) => {
+app.post("/api/customer/login", limitCustomerLogin, async (req, res) => {
   try {
     const {
       email,
@@ -1800,8 +1835,19 @@ function priceProductFromCatalog(data, item) {
     const raw = product[map[key]];
     if (Array.isArray(raw) && raw.length) return raw.filter(x => x && x.label && x.active !== false && x.enabled !== false);
     if (key === "storage" || key === "color") {
-      const own = key === "storage" ? (Array.isArray(product.storage) ? product.storage[0] : product.storage || product.geheugen || "") : (product.color || product.kleur || "");
-      return own ? [{ label: String(own), active: true, enabled: true, available: true, priceDelta: 0 }] : serverOptionDefaults(key);
+      const direct = key === "storage"
+        ? (product.storage ?? product.geheugen ?? "")
+        : (product.color ?? product.kleur ?? "");
+      const values = (Array.isArray(direct) ? direct : [direct]).filter(value =>
+        value !== null && value !== undefined &&
+        String(typeof value === "object" ? (value.label || "") : value).trim() !== ""
+      );
+      if (values.length) {
+        return values.map(value => typeof value === "object"
+          ? { active: true, enabled: true, available: true, ...value, label: String(value.label || "") }
+          : { label: String(value), active: true, enabled: true, available: true, priceDelta: 0 });
+      }
+      return serverOptionDefaults(key);
     }
     return serverOptionDefaults(key);
   };
@@ -1810,7 +1856,7 @@ function priceProductFromCatalog(data, item) {
     const requested = String(options[key] ?? "");
     if (!requested) continue;
     const option = getList(key).find(x => String(x.label) === requested);
-    if (!option || (key !== "storage" && key !== "color" && option.available === false)) {
+    if (!option || option.available === false) {
       return { error: "Een gekozen productoptie is niet geldig of niet beschikbaar. Controleer uw winkelwagen." };
     }
     chosen[key] = option;
@@ -2032,7 +2078,7 @@ app.post("/api/paypal/create-order", async (req, res) => {
       `UPDATE webshop_orders
        SET paypal_order_id = $1, payment_method = 'PayPal', payment_status = 'Pending'
        WHERE id = $2 AND checkout_token = $3`,
-      [String(data.id), localOrderId, checkoutToken]
+      [String(data.id), localOrderId, checkoutTokenHash]
     );
 
     res.json({ success: true, id: data.id, orderId: localOrderId });
@@ -2331,61 +2377,22 @@ app.post("/api/repair-requests", async (req, res) => {
       return res.status(201).json({ success: true, requestNo: Math.floor(10000 + Math.random() * 90000) });
     }
 
-    // 2. Rate limiting check (per IP)
-    const clientIp = String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown").split(",")[0].trim();
+    // 2. Rate limiting check (per client IP)
+    const clientIp = String(req.ip || req.socket?.remoteAddress || "unknown");
     if (!checkRepairRequestRateLimit(clientIp)) {
       return res.status(429).json({ error: "Te veel aanvragen vanaf uw netwerk. Wacht 15 minuten en probeer het opnieuw." });
     }
 
-    const brand = String(b.brand || "").trim().slice(0, 80);
-    const model = String(b.model || "").trim().slice(0, 100);
-    const issue = String(b.issue || "").trim().slice(0, 3000);
-    const name = String(b.name || "").trim().slice(0, 120);
-    const email = String(b.email || "").trim().toLowerCase().slice(0, 254);
-    const phone = String(b.phone || "").trim().slice(0, 40);
-
-    if (!brand || !model || !issue || !name || !email || b.consent !== true) {
-      return res.status(400).json({ error: "Vul alle verplichte velden in en geef toestemming om contact op te nemen." });
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: "Vul een geldig e-mailadres in." });
-    }
-
-    // 3. Photo validation & size bounds
-    const incomingPhotos = Array.isArray(b.photos) ? b.photos : [];
-    if (incomingPhotos.length > 4) {
-      return res.status(400).json({ error: "U kunt maximaal 4 foto's toevoegen." });
-    }
-
-    const photos = [];
-    const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/heic"]);
-    let totalPhotoBytes = 0;
-    const MAX_SINGLE_PHOTO = 2 * 1024 * 1024; // 2 MB
-    const MAX_TOTAL_PHOTOS = 6 * 1024 * 1024; // 6 MB combined
-
-    for (const photo of incomingPhotos) {
-      const type = String(photo?.type || "").toLowerCase();
-      const dataUrl = String(photo?.dataUrl || "");
-      const match = dataUrl.match(/^data:(image\/(?:jpeg|png|webp|heic));base64,([a-z0-9+/=]+)$/i);
-      if (!allowedTypes.has(type) || !match || match[1].toLowerCase() !== type) {
-        return res.status(400).json({ error: "Een foto heeft een ongeldig formaat. Alleen JPG, PNG, WEBP en HEIC zijn toegestaan." });
-      }
-      const bytes = Buffer.from(match[2], "base64");
-      if (!bytes.length || bytes.length > MAX_SINGLE_PHOTO) {
-        return res.status(400).json({ error: "Elke foto mag maximaal 2 MB groot zijn." });
-      }
-      totalPhotoBytes += bytes.length;
-      if (totalPhotoBytes > MAX_TOTAL_PHOTOS) {
-        return res.status(400).json({ error: "De totale grootte van alle foto's mag maximaal 6 MB zijn." });
-      }
-      photos.push({ name: String(photo.name || "foto").replace(/[\/\\r\\n]/g, "_").slice(0, 140), type, dataUrl });
-    }
+    // 3. Validate using the same pure helper covered by the unit tests.
+    const validation = validateRepairQuotePayload(b);
+    if (validation.error) return res.status(400).json({ error: validation.error });
+    const { brand, model, issue, name, email, phone, photos } = validation;
 
     // 4. Link customer_id if user is authenticated or customer exists by email
     let customerId = null;
-    if (req.cookies?.customer_token) {
+    if (req.cookies?.customerToken) {
       try {
-        const decoded = jwt.verify(req.cookies.customer_token, process.env.JWT_SECRET || "customer-secret-key");
+        const decoded = jwt.verify(req.cookies.customerToken, process.env.JWT_SECRET);
         if (decoded?.customerId) customerId = decoded.customerId;
       } catch {}
     }
@@ -2527,16 +2534,14 @@ app.put("/api/admin/orders/:id/execution", requirePermission("orders.update"), a
 app.post("/api/admin/repair-requests/:id/offer", requirePermission("orders.update"), async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const priceInput = String(req.body?.price ?? "").trim().replace(",", ".");
-    const price = Number(priceInput);
+    const parsedPrice = parseAndValidateOfferPrice(req.body?.price);
     const message = String(req.body?.message || "").trim().slice(0, 3000);
     const validity = String(req.body?.validity || "14 dagen").trim().slice(0, 80);
     const duration = String(req.body?.duration || "In overleg").trim().slice(0, 120);
 
     if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig aanvraagnummer." });
-    if (!priceInput || !Number.isFinite(price) || price < 0 || price > 100000) {
-      return res.status(400).json({ error: "Vul een geldige prijs in (tussen 0 en 100.000)." });
-    }
+    if (parsedPrice.error) return res.status(400).json({ error: parsedPrice.error });
+    const { price, formattedPrice, rawPrice } = parsedPrice;
     if (!message) return res.status(400).json({ error: "Vul een bericht aan de klant in." });
 
     const found = await pool.query(
@@ -2551,9 +2556,6 @@ app.post("/api/admin/repair-requests/:id/offer", requirePermission("orders.updat
 
     const brand = String(meta.brand || "").trim();
     const model = String(meta.model || order.service_name || "").trim();
-    const formattedPrice = price.toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const rawPrice = price.toFixed(2);
-
     // Prepare offer object
     const offer = {
       price: formattedPrice,

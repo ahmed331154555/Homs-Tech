@@ -3,12 +3,10 @@ name: GSM System Tests
 on:
   push:
     branches:
-      - build-gsm-system-2026-10-10
-      - gsm-rebuild-no-firmware-2026-10-11
+      - '**'
   pull_request:
     branches:
-      - build-gsm-system-2026-10-10
-      - gsm-rebuild-no-firmware-2026-10-11
+      - '**'
 
 permissions:
   contents: read
@@ -35,3 +33,5 @@ jobs:
         run: node scripts/check-admin-inline.js
       - name: Run GSM provider tests
         run: npm run test:gsm
+      - name: Run repair quote validation tests
+        run: node --test test/repair-quote.test.js

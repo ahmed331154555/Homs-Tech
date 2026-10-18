@@ -323,7 +323,16 @@ function effectiveOptions(product,key){
     vat:[{label:'Zonder BTW',priceDelta:0,active:true,available:true},{label:'Met BTW',priceDelta:10,active:true,available:true}],
     tradeIn:[{label:'Nee',priceDelta:0,active:true,available:true},{label:'Ja',priceDelta:0,active:true,available:true}]
   };
-  let list=raw.length?raw:defaults[key];
+  let list=raw;
+  if(!list.length && key==='storage'){
+    const direct=product.storage??product.geheugen??'';
+    const values=(Array.isArray(direct)?direct:[direct]).filter(v=>v!==null&&v!==undefined&&String(typeof v==='object'?(v.label||''):v).trim()!=='');
+    list=values.length?values.map(v=>typeof v==='object'?{active:true,enabled:true,available:true,...v,label:String(v.label||'')}:{label:String(v),priceDelta:0,active:true,enabled:true,available:true}):defaults[key];
+  } else if(!list.length && key==='color'){
+    const direct=product.color??product.kleur??'';
+    const values=(Array.isArray(direct)?direct:[direct]).filter(v=>v!==null&&v!==undefined&&String(typeof v==='object'?(v.label||''):v).trim()!=='');
+    list=values.length?values.map(v=>typeof v==='object'?{active:true,enabled:true,available:true,...v,label:String(v.label||'')}:{label:String(v),priceDelta:0,active:true,enabled:true,available:true}):defaults[key];
+  } else if(!list.length) list=defaults[key];
   list=list.map(x=>{const y={...x}; if(key==='battery') y.priceDelta=String(y.label||'').toLowerCase().includes('nieuw')?30:0; if(key==='vat') y.priceDelta=String(y.label||'').toLowerCase().includes('met btw')?10:0; return y;});
   return list.filter(x=>x&&x.label&&(x.active!==false && x.enabled!==false));
 }
@@ -665,8 +674,7 @@ function renderOptionSection(key,title,list){
   const items=base.filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false));
   if(!items.length) return "";
 
-  const availabilityControlled=key!=="storage" && key!=="color";
-  const available=items.filter(x=>!availabilityControlled || x.available!==false);
+  const available=items.filter(x=>x.available!==false);
   const sameOptionValue=(a,b)=>{
     if(key==="storage") return normalizeStorageValue(a)===normalizeStorageValue(b);
     if(key==="color") return normalizeColorValue(a)===normalizeColorValue(b);
@@ -678,7 +686,7 @@ function renderOptionSection(key,title,list){
 
   const buttons=items.map(x=>{
     const active=sameOptionValue(x.label,selectedOptions[key]);
-    const availableNow=(key==="storage" || key==="color") ? true : x.available!==false;
+    const availableNow=x.available!==false;
 
     let priceLabel="";
     if(key==="condition"){
@@ -693,8 +701,11 @@ function renderOptionSection(key,title,list){
 
     if(key==="color"){
       const img=colorVariantImage(x.label);
+      const click=availableNow
+        ? ' onclick="selectProductOption(\'color\',\''+esc(x.label)+'\')"'
+        : ' disabled';
       return '<button type="button" class="option-btn color-option-btn '+(active?"active":"")+
-        '" onclick="selectProductOption(\'color\',\''+esc(x.label)+'\')" aria-label="Kleur '+esc(x.label)+'">'+
+        (availableNow?"":" unavailable")+'"'+click+' aria-label="Kleur '+esc(x.label)+'">'+
         (img?'<img class="color-option-image" src="'+esc(img)+'" alt="'+esc(x.label)+'">':"")+
         '<span class="color-option-label">'+esc(x.label)+"</span></button>";
     }
