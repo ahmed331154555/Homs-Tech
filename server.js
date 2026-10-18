@@ -48,6 +48,13 @@ function customerAuthRateLimit({ windowMs, max, message }) {
     }
     current.push(now);
     customerAuthRateLimits.set(key, current);
+    if (customerAuthRateLimits.size > 5000) {
+      for (const [storedKey, timestamps] of customerAuthRateLimits.entries()) {
+        const live = timestamps.filter(ts => now - ts < windowMs);
+        if (live.length) customerAuthRateLimits.set(storedKey, live);
+        else customerAuthRateLimits.delete(storedKey);
+      }
+    }
     next();
   };
 }
