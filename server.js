@@ -1835,8 +1835,19 @@ function priceProductFromCatalog(data, item) {
     const raw = product[map[key]];
     if (Array.isArray(raw) && raw.length) return raw.filter(x => x && x.label && x.active !== false && x.enabled !== false);
     if (key === "storage" || key === "color") {
-      const own = key === "storage" ? (Array.isArray(product.storage) ? product.storage[0] : product.storage || product.geheugen || "") : (product.color || product.kleur || "");
-      return own ? [{ label: String(own), active: true, enabled: true, available: true, priceDelta: 0 }] : serverOptionDefaults(key);
+      const direct = key === "storage"
+        ? (product.storage ?? product.geheugen ?? "")
+        : (product.color ?? product.kleur ?? "");
+      const values = (Array.isArray(direct) ? direct : [direct]).filter(value =>
+        value !== null && value !== undefined &&
+        String(typeof value === "object" ? (value.label || "") : value).trim() !== ""
+      );
+      if (values.length) {
+        return values.map(value => typeof value === "object"
+          ? { active: true, enabled: true, available: true, ...value, label: String(value.label || "") }
+          : { label: String(value), active: true, enabled: true, available: true, priceDelta: 0 });
+      }
+      return serverOptionDefaults(key);
     }
     return serverOptionDefaults(key);
   };
