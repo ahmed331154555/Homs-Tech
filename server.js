@@ -9,6 +9,8 @@ const path = require("path");
 const { importSamFwPage } = require("./lib/samfw-import");
 
 const app = express();
+// Render terminates TLS/proxies requests; trust its single front proxy so req.ip is client-specific.
+app.set("trust proxy", 1);
 const PORT = process.env.PORT || 3000;
 
 const pool = new Pool({
@@ -28,6 +30,31 @@ app.use((err, req, res, next) => {
   next(err);
 });
 app.use(cookieParser());
+
+// Small in-memory abuse limiter for public customer-account endpoints.
+// Limits reset on process restart; use a shared store if the service is later scaled horizontally.
+const customerAuthRateLimits = new Map();
+function customerAuthRateLimit({ windowMs, max, message }) {
+  return (req, res, next) => {
+    const now = Date.now();
+    const ip = String(req.ip || req.socket?.remoteAddress || "unknown");
+    const key = `${req.path}:${ip}`;
+    const current = (customerAuthRateLimits.get(key) || []).filter(ts => now - ts < windowMs);
+    if (current.length >= max) {
+      const retryAfter = Math.max(1, Math.ceil((windowMs - (now - current[0])) / 1000));
+      res.set("Retry-After", String(retryAfter));
+      return res.status(429).json({ error: message });
+    }
+    current.push(now);
+    customerAuthRateLimits.set(key, current);
+    next();
+  };
+}
+const limitCustomerLogin = customerAuthRateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: "Te veel inlogpogingen. Probeer het over 15 minuten opnieuw." });
+const limitCustomerRegister = customerAuthRateLimit({ windowMs: 60 * 60 * 1000, max: 5, message: "Te veel registratiepogingen. Probeer het later opnieuw." });
+const limitCustomerVerification = customerAuthRateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: "Te veel pogingen om het e-mailadres te bevestigen. Probeer het later opnieuw." });
+const limitCustomerResend = customerAuthRateLimit({ windowMs: 60 * 60 * 1000, max: 3, message: "Je hebt te vaak een nieuwe code aangevraagd. Probeer het over een uur opnieuw." });
+const limitCustomerPasswordReset = customerAuthRateLimit({ windowMs: 60 * 60 * 1000, max: 5, message: "Te veel aanvragen voor wachtwoordherstel. Probeer het later opnieuw." });
 
 // Never expose server code, deployment metadata, backups, or dotfiles through static hosting.
 app.use((req, res, next) => {
@@ -1010,7 +1037,7 @@ app.get("/api/admin/search",requirePermission("search"),async(req,res)=>{
 });
 
 // Customer self-registration: account remains inactive until email code is confirmed.
-app.post("/api/customer/register", async (req, res) => {
+app.post("/api/customer/register", limitCustomerRegister, async (req, res) => {
   try {
     const { name, email, phone = "", address = "", password } = req.body || {};
     const cleanName = String(name || "").trim();
@@ -1065,7 +1092,7 @@ app.post("/api/customer/register", async (req, res) => {
 });
 
 // Confirm public signup with the emailed six-digit code.
-app.post("/api/customer/verify-email", async (req, res) => {
+app.post("/api/customer/verify-email", limitCustomerVerification, async (req, res) => {
   try {
     const email = String(req.body?.email || "").trim().toLowerCase();
     const code = String(req.body?.code || "").trim();
@@ -1104,7 +1131,7 @@ app.post("/api/customer/verify-email", async (req, res) => {
 });
 
 // Send a fresh code to an existing unverified signup.
-app.post("/api/customer/resend-verification", async (req, res) => {
+app.post("/api/customer/resend-verification", limitCustomerResend, async (req, res) => {
   try {
     const email = String(req.body?.email || "").trim().toLowerCase();
     if (!email || email.length > 254) return res.status(400).json({ error: "Vul een geldig e-mailadres in." });
@@ -1137,7 +1164,7 @@ app.post("/api/customer/resend-verification", async (req, res) => {
 });
 
 // Request a password reset. Always return the same response to avoid exposing registered emails.
-app.post("/api/customer/forgot-password", async (req, res) => {
+app.post("/api/customer/forgot-password", limitCustomerPasswordReset, async (req, res) => {
   const genericMessage = "Als dit e-mailadres bij ons bekend is, ontvang je een e-mail met een link om je wachtwoord opnieuw in te stellen.";
   try {
     const email = String((req.body || {}).email || "").trim().toLowerCase();
@@ -1232,7 +1259,7 @@ app.post("/api/customer/reset-password", async (req, res) => {
 });
 
 // Customer login
-app.post("/api/customer/login", async (req, res) => {
+app.post("/api/customer/login", limitCustomerLogin, async (req, res) => {
   try {
     const {
       email,
@@ -1810,7 +1837,7 @@ function priceProductFromCatalog(data, item) {
     const requested = String(options[key] ?? "");
     if (!requested) continue;
     const option = getList(key).find(x => String(x.label) === requested);
-    if (!option || (key !== "storage" && key !== "color" && option.available === false)) {
+    if (!option || option.available === false) {
       return { error: "Een gekozen productoptie is niet geldig of niet beschikbaar. Controleer uw winkelwagen." };
     }
     chosen[key] = option;
@@ -2032,7 +2059,7 @@ app.post("/api/paypal/create-order", async (req, res) => {
       `UPDATE webshop_orders
        SET paypal_order_id = $1, payment_method = 'PayPal', payment_status = 'Pending'
        WHERE id = $2 AND checkout_token = $3`,
-      [String(data.id), localOrderId, checkoutToken]
+      [String(data.id), localOrderId, checkoutTokenHash]
     );
 
     res.json({ success: true, id: data.id, orderId: localOrderId });
@@ -2383,9 +2410,9 @@ app.post("/api/repair-requests", async (req, res) => {
 
     // 4. Link customer_id if user is authenticated or customer exists by email
     let customerId = null;
-    if (req.cookies?.customer_token) {
+    if (req.cookies?.customerToken) {
       try {
-        const decoded = jwt.verify(req.cookies.customer_token, process.env.JWT_SECRET || "customer-secret-key");
+        const decoded = jwt.verify(req.cookies.customerToken, process.env.JWT_SECRET);
         if (decoded?.customerId) customerId = decoded.customerId;
       } catch {}
     }
