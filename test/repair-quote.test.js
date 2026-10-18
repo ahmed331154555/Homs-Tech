@@ -60,7 +60,7 @@ test("enforces per-photo size limit", () => {
 });
 
 test("enforces combined photo size limit", () => {
-  const dataUrl = "data:image/jpeg;base64," + Buffer.alloc(1.7 * 1024 * 1024).toString("base64");
+  const dataUrl = "data:image/jpeg;base64," + Buffer.alloc(Math.floor(1.7 * 1024 * 1024)).toString("base64");
   const photos = Array.from({ length: 4 }, (_, i) => ({ name: "photo" + i + ".jpg", type: "image/jpeg", dataUrl }));
   assert.match(validateRepairQuotePayload(validPayload({ photos })).error, /totale grootte.*6 MB/);
 });
