@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /account.html
+Disallow: /client-area.html
+Disallow: /checkout.html
+Disallow: /cart.html
+Allow: /ads.txt
+Sitemap: https://homs-tech.nl/sitemap.xml
