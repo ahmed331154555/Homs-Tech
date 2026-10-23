@@ -373,14 +373,16 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
     showStatus("","");
 
     try{
+      const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || "Mollie";
+      if(selectedMethod === "Mollie" && !paymentAvailability.mollie) throw new Error("Mollie is nog niet actief. De eigenaar moet de Mollie API-sleutel instellen op de server.");
+      if(selectedMethod === "PayPal" && !paymentAvailability.paypal) throw new Error("PayPal is nog niet geconfigureerd.");
+
       const order = await createLocalOrder();
       pendingOrderId = Number(order?.id || 0);
       pendingCheckoutToken = String(order?.checkout_token || "");
       if(!pendingOrderId || !/^[a-f0-9]{64}$/.test(pendingCheckoutToken)) throw new Error("De bestelling kon niet veilig worden bevestigd. Probeer opnieuw.");
 
-      const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || "Mollie";
       if(selectedMethod === "Mollie"){
-        if(!paymentAvailability.mollie) throw new Error("Mollie is nog niet actief. De eigenaar moet de Mollie API-sleutel instellen op de server.");
         btn.textContent = "Doorsturen naar Mollie…";
         await startMolliePayment();
         return;
