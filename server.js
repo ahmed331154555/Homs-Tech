@@ -1987,6 +1987,10 @@ app.post("/api/mollie/create-payment", async (req, res) => {
     if (order.mollie_payment_id) {
       try {
         const existing = await mollieRequest("/payments/" + encodeURIComponent(order.mollie_payment_id));
+        if (molliePaymentMatchesOrder(existing, order) && String(existing.status || "").toLowerCase() === "paid") {
+          await pool.query("UPDATE webshop_orders SET payment_status='Paid', payment_method='Mollie' WHERE id=$1 AND mollie_payment_id=$2", [localOrderId, order.mollie_payment_id]);
+          return res.status(409).json({ error: "Deze bestelling is al betaald." });
+        }
         if (molliePaymentMatchesOrder(existing, order) &&
             !["paid", "canceled", "expired", "failed"].includes(String(existing.status || "").toLowerCase()) &&
             existing._links && existing._links.checkout && existing._links.checkout.href) {
