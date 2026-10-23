@@ -77,6 +77,16 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 .payment-head p{margin:0;color:#64748b;font-size:14px;line-height:1.5}
 .payment-order{font-weight:900;color:#2563eb;white-space:nowrap}
 #paypal-button-container{max-width:520px}
+.payment-choice{margin-top:22px;border:1px solid #e2e8f0;border-radius:14px;padding:16px;background:#fff}
+.payment-choice h3{margin:0 0 12px;font-size:18px}
+.payment-option{display:flex;align-items:center;gap:12px;padding:13px;border:1px solid #dbe3ec;border-radius:11px;margin-top:9px;cursor:pointer}
+.payment-option:has(input:checked){border-color:#2563eb;background:#eff6ff}
+.payment-option input{width:18px;height:18px;flex:0 0 auto}
+.payment-option span{display:flex;flex:1;flex-direction:column;gap:4px}
+.payment-option strong{font-size:14px}.payment-option small,.payment-config-note{font-size:12px;color:#64748b;line-height:1.5}
+.payment-option b{font-size:12px;color:#2563eb}
+.payment-option input:disabled{cursor:not-allowed}
+.payment-config-note{margin:12px 0 0}
 @media(max-width:560px){.payment-head{flex-direction:column}.payment-order{white-space:normal}}
 </style>
   <link rel="stylesheet" href="assets/homs-global-nav.css">
@@ -86,7 +96,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 <header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a><a href="used.html">Tweedehands</a><a href="gsm-services.html">GSM Services</a>
    <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a></nav></div></header>
 <main class="wrap">
-<h1 class="title">Afrekenen</h1><p class="subtitle">Vul uw gegevens in en ga daarna veilig verder met PayPal.</p>
+<h1 class="title">Afrekenen</h1><p class="subtitle">Vul uw gegevens in en kies daarna uw veilige betaalmethode.</p>
 <div id="checkoutContent" class="layout">
 <section class="card"><h2>📦 Uw gegevens</h2><div id="accountNote" class="account-note hidden"></div><form id="checkoutForm"><div class="grid">
 <div class="field"><label for="name">Naam *</label><input id="name" required></div>
@@ -96,7 +106,13 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 <div class="field"><label for="street">Straat *</label><input id="street" required></div>
 <div class="field"><label for="houseNumber">Huisnummer *</label><input id="houseNumber" required></div>
 <div class="field full"><label for="city">Plaats *</label><input id="city" required></div>
-</div><div id="status" class="status"></div>
+</div><div class="payment-choice" aria-label="Betaalmethode">
+<h3>Betaalmethode</h3>
+<label class="payment-option" for="paymentMollie"><input id="paymentMollie" type="radio" name="paymentMethod" value="Mollie" checked><span><strong>iDEAL / Wero, bankkaart en meer</strong><small>Veilig afrekenen via Mollie</small></span><b>Mollie</b></label>
+<label class="payment-option" for="paymentPayPal"><input id="paymentPayPal" type="radio" name="paymentMethod" value="PayPal"><span><strong>PayPal</strong><small>Betalen met uw PayPal-account</small></span><b>PayPal</b></label>
+<p id="paymentConfigNote" class="payment-config-note" role="status">Betaalmethoden worden gecontroleerd…</p>
+</div>
+<div id="status" class="status"></div>
 <button id="submitBtn" class="btn blue submit" type="submit">→ Doorgaan naar betaling</button>
 </form>
 
@@ -104,7 +120,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   <div class="payment-head">
     <div>
       <h3>💳 Betaling</h3>
-      <p>Betaal veilig met PayPal. Voor deze test gebruiken we de PayPal Sandbox.</p>
+      <p>Voltooi uw betaling veilig bij de gekozen betaalprovider.</p>
     </div>
     <div id="paymentOrderLabel" class="payment-order"></div>
   </div>
@@ -124,6 +140,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   let pendingOrderId = null;
   let pendingCheckoutToken = "";
   let paypalRendered = false;
+  let paymentAvailability = { mollie: false, paypal: false };
 
   function readCart(){
     try{
@@ -253,7 +270,8 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
       houseNumber: document.getElementById("houseNumber").value.trim(),
       postcode: document.getElementById("postcode").value.trim(),
       city: document.getElementById("city").value.trim(),
-      items
+      items,
+      paymentMethod: document.querySelector('input[name="paymentMethod"]:checked')?.value || "Mollie"
     };
 
     const r = await fetch("/api/webshop/orders",{
@@ -266,6 +284,18 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
     const result = await r.json().catch(()=>({}));
     if(!r.ok) throw new Error(result.error || "Bestelling kon niet worden aangemaakt.");
     return result.order;
+  }
+
+  async function startMolliePayment(){
+    const r = await fetch("/api/mollie/create-payment",{
+      method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},credentials:"same-origin",
+      body:JSON.stringify({orderId:pendingOrderId,checkoutToken:pendingCheckoutToken})
+    });
+    const result = await r.json().catch(()=>({}));
+    if(!r.ok || !result.checkoutUrl) throw new Error(result.error || "Mollie betaling kon niet worden gestart.");
+    sessionStorage.setItem("homsTechMollieOrderId",String(pendingOrderId));
+    sessionStorage.setItem("homsTechMollieCheckoutToken",pendingCheckoutToken);
+    location.assign(result.checkoutUrl);
   }
 
   async function renderPayPalButton(){
@@ -348,15 +378,24 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
       pendingCheckoutToken = String(order?.checkout_token || "");
       if(!pendingOrderId || !/^[a-f0-9]{64}$/.test(pendingCheckoutToken)) throw new Error("De bestelling kon niet veilig worden bevestigd. Probeer opnieuw.");
 
-      localStorage.setItem("homsTechPendingWebshopOrderId",String(pendingOrderId));
-      document.getElementById("paymentOrderLabel").textContent = "Order #" + pendingOrderId;
-      document.getElementById("paymentBox").classList.remove("hidden");
-      document.getElementById("submitBtn").classList.add("hidden");
-
-      showPaymentStatus("PayPal laden...","success");
-      await renderPayPalButton();
-      showPaymentStatus("Kies PayPal om veilig af te rekenen.","success");
-      document.getElementById("paymentBox").scrollIntoView({behavior:"smooth",block:"center"});
+      const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || "Mollie";
+      if(selectedMethod === "Mollie"){
+        if(!paymentAvailability.mollie) throw new Error("Mollie is nog niet actief. De eigenaar moet de Mollie API-sleutel instellen op de server.");
+        btn.textContent = "Doorsturen naar Mollie…";
+        await startMolliePayment();
+        return;
+      }
+      if(selectedMethod === "PayPal"){
+        if(!paymentAvailability.paypal) throw new Error("PayPal is nog niet geconfigureerd.");
+        localStorage.setItem("homsTechPendingWebshopOrderId",String(pendingOrderId));
+        document.getElementById("paymentOrderLabel").textContent = "Order #" + pendingOrderId;
+        document.getElementById("paymentBox").classList.remove("hidden");
+        document.getElementById("submitBtn").classList.add("hidden");
+        showPaymentStatus("PayPal laden…","success");
+        await renderPayPalButton();
+        showPaymentStatus("Kies PayPal om veilig af te rekenen.","success");
+        document.getElementById("paymentBox").scrollIntoView({behavior:"smooth",block:"center"});
+      }
     }catch(error){
       showStatus("✕ " + (error.message || "Bestelling kon niet worden aangemaakt."),"error");
       if(btn){
@@ -366,11 +405,85 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
     }
   }
 
+  async function loadPaymentAvailability(){
+    const note = document.getElementById("paymentConfigNote");
+    try {
+      const [mollieResponse, paypalResponse] = await Promise.all([
+        fetch("/api/mollie/config",{cache:"no-store"}),
+        fetch("/api/paypal/config",{cache:"no-store"})
+      ]);
+      const mollie = await mollieResponse.json().catch(()=>({}));
+      const paypal = await paypalResponse.json().catch(()=>({}));
+      paymentAvailability = { mollie: !!(mollieResponse.ok && mollie.enabled), paypal: !!(paypalResponse.ok && paypal.enabled && paypal.clientId) };
+      const mollieInput = document.getElementById("paymentMollie");
+      const paypalInput = document.getElementById("paymentPayPal");
+      mollieInput.disabled = !paymentAvailability.mollie;
+      paypalInput.disabled = !paymentAvailability.paypal;
+      if(paymentAvailability.mollie) mollieInput.checked = true;
+      else if(paymentAvailability.paypal) paypalInput.checked = true;
+      if(note){
+        note.textContent = paymentAvailability.mollie && paymentAvailability.paypal
+          ? "Mollie en PayPal zijn beschikbaar."
+          : paymentAvailability.mollie
+            ? "Mollie is beschikbaar. Kies iDEAL / Wero of een andere methode op de Mollie-betaalpagina."
+            : paymentAvailability.paypal
+              ? "Mollie is nog niet ingesteld; PayPal is beschikbaar."
+              : "Online betalen is nog niet geconfigureerd. De beheerder moet eerst de betaalprovider instellen.";
+      }
+    } catch(error) {
+      paymentAvailability = { mollie:false, paypal:false };
+      if(note) note.textContent = "Betaalmethoden konden niet worden gecontroleerd. Vernieuw de pagina of probeer later opnieuw.";
+      document.getElementById("paymentMollie").disabled = true;
+      document.getElementById("paymentPayPal").disabled = true;
+    }
+  }
+
+  async function verifyMollieReturn(){
+    const params = new URLSearchParams(location.search);
+    const state = params.get("mollie");
+    if(!state) return;
+    const orderId = Number(params.get("orderId") || sessionStorage.getItem("homsTechMollieOrderId"));
+    const token = sessionStorage.getItem("homsTechMollieCheckoutToken") || "";
+    if(state === "cancel"){
+      showStatus("De betaling is geannuleerd. Uw bestelling is nog niet als betaald gemarkeerd.","error");
+      return;
+    }
+    if(state !== "return") return;
+    if(!Number.isInteger(orderId) || orderId < 1 || !/^[a-f0-9]{64}$/.test(token)){
+      showStatus("We konden de betaling niet aan uw bestelling koppelen. Neem contact op met HOMS TECH voordat u opnieuw betaalt.","error");
+      return;
+    }
+    showStatus("We controleren uw betaling bij Mollie…","success");
+    try{
+      const r = await fetch("/api/mollie/verify-payment",{
+        method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},credentials:"same-origin",
+        body:JSON.stringify({orderId,checkoutToken:token})
+      });
+      const result = await r.json().catch(()=>({}));
+      if(!r.ok) throw new Error(result.error || "De betaalstatus kon niet worden gecontroleerd.");
+      if(result.paid){
+        localStorage.removeItem(CART_KEY);
+        localStorage.removeItem("homsTechPendingWebshopOrderId");
+        sessionStorage.removeItem("homsTechMollieOrderId");
+        sessionStorage.removeItem("homsTechMollieCheckoutToken");
+        document.getElementById("checkoutContent").classList.add("hidden");
+        document.getElementById("success").classList.remove("hidden");
+        document.getElementById("orderNumber").textContent = "Bestelnummer #" + orderId;
+      }else{
+        showStatus("De betaling is nog niet bevestigd (status: " + String(result.status || "in behandeling") + "). Wacht even en vernieuw deze pagina; betaal niet opnieuw zolang de status onduidelijk is.","error");
+      }
+    }catch(error){
+      showStatus("✕ " + (error.message || "De betaalstatus kon niet worden gecontroleerd."),"error");
+    }
+  }
+
   function start(){
     const form=document.getElementById("checkoutForm");
     if(form) form.addEventListener("submit",submitOrder);
     renderItems();
     prefill();
+    loadPaymentAvailability();
+    verifyMollieReturn();
   }
 
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",start);
