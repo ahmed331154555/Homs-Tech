@@ -1992,7 +1992,7 @@ app.post("/api/mollie/create-payment", async (req, res) => {
             existing._links && existing._links.checkout && existing._links.checkout.href) {
           return res.json({ success: true, checkoutUrl: existing._links.checkout.href, paymentId: existing.id });
         }
-      } catch (error) { if (!getMollieApiKey()) throw error; }
+      } catch (error) { if (error.statusCode !== 404) throw error; }
     }
     const total = Number(order.total);
     if (!Number.isFinite(total) || total <= 0) return res.status(400).json({ error: "Het orderbedrag is ongeldig." });
