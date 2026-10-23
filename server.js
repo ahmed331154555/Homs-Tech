@@ -21,6 +21,7 @@ const pool = new Pool({
 });
 
 app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: false, limit: "10kb" }));
 app.use((err, req, res, next) => {
   if (err?.type === "entity.too.large" || err?.status === 413) {
     return res.status(413).json({ error: "Het geüploade bestand is te groot. Verklein de foto's en probeer opnieuw." });
@@ -338,6 +339,7 @@ async function initDatabase() {
   await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'Unpaid'`);
   await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS paypal_order_id TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS mollie_payment_id TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS shipping_method TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS tracking_number TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS tracking_url TEXT DEFAULT ''`);
@@ -1868,6 +1870,8 @@ app.post("/api/webshop/orders", async (req, res) => {
     const postcode = String(body.postcode || "").trim();
     const city = String(body.city || "").trim();
     const items = Array.isArray(body.items) ? body.items : [];
+    const paymentMethod = String(body.paymentMethod || "Mollie").trim();
+    if (!["Mollie", "PayPal"].includes(paymentMethod)) return res.status(400).json({ error: "Kies een geldige betaalmethode." });
 
     if (!name || !email || !phone || !street || !houseNumber || !postcode || !city || !items.length) {
       return res.status(400).json({ error: "Vul alle verplichte gegevens in en controleer uw winkelwagen." });
@@ -1905,10 +1909,10 @@ app.post("/api/webshop/orders", async (req, res) => {
       `INSERT INTO webshop_orders
        (customer_id, name, email, phone, street, house_number, postcode, city, items, total, checkout_token, payment_method, payment_status)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
-       RETURNING id, status, payment_method, payment_status, paypal_order_id, created_at`,
+       RETURNING id, status, payment_method, payment_status, paypal_order_id, mollie_payment_id, created_at`,
       [
         customerId, name, email, phone, street, houseNumber, postcode, city,
-        JSON.stringify(safeItems), total.toFixed(2), checkoutTokenHash, "PayPal", "Unpaid"
+        JSON.stringify(safeItems), total.toFixed(2), checkoutTokenHash, paymentMethod, "Unpaid"
       ]
     );
 
@@ -1916,6 +1920,151 @@ app.post("/api/webshop/orders", async (req, res) => {
   } catch (error) {
     console.error("Create webshop order error:", error);
     res.status(500).json({ error: "Webshop bestelling kon niet worden opgeslagen." });
+  }
+});
+
+// ---------------- MOLLIE PAYMENTS ----------------
+function getMollieApiKey() {
+  return String(process.env.MOLLIE_API_KEY || "").trim();
+}
+
+async function mollieRequest(endpoint, options = {}) {
+  const apiKey = getMollieApiKey();
+  if (!apiKey) throw new Error("Mollie is nog niet geconfigureerd. Voeg MOLLIE_API_KEY toe aan de serveromgeving.");
+  const response = await fetch("https://api.mollie.com/v2" + endpoint, {
+    ...options,
+    headers: {
+      "Authorization": "Bearer " + apiKey,
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      ...(options.headers || {})
+    }
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error("Mollie kon de betaling niet verwerken.");
+    error.statusCode = response.status;
+    throw error;
+  }
+  return data;
+}
+
+function mollieStatusToLocal(status) {
+  const map = { paid: "Paid", canceled: "Cancelled", expired: "Expired", failed: "Failed", pending: "Pending", authorized: "Pending" };
+  return map[String(status || "").toLowerCase()] || "Pending";
+}
+
+function molliePaymentMatchesOrder(payment, order) {
+  const expectedAmount = moneyNumber(order.total);
+  const actualAmount = moneyNumber(payment && payment.amount && payment.amount.value);
+  return String(payment && payment.id || "") !== "" &&
+    String(payment && payment.metadata && payment.metadata.orderId || "") === String(order.id) &&
+    String(payment && payment.amount && payment.amount.currency || "").toUpperCase() === "EUR" &&
+    Number.isFinite(expectedAmount) && Number.isFinite(actualAmount) &&
+    Math.abs(expectedAmount - actualAmount) < 0.005;
+}
+
+app.get("/api/mollie/config", (req, res) => {
+  res.set("Cache-Control", "no-store");
+  res.json({ enabled: !!getMollieApiKey(), provider: "Mollie" });
+});
+
+app.post("/api/mollie/create-payment", async (req, res) => {
+  try {
+    const localOrderId = Number(req.body && req.body.orderId);
+    const checkoutToken = String(req.body && req.body.checkoutToken || "").trim();
+    if (!Number.isInteger(localOrderId) || localOrderId < 1 || !/^[a-f0-9]{64}$/.test(checkoutToken)) {
+      return res.status(400).json({ error: "Ongeldige checkoutgegevens." });
+    }
+    const checkoutTokenHash = crypto.createHash("sha256").update(checkoutToken).digest("hex");
+    const local = await pool.query(
+      "SELECT id, name, email, total, payment_status, payment_method, mollie_payment_id FROM webshop_orders WHERE id=$1 AND checkout_token=$2",
+      [localOrderId, checkoutTokenHash]
+    );
+    if (!local.rows.length) return res.status(404).json({ error: "Webshop bestelling niet gevonden." });
+    const order = local.rows[0];
+    if (order.payment_status === "Paid") return res.status(409).json({ error: "Deze bestelling is al betaald." });
+    if (order.mollie_payment_id) {
+      try {
+        const existing = await mollieRequest("/payments/" + encodeURIComponent(order.mollie_payment_id));
+        if (molliePaymentMatchesOrder(existing, order) &&
+            !["paid", "canceled", "expired", "failed"].includes(String(existing.status || "").toLowerCase()) &&
+            existing._links && existing._links.checkout && existing._links.checkout.href) {
+          return res.json({ success: true, checkoutUrl: existing._links.checkout.href, paymentId: existing.id });
+        }
+      } catch (error) { if (!getMollieApiKey()) throw error; }
+    }
+    const total = Number(order.total);
+    if (!Number.isFinite(total) || total <= 0) return res.status(400).json({ error: "Het orderbedrag is ongeldig." });
+    const baseUrl = String(process.env.PUBLIC_BASE_URL || "https://homs-tech.nl").trim().replace(/\/+$/, "");
+    const payment = await mollieRequest("/payments", {
+      method: "POST",
+      body: JSON.stringify({
+        amount: { currency: "EUR", value: total.toFixed(2) },
+        description: "HOMS TECH bestelling #" + localOrderId,
+        redirectUrl: baseUrl + "/checkout.html?mollie=return&orderId=" + localOrderId,
+        cancelUrl: baseUrl + "/checkout.html?mollie=cancel&orderId=" + localOrderId,
+        webhookUrl: baseUrl + "/api/mollie/webhook",
+        metadata: { orderId: String(localOrderId) }
+      })
+    });
+    if (!payment.id || !payment._links || !payment._links.checkout || !payment._links.checkout.href ||
+        !molliePaymentMatchesOrder(payment, order)) {
+      console.error("Mollie response did not match order", { orderId: localOrderId, paymentId: payment.id || null });
+      return res.status(502).json({ error: "Mollie gaf geen geldige betaalpagina terug." });
+    }
+    await pool.query("UPDATE webshop_orders SET mollie_payment_id=$1, payment_method='Mollie', payment_status='Pending' WHERE id=$2 AND checkout_token=$3 AND payment_status <> 'Paid'", [String(payment.id), localOrderId, checkoutTokenHash]);
+    res.json({ success: true, checkoutUrl: payment._links.checkout.href, paymentId: payment.id });
+  } catch (error) {
+    console.error("Mollie create payment error:", error.statusCode || error.message);
+    const status = error.statusCode === 401 || error.statusCode === 403 ? 503 : 500;
+    res.status(status).json({ error: error.message || "Mollie betaling kon niet worden gestart." });
+  }
+});
+
+app.post("/api/mollie/webhook", async (req, res) => {
+  try {
+    const paymentId = String(req.body && req.body.id || "").trim();
+    if (!/^tr_[A-Za-z0-9]+$/.test(paymentId)) return res.sendStatus(400);
+    const payment = await mollieRequest("/payments/" + encodeURIComponent(paymentId));
+    const orderId = Number(payment && payment.metadata && payment.metadata.orderId);
+    if (!Number.isInteger(orderId) || orderId < 1) return res.sendStatus(200);
+    const found = await pool.query("SELECT id, total, mollie_payment_id, payment_status FROM webshop_orders WHERE id=$1", [orderId]);
+    if (!found.rows.length) return res.sendStatus(200);
+    const order = found.rows[0];
+    if (String(order.mollie_payment_id || "") !== paymentId || !molliePaymentMatchesOrder(payment, order)) {
+      console.error("Mollie webhook order mismatch", { orderId, paymentId });
+      return res.sendStatus(200);
+    }
+    const localStatus = mollieStatusToLocal(payment.status);
+    await pool.query("UPDATE webshop_orders SET payment_status=CASE WHEN payment_status='Paid' THEN 'Paid' ELSE $1 END, payment_method='Mollie' WHERE id=$2 AND mollie_payment_id=$3", [localStatus, orderId, paymentId]);
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("Mollie webhook error:", error.statusCode || error.message);
+    res.sendStatus(500);
+  }
+});
+
+app.post("/api/mollie/verify-payment", async (req, res) => {
+  try {
+    const localOrderId = Number(req.body && req.body.orderId);
+    const checkoutToken = String(req.body && req.body.checkoutToken || "").trim();
+    if (!Number.isInteger(localOrderId) || localOrderId < 1 || !/^[a-f0-9]{64}$/.test(checkoutToken)) return res.status(400).json({ error: "Ongeldige checkoutgegevens." });
+    const checkoutTokenHash = crypto.createHash("sha256").update(checkoutToken).digest("hex");
+    const local = await pool.query("SELECT id, total, payment_status, payment_method, mollie_payment_id FROM webshop_orders WHERE id=$1 AND checkout_token=$2", [localOrderId, checkoutTokenHash]);
+    if (!local.rows.length) return res.status(404).json({ error: "Webshop bestelling niet gevonden." });
+    const order = local.rows[0];
+    if (order.payment_status === "Paid") return res.json({ success: true, paid: true, status: "Paid", orderId: localOrderId });
+    if (!order.mollie_payment_id || order.payment_method !== "Mollie") return res.status(409).json({ error: "Er is geen Mollie-betaling gekoppeld aan deze bestelling." });
+    const payment = await mollieRequest("/payments/" + encodeURIComponent(order.mollie_payment_id));
+    if (!molliePaymentMatchesOrder(payment, order) || payment.id !== order.mollie_payment_id) return res.status(409).json({ error: "De betaling komt niet overeen met deze bestelling." });
+    const status = mollieStatusToLocal(payment.status);
+    await pool.query("UPDATE webshop_orders SET payment_status=CASE WHEN payment_status='Paid' THEN 'Paid' ELSE $1 END WHERE id=$2 AND mollie_payment_id=$3", [status, localOrderId, order.mollie_payment_id]);
+    const paid = String(payment.status || "").toLowerCase() === "paid";
+    res.json({ success: true, paid, status, orderId: localOrderId });
+  } catch (error) {
+    console.error("Mollie verify payment error:", error.statusCode || error.message);
+    res.status(500).json({ error: "De betaalstatus kon niet worden gecontroleerd. Probeer het opnieuw." });
   }
 });
 
