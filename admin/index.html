@@ -6343,7 +6343,7 @@ async function save(isAuto=false){
       return false;
     }
     if(phone.pricingMode==="variant" && Array.isArray(phone.variantPrices)){
-      const invalid=phone.variantPrices.find(row=>!Number.isFinite(Number(row.price)) || Number(row.price)<0);
+      const invalid=phone.variantPrices.find(row=>!Number.isFinite(Number(row.price)) || Number(row.price)<=0);
       if(invalid){
         setStatus("✕ Controleer de vaste prijzen: elke prijs moet een geldig bedrag van € 0 of hoger zijn.","error");
         return false;
@@ -6380,11 +6380,20 @@ async function save(isAuto=false){
       });
     }
 
+    const payload=JSON.parse(JSON.stringify(data));
+    if(currentPage==="phones" && payload.phones?.[selectedPhoneIndex]?.setupWizard){
+      payload.phones[selectedPhoneIndex].setupWizard=false;
+      delete payload.phones[selectedPhoneIndex].setupStep;
+      delete payload.phones[selectedPhoneIndex].setupDone;
+      delete payload.phones[selectedPhoneIndex].setupColors;
+      delete payload.phones[selectedPhoneIndex].setupStorages;
+      delete payload.phones[selectedPhoneIndex].setupConditions;
+    }
     const r=await fetch("/api/site",{
       method:"PUT",
       headers:{"Content-Type":"application/json","Accept":"application/json","X-Homs-Admin-Section":currentPage},
       credentials:"same-origin",
-      body:JSON.stringify(data)
+      body:JSON.stringify(payload)
     });
 
     const raw=await r.text();
