@@ -3864,12 +3864,12 @@ function renderPhoneBulkPricing(){
     <section style="border:1px solid #dbe2ea;border-radius:12px;padding:14px;margin:16px 0;background:#fff">
       <h3 style="margin:0 0 6px">Kleuren en geheugens beheren</h3>
       <p class="small">Je kunt kleuren en geheugens toevoegen of verwijderen voor alleen dit model. Verwijderen wist de bijbehorende uitvoeringen; controleer eerst voorraad en prijzen.</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><input id="phone-bulk-new-color" type="text" maxlength="60" placeholder="Nieuwe kleur, bijvoorbeeld Roze" style="min-width:220px;flex:1"><button type="button" class="btn btn-green" onclick="phoneBulkAddColor()">＋ Kleur toevoegen</button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><input id="phone-bulk-new-color" type="text" maxlength="60" placeholder="Nieuwe kleur, bijvoorbeeld Roze" style="min-width:220px;flex:1"><button type="button" class="btn btn-green" onclick="phoneBulkAddColor()">Kleur toevoegen</button></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><select id="phone-bulk-remove-color" style="min-width:200px"><option value="">Kleur verwijderen...</option>${colors.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join("")}</select><button type="button" class="btn btn-light" onclick="phoneBulkRemoveColor()">Verwijder kleur en uitvoeringen</button></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><input id="phone-bulk-new-storage" type="text" maxlength="20" placeholder="Nieuwe geheugen, bijvoorbeeld 2 TB" style="min-width:220px;flex:1"><button type="button" class="btn btn-green" onclick="phoneBulkAddStorage()">＋ Geheugen toevoegen</button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><input id="phone-bulk-new-storage" type="text" maxlength="20" placeholder="Nieuwe geheugen, bijvoorbeeld 2 TB" style="min-width:220px;flex:1"><button type="button" class="btn btn-green" onclick="phoneBulkAddStorage()">Geheugen toevoegen</button></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><select id="phone-bulk-remove-storage" style="min-width:200px"><option value="">Geheugen verwijderen...</option>${storages.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join("")}</select><button type="button" class="btn btn-light" onclick="phoneBulkRemoveStorage()">Verwijder geheugen en uitvoeringen</button></div>
-      <h4 style="margin:18px 0 8px">Vier foto’s per kleur</h4><p class="small">Voeg maximaal vier afbeeldingen toe aan iedere kleur. Ze worden gebruikt voor alle geheugen- en staatcombinaties van deze kleur.</p>
-      ${colors.map(color=>phoneBulkColorGalleryHtml(color)).join("")||"<p class=\"small\">Geen kleuren geregistreerd. Voeg hierboven een kleur toe.</p>}
+      <h4 style="margin:18px 0 8px">Vier fotos per kleur</h4><p class="small">Voeg maximaal vier afbeeldingen toe aan iedere kleur.</p>
+      ${colors.map(color=>phoneBulkColorGalleryHtml(color)).join("")}
     </section>
     <section style="padding:14px;border:1px solid #dbe2ea;border-radius:12px;margin:16px 0;background:#fff">
       <h3 style="margin:0 0 5px">Selecteer uitvoeringen op kenmerken</h3>
