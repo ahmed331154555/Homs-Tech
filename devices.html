@@ -759,9 +759,10 @@ const condition = device.condition || device.conditie || "";
 const salePrice = startingConditionPrice(device);
 const stock = Number(device.stock || 0);
 
-const productUrl =
-"product.html?type=phone&id=" +
-encodeURIComponent(device._index);
+const productParams = new URLSearchParams({type:"phone",id:String(device._index)});
+if(device._variantStorage) productParams.set("storage",device._variantStorage);
+if(device._variantColor) productParams.set("color",device._variantColor);
+const productUrl = "product.html?" + productParams.toString();
 
 return `
 <a class="device-card sales-card"
@@ -875,24 +876,23 @@ if(Array.isArray(data.phones)){
 
 devices = data.phones
       .map((phone, index) => ({ phone, originalIndex: index }))
-      .filter(({ phone }) => !isRemovedLegacyPhone(phone))
-      .map(({ phone, originalIndex }) => ({
-        _index: originalIndex,
-        name: phone.name || "Smartphone",
-        brand: phone.brand || "",
-        price: phone.price || phone.salePrice || phone.sellPrice || phone.verkoopprijs || "",
-        salePrice: phone.salePrice || phone.price || phone.sellPrice || phone.verkoopprijs || "",
-        storage: phone.storage || phone.geheugen || "",
-        color: phone.color || phone.kleur || "",
-        condition: phone.condition || phone.conditie || "",
-        conditionOptions: Array.isArray(phone.conditionOptions) ? phone.conditionOptions : [],
-        stock: Number(phone.stock || 0),
-        active: phone.active !== false,
-        warranty: phone.warranty || phone.garantie || "",
-        description: phone.description || "",
-        image: phone.image || phone.imageUrl || "",
-        images: Array.isArray(phone.images) ? phone.images : []
-      })).filter(phone => phone.active);
+      .filter(({ phone }) => !isRemovedLegacyPhone(phone) && phone.active !== false)
+      .flatMap(({ phone, originalIndex }) => {
+        const base = {_index:originalIndex,brand:phone.brand||"",active:true,warranty:phone.warranty||phone.garantie||"",description:phone.description||"",conditionOptions:Array.isArray(phone.conditionOptions)?phone.conditionOptions:[],images:Array.isArray(phone.images)?phone.images:[],image:phone.image||phone.imageUrl||""};
+        const rows=Array.isArray(phone.variantPrices)?phone.variantPrices.filter(r=>r&&r.active!==false):[];
+        if(!rows.length)return [{...base,name:phone.name||"Smartphone",price:phone.price||phone.salePrice||phone.sellPrice||phone.verkoopprijs||"",salePrice:phone.salePrice||phone.price||phone.sellPrice||phone.verkoopprijs||"",storage:phone.storage||phone.geheugen||"",color:phone.color||phone.kleur||"",condition:phone.condition||phone.conditie||"",stock:Number(phone.stock||0),_variantStorage:"",_variantColor:""}];
+        const keyNorm=value=>String(value||"").trim().toLocaleLowerCase().replace(/\s+/g," ");
+        const combinations=new Map();
+        rows.forEach(row=>{const storage=String(row.storage||"").trim(),color=String(row.color||"").trim();if(!storage||!color)return;const key=keyNorm(storage)+"|"+keyNorm(color);if(!combinations.has(key))combinations.set(key,{storage,color,rows:[]});combinations.get(key).rows.push(row);});
+        const stripBase=(name,storage,color)=>{let n=String(name||"Smartphone").trim();[storage,color].filter(Boolean).forEach(v=>{const suffix=" "+String(v).trim();if(n.toLocaleLowerCase().endsWith(suffix.toLocaleLowerCase()))n=n.slice(0,-suffix.length).trim();});return n.replace(/\s+/g," ").trim()||String(name||"Smartphone");};
+        return [...combinations.values()].map(group=>{
+          const prices=group.rows.map(r=>Number(String(r.price??"").replace(/€/g,"").replace(",","."))).filter(n=>Number.isFinite(n)&&n>0);
+          const gallery=phone.colorGalleryImages&&Array.isArray(phone.colorGalleryImages[group.color])?phone.colorGalleryImages[group.color].filter(Boolean):[];
+          const colorImage=gallery[0]||(phone.colorImages&&phone.colorImages[group.color])||(Array.isArray(phone.colorOptions)?phone.colorOptions.find(o=>String(o.label||"").toLowerCase()===group.color.toLowerCase())?.image:"")||base.image||base.images.find(Boolean)||"";
+          const stock=Math.max(0,...group.rows.map(r=>Number(r.stock??phone.stock??0)||0));
+          return {...base,name:stripBase(phone.name,group.storage,group.color)+" "+group.storage+" "+group.color,price:prices.length?Math.min(...prices):(phone.price||""),salePrice:prices.length?Math.min(...prices):(phone.salePrice||phone.price||""),storage:group.storage,color:group.color,condition:"",stock,image:colorImage,images:gallery.length?gallery:base.images,_variantStorage:group.storage,_variantColor:group.color};
+        });
+      });
 
 }
 
