@@ -3900,30 +3900,31 @@ function phoneBulkAddColor(){
   const input=document.getElementById("phone-bulk-new-color");
   const color=String(input?.value||"").trim();
   if(!color){alert("Vul eerst een kleurnaam in.");return;}
-  const family=(data.phones||[]).map((p,i)=>({p,i})).filter(x=>phoneBulkFamilyName(x.p)===phoneBulkPricingModelIndex&&Array.isArray(x.p.variantPrices));
+  const family=(data.phones||[]).filter(p=>phoneBulkFamilyName(p)===phoneBulkPricingModelIndex&&Array.isArray(p.variantPrices));
   if(!family.length){alert("Geen uitvoeringen gevonden voor dit model.");return;}
-  const existing=[...new Set(family.flatMap(x=>(x.p.variantPrices||[]).map(r=>String(r?.color||"").trim())).filter(Boolean))];
+  const existing=[...new Set(family.flatMap(p=>(p.variantPrices||[]).map(r=>String(r?.color||"").trim())).filter(Boolean))];
   if(existing.some(x=>x.toLocaleLowerCase()===color.toLocaleLowerCase())){alert("Deze kleur bestaat al voor dit model. Kies hem in de lijst en voeg de fotos toe.");return;}
-  const rows=family.flatMap(x=>(x.p.variantPrices||[]).filter(r=>r&&r.active!==false).map(r=>({...r,storage:canonicalPhoneStorageLabel(r.storage),color:String(r.color||"").trim(),condition:String(r.condition||"").trim()})));
-  const combinations=new Map();
-  rows.forEach(r=>{if(!r.storage||!r.condition)return;const key=JSON.stringify([r.storage.toLocaleLowerCase(),r.condition.toLocaleLowerCase()]);if(!combinations.has(key))combinations.set(key,r);});
-  if(!combinations.size){alert("Er zijn geen geheugen/staat-combinaties om van over te nemen.");return;}
-  const target=family[0].p;
-  if(!Array.isArray(target.variantPrices))target.variantPrices=[];
+  const rows=family.flatMap(p=>(p.variantPrices||[]).filter(r=>r&&r.active!==false).map(r=>({row:r,phone:p,storage:canonicalPhoneStorageLabel(r.storage||""),condition:String(r.condition||r.state||"").trim()})));
+  const storages=[...new Set(rows.map(x=>x.storage).filter(Boolean))];
+  let conditions=[...new Set(rows.map(x=>x.condition).filter(Boolean))];
+  if(!conditions.length)conditions=[...new Set(family.flatMap(p=>(p.conditionOptions||[]).map(o=>String(typeof o==="string"?o:o?.label||o?.value||"").trim())).filter(Boolean))];
+  if(!storages.length||!conditions.length){alert("Dit model mist geheugen- of conditiegegevens in de uitvoeringen. Controleer eerst de opties van het model; er zijn geen varianten aangemaakt.");return;}
+  const target=family[0];if(!Array.isArray(target.variantPrices))target.variantPrices=[];
   const added=[];
-  combinations.forEach(base=>{
-    const exists=family.some(x=>(x.p.variantPrices||[]).some(r=>r&&String(r.color||"").trim().toLocaleLowerCase()===color.toLocaleLowerCase()&&canonicalPhoneStorageLabel(r.storage)===base.storage&&String(r.condition||"").trim().toLocaleLowerCase()===base.condition.toLocaleLowerCase()));
+  storages.forEach(storage=>conditions.forEach(condition=>{
+    const exists=family.some(p=>(p.variantPrices||[]).some(r=>r&&String(r.color||"").trim().toLocaleLowerCase()===color.toLocaleLowerCase()&&canonicalPhoneStorageLabel(r.storage)===storage&&String(r.condition||r.state||"").trim().toLocaleLowerCase()===condition.toLocaleLowerCase()));
     if(exists)return;
-    const clone={...base,color,storage:base.storage,price:Number(base.price||0),stock:0,available:false,active:true};
+    const base=rows.find(x=>x.storage===storage&&(x.condition.toLocaleLowerCase()===condition.toLocaleLowerCase()||!x.condition))?.row||rows.find(x=>x.storage===storage)?.row||rows[0]?.row||{};
+    const clone={...base,color,storage,condition,price:Number(base.price||0),stock:0,available:false,active:true};
     delete clone.image;delete clone.imageUrl;delete clone.photo;delete clone.images;
     target.variantPrices.push(clone);added.push(clone);
-  });
-  if(!added.length){alert("Deze kleur heeft al alle bestaande combinaties.");return;}
-  family.forEach(({p})=>{if(!p.colorImages||typeof p.colorImages!=="object")p.colorImages={};if(!p.colorGalleryImages||typeof p.colorGalleryImages!=="object")p.colorGalleryImages={};p.colorGalleryImages[color]=["","","",""];});
+  }));
+  if(!added.length){alert("Deze kleur heeft al alle geheugen- en conditiecombinaties.");return;}
+  family.forEach(p=>{if(!p.colorImages||typeof p.colorImages!=="object")p.colorImages={};if(!p.colorGalleryImages||typeof p.colorGalleryImages!=="object")p.colorGalleryImages={};p.colorGalleryImages[color]=["","","",""];});
   phoneBulkColorGalleryDraft[color]=["","","",""];
   if(input)input.value="";
   markChanged();
-  alert("Kleur toegevoegd met "+added.length+" geheugen/staat-combinaties. Voorraad is 0 en beschikbaarheid staat uit totdat je dit aanpast.");
+  alert("Kleur toegevoegd met "+added.length+" combinaties. Voorraad is 0 en beschikbaarheid staat uit totdat je dit aanpast.");
   renderPhoneBulkPricing();
 }
 function phoneBulkFamilyRecords(){return (data.phones||[]).map((p,i)=>({p,i})).filter(x=>phoneBulkFamilyName(x.p)===phoneBulkPricingModelIndex&&Array.isArray(x.p.variantPrices));}
@@ -3937,12 +3938,22 @@ function phoneBulkRemoveColor(){
 }
 function phoneBulkAddStorage(){
  const input=document.getElementById("phone-bulk-new-storage");const storage=canonicalPhoneStorageLabel(String(input?.value||"").trim());if(!storage){alert("Vul een geheugen in, bijvoorbeeld 2 TB.");return;}
- const family=phoneBulkFamilyRecords();const rows=family.flatMap(x=>x.p.variantPrices.filter(r=>r&&r.active!==false));if(!rows.length){alert("Geen uitvoeringen gevonden voor dit model.");return;}
- const existing=[...new Set(rows.map(r=>canonicalPhoneStorageLabel(r.storage)).filter(Boolean))];if(existing.some(x=>x.toLocaleLowerCase()===storage.toLocaleLowerCase())){alert("Dit geheugen bestaat al voor dit model.");return;}
- const colors=[...new Set(rows.map(r=>String(r.color||"").trim()).filter(Boolean))];const conditions=[...new Set(rows.map(r=>String(r.condition||"").trim()).filter(Boolean))];if(!colors.length||!conditions.length){alert("Voeg eerst kleuren en toestanden toe aan dit model.");return;}
+ const family=phoneBulkFamilyRecords();const rows=family.flatMap(x=>(x.p.variantPrices||[]).filter(r=>r&&r.active!==false).map(r=>({row:r,color:String(r.color||"").trim(),condition:String(r.condition||r.state||"").trim()})));
+ if(!rows.length){alert("Geen uitvoeringen gevonden voor dit model.");return;}
+ const existing=[...new Set(rows.map(x=>canonicalPhoneStorageLabel(x.row.storage)).filter(Boolean))];if(existing.some(x=>x.toLocaleLowerCase()===storage.toLocaleLowerCase())){alert("Dit geheugen bestaat al voor dit model.");return;}
+ const colors=[...new Set(rows.map(x=>x.color).filter(Boolean))];
+ let conditions=[...new Set(rows.map(x=>x.condition).filter(Boolean))];
+ if(!conditions.length)conditions=[...new Set(family.flatMap(x=>(x.p.conditionOptions||[]).map(o=>String(typeof o==="string"?o:o?.label||o?.value||"").trim())).filter(Boolean))];
+ if(!colors.length||!conditions.length){alert("Dit model mist kleur- of conditiegegevens. Er zijn geen varianten aangemaakt.");return;}
  const target=family[0].p;const added=[];
- colors.forEach(color=>conditions.forEach(condition=>{const base=rows.find(r=>String(r.color||"").trim().toLocaleLowerCase()===color.toLocaleLowerCase()&&String(r.condition||"").trim().toLocaleLowerCase()===condition.toLocaleLowerCase())||rows[0];const clone={...base,storage,color,condition,price:Number(base.price||0),stock:0,available:false,active:true};delete clone.image;delete clone.imageUrl;delete clone.photo;delete clone.images;target.variantPrices.push(clone);added.push(clone);}));
- if(!added.length){alert("Geen geheugencombinaties aangemaakt.");return;}if(input)input.value="";phoneBulkResetAfterStructureChange();alert("Geheugen "+storage+" toegevoegd voor "+colors.length+" kleuren en "+conditions.length+" toestanden. Voorraad is 0 en verkoop staat uit totdat je dit aanpast.");
+ colors.forEach(color=>conditions.forEach(condition=>{
+   const exists=family.some(x=>(x.p.variantPrices||[]).some(r=>r&&canonicalPhoneStorageLabel(r.storage)===storage&&String(r.color||"").trim().toLocaleLowerCase()===color.toLocaleLowerCase()&&String(r.condition||r.state||"").trim().toLocaleLowerCase()===condition.toLocaleLowerCase()));
+   if(exists)return;
+   const base=rows.find(x=>x.color.toLocaleLowerCase()===color.toLocaleLowerCase()&&(x.condition.toLocaleLowerCase()===condition.toLocaleLowerCase()||!x.condition))?.row||rows.find(x=>x.color.toLocaleLowerCase()===color.toLocaleLowerCase())?.row||rows[0].row;
+   const clone={...base,storage,color,condition,price:Number(base.price||0),stock:0,available:false,active:true};delete clone.image;delete clone.imageUrl;delete clone.photo;delete clone.images;target.variantPrices.push(clone);added.push(clone);
+ }));
+ if(!added.length){alert("Dit geheugen heeft al alle bestaande combinaties.");return;}
+ if(input)input.value="";phoneBulkResetAfterStructureChange();alert("Geheugen "+storage+" toegevoegd voor "+added.length+" combinaties. Voorraad is 0 en verkoop staat uit totdat je dit aanpast.");
 }
 function phoneBulkRemoveStorage(){
  const storage=canonicalPhoneStorageLabel(String(document.getElementById("phone-bulk-remove-storage")?.value||"").trim());if(!storage){alert("Kies eerst een geheugen.");return;}
