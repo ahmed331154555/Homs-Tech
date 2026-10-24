@@ -467,24 +467,22 @@ function isIPhone15Product(product){
 function productRecordStorage(product){
   const direct=Array.isArray(product?.storage)?(product.storage.find(x=>typeof x==="string")||""):product?.storage||product?.geheugen||"";
   const text=String(direct||product?.name||"");
-  const match=text.match(/(?:^|[\\s_-])(32|64|128|256|512)\\s*GB\\b|(?:^|[\\s_-])1\\s*TB\\b/i);
-  return match?match[0].trim().replace(/^[\\s_-]+/,"").replace(/\\s+/g," ").toUpperCase():String(direct||"").trim();
+  const match=text.match(/(?:^|[\s_-])(32|64|128|256|512)\s*GB\b|(?:^|[\s_-])1\s*TB\b/i);
+  return match?match[0].trim().replace(/^[\s_-]+/,"").replace(/\s+/g," ").toUpperCase():String(direct||"").trim();
 }
 function productRecordColor(product){
   const direct=String(product?.color||product?.kleur||"").trim();
   if(direct)return direct;
-  const name=String(product?.name||"").trim();
-  const colors=["titanium naturel","middernacht","sterrenlicht","space grey","space gray","deep purple","natural titanium","black titanium","white titanium","zwart","wit","blauw","groen","rood","geel","paars","roze","goud","zilver","oranje","bruin","grijs","black","white","blue","green","red","yellow","purple","pink","gold","silver","gray","grey"];
-  const found=colors.sort((a,b)=>b.length-a.length).find(color=>new RegExp("\\b"+color.replace(/[.*+?^${}()|[\\]\\\\]/g,"\\\\function selectProductOption(key,label){")+"$","i").test(name));
-  return found||"";
+  const name=String(product?.name||"").trim().toLowerCase();
+  const colors=["titanium naturel","middernacht","sterrenlicht","space grey","space gray","deep purple","natural titanium","black titanium","white titanium","zwart","wit","blauw","groen","rood","geel","paars","roze","goud","zilver","oranje","bruin","grijs","black","white","blue","green","red","yellow","purple","pink","gold","silver","gray","grey"].sort((a,b)=>b.length-a.length);
+  return colors.find(color=>name.endsWith(" "+color))||"";
 }
 function productBaseModel(product){
   let name=String(product?.catalogFamily||product?.catalogModel||product?.name||"").trim();
-  if(product?.catalogFamily||product?.catalogModel)return name.replace(/\\s+/g," ").toLowerCase();
-  name=name.replace(/(?:^|[\\s_-])(?:32|64|128|256|512)\\s*GB\\b|(?:^|[\\s_-])1\\s*TB\\b/ig," ");
+  name=name.replace(/(?:^|[\s_-])(?:32|64|128|256|512)\s*GB\b|(?:^|[\s_-])1\s*TB\b/ig," ");
   const color=productRecordColor(product);
-  if(color)name=name.replace(new RegExp("\\s*"+color.replace(/[.*+?^${}()|[\\]\\\\]/g,"\\\\function selectProductOption(key,label){")+"$","i"),"");
-  return name.replace(/\\s+/g," ").trim().toLowerCase();
+  if(color&&name.toLowerCase().endsWith(" "+color.toLowerCase()))name=name.slice(0,-color.length-1);
+  return name.replace(/\s+/g," ").trim().toLowerCase();
 }
 function productFamilyRecords(product){
   if(!currentData||!product)return [];
