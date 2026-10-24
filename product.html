@@ -426,71 +426,6 @@ function normalizeStorageValue(v){
 function normalizeColorValue(v){
   return String(v ?? "").trim().toLowerCase();
 }
-function productModelIdentity(product){
-  if(!product) return "";
-  const explicit=product.catalogFamily || product.catalogModel || product.catalogKey;
-  if(explicit) return String(explicit).toLowerCase().trim();
-  let name=String(product.name||"");
-  name=name.replace(/\b\d+\s*(?:GB|TB)\b/ig, "");
-  const colors=["zwart","wit","blauw","rood","groen","geel","paars","goud","zilver","rose","roze","oranje","bruin","grijs","space grey","silver","gold","purple","blue","white","black","green","red"];
-  const colorPattern=new RegExp("\\s+(?:"+colors.map(c=>c.replace(/[-/\\^$*+?.()|[\]{}]/g,"\\$&")).join("|")+")$","i");
-  name=name.replace(colorPattern,"");
-  return name.replace(/\s{2,}/g," ").trim().toLowerCase();
-}
-function catalogVariantStorage(product){
-  const direct=Array.isArray(product?.storage)?product.storage[0]:product?.storage||product?.geheugen||"";
-  if(String(direct).trim()) return String(direct).trim();
-  const name=String(product?.name||"");
-  const match=name.match(/(?:^|[\s\-_])(64|128|256|512)\s*GB\b|(?:^|[\s\-_])1\s*TB\b/i);
-  return match?match[0].trim().replace(/^[-_\\s]+/,""):"";
-}
-function catalogVariantColor(product){
-  const direct=String(product?.color||product?.kleur||"").trim();
-  if(direct) return direct;
-  const name=String(product?.name||"").toLowerCase();
-  const colors=["space grey","space gray","midnight","starlight","deep purple","natural titanium","black titanium","white titanium","zwart","wit","blauw","groen","rood","roze","paars","geel","oranje","bruin","grijs","goud","zilver","koraal","black","white","blue","green","red","pink","purple","yellow","orange","brown","grey","gray","gold","silver","coral"];
-  return colors.find(color=>name.includes(color))||"";
-}
-function currentProductSiblings(){
-  if(!currentData || !currentProduct) return [];
-  const list=type==="used" ? (Array.isArray(currentData.usedPhones)?currentData.usedPhones:[]) : (Array.isArray(currentData.phones)?currentData.phones:(Array.isArray(currentData.devices)?currentData.devices:[]));
-  const records=list.map((p,i)=>({p,i}));
-  const identity=productModelIdentity(currentProduct);
-  const exact=records.filter(({p})=>productModelIdentity(p)===identity);
-  // Match imported records by visible model name too; different storage/color
-  // variants may carry different catalog keys in Admin.
-  //
-  const modelName=(product)=>{
-    let name=String(product && product.name || "");
-    name=name.replace(/\b\d+\s*(?:GB|TB)\b/ig,"");
-    name=name.replace(/\s+(?:space grey|space gray|midnight|starlight|deep purple|natural titanium|black titanium|white titanium|zwart|wit|blauw|rood|groen|geel|paars|goud|zilver|rose|roze|oranje|bruin|grijs|black|white|blue|green|red|purple|yellow|gold|silver|gray|grey)$/i,"");
-    return name.replace(/\s+/g," ").trim().toLowerCase();
-  };
-  const target=modelName(currentProduct);
-  const matches=records.filter(({p})=>modelName(p)===target);
-  const combined=new Map();
-  [...exact,...matches].forEach(item=>combined.set(item.i,item));
-  return combined.size>1 ? [...combined.values()] : exact;
-}
-function findVariantProduct(storage,color){
-  const siblings=currentProductSiblings();
-  const s=normalizeStorageValue(storage), c=normalizeColorValue(color);
-  let hit=siblings.find(({p})=>{
-    const ps=catalogVariantStorage(p);
-    const pc=catalogVariantColor(p);
-    return normalizeStorageValue(ps)===s && normalizeColorValue(pc)===c;
-  });
-  if(hit) return hit;
-  hit=siblings.find(({p})=>{
-    const ps=catalogVariantStorage(p);
-    return normalizeStorageValue(ps)===s;
-  });
-  if(hit) return hit;
-  return siblings.find(({p})=>{
-    const pc=catalogVariantColor(p);
-    return normalizeColorValue(pc)===c;
-  }) || null;
-}
 const APPLE_IPHONE15_COLOR_IMAGES = {
   "blauw": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-finish-select-202309-6-1inch-blue?wid=5120&hei=2880&fmt=p-jpg&qlt=80",
   "geel": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-finish-select-202309-6-1inch-yellow?wid=5120&hei=2880&fmt=p-jpg&qlt=80",
@@ -529,39 +464,6 @@ function isIPhone15Product(product){
   return /iphone\s*15(?:\s|$)/i.test(name) || /iphone\s*15(?:\s|$)/i.test(family);
 }
 
-function switchToProductVariant(hit,requestedStorage="",requestedColor=""){
-  if(!hit || !hit.p) return false;
-  const old={...selectedOptions};
-  currentProduct=hit.p;
-  currentProductId=hit.i;
-  const storedStorage=Array.isArray(hit.p.storage)?hit.p.storage[0]:hit.p.storage||hit.p.geheugen||"";
-  const storedColor=hit.p.color||hit.p.kleur||"";
-  // The clicked option is authoritative: some imported catalog records have
-  // stale/missing storage metadata even though the product name is correct.
-  const storage=String(requestedStorage||catalogVariantStorage(hit.p)||storedStorage||"");
-  const color=String(requestedColor||catalogVariantColor(hit.p)||storedColor||"");
-  const appleImage=appleColorImage(hit.p,color);
-  if(appleImage){
-    currentProduct={...hit.p,images:[appleImage]};
-  }
-  selectedOptions={...old};
-  if(storage) selectedOptions.storage=String(storage);
-  if(color) selectedOptions.color=String(color);
-  const conditions=effectiveOptions(currentProduct,"condition");
-  if(!conditions.some(x=>x.label===selectedOptions.condition)) selectedOptions.condition=conditions[0]?.label||"";
-  const batteries=effectiveOptions(currentProduct,"battery");
-  if(!batteries.some(x=>x.label===selectedOptions.battery)) selectedOptions.battery=batteries[0]?.label||"";
-  const vats=effectiveOptions(currentProduct,"vat");
-  if(!vats.some(x=>x.label===selectedOptions.vat)) selectedOptions.vat=vats[0]?.label||"";
-  const trades=effectiveOptions(currentProduct,"tradeIn");
-  if(!trades.some(x=>x.label===selectedOptions.tradeIn)) selectedOptions.tradeIn=trades[0]?.label||"";
-  const url=new URL(location.href);
-  url.searchParams.set("type",type);
-  url.searchParams.set("id",String(currentProductId));
-  history.replaceState({},"",url.toString());
-  renderProductBody();
-  return true;
-}
 function selectProductOption(key,label){
   if(key==="battery" || key==="vat" || key==="tradeIn"){
     selectedOptions[key]=label;
@@ -582,8 +484,6 @@ function colorVariantImage(label){
   const colorImages=currentProduct?.colorImages&&typeof currentProduct.colorImages==="object"?currentProduct.colorImages:{};
   const matched=Object.keys(colorImages).find(key=>normalizeColorValue(key)===normalizedLabel);
   if(matched&&colorImages[matched]) return colorImages[matched];
-  const appleImage=appleColorImage(currentProduct,label);
-  if(appleImage) return appleImage;
   return (Array.isArray(currentProduct?.images)?currentProduct.images.filter(Boolean)[0]:"") || currentProduct?.image || currentProduct?.imageUrl || "";
 }
 function renderOptionSection(key,title,list){
