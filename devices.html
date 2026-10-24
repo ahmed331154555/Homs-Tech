@@ -876,7 +876,7 @@ if(Array.isArray(data.phones)){
 
 devices = data.phones
       .map((phone, index) => ({ phone, originalIndex: index }))
-      .filter(({ phone }) => !isRemovedLegacyPhone(phone) && phone.active !== false)
+      .filter(({ phone }) => phone.active !== false)
       .flatMap(({ phone, originalIndex }) => {
         const base = {_index:originalIndex,brand:phone.brand||"",active:true,warranty:phone.warranty||phone.garantie||"",description:phone.description||"",conditionOptions:Array.isArray(phone.conditionOptions)?phone.conditionOptions:[],images:Array.isArray(phone.images)?phone.images:[],image:phone.image||phone.imageUrl||""};
         const rows=Array.isArray(phone.variantPrices)?phone.variantPrices.filter(r=>r&&r.active!==false):[];
