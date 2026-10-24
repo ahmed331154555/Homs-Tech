@@ -610,8 +610,18 @@ function renderOptionSection(key,title,list){
       if(key==="condition" && normalizeColorValue(row.color)!==normalizeColorValue(selectedOptions.color)) return false;
       return true;
     });
-    const values=[...new Set(matchingRows.map(row=>String(row[key]||"").trim()).filter(Boolean))];
-    base=values.map(label=>({label,active:true,enabled:true,available:matchingRows.some(row=>String(row[key]||"").trim()===label&&row.available!==false),priceDelta:0}));
+    const rawValues=matchingRows.map(row=>String(row[key]||"").trim()).filter(Boolean);
+    // Deduplicate storage labels by normalized value (e.g. "512GB" and "512 GB").
+    const seenValues=new Set();
+    const values=rawValues.filter(label=>{
+      const normalized=key==="storage"?normalizeStorageValue(label):normalizeColorValue(label);
+      if(!normalized||seenValues.has(normalized))return false;
+      seenValues.add(normalized);
+      return true;
+    });
+    base=values.map(label=>({label,active:true,enabled:true,available:matchingRows.some(row=>
+      (key==="storage"?normalizeStorageValue(row[key])===normalizeStorageValue(label):String(row[key]||"").trim()===label)
+      &&row.available!==false),priceDelta:0}));
   }
   // Legacy products without variant rows can still be linked through their individual
   // admin records. Never let this fallback override the real variant matrix.
