@@ -3629,7 +3629,10 @@ function renderPhoneFolderTree(){
         <strong style="overflow-wrap:anywhere">${esc(label)}</strong>
         <span style="color:#64748b;font-size:13px">${esc(info.group||phone.brand||'Overige')}${phone.condition?' · '+esc(phone.condition):''}${stock!==''?' · Voorraad: '+esc(stock):''}${price>0?' · €'+price.toFixed(2).replace('.',','):''}</span>
       </div>
-      <button type="button" class="phone-variant-edit" onclick="openPhoneEditor(${index})">✎ Bewerken</button>
+      <div style="display:flex;gap:6px;flex:0 0 auto;align-items:center">
+        <button type="button" class="phone-variant-edit" onclick="openPhoneEditor(${index})">✎ Bewerken</button>
+        <button type="button" class="phone-product-card-delete" style="border:1px solid #fecaca;background:#fee2e2;color:#b91c1c;border-radius:8px;padding:8px 10px;cursor:pointer;font-weight:800" onclick="deletePhone(${index})" aria-label="Product verwijderen" title="Product verwijderen">🗑 Verwijderen</button>
+      </div>
     </div>`;
   }).join('');
   return `<div class="phone-folder-group" style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">
