@@ -665,14 +665,20 @@ function renderOptionSection(key,title,list){
     });
     base=values.map(label=>{
       const normalizeLabel=value=>key==="storage"?normalizeStorageValue(value):normalizeColorValue(value);
+      const family=productFamilyRecords(currentProduct);
+      const familyOptions=family
+        .map(({p})=>Array.isArray(p?.[map[key]])?p[map[key]].find(item=>item&&normalizeLabel(item.label)===normalizeLabel(label)):null)
+        .filter(Boolean);
       const option=raw.find(item=>item&&normalizeLabel(item.label)===normalizeLabel(label));
       const matchingOptionRows=matchingRows.filter(row=>
         normalizeLabel(row[key])===normalizeLabel(label) && row.active!==false);
-      // The matching Admin option checkbox is authoritative when present.
-      // Otherwise use the exact variant availability flags; stock zero alone does not strike out.
-      const available=option
-        ? option.available!==false
-        : matchingOptionRows.some(row=>row.available!==false);
+      // An explicit unavailable setting in any matching family option must be respected.
+      // If the admin option is enabled, exact variant availability still controls the combination.
+      const explicitlyDisabled=familyOptions.some(item=>item.available===false || item.enabled===false || item.active===false);
+      const explicitlyEnabled=familyOptions.some(item=>item.available!==false && item.enabled!==false && item.active!==false);
+      const available=!explicitlyDisabled && (familyOptions.length
+        ? explicitlyEnabled
+        : option ? option.available!==false : matchingOptionRows.some(row=>row.available!==false));
       return {label,active:true,enabled:true,available,priceDelta:0};
     });
   }
