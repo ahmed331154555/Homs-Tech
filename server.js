@@ -3057,14 +3057,20 @@ app.delete("/api/admin/customers/:id", requirePermission("customers.view"), asyn
   }
 });
 
-// Admin page
+// Admin page — always serve the latest editor UI, never a cached copy.
 app.get("/admin", (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
   res.sendFile(
     path.join(__dirname, "admin", "index.html")
   );
 });
 
 app.get("/admin/", (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
   res.sendFile(
     path.join(__dirname, "admin", "index.html")
   );
