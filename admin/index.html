@@ -3005,7 +3005,7 @@ let selectedServiceIndex=0;
 let selectedPhoneIndex=0;
 let phoneEditOnly=false;
 let phoneBulkPricingView=false;
-let phoneBulkPricingModelIndex=0;
+let phoneBulkPricingModelIndex="";
 let phoneBulkSearchText="";
 let phoneBulkSelectedRows=new Set();
 let phoneTreeSearch="";
@@ -3765,33 +3765,45 @@ function renderPhoneBulkModelResults(){
   if(el)el.innerHTML=renderPhoneBulkModelResultsHtml();
 }
 function phoneBulkRowKey(modelIndex,rowIndex){return String(modelIndex)+":"+String(rowIndex);}
+let phoneBulkCurrentProductIndexes=[];
+function phoneBulkFamilyName(phone){
+  let name=String(phone?.name||"Onbenoemd product").trim();
+  const colors=[...new Set((phone?.variantPrices||[]).map(r=>String(r?.color||"").trim()).filter(Boolean))].sort((a,b)=>b.length-a.length);
+  for(const color of colors){if(name.toLocaleLowerCase().endsWith(" "+color.toLocaleLowerCase())){name=name.slice(0,-color.length-1).trim();break;}}
+  name=name.replace(/\s+\d+\s*(?:GB|TB|MB)\s*$/i,"").trim();
+  return name||String(phone?.name||"Onbenoemd product").trim();
+}
 function phoneBulkSetRow(modelIndex,rowIndex,checked){
   const key=phoneBulkRowKey(modelIndex,rowIndex);
   if(checked)phoneBulkSelectedRows.add(key);else phoneBulkSelectedRows.delete(key);
 }
-function phoneBulkSelectStorage(modelIndex,storage,checked){
-  const phone=data.phones?.[modelIndex];if(!phone)return;
-  (phone.variantPrices||[]).forEach((row,i)=>{if(String(row.storage||"")===String(storage||""))phoneBulkSetRow(modelIndex,i,checked);});
+function phoneBulkSelectStorage(storage,checked){
+  phoneBulkCurrentProductIndexes.forEach(modelIndex=>{
+    const phone=data.phones?.[modelIndex];if(!phone)return;
+    (phone.variantPrices||[]).forEach((row,i)=>{if(canonicalPhoneStorageLabel(row.storage)===canonicalPhoneStorageLabel(storage))phoneBulkSetRow(modelIndex,i,checked);});
+  });
   renderPhoneBulkPricing();
 }
-function phoneBulkSelectAll(modelIndex,checked){
-  const phone=data.phones?.[modelIndex];if(!phone)return;
-  (phone.variantPrices||[]).forEach((row,i)=>phoneBulkSetRow(modelIndex,i,checked));
+function phoneBulkSelectAll(checked){
+  phoneBulkCurrentProductIndexes.forEach(modelIndex=>{
+    const phone=data.phones?.[modelIndex];if(!phone)return;
+    (phone.variantPrices||[]).forEach((row,i)=>{if(row&&row.active!==false)phoneBulkSetRow(modelIndex,i,checked);});
+  });
   renderPhoneBulkPricing();
 }
-function phoneBulkApply(modelIndex,kind){
-  const phone=data.phones?.[modelIndex];if(!phone)return;
-  const rows=[...(phone.variantPrices||[])];
-  const selected=rows.map((row,i)=>({row,i})).filter(x=>phoneBulkSelectedRows.has(phoneBulkRowKey(modelIndex,x.i)));
+function phoneBulkApply(kind){
+  const selected=[];
+  phoneBulkCurrentProductIndexes.forEach(modelIndex=>{
+    const phone=data.phones?.[modelIndex];if(!phone)return;
+    (phone.variantPrices||[]).forEach((row,i)=>{if(row&&phoneBulkSelectedRows.has(phoneBulkRowKey(modelIndex,i)))selected.push({row,modelIndex,i});});
+  });
   if(!selected.length){alert("Selecteer eerst minimaal één uitvoering.");return;}
   if(kind==="price"){
-    const input=document.getElementById("phone-bulk-price");
-    const value=Number(input?.value);
+    const input=document.getElementById("phone-bulk-price"),value=Number(input?.value);
     if(!input||input.value.trim()===""||!Number.isFinite(value)||value<=0){alert("Vul een geldige prijs groter dan € 0 in.");return;}
     selected.forEach(x=>x.row.price=value);
   }else if(kind==="stock"){
-    const input=document.getElementById("phone-bulk-stock");
-    const value=Number(input?.value);
+    const input=document.getElementById("phone-bulk-stock"),value=Number(input?.value);
     if(!input||input.value.trim()===""||!Number.isInteger(value)||value<0){alert("Vul een geldig voorraad-aantal in (0 of hoger).");return;}
     selected.forEach(x=>x.row.stock=value);
   }else if(kind==="available"){
@@ -3799,45 +3811,57 @@ function phoneBulkApply(modelIndex,kind){
     if(!["yes","no"].includes(value)){alert("Kies eerst een beschikbaarheidsstatus.");return;}
     selected.forEach(x=>x.row.available=value==="yes");
   }
-  markChanged();
-  renderPhoneBulkPricing();
+  markChanged();renderPhoneBulkPricing();
 }
 function phoneBulkReturnToCatalog(){phoneBulkPricingView=false;phoneEditOnly=false;renderPhones();}
 function renderPhoneBulkPricing(){
   const box=document.getElementById("phonesList");if(!box)return;
-  const products=(data.phones||[]).map((p,i)=>({p,i,rows:Array.isArray(p.variantPrices)?p.variantPrices:[]})).filter(x=>x.rows.some(r=>r&&r.active!==false));
-  if(!products.length){
-    box.innerHTML='<div class="card"><h2>Collectieve prijzen</h2><p>Er zijn nog geen actieve uitvoeringen. Stel eerst de uitvoeringen van een telefoon in.</p><button type="button" class="btn btn-light" onclick="phoneBulkReturnToCatalog()">← Terug naar telefoons</button></div>';return;
+  const products=(data.phones||[]).map((p,i)=>({p,i,family:phoneBulkFamilyName(p)})).filter(x=>Array.isArray(x.p.variantPrices)&&x.p.variantPrices.length);
+  const familyMap=new Map();
+  products.forEach(x=>{if(!familyMap.has(x.family))familyMap.set(x.family,[]);familyMap.get(x.family).push(x);});
+  const families=[...familyMap.keys()].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  if(!families.length){
+    box.innerHTML='<div class="card"><h2>Collectieve prijzen</h2><p>Er zijn nog geen producten met uitvoeringen/prijzen. Stel eerst per telefoon de uitvoeringen in.</p><button type="button" class="btn btn-light" onclick="phoneBulkReturnToCatalog()">← Terug naar telefoons</button></div>';return;
   }
-  if(!products.some(x=>x.i===phoneBulkPricingModelIndex))phoneBulkPricingModelIndex=products[0].i;
-  const product=products.find(x=>x.i===phoneBulkPricingModelIndex)||products[0];
-  const phone=product.p, modelIndex=product.i;
-  const storages=[...new Set((phone.variantPrices||[]).filter(r=>r&&r.active!==false).map(r=>String(r.storage||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
-  const groups=storages.map(storage=>({storage,rows:(phone.variantPrices||[]).map((row,i)=>({row,i})).filter(x=>x.row&&x.row.active!==false&&String(x.row.storage||"").trim()===storage)}));
-  const countSelected=(phone.variantPrices||[]).filter((row,i)=>phoneBulkSelectedRows.has(phoneBulkRowKey(modelIndex,i))).length;
+  if(!families.includes(phoneBulkPricingModelIndex))phoneBulkPricingModelIndex=families[0];
+  const family=phoneBulkPricingModelIndex;
+  const familyProducts=familyMap.get(family)||[];
+  phoneBulkCurrentProductIndexes=familyProducts.map(x=>x.i);
+  const allRows=[];
+  familyProducts.forEach(({p,i})=>(p.variantPrices||[]).forEach((row,j)=>{if(row&&row.active!==false)allRows.push({row,modelIndex:i,rowIndex:j,phone:p});}));
+  const storages=[...new Set(allRows.map(x=>canonicalPhoneStorageLabel(x.row.storage)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  const groups=storages.map(storage=>({storage,rows:allRows.filter(x=>canonicalPhoneStorageLabel(x.row.storage)===storage)}));
+  const countSelected=allRows.filter(x=>phoneBulkSelectedRows.has(phoneBulkRowKey(x.modelIndex,x.rowIndex))).length;
   box.innerHTML=`<div class="card" style="max-width:1500px;margin:0 auto;padding:clamp(14px,2vw,26px)">
     <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
-      <div><div class="small">HOMS TECH · PRIJZENBEHEER</div><h2 style="margin:5px 0">Collectieve prijzen per iPhone</h2><p class="small">Selecteer kleuren en toestanden binnen dezelfde geheugengrootte en pas één prijs toe op de selectie.</p></div>
+      <div><div class="small">HOMS TECH · PRIJZENBEHEER</div><h2 style="margin:5px 0">Collectieve prijzen per iPhone</h2><p class="small">Kies het basismodel. Alle geregistreerde kleuren, geheugens en toestanden van dit model worden hieronder getoond.</p></div>
       <button type="button" class="btn btn-light" onclick="phoneBulkReturnToCatalog()">← Terug naar telefoons</button>
     </div>
     <div class="grid" style="margin:16px 0">
-      <div class="field"><label>Zoek iPhone-model</label><input id="phone-bulk-model-search" type="search" placeholder="Bijv. iPhone 11, iPhone 12 Pro Max" value="${esc(phoneBulkSearchText||"")}" oninput="phoneBulkSearchText=this.value;renderPhoneBulkModelResults()"><div id="phone-bulk-model-results" style="margin-top:8px;max-height:180px;overflow:auto;border:1px solid #dbe2ea;border-radius:9px">${renderPhoneBulkModelResultsHtml()}</div><div class="small" style="margin-top:5px">Kies een model om alle beschikbare geheugens, kleuren en toestanden te zien.</div></div>
-      <div class="field"><label>Geselecteerde uitvoeringen</label><div style="padding:12px;border:1px solid #dbe2ea;border-radius:9px;font-weight:800">${countSelected}</div></div>
+      <div class="field"><label>Zoek iPhone-model</label><input id="phone-bulk-model-search" type="search" placeholder="Bijv. iPhone 11, iPhone 12 Pro, iPhone 11 Pro Max" value="${esc(family)}" oninput="phoneBulkFilterModels(this.value)"><div id="phone-bulk-model-results" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${families.filter(f=>f.toLocaleLowerCase().includes(family.toLocaleLowerCase())).map(f=>`<button type="button" class="btn ${f===family?'btn-green':'btn-light'}" onclick="phoneBulkChooseFamily('${f.replace(/\\/g,"\\\\").replace(/'/g,"\\'")}')">${esc(f)}</button>`).join("")}</div></div>
+      <div class="field"><label>Geselecteerde uitvoeringen</label><div style="padding:12px;border:1px solid #dbe2ea;border-radius:9px;font-weight:800">${countSelected}</div><div class="small">${familyProducts.length} productrecord(s) samengevoegd</div></div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;padding:14px;background:#f8fafc;border:1px solid #dbe2ea;border-radius:12px;margin-bottom:16px">
       <div class="field" style="margin:0;min-width:150px;flex:1"><label>Prijs voor selectie (€)</label><input id="phone-bulk-price" type="number" min="0.01" step="0.01" placeholder="Bijv. 229"></div>
-      <button type="button" class="btn btn-green" onclick="phoneBulkApply(${modelIndex},'price')">Pas prijs toe</button>
+      <button type="button" class="btn btn-green" onclick="phoneBulkApply('price')">Pas prijs toe</button>
       <div class="field" style="margin:0;min-width:120px;flex:1"><label>Voorraad voor selectie</label><input id="phone-bulk-stock" type="number" min="0" step="1" placeholder="Bijv. 1"></div>
-      <button type="button" class="btn btn-light" onclick="phoneBulkApply(${modelIndex},'stock')">Pas voorraad toe</button>
+      <button type="button" class="btn btn-light" onclick="phoneBulkApply('stock')">Pas voorraad toe</button>
       <div class="field" style="margin:0;min-width:150px;flex:1"><label>Beschikbaarheid</label><select id="phone-bulk-available"><option value="">Kies status</option><option value="yes">Verkrijgbaar</option><option value="no">Niet beschikbaar</option></select></div>
-      <button type="button" class="btn btn-light" onclick="phoneBulkApply(${modelIndex},'available')">Pas status toe</button>
+      <button type="button" class="btn btn-light" onclick="phoneBulkApply('available')">Pas status toe</button>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><button class="btn btn-light" type="button" onclick="phoneBulkSelectAll(${modelIndex},true)">Selecteer alle uitvoeringen</button><button class="btn btn-light" type="button" onclick="phoneBulkSelectAll(${modelIndex},false)">Deselecteer alles</button><span class="small" style="align-self:center">De prijs wordt alleen aangepast bij de aangevinkte rijen.</span></div>
-    ${groups.map(group=>`<section style="border:1px solid #dbe2ea;border-radius:12px;overflow:hidden;margin:14px 0"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#f1f5f9;padding:12px 14px"><input type="checkbox" aria-label="Selecteer alle ${esc(group.storage)} uitvoeringen" onchange="phoneBulkSelectStorage(${modelIndex},'${String(group.storage).replace(/'/g,"\\'")}',this.checked)" ${group.rows.length&&group.rows.every(x=>phoneBulkSelectedRows.has(phoneBulkRowKey(modelIndex,x.i)))?'checked':''}><strong style="font-size:17px">${esc(group.storage)}</strong><span class="small">${group.rows.length} uitvoeringen</span></div><div style="overflow:auto"><table style="width:100%;border-collapse:collapse;min-width:760px"><thead><tr><th style="padding:10px;text-align:center">Kies</th><th style="padding:10px;text-align:left">Kleur</th><th style="padding:10px;text-align:left">Geheugen</th><th style="padding:10px;text-align:left">Staat</th><th style="padding:10px;text-align:left">Voorraad</th><th style="padding:10px;text-align:left">Prijs (€)</th><th style="padding:10px;text-align:center">Beschikbaar</th></tr></thead><tbody>${group.rows.map(({row,i})=>`<tr style="border-top:1px solid #edf0f5"><td style="text-align:center;padding:9px"><input type="checkbox" ${phoneBulkSelectedRows.has(phoneBulkRowKey(modelIndex,i))?'checked':''} onchange="phoneBulkSetRow(${modelIndex},${i},this.checked);renderPhoneBulkPricing()"></td><td style="padding:9px">${esc(row.color||"—")}</td><td style="padding:9px">${esc(row.storage||"—")}</td><td style="padding:9px">${esc(row.condition||"—")}</td><td style="padding:9px"><input type="number" min="0" step="1" value="${esc(row.stock??phone.stock??0)}" style="width:85px" oninput="data.phones[${modelIndex}].variantPrices[${i}].stock=Math.max(0,Number(this.value||0));markChanged()"></td><td style="padding:9px"><input type="number" min="0" step="0.01" value="${esc(row.price??0)}" style="width:100px" oninput="data.phones[${modelIndex}].variantPrices[${i}].price=Number(this.value||0);markChanged()"></td><td style="text-align:center;padding:9px"><input type="checkbox" ${row.available!==false?'checked':''} onchange="data.phones[${modelIndex}].variantPrices[${i}].available=this.checked;markChanged()"></td></tr>`).join("")}</tbody></table></div></section>`).join("")}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><button class="btn btn-light" type="button" onclick="phoneBulkSelectAll(true)">Selecteer alle uitvoeringen</button><button class="btn btn-light" type="button" onclick="phoneBulkSelectAll(false)">Deselecteer alles</button><span class="small" style="align-self:center">De prijs wordt alleen aangepast bij de aangevinkte rijen.</span></div>
+    ${groups.map(group=>`<section style="border:1px solid #dbe2ea;border-radius:12px;overflow:hidden;margin:14px 0"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#f1f5f9;padding:12px 14px"><input type="checkbox" aria-label="Selecteer alle ${esc(group.storage)} uitvoeringen" onchange="phoneBulkSelectStorage('${group.storage.replace(/'/g,"\\'")}',this.checked)" ${group.rows.length&&group.rows.every(x=>phoneBulkSelectedRows.has(phoneBulkRowKey(x.modelIndex,x.rowIndex)))?'checked':''}><strong style="font-size:17px">${esc(group.storage)}</strong><span class="small">${group.rows.length} uitvoeringen</span></div><div style="overflow:auto"><table style="width:100%;border-collapse:collapse;min-width:760px"><thead><tr><th style="padding:10px;text-align:center">Kies</th><th style="padding:10px;text-align:left">Kleur</th><th style="padding:10px;text-align:left">Geheugen</th><th style="padding:10px;text-align:left">Staat</th><th style="padding:10px;text-align:left">Voorraad</th><th style="padding:10px;text-align:left">Prijs (€)</th><th style="padding:10px;text-align:center">Beschikbaar</th></tr></thead><tbody>${group.rows.map(({row,modelIndex,rowIndex,phone})=>`<tr style="border-top:1px solid #edf0f5"><td style="text-align:center;padding:9px"><input type="checkbox" ${phoneBulkSelectedRows.has(phoneBulkRowKey(modelIndex,rowIndex))?'checked':''} onchange="phoneBulkSetRow(${modelIndex},${rowIndex},this.checked);renderPhoneBulkPricing()"></td><td style="padding:9px">${esc(row.color||"—")}</td><td style="padding:9px">${esc(canonicalPhoneStorageLabel(row.storage)||"—")}</td><td style="padding:9px">${esc(row.condition||"—")}</td><td style="padding:9px"><input type="number" min="0" step="1" value="${esc(row.stock??phone.stock??0)}" style="width:85px" oninput="data.phones[${modelIndex}].variantPrices[${rowIndex}].stock=Math.max(0,Number(this.value||0));markChanged()"></td><td style="padding:9px"><input type="number" min="0" step="0.01" value="${esc(row.price??0)}" style="width:100px" oninput="data.phones[${modelIndex}].variantPrices[${rowIndex}].price=Number(this.value||0);markChanged()"></td><td style="text-align:center;padding:9px"><input type="checkbox" ${row.available!==false?'checked':''} onchange="data.phones[${modelIndex}].variantPrices[${rowIndex}].available=this.checked;markChanged()"></td></tr>`).join("")}</tbody></table></div></section>`).join("")}
     <div style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:18px"><button type="button" class="btn btn-light" onclick="phoneBulkReturnToCatalog()">Terug</button><button type="button" class="btn btn-green" onclick="save(false)">💾 Wijzigingen opslaan</button></div>
   </div>`;
 }
-
+function phoneBulkChooseFamily(family){phoneBulkPricingModelIndex=family;phoneBulkSelectedRows.clear();renderPhoneBulkPricing();}
+function phoneBulkFilterModels(query){
+  const products=(data.phones||[]).map(p=>phoneBulkFamilyName(p));
+  const families=[...new Set((data.phones||[]).filter(p=>Array.isArray(p.variantPrices)&&p.variantPrices.length).map(p=>phoneBulkFamilyName(p)))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  const q=String(query||"").trim().toLocaleLowerCase();
+  const box=document.getElementById("phone-bulk-model-results");if(!box)return;
+  box.innerHTML=families.filter(f=>f.toLocaleLowerCase().includes(q)).map(f=>`<button type="button" class="btn ${f===phoneBulkPricingModelIndex?'btn-green':'btn-light'}" onclick="phoneBulkChooseFamily('${f.replace(/\\/g,"\\\\").replace(/'/g,"\\'")}')">${esc(f)}</button>`).join("")||'<span class="small">Geen iPhone-modellen gevonden.</span>';
+}
 function renderPhones(){
   const box=document.getElementById("phonesList");
   if(!box) return;
