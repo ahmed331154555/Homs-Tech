@@ -666,12 +666,14 @@ function renderOptionSection(key,title,list){
     base=values.map(label=>{
       const normalizeLabel=value=>key==="storage"?normalizeStorageValue(value):normalizeColorValue(value);
       const option=raw.find(item=>item&&normalizeLabel(item.label)===normalizeLabel(label));
-      const optionEnabled=option?.available!==false;
-      const rowEnabled=matchingRows.some(row=>
-        normalizeLabel(row[key])===normalizeLabel(label) && row.available!==false && row.active!==false);
-      // Availability is controlled by the Admin "Beschikbaar" checkboxes only.
-      // Do not automatically strike out an option just because stock is zero.
-      return {label,active:true,enabled:true,available:optionEnabled&&rowEnabled,priceDelta:0};
+      const matchingOptionRows=matchingRows.filter(row=>
+        normalizeLabel(row[key])===normalizeLabel(label) && row.active!==false);
+      // The matching Admin option checkbox is authoritative when present.
+      // Otherwise use the exact variant availability flags; stock zero alone does not strike out.
+      const available=option
+        ? option.available!==false
+        : matchingOptionRows.some(row=>row.available!==false);
+      return {label,active:true,enabled:true,available,priceDelta:0};
     });
   }
   // Legacy products without variant rows can still be linked through their individual
