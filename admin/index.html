@@ -3004,6 +3004,7 @@ function renderGeneral(){
 let selectedServiceIndex=0;
 let selectedPhoneIndex=0;
 let phoneEditOnly=false;
+let phoneWizardExistingEdit=false;
 let phoneBulkPricingView=false;
 let phoneBulkPricingModelIndex="";
 let phoneBulkSearchText="";
@@ -3638,6 +3639,7 @@ function renderPhoneFolderTree(){
 }
 
 function openPhoneEditor(i){
+  phoneWizardExistingEdit=true;
   selectedPhoneIndex=Number(i);
   const phone=data.phones[selectedPhoneIndex];
   if(!phone){return;}
@@ -4138,6 +4140,7 @@ function renderPhoneVariantPriceTable(phone){
 }
 
 function addPhone(){
+  phoneWizardExistingEdit=false;
   const phone={
     name:"",brand:"Apple",price:"",storage:"",color:"",condition:"Zo goed als nieuw",
     warranty:"12 maanden",description:"",subtitle:"",sku:"",stock:0,stockStatus:"available",
@@ -4221,7 +4224,7 @@ function phoneWizardStageHtml(phone,index){
   if(step===1){
     body=`<div class="grid">${field("Naam / model",`<input data-focus-key="phone-name" value="${esc(phone.name||'')}" placeholder="iPhone 13" oninput="data.phones[${index}].name=this.value;markChanged()">`)}${field("Merk",`<select onchange="data.phones[${index}].brand=this.value;markChanged()">${["Apple","Samsung","Google","Xiaomi","OnePlus","Overige"].map(x=>`<option ${phone.brand===x?'selected':''}>${x}</option>`).join("")}</select>`)}${field("Voorraad totaal",`<input type="number" min="0" step="1" value="${esc(phone.stock??0)}" oninput="data.phones[${index}].stock=Math.max(0,Number(this.value||0));markChanged()">`)}${field("Beschikbaarheid",`<select onchange="data.phones[${index}].stockStatus=this.value;markChanged()"><option value="available" ${phone.stockStatus!=="unavailable"?'selected':''}>Verkrijgbaar</option><option value="unavailable" ${phone.stockStatus==="unavailable"?'selected':''}>Niet beschikbaar</option></select>`)}</div><h3>Vier basisfoto's</h3><p class="small">Upload maximaal 4 foto's. Per kleur kun je in de volgende stap een aparte foto koppelen.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:12px">${[0,1,2,3].map(i=>imageCard(phone.images?.[i],"Foto "+(i+1),"base",i,"")).join("")}</div>`;
   }else if(step===2){
-    body=`<p class="small">Selecteer alleen de kleuren die je werkelijk aanbiedt. De vier basisfoto's uit stap 1 worden gebruikt; je hoeft geen aparte foto per kleur te uploaden.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px">${colors.map(c=>`<label style="border:1px solid #e2e8f0;border-radius:10px;padding:12px;display:flex;align-items:center;gap:8px;font-weight:700"><input type="checkbox" ${(phone.setupColors||[]).includes(c)?'checked':''} onchange="phoneWizardSetList(${index},'setupColors','${c}',this.checked)">${c}</label>`).join("")}</div><div class="field" style="margin-top:12px"><label>Eigen kleur toevoegen</label><div style="display:flex;gap:8px"><input id="customPhoneColor" placeholder="Bijv. Titanium blauw"><button class="btn btn-light" type="button" onclick="(()=>{const e=document.getElementById('customPhoneColor');const v=e.value.trim();if(v){phoneWizardSetList(${index},'setupColors',v,true);e.value='';}})()">＋ Toevoegen</button></div></div>`;
+    body=`<p class="small">Selecteer alleen de kleuren die je werkelijk aanbiedt. De vier basisfoto's uit stap 1 worden gebruikt; je hoeft geen aparte foto per kleur te uploaden.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px">${(phoneWizardExistingEdit&&!phone.setupShowAllColors&&(phone.setupColors||[]).length?(phone.setupColors||[]):colors).map(c=>`<label style="border:1px solid #e2e8f0;border-radius:10px;padding:12px;display:flex;align-items:center;gap:8px;font-weight:700"><input type="checkbox" ${(phone.setupColors||[]).includes(c)?'checked':''} onchange="phoneWizardSetList(${index},'setupColors','${c}',this.checked)">${c}</label>`).join("")}</div>${phoneWizardExistingEdit&&!phone.setupShowAllColors?`<button type="button" class="btn btn-light" style="margin-top:10px" onclick="data.phones[${index}].setupShowAllColors=true;renderPhones()">＋ Andere kleur toevoegen</button>`:""}<div class="field" style="margin-top:12px"><label>Eigen kleur toevoegen</label><div style="display:flex;gap:8px"><input id="customPhoneColor" placeholder="Bijv. Titanium blauw"><button class="btn btn-light" type="button" onclick="(()=>{const e=document.getElementById('customPhoneColor');const v=e.value.trim();if(v){phoneWizardSetList(${index},'setupColors',v,true);e.value='';}})()">＋ Toevoegen</button></div></div>`;
   }else if(step===3){
     body=`<p class="small">Selecteer de geheugengroottes die je voor dit model wilt aanbieden.</p><div style="display:flex;flex-wrap:wrap;gap:10px">${storages.map(v=>`<label style="border:1px solid #cbd5e1;border-radius:10px;padding:12px;display:flex;gap:8px;align-items:center"><input type="checkbox" ${(phone.setupStorages||[]).includes(v)?'checked':''} onchange="phoneWizardSetList(${index},'setupStorages','${v}',this.checked)">${v}</label>`).join("")}</div><div class="field" style="margin-top:12px"><label>Andere geheugengrootte</label><div style="display:flex;gap:8px"><input id="customPhoneStorage" placeholder="Bijv. 2 TB"><button class="btn btn-light" type="button" onclick="(()=>{const e=document.getElementById('customPhoneStorage');const v=e.value.trim();if(v){phoneWizardSetList(${index},'setupStorages',v,true);e.value='';}})()">＋ Toevoegen</button></div></div>`;
   }else if(step===4){
