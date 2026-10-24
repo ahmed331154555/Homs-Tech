@@ -4136,16 +4136,6 @@ function phoneWizardVariantTitle(phone,row){
   if(row?.storage && /^(?:\d+\s*(?:GB|TB)|\d+\s*MB)$/i.test(String(row.storage).trim())) model=model.replace(/\s+\d+\s*(?:GB|TB|MB)\s*$/i,'').trim();
   return [model,row?.storage,row?.color].filter(Boolean).join(' ')+' · '+String(row?.condition||'');
 }
-function phoneWizardStageHtml(phone,index){");
-    model=model.replace(new RegExp("\\s+"+escaped+"\\s*$","i"),"").trim();
-  }
-  // Product names sometimes already contain a capacity (e.g. "iPhone 11 128GB").
-  // Remove that trailing capacity before appending the selected variant's capacity.
-  if(row?.storage && /^(?:\\d+\\s*(?:GB|TB)|\\d+\\s*MB)$/i.test(String(row.storage).trim())){
-    model=model.replace(/\\s+\\d+\\s*(?:GB|TB|MB)\\s*$/i,"").trim();
-  }
-  return [model,row?.storage,row?.color].filter(Boolean).join(" ")+" · "+String(row?.condition||"");
-}
 function phoneWizardStageHtml(phone,index){
   const step=Number(phone.setupStep||1);
   const stepButton=(n,label)=>`<button type="button" class="btn ${step===n?'btn-green':'btn-light'}" onclick="data.phones[${index}].setupStep=${n};renderPhones()">${n}. ${label}</button>`;
