@@ -343,6 +343,8 @@ async function initDatabase() {
   await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS shipping_method TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS tracking_number TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS tracking_url TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS inventory_deducted_at TIMESTAMPTZ`);
+  await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS inventory_error TEXT NOT NULL DEFAULT ''`);
 
   const result = await pool.query(
     "SELECT id FROM site_settings WHERE id = 1"
@@ -1882,6 +1884,54 @@ function priceProductFromCatalog(data, item) {
   };
 }
 
+async function deductPaidOrderInventory(orderId) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await client.query('SELECT id, items, payment_status, inventory_deducted_at FROM webshop_orders WHERE id=$1 FOR UPDATE', [orderId]);
+    if (!result.rows.length || result.rows[0].payment_status !== 'Paid') { await client.query('ROLLBACK'); return { skipped: true }; }
+    const order = result.rows[0];
+    if (order.inventory_deducted_at) { await client.query('COMMIT'); return { alreadyDeducted: true }; }
+    const settings = await client.query('SELECT data FROM site_settings WHERE id=1 FOR UPDATE');
+    if (!settings.rows.length) throw new Error('Catalog settings row is missing.');
+    const data = settings.rows[0].data || {};
+    for (const item of (Array.isArray(order.items) ? order.items : [])) {
+      const type = String(item && item.type || '').toLowerCase();
+      const list = type === 'used' ? (Array.isArray(data.usedPhones) ? data.usedPhones : []) : (Array.isArray(data.phones) && data.phones.length ? data.phones : (Array.isArray(data.devices) ? data.devices : []));
+      const id = Number(item && item.id); const qty = Number(item && item.qty || 1);
+      if (!Number.isInteger(id) || id < 0 || !list[id] || !Number.isInteger(qty) || qty < 1) throw new Error('Paid order item could not be matched to catalog.');
+      const product = list[id]; const options = item.options && typeof item.options === 'object' ? item.options : {};
+      if (product.pricingMode === 'variant') {
+        const rows = Array.isArray(product.variantPrices) ? product.variantPrices : [];
+        const row = rows.find(x => x && String(x.condition ?? '') === String(options.condition ?? '') && String(x.color ?? '') === String(options.color ?? '') && String(x.storage ?? '') === String(options.storage ?? ''));
+        if (!row) throw new Error('Paid order variant was not found.');
+        if (row.stock !== undefined && row.stock !== null && row.stock !== '') { const stock = Number(row.stock); if (!Number.isFinite(stock) || stock < qty) throw new Error('Insufficient stock for paid variant.'); row.stock = stock - qty; }
+      } else {
+        const key = ['stock', 'quantity', 'stockQuantity'].find(k => product[k] !== undefined && product[k] !== null && product[k] !== '');
+        if (key) { const stock = Number(product[key]); if (!Number.isFinite(stock) || stock < qty) throw new Error('Insufficient stock for paid product.'); product[key] = stock - qty; }
+      }
+      const custom = options.custom && typeof options.custom === 'object' ? options.custom : {};
+      for (const groupType of ['optionGroups', 'addonGroups']) {
+        const groups = Array.isArray(product[groupType]) ? product[groupType] : [];
+        for (let i = 0; i < groups.length; i++) {
+          const label = String(custom[groupType + ':' + i] ?? ''); if (!label) continue;
+          const option = (Array.isArray(groups[i]?.options) ? groups[i].options : []).find(x => x && String(x.label) === label);
+          if (!option) throw new Error('Paid order option was not found.');
+          if (option.stock !== undefined && option.stock !== null && option.stock !== '') { const stock = Number(option.stock); if (!Number.isFinite(stock) || stock < qty) throw new Error('Insufficient stock for paid option.'); option.stock = stock - qty; }
+        }
+      }
+      list[id] = product;
+    }
+    await client.query('UPDATE site_settings SET data=$1::jsonb WHERE id=1', [JSON.stringify(data)]);
+    await client.query('UPDATE webshop_orders SET inventory_deducted_at=NOW(), inventory_error=$1 WHERE id=$2 AND inventory_deducted_at IS NULL', ['', orderId]);
+    await client.query('COMMIT'); return { deducted: true };
+  } catch (error) {
+    try { await client.query('ROLLBACK'); } catch {}
+    try { await pool.query('UPDATE webshop_orders SET inventory_error=$1 WHERE id=$2 AND inventory_deducted_at IS NULL', [String(error.message || 'Inventory deduction failed').slice(0, 500), orderId]); } catch (recordError) { console.error('Could not record inventory error:', recordError.message); }
+    console.error('Paid order inventory deduction needs review:', { orderId, message: error.message }); return { error: true };
+  } finally { client.release(); }
+}
+
 // ---------------- WEBSHOP ORDERS ----------------
 
 app.post("/api/webshop/orders", async (req, res) => {
@@ -2014,6 +2064,7 @@ app.post("/api/mollie/create-payment", async (req, res) => {
         const existing = await mollieRequest("/payments/" + encodeURIComponent(order.mollie_payment_id));
         if (molliePaymentMatchesOrder(existing, order) && String(existing.status || "").toLowerCase() === "paid") {
           await pool.query("UPDATE webshop_orders SET payment_status='Paid', payment_method='Mollie' WHERE id=$1 AND mollie_payment_id=$2", [localOrderId, order.mollie_payment_id]);
+          await deductPaidOrderInventory(localOrderId);
           return res.status(409).json({ error: "Deze bestelling is al betaald." });
         }
         if (molliePaymentMatchesOrder(existing, order) &&
@@ -2067,6 +2118,7 @@ app.post("/api/mollie/webhook", async (req, res) => {
     }
     const localStatus = mollieStatusToLocal(payment.status);
     await pool.query("UPDATE webshop_orders SET payment_status=CASE WHEN payment_status='Paid' THEN 'Paid' ELSE $1 END, payment_method='Mollie' WHERE id=$2 AND mollie_payment_id=$3", [localStatus, orderId, paymentId]);
+    if (localStatus === 'Paid') await deductPaidOrderInventory(orderId);
     res.sendStatus(200);
   } catch (error) {
     console.error("Mollie webhook error:", error.statusCode || error.message);
@@ -2089,6 +2141,7 @@ app.post("/api/mollie/verify-payment", async (req, res) => {
     if (!molliePaymentMatchesOrder(payment, order) || payment.id !== order.mollie_payment_id) return res.status(409).json({ error: "De betaling komt niet overeen met deze bestelling." });
     const status = mollieStatusToLocal(payment.status);
     await pool.query("UPDATE webshop_orders SET payment_status=CASE WHEN payment_status='Paid' THEN 'Paid' ELSE $1 END WHERE id=$2 AND mollie_payment_id=$3", [status, localOrderId, order.mollie_payment_id]);
+    if (status === 'Paid') await deductPaidOrderInventory(localOrderId);
     const paid = String(payment.status || "").toLowerCase() === "paid";
     res.json({ success: true, paid, status, orderId: localOrderId });
   } catch (error) {
@@ -2301,6 +2354,7 @@ app.post("/api/paypal/capture-order", async (req, res) => {
        WHERE id = $1`,
       [localOrderId]
     );
+    await deductPaidOrderInventory(localOrderId);
 
     res.json({
       success: true,
