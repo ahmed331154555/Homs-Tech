@@ -2977,13 +2977,45 @@ async function requireSiteOrPhoneUpdate(req,res,next){
   }catch(e){ return res.status(401).json({error:"Not authenticated"}); }
 }
 
+function preserveExistingProductPhotos(existingProduct, incomingProduct) {
+  if (!existingProduct || !incomingProduct || typeof existingProduct !== "object" || typeof incomingProduct !== "object") return incomingProduct;
+  const fields = ["images", "colorImages", "colorGalleryImages", "colorGallery", "galleryImages", "variantImages"];
+  const containsPhotos = value => Array.isArray(value)
+    ? value.some(v => typeof v === "string" && v.trim() !== "")
+    : value && typeof value === "object"
+      ? Object.values(value).some(v => containsPhotos(v))
+      : typeof value === "string" && value.trim() !== "";
+  for (const field of fields) {
+    if (containsPhotos(existingProduct[field]) && !containsPhotos(incomingProduct[field])) {
+      incomingProduct[field] = existingProduct[field];
+    }
+  }
+  return incomingProduct;
+}
+
+function preserveExistingCatalogPhotos(existingData, incomingData) {
+  for (const collection of ["phones", "usedPhones", "devices"]) {
+    const oldItems = Array.isArray(existingData?.[collection]) ? existingData[collection] : [];
+    const newItems = Array.isArray(incomingData?.[collection]) ? incomingData[collection] : [];
+    for (const item of newItems) {
+      if (!item || typeof item !== "object") continue;
+      const oldItem = oldItems.find(old => old && (
+        (item.id != null && old.id != null && String(old.id) === String(item.id)) ||
+        (item.id == null && old.id == null && String(old.name || old.model || "") === String(item.name || item.model || ""))
+      ));
+      if (oldItem) preserveExistingProductPhotos(oldItem, item);
+    }
+  }
+  return incomingData;
+}
+
 app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
   try {
     const section=String(req.headers["x-homs-admin-section"]||"").trim().toLowerCase();
+    const current=await pool.query("SELECT data FROM site_settings WHERE id=1");
+    const existing=current.rows[0]?.data || {};
+    const incoming=preserveExistingCatalogPhotos(existing, req.body || {});
     if(section==="phones" && req.admin.permissions && req.admin.permissions.includes("phones.update") && !req.admin.permissions.includes("site.save") && req.admin.role!=="superadmin" && !req.admin.permissions.includes("*")){
-      const current=await pool.query("SELECT data FROM site_settings WHERE id=1");
-      const existing=current.rows[0]?.data || {};
-      const incoming=req.body || {};
       const keys=new Set([...Object.keys(existing),...Object.keys(incoming)]);
       for(const key of keys){
         if(key==="phones") continue;
@@ -2994,12 +3026,12 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
     }
     await pool.query(
       "UPDATE site_settings SET data = $1 WHERE id = 1",
-      [JSON.stringify(req.body)]
+      [JSON.stringify(incoming)]
     );
 
     res.json({
       success: true,
-      data: req.body
+      data: incoming
     });
   } catch (error) {
     console.error(error);
