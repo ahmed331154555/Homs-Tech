@@ -1817,6 +1817,25 @@ function priceProductFromCatalog(data, item) {
     }
     chosen[key] = option;
   }
+  const requestedCustom=options.custom&&typeof options.custom==="object"&&!Array.isArray(options.custom)?options.custom:{};
+  const verifiedCustom={};
+  let customTotal=0;
+  for(const type of ["optionGroups","addonGroups"]){
+    const groups=Array.isArray(product[type])?product[type]:[];
+    groups.forEach((group,index)=>{
+      const key=type+":"+index;
+      const requested=String(requestedCustom[key]??"");
+      if(!requested)return;
+      const option=(Array.isArray(group?.options)?group.options:[]).find(x=>x&&String(x.label)===requested&&x.active!==false&&x.available!==false);
+      if(!option)throw new Error("Een extra of variant is niet meer beschikbaar. Controleer uw winkelwagen.");
+      const stock=option.stock;
+      if(stock!==undefined&&stock!==null&&stock!==""&&(!Number.isFinite(Number(stock))||Number(stock)<1)){
+        throw new Error("Deze optie is momenteel niet op voorraad.");
+      }
+      verifiedCustom[key]=requested;
+      customTotal+=serverOptionDelta(option);
+    });
+  }
   if(product.pricingMode==="variant"){
     const row=(Array.isArray(product.variantPrices)?product.variantPrices:[]).find(x=>
       x && String(x.condition)===String(chosen.condition?.label||"") &&
@@ -1829,9 +1848,10 @@ function priceProductFromCatalog(data, item) {
     }
     let exact=moneyNumber(row.price);
     for(const key of ["battery","vat","tradeIn"]) exact+=serverOptionDelta(chosen[key],key);
+    exact+=customTotal;
     const qty=Number(item?.qty ?? 1);
     if(!Number.isInteger(qty)||qty<1||qty>99) return {error:"Kies een geldige hoeveelheid (1–99)."};
-    return {item:{name:String(product.name||"Smartphone"),brand:String(product.brand||""),type,id,options:Object.fromEntries(Object.entries(options).filter(([key,value])=>["storage","color","condition","battery","vat","tradeIn"].includes(key)&&String(value??"").trim()!=="")),qty,unitPrice:Math.round(Math.max(0,exact)*100)/100}};
+    return {item:{name:String(product.name||"Smartphone"),brand:String(product.brand||""),type,id,options:Object.fromEntries(Object.entries(options).filter(([key,value])=>["storage","color","condition","battery","vat","tradeIn","custom"].includes(key)&&String(value??"").trim()!=="").map(([key,value])=>[key,key==="custom"?verifiedCustom:value])),qty,unitPrice:Math.round(Math.max(0,exact)*100)/100}};
   }
   const condition = chosen.condition;
   const base = condition && (condition.basePrice !== undefined || condition.conditionBasePrice !== undefined)
@@ -1840,6 +1860,7 @@ function priceProductFromCatalog(data, item) {
   if (!Number.isFinite(base) || base < 0) return { error: "De prijs van een product is ongeldig. Neem contact met ons op." };
   let total = base;
   for (const key of ["storage", "color", "battery", "vat", "tradeIn"]) total += serverOptionDelta(chosen[key], key);
+  total += customTotal;
   total = Math.max(0, total);
   if (!Number.isFinite(total) || total <= 0) return { error: "Dit product heeft momenteel geen geldige verkoopprijs." };
   const qty = Number(item?.qty ?? 1);
@@ -1850,7 +1871,7 @@ function priceProductFromCatalog(data, item) {
       brand: String(product.brand || ""),
       type,
       id,
-      options: Object.fromEntries(Object.entries(options).filter(([key, value]) => ["storage", "color", "condition", "battery", "vat", "tradeIn"].includes(key) && String(value ?? "").trim() !== "")),
+      options: Object.fromEntries(Object.entries(options).filter(([key, value]) => ["storage", "color", "condition", "battery", "vat", "tradeIn", "custom"].includes(key) && String(value ?? "").trim() !== "").map(([key,value])=>[key,key==="custom"?verifiedCustom:value])),
       qty,
       unitPrice: Math.round(total * 100) / 100
     }
