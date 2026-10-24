@@ -23,7 +23,7 @@
     ['Home','index.html'],
     ['Over ons','about.html'],
     ['Reparaties','repair.html'],
-    ['Easy Refurbished','https://easy-refurbished.nl/'],
+    ['Apparaten','devices.html'],
     ['Winkelwagen','cart.html'],
     ['Prijzen','prices.html'],
     ['Tweedehands','used.html'],
@@ -45,9 +45,6 @@
     if (target === activeTarget) {
       a.classList.add('active');
       a.setAttribute('aria-current','page');
-    }
-    if (item[0] === 'Easy Refurbished') {
-      a.setAttribute('aria-label','Bezoek de Easy Refurbished webshop');
     }
     inner.appendChild(a);
   });
