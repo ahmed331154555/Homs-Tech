@@ -2408,24 +2408,9 @@ function normalizePhoneOptions(phone){
     if(phone.pricingMode!=="variant") phone.pricingMode="legacy";
     if(!Array.isArray(phone.variantPrices)) phone.variantPrices=[];
     const defaults={
-      conditionOptions:[
-        {label:"Zichtbaar gebruikt",enabled:true,active:true,available:true,basePrice:0},
-        {label:"Licht gebruikt",enabled:true,active:true,available:true,basePrice:0},
-        {label:"Zo goed als nieuw",enabled:true,active:true,available:true,basePrice:0}
-      ],
-      storageOptions:[
-        {label:"64 GB",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"128 GB",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"256 GB",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"512 GB",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"1 TB",enabled:true,active:true,available:true,priceDelta:0}
-      ],
-      colorOptions:[
-        {label:"Zwart",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Wit",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Blauw",enabled:true,active:true,available:true,priceDelta:0},
-        {label:"Rood",enabled:true,active:true,available:true,priceDelta:0}
-      ],
+      conditionOptions:[],
+      storageOptions:[],
+      colorOptions:[],
       batteryOptions:[
         {label:"Standaard",enabled:true,active:true,available:true,priceDelta:0},
         {label:"Nieuw (100%)",enabled:true,active:true,available:true,priceDelta:30}
@@ -2443,34 +2428,27 @@ function normalizePhoneOptions(phone){
       const incoming=Array.isArray(phone[key]) ? phone[key] : [];
       const normalized=incoming.map((x,i)=>{
         const d=defaults[key][i] || (key==='conditionOptions' ? {basePrice:Number(phone.price||0)} : {priceDelta:0});
-        const n=normalizePhoneOption(
-          x,
-          d.label,
-          d.priceDelta,
-          key==='conditionOptions',
-          Number(phone.price||0)
-        );
+        const n=normalizePhoneOption(x,d.label,d.priceDelta,key==='conditionOptions',Number(phone.price||0));
         n.label=canonicalPhoneOptionLabel(key,n.label);
         if(key==='conditionOptions' && n.basePrice===undefined) n.basePrice=Number(phone.price||0);
         if(key==='batteryOptions') n.priceDelta=String(n.label).toLowerCase().includes('nieuw') ? 30 : 0;
         if(key==='vatOptions') n.priceDelta=String(n.label).toLowerCase().includes('met btw') ? 10 : 0;
         return n;
       });
-      const deduped=[];
-      const seen=new Set();
+      const deduped=[],seen=new Set();
       normalized.forEach(n=>{
         if(!n || !n.label) return;
         const id=String(n.label).toLowerCase();
         if(seen.has(id)) return;
         if(key==='vatOptions' && n.label!=='Zonder BTW' && n.label!=='Met BTW') return;
         if(key==='batteryOptions' && n.label!=='Standaard' && n.label!=='Nieuw (100%)') return;
-        seen.add(id);
-        deduped.push(n);
+        seen.add(id);deduped.push(n);
       });
-      const labels=new Set(deduped.map(x=>String(x.label).toLowerCase()));
-      defaults[key].forEach(d=>{
-        if(!labels.has(String(d.label).toLowerCase())) deduped.push({...d});
-      });
+      // Never invent model-specific condition, color, or storage options.
+      if(!["conditionOptions","storageOptions","colorOptions"].includes(key)){
+        const labels=new Set(deduped.map(x=>String(x.label).toLowerCase()));
+        defaults[key].forEach(d=>{if(!labels.has(String(d.label).toLowerCase()))deduped.push({...d});});
+      }
       phone[key]=deduped;
     });
   }
@@ -3628,6 +3606,27 @@ function renderPhoneFolderTree(){
 
 function openPhoneEditor(i){
   selectedPhoneIndex=Number(i);
+  const phone=data.phones[selectedPhoneIndex];
+  if(!phone){return;}
+  // Use the same guided editor for both adding and editing. Reconstruct the
+  // selectable combinations from existing variant rows first; never from a
+  // generic list of possible phone capacities/colors.
+  const rows=Array.isArray(phone.variantPrices)?phone.variantPrices:[];
+  const unique=(values)=>[...new Set(values.map(v=>String(v||"").trim()).filter(Boolean))];
+  const fromRows=key=>unique(rows.filter(row=>row&&row.active!==false).map(row=>row[key]));
+  const fromOptions=key=>unique((Array.isArray(phone[key])?phone[key]:[]).filter(x=>x&&x.active!==false&&x.enabled!==false).map(x=>x.label));
+  const scalar=(key)=>String(phone[key]||"").trim();
+  const conditions=fromRows("condition"), colors=fromRows("color"), storages=fromRows("storage");
+  phone.setupColors=colors.length?colors:(fromOptions("colorOptions").length?fromOptions("colorOptions"):(scalar("color")?[scalar("color")]:[]));
+  phone.setupStorages=storages.length?storages:(fromOptions("storageOptions").length?fromOptions("storageOptions"):(scalar("storage")?[scalar("storage")]:[]));
+  phone.setupConditions=conditions.length?conditions:(fromOptions("conditionOptions").length?fromOptions("conditionOptions"):(scalar("condition")?[scalar("condition")]:[]));
+  phone.setupStep=1;
+  phone.setupWizard=true;
+  phone.setupDone=false;
+  if(!Array.isArray(phone.images))phone.images=["","","",""];
+  while(phone.images.length<4)phone.images.push("");
+  if(!phone.colorImages||typeof phone.colorImages!=="object")phone.colorImages={};
+  (phone.colorOptions||[]).forEach(o=>{if(o&&o.label&&o.image&&!phone.colorImages[o.label])phone.colorImages[o.label]=o.image;});
   phoneEditOnly=true;
   renderPhones();
   window.scrollTo({top:0,behavior:'smooth'});
@@ -4026,9 +4025,9 @@ function phoneWizardGenerate(index){
   if(!(p.setupColors||[]).length){alert("Selecteer minstens één kleur.");return;}
   if(!(p.setupStorages||[]).length){alert("Selecteer minstens één geheugengrootte.");return;}
   if(!(p.setupConditions||[]).length){alert("Selecteer minstens één staat.");return;}
-  p.colorOptions=p.setupColors.map(label=>({label,active:true,enabled:true,available:true,priceDelta:0,image:p.colorImages?.[label]||""}));
-  p.storageOptions=p.setupStorages.map(label=>({label,active:true,enabled:true,available:true,priceDelta:0}));
-  p.conditionOptions=p.setupConditions.map(label=>({label,active:true,enabled:true,available:true,basePrice:Number(p.price||0)}));
+  p.colorOptions=p.setupColors.map(label=>{const old=(p.colorOptions||[]).find(x=>x&&x.label===label)||{};return {...old,label,active:true,enabled:true,available:old.available!==false,priceDelta:Number(old.priceDelta||0),image:p.colorImages?.[label]||old.image||""};});
+  p.storageOptions=p.setupStorages.map(label=>{const old=(p.storageOptions||[]).find(x=>x&&x.label===label)||{};return {...old,label,active:true,enabled:true,available:old.available!==false,priceDelta:Number(old.priceDelta||0)};});
+  p.conditionOptions=p.setupConditions.map(label=>{const old=(p.conditionOptions||[]).find(x=>x&&x.label===label)||{};return {...old,label,active:true,enabled:true,available:old.available!==false,basePrice:Number(old.basePrice??p.price??0)};});
   const old=Array.isArray(p.variantPrices)?p.variantPrices:[];
   const oldByKey=new Map(old.map(x=>[JSON.stringify([x.condition,x.color,x.storage]),x]));
   p.variantPrices=[];
