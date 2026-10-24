@@ -563,153 +563,45 @@ function switchToProductVariant(hit,requestedStorage="",requestedColor=""){
   return true;
 }
 function selectProductOption(key,label){
-  if(key==="tradeIn"){
+  if(key==="battery" || key==="vat" || key==="tradeIn"){
     selectedOptions[key]=label;
     renderProductBody();
     const priceEl=document.getElementById("selectedConditionPrice");
-    if(priceEl && currentProduct) priceEl.textContent=money(calculateTotal(currentProduct));
-    if(/^ja$/i.test(String(label||"").trim())) openTradeInModal();
+    if(priceEl&&currentProduct)priceEl.textContent=money(calculateTotal(currentProduct));
+    if(/^ja$/i.test(String(label||"").trim()))openTradeInModal();
     return;
   }
-  if((key==="storage" || key==="color") && currentProduct){
-    const storage=key==="storage" ? label : selectedOptions.storage;
-    const color=key==="color" ? label : selectedOptions.color;
-    const siblings=currentProductSiblings();
-    const hasSeparateCatalogVariants=siblings.length>1 && siblings.some(({p})=>{
-      const s=catalogVariantStorage(p);
-      const col=catalogVariantColor(p);
-      return !!(s||col);
-    });
-    if(hasSeparateCatalogVariants){
-      const hit=findVariantProductExact(storage,color);
-      if(hit && switchToProductVariant(hit,storage,color)) return;
-      // Never fall back to a different storage/color product when catalog
-      // variants exist. Keep the user's selection responsive if one exact
-      // combination is missing from the saved catalog.
-      selectedOptions[key]=label;
-      renderProductBody();
-      const priceEl=document.getElementById("selectedConditionPrice");
-      if(priceEl && currentProduct) priceEl.textContent=money(calculateTotal(currentProduct));
-      return;
-    }
-  }
-  if(currentProduct && currentProduct.pricingMode==="variant" && (key==="storage" || key==="color" || key==="condition")){
-    selectedOptions[key]=label;
-    renderProductBody();
-    const priceEl=document.getElementById("selectedConditionPrice");
-    if(priceEl && currentProduct) priceEl.textContent=money(calculateTotal(currentProduct));
-    return;
-  }
-  if(key==="storage" || key==="color"){
-    const storage=key==="storage" ? label : selectedOptions.storage;
-    const color=key==="color" ? label : selectedOptions.color;
-    const hit=findVariantProduct(storage,color);
-    if(switchToProductVariant(hit)) return;
-  }
+  // Memory, color and condition stay on this admin product; combinations/prices come from variantPrices.
   selectedOptions[key]=label;
   renderProductBody();
   const priceEl=document.getElementById("selectedConditionPrice");
-  if(priceEl && currentProduct) priceEl.textContent=money(calculateTotal(currentProduct));
+  if(priceEl&&currentProduct)priceEl.textContent=money(calculateTotal(currentProduct));
 }
 function colorVariantImage(label){
   const normalizedLabel=normalizeColorValue(label);
+  const colorImages=currentProduct?.colorImages&&typeof currentProduct.colorImages==="object"?currentProduct.colorImages:{};
+  const matched=Object.keys(colorImages).find(key=>normalizeColorValue(key)===normalizedLabel);
+  if(matched&&colorImages[matched]) return colorImages[matched];
   const appleImage=appleColorImage(currentProduct,label);
   if(appleImage) return appleImage;
-  const storage=selectedOptions.storage || (Array.isArray(currentProduct?.storage)?currentProduct.storage[0]:currentProduct?.storage||currentProduct?.geheugen||'');
-  const siblings=currentProductSiblings();
-  const exact=findVariantProductExact(storage,label);
-  const colorMatch=siblings.find(({p})=>normalizeColorValue(p.color||p.kleur||'')===normalizedLabel);
-  const hit=exact || colorMatch;
-  if(hit && hit.p){
-    const imgs=Array.isArray(hit.p.images)?hit.p.images.filter(Boolean):[];
-    const image=imgs[0] || hit.p.image || hit.p.imageUrl || '';
-    if(image) return image;
-  }
-  return (Array.isArray(currentProduct?.images)?currentProduct.images.filter(Boolean)[0]:"") || currentProduct?.image || "";
-}
-function findVariantProductExact(storage,color){
-  const siblings=currentProductSiblings();
-  const s=normalizeStorageValue(storage), c=normalizeColorValue(color);
-  return siblings.find(({p})=>{
-    const ps=catalogVariantStorage(p);
-    const pc=catalogVariantColor(p);
-    return normalizeStorageValue(ps)===s && normalizeColorValue(pc)===c;
-  }) || null;
+  return (Array.isArray(currentProduct?.images)?currentProduct.images.filter(Boolean)[0]:"") || currentProduct?.image || currentProduct?.imageUrl || "";
 }
 function renderOptionSection(key,title,list){
   const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
   const raw=Array.isArray(currentProduct[map[key]]) ? currentProduct[map[key]] : [];
   let base=raw.length ? raw : effectiveOptions(currentProduct,key);
-  const siblingProducts=currentProductSiblings();
-  const hasSeparateCatalogVariants=siblingProducts.length>1 && siblingProducts.some(({p})=>{
-    const s=catalogVariantStorage(p);
-    const col=catalogVariantColor(p);
-    return !!(s||col);
-  });
-  if(hasSeparateCatalogVariants && (key==="storage" || key==="color")){
-    const seen=new Set();
-    const values=[];
-    siblingProducts.forEach(({p})=>{
-      const storage=catalogVariantStorage(p);
-      const color=catalogVariantColor(p);
-      if(key==="color" && normalizeStorageValue(storage)!==normalizeStorageValue(selectedOptions.storage)) return;
-      const value=key==="storage"?storage:color;
-      if(!value) return;
-      const normalized=key==="storage"?normalizeStorageValue(value):normalizeColorValue(value);
-      if(seen.has(normalized)) return;
-      seen.add(normalized);
-      values.push(String(value));
-    });
-    if(values.length) base=values.map(label=>({label,active:true,enabled:true,available:true,priceDelta:0}));
-  } else if(currentProduct.pricingMode==="variant" && ["condition","storage","color"].includes(key)){
-    const rows=(Array.isArray(currentProduct.variantPrices)?currentProduct.variantPrices:[])
-      .filter(x=>x&&x.active!==false&&x.available!==false);
+  // Admin-defined variant rows are the single source of truth for memory, color and condition.
+  if(currentProduct.pricingMode==="variant" && ["condition","storage","color"].includes(key)){
+    const rows=(Array.isArray(currentProduct.variantPrices)?currentProduct.variantPrices:[]).filter(row=>row&&row.active!==false);
     const matchingRows=rows.filter(row=>{
       if(key!=="storage" && normalizeStorageValue(row.storage)!==normalizeStorageValue(selectedOptions.storage)) return false;
       if(key!=="color" && normalizeColorValue(row.color)!==normalizeColorValue(selectedOptions.color)) return false;
-      if(key!=="condition" && row.condition!==selectedOptions.condition) return false;
+      if(key!=="condition" && String(row.condition||"")!==String(selectedOptions.condition||"")) return false;
       return true;
     });
-    const values=[...new Set(matchingRows.map(x=>x[key]).filter(Boolean))];
-    if(values.length) base=values.map(label=>({label,active:true,enabled:true,available:true,priceDelta:0}));
+    const values=[...new Set(matchingRows.map(row=>String(row[key]||"").trim()).filter(Boolean))];
+    base=values.map(label=>({label,active:true,enabled:true,available:matchingRows.some(row=>String(row[key]||"").trim()===label&&row.available!==false),priceDelta:0}));
   }
-
-  if((key==="storage" || key==="color") && currentProduct.pricingMode!=="variant"){
-    const siblings=currentProductSiblings();
-    const seen=new Set();
-    const variantOptions=[];
-    for(const item of siblings){
-      const p=item.p;
-      const value=key==="storage"
-        ? (catalogVariantStorage(p))
-        : (catalogVariantColor(p));
-      if(!value) continue;
-      const norm=key==="storage" ? normalizeStorageValue(value) : normalizeColorValue(value);
-      if(seen.has(norm)) continue;
-      seen.add(norm);
-      variantOptions.push({label:String(value),priceDelta:0,active:true,available:true});
-    }
-    if(variantOptions.length) base=variantOptions;
-  }
-  // For independently managed catalog products, only show values that have
-  // a real admin record matching the currently selected other dimension.
-  if(hasSeparateCatalogVariants && (key==="storage" || key==="color")){
-    const matchingRecords=siblingProducts.filter(({p})=>{
-      const storage=catalogVariantStorage(p);
-      const color=catalogVariantColor(p);
-      return key==="color"
-        ? normalizeStorageValue(storage)===normalizeStorageValue(selectedOptions.storage)
-        : true;
-    });
-    const existingValues=new Set(matchingRecords.map(({p})=>{
-      const value=key==="color"?(catalogVariantColor(p)):(catalogVariantStorage(p));
-      return key==="color"?normalizeColorValue(value):normalizeStorageValue(value);
-    }).filter(Boolean));
-    if(existingValues.size){
-      base=base.filter(option=>existingValues.has(key==="color"?normalizeColorValue(option.label):normalizeStorageValue(option.label)));
-    }
-  }
-
   const items=base.filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false));
   if(!items.length) return "";
 
@@ -953,7 +845,7 @@ function render(product,data){
   currentProduct=product; currentData=data;
   selectedOptions={};
   customSelectedOptions={};
-  ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'}; const raw=Array.isArray(product[map[key]])?product[map[key]]:[]; const list=(raw.length?raw:effectiveOptions(product,key)).filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false&&((key==="storage"||key==="color")||x.available!==false))); if(list.length) selectedOptions[key]=list[0].label;});
+  ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'}; const variantKey=product.pricingMode==="variant"&&["storage","color","condition"].includes(key); const raw=Array.isArray(product[map[key]])?product[map[key]]:[]; const source=variantKey?effectiveOptions(product,key):(raw.length?raw:effectiveOptions(product,key)); const list=source.filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false&&((key==="storage"||key==="color")||x.available!==false))); if(list.length) selectedOptions[key]=list[0].label;});
   renderProductBody();
 }
 function renderBasicProductFallback(product){
@@ -992,7 +884,6 @@ if(type==="used"){
   list=Array.isArray(data.usedPhones)?data.usedPhones:[];
 }else{
   list=Array.isArray(data.phones)?data.phones:[];
-  if(!list.length && Array.isArray(data.devices)) list=data.devices;
 }
 const product=Number.isInteger(id)&&id>=0?list[id]:null;
 if(!product){
