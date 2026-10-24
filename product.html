@@ -568,6 +568,32 @@ function colorVariantImage(label){
   const colorImages=currentProduct?.colorImages&&typeof currentProduct.colorImages==="object"?currentProduct.colorImages:{};
   const matched=Object.keys(colorImages).find(key=>normalizeColorValue(key)===normalizedLabel);
   if(matched&&colorImages[matched]) return colorImages[matched];
+
+  // Prefer the matching color's own admin record so every swatch shows its real color.
+  const family=productFamilyRecords(currentProduct);
+  const wantedStorage=normalizeStorageValue(selectedOptions.storage||productRecordStorage(currentProduct));
+  const record=family.find(({p})=>
+    normalizeColorValue(productRecordColor(p))===normalizedLabel &&
+    normalizeStorageValue(productRecordStorage(p))===wantedStorage
+  ) || family.find(({p})=>normalizeColorValue(productRecordColor(p))===normalizedLabel);
+  if(record&&record.p){
+    const p=record.p;
+    const images=Array.isArray(p.images)?p.images.filter(Boolean):[];
+    const image=images[0]||p.image||p.imageUrl||"";
+    if(image)return image;
+  }
+
+  // Some admin setups store the image on the variant-price row instead of the product record.
+  const variant=familyVariantRows(currentProduct).find(({row})=>
+    normalizeColorValue(row.color)===normalizedLabel &&
+    normalizeStorageValue(row.storage)===wantedStorage
+  );
+  if(variant&&variant.row){
+    const row=variant.row;
+    const images=Array.isArray(row.images)?row.images.filter(Boolean):[];
+    const image=row.image||row.imageUrl||row.photo||images[0]||"";
+    if(image)return image;
+  }
   return (Array.isArray(currentProduct?.images)?currentProduct.images.filter(Boolean)[0]:"") || currentProduct?.image || currentProduct?.imageUrl || "";
 }
 function renderOptionSection(key,title,list){
@@ -739,7 +765,7 @@ function renderProductBody(){
   const area=document.getElementById("productArea");
   const images=Array.isArray(product.images)?product.images.filter(Boolean):[];
   const baseImages=images.length ? images : (product.image ? [product.image] : []);
-  const selectedColorImage=product.colorImages&&selectedOptions.color?String(product.colorImages[selectedOptions.color]||""):"";
+  const selectedColorImage=selectedOptions.color?colorVariantImage(selectedOptions.color):"";
   const galleryImages=selectedColorImage?[selectedColorImage,...baseImages.filter(x=>x!==selectedColorImage)]:baseImages;
   const selectedCustomImage=(()=>{
     for(const type of ["optionGroups","addonGroups"]){
