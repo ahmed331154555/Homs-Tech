@@ -648,10 +648,13 @@ function renderOptionSection(key,title,list){
   if(familyVariantRows(currentProduct).length && ["condition","storage","color"].includes(key)){
     const rows=familyVariantRows(currentProduct).map(item=>item.row);
     const matchingRows=rows.filter(row=>{
-      // Memory lists every memory registered for this model. Color is filtered by
-      // the selected memory; condition is filtered by both selected memory and color.
+      // Evaluate availability for the currently selected combination.
       if(key!=="storage" && normalizeStorageValue(row.storage)!==normalizeStorageValue(selectedOptions.storage)) return false;
-      if(key==="condition" && normalizeColorValue(row.color)!==normalizeColorValue(selectedOptions.color)) return false;
+      if(key!=="color" && key!=="storage" && normalizeColorValue(row.color)!==normalizeColorValue(selectedOptions.color)) return false;
+      if(key==="color" && selectedOptions.condition && String(row.condition||row.state||"").trim()!==String(selectedOptions.condition||"").trim()) return false;
+      if(key==="storage" && selectedOptions.color && normalizeColorValue(row.color)!==normalizeColorValue(selectedOptions.color)) return false;
+      if(key==="storage" && selectedOptions.condition && String(row.condition||row.state||"").trim()!==String(selectedOptions.condition||"").trim()) return false;
+      if(key==="condition" && String(row.condition||row.state||"").trim()!==String(selectedOptions.condition||"").trim()) return false;
       return true;
     });
     const rawValues=matchingRows.map(row=>String(row[key]||"").trim()).filter(Boolean);
@@ -672,13 +675,13 @@ function renderOptionSection(key,title,list){
       const option=raw.find(item=>item&&normalizeLabel(item.label)===normalizeLabel(label));
       const matchingOptionRows=matchingRows.filter(row=>
         normalizeLabel(row[key])===normalizeLabel(label) && row.active!==false);
-      // An explicit unavailable setting in any matching family option must be respected.
-      // If the admin option is enabled, exact variant availability still controls the combination.
+      // Variant availability for the selected condition/color/storage is authoritative.
+      // Admin-level option availability can additionally disable an entire option.
       const explicitlyDisabled=familyOptions.some(item=>item.available===false || item.enabled===false || item.active===false);
-      const explicitlyEnabled=familyOptions.some(item=>item.available!==false && item.enabled!==false && item.active!==false);
-      const available=!explicitlyDisabled && (familyOptions.length
-        ? explicitlyEnabled
-        : option ? option.available!==false : matchingOptionRows.some(row=>row.available!==false));
+      const availableRows=matchingOptionRows.filter(row=>row.available!==false);
+      const available=!explicitlyDisabled && (matchingOptionRows.length
+        ? availableRows.length>0
+        : option ? option.available!==false : false);
       return {label,active:true,enabled:true,available,priceDelta:0};
     });
   }
