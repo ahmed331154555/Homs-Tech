@@ -223,6 +223,19 @@ nav{justify-content:center}
 </style>  <link rel="stylesheet" href="assets/homs-global-nav.css">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5361560605027063"
      crossorigin="anonymous"></script>
+
+<style id="homs-tradein-modal-v1">
+.tradein-modal{position:fixed;inset:0;z-index:30000;display:none;align-items:center;justify-content:center;padding:12px;background:rgba(7,29,45,.72)}
+.tradein-modal.open{display:flex}
+.tradein-modal-card{width:min(1000px,98vw);height:min(820px,94dvh);display:flex;flex-direction:column;overflow:hidden;background:#fff;border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.3)}
+.tradein-modal-head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid #e2e8f0}
+.tradein-modal-head h2{font-size:18px;color:#111827;margin:0}
+.tradein-modal-close{width:36px;height:36px;flex:0 0 36px;border:0;border-radius:50%;background:#eef4fb;color:#1e3a5f;font-size:24px;cursor:pointer;font-weight:800}
+.tradein-modal-close:hover{background:#2563eb;color:#fff}
+.tradein-modal-frame{display:block;width:100%;height:100%;flex:1 1 auto;border:0;background:#f7faff}
+@media(max-width:600px){.tradein-modal{padding:6px}.tradein-modal-card{width:100%;height:94dvh;border-radius:14px}.tradein-modal-head{padding:9px 12px}.tradein-modal-head h2{font-size:16px}}
+</style>
+
 </head>
 <body>
 
@@ -526,6 +539,14 @@ function switchToProductVariant(hit,requestedStorage="",requestedColor=""){
   return true;
 }
 function selectProductOption(key,label){
+  if(key==="tradeIn"){
+    selectedOptions[key]=label;
+    renderProductBody();
+    const priceEl=document.getElementById("selectedConditionPrice");
+    if(priceEl && currentProduct) priceEl.textContent=money(calculateTotal(currentProduct));
+    if(/^ja$/i.test(String(label||"").trim())) openTradeInModal();
+    return;
+  }
   if((key==="storage" || key==="color") && currentProduct){
     const storage=key==="storage" ? label : selectedOptions.storage;
     const color=key==="color" ? label : selectedOptions.color;
@@ -888,6 +909,35 @@ document.getElementById("productArea").innerHTML=
 
 load();
 </script>
+
+<div id="tradeInModal" class="tradein-modal" role="dialog" aria-modal="true" aria-labelledby="tradeInModalTitle" onclick="closeTradeInModal(event)">
+  <div class="tradein-modal-card" onclick="event.stopPropagation()">
+    <div class="tradein-modal-head">
+      <h2 id="tradeInModalTitle">Oude telefoon inruilen</h2>
+      <button type="button" class="tradein-modal-close" onclick="closeTradeInModal()" aria-label="Sluiten">×</button>
+    </div>
+    <iframe id="tradeInModalFrame" class="tradein-modal-frame" title="Oude telefoon inruilen" loading="lazy" src="about:blank"></iframe>
+  </div>
+</div>
+<script>
+function openTradeInModal(){
+  const modal=document.getElementById("tradeInModal");
+  const frame=document.getElementById("tradeInModalFrame");
+  if(!modal||!frame)return;
+  if(frame.getAttribute("src")==="about:blank") frame.setAttribute("src","uw-toestel-verkopen.html?embed=1");
+  modal.classList.add("open");
+  document.body.style.overflow="hidden";
+}
+function closeTradeInModal(event){
+  if(event && event.target && event.target.id!=="tradeInModal") return;
+  const modal=document.getElementById("tradeInModal");
+  if(!modal)return;
+  modal.classList.remove("open");
+  document.body.style.overflow="";
+}
+document.addEventListener("keydown",function(event){if(event.key==="Escape")closeTradeInModal();});
+</script>
+
   <script src="assets/homs-global-nav.js"></script>
 </body>
 </html>
