@@ -762,8 +762,10 @@ function addCurrentProductToCart(){
   const items=readCart();
   const key=String(type)+"|"+String(currentProductId)+"|"+JSON.stringify(options);
   const found=items.find(x=>x.key===key);
-  if(found) found.qty=Number(found.qty||1)+1;
-  else items.push({key,type,id:currentProductId,name:currentProduct.name||"Smartphone",brand:currentProduct.brand||"",image:(Array.isArray(currentProduct.images)&&currentProduct.images[0])||currentProduct.image||"",options,unitPrice:total,qty:1});
+  const selectedGallery=selectedOptions.color&&currentProduct.colorGalleryImages&&Array.isArray(currentProduct.colorGalleryImages[selectedOptions.color])?currentProduct.colorGalleryImages[selectedOptions.color].filter(Boolean):[];
+  const selectedImage=selectedGallery[0]||colorVariantImage(selectedOptions.color)||((Array.isArray(currentProduct.images)&&currentProduct.images[0])||currentProduct.image||currentProduct.imageUrl||"");
+  if(found){found.qty=Number(found.qty||1)+1;if(!found.image&&selectedImage)found.image=selectedImage;}
+  else items.push({key,type,id:currentProductId,name:currentProduct.name||"Smartphone",brand:currentProduct.brand||"",image:selectedImage,options,unitPrice:total,qty:1});
   writeCart(items);
   const msg=document.getElementById("cartAdded"); if(msg){msg.style.display="block";msg.textContent="✓ Toegevoegd aan winkelwagen";setTimeout(()=>msg.style.display="none",2200)}
 }
