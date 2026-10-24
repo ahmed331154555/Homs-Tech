@@ -3672,6 +3672,11 @@ function openPhoneEditor(i){
 
 function showPhoneCatalog(){
   phoneEditOnly=false;
+  const phone=data.phones&&data.phones[selectedPhoneIndex];
+  if(phone&&phone.setupWizard){
+    phone.setupWizard=false;
+    delete phone.setupDone;
+  }
   renderPhones();
   window.scrollTo({top:0,behavior:'smooth'});
 }
