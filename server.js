@@ -3045,36 +3045,67 @@ function preserveExistingCatalogPhotos(existingData, incomingData) {
 
 app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
   try {
-    const section=String(req.headers["x-homs-admin-section"]||"").trim().toLowerCase();
-    const current=await pool.query("SELECT data FROM site_settings WHERE id=1");
-    const existing=current.rows[0]?.data || {};
-    const incoming=preserveExistingCatalogPhotos(existing, req.body || {});
-    if(section==="phones" && req.admin.permissions && req.admin.permissions.includes("phones.update") && !req.admin.permissions.includes("site.save") && req.admin.role!=="superadmin" && !req.admin.permissions.includes("*")){
-      const keys=new Set([...Object.keys(existing),...Object.keys(incoming)]);
-      for(const key of keys){
-        if(key==="phones") continue;
-        if(JSON.stringify(existing[key])!==JSON.stringify(incoming[key])){
-          return res.status(403).json({error:"Deze admin mag alleen Telefoons & prijzen wijzigen."});
+    const section = String(req.headers["x-homs-admin-section"] || "").trim().toLowerCase();
+
+    // The phone editor now sends only the phone catalog, not the entire 18+ MB
+    // settings document (which also contains large repair-page images).
+    // Read and update just this JSON key to reduce request/response memory use.
+    const isPhoneCatalogPatch = section === "phones" &&
+      req.body && Array.isArray(req.body.phones) &&
+      Object.keys(req.body).length === 1;
+
+    if (isPhoneCatalogPatch) {
+      const current = await queryWithConnectionRetry(
+        "SELECT data->'phones' AS phones FROM site_settings WHERE id = 1",
+        [],
+        4
+      );
+      const existing = { phones: current.rows[0]?.phones || [] };
+      const incoming = preserveExistingCatalogPhotos(existing, { phones: req.body.phones });
+
+      await queryWithConnectionRetry(
+        "UPDATE site_settings SET data = jsonb_set(data, '{phones}', $1::jsonb, true) WHERE id = 1 RETURNING data->'phones' AS phones",
+        [JSON.stringify(incoming.phones)],
+        4
+      );
+
+      return res.json({ success: true, phones: incoming.phones });
+    }
+
+    const current = await queryWithConnectionRetry(
+      "SELECT data FROM site_settings WHERE id = 1",
+      [],
+      4
+    );
+    const existing = current.rows[0]?.data || {};
+    const incoming = preserveExistingCatalogPhotos(existing, req.body || {});
+
+    if (section === "phones" && req.admin.permissions &&
+        req.admin.permissions.includes("phones.update") &&
+        !req.admin.permissions.includes("site.save") &&
+        req.admin.role !== "superadmin" &&
+        !req.admin.permissions.includes("*")) {
+      const keys = new Set([...Object.keys(existing), ...Object.keys(incoming)]);
+      for (const key of keys) {
+        if (key === "phones") continue;
+        if (JSON.stringify(existing[key]) !== JSON.stringify(incoming[key])) {
+          return res.status(403).json({ error: "Deze admin mag alleen Telefoons & prijzen wijzigen." });
         }
       }
     }
-    // Idempotent update: retry once if PostgreSQL drops the connection mid-request.
+
     await queryWithConnectionRetry(
       "UPDATE site_settings SET data = $1 WHERE id = 1",
       [JSON.stringify(incoming)],
       4
     );
 
-    res.json({
-      success: true,
-      data: incoming
-    });
+    res.json({ success: true, data: incoming });
   } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error: "Could not save settings"
-    });
+    console.error("Save site settings failed:", error);
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Could not save settings" });
+    }
   }
 });
 
