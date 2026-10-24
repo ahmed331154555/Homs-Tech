@@ -810,10 +810,13 @@ function renderProductBody(){
   const warranty=product.warranty||product.garantie||"";
   const description=product.description||product.beschrijving||"";
   const whatsapp=wa(data.whatsapp);
-  const titleBase=String(product.name||"Smartphone")
-    .replace(/(?:^|[\\s_-])(?:32|64|128|256|512)\\s*GB\\b|(?:^|[\\s_-])1\\s*TB\\b/ig," ")
-    .replace(/\\s+/g," ").trim()
-    .replace(new RegExp("\\s+"+String(productRecordColor(product)||"").replace(/[.*+?^${}()|[\\]\\\\]/g,"\\\\  const title=product.name||"Smartphone";")+"$","i"),"").trim();
+  let titleBase=String(product.name||"Smartphone")
+    .replace(/(?:^|[\s_-])(?:32|64|128|256|512)\s*GB\b|(?:^|[\s_-])1\s*TB\b/ig," ")
+    .replace(/\s+/g," ").trim();
+  const baseColor=String(productRecordColor(product)||"").trim();
+  if(baseColor && titleBase.toLocaleLowerCase().endsWith(" "+baseColor.toLocaleLowerCase())){
+    titleBase=titleBase.slice(0,-baseColor.length-1).trim();
+  }
   const title=[titleBase,selectedOptions.storage,selectedOptions.color].filter(Boolean).join(" ")||"Smartphone";
 
   let specs="";
