@@ -578,17 +578,18 @@ function renderOptionSection(key,title,list){
   if(familyVariantRows(currentProduct).length && ["condition","storage","color"].includes(key)){
     const rows=familyVariantRows(currentProduct).map(item=>item.row);
     const matchingRows=rows.filter(row=>{
+      // Memory lists every memory registered for this model. Color is filtered by
+      // the selected memory; condition is filtered by both selected memory and color.
       if(key!=="storage" && normalizeStorageValue(row.storage)!==normalizeStorageValue(selectedOptions.storage)) return false;
-      if(key!=="color" && normalizeColorValue(row.color)!==normalizeColorValue(selectedOptions.color)) return false;
-      if(key!=="condition" && String(row.condition||"")!==String(selectedOptions.condition||"")) return false;
+      if(key==="condition" && normalizeColorValue(row.color)!==normalizeColorValue(selectedOptions.color)) return false;
       return true;
     });
     const values=[...new Set(matchingRows.map(row=>String(row[key]||"").trim()).filter(Boolean))];
     base=values.map(label=>({label,active:true,enabled:true,available:matchingRows.some(row=>String(row[key]||"").trim()===label&&row.available!==false),priceDelta:0}));
   }
-  // If the admin stores each memory/color as a separate product record, link those
-  // records into one selector, but only expose combinations that actually exist in admin.
-  if(key==="storage"||key==="color"){
+  // Legacy products without variant rows can still be linked through their individual
+  // admin records. Never let this fallback override the real variant matrix.
+  if(!familyVariantRows(currentProduct).length && (key==="storage"||key==="color")){
     const family=productFamilyRecords(currentProduct);
     const separate=family.length>1&&family.some(({p})=>productRecordStorage(p)||productRecordColor(p));
     if(separate){
