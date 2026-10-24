@@ -32,7 +32,7 @@ pool.on("error", (error) => {
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-async function queryWithConnectionRetry(sql, params, attempts = 2) {
+async function queryWithConnectionRetry(sql, params, attempts = 4) {
   let lastError;
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
@@ -43,10 +43,10 @@ async function queryWithConnectionRetry(sql, params, attempts = 2) {
         "ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "EPIPE",
         "57P01", "57P02", "57P03", "08000", "08003", "08006"
       ].includes(error?.code) ||
-        /connection terminated unexpectedly|connection closed|connection timeout/i.test(String(error?.message || ""));
+        /connection terminated unexpectedly|connection closed|connection timeout|socket disconnected before secure TLS/i.test(String(error?.message || ""));
       if (!retryable || attempt === attempts) throw error;
-      console.warn(`PostgreSQL connection failed during query (attempt ${attempt}/${attempts}); retrying once.`);
-      await wait(400 * attempt);
+      console.warn(`PostgreSQL connection failed during query (attempt ${attempt}/${attempts}); retrying after transient connection error.`);
+      await wait(Math.min(1000 * attempt, 5000));
     }
   }
   throw lastError;
@@ -462,8 +462,10 @@ function sanitizePublicSiteData(input) {
 // Get website settings
 app.get("/api/site", async (req, res) => {
   try {
-    const result = await pool.query(
-      "SELECT data FROM site_settings WHERE id = 1"
+    const result = await queryWithConnectionRetry(
+      "SELECT data FROM site_settings WHERE id = 1",
+      [],
+      4
     );
 
     if (result.rows.length === 0) {
@@ -577,7 +579,7 @@ function easyCanonicalServiceKey(category,item){
 function easyIsImportedService(item){return String(item?.source||"").trim().toLowerCase()==="easy-unlocker" || String(item?.sourceId||"").startsWith("easy-") && Boolean(item?.sourceUrl);}
 app.post("/api/admin/gsm/import-easy",requirePermission("gsm.import"),async(req,res)=>{try{
   const catalog=await fetchEasyPublicCatalog();
-  const current=await pool.query("SELECT data FROM site_settings WHERE id=1");
+  const current=await queryWithConnectionRetry("SELECT data FROM site_settings WHERE id=1", [], 4);
   if(!current.rows.length)return res.status(404).json({error:"Websitegegevens ontbreken."});
   const data=current.rows[0].data||{};
   if(!data.gsmServices||typeof data.gsmServices!=="object")data.gsmServices={};
@@ -3060,7 +3062,7 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
     await queryWithConnectionRetry(
       "UPDATE site_settings SET data = $1 WHERE id = 1",
       [JSON.stringify(incoming)],
-      2
+      4
     );
 
     res.json({
