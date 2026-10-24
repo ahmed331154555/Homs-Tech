@@ -6769,11 +6769,14 @@ async function save(isAuto=false){
       delete payload.phones[selectedPhoneIndex].setupStorages;
       delete payload.phones[selectedPhoneIndex].setupConditions;
     }
+    // The phone catalog can contain several MB of images. Send only that
+    // section when editing phones instead of the full site settings document.
+    const requestPayload=currentPage==="phones" ? {phones:payload.phones||[]} : payload;
     const r=await fetch("/api/site",{
       method:"PUT",
       headers:{"Content-Type":"application/json","Accept":"application/json","X-Homs-Admin-Section":currentPage},
       credentials:"same-origin",
-      body:JSON.stringify(payload)
+      body:JSON.stringify(requestPayload)
     });
 
     const raw=await r.text();
@@ -6789,7 +6792,12 @@ async function save(isAuto=false){
     // Use the exact data returned by the server (the persisted DB state).
     // Do not normalize again here, so Protocol 1–8 values cannot be reset
     // immediately after a successful save.
-    data=result.data || data;
+    if(currentPage==="phones"){
+      if(Array.isArray(result.phones)) data.phones=result.phones;
+      else if(Array.isArray(payload.phones)) data.phones=payload.phones;
+    }else{
+      data=result.data || data;
+    }
 
     // Alleen de huidige pagina opnieuw tekenen. Geen renderAll-loop na opslaan.
     if(currentPage==="general") renderHomepageSettings();
