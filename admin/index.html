@@ -4022,38 +4022,6 @@ function phoneWizardStageHtml(phone,index){
   return `<div class="card" style="max-width:1150px;margin:0 auto;border:1px solid #dbe5f1;border-radius:16px;padding:clamp(14px,3vw,28px)"><div style="display:flex;justify-content:space-between;gap:12px;align-items:start;flex-wrap:wrap"><div><div class="small">HOMS TECH · PRODUCT CONFIGURATOR</div><h2 style="margin:6px 0">${esc(phone.name||"Nieuwe telefoon toevoegen")}</h2><p class="small">Stap ${step} van 5 — vul de gegevens in en ga verder.</p></div><button type="button" class="btn btn-light" onclick="showPhoneCatalog()">← Terug naar telefoons</button></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 22px">${stepButton(1,"Basis & foto's")}${stepButton(2,"Kleuren")}${stepButton(3,"Geheugen")}${stepButton(4,"Staat")}${stepButton(5,"Prijs & batterij")}</div><div>${body}</div><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:24px;padding-top:16px;border-top:1px solid #e2e8f0"><button type="button" class="btn btn-light" ${step===1?'disabled':''} onclick="data.phones[${index}].setupStep=${step-1};renderPhones()">← Vorige</button><div style="display:flex;gap:8px;flex-wrap:wrap">${step<4?`<button type="button" class="btn btn-green" onclick="data.phones[${index}].setupStep=${step+1};renderPhones()">Volgende →</button>`:step===4?`<button type="button" class="btn btn-green" onclick="phoneWizardGenerate(${index})">✓ Klaar — maak uitvoeringen</button>`:`<button type="button" class="btn btn-green" onclick="save(false)">💾 Opslaan en publiceren</button>`}</div></div></div>`;
 }
 
-  data.phones.push({
-    name:"Nieuwe iPhone",
-    brand:"Apple",
-    price:"",
-    storage:"",
-    color:"",
-    condition:"Zichtbaar gebruikt",
-    warranty:"12 maanden",
-    description:"",
-    subtitle:"",
-    sku:"",
-    stock:0,
-    category:"Smartphones",
-    connectivity:"",
-    processor:"",
-    memory:"",
-    gpu:"",
-    screenSize:"",
-    releaseYear:"",
-    images:["","","",""],
-    conditionDetails:[],
-    specifications:[],
-    pricingMode:"variant",
-    variantPrices:[]
-  });
-  normalizePhoneOptions(data.phones[data.phones.length-1]);
-  selectedPhoneIndex=data.phones.length-1;
-  generatePhoneVariantPrices(false);
-  renderPhones();
-  markChanged();
-}
-
 function duplicatePhone(i){
   const source=data.phones[i];
   if(!source) return;
