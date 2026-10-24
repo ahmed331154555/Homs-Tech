@@ -344,7 +344,7 @@ function effectiveOptions(product,key){
     const rows=Array.isArray(product.variantPrices)?product.variantPrices:[];
     // For fixed-price variants, the variant table is the source of truth.
     // Do not expose options that have no corresponding purchasable combination.
-    const labels=[...new Set(rows.filter(row=>row&&row.active!==false&&row.available!==false).map(row=>String(row[property]||'').trim()).filter(Boolean))];
+    const labels=[...new Set(rows.filter(row=>row&&row.active!==false).map(row=>String(row[property]||'').trim()).filter(Boolean))];
     if(product.pricingMode==="variant" && rows.length){
       list=labels.map(label=>raw.find(option=>option&&String(option.label||'').trim()===label)||{label,priceDelta:0,active:true,available:true});
     }else if(!list.length){
