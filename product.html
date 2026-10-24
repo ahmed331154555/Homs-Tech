@@ -801,7 +801,13 @@ function selectCustomProductOption(type,index,label){
 }
 function addCurrentProductToCart(){
   if(!currentProduct) return;
+  if(currentProduct.pricingMode==="variant"){
+    const row=(Array.isArray(currentProduct.variantPrices)?currentProduct.variantPrices:[]).find(x=>x&&x.condition===selectedOptions.condition&&x.color===selectedOptions.color&&x.storage===selectedOptions.storage&&x.active!==false&&x.available!==false);
+    if(!row){alert("Deze uitvoering is momenteel niet beschikbaar.");return;}
+    if(row.stock!==undefined&&row.stock!==null&&row.stock!==""&&Number(row.stock)<1){alert("Deze uitvoering is momenteel uitverkocht.");return;}
+  }
   const total=calculateTotal(currentProduct);
+  if(!Number.isFinite(total)||total<=0){alert("Deze uitvoering heeft nog geen geldige prijs.");return;}
   const options={};
   ["storage","color","condition","battery","vat","tradeIn"].forEach(k=>{if(selectedOptions[k]) options[k]=selectedOptions[k]});
   options.custom=customSelectedOptions;
