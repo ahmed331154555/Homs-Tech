@@ -882,29 +882,57 @@ function render(product,data){
   ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'}; const raw=Array.isArray(product[map[key]])?product[map[key]]:[]; const list=(raw.length?raw:effectiveOptions(product,key)).filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false&&((key==="storage"||key==="color")||x.available!==false))); if(list.length) selectedOptions[key]=list[0].label;});
   renderProductBody();
 }
+function renderBasicProductFallback(product){
+  const area=document.getElementById("productArea");
+  const name=esc(product?.name||"Smartphone");
+  const brand=esc(product?.brand||"HOMS TECH");
+  const image=product?.image||product?.imageUrl||(Array.isArray(product?.images)?product.images[0]:"");
+  const price=product?.price||product?.salePrice||product?.sellPrice||"";
+  const description=esc(product?.description||product?.beschrijving||"");
+  area.innerHTML=`<div class="product">
+    <div class="gallery">${image?`<img class="main-image" src="${esc(image)}" alt="${name}">`:`<div class="main-image" style="display:flex;align-items:center;justify-content:center;font-size:80px">📱</div>`}</div>
+    <div class="info"><div class="brand">${brand}</div><h1>${name}</h1>
+    ${price!==""?`<div class="price">${esc(String(price).includes("€")?String(price):"€"+price)}</div>`:""}
+    ${description?`<div class="description">${description}</div>`:""}
+    <p class="status">De productopties konden niet volledig worden geladen. Je kunt teruggaan naar het overzicht of contact met HOMS TECH opnemen.</p>
+    <div class="buttons"><a class="btn gray" href="devices.html">← Apparaten</a><a class="btn blue" href="repair.html">Contact / Reparatie</a></div></div></div>`;
+}
 async function load(){
+let data;
 try{
-const response=await fetch("/api/site");
-if(!response.ok) throw new Error("API error");
-const data=await response.json();
-
+  const response=await fetch("/api/site",{cache:"no-store"});
+  if(!response.ok) throw new Error("API returned HTTP "+response.status);
+  data=await response.json();
+}catch(e){
+  console.error("HOMS TECH product data load failed:",e);
+  document.getElementById("productArea").innerHTML=
+    `<div class="empty"><h2>Productgegevens konden niet worden opgehaald</h2><p>Controleer je internetverbinding en probeer het opnieuw.</p><button class="btn blue" type="button" onclick="location.reload()">Opnieuw proberen</button></div>`;
+  return;
+}
 document.getElementById("footerName").textContent=data.businessName||data.siteName||"HOMS TECH";
 document.getElementById("footerTag").textContent=data.tagline||"Telefoonreparatie aan huis";
-
 let list=[];
 if(type==="used"){
-list=Array.isArray(data.usedPhones)?data.usedPhones:[];
+  list=Array.isArray(data.usedPhones)?data.usedPhones:[];
 }else{
-list=Array.isArray(data.phones)?data.phones:[];
-if(!list.length && Array.isArray(data.devices)) list=data.devices;
+  list=Array.isArray(data.phones)?data.phones:[];
+  if(!list.length && Array.isArray(data.devices)) list=data.devices;
 }
-
-const product=Number.isInteger(id) && id>=0 ? list[id] : null;
-render(product,data);
+const product=Number.isInteger(id)&&id>=0?list[id]:null;
+if(!product){
+  document.getElementById("productArea").innerHTML=
+    `<div class="empty"><h2>Product niet gevonden</h2><p>Dit apparaat staat niet meer in het aanbod.</p><a class="btn blue" href="devices.html">Terug naar Apparaten</a></div>`;
+  return;
+}
+try{
+  render(product,data);
 }catch(e){
-console.error("HOMS TECH:",e);
-document.getElementById("productArea").innerHTML=
-`<div class="empty"><h2>Product kan niet worden geladen</h2><p>Probeer het opnieuw.</p></div>`;
+  console.error("HOMS TECH product render failed:",e);
+  try{renderBasicProductFallback(product);}catch(fallbackError){
+    console.error("HOMS TECH product fallback failed:",fallbackError);
+    document.getElementById("productArea").innerHTML=
+      `<div class="empty"><h2>Product kon niet volledig worden weergegeven</h2><p>Probeer het opnieuw of ga terug naar Apparaten.</p><a class="btn blue" href="devices.html">Terug naar Apparaten</a></div>`;
+  }
 }
 }
 
