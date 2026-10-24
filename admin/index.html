@@ -4050,10 +4050,14 @@ function phoneWizardApplyBulkPrice(index){
   markChanged();renderPhones();
 }
 function phoneWizardVariantTitle(phone,row){
-  let model=String(phone?.name||"").trim();
-  const color=String(row?.color||"").trim();
-  if(color){
-    const escaped=color.replace(/[.*+?^${}()|[\]\\]/g,"\\function phoneWizardStageHtml(phone,index){");
+  let model=String(phone?.name||'').trim();
+  const color=String(row?.color||'').trim();
+  if(color && model.toLowerCase().endsWith(' '+color.toLowerCase())) model=model.slice(0,-color.length-1).trim();
+  // Strip a capacity already embedded at the end of the model name before adding the variant capacity.
+  if(row?.storage && /^(?:\d+\s*(?:GB|TB)|\d+\s*MB)$/i.test(String(row.storage).trim())) model=model.replace(/\s+\d+\s*(?:GB|TB|MB)\s*$/i,'').trim();
+  return [model,row?.storage,row?.color].filter(Boolean).join(' ')+' · '+String(row?.condition||'');
+}
+function phoneWizardStageHtml(phone,index){");
     model=model.replace(new RegExp("\\s+"+escaped+"\\s*$","i"),"").trim();
   }
   // Product names sometimes already contain a capacity (e.g. "iPhone 11 128GB").
