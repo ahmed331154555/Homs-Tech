@@ -339,12 +339,18 @@ function effectiveOptions(product,key){
     tradeIn:[{label:'Nee',priceDelta:0,active:true,available:true},{label:'Ja',priceDelta:0,active:true,available:true}]
   };
   let list=raw.slice();
-  if(!list.length && ['condition','storage','color'].includes(key)){
+  if(['condition','storage','color'].includes(key)){
     const property={condition:'condition',storage:'storage',color:'color'}[key];
     const rows=Array.isArray(product.variantPrices)?product.variantPrices:[];
+    // For fixed-price variants, the variant table is the source of truth.
+    // Do not expose options that have no corresponding purchasable combination.
     const labels=[...new Set(rows.filter(row=>row&&row.active!==false&&row.available!==false).map(row=>String(row[property]||'').trim()).filter(Boolean))];
-    const scalar=String(product[property]||'').trim();
-    list=(labels.length?labels:(scalar?[scalar]:[])).map(label=>({label,priceDelta:0,active:true,available:true}));
+    if(product.pricingMode==="variant" && rows.length){
+      list=labels.map(label=>raw.find(option=>option&&String(option.label||'').trim()===label)||{label,priceDelta:0,active:true,available:true});
+    }else if(!list.length){
+      const scalar=String(product[property]||'').trim();
+      list=(scalar?[scalar]:[]).map(label=>({label,priceDelta:0,active:true,available:true}));
+    }
   }else if(!list.length){
     list=defaults[key]||[];
   }
