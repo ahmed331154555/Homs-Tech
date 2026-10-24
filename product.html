@@ -46,6 +46,7 @@ nav a:hover{background:#2563eb}
 .option-btn.active{border-color:#2563eb;background:#eff6ff;box-shadow:0 0 0 2px rgba(37,99,235,.10)}
 .option-btn.unavailable{opacity:.55;text-decoration:line-through;cursor:not-allowed;background:#f3f4f6;border-color:#d1d5db}.sold-x{color:#dc2626;font-weight:900;margin-left:6px;text-decoration:none}
 .option-btn small{display:block;color:#6b7280;font-weight:600;margin-top:2px}
+.color-stock-label{display:block;margin-top:5px;font-size:11px;font-weight:800;line-height:1.25;color:#15803d}.color-stock-label.sold-out{color:#dc2626}.color-stock-label.stock-unknown{color:#64748b}
 /* Battery options: product-page cards, isolated from other option controls */
 .option-grid.battery-option-grid{display:grid;grid-template-columns:1fr;gap:10px}
 .battery-option-card{display:flex;align-items:center;gap:12px;width:100%;min-width:0;text-align:left;border:1px solid #d1d5db;border-radius:14px;padding:12px;background:#fff;color:#111827;cursor:pointer;box-sizing:border-box}
@@ -608,6 +609,37 @@ function colorVariantImage(label){
   }
   return (Array.isArray(currentProduct?.images)?currentProduct.images.filter(Boolean)[0]:"") || currentProduct?.image || currentProduct?.imageUrl || "";
 }
+function colorStockStatus(label){
+  const wantedStorage=normalizeStorageValue(selectedOptions.storage||productRecordStorage(currentProduct));
+  const wantedColor=normalizeColorValue(label);
+  const wantedCondition=String(selectedOptions.condition||"");
+  const variants=familyVariantRows(currentProduct).filter(({row})=>
+    normalizeStorageValue(row.storage)===wantedStorage &&
+    normalizeColorValue(row.color)===wantedColor
+  );
+  if(variants.length){
+    const exact=variants.filter(({row})=>String(row.condition||"")===wantedCondition);
+    const relevant=exact.length?exact:variants;
+    const inStock=relevant.filter(({row})=>row.available!==false &&
+      !(row.stock!==undefined&&row.stock!==null&&row.stock!==""&&Number.isFinite(Number(row.stock))&&Number(row.stock)<1));
+    if(!inStock.length)return {available:false,count:0,known:true};
+    const hasStock=inStock.every(({row})=>row.stock!==undefined&&row.stock!==null&&row.stock!==""&&Number.isFinite(Number(row.stock))&&Number(row.stock)>=0);
+    return {available:true,count:hasStock?inStock.reduce((sum,{row})=>sum+Number(row.stock),0):null,known:hasStock};
+  }
+  const record=findFamilyRecord(selectedOptions.storage||productRecordStorage(currentProduct),label);
+  const p=record?.p;
+  if(p){
+    const raw=p.stock??p.quantity??p.stockQuantity;
+    if(raw!==undefined&&raw!==null&&raw!==""&&Number.isFinite(Number(raw))){
+      const count=Math.max(0,Number(raw));
+      return {available:p.available!==false&&p.active!==false&&count>0,count,known:true};
+    }
+    if(p.available===false||p.active===false||String(p.stockStatus||"").toLowerCase()==="sold"){
+      return {available:false,count:0,known:false};
+    }
+  }
+  return {available:true,count:null,known:false};
+}
 function renderOptionSection(key,title,list){
   const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
   const raw=Array.isArray(currentProduct[map[key]]) ? currentProduct[map[key]] : [];
@@ -633,7 +665,7 @@ function renderOptionSection(key,title,list){
     });
     base=values.map(label=>({label,active:true,enabled:true,available:matchingRows.some(row=>
       (key==="storage"?normalizeStorageValue(row[key])===normalizeStorageValue(label):String(row[key]||"").trim()===label)
-      &&row.available!==false),priceDelta:0}));
+      &&row.available!==false&&!(row.stock!==undefined&&row.stock!==null&&row.stock!==""&&Number.isFinite(Number(row.stock))&&Number(row.stock)<1)),priceDelta:0}));
   }
   // Legacy products without variant rows can still be linked through their individual
   // admin records. Never let this fallback override the real variant matrix.
@@ -684,14 +716,19 @@ function renderOptionSection(key,title,list){
 
     if(key==="color"){
       const img=colorVariantImage(x.label);
-      const colorClick=availableNow
+      const stockStatus=colorStockStatus(x.label);
+      const colorAvailable=availableNow&&stockStatus.available;
+      const colorClick=colorAvailable
         ? ' onclick="selectProductOption(\'color\',\''+esc(x.label)+'\')"'
         : ' disabled aria-disabled="true"';
+      const stockLabel=stockStatus.known
+        ? (stockStatus.count>0?'<span class="color-stock-label">Op voorraad: '+esc(stockStatus.count)+'</span>':'<span class="color-stock-label sold-out">Niet op voorraad</span>')
+        : (colorAvailable?'<span class="color-stock-label stock-unknown">Beschikbaar</span>':'<span class="color-stock-label sold-out">Niet op voorraad</span>');
       return '<button type="button" class="option-btn color-option-btn '+(active?"active ":"")+
-        (availableNow?"":"unavailable")+'"'+colorClick+' aria-label="Kleur '+esc(x.label)+'">'+
+        (colorAvailable?"":"unavailable")+'"'+colorClick+' aria-label="Kleur '+esc(x.label)+'">'+
         (img?'<img class="color-option-image" src="'+esc(img)+'" alt="'+esc(x.label)+'">':"")+
-        '<span class="color-option-label">'+esc(x.label)+'</span>'+
-        (availableNow?"":'<span class="sold-x">✕ Niet beschikbaar</span>')+'</button>';
+        '<span class="color-option-label">'+esc(x.label)+'</span>'+stockLabel+
+        (colorAvailable?"":'<span class="sold-x">✕ Niet beschikbaar</span>')+'</button>';
     }
 
     const click=availableNow
