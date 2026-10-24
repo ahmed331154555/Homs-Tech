@@ -2376,6 +2376,40 @@ function normalizeGsmService(x){
   }
 
   
+function handleBatteryOptionImage(event, phoneIndex, optionIndex){
+  const file=event.target.files && event.target.files[0];
+  if(!file)return;
+  if(!file.type || !file.type.startsWith("image/")){
+    alert("Kies een afbeeldingsbestand.");
+    event.target.value="";
+    return;
+  }
+  if(file.size>5*1024*1024){
+    alert("De afbeelding mag maximaal 5 MB zijn.");
+    event.target.value="";
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const phone=data.phones && data.phones[phoneIndex];
+    const option=phone && Array.isArray(phone.batteryOptions) ? phone.batteryOptions[optionIndex] : null;
+    if(!option)return;
+    option.image=String(reader.result||"");
+    renderPhones();
+    markChanged();
+  };
+  reader.onerror=()=>alert("De afbeelding kon niet worden gelezen. Probeer het opnieuw.");
+  reader.readAsDataURL(file);
+}
+function removeBatteryOptionImage(phoneIndex, optionIndex){
+  const phone=data.phones && data.phones[phoneIndex];
+  const option=phone && Array.isArray(phone.batteryOptions) ? phone.batteryOptions[optionIndex] : null;
+  if(!option)return;
+  option.image="";
+  renderPhones();
+  markChanged();
+}
+
 function canonicalPhoneOptionLabel(key,label){
   const raw=String(label??'').trim(), low=raw.toLowerCase();
   if(key==='color'){
@@ -4046,7 +4080,7 @@ function renderPhones(){
           ${key==='storageOptions'?'<button type="button" class="btn btn-red" onclick="removePhoneOption('+selectedPhoneIndex+',\'storageOptions\','+i+')">Verwijderen</button>':''}
         </div>${key==='batteryOptions' ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 12px">
           <div class="field"><label>Beschrijving batterij</label><textarea placeholder="Beschrijving van deze batterijoptie" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].description=this.value;markChanged()">${esc(o.description||'')}</textarea></div>
-          <div class="field"><label>Afbeeldingslink batterij</label><input type="url" value="${esc(o.image||'')}" placeholder="https://..." oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].image=this.value;markChanged()"><div class="small">Gebruik een directe URL naar de afbeelding.</div>${o.image ? '<img src="'+esc(o.image)+'" alt="Batterij" style="max-width:120px;max-height:100px;object-fit:contain;margin-top:8px">' : ''}</div>
+          <div class="field"><label>Foto van de batterij uploaden</label><input type="file" accept="image/*" onchange="handleBatteryOptionImage(event,${selectedPhoneIndex},${i})"><div class="small">Kies een foto uit je telefoon of computer (maximaal 5 MB).</div>${o.image ? '<img src="'+esc(o.image)+'" alt="Batterij" style="display:block;max-width:160px;max-height:130px;object-fit:contain;margin-top:8px;border:1px solid #dbe2ea;border-radius:8px;padding:5px;background:#fff"><button type="button" class="btn btn-light" style="margin-top:6px" onclick="removeBatteryOptionImage(${selectedPhoneIndex},${i})">Foto verwijderen</button>' : '<div class="small" style="margin-top:6px">Nog geen foto gekozen.</div>'}</div>
         </div>` : ''}`).join('')}
     </div>`;
   };
