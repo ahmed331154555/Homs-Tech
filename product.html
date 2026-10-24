@@ -804,13 +804,17 @@ function renderProductBody(){
   const total=calculateTotal(product);
   // Main displayed price = selected condition base price + all selected +/- options.
   const conditionDisplayPrice=calculateTotal(product);
-  const storage=product.storage||product.geheugen||"";
-  const color=product.color||product.kleur||"";
-  const condition=product.condition||product.conditie||"";
+  const storage=selectedOptions.storage||productRecordStorage(product)||product.storage||product.geheugen||"";
+  const color=selectedOptions.color||productRecordColor(product)||product.color||product.kleur||"";
+  const condition=selectedOptions.condition||product.condition||product.conditie||"";
   const warranty=product.warranty||product.garantie||"";
   const description=product.description||product.beschrijving||"";
   const whatsapp=wa(data.whatsapp);
-  const title=product.name||"Smartphone";
+  const titleBase=String(product.name||"Smartphone")
+    .replace(/(?:^|[\\s_-])(?:32|64|128|256|512)\\s*GB\\b|(?:^|[\\s_-])1\\s*TB\\b/ig," ")
+    .replace(/\\s+/g," ").trim()
+    .replace(new RegExp("\\s+"+String(productRecordColor(product)||"").replace(/[.*+?^${}()|[\\]\\\\]/g,"\\\\  const title=product.name||"Smartphone";")+"$","i"),"").trim();
+  const title=[titleBase,selectedOptions.storage,selectedOptions.color].filter(Boolean).join(" ")||"Smartphone";
 
   let specs="";
   if(storage) specs+=`<div><strong>Opslag:</strong> ${esc(storage)}</div>`;
