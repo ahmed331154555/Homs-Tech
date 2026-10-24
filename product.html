@@ -46,6 +46,18 @@ nav a:hover{background:#2563eb}
 .option-btn.active{border-color:#2563eb;background:#eff6ff;box-shadow:0 0 0 2px rgba(37,99,235,.10)}
 .option-btn.unavailable{opacity:.55;text-decoration:line-through;cursor:not-allowed;background:#f3f4f6;border-color:#d1d5db}.sold-x{color:#dc2626;font-weight:900;margin-left:6px;text-decoration:none}
 .option-btn small{display:block;color:#6b7280;font-weight:600;margin-top:2px}
+/* Battery options: product-page cards, isolated from other option controls */
+.option-grid.battery-option-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.battery-option-card{display:flex;align-items:center;gap:12px;width:100%;min-width:0;text-align:left;border:1px solid #d1d5db;border-radius:14px;padding:12px;background:#fff;color:#111827;cursor:pointer;box-sizing:border-box}
+.battery-option-card.active{border-color:#2563eb;background:#eff6ff;box-shadow:0 0 0 1px rgba(37,99,235,.12)}
+.battery-option-card.unavailable{opacity:.55;text-decoration:none}
+.battery-option-card .battery-option-photo{width:48px;height:48px;flex:0 0 48px;object-fit:contain;border-radius:7px}
+.battery-option-card .battery-option-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}
+.battery-option-card .battery-option-name{font-weight:800}
+.battery-option-card .battery-option-description{font-size:12px;line-height:1.45;color:#64748b;font-weight:400;white-space:normal}
+.battery-option-card .battery-option-price{font-size:12px;font-weight:800;white-space:nowrap;margin-left:auto}
+@media(max-width:480px){.battery-option-card{gap:9px;padding:10px}.battery-option-card .battery-option-photo{width:42px;height:42px;flex-basis:42px}.battery-option-card .battery-option-price{font-size:11px}}
+
 .order-summary{margin-top:22px;background:#111827;color:#fff;border-radius:18px;padding:20px}
 .order-summary h3{font-size:20px;margin-bottom:12px}
 .summary-row{display:flex;justify-content:space-between;gap:15px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12)}
@@ -686,6 +698,18 @@ function renderOptionSection(key,title,list){
       ? ' onclick="selectProductOption(\''+esc(key)+'\',\''+esc(x.label)+'\')"'
       : ' disabled';
 
+    if(key==="battery"){
+      const image=String(x.image||"").trim();
+      const description=String(x.description||"").trim();
+      return '<button type="button" class="battery-option-card '+(active?"active":"")+
+        (availableNow?"":" unavailable")+'"'+click+'>'+
+        (image?'<img class="battery-option-photo" src="'+esc(image)+'" alt="" loading="lazy">':'')+
+        '<span class="battery-option-copy"><span class="battery-option-name">'+esc(x.label)+'</span>'+
+        (description?'<span class="battery-option-description">'+esc(description)+'</span>':'')+
+        '</span><span class="battery-option-price">'+(priceLabel?priceLabel.replace(/<\/?small>/g,""):"")+
+        (availableNow?"":' <span class="sold-x">✕</span>')+'</span></button>';
+    }
+
     return '<button type="button" class="option-btn '+(active?"active":"")+
       (availableNow?"":" unavailable")+'"'+click+'>'+esc(x.label)+priceLabel+
       (availableNow?"":' <span class="sold-x">✕</span>')+'</button>';
@@ -702,7 +726,7 @@ function renderOptionSection(key,title,list){
     : "";
 
   return '<div class="option-section"><div class="option-title">'+esc(title)+help+
-    '</div><div class="option-grid">'+buttons+'</div>'+note+'</div>';
+    '</div><div class="option-grid '+(key==="battery"?"battery-option-grid":"")+'">'+buttons+'</div>'+note+'</div>';
 }
 let galleryImagesState=[];
 let galleryIndex=0;
