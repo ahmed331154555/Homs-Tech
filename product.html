@@ -44,7 +44,7 @@ nav a:hover{background:#2563eb}
 .option-btn{border:1px solid #dbe3ec;background:#fff;color:#111827;border-radius:11px;padding:11px 14px;cursor:pointer;font-weight:700;min-width:90px;text-align:left}
 .option-btn:hover{border-color:#2563eb}
 .option-btn.active{border-color:#2563eb;background:#eff6ff;box-shadow:0 0 0 2px rgba(37,99,235,.10)}
-.option-btn.unavailable{opacity:.55;text-decoration:line-through;cursor:not-allowed;background:#f3f4f6;border-color:#d1d5db}.color-option-btn{position:relative}.color-option-btn.unavailable:after{content:"";position:absolute;inset:8%;background:linear-gradient(45deg,transparent calc(50% - 1px),rgba(80,80,80,.48) calc(50% - 1px),rgba(80,80,80,.48) calc(50% + 1px),transparent calc(50% + 1px)),linear-gradient(-45deg,transparent calc(50% - 1px),rgba(80,80,80,.48) calc(50% - 1px),rgba(80,80,80,.48) calc(50% + 1px),transparent calc(50% + 1px));pointer-events:none}.option-btn.unavailable{opacity:.62;text-decoration:line-through;cursor:not-allowed;background:#f3f4f6;border-color:#d1d5db}.sold-x{color:#dc2626;font-weight:900;margin-left:6px;text-decoration:none}
+.option-btn.unavailable{opacity:.55;text-decoration:line-through;cursor:not-allowed;background:#f3f4f6;border-color:#d1d5db}.color-option-btn{position:relative}.color-option-btn.unavailable:after{content:"";position:absolute;left:8%;right:8%;top:50%;height:2px;background:rgba(80,80,80,.65);transform:rotate(-35deg);transform-origin:center;pointer-events:none}.option-btn.unavailable{opacity:.62;text-decoration:line-through;cursor:not-allowed;background:#f3f4f6;border-color:#d1d5db}.sold-x{color:#dc2626;font-weight:900;margin-left:6px;text-decoration:none}
 .option-btn small{display:block;color:#6b7280;font-weight:600;margin-top:2px}
 
 /* Battery options: product-page cards, isolated from other option controls */
@@ -752,12 +752,12 @@ function renderOptionSection(key,title,list){
         '<span class="battery-option-copy"><span class="battery-option-name">'+esc(x.label)+'</span>'+
         (description?'<span class="battery-option-description">'+esc(description)+'</span>':'')+
         '</span><span class="battery-option-price">'+(priceLabel?priceLabel.replace(/<\/?small>/g,""):"")+
-        (availableNow?"":' <span class="sold-x">✕</span>')+'</span></button>';
+        +'</span></button>';
     }
 
     return '<button type="button" class="option-btn '+(active?"active":"")+
       (availableNow?"":" unavailable")+'"'+click+'>'+esc(x.label)+priceLabel+
-      (availableNow?"":' <span class="sold-x">✕</span>')+'</button>';
+      +'</button>';
   }).join("");
 
   const help=key==="condition"
