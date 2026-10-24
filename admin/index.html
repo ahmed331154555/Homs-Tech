@@ -3805,7 +3805,7 @@ function renderPhones(){
           <div>
             ${phoneEditOnly?`<button type="button" class="btn btn-light phone-back-catalog" onclick="showPhoneCatalog()">← Terug naar telefoons</button>`:''}
             <div class="card-title" style="font-size:20px">🛒 ${esc(phone.name||'Nieuw product')}</div><div class="small">Dit is het verkoopsysteem van HOMS TECH. Staat los van Uw toestel verkopen / Protocol 1–8.</div></div>
-          <button class="btn btn-red" onclick="deletePhone(${selectedPhoneIndex})">Verwijderen</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn btn-light" onclick="duplicatePhone(${selectedPhoneIndex})">⧉ Product kopiëren</button><button type="button" class="btn btn-red" onclick="deletePhone(${selectedPhoneIndex})">Verwijderen</button></div>
         </div>
 
         <div class="grid">
@@ -3943,6 +3943,27 @@ function addPhone(){
   generatePhoneVariantPrices(false);
   renderPhones();
   markChanged();
+}
+
+function duplicatePhone(i){
+  const source=data.phones[i];
+  if(!source) return;
+  // Clone the complete product, including option settings and photos, without sharing nested objects.
+  const copy=JSON.parse(JSON.stringify(source));
+  const baseName=String(source.name||"Telefoon").trim()||"Telefoon";
+  copy.name=baseName+" (kopie)";
+  copy.sku="";
+  copy.stock=0;
+  copy.createdAt=undefined;
+  if(Array.isArray(copy.variantPrices)){
+    copy.variantPrices=copy.variantPrices.map(row=>({...row,available:true,stock:0}));
+  }
+  data.phones.push(copy);
+  selectedPhoneIndex=data.phones.length-1;
+  phoneEditOnly=true;
+  markChanged();
+  renderPhones();
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 
 function deletePhone(i){
