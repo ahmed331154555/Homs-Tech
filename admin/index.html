@@ -3006,6 +3006,7 @@ let selectedPhoneIndex=0;
 let phoneEditOnly=false;
 let phoneBulkPricingView=false;
 let phoneBulkPricingModelIndex=0;
+let phoneBulkSearchText="";
 let phoneBulkSelectedRows=new Set();
 let phoneTreeSearch="";
 let phoneTreeBrand="Alle";
@@ -3744,6 +3745,25 @@ function renderPhonesPreserveFocus(input){
 }
 
 
+function phoneBulkModelFamily(name){
+  return String(name||"").trim().toLocaleLowerCase().replace(/\s+/g," ");
+}
+function phoneBulkMatchesSearch(name,query){
+  const q=String(query||"").trim().toLocaleLowerCase().replace(/\s+/g," ");
+  if(!q)return true;
+  return phoneBulkModelFamily(name).includes(q);
+}
+function renderPhoneBulkModelResultsHtml(){
+  const products=(data.phones||[]).map((p,i)=>({p,i})).filter(x=>Array.isArray(x.p.variantPrices)&&x.p.variantPrices.some(r=>r&&r.active!==false));
+  const query=String(phoneBulkSearchText||"").trim();
+  const matches=products.filter(x=>phoneBulkMatchesSearch(x.p.name,query));
+  if(!matches.length)return '<div class="small" style="padding:10px">Geen modellen gevonden. Probeer bijvoorbeeld iPhone 11 of iPhone 12.</div>';
+  return matches.map(x=>`<button type="button" style="display:block;width:100%;text-align:left;border:0;border-bottom:1px solid #edf0f5;background:${x.i===phoneBulkPricingModelIndex?'#e8f5ee':'white'};padding:10px 12px" onclick="phoneBulkPricingModelIndex=${x.i};phoneBulkSelectedRows.clear();renderPhoneBulkPricing()">${esc(x.p.name||"Onbenoemd product")} <span class="small">· ${x.p.variantPrices.filter(r=>r&&r.active!==false).length} uitvoeringen</span></button>`).join("");
+}
+function renderPhoneBulkModelResults(){
+  const el=document.getElementById("phone-bulk-model-results");
+  if(el)el.innerHTML=renderPhoneBulkModelResultsHtml();
+}
 function phoneBulkRowKey(modelIndex,rowIndex){return String(modelIndex)+":"+String(rowIndex);}
 function phoneBulkSetRow(modelIndex,rowIndex,checked){
   const key=phoneBulkRowKey(modelIndex,rowIndex);
@@ -3785,9 +3805,9 @@ function phoneBulkApply(modelIndex,kind){
 function phoneBulkReturnToCatalog(){phoneBulkPricingView=false;phoneEditOnly=false;renderPhones();}
 function renderPhoneBulkPricing(){
   const box=document.getElementById("phonesList");if(!box)return;
-  const products=(data.phones||[]).map((p,i)=>({p,i})).filter(x=>Array.isArray(x.p.variantPrices)&&x.p.variantPrices.length);
+  const products=(data.phones||[]).map((p,i)=>({p,i,rows:Array.isArray(p.variantPrices)?p.variantPrices:[]})).filter(x=>x.rows.some(r=>r&&r.active!==false));
   if(!products.length){
-    box.innerHTML='<div class="card"><h2>Collectieve prijzen</h2><p>Er zijn nog geen producten met uitvoeringen/prijzen. Stel eerst per telefoon de uitvoeringen in.</p><button type="button" class="btn btn-light" onclick="phoneBulkReturnToCatalog()">← Terug naar telefoons</button></div>';return;
+    box.innerHTML='<div class="card"><h2>Collectieve prijzen</h2><p>Er zijn nog geen actieve uitvoeringen. Stel eerst de uitvoeringen van een telefoon in.</p><button type="button" class="btn btn-light" onclick="phoneBulkReturnToCatalog()">← Terug naar telefoons</button></div>';return;
   }
   if(!products.some(x=>x.i===phoneBulkPricingModelIndex))phoneBulkPricingModelIndex=products[0].i;
   const product=products.find(x=>x.i===phoneBulkPricingModelIndex)||products[0];
@@ -3801,7 +3821,7 @@ function renderPhoneBulkPricing(){
       <button type="button" class="btn btn-light" onclick="phoneBulkReturnToCatalog()">← Terug naar telefoons</button>
     </div>
     <div class="grid" style="margin:16px 0">
-      <div class="field"><label>Kies telefoonmodel</label><select style="width:100%" onchange="phoneBulkPricingModelIndex=Number(this.value);phoneBulkSelectedRows.clear();renderPhoneBulkPricing()">${products.map(x=>`<option value="${x.i}" ${x.i===modelIndex?'selected':''}>${esc(x.p.name||"Onbenoemd product")}</option>`).join("")}</select></div>
+      <div class="field"><label>Zoek iPhone-model</label><input id="phone-bulk-model-search" type="search" placeholder="Bijv. iPhone 11, iPhone 12 Pro Max" value="${esc(phoneBulkSearchText||"")}" oninput="phoneBulkSearchText=this.value;renderPhoneBulkModelResults()"><div id="phone-bulk-model-results" style="margin-top:8px;max-height:180px;overflow:auto;border:1px solid #dbe2ea;border-radius:9px">${renderPhoneBulkModelResultsHtml()}</div><div class="small" style="margin-top:5px">Kies een model om alle beschikbare geheugens, kleuren en toestanden te zien.</div></div>
       <div class="field"><label>Geselecteerde uitvoeringen</label><div style="padding:12px;border:1px solid #dbe2ea;border-radius:9px;font-weight:800">${countSelected}</div></div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;padding:14px;background:#f8fafc;border:1px solid #dbe2ea;border-radius:12px;margin-bottom:16px">
