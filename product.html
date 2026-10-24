@@ -909,8 +909,10 @@ try{
     `<div class="empty"><h2>Productgegevens konden niet worden opgehaald</h2><p>Controleer je internetverbinding en probeer het opnieuw.</p><button class="btn blue" type="button" onclick="location.reload()">Opnieuw proberen</button></div>`;
   return;
 }
-document.getElementById("footerName").textContent=data.businessName||data.siteName||"HOMS TECH";
-document.getElementById("footerTag").textContent=data.tagline||"Telefoonreparatie aan huis";
+const footerName=document.getElementById("footerName");
+if(footerName) footerName.textContent=data.businessName||data.siteName||"HOMS TECH";
+const footerTag=document.getElementById("footerTag");
+if(footerTag) footerTag.textContent=data.tagline||"Telefoonreparatie aan huis";
 let list=[];
 if(type==="used"){
   list=Array.isArray(data.usedPhones)?data.usedPhones:[];
