@@ -59,7 +59,7 @@ nav a:hover{background:#2563eb}
 .battery-option-card .battery-option-price{font-size:12px;font-weight:800;white-space:nowrap;margin-left:auto}
 @media(max-width:480px){.battery-option-card{gap:9px;padding:10px}.battery-option-card .battery-option-photo{width:42px;height:42px;flex-basis:42px}.battery-option-card .battery-option-price{font-size:11px}}
 
-.order-summary{margin-top:22px;background:#111827;color:#fff;border-radius:18px;padding:20px}.inventory-notice{margin:10px 0 14px;padding:12px 13px;border:1px solid rgba(255,255,255,.2);border-radius:10px;font-size:13px;line-height:1.45}.inventory-notice p{margin:5px 0 9px;color:#e5e7eb}.inventory-notice.sold-out{border-color:rgba(245,158,11,.45)}.inventory-notice.in-stock{border-color:rgba(34,197,94,.35);color:#bbf7d0}.inventory-alt-title{font-size:12px;color:#e5e7eb;margin:8px 0 7px}.inventory-alt-list{display:flex;flex-wrap:wrap;gap:7px}.inventory-alt-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:7px 10px;background:#f5e7c5;color:#111827;font-size:12px;font-weight:700;cursor:pointer}.inventory-alt-dot{font-size:11px;color:#6b7280}
+.order-summary{margin-top:22px;background:#111827;color:#fff;border-radius:18px;padding:20px}.inventory-notice{margin:10px 0 14px;padding:12px 13px;border:1px solid rgba(255,255,255,.2);border-radius:10px;font-size:13px;line-height:1.45}.inventory-notice p{margin:5px 0 9px;color:#e5e7eb}.inventory-notice.sold-out{border-color:rgba(245,158,11,.45)}.inventory-notice.in-stock{border-color:rgba(34,197,94,.35);color:#bbf7d0}.inventory-alt-title{font-size:12px;color:#e5e7eb;margin:8px 0 7px}.inventory-alt-list{display:flex;flex-wrap:wrap;gap:7px}.inventory-alt-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:7px 10px;background:#f5e7c5;color:#111827;font-size:12px;font-weight:700;cursor:pointer}.inventory-alt-dot{font-size:11px;color:#6b7280}.inventory-alt-count{font-size:11px;font-weight:800;color:#166534;white-space:nowrap}.inventory-current-count{font-weight:700;color:#bbf7d0;font-size:12px}
 .order-summary h3{font-size:20px;margin-bottom:12px}
 .summary-row{display:flex;justify-content:space-between;gap:15px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12)}
 .summary-row:last-child{border-bottom:0}
@@ -824,6 +824,27 @@ function addCurrentProductToCart(){
   writeCart(items);
   const msg=document.getElementById("cartAdded"); if(msg){msg.style.display="block";msg.textContent="✓ Toegevoegd aan winkelwagen";setTimeout(()=>msg.style.display="none",2200)}
 }
+function inventoryStockCount(product,storage,color,condition){
+  const rows=familyVariantRows(product).filter(({row})=>
+    normalizeStorageValue(row.storage)===normalizeStorageValue(storage) &&
+    normalizeColorValue(row.color)===normalizeColorValue(color) &&
+    (!condition||String(row.condition||"")===String(condition))
+  );
+  if(rows.length){
+    const eligible=rows.filter(({row})=>row.active!==false&&row.available!==false&&
+      !(row.stock!==undefined&&row.stock!==null&&row.stock!==""&&Number.isFinite(Number(row.stock))&&Number(row.stock)<1));
+    if(!eligible.length)return {known:true,count:0};
+    if(!eligible.every(({row})=>row.stock!==undefined&&row.stock!==null&&row.stock!==""&&Number.isFinite(Number(row.stock))&&Number(row.stock)>=0))return {known:false,count:null};
+    return {known:true,count:eligible.reduce((sum,{row})=>sum+Number(row.stock),0)};
+  }
+  const record=findFamilyRecord(storage,color);
+  const p=record?.p;
+  if(p){
+    const raw=p.stock??p.quantity??p.stockQuantity;
+    if(raw!==undefined&&raw!==null&&raw!==""&&Number.isFinite(Number(raw)))return {known:true,count:Math.max(0,Number(raw))};
+  }
+  return {known:false,count:null};
+}
 function inventoryAvailability(product){
   const storage=selectedOptions.storage||productRecordStorage(product);
   const color=selectedOptions.color||productRecordColor(product);
@@ -845,9 +866,10 @@ function inventoryAvailability(product){
       const st=String(row.storage||"").trim(),co=String(row.color||"").trim();
       if(!st||!co||(!condition?false:String(row.condition||"")!==String(condition)))return;
       if(normalizeStorageValue(st)===normalizeStorageValue(storage)&&normalizeColorValue(co)===normalizeColorValue(color))return;
-      if(!alternatives.some(x=>normalizeStorageValue(x.storage)===normalizeStorageValue(st)&&normalizeColorValue(x.color)===normalizeColorValue(co))) alternatives.push({storage:st,color:co});
+      let item=alternatives.find(x=>normalizeStorageValue(x.storage)===normalizeStorageValue(st)&&normalizeColorValue(x.color)===normalizeColorValue(co));
+      if(!item){item={storage:st,color:co,stock:inventoryStockCount(product,st,co,condition)};alternatives.push(item);}
     });
-    return {available,known:matching.length>0,alternatives};
+    return {available,known:matching.length>0,stock:inventoryStockCount(product,storage,color,condition),alternatives};
   }
   const record=findFamilyRecord(storage,color);
   const p=record?.p;
@@ -862,23 +884,27 @@ function inventoryAvailability(product){
       const qty=other.stock??other.quantity??other.stockQuantity;
       const hasQty=qty!==undefined&&qty!==null&&qty!==""&&Number.isFinite(Number(qty));
       if(other.active===false||other.available===false||String(other.stockStatus||"").toLowerCase()==="sold"||(hasQty&&Number(qty)<1))return;
-      if(!alternatives.some(x=>normalizeStorageValue(x.storage)===normalizeStorageValue(st)&&normalizeColorValue(x.color)===normalizeColorValue(co)))alternatives.push({storage:st,color:co});
+      let item=alternatives.find(x=>normalizeStorageValue(x.storage)===normalizeStorageValue(st)&&normalizeColorValue(x.color)===normalizeColorValue(co));
+      if(!item)alternatives.push({storage:st,color:co,stock:{known:hasQty,count:hasQty?Number(qty):null}});
     });
-    return {available,known,alternatives};
+    return {available,known,stock:{known,count:known?Number(raw):null},alternatives};
   }
-  return {available:true,known:false,alternatives:[]};
+  return {available:true,known:false,stock:{known:false,count:null},alternatives:[]};
 }
 function renderInventoryNotice(product){
   const status=inventoryAvailability(product);
-  const labelStorage=selectedOptions.storage||productRecordStorage(product);
-  const labelColor=selectedOptions.color||productRecordColor(product);
-  const label=[product.name||"Apparaat",labelStorage,labelColor].filter(Boolean).join(" ");
+  const stockText=item=>item.stock?.known
+    ? (item.stock.count>0?String(item.stock.count)+' stuks op voorraad':'Uitverkocht')
+    : 'Op voorraad';
   const alternatives=status.alternatives.slice(0,8).map(item=>
-    '<button type="button" class="inventory-alt-chip" onclick="selectInventoryAlternative(\''+esc(item.storage)+'\',\''+esc(item.color)+'\')">'+
-    '<span class="inventory-alt-dot" aria-hidden="true">●</span>'+esc(item.color)+' '+esc(item.storage)+'</button>'
+    '<button type="button" class="inventory-alt-chip" onclick="selectInventoryAlternative(this.dataset.storage,this.dataset.color)" data-storage="'+esc(item.storage)+'" data-color="'+esc(item.color)+'">'+
+    '<span class="inventory-alt-dot" aria-hidden="true">●</span>'+esc(item.color)+' '+esc(item.storage)+
+    '<span class="inventory-alt-count">'+esc(stockText(item))+'</span></button>'
   ).join("");
   if(status.available){
-    return '<div class="inventory-notice in-stock"><strong>✓ Deze uitvoering is op voorraad.</strong></div>';
+    const currentCount=status.stock?.known&&status.stock.count>0
+      ? ' <span class="inventory-current-count">('+esc(status.stock.count)+' stuks op voorraad)</span>' : "";
+    return '<div class="inventory-notice in-stock"><strong>✓ Deze uitvoering is op voorraad.</strong>'+currentCount+'</div>';
   }
   return '<div class="inventory-notice sold-out"><strong>ⓘ Deze uitvoering is momenteel uitverkocht.</strong>'+
     (status.alternatives.length?'<p>Andere kleuren en opslaggroottes zijn wel op voorraad.</p><div class="inventory-alt-title">Wel op voorraad:</div><div class="inventory-alt-list">'+alternatives+'</div>':'<p>Er zijn momenteel geen andere uitvoeringen als beschikbaar geregistreerd.</p>')+
