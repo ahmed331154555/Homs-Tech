@@ -894,6 +894,7 @@ function render(product,data){
   selectedOptions={};
   customSelectedOptions={};
   ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'}; const variantKey=familyVariantRows(product).length&&["storage","color","condition"].includes(key); const raw=Array.isArray(product[map[key]])?product[map[key]]:[]; const source=variantKey?effectiveOptions(product,key):(raw.length?raw:effectiveOptions(product,key)); const list=source.filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false&&((key==="storage"||key==="color")||x.available!==false))); if(list.length) selectedOptions[key]=list[0].label;});
+  ["storage","color","condition"].forEach(key=>{const requested=params.get(key);if(!requested)return;const options=effectiveOptions(product,key);const match=options.find(x=>String(x.label||"").trim().toLocaleLowerCase()===requested.trim().toLocaleLowerCase());if(match)selectedOptions[key]=match.label;});
   renderProductBody();
 }
 function renderBasicProductFallback(product){
