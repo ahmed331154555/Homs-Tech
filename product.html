@@ -464,6 +464,60 @@ function isIPhone15Product(product){
   return /iphone\s*15(?:\s|$)/i.test(name) || /iphone\s*15(?:\s|$)/i.test(family);
 }
 
+function productRecordStorage(product){
+  const direct=Array.isArray(product?.storage)?(product.storage.find(x=>typeof x==="string")||""):product?.storage||product?.geheugen||"";
+  const text=String(direct||product?.name||"");
+  const match=text.match(/(?:^|[\\s_-])(32|64|128|256|512)\\s*GB\\b|(?:^|[\\s_-])1\\s*TB\\b/i);
+  return match?match[0].trim().replace(/^[\\s_-]+/,"").replace(/\\s+/g," ").toUpperCase():String(direct||"").trim();
+}
+function productRecordColor(product){
+  const direct=String(product?.color||product?.kleur||"").trim();
+  if(direct)return direct;
+  const name=String(product?.name||"").trim();
+  const colors=["titanium naturel","middernacht","sterrenlicht","space grey","space gray","deep purple","natural titanium","black titanium","white titanium","zwart","wit","blauw","groen","rood","geel","paars","roze","goud","zilver","oranje","bruin","grijs","black","white","blue","green","red","yellow","purple","pink","gold","silver","gray","grey"];
+  const found=colors.sort((a,b)=>b.length-a.length).find(color=>new RegExp("\\b"+color.replace(/[.*+?^${}()|[\\]\\\\]/g,"\\\\function selectProductOption(key,label){")+"$","i").test(name));
+  return found||"";
+}
+function productBaseModel(product){
+  let name=String(product?.catalogFamily||product?.catalogModel||product?.name||"").trim();
+  if(product?.catalogFamily||product?.catalogModel)return name.replace(/\\s+/g," ").toLowerCase();
+  name=name.replace(/(?:^|[\\s_-])(?:32|64|128|256|512)\\s*GB\\b|(?:^|[\\s_-])1\\s*TB\\b/ig," ");
+  const color=productRecordColor(product);
+  if(color)name=name.replace(new RegExp("\\s*"+color.replace(/[.*+?^${}()|[\\]\\\\]/g,"\\\\function selectProductOption(key,label){")+"$","i"),"");
+  return name.replace(/\\s+/g," ").trim().toLowerCase();
+}
+function productFamilyRecords(product){
+  if(!currentData||!product)return [];
+  const list=type==="used"?(Array.isArray(currentData.usedPhones)?currentData.usedPhones:[]):(Array.isArray(currentData.phones)?currentData.phones:[]);
+  const base=productBaseModel(product);
+  const records=list.map((p,i)=>({p,i})).filter(x=>productBaseModel(x.p)===base);
+  return records.length?records:[{p:product,i:currentProductId}];
+}
+function findFamilyRecord(storage,color){
+  const wantedStorage=normalizeStorageValue(storage),wantedColor=normalizeColorValue(color);
+  return productFamilyRecords(currentProduct).find(({p})=>{
+    const s=productRecordStorage(p),col=productRecordColor(p);
+    return normalizeStorageValue(s)===wantedStorage&&normalizeColorValue(col)===wantedColor;
+  })||null;
+}
+function hasVariantCombination(product,storage,color,condition){
+  return (Array.isArray(product?.variantPrices)?product.variantPrices:[]).some(row=>row&&row.active!==false&&normalizeStorageValue(row.storage)===normalizeStorageValue(storage)&&normalizeColorValue(row.color)===normalizeColorValue(color)&&(!condition||String(row.condition||"")===String(condition)));
+}
+function switchProductRecord(record,storage,color){
+  if(!record||record.p===currentProduct)return false;
+  currentProduct=record.p;
+  currentProductId=record.i;
+  const url=new URL(window.location.href);
+  url.searchParams.set("id",String(record.i));
+  window.history.replaceState({}, "", url.toString());
+  selectedOptions={...selectedOptions};
+  selectedOptions.storage=storage||productRecordStorage(record.p)||"";
+  selectedOptions.color=color||productRecordColor(record.p)||"";
+  const conditions=effectiveOptions(record.p,"condition");
+  if(!conditions.some(x=>x.label===selectedOptions.condition))selectedOptions.condition=conditions[0]?.label||"";
+  renderProductBody();
+  return true;
+}
 function selectProductOption(key,label){
   if(key==="battery" || key==="vat" || key==="tradeIn"){
     selectedOptions[key]=label;
@@ -473,7 +527,14 @@ function selectProductOption(key,label){
     if(/^ja$/i.test(String(label||"").trim()))openTradeInModal();
     return;
   }
-  // Memory, color and condition stay on this admin product; combinations/prices come from variantPrices.
+  const next={...selectedOptions,[key]:label};
+  if(key==="storage"||key==="color"){
+    const hit=findFamilyRecord(next.storage,next.color);
+    if(hit&&hit.p!==currentProduct&&!hasVariantCombination(currentProduct,next.storage,next.color,next.condition)){
+      switchProductRecord(hit,next.storage,next.color);
+      return;
+    }
+  }
   selectedOptions[key]=label;
   renderProductBody();
   const priceEl=document.getElementById("selectedConditionPrice");
