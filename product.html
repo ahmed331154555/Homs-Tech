@@ -527,9 +527,17 @@ function selectProductOption(key,label){
   }
   const next={...selectedOptions,[key]:label};
   if(key==="storage"||key==="color"){
-    const hit=findFamilyRecord(next.storage,next.color);
+    let hit=findFamilyRecord(next.storage,next.color);
+    const family=productFamilyRecords(currentProduct);
+    if(!hit){
+      hit=family.find(({p})=>key==="storage"
+        ? normalizeStorageValue(productRecordStorage(p))===normalizeStorageValue(label)
+        : normalizeColorValue(productRecordColor(p))===normalizeColorValue(label))||null;
+    }
     if(hit&&hit.p!==currentProduct&&!hasVariantCombination(currentProduct,next.storage,next.color,next.condition)){
-      switchProductRecord(hit,next.storage,next.color);
+      const targetStorage=key==="storage"?label:productRecordStorage(hit.p);
+      const targetColor=key==="color"?label:productRecordColor(hit.p);
+      switchProductRecord(hit,targetStorage,targetColor);
       return;
     }
   }
