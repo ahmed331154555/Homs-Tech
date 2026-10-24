@@ -775,8 +775,9 @@ function renderProductBody(){
   const area=document.getElementById("productArea");
   const images=Array.isArray(product.images)?product.images.filter(Boolean):[];
   const baseImages=images.length ? images : (product.image ? [product.image] : []);
-  const selectedColorImage=selectedOptions.color?colorVariantImage(selectedOptions.color):"";
-  const galleryImages=selectedColorImage?[selectedColorImage,...baseImages.filter(x=>x!==selectedColorImage)]:baseImages;
+  const selectedColorGallery=selectedOptions.color&&product.colorGalleryImages&&Array.isArray(product.colorGalleryImages[selectedOptions.color])?product.colorGalleryImages[selectedOptions.color].filter(Boolean):[];
+  const selectedColorImage=selectedColorGallery[0]|| (selectedOptions.color?colorVariantImage(selectedOptions.color):"");
+  const galleryImages=selectedColorGallery.length?selectedColorGallery:(selectedColorImage?[selectedColorImage,...baseImages.filter(x=>x!==selectedColorImage)]:baseImages);
   const selectedCustomImage=(()=>{
     for(const type of ["optionGroups","addonGroups"]){
       const groups=Array.isArray(product[type])?product[type]:[];
