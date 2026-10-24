@@ -1853,6 +1853,8 @@ function priceProductFromCatalog(data, item) {
     exact+=customTotal;
     const qty=Number(item?.qty ?? 1);
     if(!Number.isInteger(qty)||qty<1||qty>99) return {error:"Kies een geldige hoeveelheid (1–99)."};
+    if(row.stock!==undefined&&row.stock!==null&&row.stock!==""&&Number.isFinite(Number(row.stock))&&qty>Number(row.stock)) return {error:"Er is onvoldoende voorraad voor deze uitvoering."};
+    if(row.available===false||row.active===false) return {error:"Deze uitvoering is niet beschikbaar."};
     return {item:{name:String(product.name||"Smartphone"),brand:String(product.brand||""),type,id,options:Object.fromEntries(Object.entries(options).filter(([key,value])=>["storage","color","condition","battery","vat","tradeIn","custom"].includes(key)&&String(value??"").trim()!=="").map(([key,value])=>[key,key==="custom"?verifiedCustom:value])),qty,unitPrice:Math.round(Math.max(0,exact)*100)/100}};
   }
   const condition = chosen.condition;
