@@ -2369,7 +2369,9 @@ function normalizeGsmService(x){
       enabled:active,
       active:active,
       available:x.available !== false,
-      priceDelta:x.priceDelta ?? x.delta ?? x.priceAdjustment ?? x.extra ?? fallbackPrice ?? 0
+      priceDelta:x.priceDelta ?? x.delta ?? x.priceAdjustment ?? x.extra ?? fallbackPrice ?? 0,
+      description:String(x.description || ""),
+      image:String(x.image || "")
     };
   }
 
@@ -4042,7 +4044,10 @@ function renderPhones(){
           }
           <span class="small">${isCondition?'Basisprijs':'Prijsverschil'}</span>
           ${key==='storageOptions'?'<button type="button" class="btn btn-red" onclick="removePhoneOption('+selectedPhoneIndex+',\'storageOptions\','+i+')">Verwijderen</button>':''}
-        </div>`).join('')}
+        </div>${key==='batteryOptions' ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 12px">
+          <div class="field"><label>Beschrijving batterij</label><textarea placeholder="Beschrijving van deze batterijoptie" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].description=this.value;markChanged()">${esc(o.description||'')}</textarea></div>
+          <div class="field"><label>Afbeeldingslink batterij</label><input type="url" value="${esc(o.image||'')}" placeholder="https://..." oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].image=this.value;markChanged()"><div class="small">Gebruik een directe URL naar de afbeelding.</div>${o.image ? '<img src="'+esc(o.image)+'" alt="Batterij" style="max-width:120px;max-height:100px;object-fit:contain;margin-top:8px">' : ''}</div>
+        </div>` : ''}`).join('')}
     </div>`;
   };
 
