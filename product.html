@@ -563,6 +563,24 @@ function renderOptionSection(key,title,list){
     const values=[...new Set(matchingRows.map(row=>String(row[key]||"").trim()).filter(Boolean))];
     base=values.map(label=>({label,active:true,enabled:true,available:matchingRows.some(row=>String(row[key]||"").trim()===label&&row.available!==false),priceDelta:0}));
   }
+  // If the admin stores each memory/color as a separate product record, link those
+  // records into one selector, but only expose combinations that actually exist in admin.
+  if(key==="storage"||key==="color"){
+    const family=productFamilyRecords(currentProduct);
+    const separate=family.length>1&&family.some(({p})=>productRecordStorage(p)||productRecordColor(p));
+    if(separate){
+      const seen=new Set(),values=[];
+      family.forEach(({p})=>{
+        const value=key==="storage"?productRecordStorage(p):productRecordColor(p);
+        if(!value)return;
+        if(key==="color"&&normalizeStorageValue(productRecordStorage(p))!==normalizeStorageValue(selectedOptions.storage))return;
+        const norm=key==="storage"?normalizeStorageValue(value):normalizeColorValue(value);
+        if(seen.has(norm))return;
+        seen.add(norm);values.push(value);
+      });
+      if(values.length)base=values.map(label=>({label,active:true,enabled:true,available:true,priceDelta:0}));
+    }
+  }
   const items=base.filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false));
   if(!items.length) return "";
 
