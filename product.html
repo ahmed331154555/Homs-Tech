@@ -815,6 +815,13 @@ function addCurrentProductToCart(){
 }
 function renderProductBody(){
   const product=currentProduct,data=currentData;
+  ["optionGroups","addonGroups"].forEach(type=>{
+    (Array.isArray(product[type])?product[type]:[]).forEach((group,i)=>{
+      const key=type+":"+i;
+      const options=(Array.isArray(group.options)?group.options:[]).filter(x=>x&&x.label&&x.active!==false&&x.available!==false);
+      if(!customSelectedOptions[key]||!options.some(x=>x.label===customSelectedOptions[key])) customSelectedOptions[key]=options[0]?.label||"";
+    });
+  });
   const area=document.getElementById("productArea");
   const images=Array.isArray(product.images)?product.images.filter(Boolean):[];
   const galleryImages=images.length ? images : (product.image ? [product.image] : []);
