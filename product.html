@@ -59,7 +59,7 @@ nav a:hover{background:#2563eb}
 .battery-option-card .battery-option-price{font-size:12px;font-weight:800;white-space:nowrap;margin-left:auto}
 @media(max-width:480px){.battery-option-card{gap:9px;padding:10px}.battery-option-card .battery-option-photo{width:42px;height:42px;flex-basis:42px}.battery-option-card .battery-option-price{font-size:11px}}
 
-.order-summary{margin-top:22px;background:#111827;color:#fff;border-radius:18px;padding:20px}.inventory-notice{margin:10px 0 14px;padding:12px 13px;border:1px solid rgba(255,255,255,.2);border-radius:10px;font-size:13px;line-height:1.45}.inventory-notice p{margin:5px 0 9px;color:#e5e7eb}.inventory-notice.sold-out{border-color:rgba(245,158,11,.45)}.inventory-notice.in-stock{border-color:rgba(34,197,94,.35);color:#bbf7d0}.inventory-alt-title{font-size:12px;color:#e5e7eb;margin:8px 0 7px}.inventory-alt-list{display:flex;flex-wrap:wrap;gap:7px}.inventory-alt-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:7px 10px;background:#f5e7c5;color:#111827;font-size:12px;font-weight:700;cursor:pointer}.inventory-alt-dot{font-size:11px;color:#6b7280}.inventory-alt-count{font-size:11px;font-weight:800;color:#166534;white-space:nowrap}.inventory-current-count{font-weight:700;color:#bbf7d0;font-size:12px}
+.order-summary{margin-top:22px;background:#111827;color:#fff;border-radius:18px;padding:20px}.inventory-notice{margin:10px 0 14px;padding:12px 13px;border:1px solid rgba(255,255,255,.2);border-radius:10px;font-size:13px;line-height:1.45}.inventory-notice p{margin:5px 0 9px;color:#e5e7eb}.inventory-notice.sold-out{border-color:rgba(245,158,11,.45)}.inventory-notice.in-stock{border-color:rgba(34,197,94,.35);color:#bbf7d0}.inventory-alt-title{font-size:12px;color:#e5e7eb;margin:10px 0 7px}.inventory-alt-list{display:flex;flex-wrap:wrap;gap:7px}.inventory-alt-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:8px 11px;background:#f5e7c5;color:#111827;font-size:12px;font-weight:700;cursor:pointer;flex-wrap:wrap}.inventory-alt-dot{font-size:12px;color:#6b7280}.inventory-alt-count{display:block;width:100%;padding-left:18px;font-size:11px;font-weight:800;color:#166534;white-space:nowrap}.inventory-current-count{font-weight:700;color:#bbf7d0;font-size:12px}
 .order-summary h3{font-size:20px;margin-bottom:12px}
 .summary-row{display:flex;justify-content:space-between;gap:15px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12)}
 .summary-row:last-child{border-bottom:0}
@@ -896,18 +896,34 @@ function renderInventoryNotice(product){
   const stockText=item=>item.stock?.known
     ? (item.stock.count>0?String(item.stock.count)+' stuks op voorraad':'Uitverkocht')
     : 'Op voorraad';
+  const colorDot=item=>{
+    const c=normalizeColorValue(item.color);
+    const colors=[
+      ["zwart","#222222"],["black","#222222"],["wit","#f8fafc"],["white","#f8fafc"],
+      ["rood","#dc2626"],["red","#dc2626"],["groen","#16a34a"],["green","#16a34a"],
+      ["blauw","#2563eb"],["blue","#2563eb"],["paars","#a855f7"],["purple","#a855f7"],
+      ["geel","#eab308"],["yellow","#eab308"],["goud","#d4af37"],["gold","#d4af37"],
+      ["zilver","#cbd5e1"],["silver","#cbd5e1"],["grijs","#9ca3af"],["grey","#9ca3af"],["gray","#9ca3af"],
+      ["middernacht","#1f2937"],["sterlicht","#e7e5e4"],["roze","#ec4899"],["pink","#ec4899"]
+    ];
+    const match=colors.find(([name])=>c.includes(name));
+    return match?match[1]:"#9ca3af";
+  };
   const alternatives=status.alternatives.slice(0,8).map(item=>
     '<button type="button" class="inventory-alt-chip" onclick="selectInventoryAlternative(this.dataset.storage,this.dataset.color)" data-storage="'+esc(item.storage)+'" data-color="'+esc(item.color)+'">'+
-    '<span class="inventory-alt-dot" aria-hidden="true">●</span>'+esc(item.color)+' '+esc(item.storage)+
+    '<span class="inventory-alt-dot" aria-hidden="true" style="color:'+colorDot(item)+'">●</span>'+esc(item.color)+' '+esc(item.storage)+
     '<span class="inventory-alt-count">'+esc(stockText(item))+'</span></button>'
   ).join("");
+  const availableList=status.alternatives.length
+    ? '<div class="inventory-alt-title">Wel op voorraad:</div><div class="inventory-alt-list">'+alternatives+'</div>'
+    : '';
   if(status.available){
     const currentCount=status.stock?.known&&status.stock.count>0
       ? ' <span class="inventory-current-count">('+esc(status.stock.count)+' stuks op voorraad)</span>' : "";
-    return '<div class="inventory-notice in-stock"><strong>✓ Deze uitvoering is op voorraad.</strong>'+currentCount+'</div>';
+    return '<div class="inventory-notice in-stock"><strong>✓ Deze uitvoering is op voorraad.</strong>'+currentCount+availableList+'</div>';
   }
   return '<div class="inventory-notice sold-out"><strong>ⓘ Deze uitvoering is momenteel uitverkocht.</strong>'+
-    (status.alternatives.length?'<p>Andere kleuren en opslaggroottes zijn wel op voorraad.</p><div class="inventory-alt-title">Wel op voorraad:</div><div class="inventory-alt-list">'+alternatives+'</div>':'<p>Er zijn momenteel geen andere uitvoeringen als beschikbaar geregistreerd.</p>')+
+    (status.alternatives.length?'<p>Andere kleuren en opslaggroottes zijn wel op voorraad.</p>'+availableList:'<p>Er zijn momenteel geen andere uitvoeringen als beschikbaar geregistreerd.</p>')+
     '</div>';
 }
 function selectInventoryAlternative(storage,color){
