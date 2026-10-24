@@ -345,7 +345,7 @@ function effectiveOptions(product,key){
     // For fixed-price variants, the variant table is the source of truth.
     // Do not expose options that have no corresponding purchasable combination.
     const labels=[...new Set(rows.filter(row=>row&&row.active!==false).map(row=>String(row[property]||'').trim()).filter(Boolean))];
-    if(product.pricingMode==="variant" && rows.length){
+    if(rows.length){
       list=labels.map(label=>raw.find(option=>option&&String(option.label||'').trim()===label)||{label,priceDelta:0,active:true,available:true});
     }else if(!list.length){
       const scalar=String(product[property]||'').trim();
@@ -381,7 +381,7 @@ function optionDelta(x){
 }
 function money(n){ return "€"+Number(n||0).toFixed(2).replace(".00","").replace(".",","); }
 function calculateTotal(product){
-  if(product && product.pricingMode==="variant"){
+  if(product && Array.isArray(product.variantPrices) && product.variantPrices.length){
     const row=(Array.isArray(product.variantPrices)?product.variantPrices:[]).find(x=>x && x.condition===selectedOptions.condition && x.color===selectedOptions.color && x.storage===selectedOptions.storage && x.active!==false && x.available!==false);
     if(!row) return 0;
     let exact=num(row.price);
@@ -491,7 +491,7 @@ function renderOptionSection(key,title,list){
   const raw=Array.isArray(currentProduct[map[key]]) ? currentProduct[map[key]] : [];
   let base=raw.length ? raw : effectiveOptions(currentProduct,key);
   // Admin-defined variant rows are the single source of truth for memory, color and condition.
-  if(currentProduct.pricingMode==="variant" && ["condition","storage","color"].includes(key)){
+  if(Array.isArray(currentProduct.variantPrices) && currentProduct.variantPrices.length && ["condition","storage","color"].includes(key)){
     const rows=(Array.isArray(currentProduct.variantPrices)?currentProduct.variantPrices:[]).filter(row=>row&&row.active!==false);
     const matchingRows=rows.filter(row=>{
       if(key!=="storage" && normalizeStorageValue(row.storage)!==normalizeStorageValue(selectedOptions.storage)) return false;
@@ -522,7 +522,7 @@ function renderOptionSection(key,title,list){
 
     let priceLabel="";
     if(key==="condition"){
-      const cp=currentProduct.pricingMode==="variant"
+      const cp=Array.isArray(currentProduct.variantPrices)&&currentProduct.variantPrices.length
         ? num((currentProduct.variantPrices||[]).find(r=>r.condition===x.label&&r.color===selectedOptions.color&&r.storage===selectedOptions.storage)?.price)
         : conditionBasePrice(x,currentProduct);
       if(cp>0) priceLabel="<small>"+money(cp)+"</small>";
@@ -553,7 +553,7 @@ function renderOptionSection(key,title,list){
     : "";
 
   const note=key==="condition"
-    ? (currentProduct.pricingMode==="variant"
+    ? (Array.isArray(currentProduct.variantPrices)&&currentProduct.variantPrices.length
       ? '<div style="margin-top:7px;color:#64748b;font-size:12px">De prijs hangt af van de gekozen conditie, kleur en opslag. Batterij, BTW en inruil kunnen nog een toeslag hebben.</div>'
       : '<div style="margin-top:7px;color:#64748b;font-size:12px">De gekozen staat bepaalt de basisprijs. Opslag, kleur, batterij en andere opties worden daarna als +/- prijsverschil toegevoegd.</div>')
     : "";
@@ -605,7 +605,7 @@ function selectCustomProductOption(type,index,label){
 }
 function addCurrentProductToCart(){
   if(!currentProduct) return;
-  if(currentProduct.pricingMode==="variant"){
+  if(Array.isArray(currentProduct.variantPrices)&&currentProduct.variantPrices.length){
     const row=(Array.isArray(currentProduct.variantPrices)?currentProduct.variantPrices:[]).find(x=>x&&x.condition===selectedOptions.condition&&x.color===selectedOptions.color&&x.storage===selectedOptions.storage&&x.active!==false&&x.available!==false);
     if(!row){alert("Deze uitvoering is momenteel niet beschikbaar.");return;}
     if(row.stock!==undefined&&row.stock!==null&&row.stock!==""&&Number(row.stock)<1){alert("Deze uitvoering is momenteel uitverkocht.");return;}
@@ -745,7 +745,7 @@ function render(product,data){
   currentProduct=product; currentData=data;
   selectedOptions={};
   customSelectedOptions={};
-  ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'}; const variantKey=product.pricingMode==="variant"&&["storage","color","condition"].includes(key); const raw=Array.isArray(product[map[key]])?product[map[key]]:[]; const source=variantKey?effectiveOptions(product,key):(raw.length?raw:effectiveOptions(product,key)); const list=source.filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false&&((key==="storage"||key==="color")||x.available!==false))); if(list.length) selectedOptions[key]=list[0].label;});
+  ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'}; const variantKey=Array.isArray(product.variantPrices)&&product.variantPrices.length&&["storage","color","condition"].includes(key); const raw=Array.isArray(product[map[key]])?product[map[key]]:[]; const source=variantKey?effectiveOptions(product,key):(raw.length?raw:effectiveOptions(product,key)); const list=source.filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false&&((key==="storage"||key==="color")||x.available!==false))); if(list.length) selectedOptions[key]=list[0].label;});
   renderProductBody();
 }
 function renderBasicProductFallback(product){
