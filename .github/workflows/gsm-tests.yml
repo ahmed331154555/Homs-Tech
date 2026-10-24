@@ -1,12 +1,14 @@
-name: GSM System Tests
+name: HOMS TECH Automated Tests
 
 on:
   push:
     branches:
+      - feature/repair-quote-request-integration
       - build-gsm-system-2026-10-10
       - gsm-rebuild-no-firmware-2026-10-11
   pull_request:
     branches:
+      - feature/repair-quote-request-integration
       - build-gsm-system-2026-10-10
       - gsm-rebuild-no-firmware-2026-10-11
 
@@ -14,7 +16,7 @@ permissions:
   contents: read
 
 jobs:
-  gsm-tests:
+  tests:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -23,15 +25,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Check server syntax
         run: node --check server.js
-      - name: Check provider syntax
+      - name: Check GSM provider syntax
         run: node --check lib/gsm-provider.js
       - name: Check GSM storefront JavaScript
         run: node scripts/check-gsm-inline.js
       - name: Check admin inline JavaScript
         run: node scripts/check-admin-inline.js
-      - name: Run GSM provider tests
-        run: npm run test:gsm
+      - name: Run complete automated test suite
+        run: npm test
