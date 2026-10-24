@@ -13,12 +13,44 @@ const PORT = process.env.PORT || 3000;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  // Avoid keeping stale idle connections around when the managed database
+  // briefly restarts or drops an idle socket.
+  max: 5,
+  idleTimeoutMillis: 10000,
+  connectionTimeoutMillis: 10000,
+  keepAlive: true,
   ssl:
     process.env.DATABASE_URL &&
     !/localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL)
       ? { rejectUnauthorized: false }
       : false,
 });
+
+pool.on("error", (error) => {
+  console.error("Unexpected idle PostgreSQL client error:", error.message);
+});
+
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function queryWithConnectionRetry(sql, params, attempts = 2) {
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await pool.query(sql, params);
+    } catch (error) {
+      lastError = error;
+      const retryable = [
+        "ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "EPIPE",
+        "57P01", "57P02", "57P03", "08000", "08003", "08006"
+      ].includes(error?.code) ||
+        /connection terminated unexpectedly|connection closed|connection timeout/i.test(String(error?.message || ""));
+      if (!retryable || attempt === attempts) throw error;
+      console.warn(`PostgreSQL connection failed during query (attempt ${attempt}/${attempts}); retrying once.`);
+      await wait(400 * attempt);
+    }
+  }
+  throw lastError;
+}
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: false, limit: "10kb" }));
@@ -3024,9 +3056,11 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
         }
       }
     }
-    await pool.query(
+    // Idempotent update: retry once if PostgreSQL drops the connection mid-request.
+    await queryWithConnectionRetry(
       "UPDATE site_settings SET data = $1 WHERE id = 1",
-      [JSON.stringify(incoming)]
+      [JSON.stringify(incoming)],
+      2
     );
 
     res.json({
