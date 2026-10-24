@@ -751,13 +751,11 @@ function renderOptionSection(key,title,list){
         (image?'<img class="battery-option-photo" src="'+esc(image)+'" alt="" loading="lazy">':'')+
         '<span class="battery-option-copy"><span class="battery-option-name">'+esc(x.label)+'</span>'+
         (description?'<span class="battery-option-description">'+esc(description)+'</span>':'')+
-        '</span><span class="battery-option-price">'+(priceLabel?priceLabel.replace(/<\/?small>/g,""):"")+
-        +'</span></button>';
+        '</span><span class="battery-option-price">'+(priceLabel?priceLabel.replace(/<\/?small>/g,""):"")+'</span></button>';
     }
 
     return '<button type="button" class="option-btn '+(active?"active":"")+
-      (availableNow?"":" unavailable")+'"'+click+'>'+esc(x.label)+priceLabel+
-      +'</button>';
+      (availableNow?"":" unavailable")+'"'+click+'>'+esc(x.label)+priceLabel+'</button>';
   }).join("");
 
   const help=key==="condition"
