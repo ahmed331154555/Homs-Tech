@@ -6342,7 +6342,7 @@ async function save(isAuto=false){
       setStatus("✕ Vul eerst het merk in voordat je opslaat.","error");
       return false;
     }
-    if(phone.pricingMode==="variant" && Array.isArray(phone.variantPrices)){
+    if(phone.setupWizard && phone.pricingMode==="variant" && Array.isArray(phone.variantPrices)){
       const invalid=phone.variantPrices.find(row=>!Number.isFinite(Number(row.price)) || Number(row.price)<=0);
       if(invalid){
         setStatus("✕ Controleer de vaste prijzen: elke prijs moet een geldig bedrag van € 0 of hoger zijn.","error");
