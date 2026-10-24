@@ -873,8 +873,11 @@ data.phones
 
 if(Array.isArray(data.phones)){
 
-devices = data.phones.filter(phone=>!isRemovedLegacyPhone(phone)).map((phone, index) => ({
-        _index: index,
+devices = data.phones
+      .map((phone, index) => ({ phone, originalIndex: index }))
+      .filter(({ phone }) => !isRemovedLegacyPhone(phone))
+      .map(({ phone, originalIndex }) => ({
+        _index: originalIndex,
         name: phone.name || "Smartphone",
         brand: phone.brand || "",
         price: phone.price || phone.salePrice || phone.sellPrice || phone.verkoopprijs || "",
