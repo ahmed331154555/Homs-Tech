@@ -2404,9 +2404,38 @@ function canonicalPhoneOptionLabel(key,label){
   return raw;
 }
 
+function canonicalPhoneStorageLabel(value){
+  const raw=String(value??"").trim().replace(/\s+/g," ");
+  const m=raw.match(/^(\d+)\s*(GB|TB|MB)$/i);
+  return m?m[1]+" "+m[2].toUpperCase():raw;
+}
+function canonicalPhoneVariantText(value){
+  return String(value??"").trim().replace(/\s+/g," ").toLocaleLowerCase();
+}
 function normalizePhoneOptions(phone){
     if(phone.pricingMode!=="variant") phone.pricingMode="legacy";
     if(!Array.isArray(phone.variantPrices)) phone.variantPrices=[];
+    // Normalize equivalent storage labels and collapse duplicate variant rows (e.g. "128GB" vs "128 GB").
+    if(phone.pricingMode==="variant" && phone.variantPrices.length){
+      const unique=new Map();
+      phone.variantPrices.forEach((source)=>{
+        if(!source||typeof source!=="object")return;
+        const row={...source,storage:canonicalPhoneStorageLabel(source.storage)};
+        const key=JSON.stringify([canonicalPhoneVariantText(row.condition),canonicalPhoneVariantText(row.color),canonicalPhoneVariantText(row.storage)]);
+        const previous=unique.get(key);
+        if(!previous){unique.set(key,row);return;}
+        const prevHasPrice=previous.price!==""&&previous.price!==null&&previous.price!==undefined&&Number(previous.price)>0;
+        const rowHasPrice=row.price!==""&&row.price!==null&&row.price!==undefined&&Number(row.price)>0;
+        const chosen=rowHasPrice&&!prevHasPrice?row:previous;
+        unique.set(key,{...previous,...row,...chosen,
+          storage:canonicalPhoneStorageLabel(chosen.storage),
+          stock:Math.max(0,Number(previous.stock||0),Number(row.stock||0)),
+          active:previous.active!==false||row.active!==false,
+          available:previous.available!==false||row.available!==false
+        });
+      });
+      phone.variantPrices=[...unique.values()];
+    }
     const defaults={
       conditionOptions:[],
       storageOptions:[],
