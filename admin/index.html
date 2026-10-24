@@ -3009,6 +3009,9 @@ let phoneBulkPricingView=false;
 let phoneBulkPricingModelIndex="";
 let phoneBulkSearchText="";
 let phoneBulkSelectedRows=new Set();
+let phoneBulkFilterColor="";
+let phoneBulkFilterStorage="";
+let phoneBulkFilterCondition="";
 let phoneTreeSearch="";
 let phoneTreeBrand="Alle";
 let phoneTreeCustomGroups=[];
@@ -3786,6 +3789,20 @@ function phoneBulkSelectStorage(storage,checked){
   });
   renderPhoneBulkPricing();
 }
+function phoneBulkSelectFiltered(checked){
+  const color=phoneBulkFilterColor,storage=phoneBulkFilterStorage,condition=phoneBulkFilterCondition;
+  phoneBulkCurrentProductIndexes.forEach(modelIndex=>{
+    const phone=data.phones?.[modelIndex];if(!phone)return;
+    (phone.variantPrices||[]).forEach((row,i)=>{
+      if(!row||row.active===false)return;
+      const matchColor=!color||String(row.color||"").trim()===color;
+      const matchStorage=!storage||canonicalPhoneStorageLabel(row.storage)===canonicalPhoneStorageLabel(storage);
+      const matchCondition=!condition||String(row.condition||"").trim()===condition;
+      if(matchColor&&matchStorage&&matchCondition)phoneBulkSetRow(modelIndex,i,checked);
+    });
+  });
+  renderPhoneBulkPricing();
+}
 function phoneBulkSelectAll(checked){
   phoneBulkCurrentProductIndexes.forEach(modelIndex=>{
     const phone=data.phones?.[modelIndex];if(!phone)return;
@@ -3845,6 +3862,16 @@ function renderPhoneBulkPricing(){
       <div class="field"><label>Geselecteerde uitvoeringen</label><div style="padding:12px;border:1px solid #dbe2ea;border-radius:9px;font-weight:800">${countSelected}</div><div class="small">${familyProducts.length} productrecord(s) samengevoegd</div></div>
     </div>
     <section style="border:1px solid #dbe2ea;border-radius:12px;padding:14px;margin:16px 0;background:#fff"><h3 style="margin:0 0 6px">Foto per kleur</h3><p class="small" style="margin-bottom:12px">Voeg maximaal 4 fotos toe per kleur. De fotos worden gedeeld met alle uitvoeringen van dit model.</p>${colors.map(color=>phoneBulkColorGalleryHtml(color)).join("")||"<p class=\"small\">Geen kleuren geregistreerd in de uitvoeringen van dit model.</p>"}</section>
+    <section style="padding:14px;border:1px solid #dbe2ea;border-radius:12px;margin:16px 0;background:#fff">
+      <h3 style="margin:0 0 5px">Selecteer uitvoeringen op kenmerken</h3>
+      <p class="small" style="margin-bottom:12px">Kies optioneel kleur, geheugen en staat. Gebruik daarna de knop om alle overeenkomende uitvoeringen te selecteren voor dezelfde prijs of voorraad.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+        <div class="field"><label>Kleur</label><select id="phone-bulk-filter-color" onchange="phoneBulkFilterColor=this.value"><option value="">Alle kleuren</option>${colors.map(v=>'<option value="'+esc(v)+'"'+(phoneBulkFilterColor===v?' selected':'')+'>'+esc(v)+'</option>').join('')}</select></div>
+        <div class="field"><label>Geheugen</label><select id="phone-bulk-filter-storage" onchange="phoneBulkFilterStorage=this.value"><option value="">Alle geheugens</option>${storages.map(v=>'<option value="'+esc(v)+'"'+(phoneBulkFilterStorage===v?' selected':'')+'>'+esc(v)+'</option>').join('')}</select></div>
+        <div class="field"><label>Staat</label><select id="phone-bulk-filter-condition" onchange="phoneBulkFilterCondition=this.value"><option value="">Alle staten</option>${[...new Set(allRows.map(x=>String(x.row.condition||'').trim()).filter(Boolean))].sort().map(v=>'<option value="'+esc(v)+'"'+(phoneBulkFilterCondition===v?' selected':'')+'>'+esc(v)+'</option>').join('')}</select></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="btn btn-green" onclick="phoneBulkSelectFiltered(true)">Selecteer alle overeenkomende uitvoeringen</button><button type="button" class="btn btn-light" onclick="phoneBulkSelectFiltered(false)">Deselecteer overeenkomende uitvoeringen</button></div>
+    </section>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;padding:14px;background:#f8fafc;border:1px solid #dbe2ea;border-radius:12px;margin-bottom:16px">
       <div class="field" style="margin:0;min-width:150px;flex:1"><label>Prijs voor selectie (€)</label><input id="phone-bulk-price" type="number" min="0.01" step="0.01" placeholder="Bijv. 229"></div>
       <button type="button" class="btn btn-green" onclick="phoneBulkApply('price')">Pas prijs toe</button>
@@ -3863,7 +3890,7 @@ function phoneBulkGetColorGallery(color){if(!phoneBulkColorGalleryDraft[color]){
 function phoneBulkColorGalleryHtml(color){const imgs=phoneBulkGetColorGallery(color);let html='<div style="border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin:12px 0"><strong style="display:block;margin-bottom:10px">'+esc(color)+'</strong><div style="display:grid;grid-template-columns:repeat(4,minmax(100px,1fr));gap:10px">';for(let slot=0;slot<4;slot++){html+='<div style="min-width:0;border:1px solid #e2e8f0;border-radius:8px;padding:8px">';html+=imgs[slot]?'<img src="'+esc(imgs[slot])+'" alt="" style="width:100%;height:105px;object-fit:contain;display:block;background:#f8fafc;border-radius:6px;margin-bottom:7px">':'<div style="height:105px;display:flex;align-items:center;justify-content:center;background:#f8fafc;border-radius:6px;margin-bottom:7px;color:#64748b;font-size:12px">Geen foto</div>';html+='<label class="small" style="display:block;margin-bottom:5px">Foto '+(slot+1)+'</label><input type="file" accept="image/*" onchange="phoneBulkHandleColorImage(event,'+JSON.stringify(color)+','+slot+')" style="width:100%;font-size:11px">';if(imgs[slot])html+='<button type="button" class="btn btn-light" style="margin-top:6px;padding:6px 8px;font-size:11px" onclick="phoneBulkRemoveColorImage('+JSON.stringify(color)+','+slot+')">Verwijderen</button>';html+='</div>';}return html+'</div></div>';}
 function phoneBulkHandleColorImage(event,color,slot){const file=event.target.files&&event.target.files[0];if(!file)return;if(!file.type.startsWith('image/')){alert('Kies een afbeeldingsbestand.');event.target.value='';return;}if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}const reader=new FileReader();reader.onload=()=>{const imgs=phoneBulkGetColorGallery(color);imgs[slot]=String(reader.result||'');const family=(data.phones||[]).filter(p=>phoneBulkFamilyName(p)===phoneBulkPricingModelIndex);family.forEach(p=>{if(!p.colorGalleryImages||typeof p.colorGalleryImages!=='object')p.colorGalleryImages={};p.colorGalleryImages[color]=imgs.slice(0,4);if(!p.colorImages||typeof p.colorImages!=='object')p.colorImages={};if(imgs[0])p.colorImages[color]=imgs[0];else delete p.colorImages[color];});markChanged();renderPhoneBulkPricing();};reader.readAsDataURL(file);}
 function phoneBulkRemoveColorImage(color,slot){const imgs=phoneBulkGetColorGallery(color);imgs[slot]='';const family=(data.phones||[]).filter(p=>phoneBulkFamilyName(p)===phoneBulkPricingModelIndex);family.forEach(p=>{if(!p.colorGalleryImages||typeof p.colorGalleryImages!=='object')p.colorGalleryImages={};p.colorGalleryImages[color]=imgs.slice(0,4);if(!p.colorImages||typeof p.colorImages!=='object')p.colorImages={};if(imgs[0])p.colorImages[color]=imgs[0];else delete p.colorImages[color];});markChanged();renderPhoneBulkPricing();}
-function phoneBulkChooseFamily(family){phoneBulkPricingModelIndex=family;phoneBulkSelectedRows.clear();phoneBulkColorGalleryDraft={};renderPhoneBulkPricing();}
+function phoneBulkChooseFamily(family){phoneBulkPricingModelIndex=family;phoneBulkSelectedRows.clear();phoneBulkColorGalleryDraft={};phoneBulkFilterColor="";phoneBulkFilterStorage="";phoneBulkFilterCondition="";renderPhoneBulkPricing();}
 function phoneBulkFilterModels(query){
   const products=(data.phones||[]).map(p=>phoneBulkFamilyName(p));
   const families=[...new Set((data.phones||[]).filter(p=>Array.isArray(p.variantPrices)&&p.variantPrices.length).map(p=>phoneBulkFamilyName(p)))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
