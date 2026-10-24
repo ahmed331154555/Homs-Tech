@@ -856,6 +856,46 @@ textarea{
 .customer-card-hint{font-size:12px;color:#64748b;margin-top:10px}
 @media(max-width:600px){.customer-modal-backdrop{padding:10px;align-items:center}.customer-modal{padding:23px 17px;max-height:calc(100vh - 20px)}.customer-modal .grid{grid-template-columns:1fr}.customer-modal .field[style*="grid-column"]{grid-column:auto!important}.customer-modal .actions{display:flex;flex-wrap:wrap}.customer-modal .actions .btn{flex:1 1 auto}}
 
+
+/* Phone editor refresh: clearer sections, responsive option rows and image gallery */
+.phone-edit-mode{grid-template-columns:minmax(0,1fr)!important;gap:16px}
+.phone-edit-mode>.editor-panel{padding:clamp(14px,2.2vw,26px);border:1px solid #dce4ed;border-radius:20px;background:#fff;box-shadow:0 10px 32px rgba(15,23,42,.06)}
+.phone-edit-mode>.editor-panel>.card-head{position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:4px 0 18px;margin-bottom:20px;border-bottom:1px solid #e8edf3}
+.phone-edit-mode>.editor-panel>.card-head .card-title{font-size:clamp(20px,2vw,27px)!important;letter-spacing:-.025em;color:#101828}
+.phone-edit-mode>.editor-panel>.card-head .small{max-width:650px;line-height:1.5;margin-top:7px}
+.phone-edit-mode .phone-back-catalog{margin-bottom:12px}
+.phone-edit-mode .grid{gap:14px}
+.phone-edit-mode .field{min-width:0;margin-bottom:5px}
+.phone-edit-mode .field>label{font-size:12px;letter-spacing:.02em;color:#475569}
+.phone-edit-mode .field input:not([type=checkbox]):not([type=radio]):not([type=file]),.phone-edit-mode .field select,.phone-edit-mode .field textarea,.phone-edit-mode .editor-panel>input,.phone-edit-mode .editor-panel>textarea{min-height:44px;border:1px solid #d8e1eb;border-radius:11px;padding:11px 12px;background:#fff;transition:border-color .15s,box-shadow .15s}
+.phone-edit-mode .field input:focus,.phone-edit-mode .field select:focus,.phone-edit-mode .field textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.10);outline:none}
+.phone-edit-mode .card{margin-top:18px!important;padding:clamp(13px,2vw,20px);border:1px solid #e1e8f0!important;border-radius:16px;background:#fbfcfe}
+.phone-edit-mode .card-title{font-size:16px;color:#172033;letter-spacing:-.01em}
+.phone-edit-mode .card .small{line-height:1.55}
+.phone-edit-mode .images-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.phone-edit-mode .image-box{padding:10px;border:1px solid #e1e8f0;border-radius:13px;background:#fff;text-align:left}
+.phone-edit-mode .image-preview,.phone-edit-mode .empty-preview{height:140px;border-radius:10px;background:#f1f5f9}
+.phone-edit-mode .image-box input[type=file]{font-size:11px;margin-top:6px}
+.phone-edit-mode .image-box .btn{font-size:11px;padding:8px;margin-top:6px;border-radius:8px}
+.phone-edit-mode input[type=checkbox],.phone-edit-mode input[type=radio]{accent-color:#16a34a}
+.phone-edit-mode .save-bar{border:1px solid #dfe7ef;box-shadow:0 10px 35px rgba(15,23,42,.14);border-radius:16px}
+.phone-edit-mode .actions{gap:8px}
+.phone-edit-mode button{transition:transform .12s ease,filter .12s ease}
+.phone-edit-mode button:hover{filter:brightness(.98)}
+.phone-edit-mode .btn{border-radius:10px}
+.phone-edit-mode .btn-green{background:#16a34a}
+.phone-edit-mode .btn-light{border:1px solid #dce4ed}
+@media(max-width:700px){
+ .phone-edit-mode>.editor-panel{padding:13px;border-radius:15px}
+ .phone-edit-mode>.editor-panel>.card-head{flex-direction:column}
+ .phone-edit-mode>.editor-panel>.card-head>div:last-child{width:100%}
+ .phone-edit-mode .images-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .phone-edit-mode .image-preview,.phone-edit-mode .empty-preview{height:120px}
+ .phone-edit-mode .grid{grid-template-columns:1fr}
+ .phone-edit-mode .card{padding:12px}
+ .phone-edit-mode .card [style*="grid-template-columns:minmax(180px,1fr) 125px"]{grid-template-columns:minmax(0,1fr)!important}
+}
+
 </style>
 <style>
 .permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
