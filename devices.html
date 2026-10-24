@@ -918,8 +918,9 @@ camera: ""
 }
 
 
+// Do not show hard-coded sample products when the saved catalog is empty.
 if(!devices.length){
-devices = defaultDevices;
+devices = [];
 }
 
 
@@ -961,7 +962,8 @@ document.querySelectorAll("[data-phone]").forEach(el => {
 el.href = "#";
 });
 
-renderDevices(defaultDevices);
+// Keep the catalog empty on load errors instead of showing fake sample products.
+renderDevices([]);
 
 }
 
