@@ -1820,6 +1820,7 @@ function priceProductFromCatalog(data, item) {
   const requestedCustom=options.custom&&typeof options.custom==="object"&&!Array.isArray(options.custom)?options.custom:{};
   const verifiedCustom={};
   let customTotal=0;
+  let customValidationError="";
   for(const type of ["optionGroups","addonGroups"]){
     const groups=Array.isArray(product[type])?product[type]:[];
     groups.forEach((group,index)=>{
@@ -1827,15 +1828,16 @@ function priceProductFromCatalog(data, item) {
       const requested=String(requestedCustom[key]??"");
       if(!requested)return;
       const option=(Array.isArray(group?.options)?group.options:[]).find(x=>x&&String(x.label)===requested&&x.active!==false&&x.available!==false);
-      if(!option)throw new Error("Een extra of variant is niet meer beschikbaar. Controleer uw winkelwagen.");
+      if(!option){customValidationError="Een extra of variant is niet meer beschikbaar. Controleer uw winkelwagen.";return;}
       const stock=option.stock;
       if(stock!==undefined&&stock!==null&&stock!==""&&(!Number.isFinite(Number(stock))||Number(stock)<1)){
-        throw new Error("Deze optie is momenteel niet op voorraad.");
+        customValidationError="Deze optie is momenteel niet op voorraad.";return;
       }
       verifiedCustom[key]=requested;
       customTotal+=serverOptionDelta(option);
     });
   }
+  if(customValidationError)return {error:customValidationError};
   if(product.pricingMode==="variant"){
     const row=(Array.isArray(product.variantPrices)?product.variantPrices:[]).find(x=>
       x && String(x.condition)===String(chosen.condition?.label||"") &&
