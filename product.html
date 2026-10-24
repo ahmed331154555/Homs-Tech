@@ -824,7 +824,9 @@ function renderProductBody(){
   });
   const area=document.getElementById("productArea");
   const images=Array.isArray(product.images)?product.images.filter(Boolean):[];
-  const galleryImages=images.length ? images : (product.image ? [product.image] : []);
+  const baseImages=images.length ? images : (product.image ? [product.image] : []);
+  const selectedColorImage=product.colorImages&&selectedOptions.color?String(product.colorImages[selectedOptions.color]||""):"";
+  const galleryImages=selectedColorImage?[selectedColorImage,...baseImages.filter(x=>x!==selectedColorImage)]:baseImages;
   const selectedCustomImage=(()=>{
     for(const type of ["optionGroups","addonGroups"]){
       const groups=Array.isArray(product[type])?product[type]:[];
@@ -836,7 +838,7 @@ function renderProductBody(){
     }
     return "";
   })();
-  const mainImage=selectedCustomImage||galleryImages[0]||"";
+  const mainImage=selectedCustomImage||selectedColorImage||galleryImages[0]||"";
   galleryImagesState=galleryImages.slice();
   galleryIndex=0;
   let gallery=mainImage?`<div class="gallery-wrap">
