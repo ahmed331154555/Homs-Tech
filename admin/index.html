@@ -2695,9 +2695,7 @@ function deleteDeviceCategory(i){
   }
 }
 
-// Never delete a real catalog item based only on its model name. Older cleanup
-// logic removed legitimate products such as iPhone 11 and auto-saved the loss.
-let removedLegacyPhonesPendingSave = 0;
+// Safety: never automatically remove catalog products during normalization.
 function isRemovedLegacyPhone(phone){return false;}
 
 function normalizeData(){
@@ -2846,10 +2844,7 @@ function normalizeData(){
     return phone;
   });
 
-  const beforePhoneCleanup=data.phones.length;
-  data.phones=data.phones.filter(x=>!isRemovedLegacyPhone(x));
-  removedLegacyPhonesPendingSave += beforePhoneCleanup-data.phones.length;
-
+  // Intentionally do not filter/delete products during normalization.
   data.phones.forEach(x=>{
     while(x.images.length<4) x.images.push("");
     if(x.image && !x.images[0]) x.images[0]=x.image;
@@ -2962,11 +2957,6 @@ async function loadData(){
 
     setStatus("✓ Gegevens geladen","success");
 
-    if(removedLegacyPhonesPendingSave>0){
-      const removed=removedLegacyPhonesPendingSave;
-      removedLegacyPhonesPendingSave=0;
-      setTimeout(async()=>{await save(true);setStatus("✓ "+removed+" oude standaard-iPhones verwijderd en opgeslagen","success");},0);
-    }
 
   }catch(e){
 
