@@ -334,14 +334,20 @@ function effectiveOptions(product,key){
   const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'};
   const raw=Array.isArray(product[map[key]]) ? product[map[key]] : [];
   const defaults={
-    condition:[{label:'Zichtbaar gebruikt',priceDelta:0,active:true,available:true},{label:'Licht gebruikt',priceDelta:0,active:true,available:true},{label:'Zo goed als nieuw',priceDelta:0,active:true,available:true}],
-    storage:[{label:'64 GB',priceDelta:0,active:true,available:true},{label:'128 GB',priceDelta:0,active:true,available:true},{label:'256 GB',priceDelta:0,active:true,available:true},{label:'512 GB',priceDelta:0,active:true,available:true},{label:'1 TB',priceDelta:0,active:true,available:true}],
-    color:[{label:'Zwart',priceDelta:0,active:true,available:true},{label:'Wit',priceDelta:0,active:true,available:true},{label:'Blauw',priceDelta:0,active:true,available:true},{label:'Rood',priceDelta:0,active:true,available:true}],
     battery:[{label:'Standaard',priceDelta:0,active:true,available:true},{label:'Nieuw (100%)',priceDelta:30,active:true,available:true}],
     vat:[{label:'Zonder BTW',priceDelta:0,active:true,available:true},{label:'Met BTW',priceDelta:10,active:true,available:true}],
     tradeIn:[{label:'Nee',priceDelta:0,active:true,available:true},{label:'Ja',priceDelta:0,active:true,available:true}]
   };
-  let list=raw.length?raw:defaults[key];
+  let list=raw.slice();
+  if(!list.length && ['condition','storage','color'].includes(key)){
+    const property={condition:'condition',storage:'storage',color:'color'}[key];
+    const rows=Array.isArray(product.variantPrices)?product.variantPrices:[];
+    const labels=[...new Set(rows.filter(row=>row&&row.active!==false&&row.available!==false).map(row=>String(row[property]||'').trim()).filter(Boolean))];
+    const scalar=String(product[property]||'').trim();
+    list=(labels.length?labels:(scalar?[scalar]:[])).map(label=>({label,priceDelta:0,active:true,available:true}));
+  }else if(!list.length){
+    list=defaults[key]||[];
+  }
   list=list.map(x=>{const y={...x}; if(key==='battery') y.priceDelta=String(y.label||'').toLowerCase().includes('nieuw')?30:0; if(key==='vat') y.priceDelta=String(y.label||'').toLowerCase().includes('met btw')?10:0; return y;});
   return list.filter(x=>x&&x.label&&(x.active!==false && x.enabled!==false));
 }
