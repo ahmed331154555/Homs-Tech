@@ -3197,7 +3197,7 @@ app.get("/admin/", (req, res) => {
 });
 
 // Start server
-async function initializeDatabaseWithRetry(maxAttempts = 5) {
+async function initializeDatabaseWithRetry(maxAttempts = 12) {
   let lastError;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
@@ -3207,7 +3207,7 @@ async function initializeDatabaseWithRetry(maxAttempts = 5) {
       lastError = error;
       console.error(`Database initialization attempt ${attempt}/${maxAttempts} failed:`, error?.message || error);
       if (attempt < maxAttempts) {
-        await wait(Math.min(1000 * attempt, 5000));
+        await wait(Math.min(2000 * attempt, 10000));
       }
     }
   }
