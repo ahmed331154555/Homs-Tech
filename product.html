@@ -46,7 +46,7 @@ nav a:hover{background:#2563eb}
 .option-btn.active{border-color:#2563eb;background:#eff6ff;box-shadow:0 0 0 2px rgba(37,99,235,.10)}
 .option-btn.unavailable{opacity:.55;text-decoration:line-through;cursor:not-allowed;background:#f3f4f6;border-color:#d1d5db}.sold-x{color:#dc2626;font-weight:900;margin-left:6px;text-decoration:none}
 .option-btn small{display:block;color:#6b7280;font-weight:600;margin-top:2px}
-.color-stock-label{display:block;margin-top:5px;font-size:11px;font-weight:800;line-height:1.25;color:#15803d}.color-stock-label.sold-out{color:#dc2626}.color-stock-label.stock-unknown{color:#64748b}
+
 /* Battery options: product-page cards, isolated from other option controls */
 .option-grid.battery-option-grid{display:grid;grid-template-columns:1fr;gap:10px}
 .battery-option-card{display:flex;align-items:center;gap:12px;width:100%;min-width:0;text-align:left;border:1px solid #d1d5db;border-radius:14px;padding:12px;background:#fff;color:#111827;cursor:pointer;box-sizing:border-box}
@@ -59,7 +59,7 @@ nav a:hover{background:#2563eb}
 .battery-option-card .battery-option-price{font-size:12px;font-weight:800;white-space:nowrap;margin-left:auto}
 @media(max-width:480px){.battery-option-card{gap:9px;padding:10px}.battery-option-card .battery-option-photo{width:42px;height:42px;flex-basis:42px}.battery-option-card .battery-option-price{font-size:11px}}
 
-.order-summary{margin-top:22px;background:#111827;color:#fff;border-radius:18px;padding:20px}
+.order-summary{margin-top:22px;background:#111827;color:#fff;border-radius:18px;padding:20px}.inventory-notice{margin:10px 0 14px;padding:12px 13px;border:1px solid rgba(255,255,255,.2);border-radius:10px;font-size:13px;line-height:1.45}.inventory-notice p{margin:5px 0 9px;color:#e5e7eb}.inventory-notice.sold-out{border-color:rgba(245,158,11,.45)}.inventory-notice.in-stock{border-color:rgba(34,197,94,.35);color:#bbf7d0}.inventory-alt-title{font-size:12px;color:#e5e7eb;margin:8px 0 7px}.inventory-alt-list{display:flex;flex-wrap:wrap;gap:7px}.inventory-alt-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:7px 10px;background:#f5e7c5;color:#111827;font-size:12px;font-weight:700;cursor:pointer}.inventory-alt-dot{font-size:11px;color:#6b7280}
 .order-summary h3{font-size:20px;margin-bottom:12px}
 .summary-row{display:flex;justify-content:space-between;gap:15px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12)}
 .summary-row:last-child{border-bottom:0}
@@ -665,7 +665,7 @@ function renderOptionSection(key,title,list){
     });
     base=values.map(label=>({label,active:true,enabled:true,available:matchingRows.some(row=>
       (key==="storage"?normalizeStorageValue(row[key])===normalizeStorageValue(label):String(row[key]||"").trim()===label)
-      &&row.available!==false&&!(row.stock!==undefined&&row.stock!==null&&row.stock!==""&&Number.isFinite(Number(row.stock))&&Number(row.stock)<1)),priceDelta:0}));
+      &&row.available!==false),priceDelta:0}));
   }
   // Legacy products without variant rows can still be linked through their individual
   // admin records. Never let this fallback override the real variant matrix.
@@ -716,19 +716,13 @@ function renderOptionSection(key,title,list){
 
     if(key==="color"){
       const img=colorVariantImage(x.label);
-      const stockStatus=colorStockStatus(x.label);
-      const colorAvailable=availableNow&&stockStatus.available;
-      const colorClick=colorAvailable
+      const colorClick=availableNow
         ? ' onclick="selectProductOption(\'color\',\''+esc(x.label)+'\')"'
         : ' disabled aria-disabled="true"';
-      const stockLabel=stockStatus.known
-        ? (stockStatus.count>0?'<span class="color-stock-label">Op voorraad: '+esc(stockStatus.count)+'</span>':'<span class="color-stock-label sold-out">Niet op voorraad</span>')
-        : (colorAvailable?'<span class="color-stock-label stock-unknown">Beschikbaar</span>':'<span class="color-stock-label sold-out">Niet op voorraad</span>');
       return '<button type="button" class="option-btn color-option-btn '+(active?"active ":"")+
-        (colorAvailable?"":"unavailable")+'"'+colorClick+' aria-label="Kleur '+esc(x.label)+'">'+
+        (availableNow?"":"unavailable")+'"'+colorClick+' aria-label="Kleur '+esc(x.label)+'">'+
         (img?'<img class="color-option-image" src="'+esc(img)+'" alt="'+esc(x.label)+'">':"")+
-        '<span class="color-option-label">'+esc(x.label)+'</span>'+stockLabel+
-        (colorAvailable?"":'<span class="sold-x">✕ Niet beschikbaar</span>')+'</button>';
+        '<span class="color-option-label">'+esc(x.label)+'</span></button>';
     }
 
     const click=availableNow
@@ -830,6 +824,73 @@ function addCurrentProductToCart(){
   writeCart(items);
   const msg=document.getElementById("cartAdded"); if(msg){msg.style.display="block";msg.textContent="✓ Toegevoegd aan winkelwagen";setTimeout(()=>msg.style.display="none",2200)}
 }
+function inventoryAvailability(product){
+  const storage=selectedOptions.storage||productRecordStorage(product);
+  const color=selectedOptions.color||productRecordColor(product);
+  const condition=selectedOptions.condition||product.condition||product.conditie||"";
+  const rows=familyVariantRows(product);
+  if(rows.length){
+    const matching=rows.filter(({row})=>
+      normalizeStorageValue(row.storage)===normalizeStorageValue(storage) &&
+      normalizeColorValue(row.color)===normalizeColorValue(color) &&
+      (!condition||String(row.condition||"")===String(condition))
+    );
+    const available=matching.some(({row})=>row.active!==false&&row.available!==false&&
+      !(row.stock!==undefined&&row.stock!==null&&row.stock!==""&&Number.isFinite(Number(row.stock))&&Number(row.stock)<1));
+    const alternatives=[];
+    rows.forEach(({row})=>{
+      const ok=row.active!==false&&row.available!==false&&
+        !(row.stock!==undefined&&row.stock!==null&&row.stock!==""&&Number.isFinite(Number(row.stock))&&Number(row.stock)<1);
+      if(!ok)return;
+      const st=String(row.storage||"").trim(),co=String(row.color||"").trim();
+      if(!st||!co||(!condition?false:String(row.condition||"")!==String(condition)))return;
+      if(normalizeStorageValue(st)===normalizeStorageValue(storage)&&normalizeColorValue(co)===normalizeColorValue(color))return;
+      if(!alternatives.some(x=>normalizeStorageValue(x.storage)===normalizeStorageValue(st)&&normalizeColorValue(x.color)===normalizeColorValue(co))) alternatives.push({storage:st,color:co});
+    });
+    return {available,known:matching.length>0,alternatives};
+  }
+  const record=findFamilyRecord(storage,color);
+  const p=record?.p;
+  if(p){
+    const raw=p.stock??p.quantity??p.stockQuantity;
+    const known=raw!==undefined&&raw!==null&&raw!==""&&Number.isFinite(Number(raw));
+    const available=p.active!==false&&p.available!==false&&String(p.stockStatus||"").toLowerCase()!=="sold"&&(!known||Number(raw)>0);
+    const alternatives=[];
+    productFamilyRecords(product).forEach(({p:other})=>{
+      const st=productRecordStorage(other),co=productRecordColor(other);
+      if(!st||!co||(normalizeStorageValue(st)===normalizeStorageValue(storage)&&normalizeColorValue(co)===normalizeColorValue(color)))return;
+      const qty=other.stock??other.quantity??other.stockQuantity;
+      const hasQty=qty!==undefined&&qty!==null&&qty!==""&&Number.isFinite(Number(qty));
+      if(other.active===false||other.available===false||String(other.stockStatus||"").toLowerCase()==="sold"||(hasQty&&Number(qty)<1))return;
+      if(!alternatives.some(x=>normalizeStorageValue(x.storage)===normalizeStorageValue(st)&&normalizeColorValue(x.color)===normalizeColorValue(co)))alternatives.push({storage:st,color:co});
+    });
+    return {available,known,alternatives};
+  }
+  return {available:true,known:false,alternatives:[]};
+}
+function renderInventoryNotice(product){
+  const status=inventoryAvailability(product);
+  const labelStorage=selectedOptions.storage||productRecordStorage(product);
+  const labelColor=selectedOptions.color||productRecordColor(product);
+  const label=[product.name||"Apparaat",labelStorage,labelColor].filter(Boolean).join(" ");
+  const alternatives=status.alternatives.slice(0,8).map(item=>
+    '<button type="button" class="inventory-alt-chip" onclick="selectInventoryAlternative(\''+esc(item.storage)+'\',\''+esc(item.color)+'\')">'+
+    '<span class="inventory-alt-dot" aria-hidden="true">●</span>'+esc(item.color)+' '+esc(item.storage)+'</button>'
+  ).join("");
+  if(status.available){
+    return '<div class="inventory-notice in-stock"><strong>✓ Deze uitvoering is op voorraad.</strong></div>';
+  }
+  return '<div class="inventory-notice sold-out"><strong>ⓘ Deze uitvoering is momenteel uitverkocht.</strong>'+
+    (status.alternatives.length?'<p>Andere kleuren en opslaggroottes zijn wel op voorraad.</p><div class="inventory-alt-title">Wel op voorraad:</div><div class="inventory-alt-list">'+alternatives+'</div>':'<p>Er zijn momenteel geen andere uitvoeringen als beschikbaar geregistreerd.</p>')+
+    '</div>';
+}
+function selectInventoryAlternative(storage,color){
+  const storageOption=effectiveOptions(currentProduct,"storage").find(x=>normalizeStorageValue(x.label)===normalizeStorageValue(storage));
+  const colorOption=effectiveOptions(currentProduct,"color").find(x=>normalizeColorValue(x.label)===normalizeColorValue(color));
+  if(storageOption)selectedOptions.storage=storageOption.label;
+  if(colorOption)selectedOptions.color=colorOption.label;
+  renderProductBody();
+}
 function renderProductBody(){
   const product=currentProduct,data=currentData;
   ["optionGroups","addonGroups"].forEach(type=>{
@@ -928,7 +989,7 @@ function renderProductBody(){
     ${selectedOptions.condition?`<div style="margin-top:-12px;margin-bottom:16px;color:#64748b;font-size:13px">Prijs voor staat: <strong style="color:#111827">${esc(selectedOptions.condition)}</strong></div>`:""}
     ${specs?`<div class="meta">${specs}</div>`:""}
     ${optionsHtml}
-    ${hasOptions?`<div class="order-summary"><h3>Jouw bestelling</h3>${["storage","color","condition","battery","vat","tradeIn"].filter(k=>selectedOptions[k]).map(k=>`<div class="summary-row"><span>${esc(k==="storage"?"Geheugen":k==="color"?"Kleur":k==="condition"?"Conditie":k==="battery"?"Batterij":k==="vat"?"BTW":"Inruil")}</span><strong>${esc(selectedOptions[k])}</strong></div>`).join("")}${Object.entries(customSelectedOptions).filter(([k,v])=>v).map(([k,v])=>{const [type,index]=k.split(":");const group=currentProduct?.[type]?.[Number(index)];return `<div class="summary-row"><span>${esc(group?.name||"Extra")}</span><strong>${esc(v)}</strong></div>`}).join("")}<div class="summary-total">Totaal: ${money(total)}</div></div>`:""}
+    ${hasOptions?`<div class="order-summary"><h3>Jouw bestelling</h3>${renderInventoryNotice(product)}${["storage","color","condition","battery","vat","tradeIn"].filter(k=>selectedOptions[k]).map(k=>`<div class="summary-row"><span>${esc(k==="storage"?"Geheugen":k==="color"?"Kleur":k==="condition"?"Conditie":k==="battery"?"Batterij":k==="vat"?"BTW":"Inruil")}</span><strong>${esc(selectedOptions[k])}</strong></div>`).join("")}${Object.entries(customSelectedOptions).filter(([k,v])=>v).map(([k,v])=>{const [type,index]=k.split(":");const group=currentProduct?.[type]?.[Number(index)];return `<div class="summary-row"><span>${esc(group?.name||"Extra")}</span><strong>${esc(v)}</strong></div>`}).join("")}<div class="summary-total">Totaal: ${money(total)}</div></div>`:""}
     ${description?`<div class="description">${esc(description)}</div>`:""}
     ${(adminSpecs.length || specsList.length)?`<div class="spec-box"><h2>Productspecificaties</h2><div class="spec-list">
       ${adminSpecs.map(([label,value])=>`<div><strong>${esc(label)}:</strong> ${esc(value)}</div>`).join("")}
