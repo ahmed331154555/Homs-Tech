@@ -315,6 +315,7 @@ return n ? "https://wa.me/"+n : "#";
 }
 
 let selectedOptions={};
+let customSelectedOptions={};
 let currentProduct=null;
 let currentData=null;
 
@@ -388,6 +389,16 @@ function calculateTotal(product){
     const list=effectiveOptions(product,key);
     const chosen=list.find(x=>x.label===selectedOptions[key]);
     if(chosen) total+=optionDelta(chosen);
+  });
+  (Array.isArray(product?.optionGroups)?product.optionGroups:[]).forEach((group,i)=>{
+    const selected=customSelectedOptions["optionGroups:"+i];
+    const option=(group.options||[]).find(x=>x.label===selected&&x.active!==false&&x.available!==false);
+    if(option) total+=optionDelta(option);
+  });
+  (Array.isArray(product?.addonGroups)?product.addonGroups:[]).forEach((group,i)=>{
+    const selected=customSelectedOptions["addonGroups:"+i];
+    const option=(group.options||[]).find(x=>x.label===selected&&x.active!==false&&x.available!==false);
+    if(option) total+=optionDelta(option);
   });
   return Math.max(0,total);
 }
@@ -767,11 +778,33 @@ function cartKey(){return "homsTechCart";}
 function readCart(){try{return JSON.parse(localStorage.getItem(cartKey())||"[]")}catch(e){return []}}
 function writeCart(items){localStorage.setItem(cartKey(),JSON.stringify(items));updateCartCount()}
 function updateCartCount(){const el=document.getElementById("cartCount");if(el)el.textContent=readCart().reduce((n,x)=>n+Number(x.qty||1),0)}
+function renderCustomChoiceGroups(product,type,titlePrefix){
+  const groups=Array.isArray(product?.[type])?product[type]:[];
+  return groups.map((group,i)=>{
+    const key=type+":"+i;
+    const options=(Array.isArray(group.options)?group.options:[]).filter(x=>x&&x.label&&x.active!==false);
+    if(!options.length)return "";
+    const available=options.filter(x=>x.available!==false);
+    if(!customSelectedOptions[key]||!available.some(x=>x.label===customSelectedOptions[key])) customSelectedOptions[key]=available[0]?.label||"";
+    return '<div class="option-section"><div class="option-title">'+esc(group.name||titlePrefix)+'</div><div class="option-grid">'+options.map(option=>{
+      const active=customSelectedOptions[key]===option.label;
+      const disabled=option.available===false;
+      const image=option.image?'<img src="'+esc(option.image)+'" alt="" style="width:38px;height:38px;object-fit:cover;border-radius:7px;display:block;margin:0 auto 5px">':"";
+      const delta=optionDelta(option);
+      return '<button type="button" class="option-btn '+(active?'active':'')+(disabled?' unavailable':'')+'" '+(disabled?'disabled':'onclick="selectCustomProductOption(\''+esc(type)+'\','+i+',\''+esc(option.label)+'\')"')+'>'+image+esc(option.label)+(delta?'<small>'+(delta>0?'+':'')+money(delta)+'</small>':"")+'</button>';
+    }).join("")+'</div></div>';
+  }).join("");
+}
+function selectCustomProductOption(type,index,label){
+  customSelectedOptions[type+":"+index]=label;
+  renderProductBody();
+}
 function addCurrentProductToCart(){
   if(!currentProduct) return;
   const total=calculateTotal(currentProduct);
   const options={};
   ["storage","color","condition","battery","vat","tradeIn"].forEach(k=>{if(selectedOptions[k]) options[k]=selectedOptions[k]});
+  options.custom=customSelectedOptions;
   const items=readCart();
   const key=String(type)+"|"+String(currentProductId)+"|"+JSON.stringify(options);
   const found=items.find(x=>x.key===key);
@@ -837,7 +870,9 @@ function renderProductBody(){
     renderOptionSection("condition","3. Productconditie",product.conditionOptions),
     renderOptionSection("battery","4. Batterij",product.batteryOptions),
     renderOptionSection("vat","5. BTW-keuze",product.vatOptions),
-    renderOptionSection("tradeIn","6. Inruil oude telefoon",product.tradeInOptions)
+    renderOptionSection("tradeIn","6. Inruil oude telefoon",product.tradeInOptions),
+    renderCustomChoiceGroups(product,"optionGroups","Variant"),
+    renderCustomChoiceGroups(product,"addonGroups","Extra")
   ].join(""):"";
 
   area.innerHTML=`<div class="product"><div class="gallery">${gallery}</div><div class="info">
@@ -879,6 +914,7 @@ function render(product,data){
   if(!product){document.getElementById("productArea").innerHTML=`<div class="empty"><h2>Product niet gevonden</h2><p>Dit apparaat bestaat niet of is niet meer beschikbaar.</p></div>`;return;}
   currentProduct=product; currentData=data;
   selectedOptions={};
+  customSelectedOptions={};
   ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'}; const raw=Array.isArray(product[map[key]])?product[map[key]]:[]; const list=(raw.length?raw:effectiveOptions(product,key)).filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false&&((key==="storage"||key==="color")||x.available!==false))); if(list.length) selectedOptions[key]=list[0].label;});
   renderProductBody();
 }
