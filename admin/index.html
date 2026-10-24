@@ -3744,6 +3744,8 @@ function renderPhones(){
     </div>`;
   };
 
+  const customOptionsEditor = renderCustomProductOptionsEditor(phone, selectedPhoneIndex);
+
   const pricingModeEditor = `
     <div class="card" style="margin-top:16px;border:1px solid #cfe0ff">
       <div class="card-title">💶 Prijsinstelling voor dit product</div>
@@ -3836,6 +3838,7 @@ function renderPhones(){
           <div style="margin-top:14px"><strong>Extra specificaties</strong>${specs}<button class="btn btn-light" type="button" onclick="data.phones[${selectedPhoneIndex}].specifications.push({label:'',value:''});renderPhones();markChanged()">+ Specificatie</button></div>
         </div>
 
+        ${customOptionsEditor}
         ${pricingModeEditor}
         ${optionEditor('conditionOptions','1. Productconditie','Hier beheer je de beschikbare condities. In de nieuwe methode wordt de prijs per conditie + kleur + opslag apart ingesteld.')}
         ${optionEditor('storageOptions','2. Geheugen / opslag','Opslag is altijd een prijsverschil (+/-) bovenop de gekozen conditie.')}
@@ -3856,6 +3859,66 @@ function renderPhones(){
         </div>
       </div>
     </div>`;
+}
+
+function renderCustomProductOptionsEditor(phone,index){
+  if(!Array.isArray(phone.optionGroups)) phone.optionGroups=[];
+  if(!Array.isArray(phone.addonGroups)) phone.addonGroups=[];
+  const renderGroups=(groups,type,title,help)=>`
+    <div class="card" style="margin-top:16px;border:1px solid #cbd5e1">
+      <div class="card-head"><div><div class="card-title">${title}</div><div class="small">${help}</div></div>
+      <button type="button" class="btn btn-light" onclick="addCustomOptionGroup(${index},'${type}')">＋ Groep</button></div>
+      ${groups.map((group,gi)=>`
+        <div style="border:1px solid #e2e8f0;border-radius:12px;padding:13px;margin:12px 0">
+          <div class="grid">
+            <div class="field"><label>Naam van de groep</label><input value="${esc(group.name||'')}" oninput="data.phones[${index}].${type}[${gi}].name=this.value;markChanged()"></div>
+            <div class="field"><label>Keuze</label><select onchange="data.phones[${index}].${type}[${gi}].singleSelect=this.value==='true';markChanged()"><option value="true" ${group.singleSelect!==false?'selected':''}>Kies één optie</option><option value="false" ${group.singleSelect===false?'selected':''}>Meerdere opties</option></select></div>
+          </div>
+          ${(Array.isArray(group.options)?group.options:[]).map((option,oi)=>`
+            <div style="display:grid;grid-template-columns:minmax(120px,1fr) minmax(90px,.55fr) minmax(140px,1fr) auto;gap:9px;align-items:center;border-top:1px solid #edf0f5;padding:12px 0">
+              <input aria-label="Optienaam" placeholder="Naam optie" value="${esc(option.label||'')}" oninput="data.phones[${index}].${type}[${gi}].options[${oi}].label=this.value;markChanged()">
+              <input aria-label="Prijsverschil" type="number" step="0.01" value="${esc(option.priceDelta??0)}" placeholder="Prijs +/-" oninput="data.phones[${index}].${type}[${gi}].options[${oi}].priceDelta=Number(this.value||0);markChanged()">
+              <div style="min-width:0"><div class="small">Afbeelding</div>${option.image?'<img src="'+esc(option.image)+'" alt="" style="width:42px;height:42px;object-fit:cover;border-radius:8px">':''}<input type="file" accept="image/*" aria-label="Afbeelding optie" onchange="handleCustomOptionImage(event,${index},'${type}',${gi},${oi})" style="max-width:160px"></div>
+              <button type="button" class="btn btn-red" onclick="removeCustomOption(${index},'${type}',${gi},${oi})">×</button>
+            </div>
+            <div class="grid" style="margin-bottom:10px">
+              <div class="field"><label>Beschikbaarheid</label><select onchange="data.phones[${index}].${type}[${gi}].options[${oi}].available=this.value==='true';markChanged()"><option value="true" ${option.available!==false?'selected':''}>Beschikbaar</option><option value="false" ${option.available===false?'selected':''}>Niet beschikbaar</option></select></div>
+              <div class="field"><label>Voorraad (اختياري)</label><input type="number" min="0" step="1" value="${esc(option.stock??'')}" oninput="data.phones[${index}].${type}[${gi}].options[${oi}].stock=this.value===''?null:Number(this.value);markChanged()"></div>
+            </div>`).join('')}
+          <button type="button" class="btn btn-light" onclick="addCustomOption(${index},'${type}',${gi})">＋ Optie toevoegen</button>
+          <button type="button" class="btn btn-red" onclick="removeCustomOptionGroup(${index},'${type}',${gi})">Groep verwijderen</button>
+        </div>`).join('')}
+    </div>`;
+  return renderGroups(phone.optionGroups,'optionGroups','🎛️ Extra varianten','Voeg zelf eigenschappen toe, met waarden, prijsverschillen, voorraad en afbeeldingen.')
+    + renderGroups(phone.addonGroups,'addonGroups','➕ Extra’s / add-ons','Bijvoorbeeld een batterij-upgrade. De prijs wordt bij het product opgeteld.');
+}
+function addCustomOptionGroup(index,type){
+  const phone=data.phones[index];if(!phone)return;
+  if(!Array.isArray(phone[type]))phone[type]=[];
+  phone[type].push({name:type==='addonGroups'?'Nieuwe extra':'Nieuwe eigenschap',singleSelect:true,options:[{label:'Nieuwe optie',priceDelta:0,available:true,stock:null,image:''}]});
+  renderPhones();markChanged();
+}
+function addCustomOption(index,type,groupIndex){
+  const group=data.phones[index]?.[type]?.[groupIndex];if(!group)return;
+  if(!Array.isArray(group.options))group.options=[];
+  group.options.push({label:'',priceDelta:0,available:true,stock:null,image:''});
+  renderPhones();markChanged();
+}
+function removeCustomOption(index,type,groupIndex,optionIndex){
+  data.phones[index]?.[type]?.[groupIndex]?.options?.splice(optionIndex,1);
+  renderPhones();markChanged();
+}
+function removeCustomOptionGroup(index,type,groupIndex){
+  data.phones[index]?.[type]?.splice(groupIndex,1);
+  renderPhones();markChanged();
+}
+function handleCustomOptionImage(event,index,type,groupIndex,optionIndex){
+  const file=event.target.files?.[0];if(!file)return;
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');event.target.value='';return;}
+  if(file.size>2*1024*1024){alert('Afbeelding maximaal 2 MB.');event.target.value='';return;}
+  const reader=new FileReader();
+  reader.onload=()=>{const option=data.phones[index]?.[type]?.[groupIndex]?.options?.[optionIndex];if(option){option.image=reader.result;renderPhones();markChanged();}};
+  reader.readAsDataURL(file);
 }
 
 function handlePhoneImage(event,i,j){
