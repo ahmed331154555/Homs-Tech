@@ -3682,15 +3682,17 @@ function renderPhones(){
   }
   if(selectedPhoneIndex>=data.phones.length) selectedPhoneIndex=data.phones.length-1;
   const phone=data.phones[selectedPhoneIndex];
+  if(phone.setupWizard){
+    if(!Array.isArray(phone.images))phone.images=["","","",""];
+    while(phone.images.length<4)phone.images.push("");
+    if(!phone.colorImages||typeof phone.colorImages!=="object")phone.colorImages={};
+    box.innerHTML=phoneWizardStageHtml(phone,selectedPhoneIndex);
+    return;
+  }
   normalizePhoneOptions(phone);
   while(!Array.isArray(phone.images)) phone.images=[];
   while(phone.images.length<4) phone.images.push("");
   if(!Array.isArray(phone.specifications)) phone.specifications=[];
-
-  if(phone.setupWizard){
-    box.innerHTML=phoneWizardStageHtml(phone,selectedPhoneIndex);
-    return;
-  }
   const list=renderPhoneFolderTree();
 
   const optionEditor=(key,title,help)=>{
@@ -3995,7 +3997,6 @@ function phoneWizardGenerate(index){
     p.variantPrices.push(prev?{...prev}:{condition,color,storage,price:"",stock:Number(p.stock||0),active:true,available:p.stockStatus!=="unavailable",images:p.images.slice()});
   }
   p.pricingMode="variant";p.setupDone=true;p.setupStep=5;
-  normalizePhoneOptions(p);
   renderPhones();markChanged();
 }
 function phoneWizardStageHtml(phone,index){
