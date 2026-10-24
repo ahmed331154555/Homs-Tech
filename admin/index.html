@@ -6220,6 +6220,31 @@ async function save(isAuto=false){
   if(!canEditCurrentPage()){setStatus("✕ Je hebt geen toestemming om wijzigingen op te slaan.","error");return false;}
   if(isAuto) autoSaveAgain=false;
   if(loading) return false;
+  // Validate the phone currently being edited before persisting the catalog.
+  // This is scoped to the phone page so unrelated admin sections keep their existing save flow.
+  if(currentPage==="phones" && phoneEditOnly){
+    const phone=data.phones?.[selectedPhoneIndex];
+    if(!phone || !String(phone.name||"").trim()){
+      setStatus("✕ Vul eerst de modelnaam in voordat je opslaat.","error");
+      document.querySelector('[data-focus-key="phone-name"]')?.focus();
+      return false;
+    }
+    if(!String(phone.brand||"").trim()){
+      setStatus("✕ Vul eerst het merk in voordat je opslaat.","error");
+      return false;
+    }
+    if(phone.pricingMode==="variant" && Array.isArray(phone.variantPrices)){
+      const invalid=phone.variantPrices.find(row=>!Number.isFinite(Number(row.price)) || Number(row.price)<0);
+      if(invalid){
+        setStatus("✕ Controleer de vaste prijzen: elke prijs moet een geldig bedrag van € 0 of hoger zijn.","error");
+        return false;
+      }
+    }
+    if(phone.price!=="" && phone.price!==null && phone.price!==undefined && (!Number.isFinite(Number(phone.price)) || Number(phone.price)<0)){
+      setStatus("✕ De standaardprijs moet een geldig bedrag van € 0 of hoger zijn.","error");
+      return false;
+    }
+  }
   loading=true;
   setStatus("Opslaan...","info");
 
