@@ -3687,6 +3687,10 @@ function renderPhones(){
   while(phone.images.length<4) phone.images.push("");
   if(!Array.isArray(phone.specifications)) phone.specifications=[];
 
+  if(phone.setupWizard){
+    box.innerHTML=phoneWizardStageHtml(phone,selectedPhoneIndex);
+    return;
+  }
   const list=renderPhoneFolderTree();
 
   const optionEditor=(key,title,help)=>{
@@ -3941,6 +3945,82 @@ function renderPhoneVariantPriceTable(phone){
 }
 
 function addPhone(){
+  const phone={
+    name:"",brand:"Apple",price:"",storage:"",color:"",condition:"Zo goed als nieuw",
+    warranty:"12 maanden",description:"",subtitle:"",sku:"",stock:0,stockStatus:"available",
+    category:"Smartphones",images:["","","",""],colorImages:{},specifications:[],
+    pricingMode:"variant",variantPrices:[],conditionOptions:[],storageOptions:[],colorOptions:[],
+    batteryOptions:[{label:"Standaard",active:true,enabled:true,available:true,priceDelta:0},{label:"Nieuw (100%)",active:true,enabled:true,available:true,priceDelta:30}],
+    vatOptions:[{label:"Zonder BTW",active:true,enabled:true,available:true,priceDelta:0}],
+    tradeInOptions:[{label:"Nee",active:true,enabled:true,available:true,priceDelta:0}],
+    setupWizard:true,setupStep:1,setupColors:[],setupStorages:[],setupConditions:["Zo goed als nieuw"],setupDone:false
+  };
+  data.phones.push(phone);
+  selectedPhoneIndex=data.phones.length-1;
+  phoneEditOnly=true;
+  renderPhones();markChanged();
+}
+function phoneWizardUpload(event,index,kind,slot,color){
+  const phone=data.phones[index],file=event.target.files?.[0];if(!phone||!file)return;
+  if(!file.type.startsWith("image/")){alert("Kies een afbeeldingsbestand.");event.target.value="";return;}
+  if(file.size>2*1024*1024){alert("Elke afbeelding mag maximaal 2 MB zijn.");event.target.value="";return;}
+  const reader=new FileReader();
+  reader.onload=()=>{
+    if(kind==="base")phone.images[slot]=reader.result;
+    else {if(!phone.colorImages||typeof phone.colorImages!=="object")phone.colorImages={};phone.colorImages[color]=reader.result;}
+    renderPhones();markChanged();
+  };
+  reader.readAsDataURL(file);
+}
+function phoneWizardSetList(index,key,value,checked){
+  const phone=data.phones[index];if(!phone)return;
+  if(!Array.isArray(phone[key]))phone[key]=[];
+  phone[key]=checked?[...new Set([...phone[key],value])]:phone[key].filter(x=>x!==value);
+  renderPhones();markChanged();
+}
+function phoneWizardGenerate(index){
+  const p=data.phones[index];if(!p)return;
+  if(!String(p.name||"").trim()){alert("Vul eerst de modelnaam in.");return;}
+  if(!(p.setupColors||[]).length){alert("Selecteer minstens één kleur.");return;}
+  if(!(p.setupStorages||[]).length){alert("Selecteer minstens één geheugengrootte.");return;}
+  if(!(p.setupConditions||[]).length){alert("Selecteer minstens één staat.");return;}
+  p.colorOptions=p.setupColors.map(label=>({label,active:true,enabled:true,available:true,priceDelta:0,image:p.colorImages?.[label]||""}));
+  p.storageOptions=p.setupStorages.map(label=>({label,active:true,enabled:true,available:true,priceDelta:0}));
+  p.conditionOptions=p.setupConditions.map(label=>({label,active:true,enabled:true,available:true,basePrice:Number(p.price||0)}));
+  const old=Array.isArray(p.variantPrices)?p.variantPrices:[];
+  const oldByKey=new Map(old.map(x=>[JSON.stringify([x.condition,x.color,x.storage]),x]));
+  p.variantPrices=[];
+  for(const condition of p.setupConditions)for(const color of p.setupColors)for(const storage of p.setupStorages){
+    const key=JSON.stringify([condition,color,storage]),prev=oldByKey.get(key);
+    p.variantPrices.push(prev?{...prev}:{condition,color,storage,price:"",stock:Number(p.stock||0),active:true,available:p.stockStatus!=="unavailable",images:p.images.slice()});
+  }
+  p.pricingMode="variant";p.setupDone=true;p.setupStep=5;
+  normalizePhoneOptions(p);
+  renderPhones();markChanged();
+}
+function phoneWizardStageHtml(phone,index){
+  const step=Number(phone.setupStep||1);
+  const stepButton=(n,label)=>`<button type="button" class="btn ${step===n?'btn-green':'btn-light'}" onclick="data.phones[${index}].setupStep=${n};renderPhones()">${n}. ${label}</button>`;
+  const field=(label,html)=>`<div class="field"><label>${label}</label>${html}</div>`;
+  const colors=["Zwart","Wit","Blauw","Groen","Rood","Paars","Roze","Geel","Goud","Zilver","Middernacht","Sterrenlicht","Titanium naturel","Anders"];
+  const storages=["32 GB","64 GB","128 GB","256 GB","512 GB","1 TB","2 TB"];
+  const conditions=["Zo goed als nieuw","Licht gebruikt","Zichtbaar gebruikt","Nieuw"];
+  const imageCard=(src,label,kind,slot,color)=>`<div style="border:1px solid #e2e8f0;border-radius:12px;padding:10px;min-width:0"><div style="height:100px;background:#f8fafc;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:8px">${src?`<img src="${esc(src)}" alt="" style="max-width:100%;max-height:100%;object-fit:contain">`:'<span style="color:#94a3b8">Geen foto</span>'}</div><strong style="display:block;margin-bottom:6px">${label}</strong><input type="file" accept="image/*" onchange="phoneWizardUpload(event,${index},'${kind}',${slot},'${String(color||'').replace(/'/g,"\\'")}')" style="width:100%;font-size:12px"></div>`;
+  let body="";
+  if(step===1){
+    body=`<div class="grid">${field("Naam / model",`<input data-focus-key="phone-name" value="${esc(phone.name||'')}" placeholder="iPhone 13" oninput="data.phones[${index}].name=this.value;markChanged()">`)}${field("Merk",`<select onchange="data.phones[${index}].brand=this.value;markChanged()">${["Apple","Samsung","Google","Xiaomi","OnePlus","Overige"].map(x=>`<option ${phone.brand===x?'selected':''}>${x}</option>`).join("")}</select>`)}${field("Voorraad totaal",`<input type="number" min="0" step="1" value="${esc(phone.stock??0)}" oninput="data.phones[${index}].stock=Math.max(0,Number(this.value||0));markChanged()">`)}${field("Beschikbaarheid",`<select onchange="data.phones[${index}].stockStatus=this.value;markChanged()"><option value="available" ${phone.stockStatus!=="unavailable"?'selected':''}>Verkrijgbaar</option><option value="unavailable" ${phone.stockStatus==="unavailable"?'selected':''}>Niet beschikbaar</option></select>`)}</div><h3>Vier basisfoto's</h3><p class="small">Upload maximaal 4 foto's. Per kleur kun je in de volgende stap een aparte foto koppelen.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:12px">${[0,1,2,3].map(i=>imageCard(phone.images?.[i],"Foto "+(i+1),"base",i,"")).join("")}</div>`;
+  }else if(step===2){
+    body=`<p class="small">Selecteer alleen de kleuren die je werkelijk aanbiedt. Upload desgewenst per kleur een foto; bij de keuze in de webshop wordt die foto getoond.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px">${colors.map(c=>`<div style="border:1px solid #e2e8f0;border-radius:12px;padding:12px"><label style="display:flex;align-items:center;gap:8px;font-weight:700"><input type="checkbox" ${(phone.setupColors||[]).includes(c)?'checked':''} onchange="phoneWizardSetList(${index},'setupColors','${c}',this.checked)">${c}</label>${(phone.setupColors||[]).includes(c)?imageCard(phone.colorImages?.[c]||"","Foto kleur "+c,"color",0,c):""}</div>`).join("")}</div><div class="field" style="margin-top:12px"><label>Eigen kleur toevoegen</label><div style="display:flex;gap:8px"><input id="customPhoneColor" placeholder="Bijv. Titanium blauw"><button class="btn btn-light" type="button" onclick="(()=>{const e=document.getElementById('customPhoneColor');const v=e.value.trim();if(v){phoneWizardSetList(${index},'setupColors',v,true);e.value='';}})()">＋ Toevoegen</button></div></div>`;
+  }else if(step===3){
+    body=`<p class="small">Selecteer de geheugengroottes die je voor dit model wilt aanbieden.</p><div style="display:flex;flex-wrap:wrap;gap:10px">${storages.map(v=>`<label style="border:1px solid #cbd5e1;border-radius:10px;padding:12px;display:flex;gap:8px;align-items:center"><input type="checkbox" ${(phone.setupStorages||[]).includes(v)?'checked':''} onchange="phoneWizardSetList(${index},'setupStorages','${v}',this.checked)">${v}</label>`).join("")}</div><div class="field" style="margin-top:12px"><label>Andere geheugengrootte</label><div style="display:flex;gap:8px"><input id="customPhoneStorage" placeholder="Bijv. 2 TB"><button class="btn btn-light" type="button" onclick="(()=>{const e=document.getElementById('customPhoneStorage');const v=e.value.trim();if(v){phoneWizardSetList(${index},'setupStorages',v,true);e.value='';}})()">＋ Toevoegen</button></div></div>`;
+  }else if(step===4){
+    body=`<p class="small">Selecteer de uiterlijke staat die je wilt aanbieden. Je kunt later de prijs per combinatie instellen.</p><div style="display:flex;flex-wrap:wrap;gap:10px">${conditions.map(v=>`<label style="border:1px solid #cbd5e1;border-radius:10px;padding:12px;display:flex;gap:8px;align-items:center"><input type="checkbox" ${(phone.setupConditions||[]).includes(v)?'checked':''} onchange="phoneWizardSetList(${index},'setupConditions','${v}',this.checked)">${v}</label>`).join("")}</div><div class="field" style="margin-top:12px"><label>Andere staat toevoegen</label><div style="display:flex;gap:8px"><input id="customPhoneCondition" placeholder="Bijv. Grade B"><button class="btn btn-light" type="button" onclick="(()=>{const e=document.getElementById('customPhoneCondition');const v=e.value.trim();if(v){phoneWizardSetList(${index},'setupConditions',v,true);e.value='';}})()">＋ Toevoegen</button></div></div>`;
+  }else{
+    body=`<h3>Prijzen en voorraad per uitvoering</h3><p class="small">Elke combinatie hieronder wordt een eigen uitvoering met eigen prijs, voorraad en beschikbaarheid.</p><div style="overflow:auto"><table style="width:100%;border-collapse:collapse;min-width:700px"><thead><tr><th style="text-align:left;padding:9px">Uitvoering</th><th style="text-align:left;padding:9px">Prijs (€)</th><th style="text-align:left;padding:9px">Voorraad</th><th style="padding:9px">Verkrijgbaar</th></tr></thead><tbody>${(phone.variantPrices||[]).map((r,i)=>`<tr><td style="padding:8px;border-top:1px solid #e2e8f0">${esc(phone.name)} ${esc(r.storage)} ${esc(r.color)} · ${esc(r.condition)}</td><td style="padding:8px;border-top:1px solid #e2e8f0"><input type="number" min="0" step="0.01" value="${esc(r.price??'')}" placeholder="0,00" style="width:120px" oninput="data.phones[${index}].variantPrices[${i}].price=this.value===''?'':Number(this.value);markChanged()"></td><td style="padding:8px;border-top:1px solid #e2e8f0"><input type="number" min="0" step="1" value="${esc(r.stock??phone.stock??0)}" style="width:90px" oninput="data.phones[${index}].variantPrices[${i}].stock=Math.max(0,Number(this.value||0));markChanged()"></td><td style="text-align:center;padding:8px;border-top:1px solid #e2e8f0"><input type="checkbox" ${r.available!==false?'checked':''} onchange="data.phones[${index}].variantPrices[${i}].available=this.checked;markChanged()"></td></tr>`).join("")}</tbody></table></div><h3 style="margin-top:20px">Batterij</h3><p class="small">Kies welke batterijopties de klant ziet en bepaal de toeslag voor een nieuwe batterij.</p>${(phone.batteryOptions||[]).map((b,i)=>`<div style="display:grid;grid-template-columns:minmax(140px,1fr) 130px auto;gap:10px;align-items:center;margin:8px 0"><input value="${esc(b.label)}" oninput="data.phones[${index}].batteryOptions[${i}].label=this.value;markChanged()"><input type="number" step="0.01" value="${esc(b.priceDelta??0)}" aria-label="Toeslag batterij" oninput="data.phones[${index}].batteryOptions[${i}].priceDelta=Number(this.value||0);markChanged()"><span class="small">Toeslag (€)</span></div>`).join("")}<button class="btn btn-light" type="button" onclick="data.phones[${index}].batteryOptions.push({label:'Nieuwe batterij',active:true,enabled:true,available:true,priceDelta:0});renderPhones();markChanged()">＋ Batterijoptie toevoegen</button>`;
+  }
+  return `<div class="card" style="max-width:1150px;margin:0 auto;border:1px solid #dbe5f1;border-radius:16px;padding:clamp(14px,3vw,28px)"><div style="display:flex;justify-content:space-between;gap:12px;align-items:start;flex-wrap:wrap"><div><div class="small">HOMS TECH · PRODUCT CONFIGURATOR</div><h2 style="margin:6px 0">${esc(phone.name||"Nieuwe telefoon toevoegen")}</h2><p class="small">Stap ${step} van 5 — vul de gegevens in en ga verder.</p></div><button type="button" class="btn btn-light" onclick="showPhoneCatalog()">← Terug naar telefoons</button></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 22px">${stepButton(1,"Basis & foto's")}${stepButton(2,"Kleuren")}${stepButton(3,"Geheugen")}${stepButton(4,"Staat")}${stepButton(5,"Prijs & batterij")}</div><div>${body}</div><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:24px;padding-top:16px;border-top:1px solid #e2e8f0"><button type="button" class="btn btn-light" ${step===1?'disabled':''} onclick="data.phones[${index}].setupStep=${step-1};renderPhones()">← Vorige</button><div style="display:flex;gap:8px;flex-wrap:wrap">${step<4?`<button type="button" class="btn btn-green" onclick="data.phones[${index}].setupStep=${step+1};renderPhones()">Volgende →</button>`:step===4?`<button type="button" class="btn btn-green" onclick="phoneWizardGenerate(${index})">✓ Klaar — maak uitvoeringen</button>`:`<button type="button" class="btn btn-green" onclick="save(false)">💾 Opslaan en publiceren</button>`}</div></div></div>`;
+}
+
   data.phones.push({
     name:"Nieuwe iPhone",
     brand:"Apple",
