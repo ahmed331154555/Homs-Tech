@@ -222,6 +222,36 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
   <link rel="stylesheet" href="assets/homs-global-nav.css">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5361560605027063"
      crossorigin="anonymous"></script>
+
+<style id="homs-tradein-embed-mode-v1">
+/* Compact in-product trade-in modal: show the actual buyback flow only. */
+body.embed-tradein{background:#f7faff!important}
+body.embed-tradein .topbar,
+body.embed-tradein header.head,
+body.embed-tradein nav,
+body.embed-tradein .hero,
+body.embed-tradein .info,
+body.embed-tradein footer,
+body.embed-tradein .homs-global-nav,
+body.embed-tradein .ht-topbar,
+body.embed-tradein .ht-header{display:none!important}
+body.embed-tradein .main{padding-top:12px!important;padding-bottom:20px!important}
+body.embed-tradein .main>.wrap{width:100%!important;max-width:none!important;margin:0!important;padding:0 12px!important}
+body.embed-tradein .panel{border-radius:14px!important;box-shadow:none!important}
+body.embed-tradein .panel-head{padding-top:14px!important}
+body.embed-tradein .forzastyle-panel{margin-top:0!important}
+</style>
+<script>
+(function(){
+  try {
+    if(new URLSearchParams(window.location.search).get('embed')==='1') {
+      document.documentElement.classList.add('tradein-embed');
+      document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('embed-tradein');});
+    }
+  } catch(e) {}
+})();
+</script>
+
 </head>
 <body>
 
