@@ -4033,7 +4033,7 @@ function renderPhones(){
       <div class="card-title">${title}</div>
       <div class="small" style="margin-bottom:12px">${help}</div>
       ${opts.map((o,i)=>`
-        <div style="display:grid;grid-template-columns:minmax(180px,1fr) 125px 125px 125px 120px;gap:10px;align-items:center;margin-bottom:9px">
+        <div style="display:grid;grid-template-columns:minmax(180px,1fr) 125px 125px 125px 120px ${key==='storageOptions'?'105px':'0px'};gap:10px;align-items:center;margin-bottom:9px">
           <input value="${esc(o.label)}" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].label=this.value;markChanged()">
           <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${o.active!==false?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].active=this.checked;data.phones[${selectedPhoneIndex}].${key}[${i}].enabled=this.checked;markChanged()"> Actief</label>
           <label style="display:flex;align-items:center;gap:7px;font-weight:700"><input type="checkbox" ${o.available!==false?'checked':''} onchange="data.phones[${selectedPhoneIndex}].${key}[${i}].available=this.checked;markChanged()"> Beschikbaar</label>
@@ -4042,6 +4042,7 @@ function renderPhones(){
             : `<input type="number" step="0.01" value="${esc(o.priceDelta??0)}" placeholder="+/- €" oninput="data.phones[${selectedPhoneIndex}].${key}[${i}].priceDelta=Number(this.value||0);markChanged()">`
           }
           <span class="small">${isCondition?'Basisprijs':'Prijsverschil'}</span>
+          ${key==='storageOptions'?'<button type="button" class="btn btn-red" onclick="removePhoneOption('+selectedPhoneIndex+',\'storageOptions\','+i+')">Verwijderen</button>':''}
         </div>`).join('')}
     </div>`;
   };
@@ -4161,6 +4162,21 @@ function renderPhones(){
         </div>
       </div>
     </div>`;
+}
+
+function removePhoneOption(phoneIndex,key,optionIndex){
+  const phone=data.phones?.[phoneIndex];
+  if(!phone||!Array.isArray(phone[key])||!phone[key][optionIndex])return;
+  const option=phone[key][optionIndex];
+  const label=String(option.label||"").trim();
+  const matchingRows=(phone.variantPrices||[]).filter(row=>String(row?.storage||"").trim()===label);
+  const message='Geheugenoptie "'+label+'" verwijderen?'+(matchingRows.length?'\n\nOok '+matchingRows.length+' prijscombinaties met exact deze schrijfwijze worden verwijderd. Andere schrijfwijzen blijven behouden.':'')+'\n\nDeze actie wordt pas definitief nadat je op Wijzigingen opslaan drukt.';
+  if(!confirm(message))return;
+  phone[key].splice(optionIndex,1);
+  if(key==="storageOptions"&&Array.isArray(phone.variantPrices)&&matchingRows.length){
+    phone.variantPrices=phone.variantPrices.filter(row=>String(row?.storage||"").trim()!==label);
+  }
+  renderPhones();markChanged();
 }
 
 function renderCustomProductOptionsEditor(phone,index){
