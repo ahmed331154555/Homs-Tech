@@ -3197,7 +3197,24 @@ app.get("/admin/", (req, res) => {
 });
 
 // Start server
-initDatabase()
+async function initializeDatabaseWithRetry(maxAttempts = 5) {
+  let lastError;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await initDatabase();
+      return;
+    } catch (error) {
+      lastError = error;
+      console.error(`Database initialization attempt ${attempt}/${maxAttempts} failed:`, error?.message || error);
+      if (attempt < maxAttempts) {
+        await wait(Math.min(1000 * attempt, 5000));
+      }
+    }
+  }
+  throw lastError;
+}
+
+initializeDatabaseWithRetry()
   .then(() => {
     app.listen(PORT, () => {
       console.log(
@@ -3207,10 +3224,9 @@ initDatabase()
   })
   .catch((error) => {
     console.error(
-      "Database initialization failed:",
+      "Database initialization failed after retries:",
       error
     );
-
     process.exit(1);
   });
 
