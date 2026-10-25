@@ -2040,6 +2040,26 @@ app.post("/api/webshop/orders", async (req, res) => {
       ]
     );
 
+    // Send the customer an order confirmation to the email address used at checkout.
+    if (process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL) {
+      try {
+        const order = result.rows[0];
+        const itemLines = safeItems.map(item => `<li>${escapeHtml(String(item.name || item.title || "Product"))} × ${Number(item.qty || 1)} — €${(Number(item.unitPrice || 0) * Number(item.qty || 1)).toFixed(2)}</li>`).join("");
+        const customerResponse = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: process.env.RESEND_FROM_EMAIL,
+            to: [email],
+            subject: `HOMS TECH — bevestiging van bestelling #${order.id}`,
+            html: `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;padding:24px;color:#203449;line-height:1.6"><h1 style="color:#0f2740">Bedankt voor je bestelling!</h1><p>Hallo ${escapeHtml(name)},</p><p>We hebben je bestelling bij HOMS TECH ontvangen. Hieronder vind je het overzicht.</p><p><strong>Bestelnummer:</strong> #${escapeHtml(String(order.id))}</p><h3>Bestelde producten</h3><ul>${itemLines}</ul><p style="font-size:18px"><strong>Totaal: €${total.toFixed(2)}</strong></p><p><strong>Betaalmethode:</strong> ${escapeHtml(paymentMethod)}</p><p><strong>Betaalstatus:</strong> ${escapeHtml(String(order.payment_status || "Unpaid"))}</p><p><strong>Verzendadres:</strong><br>${escapeHtml(street)} ${escapeHtml(houseNumber)}<br>${escapeHtml(postcode)} ${escapeHtml(city)}</p><p>Bewaar deze e-mail als bevestiging van je bestelling. We sturen een update als de status verandert.</p><p>Met vriendelijke groet,<br><strong>Team HOMS TECH</strong></p><p style="font-size:12px;color:#64748b">https://homs-tech.nl</p></div>`
+          })
+        });
+        if (!customerResponse.ok) console.error("Webshop customer confirmation failed:", customerResponse.status, await customerResponse.text().catch(() => ""));
+        else console.log("Webshop customer confirmation sent:", (await customerResponse.json().catch(() => ({}))).id || "ok");
+      } catch (mailError) { console.error("Webshop customer confirmation error:", mailError.message); }
+    }
+
     // Notify the site owner when a webshop order is created.
     const notifyEmail = process.env.ORDER_NOTIFICATION_EMAIL || process.env.REPAIR_REQUEST_EMAIL;
     if (process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL && notifyEmail) {
