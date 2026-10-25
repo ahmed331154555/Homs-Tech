@@ -3549,7 +3549,7 @@ function renderServices(){
               <div class="service-image-controls">
                 <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" aria-label="Afbeelding uploaden" onchange="handleServiceImageUpload(event,${selectedServiceIndex})">
                 <small>JPG, PNG, WebP of GIF · maximaal 1,5 MB</small>
-                ${service[3] ? '<button class="btn btn-light" type="button" onclick="clearServiceImage('+ ${selectedServiceIndex} +')">Afbeelding verwijderen</button>' : ''}
+                ${service[3] ? '<button class="btn btn-light" type="button" onclick="clearServiceImage('+selectedServiceIndex+')">Afbeelding verwijderen</button>' : ''}
               </div>
             </div>
           </div>
