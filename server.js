@@ -1750,6 +1750,34 @@ app.post("/api/orders", async (req, res) => {
       ]
     );
 
+    // Notify the store owner for repair/service orders as well as quote-form requests.
+    if (clean.serviceCategory.toLowerCase() === "reparatie") {
+      const notifyEmail = process.env.REPAIR_REQUEST_EMAIL || process.env.ORDER_NOTIFICATION_EMAIL;
+      if (process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL && notifyEmail) {
+        try {
+          const appointment = isHomeRepair
+            ? `<p><b>Afspraak:</b> ${escapeHtml(clean.appointmentDate)} · ${escapeHtml(clean.appointmentTime)}</p>`
+            : "";
+          const mailResponse = await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              from: process.env.RESEND_FROM_EMAIL,
+              to: [notifyEmail],
+              subject: `Nieuwe HOMS TECH reparatiebestelling #${result.rows[0].id}`,
+              html: `<div style="font-family:Arial,sans-serif;color:#203449"><h2>Nieuwe reparatiebestelling #${result.rows[0].id}</h2><p><b>Toestel/service:</b> ${escapeHtml(clean.serviceName)}</p><p><b>Klant:</b> ${escapeHtml(clean.name)}</p><p><b>E-mail:</b> ${escapeHtml(clean.email)}</p><p><b>Telefoon:</b> ${escapeHtml(clean.phone)}</p><p><b>Prijs:</b> ${escapeHtml(clean.price || "Op aanvraag")} ${escapeHtml(clean.priceCurrency || "EUR")}</p>${appointment}<p><b>Opmerking:</b><br>${escapeHtml(clean.notes || "-").replace(/\\n/g, "<br>")}</p><p>Bekijk de aanvraag in de HOMS TECH-admin.</p></div>`
+            })
+          });
+          if (!mailResponse.ok) console.error("Service repair notification failed:", mailResponse.status, await mailResponse.text().catch(() => ""));
+          else console.log("Service repair notification sent:", result.rows[0].id);
+        } catch (mailError) {
+          console.error("Service repair notification error:", mailError);
+        }
+      } else {
+        console.error("Service repair notification skipped: missing RESEND_API_KEY, RESEND_FROM_EMAIL, or notification recipient");
+      }
+    }
+
     res.status(201).json({
       success: true,
       order: result.rows[0]
