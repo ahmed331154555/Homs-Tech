@@ -3697,8 +3697,11 @@ app.post("/api/chat", async (req, res) => {
       areas: Array.isArray(siteData.areas) ? siteData.areas.slice(0, 20) : [],
       services: Array.isArray(siteData.services) ? siteData.services.slice(0, 40) : []
     };
+    const priorHistory = history.length && history[history.length - 1].role === "user" && history[history.length - 1].content === message
+      ? history.slice(0, -1)
+      : history;
     const input = [
-      ...history,
+      ...priorHistory,
       { role: "user", content: message }
     ];
     const response = await fetch("https://api.openai.com/v1/responses", {
