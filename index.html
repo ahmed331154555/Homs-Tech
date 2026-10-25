@@ -129,16 +129,11 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 .screen-before-after{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px;margin:24px 0 30px;box-shadow:0 8px 24px rgba(7,29,45,.06)}
 .screen-before-after .section-title{margin-bottom:8px}
 .screen-ba-subtitle{text-align:center;color:var(--muted);font-size:13px;margin:0 0 20px}
-.screen-ba-stage{position:relative;width:min(100%,760px);height:330px;margin:auto;border-radius:12px;overflow:hidden;background:linear-gradient(115deg,#06477c 0%,#0d8ad5 48%,#4331b8 72%,#ec4899 100%);touch-action:pan-y;cursor:ew-resize;user-select:none;outline:none}
-.screen-ba-half{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.screen-ba-broken{background:linear-gradient(115deg,#06477c 0%,#0d8ad5 100%)}
-.screen-ba-clean{background:linear-gradient(115deg,#126fd2,#4737bf 65%,#ec4899);clip-path:inset(0 0 0 50%)}
-.screen-ba-phone{height:285px;width:148px;border:6px solid #111923;border-radius:27px;background:#030712;box-shadow:0 14px 28px #0008;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.screen-ba-screen{position:absolute;inset:4px;border-radius:19px;background:linear-gradient(155deg,#080c13 5%,#03060b 58%,#182231)}
-.screen-ba-clean .screen-ba-screen{background:linear-gradient(145deg,#1148c8 0%,#24a7f3 30%,#f6a0c4 48%,#ff542f 65%,#e60070 78%,#3926a5 100%)}
-.screen-ba-notch{position:absolute;z-index:2;top:4px;left:50%;transform:translateX(-50%);width:56px;height:15px;background:#030712;border-radius:0 0 10px 10px}
-.screen-ba-cracks{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 420'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1.6' opacity='.98'%3E%3Cpath d='M28 80L78 150 58 190 102 228 78 290 116 335M78 150L25 175M78 150L128 132 155 85M102 228L155 205 190 230M58 190L24 220M116 335L165 300 190 330M128 132L115 90M155 205L174 160M78 290L35 315'/%3E%3Ccircle cx='78' cy='150' r='30'/%3E%3Ccircle cx='155' cy='205' r='24'/%3E%3C/g%3E%3C/svg%3E");background-size:100% 100%}
-.screen-ba-divider{position:absolute;top:0;bottom:0;left:50%;width:2px;background:#fff;box-shadow:0 0 8px #0008;transform:translateX(-50%);z-index:5;pointer-events:none}
+.screen-ba-stage{position:relative;width:min(100%,760px);margin:auto;border-radius:12px;overflow:hidden;background:#f3f5f8}
+.screen-ba-photo-stage{height:auto;aspect-ratio:3/2;display:flex;align-items:center;justify-content:center}
+.screen-ba-photo{display:block;width:100%;height:100%;object-fit:contain;object-position:center}
+@media(max-width:520px){.screen-before-after{padding:16px 12px}.screen-ba-photo-stage{aspect-ratio:4/3}}
+
 @media(max-width:520px){.screen-before-after{padding:16px 12px}.screen-ba-stage{height:270px}.screen-ba-phone{height:225px;width:118px}}
 
 </style>
@@ -298,10 +293,8 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 
 <section class="screen-before-after" id="screenBeforeAfter" aria-label="Scherm reparatie">
  <h2 class="section-title">Van gebarsten naar als nieuw</h2>
- <div class="screen-ba-stage" id="screenBaStage" tabindex="0" role="slider" aria-label="Beweeg over de afbeelding om het scherm te herstellen" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
-  <div class="screen-ba-half screen-ba-broken"><div class="screen-ba-phone"><div class="screen-ba-screen"></div><div class="screen-ba-notch"></div><div class="screen-ba-cracks"></div></div></div>
-  <div class="screen-ba-half screen-ba-clean" id="screenBaClean"><div class="screen-ba-phone"><div class="screen-ba-screen"></div><div class="screen-ba-notch"></div></div></div>
-  <div class="screen-ba-divider" id="screenBaDivider"></div>
+ <div class="screen-ba-stage screen-ba-photo-stage">
+  <img class="screen-ba-photo" src="assets/screen-repair-before-after.jpg" alt="Smartphone met gebarsten scherm en hersteld scherm naast elkaar" loading="lazy">
  </div>
 </section>
 
