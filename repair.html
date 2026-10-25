@@ -323,6 +323,55 @@
       .ht-marquee{gap:28px!important}
       .ht-marquee-item{font-size:13px!important}
     }
+
+    /* Mobile-only refinement: preserve desktop layout and all page functionality */
+    @media (max-width: 600px) {
+      .ht-topbar { min-height: 30px !important; }
+      .ht-marquee-item { font-size: 11px !important; }
+      .ht-header .ht-container { padding-left: 14px !important; padding-right: 14px !important; }
+      .ht-header .ht-header-main {
+        min-height: 58px !important;
+        gap: 10px !important;
+        padding: 8px 0 !important;
+      }
+      .ht-header .ht-brand img { width: 122px !important; }
+      .ht-header .ht-actions { gap: 8px !important; font-size: 12px !important; }
+      .ht-header .ht-actions a { font-size: 12px !important; }
+      .ht-header .ht-search {
+        height: 40px !important;
+        border-radius: 10px !important;
+        margin: 0 0 2px !important;
+      }
+      .ht-header .ht-search input { min-width: 0 !important; font-size: 14px !important; }
+      .ht-header .ht-search button { padding: 0 14px !important; font-size: 14px !important; }
+      .ht-header .ht-nav {
+        min-height: 40px !important;
+        gap: 2px !important;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      .ht-header .ht-nav::-webkit-scrollbar { display: none; }
+      .ht-header .ht-nav a { font-size: 12px !important; padding: 8px 10px !important; }
+      .repair-hero { min-height: 0 !important; }
+      .hero-inner { padding: 38px 18px 56px !important; }
+      .eyebrow { font-size: 11px !important; letter-spacing: .35px !important; margin-bottom: 18px !important; }
+      .hero-title {
+        font-size: clamp(33px, 8.8vw, 39px) !important;
+        line-height: 1.08 !important;
+        letter-spacing: -1.1px !important;
+        margin-bottom: 16px !important;
+        overflow-wrap: anywhere;
+      }
+      .hero-sub { font-size: 16px !important; line-height: 1.55 !important; margin-bottom: 22px !important; }
+      .hero-checks { gap: 10px !important; margin-bottom: 24px !important; }
+      .hero-check { align-items: flex-start !important; font-size: 14px !important; line-height: 1.4 !important; }
+      .hero-check b { flex: 0 0 22px !important; margin-top: 1px !important; }
+      .hero-actions { gap: 10px !important; }
+      .hero-actions a, .hero-actions button { width: 100% !important; justify-content: center !important; }
+      .section { padding: 44px 0 !important; }
+      .section-head h2 { font-size: clamp(26px, 7vw, 30px) !important; line-height: 1.15 !important; }
+    }
+
   </style>
   <link rel="stylesheet" href="assets/homs-global-nav.css">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5361560605027063"
