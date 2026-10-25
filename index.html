@@ -129,12 +129,14 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 .screen-before-after{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px;margin:24px 0 30px;box-shadow:0 8px 24px rgba(7,29,45,.06)}
 .screen-before-after .section-title{margin-bottom:8px}
 .screen-ba-subtitle{text-align:center;color:var(--muted);font-size:13px;margin:0 0 20px}
-.screen-ba-stage{position:relative;width:min(100%,760px);margin:auto;border-radius:12px;overflow:hidden;background:#f3f5f8}
-.screen-ba-photo-stage{height:auto;aspect-ratio:3/2;display:flex;align-items:center;justify-content:center}
-.screen-ba-photo{display:block;width:100%;height:100%;object-fit:contain;object-position:center}
-@media(max-width:520px){.screen-before-after{padding:16px 12px}.screen-ba-photo-stage{aspect-ratio:4/3}}
-
-@media(max-width:520px){.screen-before-after{padding:16px 12px}.screen-ba-stage{height:270px}.screen-ba-phone{height:225px;width:118px}}
+.screen-ba-stage{position:relative;width:min(100%,760px);margin:auto;border-radius:12px;overflow:hidden;background:#f3f5f8;aspect-ratio:3/2;touch-action:pan-y;cursor:ew-resize;user-select:none}
+.screen-ba-layer{position:absolute;inset:0;background-image:url("assets/screen-repair-before-after.jpg");background-repeat:no-repeat;background-size:200% 100%}
+.screen-ba-after{background-position:right center}
+.screen-ba-before{background-position:left center;clip-path:inset(0 50% 0 0)}
+.screen-ba-divider{position:absolute;top:0;bottom:0;left:50%;width:2px;background:#fff;transform:translateX(-50%);pointer-events:none;display:flex;align-items:center;justify-content:center;box-shadow:0 0 4px #0004}
+.screen-ba-divider span{width:38px;height:38px;border-radius:50%;background:#fff;color:#18212a;display:flex;align-items:center;justify-content:center;font-size:25px;font-weight:700;box-shadow:0 2px 8px #0003;white-space:nowrap}
+.screen-ba-stage:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+@media(max-width:520px){.screen-before-after{padding:16px 12px}.screen-ba-stage{aspect-ratio:4/3}}
 
 </style>
 
@@ -293,8 +295,10 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 
 <section class="screen-before-after" id="screenBeforeAfter" aria-label="Scherm reparatie">
  <h2 class="section-title">Van gebarsten naar als nieuw</h2>
- <div class="screen-ba-stage screen-ba-photo-stage">
-  <img class="screen-ba-photo" src="assets/screen-repair-before-after.jpg" alt="Smartphone met gebarsten scherm en hersteld scherm naast elkaar" loading="lazy">
+ <div class="screen-ba-stage screen-ba-photo-stage" id="screenBaStage" role="slider" tabindex="0" aria-label="Vergelijk gebarsten en hersteld scherm" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+  <div class="screen-ba-layer screen-ba-after" aria-hidden="true"></div>
+  <div class="screen-ba-layer screen-ba-before" id="screenBaBefore" aria-hidden="true"></div>
+  <div class="screen-ba-divider" id="screenBaDivider" aria-hidden="true"><span>‹ ›</span></div>
  </div>
 </section>
 
@@ -668,15 +672,38 @@ async function loadSite(){
  common();renderTopBar();renderHero();renderBanners();renderHomepageGsm();renderHomepageVisibility();renderCategories();renderProducts();renderServices();renderWhy();
 }
 
-// Interactive screen repair reveal: mouse hover and touch; no labels or bottom slider.
+// Interactive before/after reveal: drag the divider on desktop or touch.
 (function initScreenBeforeAfter(){
- const stage=document.getElementById("screenBaStage"),clean=document.getElementById("screenBaClean"),divider=document.getElementById("screenBaDivider");
- if(!stage||!clean||!divider)return;
- function setPosition(value){const v=Math.max(0,Math.min(100,Number(value)||0));clean.style.clipPath="inset(0 0 0 "+v+"%)";divider.style.left=v+"%";stage.setAttribute("aria-valuenow",String(Math.round(v)));}
- function fromEvent(e){const r=stage.getBoundingClientRect();setPosition(100-(e.clientX-r.left)/r.width*100);}
- stage.addEventListener("pointermove",e=>{if(e.pointerType==="mouse")fromEvent(e);});
- stage.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse")fromEvent(e);});
- stage.addEventListener("keydown",e=>{const now=Number(stage.getAttribute("aria-valuenow")||50);if(e.key==="ArrowLeft"){setPosition(now-5);e.preventDefault();}if(e.key==="ArrowRight"){setPosition(now+5);e.preventDefault();}});
+ const stage=document.getElementById("screenBaStage"),before=document.getElementById("screenBaBefore"),divider=document.getElementById("screenBaDivider");
+ if(!stage||!before||!divider)return;
+ function setPosition(value){
+  const v=Math.max(0,Math.min(100,Number(value)||0));
+  before.style.clipPath="inset(0 "+(100-v)+"% 0 0)";
+  divider.style.left=v+"%";
+  stage.setAttribute("aria-valuenow",String(Math.round(v)));
+ }
+ function fromEvent(e){
+  const r=stage.getBoundingClientRect();
+  if(!r.width)return;
+  setPosition((e.clientX-r.left)/r.width*100);
+ }
+ stage.addEventListener("pointerdown",e=>{
+  if(e.pointerType==="mouse"&&e.button!==0)return;
+  stage.setPointerCapture?.(e.pointerId);
+  fromEvent(e);
+ });
+ stage.addEventListener("pointermove",e=>{
+  if(e.pointerType==="mouse"&&e.buttons!==1)return;
+  if(e.pointerType!=="mouse"&&e.pressure===0)return;
+  fromEvent(e);
+ });
+ stage.addEventListener("keydown",e=>{
+  const now=Number(stage.getAttribute("aria-valuenow")||50);
+  if(e.key==="ArrowLeft"){setPosition(now-5);e.preventDefault();}
+  if(e.key==="ArrowRight"){setPosition(now+5);e.preventDefault();}
+  if(e.key==="Home"){setPosition(0);e.preventDefault();}
+  if(e.key==="End"){setPosition(100);e.preventDefault();}
+ });
  setPosition(50);
 })();
 
