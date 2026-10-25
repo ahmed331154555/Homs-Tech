@@ -1655,14 +1655,11 @@ textarea{
     <button class="nav-btn" data-page="phones" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
     <button class="nav-btn" data-page="shop" data-permission="site.save" onclick="showPage('shop')">🛍️ Shop producten</button>
     <button class="nav-btn" data-page="buyback" data-permission="buyback.view" onclick="showPage('buyback')">📥 Uw toestel verkopen</button>
-    <button class="nav-btn" data-page="buyback-orders" data-permission="buyback_orders.view" onclick="showPage('buyback-orders')">📥 Verkoopaanvragen</button>
 
     <button class="nav-btn" data-page="categories" onclick="showPage('categories')">🖼️ Apparaten & categorieën</button>
     <button class="nav-btn" data-page="why" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
     <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
-    <button class="nav-btn" data-page="orders" onclick="showPage('orders')">📋 GSM Orders</button>
-    <button class="nav-btn" data-page="repair-requests" onclick="showPage('repair-requests')">🔧 Repair Requests</button>
-    <button class="nav-btn" data-page="webshop-orders" onclick="showPage('webshop-orders')">🛍️ Webshop Bestellingen</button>
+    <button class="nav-btn" data-page="all-orders" onclick="showPage('all-orders')">📋 Alle bestellingen</button>
     <button class="nav-btn" data-page="order-settings" data-permission="site.save" onclick="showPage('order-settings')">📦 Orderinstellingen</button>
     <button class="nav-btn" data-page="search" data-permission="search" onclick="showPage('search')">🔎 Zoeken</button>
     <button class="nav-btn" data-page="admins" data-permission="admins.manage" onclick="showPage('admins')">👤 Admins</button>
@@ -2216,6 +2213,7 @@ let buybackCatalogDeleteLock = false;
 
 
 const PAGE_PERMISSIONS = {
+  "all-orders":"orders.view",
   general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",shop:"site.save",categories:"categories.view",
   used:"used.view",why:"why.view",customers:"customers.view",orders:"orders.view","repair-requests":"orders.view",
   "webshop-orders":"webshop_orders.view","order-settings":"site.save",gsm:"gsm.view",firmware:"site.save",search:"search",admins:"admins.manage",
@@ -2260,7 +2258,8 @@ function applyPermissionUI(){
   document.querySelectorAll(".order-status-select").forEach(el=>{const page=el.closest(".admin-page")?.id||"";const permission=page==="page-orders"||page==="page-repair-requests"?"orders.update":"webshop_orders.update";el.disabled=!hasPermission(permission);});
 }
 function showPage(page){
-  if(!hasPermission(PAGE_PERMISSIONS[page]||""))page=firstAllowedPage();
+  const unifiedOrdersAllowed=page==="all-orders"&&(hasPermission("orders.view")||hasPermission("webshop_orders.view")||hasPermission("buyback_orders.view"));
+  if(!unifiedOrdersAllowed&&!hasPermission(PAGE_PERMISSIONS[page]||""))page=firstAllowedPage();
   if(!page)return;
   currentPage=page;
   try{localStorage.setItem("homsAdminCurrentPage",page);}catch{}
@@ -2269,7 +2268,7 @@ function showPage(page){
   if(target){
     target.classList.add("active");
     if(page==="customers")loadCustomers();
-    if(page==="orders"||page==="repair-requests")loadOrders();
+    if(page==="orders"||page==="repair-requests"||page==="all-orders"){loadOrders();loadWebshopOrders();loadBuybackOrders();}
     if(page==="webshop-orders")loadWebshopOrders();
     if(page==="order-settings")loadOrderSettings();
     if(page==="buyback")renderBuybackPhones();
@@ -7494,8 +7493,31 @@ async function showBuybackDetails(id){
 
 
 
+function setupUnifiedOrdersAdmin(){
+  if(document.getElementById("page-all-orders"))return;
+  const ids=["page-orders","page-repair-requests","page-webshop-orders","page-buyback-orders"];
+  const sections=ids.map(id=>document.getElementById(id)).filter(Boolean);
+  if(!sections.length)return;
+  const parent=document.createElement("section");
+  parent.className="section admin-page";
+  parent.id="page-all-orders";
+  parent.innerHTML='<div class="section-head"><div><h2>📋 Alle bestellingen</h2><p>Alle aanvragen en bestellingen op één plek, gegroepeerd per type.</p></div><button class="btn btn-light" type="button" onclick="loadOrders();loadWebshopOrders();loadBuybackOrders()">↻ Alles vernieuwen</button></div><div class="small" style="margin-bottom:14px;color:#64748b">Kies hieronder het juiste overzicht. Bestaande gegevens en statussen blijven behouden.</div><div id="allOrdersSections"></div>';
+  const host=parent.querySelector("#allOrdersSections");
+  sections.forEach(section=>{
+    section.classList.remove("admin-page","active");
+    section.style.display="block";
+    const head=section.querySelector(".section-head h2");
+    if(head)head.style.fontSize="18px";
+    section.style.marginTop="14px";
+    host.appendChild(section);
+  });
+  const container=document.querySelector("#dashboard .container");
+  if(container)container.insertBefore(parent,container.querySelector(".save-bar"));
+  document.querySelectorAll('.nav-btn[data-page="orders"],.nav-btn[data-page="repair-requests"],.nav-btn[data-page="webshop-orders"],.nav-btn[data-page="buyback-orders"]').forEach(button=>button.remove());
+}
 function renderAll(){
 
+  setupUnifiedOrdersAdmin();
   renderHomepageSettings();
   renderServices();
   renderRepairPageAdmin();
