@@ -1823,14 +1823,25 @@ function serverOptionDefaults(key) {
 }
 function priceProductFromCatalog(data, item) {
   const type = String(item?.type || "").toLowerCase();
-  const list = type === "used"
-    ? (Array.isArray(data.usedPhones) ? data.usedPhones : [])
-    : (Array.isArray(data.phones) && data.phones.length ? data.phones : (Array.isArray(data.devices) ? data.devices : []));
+  const list = type === "shop"
+    ? (Array.isArray(data.shopProducts) ? data.shopProducts : [])
+    : type === "used"
+      ? (Array.isArray(data.usedPhones) ? data.usedPhones : [])
+      : (Array.isArray(data.phones) && data.phones.length ? data.phones : (Array.isArray(data.devices) ? data.devices : []));
   const id = Number(item?.id);
   if (!Number.isInteger(id) || id < 0 || id >= list.length) return { error: "Een product in uw winkelwagen is verouderd. Verwijder het en voeg het opnieuw toe." };
   const product = list[id];
   if (!product || product.active === false || product.available === false || String(product.stockStatus || "").toLowerCase() === "sold") {
     return { error: "Een product in uw winkelwagen is niet meer beschikbaar." };
+  }
+  if (type === "shop") {
+    const price = moneyNumber(product.price);
+    const qty = Number(item?.qty ?? 1);
+    if (!Number.isFinite(price) || price <= 0) return { error: "Dit Shop-product heeft geen geldige prijs." };
+    if (!Number.isInteger(qty) || qty < 1 || qty > 99) return { error: "Kies een geldige hoeveelheid (1–99)." };
+    const stockText = String(product.stock ?? "").trim();
+    if (/^\d+$/.test(stockText) && Number(stockText) < qty) return { error: "Er is onvoldoende voorraad voor dit product." };
+    return { item: { name: String(product.name || "Shop-product"), brand: "HOMS TECH Shop", type, id, options: { category: String(product.category || "Accessoires") }, qty, unitPrice: Math.round(price * 100) / 100 } };
   }
   const options = item.options && typeof item.options === "object" && !Array.isArray(item.options) ? item.options : {};
   const getList = key => {
@@ -1931,7 +1942,7 @@ async function deductPaidOrderInventory(orderId) {
     const data = settings.rows[0].data || {};
     for (const item of (Array.isArray(order.items) ? order.items : [])) {
       const type = String(item && item.type || '').toLowerCase();
-      const list = type === 'used' ? (Array.isArray(data.usedPhones) ? data.usedPhones : []) : (Array.isArray(data.phones) && data.phones.length ? data.phones : (Array.isArray(data.devices) ? data.devices : []));
+      const list = type === 'shop' ? (Array.isArray(data.shopProducts) ? data.shopProducts : []) : type === 'used' ? (Array.isArray(data.usedPhones) ? data.usedPhones : []) : (Array.isArray(data.phones) && data.phones.length ? data.phones : (Array.isArray(data.devices) ? data.devices : []));
       const id = Number(item && item.id); const qty = Number(item && item.qty || 1);
       if (!Number.isInteger(id) || id < 0 || !list[id] || !Number.isInteger(qty) || qty < 1) throw new Error('Paid order item could not be matched to catalog.');
       const product = list[id]; const options = item.options && typeof item.options === 'object' ? item.options : {};
@@ -1942,7 +1953,11 @@ async function deductPaidOrderInventory(orderId) {
         if (row.stock !== undefined && row.stock !== null && row.stock !== '') { const stock = Number(row.stock); if (!Number.isFinite(stock) || stock < qty) throw new Error('Insufficient stock for paid variant.'); row.stock = stock - qty; }
       } else {
         const key = ['stock', 'quantity', 'stockQuantity'].find(k => product[k] !== undefined && product[k] !== null && product[k] !== '');
-        if (key) { const stock = Number(product[key]); if (!Number.isFinite(stock) || stock < qty) throw new Error('Insufficient stock for paid product.'); product[key] = stock - qty; }
+        if (key) {
+          const stock = Number(product[key]);
+          if (type === 'shop' && !Number.isFinite(stock)) { /* Text stock labels such as "Op voorraad" are informational only. */ }
+          else { if (!Number.isFinite(stock) || stock < qty) throw new Error('Insufficient stock for paid product.'); product[key] = stock - qty; }
+        }
       }
       const custom = options.custom && typeof options.custom === 'object' ? options.custom : {};
       for (const groupType of ['optionGroups', 'addonGroups']) {
