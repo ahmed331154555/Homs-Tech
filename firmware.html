@@ -605,5 +605,6 @@ function openFolder(id,name){stack.push({id:Number(id),name});current=Number(id)
  async function bootLibrary(){const goRoot=new URLSearchParams(location.search).get('root')==='1';if(goRoot){stack=[];current=null;query='';searchType='all';try{sessionStorage.removeItem(LIB_STATE_KEY)}catch{}try{history.replaceState(null,'',location.pathname)}catch{}}else{try{const saved=JSON.parse(sessionStorage.getItem(LIB_STATE_KEY)||'null');if(saved&&Array.isArray(saved.stack)){stack=saved.stack;current=stack.length?Number(stack[stack.length-1].id):null;query=String(saved.query||'');searchType=saved.searchType||'all';document.getElementById('folderSearchInput').value=query;document.getElementById('folderSearchType').value=searchType}}catch{}}const folderHash=location.hash.match(/^#folder=(\d+)$/);if(folderHash&&(!current||Number(folderHash[1])!==current)){current=Number(folderHash[1]);if(!stack.length||Number(stack[stack.length-1].id)!==current)stack=[{id:current,name:'Map'}]}await load();const fileHash=location.hash.match(/^#file-(\d+)$/);if(fileHash)await openFile(Number(fileHash[1]));loadHighlights()}
 bootLibrary();
 </script>  <script src="assets/homs-global-nav.js"></script>
+  <script src="assets/homs-ai-chat.js" defer></script>
 </body>
 </html>
