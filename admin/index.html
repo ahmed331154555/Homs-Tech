@@ -6454,7 +6454,7 @@ function renderRepairRequests(){
   const statuses=['Nieuw','In behandeling','Wacht op klant','Wacht op leverancier','Resultaat ontvangen','Mislukt','Voltooid','Geannuleerd'];
   const options=statuses.map(s=>'<option'+((order.status||'Nieuw')===s?' selected':'')+'>'+s+'</option>').join('');
   const deleteBtn=hasPermission('orders.delete')?'<button class="btn btn-red order-delete-btn" onclick="deleteGsmOrder('+Number(order.id)+')">🗑️ Verwijderen</button>':'';
-  return '<article class="order-card repair-request-card '+(open?'is-open':'')+'"><div class="repair-request-row"><button type="button" class="repair-request-toggle" aria-expanded="'+(open?'true':'false')+'" aria-controls="repair-request-details-'+Number(order.id)+'" onclick="toggleRepairRequest('+Number(order.id)+')"><span class="repair-request-chevron" aria-hidden="true">'+(open?'▾':'▸')+'</span><span class="repair-request-heading"><strong>#'+esc(order.id)+' · '+esc((meta.brand?meta.brand+' ':'')+(meta.model||order.service_name||'Reparatie'))+'</strong><span>'+esc(order.name||'Onbekende klant')+' · '+esc(date)+'</span></span><span class="repair-request-summary-status">'+esc(order.status||'Nieuw')+'</span></button><div class="repair-request-row-actions"><select aria-label="Status aanvraag '+esc(order.id)+'" class="order-status-select" data-order-id="'+esc(order.id)+'" onchange="updateOrderStatus('+Number(order.id)+',this.value)">'+options+'</select>'+deleteBtn+'</div></div><div id="repair-request-details-'+Number(order.id)+'" class="repair-request-details" '+(open?'':'hidden')+'><div class="order-grid repair-request-grid"><div class="order-info"><strong>Klant</strong><span>'+esc(order.name||'-')+'</span></div><div class="order-info"><strong>E-mail</strong><span>'+esc(order.email||'-')+'</span></div><div class="order-info"><strong>Telefoon</strong><span>'+esc(order.phone||'-')+'</span></div><div class="order-info"><strong>Status</strong><span>'+esc(order.status||'Nieuw')+'</span></div><div class="order-info"><strong>Toestel / service</strong><span>'+esc((meta.brand?meta.brand+' ':'')+(meta.model||order.service_name||'-'))+'</span></div><div class="order-info"><strong>Aangemaakt</strong><span>'+esc(date||'-')+'</span></div></div><div class="order-notes"><strong>Probleem / klacht</strong><div class="repair-request-problem">'+esc(order.notes||'-')+'</div></div>'+photoHtml+offerHtml+'</div></article>';
+  return '<article class="order-card repair-request-card '+(open?'is-open':'')+'"><div class="repair-request-row"><button type="button" class="repair-request-toggle" aria-expanded="'+(open?'true':'false')+'" aria-controls="repair-request-details-'+Number(order.id)+'" onclick="toggleRepairRequest('+Number(order.id)+')"><span class="repair-request-chevron" aria-hidden="true">'+(open?'▾':'▸')+'</span><span class="repair-request-heading"><strong>#'+esc(order.id)+' · '+esc((meta.brand?meta.brand+' ':'')+(meta.model||order.service_name||'Reparatie'))+'</strong><span>'+esc(order.name||'Onbekende klant')+'</span><span>'+esc(date)+'</span></span></button><div class="repair-request-row-actions"><span class="repair-request-summary-status">'+esc(order.status||'Nieuw')+'</span><select aria-label="Status aanvraag '+esc(order.id)+'" class="order-status-select" data-order-id="'+esc(order.id)+'" onchange="updateOrderStatus('+Number(order.id)+',this.value)">'+options+'</select>'+deleteBtn+'</div></div><div id="repair-request-details-'+Number(order.id)+'" class="repair-request-details" '+(open?'':'hidden')+'><div class="order-grid repair-request-grid"><div class="order-info"><strong>Klant</strong><span>'+esc(order.name||'-')+'</span></div><div class="order-info"><strong>E-mail</strong><span>'+esc(order.email||'-')+'</span></div><div class="order-info"><strong>Telefoon</strong><span>'+esc(order.phone||'-')+'</span></div><div class="order-info"><strong>Status</strong><span>'+esc(order.status||'Nieuw')+'</span></div><div class="order-info"><strong>Toestel / service</strong><span>'+esc((meta.brand?meta.brand+' ':'')+(meta.model||order.service_name||'-'))+'</span></div><div class="order-info"><strong>Aangemaakt</strong><span>'+esc(date||'-')+'</span></div></div><div class="order-notes"><strong>Probleem / klacht</strong><div class="repair-request-problem">'+esc(order.notes||'-')+'</div></div>'+photoHtml+offerHtml+'</div></article>';
  }).join('');
 }
 async function sendRepairOffer(id){
@@ -7264,6 +7264,9 @@ async function printWebshopShippingLabel(id){
 /* Repair requests: compact, aligned accordion cards */
 .repair-request-card{padding:0!important;margin:0 0 12px!important;overflow:hidden;border:1px solid #dbe3ed!important;border-radius:14px!important;background:#fff!important}
 .repair-request-row{display:flex;align-items:center;gap:12px;padding:12px 14px;min-width:0}
+.repair-request-row-actions .repair-request-summary-status{flex:0 0 auto}
+.repair-request-heading strong{display:block;overflow-wrap:anywhere}
+.repair-request-heading span{display:block}
 .repair-request-toggle{display:flex;align-items:center;gap:11px;flex:1;min-width:0;text-align:left;border:0;background:transparent;color:inherit;padding:5px 0}
 .repair-request-chevron{display:flex;align-items:center;justify-content:center;flex:0 0 28px;width:28px;height:28px;border-radius:8px;background:#eef4fa;color:#334155;font-size:20px}
 .repair-request-heading{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}
@@ -7290,10 +7293,10 @@ async function printWebshopShippingLabel(id){
 @media(max-width:680px){
  .repair-request-row{align-items:stretch;flex-direction:column;gap:9px;padding:11px}
  .repair-request-toggle{width:100%}
- .repair-request-row-actions{width:100%;align-items:stretch}
- .repair-request-row-actions .order-status-select{flex:1;max-width:none;width:100%;min-height:42px}
+ .repair-request-row-actions{width:100%;align-items:stretch;flex-wrap:wrap}
+ .repair-request-row-actions .repair-request-summary-status{align-self:center}
+ .repair-request-row-actions .order-status-select{flex:1 1 140px;max-width:none;width:100%;min-height:42px}
  .repair-request-row-actions .order-delete-btn{min-height:42px;padding:9px 10px}
- .repair-request-summary-status{align-self:flex-start;margin-left:39px}
  .repair-request-details{padding:12px}
  .repair-offer-fields{grid-template-columns:minmax(0,1fr)}
  .repair-request-photos img{width:86px;height:76px}
