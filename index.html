@@ -310,8 +310,6 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
   <div class="screen-ba-half screen-ba-clean" id="screenBaClean"><div class="screen-ba-phone"><div class="screen-ba-screen"></div><div class="screen-ba-notch"></div></div></div>
   <div class="screen-ba-divider" id="screenBaDivider"><div class="screen-ba-knob">↔</div></div>
  </div>
- <input class="screen-ba-range" id="screenBaRange" type="range" min="0" max="100" value="50" aria-label="Vergelijk kapot en gerepareerd scherm">
- <p class="screen-ba-help">Sleep de schuif of beweeg met de muis over de afbeelding</p>
 </section>
 
 <section class="section" id="homeGsmSection">
@@ -684,16 +682,38 @@ async function loadSite(){
  common();renderTopBar();renderHero();renderBanners();renderHomepageGsm();renderHomepageVisibility();renderCategories();renderProducts();renderServices();renderWhy();
 }
 
-// Interactive screen before/after comparison: works with mouse, touch and keyboard.
+// Interactive screen before/after comparison: precise drag, same direction as pointer.
 (function initScreenBeforeAfter(){
- const stage=document.getElementById("screenBaStage"),clean=document.getElementById("screenBaClean"),divider=document.getElementById("screenBaDivider"),range=document.getElementById("screenBaRange");
- if(!stage||!clean||!divider||!range)return;
- function setPosition(value){const v=Math.max(0,Math.min(100,Number(value)||0));clean.style.clipPath="inset(0 0 0 "+v+"%)";divider.style.left=v+"%";range.value=String(v);}
- range.addEventListener("input",()=>setPosition(range.value));
- stage.addEventListener("pointermove",e=>{if(e.pointerType==="mouse"){const r=stage.getBoundingClientRect();setPosition(100-(e.clientX-r.left)/r.width*100);}});
- stage.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse"){const r=stage.getBoundingClientRect();setPosition(100-(e.clientX-r.left)/r.width*100);}});
- stage.addEventListener("keydown",e=>{if(e.key==="ArrowLeft"){setPosition(Number(range.value)-5);}if(e.key==="ArrowRight"){setPosition(Number(range.value)+5);}});
- setPosition(50);
+ const stage=document.getElementById("screenBaStage"),clean=document.getElementById("screenBaClean"),divider=document.getElementById("screenBaDivider");
+ if(!stage||!clean||!divider)return;
+ let dragging=false;
+ function setPositionFromPointer(e){
+  const r=stage.getBoundingClientRect();
+  if(!r.width)return;
+  const x=Math.max(0,Math.min(r.width,e.clientX-r.left));
+  const v=x/r.width*100;
+  clean.style.clipPath="inset(0 0 0 "+v+"%)";
+  divider.style.left=v+"%";
+ }
+ stage.addEventListener("pointerdown",e=>{
+  if(e.pointerType==="mouse"&&e.button!==0)return;
+  dragging=true;
+  stage.setPointerCapture?.(e.pointerId);
+  setPositionFromPointer(e);
+  e.preventDefault();
+ });
+ stage.addEventListener("pointermove",e=>{if(dragging)setPositionFromPointer(e);});
+ stage.addEventListener("pointerup",()=>{dragging=false;});
+ stage.addEventListener("pointercancel",()=>{dragging=false;});
+ stage.addEventListener("keydown",e=>{
+  const now=parseFloat(divider.style.left)||50;
+  if(e.key==="ArrowLeft"){const v=Math.max(0,now-2);clean.style.clipPath="inset(0 0 0 "+v+"%)";divider.style.left=v+"%";e.preventDefault();}
+  if(e.key==="ArrowRight"){const v=Math.min(100,now+2);clean.style.clipPath="inset(0 0 0 "+v+"%)";divider.style.left=v+"%";e.preventDefault();}
+  if(e.key==="Home"){clean.style.clipPath="inset(0 0 0 0%)";divider.style.left="0%";e.preventDefault();}
+  if(e.key==="End"){clean.style.clipPath="inset(0 0 0 100%)";divider.style.left="100%";e.preventDefault();}
+ });
+ clean.style.clipPath="inset(0 0 0 50%)";
+ divider.style.left="50%";
 })();
 
 loadSite();
