@@ -687,16 +687,20 @@ async function loadSite(){
   if(!r.width)return;
   setPosition((e.clientX-r.left)/r.width*100);
  }
+ let touchDragging=false;
  stage.addEventListener("pointerdown",e=>{
   if(e.pointerType==="mouse"&&e.button!==0)return;
+  touchDragging=true;
   stage.setPointerCapture?.(e.pointerId);
   fromEvent(e);
  });
  stage.addEventListener("pointermove",e=>{
-  if(e.pointerType==="mouse"&&e.buttons!==1)return;
-  if(e.pointerType!=="mouse"&&e.pressure===0)return;
+  // Mouse users can move the comparison with the cursor; touch users drag while pressed.
+  if(e.pointerType!=="mouse"&&!touchDragging)return;
   fromEvent(e);
  });
+ stage.addEventListener("pointerup",()=>{touchDragging=false;});
+ stage.addEventListener("pointercancel",()=>{touchDragging=false;});
  stage.addEventListener("keydown",e=>{
   const now=Number(stage.getAttribute("aria-valuenow")||50);
   if(e.key==="ArrowLeft"){setPosition(now-5);e.preventDefault();}
