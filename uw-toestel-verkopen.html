@@ -33,13 +33,16 @@ a{text-decoration:none;color:inherit}
 .nav a:hover,.nav a.active{color:var(--blue)}.nav a.active{border-bottom:3px solid var(--blue)}
 
 /* HERO */
-.hero{padding:38px 0 24px;background:linear-gradient(180deg,#fff 0%,#f7faff 100%)}
-.hero-grid{display:grid;grid-template-columns:1fr 250px;gap:24px;align-items:start}
-.crumb{font-size:11px;color:#7b8da0;margin-bottom:13px}
-.hero h1{font-size:clamp(30px,3.4vw,46px);line-height:1.08;letter-spacing:-1.2px;margin:0 0 10px;color:var(--navy)}
-.hero p{margin:0;color:#64748b;font-size:13px;line-height:1.65;max-width:760px}
-.benefits{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(7,26,43,.06)}
-.benefit{display:flex;gap:9px;align-items:center;margin:8px 0;font-size:12px;font-weight:700}.check{width:22px;height:22px;border-radius:50%;background:#e9f8f0;color:#16a34a;display:grid;place-items:center;font-weight:900}
+.hero{padding:24px 0 26px;background:#f7faff}
+.sell-hero-card{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr);gap:28px;align-items:center;min-height:370px;padding:38px 42px;border:1px solid #16436a;border-radius:24px;background:radial-gradient(ellipse at 72% 38%,#164f82 0%,#0b2c49 36%,#041522 78%);color:#fff;box-shadow:0 20px 48px rgba(4,21,34,.18)}
+.sell-hero-card:before{content:"";position:absolute;z-index:-1;left:30%;right:-12%;bottom:-48%;height:78%;border-radius:50%;background:linear-gradient(110deg,transparent 10%,rgba(0,132,255,.62) 45%,rgba(71,177,255,.12) 70%,transparent 85%);filter:blur(18px);transform:rotate(-12deg)}
+.sell-copy{position:relative;z-index:2}.sell-kicker{display:inline-flex;align-items:center;gap:9px;margin-bottom:18px;padding:8px 13px;border:1px solid rgba(77,163,255,.38);border-radius:999px;background:rgba(5,32,54,.7);color:#69b7ff;font-size:12px;font-weight:800;letter-spacing:.4px}.sell-kicker:before{content:"◇";font-size:20px;line-height:1}
+.hero .crumb{font-size:11px;color:#a9c7e2;margin:0 0 12px}.hero h1{font-size:clamp(36px,4.5vw,64px);line-height:.99;letter-spacing:-1.8px;margin:0 0 16px;color:#fff;max-width:650px}.hero h1 span{display:block;color:#1683ff;margin-top:4px}.hero p{margin:0;color:#d1e2f2;font-size:15px;line-height:1.65;max-width:640px}
+.sell-benefit-row{display:flex;flex-wrap:wrap;gap:18px;margin:22px 0 24px}.sell-benefit{display:flex;align-items:center;gap:9px;color:#eaf5ff;font-size:12px;font-weight:700}.sell-benefit-icon{display:grid;place-items:center;width:34px;height:34px;flex:none;border:1px solid rgba(50,145,255,.35);border-radius:11px;background:rgba(0,105,255,.17);color:#2995ff;font-size:19px}
+.sell-actions{display:flex;align-items:center;gap:20px;flex-wrap:wrap}.sell-cta{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:58px;padding:0 24px;border:1px solid #58aaff;border-radius:13px;background:linear-gradient(135deg,#1684ff,#0759e8);color:#fff;font-weight:850;font-size:15px;box-shadow:0 10px 28px rgba(0,100,255,.28);transition:transform .18s,box-shadow .18s}.sell-cta:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(0,100,255,.38)}.sell-cta span{font-size:22px}.sell-how{color:#b8dcff;font-size:13px;font-weight:750}.sell-visual{position:relative;min-height:300px;display:flex;align-items:center;justify-content:center}.sell-phone-image{position:relative;z-index:1;width:min(100%,440px);height:330px;object-fit:contain;filter:drop-shadow(0 24px 26px rgba(0,0,0,.4))}.sell-floating{position:absolute;z-index:2;right:-8px;display:flex;align-items:center;gap:10px;max-width:190px;padding:12px;border:1px solid rgba(97,177,255,.35);border-radius:14px;background:rgba(5,29,49,.84);color:#eef7ff;font-size:11px;font-weight:750;box-shadow:0 12px 28px rgba(0,0,0,.16);backdrop-filter:blur(10px)}.sell-floating span{display:grid;place-items:center;width:34px;height:34px;flex:none;border-radius:10px;background:#0a70e9;color:white;font-size:18px}.sell-floating.one{top:16%}.sell-floating.two{top:43%}.sell-floating.three{top:70%}
+.hero .stepper{margin-top:22px}.hero .sdot{border-color:#f7faff}.hero .step-labels{color:#60758b}
+@media(max-width:850px){.sell-hero-card{grid-template-columns:1fr;gap:4px;padding:30px 26px}.sell-visual{min-height:230px}.sell-phone-image{height:250px}.sell-floating{right:0;max-width:170px}.sell-floating.one{top:4%}.sell-floating.two{top:39%}.sell-floating.three{top:74%}.sell-benefit-row{gap:12px}.hero h1{font-size:clamp(36px,8vw,54px)}}
+@media(max-width:520px){.hero{padding:14px 0 22px}.sell-hero-card{padding:24px 18px;border-radius:18px;min-height:0}.sell-kicker{margin-bottom:14px}.hero h1{font-size:39px;letter-spacing:-1.1px}.hero p{font-size:13px}.sell-benefit-row{display:grid;grid-template-columns:1fr;gap:10px;margin:18px 0}.sell-cta{width:100%;min-height:54px}.sell-actions{gap:14px}.sell-visual{min-height:205px}.sell-phone-image{height:220px;width:90%}.sell-floating{font-size:10px;padding:8px;max-width:142px}.sell-floating span{width:28px;height:28px}.sell-floating.one{top:2%}.sell-floating.two{top:39%}.sell-floating.three{top:76%}.hero .step-labels{font-size:9px}}
 
 /* STEPPER */
 .stepper{display:flex;align-items:center;justify-content:center;max-width:560px;margin:20px auto 0}
@@ -270,10 +273,25 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 
 <section class="hero">
   <div class="wrap">
-    <div class="sell-intro">
-      <div class="crumb">Home <b>›</b> Verkopen</div>
-      <h1>Telefoon verkopen of inruilen? <span>Jij kiest: geld of tegoed</span></h1>
-      <p>Wil je jouw telefoon, tablet of smartwatch verkopen of inruilen voor geld? Kies hieronder jouw apparaat. We geven je direct een duidelijke indicatie van de waarde.</p>
+    <div class="sell-hero-card">
+      <div class="sell-copy">
+        <div class="sell-kicker">HOMS TECH <span style="color:#d8eaff;font-weight:500">|</span> UW TOESTEL VERKOPEN</div>
+        <div class="crumb">Home <b>›</b> Verkopen</div>
+        <h1>Uw toestel <span>verkopen?</span></h1>
+        <p>Ontvang direct een eerlijk bod voor je iPhone. Verkoop je oude toestel eenvoudig, snel en veilig bij HOMS TECH. Wij zorgen voor een betrouwbare afhandeling en een snelle betaling.</p>
+        <div class="sell-benefit-row">
+          <div class="sell-benefit"><span class="sell-benefit-icon">♢</span><span>Eerlijke prijzen<br><small style="font-weight:500;color:#b8cfe3">Gebaseerd op de marktwaarde</small></span></div>
+          <div class="sell-benefit"><span class="sell-benefit-icon">ϟ</span><span>Snelle afhandeling<br><small style="font-weight:500;color:#b8cfe3">Snelle beoordeling</small></span></div>
+          <div class="sell-benefit"><span class="sell-benefit-icon">✓</span><span>Veilig en betrouwbaar<br><small style="font-weight:500;color:#b8cfe3">Verzenden of inleveren</small></span></div>
+        </div>
+        <div class="sell-actions"><a class="sell-cta" href="#step1">♢ Toestel verkopen <span>→</span></a><a class="sell-how" href="#step1">Hoe werkt het? &nbsp; →</a></div>
+      </div>
+      <div class="sell-visual">
+        <img class="sell-phone-image" src="https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=900&q=85" alt="Smartphones voor verkoop bij HOMS TECH" loading="eager">
+        <div class="sell-floating one"><span>€</span><div>Direct een<br>eerlijk bod</div></div>
+        <div class="sell-floating two"><span>□</span><div>Gratis verzending<br>of inleveren</div></div>
+        <div class="sell-floating three"><span>✓</span><div>Veilige afhandeling<br>en snelle betaling</div></div>
+      </div>
     </div>
     <div class="stepper"><div id="d1" class="sdot active">1</div><div id="l1" class="sline"></div><div id="d2" class="sdot">2</div><div id="l2" class="sline"></div><div id="d3" class="sdot">3</div><div id="l3" class="sline"></div><div id="d4" class="sdot">4</div></div>
     <div class="step-labels"><span>Toestel kiezen</span><span>Staat & gegevens</span><span>Uw gegevens</span><span>Aanvraag versturen</span></div>
