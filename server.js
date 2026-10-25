@@ -3708,7 +3708,7 @@ app.post("/api/chat", async (req, res) => {
       method: "POST",
       headers: { "Authorization": "Bearer " + apiKey, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || "gpt-6",
+        model: process.env.OPENAI_MODEL || "gpt-6-astra",
         store: false,
         instructions: [
           "You are the customer-support assistant for HOMS TECH, a phone repair and device service business in the Netherlands.",
