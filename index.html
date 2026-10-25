@@ -471,15 +471,16 @@ function renderHero(){
  const hero=document.getElementById("homeHero");
  if(!hero)return;
  hero.style.display=h.enabled?"":"none";
- document.getElementById("heroTop").textContent=h.titleTop||"";
- document.getElementById("heroBottom").textContent=h.titleBottom||"";
- document.getElementById("heroText").textContent=isUsableHeroText(h.text,defaults.homepage.hero.text);
+ // Keep the approved homepage hero copy in sync even if older hero text is stored in site settings.
+ document.getElementById("heroTop").textContent="Reparatie, refurbished";
+ document.getElementById("heroBottom").textContent="en verkoop van telefoons";
+ document.getElementById("heroText").textContent="Professionele telefoonreparatie, refurbished iPhones, oude telefoons verkopen en eenvoudig je toestel naar ons opsturen.";
  const b1=document.getElementById("heroButton1"),b2=document.getElementById("heroButton2");
- b1.textContent=h.button1Text||"";
- b2.textContent=h.button2Text||"";
- b1.href=h.button1Link||wa();
- b2.href=h.button2Link||((data.phone||"")?"tel:"+String(data.phone).replace(/[^\\d+]/g,""):"#");
- document.getElementById("heroDevice").style.display=h.showDevice?"":"none";
+ b1.textContent="Bekijk onze diensten →";
+ b1.href="repair.html";
+ b2.textContent="Stuur je toestel op";
+ b2.href="repair.html";
+ document.getElementById("heroDevice").style.display=h.showDevice===false?"none":"";
 }
 function renderBanners(){
  const b=data.homepage.banners,wrap=document.getElementById("homeBanners");
