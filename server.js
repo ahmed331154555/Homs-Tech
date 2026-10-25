@@ -2795,7 +2795,27 @@ app.post("/api/repair-requests", async (req, res) => {
     );
     const request = result.rows[0];
 
-    // 6. Notify the site owner about repair requests.
+    // 6. Send an automatic Dutch receipt confirmation to the customer.
+    if (process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL) {
+      try {
+        const customerResponse = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: process.env.RESEND_FROM_EMAIL,
+            to: [email],
+            subject: `HOMS TECH — ontvangstbevestiging reparatieaanvraag #${request.id}`,
+            html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;padding:24px;color:#203449"><h2>Bedankt voor uw reparatieaanvraag</h2><p>Beste ${escapeHtml(name)},</p><p>We hebben uw reparatieaanvraag voor <b>${escapeHtml(brand)} ${escapeHtml(model)}</b> goed ontvangen.</p><p>Ons team bekijkt uw aanvraag en neemt zo snel mogelijk contact met u op over de reparatiemogelijkheden en de prijs.</p><p>Dit bericht is een automatische ontvangstbevestiging; er is nog geen reparatieprijs bevestigd.</p><p>Met vriendelijke groet,<br><b>HOMS TECH</b></p></div>`
+          })
+        });
+        if (!customerResponse.ok) console.error("Repair customer confirmation failed:", customerResponse.status, await customerResponse.text().catch(() => ""));
+        else console.log("Repair customer confirmation sent:", request.id);
+      } catch (mailError) { console.error("Repair customer confirmation error:", mailError); }
+    } else {
+      console.error("Repair customer confirmation skipped: missing RESEND_API_KEY or RESEND_FROM_EMAIL");
+    }
+
+    // 7. Notify the site owner about repair requests.
     const repairNotifyEmail = process.env.REPAIR_REQUEST_EMAIL || process.env.ORDER_NOTIFICATION_EMAIL;
     if (process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL && repairNotifyEmail) {
       try {
