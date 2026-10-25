@@ -1653,6 +1653,7 @@ textarea{
     <button class="nav-btn" data-page="services" onclick="showPage('services')">🔧 Diensten</button>
     <button class="nav-btn" data-page="repair" data-permission="site.save" onclick="showPage('repair')">🛠️ Reparatiepagina</button>
     <button class="nav-btn" data-page="phones" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
+    <button class="nav-btn" data-page="shop" data-permission="site.save" onclick="showPage('shop')">🛍️ Shop producten</button>
     <button class="nav-btn" data-page="buyback" data-permission="buyback.view" onclick="showPage('buyback')">📥 Uw toestel verkopen</button>
     <button class="nav-btn" data-page="buyback-orders" data-permission="buyback_orders.view" onclick="showPage('buyback-orders')">📥 Verkoopaanvragen</button>
 
@@ -1761,6 +1762,13 @@ textarea{
     <div id="phonesList"></div>
   </section>
 
+
+  <!-- SHOP PRODUCTEN -->
+  <section class="section admin-page" id="page-shop" data-permission="site.save">
+    <div class="section-head"><div><h2>🛍️ Shop producten</h2><p>Beheer accessoires en onderdelen apart van de telefooncatalogus. Per product maximaal 4 foto's en optioneel een uitlegvideo.</p></div><div class="actions"><a class="btn btn-light" href="../shop.html" target="_blank" rel="noopener">👁 Shop bekijken</a><button class="btn btn-green" type="button" onclick="addShopProduct()">＋ Product toevoegen</button></div></div>
+    <div class="small" style="padding:12px;background:#f4f8ff;border:1px solid #dce9ff;border-radius:10px;margin-bottom:16px">Vul de productgegevens in en druk daarna bovenaan op <strong>Wijzigingen opslaan</strong>. Foto's: maximaal 1,2 MB per foto. Voor een video kun je de YouTube-link invullen en de video-optie aanzetten.</div>
+    <div id="shopProductsAdmin"></div>
+  </section>
 
   <!-- INKOOP / UW TOESTEL VERKOPEN -->
   <section class="section admin-page" id="page-buyback" data-permission="buyback.view">
@@ -2211,7 +2219,7 @@ let buybackCatalogDeleteLock = false;
 
 
 const PAGE_PERMISSIONS = {
-  general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",categories:"categories.view",
+  general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",shop:"site.save",categories:"categories.view",
   used:"used.view",why:"why.view",customers:"customers.view",orders:"orders.view","repair-requests":"orders.view",
   "webshop-orders":"webshop_orders.view","order-settings":"site.save",gsm:"gsm.view",firmware:"site.save",search:"search",admins:"admins.manage",
   buyback:"buyback.view", "buyback-orders":"buyback_orders.view"
@@ -2233,11 +2241,12 @@ function hasPermission(p){return currentUser.role==="superadmin"||currentUser.pe
 function canEditSite(){return hasPermission("site.save");}
 function canEditCurrentPage(){
   if(currentPage==="phones") return hasPermission("phones.update") || canEditSite();
+  if(currentPage==="shop") return canEditSite();
   if(currentPage==="repair") return hasPermission("repair_page.update") || canEditSite();
   return canEditSite();
 }
 function firstAllowedPage(){
-  const pages=["general","services","repair","phones","buyback","buyback-orders","categories","used","why","customers","orders","repair-requests","webshop-orders","gsm","firmware","search","admins"];
+  const pages=["general","services","repair","phones","shop","buyback","buyback-orders","categories","used","why","customers","orders","repair-requests","webshop-orders","gsm","firmware","search","admins"];
   return pages.find(p=>hasPermission(PAGE_PERMISSIONS[p]))||null;
 }
 function applyPermissionUI(){
@@ -6903,6 +6912,31 @@ function deleteWhy(i){
 }
 
 
+/* ---------------- SHOP PRODUCTS ---------------- */
+function ensureShopProducts(){
+  if(!Array.isArray(data.shopProducts)) data.shopProducts=[];
+  data.shopProducts.forEach((p,i)=>{if(!p||typeof p!=="object")data.shopProducts[i]={};p=data.shopProducts[i];if(!p.id)p.id="shop-"+Date.now()+"-"+i;if(!Array.isArray(p.images))p.images=["","","",""];while(p.images.length<4)p.images.push("");p.images=p.images.slice(0,4);if(typeof p.active!=="boolean")p.active=true;if(typeof p.videoEnabled!=="boolean")p.videoEnabled=!!p.videoUrl;});
+}
+function addShopProduct(){ensureShopProducts();data.shopProducts.unshift({id:"shop-"+Date.now(),name:"",description:"",category:"Accessoires",price:"",stock:"",images:["","","",""],videoEnabled:false,videoUrl:"",active:true});renderShopProductsAdmin();markChanged();}
+function deleteShopProduct(index){if(!confirm("Dit Shop-product verwijderen?"))return;data.shopProducts.splice(index,1);renderShopProductsAdmin();markChanged();}
+function updateShopProduct(index,key,value){ensureShopProducts();if(!data.shopProducts[index])return;data.shopProducts[index][key]=value;markChanged();}
+function shopProductImageUpload(event,index,slot){
+ const file=event.target.files&&event.target.files[0];if(!file)return;
+ if(!file.type.startsWith("image/")){alert("Kies een afbeeldingsbestand.");event.target.value="";return;}
+ if(file.size>1.2*1024*1024){alert("Elke foto mag maximaal 1,2 MB zijn. Verklein de foto en probeer opnieuw.");event.target.value="";return;}
+ const reader=new FileReader();reader.onload=()=>{ensureShopProducts();if(!data.shopProducts[index])return;data.shopProducts[index].images[slot]=String(reader.result||"");renderShopProductsAdmin();markChanged();};reader.readAsDataURL(file);
+}
+function renderShopProductsAdmin(){
+ const box=document.getElementById("shopProductsAdmin");if(!box)return;ensureShopProducts();
+ if(!data.shopProducts.length){box.innerHTML='<div class="card"><strong>Nog geen Shop-producten</strong><p class="small">Klik op Product toevoegen om je eerste accessoire of onderdeel toe te voegen.</p></div>';return;}
+ box.innerHTML=data.shopProducts.map((p,i)=>{
+  const field=(label,key,placeholder,type)=>'<label style="display:block;font-weight:700;font-size:13px;margin-bottom:10px">'+label+'<input type="'+(type||"text")+'" value="'+esc(p[key]??"")+'" placeholder="'+esc(placeholder)+'" oninput="updateShopProduct('+i+',\''+key+'\',this.value)" style="display:block;width:100%;margin-top:5px;padding:11px;border:1px solid #d8e0e9;border-radius:9px"></label>';
+  const photos=p.images.map((src,j)=>'<div style="border:1px solid #e2e8f0;border-radius:10px;padding:9px;min-width:0"><div style="height:100px;display:grid;place-items:center;background:#f8fafc;border-radius:7px;overflow:hidden;margin-bottom:8px">'+(src?'<img src="'+src+'" alt="Productfoto '+(j+1)+'" style="width:100%;height:100%;object-fit:contain">':'<span class="small">Foto '+(j+1)+'</span>')+'</div><input type="file" accept="image/*" aria-label="Foto '+(j+1)+' uploaden" onchange="shopProductImageUpload(event,'+i+','+j+')" style="width:100%;font-size:12px">'+(src?'<button class="btn btn-light" type="button" style="margin-top:6px" onclick="data.shopProducts['+i+'].images['+j+']=\'\';renderShopProductsAdmin();markChanged()">Foto wissen</button>':'')+'</div>').join("");
+  return '<article class="card" style="background:white"><div class="card-head"><div class="card-title">Product '+(i+1)+(p.name?' — '+esc(p.name):' — Nieuw product')+'</div><button class="btn btn-red" type="button" onclick="deleteShopProduct('+i+')">Verwijderen</button></div><div class="grid">'+field("Productnaam","name","Bijv. Transparant iPhone-hoesje")+field("Prijs (€)","price","4.99","number")+field("Categorie","category","Hoesjes / Batterijen / Opladers")+field("Voorraad","stock","Bijv. Op voorraad / 12 stuks")+'</div><label style="display:block;font-weight:700;font-size:13px;margin-bottom:12px">Productbeschrijving<textarea rows="4" placeholder="Beschrijf het product, de compatibiliteit en de belangrijkste eigenschappen..." oninput="updateShopProduct('+i+',\'description\',this.value)" style="display:block;width:100%;margin-top:5px;padding:11px;border:1px solid #d8e0e9;border-radius:9px">'+esc(p.description||"")+'</textarea></label><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0">'+photos+'</div><div class="card" style="margin-top:12px"><label style="display:flex;align-items:center;gap:8px;font-weight:700"><input type="checkbox" '+(p.videoEnabled?"checked":"")+' onchange="updateShopProduct('+i+',\'videoEnabled\',this.checked);renderShopProductsAdmin()"> Video uitleg toevoegen</label>'+(p.videoEnabled?field("YouTube-video URL","videoUrl","https://www.youtube.com/watch?v=..."):'<p class="small" style="margin:8px 0 0">Uitgeschakeld: er wordt geen video op de productpagina getoond.</p>')+'</div><label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-weight:700"><input type="checkbox" '+(p.active?"checked":"")+' onchange="updateShopProduct('+i+',\'active\',this.checked)"> Actief — tonen in de Shop</label></article>';
+ }).join("");
+}
+ensureShopProducts();
+
 /* ---------------- SAVE ---------------- */
 
 async function save(isAuto=false){
@@ -7456,6 +7490,7 @@ function renderAll(){
   renderServices();
   renderRepairPageAdmin();
   renderPhones();
+  renderShopProductsAdmin();
   renderBuybackPhones();
   renderDeviceCategories();
   renderGlobalConditionDetails();
