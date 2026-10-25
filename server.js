@@ -1995,7 +1995,11 @@ app.post("/api/webshop/orders", async (req, res) => {
     const city = String(body.city || "").trim();
     const items = Array.isArray(body.items) ? body.items : [];
     const paymentMethod = String(body.paymentMethod || "Mollie").trim();
-    if (!["Mollie", "PayPal"].includes(paymentMethod)) return res.status(400).json({ error: "Kies een geldige betaalmethode." });
+    if (!["Mollie", "PayPal", "CashOnDelivery"].includes(paymentMethod)) return res.status(400).json({ error: "Kies een geldige betaalmethode." });
+    if (paymentMethod === "CashOnDelivery") {
+      const codSettings = await pool.query("SELECT data FROM order_settings WHERE id=1");
+      if (codSettings.rows[0]?.data?.cashOnDeliveryEnabled !== true) return res.status(400).json({ error: "Betalen bij ontvangst is momenteel niet beschikbaar." });
+    }
 
     if (!name || !email || !phone || !street || !houseNumber || !postcode || !city || !items.length) {
       return res.status(400).json({ error: "Vul alle verplichte gegevens in en controleer uw winkelwagen." });
@@ -2482,13 +2486,23 @@ app.post("/api/paypal/cancel-order", async (req, res) => {
   }
 });
 
+app.get("/api/payment-methods/config", async (req,res) => {
+  try {
+    const result = await pool.query("SELECT data FROM order_settings WHERE id=1");
+    res.json({cashOnDeliveryEnabled: result.rows[0]?.data?.cashOnDeliveryEnabled === true});
+  } catch (error) {
+    console.error("Payment methods config error:", error);
+    res.status(500).json({cashOnDeliveryEnabled:false});
+  }
+});
+
 app.get("/api/admin/order-settings", requirePermission("site.save"), async (req,res) => {
   try{
     await pool.query("INSERT INTO order_settings (id,data) VALUES (1,$1::jsonb) ON CONFLICT (id) DO NOTHING", [JSON.stringify({postnlEnabled:false,dhlEnabled:false})]);
     const result=await pool.query("SELECT data FROM order_settings WHERE id=1");
     const settings=result.rows[0]?.data || {postnlEnabled:false,dhlEnabled:false};
     res.json({
-      settings:{postnlEnabled:!!settings.postnlEnabled,dhlEnabled:!!settings.dhlEnabled},
+      settings:{postnlEnabled:!!settings.postnlEnabled,dhlEnabled:!!settings.dhlEnabled,cashOnDeliveryEnabled:!!settings.cashOnDeliveryEnabled},
       api:{postnl:!!process.env.POSTNL_API_KEY,dhl:!!process.env.DHL_API_KEY}
     });
   }catch(error){
@@ -2501,13 +2515,14 @@ app.put("/api/admin/order-settings", requirePermission("site.save"), async (req,
   try{
     const postnlEnabled=req.body?.postnlEnabled===true;
     const dhlEnabled=req.body?.dhlEnabled===true;
+    const cashOnDeliveryEnabled=req.body?.cashOnDeliveryEnabled===true;
     if(postnlEnabled && !process.env.POSTNL_API_KEY){
       return res.status(400).json({error:"Voeg eerst POSTNL_API_KEY toe bij Render Environment Variables."});
     }
     if(dhlEnabled && !process.env.DHL_API_KEY){
       return res.status(400).json({error:"Voeg eerst DHL_API_KEY toe bij Render Environment Variables."});
     }
-    const settings={postnlEnabled,dhlEnabled};
+    const settings={postnlEnabled,dhlEnabled,cashOnDeliveryEnabled};
     await pool.query(
       "INSERT INTO order_settings (id,data,updated_at) VALUES (1,$1::jsonb,NOW()) ON CONFLICT (id) DO UPDATE SET data=EXCLUDED.data,updated_at=NOW()",
       [JSON.stringify(settings)]
