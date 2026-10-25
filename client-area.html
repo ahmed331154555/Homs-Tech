@@ -29,4 +29,5 @@ async function load(){try{const me=await fetch('/api/customer/me',{credentials:'
 async function logout(){try{await fetch('/api/customer/logout',{method:'POST',credentials:'same-origin'})}finally{location.href='account.html'}}
 load();if(location.hash==='orders'||location.hash==='profile')showSection(location.hash.slice(1));
 </script>  <script src="assets/homs-global-nav.js"></script>
+  <script src="assets/homs-ai-chat.js" defer></script>
 </body></html>
