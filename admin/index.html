@@ -1056,6 +1056,18 @@ textarea{
   #page-services #servicesList .editor-panel .card-head .btn-red{align-self:flex-start}
 }
 
+
+/* Service image upload: scoped to Diensten only */
+#page-services .service-image-upload{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:15px;border:1px dashed #cbd5e1;border-radius:13px;background:#f8fafc}
+#page-services .service-image-preview{width:150px;height:112px;flex:0 0 150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;overflow:hidden;border:1px solid #e2e8f0;border-radius:11px;background:#fff;color:#64748b}
+#page-services .service-image-preview img{width:100%;height:100%;object-fit:cover}
+#page-services .service-image-preview span{font-size:27px}
+#page-services .service-image-preview small{font-size:11px}
+#page-services .service-image-controls{display:flex;flex:1 1 230px;flex-direction:column;align-items:flex-start;gap:9px;min-width:0}
+#page-services .service-image-controls input[type=file]{width:100%;max-width:100%;font-size:13px;color:#334155}
+#page-services .service-image-controls small{color:#64748b;line-height:1.45}
+@media(max-width:520px){#page-services .service-image-upload{align-items:stretch}#page-services .service-image-preview{width:100%;height:160px;flex-basis:100%}}
+
 </style>
 <style>
 .permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -2964,7 +2976,8 @@ function normalizeData(){
       return [
         x[0] || "🔧",
         x[1] || "",
-        x[2] || ""
+        x[2] || "",
+        x[3] || ""
       ];
     }
 
@@ -3529,13 +3542,40 @@ function renderServices(){
           <div class="field"><label>Icoon / emoji</label><input value="${esc(service[0]||'🔧')}" oninput="data.services[${selectedServiceIndex}][0]=this.value;markChanged()"></div>
           <div class="field"><label>Naam dienst</label><input value="${esc(service[1]||'')}" oninput="data.services[${selectedServiceIndex}][1]=this.value;markChanged();renderServices()"></div>
           <div class="field" style="grid-column:1/-1"><label>Beschrijving</label><textarea oninput="data.services[${selectedServiceIndex}][2]=this.value;markChanged()">${esc(service[2]||'')}</textarea></div>
+          <div class="field service-image-field" style="grid-column:1/-1">
+            <label>Afbeelding van de dienst</label>
+            <div class="service-image-upload">
+              <div class="service-image-preview">${service[3] ? '<img src="'+esc(service[3])+'" alt="Voorbeeld service-afbeelding">' : '<span>🖼️</span><small>Nog geen afbeelding</small>'}</div>
+              <div class="service-image-controls">
+                <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" aria-label="Afbeelding uploaden" onchange="handleServiceImageUpload(event,${selectedServiceIndex})">
+                <small>JPG, PNG, WebP of GIF · maximaal 1,5 MB</small>
+                ${service[3] ? '<button class="btn btn-light" type="button" onclick="clearServiceImage('+ ${selectedServiceIndex} +')">Afbeelding verwijderen</button>' : ''}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>`;
 }
 
+function handleServiceImageUpload(event,index){
+  const file=event.target.files&&event.target.files[0];
+  if(!file)return;
+  if(!["image/jpeg","image/png","image/webp","image/gif"].includes(file.type)){alert("Kies een JPG-, PNG-, WebP- of GIF-afbeelding.");event.target.value="";return;}
+  if(file.size>1.5*1024*1024){alert("De afbeelding mag maximaal 1,5 MB zijn.");event.target.value="";return;}
+  const reader=new FileReader();
+  reader.onload=()=>{if(!Array.isArray(data.services[index]))return;data.services[index][3]=String(reader.result||"");markChanged();renderServices();};
+  reader.onerror=()=>alert("De afbeelding kon niet worden gelezen. Probeer het opnieuw.");
+  reader.readAsDataURL(file);
+}
+function clearServiceImage(index){
+  if(!Array.isArray(data.services[index]))return;
+  data.services[index][3]="";
+  markChanged();
+  renderServices();
+}
 function addService(){
-  data.services.push(["🔧","Nieuwe dienst",""]);
+  data.services.push(["🔧","Nieuwe dienst","",""]);
   selectedServiceIndex=data.services.length-1;
   renderServices();
   markChanged();
