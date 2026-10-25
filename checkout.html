@@ -237,8 +237,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   }
 
   async function loadPayPalSdk(){
-    const configResponse = await fetch("/api/paypal/config",{cache:"no-store"}),
-        fetch("/api/payment-methods/config",{cache:"no-store"});
+    const configResponse = await fetch("/api/paypal/config",{cache:"no-store"});
     const config = await configResponse.json().catch(()=>({}));
     if(!configResponse.ok || !config.enabled || !config.clientId){
       throw new Error(config.error || "PayPal is nog niet geconfigureerd.");
