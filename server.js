@@ -3087,6 +3087,19 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       return res.json({ success: true, phones: incoming.phones });
     }
 
+    const isShopCatalogPatch = section === "shop" &&
+      req.body && Array.isArray(req.body.shopProducts) &&
+      Object.keys(req.body).length === 1;
+
+    if (isShopCatalogPatch) {
+      const saved = await queryWithConnectionRetry(
+        "UPDATE site_settings SET data = jsonb_set(data, '{shopProducts}', $1::jsonb, true) WHERE id = 1 RETURNING data->'shopProducts' AS products",
+        [JSON.stringify(req.body.shopProducts)],
+        4
+      );
+      return res.json({ success: true, shopProducts: saved.rows[0]?.products || [] });
+    }
+
     const current = await queryWithConnectionRetry(
       "SELECT data FROM site_settings WHERE id = 1",
       [],
