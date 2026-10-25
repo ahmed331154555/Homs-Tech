@@ -424,7 +424,8 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
     try {
       const [mollieResponse, paypalResponse, codResponse] = await Promise.all([
         fetch("/api/mollie/config",{cache:"no-store"}),
-        fetch("/api/paypal/config",{cache:"no-store"})
+        fetch("/api/paypal/config",{cache:"no-store"}),
+        fetch("/api/payment-methods/config",{cache:"no-store"})
       ]);
       const mollie = await mollieResponse.json().catch(()=>({}));
       const paypal = await paypalResponse.json().catch(()=>({}));
@@ -448,7 +449,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
               : "Online betalen is nog niet geconfigureerd. De beheerder moet eerst de betaalprovider instellen.";
       }
     } catch(error) {
-      paymentAvailability = { mollie:false, paypal:false };
+      paymentAvailability = { mollie:false, paypal:false, cashOnDelivery:false };
       if(note) note.textContent = "Betaalmethoden konden niet worden gecontroleerd. Vernieuw de pagina of probeer later opnieuw.";
       document.getElementById("paymentMollie").disabled = true;
       document.getElementById("paymentPayPal").disabled = true;
