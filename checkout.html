@@ -110,6 +110,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 <h3>Betaalmethode</h3>
 <label class="payment-option" for="paymentMollie"><input id="paymentMollie" type="radio" name="paymentMethod" value="Mollie" checked><span><strong>iDEAL / Wero, bankkaart en meer</strong><small>Veilig afrekenen via Mollie</small></span><b>Mollie</b></label>
 <label class="payment-option" for="paymentPayPal"><input id="paymentPayPal" type="radio" name="paymentMethod" value="PayPal"><span><strong>PayPal</strong><small>Betalen met uw PayPal-account</small></span><b>PayPal</b></label>
+<label class="payment-option" id="cashOnDeliveryOption" for="paymentCashOnDelivery" hidden><input id="paymentCashOnDelivery" type="radio" name="paymentMethod" value="CashOnDelivery"><span><strong>Betalen bij ontvangst</strong><small>Betaal wanneer u de telefoon ontvangt</small></span><b>Contant</b></label>
 <p id="paymentConfigNote" class="payment-config-note" role="status">Betaalmethoden worden gecontroleerd…</p>
 </div>
 <div id="status" class="status"></div>
@@ -140,7 +141,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   let pendingOrderId = null;
   let pendingCheckoutToken = "";
   let paypalRendered = false;
-  let paymentAvailability = { mollie: false, paypal: false };
+  let paymentAvailability = { mollie: false, paypal: false, cashOnDelivery: false };
 
   function readCart(){
     try{
@@ -236,7 +237,8 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   }
 
   async function loadPayPalSdk(){
-    const configResponse = await fetch("/api/paypal/config",{cache:"no-store"});
+    const configResponse = await fetch("/api/paypal/config",{cache:"no-store"}),
+        fetch("/api/payment-methods/config",{cache:"no-store"});
     const config = await configResponse.json().catch(()=>({}));
     if(!configResponse.ok || !config.enabled || !config.clientId){
       throw new Error(config.error || "PayPal is nog niet geconfigureerd.");
@@ -376,12 +378,22 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
       const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || "Mollie";
       if(selectedMethod === "Mollie" && !paymentAvailability.mollie) throw new Error("Mollie is nog niet actief. De eigenaar moet de Mollie API-sleutel instellen op de server.");
       if(selectedMethod === "PayPal" && !paymentAvailability.paypal) throw new Error("PayPal is nog niet geconfigureerd.");
+      if(selectedMethod === "CashOnDelivery" && !paymentAvailability.cashOnDelivery) throw new Error("Betalen bij ontvangst is momenteel niet beschikbaar.");
 
       const order = await createLocalOrder();
       pendingOrderId = Number(order?.id || 0);
       pendingCheckoutToken = String(order?.checkout_token || "");
       if(!pendingOrderId || !/^[a-f0-9]{64}$/.test(pendingCheckoutToken)) throw new Error("De bestelling kon niet veilig worden bevestigd. Probeer opnieuw.");
 
+      if(selectedMethod === "CashOnDelivery"){
+        localStorage.removeItem(CART_KEY);
+        localStorage.removeItem("homsTechPendingWebshopOrderId");
+        document.getElementById("checkoutContent").classList.add("hidden");
+        document.getElementById("success").classList.remove("hidden");
+        document.getElementById("orderNumber").textContent = "Bestelnummer #" + pendingOrderId;
+        showStatus("Bestelling ontvangen. U betaalt bij ontvangst; er is geen online betaling uitgevoerd.","success");
+        return;
+      }
       if(selectedMethod === "Mollie"){
         btn.textContent = "Doorsturen naar Mollie…";
         await startMolliePayment();
@@ -410,19 +422,22 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   async function loadPaymentAvailability(){
     const note = document.getElementById("paymentConfigNote");
     try {
-      const [mollieResponse, paypalResponse] = await Promise.all([
+      const [mollieResponse, paypalResponse, codResponse] = await Promise.all([
         fetch("/api/mollie/config",{cache:"no-store"}),
         fetch("/api/paypal/config",{cache:"no-store"})
       ]);
       const mollie = await mollieResponse.json().catch(()=>({}));
       const paypal = await paypalResponse.json().catch(()=>({}));
-      paymentAvailability = { mollie: !!(mollieResponse.ok && mollie.enabled), paypal: !!(paypalResponse.ok && paypal.enabled && paypal.clientId) };
+      const cod = await codResponse.json().catch(()=>({}));
+      paymentAvailability = { mollie: !!(mollieResponse.ok && mollie.enabled), paypal: !!(paypalResponse.ok && paypal.enabled && paypal.clientId), cashOnDelivery: !!(codResponse.ok && cod.cashOnDeliveryEnabled) };
+      document.getElementById("cashOnDeliveryOption").hidden = !paymentAvailability.cashOnDelivery;
       const mollieInput = document.getElementById("paymentMollie");
       const paypalInput = document.getElementById("paymentPayPal");
       mollieInput.disabled = !paymentAvailability.mollie;
       paypalInput.disabled = !paymentAvailability.paypal;
       if(paymentAvailability.mollie) mollieInput.checked = true;
       else if(paymentAvailability.paypal) paypalInput.checked = true;
+      else if(paymentAvailability.cashOnDelivery) document.getElementById("paymentCashOnDelivery").checked = true;
       if(note){
         note.textContent = paymentAvailability.mollie && paymentAvailability.paypal
           ? "Mollie en PayPal zijn beschikbaar."
