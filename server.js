@@ -3726,7 +3726,12 @@ app.post("/api/chat/conversations", async (req, res) => {
     const token = crypto.randomBytes(32).toString("hex");
     const c = await pool.query("INSERT INTO live_chat_conversations(public_token) VALUES($1) RETURNING id,public_token", [token]);
     const m = await pool.query("INSERT INTO live_chat_messages(conversation_id,sender,message) VALUES($1,'customer',$2) RETURNING id,sender,message,created_at", [c.rows[0].id,message]);
-    res.status(201).json({token:c.rows[0].public_token,messages:m.rows});
+    const automaticReply = await pool.query(
+      "INSERT INTO live_chat_messages(conversation_id,sender,message) VALUES($1,'admin',$2) RETURNING id,sender,message,created_at",
+      [c.rows[0].id, "Bedankt voor uw bericht! We hebben uw probleem ontvangen. Een medewerker van ons team neemt zo snel mogelijk contact met u op."]
+    );
+    await pool.query("UPDATE live_chat_conversations SET updated_at=NOW() WHERE id=$1", [c.rows[0].id]);
+    res.status(201).json({token:c.rows[0].public_token,messages:[...m.rows,...automaticReply.rows]});
   } catch(e) { console.error("Live chat create:",e); res.status(500).json({error:"Chat is tijdelijk niet beschikbaar."}); }
 });
 app.post("/api/chat/conversations/:token/messages", async (req,res) => {
