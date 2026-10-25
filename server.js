@@ -2889,7 +2889,14 @@ app.post("/api/admin/repair-requests/:id/offer", requirePermission("orders.updat
     const order = found.rows[0];
     let meta = {};
     try { meta = JSON.parse(order.extra_fields || "{}"); } catch {}
-    if (meta.repairQuote !== true) return res.status(400).json({ error: "Dit is geen repair request." });
+    const isLegacyRepairOrder = String(order.service_category || "").trim().toLowerCase() === "reparatie";
+    if (meta.repairQuote !== true && !isLegacyRepairOrder) return res.status(400).json({ error: "Dit is geen repair request." });
+    if (isLegacyRepairOrder && meta.repairQuote !== true) {
+      meta.repairQuote = true;
+      const serviceName = String(order.service_name || "").trim();
+      meta.brand = meta.brand || "Reparatie";
+      meta.model = meta.model || serviceName;
+    }
 
     const brand = String(meta.brand || "").trim();
     const model = String(meta.model || order.service_name || "").trim();
