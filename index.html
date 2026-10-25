@@ -40,7 +40,7 @@ header{background:#fff;border-bottom:1px solid var(--line)}
 .hero{background:linear-gradient(120deg,#071925,#173c55);color:#fff}
 .hero-inner{min-height:285px;display:grid;grid-template-columns:1.45fr .55fr;align-items:center;gap:25px}
 .hero h1{letter-spacing:-1.2px}
-.hero h1{font-size:46px;line-height:1.02;margin:0 0 14px;font-weight:900}
+.hero h1{font-size:clamp(32px,3.8vw,44px);line-height:1.04;margin:0 0 14px;font-weight:900}
 .hero h1 span{color:var(--blue2)}
 .hero p{max-width:610px;color:#d6e3eb;font-size:15px;line-height:1.65}
 .actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}
@@ -288,11 +288,11 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 <section class="hero">
  <div class="container hero-inner" id="homeHero">
   <div>
-   <h1><span id="heroTop">Is uw telefoon kapot?</span><br><span id="heroBottom">Wij komen naar u toe!</span></h1>
-   <p id="heroText">Reparatie van alle soorten telefoons bij u thuis — snelle service, professioneel werk en betaalbare prijzen.</p>
+   <h1><span id="heroTop">Reparatie, refurbished</span><br><span id="heroBottom">en verkoop van telefoons</span></h1>
+   <p id="heroText">Professionele telefoonreparatie, refurbished iPhones, oude telefoons verkopen en eenvoudig je toestel naar ons opsturen.</p>
    <div class="actions">
-    <a class="btn btn-blue" id="heroButton1" data-wa>💬 Afspraak via WhatsApp</a>
-    <a class="btn btn-light" id="heroButton2" data-phone>📞 Bel nu</a>
+    <a class="btn btn-blue" id="heroButton1" href="repair.html">Bekijk onze diensten →</a>
+    <a class="btn btn-light" id="heroButton2" href="repair.html">Stuur je toestel op</a>
    </div>
   </div>
   <div class="hero-device" id="heroDevice"><div class="phone"></div></div>
@@ -410,7 +410,7 @@ const defaults={
  services:[],why:[],phones:[],deviceCategories:[],
  homepage:{
   topBar:{enabled:true,items:["1 jaar garantie","Snel geleverd","Betrouwbare service","Betaalbare prijzen"]},
-  hero:{enabled:true,titleTop:"Is uw telefoon kapot?",titleBottom:"Wij komen naar u toe!",text:"Reparatie van alle soorten telefoons bij u thuis — snelle service, professioneel werk en betaalbare prijzen.",button1Text:"💬 Afspraak via WhatsApp",button1Link:"",button2Text:"📞 Bel nu",button2Link:"",showDevice:true},
+  hero:{enabled:true,titleTop:"Reparatie, refurbished",titleBottom:"en verkoop van telefoons",text:"Professionele telefoonreparatie, refurbished iPhones, oude telefoons verkopen en eenvoudig je toestel naar ons opsturen.",button1Text:"Bekijk onze diensten →",button1Link:"repair.html",button2Text:"Stuur je toestel op",button2Link:"repair.html",showDevice:true},
   banners:{enabled:true,buybackTitle:"Uw toestel verkopen?",buybackText:"Verkoop je oude iPhone eenvoudig, snel en veilig bij HOMS TECH. Ontvang binnen enkele minuten een eerlijk bod.",buybackButton:"Toestel verkopen →",buybackLink:"uw-toestel-verkopen.html",buybackArt:"",refurbishedTitle:"Refurbished apparaten",refurbishedText:"Geteste apparaten met duidelijke informatie en garantie.",refurbishedButton:"Bekijk apparaten →",refurbishedLink:"devices.html",refurbishedArt:"📱"},
   gsm:{enabled:true,title:"GSM Services",items:[{icon:"▥",label:"IMEI Services",link:"gsm-services.html#imei"},{icon:"🔒",label:"Unlock",link:"gsm-services.html#imei"},{icon:"G",label:"FRP Services",link:"gsm-services.html#frp"},{icon:"☁",label:"iCloud",link:"gsm-services.html#imei"},{icon:"☁",label:"Server Services",link:"gsm-services.html#server"},{icon:"⚡",label:"Server Credits",link:"gsm-services.html#server"}]},
   categories:{enabled:true,title:"Refurbished apparaten"},
