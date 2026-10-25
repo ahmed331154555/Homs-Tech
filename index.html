@@ -65,7 +65,7 @@ header{background:#fff;border-bottom:1px solid var(--line)}
 #homeBuybackBanner p{font-size:14px;line-height:1.65;color:#52657d;max-width:520px;margin:0 0 22px}
 #homeBuybackBanner .btn{display:inline-flex;align-items:center;gap:12px;min-height:52px;margin-top:0;padding:0 22px;border-radius:11px;background:#0968f5;color:#fff;font-size:13px;box-shadow:0 8px 20px #0968f52b}
 #homeBuybackBanner .art{position:absolute;right:1%;top:0;bottom:0;width:47%;height:100%;display:flex;align-items:center;justify-content:center;font-size:0;opacity:1}
-#homeBuybackBanner .art:before{content:"";position:absolute;inset:7% 0 0 0;background-image:url("https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=1000&q=85");background-size:contain;background-position:center;background-repeat:no-repeat;filter:drop-shadow(0 20px 20px rgba(15,35,70,.18))}
+#homeBuybackBanner .art:before{content:"";position:absolute;inset:7% 0 0 0;background-image:url("https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=1000&q=85");background-size:contain;background-position:center;background-repeat:no-repeat;mix-blend-mode:screen;filter:drop-shadow(0 20px 20px rgba(15,35,70,.18))}
 #homeBuybackBanner .art:after{content:"♻";position:absolute;right:7%;top:10%;font-size:clamp(64px,8vw,108px);font-weight:900;line-height:1;color:#1683ff;opacity:.82}
 #homeRefurbishedBanner{display:none}
 #homeBuybackBanner .sell-home-benefits{display:flex;gap:18px;flex-wrap:wrap;margin:0 0 23px}
@@ -487,11 +487,11 @@ function renderBanners(){
  wrap.style.display=b.enabled?"":"none";
  const buy=document.getElementById("homeBuybackBanner"),ref=document.getElementById("homeRefurbishedBanner");
  if(buy){
-  const buyTitle=String(b.buybackTitle||"Uw toestel verkopen?").trim().split(/\\s+/); const buyFirst=buyTitle.shift()||"Uw"; document.getElementById("buybackBannerTitle").innerHTML=esc(buyFirst)+"<br><span style='color:var(--blue2)'>"+esc(buyTitle.join(" ")||"toestel verkopen?")+"</span>";
-  document.getElementById("buybackBannerText").textContent=b.buybackText||"";
-  document.getElementById("buybackBannerButton").textContent=b.buybackButton||"";
-  document.getElementById("buybackBannerButton").href=b.buybackLink||"/used.html";
-  document.getElementById("buybackBannerArt").textContent=b.buybackArt||"";
+  document.getElementById("buybackBannerTitle").innerHTML="Uw toestel<br><span>verkopen?</span>";
+  document.getElementById("buybackBannerText").textContent="Verkoop je oude iPhone eenvoudig, snel en veilig bij HOMS TECH. Ontvang binnen enkele minuten een eerlijk bod.";
+  document.getElementById("buybackBannerButton").textContent="Toestel verkopen →";
+  document.getElementById("buybackBannerButton").href="uw-toestel-verkopen.html";
+  document.getElementById("buybackBannerArt").textContent="";
  }
  if(ref){
   document.getElementById("refurbishedBannerTitle").textContent=b.refurbishedTitle||"";
