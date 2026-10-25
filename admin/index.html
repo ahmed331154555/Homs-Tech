@@ -1951,6 +1951,10 @@ textarea{
         <input type="checkbox" id="orderDhlEnabled" style="margin-top:4px">
         <span><strong>DHL</strong><br><small id="orderDhlApiStatus">API-status controleren...</small></span>
       </label>
+      <label style="display:flex;gap:10px;align-items:flex-start;margin:14px 0">
+        <input type="checkbox" id="orderCashOnDeliveryEnabled" style="margin-top:4px">
+        <span><strong>Betalen bij ontvangst</strong><br><small>Laat klanten bestellen zonder online betaling. De bestelling blijft onbetaald tot ontvangst.</small></span>
+      </label>
       <button class="btn btn-primary" type="button" onclick="saveOrderSettings()">Instellingen opslaan</button>
     </div>
     <div class="card" style="padding:18px">
@@ -6649,6 +6653,7 @@ async function loadOrderSettings(){
     const data=await orderSettingsRequest();
     document.getElementById("orderPostnlEnabled").checked=!!data.settings?.postnlEnabled;
     document.getElementById("orderDhlEnabled").checked=!!data.settings?.dhlEnabled;
+    document.getElementById("orderCashOnDeliveryEnabled").checked=!!data.settings?.cashOnDeliveryEnabled;
     document.getElementById("orderPostnlApiStatus").textContent=data.api?.postnl?"API-sleutel gevonden op de server":"API-sleutel ontbreekt op de server";
     document.getElementById("orderDhlApiStatus").textContent=data.api?.dhl?"API-sleutel gevonden op de server":"API-sleutel ontbreekt op de server";
     orderSettingsStatus("Instellingen geladen.");
@@ -6658,7 +6663,8 @@ async function saveOrderSettings(){
   try{
     const data=await orderSettingsRequest("PUT",{
       postnlEnabled:document.getElementById("orderPostnlEnabled").checked,
-      dhlEnabled:document.getElementById("orderDhlEnabled").checked
+      dhlEnabled:document.getElementById("orderDhlEnabled").checked,
+      cashOnDeliveryEnabled:document.getElementById("orderCashOnDeliveryEnabled").checked
     });
     document.getElementById("orderPostnlEnabled").checked=!!data.settings?.postnlEnabled;
     document.getElementById("orderDhlEnabled").checked=!!data.settings?.dhlEnabled;
