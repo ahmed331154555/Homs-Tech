@@ -2040,6 +2040,27 @@ app.post("/api/webshop/orders", async (req, res) => {
       ]
     );
 
+    // Notify the site owner when a webshop order is created.
+    const notifyEmail = process.env.ORDER_NOTIFICATION_EMAIL || process.env.REPAIR_REQUEST_EMAIL;
+    if (process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL && notifyEmail) {
+      try {
+        const order = result.rows[0];
+        const itemLines = safeItems.map(item => `<li>${escapeHtml(String(item.name || item.title || "Product"))} × ${Number(item.qty || 1)} — €${(Number(item.unitPrice || 0) * Number(item.qty || 1)).toFixed(2)}</li>`).join("");
+        const response = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: process.env.RESEND_FROM_EMAIL,
+            to: [notifyEmail],
+            subject: `Nieuwe HOMS TECH webshopbestelling #${order.id}`,
+            html: `<div style="font-family:Arial,sans-serif;color:#203449"><h2>Nieuwe webshopbestelling #${order.id}</h2><p><b>Klant:</b> ${escapeHtml(name)}</p><p><b>E-mail:</b> ${escapeHtml(email)}</p><p><b>Telefoon:</b> ${escapeHtml(phone)}</p><p><b>Adres:</b> ${escapeHtml(street)} ${escapeHtml(houseNumber)}, ${escapeHtml(postcode)} ${escapeHtml(city)}</p><p><b>Producten:</b></p><ul>${itemLines}</ul><p><b>Totaal:</b> €${total.toFixed(2)}</p><p><b>Betaalmethode:</b> ${escapeHtml(paymentMethod)}</p><p><b>Betaalstatus:</b> ${escapeHtml(String(order.payment_status || "Unpaid"))}</p></div>`
+          })
+        });
+        if (!response.ok) console.error("Webshop order notification failed:", response.status, await response.text().catch(() => ""));
+        else console.log("Webshop order notification sent:", (await response.json().catch(() => ({}))).id || "ok");
+      } catch (mailError) { console.error("Webshop order notification error:", mailError.message); }
+    }
+
     res.status(201).json({ success: true, order: { ...result.rows[0], checkout_token: checkoutToken } });
   } catch (error) {
     console.error("Create webshop order error:", error);
@@ -2688,15 +2709,16 @@ app.post("/api/repair-requests", async (req, res) => {
     );
     const request = result.rows[0];
 
-    // 6. Optional notification email (safe non-blocking try/catch)
-    if (process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL && process.env.REPAIR_REQUEST_EMAIL) {
+    // 6. Notify the site owner about repair requests.
+    const repairNotifyEmail = process.env.REPAIR_REQUEST_EMAIL || process.env.ORDER_NOTIFICATION_EMAIL;
+    if (process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL && repairNotifyEmail) {
       try {
         const response = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: { "Authorization": `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
           body: JSON.stringify({
             from: process.env.RESEND_FROM_EMAIL,
-            to: [process.env.REPAIR_REQUEST_EMAIL],
+            to: [repairNotifyEmail],
             subject: `Nieuwe HOMS TECH reparatieaanvraag #${request.id}`,
             html: `<div style="font-family:Arial,sans-serif;color:#203449"><h2>Nieuwe reparatieaanvraag #${request.id}</h2><p><b>Toestel:</b> ${escapeHtml(brand)} ${escapeHtml(model)}</p><p><b>Probleem:</b><br>${escapeHtml(issue).replace(/\\n/g,"<br>")}</p><p><b>Klant:</b> ${escapeHtml(name)}</p><p><b>E-mail:</b> ${escapeHtml(email)}</p><p><b>Telefoon:</b> ${escapeHtml(phone || "-")}</p><p>Bekijk de aanvraag in de HOMS TECH-admin. Foto's zijn opgeslagen bij de aanvraag.</p></div>`
           })
