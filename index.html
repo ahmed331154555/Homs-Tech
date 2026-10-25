@@ -548,7 +548,9 @@ function renderHomepageVisibility(){
 }
 
 function renderCategories(){
- const box=document.getElementById("categories");box.innerHTML="";
+ const box=document.getElementById("categories");
+ if(!box)return;
+ box.innerHTML="";
  let cats=Array.isArray(data.deviceCategories)?data.deviceCategories.filter(x=>x&&x.active!==false):[];
  if(!cats.length)cats=[
   {title:"Refurbished iPhones",link:"devices.html"},{title:"Refurbished iPads",link:"devices.html"},
