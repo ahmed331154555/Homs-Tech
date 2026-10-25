@@ -126,17 +126,25 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 }
 
 /* SCREEN REPAIR BEFORE / AFTER */
-.screen-before-after{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin:18px auto 24px;max-width:900px;box-shadow:0 8px 24px rgba(7,29,45,.06)}
-.screen-before-after .section-title{margin:4px 0 12px}
-.screen-ba-subtitle{text-align:center;color:var(--muted);font-size:13px;margin:0 0 14px}
-.screen-ba-stage{position:relative;width:min(100%,520px);margin:auto;border-radius:10px;overflow:hidden;background:#f3f5f8;aspect-ratio:3/2;touch-action:pan-y;cursor:ew-resize;user-select:none}
-.screen-ba-layer{position:absolute;inset:0;background-image:url("assets/screen-repair-before-after.jpg");background-repeat:no-repeat;background-size:100% 100%;background-position:center center}
-.screen-ba-after{background-position:center center}
-.screen-ba-before{background-position:center center;clip-path:inset(0 50% 0 0)}
-.screen-ba-divider{position:absolute;top:0;bottom:0;left:50%;width:2px;background:#fff;transform:translateX(-50%);pointer-events:none;display:flex;align-items:center;justify-content:center;box-shadow:0 0 4px #0004}
-.screen-ba-divider span{width:38px;height:38px;border-radius:50%;background:#fff;color:#18212a;display:flex;align-items:center;justify-content:center;font-size:25px;font-weight:700;box-shadow:0 2px 8px #0003;white-space:nowrap}
-.screen-ba-stage:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
-@media(max-width:520px){.screen-before-after{padding:12px 10px;margin:14px 0 20px}.screen-ba-stage{width:100%;aspect-ratio:4/3}}
+.screen-before-after{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px;margin:24px 0 30px;box-shadow:0 8px 24px rgba(7,29,45,.06)}
+.screen-before-after .section-title{margin-bottom:8px}
+.screen-ba-subtitle{text-align:center;color:var(--muted);font-size:13px;margin:0 0 20px}
+.screen-ba-stage{position:relative;width:min(100%,650px);height:270px;margin:auto;border-radius:10px;overflow:hidden;background:#0b2031;touch-action:pan-y;cursor:ew-resize;user-select:none}
+.screen-ba-half{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.screen-ba-broken{background:linear-gradient(135deg,#092d49,#167bc4 58%,#071d2d)}
+.screen-ba-clean{background:linear-gradient(135deg,#0a2440,#2563eb 52%,#ec4899);clip-path:inset(0 0 0 50%)}
+.screen-ba-phone{height:220px;width:118px;border:5px solid #101820;border-radius:22px;background:#030712;box-shadow:0 10px 24px #0008;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.screen-ba-screen{position:absolute;inset:4px;border-radius:15px;background:linear-gradient(155deg,#101827 5%,#05070c 58%,#1b2638)}
+.screen-ba-clean .screen-ba-screen{background:linear-gradient(145deg,#1d4ed8,#38bdf8 40%,#f472b6 72%,#7c3aed)}
+.screen-ba-notch{position:absolute;z-index:2;top:4px;left:50%;transform:translateX(-50%);width:48px;height:12px;background:#030712;border-radius:0 0 9px 9px}
+.screen-ba-cracks{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 420'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1.4' opacity='.92'%3E%3Cpath d='M28 80L78 150 58 190 102 228 78 290 116 335M78 150L25 175M78 150L128 132 155 85M102 228L155 205 190 230M58 190L24 220M116 335L165 300 190 330M128 132L115 90M155 205L174 160M78 290L35 315'/%3E%3Ccircle cx='78' cy='150' r='30'/%3E%3Ccircle cx='155' cy='205' r='24'/%3E%3C/g%3E%3C/svg%3E");background-size:100% 100%}
+.screen-ba-label{position:absolute;top:12px;padding:6px 12px;border-radius:30px;color:#fff;background:#071d2ddd;font-size:12px;font-weight:700;z-index:4}
+.screen-ba-label.before{left:12px}.screen-ba-label.after{right:12px;background:#2563ebdd}
+.screen-ba-divider{position:absolute;top:0;bottom:0;left:50%;width:3px;background:#fff;box-shadow:0 0 8px #0008;transform:translateX(-50%);z-index:5;pointer-events:none}
+.screen-ba-knob{position:absolute;top:50%;left:50%;width:38px;height:38px;border-radius:50%;background:#fff;color:#071d2d;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:900;box-shadow:0 2px 10px #0005;transform:translate(-50%,-50%)}
+.screen-ba-range{display:block;width:min(100%,650px);margin:14px auto 0;accent-color:var(--blue);cursor:ew-resize}
+.screen-ba-help{text-align:center;font-size:12px;color:var(--muted);margin:9px 0 0}
+@media(max-width:520px){.screen-before-after{padding:16px 12px}.screen-ba-stage{height:235px}.screen-ba-phone{height:190px;width:102px}}
 
 </style>
 
@@ -293,13 +301,17 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
  <div id="categories" class="category-grid"></div>
 </section>
 
-<section class="screen-before-after" id="screenBeforeAfter" aria-label="Scherm reparatie">
+<section class="screen-before-after" id="screenBeforeAfter" aria-label="Scherm reparatie voor en na">
  <h2 class="section-title">Van gebarsten naar als nieuw</h2>
- <div class="screen-ba-stage screen-ba-photo-stage" id="screenBaStage" role="slider" tabindex="0" aria-label="Vergelijk gebarsten en hersteld scherm" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
-  <div class="screen-ba-layer screen-ba-after" aria-hidden="true"></div>
-  <div class="screen-ba-layer screen-ba-before" id="screenBaBefore" aria-hidden="true"></div>
-  <div class="screen-ba-divider" id="screenBaDivider" aria-hidden="true"><span>‹ ›</span></div>
+ <p class="screen-ba-subtitle">Bekijk het verschil na een professionele schermreparatie</p>
+ <div class="screen-ba-stage" id="screenBaStage">
+  <span class="screen-ba-label before">Voor</span><span class="screen-ba-label after">Na</span>
+  <div class="screen-ba-half screen-ba-broken"><div class="screen-ba-phone"><div class="screen-ba-screen"></div><div class="screen-ba-notch"></div><div class="screen-ba-cracks"></div></div></div>
+  <div class="screen-ba-half screen-ba-clean" id="screenBaClean"><div class="screen-ba-phone"><div class="screen-ba-screen"></div><div class="screen-ba-notch"></div></div></div>
+  <div class="screen-ba-divider" id="screenBaDivider"><div class="screen-ba-knob">↔</div></div>
  </div>
+ <input class="screen-ba-range" id="screenBaRange" type="range" min="0" max="100" value="50" aria-label="Vergelijk kapot en gerepareerd scherm">
+ <p class="screen-ba-help">Sleep de schuif of beweeg met de muis over de afbeelding</p>
 </section>
 
 <section class="section" id="homeGsmSection">
@@ -672,42 +684,15 @@ async function loadSite(){
  common();renderTopBar();renderHero();renderBanners();renderHomepageGsm();renderHomepageVisibility();renderCategories();renderProducts();renderServices();renderWhy();
 }
 
-// Interactive before/after reveal: drag the divider on desktop or touch.
+// Interactive screen before/after comparison: works with mouse, touch and keyboard.
 (function initScreenBeforeAfter(){
- const stage=document.getElementById("screenBaStage"),before=document.getElementById("screenBaBefore"),divider=document.getElementById("screenBaDivider");
- if(!stage||!before||!divider)return;
- function setPosition(value){
-  const v=Math.max(0,Math.min(100,Number(value)||0));
-  before.style.clipPath="inset(0 "+(100-v)+"% 0 0)";
-  divider.style.left=v+"%";
-  stage.setAttribute("aria-valuenow",String(Math.round(v)));
- }
- function fromEvent(e){
-  const r=stage.getBoundingClientRect();
-  if(!r.width)return;
-  setPosition((e.clientX-r.left)/r.width*100);
- }
- let touchDragging=false;
- stage.addEventListener("pointerdown",e=>{
-  if(e.pointerType==="mouse"&&e.button!==0)return;
-  touchDragging=true;
-  stage.setPointerCapture?.(e.pointerId);
-  fromEvent(e);
- });
- stage.addEventListener("pointermove",e=>{
-  // Mouse users can move the comparison with the cursor; touch users drag while pressed.
-  if(e.pointerType!=="mouse"&&!touchDragging)return;
-  fromEvent(e);
- });
- stage.addEventListener("pointerup",()=>{touchDragging=false;});
- stage.addEventListener("pointercancel",()=>{touchDragging=false;});
- stage.addEventListener("keydown",e=>{
-  const now=Number(stage.getAttribute("aria-valuenow")||50);
-  if(e.key==="ArrowLeft"){setPosition(now-5);e.preventDefault();}
-  if(e.key==="ArrowRight"){setPosition(now+5);e.preventDefault();}
-  if(e.key==="Home"){setPosition(0);e.preventDefault();}
-  if(e.key==="End"){setPosition(100);e.preventDefault();}
- });
+ const stage=document.getElementById("screenBaStage"),clean=document.getElementById("screenBaClean"),divider=document.getElementById("screenBaDivider"),range=document.getElementById("screenBaRange");
+ if(!stage||!clean||!divider||!range)return;
+ function setPosition(value){const v=Math.max(0,Math.min(100,Number(value)||0));clean.style.clipPath="inset(0 0 0 "+v+"%)";divider.style.left=v+"%";range.value=String(v);}
+ range.addEventListener("input",()=>setPosition(range.value));
+ stage.addEventListener("pointermove",e=>{if(e.pointerType==="mouse"){const r=stage.getBoundingClientRect();setPosition(100-(e.clientX-r.left)/r.width*100);}});
+ stage.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse"){const r=stage.getBoundingClientRect();setPosition(100-(e.clientX-r.left)/r.width*100);}});
+ stage.addEventListener("keydown",e=>{if(e.key==="ArrowLeft"){setPosition(Number(range.value)-5);}if(e.key==="ArrowRight"){setPosition(Number(range.value)+5);}});
  setPosition(50);
 })();
 
