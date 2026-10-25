@@ -2258,6 +2258,7 @@ function applyPermissionUI(){
   document.querySelectorAll(".order-status-select").forEach(el=>{const page=el.closest(".admin-page")?.id||"";const permission=page==="page-orders"||page==="page-repair-requests"?"orders.update":"webshop_orders.update";el.disabled=!hasPermission(permission);});
 }
 function showPage(page){
+  if(["orders","repair-requests","webshop-orders","buyback-orders"].includes(page))page="all-orders";
   const unifiedOrdersAllowed=page==="all-orders"&&(hasPermission("orders.view")||hasPermission("webshop_orders.view")||hasPermission("buyback_orders.view"));
   if(!unifiedOrdersAllowed&&!hasPermission(PAGE_PERMISSIONS[page]||""))page=firstAllowedPage();
   if(!page)return;
