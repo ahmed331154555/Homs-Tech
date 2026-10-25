@@ -1797,6 +1797,25 @@ app.post("/api/orders", async (req, res) => {
       }
     }
 
+    if (clean.serviceCategory.toLowerCase() === "reparatie" && process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL) {
+      try {
+        const customerResponse = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: process.env.RESEND_FROM_EMAIL,
+            to: [clean.email],
+            subject: `HOMS TECH — ontvangstbevestiging reparatie #${result.rows[0].id}`,
+            html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;padding:24px;color:#203449"><h2>Bedankt voor uw reparatieaanvraag</h2><p>Beste ${escapeHtml(clean.name)},</p><p>We hebben uw aanvraag voor <b>${escapeHtml(clean.serviceName)}</b> goed ontvangen.</p><p>We bekijken uw aanvraag en nemen zo snel mogelijk contact met u op.</p><p>De definitieve reparatieprijs is pas bevestigd nadat we uw aanvraag hebben beoordeeld.</p><p>Met vriendelijke groet,<br><b>HOMS TECH</b></p></div>`
+          })
+        });
+        if (!customerResponse.ok) console.error("Service repair customer confirmation failed:", customerResponse.status, await customerResponse.text().catch(() => ""));
+        else console.log("Service repair customer confirmation sent:", result.rows[0].id);
+      } catch (mailError) {
+        console.error("Service repair customer confirmation error:", mailError);
+      }
+    }
+
     res.status(201).json({
       success: true,
       order: result.rows[0]
