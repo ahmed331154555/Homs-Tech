@@ -91,16 +91,8 @@ header{background:#fff;border-bottom:1px solid var(--line)}
 .iphone-feature-cta{display:inline-flex;align-items:center;gap:24px;background:#0968f5;color:#fff;border-radius:999px;padding:14px 22px;font-weight:850;font-size:14px;box-shadow:0 8px 18px #0968f533}
 .iphone-feature-cta b{font-size:22px;line-height:12px}
 .iphone-feature-visual{min-height:360px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at 50% 55%,#c8e0ff 0%,#e9f2ff 42%,#edf4ff00 72%)}
-.iphone-feature-glow{position:absolute;width:75%;height:70%;border-radius:50%;background:#78b7ff55;filter:blur(35px)}
-.iphone-feature-phone{position:relative;width:clamp(150px,19vw,218px);height:clamp(270px,31vw,335px);border:6px solid #121820;border-radius:36px;background:#03070e;padding:7px;box-shadow:0 22px 35px #071d2d3b,inset 0 0 0 2px #7a8794;transform:rotate(-3deg);z-index:1}
-.iphone-feature-screen{position:absolute;inset:7px;border-radius:25px;overflow:hidden;background:linear-gradient(145deg,#03152c,#005bdf 48%,#07143b); }
-.iphone-feature-screen:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 35% 38%,#31b7ff 0%,#1677ee 27%,transparent 29%),radial-gradient(ellipse at 70% 65%,#0b57d4 0%,#1239a2 38%,transparent 40%),linear-gradient(145deg,#04152c,#00113b)}
-.iphone-feature-cracks{position:absolute;inset:0;width:50%;background-color:#111a27;background-image:linear-gradient(35deg,transparent 47%,#fff 48%,transparent 49%),linear-gradient(112deg,transparent 45%,#dcecff 46%,transparent 47%),linear-gradient(75deg,transparent 59%,#fff 60%,transparent 61%),linear-gradient(155deg,transparent 34%,#eaf4ff 35%,transparent 36%),linear-gradient(15deg,transparent 72%,#fff 73%,transparent 74%);z-index:2}
-.iphone-feature-split{position:absolute;left:50%;top:0;bottom:0;width:3px;background:#fff;box-shadow:0 0 12px #fff;z-index:3}
-.iphone-feature-notch{position:absolute;top:7px;left:50%;transform:translateX(-50%);width:42%;height:18px;background:#02060b;border-radius:0 0 13px 13px;z-index:4}
-.iphone-feature-tag{position:absolute;z-index:5;border-radius:999px;padding:8px 12px;font-size:11px;font-weight:850;box-shadow:0 5px 15px #071d2d12;white-space:nowrap}
-.iphone-tag-before{left:5%;top:34%;background:#192434;color:#fff}
-.iphone-tag-after{right:5%;top:55%;background:#0868f5;color:#fff}
+.iphone-feature-real-image{display:block;width:100%;height:100%;min-height:360px;max-height:460px;object-fit:contain;padding:18px;position:relative;z-index:1}
+@media(max-width:720px){.iphone-feature-real-image{min-height:280px;max-height:340px;padding:12px}}
 @media(max-width:720px){.iphone-feature{grid-template-columns:1fr}.iphone-feature-copy{padding:25px 22px 10px}.iphone-feature-copy h3{font-size:34px;margin-top:17px}.iphone-feature-copy p{font-size:14px}.iphone-feature-visual{min-height:300px}.iphone-feature-phone{width:155px;height:270px}.iphone-tag-before{left:3%;top:36%}.iphone-tag-after{right:3%;top:56%}.iphone-feature-cta{width:100%;justify-content:space-between}}
 /* PRODUCTS */
 .products{display:flex;gap:13px;overflow-x:auto;scroll-snap-type:x mandatory;padding:3px 2px 15px;scrollbar-width:thin;scroll-behavior:auto}
@@ -331,19 +323,10 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
    <ul><li><span>✓</span> Professioneel gecontroleerd</li><li><span>✓</span> Duidelijke informatie en garantie</li><li><span>✓</span> Eerlijke prijzen</li></ul>
    <span class="iphone-feature-cta">Bekijk onze iPhones <b aria-hidden="true">→</b></span>
   </div>
-  <div class="iphone-feature-visual" aria-hidden="true">
-   <div class="iphone-feature-glow"></div>
-   <div class="iphone-feature-phone">
-    <div class="iphone-feature-screen">
-     <div class="iphone-feature-cracks"></div><div class="iphone-feature-split"></div>
-    </div>
-    <div class="iphone-feature-notch"></div>
-   </div>
-   <span class="iphone-feature-tag iphone-tag-before">Voor · Gebarsten</span>
-   <span class="iphone-feature-tag iphone-tag-after">Na · Als nieuw</span>
+  <div class="iphone-feature-visual">
+   <img class="iphone-feature-real-image" src="https://cellphoneworldct.com/assets/iphone-17-promax-before-after-9Zf2_CVd.png" alt="Echte voor-en-na vergelijking van een iPhone-schermreparatie" loading="lazy">
   </div>
  </a>
- <div id="categories" class="category-grid" hidden></div>
 </section>
 
 <section class="screen-before-after" id="screenBeforeAfter" aria-label="Scherm reparatie voor en na">
