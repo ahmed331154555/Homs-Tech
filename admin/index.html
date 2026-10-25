@@ -6945,6 +6945,16 @@ async function save(isAuto=false){
   if(loading) return false;
   // Validate the phone currently being edited before persisting the catalog.
   // This is scoped to the phone page so unrelated admin sections keep their existing save flow.
+  if(currentPage==="shop"){
+    ensureShopProducts();
+    for(let i=0;i<data.shopProducts.length;i++){
+      const product=data.shopProducts[i];
+      if(!String(product.name||"").trim()){setStatus("✕ Vul de productnaam in bij product "+(i+1)+".","error");return false;}
+      const price=Number(String(product.price??"").replace(",","."));
+      if(!Number.isFinite(price)||price<=0){setStatus("✕ Vul een geldige prijs groter dan € 0 in bij "+product.name+".","error");return false;}
+      if(product.videoEnabled&&product.videoUrl&&!/^https?:\/\//i.test(String(product.videoUrl).trim())){setStatus("✕ Vul een geldige https-video-URL in bij "+product.name+".","error");return false;}
+    }
+  }
   if(currentPage==="phones" && phoneEditOnly){
     const phone=data.phones?.[selectedPhoneIndex];
     if(!phone || !String(phone.name||"").trim()){
