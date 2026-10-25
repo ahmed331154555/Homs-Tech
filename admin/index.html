@@ -7005,7 +7005,7 @@ async function save(isAuto=false){
     }
     // The phone catalog can contain several MB of images. Send only that
     // section when editing phones instead of the full site settings document.
-    const requestPayload=currentPage==="phones" ? {phones:payload.phones||[]} : payload;
+    const requestPayload=currentPage==="phones" ? {phones:payload.phones||[]} : currentPage==="shop" ? {shopProducts:payload.shopProducts||[]} : payload;
     const r=await fetch("/api/site",{
       method:"PUT",
       headers:{"Content-Type":"application/json","Accept":"application/json","X-Homs-Admin-Section":currentPage},
@@ -7029,6 +7029,9 @@ async function save(isAuto=false){
     if(currentPage==="phones"){
       if(Array.isArray(result.phones)) data.phones=result.phones;
       else if(Array.isArray(payload.phones)) data.phones=payload.phones;
+    }else if(currentPage==="shop"){
+      if(Array.isArray(result.shopProducts)) data.shopProducts=result.shopProducts;
+      else if(Array.isArray(payload.shopProducts)) data.shopProducts=payload.shopProducts;
     }else{
       data=result.data || data;
     }
