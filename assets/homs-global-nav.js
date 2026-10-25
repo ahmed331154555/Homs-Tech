@@ -29,7 +29,6 @@
     ['Shop','shop.html'],
     ['Winkelwagen','cart.html'],
     ['Prijzen','prices.html'],
-    ['Onderdelen','onderdelen.html'],
     ['Uw toestel verkopen','uw-toestel-verkopen.html'],
     ['Mijn account','account.html']
   ];
