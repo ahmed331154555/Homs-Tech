@@ -547,6 +547,7 @@ function startSimpleTicker(box){
  requestAnimationFrame(measure);
  const speed=42;
  function frame(now){
+  if(document.hidden || window.matchMedia("(prefers-reduced-motion: reduce)").matches){start=now;requestAnimationFrame(frame);return;}
   if(!start)start=now;
   if(!paused&&half>0){
    const x=((now-start)*speed/1000)%half;
@@ -566,6 +567,7 @@ function startPopularTicker(box){
  requestAnimationFrame(measure);
  const speed=38;
  function frame(now){
+  if(document.hidden || window.matchMedia("(prefers-reduced-motion: reduce)").matches){start=now;requestAnimationFrame(frame);return;}
   if(!start)start=now;
   if(!paused&&half>0){
    const x=((now-start)*speed/1000)%half;
@@ -642,8 +644,8 @@ function renderProducts(){
   pic.style.cssText="height:170px;min-height:170px;display:flex;align-items:center;justify-content:center;overflow:hidden;";
   if(img){
    const im=document.createElement("img");
-   im.src=img; im.alt=p.name||""; im.loading="lazy"; im.decoding="async";
-   im.style.cssText="display:block!important;visibility:visible!important;opacity:1!important;max-width:100%;width:auto;height:auto;max-height:160px;object-fit:contain;";
+   im.src=img; im.alt=p.name||""; im.loading="lazy"; im.decoding="async"; im.width=160; im.height=160;
+   im.style.cssText="display:block!important;visibility:visible!important;opacity:1!important;width:160px;height:160px;max-width:100%;object-fit:contain;";
    pic.appendChild(im);
   }else{
    pic.innerHTML='<div class="phone-placeholder"></div>';
@@ -673,6 +675,7 @@ function renderProducts(){
  requestAnimationFrame(measure);
 
  function frame(now){
+  if(document.hidden || window.matchMedia("(prefers-reduced-motion: reduce)").matches){last=now;requestAnimationFrame(frame);return;}
   const dt=Math.min(40,now-last); last=now;
   if(!paused&&loopWidth>0){
    offset+=(dt*0.032);
