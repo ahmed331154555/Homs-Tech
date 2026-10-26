@@ -255,7 +255,7 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
           const id = Number(item.id);
           const product = Number.isInteger(id) ? shopProducts[id] : null;
           if(!product) return item;
-          const match = String(product.stock ?? "").trim().match(/^(\\d+)/);
+          const match = String(product.stock ?? "").trim().match(/^(\d+)/);
           if(!match) return item;
           const stock = Math.max(0,Number(match[1]));
           const qty = Math.max(1,Number(item.qty || 1));
@@ -271,7 +271,6 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
     const area = document.getElementById("cartArea");
     if(!area) return;
 
-    const items = readCart();
     updateCartCount(items);
 
     if(!items.length){
