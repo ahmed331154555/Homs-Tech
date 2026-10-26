@@ -518,7 +518,41 @@ function sanitizeHomepageSiteData(input) {
     data.phones = phones.slice(cutoff).map((phone, offset) => {
       const originalIndex = cutoff + offset;
       if (typeof phone === "string") return { name: phone, _index: originalIndex };
-      return { ...phone, _index: originalIndex };
+      if (!phone || typeof phone !== "object") return { name: "Apparaat", _index: originalIndex };
+
+      // Keep only fields the homepage product cards actually render.
+      // The stored catalog and full API response remain untouched.
+      const compact = { _index: originalIndex };
+      for (const key of ["name", "brand", "image", "price", "salePrice", "sellPrice", "verkoopprijs"]) {
+        if (Object.prototype.hasOwnProperty.call(phone, key)) compact[key] = phone[key];
+      }
+      if (Array.isArray(phone.images)) compact.images = phone.images.filter(Boolean).slice(0, 1);
+      if (Array.isArray(phone.variantPrices)) {
+        compact.variantPrices = phone.variantPrices
+          .filter(row => row && row.active !== false)
+          .map(row => ({
+            storage: row.storage,
+            color: row.color,
+            price: row.price,
+            active: row.active
+          }));
+      }
+      if (phone.colorGalleryImages && typeof phone.colorGalleryImages === "object") {
+        compact.colorGalleryImages = {};
+        for (const [color, gallery] of Object.entries(phone.colorGalleryImages)) {
+          if (Array.isArray(gallery) && gallery[0]) compact.colorGalleryImages[color] = [gallery[0]];
+        }
+      }
+      if (phone.colorImages && typeof phone.colorImages === "object") {
+        compact.colorImages = phone.colorImages;
+      }
+      if (Array.isArray(phone.colorOptions)) {
+        compact.colorOptions = phone.colorOptions.map(option => ({
+          label: option?.label,
+          image: option?.image
+        }));
+      }
+      return compact;
     });
   }
 
