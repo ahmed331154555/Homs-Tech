@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const express = require("express");
+const compression = require("compression");
 const { Pool } = require("pg");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
@@ -52,6 +53,7 @@ async function queryWithConnectionRetry(sql, params, attempts = 4) {
   throw lastError;
 }
 
+app.use(compression({ threshold: 1024 }));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: false, limit: "10kb" }));
 app.use((err, req, res, next) => {
@@ -493,7 +495,6 @@ app.get("/api/site", async (req, res) => {
       });
     }
 
-    res.set("Cache-Control", "no-store");
     let canViewPrivate = false;
     try {
       const user = getAdminFromRequest(req);
@@ -507,6 +508,9 @@ app.get("/api/site", async (req, res) => {
       );
     } catch {}
     const data = result.rows[0].data;
+    // Private/admin responses must never be cached. Public responses can be revalidated
+    // so repeat visits avoid transferring the full settings payload when unchanged.
+    res.set("Cache-Control", canViewPrivate ? "no-store" : "public, max-age=0, must-revalidate");
     res.json(canViewPrivate ? data : sanitizePublicSiteData(data));
   } catch (error) {
     console.error(error);
