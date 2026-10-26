@@ -267,7 +267,7 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 <header>
  <div class="container">
   <div class="header-main">
-   <a class="brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>
+   <a class="brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH" decoding="async" fetchpriority="high"></a>
    <form class="search" action="devices.html" method="get" role="search">
     <span aria-hidden="true">⌕</span>
     <input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken">
@@ -642,7 +642,7 @@ function renderProducts(){
   pic.style.cssText="height:170px;min-height:170px;display:flex;align-items:center;justify-content:center;overflow:hidden;";
   if(img){
    const im=document.createElement("img");
-   im.src=img; im.alt=p.name||"";
+   im.src=img; im.alt=p.name||""; im.loading="lazy"; im.decoding="async";
    im.style.cssText="display:block!important;visibility:visible!important;opacity:1!important;max-width:100%;width:auto;height:auto;max-height:160px;object-fit:contain;";
    pic.appendChild(im);
   }else{
@@ -733,6 +733,7 @@ function startProductTicker(){
  box.addEventListener("touchend",()=>setTimeout(()=>paused=false,1000),{passive:true});
 
  function tick(now){
+   if(document.hidden || window.matchMedia("(prefers-reduced-motion: reduce)").matches){last=now;requestAnimationFrame(tick);return;}
    const dt=Math.min(50,now-last);
    last=now;
 
@@ -794,7 +795,7 @@ async function loadSite(){
 
 loadSite();
 </script>
-  <script src="assets/homs-global-nav.js"></script>
+  <script src="assets/homs-global-nav.js" defer></script>
   <script src="assets/homs-ai-chat.js" defer></script>
 </body>
 </html>
