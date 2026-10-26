@@ -369,7 +369,7 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
    <span class="iphone-feature-cta">Bekijk onze iPhones <b aria-hidden="true">→</b></span>
   </div>
   <div class="iphone-feature-visual">
-   <img class="iphone-feature-real-image" src="https://cellphoneworldct.com/assets/iphone-17-promax-before-after-9Zf2_CVd.png" alt="Echte voor-en-na vergelijking van een iPhone-schermreparatie" loading="lazy" decoding="async">
+   <img class="iphone-feature-real-image" src="https://cellphoneworldct.com/assets/iphone-17-promax-before-after-9Zf2_CVd.png" alt="Echte voor-en-na vergelijking van een iPhone-schermreparatie" width="600" height="500" loading="lazy" decoding="async">
   </div>
  </a>
 </section>
@@ -694,7 +694,7 @@ function renderServices(){
  arr.slice(0,8).forEach(x=>{
   if(typeof x==="string")x=["🔧",x];
   const d=document.createElement("div");d.className="service";
-  if(typeof x[3]==="string"&&x[3].startsWith("data:image/"))d.innerHTML="<img class='service-photo' src='"+esc(x[3])+"' alt='"+esc(x[1]||"Reparatieservice")+"' loading='lazy' decoding='async'><strong>"+esc(x[1]||"Service")+"</strong>";
+  if(typeof x[3]==="string"&&x[3].startsWith("data:image/"))d.innerHTML="<img class='service-photo' src='"+esc(x[3])+"' alt='"+esc(x[1]||"Reparatieservice")+"' width='400' height='300' loading='lazy' decoding='async'><strong>"+esc(x[1]||"Service")+"</strong>";
   else d.innerHTML="<div class='service-icon'>"+esc(x[0]||"🔧")+"</div><strong>"+esc(x[1]||"Service")+"</strong>";
   box.appendChild(d);
  });
