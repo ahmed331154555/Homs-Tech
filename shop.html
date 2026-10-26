@@ -67,20 +67,34 @@ function animateProductToCart(button, imageUrl){
   requestAnimationFrame(()=>{flyer.style.transform='translate3d('+dx+'px,'+dy+'px,0) scale(.18)';flyer.style.opacity='.35'});
   window.setTimeout(()=>{flyer.remove();target.animate([{transform:'scale(1)'},{transform:'scale(1.08)'},{transform:'scale(1)'}],{duration:260,easing:'ease-out'});},720);
 }
+function shopStockQuantity(product){
+  const raw=String(product?.stock??'').trim();
+  const match=raw.match(/^(\\d+)/);
+  return match?Math.max(0,Number(match[1])):null;
+}
 function addToCart(id){
   let button=null;
   try{
     const index=products.findIndex(x=>String(x.id)===String(id));
     if(index<0){alert('Dit product kon niet worden gevonden. Vernieuw de pagina en probeer opnieuw.');return;}
     const p=products[index];
+    const stock=shopStockQuantity(p);
+    if(stock===0){alert('Dit product is helaas uitverkocht.');return;}
     const quantityInput=document.getElementById('shopQuantity');
     const requestedQty=quantityInput?Math.max(1,Math.min(99,parseInt(quantityInput.value,10)||1)):1;
-    if(quantityInput)quantityInput.value=String(requestedQty);
     let cart=[];
     try{cart=JSON.parse(localStorage.getItem(CART_KEY)||'[]');if(!Array.isArray(cart))cart=[]}catch(error){cart=[]}
     const key='shop-'+String(p.id);
     const existing=cart.find(x=>String(x.key||'')===key||(String(x.type||'')==='shop'&&Number(x.id)===index));
-    if(existing) existing.qty=Math.min(99,Math.max(1,Number(existing.qty||1))+requestedQty);
+    const currentQty=existing?Math.max(1,Number(existing.qty||1)):0;
+    if(stock!==null&&currentQty+requestedQty>stock){
+      const remaining=Math.max(0,stock-currentQty);
+      if(quantityInput)quantityInput.value=String(Math.max(1,remaining||1));
+      alert(remaining>0?'Er zijn nog maar '+remaining+' stuk(s) beschikbaar. Pas het aantal aan.':'U heeft de volledige voorraad van dit product al in uw winkelwagen.');
+      return;
+    }
+    if(quantityInput&&stock!==null)quantityInput.max=String(Math.max(1,stock));
+    if(existing) existing.qty=currentQty+requestedQty;
     else cart.push({key,type:'shop',id:index,brand:'HOMS TECH Shop',name:p.name,price:Number(p.price),unitPrice:Number(p.price),image:imgFor(p),qty:requestedQty,options:{category:String(p.category||'Accessoires')}});
     localStorage.setItem(CART_KEY,JSON.stringify(cart));
     updateCartCount();
