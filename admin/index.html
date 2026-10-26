@@ -7008,11 +7008,11 @@ function ensureShopProducts(){
   if(typeof p.active!=="boolean")p.active=true;if(typeof p.videoEnabled!=="boolean")p.videoEnabled=!!p.videoUrl;
   if(!SHOP_CATEGORIES.some(c=>c.value===p.category))p.category=p.category||"Accessoires";
   if(!Array.isArray(p.variants)||!p.variants.length){
-   const legacyStock=(String(p.stock??"").match(/\d+/)||["0"])[0];
+   const legacyStock=(String(p.stock??"").match(/\d+/)||[""])[0];
    p.variants=[{id:"var-"+Date.now()+"-"+i,quality:"Standaard",sku:nextShopSku(p.category),price:String(p.price??""),stock:String(legacyStock),active:true}];
   }
   p.variants.forEach(v=>{if(!v.id)v.id="var-"+Date.now()+"-"+Math.random().toString(36).slice(2,8);if(!v.sku)v.sku=nextShopSku(p.category);if(v.quality==null)v.quality="Standaard";if(v.price==null)v.price="";if(v.stock==null)v.stock="0";if(typeof v.active!=="boolean")v.active=true;});
-  p.price=p.variants[0].price;p.stock=String(p.variants[0].stock||"0")+" stuks";
+  p.price=p.variants[0].price;p.stock=String(p.variants[0].stock??"")+" stuks";
  });
 }
 function addShopProduct(){
@@ -7023,8 +7023,8 @@ function addShopProduct(){
 function deleteShopProduct(index){if(!confirm("Dit Shop-product verwijderen?"))return;data.shopProducts.splice(index,1);renderShopProductsAdmin();markChanged();}
 function updateShopProduct(index,key,value){ensureShopProducts();if(!data.shopProducts[index])return;data.shopProducts[index][key]=value;if(key==="category")data.shopProducts[index].variants.forEach(v=>{if(!v.sku||v.sku==="")v.sku=nextShopSku(value)});markChanged();}
 function addShopVariant(index){ensureShopProducts();const p=data.shopProducts[index];if(!p)return;p.variants.push({id:"var-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),quality:"Nieuwe kwaliteit",sku:nextShopSku(p.category),price:"",stock:"0",active:true});renderShopProductsAdmin();markChanged();}
-function updateShopVariant(index,variantIndex,key,value){ensureShopProducts();const p=data.shopProducts[index],v=p&&p.variants[variantIndex];if(!v||key==="sku")return;v[key]=value;if(variantIndex===0){p.price=v.price;p.stock=String(v.stock||"0")+" stuks";}markChanged();}
-function deleteShopVariant(index,variantIndex){ensureShopProducts();const p=data.shopProducts[index];if(!p||p.variants.length<2){alert("Een product moet minimaal één optie hebben.");return;}p.variants.splice(variantIndex,1);p.price=p.variants[0].price;p.stock=String(p.variants[0].stock||"0")+" stuks";renderShopProductsAdmin();markChanged();}
+function updateShopVariant(index,variantIndex,key,value){ensureShopProducts();const p=data.shopProducts[index],v=p&&p.variants[variantIndex];if(!v||key==="sku")return;v[key]=value;if(variantIndex===0){p.price=v.price;p.stock=String(v.stock??"")+" stuks";}markChanged();}
+function deleteShopVariant(index,variantIndex){ensureShopProducts();const p=data.shopProducts[index];if(!p||p.variants.length<2){alert("Een product moet minimaal één optie hebben.");return;}p.variants.splice(variantIndex,1);p.price=p.variants[0].price;p.stock=String(p.variants[0].stock??"")+" stuks";renderShopProductsAdmin();markChanged();}
 function shopProductImageUpload(event,index,slot){
  const file=event.target.files&&event.target.files[0];if(!file)return;
  if(!file.type.startsWith("image/")){alert("Kies een afbeeldingsbestand.");event.target.value="";return;}
