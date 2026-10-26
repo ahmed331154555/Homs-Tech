@@ -755,7 +755,7 @@ function startProductTicker(){
 
 async function loadSite(){
  try{
-  const r=await fetch("/api/site",{cache:"no-cache"});
+  const r=await fetch("/api/site?view=home",{cache:"no-cache"});
   if(r.ok){const x=await r.json();if(x&&typeof x==="object")data={...defaults,...x}}
  }catch(e){console.warn("Website data unavailable, using defaults.")}
  mergeHomepageSettings();
