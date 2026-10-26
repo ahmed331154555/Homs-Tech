@@ -41,6 +41,29 @@ const money=v=>'€ '+(Number(v)||0).toFixed(2).replace('.',',');
 function visibleProducts(){return products.filter(p=>p&&p.active!==false&&String(p.name||'').trim()&&Number(p.price)>0)}
 function imgFor(p){return (Array.isArray(p.images)?p.images:[]).find(Boolean)||''}
 function updateCartCount(){try{const a=JSON.parse(localStorage.getItem(CART_KEY)||'[]');$('cartCount').textContent=a.reduce((n,x)=>n+Math.max(1,Number(x.qty||1)),0)}catch{$('cartCount').textContent='0'}}
+function animateProductToCart(button, imageUrl){
+  const target=document.querySelector('.cart-link');
+  if(!button||!target||!imageUrl||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const from=button.getBoundingClientRect(),to=target.getBoundingClientRect();
+  if(!from.width||!from.height||!to.width||!to.height)return;
+  const flyer=document.createElement('img');
+  flyer.src=imageUrl;
+  flyer.alt='';
+  flyer.setAttribute('aria-hidden','true');
+  Object.assign(flyer.style,{
+    position:'fixed',left:(from.left+from.width/2-28)+'px',top:(from.top+from.height/2-28)+'px',
+    width:'56px',height:'56px',objectFit:'contain',padding:'4px',borderRadius:'12px',
+    background:'#fff',boxShadow:'0 8px 24px rgba(0,0,0,.22)',zIndex:'2147483647',
+    pointerEvents:'none',opacity:'1',transform:'translate3d(0,0,0) scale(1)',
+    transition:'transform 700ms cubic-bezier(.22,.8,.25,1), opacity 700ms ease'
+  });
+  document.body.appendChild(flyer);
+  flyer.getBoundingClientRect();
+  const dx=to.left+to.width/2-(from.left+from.width/2);
+  const dy=to.top+to.height/2-(from.top+from.height/2);
+  requestAnimationFrame(()=>{flyer.style.transform='translate3d('+dx+'px,'+dy+'px,0) scale(.18)';flyer.style.opacity='.35'});
+  window.setTimeout(()=>{flyer.remove();target.animate([{transform:'scale(1)'},{transform:'scale(1.08)'},{transform:'scale(1)'}],{duration:260,easing:'ease-out'});},720);
+}
 function addToCart(id){
   let button=null;
   try{
@@ -56,7 +79,8 @@ function addToCart(id){
     localStorage.setItem(CART_KEY,JSON.stringify(cart));
     updateCartCount();
     button=document.querySelector('.detail-add')||Array.from(document.querySelectorAll('[data-add]')).find(el=>el.getAttribute('data-add')===String(id));
-    if(button){const original=button.textContent;button.textContent='✓ Toegevoegd aan winkelwagen';button.disabled=true;button.classList.add('added');setTimeout(()=>{if(button.isConnected){button.textContent=original;button.disabled=false;button.classList.remove('added')}},1800)}
+    if(button)animateProductToCart(button,imgFor(p));
+    if(button){const original=button.textContent;button.textContent='✓ Toegevoegd aan winkelwagen';button.disabled=true;setTimeout(()=>{if(button.isConnected){button.textContent=original;button.disabled=false}},1800)}
   }catch(error){
     console.error('HOMS TECH shop add-to-cart error:',error);
     alert('Toevoegen aan winkelwagen is niet gelukt. Probeer opnieuw.');
