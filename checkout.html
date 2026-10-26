@@ -183,8 +183,10 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
           const id = Number(item.id);
           const product = Number.isInteger(id) ? shopProducts[id] : null;
           if(!product) return item;
-          const stockText = String(product.stock ?? "").trim();
-          const stockMatch = stockText.match(/^(\d+)/);
+          const variants = Array.isArray(product.variants) ? product.variants : [];
+          const variant = variants.find(v => String(v.id || v.sku || v.quality || "") === String(item.variantId || item.sku || ""));
+          const stockText = String(variant ? variant.stock : (product.stock ?? "")).trim();
+          const stockMatch = stockText.match(/^(\\d+)/);
           if(!stockMatch) return item;
           const stock = Math.max(0, Number(stockMatch[1]));
           const currentQty = Math.max(1, Number(item.qty || 1));
