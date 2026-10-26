@@ -200,7 +200,10 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
       condition:"Conditie",
       battery:"Batterij",
       vat:"BTW",
-      tradeIn:"Inruil"
+      tradeIn:"Inruil",
+      category:"Categorie",
+      quality:"Kwaliteit",
+      sku:"Artikelnummer"
     };
 
     if(!options || typeof options !== "object") return "";
@@ -255,7 +258,10 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
           const id = Number(item.id);
           const product = Number.isInteger(id) ? shopProducts[id] : null;
           if(!product) return item;
-          const match = String(product.stock ?? "").trim().match(/^(\d+)/);
+          const variants = Array.isArray(product.variants) ? product.variants : [];
+          const variant = variants.find(v => String(v.id || v.sku || v.quality || "") === String(item.variantId || item.sku || ""));
+          const rawStock = variant ? variant.stock : product.stock;
+          const match = String(rawStock ?? "").trim().match(/^(\\d+)/);
           if(!match) return item;
           const stock = Math.max(0,Number(match[1]));
           const qty = Math.max(1,Number(item.qty || 1));
