@@ -169,8 +169,41 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
       .map(([k,v]) => (m[k] || k) + ": " + esc(v)).join(" • ");
   }
 
-  function renderItems(){
-    const items = readCart();
+  async function renderItems(){
+    let items = readCart();
+    // Refresh Shop stock from the server and correct quantities left over from earlier cart attempts.
+    try{
+      const response = await fetch("/api/site",{cache:"no-store"});
+      if(response.ok){
+        const catalog = await response.json();
+        const shopProducts = Array.isArray(catalog.shopProducts) ? catalog.shopProducts : [];
+        let changed = false;
+        items = items.map(item => {
+          if(String(item.type || "").toLowerCase() !== "shop") return item;
+          const id = Number(item.id);
+          const product = Number.isInteger(id) ? shopProducts[id] : null;
+          if(!product) return item;
+          const stockText = String(product.stock ?? "").trim();
+          const stockMatch = stockText.match(/^(\\d+)/);
+          if(!stockMatch) return item;
+          const stock = Math.max(0, Number(stockMatch[1]));
+          const currentQty = Math.max(1, Number(item.qty || 1));
+          if(stock === 0){
+            changed = true;
+            return {...item, qty:0, unavailable:true};
+          }
+          if(currentQty > stock){
+            changed = true;
+            return {...item, qty:stock};
+          }
+          return item;
+        }).filter(item => !(item.unavailable && Number(item.qty) === 0));
+        if(changed){
+          localStorage.setItem(CART_KEY,JSON.stringify(items));
+          showStatus("We hebben de aantallen aangepast aan de actuele voorraad. Controleer uw bestelling voordat u verdergaat.","error");
+        }
+      }
+    }catch(error){console.warn("Voorraadcontrole in winkelwagen kon niet worden geladen:",error);}
     const box = document.getElementById("items");
     const totalEl = document.getElementById("total");
     if(!box || !totalEl) return;
