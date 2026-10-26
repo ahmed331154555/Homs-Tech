@@ -242,7 +242,32 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
     saveCart(items);
   };
 
-  function render(){
+  async function render(){
+    let items = readCart();
+    try{
+      const response = await fetch("/api/site",{cache:"no-store"});
+      if(response.ok){
+        const catalog = await response.json();
+        const shopProducts = Array.isArray(catalog.shopProducts) ? catalog.shopProducts : [];
+        let changed = false;
+        items = items.map(item => {
+          if(String(item.type || "").toLowerCase() !== "shop") return item;
+          const id = Number(item.id);
+          const product = Number.isInteger(id) ? shopProducts[id] : null;
+          if(!product) return item;
+          const match = String(product.stock ?? "").trim().match(/^(\\d+)/);
+          if(!match) return item;
+          const stock = Math.max(0,Number(match[1]));
+          const qty = Math.max(1,Number(item.qty || 1));
+          if(stock === 0){changed=true;return {...item,qty:0,unavailable:true};}
+          if(qty > stock){changed=true;return {...item,qty:stock};}
+          return item;
+        }).filter(item => !(item.unavailable && Number(item.qty)===0));
+        if(changed){
+          try{localStorage.setItem(CART_KEY,JSON.stringify(items));}catch(error){}
+        }
+      }
+    }catch(error){console.warn("Voorraadcontrole kon niet worden geladen:",error);}
     const area = document.getElementById("cartArea");
     if(!area) return;
 
