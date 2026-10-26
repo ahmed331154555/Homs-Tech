@@ -480,6 +480,18 @@ function sanitizePublicSiteData(input) {
   return data;
 }
 
+// The homepage only needs these public fields. Avoid sending the full GSM catalog,
+// admin settings, order settings and other page-specific data on the initial visit.
+function sanitizeHomepageSiteData(input) {
+  const source = input && typeof input === "object" ? input : {};
+  const fields = ["phone", "whatsapp", "homepage", "deviceCategories", "phones", "services", "why"];
+  const data = {};
+  for (const field of fields) {
+    if (Object.prototype.hasOwnProperty.call(source, field)) data[field] = source[field];
+  }
+  return sanitizePublicSiteData(data);
+}
+
 // Get website settings
 app.get("/api/site", async (req, res) => {
   try {
@@ -511,6 +523,9 @@ app.get("/api/site", async (req, res) => {
     // Private/admin responses must never be cached. Public responses can be revalidated
     // so repeat visits avoid transferring the full settings payload when unchanged.
     res.set("Cache-Control", canViewPrivate ? "no-store" : "public, max-age=0, must-revalidate");
+    if (!canViewPrivate && req.query.view === "home") {
+      return res.json(sanitizeHomepageSiteData(data));
+    }
     res.json(canViewPrivate ? data : sanitizePublicSiteData(data));
   } catch (error) {
     console.error(error);
