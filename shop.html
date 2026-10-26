@@ -44,21 +44,22 @@ function updateCartCount(){try{const a=JSON.parse(localStorage.getItem(CART_KEY)
 function addToCart(id){
   let button=null;
   try{
-    const p=products.find(x=>String(x.id)===String(id));
-    if(!p){alert('Dit product kon niet worden gevonden. Vernieuw de pagina en probeer opnieuw.');return;}
+    const index=products.findIndex(x=>String(x.id)===String(id));
+    if(index<0){alert('Dit product kon niet worden gevonden. Vernieuw de pagina en probeer opnieuw.');return;}
+    const p=products[index];
     let cart=[];
     try{cart=JSON.parse(localStorage.getItem(CART_KEY)||'[]');if(!Array.isArray(cart))cart=[]}catch(error){cart=[]}
-    const key='shop-'+p.id;
-    const existing=cart.find(x=>String(x.id)===key);
+    const key='shop-'+String(p.id);
+    const existing=cart.find(x=>String(x.key||'')===key||(String(x.type||'')==='shop'&&Number(x.id)===index));
     if(existing) existing.qty=Math.max(1,Number(existing.qty||1))+1;
-    else cart.push({id:key,brand:'HOMS TECH Shop',name:p.name,price:Number(p.price),unitPrice:Number(p.price),image:imgFor(p),qty:1,options:{}});
+    else cart.push({key,type:'shop',id:index,brand:'HOMS TECH Shop',name:p.name,price:Number(p.price),unitPrice:Number(p.price),image:imgFor(p),qty:1,options:{category:String(p.category||'Accessoires')}});
     localStorage.setItem(CART_KEY,JSON.stringify(cart));
     updateCartCount();
     button=document.querySelector('.detail-add')||Array.from(document.querySelectorAll('[data-add]')).find(el=>el.getAttribute('data-add')===String(id));
     if(button){const original=button.textContent;button.textContent='✓ Toegevoegd aan winkelwagen';button.disabled=true;button.classList.add('added');setTimeout(()=>{if(button.isConnected){button.textContent=original;button.disabled=false;button.classList.remove('added')}},1800)}
   }catch(error){
     console.error('HOMS TECH shop add-to-cart error:',error);
-    alert('Toevoegen aan winkelwagen is niet gelukt. Controleer de browserinstellingen en probeer opnieuw.');
+    alert('Toevoegen aan winkelwagen is niet gelukt. Probeer opnieuw.');
   }
 }
 function renderCategories(){const select=$('category'),old=select.value;const cats=[...new Set(visibleProducts().map(p=>String(p.category||'Accessoires').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));select.innerHTML='<option value="">Alle categorieën</option>'+cats.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join('');if(cats.includes(old))select.value=old}
