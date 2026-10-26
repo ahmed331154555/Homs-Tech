@@ -35,6 +35,9 @@ nav a:hover{background:#2563eb}
 .blue{background:#2563eb;color:#fff}
 .gray{background:#eef2f7;color:#111827}
 .btn:hover{opacity:.9}
+#productArea .buttons{position:relative;z-index:10;pointer-events:auto}
+#productArea .buttons .btn{position:relative;z-index:11;pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:rgba(37,99,235,.18);user-select:none}
+#productArea .buttons button:disabled{opacity:.75;cursor:wait}
 .cart-link{background:#dc2626;color:#fff!important;padding:10px 14px;border-radius:10px;font-weight:800;white-space:nowrap}.cart-count{display:inline-flex;min-width:21px;height:21px;align-items:center;justify-content:center;background:#fff;color:#dc2626;border-radius:999px;font-size:12px;margin-left:4px;padding:0 5px}
 .cart-added{margin-top:10px;padding:12px 14px;border-radius:10px;background:#ecfdf5;color:#166534;font-weight:700;display:none}
 .status{padding:14px;border-radius:10px;background:#fff7ed;color:#9a3412;margin-top:15px}
@@ -814,7 +817,11 @@ function selectCustomProductOption(type,index,label){
   renderProductBody();
 }
 function addCurrentProductToCart(){
-  if(!currentProduct) return;
+  try {
+  if(!currentProduct) {
+    alert("Productgegevens zijn nog niet geladen. Vernieuw de pagina en probeer het opnieuw.");
+    return;
+  }
   if(familyVariantRows(currentProduct).length){
     const found=findFamilyVariant(selectedOptions.storage,selectedOptions.color,selectedOptions.condition);
     const row=found?.row;
@@ -834,7 +841,13 @@ function addCurrentProductToCart(){
   if(found){found.qty=Number(found.qty||1)+1;if(!found.image&&selectedImage)found.image=selectedImage;}
   else items.push({key,type,id:currentProductId,name:currentProduct.name||"Smartphone",brand:currentProduct.brand||"",image:selectedImage,options,unitPrice:total,qty:1});
   writeCart(items);
-  const msg=document.getElementById("cartAdded"); if(msg){msg.style.display="block";msg.textContent="✓ Toegevoegd aan winkelwagen";setTimeout(()=>msg.style.display="none",2200)}
+  const msg=document.getElementById("cartAdded"); if(msg){msg.style.display="block";msg.textContent="✓ Toegevoegd aan winkelwagen";setTimeout(()=>msg.style.display="none",3500)}
+  const button=document.querySelector('#productArea .buttons button[onclick*="addCurrentProductToCart"]');
+  if(button){button.textContent="✓ Toegevoegd aan winkelwagen";button.disabled=true;setTimeout(()=>{button.textContent="🛒 In winkelwagen";button.disabled=false;},1400);}
+  } catch(error) {
+    console.error("HOMS TECH add-to-cart failed:",error);
+    alert("Toevoegen aan winkelwagen is niet gelukt. Controleer of uw browser lokale opslag toestaat en probeer opnieuw.");
+  }
 }
 function inventoryStockCount(product,storage,color,condition){
   const rows=familyVariantRows(product).filter(({row})=>
