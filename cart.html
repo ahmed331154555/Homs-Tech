@@ -261,7 +261,7 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
           const variants = Array.isArray(product.variants) ? product.variants : [];
           const variant = variants.find(v => String(v.id || v.sku || v.quality || "") === String(item.variantId || item.sku || ""));
           const rawStock = variant ? variant.stock : product.stock;
-          const match = String(rawStock ?? "").trim().match(/^(\\d+)/);
+          const match = String(rawStock ?? "").trim().match(/^(\d+)/);
           if(!match) return item;
           const stock = Math.max(0,Number(match[1]));
           const qty = Math.max(1,Number(item.qty || 1));
