@@ -489,6 +489,39 @@ function sanitizeHomepageSiteData(input) {
   for (const field of fields) {
     if (Object.prototype.hasOwnProperty.call(source, field)) data[field] = source[field];
   }
+
+  // The homepage slider renders only the final 15 expanded phone variants.
+  // Send only the source phone records that can contribute to those cards,
+  // preserving original product indices so product links keep pointing correctly.
+  if (Array.isArray(data.phones)) {
+    const phones = data.phones;
+    const contributionCounts = phones.map(phone => {
+      const rows = Array.isArray(phone?.variantPrices)
+        ? phone.variantPrices.filter(row => row && row.active !== false)
+        : [];
+      if (!rows.length) return 1;
+      const groups = new Set();
+      for (const row of rows) {
+        const storage = String(row.storage || "").trim();
+        const color = String(row.color || "").trim();
+        if (storage && color) groups.add(storage.toLocaleLowerCase() + "|" + color.toLocaleLowerCase());
+      }
+      return groups.size;
+    });
+    let cutoff = phones.length;
+    let visibleCards = 0;
+    for (let i = phones.length - 1; i >= 0; i--) {
+      cutoff = i;
+      visibleCards += contributionCounts[i];
+      if (visibleCards >= 15) break;
+    }
+    data.phones = phones.slice(cutoff).map((phone, offset) => {
+      const originalIndex = cutoff + offset;
+      if (typeof phone === "string") return { name: phone, _index: originalIndex };
+      return { ...phone, _index: originalIndex };
+    });
+  }
+
   return sanitizePublicSiteData(data);
 }
 
