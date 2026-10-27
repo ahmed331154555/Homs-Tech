@@ -323,15 +323,10 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   }
 
   async function startMolliePayment(){
-    const r = await fetch("/api/mollie/create-payment",{
-      method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},credentials:"same-origin",
-      body:JSON.stringify({orderId:pendingOrderId,checkoutToken:pendingCheckoutToken})
-    });
-    const result = await r.json().catch(()=>({}));
-    if(!r.ok || !result.checkoutUrl) throw new Error(result.error || "Mollie betaling kon niet worden gestart.");
     sessionStorage.setItem("homsTechMollieOrderId",String(pendingOrderId));
     sessionStorage.setItem("homsTechMollieCheckoutToken",pendingCheckoutToken);
-    location.assign(result.checkoutUrl);
+    sessionStorage.setItem("homsTechPaymentMethod","Mollie");
+    location.assign("payment.html");
   }
 
   async function renderPayPalButton(){
@@ -435,14 +430,10 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
       }
       if(selectedMethod === "PayPal"){
         if(!paymentAvailability.paypal) throw new Error("PayPal is nog niet geconfigureerd.");
-        localStorage.setItem("homsTechPendingWebshopOrderId",String(pendingOrderId));
-        document.getElementById("paymentOrderLabel").textContent = "Order #" + pendingOrderId;
-        document.getElementById("paymentBox").classList.remove("hidden");
-        document.getElementById("submitBtn").classList.add("hidden");
-        showPaymentStatus("PayPal laden…","success");
-        await renderPayPalButton();
-        showPaymentStatus("Kies PayPal om veilig af te rekenen.","success");
-        document.getElementById("paymentBox").scrollIntoView({behavior:"smooth",block:"center"});
+        sessionStorage.setItem("homsTechMollieOrderId",String(pendingOrderId));
+        sessionStorage.setItem("homsTechMollieCheckoutToken",pendingCheckoutToken);
+        sessionStorage.setItem("homsTechPaymentMethod","PayPal");
+        location.assign("payment.html");
       }
     }catch(error){
       showStatus("✕ " + (error.message || "Bestelling kon niet worden aangemaakt."),"error");
