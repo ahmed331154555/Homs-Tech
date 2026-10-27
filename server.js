@@ -2515,7 +2515,7 @@ app.post("/api/paypal/create-order", async (req, res) => {
     if (!paypalSettings.enabled) return res.status(503).json({ error: "PayPal is momenteel uitgeschakeld." });
     const accessToken = await getPayPalAccessToken(paypalSettings);
 
-    const response = await fetch(`${getPayPalBaseUrl(paypalSettings.mode)}/v2/checkout/orders`,
+    const response = await fetch(`${getPayPalBaseUrl(paypalSettings.mode)}/v2/checkout/orders`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${accessToken}`,
