@@ -2040,6 +2040,19 @@ textarea{
       </div>
       <p style="margin:12px 0 0;color:var(--muted,#64748b);font-size:13px">Je geheime sleutel blijft op de server en wordt nooit aan de winkelbezoeker getoond. Zet PayPal pas op Live nadat je een succesvolle test hebt gedaan.</p>
     </div>
+    <div class="card" style="padding:18px;margin-top:16px">
+      <h3 style="margin-top:0">Mollie — iDEAL / Wero</h3>
+      <p>Voeg hier later je Mollie API-key toe. De sleutel wordt versleuteld op de server opgeslagen en nooit aan klanten getoond.</p>
+      <label style="display:block;font-weight:700">Mollie API-key
+        <input id="orderMollieApiKey" type="password" autocomplete="new-password" placeholder="Nog niet ingesteld" style="display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit">
+      </label>
+      <div id="orderMollieStatus" class="status info" style="margin:14px 0">Mollie is nog niet ingesteld.</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-primary" type="button" onclick="saveOrderSettings()">Mollie-instellingen opslaan</button>
+        <a href="https://my.mollie.com/dashboard/developers/api-keys" target="_blank" rel="noopener noreferrer" class="btn btn-light">Mollie Dashboard ↗</a>
+      </div>
+      <p style="margin:12px 0 0;color:var(--muted,#64748b);font-size:13px">Laat het veld leeg om een eerder opgeslagen sleutel te behouden. Begin met een Test API-key; echte betalingen werken pas met een actieve Live API-key.</p>
+    </div>
     <div class="card" style="padding:18px">
       <h3 style="margin-top:0">API-koppeling instellen</h3>
       <p>Vraag de API-gegevens aan via je zakelijke account bij PostNL en DHL. Plaats geheime sleutels niet in deze pagina, GitHub of de browser.</p>
@@ -6769,6 +6782,11 @@ async function loadOrderSettings(){
     document.getElementById("orderPaypalMerchantId").value=data.paypal?.merchantId||"";
     document.getElementById("orderPaypalClientSecret").value="";
     document.getElementById("orderPaypalClientSecret").placeholder=data.paypal?.configured?"Ingesteld — leeg laten om te behouden":"Vul je PayPal Client Secret in";
+    document.getElementById("orderMollieApiKey").value="";
+    document.getElementById("orderMollieApiKey").placeholder=data.mollie?.configured?"Ingesteld — leeg laten om te behouden":"Nog niet ingesteld";
+    const mollieStatus=document.getElementById("orderMollieStatus");
+    mollieStatus.className="status "+(data.mollie?.configured?"success":"info");
+    mollieStatus.textContent=data.mollie?.configured?"Mollie API-key veilig opgeslagen.":"Mollie is nog niet ingesteld; iDEAL / Wero is nog niet beschikbaar.";
     const paypalStatus=document.getElementById("orderPaypalStatus");
     paypalStatus.className="status "+(data.paypal?.configured?"success":"info");
     paypalStatus.textContent=data.paypal?.configured?"PayPal API-gegevens opgeslagen. Client Secret wordt niet getoond.":"PayPal is nog niet volledig ingesteld.";
@@ -6787,13 +6805,19 @@ async function saveOrderSettings(){
       paypalMode:document.getElementById("orderPaypalMode").value,
       paypalClientId:document.getElementById("orderPaypalClientId").value.trim(),
       paypalClientSecret:document.getElementById("orderPaypalClientSecret").value,
-      paypalMerchantId:document.getElementById("orderPaypalMerchantId").value.trim()
+      paypalMerchantId:document.getElementById("orderPaypalMerchantId").value.trim(),
+      mollieApiKey:document.getElementById("orderMollieApiKey").value.trim()
     });
     document.getElementById("orderPostnlEnabled").checked=!!data.settings?.postnlEnabled;
     document.getElementById("orderDhlEnabled").checked=!!data.settings?.dhlEnabled;
     document.getElementById("orderPaypalEnabled").checked=!!data.paypal?.enabled;
     document.getElementById("orderPaypalClientSecret").value="";
     document.getElementById("orderPaypalClientSecret").placeholder=data.paypal?.configured?"Ingesteld — leeg laten om te behouden":"Vul je PayPal Client Secret in";
+    document.getElementById("orderMollieApiKey").value="";
+    document.getElementById("orderMollieApiKey").placeholder=data.mollie?.configured?"Ingesteld — leeg laten om te behouden":"Nog niet ingesteld";
+    const mollieStatus=document.getElementById("orderMollieStatus");
+    mollieStatus.className="status "+(data.mollie?.configured?"success":"info");
+    mollieStatus.textContent=data.mollie?.configured?"Mollie-instellingen opgeslagen.":"Mollie is nog niet ingesteld.";
     const paypalStatus=document.getElementById("orderPaypalStatus");
     paypalStatus.className="status "+(data.paypal?.configured?"success":"info");
     paypalStatus.textContent=data.paypal?.configured?"PayPal-instellingen opgeslagen. Client Secret is veilig versleuteld.":"PayPal is nog niet volledig ingesteld.";

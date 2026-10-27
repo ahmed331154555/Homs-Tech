@@ -2251,12 +2251,15 @@ app.post("/api/webshop/orders", async (req, res) => {
 });
 
 // ---------------- MOLLIE PAYMENTS ----------------
-function getMollieApiKey() {
+async function getMollieApiKey() {
+  const result = await pool.query("SELECT data FROM order_settings WHERE id=1");
+  const saved = result.rows[0]?.data?.mollie || {};
+  if (saved.apiKeyEncrypted) return decryptPayPalSecret(saved.apiKeyEncrypted);
   return String(process.env.MOLLIE_API_KEY || "").trim();
 }
 
 async function mollieRequest(endpoint, options = {}) {
-  const apiKey = getMollieApiKey();
+  const apiKey = await getMollieApiKey();
   if (!apiKey) throw new Error("Mollie is nog niet geconfigureerd. Voeg MOLLIE_API_KEY toe aan de serveromgeving.");
   const response = await fetch("https://api.mollie.com/v2" + endpoint, {
     ...options,
@@ -2291,9 +2294,10 @@ function molliePaymentMatchesOrder(payment, order) {
     Math.abs(expectedAmount - actualAmount) < 0.005;
 }
 
-app.get("/api/mollie/config", (req, res) => {
+app.get("/api/mollie/config", async (req, res) => {
   res.set("Cache-Control", "no-store");
-  res.json({ enabled: !!getMollieApiKey(), provider: "Mollie" });
+  try { res.json({ enabled: !!(await getMollieApiKey()), provider: "Mollie" }); }
+  catch (error) { res.json({ enabled: false, provider: "Mollie" }); }
 });
 
 app.post("/api/mollie/create-payment", async (req, res) => {
@@ -2702,6 +2706,7 @@ app.get("/api/admin/order-settings", requirePermission("site.save"), async (req,
     res.json({
       settings:{postnlEnabled:!!settings.postnlEnabled,dhlEnabled:!!settings.dhlEnabled,cashOnDeliveryEnabled:!!settings.cashOnDeliveryEnabled},
       paypal:{enabled:typeof paypal.enabled==="boolean"?paypal.enabled:envConfigured,mode:String(paypal.mode||process.env.PAYPAL_MODE||"sandbox").toLowerCase()==="live"?"live":"sandbox",clientId:String(paypal.clientId||process.env.PAYPAL_CLIENT_ID||""),merchantId:String(paypal.merchantId||""),configured:!!(paypal.clientSecretEncrypted||process.env.PAYPAL_CLIENT_SECRET)},
+      mollie:{configured:!!(result.rows[0]?.data?.mollie?.apiKeyEncrypted||process.env.MOLLIE_API_KEY)},
       api:{postnl:!!process.env.POSTNL_API_KEY,dhl:!!process.env.DHL_API_KEY}
     });
   }catch(error){
@@ -2738,12 +2743,15 @@ app.put("/api/admin/order-settings", requirePermission("site.save"), async (req,
       return res.status(400).json({error:"Vul zowel de PayPal Client ID als Client Secret in voordat je PayPal inschakelt."});
     }
     const paypal={enabled:paypalEnabled,mode,clientId,merchantId,clientSecretEncrypted};
-    const settings={...current,postnlEnabled,dhlEnabled,cashOnDeliveryEnabled,paypal};
+    const oldMollie=current.mollie || {};
+    const newMollieKey=String(req.body?.mollieApiKey || "").trim();
+    const mollieApiKeyEncrypted=newMollieKey ? encryptPayPalSecret(newMollieKey) : (oldMollie.apiKeyEncrypted || null);
+    const settings={...current,postnlEnabled,dhlEnabled,cashOnDeliveryEnabled,paypal,mollie:{apiKeyEncrypted:mollieApiKeyEncrypted}};
     await pool.query(
       "INSERT INTO order_settings (id,data,updated_at) VALUES (1,$1::jsonb,NOW()) ON CONFLICT (id) DO UPDATE SET data=EXCLUDED.data,updated_at=NOW()",
       [JSON.stringify(settings)]
     );
-    res.json({success:true,settings:{postnlEnabled,dhlEnabled,cashOnDeliveryEnabled},paypal:{enabled:paypalEnabled,mode,clientId,merchantId,configured:hasServerSecret},api:{postnl:!!process.env.POSTNL_API_KEY,dhl:!!process.env.DHL_API_KEY}});
+    res.json({success:true,settings:{postnlEnabled,dhlEnabled,cashOnDeliveryEnabled},paypal:{enabled:paypalEnabled,mode,clientId,merchantId,configured:hasServerSecret},mollie:{configured:!!(mollieApiKeyEncrypted||process.env.MOLLIE_API_KEY)},api:{postnl:!!process.env.POSTNL_API_KEY,dhl:!!process.env.DHL_API_KEY}});
   }catch(error){
     console.error("Order settings save error:",error.message);
     res.status(500).json({error:error.message.includes("JWT_SECRET")?error.message:"Orderinstellingen konden niet worden opgeslagen."});
