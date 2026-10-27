@@ -2402,22 +2402,56 @@ app.post("/api/mollie/verify-payment", async (req, res) => {
   }
 });
 
-function getPayPalBaseUrl() {
-  return String(process.env.PAYPAL_MODE || "sandbox").toLowerCase() === "live"
+function paypalEncryptionKey() {
+  const secret = String(process.env.JWT_SECRET || "").trim();
+  if (!secret) throw new Error("JWT_SECRET ontbreekt op de server; PayPal-gegevens kunnen niet veilig worden opgeslagen.");
+  return crypto.createHash("sha256").update(secret).digest();
+}
+
+function encryptPayPalSecret(value) {
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv("aes-256-gcm", paypalEncryptionKey(), iv);
+  const encrypted = Buffer.concat([cipher.update(String(value), "utf8"), cipher.final()]);
+  return { iv: iv.toString("hex"), tag: cipher.getAuthTag().toString("hex"), data: encrypted.toString("hex") };
+}
+
+function decryptPayPalSecret(value) {
+  if (!value || !value.iv || !value.tag || !value.data) return "";
+  const decipher = crypto.createDecipheriv("aes-256-gcm", paypalEncryptionKey(), Buffer.from(value.iv, "hex"));
+  decipher.setAuthTag(Buffer.from(value.tag, "hex"));
+  return Buffer.concat([decipher.update(Buffer.from(value.data, "hex")), decipher.final()]).toString("utf8");
+}
+
+async function getPayPalSettings() {
+  const result = await pool.query("SELECT data FROM order_settings WHERE id=1");
+  const saved = result.rows[0]?.data?.paypal || {};
+  const envClientId = String(process.env.PAYPAL_CLIENT_ID || "").trim();
+  const envClientSecret = String(process.env.PAYPAL_CLIENT_SECRET || "").trim();
+  const savedSecret = saved.clientSecretEncrypted ? decryptPayPalSecret(saved.clientSecretEncrypted) : "";
+  const clientId = String(saved.clientId || envClientId).trim();
+  const clientSecret = savedSecret || envClientSecret;
+  const mode = String(saved.mode || process.env.PAYPAL_MODE || "sandbox").toLowerCase() === "live" ? "live" : "sandbox";
+  const enabled = typeof saved.enabled === "boolean" ? saved.enabled : Boolean(envClientId && envClientSecret);
+  return { enabled, clientId, clientSecret, mode, merchantId: String(saved.merchantId || "").trim() };
+}
+
+function getPayPalBaseUrl(mode = "sandbox") {
+  return String(mode).toLowerCase() === "live"
     ? "https://api-m.paypal.com"
     : "https://api-m.sandbox.paypal.com";
 }
 
-async function getPayPalAccessToken() {
-  const clientId = String(process.env.PAYPAL_CLIENT_ID || "").trim();
-  const clientSecret = String(process.env.PAYPAL_CLIENT_SECRET || "").trim();
+async function getPayPalAccessToken(settings = null) {
+  const config = settings || await getPayPalSettings();
+  const clientId = String(config.clientId || "").trim();
+  const clientSecret = String(config.clientSecret || "").trim();
 
   if (!clientId || !clientSecret) {
-    throw new Error("PayPal is nog niet geconfigureerd op de server.");
+    throw new Error("Vul de PayPal Client ID en Client Secret in via Admin > Orderinstellingen.");
   }
 
   const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
-  const response = await fetch(`${getPayPalBaseUrl()}/v1/oauth2/token`, {
+  const response = await fetch(`${getPayPalBaseUrl(config.mode)}/v1/oauth2/token`, {
     method: "POST",
     headers: {
       "Authorization": `Basic ${auth}`,
@@ -2428,23 +2462,23 @@ async function getPayPalAccessToken() {
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok || !data.access_token) {
-    throw new Error(`PayPal authenticatie mislukt (${response.status}).`);
+    throw new Error(`PayPal authenticatie mislukt (${response.status}). Controleer de Client ID, Client Secret en gekozen modus.`);
   }
   return data.access_token;
 }
 
-// Frontend only receives the public client ID; the secret never leaves the server.
-app.get("/api/paypal/config", (req, res) => {
-  const clientId = String(process.env.PAYPAL_CLIENT_ID || "").trim();
-  if (!clientId) {
-    return res.status(503).json({ enabled: false, error: "PayPal is nog niet geconfigureerd." });
+// Public checkout receives only the public client ID and never receives the secret.
+app.get("/api/paypal/config", async (req, res) => {
+  try {
+    const settings = await getPayPalSettings();
+    if (!settings.enabled || !settings.clientId || !settings.clientSecret) {
+      return res.status(503).json({ enabled: false, error: "PayPal is nog niet geconfigureerd of uitgeschakeld." });
+    }
+    res.json({ enabled: true, clientId: settings.clientId, mode: settings.mode });
+  } catch (error) {
+    console.error("PayPal config error:", error.message);
+    res.status(503).json({ enabled: false, error: "PayPal is momenteel niet beschikbaar." });
   }
-
-  res.json({
-    enabled: true,
-    clientId,
-    mode: String(process.env.PAYPAL_MODE || "sandbox").toLowerCase() === "live" ? "live" : "sandbox"
-  });
 });
 
 app.post("/api/paypal/create-order", async (req, res) => {
@@ -2477,9 +2511,11 @@ app.post("/api/paypal/create-order", async (req, res) => {
       return res.status(400).json({ error: "Het orderbedrag is ongeldig." });
     }
 
-    const accessToken = await getPayPalAccessToken();
+    const paypalSettings = await getPayPalSettings();
+    if (!paypalSettings.enabled) return res.status(503).json({ error: "PayPal is momenteel uitgeschakeld." });
+    const accessToken = await getPayPalAccessToken(paypalSettings);
 
-    const response = await fetch(`${getPayPalBaseUrl()}/v2/checkout/orders`, {
+    const response = await fetch(`${getPayPalBaseUrl(paypalSettings.mode)}/v2/checkout/orders`,
       method: "POST",
       headers: {
         "Authorization": `Bearer ${accessToken}`,
@@ -2659,12 +2695,15 @@ app.get("/api/admin/order-settings", requirePermission("site.save"), async (req,
     await pool.query("INSERT INTO order_settings (id,data) VALUES (1,$1::jsonb) ON CONFLICT (id) DO NOTHING", [JSON.stringify({postnlEnabled:false,dhlEnabled:false})]);
     const result=await pool.query("SELECT data FROM order_settings WHERE id=1");
     const settings=result.rows[0]?.data || {postnlEnabled:false,dhlEnabled:false};
+    const paypal = settings.paypal || {};
+    const envConfigured = !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
     res.json({
       settings:{postnlEnabled:!!settings.postnlEnabled,dhlEnabled:!!settings.dhlEnabled,cashOnDeliveryEnabled:!!settings.cashOnDeliveryEnabled},
+      paypal:{enabled:typeof paypal.enabled==="boolean"?paypal.enabled:envConfigured,mode:String(paypal.mode||process.env.PAYPAL_MODE||"sandbox").toLowerCase()==="live"?"live":"sandbox",clientId:String(paypal.clientId||process.env.PAYPAL_CLIENT_ID||""),merchantId:String(paypal.merchantId||""),configured:!!(paypal.clientSecretEncrypted||process.env.PAYPAL_CLIENT_SECRET)},
       api:{postnl:!!process.env.POSTNL_API_KEY,dhl:!!process.env.DHL_API_KEY}
     });
   }catch(error){
-    console.error("Order settings load error:",error);
+    console.error("Order settings load error:",error.message);
     res.status(500).json({error:"Orderinstellingen konden niet worden geladen."});
   }
 });
@@ -2680,15 +2719,32 @@ app.put("/api/admin/order-settings", requirePermission("site.save"), async (req,
     if(dhlEnabled && !process.env.DHL_API_KEY){
       return res.status(400).json({error:"Voeg eerst DHL_API_KEY toe bij Render Environment Variables."});
     }
-    const settings={postnlEnabled,dhlEnabled,cashOnDeliveryEnabled};
+    const currentResult=await pool.query("SELECT data FROM order_settings WHERE id=1");
+    const current=currentResult.rows[0]?.data || {};
+    const oldPaypal=current.paypal || {};
+    const clientId=String(req.body?.paypalClientId ?? oldPaypal.clientId ?? process.env.PAYPAL_CLIENT_ID ?? "").trim();
+    const mode=String(req.body?.paypalMode || oldPaypal.mode || process.env.PAYPAL_MODE || "sandbox").toLowerCase()==="live"?"live":"sandbox";
+    const merchantId=String(req.body?.paypalMerchantId ?? oldPaypal.merchantId ?? "").trim().slice(0,160);
+    const paypalEnabled=req.body?.paypalEnabled===true;
+    const newSecret=String(req.body?.paypalClientSecret || "").trim();
+    let clientSecretEncrypted=oldPaypal.clientSecretEncrypted || null;
+    if(newSecret){
+      clientSecretEncrypted=encryptPayPalSecret(newSecret);
+    }
+    const hasServerSecret=!!clientSecretEncrypted || !!process.env.PAYPAL_CLIENT_SECRET;
+    if(paypalEnabled && (!clientId || !hasServerSecret)){
+      return res.status(400).json({error:"Vul zowel de PayPal Client ID als Client Secret in voordat je PayPal inschakelt."});
+    }
+    const paypal={enabled:paypalEnabled,mode,clientId,merchantId,clientSecretEncrypted};
+    const settings={...current,postnlEnabled,dhlEnabled,cashOnDeliveryEnabled,paypal};
     await pool.query(
       "INSERT INTO order_settings (id,data,updated_at) VALUES (1,$1::jsonb,NOW()) ON CONFLICT (id) DO UPDATE SET data=EXCLUDED.data,updated_at=NOW()",
       [JSON.stringify(settings)]
     );
-    res.json({success:true,settings,api:{postnl:!!process.env.POSTNL_API_KEY,dhl:!!process.env.DHL_API_KEY}});
+    res.json({success:true,settings:{postnlEnabled,dhlEnabled,cashOnDeliveryEnabled},paypal:{enabled:paypalEnabled,mode,clientId,merchantId,configured:hasServerSecret},api:{postnl:!!process.env.POSTNL_API_KEY,dhl:!!process.env.DHL_API_KEY}});
   }catch(error){
-    console.error("Order settings save error:",error);
-    res.status(500).json({error:"Orderinstellingen konden niet worden opgeslagen."});
+    console.error("Order settings save error:",error.message);
+    res.status(500).json({error:error.message.includes("JWT_SECRET")?error.message:"Orderinstellingen konden niet worden opgeslagen."});
   }
 });
 
