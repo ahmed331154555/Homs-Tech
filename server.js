@@ -2593,10 +2593,12 @@ app.post("/api/paypal/capture-order", async (req, res) => {
       return res.json({ success: true, paid: true, orderId: localOrderId });
     }
 
-    const accessToken = await getPayPalAccessToken();
+    const paypalSettings = await getPayPalSettings();
+    if (!paypalSettings.enabled) return res.status(503).json({ error: "PayPal is momenteel uitgeschakeld." });
+    const accessToken = await getPayPalAccessToken(paypalSettings);
 
     const response = await fetch(
-      `${getPayPalBaseUrl()}/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}/capture`,
+      `${getPayPalBaseUrl(paypalSettings.mode)}/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}/capture`,
       {
         method: "POST",
         headers: {
