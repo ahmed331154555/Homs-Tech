@@ -86,6 +86,13 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 .payment-option strong{font-size:14px}.payment-option small,.payment-config-note{font-size:12px;color:#64748b;line-height:1.5}
 .payment-option b{font-size:12px;color:#2563eb}
 .payment-option input:disabled{cursor:not-allowed}
+.payment-brand{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex:0 0 auto;min-width:88px}
+.payment-logo{display:inline-flex;align-items:center;justify-content:center;min-height:27px;padding:4px 7px;border-radius:5px;font-size:12px;font-weight:900;letter-spacing:-.3px;white-space:nowrap;line-height:1}
+.payment-logo.ideal{background:#cc0066;color:#fff;font-style:italic}
+.payment-logo.wero{background:#fff;color:#1b1764;border:1px solid #d7d5ef;font-size:13px}
+.payment-logo.paypal{background:#fff;color:#003087;border:1px solid #dbe3ec;font-size:13px;font-style:italic}
+.payment-logo.paypal em{color:#009cde;font-style:italic}
+.payment-logo.mollie{background:#fff;color:#2563eb;border:1px solid #dbe3ec}
 .payment-config-note{margin:12px 0 0}
 @media(max-width:560px){.payment-head{flex-direction:column}.payment-order{white-space:normal}}
 </style>
@@ -108,8 +115,8 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 <div class="field full"><label for="city">Plaats *</label><input id="city" required></div>
 </div><div class="payment-choice" aria-label="Betaalmethode">
 <h3>Betaalmethode</h3>
-<label class="payment-option" for="paymentMollie"><input id="paymentMollie" type="radio" name="paymentMethod" value="Mollie" checked><span><strong>iDEAL / Wero, bankkaart en meer</strong><small>Veilig afrekenen via Mollie</small></span><b>Mollie</b></label>
-<label class="payment-option" for="paymentPayPal"><input id="paymentPayPal" type="radio" name="paymentMethod" value="PayPal"><span><strong>PayPal</strong><small>Betalen met uw PayPal-account</small></span><b>PayPal</b></label>
+<label class="payment-option" for="paymentMollie"><input id="paymentMollie" type="radio" name="paymentMethod" value="Mollie" checked><span><strong>iDEAL / Wero, bankkaart en meer</strong><small>Veilig afrekenen via Mollie</small></span><span class="payment-brand" aria-label="iDEAL, Wero en Mollie"><span class="payment-logo ideal">iDEAL</span><span class="payment-logo wero">wero</span></span></label>
+<label class="payment-option" for="paymentPayPal"><input id="paymentPayPal" type="radio" name="paymentMethod" value="PayPal"><span><strong>PayPal</strong><small>Betalen met uw PayPal-account</small></span><span class="payment-brand" aria-label="PayPal"><span class="payment-logo paypal">Pay<em>Pal</em></span></span></label>
 <label class="payment-option" id="cashOnDeliveryOption" for="paymentCashOnDelivery" hidden><input id="paymentCashOnDelivery" type="radio" name="paymentMethod" value="CashOnDelivery"><span><strong>Betalen bij ontvangst</strong><small>Betaal wanneer u de telefoon ontvangt</small></span><b>Contant</b></label>
 <p id="paymentConfigNote" class="payment-config-note" role="status">Betaalmethoden worden gecontroleerd…</p>
 </div>
