@@ -840,10 +840,9 @@ function addCurrentProductToCart(){
   const selectedImage=selectedGallery[0]||colorVariantImage(selectedOptions.color)||((Array.isArray(currentProduct.images)&&currentProduct.images[0])||currentProduct.image||currentProduct.imageUrl||"");
   if(found){found.qty=Number(found.qty||1)+1;if(!found.image&&selectedImage)found.image=selectedImage;}
   else items.push({key,type,id:currentProductId,name:currentProduct.name||"Smartphone",brand:currentProduct.brand||"",image:selectedImage,options,unitPrice:total,qty:1});
+  // Save the selected phone and its exact variant before navigating to the cart.
   writeCart(items);
-  const msg=document.getElementById("cartAdded"); if(msg){msg.style.display="block";msg.textContent="✓ Toegevoegd aan winkelwagen";setTimeout(()=>msg.style.display="none",3500)}
-  const button=document.querySelector('#productArea .buttons button[onclick*="addCurrentProductToCart"]');
-  if(button){button.textContent="✓ Toegevoegd aan winkelwagen";button.disabled=true;setTimeout(()=>{button.textContent="🛒 In winkelwagen";button.disabled=false;},1400);}
+  window.location.href = "cart.html";
   } catch(error) {
     console.error("HOMS TECH add-to-cart failed:",error);
     alert("Toevoegen aan winkelwagen is niet gelukt. Controleer of uw browser lokale opslag toestaat en probeer opnieuw.");
