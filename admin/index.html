@@ -2005,6 +2005,41 @@ textarea{
       </label>
       <button class="btn btn-primary" type="button" onclick="saveOrderSettings()">Instellingen opslaan</button>
     </div>
+    <div class="card" style="padding:18px;margin-bottom:14px;border:1px solid #d6e2f0">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:48px;height:48px;border-radius:14px;background:#f1f7ff;display:grid;place-items:center;font-weight:900;font-size:25px;color:#0756a8">P</div>
+          <div><h3 style="margin:0">PayPal betalingen</h3><small style="color:var(--muted,#64748b)">Ontvang online betalingen via je eigen PayPal Business-app.</small></div>
+        </div>
+        <label style="display:flex;align-items:center;gap:9px;font-weight:700"><input type="checkbox" id="orderPaypalEnabled"> PayPal inschakelen</label>
+      </div>
+      <div style="padding:13px;border-radius:12px;background:var(--soft,#f8fafc);margin-bottom:14px">
+        <label for="orderPaypalMode" style="display:block;font-weight:700;margin-bottom:6px">Betaalmodus</label>
+        <select id="orderPaypalMode" style="width:100%;max-width:360px;padding:11px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit">
+          <option value="sandbox">Sandbox — testen zonder echte betalingen</option>
+          <option value="live">Live — echte betalingen ontvangen</option>
+        </select>
+        <small style="display:block;margin-top:6px;color:var(--muted,#64748b)">Test eerst met Sandbox. Kies Live pas als je PayPal-app klaarstaat voor echte betalingen.</small>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+        <label style="display:block;font-weight:700">Client ID
+          <input id="orderPaypalClientId" type="text" autocomplete="off" spellcheck="false" placeholder="PayPal Client ID" style="display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit">
+        </label>
+        <label style="display:block;font-weight:700">Client Secret
+          <input id="orderPaypalClientSecret" type="password" autocomplete="new-password" placeholder="Plak je Client Secret hier" style="display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit">
+          <small style="display:block;margin-top:5px;color:var(--muted,#64748b)">Wordt versleuteld opgeslagen. Laat leeg om de huidige sleutel te behouden.</small>
+        </label>
+        <label style="display:block;font-weight:700">Merchant ID (optioneel)
+          <input id="orderPaypalMerchantId" type="text" autocomplete="off" placeholder="PayPal Merchant ID" style="display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit">
+        </label>
+      </div>
+      <div id="orderPaypalStatus" class="status info" style="margin:14px 0">PayPal-status controleren...</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-primary" type="button" onclick="saveOrderSettings()">PayPal-instellingen opslaan</button>
+        <a href="https://developer.paypal.com/dashboard/applications" target="_blank" rel="noopener noreferrer" class="btn btn-light">PayPal Developer Dashboard ↗</a>
+      </div>
+      <p style="margin:12px 0 0;color:var(--muted,#64748b);font-size:13px">Je geheime sleutel blijft op de server en wordt nooit aan de winkelbezoeker getoond. Zet PayPal pas op Live nadat je een succesvolle test hebt gedaan.</p>
+    </div>
     <div class="card" style="padding:18px">
       <h3 style="margin-top:0">API-koppeling instellen</h3>
       <p>Vraag de API-gegevens aan via je zakelijke account bij PostNL en DHL. Plaats geheime sleutels niet in deze pagina, GitHub of de browser.</p>
@@ -6728,6 +6763,15 @@ async function loadOrderSettings(){
     document.getElementById("orderPostnlEnabled").checked=!!data.settings?.postnlEnabled;
     document.getElementById("orderDhlEnabled").checked=!!data.settings?.dhlEnabled;
     document.getElementById("orderCashOnDeliveryEnabled").checked=!!data.settings?.cashOnDeliveryEnabled;
+    document.getElementById("orderPaypalEnabled").checked=!!data.paypal?.enabled;
+    document.getElementById("orderPaypalMode").value=data.paypal?.mode==="live"?"live":"sandbox";
+    document.getElementById("orderPaypalClientId").value=data.paypal?.clientId||"";
+    document.getElementById("orderPaypalMerchantId").value=data.paypal?.merchantId||"";
+    document.getElementById("orderPaypalClientSecret").value="";
+    document.getElementById("orderPaypalClientSecret").placeholder=data.paypal?.configured?"Ingesteld — leeg laten om te behouden":"Vul je PayPal Client Secret in";
+    const paypalStatus=document.getElementById("orderPaypalStatus");
+    paypalStatus.className="status "+(data.paypal?.configured?"success":"info");
+    paypalStatus.textContent=data.paypal?.configured?"PayPal API-gegevens opgeslagen. Client Secret wordt niet getoond.":"PayPal is nog niet volledig ingesteld.";
     document.getElementById("orderPostnlApiStatus").textContent=data.api?.postnl?"API-sleutel gevonden op de server":"API-sleutel ontbreekt op de server";
     document.getElementById("orderDhlApiStatus").textContent=data.api?.dhl?"API-sleutel gevonden op de server":"API-sleutel ontbreekt op de server";
     orderSettingsStatus("Instellingen geladen.");
@@ -6738,11 +6782,22 @@ async function saveOrderSettings(){
     const data=await orderSettingsRequest("PUT",{
       postnlEnabled:document.getElementById("orderPostnlEnabled").checked,
       dhlEnabled:document.getElementById("orderDhlEnabled").checked,
-      cashOnDeliveryEnabled:document.getElementById("orderCashOnDeliveryEnabled").checked
+      cashOnDeliveryEnabled:document.getElementById("orderCashOnDeliveryEnabled").checked,
+      paypalEnabled:document.getElementById("orderPaypalEnabled").checked,
+      paypalMode:document.getElementById("orderPaypalMode").value,
+      paypalClientId:document.getElementById("orderPaypalClientId").value.trim(),
+      paypalClientSecret:document.getElementById("orderPaypalClientSecret").value,
+      paypalMerchantId:document.getElementById("orderPaypalMerchantId").value.trim()
     });
     document.getElementById("orderPostnlEnabled").checked=!!data.settings?.postnlEnabled;
     document.getElementById("orderDhlEnabled").checked=!!data.settings?.dhlEnabled;
-    orderSettingsStatus("Verzendinstellingen opgeslagen.");
+    document.getElementById("orderPaypalEnabled").checked=!!data.paypal?.enabled;
+    document.getElementById("orderPaypalClientSecret").value="";
+    document.getElementById("orderPaypalClientSecret").placeholder=data.paypal?.configured?"Ingesteld — leeg laten om te behouden":"Vul je PayPal Client Secret in";
+    const paypalStatus=document.getElementById("orderPaypalStatus");
+    paypalStatus.className="status "+(data.paypal?.configured?"success":"info");
+    paypalStatus.textContent=data.paypal?.configured?"PayPal-instellingen opgeslagen. Client Secret is veilig versleuteld.":"PayPal is nog niet volledig ingesteld.";
+    orderSettingsStatus("Instellingen opgeslagen.");
   }catch(error){orderSettingsStatus(error.message,true);}
 }
 
