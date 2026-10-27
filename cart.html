@@ -209,7 +209,12 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
     if(!options || typeof options !== "object") return "";
 
     return Object.entries(options)
-      .filter(([_, value]) => String(value ?? "").trim() !== "")
+      .filter(([_, value]) =>
+        value !== null &&
+        value !== undefined &&
+        (typeof value === "string" || typeof value === "number" || typeof value === "boolean") &&
+        String(value).trim() !== ""
+      )
       .map(([key,value]) =>
         "<div><strong>" + esc(labels[key] || key) + ":</strong> " + esc(value) + "</div>"
       )
