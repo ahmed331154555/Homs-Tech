@@ -842,7 +842,36 @@ function addCurrentProductToCart(){
   else items.push({key,type,id:currentProductId,name:currentProduct.name||"Smartphone",brand:currentProduct.brand||"",image:selectedImage,options,unitPrice:total,qty:1});
   // Save the selected phone and its exact variant before navigating to the cart.
   writeCart(items);
-  window.location.href = "cart.html";
+
+  // Animate the selected product image toward the cart before navigating.
+  const source = document.querySelector(".main-image") || document.querySelector(".gallery img");
+  const cartTarget = document.querySelector('a[href="cart.html"], [data-cart-icon], .cart-icon');
+  if (source && cartTarget && source.getBoundingClientRect().width > 0) {
+    const from = source.getBoundingClientRect();
+    const to = cartTarget.getBoundingClientRect();
+    const flyer = source.cloneNode(true);
+    Object.assign(flyer.style, {
+      position: "fixed", left: from.left + "px", top: from.top + "px",
+      width: Math.min(from.width, 180) + "px", height: Math.min(from.height, 180) + "px",
+      objectFit: "contain", zIndex: "99999", margin: "0", pointerEvents: "none",
+      borderRadius: "12px", boxShadow: "0 8px 28px rgba(0,0,0,.25)",
+      transition: "left .55s cubic-bezier(.2,.8,.2,1), top .55s cubic-bezier(.2,.8,.2,1), width .55s, height .55s, opacity .55s, transform .55s"
+    });
+    document.body.appendChild(flyer);
+    flyer.getBoundingClientRect();
+    requestAnimationFrame(() => {
+      flyer.style.left = (to.left + to.width / 2) + "px";
+      flyer.style.top = (to.top + to.height / 2) + "px";
+      flyer.style.width = "8px";
+      flyer.style.height = "8px";
+      flyer.style.opacity = "0.25";
+      flyer.style.transform = "translate(-50%, -50%) scale(.25)";
+    });
+    setTimeout(() => { window.location.href = "cart.html"; }, 600);
+  } else {
+    // Keep the flow reliable on layouts without a visible cart icon.
+    window.location.href = "cart.html";
+  }
   } catch(error) {
     console.error("HOMS TECH add-to-cart failed:",error);
     alert("Toevoegen aan winkelwagen is niet gelukt. Controleer of uw browser lokale opslag toestaat en probeer opnieuw.");
