@@ -1756,7 +1756,7 @@ textarea{
     <form id="deviceRegisterForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">
       <label>Type<select id="drType" required style="display:block;width:100%;padding:10px;margin-top:5px" onchange="deviceUpdateFields()"><option value="customer_repair">Klantreparatie</option><option value="commercial">Eigen refurbished / verkoop</option></select></label>
       <label>Identificatie<select id="drIdentifierType" style="display:block;width:100%;padding:10px;margin-top:5px"><option value="imei">IMEI</option><option value="serial">Serienummer</option><option value="barcode">Interne HT-barcode</option></select></label>
-      <label>IMEI / serienummer / HT-code<input id="drIdentifierValue" required maxlength="100" autocomplete="off" placeholder="Scan met scanner of voer handmatig in" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
+      <label>IMEI / serienummer / HT-code<input id="drIdentifierValue" required maxlength="100" autocomplete="off" placeholder="Scan met scanner of voer handmatig in" style="display:block;width:100%;padding:10px;margin-top:5px"><button type="button" class="btn btn-light" id="drCameraOpen" style="display:block;width:100%;margin-top:7px">📷 Scan met camera</button><small style="display:block;margin-top:5px;color:#64748b">Richt de camera op de barcode of QR-code op het toestel of de doos.</small></label>
       <label>Model<input id="drModel" required maxlength="120" placeholder="iPhone 15 Pro" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
       <label>Merk<input id="drBrand" value="Apple" maxlength="60" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
       <label>Status<select id="drStatus" required style="display:block;width:100%;padding:10px;margin-top:5px"></select></label>
@@ -1771,6 +1771,7 @@ textarea{
     <p class="small" style="margin-bottom:0">Scanner-tip: klik in het identificatieveld en scan; de meeste USB/Bluetooth-scanners typen de code automatisch. Gegevens worden in de database opgeslagen, niet alleen in deze browser.</p>
   </div>
   <div id="deviceHistoryPanel" style="margin-top:18px"></div>
+<div id="deviceScannerModal" style="display:none;position:fixed;inset:0;z-index:100100;background:#061629dd;padding:16px;box-sizing:border-box;align-items:center;justify-content:center"><div style="background:#fff;color:#172033;border-radius:16px;padding:16px;width:min(520px,100%);max-height:90dvh;overflow:auto;box-sizing:border-box"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><h3 style="margin:0">📷 Scan IMEI / barcode</h3><button type="button" id="drCameraClose" class="btn btn-light">Sluiten ✕</button></div><p id="deviceScannerStatus" style="color:#475569">Geef cameratoegang en richt op een barcode of QR-code.</p><video id="deviceScannerVideo" autoplay muted playsinline style="display:block;width:100%;max-height:55dvh;object-fit:contain;background:#0f172a;border-radius:12px"></video><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button type="button" id="drCameraRetry" class="btn btn-light">↻ Camera opnieuw starten</button><button type="button" id="drCameraManual" class="btn btn-green">Handmatig invoeren</button></div><small style="display:block;color:#64748b;margin-top:10px">De camera wordt alleen gebruikt tijdens het scannen. De video wordt niet opgeslagen.</small></div></div>
 </section>
 
 <section class="section admin-page active" id="page-general">
@@ -7860,6 +7861,59 @@ function deviceExportCsv(){
   const csv=[columns.map(x=>x[0]),...rows.map(r=>columns.map(c=>c[1]==="profit"?Number(r.sale_price||0)-Number(r.purchase_cost||0)-Number(r.recorded_cost||0):(r[c[1]]??"")))].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(";")).join("\r\n");
   const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="homs-tech-toestelregister.csv";a.click();URL.revokeObjectURL(url);
 }
+
+let deviceScannerStream=null,deviceScannerActive=false,deviceScannerDetector=null,deviceScannerFrame=0;
+function deviceScannerStop(){
+  deviceScannerActive=false;
+  if(deviceScannerFrame)cancelAnimationFrame(deviceScannerFrame);
+  deviceScannerFrame=0;
+  if(deviceScannerStream){deviceScannerStream.getTracks().forEach(track=>track.stop());deviceScannerStream=null}
+  const video=document.getElementById("deviceScannerVideo");if(video){video.pause();video.srcObject=null}
+  const modal=document.getElementById("deviceScannerModal");if(modal)modal.style.display="none";
+}
+async function deviceScannerStart(){
+  const status=document.getElementById("deviceScannerStatus"),video=document.getElementById("deviceScannerVideo"),modal=document.getElementById("deviceScannerModal");
+  if(!navigator.mediaDevices?.getUserMedia){modal.style.display="flex";status.textContent="Camera niet beschikbaar. Open de adminpagina via HTTPS en controleer de camerarechten.";return}
+  if(!("BarcodeDetector" in window)){modal.style.display="flex";status.textContent="Deze browser heeft geen ingebouwde barcodescanner. Gebruik een USB/Bluetooth-scanner of voer het nummer handmatig in.";return}
+  deviceScannerStop();modal.style.display="flex";status.textContent="Camera starten…";
+  try{
+    const supported=await BarcodeDetector.getSupportedFormats();
+    const formats=["qr_code","code_128","code_39","code_93","ean_13","ean_8","itf","data_matrix","pdf417","aztec"].filter(x=>supported.includes(x));
+    if(!formats.length)throw Error("Deze browser ondersteunt geen geschikte barcodeformaten.");
+    deviceScannerDetector=new BarcodeDetector({formats});
+    deviceScannerStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
+    video.srcObject=deviceScannerStream;await video.play();deviceScannerActive=true;status.textContent="Richt de camera op de barcode of QR-code.";
+    const scan=async()=>{
+      if(!deviceScannerActive)return;
+      try{
+        if(video.readyState>=2){
+          const codes=await deviceScannerDetector.detect(video);
+          if(codes?.length){
+            const raw=String(codes[0].rawValue||"").trim();
+            if(raw){
+              const field=document.getElementById("drIdentifierValue");
+              const imei=raw.match(/(?:IMEI\s*[:#]?\s*)?(\d{15})(?!\d)/i);
+              field.value=imei?imei[1]:raw;field.dispatchEvent(new Event("input",{bubbles:true}));
+              field.focus();status.textContent="Code gelezen. Controleer het nummer en sla het toestel op.";
+              deviceScannerStop();return;
+            }
+          }
+        }
+      }catch(e){status.textContent="Scannen… houd de barcode scherp en goed verlicht."}
+      if(deviceScannerActive)deviceScannerFrame=requestAnimationFrame(scan);
+    };
+    deviceScannerFrame=requestAnimationFrame(scan);
+  }catch(e){
+    deviceScannerStop();modal.style.display="flex";
+    status.textContent=e?.name==="NotAllowedError"?"Cameratoegang geweigerd. Sta camera toe in de browserinstellingen en probeer opnieuw.":("Camera kon niet starten: "+(e.message||"controleer camerarechten."));
+  }
+}
+document.getElementById("drCameraOpen")?.addEventListener("click",deviceScannerStart);
+document.getElementById("drCameraClose")?.addEventListener("click",deviceScannerStop);
+document.getElementById("drCameraManual")?.addEventListener("click",()=>{deviceScannerStop();document.getElementById("drIdentifierValue")?.focus()});
+document.getElementById("drCameraRetry")?.addEventListener("click",deviceScannerStart);
+document.getElementById("deviceScannerModal")?.addEventListener("click",e=>{if(e.target.id==="deviceScannerModal")deviceScannerStop()});
+window.addEventListener("pagehide",deviceScannerStop);
 deviceUpdateFields();
 
 /* START */
