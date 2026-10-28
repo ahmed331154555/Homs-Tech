@@ -875,8 +875,8 @@ app.get("/api/admin/device-register",requirePermission("device_register.view"),a
     const result=await pool.query(`
       SELECT d.*,
         COALESCE((SELECT COUNT(*) FROM device_register_operations o WHERE o.device_id=d.id),0)::int AS operation_count,
-        COALESCE((SELECT SUM((p->>'quantity')::numeric*(p->>'cost')::numeric)
-          FROM device_register_operations o CROSS JOIN LATERAL jsonb_array_elements(o.parts) p WHERE o.device_id=d.id),0)
+        COALESCE((SELECT SUM((part.value->>'quantity')::numeric*(part.value->>'cost')::numeric)
+          FROM device_register_operations o CROSS JOIN LATERAL jsonb_array_elements(o.parts) AS part(value) WHERE o.device_id=d.id),0)
           + COALESCE((SELECT SUM(additional_cost) FROM device_register_operations o WHERE o.device_id=d.id),0) AS recorded_cost
       FROM device_register d
       WHERE d.archived=$1 AND ($2::text IS NULL OR d.device_type=$2)
@@ -907,7 +907,9 @@ app.put("/api/admin/device-register/:id",requirePermission("device_register.upda
     const id=Number(req.params.id),b=req.body||{};
     if(!Number.isSafeInteger(id)||id<=0)return res.status(400).json({error:"Ongeldig toestel."});
     const status=deviceText(b.status,40),purchaseCost=deviceMoney(b.purchaseCost),salePrice=deviceMoney(b.salePrice);
-    const allowed=b.deviceType==="commercial"?commercialDeviceStatuses:customerDeviceStatuses;
+    const existing=await pool.query("SELECT device_type FROM device_register WHERE id=$1 AND archived=FALSE",[id]);
+    if(!existing.rows.length)return res.status(404).json({error:"Toestel niet gevonden."});
+    const allowed=existing.rows[0].device_type==="commercial"?commercialDeviceStatuses:customerDeviceStatuses;
     if(!allowed.has(status)||!Number.isFinite(purchaseCost)||!Number.isFinite(salePrice))return res.status(400).json({error:"Controleer status en bedragen."});
     const result=await pool.query(`UPDATE device_register SET status=$2,customer_name=$3,customer_phone=$4,customer_email=$5,repair_order_number=$6,purchase_cost=$7,sale_price=$8,updated_at=NOW()
       WHERE id=$1 AND archived=FALSE RETURNING *`,[id,status,deviceText(b.customerName,160),deviceText(b.customerPhone,60),deviceText(b.customerEmail,180),deviceText(b.repairOrderNumber,100),purchaseCost,salePrice]);
