@@ -1771,7 +1771,7 @@ textarea{
     <p class="small" style="margin-bottom:0">Scanner-tip: klik in het identificatieveld en scan; de meeste USB/Bluetooth-scanners typen de code automatisch. Gegevens worden in de database opgeslagen, niet alleen in deze browser.</p>
   </div>
   <div id="deviceHistoryPanel" style="margin-top:18px"></div>
-<div id="deviceScannerModal" style="display:none;position:fixed;inset:0;z-index:100100;background:#061629dd;padding:16px;box-sizing:border-box;align-items:center;justify-content:center"><div style="background:#fff;color:#172033;border-radius:16px;padding:16px;width:min(520px,100%);max-height:90dvh;overflow:auto;box-sizing:border-box"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><h3 style="margin:0">📷 Scan IMEI / barcode</h3><button type="button" id="drCameraClose" class="btn btn-light">Sluiten ✕</button></div><p id="deviceScannerStatus" style="color:#475569">Geef cameratoegang en richt op een barcode of QR-code.</p><video id="deviceScannerVideo" autoplay muted playsinline style="display:block;width:100%;max-height:55dvh;object-fit:contain;background:#0f172a;border-radius:12px"></video><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button type="button" id="drCameraRetry" class="btn btn-light">↻ Camera opnieuw starten</button><button type="button" id="drCameraManual" class="btn btn-green">Handmatig invoeren</button></div><small style="display:block;color:#64748b;margin-top:10px">De camera wordt alleen gebruikt tijdens het scannen. De video wordt niet opgeslagen.</small></div></div>
+<div id="deviceScannerModal" style="display:none;position:fixed;inset:0;z-index:100100;background:#061629dd;padding:16px;box-sizing:border-box;align-items:center;justify-content:center"><div style="background:#fff;color:#172033;border-radius:16px;padding:16px;width:min(520px,100%);max-height:90dvh;overflow:auto;box-sizing:border-box"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><h3 style="margin:0">📷 Scan IMEI / barcode</h3><button type="button" id="drCameraClose" class="btn btn-light">Sluiten ✕</button></div><p id="deviceScannerStatus" style="color:#475569">Geef cameratoegang en richt op een barcode of QR-code.</p><video id="deviceScannerVideo" autoplay muted playsinline style="display:block;width:100%;max-height:55dvh;object-fit:contain;background:#0f172a;border-radius:12px"></video><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button type="button" id="drCameraRetry" class="btn btn-light">↻ Camera opnieuw starten</button><button type="button" id="drCameraOcr" class="btn btn-green">🔎 Lees volledig etiket</button><button type="button" id="drCameraManual" class="btn btn-light">Handmatig invoeren</button></div><small style="display:block;color:#64748b;margin-top:10px">De camera wordt alleen gebruikt tijdens het scannen. De video wordt niet opgeslagen.</small></div></div>
 </section>
 
 <section class="section admin-page active" id="page-general">
@@ -7911,7 +7911,54 @@ async function deviceScannerStart(){
 document.getElementById("drCameraOpen")?.addEventListener("click",deviceScannerStart);
 document.getElementById("drCameraClose")?.addEventListener("click",deviceScannerStop);
 document.getElementById("drCameraManual")?.addEventListener("click",()=>{deviceScannerStop();document.getElementById("drIdentifierValue")?.focus()});
+
+async function deviceScannerReadLabel(){
+  const status=document.getElementById("deviceScannerStatus"),video=document.getElementById("deviceScannerVideo");
+  if(!video||video.readyState<2){if(status)status.textContent="Start de camera eerst en houd het etiket scherp in beeld.";return}
+  const button=document.getElementById("drCameraOcr");if(button)button.disabled=true;
+  try{
+    status.textContent="OCR wordt geladen… de afbeelding wordt lokaal in je browser verwerkt.";
+    if(!window.Tesseract){
+      await new Promise((resolve,reject)=>{
+        const script=document.createElement("script");script.src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";script.onload=resolve;script.onerror=()=>reject(Error("OCR-bibliotheek kon niet worden geladen."));document.head.appendChild(script);
+      });
+    }
+    const canvas=document.createElement("canvas"),scale=Math.min(2.5,1800/Math.max(video.videoWidth||1,video.videoHeight||1));
+    canvas.width=Math.round(video.videoWidth*scale);canvas.height=Math.round(video.videoHeight*scale);
+    const ctx=canvas.getContext("2d");ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    status.textContent="Etiket lezen… houd de camera stil.";
+    const result=await window.Tesseract.recognize(canvas,"eng",{logger:m=>{if(m.status==="recognizing text")status.textContent="Etiket lezen… "+Math.round((m.progress||0)*100)+"%"}});
+    const text=String(result?.data?.text||"").replace(/\r/g,"\n");
+    const imeis=[...new Set((text.match(/\b\d[\d\s-]{12,20}\d\b/g)||[]).map(x=>x.replace(/\D/g,"")).filter(x=>x.length===15))];
+    const modelCode=(text.match(/\bSM-[A-Z0-9/.-]{4,20}\b/i)||[])[0]||"";
+    const storage=(text.match(/\b(128|256|512|1024)\s?GB\b/i)||[])[0]||"";
+    const ram=(text.match(/\b(8|12|16)\s?GB\b/i)||[])[0]||"";
+    const color=(text.match(/\b(Titanium\s+(?:Black|Gray|Grey|Silver|Blue)|Black|White|Silver|Blue|Green|Pink|Gray|Grey)\b/i)||[])[0]||"";
+    let model="";
+    if(modelCode){
+      const code=modelCode.toUpperCase().replace("/DS","");
+      const known={"SM-S938B":"Samsung Galaxy S25 Ultra","SM-S936B":"Samsung Galaxy S25+","SM-S931B":"Samsung Galaxy S25","SM-S928B":"Samsung Galaxy S24 Ultra","SM-S926B":"Samsung Galaxy S24+","SM-S921B":"Samsung Galaxy S24","SM-S918B":"Samsung Galaxy S23 Ultra","SM-S911B":"Samsung Galaxy S23"};
+      model=known[code]||("Samsung "+modelCode);
+    }
+    if(storage)model+=(model?" ":"")+storage.replace(/\s/g,"").toUpperCase();
+    if(color)model+=(model?" · ":"")+color.trim();
+    const brand=document.getElementById("drBrand"),modelField=document.getElementById("drModel"),identifier=document.getElementById("drIdentifierValue"),identifierType=document.getElementById("drIdentifierType");
+    if(model){modelField.value=model;modelField.dispatchEvent(new Event("input",{bubbles:true}));}
+    if(modelCode&&brand&&!brand.value.trim())brand.value="Samsung";
+    else if(modelCode&&brand)brand.value="Samsung";
+    if(imeis.length){
+      identifierType.value="imei";identifier.value=imeis[0];identifier.dispatchEvent(new Event("input",{bubbles:true}));
+      status.textContent="Etiket gelezen. Model/IMEI ingevuld; controleer de gegevens voor je opslaat."+(imeis.length>1?" Er zijn meerdere IMEI's gevonden; alleen IMEI 1 is ingevuld.":"");
+    }else{
+      status.textContent="Tekst gelezen, maar geen betrouwbaar 15-cijferig IMEI gevonden. Controleer de belichting en probeer opnieuw.";
+    }
+    if(!modelCode&&!storage&&!color)status.textContent+=" Model en specificaties konden niet zeker worden herkend; controleer het resultaat.";
+  }catch(e){status.textContent="Etiket lezen mislukt: "+(e?.message||"probeer opnieuw of voer handmatig in.");}
+  finally{if(button)button.disabled=false;}
+}
+
 document.getElementById("drCameraRetry")?.addEventListener("click",deviceScannerStart);
+document.getElementById("drCameraOcr")?.addEventListener("click",deviceScannerReadLabel);
 document.getElementById("deviceScannerModal")?.addEventListener("click",e=>{if(e.target.id==="deviceScannerModal")deviceScannerStop()});
 window.addEventListener("pagehide",deviceScannerStop);
 deviceUpdateFields();
