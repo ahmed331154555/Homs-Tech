@@ -1699,6 +1699,7 @@ textarea{
     <button class="nav-btn" data-page="why" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
     <button class="nav-btn" data-page="live-chat" data-permission="orders.view" onclick="showPage('live-chat')">💬 Live Chat</button>
     <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
+    <button class="nav-btn" data-page="device-register" data-permission="device_register.view" onclick="showPage('device-register')">📋 Toestelregister</button>
     <button class="nav-btn" data-page="invoices" data-permission="site.save" onclick="showPage('invoices')">🧾 Facturen</button>
     <button class="nav-btn" data-page="all-orders" onclick="showPage('all-orders')">📋 Alle bestellingen</button>
     <button class="nav-btn" data-page="order-settings" data-permission="site.save" onclick="showPage('order-settings')">📦 Orderinstellingen</button>
@@ -1740,6 +1741,38 @@ textarea{
 <div id="liveChatList" style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:10px">Gesprekken laden…</div>
 <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;display:flex;flex-direction:column;min-height:420px"><strong id="liveChatTitle">Selecteer een gesprek</strong><div id="liveChatMessages" style="flex:1;overflow:auto;display:flex;flex-direction:column;gap:8px;min-height:300px;margin-top:12px"></div><form id="liveChatReplyForm" style="display:flex;gap:8px;margin-top:12px"><input id="liveChatReply" maxlength="2000" placeholder="Typ je antwoord…" style="flex:1;min-width:0;padding:11px;border:1px solid #cbd5e1;border-radius:10px" required><button class="btn btn-green" type="submit">Verstuur</button></form><button id="liveChatCloseBtn" class="btn btn-light" type="button" style="margin-top:8px;align-self:flex-start" disabled>Gesprek sluiten</button></div></div>
 <style>@media(max-width:700px){.live-chat-layout{grid-template-columns:1fr!important}.live-chat-layout #liveChatMessages{min-height:220px!important}}</style></section>
+
+<section class="section admin-page" id="page-device-register" data-permission="device_register.view">
+  <div class="section-head"><div><h2>📋 Toestelregister</h2><p>Reparaties van klanten en eigen refurbished toestellen, met kosten en volledige historie.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-light" type="button" onclick="deviceExportCsv()">⬇ Export Excel/CSV</button><button class="btn btn-light" type="button" onclick="loadDeviceRegister()">↻ Vernieuwen</button></div></div>
+  <div class="device-register-toolbar" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+    <input id="deviceSearch" placeholder="Zoek IMEI, serienummer, HT-code, model, klant…" style="flex:1;min-width:220px;padding:11px;border:1px solid #cbd5e1;border-radius:9px" onkeydown="if(event.key==='Enter')loadDeviceRegister()">
+    <select id="deviceTypeFilter" style="padding:10px;border:1px solid #cbd5e1;border-radius:9px" onchange="loadDeviceRegister()"><option value="">Alle toestellen</option><option value="customer_repair">Klantreparaties</option><option value="commercial">Eigen refurbished</option></select>
+    <label style="display:flex;align-items:center;gap:6px;padding:8px"><input id="deviceArchivedFilter" type="checkbox" onchange="loadDeviceRegister()"> Archief tonen</label>
+  </div>
+  <div id="deviceRegisterStatus" class="status" role="status"></div>
+  <div id="deviceRegisterTable" style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:10px">Toestellen laden…</div>
+  <div style="margin-top:18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px">
+    <h3 style="margin-top:0">＋ Nieuw toestel registreren</h3>
+    <form id="deviceRegisterForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">
+      <label>Type<select id="drType" required style="display:block;width:100%;padding:10px;margin-top:5px" onchange="deviceUpdateFields()"><option value="customer_repair">Klantreparatie</option><option value="commercial">Eigen refurbished / verkoop</option></select></label>
+      <label>Identificatie<select id="drIdentifierType" style="display:block;width:100%;padding:10px;margin-top:5px"><option value="imei">IMEI</option><option value="serial">Serienummer</option><option value="barcode">Interne HT-barcode</option></select></label>
+      <label>IMEI / serienummer / HT-code<input id="drIdentifierValue" required maxlength="100" autocomplete="off" placeholder="Scan met scanner of voer handmatig in" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
+      <label>Model<input id="drModel" required maxlength="120" placeholder="iPhone 15 Pro" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
+      <label>Merk<input id="drBrand" value="Apple" maxlength="60" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
+      <label>Status<select id="drStatus" required style="display:block;width:100%;padding:10px;margin-top:5px"></select></label>
+      <label class="dr-customer-field">Klantnaam<input id="drCustomerName" maxlength="160" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
+      <label class="dr-customer-field">Telefoon klant<input id="drCustomerPhone" maxlength="60" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
+      <label class="dr-customer-field">E-mail klant<input id="drCustomerEmail" type="email" maxlength="180" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
+      <label class="dr-customer-field">Reparatieordernummer<input id="drRepairOrderNumber" maxlength="100" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
+      <label class="dr-commercial-field">Inkoopprijs (€)<input id="drPurchaseCost" type="number" min="0" step=".01" value="0" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
+      <label class="dr-commercial-field">Verkoopprijs (€)<input id="drSalePrice" type="number" min="0" step=".01" value="0" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
+      <div style="grid-column:1/-1"><button class="btn btn-green" type="submit">Toestel opslaan</button></div>
+    </form>
+    <p class="small" style="margin-bottom:0">Scanner-tip: klik in het identificatieveld en scan; de meeste USB/Bluetooth-scanners typen de code automatisch. Gegevens worden in de database opgeslagen, niet alleen in deze browser.</p>
+  </div>
+  <div id="deviceHistoryPanel" style="margin-top:18px"></div>
+</section>
+
 <section class="section admin-page active" id="page-general">
     <div class="section-head">
       <div>
@@ -2316,7 +2349,7 @@ const PAGE_PERMISSIONS = {
   general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",shop:"site.save",categories:"categories.view",
   used:"used.view",why:"why.view",customers:"customers.view",orders:"orders.view","repair-requests":"orders.view",
   "webshop-orders":"webshop_orders.view","invoices":"site.save","order-settings":"site.save",gsm:"gsm.view",firmware:"site.save",search:"search",admins:"admins.manage",
-  buyback:"buyback.view", "buyback-orders":"buyback_orders.view"
+  buyback:"buyback.view", "buyback-orders":"buyback_orders.view", "device-register":"device_register.view"
 };
 
 const ADMIN_PERMISSION_LABELS = {
@@ -2326,6 +2359,7 @@ const ADMIN_PERMISSION_LABELS = {
   "customers.view":"Klanten bekijken","orders.view":"GSM Orders bekijken","orders.update":"GSM Order-status wijzigen",
   "webshop_orders.view":"Webshop bestellingen bekijken","webshop_orders.update":"Webshop order-status wijzigen","webshop_orders.delete":"Webshop bestellingen verwijderen",
   "orders.delete":"GSM Orders verwijderen",
+  "device_register.view":"Toestelregister bekijken","device_register.update":"Toestelregister wijzigen",
   "buyback.view":"Inkooptelefoons bekijken","buyback.update":"Inkooptelefoons wijzigen",
   "buyback_orders.view":"Verkoopaanvragen bekijken","buyback_orders.update":"Verkoopaanvraag-status wijzigen","buyback_orders.delete":"Verkoopaanvragen verwijderen",
   "gsm.view":"GSM Services bekijken","repair_page.view":"Reparatiepagina bekijken","repair_page.update":"Reparatiepagina wijzigen","site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
@@ -2375,6 +2409,7 @@ function showPage(page){
   if(target){
     target.classList.add("active");
     if(page==="customers")loadCustomers();
+    if(page==="device-register")loadDeviceRegister();
     if(page==="invoices"){if(!document.querySelector("#invoiceLines tr"))addInvoiceLine();loadInvoices();}
     if(page==="live-chat"){loadLiveChat();if(liveChatRefreshTimer)clearInterval(liveChatRefreshTimer);liveChatRefreshTimer=setInterval(()=>{if(currentPage==="live-chat")loadLiveChat();},8000);}
     if(page==="orders"||page==="repair-requests"||page==="all-orders"){loadOrders();loadWebshopOrders();loadBuybackOrders();}
@@ -7768,6 +7803,65 @@ async function saveInvoice(){const s=document.getElementById("invoiceFormStatus"
 async function loadInvoices(){const b=document.getElementById("invoiceList");if(!b)return;try{const r=await fetch("/api/admin/invoices",{credentials:"same-origin"}),d=await r.json();if(!r.ok)throw Error(d.error||"Facturen laden mislukt");if(!d.invoices.length){b.textContent="Nog geen facturen opgeslagen.";return}b.innerHTML='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><tr><th>Nummer</th><th>Klant</th><th>Datum</th><th>Totaal</th><th>Status</th><th>Actie</th></tr>'+d.invoices.map(x=>'<tr><td>'+esc(x.invoice_number)+'</td><td>'+esc(x.customer_name)+'<br><small>'+esc(x.customer_email)+'</small></td><td>'+new Date(x.created_at).toLocaleDateString("nl-NL")+'</td><td>'+invoiceEuro(x.total)+'</td><td>'+esc(x.status==='Concept / test'?'Opgeslagen':x.status)+'</td><td><button class="btn btn-light" onclick="previewSavedInvoice('+x.id+')">PDF</button> <button class="btn btn-green" onclick="sendInvoiceTest('+x.id+')">E-mail naar klantadres</button></td></tr>').join("")+'</table></div>'}catch(e){b.textContent=e.message}}
 async function previewSavedInvoice(id){try{const r=await fetch("/api/admin/invoices/"+id+"/pdf",{credentials:"same-origin"});if(!r.ok){const d=await r.json();throw Error(d.error||"PDF mislukt")}const u=URL.createObjectURL(await r.blob());window.open(u,"_blank");setTimeout(()=>URL.revokeObjectURL(u),60000)}catch(e){alert(e.message)}}
 async function sendInvoiceTest(id){const row=[...document.querySelectorAll("#invoiceList tr")].find(tr=>tr.textContent.includes(""));if(!confirm("De factuur als e-mail versturen naar het e-mailadres dat bij deze factuur is opgeslagen?"))return;try{const r=await fetch("/api/admin/invoices/"+id+"/test-send",{method:"POST",credentials:"same-origin"}),d=await r.json();if(!r.ok)throw Error(d.error||"E-mail versturen mislukt");alert("E-mail verzonden naar "+d.to)}catch(e){alert(e.message)}}
+
+const DEVICE_STATUS_CUSTOMER=["مفتوح","قيد العمل","مكتمل"];
+const DEVICE_STATUS_COMMERCIAL=["تم الشراء","قيد الفحص","قيد التجديد","جاهز للبيع","تم البيع"];
+let deviceRegisterCache=[];
+function deviceEuro(v){return new Intl.NumberFormat("nl-NL",{style:"currency",currency:"EUR"}).format(Number(v)||0)}
+function deviceSetStatus(msg,type="info"){const el=document.getElementById("deviceRegisterStatus");if(el){el.textContent=msg;el.className="status "+type}}
+function deviceUpdateFields(){
+  const type=document.getElementById("drType").value,commercial=type==="commercial";
+  document.querySelectorAll(".dr-customer-field").forEach(el=>el.style.display=commercial?"none":"block");
+  document.querySelectorAll(".dr-commercial-field").forEach(el=>el.style.display=commercial?"block":"none");
+  const sel=document.getElementById("drStatus"),old=sel.value,options=commercial?DEVICE_STATUS_COMMERCIAL:DEVICE_STATUS_CUSTOMER;
+  sel.innerHTML=options.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
+  if(options.includes(old))sel.value=old;
+}
+async function deviceApi(url,options={}){
+  const r=await fetch(url,{credentials:"same-origin",...options,headers:{"Content-Type":"application/json",...(options.headers||{})}});
+  const d=await r.json().catch(()=>({error:"Ongeldig serverantwoord"}));if(!r.ok)throw Error(d.error||"Actie mislukt");return d;
+}
+async function loadDeviceRegister(){
+  const host=document.getElementById("deviceRegisterTable");if(!host)return;host.innerHTML="Laden…";
+  try{
+    const p=new URLSearchParams(),type=document.getElementById("deviceTypeFilter")?.value||"",q=document.getElementById("deviceSearch")?.value.trim()||"",archived=document.getElementById("deviceArchivedFilter")?.checked||false;
+    if(type)p.set("type",type);if(q)p.set("q",q);if(archived)p.set("archived","true");
+    const d=await deviceApi("/api/admin/device-register?"+p.toString());deviceRegisterCache=d.devices||[];
+    if(!deviceRegisterCache.length){host.innerHTML='<p style="padding:18px;color:#64748b">Geen toestellen gevonden. Voeg hierboven het eerste toestel toe.</p>';return}
+    host.innerHTML='<table style="width:100%;border-collapse:collapse;min-width:720px"><thead><tr style="text-align:left;background:#f1f5f9"><th style="padding:10px">Type</th><th style="padding:10px">IMEI / code</th><th style="padding:10px">Model</th><th style="padding:10px">Status</th><th style="padding:10px">Kosten totaal</th><th style="padding:10px">Acties</th></tr></thead><tbody>'+deviceRegisterCache.map(x=>'<tr style="border-top:1px solid #e2e8f0"><td style="padding:10px">'+(x.device_type==="commercial"?"Eigen toestel":"Klantreparatie")+'</td><td style="padding:10px"><strong>'+esc(x.identifier_value)+'</strong><div class="small">'+esc(x.identifier_type.toUpperCase())+'</div></td><td style="padding:10px">'+esc(x.brand+" "+x.model)+'<div class="small">'+esc(x.customer_name||x.repair_order_number||"")+'</div></td><td style="padding:10px">'+esc(x.status)+'</td><td style="padding:10px">'+deviceEuro(Number(x.purchase_cost||0)+Number(x.recorded_cost||0))+'</td><td style="padding:10px;white-space:nowrap"><button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button> <button class="btn btn-light" onclick="deviceAddOperation('+Number(x.id)+')">＋ Handeling</button> <button class="btn btn-light" onclick="deviceArchive('+Number(x.id)+','+(!x.archived)+')">'+(x.archived?"Herstellen":"Archiveren")+'</button></td></tr>').join("")+'</tbody></table>';
+  }catch(e){host.innerHTML="";deviceSetStatus(e.message,"error")}
+}
+document.getElementById("deviceRegisterForm")?.addEventListener("submit",async e=>{
+  e.preventDefault();const b={deviceType:document.getElementById("drType").value,identifierType:document.getElementById("drIdentifierType").value,identifierValue:document.getElementById("drIdentifierValue").value,model:document.getElementById("drModel").value,brand:document.getElementById("drBrand").value,status:document.getElementById("drStatus").value,customerName:document.getElementById("drCustomerName").value,customerPhone:document.getElementById("drCustomerPhone").value,customerEmail:document.getElementById("drCustomerEmail").value,repairOrderNumber:document.getElementById("drRepairOrderNumber").value,purchaseCost:document.getElementById("drPurchaseCost").value,salePrice:document.getElementById("drSalePrice").value};
+  try{await deviceApi("/api/admin/device-register",{method:"POST",body:JSON.stringify(b)});e.target.reset();document.getElementById("drBrand").value="Apple";deviceUpdateFields();deviceSetStatus("Toestel opgeslagen.","success");loadDeviceRegister()}catch(err){deviceSetStatus(err.message,"error")}
+});
+async function deviceArchive(id,archived){if(!confirm(archived?"Dit toestel naar het archief verplaatsen? Je kunt het later herstellen.":"Dit toestel herstellen uit het archief?"))return;try{await deviceApi("/api/admin/device-register/"+id+"/archive",{method:"POST",body:JSON.stringify({archived})});deviceSetStatus(archived?"Toestel gearchiveerd.":"Toestel hersteld.","success");loadDeviceRegister()}catch(e){deviceSetStatus(e.message,"error")}}
+async function deviceAddOperation(id){
+  const device=deviceRegisterCache.find(x=>Number(x.id)===id);if(!device)return;
+  const type=prompt("Type handeling: repair, refurbishment, purchase, sale of note","repair");if(type===null)return;
+  if(!["repair","refurbishment","purchase","sale","note"].includes(type)){alert("Gebruik repair, refurbishment, purchase, sale of note.");return}
+  const description=prompt("Omschrijving van de handeling","");if(description===null)return;
+  const status=prompt("Nieuwe status (leeg = status niet wijzigen)",device.status);if(status===null)return;
+  const additionalCost=prompt("Extra kosten in euro (0 indien geen)", "0");if(additionalCost===null)return;
+  const partsRaw=prompt("Onderdelen als JSON: [{\"name\":\"Scherm\",\"quantity\":1,\"cost\":45}] — leeg indien geen onderdelen","");if(partsRaw===null)return;
+  let parts=[];if(partsRaw.trim()){try{parts=JSON.parse(partsRaw);if(!Array.isArray(parts))throw Error()}catch{alert("Onderdelen moeten geldige JSON zijn.");return}}
+  const salePrice=prompt("Verkoopprijs bij verkoop (0 indien niet van toepassing)","0");if(salePrice===null)return;
+  try{await deviceApi("/api/admin/device-register/"+id+"/operations",{method:"POST",body:JSON.stringify({operationType:type,description,status,additionalCost,parts,salePrice})});deviceSetStatus("Handeling en onderdelen opgeslagen in de historie.","success");loadDeviceRegister();deviceShowHistory(id)}catch(e){deviceSetStatus(e.message,"error")}
+}
+async function deviceShowHistory(id){
+  const panel=document.getElementById("deviceHistoryPanel");if(!panel)return;panel.innerHTML="Historie laden…";
+  try{const d=await deviceApi("/api/admin/device-register/"+id+"/operations"),device=deviceRegisterCache.find(x=>Number(x.id)===id);
+    panel.innerHTML='<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px"><div class="section-head"><div><h3 style="margin:0">Historie — '+esc(device?.model||"Toestel")+'</h3><p>'+esc(device?.identifier_value||"")+'</p></div><button class="btn btn-light" onclick="document.getElementById(\'deviceHistoryPanel\').innerHTML=\'\'">Sluiten</button></div>'+((d.operations||[]).length?'<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;min-width:620px"><thead><tr><th style="text-align:left;padding:8px">Datum</th><th style="text-align:left;padding:8px">Handeling</th><th style="text-align:left;padding:8px">Omschrijving</th><th style="text-align:left;padding:8px">Onderdelen</th><th style="text-align:left;padding:8px">Extra kosten</th><th style="text-align:left;padding:8px">Status</th></tr></thead><tbody>'+d.operations.map(o=>'<tr style="border-top:1px solid #e2e8f0"><td style="padding:8px">'+esc(new Date(o.created_at).toLocaleString("nl-NL"))+'</td><td style="padding:8px">'+esc(o.operation_type)+'</td><td style="padding:8px">'+esc(o.description)+'</td><td style="padding:8px">'+(Array.isArray(o.parts)?o.parts.map(p=>esc(p.name)+" × "+Number(p.quantity)+" ("+deviceEuro(p.cost)+")").join("<br>"):"")+'</td><td style="padding:8px">'+deviceEuro(o.additional_cost)+'</td><td style="padding:8px">'+esc(o.status||"—")+'</td></tr>').join("")+'</tbody></table></div>':'<p>Nog geen handelingen geregistreerd.</p>')+'</div>';
+  }catch(e){panel.innerHTML='<p class="status error">'+esc(e.message)+'</p>'}
+}
+function deviceExportCsv(){
+  const rows=deviceRegisterCache;if(!rows.length){alert("Er zijn geen toestellen om te exporteren. Laad eerst het gewenste overzicht.");return}
+  const columns=[["Type","device_type"],["Identificatietype","identifier_type"],["IMEI / code","identifier_value"],["Merk","brand"],["Model","model"],["Status","status"],["Klant","customer_name"],["Telefoon","customer_phone"],["E-mail","customer_email"],["Reparatieorder","repair_order_number"],["Inkoopprijs","purchase_cost"],["Verkoopprijs","sale_price"],["Totale geregistreerde kosten","recorded_cost"],["Aangemaakt","created_at"],["Bijgewerkt","updated_at"]];
+  const csv=[columns.map(x=>x[0]),...rows.map(r=>columns.map(c=>r[c[1]]??""))].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(";")).join("\r\n");
+  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="homs-tech-toestelregister.csv";a.click();URL.revokeObjectURL(url);
+}
+deviceUpdateFields();
+
 /* START */
 
 renderPermissionCheckboxes('newAdminPermissions',[]);
