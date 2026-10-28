@@ -7894,8 +7894,8 @@ async function deviceScannerStart(){
               const field=document.getElementById("drIdentifierValue");
               const imei=raw.match(/(?:IMEI\s*[:#]?\s*)?(\d{15})(?!\d)/i);
               field.value=imei?imei[1]:raw;field.dispatchEvent(new Event("input",{bubbles:true}));
-              field.focus();status.textContent="Code gelezen. Controleer het nummer en sla het toestel op.";
-              deviceScannerStop();return;
+              field.focus();status.textContent="Barcode gelezen. De camera blijft open; druk op «Lees volledig etiket» om ook model en specificaties te herkennen.";
+              deviceScannerActive=false;if(deviceScannerFrame)cancelAnimationFrame(deviceScannerFrame);deviceScannerFrame=0;return;
             }
           }
         }
