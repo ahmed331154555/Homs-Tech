@@ -72,8 +72,17 @@ app.post("/api/webhooks/resend/inbound", express.raw({ type: "application/json",
     const apiKey=process.env.RESEND_API_KEY;if(!apiKey)return res.status(503).send("Resend API key not configured");
     const response=await fetch("https://api.resend.com/emails/receiving/"+encodeURIComponent(event.data.email_id),{headers:{Authorization:"Bearer "+apiKey}});
     const payload=await response.json().catch(()=>({}));
-    if(!response.ok||!payload.data)return res.status(502).send("Could not retrieve received email");
-    const mail=payload.data;
+    if(!response.ok){
+      console.error("Resend receiving API request failed:",response.status,JSON.stringify(payload).slice(0,1200));
+      return res.status(502).send("Could not retrieve received email");
+    }
+    // Resend's REST endpoint returns the received email object directly (not wrapped in { data }).
+    // Accept both shapes to remain compatible with SDK-style wrappers.
+    const mail=payload?.data&&typeof payload.data==="object"?payload.data:payload;
+    if(!mail?.id){
+      console.error("Resend receiving API returned an unexpected payload:",JSON.stringify(payload).slice(0,1200));
+      return res.status(502).send("Could not retrieve received email");
+    }
     await pool.query("INSERT INTO admin_emails(resend_email_id,direction,from_address,to_addresses,subject,text_body,html_body,is_read,created_at) VALUES($1,'inbound',$2,$3::jsonb,$4,$5,$6,FALSE,COALESCE($7::timestamptz,NOW())) ON CONFLICT(resend_email_id) DO NOTHING",
       [String(mail.id||event.data.email_id),String(mail.from||event.data.from||"").slice(0,320),JSON.stringify(Array.isArray(mail.to)?mail.to:Array.isArray(event.data.to)?event.data.to:[]),String(mail.subject||event.data.subject||"(geen onderwerp)").slice(0,500),String(mail.text||"").slice(0,100000),String(mail.html||"").slice(0,200000),mail.created_at||event.data.created_at||null]);
     // Send a short notification to the owner's Gmail; the full message remains in the admin inbox.
