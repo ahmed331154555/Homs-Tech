@@ -1160,6 +1160,43 @@ textarea{
   .modal { padding: 15px; border-radius: 13px; }
   .image-preview, .empty-preview { height: 48px; }
 }
+
+/* Standalone app: prevent desktop-width product editor from overflowing mobile screens. */
+@media (display-mode: standalone) and (max-width: 900px) {
+  html, body { width:100% !important; max-width:100% !important; overflow-x:hidden !important; }
+  .topbar { width:100% !important; max-width:100% !important; }
+  #dashboard, #dashboard > .container, #phonesList,
+  #phonesList > *, #phonesList .card {
+    width:100% !important; max-width:100% !important; min-width:0 !important;
+    box-sizing:border-box !important;
+  }
+  #dashboard { margin-left:0 !important; }
+  #dashboard > .container { padding-left:8px !important; padding-right:8px !important; }
+  #phonesList .card { margin-left:0 !important; margin-right:0 !important; }
+  #phonesList [style*="grid-template-columns:minmax(140px"] {
+    grid-template-columns:minmax(0,1fr) 86px !important;
+    gap:6px !important;
+    align-items:center !important;
+  }
+  #phonesList [style*="grid-template-columns:minmax(140px"] .small {
+    grid-column:1 / -1;
+  }
+  #phonesList [style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns:minmax(0,1fr) 86px !important;
+    gap:6px !important;
+  }
+  #phonesList table { min-width:620px; }
+  #phonesList [style*="overflow:auto"],
+  #phonesList [style*="overflow-x:auto"] {
+    max-width:100% !important;
+    overflow-x:auto !important;
+    -webkit-overflow-scrolling:touch;
+  }
+  #phonesList input, #phonesList select, #phonesList textarea {
+    min-width:0 !important; max-width:100% !important; box-sizing:border-box !important;
+  }
+  #phonesList .btn { white-space:normal !important; }
+}
 </style>
 <style>
 .permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
