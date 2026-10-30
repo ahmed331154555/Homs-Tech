@@ -54,6 +54,34 @@ async function queryWithConnectionRetry(sql, params, attempts = 4) {
 }
 
 app.use(compression({ threshold: 1024 }));
+// Resend inbound webhook: preserve the exact raw body so Svix signatures can be verified.
+app.post("/api/webhooks/resend/inbound", express.raw({ type: "application/json", limit: "2mb" }), async (req,res) => {
+  try {
+    const secret=String(process.env.RESEND_WEBHOOK_SECRET||"");
+    if(!secret)return res.status(503).send("Webhook secret not configured");
+    const raw=Buffer.isBuffer(req.body)?req.body:Buffer.from("");
+    const id=String(req.headers["svix-id"]||""),timestamp=String(req.headers["svix-timestamp"]||""),signature=String(req.headers["svix-signature"]||"");
+    if(!id||!timestamp||!signature||!/^\d+$/.test(timestamp)||Math.abs(Date.now()/1000-Number(timestamp))>300)return res.status(400).send("Invalid webhook headers");
+    const secretBytes=Buffer.from(secret.replace(/^whsec_/,""),"base64");
+    const signed=Buffer.concat([Buffer.from(id+"."+timestamp+"."),raw]);
+    const expected=crypto.createHmac("sha256",secretBytes).update(signed).digest("base64");
+    const valid=signature.split(" ").some(part=>{const [version,value]=part.split(",");if(version!=="v1"||!value)return false;const a=Buffer.from(value),b=Buffer.from(expected);return a.length===b.length&&crypto.timingSafeEqual(a,b);});
+    if(!valid)return res.status(401).send("Invalid signature");
+    const event=JSON.parse(raw.toString("utf8"));
+    if(event.type!=="email.received"||!event.data?.email_id)return res.status(200).send("Ignored");
+    const apiKey=process.env.RESEND_API_KEY;if(!apiKey)return res.status(503).send("Resend API key not configured");
+    const response=await fetch("https://api.resend.com/emails/receiving/"+encodeURIComponent(event.data.email_id),{headers:{Authorization:"Bearer "+apiKey}});
+    const payload=await response.json().catch(()=>({}));
+    if(!response.ok||!payload.data)return res.status(502).send("Could not retrieve received email");
+    const mail=payload.data;
+    await pool.query("INSERT INTO admin_emails(resend_email_id,direction,from_address,to_addresses,subject,text_body,html_body,is_read,created_at) VALUES($1,'inbound',$2,$3::jsonb,$4,$5,$6,FALSE,COALESCE($7::timestamptz,NOW())) ON CONFLICT(resend_email_id) DO NOTHING",
+      [String(mail.id||event.data.email_id),String(mail.from||event.data.from||"").slice(0,320),JSON.stringify(Array.isArray(mail.to)?mail.to:Array.isArray(event.data.to)?event.data.to:[]),String(mail.subject||event.data.subject||"(geen onderwerp)").slice(0,500),String(mail.text||"").slice(0,100000),String(mail.html||"").slice(0,200000),mail.created_at||event.data.created_at||null]);
+    // Send a short notification to the owner's Gmail; the full message remains in the admin inbox.
+    const from=process.env.RESEND_FROM_EMAIL;
+    if(from){fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({from,to:["Appelavcd116@gmail.com"],subject:"Nieuwe HOMS TECH e-mail: "+String(mail.subject||"").slice(0,120),text:"Nieuwe e-mail ontvangen van "+String(mail.from||"onbekend")+". Open de HOMS TECH admin inbox om het bericht te lezen."})}).catch(err=>console.error("Inbound notification failed:",err.message));}
+    return res.status(200).send("OK");
+  }catch(e){console.error("Resend inbound webhook:",e);return res.status(500).send("Webhook processing failed");}
+});
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: false, limit: "10kb" }));
 app.use((err, req, res, next) => {
@@ -210,6 +238,23 @@ function escapeHtml(value) {
 
 // Create database tables and default settings
 async function initDatabase() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS admin_emails (
+      id BIGSERIAL PRIMARY KEY,
+      resend_email_id TEXT UNIQUE,
+      direction TEXT NOT NULL CHECK(direction IN ('inbound','outbound')),
+      from_address TEXT NOT NULL DEFAULT '',
+      to_addresses JSONB NOT NULL DEFAULT '[]'::jsonb,
+      subject TEXT NOT NULL DEFAULT '',
+      text_body TEXT NOT NULL DEFAULT '',
+      html_body TEXT NOT NULL DEFAULT '',
+      is_read BOOLEAN NOT NULL DEFAULT FALSE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS admin_emails_created_idx ON admin_emails(created_at DESC);
+    CREATE INDEX IF NOT EXISTS admin_emails_inbox_idx ON admin_emails(direction,is_read,created_at DESC);
+  `);
+
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS device_register (
@@ -4150,7 +4195,29 @@ function buildInvoicePdf(invoice){
  let pdf="%PDF-1.4\n",offsets=[0];for(let i=0;i<objects.length;i++){offsets.push(Buffer.byteLength(pdf,"latin1"));pdf+=(i+1)+" 0 obj\n"+objects[i]+"\nendobj\n";}
  const xref=Buffer.byteLength(pdf,"latin1");pdf+="xref\n0 "+(objects.length+1)+"\n0000000000 65535 f \n";for(let i=1;i<offsets.length;i++)pdf+=String(offsets[i]).padStart(10,"0")+" 00000 n \n";pdf+="trailer\n<< /Size "+(objects.length+1)+" /Root 1 0 R >>\nstartxref\n"+xref+"\n%%EOF";return Buffer.from(pdf,"latin1");
 }
+app.get("/api/admin/emails",requirePermission("site.save"),async(req,res)=>{
+  try{const r=await pool.query("SELECT id,direction,from_address,to_addresses,subject,is_read,created_at FROM admin_emails ORDER BY created_at DESC,id DESC LIMIT 200");res.json({emails:r.rows});}
+  catch(e){console.error("Admin email list:",e);res.status(500).json({error:"E-mails laden is mislukt."});}
+});
+app.get("/api/admin/emails/:id",requirePermission("site.save"),async(req,res)=>{
+  try{const id=Number(req.params.id);if(!Number.isSafeInteger(id)||id<1)return res.status(400).json({error:"Ongeldig bericht."});const r=await pool.query("UPDATE admin_emails SET is_read=TRUE WHERE id=$1 AND direction='inbound' RETURNING *",[id]);if(!r.rows.length){const other=await pool.query("SELECT * FROM admin_emails WHERE id=$1",[id]);if(!other.rows.length)return res.status(404).json({error:"Bericht niet gevonden."});return res.json({email:other.rows[0]});}res.json({email:r.rows[0]});}
+  catch(e){console.error("Admin email detail:",e);res.status(500).json({error:"Bericht laden is mislukt."});}
+});
+app.post("/api/admin/emails/send",requirePermission("site.save"),async(req,res)=>{
+  try{
+    const apiKey=process.env.RESEND_API_KEY,from=process.env.RESEND_FROM_EMAIL;
+    if(!apiKey||!from||from==="onboarding@resend.dev")return res.status(503).json({error:"Stel RESEND_API_KEY en een geverifieerd RESEND_FROM_EMAIL in."});
+    const to=String(req.body?.to||"").trim().slice(0,254),subject=String(req.body?.subject||"").trim().slice(0,240),textBody=String(req.body?.text||"").trim().slice(0,50000);
+    if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(to)||!subject||!textBody)return res.status(400).json({error:"Vul een geldig e-mailadres, onderwerp en bericht in."});
+    const html=textBody.split(/\\r?\\n/).map(line=>line.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))).join("<br>");
+    const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({from,to:[to],subject,text:textBody,html,reply_to:"mail@inbound.homs-tech.nl"})});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok){console.error("Admin email send provider error:",response.status,JSON.stringify(data));return res.status(502).json({error:"E-mailprovider kon het bericht niet versturen."});}
+    await pool.query("INSERT INTO admin_emails(resend_email_id,direction,from_address,to_addresses,subject,text_body,html_body,is_read) VALUES($1,'outbound',$2,$3::jsonb,$4,$5,$6,TRUE)",[String(data.id||"sent-"+Date.now()+"-"+crypto.randomBytes(5).toString("hex")),from,JSON.stringify([to]),subject,textBody,html]);
+    res.json({success:true,to});
+  }catch(e){console.error("Admin email send:",e);res.status(500).json({error:"E-mail versturen is mislukt."});}
+});
 app.get("/api/admin/invoices",requirePermission("site.save"),async(req,res)=>{try{const r=await pool.query("SELECT id,invoice_number,customer_name,customer_email,subtotal,vat_total,total,status,created_at FROM manual_invoices ORDER BY id DESC LIMIT 200");res.json({invoices:r.rows});}catch(e){console.error("Invoice list:",e);res.status(500).json({error:"Facturen laden is mislukt."});}});
 app.post("/api/admin/invoices",requirePermission("site.save"),async(req,res)=>{try{const b=req.body||{},customerName=String(b.customerName||"").trim().slice(0,160),customerEmail=String(b.customerEmail||"").trim().slice(0,254),customerAddress=String(b.customerAddress||"").trim().slice(0,300),kvkNumber=String(b.kvkNumber||"").trim().slice(0,30),vatId=String(b.vatId||"").trim().slice(0,40);if(!customerName||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)||!Array.isArray(b.lines)||!b.lines.length||b.lines.length>80)return res.status(400).json({error:"Vul een klantnaam, geldig e-mailadres en factuurregels in."});const lines=b.lines.map(x=>({description:String(x.description||"").trim().slice(0,240),quantity:Number(x.quantity),unitPrice:Number(x.unitPrice),vatRate:Number(x.vatRate)}));if(lines.some(x=>!x.description||!Number.isInteger(x.quantity)||x.quantity<1||x.quantity>999||!Number.isFinite(x.unitPrice)||x.unitPrice<0||x.unitPrice>1000000||![0,9,21].includes(x.vatRate)))return res.status(400).json({error:"Een factuurregel bevat ongeldige gegevens."});const subtotal=lines.reduce((s,x)=>s+x.quantity*x.unitPrice,0),vatTotal=lines.reduce((s,x)=>s+x.quantity*x.unitPrice*x.vatRate/100,0),total=subtotal+vatTotal;const r=await pool.query("INSERT INTO manual_invoices(invoice_number,customer_name,customer_email,customer_address,kvk_number,vat_id,lines,subtotal,vat_total,total) VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10) RETURNING *",["HT-PENDING-"+Date.now()+"-"+Math.floor(Math.random()*100000),customerName,customerEmail,customerAddress,kvkNumber,vatId,JSON.stringify(lines),subtotal.toFixed(2),vatTotal.toFixed(2),total.toFixed(2)]);const row=r.rows[0],invoiceNumber="HT-"+new Date(row.created_at).getFullYear()+"-"+String(row.id).padStart(6,"0");const u=await pool.query("UPDATE manual_invoices SET invoice_number=$2 WHERE id=$1 RETURNING *",[row.id,invoiceNumber]);res.status(201).json({invoice:{id:row.id,invoice_number:invoiceNumber,created_at:row.created_at,status:row.status,total:u.rows[0].total}});}catch(e){console.error("Invoice create:",e);res.status(500).json({error:"Factuur opslaan is mislukt."});}});
 app.get("/api/admin/invoices/:id/pdf",requirePermission("site.save"),async(req,res)=>{try{const id=Number(req.params.id);if(!Number.isSafeInteger(id)||id<1)return res.status(400).json({error:"Ongeldige factuur."});const r=await pool.query("SELECT * FROM manual_invoices WHERE id=$1",[id]);if(!r.rows.length)return res.status(404).json({error:"Factuur niet gevonden."});res.setHeader("Content-Type","application/pdf");res.setHeader("Content-Disposition",'inline; filename="'+r.rows[0].invoice_number+'.pdf"');res.send(buildInvoicePdf(r.rows[0]));}catch(e){console.error("Invoice PDF:",e);res.status(500).json({error:"PDF maken is mislukt."});}});
-app.post("/api/admin/invoices/:id/test-send",requirePermission("site.save"),async(req,res)=>{try{const apiKey=process.env.RESEND_API_KEY,from=process.env.RESEND_FROM_EMAIL;if(!apiKey)return res.status(503).json({error:"E-mail is niet ingesteld: RESEND_API_KEY ontbreekt."});if(!from||from==="onboarding@resend.dev")return res.status(503).json({error:"Stel eerst een geverifieerd afzenderadres in via RESEND_FROM_EMAIL."});const r=await pool.query("SELECT * FROM manual_invoices WHERE id=$1",[Number(req.params.id)]);if(!r.rows.length)return res.status(404).json({error:"Factuur niet gevonden."});const pdf=buildInvoicePdf(r.rows[0]);const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{"Authorization":"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({from,to:[r.rows[0].customer_email],subject:"HOMS TECH - factuur "+r.rows[0].invoice_number,html:"<p>In de bijlage vindt u de factuur van HOMS TECH.</p><p><strong>Betalen per bankoverschrijving</strong><br>Naam: Abdullrahman Nawaya<br>IBAN: NL96 REVO 0480 6699 45<br>Omschrijving: "+r.rows[0].invoice_number+"</p>",attachments:[{filename:r.rows[0].invoice_number+".pdf",content:pdf.toString("base64")}]})});const data=await response.json().catch(()=>({}));if(!response.ok){console.error("Invoice test email provider error:",response.status,JSON.stringify(data));return res.status(502).json({error:"E-mailprovider kon de testmail niet versturen. Controleer de e-mailinstellingen."});}res.json({success:true,to:r.rows[0].customer_email});}catch(e){console.error("Invoice test send:",e);res.status(500).json({error:"Testmail versturen is mislukt."});}});
+app.post("/api/admin/invoices/:id/test-send",requirePermission("site.save"),async(req,res)=>{try{const apiKey=process.env.RESEND_API_KEY,from=process.env.RESEND_FROM_EMAIL;if(!apiKey)return res.status(503).json({error:"E-mail is niet ingesteld: RESEND_API_KEY ontbreekt."});if(!from||from==="onboarding@resend.dev")return res.status(503).json({error:"Stel eerst een geverifieerd afzenderadres in via RESEND_FROM_EMAIL."});const r=await pool.query("SELECT * FROM manual_invoices WHERE id=$1",[Number(req.params.id)]);if(!r.rows.length)return res.status(404).json({error:"Factuur niet gevonden."});const pdf=buildInvoicePdf(r.rows[0]);const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{"Authorization":"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({from,to:[r.rows[0].customer_email],subject:"HOMS TECH - factuur "+r.rows[0].invoice_number,reply_to:"mail@inbound.homs-tech.nl",html:"<p>In de bijlage vindt u de factuur van HOMS TECH.</p><p><strong>Betalen per bankoverschrijving</strong><br>Naam: Abdullrahman Nawaya<br>IBAN: NL96 REVO 0480 6699 45<br>Omschrijving: "+r.rows[0].invoice_number+"</p>",attachments:[{filename:r.rows[0].invoice_number+".pdf",content:pdf.toString("base64")}]})});const data=await response.json().catch(()=>({}));if(!response.ok){console.error("Invoice test email provider error:",response.status,JSON.stringify(data));return res.status(502).json({error:"E-mailprovider kon de testmail niet versturen. Controleer de e-mailinstellingen."});}res.json({success:true,to:r.rows[0].customer_email});}catch(e){console.error("Invoice test send:",e);res.status(500).json({error:"Testmail versturen is mislukt."});}});
