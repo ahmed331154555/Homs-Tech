@@ -1,0 +1,14 @@
+{
+  "id": "/admin/",
+  "name": "HOMS TECH Admin",
+  "short_name": "HOMS TECH",
+  "description": "Private HOMS TECH administration dashboard",
+  "lang": "nl",
+  "start_url": "/admin/",
+  "scope": "/admin/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4f7fb",
+  "theme_color": "#071d2d",
+  "icons": [{"src": "/admin/homs-tech-app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}]
+}
