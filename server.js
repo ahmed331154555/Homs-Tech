@@ -4233,26 +4233,23 @@ app.post("/api/admin/emails/send",requirePermission("site.save"),async(req,res)=
     const to=String(req.body?.to||"").trim().slice(0,254),subject=String(req.body?.subject||"").trim().slice(0,240),textBody=String(req.body?.text||"").trim().slice(0,50000);
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)||!subject||!textBody)return res.status(400).json({error:"Vul een geldig e-mailadres, onderwerp en bericht in."});
     const messageHtml=textBody.split(/\\r?\\n/).map(line=>escapeHtml(line)).join("<br>");
-    const signatureText="\\n\\n—\\nHOMS TECH | Smartphones & Reparatie\\nhttps://homs-tech.nl";
+    const signatureText="\\n\\n—\\nHOMS TECH | Customer Support\\nwww.homs-tech.nl";
     const textWithSignature=textBody+signatureText;
     const signatureHtml=`
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:28px;width:100%;max-width:560px;font-family:Arial,Helvetica,sans-serif">
-        <tr><td colspan="2" style="border-top:3px solid #2563eb;padding-top:16px"></td></tr>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:26px;width:100%;max-width:520px;font-family:Arial,Helvetica,sans-serif">
+        <tr><td style="border-top:2px solid #2563eb;padding-top:15px"></td></tr>
         <tr>
-          <td width="116" valign="middle" style="padding:0 18px 0 0">
-            <a href="https://homs-tech.nl" target="_blank" style="text-decoration:none">
-              <img src="https://homs-tech.nl/assets/homs-tech-logo.png" width="104" alt="HOMS TECH" style="display:block;width:104px;max-width:104px;height:auto;border:0">
+          <td style="padding:0;color:#10283f">
+            <a href="https://homs-tech.nl" target="_blank" style="text-decoration:none;display:inline-block">
+              <img src="https://homs-tech.nl/assets/homs-tech-logo.png" width="132" alt="HOMS TECH" style="display:block;width:132px;max-width:132px;height:auto;border:0">
             </a>
-          </td>
-          <td valign="middle" style="border-left:1px solid #dbe3ec;padding:2px 0 2px 18px;color:#0f2740">
-            <div style="font-size:18px;line-height:24px;font-weight:700;letter-spacing:.5px;color:#0f2740">HOMS TECH</div>
-            <div style="font-size:12px;line-height:19px;color:#526174">Smartphones · Reparatie · Refurbished</div>
-            <div style="font-size:13px;line-height:21px;margin-top:7px">
-              <a href="https://homs-tech.nl" target="_blank" style="color:#2563eb;text-decoration:none;font-weight:700">www.homs-tech.nl</a>
+            <div style="font-size:16px;line-height:22px;font-weight:700;letter-spacing:1.1px;color:#10283f;margin-top:10px">HOMS TECH</div>
+            <div style="font-size:11px;line-height:17px;letter-spacing:1.2px;text-transform:uppercase;color:#64748b;margin-top:2px">Customer Support</div>
+            <div style="font-size:13px;line-height:20px;margin-top:9px">
+              <a href="https://homs-tech.nl" target="_blank" style="color:#2563eb;text-decoration:none;font-weight:600">www.homs-tech.nl</a>
             </div>
           </td>
         </tr>
-        <tr><td colspan="2" style="padding-top:14px;font-size:10px;line-height:15px;color:#8793a2">Betrouwbare service voor smartphones en reparaties.</td></tr>
       </table>`;
     const html=`<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.7;color:#263445">${messageHtml}${signatureHtml}</div>`;
     const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({from,to:[to],subject,text:textWithSignature,html,reply_to:"mail@inbound.homs-tech.nl"})});
