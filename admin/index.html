@@ -7855,7 +7855,7 @@ async function loadAdminEmails(){
     adminEmailCache=d.emails||[];
     if(count)count.textContent=adminEmailCache.filter(x=>x.direction==="inbound"&&!x.is_read).length+" ongelezen";
     if(!adminEmailCache.length){list.innerHTML='<div class="order-empty">Nog geen e-mails ontvangen of verzonden.</div>';return;}
-    list.innerHTML=adminEmailCache.map(m=>'<button type="button" onclick="openAdminEmail('+Number(m.id)+')" style="width:100%;text-align:left;border:1px solid #e2e8f0;border-radius:11px;padding:12px;background:'+(m.direction==="inbound"&&!m.is_read?"#eff6ff":"#fff")+';cursor:pointer"><div style="display:flex;justify-content:space-between;gap:8px"><strong style="font-size:13px">'+(m.direction==="inbound"?"📥":"📤")+' '+emailEsc(m.subject||"(geen onderwerp)")+'</strong><small style="color:#64748b;white-space:nowrap">'+emailDate(m.created_at)+'</small></div><div style="font-size:12px;color:#64748b;margin-top:5px">'+emailEsc(m.direction==="inbound"?m.from_address:"Aan: "+(m.to_addresses||[]).join(", "))+(m.direction==="inbound"&&!m.is_read?' · <b style="color:#2563eb">Nieuw</b>':'')+'</div></button>').join("");
+    list.innerHTML=adminEmailCache.map(m=>'<div class="ht-email-row" style="display:flex;gap:8px;align-items:stretch"><button type="button" onclick="openAdminEmail('+Number(m.id)+')" style="flex:1;min-width:0;text-align:left;border:1px solid #e2e8f0;border-radius:12px;padding:13px;background:'+(m.direction==="inbound"&&!m.is_read?"#eff6ff":"#fff")+';cursor:pointer"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><strong style="font-size:13px;overflow-wrap:anywhere">'+(m.direction==="inbound"?"📥":"📤")+' '+emailEsc(m.subject||"(geen onderwerp)")+'</strong><small style="color:#64748b;white-space:nowrap">'+emailDate(m.created_at)+'</small></div><div style="font-size:12px;color:#64748b;margin-top:6px;overflow-wrap:anywhere">'+emailEsc(m.direction==="inbound"?m.from_address:"Aan: "+(m.to_addresses||[]).join(", "))+(m.direction==="inbound"&&!m.is_read?' · <b style="color:#2563eb">Nieuw</b>':'')+'</div></button><button type="button" class="btn btn-light" title="Verwijderen" aria-label="E-mail verwijderen" onclick="deleteAdminEmail('+Number(m.id)+')" style="align-self:stretch;color:#b42318;border:1px solid #fecaca;background:#fff5f5">🗑️</button></div>').join("");
   }catch(e){list.innerHTML='<div class="status error">'+emailEsc(e.message)+'</div>';}
 }
 async function openAdminEmail(id){
@@ -7863,11 +7863,24 @@ async function openAdminEmail(id){
   try{
     const r=await fetch("/api/admin/emails/"+id,{credentials:"same-origin"}),d=await r.json();if(!r.ok)throw Error(d.error||"Bericht laden mislukt.");
     const m=d.email;
-    box.innerHTML='<div style="font-weight:800;margin-bottom:8px">'+emailEsc(m.subject||"(geen onderwerp)")+'</div><div class="small" style="line-height:1.7;margin-bottom:12px">Van: '+emailEsc(m.from_address)+'<br>Aan: '+emailEsc((m.to_addresses||[]).join(", "))+'<br>'+emailDate(m.created_at)+'</div><div style="white-space:pre-wrap;overflow-wrap:anywhere;border-top:1px solid #e2e8f0;padding-top:12px;line-height:1.6">'+emailEsc(m.text_body||"").slice(0,30000)+'</div>'+(m.direction==="inbound"?'<button type="button" class="btn btn-green" style="margin-top:14px" onclick="emailReply('+Number(m.id)+')">↩️ رد على الرسالة</button>':'');
+    box.innerHTML='<div style="font-weight:800;font-size:18px;margin-bottom:10px">'+emailEsc(m.subject||"(geen onderwerp)")+'</div><div class="small" style="line-height:1.8;margin-bottom:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px">Van: '+emailEsc(m.from_address)+'<br>Aan: '+emailEsc((m.to_addresses||[]).join(", "))+'<br>'+emailDate(m.created_at)+'</div><div style="white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #e2e8f0;border-radius:10px;background:#fff;padding:16px;min-height:150px;line-height:1.7">'+emailEsc(m.text_body||"").slice(0,30000)+'</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">'+(m.direction==="inbound"?'<button type="button" class="btn btn-green" onclick="emailReply('+Number(m.id)+')">↩️ رد على الرسالة</button>':'')+'<button type="button" class="btn btn-light" style="color:#b42318;border:1px solid #fecaca" onclick="deleteAdminEmail('+Number(m.id)+')">🗑️ حذف الرسالة</button></div>';
     const cached=adminEmailCache.find(x=>Number(x.id)===Number(id));if(cached)cached.is_read=true;
     const count=document.getElementById("emailInboxCount");if(count)count.textContent=adminEmailCache.filter(x=>x.direction==="inbound"&&!x.is_read).length+" ongelezen";
     const row=[...document.querySelectorAll("#emailInboxList button")].find(b=>b.getAttribute("onclick")==="openAdminEmail("+Number(id)+")");if(row)row.style.background="#fff";
   }catch(e){box.textContent=e.message;}
+}
+async function deleteAdminEmail(id){
+  const message=adminEmailCache.find(x=>Number(x.id)===Number(id));
+  if(!message)return;
+  if(!confirm('هل أنت متأكد من حذف هذه الرسالة من لوحة HOMS TECH؟\n\n'+(message.subject||'(geen onderwerp)')+'\n\nلن يتم حذفها من Resend أو من صندوق بريد المرسل.'))return;
+  try{
+    const r=await fetch('/api/admin/emails/'+Number(id),{method:'DELETE',credentials:'same-origin'});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw Error(d.error||'Bericht verwijderen mislukt.');
+    const detail=document.getElementById('adminEmailDetail');
+    if(detail)detail.innerHTML='<div class="small">Selecteer een e-mail uit de inbox om de inhoud te bekijken.</div>';
+    await loadAdminEmails();
+  }catch(e){alert(e.message);}
 }
 function emailComposeNew(){document.getElementById("adminEmailTo").value="";document.getElementById("adminEmailSubject").value="";document.getElementById("adminEmailBody").value="";document.getElementById("adminEmailStatus").textContent="Nieuw e-mailbericht";document.getElementById("adminEmailTo").focus();}
 function emailReply(id){
