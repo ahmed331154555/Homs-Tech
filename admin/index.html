@@ -7846,7 +7846,7 @@ function deviceRenderTable(){
   const headers=["Type","IMEI / serienummer / HT-code","Merk","Model / naam","Status","Klantnaam","Telefoon","Ordernummer","Inkoop (€)","Verkoop (€)","Acties"];
   host.innerHTML='<div class="dr-sheet-wrap"><table class="dr-sheet"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
     rows.map(x=>'<tr data-row-id="'+Number(x.id)+'">'+
-      '<td><select class="dr-cell" data-field="device_type" data-id="'+Number(x.id)+'"><option value="customer_repair" '+(x.device_type==="customer_repair"?"selected":"")+'>Klantreparatie</option><option value="commercial" '+(x.device_type==="commercial"?"selected":"")+'>Eigen toestel</option></select></td>'+
+      '<td style="padding:10px 12px;white-space:nowrap;font-weight:700">'+deviceTypeLabel(x.device_type)+'</td>'+
       '<td><input class="dr-cell dr-readonly" value="'+esc(x.identifier_value)+'" readonly title="Identificatienummer kan niet inline worden gewijzigd"></td>'+
       deviceCell(x.brand,"brand",x.id)+deviceCell(x.model,"model",x.id)+
       '<td><select class="dr-cell" data-field="status" data-id="'+Number(x.id)+'">'+(x.device_type==="commercial"?DEVICE_STATUS_COMMERCIAL:DEVICE_STATUS_CUSTOMER).map(v=>'<option '+(v===x.status?"selected":"")+'>'+esc(v)+'</option>').join('')+'</select></td>'+
