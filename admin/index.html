@@ -1109,6 +1109,57 @@ textarea{
  .repair-request-photos img{width:86px;height:76px}
 }
 
+
+/* Compact layout for the installed HOMS TECH app only.
+   Desktop browser and regular mobile browser remain unchanged. */
+@media (display-mode: standalone) and (max-width: 900px) {
+  html { font-size: 13px; }
+  body { font-size: 13px; }
+  .topbar { min-height: 48px; padding: 9px 12px; gap: 8px; }
+  .logo { font-size: 17px; }
+  .topbar .btn, .topbar button { padding: 7px 10px; font-size: 12px; }
+  .admin-nav-inner { padding: 6px 8px; gap: 5px; }
+  .nav-btn { padding: 8px 10px; border-radius: 8px; font-size: 11px; }
+  .container { margin: 10px auto; padding: 0 8px 60px; }
+  .section { padding: 12px; margin-bottom: 10px; border-radius: 12px; }
+  .section-head { gap: 8px; margin-bottom: 10px; padding-bottom: 8px; }
+  .section-head h2 { font-size: 16px; }
+  .section-head p, .small { font-size: 11px; }
+  .card { padding: 10px; margin-bottom: 8px; border-radius: 10px; }
+  .card-head { gap: 7px; margin-bottom: 9px; }
+  .card-title { font-size: 13px; }
+  .field { margin-bottom: 9px; }
+  .field label { margin-bottom: 4px; font-size: 11px; }
+  .field input, .field textarea, .field select,
+  input, select, textarea { padding: 8px 9px; font-size: 12px; }
+  textarea { min-height: 70px; }
+  .btn { padding: 8px 10px; border-radius: 8px; font-size: 11px; }
+  .actions { gap: 5px; }
+  .grid { gap: 9px; }
+  .save-bar { bottom: 6px; padding: 9px; gap: 8px; border-radius: 11px; }
+  .order-summary { gap: 7px; margin-bottom: 10px; }
+  .order-stat { padding: 9px 10px; border-radius: 10px; }
+  .order-stat b { font-size: 17px; }
+  .order-stat span { font-size: 10px; }
+  .order-card { padding: 10px; border-radius: 11px; }
+  .order-card-head { gap: 8px; padding-bottom: 8px; margin-bottom: 8px; }
+  .order-main { padding: 9px; }
+  .order-grid { gap: 7px; font-size: 11px; }
+  .order-info { padding: 7px; }
+  .order-info strong { font-size: 9px; }
+  .order-status-select { min-width: 0; padding: 7px; font-size: 11px; }
+  .editor-layout, .gsm-editor-layout { gap: 9px; }
+  .editor-list, .editor-panel { padding: 9px; border-radius: 11px; }
+  .editor-list-item { padding: 8px 9px; margin-bottom: 3px; font-size: 11px; }
+  .gsm-admin-row { gap: 8px; padding: 9px 10px; }
+  .gsm-admin-name { font-size: 13px; }
+  .gsm-admin-tabs { gap: 5px; margin-bottom: 9px; }
+  .gsm-admin-tab { padding: 8px 10px; font-size: 11px; }
+  table { font-size: 11px; }
+  th, td { padding: 6px !important; }
+  .modal { padding: 15px; border-radius: 13px; }
+  .image-preview, .empty-preview { height: 48px; }
+}
 </style>
 <style>
 .permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
