@@ -1712,7 +1712,7 @@ textarea{
     <button class="nav-btn" data-page="why" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
     <button class="nav-btn" data-page="live-chat" data-permission="orders.view" onclick="showPage('live-chat')">💬 Live Chat</button>
     <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
-    <button class="nav-btn" data-page="device-register" data-permission="device_register.view" onclick="showPage('device-register')">📋 Toestelregister</button>
+    <button class="nav-btn" data-page="emails" data-permission="site.save" onclick="showPage('emails')">✉️ E-mail inbox</button>
     <button class="nav-btn" data-page="invoices" data-permission="site.save" onclick="showPage('invoices')">🧾 Facturen</button>
     <button class="nav-btn" data-page="all-orders" onclick="showPage('all-orders')">📋 Alle bestellingen</button>
     <button class="nav-btn" data-page="order-settings" data-permission="site.save" onclick="showPage('order-settings')">📦 Orderinstellingen</button>
@@ -1755,36 +1755,33 @@ textarea{
 <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;display:flex;flex-direction:column;min-height:420px"><strong id="liveChatTitle">Selecteer een gesprek</strong><div id="liveChatMessages" style="flex:1;overflow:auto;display:flex;flex-direction:column;gap:8px;min-height:300px;margin-top:12px"></div><form id="liveChatReplyForm" style="display:flex;gap:8px;margin-top:12px"><input id="liveChatReply" maxlength="2000" placeholder="Typ je antwoord…" style="flex:1;min-width:0;padding:11px;border:1px solid #cbd5e1;border-radius:10px" required><button class="btn btn-green" type="submit">Verstuur</button></form><button id="liveChatCloseBtn" class="btn btn-light" type="button" style="margin-top:8px;align-self:flex-start" disabled>Gesprek sluiten</button></div></div>
 <style>@media(max-width:700px){.live-chat-layout{grid-template-columns:1fr!important}.live-chat-layout #liveChatMessages{min-height:220px!important}}</style></section>
 
-<section class="section admin-page" id="page-device-register" data-permission="device_register.view">
-  <div class="section-head"><div><h2>📋 Toestelregister</h2><p>Excel-achtige tabel: voer toestellen rechtstreeks per rij in, bewerk ze en importeer of exporteer Excel-bestanden.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-light" type="button" onclick="document.getElementById('deviceExcelFile').click()">⬆ Import Excel</button><button class="btn btn-green" type="button" onclick="deviceExportExcel()">⬇ Export Excel</button><button class="btn btn-light" type="button" onclick="deviceAddBlankRow()">＋ Lege rij</button><button class="btn btn-light" type="button" onclick="loadDeviceRegister()">↻ Vernieuwen</button><input id="deviceExcelFile" type="file" accept=".xlsx,.xls,.csv" hidden onchange="deviceImportExcel(event)"></div></div>
-  <div class="device-register-toolbar" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
-    <input id="deviceSearch" placeholder="Zoek IMEI, serienummer, HT-code, model, klant…" style="flex:1;min-width:220px;padding:11px;border:1px solid #cbd5e1;border-radius:9px" onkeydown="if(event.key==='Enter')loadDeviceRegister()">
-    <select id="deviceTypeFilter" style="padding:10px;border:1px solid #cbd5e1;border-radius:9px" onchange="loadDeviceRegister()"><option value="">Alle toestellen</option><option value="customer_repair">Klantreparaties</option><option value="commercial">Eigen refurbished</option></select>
-    <label style="display:flex;align-items:center;gap:6px;padding:8px"><input id="deviceArchivedFilter" type="checkbox" onchange="loadDeviceRegister()"> Archief tonen</label>
+<section class="section admin-page" id="page-emails" data-permission="site.save">
+  <div class="section-head">
+    <div><h2>✉️ E-mail</h2><p>Beheer inkomende berichten en verstuur e-mails vanuit HOMS TECH.</p></div>
+    <button class="btn btn-light" type="button" onclick="loadAdminEmails()">↻ Vernieuwen</button>
   </div>
-  <div id="deviceRegisterStatus" class="status" role="status"></div>
-  <div id="deviceRegisterTable" style="overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:10px">Toestellen laden…</div>
-  <div style="margin-top:18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px">
-    <h3 style="margin-top:0">＋ Nieuw toestel registreren</h3>
-    <form id="deviceRegisterForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">
-      <label>Type<select id="drType" required style="display:block;width:100%;padding:10px;margin-top:5px" onchange="deviceUpdateFields()"><option value="customer_repair">Klantreparatie</option><option value="commercial">Eigen refurbished / verkoop</option></select></label>
-      <label>Identificatie<select id="drIdentifierType" style="display:block;width:100%;padding:10px;margin-top:5px"><option value="imei">IMEI</option><option value="serial">Serienummer</option><option value="barcode">Interne HT-barcode</option></select></label>
-      <label>IMEI / serienummer / HT-code<input id="drIdentifierValue" required maxlength="100" autocomplete="off" placeholder="Scan met scanner of voer handmatig in" style="display:block;width:100%;padding:10px;margin-top:5px"><button type="button" class="btn btn-light" id="drCameraOpen" style="display:block;width:100%;margin-top:7px">📷 Scan met camera</button><small style="display:block;margin-top:5px;color:#64748b">Richt de camera op de barcode of QR-code op het toestel of de doos.</small></label>
-      <label>Model<input id="drModel" required maxlength="120" placeholder="iPhone 15 Pro" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
-      <label>Merk<input id="drBrand" value="Apple" maxlength="60" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
-      <label>Status<select id="drStatus" required style="display:block;width:100%;padding:10px;margin-top:5px"></select></label>
-      <label class="dr-customer-field">Klantnaam<input id="drCustomerName" maxlength="160" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
-      <label class="dr-customer-field">Telefoon klant<input id="drCustomerPhone" maxlength="60" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
-      <label class="dr-customer-field">E-mail klant<input id="drCustomerEmail" type="email" maxlength="180" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
-      <label class="dr-customer-field">Reparatieordernummer<input id="drRepairOrderNumber" maxlength="100" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
-      <label class="dr-commercial-field">Inkoopprijs (€)<input id="drPurchaseCost" type="number" min="0" step=".01" value="0" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
-      <label class="dr-commercial-field">Verkoopprijs (€)<input id="drSalePrice" type="number" min="0" step=".01" value="0" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
-      <div style="grid-column:1/-1"><button class="btn btn-green" type="submit">Toestel opslaan</button></div>
-    </form>
-    <p class="small" style="margin-bottom:0">Scanner-tip: klik in het identificatieveld en scan; de meeste USB/Bluetooth-scanners typen de code automatisch. Gegevens worden in de database opgeslagen, niet alleen in deze browser.</p>
+  <div class="email-admin-layout" style="display:grid;grid-template-columns:minmax(260px,.85fr) minmax(320px,1.15fr);gap:16px">
+    <div class="card" style="margin:0;min-width:0">
+      <div class="card-head"><div class="card-title">📥 Inbox</div><span id="emailInboxCount" class="small">Laden…</span></div>
+      <div id="emailInboxList" style="display:flex;flex-direction:column;gap:8px;max-height:650px;overflow:auto"><div class="small">E-mails laden…</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div class="card" style="margin:0">
+        <div class="card-head"><div class="card-title">✍️ Nieuw bericht / beantwoorden</div><button class="btn btn-light" type="button" onclick="emailComposeNew()">Nieuw</button></div>
+        <form id="adminEmailComposeForm">
+          <div class="field"><label for="adminEmailTo">Aan</label><input id="adminEmailTo" type="email" required placeholder="klant@email.nl"></div>
+          <div class="field"><label for="adminEmailSubject">Onderwerp</label><input id="adminEmailSubject" maxlength="240" required placeholder="Onderwerp van de e-mail"></div>
+          <div class="field"><label for="adminEmailBody">Bericht</label><textarea id="adminEmailBody" rows="8" required placeholder="Schrijf je bericht hier…"></textarea></div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button id="adminEmailSendBtn" class="btn btn-green" type="submit">Verstuur e-mail</button><span id="adminEmailStatus" class="small">Antwoorden op mail@inbound.homs-tech.nl komen in deze inbox.</span></div>
+        </form>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-head"><div class="card-title">📨 Bericht bekijken</div></div>
+        <div id="adminEmailDetail" class="small">Selecteer een e-mail uit de inbox om de inhoud te bekijken.</div>
+      </div>
+    </div>
   </div>
-  <div id="deviceHistoryPanel" style="margin-top:18px"></div>
-<div id="deviceScannerModal" style="display:none;position:fixed;inset:0;z-index:100100;background:#061629dd;padding:16px;box-sizing:border-box;align-items:center;justify-content:center"><div style="background:#fff;color:#172033;border-radius:16px;padding:16px;width:min(520px,100%);max-height:90dvh;overflow:auto;box-sizing:border-box"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><h3 style="margin:0">📷 Scan IMEI / barcode</h3><button type="button" id="drCameraClose" class="btn btn-light">Sluiten ✕</button></div><p id="deviceScannerStatus" style="color:#475569">Geef cameratoegang en richt op een barcode of QR-code.</p><video id="deviceScannerVideo" autoplay muted playsinline style="display:block;width:100%;max-height:55dvh;object-fit:contain;background:#0f172a;border-radius:12px"></video><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button type="button" id="drCameraRetry" class="btn btn-light">↻ Camera opnieuw starten</button><button type="button" id="drCameraOcr" class="btn btn-green">🔎 Lees volledig etiket</button><button type="button" id="drCameraManual" class="btn btn-light">Handmatig invoeren</button></div><small style="display:block;color:#64748b;margin-top:10px">De camera wordt alleen gebruikt tijdens het scannen. De video wordt niet opgeslagen.</small></div></div>
+  <style>@media(max-width:850px){.email-admin-layout{grid-template-columns:1fr!important}.email-admin-layout #emailInboxList{max-height:360px!important}}</style>
 </section>
 
 <section class="section admin-page active" id="page-general">
@@ -2363,7 +2360,7 @@ const PAGE_PERMISSIONS = {
   general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",shop:"site.save",categories:"categories.view",
   used:"used.view",why:"why.view",customers:"customers.view",orders:"orders.view","repair-requests":"orders.view",
   "webshop-orders":"webshop_orders.view","invoices":"site.save","order-settings":"site.save",gsm:"gsm.view",firmware:"site.save",search:"search",admins:"admins.manage",
-  buyback:"buyback.view", "buyback-orders":"buyback_orders.view", "device-register":"device_register.view"
+  buyback:"buyback.view", "buyback-orders":"buyback_orders.view", emails:"site.save"
 };
 
 const ADMIN_PERMISSION_LABELS = {
@@ -2388,7 +2385,7 @@ function canEditCurrentPage(){
   return canEditSite();
 }
 function firstAllowedPage(){
-  const pages=["general","services","repair","phones","shop","buyback","buyback-orders","categories","used","why","customers","orders","repair-requests","webshop-orders","gsm","firmware","search","admins"];
+  const pages=["general","services","repair","phones","shop","buyback","buyback-orders","categories","used","why","customers","orders","repair-requests","webshop-orders","emails","invoices","gsm","firmware","search","admins"];
   return pages.find(p=>hasPermission(PAGE_PERMISSIONS[p]))||null;
 }
 function applyPermissionUI(){
@@ -2423,7 +2420,7 @@ function showPage(page){
   if(target){
     target.classList.add("active");
     if(page==="customers")loadCustomers();
-    if(page==="device-register")loadDeviceRegister();
+    if(page==="emails")loadAdminEmails();
     if(page==="invoices"){if(!document.querySelector("#invoiceLines tr"))addInvoiceLine();loadInvoices();}
     if(page==="live-chat"){loadLiveChat();if(liveChatRefreshTimer)clearInterval(liveChatRefreshTimer);liveChatRefreshTimer=setInterval(()=>{if(currentPage==="live-chat")loadLiveChat();},8000);}
     if(page==="orders"||page==="repair-requests"||page==="all-orders"){loadOrders();loadWebshopOrders();loadBuybackOrders();}
@@ -7817,6 +7814,53 @@ async function saveInvoice(){const s=document.getElementById("invoiceFormStatus"
 async function loadInvoices(){const b=document.getElementById("invoiceList");if(!b)return;try{const r=await fetch("/api/admin/invoices",{credentials:"same-origin"}),d=await r.json();if(!r.ok)throw Error(d.error||"Facturen laden mislukt");if(!d.invoices.length){b.textContent="Nog geen facturen opgeslagen.";return}b.innerHTML='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><tr><th>Nummer</th><th>Klant</th><th>Datum</th><th>Totaal</th><th>Status</th><th>Actie</th></tr>'+d.invoices.map(x=>'<tr><td>'+esc(x.invoice_number)+'</td><td>'+esc(x.customer_name)+'<br><small>'+esc(x.customer_email)+'</small></td><td>'+new Date(x.created_at).toLocaleDateString("nl-NL")+'</td><td>'+invoiceEuro(x.total)+'</td><td>'+esc(x.status==='Concept / test'?'Opgeslagen':x.status)+'</td><td><button class="btn btn-light" onclick="previewSavedInvoice('+x.id+')">PDF</button> <button class="btn btn-green" onclick="sendInvoiceTest('+x.id+')">E-mail naar klantadres</button></td></tr>').join("")+'</table></div>'}catch(e){b.textContent=e.message}}
 async function previewSavedInvoice(id){try{const r=await fetch("/api/admin/invoices/"+id+"/pdf",{credentials:"same-origin"});if(!r.ok){const d=await r.json();throw Error(d.error||"PDF mislukt")}const u=URL.createObjectURL(await r.blob());window.open(u,"_blank");setTimeout(()=>URL.revokeObjectURL(u),60000)}catch(e){alert(e.message)}}
 async function sendInvoiceTest(id){const row=[...document.querySelectorAll("#invoiceList tr")].find(tr=>tr.textContent.includes(""));if(!confirm("De factuur als e-mail versturen naar het e-mailadres dat bij deze factuur is opgeslagen?"))return;try{const r=await fetch("/api/admin/invoices/"+id+"/test-send",{method:"POST",credentials:"same-origin"}),d=await r.json();if(!r.ok)throw Error(d.error||"E-mail versturen mislukt");alert("E-mail verzonden naar "+d.to)}catch(e){alert(e.message)}}
+
+
+let adminEmailCache=[];
+function emailEsc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function emailDate(v){try{return new Date(v).toLocaleString("nl-NL",{dateStyle:"short",timeStyle:"short"});}catch{return "";}}
+async function loadAdminEmails(){
+  const list=document.getElementById("emailInboxList"),count=document.getElementById("emailInboxCount");
+  if(!list)return;list.innerHTML='<div class="small">E-mails laden…</div>';
+  try{
+    const r=await fetch("/api/admin/emails",{credentials:"same-origin"}),d=await r.json();
+    if(!r.ok)throw Error(d.error||"E-mails laden mislukt.");
+    adminEmailCache=d.emails||[];
+    if(count)count.textContent=adminEmailCache.filter(x=>x.direction==="inbound"&&!x.is_read).length+" ongelezen";
+    if(!adminEmailCache.length){list.innerHTML='<div class="order-empty">Nog geen e-mails ontvangen of verzonden.</div>';return;}
+    list.innerHTML=adminEmailCache.map(m=>'<button type="button" onclick="openAdminEmail('+Number(m.id)+')" style="width:100%;text-align:left;border:1px solid #e2e8f0;border-radius:11px;padding:12px;background:'+(m.direction==="inbound"&&!m.is_read?"#eff6ff":"#fff")+';cursor:pointer"><div style="display:flex;justify-content:space-between;gap:8px"><strong style="font-size:13px">'+(m.direction==="inbound"?"📥":"📤")+' '+emailEsc(m.subject||"(geen onderwerp)")+'</strong><small style="color:#64748b;white-space:nowrap">'+emailDate(m.created_at)+'</small></div><div style="font-size:12px;color:#64748b;margin-top:5px">'+emailEsc(m.direction==="inbound"?m.from_address:"Aan: "+(m.to_addresses||[]).join(", "))+(m.direction==="inbound"&&!m.is_read?' · <b style="color:#2563eb">Nieuw</b>':'')+'</div></button>').join("");
+  }catch(e){list.innerHTML='<div class="status error">'+emailEsc(e.message)+'</div>';}
+}
+async function openAdminEmail(id){
+  const box=document.getElementById("adminEmailDetail");if(!box)return;box.textContent="Bericht laden…";
+  try{
+    const r=await fetch("/api/admin/emails/"+id,{credentials:"same-origin"}),d=await r.json();if(!r.ok)throw Error(d.error||"Bericht laden mislukt.");
+    const m=d.email;
+    box.innerHTML='<div style="font-weight:800;margin-bottom:8px">'+emailEsc(m.subject||"(geen onderwerp)")+'</div><div class="small" style="line-height:1.7;margin-bottom:12px">Van: '+emailEsc(m.from_address)+'<br>Aan: '+emailEsc((m.to_addresses||[]).join(", "))+'<br>'+emailDate(m.created_at)+'</div><div style="white-space:pre-wrap;overflow-wrap:anywhere;border-top:1px solid #e2e8f0;padding-top:12px;line-height:1.6">'+emailEsc(m.text_body||"").slice(0,30000)+'</div>'+(m.direction==="inbound"?'<button type="button" class="btn btn-green" style="margin-top:14px" onclick="emailReply('+Number(m.id)+')">↩️ رد على الرسالة</button>':'');
+    const cached=adminEmailCache.find(x=>Number(x.id)===Number(id));if(cached)cached.is_read=true;
+    const count=document.getElementById("emailInboxCount");if(count)count.textContent=adminEmailCache.filter(x=>x.direction==="inbound"&&!x.is_read).length+" ongelezen";
+    const row=[...document.querySelectorAll("#emailInboxList button")].find(b=>b.getAttribute("onclick")==="openAdminEmail("+Number(id)+")");if(row)row.style.background="#fff";
+  }catch(e){box.textContent=e.message;}
+}
+function emailComposeNew(){document.getElementById("adminEmailTo").value="";document.getElementById("adminEmailSubject").value="";document.getElementById("adminEmailBody").value="";document.getElementById("adminEmailStatus").textContent="Nieuw e-mailbericht";document.getElementById("adminEmailTo").focus();}
+function emailReply(id){
+  const m=adminEmailCache.find(x=>Number(x.id)===Number(id));if(!m)return;
+  document.getElementById("adminEmailTo").value=m.from_address||"";
+  document.getElementById("adminEmailSubject").value=/^re:/i.test(m.subject||"")?m.subject:"Re: "+(m.subject||"");
+  document.getElementById("adminEmailBody").value="\n\n--- Oorspronkelijk bericht ---\n"+(m.text_body||"");
+  document.getElementById("adminEmailStatus").textContent="Antwoord aan "+m.from_address;
+  document.getElementById("adminEmailBody").focus();
+}
+document.getElementById("adminEmailComposeForm")?.addEventListener("submit",async e=>{
+  e.preventDefault();const btn=document.getElementById("adminEmailSendBtn"),status=document.getElementById("adminEmailStatus");
+  btn.disabled=true;status.textContent="E-mail wordt verzonden…";
+  try{
+    const body={to:document.getElementById("adminEmailTo").value.trim(),subject:document.getElementById("adminEmailSubject").value.trim(),text:document.getElementById("adminEmailBody").value};
+    const r=await fetch("/api/admin/emails/send",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}),d=await r.json();
+    if(!r.ok)throw Error(d.error||"E-mail verzenden mislukt.");
+    status.textContent="Verzonden naar "+d.to;document.getElementById("adminEmailBody").value="";await loadAdminEmails();
+  }catch(err){status.textContent=err.message;}finally{btn.disabled=false;}
+});
 
 const DEVICE_STATUS_CUSTOMER=["مفتوح","قيد العمل","مكتمل"];
 const DEVICE_STATUS_COMMERCIAL=["تم الشراء","قيد الفحص","قيد التجديد","جاهز للبيع","تم البيع"];
