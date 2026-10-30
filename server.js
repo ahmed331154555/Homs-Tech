@@ -907,12 +907,13 @@ app.put("/api/admin/device-register/:id",requirePermission("device_register.upda
     const id=Number(req.params.id),b=req.body||{};
     if(!Number.isSafeInteger(id)||id<=0)return res.status(400).json({error:"Ongeldig toestel."});
     const status=deviceText(b.status,40),purchaseCost=deviceMoney(b.purchaseCost),salePrice=deviceMoney(b.salePrice);
+    const model=deviceText(b.model,120),brand=deviceText(b.brand,60)||"Apple";
     const existing=await pool.query("SELECT device_type FROM device_register WHERE id=$1 AND archived=FALSE",[id]);
     if(!existing.rows.length)return res.status(404).json({error:"Toestel niet gevonden."});
     const allowed=existing.rows[0].device_type==="commercial"?commercialDeviceStatuses:customerDeviceStatuses;
     if(!allowed.has(status)||!Number.isFinite(purchaseCost)||!Number.isFinite(salePrice))return res.status(400).json({error:"Controleer status en bedragen."});
-    const result=await pool.query(`UPDATE device_register SET status=$2,customer_name=$3,customer_phone=$4,customer_email=$5,repair_order_number=$6,purchase_cost=$7,sale_price=$8,updated_at=NOW()
-      WHERE id=$1 AND archived=FALSE RETURNING *`,[id,status,deviceText(b.customerName,160),deviceText(b.customerPhone,60),deviceText(b.customerEmail,180),deviceText(b.repairOrderNumber,100),purchaseCost,salePrice]);
+    const result=await pool.query(`UPDATE device_register SET status=$2,customer_name=$3,customer_phone=$4,customer_email=$5,repair_order_number=$6,purchase_cost=$7,sale_price=$8,model=CASE WHEN $9='' THEN model ELSE $9 END,brand=CASE WHEN $10='' THEN brand ELSE $10 END,updated_at=NOW()
+      WHERE id=$1 AND archived=FALSE RETURNING *`,[id,status,deviceText(b.customerName,160),deviceText(b.customerPhone,60),deviceText(b.customerEmail,180),deviceText(b.repairOrderNumber,100),purchaseCost,salePrice,model,brand]);
     if(!result.rows.length)return res.status(404).json({error:"Toestel niet gevonden."});
     res.json({device:result.rows[0]});
   }catch(e){console.error("Device register update error:",e);res.status(500).json({error:"Toestel kon niet worden bijgewerkt."});}
