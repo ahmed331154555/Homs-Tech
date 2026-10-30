@@ -42,7 +42,7 @@ p{line-height:1.65}
 }
 
 /* HOMS TECH — unified top navigation across all public pages */
-:where(.ht-header .ht-nav,.homs-global-nav-inner,.homs-global-nav nav,.nav nav){
+:where(.ht-header .ht-nav,.homs-global-nav-inner,.homs-global-nav nav,.nav nav,nav.nav){
   box-sizing:border-box!important;
   min-height:48px!important;
   display:flex!important;
@@ -55,7 +55,7 @@ p{line-height:1.65}
   white-space:nowrap!important;
   scrollbar-width:thin;
 }
-:where(.ht-header .ht-nav a,.homs-global-nav-inner a,.homs-global-nav nav a,.nav nav a){
+:where(.ht-header .ht-nav a,.homs-global-nav-inner a,.homs-global-nav nav a,.nav nav a,nav.nav a){
   box-sizing:border-box!important;
   display:inline-flex!important;
   flex:0 0 auto!important;
