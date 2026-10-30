@@ -2608,7 +2608,34 @@ async function loadCurrentUser(){
   currentUser={id:x.id||null,username:x.username||"",role:x.role||"admin",permissions:Array.isArray(x.permissions)?x.permissions:[]};
 }
 async function checkLogin(){
-  try{await loadCurrentUser();showDashboard();await loadData();}catch(e){showLogin();}
+  // Only a failed /api/me response means the session is invalid.
+  // Errors while rendering/loading the dashboard must never send an authenticated
+  // administrator back to the login screen.
+  try{
+    await loadCurrentUser();
+  }catch(e){
+    console.warn("[HOMS TECH] Session check failed:",e);
+    showLogin();
+    return;
+  }
+
+  try{
+    showDashboard();
+  }catch(e){
+    console.error("[HOMS TECH] Dashboard initialization failed:",e);
+    const loginStatus=document.getElementById("loginStatus");
+    if(loginStatus){
+      loginStatus.style.display="block";
+      loginStatus.className="status error";
+      loginStatus.textContent="Dashboard kon niet volledig laden. Vernieuw de pagina of controleer de browserconsole.";
+    }
+  }
+
+  try{
+    await loadData();
+  }catch(e){
+    console.error("[HOMS TECH] Initial data loading failed:",e);
+  }
 }
 function showLogin(){
   document.getElementById("loginBox").style.display="block";
