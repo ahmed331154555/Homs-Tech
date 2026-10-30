@@ -40,3 +40,55 @@ p{line-height:1.65}
   h1{font-size:clamp(27px,7vw,34px)!important}
   h2{font-size:clamp(21px,5.5vw,27px)!important}
 }
+
+/* HOMS TECH — unified top navigation across all public pages */
+:where(.ht-header .ht-nav,.homs-global-nav-inner,.homs-global-nav nav,.nav nav){
+  box-sizing:border-box!important;
+  min-height:48px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  flex-wrap:nowrap!important;
+  gap:4px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  white-space:nowrap!important;
+  scrollbar-width:thin;
+}
+:where(.ht-header .ht-nav a,.homs-global-nav-inner a,.homs-global-nav nav a,.nav nav a){
+  box-sizing:border-box!important;
+  display:inline-flex!important;
+  flex:0 0 auto!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:40px!important;
+  padding:0 12px!important;
+  margin:0!important;
+  border-radius:8px!important;
+  font-family:Arial,Helvetica,sans-serif!important;
+  font-size:13px!important;
+  font-weight:700!important;
+  line-height:1.2!important;
+  letter-spacing:0!important;
+  white-space:nowrap!important;
+  text-decoration:none!important;
+}
+@media(max-width:900px){
+  :where(.ht-header .ht-nav,.homs-global-nav-inner,.homs-global-nav nav,.nav nav){
+    min-height:44px!important;
+    justify-content:flex-start!important;
+    gap:3px!important;
+  }
+  :where(.ht-header .ht-nav a,.homs-global-nav-inner a,.homs-global-nav nav a,.nav nav a){
+    min-height:38px!important;
+    padding:0 10px!important;
+    font-size:12px!important;
+  }
+}
+@media(max-width:560px){
+  :where(.ht-header .ht-nav a,.homs-global-nav-inner a,.homs-global-nav nav a,.nav nav a){
+    min-height:36px!important;
+    padding:0 9px!important;
+    font-size:12px!important;
+  }
+}
