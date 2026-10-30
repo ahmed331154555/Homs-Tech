@@ -1676,6 +1676,19 @@ textarea{
 </style>
 
 <style id="homs-order-accuracy-v2">.ht-order-detail-panel .ht-order-product-copy small{line-height:1.45;overflow-wrap:anywhere}.ht-order-detail-panel .ht-order-note{line-height:1.5}.ht-order-payment-state{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;background:#fef3c7;color:#92400e;font-size:12px;font-weight:800}.ht-order-payment-state.is-paid{background:#dcfce7;color:#166534}.ht-order-payment-state.is-failed{background:#fee2e2;color:#991b1b}.webshop-list-summary small{line-height:1.45}</style>
+<style id="device-register-sheet-style">
+#page-device-register .dr-sheet-wrap{overflow:auto;max-height:68vh;border:1px solid #d9e1ea;border-radius:10px;background:#fff}
+#page-device-register .dr-sheet{border-collapse:separate;border-spacing:0;min-width:1500px;width:max-content;font-size:13px}
+#page-device-register .dr-sheet th{position:sticky;top:0;z-index:2;background:#eaf0f6;color:#243247;text-align:left;padding:11px 9px;border-bottom:2px solid #cbd5e1;white-space:nowrap}
+#page-device-register .dr-sheet td{padding:4px;border-bottom:1px solid #e8edf3;border-right:1px solid #edf1f5;background:#fff}
+#page-device-register .dr-sheet tbody tr:nth-child(even) td{background:#f8fafc}
+#page-device-register .dr-sheet .dr-cell{width:145px;min-width:110px;padding:9px 8px;border:1px solid transparent;border-radius:4px;background:transparent;color:#172033;outline:none}
+#page-device-register .dr-sheet .dr-cell:focus{background:#fff;border-color:#3b82f6;box-shadow:0 0 0 2px #bfdbfe}
+#page-device-register .dr-sheet .dr-readonly{color:#64748b;background:#f1f5f9}
+#page-device-register .dr-sheet .dr-actions{white-space:nowrap;display:flex;gap:4px;padding:7px}
+#page-device-register .dr-sheet .dr-actions .btn{padding:8px 9px;font-size:12px}
+#page-device-register .device-register-toolbar .btn{white-space:nowrap}
+</style>
 </head>
 
 <body>
@@ -1743,7 +1756,7 @@ textarea{
 <style>@media(max-width:700px){.live-chat-layout{grid-template-columns:1fr!important}.live-chat-layout #liveChatMessages{min-height:220px!important}}</style></section>
 
 <section class="section admin-page" id="page-device-register" data-permission="device_register.view">
-  <div class="section-head"><div><h2>📋 Toestelregister</h2><p>Reparaties van klanten en eigen refurbished toestellen, met kosten en volledige historie.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-light" type="button" onclick="deviceExportCsv()">⬇ Export Excel/CSV</button><button class="btn btn-light" type="button" onclick="loadDeviceRegister()">↻ Vernieuwen</button></div></div>
+  <div class="section-head"><div><h2>📋 Toestelregister</h2><p>Excel-achtige tabel: voer toestellen rechtstreeks per rij in, bewerk ze en importeer of exporteer Excel-bestanden.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-light" type="button" onclick="document.getElementById('deviceExcelFile').click()">⬆ Import Excel</button><button class="btn btn-green" type="button" onclick="deviceExportExcel()">⬇ Export Excel</button><button class="btn btn-light" type="button" onclick="deviceAddBlankRow()">＋ Lege rij</button><button class="btn btn-light" type="button" onclick="loadDeviceRegister()">↻ Vernieuwen</button><input id="deviceExcelFile" type="file" accept=".xlsx,.xls,.csv" hidden onchange="deviceImportExcel(event)"></div></div>
   <div class="device-register-toolbar" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
     <input id="deviceSearch" placeholder="Zoek IMEI, serienummer, HT-code, model, klant…" style="flex:1;min-width:220px;padding:11px;border:1px solid #cbd5e1;border-radius:9px" onkeydown="if(event.key==='Enter')loadDeviceRegister()">
     <select id="deviceTypeFilter" style="padding:10px;border:1px solid #cbd5e1;border-radius:9px" onchange="loadDeviceRegister()"><option value="">Alle toestellen</option><option value="customer_repair">Klantreparaties</option><option value="commercial">Eigen refurbished</option></select>
@@ -7822,20 +7835,76 @@ async function deviceApi(url,options={}){
   const r=await fetch(url,{credentials:"same-origin",...options,headers:{"Content-Type":"application/json",...(options.headers||{})}});
   const d=await r.json().catch(()=>({error:"Ongeldig serverantwoord"}));if(!r.ok)throw Error(d.error||"Actie mislukt");return d;
 }
+
+function deviceCell(value,field,id,type="text"){
+  return '<td><input class="dr-cell" data-field="'+field+'" data-id="'+id+'" type="'+type+'" value="'+esc(value??"")+'" '+(type==="number"?'min="0" step="0.01"':'')+'></td>';
+}
+function deviceTypeLabel(type){return type==="commercial"?"Eigen toestel":"Klantreparatie"}
+function deviceRenderTable(){
+  const host=document.getElementById("deviceRegisterTable");if(!host)return;
+  const rows=deviceRegisterCache;
+  const headers=["Type","IMEI / serienummer / HT-code","Merk","Model / naam","Status","Klantnaam","Telefoon","Ordernummer","Inkoop (€)","Verkoop (€)","Acties"];
+  host.innerHTML='<div class="dr-sheet-wrap"><table class="dr-sheet"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
+    rows.map(x=>'<tr data-row-id="'+Number(x.id)+'">'+
+      '<td><select class="dr-cell" data-field="device_type" data-id="'+Number(x.id)+'"><option value="customer_repair" '+(x.device_type==="customer_repair"?"selected":"")+'>Klantreparatie</option><option value="commercial" '+(x.device_type==="commercial"?"selected":"")+'>Eigen toestel</option></select></td>'+
+      '<td><input class="dr-cell dr-readonly" value="'+esc(x.identifier_value)+'" readonly title="Identificatienummer kan niet inline worden gewijzigd"></td>'+
+      deviceCell(x.brand,"brand",x.id)+deviceCell(x.model,"model",x.id)+
+      '<td><select class="dr-cell" data-field="status" data-id="'+Number(x.id)+'">'+(x.device_type==="commercial"?DEVICE_STATUS_COMMERCIAL:DEVICE_STATUS_CUSTOMER).map(v=>'<option '+(v===x.status?"selected":"")+'>'+esc(v)+'</option>').join('')+'</select></td>'+
+      deviceCell(x.customer_name,"customerName",x.id)+deviceCell(x.customer_phone,"customerPhone",x.id)+deviceCell(x.repair_order_number,"repairOrderNumber",x.id)+
+      deviceCell(x.purchase_cost,"purchaseCost",x.id,"number")+deviceCell(x.sale_price,"salePrice",x.id,"number")+
+      '<td class="dr-actions"><button class="btn btn-green" onclick="deviceSaveRow('+Number(x.id)+')">Opslaan</button><button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button class="btn btn-light" onclick="deviceAddOperation('+Number(x.id)+')">＋</button><button class="btn btn-light" onclick="deviceArchive('+Number(x.id)+',true)">Archief</button></td></tr>').join('')+
+    '</tbody></table></div><p class="small" style="margin:10px 0 0">Tip: bewerk de cellen direct in de tabel en klik per rij op Opslaan. Scroll horizontaal om alle kolommen te zien.</p>';
+}
 async function loadDeviceRegister(){
   const host=document.getElementById("deviceRegisterTable");if(!host)return;host.innerHTML="Laden…";
   try{
     const p=new URLSearchParams(),type=document.getElementById("deviceTypeFilter")?.value||"",q=document.getElementById("deviceSearch")?.value.trim()||"",archived=document.getElementById("deviceArchivedFilter")?.checked||false;
     if(type)p.set("type",type);if(q)p.set("q",q);if(archived)p.set("archived","true");
     const d=await deviceApi("/api/admin/device-register?"+p.toString());deviceRegisterCache=d.devices||[];
-    if(!deviceRegisterCache.length){host.innerHTML='<p style="padding:18px;color:#64748b">Geen toestellen gevonden. Voeg hierboven het eerste toestel toe.</p>';return}
-    host.innerHTML='<table style="width:100%;border-collapse:collapse;min-width:720px"><thead><tr style="text-align:left;background:#f1f5f9"><th style="padding:10px">Type</th><th style="padding:10px">IMEI / code</th><th style="padding:10px">Model</th><th style="padding:10px">Status</th><th style="padding:10px">Kosten totaal</th><th style="padding:10px">Marge</th><th style="padding:10px">Acties</th></tr></thead><tbody>'+deviceRegisterCache.map(x=>'<tr style="border-top:1px solid #e2e8f0"><td style="padding:10px">'+(x.device_type==="commercial"?"Eigen toestel":"Klantreparatie")+'</td><td style="padding:10px"><strong>'+esc(x.identifier_value)+'</strong><div class="small">'+esc(x.identifier_type.toUpperCase())+'</div></td><td style="padding:10px">'+esc(x.brand+" "+x.model)+'<div class="small">'+esc(x.customer_name||x.repair_order_number||"")+'</div></td><td style="padding:10px">'+esc(x.status)+'</td><td style="padding:10px">'+deviceEuro(Number(x.purchase_cost||0)+Number(x.recorded_cost||0))+'</td><td style="padding:10px">'+deviceEuro(Number(x.sale_price||0)-Number(x.purchase_cost||0)-Number(x.recorded_cost||0))+'</td><td style="padding:10px;white-space:nowrap"><button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button> <button class="btn btn-light" onclick="deviceAddOperation('+Number(x.id)+')">＋ Handeling</button> <button class="btn btn-light" onclick="deviceArchive('+Number(x.id)+','+(!x.archived)+')">'+(x.archived?"Herstellen":"Archiveren")+'</button></td></tr>').join("")+'</tbody></table>';
+    if(!deviceRegisterCache.length){host.innerHTML='<p style="padding:18px;color:#64748b">Geen toestellen gevonden. Voeg een toestel toe of importeer een Excel-bestand.</p>';return}
+    deviceRenderTable();
   }catch(e){host.innerHTML="";deviceSetStatus(e.message,"error")}
 }
-document.getElementById("deviceRegisterForm")?.addEventListener("submit",async e=>{
-  e.preventDefault();const b={deviceType:document.getElementById("drType").value,identifierType:document.getElementById("drIdentifierType").value,identifierValue:document.getElementById("drIdentifierValue").value,model:document.getElementById("drModel").value,brand:document.getElementById("drBrand").value,status:document.getElementById("drStatus").value,customerName:document.getElementById("drCustomerName").value,customerPhone:document.getElementById("drCustomerPhone").value,customerEmail:document.getElementById("drCustomerEmail").value,repairOrderNumber:document.getElementById("drRepairOrderNumber").value,purchaseCost:document.getElementById("drPurchaseCost").value,salePrice:document.getElementById("drSalePrice").value};
-  try{await deviceApi("/api/admin/device-register",{method:"POST",body:JSON.stringify(b)});e.target.reset();document.getElementById("drBrand").value="Apple";deviceUpdateFields();deviceSetStatus("Toestel opgeslagen.","success");loadDeviceRegister()}catch(err){deviceSetStatus(err.message,"error")}
-});
+async function deviceSaveRow(id){
+  const row=document.querySelector('tr[data-row-id="'+id+'"]');if(!row)return;
+  const value=f=>row.querySelector('[data-field="'+f+'"]')?.value??"";
+  const current=deviceRegisterCache.find(x=>Number(x.id)===Number(id));if(!current)return;
+  const body={brand:value("brand"),model:value("model"),status:value("status"),customerName:value("customerName"),customerPhone:value("customerPhone"),customerEmail:current.customer_email||"",repairOrderNumber:value("repairOrderNumber"),purchaseCost:value("purchaseCost"),salePrice:value("salePrice")};
+  try{await deviceApi("/api/admin/device-register/"+id,{method:"PUT",body:JSON.stringify(body)});deviceSetStatus("Rij opgeslagen.","success");await loadDeviceRegister()}catch(e){deviceSetStatus(e.message,"error")}
+}
+function deviceAddBlankRow(){
+  document.getElementById("drType")?.scrollIntoView({behavior:"smooth",block:"center"});
+  document.getElementById("drIdentifierValue")?.focus();
+  deviceSetStatus("Vul het formulier hieronder in en sla het toestel op. Daarna verschijnt het als nieuwe rij in de tabel.","info");
+}
+async function deviceLoadXlsx(){
+  if(window.XLSX)return;
+  await new Promise((resolve,reject)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";s.onload=resolve;s.onerror=()=>reject(Error("Excel-module kon niet worden geladen. Controleer de internetverbinding."));document.head.appendChild(s)});
+}
+async function deviceExportExcel(){
+  if(!deviceRegisterCache.length){alert("Geen gegevens om te exporteren. Laad eerst het overzicht.");return}
+  try{await deviceLoadXlsx();const rows=deviceRegisterCache.map(x=>({"Type":x.device_type==="commercial"?"commercial":"customer_repair","Identificatietype":x.identifier_type,"IMEI / code":x.identifier_value,"Merk":x.brand,"Model / naam":x.model,"Status":x.status,"Klantnaam":x.customer_name,"Telefoon":x.customer_phone,"E-mail":x.customer_email,"Ordernummer":x.repair_order_number,"Inkoopprijs":Number(x.purchase_cost||0),"Verkoopprijs":Number(x.sale_price||0),"Totale kosten":Number(x.purchase_cost||0)+Number(x.recorded_cost||0),"Marge":Number(x.sale_price||0)-Number(x.purchase_cost||0)-Number(x.recorded_cost||0)}));const ws=XLSX.utils.json_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Toestelregister");XLSX.writeFile(wb,"homs-tech-toestelregister.xlsx");deviceSetStatus("Excel-bestand geëxporteerd.","success")}catch(e){deviceSetStatus(e.message,"error")}
+}
+async function deviceImportExcel(event){
+  const file=event.target.files?.[0];if(!file)return;
+  try{
+    await deviceLoadXlsx();const data=await file.arrayBuffer();const wb=XLSX.read(data,{type:"array"});const ws=wb.Sheets[wb.SheetNames[0]];const raw=XLSX.utils.sheet_to_json(ws,{defval:"",raw:false});
+    const norm=s=>String(s??"").trim().toLowerCase().replace(/[ _/()-]/g,"");
+    const aliases={deviceType:["type","devicetype","toesteltype"],identifierType:["identificatietype","identifiertype","codetype"],identifierValue:["imei","imeicode","serienummer","barcode","htcode","identificatienummer"],brand:["merk","brand"],model:["model","naam","modelnaam","toestel"],status:["status"],customerName:["klantnaam","klant","customername","naamklant"],customerPhone:["telefoon","telefoonklant","customerphone"],customerEmail:["email","e-mail","klantemail"],repairOrderNumber:["ordernummer","reparatieordernummer","repairordernumber"],purchaseCost:["inkoopprijs","inkoop","purchasecost"],salePrice:["verkoopprijs","verkoop","saleprice"]};
+    const get=(r,k)=>{const keys=Object.keys(r);const hit=keys.find(h=>aliases[k].includes(norm(h)));return hit===undefined?"":r[hit]};
+    let added=0,skipped=0;
+    for(const r of raw){
+      const identifierValue=String(get(r,"identifierValue")).trim(),model=String(get(r,"model")).trim();if(!identifierValue||!model){skipped++;continue}
+      const deviceType=String(get(r,"deviceType")).toLowerCase().includes("commercial")||String(get(r,"deviceType")).toLowerCase().includes("eigen")?"commercial":"customer_repair";
+      const identifierType=String(get(r,"identifierType")).toLowerCase().includes("serial")?"serial":String(get(r,"identifierType")).toLowerCase().includes("barcode")?"barcode":"imei";
+      const status=String(get(r,"status")).trim()||(deviceType==="commercial"?"قيد الفحص":"مفتوح");
+      const body={deviceType,identifierType,identifierValue,model,brand:String(get(r,"brand")||"Apple"),status,customerName:String(get(r,"customerName")||""),customerPhone:String(get(r,"customerPhone")||""),customerEmail:String(get(r,"customerEmail")||""),repairOrderNumber:String(get(r,"repairOrderNumber")||""),purchaseCost:String(get(r,"purchaseCost")||"0").replace(",","."),salePrice:String(get(r,"salePrice")||"0").replace(",",".")};
+      try{await deviceApi("/api/admin/device-register",{method:"POST",body:JSON.stringify(body)});added++}catch(e){skipped++}
+    }
+    deviceSetStatus("Import klaar: "+added+" toegevoegd, "+skipped+" overgeslagen (lege of dubbele/ongeldige regels).","success");await loadDeviceRegister();
+  }catch(e){deviceSetStatus(e.message,"error")}finally{event.target.value=""}
+}
+
 async function deviceArchive(id,archived){if(!confirm(archived?"Dit toestel naar het archief verplaatsen? Je kunt het later herstellen.":"Dit toestel herstellen uit het archief?"))return;try{await deviceApi("/api/admin/device-register/"+id+"/archive",{method:"POST",body:JSON.stringify({archived})});deviceSetStatus(archived?"Toestel gearchiveerd.":"Toestel hersteld.","success");loadDeviceRegister()}catch(e){deviceSetStatus(e.message,"error")}}
 async function deviceAddOperation(id){
   const device=deviceRegisterCache.find(x=>Number(x.id)===id);if(!device)return;
