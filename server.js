@@ -4208,7 +4208,7 @@ app.post("/api/admin/emails/send",requirePermission("site.save"),async(req,res)=
     const apiKey=process.env.RESEND_API_KEY,from=process.env.RESEND_FROM_EMAIL;
     if(!apiKey||!from||from==="onboarding@resend.dev")return res.status(503).json({error:"Stel RESEND_API_KEY en een geverifieerd RESEND_FROM_EMAIL in."});
     const to=String(req.body?.to||"").trim().slice(0,254),subject=String(req.body?.subject||"").trim().slice(0,240),textBody=String(req.body?.text||"").trim().slice(0,50000);
-    if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(to)||!subject||!textBody)return res.status(400).json({error:"Vul een geldig e-mailadres, onderwerp en bericht in."});
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)||!subject||!textBody)return res.status(400).json({error:"Vul een geldig e-mailadres, onderwerp en bericht in."});
     const html=textBody.split(/\\r?\\n/).map(line=>line.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))).join("<br>");
     const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({from,to:[to],subject,text:textBody,html,reply_to:"mail@inbound.homs-tech.nl"})});
     const data=await response.json().catch(()=>({}));
