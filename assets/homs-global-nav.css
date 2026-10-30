@@ -1,68 +1,73 @@
-/* Shared HOMS TECH navigation: consistent across public pages */
+/* Shared HOMS TECH navigation — visual reference: Shop page */
 .homs-global-nav{
   display:block!important;
   width:100%!important;
   max-width:none!important;
-  min-height:46px!important;
+  min-height:48px!important;
   margin:0!important;
-  padding:0!important;
+  padding:8px 20px!important;
+  box-sizing:border-box!important;
   background:#fff!important;
   border-top:1px solid #eef2f6!important;
   border-bottom:1px solid #e7edf4!important;
   box-shadow:0 4px 14px rgba(7,29,45,.045)!important;
-  position:relative;
-  z-index:20;
+  position:relative!important;
+  z-index:20!important;
 }
 .homs-global-nav-inner{
-  box-sizing:border-box;
-  width:100%;
-  max-width:1450px;
-  min-height:46px;
-  margin:0 auto;
-  padding:0  clamp(12px,2.35vw,34px);
-  display:flex;
-  align-items:stretch;
-  justify-content:center;
-  gap:3px;
-  overflow-x:auto;
-  overflow-y:hidden;
-  white-space:nowrap;
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:1200px!important;
+  min-height:40px!important;
+  margin:0 auto!important;
+  padding:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  flex-wrap:nowrap!important;
+  gap:5px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  white-space:nowrap!important;
   scrollbar-width:thin;
   scrollbar-color:#cbd9e7 transparent;
 }
 .homs-global-nav-inner a{
-  box-sizing:border-box;
-  display:inline-flex;
-  flex:0 0 auto;
-  align-items:center;
-  justify-content:center;
-  min-height:46px;
-  padding:0 11px;
-  border-radius:0 0 7px 7px;
-  border-bottom:3px solid transparent;
+  box-sizing:border-box!important;
+  display:inline-flex!important;
+  flex:0 0 auto!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:38px!important;
+  padding:9px 11px!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:8px!important;
   color:#24344b!important;
   background:transparent!important;
-  font-family:Inter,Arial,Helvetica,sans-serif;
-  font-size:12px;
-  font-weight:750;
-  line-height:1.2;
+  font-family:Arial,Helvetica,sans-serif!important;
+  font-size:13px!important;
+  font-weight:700!important;
+  line-height:1.2!important;
   text-decoration:none!important;
-  transition:color .15s ease,background-color .15s ease,border-color .15s ease;
+  white-space:nowrap!important;
+  transition:color .15s ease,background-color .15s ease;
 }
 .homs-global-nav-inner a:hover,
-.homs-global-nav-inner a:focus-visible{
-  color:#066fe0!important;
-  background:#f2f8ff!important;
+.homs-global-nav-inner a:focus-visible,
+.homs-global-nav-inner a.active{
+  color:#2563eb!important;
+  background:#eaf2ff!important;
   outline:none;
 }
-.homs-global-nav-inner a.active{
-  color:#066fe0!important;
-  background:#edf6ff!important;
-  border-bottom-color:#1689ff;
-}
 @media(max-width:900px){
-  .homs-global-nav-inner{justify-content:flex-start;padding:0 12px}
-  .homs-global-nav-inner a{padding:0 10px;font-size:11px}
+  .homs-global-nav{padding:7px 14px!important}
+  .homs-global-nav-inner{justify-content:flex-start!important;gap:4px!important}
+  .homs-global-nav-inner a{font-size:12px!important;padding:8px 10px!important}
+}
+@media(max-width:560px){
+  .homs-global-nav{padding:6px 10px!important}
+  .homs-global-nav-inner a{min-height:36px!important;font-size:12px!important;padding:8px 9px!important}
 }
 @media(prefers-reduced-motion:reduce){
   .homs-global-nav-inner a{transition:none}
