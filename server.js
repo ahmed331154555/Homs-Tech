@@ -859,18 +859,32 @@ app.post("/api/login", async (req,res)=>{
 
 app.get("/api/me",async (req,res)=>{
   try{
-    const token=req.cookies.token;
-    if(!token) return res.status(401).json({authenticated:false});
-    const user=jwt.verify(token,process.env.JWT_SECRET);
+    const token=req.cookies?.token;
+    if(!token){
+      console.warn("Admin session check: token cookie missing");
+      return res.status(401).json({authenticated:false,reason:"cookie_missing"});
+    }
+    let user;
+    try{user=jwt.verify(token,process.env.JWT_SECRET);}
+    catch(e){
+      console.warn("Admin session check: token verification failed ("+String(e?.name||"Error")+")");
+      return res.status(401).json({authenticated:false,reason:"token_invalid"});
+    }
     if(user.username===String(process.env.ADMIN_USERNAME||"")){
       return res.json({authenticated:true,...getSuperAdminUser(user.username)});
     }
     const q=await pool.query(`SELECT id,username,role,permissions,active FROM admin_users WHERE id=$1 OR LOWER(username)=LOWER($2) LIMIT 1`,[user.id||0,user.username||""]);
-    if(!q.rows.length || !q.rows[0].active) return res.status(401).json({authenticated:false});
+    if(!q.rows.length || !q.rows[0].active){
+      console.warn("Admin session check: admin account missing or inactive");
+      return res.status(401).json({authenticated:false,reason:"admin_inactive"});
+    }
     const a=q.rows[0];
     const normalized={id:a.id,username:a.username,role:a.role||"admin",permissions:Array.isArray(a.permissions)?a.permissions:[]};
     res.json({authenticated:true,...normalized});
-  }catch(e){res.status(401).json({authenticated:false});}
+  }catch(e){
+    console.error("Admin session check failed:",String(e?.name||"Error"),String(e?.code||""));
+    res.status(500).json({authenticated:false,reason:"session_check_error"});
+  }
 });
 
 app.post("/api/logout",(req,res)=>{
