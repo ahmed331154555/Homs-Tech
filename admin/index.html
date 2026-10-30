@@ -1689,6 +1689,12 @@ textarea{
 #page-device-register .dr-sheet .dr-actions .btn{padding:8px 9px;font-size:12px}
 #page-device-register .device-register-toolbar .btn{white-space:nowrap}
 </style>
+
+<meta name="theme-color" content="#071d2d">
+<link rel="manifest" href="/admin/manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="/admin/homs-tech-app-icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="HOMS TECH">
 </head>
 
 <body>
@@ -8133,5 +8139,9 @@ try{deviceUpdateFields();}catch(e){console.error("[HOMS TECH] Device register UI
 
 </script>
 
+
+<script>
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navigator.serviceWorker.register("/admin/service-worker.js", {scope:"/admin/"}).catch(e => console.error("[HOMS TECH] PWA:",e)); }); }
+</script>
 </body>
 </html>
