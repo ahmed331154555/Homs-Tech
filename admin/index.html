@@ -7895,12 +7895,17 @@ let deviceRegisterCache=[];
 function deviceEuro(v){return new Intl.NumberFormat("nl-NL",{style:"currency",currency:"EUR"}).format(Number(v)||0)}
 function deviceSetStatus(msg,type="info"){const el=document.getElementById("deviceRegisterStatus");if(el){el.textContent=msg;el.className="status "+type}}
 function deviceUpdateFields(){
-  const type=document.getElementById("drType").value,commercial=type==="commercial";
+  const typeField=document.getElementById("drType");
+  const statusField=document.getElementById("drStatus");
+  // The current spreadsheet-style register has no legacy form fields.
+  // Do not let optional register UI initialization stop the admin login script.
+  if(!typeField||!statusField)return;
+  const type=typeField.value,commercial=type==="commercial";
   document.querySelectorAll(".dr-customer-field").forEach(el=>el.style.display=commercial?"none":"block");
   document.querySelectorAll(".dr-commercial-field").forEach(el=>el.style.display=commercial?"block":"none");
-  const sel=document.getElementById("drStatus"),old=sel.value,options=commercial?DEVICE_STATUS_COMMERCIAL:DEVICE_STATUS_CUSTOMER;
-  sel.innerHTML=options.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
-  if(options.includes(old))sel.value=old;
+  const old=statusField.value,options=commercial?DEVICE_STATUS_COMMERCIAL:DEVICE_STATUS_CUSTOMER;
+  statusField.innerHTML=options.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
+  if(options.includes(old))statusField.value=old;
 }
 async function deviceApi(url,options={}){
   const r=await fetch(url,{credentials:"same-origin",...options,headers:{"Content-Type":"application/json",...(options.headers||{})}});
@@ -8108,8 +8113,10 @@ deviceUpdateFields();
 
 /* START */
 
-renderPermissionCheckboxes('newAdminPermissions',[]);
+// Authenticate first. Optional page widgets must never prevent the admin session check.
 checkLogin();
+try{renderPermissionCheckboxes('newAdminPermissions',[]);}catch(e){console.error("[HOMS TECH] Permission UI initialization failed:",e);}
+try{deviceUpdateFields();}catch(e){console.error("[HOMS TECH] Device register UI initialization failed:",e);}
 
 </script>
 
