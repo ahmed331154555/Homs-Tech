@@ -7845,14 +7845,14 @@ function deviceRenderTable(){
   const rows=deviceRegisterCache;
   const headers=["Type","IMEI / serienummer / HT-code","Merk","Model / naam","Status","Klantnaam","Telefoon","Ordernummer","Inkoop (€)","Verkoop (€)","Acties"];
   host.innerHTML='<div class="dr-sheet-wrap"><table class="dr-sheet"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
-    rows.map(x=>'<tr data-row-id="'+Number(x.id)+'">'+
+    rows.map(x=>{const rowId=x.id?String(x.id):"new";return '<tr data-row-id="'+rowId+'">'+
       '<td style="padding:10px 12px;white-space:nowrap;font-weight:700">'+deviceTypeLabel(x.device_type)+'</td>'+
-      '<td><input class="dr-cell dr-readonly" value="'+esc(x.identifier_value)+'" readonly title="Identificatienummer kan niet inline worden gewijzigd"></td>'+
+      x.id?'<td><input class="dr-cell dr-readonly" value="'+esc(x.identifier_value)+'" readonly title="Identificatienummer kan niet inline worden gewijzigd"></td>':deviceCell(x.identifier_value,"identifierValue","new")+
       deviceCell(x.brand,"brand",x.id)+deviceCell(x.model,"model",x.id)+
       '<td><select class="dr-cell" data-field="status" data-id="'+Number(x.id)+'">'+(x.device_type==="commercial"?DEVICE_STATUS_COMMERCIAL:DEVICE_STATUS_CUSTOMER).map(v=>'<option '+(v===x.status?"selected":"")+'>'+esc(v)+'</option>').join('')+'</select></td>'+
       deviceCell(x.customer_name,"customerName",x.id)+deviceCell(x.customer_phone,"customerPhone",x.id)+deviceCell(x.repair_order_number,"repairOrderNumber",x.id)+
       deviceCell(x.purchase_cost,"purchaseCost",x.id,"number")+deviceCell(x.sale_price,"salePrice",x.id,"number")+
-      '<td class="dr-actions"><button class="btn btn-green" onclick="deviceSaveRow('+Number(x.id)+')">Opslaan</button><button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button class="btn btn-light" onclick="deviceAddOperation('+Number(x.id)+')">＋</button><button class="btn btn-light" onclick="deviceArchive('+Number(x.id)+',true)">Archief</button></td></tr>').join('')+
+      '<td class="dr-actions"><button class="btn btn-green" onclick="deviceSaveRow(\''+rowId+'\')">Opslaan</button>'+(x.id?'<button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button class="btn btn-light" onclick="deviceAddOperation('+Number(x.id)+')">＋</button><button class="btn btn-light" onclick="deviceArchive('+Number(x.id)+',true)">Archief</button>':'<span class="small">Nieuwe rij</span>')+'</td></tr>'}).join('')+
     '</tbody></table></div><p class="small" style="margin:10px 0 0">Tip: bewerk de cellen direct in de tabel en klik per rij op Opslaan. Scroll horizontaal om alle kolommen te zien.</p>';
 }
 async function loadDeviceRegister(){
@@ -7868,14 +7868,17 @@ async function loadDeviceRegister(){
 async function deviceSaveRow(id){
   const row=document.querySelector('tr[data-row-id="'+id+'"]');if(!row)return;
   const value=f=>row.querySelector('[data-field="'+f+'"]')?.value??"";
-  const current=deviceRegisterCache.find(x=>Number(x.id)===Number(id));if(!current)return;
-  const body={brand:value("brand"),model:value("model"),status:value("status"),customerName:value("customerName"),customerPhone:value("customerPhone"),customerEmail:current.customer_email||"",repairOrderNumber:value("repairOrderNumber"),purchaseCost:value("purchaseCost"),salePrice:value("salePrice")};
-  try{await deviceApi("/api/admin/device-register/"+id,{method:"PUT",body:JSON.stringify(body)});deviceSetStatus("Rij opgeslagen.","success");await loadDeviceRegister()}catch(e){deviceSetStatus(e.message,"error")}
+  const current=deviceRegisterCache.find(x=>String(x.id)===String(id));
+  const body={deviceType:current?.device_type||"commercial",identifierType:current?.identifier_type||"imei",identifierValue:value("identifierValue"),brand:value("brand"),model:value("model"),status:value("status"),customerName:value("customerName"),customerPhone:value("customerPhone"),customerEmail:current?.customer_email||"",repairOrderNumber:value("repairOrderNumber"),purchaseCost:value("purchaseCost")||"0",salePrice:value("salePrice")||"0"};
+  try{
+    if(id==="new"){await deviceApi("/api/admin/device-register",{method:"POST",body:JSON.stringify(body)})}
+    else{await deviceApi("/api/admin/device-register/"+id,{method:"PUT",body:JSON.stringify(body)})}
+    deviceSetStatus("Rij opgeslagen.","success");await loadDeviceRegister()
+  }catch(e){deviceSetStatus(e.message,"error")}
 }
 function deviceAddBlankRow(){
-  document.getElementById("drType")?.scrollIntoView({behavior:"smooth",block:"center"});
-  document.getElementById("drIdentifierValue")?.focus();
-  deviceSetStatus("Vul het formulier hieronder in en sla het toestel op. Daarna verschijnt het als nieuwe rij in de tabel.","info");
+  deviceRegisterCache.push({id:null,device_type:document.getElementById("deviceTypeFilter")?.value||"commercial",identifier_type:"imei",identifier_value:"",brand:"Apple",model:"",status:"قيد الفحص",customer_name:"",customer_phone:"",customer_email:"",repair_order_number:"",purchase_cost:0,sale_price:0});
+  deviceRenderTable();const row=document.querySelector('tr[data-row-id="new"]');row?.scrollIntoView({behavior:"smooth",block:"center",inline:"center"});row?.querySelector('[data-field="identifierValue"]')?.focus();deviceSetStatus("Vul de identificatie en modelnaam in en klik op Opslaan.","info");
 }
 async function deviceLoadXlsx(){
   if(window.XLSX)return;
