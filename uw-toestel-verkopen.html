@@ -347,7 +347,7 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 .sell-progress{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .sell-progress-step{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:68px;color:#30445d;font-size:12px;font-weight:700;white-space:nowrap}
 .sell-progress-step b{width:38px;height:38px;border:1px solid #cbd7e5;border-radius:50%;display:grid;place-items:center;background:#fff;font-size:17px}
-.sell-progress-step.active b{background:#075fe8;color:#fff;border-color:#075fe8}
+.sell-progress-step.active b{background:#075fe8;color:#fff;border-color:#075fe8}.sell-progress-step.done b{background:#e8f2ff;color:#075fe8;border-color:#b7d3ff}
 .sell-progress>i{height:2px;background:#d6e0ed;flex:1;margin-top:-22px}
 .iphone-only-label{border-radius:999px;background:#edf4ff;color:#075fe8;padding:9px 14px;font-size:12px;font-weight:850;white-space:nowrap}
 #step1{margin-top:2px}
@@ -465,9 +465,9 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
         </div>
         <div class="sell-progress" aria-label="Verkoopproces">
           <div class="sell-progress-step active" data-step="1"><b>1</b><span>iPhone kiezen</span></div>
-          <i class="sell-progress-line" data-line="1"></i><div class="sell-progress-step" data-step="2"><b>2</b><span>Gegevens</span></div>
-          <i class="sell-progress-line" data-line="2"></i><div class="sell-progress-step" data-step="3"><b>3</b><span>Beoordeling</span></div>
-          <i class="sell-progress-line" data-line="3"></i><div class="sell-progress-step" data-step="4"><b>4</b><span>Betaling</span></div>
+          <i class="sell-progress-line" data-line="1"></i><div class="sell-progress-step" data-step="2"><b>2</b><span>Toestelgegevens</span></div>
+          <i class="sell-progress-line" data-line="2"></i><div class="sell-progress-step" data-step="3"><b>3</b><span>Uw gegevens</span></div>
+          <i class="sell-progress-line" data-line="3"></i><div class="sell-progress-step" data-step="4"><b>4</b><span>Aanvraag</span></div>
         </div>
       </div>
     </div>
@@ -772,7 +772,7 @@ function categories(){
   if(selectedFamily){
     $('familyGrid').style.display='none';
     $('deviceGrid').style.display='grid';
-    $('familyBack').style.display='block';
+    $('familyBack').style.display='none';
     $('modelHeader').style.display='flex';
     $('modelHeaderTitle').textContent=selectedFamily;
     $('modelHeaderSub').textContent='Kies jouw exacte model';
@@ -882,7 +882,7 @@ function go(n){
   document.querySelectorAll('.sell-progress-line').forEach(el=>{const line=Number(el.dataset.line||0);el.classList.toggle('active',n>line);});
   window.scrollTo({top:document.querySelector('.hero').offsetTop-10,behavior:'smooth'});
 }
-$('toStep3').onclick=()=>{if(!validateDynamicQuestions())return;go(3)};
+$('toStep3').onclick=()=>$('toCheckout').click();
 $('toCheckout').onclick=()=>{
   if(!selectedModel||!validateDynamicQuestions())return;
   const v=calcQuote();
