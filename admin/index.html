@@ -7392,7 +7392,7 @@ async function save(isAuto=false){
       return false;
     }
     if(phone.setupWizard && phone.pricingMode==="variant" && Array.isArray(phone.variantPrices)){
-      const invalid=phone.variantPrices.find(row=>String(row.price??"").trim()==="" || !Number.isFinite(Number(String(row.price).replace(",", "."))) || Number(String(row.price).replace(",", "."))<0);
+      const invalid=phone.variantPrices.find(row=>!Number.isFinite(Number(row.price)) || Number(row.price)<=0);
       if(invalid){
         setStatus("✕ Controleer de vaste prijzen: elke prijs moet een geldig bedrag van € 0 of hoger zijn.","error");
         return false;
@@ -7440,24 +7440,7 @@ async function save(isAuto=false){
     }
     // The phone catalog can contain several MB of images. Send only that
     // section when editing phones instead of the full site settings document.
-    // Send only the data owned by the page being edited. The Homepage editor
-    // also contains compact editors for services, benefits and device categories.
-    const pageSaveKeys={
-      general:["homepage","services","why","deviceCategories"],
-      services:["services"],
-      repair:["repairPage"],
-      phones:["phones","phoneFolders"],
-      shop:["shopProducts"],
-      buyback:["buybackCatalog","buybackPhones"],
-      why:["why"],
-      categories:["deviceCategories","globalConditionDetails"],
-      used:["usedPhones"],
-      gsm:["gsmServices"]
-    };
-    const keys=pageSaveKeys[currentPage];
-    const requestPayload=keys
-      ? Object.fromEntries(keys.filter(key=>Object.prototype.hasOwnProperty.call(payload,key)).map(key=>[key,payload[key]]))
-      : payload;
+    const requestPayload=currentPage==="phones" ? {phones:payload.phones||[]} : currentPage==="shop" ? {shopProducts:payload.shopProducts||[]} : payload;
     const r=await fetch("/api/site",{
       method:"PUT",
       headers:{"Content-Type":"application/json","Accept":"application/json","X-Homs-Admin-Section":currentPage},
@@ -7499,7 +7482,6 @@ async function save(isAuto=false){
     else if(currentPage==="why") renderWhy();
     else if(currentPage==="gsm") renderGsmServices();
 
-    if(currentPage==="phones") await clearPhoneDraft();
     setStatus("✓ Alle wijzigingen zijn succesvol opgeslagen","success");
     return true;
   }catch(e){
