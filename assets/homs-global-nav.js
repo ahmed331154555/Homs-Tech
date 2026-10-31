@@ -13,8 +13,9 @@
  ];
  var style=document.createElement('style');
  style.textContent=`
- #homsMenuButton{position:fixed;top:50%;left:12px;right:auto;transform:translateY(-50%);z-index:100002;width:46px;height:46px;border:1px solid #e2e8f0;border-radius:11px;background:#fff;box-shadow:0 4px 18px #071d2d20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer}
- #homsMenuButton span{width:21px;height:2px;background:#071d2d;border-radius:2px;display:block}
+ #homsMenuButton{position:fixed;top:50%;left:12px;right:auto;transform:translateY(-50%);z-index:100002;width:54px;height:54px;border:2px solid rgba(255,255,255,.9);border-radius:50%;background:linear-gradient(145deg,#0b2b42,#071d2d);box-shadow:0 8px 22px rgba(7,29,45,.28),0 0 0 4px rgba(37,99,235,.10);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;transition:box-shadow .18s ease,transform .18s ease}
+ #homsMenuButton:active{transform:translateY(-50%) scale(.96)}
+ #homsMenuButton span{width:22px;height:2.5px;background:#fff;border-radius:3px;display:block}
  #homsMenuBackdrop{position:fixed;inset:0;background:#06131e88;z-index:100003;opacity:0;visibility:hidden;transition:.22s}
  #homsMenuBackdrop.open{opacity:1;visibility:visible}
  #homsMenuDrawer{position:fixed;inset:0 auto 0 0;width:min(88vw,370px);background:#fff;z-index:100004;transform:translateX(-105%);transition:transform .25s ease;overflow:auto;box-shadow:15px 0 40px #0002;font-family:Arial,Helvetica,sans-serif}
