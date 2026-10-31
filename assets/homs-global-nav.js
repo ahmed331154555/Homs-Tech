@@ -58,27 +58,6 @@
  }
  `;
 
- .homs-header-row{display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:8px!important;width:100%!important;padding:12px 20px!important;box-sizing:border-box!important;min-height:72px!important}
- .homs-header-row #homsMenuButton{order:1!important;flex:0 0 42px!important;width:42px!important;height:42px!important;margin:0 4px 0 0!important;padding:0!important}
- .homs-header-row .logo{order:2!important;display:flex!important;align-items:center!important;flex:0 1 150px!important;min-width:70px!important;max-width:170px!important;font-size:0!important;line-height:0!important}
- .homs-header-row .logo img{display:block!important;width:100%!important;max-width:155px!important;height:auto!important;max-height:48px!important;object-fit:contain!important}
- .homs-header-row form.ht-search,.homs-header-row form.search,.homs-header-row .search{order:5!important;display:flex!important;align-items:center!important;gap:8px!important;flex:0 0 100%!important;width:100%!important;max-width:100%!important;min-width:0!important;height:46px!important;margin:8px 0 0!important;padding:0 6px 0 14px!important;box-sizing:border-box!important;border:1px solid #d8e2ee!important;border-radius:13px!important;background:linear-gradient(180deg,#fff,#f5f8fc)!important;box-shadow:0 4px 14px rgba(7,29,45,.07)!important}
- .homs-header-row form.ht-search input,.homs-header-row form.search input,.homs-header-row .search input{flex:1 1 auto!important;width:100%!important;min-width:0!important;height:100%!important;padding:0 3px!important;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;font-size:14px!important;color:#14283b!important}
- .homs-header-row form.ht-search button,.homs-header-row form.search button,.homs-header-row .search button{flex:0 0 auto!important;height:36px!important;min-width:82px!important;padding:0 18px!important;border:0!important;border-radius:10px!important;background:linear-gradient(135deg,#1678f5,#0754c8)!important;color:white!important;font-size:13px!important;font-weight:800!important;box-shadow:0 4px 10px rgba(13,98,220,.24)!important}
- .homs-header-row .header-actions,.homs-header-row .ht-actions,.homs-header-row .headlinks,.homs-header-row .actions{order:4!important;display:flex!important;align-items:center!important;gap:10px!important;flex:0 0 auto!important;width:auto!important;min-width:0!important;margin-left:0!important;position:absolute!important;top:12px!important;right:20px!important}
- .homs-header-row .homs-icon-link{display:inline-flex!important;align-items:center!important;justify-content:center!important;position:relative!important;width:36px!important;height:42px!important;padding:0!important;color:#071d2d!important;font-size:0!important;text-decoration:none!important}
- .homs-header-row .homs-icon-link svg{display:block!important;width:29px!important;height:29px!important;fill:none!important;stroke:#071d2d!important;stroke-width:2.1!important;stroke-linecap:round!important;stroke-linejoin:round!important}
- .homs-header-row .homs-cart-badge{position:absolute!important;top:-2px!important;right:-5px!important;min-width:17px!important;height:17px!important;padding:0 4px!important;border-radius:99px!important;background:#2563eb!important;color:#fff!important;font-size:10px!important;font-weight:800!important;line-height:17px!important;text-align:center!important}
- @media(max-width:560px){
-  .homs-header-row{padding:12px 20px!important;gap:6px!important}
-  .homs-header-row .logo{flex-basis:125px!important;max-width:135px!important}
-  .homs-header-row .logo img{max-width:135px!important;max-height:42px!important}
-  .homs-header-row form.ht-search,.homs-header-row form.search,.homs-header-row .search{height:44px!important;margin-top:8px!important;padding-left:12px!important}
-  .homs-header-row form.ht-search button,.homs-header-row form.search button,.homs-header-row .search button{height:34px!important;min-width:76px!important;padding:0 14px!important}
-  .homs-header-row .header-actions,.homs-header-row .ht-actions,.homs-header-row .headlinks,.homs-header-row .actions{gap:5px!important}
-  .homs-header-row .homs-icon-link{width:32px!important}
- }
- `;
  document.head.appendChild(headerFix);
 
  function removeLegacyNavigation(){
