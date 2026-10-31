@@ -929,11 +929,29 @@ async function loadBuyback(){
     siteData=await r.json();
     const catalog=Array.isArray(siteData.buybackCatalog)?siteData.buybackCatalog:[];
     devices=flattenBuybackCatalog(catalog);
-    if(!devices.length){
-      devices=(Array.isArray(siteData.buybackPhones)?siteData.buybackPhones:[]).filter(x=>x.active!==false).map(x=>({...x,protocol:String(x.buybackProtocol||x.protocol||'1'),protocol2:x.protocol2||{},protocolSettings:x.buybackProtocolSettings?.[x.buybackProtocol==='1'?'1':'2']||{},typeQuestions:buildCustomerQuestions(x,{questions:[]})}));
-    }
-    // Deze verkooppagina toont voorlopig uitsluitend iPhone-modellen.
-    devices=devices.filter(d=>/iphone/i.test([d.name,d.brand,d.deviceType,d.type,d.family].filter(Boolean).join(' '))&&!/ipad|watch/i.test([d.name,d.deviceType,d.type].filter(Boolean).join(' ')));
+    // Also include active buyback phone records that are not linked to a catalog model.
+    // The admin stores the brand separately, so a model can be named "16 Pro Max"
+    // without the word "iPhone" in its model name.
+    const linkedIds=new Set(devices.map(d=>String(d.id)));
+    (Array.isArray(siteData.buybackPhones)?siteData.buybackPhones:[]).forEach(phone=>{
+      if(!phone||phone.active===false||linkedIds.has(String(phone.id)))return;
+      devices.push({...phone,brand:phone.brand||'',deviceType:phone.deviceType||phone.type||'Telefoon',
+        typeQuestions:buildCustomerQuestions(phone,{questions:[]}),
+        protocol:String(phone.buybackProtocol||phone.protocol||'1'),protocol2:phone.protocol2||{},
+        protocolSettings:phone.buybackProtocolSettings?.[phone.buybackProtocol==='1'?'1':'2']||{}});
+      linkedIds.add(String(phone.id));
+    });
+    // iPhone models may be named "iPhone 16 Pro" or simply "16 Pro Max"
+    // under the Apple brand. Exclude Apple tablets, watches and computers.
+    devices=devices.filter(d=>{
+      const name=String(d.name||'');
+      const brand=String(d.brand||'');
+      const type=String(d.deviceType||d.type||'');
+      const isApplePhone=/apple/i.test(brand)&&/telefoon|phone|smartphone/i.test(type);
+      const isNamedIphone=/iphone/i.test([name,type].join(' '));
+      const excluded=/ipad|watch|macbook|imac|mac mini/i.test([name,type].join(' '));
+      return !excluded&&(isNamedIphone||isApplePhone);
+    });
     selectedFamily='iPhone';
     categories();renderDevices();
   }catch(e){devices=[];categories();renderDevices()}
