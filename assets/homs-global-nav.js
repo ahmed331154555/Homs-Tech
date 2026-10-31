@@ -71,6 +71,13 @@
  .homs-header-row .homs-icon-link{position:relative!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;width:36px!important;height:42px!important;padding:0!important;color:#071d2d!important;text-decoration:none!important;font-size:0!important;white-space:nowrap!important}
  .homs-header-row .homs-icon-link svg{width:27px!important;height:27px!important;display:block!important;stroke:currentColor!important;fill:none!important;stroke-width:2!important;stroke-linecap:round!important;stroke-linejoin:round!important}
  .homs-header-row .homs-icon-link .cart-count,.homs-header-row .homs-icon-link #cartCount,.homs-header-row .homs-icon-link .homs-cart-badge{position:absolute!important;top:-2px!important;right:-5px!important;min-width:17px!important;height:17px!important;padding:0 4px!important;border-radius:99px!important;background:#2563eb!important;color:#fff!important;font-size:10px!important;font-weight:800!important;line-height:17px!important;text-align:center!important}
+ .homs-header-row form.search,.homs-header-row form.ht-search,.homs-header-row .search{order:5!important;flex:0 0 100%!important;width:100%!important;max-width:none!important;margin:10px 0 0!important;height:46px!important;padding:0 6px 0 14px!important;border:1px solid #d8e2ee!important;border-radius:13px!important;background:linear-gradient(180deg,#fff,#f5f8fc)!important;box-shadow:0 4px 14px rgba(7,29,45,.07)!important;display:flex!important;align-items:center!important;gap:9px!important}
+ .homs-header-row form.search input,.homs-header-row form.ht-search input,.homs-header-row .search input{flex:1 1 auto!important;min-width:0!important;font-size:13px!important}
+ .homs-header-row form.search button,.homs-header-row form.ht-search button,.homs-header-row .search button{height:36px!important;min-width:82px!important;padding:0 18px!important;border-radius:10px!important;background:linear-gradient(135deg,#1678f5 0%,#0754c8 100%)!important;color:#fff!important;font-size:12px!important;font-weight:850!important;letter-spacing:.01em!important;box-shadow:0 4px 10px rgba(13,98,220,.24)!important}
+ @media(max-width:560px){
+  .homs-header-row form.search,.homs-header-row form.ht-search,.homs-header-row .search{flex:0 0 100%!important;width:100%!important;max-width:none!important;margin:9px 0 0!important;height:43px!important;padding-left:12px!important}
+  .homs-header-row form.search button,.homs-header-row form.ht-search button,.homs-header-row .search button{height:33px!important;min-width:76px!important;padding:0 14px!important}
+ }
  @media(max-width:560px){
   .homs-header-row{gap:5px!important}
   .homs-header-row #homsMenuButton{flex-basis:32px!important;width:32px!important;height:38px!important}
