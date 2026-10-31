@@ -3472,21 +3472,11 @@ async function restorePhoneDraft(){
       if(index>=data.phones.length)data.phones.push(draft.phone);
       else data.phones.splice(index,0,draft.phone);
     }else{
-      // Existing-product drafts must still refer to a product that exists on the server.
-      // Otherwise an old draft could resurrect a product the admin deliberately deleted.
-      const draftId=String(draft.phone?.id||"").trim();
-      const draftSku=String(draft.phone?.sku||"").trim().toLowerCase();
-      const draftName=String(draft.phone?.name||"").trim().toLowerCase();
-      const draftBrand=String(draft.phone?.brand||"").trim().toLowerCase();
-      const match=data.phones.findIndex(p=>{
-        if(draftId && String(p?.id||"").trim()===draftId)return true;
-        if(draftSku && String(p?.sku||"").trim().toLowerCase()===draftSku)return true;
-        return !!draftName && String(p?.name||"").trim().toLowerCase()===draftName &&
-          String(p?.brand||"").trim().toLowerCase()===draftBrand;
-      });
-      if(match<0){await clearPhoneDraft();return false;}
-      index=match;
-      data.phones[index]=draft.phone;
+      // Existing-product drafts are device-local and may be older than the shared
+      // database version edited from another device. Never let a phone/desktop
+      // draft overwrite the canonical server product on load.
+      await clearPhoneDraft();
+      return false;
     }
     selectedPhoneIndex=index;phoneEditOnly=true;phoneWizardExistingEdit=!draft.isNew;
     setStatus("✓ Er is een lokaal opgeslagen productconcept hersteld. Controleer het en sla het opnieuw op.","info");
