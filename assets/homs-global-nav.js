@@ -38,6 +38,9 @@
  header:not(.ht-header)>.container{width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important;padding-left:12px!important;padding-right:12px!important;box-sizing:border-box!important}
  header .container:has(>.homs-header-row){width:100%!important;max-width:none!important;padding-left:24px!important;padding-right:24px!important;margin-left:0!important;margin-right:0!important;box-sizing:border-box!important}
  .homs-header-row{position:relative!important;display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:8px!important;width:100%!important;padding:12px 20px!important;box-sizing:border-box!important;min-height:72px!important}
+ .homs-header-row{justify-content:flex-start!important}
+ .homs-header-row .logo,.homs-header-row .brand,.homs-header-row .ht-brand{margin-left:8px!important;margin-right:auto!important;flex:0 1 155px!important}
+ .homs-header-row .header-actions{z-index:2!important}
  .homs-header-row #homsMenuButton{order:1!important;position:static!important;flex:0 0 42px!important;width:42px!important;height:42px!important;margin:0 4px 0 0!important;padding:0!important}
  .homs-header-row .brand,.homs-header-row .ht-brand,.homs-header-row .logo{order:2!important;display:flex!important;align-items:center!important;flex:0 1 150px!important;min-width:70px!important;max-width:170px!important;font-size:0!important;line-height:0!important}
  .homs-header-row .brand img,.homs-header-row .ht-brand img,.homs-header-row .logo img{display:block!important;width:100%!important;max-width:155px!important;height:auto!important;max-height:48px!important;object-fit:contain!important}
