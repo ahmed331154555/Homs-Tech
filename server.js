@@ -3597,6 +3597,32 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       return res.json({ success: true, shopProducts: saved.rows[0]?.products || [] });
     }
 
+    // Section-scoped settings updates: merge only keys owned by the active
+    // admin page. PostgreSQL JSONB concatenation preserves every other page.
+    const sectionKeys = {
+      general: ["homepage", "services", "why", "deviceCategories"],
+      services: ["services"],
+      repair: ["repairPage"],
+      buyback: ["buybackCatalog", "buybackPhones"],
+      why: ["why"],
+      categories: ["deviceCategories", "globalConditionDetails"],
+      used: ["usedPhones"],
+      gsm: ["gsmServices"]
+    };
+    const allowedKeys = sectionKeys[section];
+    if (allowedKeys && req.body && typeof req.body === "object" && !Array.isArray(req.body)) {
+      const patchKeys = Object.keys(req.body);
+      if (!patchKeys.length || patchKeys.some(key => !allowedKeys.includes(key))) {
+        return res.status(400).json({ error: "Ongeldige gegevens voor deze adminpagina." });
+      }
+      const saved = await queryWithConnectionRetry(
+        "UPDATE site_settings SET data = COALESCE(data, '{}'::jsonb) || $1::jsonb WHERE id = 1 RETURNING data",
+        [JSON.stringify(req.body)],
+        4
+      );
+      return res.json({ success: true, data: saved.rows[0]?.data || {} });
+    }
+
     const current = await queryWithConnectionRetry(
       "SELECT data FROM site_settings WHERE id = 1",
       [],
