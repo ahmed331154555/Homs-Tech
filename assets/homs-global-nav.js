@@ -35,7 +35,7 @@
  var headerFix=document.createElement('style');
  headerFix.textContent=`
  header.ht-header .ht-container,.homs-header-row{width:100%!important;max-width:none!important;box-sizing:border-box!important}
- header:not(.ht-header)>.container{width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important;padding-left:22px!important;padding-right:22px!important;box-sizing:border-box!important}
+ header:not(.ht-header)>.container{width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important;padding-left:12px!important;padding-right:12px!important;box-sizing:border-box!important}
  header .container:has(>.homs-header-row){width:100%!important;max-width:none!important;padding-left:24px!important;padding-right:24px!important;margin-left:0!important;margin-right:0!important;box-sizing:border-box!important}
  .homs-header-row{position:relative!important;display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:8px!important;width:100%!important;padding:12px 20px!important;box-sizing:border-box!important;min-height:72px!important}
  .homs-header-row #homsMenuButton{order:1!important;position:static!important;flex:0 0 42px!important;width:42px!important;height:42px!important;margin:0 4px 0 0!important;padding:0!important}
