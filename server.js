@@ -648,6 +648,30 @@ function sanitizeHomepageSiteData(input) {
   return sanitizePublicSiteData(data);
 }
 
+// Lightweight public catalog for the customer buyback page.
+// Avoid downloading the full site settings document (which can contain large
+// repair/product images) just to render the buyback model selector.
+app.get("/api/buyback/catalog", async (req, res) => {
+  try {
+    const result = await queryWithConnectionRetry(
+      "SELECT data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones FROM site_settings WHERE id = 1",
+      [],
+      4
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Buyback catalog not found" });
+    }
+    res.set("Cache-Control", "no-store");
+    return res.json({
+      buybackCatalog: Array.isArray(result.rows[0].catalog) ? result.rows[0].catalog : [],
+      buybackPhones: Array.isArray(result.rows[0].phones) ? result.rows[0].phones : []
+    });
+  } catch (error) {
+    console.error("[BUYBACK CATALOG] Load failed:", error);
+    return res.status(500).json({ error: "Buyback catalog could not be loaded" });
+  }
+});
+
 // Get website settings
 app.get("/api/site", async (req, res) => {
   try {
