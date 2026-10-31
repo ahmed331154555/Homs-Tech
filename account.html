@@ -37,7 +37,7 @@ input:focus{outline:3px solid rgba(37,99,235,.12);border-color:#2563eb}
 .account-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .info{background:#f8fafc;padding:18px;border-radius:12px}
 .info strong{display:block;margin-bottom:4px}
-.orders{margin-top:20px}.orders h2{margin-bottom:12px}.order-list{display:flex;flex-direction:column;gap:10px}.order-item{border:1px solid #e5e7eb;border-radius:12px;padding:14px;background:#f8fafc}.order-item-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.order-name{font-weight:900}.order-date{font-size:12px;color:#64748b}.order-status{padding:5px 9px;border-radius:999px;background:#e2e8f0;font-size:12px;font-weight:800}.order-detail{margin-top:8px;font-size:13px;color:#475569}.orders-empty{color:#64748b;padding:15px;background:#f8fafc;border-radius:10px}
+.orders{margin-top:20px}.orders h2{margin-bottom:12px}.order-list{display:flex;flex-direction:column;gap:10px}.order-item{border:1px solid #e5e7eb;border-radius:12px;padding:14px;background:#f8fafc}.order-item-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.order-name{font-weight:900}.order-date{font-size:12px;color:#64748b}.order-status{padding:5px 9px;border-radius:999px;background:#eaf2ff;color:#1d4ed8;font-size:12px;font-weight:800}.order-status.done{background:#dcfce7;color:#166534}.order-status.progress{background:#fef3c7;color:#92400e}.order-status.cancelled{background:#fee2e2;color:#991b1b}.order-detail{margin-top:8px;font-size:13px;color:#475569}.orders-empty{color:#64748b;padding:15px;background:#f8fafc;border-radius:10px}
 @media(max-width:650px){.nav{flex-direction:column;padding:12px 15px}.form,.account-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.section{padding:45px 16px}h1{font-size:31px}}
 
 .ht-site-footer{background:#071d2d;color:#fff;margin-top:36px;padding:38px 20px 18px;font-size:14px}
@@ -49,6 +49,31 @@ input:focus{outline:3px solid rgba(37,99,235,.12);border-color:#2563eb}
 .ht-footer-bottom{max-width:1200px;margin:26px auto 0;padding-top:14px;border-top:1px solid #334155;display:flex;justify-content:space-between;gap:12px;color:#cbd5e1;font-size:12px}
 @media(max-width:760px){.ht-footer-grid{grid-template-columns:1fr 1fr;gap:22px}.ht-footer-bottom{flex-direction:column}}
 @media(max-width:460px){.ht-footer-grid{grid-template-columns:1fr}}
+
+
+/* Account dashboard — clear, responsive customer layout */
+#accountCard{max-width:1040px;margin:0 auto;padding:clamp(18px,3vw,32px)}
+#accountCard h1{font-size:clamp(25px,4vw,34px)!important;color:#102033}
+#accountCard .subtitle{margin-bottom:22px}
+.account-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.account-grid .info{min-width:0;border:1px solid #e7edf4;background:#f8fafc;padding:15px 17px}
+.account-grid .info strong{font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.04em}
+.account-grid .info span{display:block;overflow-wrap:anywhere;color:#172330;font-weight:650}
+.orders{margin-top:28px}
+.orders h2{display:flex;align-items:center;gap:9px;margin-bottom:14px;color:#102033;font-size:21px!important}
+.order-list{gap:12px}
+.order-item{padding:0;background:#fff;border:1px solid #e2e8f0;border-radius:15px;overflow:hidden;box-shadow:0 3px 12px rgba(15,23,42,.035)}
+.order-item-head{padding:15px 17px;background:#f8fafc;border-bottom:1px solid #edf1f5;align-items:center}
+.order-name{font-size:16px;color:#102033}
+.order-date{margin-top:3px;font-size:12px;color:#718096}
+.order-status{white-space:nowrap;padding:6px 11px;background:#eaf2ff;color:#1d4ed8;border:1px solid #dbeafe}
+.order-details-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:14px 17px}
+.order-detail-cell{min-width:0;color:#64748b;font-size:12px}
+.order-detail-cell strong{display:block;margin-top:3px;color:#1e293b;font-size:13px;font-weight:700;overflow-wrap:anywhere}
+.order-notes{margin:0 17px 16px;padding:12px 14px;border-radius:10px;background:#f8fafc;color:#475569;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}
+.orders-empty{border:1px dashed #cbd5e1;background:#f8fafc;padding:22px;text-align:center}
+#accountCard .actions{padding-top:18px;border-top:1px solid #edf1f5}
+@media(max-width:600px){#accountCard{padding:18px 14px}.account-grid,.order-details-grid{grid-template-columns:1fr}.order-item-head{align-items:flex-start}.order-name{font-size:14px}.order-status{font-size:11px}.section{padding:24px 12px}}
 
 </style>
 <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20260922-final-header">
@@ -105,7 +130,7 @@ input:focus{outline:3px solid rgba(37,99,235,.12);border-color:#2563eb}
 </head>
 <body>
 <div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div>
-<header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a class="active" href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a><a href="used.html">Tweedehands</a><a href="gsm-services.html">GSM Services</a>
+<header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a class="active" href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a><a href="used.html">Tweedehands</a>
    <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a></nav></div></header>
 
 <section class="section">
@@ -181,12 +206,8 @@ input:focus{outline:3px solid rgba(37,99,235,.12);border-color:#2563eb}
 <div class="info"><strong>Adres</strong><span id="customerAddress"></span></div>
 </div>
 <div class="orders">
-<h2>📋 Mijn GSM-service bestellingen</h2>
+<h2>Mijn bestellingen</h2>
 <div id="myOrders" class="order-list"><div class="orders-empty">Bestellingen laden...</div></div>
-</div>
-<div class="orders">
-<h2>📥 Mijn firmware-downloads</h2>
-<div id="myFirmwareDownloads" class="order-list"><div class="orders-empty">Downloads laden...</div></div>
 </div>
 <div class="actions">
 <a class="btn blue" href="devices.html">📱 Bekijk telefoons</a>
@@ -272,27 +293,28 @@ const data=await api("/api/customer/orders");
 const orders=data.orders||[];
 if(!orders.length){box.innerHTML='<div class="orders-empty">Nog geen GSM-service bestellingen.</div>';return;}
 box.innerHTML=orders.map(order=>{
-const date=order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"";
-const price=order.price?"€ "+order.price:"Op aanvraag";
-return `<div class="order-item"><div class="order-item-head"><div><div class="order-name">#${order.id} — ${escapeHtml(order.service_name||"GSM Service")}</div><div class="order-date">${escapeHtml(date)}</div></div><span class="order-status">${escapeHtml(order.status||"Nieuw")}</span></div><div class="order-detail">Prijs: <strong>${escapeHtml(price)}</strong>${order.imei?` · IMEI: ${escapeHtml(order.imei)}`:""}</div>${order.notes?`<div class="order-detail">${escapeHtml(order.notes)}</div>`:""}</div>`;
+const date=order.created_at?new Date(order.created_at).toLocaleString("nl-NL",{dateStyle:"medium",timeStyle:"short"}):"—";
+const price=order.price!==null&&order.price!==undefined&&order.price!==""?new Intl.NumberFormat("nl-NL",{style:"currency",currency:order.price_currency||"EUR"}).format(Number(order.price)):"Op aanvraag";
+const status=order.status||"Nieuw";
+const statusClass=/voltooid|afgerond|geleverd/i.test(status)?"done":/behandeling|bezig|processing/i.test(status)?"progress":/annul|geweigerd/i.test(status)?"cancelled":"new";
+const details=[
+["Type service",order.service_category],
+["Categorie",order.service_group],
+["Prijs",price],
+["IMEI",order.imei],
+["Telefoon",order.phone],
+["Gebruikersnaam",order.username],
+["E-mail",order.email],
+["Referentie",order.service_source_id]
+].filter(x=>x[1]!==null&&x[1]!==undefined&&String(x[1]).trim()!=="");
+const extra=order.extra_fields&&typeof order.extra_fields==="object"?Object.entries(order.extra_fields):[];
+const required=order.required_fields&&typeof order.required_fields==="object"?Object.entries(order.required_fields):[];
+const extraRows=[...required,...extra].filter(x=>x[1]!==null&&x[1]!==undefined&&String(x[1]).trim()!=="");
+return '<article class="order-item"><div class="order-item-head"><div><div class="order-name">Bestelling #'+escapeHtml(order.id)+' — '+escapeHtml(order.service_name||"Service")+'</div><div class="order-date">Aangemaakt: '+escapeHtml(date)+'</div></div><span class="order-status '+statusClass+'">'+escapeHtml(status)+'</span></div><div class="order-details-grid">'+details.map(x=>'<div class="order-detail-cell">'+escapeHtml(x[0])+'<strong>'+escapeHtml(x[1])+'</strong></div>').join("")+extraRows.map(x=>'<div class="order-detail-cell">'+escapeHtml(x[0])+'<strong>'+escapeHtml(typeof x[1]==="object"?JSON.stringify(x[1]):x[1])+'</strong></div>').join("")+'</div>'+(order.service_instructions?'<div class="order-notes"><strong>Instructies</strong><br>'+escapeHtml(order.service_instructions)+'</div>':'')+(order.notes?'<div class="order-notes"><strong>Extra informatie</strong><br>'+escapeHtml(order.notes)+'</div>':'')+'</article>';
 }).join("");
 }catch(e){box.innerHTML='<div class="orders-empty">Bestellingen konden niet worden geladen.</div>';}
 }
 
-async function loadMyFirmwareDownloads(){
-const box=document.getElementById("myFirmwareDownloads");
-if(!box)return;
-try{
-const data=await api("/api/customer/downloads");
-const downloads=data.downloads||[];
-if(!downloads.length){box.innerHTML='<div class="orders-empty">Nog geen firmwarebestanden gedownload.</div>';return;}
-box.innerHTML=downloads.map(item=>{
-const when=item.downloaded_at?new Date(item.downloaded_at).toLocaleString("nl-NL"):"";
-const link=item.firmware_item_id?'<a class="btn blue" style="display:inline-flex;margin-top:8px" href="/api/firmware/download/'+encodeURIComponent(item.firmware_item_id)+'">Opnieuw downloaden</a>':'<span class="order-detail">Bestand is niet meer beschikbaar.</span>';
-return '<div class="order-item"><div class="order-item-head"><div><div class="order-name">'+escapeHtml(item.file_name||"Firmwarebestand")+'</div><div class="order-date">'+escapeHtml(when)+'</div></div></div>'+link+'</div>';
-}).join("");
-}catch(e){box.innerHTML='<div class="orders-empty">Firmware-downloads konden niet worden geladen.</div>';}
-}
 
 function continueFirmwareDownloadAfterLogin(){
 const target=new URLSearchParams(window.location.search).get("returnTo")||"";
@@ -414,7 +436,7 @@ if(data.authenticated){if(continueFirmwareDownloadAfterLogin())return;showAccoun
 
 <footer class="ht-site-footer" aria-label="Footer HOMS TECH">
   <div class="ht-footer-grid">
-    <div><div class="ht-footer-logo">HOMS <span>TECH</span></div><p>Refurbished apparaten · Reparatie aan huis · GSM Services</p></div>
+    <div><div class="ht-footer-logo">HOMS <span>TECH</span></div><p>Refurbished apparaten · Reparatie aan huis</p></div>
     <div><h2>Snelle links</h2><ul><li><a href="index.html">Home</a></li><li><a href="devices.html">Apparaten</a></li><li><a href="repair.html">Reparaties</a></li><li><a href="prices.html">Prijzen</a></li></ul></div>
     <div><h2>Service</h2><ul><li><a href="about.html">Over ons</a></li><li><a href="used.html">Tweedehands</a></li><li><a href="uw-toestel-verkopen.html">Uw toestel verkopen</a></li><li><a href="account.html">Mijn account</a></li></ul></div>
     <div><h2>Hulp nodig?</h2><p>Bekijk onze reparaties of neem contact op via WhatsApp.</p><a class="ht-footer-cta" href="repair.html">Reparatie aanvragen →</a></div>
