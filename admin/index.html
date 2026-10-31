@@ -3514,6 +3514,20 @@ async function loadData(){
 
     normalizeData();
 
+    // The guided setup wizard is a temporary editor state, not product data.
+    // Older saves may have persisted setupWizard=true and reopened the same
+    // existing product editor on every reload. Clear it for server products;
+    // genuinely new unsaved drafts are restored immediately below.
+    if(Array.isArray(data.phones)){
+      data.phones.forEach(phone=>{
+        if(phone && phone.setupWizard){
+          phone.setupWizard=false;
+          delete phone.setupStep;
+          delete phone.setupDone;
+        }
+      });
+    }
+
     const phoneDraftRestored=await restorePhoneDraft();
     renderAll();
 
