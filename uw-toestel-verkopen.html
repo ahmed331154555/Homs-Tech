@@ -25,7 +25,7 @@ a{text-decoration:none;color:inherit}
 /* HEADER */
 .topbar{height:34px;background:var(--navy);color:#dbeafe;font-size:12px}
 .topbar .wrap{height:100%;display:flex;align-items:center;justify-content:space-between}
-.topbar b{color:#fff}.head{height:76px;background:#fff;border-bottom:1px solid var(--line)}
+.topbar b{color:#fff}.head{height:auto!important;min-height:76px;background:#fff;border-bottom:1px solid var(--line);position:relative;z-index:1002}.head .wrap{height:auto!important;min-height:76px;flex-wrap:wrap;padding-top:10px;padding-bottom:10px;row-gap:8px}.head .search button{height:34px;min-width:76px;margin-right:4px;padding:0 16px;border:0;border-radius:9px;background:linear-gradient(135deg,#1678f5,#0754c8);color:#fff;font-weight:800;box-shadow:0 4px 10px rgba(13,98,220,.24)}
 .head .wrap{height:100%;display:flex;align-items:center;gap:22px}
 .logo{display:flex;align-items:center;min-width:155px}.logo img{width:142px;max-height:46px;object-fit:contain}
 .search{height:42px;flex:1;max-width:410px;border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;background:#fff}
@@ -267,7 +267,7 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 
 <header class="head"><div class="wrap">
   <a class="logo" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a>
-  <div class="search"><span>⌕</span><input id="siteSearch" placeholder="Zoek een toestel, reparatie of product..."></div>
+  <form class="search" action="devices.html" method="get"><span>⌕</span><input id="siteSearch" name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form>
   <div class="headlinks"><a href="account.html">Mijn account</a><a href="cart.html">Winkelwagen</a></div>
 </div></header>
 
