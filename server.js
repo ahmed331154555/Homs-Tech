@@ -3564,7 +3564,7 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
     // Read and update just this JSON key to reduce request/response memory use.
     const isPhoneCatalogPatch = section === "phones" &&
       req.body && Array.isArray(req.body.phones) &&
-      Object.keys(req.body).length === 1;
+      Object.keys(req.body).every(key => ["phones", "phoneFolders"].includes(key));
 
     if (isPhoneCatalogPatch) {
       const current = await queryWithConnectionRetry(
@@ -3574,14 +3574,18 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       );
       const existing = { phones: current.rows[0]?.phones || [] };
       const incoming = preserveExistingCatalogPhotos(existing, { phones: req.body.phones });
+      const phonePatch = { phones: incoming.phones };
+      if (Object.prototype.hasOwnProperty.call(req.body, "phoneFolders")) {
+        phonePatch.phoneFolders = req.body.phoneFolders;
+      }
 
-      await queryWithConnectionRetry(
-        "UPDATE site_settings SET data = jsonb_set(data, '{phones}', $1::jsonb, true) WHERE id = 1 RETURNING data->'phones' AS phones",
-        [JSON.stringify(incoming.phones)],
+      const saved = await queryWithConnectionRetry(
+        "UPDATE site_settings SET data = COALESCE(data, '{}'::jsonb) || $1::jsonb WHERE id = 1 RETURNING data->'phones' AS phones",
+        [JSON.stringify(phonePatch)],
         4
       );
 
-      return res.json({ success: true, phones: incoming.phones });
+      return res.json({ success: true, phones: saved.rows[0]?.phones || incoming.phones });
     }
 
     const isShopCatalogPatch = section === "shop" &&
