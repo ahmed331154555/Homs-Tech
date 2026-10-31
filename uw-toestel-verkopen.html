@@ -334,6 +334,110 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 }
 </style>
 
+
+<style id="homs-iphone-buyback-layout">
+/* HOMS TECH iPhone-only sell flow — scoped to this page's content; header remains unchanged. */
+.hero{padding:18px 0 18px!important;background:#f7faff!important}
+.sell-page-intro{padding:0 12px}
+.sell-page-intro .crumb{color:#52647a;font-size:13px;margin:0 0 12px}
+.sell-intro-row{display:grid;grid-template-columns:1fr minmax(440px,.95fr);gap:24px;align-items:center}
+.sell-intro-row h1{margin:0 0 8px;color:#071d2d;font-size:clamp(30px,3.4vw,42px);line-height:1.1;letter-spacing:-1.2px}
+.sell-intro-row h1 span{display:inline!important;color:#1265e8!important}
+.sell-intro-row p{color:#34465b;font-size:16px;max-width:700px}
+.sell-progress{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sell-progress-step{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:68px;color:#30445d;font-size:12px;font-weight:700;white-space:nowrap}
+.sell-progress-step b{width:38px;height:38px;border:1px solid #cbd7e5;border-radius:50%;display:grid;place-items:center;background:#fff;font-size:17px}
+.sell-progress-step.active b{background:#075fe8;color:#fff;border-color:#075fe8}
+.sell-progress>i{height:2px;background:#d6e0ed;flex:1;margin-top:-22px}
+.iphone-only-label{border-radius:999px;background:#edf4ff;color:#075fe8;padding:9px 14px;font-size:12px;font-weight:850;white-space:nowrap}
+#step1{margin-top:2px}
+#step1 .panel-head{align-items:center}
+#step1 .panel-head h2{font-size:21px}
+.buyback-step{padding:4px 0 48px}
+.buyback-layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,.95fr);gap:22px;align-items:start}
+.buyback-main-column{display:grid;gap:16px;min-width:0}
+.buyback-step .panel{padding:22px;border:1px solid #e0e7f0;border-radius:19px;background:#fff;box-shadow:0 12px 30px rgba(7,29,45,.07)}
+.buyback-step .panel-head{margin-bottom:18px}
+.buyback-step .panel-head h2{font-size:19px}
+.buyback-step .panel-head p{font-size:12px}
+.buyback-step .product-card{grid-template-columns:minmax(150px,205px) minmax(0,1fr);gap:22px;align-items:center}
+.buyback-step .product-image{min-height:225px;padding:12px;background:linear-gradient(145deg,#f8fafc,#edf3fa)}
+.buyback-step .product-info{padding:4px 0}
+.buyback-step .product-info h2{font-size:24px}
+.quote-inline{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin:12px 0 14px}
+.quote-inline small{color:#64748b;font-size:12px;font-weight:750}
+.quote-inline strong{color:#075fe8;font-size:40px;line-height:1.1;letter-spacing:-1px}
+.quote-inline span{font-size:11px;color:#075fe8;background:#edf4ff;border-radius:8px;padding:6px 9px;font-weight:750}
+.buyback-step .label{margin:12px 0 7px}
+.buyback-step .condition-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.buyback-step .condition{min-height:62px;padding:10px 12px}
+.questions-panel{padding:0!important;overflow:hidden}
+.questions-heading{display:flex;align-items:center;gap:12px;padding:16px 18px;background:#edf4ff;border-bottom:1px solid #dce8f8}
+.questions-heading-icon{width:34px;height:34px;border-radius:10px;background:#fff;color:#075fe8;display:grid;place-items:center;font-size:20px;font-weight:900}
+.questions-heading h3{font-size:18px;margin:0;color:#102033}
+.questions-heading p{font-size:12px;color:#64748b;margin:3px 0 0}
+.dynamic-questions{display:block;margin:0;padding:0 18px}
+.dynamic-question{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,.9fr);align-items:center;gap:18px;margin:0;padding:11px 4px;border:0;border-bottom:1px solid #e8edf3;border-radius:0;background:#fff}
+.dynamic-question:last-child{border-bottom:0}
+.dynamic-question-title{display:flex;align-items:center;gap:10px;margin:0;font-size:13px;font-weight:800;color:#172b42}
+.question-icon{width:27px;height:27px;flex:none;display:grid;place-items:center;border-radius:8px;background:#edf4ff;color:#075fe8;font-size:16px}
+.dynamic-select{width:100%;min-height:40px;border:1px solid #d5dfeb;border-radius:10px;padding:0 12px;background:#fff;color:#15263a;font-size:13px;font-weight:700}
+.dynamic-select:focus{outline:0;border-color:#1677ff;box-shadow:0 0 0 3px #1677ff18}
+.dynamic-question-required{color:#dc2626;margin-left:4px}
+.dynamic-question .dynamic-text{min-height:74px}
+.dynamic-info-line{display:flex;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid #e8edf3;font-size:13px}
+.inspection-note{margin:12px 18px 0;padding:12px 14px;border-radius:11px;background:#f2f7ff;display:flex;flex-direction:column;gap:4px;color:#18324e;font-size:12px}
+.inspection-note b{font-size:13px}
+.inspection-note span{color:#52647a;line-height:1.5}
+.buyback-step .totalbar{margin:14px 18px 18px;padding:13px 0 0;border:0;border-top:1px solid #e8edf3;border-radius:0;background:#fff;grid-template-columns:1fr auto;gap:14px}
+.buyback-step .totalbar .total strong{font-size:27px}
+.buyback-step .totalbar .primary{min-height:48px;white-space:nowrap}
+.buyback-side{display:grid;gap:16px}
+.service-panel h3,.trust-panel h3{font-size:20px;margin:0 0 18px;color:#102033}
+.service-step{display:flex;align-items:center;gap:13px;margin:14px 0}
+.service-step>span{width:43px;height:43px;flex:none;border-radius:12px;background:#edf4ff;color:#075fe8;display:grid;place-items:center;font-size:19px;font-weight:900}
+.service-step div{display:flex;flex-direction:column;gap:4px}
+.service-step b{font-size:13px;color:#15263a}
+.service-step small{font-size:12px;color:#64748b;line-height:1.4}
+.trust-panel{background:linear-gradient(145deg,#fff,#f5f8ff)!important}
+.trust-panel ul{list-style:none;padding:0;margin:0 0 16px}
+.trust-panel li{font-size:12px;color:#41566e;padding:8px 0;border-bottom:1px solid #e8edf3}
+.trust-panel li:before{content:"✓";color:#0873ed;font-weight:900;margin-right:9px}
+.trust-panel a{display:block;padding:12px;border-radius:10px;background:#edf4ff;color:#075fe8;font-size:12px;font-weight:800;text-align:center}
+@media(max-width:900px){
+ .sell-intro-row{grid-template-columns:1fr;gap:16px}
+ .sell-progress{max-width:600px}
+ .buyback-layout{grid-template-columns:1fr}
+ .buyback-side{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+ .hero{padding:14px 0!important}
+ .sell-page-intro{padding:0 2px}
+ .sell-intro-row h1{font-size:31px}
+ .sell-intro-row p{font-size:13px}
+ .sell-progress-step{font-size:9px;min-width:54px}
+ .sell-progress-step b{width:31px;height:31px;font-size:14px}
+ .sell-progress>i{margin-top:-18px}
+ #step1 .panel-head{align-items:flex-start;flex-direction:column;gap:8px}
+ .buyback-step .panel{padding:15px;border-radius:15px}
+ .buyback-step .product-card{grid-template-columns:105px minmax(0,1fr);gap:13px}
+ .buyback-step .product-image{min-height:145px;padding:5px}
+ .buyback-step .product-info h2{font-size:17px}
+ .quote-inline strong{font-size:30px}
+ .quote-inline{margin:8px 0}
+ .buyback-step .condition-grid{grid-template-columns:1fr 1fr}
+ .questions-heading{padding:13px}
+ .dynamic-questions{padding:0 12px}
+ .dynamic-question{grid-template-columns:1fr;gap:7px;padding:11px 2px}
+ .dynamic-question-title{font-size:12px}
+ .dynamic-select{min-height:42px}
+ .inspection-note{margin:10px 12px 0}
+ .buyback-step .totalbar{margin:12px;padding-top:12px;grid-template-columns:1fr}
+ .buyback-step .totalbar .primary{width:100%;white-space:normal}
+ .buyback-side{grid-template-columns:1fr}
+}
+</style>
+
 </head>
 <body>
 
@@ -352,28 +456,21 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 
 <section class="hero">
   <div class="wrap">
-    <div class="sell-hero-card">
-      <div class="sell-copy">
-        <div class="sell-kicker">HOMS TECH <span style="color:#d8eaff;font-weight:500">|</span> UW TOESTEL VERKOPEN</div>
-        <div class="crumb">Home <b>›</b> Verkopen</div>
-        <h1>Uw toestel <span>verkopen?</span></h1>
-        <p>Ontvang direct een eerlijk bod voor je iPhone. Verkoop je oude toestel eenvoudig, snel en veilig bij HOMS TECH. Wij zorgen voor een betrouwbare afhandeling en een snelle betaling.</p>
-        <div class="sell-benefit-row">
-          <div class="sell-benefit"><span class="sell-benefit-icon">♢</span><span>Eerlijke prijzen<br><small style="font-weight:500;color:#b8cfe3">Gebaseerd op de marktwaarde</small></span></div>
-          <div class="sell-benefit"><span class="sell-benefit-icon">ϟ</span><span>Snelle afhandeling<br><small style="font-weight:500;color:#b8cfe3">Snelle beoordeling</small></span></div>
-          <div class="sell-benefit"><span class="sell-benefit-icon">✓</span><span>Veilig en betrouwbaar<br><small style="font-weight:500;color:#b8cfe3">Verzenden of inleveren</small></span></div>
+    <div class="sell-page-intro">
+      <div class="crumb">Home <b>›</b> Verkopen</div>
+      <div class="sell-intro-row">
+        <div>
+          <h1>Uw <span>iPhone</span> verkopen</h1>
+          <p>Verkoop uw iPhone snel, veilig en voor een eerlijke prijs bij HOMS TECH.</p>
         </div>
-        <div class="sell-actions"><a class="sell-cta" href="#step1">♢ Toestel verkopen <span>→</span></a><a class="sell-how" href="#step1">Hoe werkt het? &nbsp; →</a></div>
-      </div>
-      <div class="sell-visual">
-        <img class="sell-phone-image" src="https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/iphone-14-pro-finish-select-202209-6-1inch-spaceblack?wid=1600&hei=1600&fmt=p-jpg&qlt=85" alt="Smartphones voor verkoop bij HOMS TECH" loading="eager">
-        <div class="sell-floating one"><span>€</span><div>Direct een<br>eerlijk bod</div></div>
-        <div class="sell-floating two"><span>□</span><div>Gratis verzending<br>of inleveren</div></div>
-        <div class="sell-floating three"><span>✓</span><div>Veilige afhandeling<br>en snelle betaling</div></div>
+        <div class="sell-progress" aria-label="Verkoopproces">
+          <div class="sell-progress-step active"><b>1</b><span>iPhone kiezen</span></div>
+          <i></i><div class="sell-progress-step"><b>2</b><span>Gegevens</span></div>
+          <i></i><div class="sell-progress-step"><b>3</b><span>Beoordeling</span></div>
+          <i></i><div class="sell-progress-step"><b>4</b><span>Betaling</span></div>
+        </div>
       </div>
     </div>
-    <div class="stepper"><div id="d1" class="sdot active">1</div><div id="l1" class="sline"></div><div id="d2" class="sdot">2</div><div id="l2" class="sline"></div><div id="d3" class="sdot">3</div><div id="l3" class="sline"></div><div id="d4" class="sdot">4</div></div>
-    <div class="step-labels"><span>Toestel kiezen</span><span>Staat & gegevens</span><span>Uw gegevens</span><span>Aanvraag versturen</span></div>
   </div>
 </section>
 
@@ -381,10 +478,11 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 
 <section id="step1" class="panel forzastyle-panel">
   <div class="panel-head forzastyle-head">
-    <div><h2 id="chooseTitle">Welk toestel wilt u verkopen?</h2><p>Kies eerst een apparaatgroep. Daarna kies je het exacte model.</p></div>
+    <div><h2 id="chooseTitle">Welk iPhone-model wilt u verkopen?</h2><p>Kies uw iPhone-model om de geschatte verkoopwaarde te bekijken.</p></div>
+    <span class="iphone-only-label">Alleen iPhone</span>
   </div>
   <div class="forza-searchrow">
-    <div class="searchbox"><span>⌕</span><input id="deviceSearch" class="field" placeholder="Zoek jouw apparaat..."></div>
+    <div class="searchbox"><span>⌕</span><input id="deviceSearch" class="field" placeholder="Zoek jouw iPhone-model..."></div>
   </div>
   <div id="sellSearchResults" class="sell-search-results"></div>
   <button id="familyBack" class="family-back" type="button" style="display:none">← Terug naar apparaten</button>
@@ -396,32 +494,42 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
   <button id="loadMoreModels" class="load-more" type="button" style="display:none">Meer laden</button>
 </section>
 
-<section id="step2" class="panel" style="display:none">
-  <div class="panel-head"><div><h2 id="productTitle">Uw toestel</h2><p>Kies opslag en de staat van uw toestel.</p></div><button id="back1" class="back">← Terug</button></div>
-  <div class="product-card">
-    <div id="productImage" class="product-image"></div>
-    <div class="product-info"><h2 id="modelName">Apple iPhone</h2><div id="modelSub" class="sub">Kies de uitvoering</div>
-      <label class="label">Opslagcapaciteit</label><div id="storage" class="storage"></div>
-      <label class="label">Wat is de staat van uw toestel?</label><div id="conditionGrid" class="condition-grid"></div>
+<section id="step2" class="buyback-step" style="display:none">
+  <div class="buyback-layout">
+    <div class="buyback-main-column">
+      <div class="panel">
+        <div class="panel-head"><div><h2 id="productTitle">Uw iPhone</h2><p>Controleer uw model en beantwoord de vragen voor een passend bod.</p></div><button id="back1" class="back">← Terug</button></div>
+        <div class="product-card">
+          <div id="productImage" class="product-image"></div>
+          <div class="product-info"><h2 id="modelName">Apple iPhone</h2><div id="modelSub" class="sub">Kies de uitvoering</div>
+            <div class="quote-inline"><small>Uw geschatte waarde</small><strong id="quote">€ 0,00</strong><span>✓ Directe uitbetaling na controle</span></div>
+            <label class="label">Opslagcapaciteit</label><div id="storage" class="storage"></div>
+            <label class="label">Wat is de staat van uw toestel?</label><div id="conditionGrid" class="condition-grid"></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel questions-panel">
+        <div class="questions-heading"><span class="questions-heading-icon">✓</span><div><h3>Apparaatgegevens</h3><p>Beantwoord de vragen zo nauwkeurig mogelijk.</p></div></div>
+        <div id="dynamicQuestions" class="dynamic-questions"></div>
+        <div class="inspection-note"><b>Veilig en betrouwbaar</b><span>We controleren uw iPhone zorgvuldig. De definitieve waarde bevestigen we na ontvangst en inspectie.</span></div>
+        <div class="totalbar"><div class="total"><small>Totaal geschatte waarde</small><strong id="bottomTotal">€ 0,00</strong></div><button id="toCheckout" class="primary blue">Ga verder met verkopen →</button></div>
+      </div>
     </div>
-    <aside class="quote"><div><small>Totale prijs (geschat)</small><div class="pricing-hint">Staat = vaste prijs · overige keuzes = + / -</div><strong id="quote">€ 0,00</strong></div><button id="toStep3" class="primary blue">Ga verder →</button><ul><li>Gratis verzending</li><li>Snelle beoordeling</li><li>Directe uitbetaling</li></ul></aside>
+    <aside class="buyback-side">
+      <div class="panel service-panel">
+        <h3>Onze service in 4 stappen</h3>
+        <div class="service-step"><span>1</span><div><b>Vul de gegevens in</b><small>Kies uw iPhone en beantwoord een paar vragen.</small></div></div>
+        <div class="service-step"><span>2</span><div><b>Ontvang uw prijs</b><small>Direct een eerlijk en realistisch aanbod.</small></div></div>
+        <div class="service-step"><span>3</span><div><b>Stuur uw iPhone op of lever in</b><small>Gratis verzenden of langskomen in onze winkel.</small></div></div>
+        <div class="service-step"><span>4</span><div><b>Ontvang uw betaling</b><small>Snel en veilig op uw rekening.</small></div></div>
+      </div>
+      <div class="panel trust-panel">
+        <h3>Waarom HOMS TECH?</h3>
+        <ul><li>Gratis en veilig verzenden</li><li>Persoonlijke controle door specialisten</li><li>Geen verborgen kosten</li><li>Snelle en veilige uitbetaling</li></ul>
+        <a href="contact.html">Hulp nodig? Neem contact op →</a>
+      </div>
+    </aside>
   </div>
-  <div class="two-col">
-    <div class="box" style="grid-column:1/-1">
-      <h3>Toestelgegevens</h3>
-      <p class="small" style="color:#64748b;margin-top:-4px">De vragen hieronder worden automatisch bepaald door HOMS TECH op basis van het gekozen merk en type apparaat.</p>
-      <div id="dynamicQuestions" class="dynamic-questions"></div>
-    </div>
-    <div class="box" style="grid-column:1/-1">
-      <h3>Controle van uw toestel</h3>
-      <ul>
-        <li><span class="bullet">✓</span> Het toestel wordt gecontroleerd op werking en uiterlijke staat.</li>
-        <li><span class="bullet">✓</span> Account- en vergrendelingsbeveiliging moet zijn uitgeschakeld.</li>
-        <li><span class="bullet">✓</span> De definitieve waarde wordt na controle bevestigd.</li>
-      </ul>
-    </div>
-  </div>
-  <div class="totalbar"><div class="total"><small>Totaal geschatte waarde</small><strong id="bottomTotal">€ 0,00</strong></div><div></div><button id="toCheckout" class="primary">Bevestig en ga verder →</button></div>
 </section>
 
 <section id="step3" class="panel" style="display:none">
@@ -562,18 +670,18 @@ function renderQuestion(q){
   if(q.type==='yesno' || q.type==='options'){
     if(!opts.length)return '';
     const isCondition=String(q.id||'')==='p2_condition' || String(q.label||'').toLowerCase().includes('conditie') || String(q.label||'').toLowerCase().includes('staat');
+    const iconText=/opslag|storage/i.test(q.label)?'▤':/batterij|battery/i.test(q.label)?'ϟ':/scherm|display/i.test(q.label)?'▣':/behuizing|achterkant|glas/i.test(q.label)?'◇':isCondition?'✦':'✓';
     return `<div class="dynamic-question ${isCondition?'dynamic-condition-question':''}">
-      <div class="dynamic-question-title">${esc(q.label)}${required?'<span class="dynamic-question-required">*</span>':''}</div>
-      <div class="dynamic-option-grid">${opts.map(o=>{
-        const activeNow=val===o.label;
-        const delta=Number(o.priceDelta||0);
-        const buyPrice=Number(o.buyPrice||0);
-        const showConditionPrice=isCondition && buyPrice>0;
-        return `<button type="button" class="dynamic-option ${activeNow?'active':''}" onclick="setQuestionValue('${esc(q.id)}','${esc(o.label)}')">
-          <span>${esc(o.label)}</span>
-          ${showConditionPrice?`<span class="condition-price">${money(buyPrice)}</span>`:(!isCondition&&delta?`<span class="delta">${delta>0?'+':''}${money(delta)}</span>`:'')}
-        </button>`;
-      }).join('')}</div>
+      <div class="dynamic-question-title"><span class="question-icon">${iconText}</span><span>${esc(q.label)}${required?'<span class="dynamic-question-required">*</span>':''}</span></div>
+      <select class="dynamic-select" aria-label="${esc(q.label)}" onchange="setQuestionValue('${esc(q.id)}',this.value)">
+        <option value="">Maak een keuze</option>
+        ${opts.map(o=>{
+          const delta=Number(o.priceDelta||0);
+          const buyPrice=Number(o.buyPrice||0);
+          const suffix=isCondition&&buyPrice>0?' — '+money(buyPrice):(!isCondition&&delta?' — '+(delta>0?'+':'')+money(delta):'');
+          return `<option value="${esc(o.label)}" ${val===o.label?'selected':''}>${esc(o.label+suffix)}</option>`;
+        }).join('')}
+      </select>
     </div>`;
   }
   return '';
@@ -767,7 +875,7 @@ function calcQuote(){
   return calcQuoteLocalFallback();
 }
 function go(n){
-  if(n===1){selectedFamily='';window._modelLimit=12;if($('deviceSearch'))$('deviceSearch').value='';if($('familyGrid'))categories();}
+  if(n===1){selectedFamily='iPhone';window._modelLimit=12;if($('deviceSearch'))$('deviceSearch').value='';if($('familyGrid'))categories();}
   [1,2,3,4].forEach(i=>$('step'+i).style.display=i===n?'block':'none');
   for(let i=1;i<=4;i++)$('d'+i).className='sdot '+(n>=i?'active':'');
   for(let i=1;i<=3;i++)$('l'+i).className='sline '+(n>i?'active':'');
@@ -811,7 +919,7 @@ $('finish').onclick=async()=>{
   }catch(e){console.error(e);alert(e.message||'Er ging iets mis bij het verzenden.')}finally{btn.disabled=false;btn.textContent=old}
 };
 $('deviceSearch').oninput=()=>{window._modelLimit=12;categories()};
-$('familyBack').onclick=()=>{selectedFamily='';window._modelLimit=12;$('deviceSearch').value='';categories()};
+$('familyBack').onclick=()=>{selectedFamily='iPhone';window._modelLimit=12;$('deviceSearch').value='';categories()};
 $('loadMoreModels').onclick=()=>{window._modelLimit=(window._modelLimit||12)+12;renderFamilyModels()};
 $('siteSearch').onkeydown=e=>{if(e.key==='Enter'&&e.target.value.trim())location.href='devices.html?search='+encodeURIComponent(e.target.value.trim())};
 async function loadBuyback(){
@@ -823,6 +931,9 @@ async function loadBuyback(){
     if(!devices.length){
       devices=(Array.isArray(siteData.buybackPhones)?siteData.buybackPhones:[]).filter(x=>x.active!==false).map(x=>({...x,protocol:String(x.buybackProtocol||x.protocol||'1'),protocol2:x.protocol2||{},protocolSettings:x.buybackProtocolSettings?.[x.buybackProtocol==='1'?'1':'2']||{},typeQuestions:buildCustomerQuestions(x,{questions:[]})}));
     }
+    // Deze verkooppagina toont voorlopig uitsluitend iPhone-modellen.
+    devices=devices.filter(d=>/iphone/i.test([d.name,d.brand,d.deviceType,d.type,d.family].filter(Boolean).join(' '))&&!/ipad|watch/i.test([d.name,d.deviceType,d.type].filter(Boolean).join(' ')));
+    selectedFamily='iPhone';
     categories();renderDevices();
   }catch(e){devices=[];categories();renderDevices()}
 }
