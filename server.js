@@ -16,7 +16,7 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   // Avoid keeping stale idle connections around when the managed database
   // briefly restarts or drops an idle socket.
-  max: 5,
+  max: 2,
   idleTimeoutMillis: 10000,
   connectionTimeoutMillis: 10000,
   keepAlive: true,
