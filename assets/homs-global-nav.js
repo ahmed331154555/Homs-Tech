@@ -86,9 +86,11 @@
  var headerRow=siteHeader&&siteHeader.querySelector('.ht-header-main,.header-main,.head,.wrap');
  if(headerRow){
   headerRow.classList.add('homs-header-row');
-  headerRow.style.setProperty('display','flex','important');
+  headerRow.style.setProperty('display','grid','important');
+  headerRow.style.setProperty('grid-template-columns','42px minmax(0,1fr) auto','important');
   headerRow.style.setProperty('align-items','center','important');
-  headerRow.style.setProperty('flex-wrap','wrap','important');
+  headerRow.style.setProperty('column-gap','10px','important');
+  headerRow.style.setProperty('row-gap','8px','important');
   headerRow.style.setProperty('width','100%','important');
   headerRow.style.setProperty('box-sizing','border-box','important');
   var brand=headerRow.querySelector('.brand,.ht-brand,.logo');
@@ -96,9 +98,12 @@
   var actions=headerRow.querySelector('.header-actions,.ht-actions,.headlinks,.actions');
   if(!actions){actions=document.createElement('div');actions.className='header-actions';headerRow.appendChild(actions)}
   headerRow.insertBefore(button,headerRow.firstChild);
-  if(brand)brand.style.setProperty('order','2','important');
-  button.style.setProperty('order','1','important');
-  if(search){search.style.setProperty('order','5','important');search.style.setProperty('flex','0 0 100%','important');search.style.setProperty('width','100%','important');search.style.setProperty('max-width','100%','important');search.style.setProperty('min-width','0','important');search.style.setProperty('box-sizing','border-box','important')}
+  if(brand){brand.style.setProperty('grid-column','2','important');brand.style.setProperty('grid-row','1','important');brand.style.setProperty('min-width','0','important');brand.style.setProperty('width','100%','important');brand.style.setProperty('max-width','none','important');brand.style.setProperty('margin','0','important')}
+  button.style.setProperty('grid-column','1','important');
+  button.style.setProperty('grid-row','1','important');
+  if(search){search.style.setProperty('grid-column','1 / -1','important');search.style.setProperty('grid-row','2','important');search.style.setProperty('order','5','important');search.style.setProperty('flex','0 0 100%','important');search.style.setProperty('width','100%','important');search.style.setProperty('max-width','100%','important');search.style.setProperty('min-width','0','important');search.style.setProperty('box-sizing','border-box','important')}
+  actions.style.setProperty('grid-column','3','important');
+  actions.style.setProperty('grid-row','1','important');
   actions.style.setProperty('order','4','important');
   actions.style.setProperty('display','flex','important');
   actions.style.setProperty('align-items','center','important');
@@ -112,6 +117,7 @@
   actions.style.setProperty('top','auto','important');
   actions.style.setProperty('right','auto','important');
   actions.style.setProperty('margin-left','0','important');
+  actions.style.setProperty('justify-self','end','important');
   headerRow.style.setProperty('position','relative','important');
   Array.from(actions.querySelectorAll('a')).forEach(function(link){
    if(!/account|cart/i.test(link.getAttribute('href')||''))link.remove();
