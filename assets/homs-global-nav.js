@@ -13,7 +13,7 @@
  ];
  var style=document.createElement('style');
  style.textContent=`
- #homsMenuButton{position:fixed;top:14px;right:14px;z-index:100002;width:46px;height:46px;border:1px solid #e2e8f0;border-radius:11px;background:#fff;box-shadow:0 4px 18px #071d2d20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer}
+ #homsMenuButton{position:fixed;top:14px;left:14px;right:auto;z-index:100002;width:46px;height:46px;border:1px solid #e2e8f0;border-radius:11px;background:#fff;box-shadow:0 4px 18px #071d2d20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer}
  #homsMenuButton span{width:21px;height:2px;background:#071d2d;border-radius:2px;display:block}
  #homsMenuBackdrop{position:fixed;inset:0;background:#06131e88;z-index:100003;opacity:0;visibility:hidden;transition:.22s}
  #homsMenuBackdrop.open{opacity:1;visibility:visible}
@@ -27,7 +27,7 @@
  #homsMenuDrawer a .homs-menu-icon{width:25px;text-align:center;font-size:18px}
  #homsMenuDrawer a.active{background:#eaf2ff;color:#2563eb}
  body.homs-menu-open{overflow:hidden}
- @media(min-width:900px){#homsMenuButton{top:18px;right:22px}}
+ @media(min-width:900px){#homsMenuButton{top:18px;left:22px;right:auto}}
  `;
  document.head.appendChild(style);
  function removeLegacyNavigation(){
