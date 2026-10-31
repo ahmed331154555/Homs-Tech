@@ -30,12 +30,15 @@
  @media(min-width:900px){#homsMenuButton{top:18px;right:22px}}
  `;
  document.head.appendChild(style);
- var header=document.querySelector('header');
- if(current!=='gsm-home.html'&&current!=='gsm-services.html'){
-  var oldNav=header&&header.querySelector('nav');
-  if(oldNav)oldNav.remove();
-  var oldGlobal=document.querySelector('.homs-global-nav');if(oldGlobal)oldGlobal.remove();
+ function removeLegacyNavigation(){
+  if(current==='gsm-home.html'||current==='gsm-services.html')return;
+  document.querySelectorAll('.homs-global-nav, header nav, .desktop-nav, .nav-inner, nav.nav, .navbar, .main-nav, .site-nav, .ht-nav').forEach(function(el){
+   if(!el.closest('#homsMenuDrawer'))el.remove();
+  });
  }
+ removeLegacyNavigation();
+ var navObserver=new MutationObserver(function(){removeLegacyNavigation()});
+ navObserver.observe(document.documentElement,{childList:true,subtree:true});
  var button=document.createElement('button');button.id='homsMenuButton';button.type='button';button.setAttribute('aria-label','Menu openen');button.setAttribute('aria-expanded','false');button.innerHTML='<span></span><span></span><span></span>';
  var backdrop=document.createElement('div');backdrop.id='homsMenuBackdrop';
  var drawer=document.createElement('aside');drawer.id='homsMenuDrawer';drawer.setAttribute('aria-label','Hoofdnavigatie');drawer.setAttribute('aria-hidden','true');
