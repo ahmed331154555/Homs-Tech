@@ -3564,7 +3564,7 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
     // Read and update just this JSON key to reduce request/response memory use.
     const isPhoneCatalogPatch = section === "phones" &&
       req.body && Array.isArray(req.body.phones) &&
-      Object.keys(req.body).every(key => ["phones", "phoneFolders"].includes(key));
+      Object.keys(req.body).length === 1;
 
     if (isPhoneCatalogPatch) {
       const current = await queryWithConnectionRetry(
@@ -3574,18 +3574,14 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       );
       const existing = { phones: current.rows[0]?.phones || [] };
       const incoming = preserveExistingCatalogPhotos(existing, { phones: req.body.phones });
-      const phonePatch = { phones: incoming.phones };
-      if (Object.prototype.hasOwnProperty.call(req.body, "phoneFolders")) {
-        phonePatch.phoneFolders = req.body.phoneFolders;
-      }
 
-      const saved = await queryWithConnectionRetry(
-        "UPDATE site_settings SET data = COALESCE(data, '{}'::jsonb) || $1::jsonb WHERE id = 1 RETURNING data->'phones' AS phones",
-        [JSON.stringify(phonePatch)],
+      await queryWithConnectionRetry(
+        "UPDATE site_settings SET data = jsonb_set(data, '{phones}', $1::jsonb, true) WHERE id = 1 RETURNING data->'phones' AS phones",
+        [JSON.stringify(incoming.phones)],
         4
       );
 
-      return res.json({ success: true, phones: saved.rows[0]?.phones || incoming.phones });
+      return res.json({ success: true, phones: incoming.phones });
     }
 
     const isShopCatalogPatch = section === "shop" &&
@@ -3599,32 +3595,6 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
         4
       );
       return res.json({ success: true, shopProducts: saved.rows[0]?.products || [] });
-    }
-
-    // Section-scoped settings updates: merge only keys owned by the active
-    // admin page. PostgreSQL JSONB concatenation preserves every other page.
-    const sectionKeys = {
-      general: ["homepage", "services", "why", "deviceCategories"],
-      services: ["services"],
-      repair: ["repairPage"],
-      buyback: ["buybackCatalog", "buybackPhones"],
-      why: ["why"],
-      categories: ["deviceCategories", "globalConditionDetails"],
-      used: ["usedPhones"],
-      gsm: ["gsmServices"]
-    };
-    const allowedKeys = sectionKeys[section];
-    if (allowedKeys && req.body && typeof req.body === "object" && !Array.isArray(req.body)) {
-      const patchKeys = Object.keys(req.body);
-      if (!patchKeys.length || patchKeys.some(key => !allowedKeys.includes(key))) {
-        return res.status(400).json({ error: "Ongeldige gegevens voor deze adminpagina." });
-      }
-      const saved = await queryWithConnectionRetry(
-        "UPDATE site_settings SET data = COALESCE(data, '{}'::jsonb) || $1::jsonb WHERE id = 1 RETURNING data",
-        [JSON.stringify(req.body)],
-        4
-      );
-      return res.json({ success: true, data: saved.rows[0]?.data || {} });
     }
 
     const current = await queryWithConnectionRetry(
