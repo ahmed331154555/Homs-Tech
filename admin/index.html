@@ -4160,7 +4160,13 @@ function openPhoneEditor(i){
   const fromOptions=key=>unique((Array.isArray(phone[key])?phone[key]:[]).filter(x=>x&&x.active!==false&&x.enabled!==false).map(x=>x.label));
   const scalar=(key)=>String(phone[key]||"").trim();
   const conditions=fromRows("condition"), colors=fromRows("color"), storages=fromRows("storage");
-  phone.setupColors=colors.length?colors:(fromOptions("colorOptions").length?fromOptions("colorOptions"):(scalar("color")?[scalar("color")]:[]));
+  // Keep colors that already have photos/options even when no active price row references them.
+  const photoColorKeys=Object.keys(phone.colorGalleryImages&&typeof phone.colorGalleryImages==="object"?phone.colorGalleryImages:{});
+  const legacyColorKeys=Object.keys(phone.colorImages&&typeof phone.colorImages==="object"?phone.colorImages:{});
+  const optionColorKeys=(Array.isArray(phone.colorOptions)?phone.colorOptions:[]).map(o=>o?.label);
+  phone.setupColors=[...new Set([...colors,...fromOptions("colorOptions"),...optionColorKeys,...photoColorKeys,...legacyColorKeys,scalar("color")].map(v=>String(v||"").trim()).filter(Boolean))];
+  phone.setupStorages=storages.length?storages:(fromOptions("storageOptions").length?fromOptions("storageOptions"):(scalar("storage")?[scalar("storage")]:[]));
+  phone.setupConditions=conditions.length?conditions:(fromOptions("conditionOptions").length?fromOptions("conditionOptions"):(scalar("condition")?[scalar("condition")]:[]));
   phone.setupStorages=storages.length?storages:(fromOptions("storageOptions").length?fromOptions("storageOptions"):(scalar("storage")?[scalar("storage")]:[]));
   phone.setupConditions=conditions.length?conditions:(fromOptions("conditionOptions").length?fromOptions("conditionOptions"):(scalar("condition")?[scalar("condition")]:[]));
   phone.setupStep=1;
@@ -4171,28 +4177,46 @@ function openPhoneEditor(i){
   if(!phone.colorImages||typeof phone.colorImages!=="object")phone.colorImages={};
   if(!phone.colorGalleryImages||typeof phone.colorGalleryImages!=="object")phone.colorGalleryImages={};
 
-  // Restore galleries created by older editor versions. Older products may have
-  // stored one photo in colorImages or colorOptions[].image instead of the
-  // newer four-slot colorGalleryImages structure.
+  // Restore all legacy photo formats into the four-slot editor without overwriting
+  // any existing gallery photo. Older catalog entries used colorImages,
+  // colorOptions[].image, variantPrices[].image, or a single product image.
   const findColorKey=(object,color)=>{
     const wanted=String(color||"").trim().toLocaleLowerCase();
     return Object.keys(object||{}).find(key=>String(key).trim().toLocaleLowerCase()===wanted);
   };
+  const photoValues=value=>{
+    if(typeof value==="string")return value.trim()?[value]:[];
+    if(Array.isArray(value))return value.flatMap(photoValues);
+    return [];
+  };
+  const basePhotos=photoValues(phone.images);
+  if(!basePhotos.length){
+    const legacyBase=photoValues(phone.image||phone.imageUrl||phone.photo||phone.galleryImages);
+    if(legacyBase.length)phone.images=legacyBase.slice(0,4);
+  }
   (phone.setupColors||[]).forEach(color=>{
-    let galleryKey=findColorKey(phone.colorGalleryImages,color);
+    const galleryKey=findColorKey(phone.colorGalleryImages,color);
     let gallery=galleryKey?phone.colorGalleryImages[galleryKey]:null;
     if(!Array.isArray(gallery))gallery=[];
     gallery=gallery.slice(0,4);
     while(gallery.length<4)gallery.push("");
 
-    const hasGalleryPhoto=gallery.some(Boolean);
-    if(!hasGalleryPhoto){
-      const imageKey=findColorKey(phone.colorImages,color);
-      const option=(phone.colorOptions||[]).find(o=>String(o?.label||"").trim().toLocaleLowerCase()===String(color).trim().toLocaleLowerCase());
-      const legacyImage=(imageKey&&phone.colorImages[imageKey])||option?.image||"";
-      if(legacyImage)gallery[0]=legacyImage;
+    const imageKey=findColorKey(phone.colorImages,color);
+    const option=(phone.colorOptions||[]).find(o=>String(o?.label||"").trim().toLocaleLowerCase()===String(color).trim().toLocaleLowerCase());
+    const variantRows=(Array.isArray(phone.variantPrices)?phone.variantPrices:[]).filter(row=>String(row?.color||"").trim().toLocaleLowerCase()===String(color).trim().toLocaleLowerCase());
+    const legacyPhotos=[
+      ...photoValues(imageKey?phone.colorImages[imageKey]:""),
+      ...photoValues(option?.image),
+      ...variantRows.flatMap(row=>photoValues(row?.images||row?.image||row?.imageUrl||row?.photo))
+    ];
+    let next=0;
+    for(const photo of legacyPhotos){
+      while(next<4&&gallery[next])next++;
+      if(next>=4)break;
+      gallery[next++]=photo;
     }
     phone.colorGalleryImages[color]=gallery;
+    if(!phone.colorImages[color]&&gallery.some(Boolean))phone.colorImages[color]=gallery.find(Boolean);
   });
   phoneEditOnly=true;
   renderPhones();
