@@ -4206,7 +4206,14 @@ function openPhoneEditor(i){
     const legacyPhotos=[
       ...photoValues(imageKey?phone.colorImages[imageKey]:""),
       ...photoValues(option?.image),
-      ...variantRows.flatMap(row=>photoValues(row?.images||row?.image||row?.imageUrl||row?.photo))
+      // Do not use "row.images || row.image": an empty images array is truthy
+      // and masks a valid legacy row.image/row.imageUrl/photo used by the storefront.
+      ...variantRows.flatMap(row=>[
+        ...photoValues(row?.images),
+        ...photoValues(row?.image),
+        ...photoValues(row?.imageUrl),
+        ...photoValues(row?.photo)
+      ])
     ];
     let next=0;
     for(const photo of legacyPhotos){
