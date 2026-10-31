@@ -73,6 +73,10 @@
   actions.style.setProperty('gap','12px','important');
   actions.style.setProperty('margin-left','auto','important');
   actions.style.setProperty('flex','0 0 auto','important');
+  actions.style.setProperty('width','auto','important');
+  actions.style.setProperty('min-width','0','important');
+  actions.style.setProperty('flex-wrap','nowrap','important');
+  actions.style.setProperty('position','static','important');
   Array.from(actions.querySelectorAll('a')).forEach(function(link){
    if(!/account|cart/i.test(link.getAttribute('href')||''))link.remove();
   });
@@ -95,8 +99,8 @@
    link.setAttribute('aria-label',type==='account'?'Mijn account':'Winkelwagen');
    link.setAttribute('title',type==='account'?'Mijn account':'Winkelwagen');
    link.innerHTML=type==='account'
-    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="4"></circle><path d="M4 21c.6-4.2 3.5-6.5 8-6.5s7.4 2.3 8 6.5"></path></svg>'
-    : '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.5"></circle><circle cx="19" cy="20" r="1.5"></circle><path d="M2 3h2l2.6 12.2a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 1.9-1.4L22 8H6"></path></svg>';
+    ? '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#071d2d" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.5" r="4" fill="none"></circle><path d="M4 21c.6-4.2 3.5-6.5 8-6.5s7.4 2.3 8 6.5" fill="none"></path></svg>'
+    : '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#071d2d" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5" fill="none"></circle><circle cx="19" cy="20" r="1.5" fill="none"></circle><path d="M2 3h2l2.6 12.2a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 1.9-1.4L22 8H6" fill="none"></path></svg>';
    if(type==='cart'&&countText){var badge=document.createElement('span');badge.className='homs-cart-badge';badge.textContent=countText;link.appendChild(badge)}
   }
   makeIcon(account,'account');makeIcon(cart,'cart');
