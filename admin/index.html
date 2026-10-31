@@ -3431,6 +3431,7 @@ const PHONE_DRAFT_DB="homsTechAdminDrafts";
 const PHONE_DRAFT_STORE="drafts";
 const PHONE_DRAFT_KEY="phone-editor-current";
 let phoneDraftTimer=null;
+let phoneDraftCommitted=false;
 function openPhoneDraftDb(){
   return new Promise((resolve,reject)=>{
     if(!("indexedDB" in window)){reject(new Error("Lokale conceptopslag niet beschikbaar"));return;}
@@ -3450,6 +3451,7 @@ async function writePhoneDraft(){
 }
 function schedulePhoneDraftSave(){
   if(currentPage!=="phones"||!phoneEditOnly)return;
+  phoneDraftCommitted=false;
   clearTimeout(phoneDraftTimer);
   phoneDraftTimer=setTimeout(()=>writePhoneDraft().catch(e=>console.warn("[HOMS TECH] Lokale productconceptopslag:",e)),250);
 }
@@ -3462,12 +3464,29 @@ async function restorePhoneDraft(){
     if(!Array.isArray(data.phones))data.phones=[];
     let index=Number.isInteger(draft.index)?draft.index:data.phones.length;
     if(draft.isNew){
+      // Recover genuinely new, unsaved products, but never duplicate one already on the server.
+      const duplicate=data.phones.findIndex(p=>
+        String(p?.id||"")===String(draft.phone?.id||"") && !!draft.phone?.id
+      );
+      if(duplicate>=0){await clearPhoneDraft();return false;}
       if(index>=data.phones.length)data.phones.push(draft.phone);
       else data.phones.splice(index,0,draft.phone);
-    }else if(index<data.phones.length){
-      data.phones[index]=draft.phone;
     }else{
-      index=data.phones.length;data.phones.push(draft.phone);
+      // Existing-product drafts must still refer to a product that exists on the server.
+      // Otherwise an old draft could resurrect a product the admin deliberately deleted.
+      const draftId=String(draft.phone?.id||"").trim();
+      const draftSku=String(draft.phone?.sku||"").trim().toLowerCase();
+      const draftName=String(draft.phone?.name||"").trim().toLowerCase();
+      const draftBrand=String(draft.phone?.brand||"").trim().toLowerCase();
+      const match=data.phones.findIndex(p=>{
+        if(draftId && String(p?.id||"").trim()===draftId)return true;
+        if(draftSku && String(p?.sku||"").trim().toLowerCase()===draftSku)return true;
+        return !!draftName && String(p?.name||"").trim().toLowerCase()===draftName &&
+          String(p?.brand||"").trim().toLowerCase()===draftBrand;
+      });
+      if(match<0){await clearPhoneDraft();return false;}
+      index=match;
+      data.phones[index]=draft.phone;
     }
     selectedPhoneIndex=index;phoneEditOnly=true;phoneWizardExistingEdit=!draft.isNew;
     setStatus("✓ Er is een lokaal opgeslagen productconcept hersteld. Controleer het en sla het opnieuw op.","info");
@@ -3484,7 +3503,7 @@ async function clearPhoneDraft(){
   }catch(e){console.warn("[HOMS TECH] Productconcept wissen:",e);}
   finally{if(db)db.close();}
 }
-window.addEventListener("pagehide",()=>{if(currentPage==="phones"&&phoneEditOnly)writePhoneDraft().catch(()=>{});});
+window.addEventListener("pagehide",()=>{if(currentPage==="phones"&&phoneEditOnly&&!phoneDraftCommitted)writePhoneDraft().catch(()=>{});});
 
 async function loadData(){
 
@@ -7469,6 +7488,13 @@ async function save(isAuto=false){
       else if(Array.isArray(payload.shopProducts)) data.shopProducts=payload.shopProducts;
     }else{
       data=result.data || data;
+    }
+
+    // A successful server save is the source of truth. Clear the local phone draft
+    // so an old IndexedDB snapshot cannot restore deleted or outdated products.
+    if(currentPage==="phones"){
+      phoneDraftCommitted=true;
+      await clearPhoneDraft();
     }
 
     // Alleen de huidige pagina opnieuw tekenen. Geen renderAll-loop na opslaan.
