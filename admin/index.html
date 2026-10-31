@@ -4169,7 +4169,31 @@ function openPhoneEditor(i){
   if(!Array.isArray(phone.images))phone.images=["","","",""];
   while(phone.images.length<4)phone.images.push("");
   if(!phone.colorImages||typeof phone.colorImages!=="object")phone.colorImages={};
-  (phone.colorOptions||[]).forEach(o=>{if(o&&o.label&&o.image&&!phone.colorImages[o.label])phone.colorImages[o.label]=o.image;});
+  if(!phone.colorGalleryImages||typeof phone.colorGalleryImages!=="object")phone.colorGalleryImages={};
+
+  // Restore galleries created by older editor versions. Older products may have
+  // stored one photo in colorImages or colorOptions[].image instead of the
+  // newer four-slot colorGalleryImages structure.
+  const findColorKey=(object,color)=>{
+    const wanted=String(color||"").trim().toLocaleLowerCase();
+    return Object.keys(object||{}).find(key=>String(key).trim().toLocaleLowerCase()===wanted);
+  };
+  (phone.setupColors||[]).forEach(color=>{
+    let galleryKey=findColorKey(phone.colorGalleryImages,color);
+    let gallery=galleryKey?phone.colorGalleryImages[galleryKey]:null;
+    if(!Array.isArray(gallery))gallery=[];
+    gallery=gallery.slice(0,4);
+    while(gallery.length<4)gallery.push("");
+
+    const hasGalleryPhoto=gallery.some(Boolean);
+    if(!hasGalleryPhoto){
+      const imageKey=findColorKey(phone.colorImages,color);
+      const option=(phone.colorOptions||[]).find(o=>String(o?.label||"").trim().toLocaleLowerCase()===String(color).trim().toLocaleLowerCase());
+      const legacyImage=(imageKey&&phone.colorImages[imageKey])||option?.image||"";
+      if(legacyImage)gallery[0]=legacyImage;
+    }
+    phone.colorGalleryImages[color]=gallery;
+  });
   phoneEditOnly=true;
   renderPhones();
   window.scrollTo({top:0,behavior:'smooth'});
