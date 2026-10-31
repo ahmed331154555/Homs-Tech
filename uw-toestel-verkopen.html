@@ -464,10 +464,10 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
           <p>Verkoop uw iPhone snel, veilig en voor een eerlijke prijs bij HOMS TECH.</p>
         </div>
         <div class="sell-progress" aria-label="Verkoopproces">
-          <div class="sell-progress-step active"><b>1</b><span>iPhone kiezen</span></div>
-          <i></i><div class="sell-progress-step"><b>2</b><span>Gegevens</span></div>
-          <i></i><div class="sell-progress-step"><b>3</b><span>Beoordeling</span></div>
-          <i></i><div class="sell-progress-step"><b>4</b><span>Betaling</span></div>
+          <div class="sell-progress-step active" data-step="1"><b>1</b><span>iPhone kiezen</span></div>
+          <i class="sell-progress-line" data-line="1"></i><div class="sell-progress-step" data-step="2"><b>2</b><span>Gegevens</span></div>
+          <i class="sell-progress-line" data-line="2"></i><div class="sell-progress-step" data-step="3"><b>3</b><span>Beoordeling</span></div>
+          <i class="sell-progress-line" data-line="3"></i><div class="sell-progress-step" data-step="4"><b>4</b><span>Betaling</span></div>
         </div>
       </div>
     </div>
@@ -715,6 +715,7 @@ function firstAnswerByLabel(words){
 function familyKey(d){
   const brand=String(d.brand||'').trim(), type=String(d.deviceType||d.type||'Telefoon').trim(), name=String(d.name||'');
   const n=name.toLowerCase();
+  if(/iphone/i.test(type+' '+name)) return 'iPhone';
   if(/apple/i.test(brand) && /watch/i.test(type+' '+name)) return 'Apple Watch';
   if(/apple/i.test(brand) && /ipad/i.test(type+' '+name)) return 'iPad';
   if(/apple/i.test(brand) && /iphone/i.test(type+' '+name)) return 'iPhone';
@@ -877,8 +878,8 @@ function calcQuote(){
 function go(n){
   if(n===1){selectedFamily='iPhone';window._modelLimit=12;if($('deviceSearch'))$('deviceSearch').value='';if($('familyGrid'))categories();}
   [1,2,3,4].forEach(i=>$('step'+i).style.display=i===n?'block':'none');
-  for(let i=1;i<=4;i++)$('d'+i).className='sdot '+(n>=i?'active':'');
-  for(let i=1;i<=3;i++)$('l'+i).className='sline '+(n>i?'active':'');
+  document.querySelectorAll('.sell-progress-step').forEach(el=>{const step=Number(el.dataset.step||0);el.classList.toggle('active',step===n);el.classList.toggle('done',step<n);});
+  document.querySelectorAll('.sell-progress-line').forEach(el=>{const line=Number(el.dataset.line||0);el.classList.toggle('active',n>line);});
   window.scrollTo({top:document.querySelector('.hero').offsetTop-10,behavior:'smooth'});
 }
 $('toStep3').onclick=()=>{if(!validateDynamicQuestions())return;go(3)};
