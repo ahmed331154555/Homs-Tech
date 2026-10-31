@@ -3207,6 +3207,15 @@ function normalizeData(){
 
   data.phones=data.phones.map(x=>{
     const phone={
+      // Preserve legacy photo fields when rebuilding normalized admin product records.
+      image:x.image || "",
+      imageUrl:x.imageUrl || "",
+      photo:x.photo || "",
+      colorImages:x.colorImages && typeof x.colorImages==="object" ? x.colorImages : {},
+      colorGalleryImages:x.colorGalleryImages && typeof x.colorGalleryImages==="object" ? x.colorGalleryImages : {},
+      colorGallery:x.colorGallery && typeof x.colorGallery==="object" ? x.colorGallery : {},
+      galleryImages:x.galleryImages || [],
+      variantImages:x.variantImages || {},
       name:x.name || x.model || "",
       brand:x.brand || "Apple",
       price:x.price || x.salePrice || x.sellPrice || x.verkoopprijs || x.screen || "",
