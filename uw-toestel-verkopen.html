@@ -1682,6 +1682,67 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 }
 </style>
 
+
+<style id="homs-buyback-compact-estimate-shield-v1">
+/* Compact the estimate card so it has clear breathing room from the back button. */
+#step2 .product-card>.product-info>.quote-inline{
+ box-sizing:border-box!important;min-height:0!important;height:auto!important;
+ max-width:250px!important;justify-self:end!important;align-self:center!important;
+ gap:9px!important;padding:15px 13px 15px 17px!important;border-radius:19px!important
+}
+#step2 .product-card>.product-info>.quote-inline:after{
+ top:13px!important;bottom:13px!important;width:3px!important
+}
+#step2 .product-card>.product-info>.quote-inline small{
+ font-size:10px!important;letter-spacing:.5px!important;gap:7px!important
+}
+#step2 .product-card>.product-info>.quote-inline small:before{
+ width:28px!important;height:28px!important;font-size:19px!important;border-radius:8px!important
+}
+#step2 .product-card>.product-info>.quote-inline strong{
+ padding:6px 12px 7px!important;border-radius:13px!important;
+ font-size:clamp(25px,2.8vw,32px)!important;letter-spacing:-.8px!important
+}
+#step2 .product-card>.product-info>.quote-inline .quote-payout{
+ display:inline-flex!important;align-items:center!important;gap:7px!important;
+ padding:7px 9px!important;border-radius:999px!important;font-size:9px!important;
+ line-height:1.2!important;white-space:nowrap!important
+}
+#step2 .product-card>.product-info>.quote-inline .quote-payout svg{
+ display:block!important;flex:none!important;width:16px!important;height:16px!important;
+ color:#7ce4ff!important
+}
+#step2 .buyback-main-column>.panel:first-child .panel-head .back{
+ min-height:0!important;padding:4px 7px!important;border-radius:8px!important;
+ font-size:8px!important;line-height:1.1!important;font-weight:750!important
+}
+@media(max-width:700px){
+ #step2 .product-card>.product-info>.quote-inline{
+  width:100%!important;max-width:205px!important;min-height:0!important;
+  padding:12px 9px 12px 12px!important;gap:7px!important;border-radius:16px!important
+ }
+ #step2 .product-card>.product-info>.quote-inline:after{top:11px!important;bottom:11px!important;width:3px!important}
+ #step2 .product-card>.product-info>.quote-inline small{font-size:8px!important;letter-spacing:.25px!important;gap:5px!important}
+ #step2 .product-card>.product-info>.quote-inline small:before{width:22px!important;height:22px!important;font-size:15px!important;border-radius:6px!important}
+ #step2 .product-card>.product-info>.quote-inline strong{
+  padding:5px 8px 6px!important;border-radius:10px!important;
+  font-size:clamp(21px,5vw,26px)!important;letter-spacing:-.55px!important
+ }
+ #step2 .product-card>.product-info>.quote-inline .quote-payout{
+  gap:5px!important;padding:6px 7px!important;font-size:7px!important
+ }
+ #step2 .product-card>.product-info>.quote-inline .quote-payout svg{width:13px!important;height:13px!important}
+ #step2 .buyback-main-column>.panel:first-child .panel-head .back{
+  padding:3px 6px!important;font-size:7px!important;border-radius:7px!important
+ }
+}
+@media(max-width:380px){
+ #step2 .product-card>.product-info>.quote-inline{max-width:185px!important;padding:10px 7px 10px 10px!important}
+ #step2 .product-card>.product-info>.quote-inline strong{font-size:20px!important}
+ #step2 .product-card>.product-info>.quote-inline .quote-payout{font-size:6.5px!important}
+}
+</style>
+
 </head>
 <body>
 
@@ -1752,7 +1813,7 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
               <span class="buyback-summary-chip"><b>Ontgrendeld</b></span>
               <span class="buyback-summary-chip"><b>Zo goed als nieuw</b></span>
             </div>
-            <div class="quote-inline"><small>Uw geschatte waarde</small><strong id="quote">€ 0,00</strong><span>✓ Directe uitbetaling na controle</span></div>
+            <div class="quote-inline"><small>Uw geschatte waarde</small><strong id="quote">€ 0,00</strong><span class="quote-payout"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2.5 20 5.7v5.5c0 5.1-3.3 8.5-8 10.3-4.7-1.8-8-5.2-8-10.3V5.7L12 2.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m8.5 12.1 2.3 2.3 4.8-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Directe uitbetaling na controle</span></div>
             <label class="label">Opslagcapaciteit</label><div id="storage" class="storage"></div>
             <label class="label">Wat is de staat van uw toestel?</label><div id="conditionGrid" class="condition-grid"></div>
           </div>
