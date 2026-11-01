@@ -3660,6 +3660,51 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
   try {
     const section = String(req.headers["x-homs-admin-section"] || "").trim().toLowerCase();
 
+    // A single-product edit updates exactly one array element. It never rewrites
+    // the full phone catalog or unrelated site settings.
+    const isSinglePhonePatch = section === "phones" &&
+      req.body && req.body.phoneItem && typeof req.body.phoneItem === "object" &&
+      !Array.isArray(req.body.phoneItem) &&
+      Number.isInteger(Number(req.body.phoneIndex)) &&
+      Object.keys(req.body).length === 2;
+
+    if (isSinglePhonePatch) {
+      const phoneIndex = Number(req.body.phoneIndex);
+      const incomingPhone = req.body.phoneItem;
+      const current = await queryWithConnectionRetry(
+        "SELECT data->'phones' AS phones FROM site_settings WHERE id = 1",
+        [], 4
+      );
+      const phones = Array.isArray(current.rows[0]?.phones) ? current.rows[0].phones.slice() : [];
+      if (phoneIndex < 0 || phoneIndex > phones.length) {
+        return res.status(409).json({ error: "De productlijst is gewijzigd. Vernieuw de pagina en probeer opnieuw." });
+      }
+      if (phoneIndex === phones.length) {
+        phones.push(incomingPhone);
+      } else {
+        const existingPhone = phones[phoneIndex];
+        const sameId = incomingPhone.id != null && existingPhone?.id != null &&
+          String(incomingPhone.id) === String(existingPhone.id);
+        const sameLegacyIdentity = incomingPhone.id == null && existingPhone?.id == null &&
+          String(incomingPhone.name || "").trim() === String(existingPhone?.name || "").trim() &&
+          String(incomingPhone.brand || "").trim() === String(existingPhone?.brand || "").trim();
+        if (!sameId && !sameLegacyIdentity) {
+          return res.status(409).json({ error: "Dit product is ondertussen gewijzigd of verplaatst. Vernieuw de pagina om overschrijven te voorkomen." });
+        }
+        const preserved = preserveExistingCatalogPhotos(
+          { phones: [existingPhone] },
+          { phones: [incomingPhone] }
+        );
+        phones[phoneIndex] = preserved.phones[0];
+      }
+      const saved = await queryWithConnectionRetry(
+        "UPDATE site_settings SET data = jsonb_set(data, '{phones}', $1::jsonb, true) WHERE id = 1 RETURNING data->'phones' AS phones",
+        [JSON.stringify(phones)], 4
+      );
+      const savedPhones = Array.isArray(saved.rows[0]?.phones) ? saved.rows[0].phones : phones;
+      return res.json({ success: true, phoneIndex, phone: savedPhones[phoneIndex] });
+    }
+
     // The phone editor now sends only the phone catalog, not the entire 18+ MB
     // settings document (which also contains large repair-page images).
     // Read and update just this JSON key to reduce request/response memory use.
