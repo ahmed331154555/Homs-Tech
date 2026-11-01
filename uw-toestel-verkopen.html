@@ -780,6 +780,13 @@ function setQuestionValue(qid,value){
   }
   buybackAnswers[qid]=value;
   buybackExpandedQuestionIds.delete(qid);
+  // A locked iPhone is valued immediately using the configured "Kapot" condition price.
+  const isLockQuestion=q?.id==='protocol4_connectivity' || /ontgrendeld|vergrendeld/i.test(String(q?.label||''));
+  if(isLockQuestion && /vergrendeld|locked/i.test(String(value||'')) && !/ontgrendeld|unlocked/i.test(String(value||''))){
+    const conditionQuestion=getConditionQuestion();
+    const brokenOption=active(conditionQuestion?.options).find(o=>/kapot/i.test(String(o.label||'')));
+    if(conditionQuestion && brokenOption) buybackAnswers[conditionQuestion.id]=brokenOption.label;
+  }
   // A kapot toestel needs no further inspection questions.
   if((q?.id==='p2_condition' || String(q?.label||'').toLowerCase().includes('conditie') || String(q?.label||'').toLowerCase().includes('staat')) && String(value||'').toLowerCase().includes('kapot')){
     const conditionId=q.id;
@@ -814,7 +821,12 @@ function renderQuestion(q){
       <div class="dynamic-option-grid ${isCondition?'condition-options':(opts.length===2?'two-options':'')}">
         ${opts.map(o=>{
           const price=Number(o.buyPrice??o.conditionPrice??0);
-          return `<button type="button" class="dynamic-option ${val===o.label?'selected':''}" onclick="setQuestionValue('${esc(q.id)}','${esc(o.label)}')"><span class="dynamic-option-radio"></span><span>${esc(o.label)}</span>${isCondition&&price>0?`<strong class="condition-price">${money(price)}</strong>`:''}</button>`;
+          const lockLabel=String(o.label||'');
+          const isUnlocked=/ontgrendeld|unlocked/i.test(lockLabel);
+          const isLocked=/vergrendeld|locked/i.test(lockLabel)&&!isUnlocked;
+          const cleanLabel=lockLabel.replace(/[🔒🔓🔐]/g,'').trim();
+          const lockIcon=isUnlocked?'🔓':(isLocked?'🔒':'');
+          return `<button type="button" class="dynamic-option ${val===o.label?'selected':''}" onclick="setQuestionValue('${esc(q.id)}','${esc(o.label)}')"><span class="dynamic-option-radio"></span>${lockIcon?`<span class="lock-choice-icon" aria-hidden="true">${lockIcon}</span>`:''}<span>${esc(cleanLabel)}</span>${isCondition&&price>0?`<strong class="condition-price">${money(price)}</strong>`:''}</button>`;
         }).join('')}
       </div>
     </div>`;
