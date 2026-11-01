@@ -2980,5 +2980,23 @@ loadBuyback();
 }
 </style>
 
+
+<style id="homs-buyback-transparent-phone-images-v1">
+/* Transparent product images: keep the card white and remove the colored image panel. */
+#modelChooser .device-img{
+  background:transparent!important;
+  padding:18px 24px!important;
+}
+#modelChooser .device-img img{
+  background:transparent!important;
+  box-shadow:none!important;
+  filter:none!important;
+  object-fit:contain!important;
+}
+@media(max-width:700px){
+  #modelChooser .device-img{background:transparent!important;padding:10px!important}
+}
+</style>
+
 </body>
 </html>
