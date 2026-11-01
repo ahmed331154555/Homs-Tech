@@ -3595,7 +3595,8 @@ const HOMEPAGE_DEFAULTS={
     enabled:true,
     description:"Refurbished apparaten · Reparatie aan huis · GSM Services",
     area:"Rotterdam en omgeving",
-    contact:"WhatsApp · Telefoon · E-mail"
+    contact:"WhatsApp · Telefoon · E-mail",
+    email:"", phone:"", whatsapp:"", hours:"", address:"", mapUrl:""
   }
 };
 
@@ -3813,6 +3814,12 @@ function renderHomepageSettings(){
       <div class="field"><label>Omschrijving</label><input value="${esc(f.description)}" oninput="data.homepage.footer.description=this.value;markChanged()"></div>
       <div class="field"><label>Werkgebied</label><input value="${esc(f.area)}" oninput="data.homepage.footer.area=this.value;markChanged()"></div>
       <div class="field" style="grid-column:1/-1"><label>Contactregel</label><input value="${esc(f.contact)}" oninput="data.homepage.footer.contact=this.value;markChanged()"></div>
+      <div class="field"><label>E-mailadres contact</label><input type="email" value="${esc(f.email)}" placeholder="info@homs-tech.nl" oninput="data.homepage.footer.email=this.value;markChanged()"></div>
+      <div class="field"><label>Telefoonnummer</label><input value="${esc(f.phone)}" placeholder="+31 ..." oninput="data.homepage.footer.phone=this.value;markChanged()"></div>
+      <div class="field"><label>WhatsApp nummer</label><input value="${esc(f.whatsapp)}" placeholder="316..." oninput="data.homepage.footer.whatsapp=this.value;markChanged()"></div>
+      <div class="field"><label>Openingstijden</label><input value="${esc(f.hours)}" placeholder="Ma–Vr 09:00–18:00" oninput="data.homepage.footer.hours=this.value;markChanged()"></div>
+      <div class="field"><label>Adres</label><input value="${esc(f.address)}" placeholder="Straat, postcode en plaats" oninput="data.homepage.footer.address=this.value;markChanged()"></div>
+      <div class="field"><label>Google Maps link</label><input type="url" value="${esc(f.mapUrl)}" placeholder="https://maps.google.com/..." oninput="data.homepage.footer.mapUrl=this.value;markChanged()"></div>
     </div>`;
 
   box.innerHTML=
