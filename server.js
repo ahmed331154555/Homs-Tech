@@ -3672,18 +3672,21 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
     if (isSinglePhonePatch) {
       const phoneIndex = Number(req.body.phoneIndex);
       const incomingPhone = req.body.phoneItem;
+      // Read only the selected phone and the array length. Avoid loading and
+      // rewriting the complete phone catalog (which may contain many large images).
       const current = await queryWithConnectionRetry(
-        "SELECT data->'phones' AS phones FROM site_settings WHERE id = 1",
-        [], 4
+        "SELECT data->'phones'-> $1 AS phone, jsonb_array_length(COALESCE(data->'phones', '[]'::jsonb)) AS phone_count FROM site_settings WHERE id = 1",
+        [phoneIndex], 4
       );
-      const phones = Array.isArray(current.rows[0]?.phones) ? current.rows[0].phones.slice() : [];
-      if (phoneIndex < 0 || phoneIndex > phones.length) {
+      if (!current.rows.length) {
+        return res.status(404).json({ error: "Websitegegevens ontbreken." });
+      }
+      const phoneCount = Number(current.rows[0].phone_count || 0);
+      if (phoneIndex < 0 || phoneIndex > phoneCount) {
         return res.status(409).json({ error: "De productlijst is gewijzigd. Vernieuw de pagina en probeer opnieuw." });
       }
-      if (phoneIndex === phones.length) {
-        phones.push(incomingPhone);
-      } else {
-        const existingPhone = phones[phoneIndex];
+      if (phoneIndex < phoneCount) {
+        const existingPhone = current.rows[0].phone;
         const sameId = incomingPhone.id != null && existingPhone?.id != null &&
           String(incomingPhone.id) === String(existingPhone.id);
         const expected = req.body.phoneIdentity || {};
@@ -3693,17 +3696,15 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
         if (!sameId && !sameLegacyIdentity) {
           return res.status(409).json({ error: "Dit product is ondertussen gewijzigd of verplaatst. Vernieuw de pagina om overschrijven te voorkomen." });
         }
-        // Match by the already-validated array slot, not by editable name/brand.
-        // This preserves old photos even when the admin changes the product name.
+        // Keep existing images when the editor submits an incomplete image payload.
         preserveExistingProductPhotos(existingPhone, incomingPhone);
-        phones[phoneIndex] = incomingPhone;
       }
       const saved = await queryWithConnectionRetry(
-        "UPDATE site_settings SET data = jsonb_set(data, '{phones}', $1::jsonb, true) WHERE id = 1 RETURNING data->'phones' AS phones",
-        [JSON.stringify(phones)], 4
+        "UPDATE site_settings SET data = jsonb_set(data, ARRAY['phones', $1::text], $2::jsonb, true) WHERE id = 1 RETURNING data->'phones'-> $1 AS phone",
+        [phoneIndex, JSON.stringify(incomingPhone)], 4
       );
-      const savedPhones = Array.isArray(saved.rows[0]?.phones) ? saved.rows[0].phones : phones;
-      return res.json({ success: true, phoneIndex, phone: savedPhones[phoneIndex] });
+      if (!saved.rows.length) throw new Error("Websitegegevens konden niet worden opgeslagen.");
+      return res.json({ success: true, phoneIndex, phone: saved.rows[0].phone });
     }
 
     // The phone editor now sends only the phone catalog, not the entire 18+ MB
