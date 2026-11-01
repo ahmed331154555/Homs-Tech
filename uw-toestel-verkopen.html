@@ -2004,7 +2004,6 @@ function setQuestionValue(qid,value){
     orderedQuestions.slice(currentIndex+1).forEach(item=>{delete buybackAnswers[item.id];});
   }
   buybackAnswers[qid]=value;
-  updateBuybackSummaryChips();
   buybackExpandedQuestionIds.delete(qid);
   // Preserve Kapot when the customer changes storage; the condition price is tied to that storage.
   if(isLockedIphoneSelected() || (wasKapotSelected && storageQuestion)){
@@ -2022,6 +2021,9 @@ function setQuestionValue(qid,value){
       if(id!==conditionId && !(selectedModel?.protocol==='protocol4' && capacityQuestion && id===capacityQuestion.id)) delete buybackAnswers[id];
     });
   }
+  // Refresh the top summary only after automatic Kapot/lock rules and answer resets
+  // have completed, so the badge always reflects the final selected condition.
+  updateBuybackSummaryChips();
   renderDynamicQuestions();
   calcQuote();
   calculateServerQuote();
