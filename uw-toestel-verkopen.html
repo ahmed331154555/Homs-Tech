@@ -539,6 +539,13 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 }
 
 /* Real vertical accordion expansion: animate height, not translate/opacity alone */
+.lock-choice-icon{display:inline-flex;align-items:center;justify-content:center;font-size:25px;line-height:1;min-width:30px;transform:scale(1.12);margin-right:3px}
+.dynamic-option:has(.lock-choice-icon){display:inline-flex;align-items:center;gap:8px;min-height:54px}
+.locked-device-price-panel{border:1px solid #dbeafe;background:#eff6ff;border-radius:14px;padding:15px 17px;display:flex;flex-direction:column;gap:6px;color:#17324a}
+.locked-device-price-panel>span{font-size:12px;color:#64748b}
+.locked-device-price-panel>b{font-size:25px;color:#2563eb}
+.locked-device-price-panel>small{font-size:12px;line-height:1.6;color:#475569;margin-top:3px}
+
 @keyframes buybackExpandDown{
   from{max-height:0;opacity:.35}
   to{max-height:520px;opacity:1}
@@ -756,6 +763,13 @@ function getSelectedBuybackAction(){
 function getConditionQuestion(){
   return (selectedModel?.typeQuestions||[]).find(q=>q.id==='p2_condition' || String(q.label||'').toLowerCase().includes('conditie') || String(q.label||'').toLowerCase().includes('staat'));
 }
+function getLockQuestion(){
+  return (selectedModel?.typeQuestions||[]).find(q=>q.id==='protocol4_connectivity' || /ontgrendeld|vergrendeld/i.test(String(q.label||'')));
+}
+function isLockedIphoneSelected(){
+  const q=getLockQuestion(),v=String(q?questionValue(q):'').toLowerCase();
+  return !!q && /vergrendeld|locked/.test(v) && !/ontgrendeld|unlocked/.test(v);
+}
 function isKapotSelected(){
   const q=getConditionQuestion();
   if(!q)return false;
@@ -845,6 +859,18 @@ function renderDynamicQuestions(){
   const conditionQ=allQs.find(q=>{const l=String(q.label||'').toLowerCase();return l.includes('conditie')||l.includes('staat');});
   const qs=isKapotSelected()?allQs.filter(q=>q===conditionQ):allQs;
   if(!qs.length){box.innerHTML='<div style="padding:14px;background:#f8fafc;border-radius:12px;color:#64748b">Voor dit type zijn nog geen extra vragen ingesteld.</div>';return;}
+  if(isLockedIphoneSelected()){
+    const lockQ=getLockQuestion();
+    const brokenPrice=getConditionBasePrice();
+    box.innerHTML=`<div class="dynamic-question-open-panel"><div class="dynamic-question-open-inner">${renderQuestion(lockQ)}</div></div>
+      <div class="locked-device-price-panel">
+        <strong>🔒 iPhone vergrendeld — staat: Kapot</strong>
+        <span>Uw geschatte inruilwaarde</span>
+        <b>${money(brokenPrice)}</b>
+        <small>Wilt u verdergaan? Kies hierboven <b>🔓 Ontgrendeld</b> om de overige vragen te beantwoorden.</small>
+      </div>`;
+    return;
+  }
   const visible=[];
   let waitingForAnswer=false;
   for(const q of qs){
