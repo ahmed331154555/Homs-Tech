@@ -622,6 +622,92 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 }
 </style>
 
+
+<style id="homs-buyback-fullwidth-bottom-panels-v1">
+/* Full-width buyback flow: details occupy the page; service/trust panels follow below. */
+#step2 .buyback-layout{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:18px!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+}
+#step2 .buyback-main-column{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  gap:16px!important;
+}
+#step2 .buyback-main-column>.panel,
+#step2 .buyback-main-column>.questions-panel{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+}
+#step2 .buyback-side{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  width:100%!important;
+  max-width:none!important;
+  position:static!important;
+  gap:14px!important;
+  margin:0!important;
+}
+#step2 .buyback-side>.panel{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+}
+#step2 #dynamicQuestions .dynamic-question-complete{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(160px,auto)!important;
+  align-items:center!important;
+  gap:14px!important;
+  width:100%!important;
+}
+#step2 #dynamicQuestions .dynamic-question-complete>.dynamic-question-title{
+  min-width:0!important;
+  margin:0!important;
+  text-align:left!important;
+}
+#step2 #dynamicQuestions .dynamic-question-complete .dynamic-answer-summary{
+  display:flex!important;
+  justify-self:end!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  width:auto!important;
+  min-width:150px!important;
+  margin-left:auto!important;
+  text-align:right!important;
+  white-space:nowrap!important;
+}
+#step2 #dynamicQuestions .dynamic-question-complete .dynamic-answer-summary strong{
+  text-align:right!important;
+}
+#step2 #dynamicQuestions .dynamic-question-complete .question-chevron{
+  flex:none!important;
+}
+@media(max-width:600px){
+  #step2 .buyback-layout{gap:16px!important}
+  #step2 .buyback-main-column{gap:13px!important}
+  #step2 .buyback-side{grid-template-columns:1fr!important;gap:12px!important}
+  #step2 #dynamicQuestions .dynamic-question-complete{
+    grid-template-columns:minmax(0,1fr) minmax(130px,auto)!important;
+    gap:8px!important;
+    padding:13px 2px!important;
+  }
+  #step2 #dynamicQuestions .dynamic-question-complete .dynamic-answer-summary{
+    min-width:130px!important;
+    gap:7px!important;
+    font-size:12px!important;
+  }
+}
+</style>
+
 </head>
 <body>
 
