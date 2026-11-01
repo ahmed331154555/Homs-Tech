@@ -3668,40 +3668,6 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       Object.keys(req.body).length === 1;
 
     if (isPhoneCatalogPatch) {
-      // Save only the buyback catalog keys, not the full site settings document.
-    // Preserve existing images by stable IDs if an editor payload omits them.
-    const isBuybackCatalogPatch = section === "buyback" &&
-      req.body && Array.isArray(req.body.buybackCatalog) &&
-      Array.isArray(req.body.buybackPhones) &&
-      Object.keys(req.body).length === 2;
-
-    if (isBuybackCatalogPatch) {
-      const currentBuyback = await queryWithConnectionRetry(
-        "SELECT data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones FROM site_settings WHERE id = 1",
-        [],
-        4
-      );
-      const incomingBuyback = preserveExistingBuybackPhotos({
-        buybackCatalog: currentBuyback.rows[0]?.catalog || [],
-        buybackPhones: currentBuyback.rows[0]?.phones || []
-      }, {
-        buybackCatalog: req.body.buybackCatalog,
-        buybackPhones: req.body.buybackPhones
-      });
-
-      const savedBuyback = await queryWithConnectionRetry(
-        "UPDATE site_settings SET data = jsonb_set(jsonb_set(data, '{buybackCatalog}', $1::jsonb, true), '{buybackPhones}', $2::jsonb, true) WHERE id = 1 RETURNING data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones",
-        [JSON.stringify(incomingBuyback.buybackCatalog), JSON.stringify(incomingBuyback.buybackPhones)],
-        4
-      );
-      if (!savedBuyback.rows.length) throw new Error("Site settings record is missing.");
-      return res.json({
-        success: true,
-        buybackCatalog: savedBuyback.rows[0].catalog || [],
-        buybackPhones: savedBuyback.rows[0].phones || []
-      });
-    }
-
     const current = await queryWithConnectionRetry(
         "SELECT data->'phones' AS phones FROM site_settings WHERE id = 1",
         [],
@@ -3717,6 +3683,40 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       );
 
       return res.json({ success: true, phones: incoming.phones });
+    }
+
+    // Save only the buyback catalog keys, not the full site settings document.
+    // Preserve existing images by stable IDs if an editor payload omits them.
+    const isBuybackCatalogPatch = section === "buyback" &&
+    req.body && Array.isArray(req.body.buybackCatalog) &&
+    Array.isArray(req.body.buybackPhones) &&
+    Object.keys(req.body).length === 2;
+
+    if (isBuybackCatalogPatch) {
+    const currentBuyback = await queryWithConnectionRetry(
+      "SELECT data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones FROM site_settings WHERE id = 1",
+      [],
+      4
+    );
+    const incomingBuyback = preserveExistingBuybackPhotos({
+      buybackCatalog: currentBuyback.rows[0]?.catalog || [],
+      buybackPhones: currentBuyback.rows[0]?.phones || []
+    }, {
+      buybackCatalog: req.body.buybackCatalog,
+      buybackPhones: req.body.buybackPhones
+    });
+
+    const savedBuyback = await queryWithConnectionRetry(
+      "UPDATE site_settings SET data = jsonb_set(jsonb_set(data, '{buybackCatalog}', $1::jsonb, true), '{buybackPhones}', $2::jsonb, true) WHERE id = 1 RETURNING data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones",
+      [JSON.stringify(incomingBuyback.buybackCatalog), JSON.stringify(incomingBuyback.buybackPhones)],
+      4
+    );
+    if (!savedBuyback.rows.length) throw new Error("Site settings record is missing.");
+    return res.json({
+      success: true,
+      buybackCatalog: savedBuyback.rows[0].catalog || [],
+      buybackPhones: savedBuyback.rows[0].phones || []
+    });
     }
 
     const isShopCatalogPatch = section === "shop" &&
