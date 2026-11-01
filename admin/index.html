@@ -7932,10 +7932,15 @@ async function loadBuybackOrders(){
           <select ${hasPermission("buyback_orders.update")?"":"disabled"} onchange="updateBuybackStatus(${order.id},this.value)" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:10px">
             ${bbOpt("Nieuw",order.status)}
             ${bbOpt("In behandeling",order.status)}
+            ${bbOpt("Aanbod verzonden",order.status)}
             ${bbOpt("Goedgekeurd",order.status)}
             ${bbOpt("Afgewezen",order.status)}
             ${bbOpt("Voltooid",order.status)}
           </select>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input id="buybackOffer-${order.id}" type="number" min="0" step="0.01" placeholder="Definitief bod (€)" value="${order.final_offer!==null&&order.final_offer!==undefined?Number(order.final_offer).toFixed(2):""}" style="width:155px;padding:9px 10px;border:1px solid #cbd5e1;border-radius:10px">
+            <button class="btn btn-green" onclick="sendBuybackOffer(${order.id})" ${hasPermission("buyback_orders.update")?"":"disabled"}>✉️ Verstuur prijsvoorstel</button>
+          </div>
           <button class="btn btn-light" onclick="showBuybackDetails(${order.id})">Details</button>
           ${hasPermission("buyback_orders.delete")?`<button class="btn btn-red" onclick="deleteBuybackOrder(${order.id})">Verwijderen</button>`:""}
         </div>
@@ -7948,6 +7953,19 @@ async function loadBuybackOrders(){
 }
 function bbInfo(label,value){return `<div style="background:#f8fafc;padding:12px;border-radius:10px"><div style="font-size:12px;color:#64748b">${label}</div><strong>${esc(value||"-")}</strong></div>`}
 function bbOpt(value,current){return `<option value="${esc(value)}" ${value===current?"selected":""}>${esc(value)}</option>`}
+async function sendBuybackOffer(id){
+  const input=document.getElementById("buybackOffer-"+id);
+  const finalOffer=Number(input?.value);
+  if(!Number.isFinite(finalOffer)||finalOffer<0){alert("Vul eerst een geldig definitief bedrag in.");return;}
+  if(!confirm("Het definitieve prijsvoorstel van € "+finalOffer.toFixed(2).replace(".",",")+" per e-mail naar de klant versturen?"))return;
+  try{
+    const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id)+"/offer",{method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({finalOffer})});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Prijsvoorstel kon niet worden verstuurd.");
+    alert("Het prijsvoorstel is per e-mail verstuurd.");
+    await loadBuybackOrders();
+  }catch(error){alert(error.message);}
+}
 async function updateBuybackStatus(id,newStatus){
   try{
     const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id)+"/status",{method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:newStatus})});
@@ -7992,7 +8010,9 @@ async function showBuybackDetails(id){
       "Scherm": order.screen || "-",
       "Aangeboden prijs": "€ " + price,
       "Betaalmethode": order.payment_method || "-",
-      "IBAN": order.iban || "-"
+      "IBAN": order.iban || "-",
+      "Definitief aanbod": order.final_offer!==null&&order.final_offer!==undefined ? "€ "+Number(order.final_offer).toFixed(2).replace(".",",") : "-",
+      "Antwoorden": order.answers && typeof order.answers==="object" ? Object.entries(order.answers).map(([key,value])=>{const item=value&&typeof value==="object"?value:{};return (item.question||key)+": "+(item.value||"-")}).join("\n") || "-" : "-"
     });
   }catch(error){alert(error.message)}
 }
