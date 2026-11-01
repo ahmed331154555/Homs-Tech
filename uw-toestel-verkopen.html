@@ -708,6 +708,12 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 }
 </style>
 
+<style id="homs-buyback-checklist-colors-v1">
+#dynamicQuestions .dynamic-info-line{color:#263445!important}
+#dynamicQuestions .dynamic-info-line .bullet{background:#e8f6ee!important;color:#16834a!important}
+#dynamicQuestions .dynamic-info-line.dynamic-info-warning{color:#8a4b12!important}
+#dynamicQuestions .dynamic-info-line.dynamic-info-warning .bullet{background:#fff1df!important;color:#b96513!important}
+</style>
 </head>
 <body>
 
@@ -964,7 +970,8 @@ function renderQuestion(q){
   const required=q.required!==false;
 
   if(q.type==='info'){
-    return `<div class="dynamic-info-line"><span class="bullet">✓</span><span>${esc(q.label)}</span></div>`;
+    const isWarning=/^\s*(let op|waarschuwing|opgelet)/i.test(String(q.label||''));
+    return `<div class="dynamic-info-line ${isWarning?'dynamic-info-warning':''}"><span class="bullet">${isWarning?'!':'✓'}</span><span>${esc(q.label)}</span></div>`;
   }
 
   if(q.type==='text'){
