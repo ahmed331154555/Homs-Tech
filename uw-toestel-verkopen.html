@@ -594,7 +594,7 @@ function buildCustomerQuestions(phone,type){
     return questions;
   }
   const p=phone?.[protocol]||{},base=Number(phone?.price||0),questions=[];
-  const addSection=(key,label)=>{const sec=p[key];if(!sec||sec.active===false)return;const opts=Array.isArray(sec.options)?sec.options.filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>{const out={...o};if(key==='condition'){const exact=(o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):((o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):((o.priceDelta!==undefined&&o.priceDelta!=='')?Number(o.priceDelta):base));out.buyPrice=Math.max(0,Number.isFinite(exact)?exact:base);out.conditionPrice=out.buyPrice;}return out;}):[];if(opts.length)questions.push({id:protocol+'_'+key,label,type:'options',required:true,options:opts});};
+  const addSection=(key,label)=>{const sec=p[key];if(!sec||sec.active===false)return;const opts=Array.isArray(sec.options)?sec.options.filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>{const out={...o};if(key==='condition'&&protocol!=='protocol4'){const exact=(o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):((o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):((o.priceDelta!==undefined&&o.priceDelta!=='')?Number(o.priceDelta):base));out.buyPrice=Math.max(0,Number.isFinite(exact)?exact:base);out.conditionPrice=out.buyPrice;}return out;}):[];if(opts.length)questions.push({id:protocol+'_'+key,label,type:'options',required:true,options:opts});};
   const addChecklist=()=>{const sec=p.checklist;if(!sec||sec.active===false)return;(Array.isArray(sec.items)?sec.items:[]).filter(x=>x&&x.active!==false&&String(x.text||'').trim()).forEach((x,i)=>questions.push({id:protocol+'_check_'+i,label:String(x.text),type:'info',required:false,options:[]}));};
   const addFunctions=()=>{const sec=p.functions;if(!sec||sec.active===false)return;questions.push({id:protocol+'_functions',label:String(sec.label||'Werken alle functies van het toestel goed?'),type:'options',required:true,options:[{label:'Ja',priceDelta:Number(sec.yesDelta||0),active:true},{label:'Nee',priceDelta:Number(sec.noDelta||0),active:true}]});};
   const addBattery=()=>{const sec=p.battery;if(!sec||sec.active===false)return;const opts=Array.isArray(sec.options)&&sec.options.length?sec.options.filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>({...o})):[{label:'Ja',priceDelta:Number(sec.yesDelta||0),active:true},{label:'Nee',priceDelta:Number(sec.noDelta||0),active:true}];questions.push({id:protocol+'_battery',label:String(sec.label||'Wat is de status van de batterij?'),type:'options',required:true,options:opts});};
@@ -700,7 +700,7 @@ function renderDynamicQuestions(){
   const box=$('dynamicQuestions'); if(!box)return;
   const allQs=Array.isArray(selectedModel?.typeQuestions)?selectedModel.typeQuestions:[];
   const conditionQ=allQs.find(q=>{const l=String(q.label||'').toLowerCase();return l.includes('conditie')||l.includes('staat');});
-  const qs=isKapotSelected()
+  const qs=isKapotSelected()&&selectedModel?.protocol!=='protocol4'
     ? allQs.filter(q=>q===conditionQ)
     : allQs;
   if(!qs.length){box.innerHTML='<div style="padding:14px;background:#f8fafc;border-radius:12px;color:#64748b">Voor dit type zijn nog geen extra vragen ingesteld.</div>';return;}
@@ -709,7 +709,7 @@ function renderDynamicQuestions(){
 function validateDynamicQuestions(){
   const allQs=selectedModel?.typeQuestions||[];
   const conditionQ=allQs.find(q=>{const l=String(q.label||'').toLowerCase();return l.includes('conditie')||l.includes('staat');});
-  const qs=isKapotSelected()?allQs.filter(q=>q===conditionQ):allQs;
+  const qs=isKapotSelected()&&selectedModel?.protocol!=='protocol4'?allQs.filter(q=>q===conditionQ):allQs;
   const missing=qs.find(q=>q.required!==false && !String(questionValue(q)).trim());
   if(missing){alert('Kies of vul eerst in: '+missing.label);return false;}
   const action=getSelectedBuybackAction();
@@ -854,12 +854,13 @@ function getSelectedAnswerByWords(words){
 function getConditionBasePrice(){
   const opt=getSelectedConditionOption();
   const base=Number(selectedModel?.base||0);
+  if(selectedModel?.protocol==='protocol4') return Math.max(0,base+Number(opt?.priceDelta||0));
   if(isKapotSelected()) return Math.max(0,Number(selectedModel?.scrapPrice||0));
   const raw=(opt?.conditionPrice!==undefined&&opt?.conditionPrice!=='')?opt.conditionPrice:opt?.buyPrice;
   const n=Number(raw);
   // Protocol 3–8: the condition price is the final/base price for that condition.
   // Never add the model's general base price to it.
-  if(/^protocol[3-8]$/.test(String(selectedModel?.protocol||''))){
+  if(/^protocol[3-8]$/.test(String(selectedModel?.protocol||'')) && selectedModel?.protocol!=='protocol4'){
     if(Number.isFinite(n)) return Math.max(0,n);
     return Math.max(0,base);
   }
@@ -887,7 +888,7 @@ function calcQuoteLocalFallback(){
     const credit=$('cMethod')?.value?.includes('tegoed'),display=credit?scrap*1.10:scrap;
     $('quote').textContent=money(display);$('bottomTotal').textContent=money(display);return scrap;
   }
-  const conditionQ=getConditionQuestion();if(conditionQ&&isKapotSelected()){const v=getConditionBasePrice(),credit=$('cMethod')?.value?.includes('tegoed'),display=credit?v*1.10:v;$('quote').textContent=money(display);$('bottomTotal').textContent=money(display);return v;}
+  const conditionQ=getConditionQuestion();if(conditionQ&&isKapotSelected()&&selectedModel?.protocol!=='protocol4'){const v=getConditionBasePrice(),credit=$('cMethod')?.value?.includes('tegoed'),display=credit?v*1.10:v;$('quote').textContent=money(display);$('bottomTotal').textContent=money(display);return v;}
   let v=getConditionBasePrice(),battery=getSelectedAnswerByWords(['batterij','battery']),functions=getSelectedAnswerByWords(['alle functies','functies','werkt het','werkt','function']);
   if(/^protocol[3-8]$/.test(String(selectedModel?.protocol||'')))v+=getProtocolExtraDelta();else if(selectedModel?.protocol==='2'){v+=getSelectedStorageDelta();const p2=selectedModel?.protocol2||{},fnDiscount=Number(p2?.functions?.noDiscount??selectedModel?.protocolSettings?.functionsDiscount??33.3333333333),batDiscount=Number(p2?.battery?.noDiscount??selectedModel?.protocolSettings?.batteryDiscount??10);if(functions&&String(functions.value||'')===String(p2?.functions?.noLabel||'Nee'))v*=Math.max(0,1-fnDiscount/100);if(battery&&String(battery.value||'')===String(p2?.battery?.noLabel||'Nee'))v*=Math.max(0,1-batDiscount/100);}else{const rules=selectedModel?.protocolSettings||{},fnMult=Math.max(0,1-Number(rules.functionsDiscount??30)/100),batMult=Math.max(0,1-Number(rules.batteryDiscount??10)/100);if(functions&&/nee|no|niet/i.test(String(functions.value||'')))v*=fnMult;if(battery&&/onder\s*85|<\s*85/i.test(String(battery.value||'')))v*=batMult;}
   v=Math.max(0,v);const credit=$('cMethod')?.value?.includes('tegoed'),display=credit?v*1.10:v;$('quote').textContent=money(display);$('bottomTotal').textContent=money(display);return v;
