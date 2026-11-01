@@ -1758,32 +1758,62 @@ textarea{
 <style>@media(max-width:700px){.live-chat-layout{grid-template-columns:1fr!important}.live-chat-layout #liveChatMessages{min-height:220px!important}}</style></section>
 
 <section class="section admin-page" id="page-emails" data-permission="site.save">
-  <div class="section-head">
-    <div><h2>✉️ E-mail</h2><p>Beheer inkomende berichten en verstuur e-mails vanuit HOMS TECH.</p></div>
-    <button class="btn btn-light" type="button" onclick="loadAdminEmails()">↻ Vernieuwen</button>
+  <div class="ht-mail-head">
+    <div><div class="ht-mail-kicker">HOMS TECH · CUSTOMER SUPPORT</div><h2>✉️ E-mail Inbox</h2><p>Beheer klantberichten en verstuur professionele e-mails vanuit één plek.</p></div>
+    <button class="ht-mail-refresh" type="button" onclick="loadAdminEmails()">↻ Vernieuwen</button>
   </div>
-  <div class="email-admin-layout" style="display:grid;grid-template-columns:minmax(260px,.85fr) minmax(320px,1.15fr);gap:16px">
-    <div class="card" style="margin:0;min-width:0">
-      <div class="card-head"><div class="card-title">📥 Inbox</div><span id="emailInboxCount" class="small">Laden…</span></div>
-      <div id="emailInboxList" style="display:flex;flex-direction:column;gap:8px;max-height:650px;overflow:auto"><div class="small">E-mails laden…</div></div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
-      <div class="card" style="margin:0">
-        <div class="card-head"><div class="card-title">✍️ Nieuw bericht / beantwoorden</div><button class="btn btn-light" type="button" onclick="emailComposeNew()">Nieuw</button></div>
-        <form id="adminEmailComposeForm">
-          <div class="field"><label for="adminEmailTo">Aan</label><input id="adminEmailTo" type="email" required placeholder="klant@email.nl"></div>
-          <div class="field"><label for="adminEmailSubject">Onderwerp</label><input id="adminEmailSubject" maxlength="240" required placeholder="Onderwerp van de e-mail"></div>
-          <div class="field"><label for="adminEmailBody">Bericht</label><textarea id="adminEmailBody" rows="8" required placeholder="Schrijf je bericht hier…"></textarea></div>
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button id="adminEmailSendBtn" class="btn btn-green" type="submit">Verstuur e-mail</button><span id="adminEmailStatus" class="small">Antwoorden op mail@inbound.homs-tech.nl komen in deze inbox.</span></div>
-        </form>
-      </div>
-      <div class="card" style="margin:0">
-        <div class="card-head"><div class="card-title">📨 Bericht bekijken</div></div>
-        <div id="adminEmailDetail" class="small">Selecteer een e-mail uit de inbox om de inhoud te bekijken.</div>
-      </div>
+  <div class="ht-mail-stats">
+    <div class="ht-mail-stat active"><span class="ht-mail-stat-icon">✉</span><div><strong>Inbox</strong><small id="emailStatInbox">0 ongelezen</small></div></div>
+    <div class="ht-mail-stat"><span class="ht-mail-stat-icon">➤</span><div><strong>Verzonden</strong><small id="emailStatSent">0 berichten</small></div></div>
+    <div class="ht-mail-stat"><span class="ht-mail-stat-icon">▤</span><div><strong>Bijlagen</strong><small>Foto's en documenten</small></div></div>
+    <div class="ht-mail-stat"><span class="ht-mail-stat-icon">◉</span><div><strong>Support</strong><small>HOMS TECH Inbox</small></div></div>
+  </div>
+  <div class="ht-mail-toolbar">
+    <label class="ht-mail-search"><span>⌕</span><input id="emailSearch" type="search" placeholder="Zoek op afzender of onderwerp…" oninput="renderAdminEmailList()"></label>
+    <div class="ht-mail-filters">
+      <button type="button" class="active" data-email-filter="all" onclick="setEmailFilter('all',this)">Alle berichten</button>
+      <button type="button" data-email-filter="inbound" onclick="setEmailFilter('inbound',this)">Inbox</button>
+      <button type="button" data-email-filter="outbound" onclick="setEmailFilter('outbound',this)">Verzonden</button>
     </div>
   </div>
-  <style>@media(max-width:850px){.email-admin-layout{grid-template-columns:1fr!important}.email-admin-layout #emailInboxList{max-height:360px!important}}</style>
+  <div class="ht-mail-workspace">
+    <aside class="ht-mail-list-panel">
+      <div class="ht-mail-panel-title"><strong>Berichten</strong><span id="emailInboxCount">Laden…</span></div>
+      <div id="emailInboxList" class="ht-mail-list"><div class="small">E-mails laden…</div></div>
+    </aside>
+    <div class="ht-mail-reader" id="adminEmailDetail"><div class="ht-mail-empty"><span>✉</span><strong>Selecteer een e-mail</strong><p>Kies een bericht uit de lijst om de inhoud te bekijken.</p></div></div>
+  </div>
+  <div class="ht-mail-compose">
+    <div class="ht-mail-compose-head"><div><span class="ht-mail-compose-icon">✎</span><div><strong id="emailComposeTitle">Nieuw bericht</strong><small>Schrijf een bericht aan je klant</small></div></div><button type="button" onclick="emailComposeNew()">＋ Nieuw bericht</button></div>
+    <form id="adminEmailComposeForm">
+      <div class="ht-mail-address-row"><label for="adminEmailTo">Aan</label><input id="adminEmailTo" type="email" required placeholder="klant@email.nl"><button type="button" class="ht-mail-cc" onclick="toggleEmailCc('cc')">Cc</button><button type="button" class="ht-mail-cc" onclick="toggleEmailCc('bcc')">Bcc</button></div>
+      <div id="emailCcRow" class="ht-mail-address-row" hidden><label for="adminEmailCc">Cc</label><input id="adminEmailCc" type="text" placeholder="extra@email.nl"></div>
+      <div id="emailBccRow" class="ht-mail-address-row" hidden><label for="adminEmailBcc">Bcc</label><input id="adminEmailBcc" type="text" placeholder="extra@email.nl"></div>
+      <div class="ht-mail-address-row"><label for="adminEmailSubject">Onderwerp</label><input id="adminEmailSubject" maxlength="240" required placeholder="Onderwerp van de e-mail"></div>
+      <div class="ht-mail-editor">
+        <div class="ht-mail-editor-tools"><button type="button" onclick="formatEmailText('bold')" title="Vet">B</button><button type="button" onclick="formatEmailText('italic')" title="Cursief"><i>I</i></button><button type="button" onclick="formatEmailText('underline')" title="Onderstrepen"><u>U</u></button><span></span><button type="button" onclick="insertEmailText('• ')" title="Opsomming">☷</button></div>
+        <textarea id="adminEmailBody" rows="7" required placeholder="Typ hier uw bericht…"></textarea>
+      </div>
+      <input id="adminEmailFiles" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/heic,application/pdf,.doc,.docx,.xls,.xlsx,.txt" hidden onchange="handleEmailFiles(this.files)">
+      <div id="emailAttachmentList" class="ht-mail-attachments"></div>
+      <div class="ht-mail-compose-bottom">
+        <div class="ht-mail-file-actions"><button type="button" class="ht-mail-attach-btn" onclick="document.getElementById('adminEmailFiles').click()">📎 Bijlage toevoegen</button><button type="button" class="ht-mail-attach-btn" onclick="document.getElementById('adminEmailFiles').click()">▧ Foto toevoegen</button><small>JPG, PNG, WEBP, PDF, DOC, DOCX, XLS, XLSX en TXT · max. 10 MB per bestand · 20 MB totaal</small></div>
+        <button id="adminEmailSendBtn" class="ht-mail-send" type="submit">➤ E-mail versturen</button>
+      </div>
+      <div id="adminEmailStatus" class="ht-mail-status">Antwoorden op mail@inbound.homs-tech.nl komen in deze inbox.</div>
+    </form>
+  </div>
+  <style>
+  #page-emails{max-width:100%;color:#142238}
+  .ht-mail-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px}.ht-mail-head h2{margin:4px 0 5px;font-size:25px;color:#10283f}.ht-mail-head p{margin:0;color:#718096;font-size:13px}.ht-mail-kicker{font-size:10px;letter-spacing:1.5px;font-weight:800;color:#2563eb}.ht-mail-refresh,.ht-mail-compose-head>button{border:1px solid #d7e0ed;background:#fff;color:#16304d;border-radius:10px;padding:11px 15px;font-weight:700}
+  .ht-mail-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}.ht-mail-stat{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e1e8f2;border-radius:13px;padding:13px 15px;min-width:0}.ht-mail-stat.active{background:#eff6ff;border-color:#c9dcff}.ht-mail-stat-icon{width:38px;height:38px;border-radius:11px;background:#e8f0ff;color:#2563eb;display:grid;place-items:center;font-size:20px;flex:none}.ht-mail-stat strong,.ht-mail-stat small{display:block}.ht-mail-stat strong{font-size:13px}.ht-mail-stat small{font-size:11px;color:#64748b;margin-top:4px}
+  .ht-mail-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}.ht-mail-search{display:flex;align-items:center;gap:9px;flex:1;min-width:220px;max-width:460px;background:#fff;border:1px solid #dce4ef;border-radius:10px;padding:0 12px;color:#718096}.ht-mail-search span{font-size:22px}.ht-mail-search input{border:0!important;outline:0!important;box-shadow:none!important;padding:12px 0!important;width:100%;min-width:0}.ht-mail-filters{display:flex;gap:5px;background:#edf2f8;padding:4px;border-radius:10px}.ht-mail-filters button{border:0;background:transparent;padding:8px 12px;border-radius:8px;color:#53657a;font-size:12px;font-weight:700}.ht-mail-filters button.active{background:#fff;color:#1d4ed8;box-shadow:0 1px 4px #0f172a12}
+  .ht-mail-workspace{display:grid;grid-template-columns:minmax(260px,350px) minmax(0,1fr);gap:13px;align-items:stretch}.ht-mail-list-panel,.ht-mail-reader,.ht-mail-compose{background:#fff;border:1px solid #e1e8f2;border-radius:15px;box-shadow:0 4px 18px #12243a08;min-width:0}.ht-mail-list-panel{overflow:hidden}.ht-mail-panel-title{padding:15px 16px;border-bottom:1px solid #edf1f6;display:flex;justify-content:space-between;align-items:center}.ht-mail-panel-title strong{font-size:14px}.ht-mail-panel-title span{font-size:11px;color:#64748b}.ht-mail-list{padding:8px;display:flex;flex-direction:column;gap:6px;max-height:520px;overflow:auto}.ht-mail-row{width:100%;text-align:left;display:block;border:1px solid transparent;border-radius:11px;background:#fff;padding:12px;cursor:pointer;color:#1e293b}.ht-mail-row:hover{background:#f7faff;border-color:#e0eaff}.ht-mail-row.active{background:#eff6ff;border-color:#c8dcff}.ht-mail-row-top{display:flex;align-items:center;gap:9px}.ht-mail-avatar{width:34px;height:34px;border-radius:50%;background:#e6edff;color:#2456b8;display:grid;place-items:center;font-weight:800;flex:none}.ht-mail-row-top>div:nth-child(2){min-width:0;flex:1}.ht-mail-row strong{display:block;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ht-mail-row small{color:#718096;font-size:10px;white-space:nowrap}.ht-mail-row-subject{font-size:12px;font-weight:700;margin:9px 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ht-mail-row-preview{font-size:11px;color:#7b8797;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ht-mail-row-badges{display:flex;gap:5px;margin-top:8px}.ht-mail-pill{font-size:9px;font-weight:800;padding:3px 7px;border-radius:20px;background:#eaf2ff;color:#2456b8}.ht-mail-pill.sent{background:#eef2f6;color:#64748b}
+  .ht-mail-reader{padding:0;min-height:350px;overflow:hidden}.ht-mail-reader-head{padding:20px 22px 15px;border-bottom:1px solid #edf1f6}.ht-mail-reader-title{font-size:18px;line-height:1.35;margin:0 0 15px;color:#10283f;overflow-wrap:anywhere}.ht-mail-meta{display:flex;gap:10px;align-items:center}.ht-mail-meta .ht-mail-avatar{width:40px;height:40px}.ht-mail-meta-main{min-width:0;flex:1}.ht-mail-meta-main strong,.ht-mail-meta-main small{display:block;overflow-wrap:anywhere}.ht-mail-meta-main strong{font-size:13px}.ht-mail-meta-main small{font-size:11px;color:#718096;margin-top:4px}.ht-mail-reader-body{padding:20px 22px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.75;font-size:13px;min-height:160px;color:#26384d}.ht-mail-reader-actions{padding:13px 18px;border-top:1px solid #edf1f6;display:flex;gap:8px;flex-wrap:wrap}.ht-mail-reader-actions button{border:1px solid #d8e1ed;background:#fff;color:#243b57;padding:9px 13px;border-radius:9px;font-weight:700;font-size:12px}.ht-mail-reader-actions button.primary{background:#155eef;color:#fff;border-color:#155eef}.ht-mail-empty{min-height:350px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:25px;color:#718096}.ht-mail-empty span{width:56px;height:56px;display:grid;place-items:center;background:#eff6ff;color:#2563eb;border-radius:16px;font-size:27px;margin-bottom:12px}.ht-mail-empty strong{color:#26384d}.ht-mail-empty p{font-size:12px}
+  .ht-mail-compose{margin-top:15px;padding:0;overflow:hidden}.ht-mail-compose-head{display:flex;align-items:center;justify-content:space-between;padding:15px 19px;border-bottom:1px solid #edf1f6}.ht-mail-compose-head>div{display:flex;gap:10px;align-items:center}.ht-mail-compose-icon{width:36px;height:36px;border-radius:10px;background:#eff6ff;color:#2563eb;display:grid;place-items:center;font-size:19px}.ht-mail-compose-head strong,.ht-mail-compose-head small{display:block}.ht-mail-compose-head strong{font-size:14px}.ht-mail-compose-head small{font-size:11px;color:#718096;margin-top:3px}.ht-mail-compose form{padding:14px 18px 16px}.ht-mail-address-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #edf1f6}.ht-mail-address-row label{width:76px;flex:none;color:#64748b;font-size:12px;font-weight:700}.ht-mail-address-row input{border:0!important;outline:0!important;box-shadow:none!important;min-width:0;flex:1;padding:8px 5px!important;background:transparent}.ht-mail-cc{border:0;background:transparent;color:#2563eb;font-weight:700;font-size:11px}.ht-mail-editor{border:1px solid #dce4ef;border-radius:11px;overflow:hidden;margin-top:14px}.ht-mail-editor-tools{display:flex;gap:4px;padding:7px 10px;border-bottom:1px solid #e5eaf1;background:#f9fbfe}.ht-mail-editor-tools button{border:0;background:transparent;border-radius:6px;min-width:30px;height:28px;color:#41536a;font-weight:700}.ht-mail-editor-tools button:hover{background:#eaf1fb}.ht-mail-editor-tools span{width:1px;background:#dce4ef;margin:3px 6px}.ht-mail-editor textarea{border:0!important;outline:0!important;box-shadow:none!important;width:100%;min-height:145px;padding:14px!important;resize:vertical;background:#fff}.ht-mail-attachments{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.ht-mail-attachment{display:flex;align-items:center;gap:8px;border:1px solid #e1e8f2;background:#f8fafc;border-radius:10px;padding:7px 9px;max-width:100%}.ht-mail-attachment img{width:38px;height:38px;object-fit:cover;border-radius:6px}.ht-mail-attachment-icon{width:38px;height:38px;display:grid;place-items:center;background:#e9efff;color:#2456b8;border-radius:6px;font-size:18px}.ht-mail-attachment-info{min-width:0}.ht-mail-attachment-info strong,.ht-mail-attachment-info small{display:block;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ht-mail-attachment-info strong{font-size:11px}.ht-mail-attachment-info small{font-size:10px;color:#718096;margin-top:3px}.ht-mail-attachment button{border:0;background:transparent;color:#b42318;font-size:17px;padding:3px}.ht-mail-compose-bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-top:13px}.ht-mail-file-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.ht-mail-attach-btn{border:1px solid #d7e0ed;background:#fff;border-radius:9px;padding:9px 12px;font-size:11px;font-weight:700;color:#2d435c}.ht-mail-file-actions small{display:block;width:100%;font-size:10px;color:#8190a2}.ht-mail-send{border:0;border-radius:10px;background:#155eef;color:#fff;font-weight:800;padding:12px 17px;white-space:nowrap}.ht-mail-send:disabled{opacity:.6;cursor:wait}.ht-mail-status{font-size:11px;color:#718096;margin-top:10px}.ht-mail-status.error{color:#b42318}.ht-mail-status.success{color:#16834a}
+  @media(max-width:900px){.ht-mail-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.ht-mail-workspace{grid-template-columns:minmax(220px,.8fr) minmax(0,1.2fr)}}
+  @media(max-width:700px){.ht-mail-head{align-items:flex-start}.ht-mail-head h2{font-size:21px}.ht-mail-workspace{grid-template-columns:1fr}.ht-mail-list{max-height:260px}.ht-mail-reader{min-height:250px}.ht-mail-reader-head{padding:15px}.ht-mail-reader-body{padding:15px;min-height:100px}.ht-mail-compose-bottom{align-items:stretch;flex-direction:column}.ht-mail-send{width:100%}.ht-mail-filters{width:100%;justify-content:space-between}.ht-mail-filters button{flex:1;padding:8px 5px}.ht-mail-stats{gap:8px}.ht-mail-stat{padding:10px}.ht-mail-stat-icon{width:32px;height:32px}}
+  </style>
 </section>
 
 <section class="section admin-page active" id="page-general">
@@ -8105,63 +8135,67 @@ async function previewSavedInvoice(id){try{const r=await fetch("/api/admin/invoi
 async function sendInvoiceTest(id){const row=[...document.querySelectorAll("#invoiceList tr")].find(tr=>tr.textContent.includes(""));if(!confirm("De factuur als e-mail versturen naar het e-mailadres dat bij deze factuur is opgeslagen?"))return;try{const r=await fetch("/api/admin/invoices/"+id+"/test-send",{method:"POST",credentials:"same-origin"}),d=await r.json();if(!r.ok)throw Error(d.error||"E-mail versturen mislukt");alert("E-mail verzonden naar "+d.to)}catch(e){alert(e.message)}}
 
 
-let adminEmailCache=[];
+let adminEmailCache=[],adminEmailFilter="all",adminEmailSelectedId=null,adminEmailFiles=[];
 function emailEsc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function emailDate(v){try{return new Date(v).toLocaleString("nl-NL",{dateStyle:"short",timeStyle:"short"});}catch{return "";}}
+function emailBytes(n){if(n<1024)return n+" B";if(n<1048576)return (n/1024).toFixed(0)+" KB";return (n/1048576).toFixed(1)+" MB";}
+function emailInitial(v){return String(v||"?").trim().charAt(0).toUpperCase()||"?";}
+function emailPreview(v){return String(v||"").replace(/<[^>]*>/g," ").replace(/\\s+/g," ").trim().slice(0,120);}
+function setEmailFilter(filter,button){adminEmailFilter=filter;document.querySelectorAll("[data-email-filter]").forEach(x=>x.classList.toggle("active",x===button));renderAdminEmailList();}
+function renderAdminEmailList(){
+ const list=document.getElementById("emailInboxList"),search=(document.getElementById("emailSearch")?.value||"").toLowerCase();if(!list)return;
+ const rows=adminEmailCache.filter(m=>(adminEmailFilter==="all"||m.direction===adminEmailFilter)&&[m.subject,m.from_address,(m.to_addresses||[]).join(" ")].join(" ").toLowerCase().includes(search));
+ if(!rows.length){list.innerHTML='<div class="ht-mail-empty" style="min-height:180px"><span>⌕</span><strong>Geen berichten gevonden</strong><p>Pas je zoekopdracht of filter aan.</p></div>';return;}
+ list.innerHTML=rows.map(m=>'<button type="button" class="ht-mail-row '+(Number(m.id)===Number(adminEmailSelectedId)?"active":"")+'" onclick="openAdminEmail('+Number(m.id)+')"><div class="ht-mail-row-top"><span class="ht-mail-avatar">'+emailEsc(emailInitial(m.direction==="inbound"?m.from_address:(m.to_addresses||[])[0]))+'</span><div><strong>'+emailEsc(m.direction==="inbound"?m.from_address:"Aan: "+(m.to_addresses||[]).join(", "))+'</strong><small>'+emailDate(m.created_at)+'</small></div></div><div class="ht-mail-row-subject">'+emailEsc(m.subject||"(geen onderwerp)")+'</div><div class="ht-mail-row-preview">'+emailEsc(emailPreview(m.text_body||m.subject))+'</div><div class="ht-mail-row-badges"><span class="ht-mail-pill '+(m.direction==="outbound"?"sent":"")+'">'+(m.direction==="inbound"?"Inbox":"Verzonden")+'</span>'+(m.direction==="inbound"&&!m.is_read?'<span class="ht-mail-pill">Nieuw</span>':"")+(Array.isArray(m.attachments)&&m.attachments.length?'<span class="ht-mail-pill">📎 '+m.attachments.length+'</span>':"")+'</div></button>').join("");
+}
 async function loadAdminEmails(){
-  const list=document.getElementById("emailInboxList"),count=document.getElementById("emailInboxCount");
-  if(!list)return;list.innerHTML='<div class="small">E-mails laden…</div>';
-  try{
-    const r=await fetch("/api/admin/emails",{credentials:"same-origin"}),d=await r.json();
-    if(!r.ok)throw Error(d.error||"E-mails laden mislukt.");
-    adminEmailCache=d.emails||[];
-    if(count)count.textContent=adminEmailCache.filter(x=>x.direction==="inbound"&&!x.is_read).length+" ongelezen";
-    if(!adminEmailCache.length){list.innerHTML='<div class="order-empty">Nog geen e-mails ontvangen of verzonden.</div>';return;}
-    list.innerHTML=adminEmailCache.map(m=>'<div class="ht-email-row" style="display:flex;gap:8px;align-items:stretch"><button type="button" onclick="openAdminEmail('+Number(m.id)+')" style="flex:1;min-width:0;text-align:left;border:1px solid #e2e8f0;border-radius:12px;padding:13px;background:'+(m.direction==="inbound"&&!m.is_read?"#eff6ff":"#fff")+';cursor:pointer"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><strong style="font-size:13px;overflow-wrap:anywhere">'+(m.direction==="inbound"?"📥":"📤")+' '+emailEsc(m.subject||"(geen onderwerp)")+'</strong><small style="color:#64748b;white-space:nowrap">'+emailDate(m.created_at)+'</small></div><div style="font-size:12px;color:#64748b;margin-top:6px;overflow-wrap:anywhere">'+emailEsc(m.direction==="inbound"?m.from_address:"Aan: "+(m.to_addresses||[]).join(", "))+(m.direction==="inbound"&&!m.is_read?' · <b style="color:#2563eb">Nieuw</b>':'')+'</div></button><button type="button" class="btn btn-light" title="Verwijderen" aria-label="E-mail verwijderen" onclick="deleteAdminEmail('+Number(m.id)+')" style="align-self:stretch;color:#b42318;border:1px solid #fecaca;background:#fff5f5">🗑️</button></div>').join("");
-  }catch(e){list.innerHTML='<div class="status error">'+emailEsc(e.message)+'</div>';}
+ const list=document.getElementById("emailInboxList"),count=document.getElementById("emailInboxCount");if(!list)return;list.innerHTML='<div class="small">E-mails laden…</div>';
+ try{
+  const r=await fetch("/api/admin/emails",{credentials:"same-origin"}),d=await r.json();if(!r.ok)throw Error(d.error||"E-mails laden mislukt.");
+  adminEmailCache=d.emails||[];const unread=adminEmailCache.filter(x=>x.direction==="inbound"&&!x.is_read).length;
+  if(count)count.textContent=adminEmailCache.length+" berichten";const inbox=document.getElementById("emailStatInbox"),sent=document.getElementById("emailStatSent");
+  if(inbox)inbox.textContent=unread+" ongelezen";if(sent)sent.textContent=adminEmailCache.filter(x=>x.direction==="outbound").length+" berichten";
+  renderAdminEmailList();
+  if(adminEmailSelectedId&&adminEmailCache.some(x=>Number(x.id)===Number(adminEmailSelectedId)))return;
+  if(adminEmailCache.length)await openAdminEmail(adminEmailCache[0].id);
+ }catch(e){list.innerHTML='<div class="status error">'+emailEsc(e.message)+'</div>';}
 }
 async function openAdminEmail(id){
-  const box=document.getElementById("adminEmailDetail");if(!box)return;box.textContent="Bericht laden…";
-  try{
-    const r=await fetch("/api/admin/emails/"+id,{credentials:"same-origin"}),d=await r.json();if(!r.ok)throw Error(d.error||"Bericht laden mislukt.");
-    const m=d.email;
-    box.innerHTML='<div style="font-weight:800;font-size:18px;margin-bottom:10px">'+emailEsc(m.subject||"(geen onderwerp)")+'</div><div class="small" style="line-height:1.8;margin-bottom:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px">Van: '+emailEsc(m.from_address)+'<br>Aan: '+emailEsc((m.to_addresses||[]).join(", "))+'<br>'+emailDate(m.created_at)+'</div><div style="white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #e2e8f0;border-radius:10px;background:#fff;padding:16px;min-height:150px;line-height:1.7">'+emailEsc(m.text_body||"").slice(0,30000)+'</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">'+(m.direction==="inbound"?'<button type="button" class="btn btn-green" onclick="emailReply('+Number(m.id)+')">↩️ رد على الرسالة</button>':'')+'<button type="button" class="btn btn-light" style="color:#b42318;border:1px solid #fecaca" onclick="deleteAdminEmail('+Number(m.id)+')">🗑️ حذف الرسالة</button></div>';
-    const cached=adminEmailCache.find(x=>Number(x.id)===Number(id));if(cached)cached.is_read=true;
-    const count=document.getElementById("emailInboxCount");if(count)count.textContent=adminEmailCache.filter(x=>x.direction==="inbound"&&!x.is_read).length+" ongelezen";
-    const row=[...document.querySelectorAll("#emailInboxList button")].find(b=>b.getAttribute("onclick")==="openAdminEmail("+Number(id)+")");if(row)row.style.background="#fff";
-  }catch(e){box.textContent=e.message;}
+ const box=document.getElementById("adminEmailDetail");if(!box)return;adminEmailSelectedId=Number(id);renderAdminEmailList();box.innerHTML='<div class="ht-mail-empty"><strong>Bericht laden…</strong></div>';
+ try{
+  const r=await fetch("/api/admin/emails/"+id,{credentials:"same-origin"}),d=await r.json();if(!r.ok)throw Error(d.error||"Bericht laden mislukt.");
+  const m=d.email,attachments=Array.isArray(m.attachments)?m.attachments:[];
+  box.innerHTML='<div class="ht-mail-reader-head"><h3 class="ht-mail-reader-title">'+emailEsc(m.subject||"(geen onderwerp)")+'</h3><div class="ht-mail-meta"><span class="ht-mail-avatar">'+emailEsc(emailInitial(m.from_address))+'</span><div class="ht-mail-meta-main"><strong>'+emailEsc(m.from_address||"Onbekend")+'</strong><small>Aan: '+emailEsc((m.to_addresses||[]).join(", "))+' · '+emailDate(m.created_at)+'</small></div></div></div><div class="ht-mail-reader-body">'+emailEsc(m.text_body||emailPreview(m.html_body)||"Geen tekstinhoud beschikbaar.")+'</div>'+(attachments.length?'<div style="padding:0 20px 16px"><strong style="font-size:12px">📎 Bijlagen ('+attachments.length+')</strong><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:9px">'+attachments.map(x=>'<div class="ht-mail-attachment"><span class="ht-mail-attachment-icon">▤</span><div class="ht-mail-attachment-info"><strong>'+emailEsc(x.filename||x.name||"Bijlage")+'</strong><small>'+emailEsc(x.content_type||x.type||"Bestand")+'</small></div></div>').join("")+'</div></div>':'')+'<div class="ht-mail-reader-actions">'+(m.direction==="inbound"?'<button type="button" class="primary" onclick="emailReply('+Number(m.id)+')">↩ Beantwoorden</button>':'')+'<button type="button" onclick="emailComposeNew()">＋ Nieuw bericht</button><button type="button" onclick="deleteAdminEmail('+Number(m.id)+')">🗑 Verwijderen</button></div>';
+  const cached=adminEmailCache.find(x=>Number(x.id)===Number(id));if(cached)cached.is_read=true;const unread=adminEmailCache.filter(x=>x.direction==="inbound"&&!x.is_read).length;const stat=document.getElementById("emailStatInbox");if(stat)stat.textContent=unread+" ongelezen";renderAdminEmailList();
+ }catch(e){box.textContent=e.message;}
 }
 async function deleteAdminEmail(id){
-  const message=adminEmailCache.find(x=>Number(x.id)===Number(id));
-  if(!message)return;
-  if(!confirm('هل أنت متأكد من حذف هذه الرسالة من لوحة HOMS TECH؟\n\n'+(message.subject||'(geen onderwerp)')+'\n\nلن يتم حذفها من Resend أو من صندوق بريد المرسل.'))return;
-  try{
-    const r=await fetch('/api/admin/emails/'+Number(id),{method:'DELETE',credentials:'same-origin'});
-    const d=await r.json().catch(()=>({}));
-    if(!r.ok)throw Error(d.error||'Bericht verwijderen mislukt.');
-    const detail=document.getElementById('adminEmailDetail');
-    if(detail)detail.innerHTML='<div class="small">Selecteer een e-mail uit de inbox om de inhoud te bekijken.</div>';
-    await loadAdminEmails();
-  }catch(e){alert(e.message);}
+ const m=adminEmailCache.find(x=>Number(x.id)===Number(id));if(!m||!confirm("Deze e-mail alleen uit de HOMS TECH inbox verwijderen?"))return;
+ try{const r=await fetch("/api/admin/emails/"+Number(id),{method:"DELETE",credentials:"same-origin"}),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||"Bericht verwijderen mislukt.");adminEmailSelectedId=null;document.getElementById("adminEmailDetail").innerHTML='<div class="ht-mail-empty"><span>✉</span><strong>Selecteer een e-mail</strong></div>';await loadAdminEmails();}catch(e){alert(e.message);}
 }
-function emailComposeNew(){document.getElementById("adminEmailTo").value="";document.getElementById("adminEmailSubject").value="";document.getElementById("adminEmailBody").value="";document.getElementById("adminEmailStatus").textContent="Nieuw e-mailbericht";document.getElementById("adminEmailTo").focus();}
+function emailComposeNew(){document.getElementById("adminEmailTo").value="";document.getElementById("adminEmailSubject").value="";document.getElementById("adminEmailBody").value="";document.getElementById("emailComposeTitle").textContent="Nieuw bericht";document.getElementById("adminEmailStatus").textContent="Nieuw e-mailbericht";document.getElementById("adminEmailCc").value="";document.getElementById("adminEmailBcc").value="";clearEmailFiles();document.getElementById("adminEmailTo").focus();}
 function emailReply(id){
-  const m=adminEmailCache.find(x=>Number(x.id)===Number(id));if(!m)return;
-  document.getElementById("adminEmailTo").value=m.from_address||"";
-  document.getElementById("adminEmailSubject").value=/^re:/i.test(m.subject||"")?m.subject:"Re: "+(m.subject||"");
-  document.getElementById("adminEmailBody").value="\n\n--- Oorspronkelijk bericht ---\n"+(m.text_body||"");
-  document.getElementById("adminEmailStatus").textContent="Antwoord aan "+m.from_address;
-  document.getElementById("adminEmailBody").focus();
+ const m=adminEmailCache.find(x=>Number(x.id)===Number(id));if(!m)return;document.getElementById("adminEmailTo").value=m.from_address||"";document.getElementById("adminEmailSubject").value=/^re:/i.test(m.subject||"")?m.subject:"Re: "+(m.subject||"");document.getElementById("adminEmailBody").value="";document.getElementById("emailComposeTitle").textContent="Antwoord op: "+(m.subject||"e-mail");document.getElementById("adminEmailStatus").textContent="Antwoord aan "+m.from_address;document.getElementById("adminEmailBody").focus();}
+function toggleEmailCc(which){const el=document.getElementById(which==="cc"?"emailCcRow":"emailBccRow");if(el)el.hidden=!el.hidden;}
+function formatEmailText(kind){const el=document.getElementById("adminEmailBody"),a=el.selectionStart,b=el.selectionEnd;if(a===b)return;const selected=el.value.slice(a,b),wrapped=kind==="bold"?"**"+selected+"**":kind==="italic"?"_"+selected+"_":"__"+selected+"__";el.setRangeText(wrapped,a,b,"select");el.focus();}
+function insertEmailText(text){const el=document.getElementById("adminEmailBody"),a=el.selectionStart;el.setRangeText(text,a,a,"end");el.focus();}
+function clearEmailFiles(){adminEmailFiles=[];const input=document.getElementById("adminEmailFiles");if(input)input.value="";renderEmailFiles();}
+function handleEmailFiles(files){
+ const allowed=new Set(["image/jpeg","image/png","image/webp","image/gif","image/heic","application/pdf","application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","text/plain"]);
+ for(const file of Array.from(files||[])){if(!allowed.has(file.type)&&!(/\.(doc|docx|xls|xlsx|txt)$/i.test(file.name))){alert("Dit bestandstype wordt niet ondersteund: "+file.name);continue;}if(file.size>10*1024*1024){alert(file.name+" is groter dan 10 MB.");continue;}if(adminEmailFiles.reduce((n,x)=>n+x.size,0)+file.size>20*1024*1024){alert("De totale grootte van bijlagen mag maximaal 20 MB zijn.");break;}if(adminEmailFiles.some(x=>x.name===file.name&&x.size===file.size)){continue;}adminEmailFiles.push(file);}
+ renderEmailFiles();document.getElementById("adminEmailFiles").value="";
 }
+function renderEmailFiles(){const box=document.getElementById("emailAttachmentList");if(!box)return;box.innerHTML=adminEmailFiles.map((f,i)=>'<div class="ht-mail-attachment">'+(f.type.startsWith("image/")?'<img src="'+URL.createObjectURL(f)+'" alt="">':'<span class="ht-mail-attachment-icon">▤</span>')+'<div class="ht-mail-attachment-info"><strong>'+emailEsc(f.name)+'</strong><small>'+emailBytes(f.size)+'</small></div><button type="button" aria-label="Bijlage verwijderen" onclick="removeEmailFile('+i+')">×</button></div>').join("");}
+function removeEmailFile(i){adminEmailFiles.splice(i,1);renderEmailFiles();}
+function emailFileToBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(",")[1]||"");reader.onerror=()=>reject(new Error("Bestand lezen mislukt: "+file.name));reader.readAsDataURL(file);});}
 document.getElementById("adminEmailComposeForm")?.addEventListener("submit",async e=>{
-  e.preventDefault();const btn=document.getElementById("adminEmailSendBtn"),status=document.getElementById("adminEmailStatus");
-  btn.disabled=true;status.textContent="E-mail wordt verzonden…";
-  try{
-    const body={to:document.getElementById("adminEmailTo").value.trim(),subject:document.getElementById("adminEmailSubject").value.trim(),text:document.getElementById("adminEmailBody").value};
-    const r=await fetch("/api/admin/emails/send",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}),d=await r.json();
-    if(!r.ok)throw Error(d.error||"E-mail verzenden mislukt.");
-    status.textContent="Verzonden naar "+d.to;document.getElementById("adminEmailBody").value="";await loadAdminEmails();
-  }catch(err){status.textContent=err.message;}finally{btn.disabled=false;}
+ e.preventDefault();const btn=document.getElementById("adminEmailSendBtn"),status=document.getElementById("adminEmailStatus");btn.disabled=true;status.className="ht-mail-status";status.textContent="E-mail en bijlagen worden voorbereid…";
+ try{
+  const attachments=[];for(const file of adminEmailFiles)attachments.push({filename:file.name,content:await emailFileToBase64(file),content_type:file.type||"application/octet-stream"});
+  const body={to:document.getElementById("adminEmailTo").value.trim(),cc:document.getElementById("adminEmailCc").value.trim(),bcc:document.getElementById("adminEmailBcc").value.trim(),subject:document.getElementById("adminEmailSubject").value.trim(),text:document.getElementById("adminEmailBody").value,attachments};
+  const r=await fetch("/api/admin/emails/send",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}),d=await r.json();if(!r.ok)throw Error(d.error||"E-mail verzenden mislukt.");
+  status.className="ht-mail-status success";status.textContent="Verzonden naar "+d.to+" · "+attachments.length+" bijlagen";document.getElementById("adminEmailBody").value="";clearEmailFiles();await loadAdminEmails();
+ }catch(err){status.className="ht-mail-status error";status.textContent=err.message;}finally{btn.disabled=false;}
 });
 
 const DEVICE_STATUS_CUSTOMER=["مفتوح","قيد العمل","مكتمل"];
