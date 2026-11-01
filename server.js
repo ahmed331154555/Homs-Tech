@@ -83,8 +83,11 @@ app.post("/api/webhooks/resend/inbound", express.raw({ type: "application/json",
       console.error("Resend receiving API returned an unexpected payload:",JSON.stringify(payload).slice(0,1200));
       return res.status(502).send("Could not retrieve received email");
     }
-    await pool.query("INSERT INTO admin_emails(resend_email_id,direction,from_address,to_addresses,subject,text_body,html_body,attachments,is_read,created_at) VALUES($1,'inbound',$2,$3::jsonb,$4,$5,$6,$7::jsonb,FALSE,COALESCE($8::timestamptz,NOW())) ON CONFLICT(resend_email_id) DO NOTHING",
-      [String(mail.id||event.data.email_id),String(mail.from||event.data.from||"").slice(0,320),JSON.stringify(Array.isArray(mail.to)?mail.to:Array.isArray(event.data.to)?event.data.to:[]),String(mail.subject||event.data.subject||"(geen onderwerp)").slice(0,500),String(mail.text||"").slice(0,100000),String(mail.html||"").slice(0,200000),JSON.stringify(Array.isArray(mail.attachments)?mail.attachments.map(x=>({filename:String(x.filename||x.name||"Bijlage").slice(0,240),content_type:String(x.content_type||x.type||"").slice(0,120),size:Number(x.size)||0,id:x.id||null})):[]),mail.created_at||event.data.created_at||null]);
+    const headerValue=(...names)=>{const headers=mail.headers&&typeof mail.headers==="object"?mail.headers:{};for(const name of names){const key=Object.keys(headers).find(k=>k.toLowerCase()===name.toLowerCase());if(key){const value=headers[key];return (Array.isArray(value)?value.join(" "):String(value||"")).trim();}}return "";};
+    const originalMessageId=headerValue("message-id").slice(0,998);
+    const originalReferences=headerValue("references","in-reply-to").slice(0,4000);
+    await pool.query("INSERT INTO admin_emails(resend_email_id,message_id,references_header,direction,from_address,to_addresses,subject,text_body,html_body,attachments,is_read,created_at) VALUES($1,$2,$3,'inbound',$4,$5::jsonb,$6,$7,$8,$9::jsonb,FALSE,COALESCE($10::timestamptz,NOW())) ON CONFLICT(resend_email_id) DO NOTHING",
+      [String(mail.id||event.data.email_id),originalMessageId,originalReferences,String(mail.from||event.data.from||"").slice(0,320),JSON.stringify(Array.isArray(mail.to)?mail.to:Array.isArray(event.data.to)?event.data.to:[]),String(mail.subject||event.data.subject||"(geen onderwerp)").slice(0,500),String(mail.text||"").slice(0,100000),String(mail.html||"").slice(0,200000),JSON.stringify(Array.isArray(mail.attachments)?mail.attachments.map(x=>({filename:String(x.filename||x.name||"Bijlage").slice(0,240),content_type:String(x.content_type||x.type||"").slice(0,120),size:Number(x.size)||0,id:x.id||null})):[]),mail.created_at||event.data.created_at||null]);
     // Send a short notification to the owner's Gmail; the full message remains in the admin inbox.
     const from=process.env.RESEND_FROM_EMAIL;
     if(from){fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({from,to:["Appelavcd116@gmail.com"],subject:"Nieuwe HOMS TECH e-mail: "+String(mail.subject||"").slice(0,120),text:"Nieuwe e-mail ontvangen van "+String(mail.from||"onbekend")+". Open de HOMS TECH admin inbox om het bericht te lezen."})}).catch(err=>console.error("Inbound notification failed:",err.message));}
@@ -251,6 +254,8 @@ async function initDatabase() {
     CREATE TABLE IF NOT EXISTS admin_emails (
       id BIGSERIAL PRIMARY KEY,
       resend_email_id TEXT UNIQUE,
+      message_id TEXT NOT NULL DEFAULT '',
+      references_header TEXT NOT NULL DEFAULT '',
       direction TEXT NOT NULL CHECK(direction IN ('inbound','outbound')),
       from_address TEXT NOT NULL DEFAULT '',
       to_addresses JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -264,6 +269,8 @@ async function initDatabase() {
     CREATE INDEX IF NOT EXISTS admin_emails_inbox_idx ON admin_emails(direction,is_read,created_at DESC);
   `);
   await pool.query(`ALTER TABLE admin_emails ADD COLUMN IF NOT EXISTS attachments JSONB NOT NULL DEFAULT '[]'::jsonb`);
+  await pool.query(`ALTER TABLE admin_emails ADD COLUMN IF NOT EXISTS message_id TEXT NOT NULL DEFAULT ''`);
+  await pool.query(`ALTER TABLE admin_emails ADD COLUMN IF NOT EXISTS references_header TEXT NOT NULL DEFAULT ''`);
 
 
   await pool.query(`
@@ -4349,7 +4356,7 @@ function buildInvoicePdf(invoice){
  const xref=Buffer.byteLength(pdf,"latin1");pdf+="xref\n0 "+(objects.length+1)+"\n0000000000 65535 f \n";for(let i=1;i<offsets.length;i++)pdf+=String(offsets[i]).padStart(10,"0")+" 00000 n \n";pdf+="trailer\n<< /Size "+(objects.length+1)+" /Root 1 0 R >>\nstartxref\n"+xref+"\n%%EOF";return Buffer.from(pdf,"latin1");
 }
 app.get("/api/admin/emails",requirePermission("site.save"),async(req,res)=>{
-  try{const r=await pool.query("SELECT id,direction,from_address,to_addresses,subject,LEFT(text_body,180) AS preview,attachments,is_read,created_at FROM admin_emails ORDER BY created_at DESC,id DESC LIMIT 200");res.json({emails:r.rows});}
+  try{const r=await pool.query("SELECT id,direction,from_address,to_addresses,subject,LEFT(text_body,180) AS preview,attachments,is_read,created_at,message_id,references_header FROM admin_emails ORDER BY created_at DESC,id DESC LIMIT 200");res.json({emails:r.rows});}
   catch(e){console.error("Admin email list:",e);res.status(500).json({error:"E-mails laden is mislukt."});}
 });
 app.get("/api/admin/emails/:id",requirePermission("site.save"),async(req,res)=>{
@@ -4408,7 +4415,19 @@ app.post("/api/admin/emails/send",requirePermission("site.save"),async(req,res)=
         </tr>
       </table>`;
     const html=`<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.7;color:#263445">${messageHtml}${signatureHtml}</div>`;
-    const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({from,to:[to],cc,bcc,subject,text:textWithSignature,html,reply_to:"mail@inbound.homs-tech.nl",attachments:attachments.map(x=>({filename:x.filename,content:x.content}))})});
+    const replyToId=Number(req.body?.replyToId)||0;
+    let replyHeaders;
+    if(replyToId){
+      const originalResult=await pool.query("SELECT direction,message_id,references_header FROM admin_emails WHERE id=$1",[replyToId]);
+      const original=originalResult.rows[0];
+      if(!original||original.direction!=="inbound")return res.status(400).json({error:"Het oorspronkelijke inkomende bericht is niet gevonden. Verstuur dit bericht als nieuw e-mailbericht."});
+      if(!String(original.message_id||"").trim())return res.status(400).json({error:"Dit oude bericht bevat geen Message-ID om de conversatie te koppelen. Verstuur het als nieuw e-mailbericht."});
+      const refs=[...new Set((String(original.references_header||"")+" "+String(original.message_id)).match(/<[^<>\s]+>/g)||[])].slice(-20);
+      replyHeaders={"In-Reply-To":String(original.message_id).trim(),"References":refs.join(" ")};
+    }
+    const sendPayload={from,to:[to],cc,bcc,subject,text:textWithSignature,html,reply_to:"mail@inbound.homs-tech.nl",attachments:attachments.map(x=>({filename:x.filename,content:x.content}))};
+    if(replyHeaders)sendPayload.headers=replyHeaders;
+    const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify(sendPayload)});
     const data=await response.json().catch(()=>({}));
     if(!response.ok){console.error("Admin email send provider error:",response.status,JSON.stringify(data));return res.status(502).json({error:"E-mailprovider kon het bericht niet versturen."});}
     await pool.query("INSERT INTO admin_emails(resend_email_id,direction,from_address,to_addresses,subject,text_body,html_body,attachments,is_read) VALUES($1,'outbound',$2,$3::jsonb,$4,$5,$6,$7::jsonb,TRUE)",[String(data.id||"sent-"+Date.now()+"-"+crypto.randomBytes(5).toString("hex")),from,JSON.stringify([to,...cc,...bcc]),subject,textBody,html,JSON.stringify(attachments.map(x=>({filename:x.filename,content_type:x.content_type,size:Buffer.from(x.content,"base64").length}))) ]);
