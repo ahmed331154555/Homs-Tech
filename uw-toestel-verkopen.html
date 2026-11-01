@@ -471,6 +471,16 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 #dynamicQuestions .dynamic-info-line{display:flex;align-items:flex-start;gap:9px;padding:8px 0;border:0;font-size:12px;line-height:1.5;color:#536276}
 #dynamicQuestions .dynamic-info-line .bullet{width:18px;height:18px;font-size:11px}
 @media(max-width:520px){#dynamicQuestions.dynamic-questions{padding:0 14px}#dynamicQuestions .dynamic-option-grid.condition-options{grid-template-columns:repeat(2,minmax(0,1fr))}#dynamicQuestions .dynamic-option{min-height:44px;padding:9px;font-size:12px}#dynamicQuestions .dynamic-option-grid.condition-options .dynamic-option{min-height:66px}}
+
+/* Three-stage trade-in flow: model choice and device assessment share stage one */
+#step1{display:block}
+#step1 #modelChooser{margin-bottom:16px}
+#step1 #step2{padding:0 0 18px;margin:0}
+#step1 #step2 .buyback-layout{grid-template-columns:minmax(0,1fr)}
+#step1 #step2 .buyback-side{display:none}
+#step1 #step2 .buyback-main-column{gap:14px}
+#step1 #step2 .buyback-step .panel{box-shadow:0 8px 22px rgba(7,29,45,.055)}
+@media(max-width:850px){#step1 #step2{padding-bottom:8px}}
 </style>
 
 </head>
@@ -499,10 +509,9 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
           <p>Verkoop uw iPhone snel, veilig en voor een eerlijke prijs bij HOMS TECH.</p>
         </div>
         <div class="sell-progress" aria-label="Verkoopproces">
-          <div class="sell-progress-step active" data-step="1"><b>1</b><span>iPhone kiezen</span></div>
-          <i class="sell-progress-line" data-line="1"></i><div class="sell-progress-step" data-step="2"><b>2</b><span>Toestelgegevens</span></div>
-          <i class="sell-progress-line" data-line="2"></i><div class="sell-progress-step" data-step="3"><b>3</b><span>Uw gegevens</span></div>
-          <i class="sell-progress-line" data-line="3"></i><div class="sell-progress-step" data-step="4"><b>4</b><span>Aanvraag</span></div>
+          <div class="sell-progress-step active" data-step="1"><b>1</b><span>Toestel kiezen</span></div>
+          <i class="sell-progress-line" data-line="1"></i><div class="sell-progress-step" data-step="2"><b>2</b><span>Uw gegevens</span></div>
+          <i class="sell-progress-line" data-line="2"></i><div class="sell-progress-step" data-step="3"><b>3</b><span>Aanvraag</span></div>
         </div>
       </div>
     </div>
@@ -511,7 +520,8 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 
 <main class="main"><div class="wrap">
 
-<section id="step1" class="panel forzastyle-panel">
+<section id="step1" class="buyback-step" style="display:block">
+  <div id="modelChooser" class="panel forzastyle-panel">
   <div class="panel-head forzastyle-head">
     <div><h2 id="chooseTitle">Welk iPhone-model wilt u verkopen?</h2><p>Kies uw iPhone-model om de geschatte verkoopwaarde te bekijken.</p></div>
     <span class="iphone-only-label">Alleen iPhone</span>
@@ -528,9 +538,9 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
   <div id="deviceGrid" class="device-grid"></div>
   <div id="buybackLoadError" role="status" style="display:none;margin:14px auto;padding:13px 15px;max-width:900px;border:1px solid #fecaca;border-radius:12px;background:#fff7f7;color:#991b1b;font-size:13px;line-height:1.5"></div>
   <button id="loadMoreModels" class="load-more" type="button" style="display:none">Meer laden</button>
-</section>
+  </div>
 
-<section id="step2" class="buyback-step" style="display:none">
+  <section id="step2" class="buyback-step" style="display:none">
   <div class="buyback-layout">
     <div class="buyback-main-column">
       <div class="panel">
@@ -553,11 +563,10 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
     </div>
     <aside class="buyback-side">
       <div class="panel service-panel">
-        <h3>Onze service in 4 stappen</h3>
-        <div class="service-step"><span>1</span><div><b>Vul de gegevens in</b><small>Kies uw iPhone en beantwoord een paar vragen.</small></div></div>
-        <div class="service-step"><span>2</span><div><b>Ontvang uw prijs</b><small>Direct een eerlijk en realistisch aanbod.</small></div></div>
-        <div class="service-step"><span>3</span><div><b>Stuur uw iPhone op of lever in</b><small>Gratis verzenden of langskomen in onze winkel.</small></div></div>
-        <div class="service-step"><span>4</span><div><b>Ontvang uw betaling</b><small>Snel en veilig op uw rekening.</small></div></div>
+        <h3>Onze service in 3 stappen</h3>
+        <div class="service-step"><span>1</span><div><b>Kies en beoordeel uw iPhone</b><small>Selecteer uw model en beantwoord de vragen.</small></div></div>
+        <div class="service-step"><span>2</span><div><b>Ontvang uw prijsvoorstel</b><small>Bekijk direct de geschatte waarde en vul uw gegevens in.</small></div></div>
+        <div class="service-step"><span>3</span><div><b>Verstuur uw aanvraag</b><small>We nemen contact met u op over verzending en uitbetaling.</small></div></div>
       </div>
       <div class="panel trust-panel">
         <h3>Waarom HOMS TECH?</h3>
@@ -566,6 +575,7 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
       </div>
     </aside>
   </div>
+  </section>
 </section>
 
 <section id="step3" class="panel" style="display:none">
@@ -952,10 +962,20 @@ function calcQuote(){
   return calcQuoteLocalFallback();
 }
 function go(n){
-  if(n===1){selectedFamily='iPhone';window._modelLimit=12;if($('deviceSearch'))$('deviceSearch').value='';if($('familyGrid'))categories();}
-  [1,2,3,4].forEach(i=>$('step'+i).style.display=i===n?'block':'none');
-  document.querySelectorAll('.sell-progress-step').forEach(el=>{const step=Number(el.dataset.step||0);el.classList.toggle('active',step===n);el.classList.toggle('done',step<n);});
-  document.querySelectorAll('.sell-progress-line').forEach(el=>{const line=Number(el.dataset.line||0);el.classList.toggle('active',n>line);});
+  const modelChooser=$('modelChooser'),assessment=$('step2');
+  if(n===1){
+    $('step1').style.display='block';assessment.style.display='none';modelChooser.style.display='block';
+    if(!selected){selectedFamily='iPhone';window._modelLimit=12;if($('deviceSearch'))$('deviceSearch').value='';if($('familyGrid'))categories();}
+  }else if(n===2){
+    $('step1').style.display='block';modelChooser.style.display='none';assessment.style.display='block';$('step3').style.display='none';$('step4').style.display='none';
+  }else if(n===3){
+    $('step1').style.display='none';$('step3').style.display='block';$('step4').style.display='none';
+  }else if(n===4){
+    $('step1').style.display='none';$('step3').style.display='none';$('step4').style.display='block';
+  }
+  const progressStep=n===4?3:(n===3?2:1);
+  document.querySelectorAll('.sell-progress-step').forEach(el=>{const step=Number(el.dataset.step||0);el.classList.toggle('active',step===progressStep);el.classList.toggle('done',step<progressStep);});
+  document.querySelectorAll('.sell-progress-line').forEach(el=>{const line=Number(el.dataset.line||0);el.classList.toggle('active',progressStep>line);});
   window.scrollTo({top:document.querySelector('.hero').offsetTop-10,behavior:'smooth'});
 }
 const toStep3 = $('toStep3');
