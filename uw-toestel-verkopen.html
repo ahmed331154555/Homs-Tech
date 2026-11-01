@@ -2496,5 +2496,90 @@ loadBuyback();
   }
 }
 </style>
+
+<style id="homs-buyback-mobile-layout-preview-v1">
+/* Preview-only mobile presentation fixes. Desktop and buyback logic remain untouched. */
+@media(max-width:700px){
+  #step2 .product-card{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:12px!important;
+    align-items:start!important;
+    padding:12px!important;
+  }
+  #step2 .product-card>.product-image{
+    width:100%!important;
+    min-height:145px!important;
+    max-height:165px!important;
+    padding:10px!important;
+    margin:0!important;
+    border-radius:14px!important;
+  }
+  #step2 .product-card>.product-image img{
+    width:100%!important;
+    height:145px!important;
+    max-height:145px!important;
+    object-fit:contain!important;
+  }
+  #step2 .product-card>.product-info{
+    width:100%!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:auto auto auto auto!important;
+    align-content:start!important;
+    align-items:start!important;
+    row-gap:8px!important;
+    min-width:0!important;
+    padding:4px 0 0!important;
+    text-align:center!important;
+  }
+  #step2 .product-card>.product-info>#modelName,
+  #step2 .product-card>.product-info>#modelSub,
+  #step2 .product-card>.product-info>.quote-inline,
+  #step2 .product-card>.product-info>.buyback-summary-chips{
+    grid-column:1!important;
+    width:100%!important;
+    min-width:0!important;
+    justify-self:stretch!important;
+  }
+  #step2 .product-card>.product-info>#modelName{grid-row:1!important;margin:0!important;font-size:clamp(21px,6vw,26px)!important}
+  #step2 .product-card>.product-info>#modelSub{grid-row:2!important;margin:0!important}
+  #step2 .product-card>.product-info>.quote-inline{
+    grid-row:3!important;
+    align-items:center!important;
+    margin:4px 0!important;
+    padding:14px!important;
+    box-sizing:border-box!important;
+  }
+  #step2 .product-card>.product-info>.quote-inline strong{font-size:clamp(30px,8vw,38px)!important}
+  #step2 .product-card>.product-info>.buyback-summary-chips{
+    grid-row:4!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:6px!important;
+    margin:2px 0 0!important;
+  }
+  #step2 .product-card>.product-info>.buyback-summary-chips .buyback-summary-chip{
+    width:100%!important;max-width:none!important;min-width:0!important;
+    min-height:38px!important;padding:6px 3px!important;
+    justify-content:center!important;white-space:normal!important;
+    text-align:center!important;font-size:clamp(8px,2.3vw,10px)!important;
+    line-height:1.2!important;box-sizing:border-box!important;
+  }
+  #step2 .questions-panel{margin-top:14px!important}
+  #step2 .dynamic-question{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+  #step2 .dynamic-question-title{line-height:1.4!important}
+  #homs-ai-launch{
+    right:12px!important;left:auto!important;bottom:10px!important;
+    max-width:155px!important;padding:9px 11px!important;
+    font-size:12px!important;line-height:1.2!important;
+  }
+}
+@media(max-width:380px){
+  #step2 .product-card{padding:9px!important}
+  #step2 .product-card>.product-info>.buyback-summary-chips{gap:4px!important}
+}
+</style>
+
 </body>
 </html>
