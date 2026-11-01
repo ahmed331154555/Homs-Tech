@@ -481,6 +481,22 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 #step1 #step2 .buyback-main-column{gap:14px}
 #step1 #step2 .buyback-step .panel{box-shadow:0 8px 22px rgba(7,29,45,.055)}
 @media(max-width:850px){#step1 #step2{padding-bottom:8px}}
+
+/* Progressive question flow: answered rows fold neatly; only the next question stays open */
+#dynamicQuestions .dynamic-question{display:block;padding:15px 4px;border-bottom:1px solid #e6ebf1;background:#fff}
+#dynamicQuestions .dynamic-question-title{display:block;margin:0 0 11px;font-size:13px;line-height:1.45;font-weight:750;color:#172b42}
+#dynamicQuestions .dynamic-option-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#dynamicQuestions .dynamic-option{display:flex;align-items:center;justify-content:flex-start;gap:10px;min-height:44px;padding:10px 13px;border:1px solid #d9e0e8;border-radius:8px;background:#fff;color:#29384b;font-size:13px;font-weight:600;box-shadow:none;text-align:left}
+#dynamicQuestions .dynamic-option-radio{width:15px;height:15px;flex:none;border:1.5px solid #9aa8b8;border-radius:50%;background:#fff}
+#dynamicQuestions .dynamic-option.selected{border-color:#176fe5;background:#f5f9ff;color:#075fe8}
+#dynamicQuestions .dynamic-option.selected .dynamic-option-radio{border:4px solid #176fe5}
+#dynamicQuestions .dynamic-question-complete{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:11px 4px;background:#fff}
+#dynamicQuestions .dynamic-question-complete .dynamic-question-title{margin:0;font-size:12px;font-weight:650;color:#59697d}
+#dynamicQuestions .dynamic-answer-summary{display:flex;align-items:center;gap:12px;white-space:nowrap}
+#dynamicQuestions .dynamic-answer-summary strong{font-size:12px;color:#172b42}
+#dynamicQuestions .dynamic-answer-summary button{border:0;background:transparent;color:#176fe5;font-size:12px;font-weight:800;padding:5px 0}
+#dynamicQuestions .dynamic-info-line{display:flex;align-items:flex-start;gap:9px;padding:9px 4px;border:0;font-size:12px;line-height:1.5;color:#536276}
+@media(max-width:520px){#dynamicQuestions .dynamic-option-grid{grid-template-columns:1fr}#dynamicQuestions .dynamic-option{min-height:43px}#dynamicQuestions .dynamic-question-complete{gap:8px}#dynamicQuestions .dynamic-answer-summary{gap:8px}}
 </style>
 
 </head>
@@ -750,7 +766,26 @@ function renderDynamicQuestions(){
   const conditionQ=allQs.find(q=>{const l=String(q.label||'').toLowerCase();return l.includes('conditie')||l.includes('staat');});
   const qs=isKapotSelected()?allQs.filter(q=>q===conditionQ):allQs;
   if(!qs.length){box.innerHTML='<div style="padding:14px;background:#f8fafc;border-radius:12px;color:#64748b">Voor dit type zijn nog geen extra vragen ingesteld.</div>';return;}
-  box.innerHTML=qs.map(renderQuestion).join('');
+  const visible=[];
+  let waitingForAnswer=false;
+  for(const q of qs){
+    if(q.type==='info'){
+      if(!waitingForAnswer) visible.push(renderQuestion(q));
+      continue;
+    }
+    const answer=String(questionValue(q)??'').trim();
+    if(answer){
+      visible.push(`<div class="dynamic-question dynamic-question-complete">
+        <div class="dynamic-question-title">${esc(q.label)}</div>
+        <div class="dynamic-answer-summary"><strong>${esc(answer)}</strong><button type="button" onclick="setQuestionValue('${esc(q.id)}','')">Wijzigen</button></div>
+      </div>`);
+      continue;
+    }
+    visible.push(renderQuestion(q));
+    waitingForAnswer=true;
+    break;
+  }
+  box.innerHTML=visible.join('');
 }
 function validateDynamicQuestions(){
   const allQs=selectedModel?.typeQuestions||[];
@@ -878,11 +913,7 @@ function chooseDevice(d){
   $('modelName').textContent=d.name||'Toestel';
   $('modelSub').textContent=(d.brand||'')+' · '+(d.deviceType||'')+' · HOMS TECH inkoop';
   $('productImage').innerHTML=imageFor(d);
-  // Set the first active option for every question, so the estimate is immediately visible.
-  (selectedModel.typeQuestions||[]).forEach(q=>{
-    const opts=active(q.options);
-    if(q.type!=='text' && opts.length) buybackAnswers[q.id]=opts[0].label;
-  });
+  // Do not preselect answers. Ask one question at a time, as in the Forza flow.
   renderDynamicQuestions();
   calcQuote();
   calculateServerQuote();
