@@ -883,7 +883,8 @@ function go(n){
   document.querySelectorAll('.sell-progress-line').forEach(el=>{const line=Number(el.dataset.line||0);el.classList.toggle('active',n>line);});
   window.scrollTo({top:document.querySelector('.hero').offsetTop-10,behavior:'smooth'});
 }
-$('toStep3').onclick=()=>$('toCheckout').click();
+const toStep3 = $('toStep3');
+if (toStep3) toStep3.onclick = () => $('toCheckout')?.click();
 $('toCheckout').onclick=()=>{
   if(!selectedModel||!validateDynamicQuestions())return;
   const v=calcQuote();
