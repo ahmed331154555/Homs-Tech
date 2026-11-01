@@ -1369,6 +1369,40 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 }
 </style>
 
+
+<style id="homs-buyback-summary-chips-v1">
+#step2 .product-card>.product-info{
+ display:grid!important;grid-template-columns:minmax(0,1fr) minmax(220px,.82fr)!important;
+ grid-template-rows:auto auto auto!important;column-gap:20px!important;align-content:center!important
+}
+#step2 .product-card>.product-info>#modelName{grid-column:1!important;grid-row:1!important}
+#step2 .product-card>.product-info>#modelSub{grid-column:1!important;grid-row:2!important;margin-bottom:10px!important}
+#step2 .buyback-summary-chips{
+ grid-column:1!important;grid-row:3!important;display:flex!important;align-items:center!important;
+ flex-wrap:nowrap!important;gap:7px!important;min-width:0!important;margin:2px 0!important
+}
+#step2 .buyback-summary-chip{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;
+ min-width:0!important;max-width:100%!important;padding:9px 11px!important;border-radius:999px!important;
+ border:1px solid rgba(75,184,245,.34)!important;background:rgba(7,72,112,.55)!important;
+ color:#f0f8ff!important;white-space:nowrap!important;font-size:11px!important;line-height:1.2!important
+}
+#step2 .buyback-summary-chip i{font-style:normal!important;color:#7bdcff!important;font-size:14px!important}
+#step2 .buyback-summary-chip b{overflow:hidden!important;text-overflow:ellipsis!important;font-weight:850!important}
+#step2 .product-card>.product-info>.quote-inline{
+ grid-column:2!important;grid-row:1 / span 3!important;align-self:stretch!important
+}
+#step2 .product-card>.product-info>.label,
+#step2 .product-card>.product-info>#storage,
+#step2 .product-card>.product-info>#conditionGrid{display:none!important}
+@media(max-width:700px){
+ #step2 .product-card>.product-info{grid-template-columns:minmax(0,1fr) 124px!important;column-gap:8px!important}
+ #step2 .buyback-summary-chips{gap:4px!important;flex-wrap:wrap!important}
+ #step2 .buyback-summary-chip{padding:6px 7px!important;gap:3px!important;font-size:8px!important}
+ #step2 .buyback-summary-chip i{font-size:10px!important}
+}
+</style>
+
 </head>
 <body>
 
@@ -1434,6 +1468,11 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
         <div class="product-card">
           <div id="productImage" class="product-image"></div>
           <div class="product-info"><h2 id="modelName">Apple iPhone</h2><div id="modelSub" class="sub">Kies de uitvoering</div>
+            <div id="buybackSummaryChips" class="buyback-summary-chips" aria-live="polite">
+              <span class="buyback-summary-chip"><b>256GB</b></span>
+              <span class="buyback-summary-chip"><b>Ontgrendeld</b></span>
+              <span class="buyback-summary-chip"><b>Zo goed als nieuw</b></span>
+            </div>
             <div class="quote-inline"><small>Uw geschatte waarde</small><strong id="quote">€ 0,00</strong><span>✓ Directe uitbetaling na controle</span></div>
             <label class="label">Opslagcapaciteit</label><div id="storage" class="storage"></div>
             <label class="label">Wat is de staat van uw toestel?</label><div id="conditionGrid" class="condition-grid"></div>
@@ -1585,6 +1624,33 @@ function getSelectedConditionOption(){
   const v=questionValue(q);
   return active(q.options).find(o=>String(o.label||'')===String(v))||null;
 }
+
+function updateBuybackSummaryChips(){
+  const host=$('buybackSummaryChips');if(!host||!selectedModel)return;
+  const qs=selectedModel.typeQuestions||[];
+  const findQ=fn=>qs.find(q=>fn(String(q.label||'').toLowerCase()));
+  const valueFor=(q,matcher,fallback)=>{
+    if(!q)return fallback;
+    const chosen=String(questionValue(q)||'').trim();
+    if(chosen)return chosen;
+    const opts=active(q.options);
+    const preferred=opts.find(o=>matcher(String(o.label||'').toLowerCase()));
+    return String((preferred||opts[0])?.label||fallback);
+  };
+  const storageQ=findQ(t=>/opslag|storage|capaciteit|capacity/.test(t));
+  const lockQ=findQ(t=>/ontgrendeld|vergrendeld|unlock|locked|lockstatus/.test(t));
+  const conditionQ=getConditionQuestion();
+  const storage=valueFor(storageQ,t=>/256\s*gb|256gb/.test(t),'Opslag');
+  const lock=valueFor(lockQ,t=>/ontgrendeld|unlocked/.test(t),'Ontgrendeld');
+  const condition=valueFor(conditionQ,t=>/zo goed als nieuw|als nieuw|new/.test(t),'Zo goed als nieuw');
+  const shortStorage=storage.replace(/\s*(gb|tb)\s*/i,(_,unit)=>unit.toUpperCase());
+  host.innerHTML=[
+    ['▣',shortStorage],
+    ['♙',lock],
+    ['◈',condition]
+  ].map(([icon,label])=>'<span class="buyback-summary-chip"><i aria-hidden="true">'+icon+'</i><b>'+esc(label)+'</b></span>').join('');
+}
+
 function questionValue(q){return buybackAnswers[q.id]??''}
 function setQuestionValue(qid,value){
   const q=(selectedModel?.typeQuestions||[]).find(x=>x.id===qid);
@@ -1598,6 +1664,7 @@ function setQuestionValue(qid,value){
     orderedQuestions.slice(currentIndex+1).forEach(item=>{delete buybackAnswers[item.id];});
   }
   buybackAnswers[qid]=value;
+  updateBuybackSummaryChips();
   buybackExpandedQuestionIds.delete(qid);
   // Preserve Kapot when the customer changes storage; the condition price is tied to that storage.
   if(isLockedIphoneSelected() || (wasKapotSelected && storageQuestion)){
@@ -1846,6 +1913,7 @@ function chooseDevice(d){
   $('modelName').textContent=d.name||'Toestel';
   $('modelSub').textContent=(d.brand||'')+' · '+(d.deviceType||'')+' · HOMS TECH inkoop';
   $('productImage').innerHTML=imageFor(d);
+  updateBuybackSummaryChips();
   // Do not preselect answers. Ask one question at a time, as in the Forza flow.
   renderDynamicQuestions();
   calcQuote();
