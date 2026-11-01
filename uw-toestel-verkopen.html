@@ -546,7 +546,7 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 #dynamicQuestions .dynamic-question-open-panel{
   display:grid;
   grid-template-rows:1fr;
-  animation:buybackExpandDown 1.55s cubic-bezier(.22,.61,.36,1) both;
+  animation:buybackExpandDown 2s cubic-bezier(.22,.61,.36,1) both;
   overflow:hidden;
   min-height:0;
 }
@@ -685,7 +685,7 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 </footer>
 
 <script>
-let devices=[],selected=null,selectedModel=null,selectedCondition='',pay='money',siteData={},buybackAnswers={},buybackExpandedQuestionId=null;
+let devices=[],selected=null,selectedModel=null,selectedCondition='',pay='money',siteData={},buybackAnswers={},buybackExpandedQuestionIds=new Set();
 const $=id=>document.getElementById(id);
 const money=n=>new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(Number(n||0));
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -779,7 +779,7 @@ function setQuestionValue(qid,value){
     orderedQuestions.slice(currentIndex+1).forEach(item=>{delete buybackAnswers[item.id];});
   }
   buybackAnswers[qid]=value;
-  buybackExpandedQuestionId=null;
+  buybackExpandedQuestionIds.delete(qid);
   // A kapot toestel needs no further inspection questions.
   if((q?.id==='p2_condition' || String(q?.label||'').toLowerCase().includes('conditie') || String(q?.label||'').toLowerCase().includes('staat')) && String(value||'').toLowerCase().includes('kapot')){
     const conditionId=q.id;
@@ -824,7 +824,7 @@ function renderQuestion(q){
 function toggleBuybackQuestion(qid){
   // The chevron belongs to this question: down opens it here, up closes it here.
   // It must never navigate to another question or scroll to a different section.
-  buybackExpandedQuestionId=buybackExpandedQuestionId===qid?null:qid;
+  if(buybackExpandedQuestionIds.has(qid)) buybackExpandedQuestionIds.delete(qid); else buybackExpandedQuestionIds.add(qid);
   renderDynamicQuestions();
 }
 function renderDynamicQuestions(){
@@ -841,7 +841,7 @@ function renderDynamicQuestions(){
       continue;
     }
     const answer=String(questionValue(q)??'').trim();
-    const expanded=buybackExpandedQuestionId===q.id;
+    const expanded=buybackExpandedQuestionIds.has(q.id);
     if(answer&&!expanded){
       visible.push(`<div class="dynamic-question dynamic-question-complete">
         <div class="dynamic-question-title">${esc(q.label)}</div>
