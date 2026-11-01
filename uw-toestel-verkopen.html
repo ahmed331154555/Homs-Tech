@@ -812,10 +812,7 @@ function renderDynamicQuestions(){
       continue;
     }
     if(!answer&&!expanded){
-      visible.push(`<div class="dynamic-question dynamic-question-complete dynamic-question-pending">
-        <div class="dynamic-question-title">${esc(q.label)}</div>
-        <div class="dynamic-answer-summary"><strong>Nog niet gekozen</strong><button type="button" class="question-chevron" aria-label="Vraag openen" onclick="toggleBuybackQuestion('${esc(q.id)}')"><span>⌄</span></button></div>
-      </div>`);
+      visible.push(renderQuestion(q));
       waitingForAnswer=true;
       break;
     }
