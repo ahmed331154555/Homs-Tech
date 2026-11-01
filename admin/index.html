@@ -5315,9 +5315,12 @@ function defaultBuybackProtocol4(){
     },
     battery:{
       active:true,
-      label:'Is de batterijcapaciteit minimaal 85%?',
-      yesDelta:0,
-      noDelta:-25
+      label:'Batterijconditie',
+      options:[
+        {label:'85% of hoger',priceDelta:0,active:true},
+        {label:'80–84%',priceDelta:-15,active:true},
+        {label:'Onder 80%',priceDelta:-35,active:true}
+      ]
     }
   };
 }
