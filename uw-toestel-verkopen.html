@@ -840,6 +840,7 @@ function getSelectedAnswerByWords(words){
 function getConditionBasePrice(){
   const opt=getSelectedConditionOption();
   const base=Number(selectedModel?.base||0);
+  if(isKapotSelected()) return Math.max(0,Number(selectedModel?.scrapPrice||0));
   const raw=(opt?.conditionPrice!==undefined&&opt?.conditionPrice!=='')?opt.conditionPrice:opt?.buyPrice;
   const n=Number(raw);
   // Protocol 3–8: the condition price is the final/base price for that condition.
