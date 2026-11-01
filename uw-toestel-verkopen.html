@@ -806,7 +806,7 @@ function renderDynamicQuestions(){
       waitingForAnswer=true;
       break;
     }
-    visible.push(`<div class="dynamic-question-expanded"><div class="dynamic-question-expanded-head"><strong>${esc(q.label)}</strong><button type="button" class="question-chevron" aria-label="Vraag sluiten" onclick="toggleBuybackQuestion('${esc(q.id)}')"><span>⌄</span></button></div>${renderQuestion(q)}</div>`);
+    visible.push(`<div class="dynamic-question-expanded"><div class="dynamic-question-expanded-head"><strong>${esc(q.label)}</strong><button type="button" class="question-chevron" aria-label="Vraag sluiten" onclick="toggleBuybackQuestion('${esc(q.id)}')"><span>⌃</span></button></div>${renderQuestion(q)}</div>`);
     if(!answer){waitingForAnswer=true;break;}
   }
   box.innerHTML=visible.join('');
