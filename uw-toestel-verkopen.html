@@ -670,6 +670,12 @@ function questionValue(q){return buybackAnswers[q.id]??''}
 function setQuestionValue(qid,value){
   const q=(selectedModel?.typeQuestions||[]).find(x=>x.id===qid);
   if(q && q.type!=='text' && !active(q.options).some(o=>o.label===value)) return;
+  const orderedQuestions=selectedModel?.typeQuestions||[];
+  const changed=String(buybackAnswers[qid]??'')!==String(value??'');
+  if(changed){
+    const currentIndex=orderedQuestions.findIndex(item=>item.id===qid);
+    orderedQuestions.slice(currentIndex+1).forEach(item=>{delete buybackAnswers[item.id];});
+  }
   buybackAnswers[qid]=value;
   // A kapot toestel needs no further inspection questions.
   if((q?.id==='p2_condition' || String(q?.label||'').toLowerCase().includes('conditie') || String(q?.label||'').toLowerCase().includes('staat')) && String(value||'').toLowerCase().includes('kapot')){
