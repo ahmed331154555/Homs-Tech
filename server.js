@@ -4335,7 +4335,7 @@ app.post("/api/admin/emails/send",requirePermission("site.save"),async(req,res)=
     const allowedTypes=new Set(["image/jpeg","image/png","image/webp","image/gif","image/heic","application/pdf","application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","text/plain"]);
     let attachmentTotal=0;
     const attachments=rawAttachments.map(file=>{
-      const filename=String(file?.filename||"").replace(/[\/\r\n]/g,"_").slice(0,180);
+      const filename=String(file?.filename||"").replace(/[\/\\\r\n]/g,"_").slice(0,180);
       const ext=filename.split(".").pop().toLowerCase();
       const fallbackTypes={jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png",webp:"image/webp",gif:"image/gif",heic:"image/heic",pdf:"application/pdf",doc:"application/msword",docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",xls:"application/vnd.ms-excel",xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",txt:"text/plain"};
       const mime=String(file?.content_type||fallbackTypes[ext]||"application/octet-stream").toLowerCase();
