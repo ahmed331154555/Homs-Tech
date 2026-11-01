@@ -623,6 +623,15 @@ function getQuestionDelta(qId,label){
   const o=active(q?.options).find(x=>x.label===label);
   return Number(o?.priceDelta||0);
 }
+function getSelectedBuybackAction(){
+  for(const q of (selectedModel?.typeQuestions||[])){
+    const value=questionValue(q);
+    if(!value) continue;
+    const option=active(q.options).find(o=>String(o.label)===String(value));
+    if(option && ['scrap','reject'].includes(option.action)) return {action:option.action,question:q,option};
+  }
+  return null;
+}
 function getConditionQuestion(){
   return (selectedModel?.typeQuestions||[]).find(q=>q.id==='p2_condition' || String(q.label||'').toLowerCase().includes('conditie') || String(q.label||'').toLowerCase().includes('staat'));
 }
@@ -703,6 +712,11 @@ function validateDynamicQuestions(){
   const qs=isKapotSelected()?allQs.filter(q=>q===conditionQ):allQs;
   const missing=qs.find(q=>q.required!==false && !String(questionValue(q)).trim());
   if(missing){alert('Kies of vul eerst in: '+missing.label);return false;}
+  const action=getSelectedBuybackAction();
+  if(action?.action==='reject'){
+    alert('Helaas kunnen wij dit toestel in deze staat niet inkopen.');
+    return false;
+  }
   return true;
 }
 function firstAnswerByLabel(words){
@@ -866,7 +880,14 @@ async function calculateServerQuote(){
   try{const r=await fetch('/api/buyback/calculate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}),d=await r.json();if(reqId!==serverQuoteRequest)return Number(d.price||0);const v=Math.max(0,Number(d.price||0)),credit=$('cMethod')?.value?.includes('tegoed'),display=credit?v*1.10:v;$('quote').textContent=money(display);$('bottomTotal').textContent=money(display);return v;}catch(e){return calcQuoteLocalFallback();}
 }
 function calcQuoteLocalFallback(){
-  if(!selectedModel)return 0;const conditionQ=getConditionQuestion();if(conditionQ&&isKapotSelected()){const v=getConditionBasePrice(),credit=$('cMethod')?.value?.includes('tegoed'),display=credit?v*1.10:v;$('quote').textContent=money(display);$('bottomTotal').textContent=money(display);return v;}
+  if(!selectedModel)return 0;
+  const selectedAction=getSelectedBuybackAction();
+  if(selectedAction?.action==='scrap'){
+    const scrap=Math.max(0,Number(selectedModel?.scrapPrice||0));
+    const credit=$('cMethod')?.value?.includes('tegoed'),display=credit?scrap*1.10:scrap;
+    $('quote').textContent=money(display);$('bottomTotal').textContent=money(display);return scrap;
+  }
+  const conditionQ=getConditionQuestion();if(conditionQ&&isKapotSelected()){const v=getConditionBasePrice(),credit=$('cMethod')?.value?.includes('tegoed'),display=credit?v*1.10:v;$('quote').textContent=money(display);$('bottomTotal').textContent=money(display);return v;}
   let v=getConditionBasePrice(),battery=getSelectedAnswerByWords(['batterij','battery']),functions=getSelectedAnswerByWords(['alle functies','functies','werkt het','werkt','function']);
   if(/^protocol[3-8]$/.test(String(selectedModel?.protocol||'')))v+=getProtocolExtraDelta();else if(selectedModel?.protocol==='2'){v+=getSelectedStorageDelta();const p2=selectedModel?.protocol2||{},fnDiscount=Number(p2?.functions?.noDiscount??selectedModel?.protocolSettings?.functionsDiscount??33.3333333333),batDiscount=Number(p2?.battery?.noDiscount??selectedModel?.protocolSettings?.batteryDiscount??10);if(functions&&String(functions.value||'')===String(p2?.functions?.noLabel||'Nee'))v*=Math.max(0,1-fnDiscount/100);if(battery&&String(battery.value||'')===String(p2?.battery?.noLabel||'Nee'))v*=Math.max(0,1-batDiscount/100);}else{const rules=selectedModel?.protocolSettings||{},fnMult=Math.max(0,1-Number(rules.functionsDiscount??30)/100),batMult=Math.max(0,1-Number(rules.batteryDiscount??10)/100);if(functions&&/nee|no|niet/i.test(String(functions.value||'')))v*=fnMult;if(battery&&/onder\s*85|<\s*85/i.test(String(battery.value||'')))v*=batMult;}
   v=Math.max(0,v);const credit=$('cMethod')?.value?.includes('tegoed'),display=credit?v*1.10:v;$('quote').textContent=money(display);$('bottomTotal').textContent=money(display);return v;
