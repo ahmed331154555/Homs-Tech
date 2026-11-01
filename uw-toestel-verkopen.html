@@ -671,7 +671,7 @@ function buildCustomerQuestions(phone,type){
   const addChecklist=()=>{const sec=p.checklist;if(!sec||sec.active===false)return;(Array.isArray(sec.items)?sec.items:[]).filter(x=>x&&x.active!==false&&String(x.text||'').trim()).forEach((x,i)=>questions.push({id:protocol+'_check_'+i,label:String(x.text),type:'info',required:false,options:[]}));};
   const addFunctions=()=>{const sec=p.functions;if(!sec||sec.active===false)return;questions.push({id:protocol+'_functions',label:String(sec.label||'Werken alle functies van het toestel goed?'),type:'options',required:true,options:[{label:'Ja',priceDelta:base*(Number(sec.yesPercent||0)/100),active:true},{label:'Nee',priceDelta:base*(Number(sec.noPercent??-30)/100),active:true}]});};
   const addBattery=()=>{const sec=p.battery;if(!sec||sec.active===false)return;questions.push({id:protocol+'_battery',label:String(sec.label||'Is de batterijcapaciteit minimaal 85%?'),type:'options',required:true,options:[{label:'Ja',priceDelta:0,active:true},{label:'Nee',priceDelta:base*(Number(sec.noPercent??-10)/100),active:true}]});};
-  const maps={protocol3:[['connectivity','Connectiviteit'],['capacity','Capaciteit'],['condition','Wat is de staat van je Watch?']],protocol4:[['capacity','Opslagcapaciteit'],['condition','Wat is de staat van je iPhone?']],protocol5:[['connectivity','Connectiviteit'],['capacity','Capaciteit'],['condition','Wat is de staat van je iPad?']],protocol6:[['connectivity','Connectiviteit'],['capacity','Capaciteit'],['ram','Geheugen-grootte'],['condition','Wat is de staat van je Samsung Galaxy?']],protocol7:[['connectivity','Connectiviteit'],['capacity','Capaciteit'],['condition','Wat is de staat van je Samsung Tab?']],protocol8:[['screenSize','Schermgrootte'],['yearModel','Jaar en type'],['processor','Processor'],['storage','Opslag'],['memory','Geheugen'],['graphics','Grafische kaart'],['condition','Wat is de staat van je MacBook Pro?']]};
+  const maps={protocol3:[['connectivity','Connectiviteit'],['capacity','Capaciteit'],['condition','Wat is de staat van je Watch?']],protocol4:[['connectivity','Is je iPhone ontgrendeld of vergrendeld?'],['capacity','Opslagcapaciteit'],['condition','Wat is de staat van je iPhone?']],protocol5:[['connectivity','Connectiviteit'],['capacity','Capaciteit'],['condition','Wat is de staat van je iPad?']],protocol6:[['connectivity','Connectiviteit'],['capacity','Capaciteit'],['ram','Geheugen-grootte'],['condition','Wat is de staat van je Samsung Galaxy?']],protocol7:[['connectivity','Connectiviteit'],['capacity','Capaciteit'],['condition','Wat is de staat van je Samsung Tab?']],protocol8:[['screenSize','Schermgrootte'],['yearModel','Jaar en type'],['processor','Processor'],['storage','Opslag'],['memory','Geheugen'],['graphics','Grafische kaart'],['condition','Wat is de staat van je MacBook Pro?']]};
   (maps[protocol]||[]).forEach(([key,label])=>addSection(key,label));addChecklist();addFunctions();addBattery();return questions;
 }
 
@@ -773,8 +773,20 @@ function renderQuestion(q){
   }
   return '';
 }
-function toggleBuybackQuestion(qid){
-  buybackExpandedQuestionId=buybackExpandedQuestionId===qid?null:qid;
+function toggleBuybackQuestion(qid,direction){
+  const allQs=Array.isArray(selectedModel?.typeQuestions)?selectedModel.typeQuestions:[];
+  const conditionQ=allQs.find(q=>{const l=String(q.label||'').toLowerCase();return l.includes('conditie')||l.includes('staat');});
+  const qs=isKapotSelected()?allQs.filter(q=>q===conditionQ):allQs;
+  const navigable=qs.filter(q=>q.type!=='info');
+  const index=navigable.findIndex(q=>q.id===qid);
+  if(index<0)return;
+  if(direction==='next'){
+    buybackExpandedQuestionId=navigable[index+1]?.id||qid;
+  }else if(direction==='previous'){
+    buybackExpandedQuestionId=navigable[index-1]?.id||qid;
+  }else{
+    buybackExpandedQuestionId=buybackExpandedQuestionId===qid?null:qid;
+  }
   renderDynamicQuestions();
 }
 function renderDynamicQuestions(){
@@ -795,7 +807,7 @@ function renderDynamicQuestions(){
     if(answer&&!expanded){
       visible.push(`<div class="dynamic-question dynamic-question-complete">
         <div class="dynamic-question-title">${esc(q.label)}</div>
-        <div class="dynamic-answer-summary"><strong>${esc(answer)}</strong><button type="button" class="question-chevron" aria-label="Vraag openen" onclick="toggleBuybackQuestion('${esc(q.id)}')"><span>⌄</span></button></div>
+        <div class="dynamic-answer-summary"><strong>${esc(answer)}</strong><button type="button" class="question-chevron" aria-label="Vraag openen" onclick="toggleBuybackQuestion('${esc(q.id)}','next')"><span>⌄</span></button></div>
       </div>`);
       continue;
     }
@@ -807,7 +819,7 @@ function renderDynamicQuestions(){
       waitingForAnswer=true;
       break;
     }
-    visible.push(`<div class="dynamic-question-expanded"><div class="dynamic-question-expanded-head"><strong>${esc(q.label)}</strong><button type="button" class="question-chevron" aria-label="Vraag sluiten" onclick="toggleBuybackQuestion('${esc(q.id)}')"><span>⌃</span></button></div>${renderQuestion(q)}</div>`);
+    visible.push(`<div class="dynamic-question-expanded"><div class="dynamic-question-expanded-head"><strong>${esc(q.label)}</strong><button type="button" class="question-chevron" aria-label="Vraag sluiten" onclick="toggleBuybackQuestion('${esc(q.id)}','previous')"><span>⌃</span></button></div>${renderQuestion(q)}</div>`);
     if(!answer){waitingForAnswer=true;break;}
   }
   box.innerHTML=visible.join('');
