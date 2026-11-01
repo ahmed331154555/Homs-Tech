@@ -3457,6 +3457,7 @@ async function loadData(){
     }
 
     data=await r.json();
+    phoneOriginalIdentities=(Array.isArray(data.phones)?data.phones:[]).map(p=>({id:p?.id??null,name:String(p?.name||""),brand:String(p?.brand||"")}));
     buybackCatalogDeleteLock=false;
 
     normalizeData();
@@ -3517,6 +3518,7 @@ function renderGeneral(){
 /* Editor selections */
 let selectedServiceIndex=0;
 let selectedPhoneIndex=0;
+let phoneOriginalIdentities=[];
 let phoneEditOnly=false;
 let phoneWizardExistingEdit=false;
 let phoneBulkPricingView=false;
@@ -7539,7 +7541,8 @@ async function save(isAuto=false){
       : JSON.parse(JSON.stringify(data));
     if(currentPage==="phones"){
       setStatus("Foto's verkleinen en product opslaan...","info");
-      payload.phones=await compressPhoneCatalogPhotos(payload.phones||[]);
+      if(phoneEditOnly && payload.phones?.[selectedPhoneIndex]) payload.phones[selectedPhoneIndex]=(await compressPhoneCatalogPhotos([payload.phones[selectedPhoneIndex]]))[0];
+      else payload.phones=await compressPhoneCatalogPhotos(payload.phones||[]);
     }
     if(currentPage==="phones" && payload.phones?.[selectedPhoneIndex]?.setupWizard){
       payload.phones[selectedPhoneIndex].setupWizard=false;
@@ -7553,11 +7556,10 @@ async function save(isAuto=false){
     // section when editing phones instead of the full site settings document.
     const requestPayload=currentPage==="phones"
       ? (phoneEditOnly
-          ? {phoneItem:payload.phones?.[selectedPhoneIndex],phoneIndex:selectedPhoneIndex}
+          ? {phoneItem:payload.phones?.[selectedPhoneIndex],phoneIndex:selectedPhoneIndex,phoneIdentity:phoneOriginalIdentities[selectedPhoneIndex]||null}
           : {phones:payload.phones||[]})
       : currentPage==="shop" ? {shopProducts:payload.shopProducts||[]} : currentPage==="buyback" ? {buybackCatalog:payload.buybackCatalog||[],buybackPhones:payload.buybackPhones||[]} : payload;
     if(currentPage==="phones" && phoneEditOnly && requestPayload.phoneItem){
-      requestPayload.phoneItem=await compressPhoneCatalogPhotos([requestPayload.phoneItem]).then(items=>items[0]);
       if(requestPayload.phoneItem.setupWizard){
         requestPayload.phoneItem.setupWizard=false;
         delete requestPayload.phoneItem.setupStep;
@@ -7592,8 +7594,9 @@ async function save(isAuto=false){
         const savedIndex=Number(result.phoneIndex);
         if(savedIndex===data.phones.length) data.phones.push(result.phone);
         else if(savedIndex>=0 && savedIndex<data.phones.length) data.phones[savedIndex]=result.phone;
+        phoneOriginalIdentities[savedIndex]={id:result.phone.id??null,name:String(result.phone.name||""),brand:String(result.phone.brand||"")};
       }else if(Array.isArray(result.phones)) data.phones=result.phones;
-      else if(Array.isArray(payload.phones)) data.phones=payload.phones;
+      else if(Array.isArray(payload.phones)){data.phones=payload.phones;phoneOriginalIdentities=data.phones.map(p=>({id:p?.id??null,name:String(p?.name||""),brand:String(p?.brand||"")}));}
     }else if(currentPage==="shop"){
       if(Array.isArray(result.shopProducts)) data.shopProducts=result.shopProducts;
       else if(Array.isArray(payload.shopProducts)) data.shopProducts=payload.shopProducts;
