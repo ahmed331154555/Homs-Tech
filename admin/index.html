@@ -5051,7 +5051,7 @@ function normalizeBuybackProtocol2(x){
     conditionOptions:normOpts(p.conditionOptions,d.conditionOptions),
     checklist:Array.isArray(p.checklist)&&p.checklist.length?p.checklist.map(o=>({text:String(o.text||''),active:o.active!==false})):d.checklist.map(o=>({...o})),
     functions:{...d.functions,...(p.functions||{}),yesDelta:Number((p.functions||{}).yesDelta??d.functions.yesDelta),noDelta:Number((p.functions||{}).noDelta??d.functions.noDelta),active:(p.functions||{}).active!==false},
-    battery:{...d.battery,...(p.battery||{}),yesDelta:Number((p.battery||{}).yesDelta??d.battery.yesDelta),noDelta:Number((p.battery||{}).noDelta??d.battery.noDelta),active:(p.battery||{}).active!==false}
+    battery:{...d.battery,...(p.battery||{}),active:(p.battery||{}).active!==false,options:Array.isArray(p.battery?.options)&&p.battery.options.length?p.battery.options.map(o=>({label:String(o.label||''),priceDelta:Number(o.priceDelta||0),active:o.active!==false})):d.battery.options.map(o=>({...o}))}
   };
 }
 
@@ -5093,9 +5093,12 @@ function defaultBuybackProtocol3(){
     },
     battery:{
       active:true,
-      label:'Is de batterijcapaciteit minimaal 85%?',
-      yesDelta:0,
-      noDelta:-25
+      label:'Batterijconditie',
+      options:[
+        {label:'85% of hoger',priceDelta:0,active:true},
+        {label:'80–84%',priceDelta:-15,active:true},
+        {label:'Onder 80%',priceDelta:-35,active:true}
+      ]
     }
   };
 }
@@ -5282,10 +5285,11 @@ function defaultBuybackProtocol4(){
     condition:{
       active:true,
       options:[
-              {label:'Zo goed als nieuw',buyPrice:550,conditionPrice:550,priceDelta:0,active:true},
-      {label:'Licht gebruikt',buyPrice:473,conditionPrice:473,priceDelta:0,active:true},
-      {label:'Zichtbaar gebruikt',buyPrice:359,conditionPrice:359,priceDelta:0,active:true},
-      {label:'Kapot',buyPrice:65,conditionPrice:65,priceDelta:0,active:true}
+        {label:'Zo goed als nieuw',priceDelta:0,active:true},
+        {label:'Licht gebruikt',priceDelta:-25,active:true},
+        {label:'Zichtbaar gebruikt',priceDelta:-60,active:true},
+        {label:'Beschadigd',priceDelta:-100,active:true},
+        {label:'Kapot',priceDelta:-150,active:true}
       ]
     },
     checklist:{
@@ -5827,7 +5831,7 @@ function updateProtocol3Option(section,index,field,value){
   const phone=getSelectedBuybackPhone();if(!phone)return;
   phone.protocol3=normalizeBuybackProtocol3(phone);
   const arr=phone.protocol3[section].options;if(!Array.isArray(arr)||!arr[index])return;
-  if(field==='buyPrice'){const v=Number(value||0);arr[index].buyPrice=v;arr[index].conditionPrice=v;arr[index].priceDelta=0;}else if(field==='priceDelta')arr[index].priceDelta=Number(value||0);else if(field==='active')arr[index].active=!!value;else arr[index][field]=String(value);
+  if(field==='buyPrice'){const v=Number(value||0);arr[index].buyPrice=v;arr[index].conditionPrice=v;arr[index].priceDelta=0;}else if(field==='priceDelta'){arr[index].priceDelta=Number(value||0);delete arr[index].buyPrice;delete arr[index].conditionPrice;}else if(field==='active')arr[index].active=!!value;else arr[index][field]=String(value);
   markChanged();
 }
 function updateProtocol3Checklist(index,field,value){
@@ -6010,7 +6014,7 @@ function renderProtocol8Settings(phone){
     ${optionEditor('storage','Opslag','Opslagoptie toevoegen')}
     ${optionEditor('memory','Geheugen','Geheugenoptie toevoegen')}
     ${optionEditor('graphics','Grafische kaart','Grafische kaart toevoegen')}
-    ${optionEditor('condition','Staat van het toestel — vaste prijs (€)','Conditie toevoegen')}
+    ${optionEditor('condition','Staat van de iPhone — prijsaanpassing (€)','Conditie toevoegen')}
     <div class="card bb-proto8-card"><div class="bb-proto8-card-head"><div><div class="card-title">Controlepunten</div><div class="small">Deze tekst verschijnt als toelichting bij de gekozen staat.</div></div><label class="bb-proto8-switch"><input type="checkbox" ${p.checklist.active!==false?'checked':''} onchange="updateProtocol8Section('checklist',this.checked)"><span>Op website tonen</span></label></div>${p.checklist.items.map((o,i)=>`<div class="bb-proto8-row bb-proto8-check"><input value="${esc(o.text)}" oninput="updateProtocol8Checklist(${i},'text',this.value)"><label class="bb-proto8-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol8Checklist(${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol8Checklist(${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol8Checklist()">+ Controlepunt toevoegen</button></div>
     <div class="card bb-proto8-card"><div class="bb-proto8-card-head"><div><div class="card-title">Alle functies werken?</div><div class="small">Ja/Nee kan een eigen prijsaanpassing krijgen.</div></div><label class="bb-proto8-switch"><input type="checkbox" ${p.functions.active!==false?'checked':''} onchange="updateProtocol8Field('functions.active',this.checked)"><span>Op website tonen</span></label></div><div class="field"><label>Vraag</label><textarea oninput="updateProtocol8Field('functions.label',this.value)">${esc(p.functions.label)}</textarea></div><div class="bb-proto8-two"><div class="field"><label>Ja: prijsaanpassing</label><input type="number" step="1" value="${Number(p.functions.yesDelta||0)}" oninput="updateProtocol8Field('functions.yesDelta',this.value)"></div><div class="field"><label>Nee: prijsaanpassing</label><input type="number" step="1" value="${Number(p.functions.noDelta||0)}" oninput="updateProtocol8Field('functions.noDelta',this.value)"></div></div></div>
     <div class="card bb-proto8-card"><div class="bb-proto8-card-head"><div><div class="card-title">Batterijstatus</div><div class="small">Meerdere batterijstatussen met een eigen prijsaanpassing.</div></div><label class="bb-proto8-switch"><input type="checkbox" ${p.battery.active!==false?'checked':''} onchange="updateProtocol8Section('battery',this.checked)"><span>Op website tonen</span></label></div>${p.battery.options.map((o,i)=>`<div class="bb-proto8-row"><input value="${esc(o.label)}" oninput="updateProtocol8Option('battery',${i},'label',this.value)"><input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateProtocol8Option('battery',${i},'priceDelta',this.value)" placeholder="Prijsaanpassing"><label class="bb-proto8-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol8Option('battery',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol8Option('battery',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol8Option('battery')">+ Batterijstatus toevoegen</button></div>
@@ -6046,7 +6050,7 @@ function renderProtocol6Settings(phone){
 
 function renderProtocol5Settings(phone){
   const p=normalizeBuybackProtocol5(phone);phone.protocol5=p;
-  const optionEditor=(section,title,addText)=>`<div class="card bb-proto4-card"><div class="bb-proto4-card-head"><div><div class="card-title">${title}</div><div class="small">Keuzes: staat = vaste prijs · overige keuzes = +/-</div></div><label class="bb-proto4-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol5Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto4-row"><input value="${esc(o.label)}" oninput="updateProtocol5Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${section==='condition'?Number(o.conditionPrice ?? o.buyPrice ?? o.priceDelta ?? 0):Number(o.priceDelta||0)}" oninput="updateProtocol5Option('${section}',${i},'${section==='condition'?'buyPrice':'priceDelta'}',this.value)" placeholder="+ / -"><label class="bb-proto4-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol5Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol5Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol5Option('${section}')">+ ${addText}</button></div>`;
+  const optionEditor=(section,title,addText)=>`<div class="card bb-proto4-card"><div class="bb-proto4-card-head"><div><div class="card-title">${title}</div><div class="small">Alle keuzes worden als prijsaanpassing (+ / -) op de basisprijs berekend.</div></div><label class="bb-proto4-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol5Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto4-row"><input value="${esc(o.label)}" oninput="updateProtocol5Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${section==='condition'?Number(o.conditionPrice ?? o.buyPrice ?? o.priceDelta ?? 0):Number(o.priceDelta||0)}" oninput="updateProtocol5Option('${section}',${i},'${section==='condition'?'buyPrice':'priceDelta'}',this.value)" placeholder="+ / -"><label class="bb-proto4-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol5Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol5Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol5Option('${section}')">+ ${addText}</button></div>`;
   return `<div class="bb-protocol5-settings">
     <div class="bb-protocol5-title"><div><h4>📱 Protocol 4 instellingen</h4><div class="small">Opbouw zoals de iPad-verkoopstap: connectiviteit, capaciteit, staat, controlepunten, functies en batterij.</div></div><div class="bb-protocol5-badge">PROTOCOL 4</div></div>
     ${optionEditor('connectivity','Connectiviteit','Verbindingsoptie toevoegen')}
@@ -6054,13 +6058,13 @@ function renderProtocol5Settings(phone){
     ${optionEditor('condition','Staat van het toestel — vaste prijs (€)','Conditie toevoegen')}
     <div class="card bb-proto4-card"><div class="bb-proto4-card-head"><div><div class="card-title">Controlepunten</div><div class="small">Deze tekst verschijnt als toelichting bij de gekozen staat.</div></div><label class="bb-proto4-switch"><input type="checkbox" ${p.checklist.active!==false?'checked':''} onchange="updateProtocol5Section('checklist',this.checked)"><span>Op website tonen</span></label></div>${p.checklist.items.map((o,i)=>`<div class="bb-proto4-row bb-proto4-check"><input value="${esc(o.text)}" oninput="updateProtocol5Checklist(${i},'text',this.value)"><label class="bb-proto4-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol5Checklist(${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol5Checklist(${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol5Checklist()">+ Controlepunt toevoegen</button></div>
     <div class="card bb-proto4-card"><div class="bb-proto4-card-head"><div><div class="card-title">Alle functies werken?</div><div class="small">Ja/Nee kan een eigen prijsaanpassing krijgen.</div></div><label class="bb-proto4-switch"><input type="checkbox" ${p.functions.active!==false?'checked':''} onchange="updateProtocol5Field('functions.active',this.checked)"><span>Op website tonen</span></label></div><div class="field"><label>Vraag</label><textarea oninput="updateProtocol5Field('functions.label',this.value)">${esc(p.functions.label)}</textarea></div><div class="bb-proto4-two"><div class="field"><label>Ja: prijsaanpassing</label><input type="number" step="1" value="${Number(p.functions.yesDelta||0)}" oninput="updateProtocol5Field('functions.yesDelta',this.value)"></div><div class="field"><label>Nee: prijsaanpassing</label><input type="number" step="1" value="${Number(p.functions.noDelta||0)}" oninput="updateProtocol5Field('functions.noDelta',this.value)"></div></div></div>
-    <div class="card bb-proto4-card"><div class="bb-proto4-card-head"><div><div class="card-title">Batterij 85%</div><div class="small">Batterijvraag met eigen prijsaanpassing.</div></div><label class="bb-proto4-switch"><input type="checkbox" ${p.battery.active!==false?'checked':''} onchange="updateProtocol5Field('battery.active',this.checked)"><span>Op website tonen</span></label></div><div class="field"><label>Vraag</label><input value="${esc(p.battery.label)}" oninput="updateProtocol5Field('battery.label',this.value)"></div><div class="bb-proto4-two"><div class="field"><label>Ja: prijsaanpassing</label><input type="number" step="1" value="${Number(p.battery.yesDelta||0)}" oninput="updateProtocol5Field('battery.yesDelta',this.value)"></div><div class="field"><label>Nee: prijsaanpassing</label><input type="number" step="1" value="${Number(p.battery.noDelta||0)}" oninput="updateProtocol5Field('battery.noDelta',this.value)"></div></div></div>
+        ${optionEditor('battery','Batterijconditie — prijsaanpassing (€)','Batterijoptie toevoegen')}
   </div>`;
 }
 
 function renderProtocol4Settings(phone){
   const p=normalizeBuybackProtocol4(phone);phone.protocol4=p;
-  const optionEditor=(section,title,addText)=>`<div class="card bb-proto4-card"><div class="bb-proto4-card-head"><div><div class="card-title">${title}</div><div class="small">Keuzes: staat = vaste prijs · overige keuzes = +/-</div></div><label class="bb-proto4-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol4Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto4-row"><input value="${esc(o.label)}" oninput="updateProtocol4Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${section==='condition'?Number(o.conditionPrice ?? o.buyPrice ?? o.priceDelta ?? 0):Number(o.priceDelta||0)}" oninput="updateProtocol4Option('${section}',${i},'${section==='condition'?'buyPrice':'priceDelta'}',this.value)" placeholder="+ / -"><label class="bb-proto4-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol4Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol4Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol4Option('${section}')">+ ${addText}</button></div>`;
+  const optionEditor=(section,title,addText)=>`<div class="card bb-proto4-card"><div class="bb-proto4-card-head"><div><div class="card-title">${title}</div><div class="small">Keuzes: staat = vaste prijs · overige keuzes = +/-</div></div><label class="bb-proto4-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol4Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto4-row"><input value="${esc(o.label)}" oninput="updateProtocol4Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateProtocol4Option('${section}',${i},'priceDelta',this.value)" placeholder="+ / -"><label class="bb-proto4-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol4Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol4Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol4Option('${section}')">+ ${addText}</button></div>`;
   return `<div class="bb-protocol4-settings">
     <div class="bb-protocol4-title"><div><h4>📱 Protocol 4 instellingen</h4><div class="small">Opbouw zoals de iPhone-verkoopstap: ontgrendeling, capaciteit, staat, controlepunten, functies en batterij.</div></div><div class="bb-protocol4-badge">PROTOCOL 4</div></div>
     ${optionEditor('connectivity','Connectiviteit','Verbindingsoptie toevoegen')}
