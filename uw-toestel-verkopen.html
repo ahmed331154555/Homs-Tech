@@ -1252,6 +1252,123 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 }
 </style>
 
+
+<style id="homs-buyback-selector-fix-v5">
+/* Correct selectors: #step2 is itself .buyback-step, not a parent of one. */
+#step2 .product-card{
+ display:grid!important;grid-template-columns:165px minmax(0,1fr)!important;
+ align-items:stretch!important;gap:22px!important;padding:27px 24px!important;
+ margin:0!important;background:transparent!important;border:0!important
+}
+#step2 .product-card>.product-image{
+ grid-column:1!important;grid-row:1!important;align-self:center!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ width:100%!important;min-height:220px!important;height:220px!important;padding:10px!important;
+ border:1px solid rgba(154,210,255,.26)!important;border-radius:17px!important;
+ background:linear-gradient(145deg,rgba(255,255,255,.15),rgba(164,210,248,.06))!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 12px 26px rgba(0,0,0,.16)!important
+}
+#step2 .product-card>.product-image img{
+ display:block!important;max-width:100%!important;max-height:200px!important;
+ object-fit:contain!important;filter:drop-shadow(0 9px 12px rgba(0,0,0,.3))!important
+}
+#step2 .product-card>.product-info{
+ grid-column:2!important;grid-row:1!important;display:grid!important;
+ grid-template-columns:minmax(0,1fr) minmax(220px,.82fr)!important;
+ grid-template-rows:auto auto auto auto auto auto!important;
+ align-content:center!important;align-items:center!important;column-gap:20px!important;
+ min-width:0!important;padding:2px 0!important
+}
+#step2 .product-card>.product-info>#modelName{
+ display:block!important;visibility:visible!important;opacity:1!important;
+ grid-column:1!important;grid-row:1!important;margin:0 0 5px!important;
+ color:#fff!important;font-size:clamp(23px,3vw,34px)!important;
+ font-weight:950!important;line-height:1.12!important;letter-spacing:-.7px!important
+}
+#step2 .product-card>.product-info>#modelSub{
+ display:block!important;grid-column:1!important;grid-row:2!important;
+ margin:0 0 12px!important;color:#c3d7e9!important;
+ font-size:13px!important;line-height:1.4!important
+}
+#step2 .product-card>.product-info>label.label:first-of-type{
+ grid-column:1!important;grid-row:3!important;margin:5px 0!important;
+ color:#c8dced!important;font-size:11px!important;font-weight:850!important
+}
+#step2 .product-card>.product-info>#storage{
+ grid-column:1!important;grid-row:4!important;display:flex!important;flex-wrap:wrap!important;gap:7px!important
+}
+#step2 .product-card>.product-info>label.label:nth-of-type(2){
+ grid-column:1!important;grid-row:5!important;margin:7px 0 5px!important;
+ color:#c8dced!important;font-size:11px!important;font-weight:850!important
+}
+#step2 .product-card>.product-info>#conditionGrid{
+ grid-column:1!important;grid-row:6!important;display:flex!important;flex-wrap:wrap!important;gap:7px!important
+}
+#step2 .product-card>.product-info>#storage button,
+#step2 .product-card>.product-info>#conditionGrid button{
+ min-height:36px!important;padding:8px 11px!important;border-radius:999px!important;
+ color:#eaf6ff!important;background:rgba(9,73,112,.58)!important;
+ border:1px solid rgba(85,184,245,.30)!important;font-size:11px!important;font-weight:800!important
+}
+#step2 .product-card>.product-info>#storage button.active,
+#step2 .product-card>.product-info>#conditionGrid button.active,
+#step2 .product-card>.product-info>#conditionGrid button.selected{
+ color:#fff!important;background:rgba(0,139,255,.30)!important;
+ border:1px solid #27baff!important;box-shadow:0 0 12px rgba(0,155,255,.18)!important
+}
+#step2 .product-card>.product-info>.quote-inline{
+ grid-column:2!important;grid-row:1 / span 6!important;align-self:stretch!important;
+ display:flex!important;flex-direction:column!important;justify-content:center!important;
+ align-items:flex-start!important;gap:10px!important;position:relative!important;
+ min-width:0!important;margin:0!important;padding:22px 20px!important;
+ border:1px solid rgba(48,177,255,.72)!important;border-radius:18px!important;
+ background:linear-gradient(145deg,rgba(4,45,76,.98),rgba(7,65,106,.96))!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 0 22px rgba(0,143,255,.12)!important
+}
+#step2 .product-card>.product-info>.quote-inline:before{
+ content:""!important;position:absolute!important;left:0!important;top:16px!important;bottom:16px!important;
+ width:4px!important;border-radius:0 4px 4px 0!important;background:#16baff!important
+}
+#step2 .product-card>.product-info>.quote-inline small{
+ color:#d0e8fa!important;font-size:12px!important;font-weight:800!important
+}
+#step2 .product-card>.product-info>.quote-inline strong{
+ color:#22c5ff!important;font-size:clamp(36px,4vw,51px)!important;
+ font-weight:950!important;line-height:1!important;letter-spacing:-1.5px!important;
+ text-shadow:0 0 22px rgba(0,174,255,.35)!important;white-space:nowrap!important
+}
+#step2 .product-card>.product-info>.quote-inline span{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ padding:9px 11px!important;border-radius:999px!important;color:#f0faff!important;
+ background:rgba(0,143,255,.20)!important;border:1px solid rgba(57,188,255,.42)!important;
+ font-size:10px!important;font-weight:800!important
+}
+@media(max-width:700px){
+ #step2 .product-card{grid-template-columns:94px minmax(0,1fr)!important;gap:11px!important;padding:22px 11px 16px!important}
+ #step2 .product-card>.product-image{height:150px!important;min-height:150px!important;padding:6px!important}
+ #step2 .product-card>.product-image img{max-height:138px!important}
+ #step2 .product-card>.product-info{grid-template-columns:minmax(0,1fr) 124px!important;column-gap:8px!important}
+ #step2 .product-card>.product-info>#modelName{font-size:18px!important;letter-spacing:-.35px!important}
+ #step2 .product-card>.product-info>#modelSub{font-size:9px!important;margin-bottom:7px!important}
+ #step2 .product-card>.product-info>label.label:first-of-type,
+ #step2 .product-card>.product-info>label.label:nth-of-type(2){font-size:9px!important}
+ #step2 .product-card>.product-info>#storage,
+ #step2 .product-card>.product-info>#conditionGrid{gap:4px!important}
+ #step2 .product-card>.product-info>#storage button,
+ #step2 .product-card>.product-info>#conditionGrid button{min-height:29px!important;padding:5px 7px!important;font-size:8px!important}
+ #step2 .product-card>.product-info>.quote-inline{padding:12px 9px!important;gap:7px!important;border-radius:13px!important}
+ #step2 .product-card>.product-info>.quote-inline small{font-size:8px!important;line-height:1.3!important}
+ #step2 .product-card>.product-info>.quote-inline strong{font-size:clamp(22px,6vw,29px)!important;letter-spacing:-.7px!important}
+ #step2 .product-card>.product-info>.quote-inline span{padding:6px 7px!important;font-size:7px!important;line-height:1.3!important}
+}
+@media(max-width:380px){
+ #step2 .product-card{grid-template-columns:82px minmax(0,1fr)!important;column-gap:8px!important;padding-left:8px!important;padding-right:8px!important}
+ #step2 .product-card>.product-info{grid-template-columns:minmax(0,1fr) 108px!important;column-gap:6px!important}
+ #step2 .product-card>.product-info>#modelName{font-size:16px!important}
+ #step2 .product-card>.product-info>.quote-inline strong{font-size:21px!important}
+}
+</style>
+
 </head>
 <body>
 
