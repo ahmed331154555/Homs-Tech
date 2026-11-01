@@ -5349,7 +5349,11 @@ function normalizeBuybackProtocol5(x){
 }
 function normalizeBuybackProtocol4(x){
   const d=defaultBuybackProtocol4(), p=(x&&x.protocol4)||{};
-  const normOpts=(incoming,fallback)=>Array.isArray(incoming)&&incoming.length?incoming.map(o=>({label:String(o.label||''),buyPrice:(o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):((o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):((o.priceDelta!==undefined&&o.priceDelta!=='')?Number(o.priceDelta):undefined)),conditionPrice:(o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):((o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):((o.priceDelta!==undefined&&o.priceDelta!=='')?Number(o.priceDelta):undefined)),priceDelta:Number(o.priceDelta||0),active:o.active!==false})):fallback.map(o=>({...o}));
+  const normOpts=(incoming,fallback)=>Array.isArray(incoming)&&incoming.length?incoming.map(o=>({label:String(o.label||''),priceDelta:Number(o.priceDelta||0),active:o.active!==false})):fallback.map(o=>({...o}));
+  const conditionOpts=(Array.isArray(p.condition&&p.condition.options)&&p.condition.options.length?p.condition.options:d.condition.options).map(o=>{
+    const fixed=(o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):((o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):Math.max(0,Number(x&&x.price||0)+Number(o.priceDelta||0)));
+    return {label:String(o.label||''),buyPrice:Math.max(0,Number.isFinite(fixed)?fixed:0),conditionPrice:Math.max(0,Number.isFinite(fixed)?fixed:0),priceDelta:0,active:o.active!==false};
+  });
   const normSection=(incoming,fallback)=>({
     ...fallback,
     ...(incoming||{}),
@@ -5359,7 +5363,7 @@ function normalizeBuybackProtocol4(x){
   return {
     connectivity:normSection(p.connectivity,d.connectivity),
     capacity:normSection(p.capacity,d.capacity),
-    condition:normSection(p.condition,d.condition),
+    condition:{...d.condition,...(p.condition||{}),active:(p.condition||{}).active===undefined?true:!!(p.condition||{}).active,options:conditionOpts},
     checklist:{
       ...d.checklist,
       ...(p.checklist||{}),
@@ -5989,7 +5993,7 @@ function updateProtocol4Field(path,value){
 function addProtocol4Option(section){
   const phone=getSelectedBuybackPhone();if(!phone)return;
   phone.protocol4=normalizeBuybackProtocol4(phone);
-  phone.protocol4[section].options.push({label:'Nieuwe keuze',buyPrice:0,conditionPrice:0,priceDelta:0,active:true});
+  phone.protocol4[section].options.push(section==='condition'?{label:'Nieuwe keuze',buyPrice:0,conditionPrice:0,priceDelta:0,active:true}:{label:'Nieuwe keuze',priceDelta:0,active:true});
   markChanged();renderBuybackModelEditor();
 }
 function deleteProtocol4Option(section,index){
@@ -6070,7 +6074,7 @@ function renderProtocol5Settings(phone){
 
 function renderProtocol4Settings(phone){
   const p=normalizeBuybackProtocol4(phone);phone.protocol4=p;
-  const optionEditor=(section,title,addText)=>`<div class="card bb-proto4-card"><div class="bb-proto4-card-head"><div><div class="card-title">${title}</div><div class="small">Alle keuzes zijn prijsaanpassingen (+ / -) op de basisprijs.</div></div><label class="bb-proto4-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol4Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto4-row"><input value="${esc(o.label)}" oninput="updateProtocol4Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateProtocol4Option('${section}',${i},'priceDelta',this.value)" placeholder="+ / -"><label class="bb-proto4-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol4Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol4Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol4Option('${section}')">+ ${addText}</button></div>`;
+  const optionEditor=(section,title,addText)=>`<div class="card bb-proto4-card"><div class="bb-proto4-card-head"><div><div class="card-title">${title}</div><div class="small">Staat = vaste prijs. Opslag en batterij = prijsaanpassing (+ / -).</div></div><label class="bb-proto4-switch"><input type="checkbox" ${p[section].active!==false?'checked':''} onchange="updateProtocol4Section('${section}',this.checked)"><span>Op website tonen</span></label></div>${p[section].options.map((o,i)=>`<div class="bb-proto4-row"><input value="${esc(o.label)}" oninput="updateProtocol4Option('${section}',${i},'label',this.value)"><input type="number" step="1" value="${section==='condition'?Number(o.conditionPrice ?? o.buyPrice ?? 0):Number(o.priceDelta||0)}" oninput="updateProtocol4Option('${section}',${i},'${section==='condition'?'buyPrice':'priceDelta'}',this.value)" placeholder="${section==='condition'?'Vaste prijs (€)':' + / - (€)'}"><label class="bb-proto4-switch"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateProtocol4Option('${section}',${i},'active',this.checked)"><span>Actief</span></label><button type="button" class="btn btn-light" onclick="deleteProtocol4Option('${section}',${i})">🗑️</button></div>`).join('')}<button type="button" class="btn btn-light" onclick="addProtocol4Option('${section}')">+ ${addText}</button></div>`;
   return `<div class="bb-protocol4-settings">
     <div class="bb-protocol4-title"><div><h4>📱 Protocol 4 instellingen</h4><div class="small">Opbouw zoals de iPhone-verkoopstap: ontgrendeling, capaciteit, staat, controlepunten, functies en batterij.</div></div><div class="bb-protocol4-badge">PROTOCOL 4</div></div>
     ${optionEditor('connectivity','Connectiviteit','Verbindingsoptie toevoegen')}
