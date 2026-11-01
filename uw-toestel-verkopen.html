@@ -2450,5 +2450,51 @@ loadBuyback();
 </script>
   <script src="assets/homs-global-nav.js"></script>
   <script src="assets/homs-ai-chat.js" defer></script>
+
+<style id="homs-buyback-mobile-card-layout-v1">
+/* Mobile: estimate directly below the model title; summary chips share one row below it. */
+@media(max-width:700px){
+  #step2 .product-card>.product-info{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:auto auto auto auto!important;
+    align-content:start!important;
+    align-items:start!important;
+    row-gap:9px!important;
+    min-width:0!important;
+  }
+  #step2 .product-card>.product-info>#modelName{
+    grid-column:1!important;grid-row:1!important;margin:0!important
+  }
+  #step2 .product-card>.product-info>#modelSub{
+    grid-column:1!important;grid-row:2!important;margin:0!important
+  }
+  #step2 .product-card>.product-info>.quote-inline{
+    grid-column:1!important;grid-row:3!important;
+    width:100%!important;min-width:0!important;min-height:0!important;
+    margin:2px 0!important;box-sizing:border-box!important
+  }
+  #step2 .product-card>.product-info>.buyback-summary-chips{
+    grid-column:1!important;grid-row:4!important;
+    display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    align-items:stretch!important;gap:5px!important;width:100%!important;
+    margin:2px 0 0!important;min-width:0!important
+  }
+  #step2 .product-card>.product-info>.buyback-summary-chips .buyback-summary-chip{
+    min-width:0!important;width:100%!important;max-width:none!important;
+    min-height:34px!important;padding:6px 4px!important;
+    justify-content:center!important;gap:3px!important;
+    white-space:normal!important;text-align:center!important;
+    font-size:clamp(7px,2.1vw,9px)!important;line-height:1.15!important;
+    box-sizing:border-box!important
+  }
+  #step2 .product-card>.product-info>.buyback-summary-chips .buyback-summary-chip i{
+    font-size:9px!important
+  }
+  #step2 .product-card>.product-info>.buyback-summary-chips .buyback-summary-chip b{
+    overflow-wrap:anywhere!important;text-overflow:clip!important
+  }
+}
+</style>
 </body>
 </html>
