@@ -688,7 +688,8 @@ function renderQuestion(q){
         ${opts.map(o=>{
           const delta=Number(o.priceDelta||0);
           const buyPrice=Number(o.buyPrice||0);
-          const suffix=isCondition&&buyPrice>0?' — '+money(buyPrice):(!isCondition&&delta?' — '+(delta>0?'+':'')+money(delta):'');
+          const hideProtocol4OptionPrices=selectedModel?.protocol==='protocol4';
+          const suffix=hideProtocol4OptionPrices?'':(isCondition&&buyPrice>0?' — '+money(buyPrice):(!isCondition&&delta?' — '+(delta>0?'+':'')+money(delta):''));
           return `<option value="${esc(o.label)}" ${val===o.label?'selected':''}>${esc(o.label+suffix)}</option>`;
         }).join('')}
       </select>
