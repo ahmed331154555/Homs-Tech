@@ -3890,11 +3890,11 @@ app.post("/api/buyback/calculate", async (req, res) => {
 
     // Admin can change the discount values per phone/protocol.
     const functionsDiscount = Math.max(0, Math.min(100,
-      Number.isFinite(Number(b.functionsDiscount)) ? Number(b.functionsDiscount) :
+      Number.isFinite(Number(b.functionsDiscount)) ? Math.abs(Number(b.functionsDiscount)) :
       (1-rules.functionsNotWorkingMultiplier)*100
     ));
     const batteryDiscount = Math.max(0, Math.min(100,
-      Number.isFinite(Number(b.batteryDiscount)) ? Number(b.batteryDiscount) :
+      Number.isFinite(Number(b.batteryDiscount)) ? Math.abs(Number(b.batteryDiscount)) :
       (1-rules.batteryUnder85Multiplier)*100
     ));
 
