@@ -733,17 +733,17 @@ app.post("/api/contact", async (req,res) => {
     const phone=String(req.body?.phone||"").trim().slice(0,60);
     const topic=String(req.body?.topic||"Algemene vraag").trim().slice(0,120);
     const message=String(req.body?.message||"").trim().slice(0,8000);
-    if(name.length<2||!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)||message.length<8){
+    if(name.length<2||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||message.length<8){
       return res.status(400).json({error:"Vul uw naam, een geldig e-mailadres en een bericht in."});
     }
     recent.push(now);contactFormAttempts.set(ip,recent);
     const subject=("Website contact: "+topic).slice(0,240);
-    const body=["Nieuw contactbericht via HOMS TECH","Naam: "+name,"E-mail: "+email,"Telefoon: "+(phone||"-"),"Onderwerp: "+topic,"","Bericht:",message].join("\\n");
+    const body=["Nieuw contactbericht via HOMS TECH","Naam: "+name,"E-mail: "+email,"Telefoon: "+(phone||"-"),"Onderwerp: "+topic,"","Bericht:",message].join("\n");
     const id="contact-"+crypto.randomUUID();
     const notifyEmail=String(process.env.REPAIR_REQUEST_EMAIL||process.env.ORDER_NOTIFICATION_EMAIL||"").trim();
     await pool.query(
       "INSERT INTO admin_emails(resend_email_id,direction,from_address,to_addresses,subject,text_body,html_body,attachments,is_read) VALUES($1,'inbound',$2,$3::jsonb,$4,$5,$6,'[]'::jsonb,FALSE)",
-      [id,email,JSON.stringify(notifyEmail?[notifyEmail]:[]),subject,body,"<pre style=\\"white-space:pre-wrap;font-family:Arial,sans-serif\\">"+escapeHtml(body)+"</pre>"]
+      [id,email,JSON.stringify(notifyEmail?[notifyEmail]:[]),subject,body,"<pre style=\"white-space:pre-wrap;font-family:Arial,sans-serif\">"+escapeHtml(body)+"</pre>"]
     );
     if(process.env.RESEND_API_KEY&&process.env.RESEND_FROM_EMAIL&&notifyEmail){
       fetch("https://api.resend.com/emails",{
