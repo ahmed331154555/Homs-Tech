@@ -3632,6 +3632,30 @@ function preserveExistingCatalogPhotos(existingData, incomingData) {
   return incomingData;
 }
 
+function preserveExistingBuybackPhotos(existingData, incomingData) {
+  const existingBrands = Array.isArray(existingData?.buybackCatalog) ? existingData.buybackCatalog : [];
+  const incomingBrands = Array.isArray(incomingData?.buybackCatalog) ? incomingData.buybackCatalog : [];
+  for (const brand of incomingBrands) {
+    if (!brand || typeof brand !== "object") continue;
+    const oldBrand = existingBrands.find(old => old && (
+      (brand.id != null && old.id != null && String(old.id) === String(brand.id)) ||
+      (brand.id == null && old.id == null && String(old.name || "").trim() === String(brand.name || "").trim())
+    ));
+    if (oldBrand && String(oldBrand.image || "").trim() && !String(brand.image || "").trim()) brand.image = oldBrand.image;
+  }
+  const existingPhones = Array.isArray(existingData?.buybackPhones) ? existingData.buybackPhones : [];
+  const incomingPhones = Array.isArray(incomingData?.buybackPhones) ? incomingData.buybackPhones : [];
+  for (const phone of incomingPhones) {
+    if (!phone || typeof phone !== "object") continue;
+    const oldPhone = existingPhones.find(old => old && (
+      (phone.id != null && old.id != null && String(old.id) === String(phone.id)) ||
+      (phone.id == null && old.id == null && String(old.name || "").trim() === String(phone.name || "").trim() && String(old.brand || "").trim() === String(phone.brand || "").trim())
+    ));
+    if (oldPhone && String(oldPhone.image || "").trim() && !String(phone.image || "").trim()) phone.image = oldPhone.image;
+  }
+  return incomingData;
+}
+
 app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
   try {
     const section = String(req.headers["x-homs-admin-section"] || "").trim().toLowerCase();
@@ -3644,7 +3668,41 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       Object.keys(req.body).length === 1;
 
     if (isPhoneCatalogPatch) {
-      const current = await queryWithConnectionRetry(
+      // Save only the buyback catalog keys, not the full site settings document.
+    // Preserve existing images by stable IDs if an editor payload omits them.
+    const isBuybackCatalogPatch = section === "buyback" &&
+      req.body && Array.isArray(req.body.buybackCatalog) &&
+      Array.isArray(req.body.buybackPhones) &&
+      Object.keys(req.body).length === 2;
+
+    if (isBuybackCatalogPatch) {
+      const currentBuyback = await queryWithConnectionRetry(
+        "SELECT data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones FROM site_settings WHERE id = 1",
+        [],
+        4
+      );
+      const incomingBuyback = preserveExistingBuybackPhotos({
+        buybackCatalog: currentBuyback.rows[0]?.catalog || [],
+        buybackPhones: currentBuyback.rows[0]?.phones || []
+      }, {
+        buybackCatalog: req.body.buybackCatalog,
+        buybackPhones: req.body.buybackPhones
+      });
+
+      const savedBuyback = await queryWithConnectionRetry(
+        "UPDATE site_settings SET data = jsonb_set(jsonb_set(data, '{buybackCatalog}', $1::jsonb, true), '{buybackPhones}', $2::jsonb, true) WHERE id = 1 RETURNING data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones",
+        [JSON.stringify(incomingBuyback.buybackCatalog), JSON.stringify(incomingBuyback.buybackPhones)],
+        4
+      );
+      if (!savedBuyback.rows.length) throw new Error("Site settings record is missing.");
+      return res.json({
+        success: true,
+        buybackCatalog: savedBuyback.rows[0].catalog || [],
+        buybackPhones: savedBuyback.rows[0].phones || []
+      });
+    }
+
+    const current = await queryWithConnectionRetry(
         "SELECT data->'phones' AS phones FROM site_settings WHERE id = 1",
         [],
         4
