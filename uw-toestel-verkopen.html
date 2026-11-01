@@ -773,20 +773,10 @@ function renderQuestion(q){
   }
   return '';
 }
-function toggleBuybackQuestion(qid,direction){
-  const allQs=Array.isArray(selectedModel?.typeQuestions)?selectedModel.typeQuestions:[];
-  const conditionQ=allQs.find(q=>{const l=String(q.label||'').toLowerCase();return l.includes('conditie')||l.includes('staat');});
-  const qs=isKapotSelected()?allQs.filter(q=>q===conditionQ):allQs;
-  const navigable=qs.filter(q=>q.type!=='info');
-  const index=navigable.findIndex(q=>q.id===qid);
-  if(index<0)return;
-  if(direction==='next'){
-    buybackExpandedQuestionId=navigable[index+1]?.id||qid;
-  }else if(direction==='previous'){
-    buybackExpandedQuestionId=navigable[index-1]?.id||qid;
-  }else{
-    buybackExpandedQuestionId=buybackExpandedQuestionId===qid?null:qid;
-  }
+function toggleBuybackQuestion(qid){
+  // The chevron belongs to this question: down opens it here, up closes it here.
+  // It must never navigate to another question or scroll to a different section.
+  buybackExpandedQuestionId=buybackExpandedQuestionId===qid?null:qid;
   renderDynamicQuestions();
 }
 function renderDynamicQuestions(){
@@ -807,7 +797,7 @@ function renderDynamicQuestions(){
     if(answer&&!expanded){
       visible.push(`<div class="dynamic-question dynamic-question-complete">
         <div class="dynamic-question-title">${esc(q.label)}</div>
-        <div class="dynamic-answer-summary"><strong>${esc(answer)}</strong><button type="button" class="question-chevron" aria-label="Vraag openen" onclick="toggleBuybackQuestion('${esc(q.id)}','next')"><span>⌄</span></button></div>
+        <div class="dynamic-answer-summary"><strong>${esc(answer)}</strong><button type="button" class="question-chevron" aria-label="Vraag openen" onclick="toggleBuybackQuestion('${esc(q.id)}')"><span>⌄</span></button></div>
       </div>`);
       continue;
     }
@@ -816,7 +806,7 @@ function renderDynamicQuestions(){
       waitingForAnswer=true;
       break;
     }
-    visible.push(`<div class="dynamic-question-expanded"><div class="dynamic-question-expanded-head"><strong>${esc(q.label)}</strong><button type="button" class="question-chevron" aria-label="Vraag sluiten" onclick="toggleBuybackQuestion('${esc(q.id)}','previous')"><span>⌃</span></button></div>${renderQuestion(q)}</div>`);
+    visible.push(`<div class="dynamic-question-expanded"><div class="dynamic-question-expanded-head"><strong>${esc(q.label)}</strong><button type="button" class="question-chevron" aria-label="Vraag sluiten" onclick="toggleBuybackQuestion('${esc(q.id)}')"><span>⌄</span></button></div>${renderQuestion(q)}</div>`);
     if(!answer){waitingForAnswer=true;break;}
   }
   box.innerHTML=visible.join('');
