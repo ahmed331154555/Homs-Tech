@@ -4423,9 +4423,12 @@ app.post("/api/admin/emails/send",requirePermission("site.save"),async(req,res)=
       const originalResult=await pool.query("SELECT direction,message_id,references_header FROM admin_emails WHERE id=$1",[replyToId]);
       const original=originalResult.rows[0];
       if(!original||original.direction!=="inbound")return res.status(400).json({error:"Het oorspronkelijke inkomende bericht is niet gevonden. Verstuur dit bericht als nieuw e-mailbericht."});
-      if(!String(original.message_id||"").trim())return res.status(400).json({error:"Dit oude bericht bevat geen Message-ID om de conversatie te koppelen. Verstuur het als nieuw e-mailbericht."});
-      const refs=[...new Set((String(original.references_header||"")+" "+String(original.message_id)).match(/<[^<>\s]+>/g)||[])].slice(-20);
-      replyHeaders={"In-Reply-To":String(original.message_id).trim(),"References":refs.join(" ")};
+      // Website contact-form entries are stored locally and have no RFC Message-ID.
+      // Allow replying to them as a normal new email; only add threading headers when available.
+      if(String(original.message_id||"").trim()){
+        const refs=[...new Set((String(original.references_header||"")+" "+String(original.message_id)).match(/<[^<>\s]+>/g)||[])].slice(-20);
+        replyHeaders={"In-Reply-To":String(original.message_id).trim(),"References":refs.join(" ")};
+      }
     }
     const sendPayload={from,to:[to],cc,bcc,subject,text:textWithSignature,html,reply_to:"mail@inbound.homs-tech.nl",attachments:attachments.map(x=>({filename:x.filename,content:x.content}))};
     if(replyHeaders)sendPayload.headers=replyHeaders;
