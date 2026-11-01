@@ -849,10 +849,23 @@ function getSelectedAnswerByWords(words){
   }
   return null;
 }
+function getProtocol4StorageConditionPrice(){
+  if(selectedModel?.protocol!=='protocol4')return null;
+  const storageQ=(selectedModel?.typeQuestions||[]).find(q=>q.id==='protocol4_capacity');
+  const storageLabel=questionValue(storageQ);if(!storageLabel)return null;
+  const storageOption=active(storageQ?.options).find(o=>String(o.label||'')===String(storageLabel));
+  const condition=String(getSelectedConditionOption()?.label||'').toLowerCase();
+  const key=condition.includes('zo goed')||condition.includes('als nieuw')?'new':condition.includes('licht')?'light':condition.includes('zichtbaar')?'visible':'';
+  if(!key||!storageOption?.conditionPrices)return null;
+  const value=Number(storageOption.conditionPrices[key]);
+  return Number.isFinite(value)?Math.max(0,value):null;
+}
 function getConditionBasePrice(){
   const opt=getSelectedConditionOption();
   const base=Number(selectedModel?.base??selectedModel?.price??0);
   if(selectedModel?.protocol==='protocol4'){
+    const linkedPrice=getProtocol4StorageConditionPrice();
+    if(linkedPrice!==null)return linkedPrice;
     const fixed=(opt?.conditionPrice!==undefined&&opt?.conditionPrice!=='')?Number(opt.conditionPrice):((opt?.buyPrice!==undefined&&opt?.buyPrice!=='')?Number(opt.buyPrice):base+Number(opt?.priceDelta||0));
     return Math.max(0,Number.isFinite(fixed)?fixed:base);
   }
@@ -873,7 +886,7 @@ function getSelectedStorageDelta(){
   if(selectedModel?.protocol!=='2')return 0;const q=(selectedModel?.typeQuestions||[]).find(x=>x.id==='p2_storage');if(!q)return 0;const o=active(q.options).find(x=>String(x.label||'')===String(questionValue(q)||''));return Number(o?.priceDelta||0);
 }
 function getProtocolExtraDelta(){
-  const p=String(selectedModel?.protocol||'');if(!/^protocol[3-8]$/.test(p))return 0;const conditionQ=getConditionQuestion();let total=0;(selectedModel?.typeQuestions||[]).forEach(q=>{if(q===conditionQ||q.type==='info')return;const v=questionValue(q);if(!v)return;const o=active(q.options).find(x=>String(x.label||'')===String(v));total+=Number(o?.priceDelta||0);});return total;
+  const p=String(selectedModel?.protocol||'');if(!/^protocol[3-8]$/.test(p))return 0;const conditionQ=getConditionQuestion();let total=0;(selectedModel?.typeQuestions||[]).forEach(q=>{if(q===conditionQ||q.type==='info'||(p==='protocol4'&&q.id==='protocol4_capacity'))return;const v=questionValue(q);if(!v)return;const o=active(q.options).find(x=>String(x.label||'')===String(v));total+=Number(o?.priceDelta||0);});return total;
 }
 async function calculateServerQuote(){
   if(!selectedModel)return 0;if(/^protocol[3-8]$/.test(String(selectedModel.protocol||'')))return calcQuoteLocalFallback();
