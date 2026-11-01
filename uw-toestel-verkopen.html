@@ -982,7 +982,7 @@ function renderQuestion(q){
           const isLocked=/vergrendeld|locked/i.test(lockLabel)&&!isUnlocked;
           const cleanLabel=lockLabel.replace(/[🔒🔓🔐]/g,'').trim();
           const lockIcon=isUnlocked?'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M14 21V14C14 7.5 19 4 25 4c6 0 10 4 10 10" fill="none" stroke="#64748b" stroke-width="5" stroke-linecap="round"/><path d="M35 14l5-5" fill="none" stroke="#64748b" stroke-width="4.5" stroke-linecap="round"/><rect x="8" y="19" width="29" height="24" rx="6" fill="#f5b400" stroke="#c98700" stroke-width="1.6"/><circle cx="22.5" cy="29" r="3" fill="#855500"/><path d="M22.5 32v4" stroke="#855500" stroke-width="2.5" stroke-linecap="round"/></svg>':(isLocked?'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M14 20V13C14 1 32 1 32 13V20" fill="none" stroke="#64748b" stroke-width="5" stroke-linecap="round"/><rect x="8" y="19" width="29" height="24" rx="6" fill="#f5b400" stroke="#c98700" stroke-width="1.6"/><circle cx="22.5" cy="29" r="3" fill="#855500"/><path d="M22.5 32v4" stroke="#855500" stroke-width="2.5" stroke-linecap="round"/></svg>':'');
-          return `<button type="button" class="dynamic-option ${val===o.label?'selected':''}" onclick="setQuestionValue('${esc(q.id)}','${esc(o.label)}')"><span class="dynamic-option-radio"></span>${lockIcon?`<span class="lock-choice-icon" aria-hidden="true">${lockIcon}</span>`:''}<span>${esc(cleanLabel)}</span>${isCondition&&price>0?`<strong class="condition-price">${money(price)}</strong>`:''}</button>`;
+          return `<button type="button" class="dynamic-option ${val===o.label?'selected':''}" onclick="setQuestionValue('${esc(q.id)}','${esc(o.label)}')"><span class="dynamic-option-radio"></span>${lockIcon?`<span class="lock-choice-icon" aria-hidden="true">${lockIcon}</span>`:''}<span>${esc(cleanLabel)}</span></button>`;
         }).join('')}
       </div>
     </div>`;
@@ -1190,7 +1190,7 @@ function getProtocol4StorageConditionPrice(){
   const storageLabel=questionValue(storageQ);if(!storageLabel)return null;
   const storageOption=active(storageQ?.options).find(o=>String(o.label||'')===String(storageLabel));
   const condition=String(getSelectedConditionOption()?.label||'').toLowerCase();
-  const key=condition.includes('zo goed')||condition.includes('als nieuw')?'new':condition.includes('licht')?'light':condition.includes('zichtbaar')?'visible':'';
+  const key=condition.includes('zo goed')||condition.includes('als nieuw')?'new':condition.includes('licht')?'light':condition.includes('zichtbaar')?'visible':condition.includes('kapot')?'broken':'';
   if(!key||!storageOption?.conditionPrices)return null;
   const value=Number(storageOption.conditionPrices[key]);
   return Number.isFinite(value)?Math.max(0,value):null;
