@@ -4082,6 +4082,7 @@ app.put("/api/admin/buyback-orders/:id/offer", requirePermission("buyback_orders
       method:"POST", headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},
       body:JSON.stringify({
         from, to:[order.email], subject:"Uw definitieve prijsvoorstel van HOMS TECH – "+order.order_no,
+        reply_to:"mail@inbound.homs-tech.nl",
         html:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#1f2937;line-height:1.6"><h2 style="color:#0f2740">Uw prijsvoorstel is klaar</h2><p>Beste ${escapeHtml(order.name)},</p><p>Na beoordeling van uw ${escapeHtml(order.device)} bieden wij u definitief:</p><p style="font-size:30px;font-weight:800;color:#2563eb">€ ${offer.toFixed(2)}</p><p>Dit aanbod is gebaseerd op de door u verstrekte informatie en onze beoordeling. Wilt u akkoord gaan? Beantwoord dan deze e-mail of neem contact met ons op.</p><p>Met vriendelijke groet,<br><strong>HOMS TECH</strong></p></div>`
       })
     });
