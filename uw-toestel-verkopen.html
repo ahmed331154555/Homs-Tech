@@ -947,7 +947,12 @@ function setQuestionValue(qid,value){
   // A kapot toestel needs no further inspection questions.
   if((q?.id==='p2_condition' || String(q?.label||'').toLowerCase().includes('conditie') || String(q?.label||'').toLowerCase().includes('staat')) && String(value||'').toLowerCase().includes('kapot')){
     const conditionId=q.id;
-    Object.keys(buybackAnswers).forEach(id=>{if(id!==conditionId) delete buybackAnswers[id];});
+    // Protocol 4 prices Kapot per storage capacity. Keep the already selected capacity
+    // and clear only the unrelated inspection answers.
+    const capacityQuestion=orderedQuestions.find(item=>item.id==='protocol4_capacity' || /opslagcapaciteit|opslag|storage/i.test(String(item.label||'')));
+    Object.keys(buybackAnswers).forEach(id=>{
+      if(id!==conditionId && !(selectedModel?.protocol==='protocol4' && capacityQuestion && id===capacityQuestion.id)) delete buybackAnswers[id];
+    });
   }
   renderDynamicQuestions();
   calcQuote();
