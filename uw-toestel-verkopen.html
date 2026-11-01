@@ -509,6 +509,34 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 #dynamicQuestions .dynamic-question-complete{min-height:53px}
 #dynamicQuestions .dynamic-answer-summary{gap:12px}
 #dynamicQuestions .dynamic-question-pending .dynamic-answer-summary strong{font-weight:600;color:#8a97a7}
+
+/* Gentle, non-jumping accordion motion */
+@keyframes buybackQuestionReveal{
+  0%{opacity:0;transform:translateY(9px);clip-path:inset(0 0 100% 0)}
+  65%{opacity:1;clip-path:inset(0 0 0 0)}
+  100%{opacity:1;transform:translateY(0);clip-path:inset(0 0 0 0)}
+}
+@keyframes buybackOptionsReveal{
+  0%{opacity:0;transform:translateY(5px)}
+  100%{opacity:1;transform:translateY(0)}
+}
+#dynamicQuestions .dynamic-question-expanded,
+#dynamicQuestions>.dynamic-question:not(.dynamic-question-complete){
+  animation:buybackQuestionReveal .38s cubic-bezier(.22,.7,.25,1) both;
+  will-change:transform,opacity;
+}
+#dynamicQuestions .dynamic-question-expanded .dynamic-option-grid,
+#dynamicQuestions>.dynamic-question:not(.dynamic-question-complete) .dynamic-option-grid{
+  animation:buybackOptionsReveal .32s ease-out .07s both;
+}
+#dynamicQuestions .question-chevron span{display:block;transition:transform .24s ease}
+#dynamicQuestions .question-chevron:active{transform:scale(.94);transition:transform .12s ease}
+@media(prefers-reduced-motion:reduce){
+  #dynamicQuestions .dynamic-question-expanded,
+  #dynamicQuestions>.dynamic-question:not(.dynamic-question-complete),
+  #dynamicQuestions .dynamic-option-grid{animation:none!important}
+  #dynamicQuestions .question-chevron span{transition:none}
+}
 </style>
 
 </head>
