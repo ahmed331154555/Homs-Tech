@@ -7551,7 +7551,22 @@ async function save(isAuto=false){
     }
     // The phone catalog can contain several MB of images. Send only that
     // section when editing phones instead of the full site settings document.
-    const requestPayload=currentPage==="phones" ? {phones:payload.phones||[]} : currentPage==="shop" ? {shopProducts:payload.shopProducts||[]} : currentPage==="buyback" ? {buybackCatalog:payload.buybackCatalog||[],buybackPhones:payload.buybackPhones||[]} : payload;
+    const requestPayload=currentPage==="phones"
+      ? (phoneEditOnly
+          ? {phoneItem:payload.phones?.[selectedPhoneIndex],phoneIndex:selectedPhoneIndex}
+          : {phones:payload.phones||[]})
+      : currentPage==="shop" ? {shopProducts:payload.shopProducts||[]} : currentPage==="buyback" ? {buybackCatalog:payload.buybackCatalog||[],buybackPhones:payload.buybackPhones||[]} : payload;
+    if(currentPage==="phones" && phoneEditOnly && requestPayload.phoneItem){
+      requestPayload.phoneItem=await compressPhoneCatalogPhotos([requestPayload.phoneItem]).then(items=>items[0]);
+      if(requestPayload.phoneItem.setupWizard){
+        requestPayload.phoneItem.setupWizard=false;
+        delete requestPayload.phoneItem.setupStep;
+        delete requestPayload.phoneItem.setupDone;
+        delete requestPayload.phoneItem.setupColors;
+        delete requestPayload.phoneItem.setupStorages;
+        delete requestPayload.phoneItem.setupConditions;
+      }
+    }
     const r=await fetch("/api/site",{
       method:"PUT",
       headers:{"Content-Type":"application/json","Accept":"application/json","X-Homs-Admin-Section":currentPage},
@@ -7573,7 +7588,11 @@ async function save(isAuto=false){
     // Do not normalize again here, so Protocol 1–8 values cannot be reset
     // immediately after a successful save.
     if(currentPage==="phones"){
-      if(Array.isArray(result.phones)) data.phones=result.phones;
+      if(phoneEditOnly && result.phone && Number.isInteger(Number(result.phoneIndex))){
+        const savedIndex=Number(result.phoneIndex);
+        if(savedIndex===data.phones.length) data.phones.push(result.phone);
+        else if(savedIndex>=0 && savedIndex<data.phones.length) data.phones[savedIndex]=result.phone;
+      }else if(Array.isArray(result.phones)) data.phones=result.phones;
       else if(Array.isArray(payload.phones)) data.phones=payload.phones;
     }else if(currentPage==="shop"){
       if(Array.isArray(result.shopProducts)) data.shopProducts=result.shopProducts;
