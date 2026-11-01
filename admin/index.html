@@ -5364,7 +5364,7 @@ function normalizeBuybackProtocol4(x){
       items:Array.isArray(p.checklist&&p.checklist.items)&&p.checklist.items.length?p.checklist.items.map(o=>({text:String(o.text||''),active:o.active!==false})):d.checklist.items.map(o=>({...o}))
     },
     functions:{...d.functions,...(p.functions||{}),yesDelta:Number((p.functions||{}).yesDelta??d.functions.yesDelta),noDelta:Number((p.functions||{}).noDelta??d.functions.noDelta),active:(p.functions||{}).active!==false},
-    battery:{...d.battery,...(p.battery||{}),yesDelta:Number((p.battery||{}).yesDelta??d.battery.yesDelta),noDelta:Number((p.battery||{}).noDelta??d.battery.noDelta),active:(p.battery||{}).active!==false}
+    battery:{...d.battery,...(p.battery||{}),active:(p.battery||{}).active!==false,options:Array.isArray(p.battery&&p.battery.options)&&p.battery.options.length?p.battery.options.map(o=>({label:String(o.label||''),priceDelta:Number(o.priceDelta||0),active:o.active!==false})):d.battery.options.map(o=>({...o}))}
   };
 }
 
