@@ -4422,7 +4422,7 @@ app.post("/api/admin/emails/send",requirePermission("site.save"),async(req,res)=
       const original=originalResult.rows[0];
       if(!original||original.direction!=="inbound")return res.status(400).json({error:"Het oorspronkelijke inkomende bericht is niet gevonden. Verstuur dit bericht als nieuw e-mailbericht."});
       if(!String(original.message_id||"").trim())return res.status(400).json({error:"Dit oude bericht bevat geen Message-ID om de conversatie te koppelen. Verstuur het als nieuw e-mailbericht."});
-      const refs=[...new Set((String(original.references_header||"")+" "+String(original.message_id)).match(/<[^<>\\s]+>/g)||[])].slice(-20);
+      const refs=[...new Set((String(original.references_header||"")+" "+String(original.message_id)).match(/<[^<>\s]+>/g)||[])].slice(-20);
       replyHeaders={"In-Reply-To":String(original.message_id).trim(),"References":refs.join(" ")};
     }
     const sendPayload={from,to:[to],cc,bcc,subject,text:textWithSignature,html,reply_to:"mail@inbound.homs-tech.nl",attachments:attachments.map(x=>({filename:x.filename,content:x.content}))};
