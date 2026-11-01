@@ -7556,7 +7556,7 @@ async function save(isAuto=false){
     // section when editing phones instead of the full site settings document.
     const requestPayload=currentPage==="phones"
       ? (phoneEditOnly
-          ? {phoneItem:payload.phones?.[selectedPhoneIndex],phoneIndex:selectedPhoneIndex,phoneIdentity:phoneOriginalIdentities[selectedPhoneIndex]||null}
+          ? {phoneItem:payload.phones?.[selectedPhoneIndex],phoneIndex:selectedPhoneIndex,phoneIdentity:phoneOriginalIdentities[selectedPhoneIndex]||{}}
           : {phones:payload.phones||[]})
       : currentPage==="shop" ? {shopProducts:payload.shopProducts||[]} : currentPage==="buyback" ? {buybackCatalog:payload.buybackCatalog||[],buybackPhones:payload.buybackPhones||[]} : payload;
     if(currentPage==="phones" && phoneEditOnly && requestPayload.phoneItem){
