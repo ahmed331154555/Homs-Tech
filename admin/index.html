@@ -5527,7 +5527,12 @@ function renderBuybackQuestionOptions(q){
   return `<div class="bb-option-editor">
     ${(q.options||[]).map((o,i)=>`<div class="bb-option-line">
       <input value="${esc(o.label)}" oninput="updateBuybackQuestionOption('${esc(q.id)}',${i},'label',this.value)">
-      <input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateBuybackQuestionOption('${esc(q.id)}',${i},'priceDelta',this.value)">
+      <input type="number" step="1" value="${Number(o.priceDelta||0)}" oninput="updateBuybackQuestionOption('${esc(q.id)}',${i},'priceDelta',this.value)" placeholder="+ / - prijs">
+      <select aria-label="Prijsactie" onchange="updateBuybackQuestionOption('${esc(q.id)}',${i},'action',this.value)">
+        <option value="price" ${(o.action||'price')==='price'?'selected':''}>Prijs aanpassen</option>
+        <option value="scrap" ${o.action==='scrap'?'selected':''}>Scrapprijs gebruiken</option>
+        <option value="reject" ${o.action==='reject'?'selected':''}>Inkoop weigeren</option>
+      </select>
       <label style="font-size:11px;font-weight:800"><input type="checkbox" ${o.active!==false?'checked':''} onchange="updateBuybackQuestionOption('${esc(q.id)}',${i},'active',this.checked)"> Actief</label>
       <button class="bb-q-delete" type="button" onclick="deleteBuybackQuestionOption('${esc(q.id)}',${i})">×</button>
     </div>`).join('')}
