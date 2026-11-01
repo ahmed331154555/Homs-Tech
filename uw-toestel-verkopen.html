@@ -929,6 +929,8 @@ function setQuestionValue(qid,value){
   const q=(selectedModel?.typeQuestions||[]).find(x=>x.id===qid);
   if(q && q.type!=='text' && !active(q.options).some(o=>o.label===value)) return;
   const orderedQuestions=selectedModel?.typeQuestions||[];
+  const wasKapotSelected=isKapotSelected();
+  const storageQuestion=q?.id==='protocol4_capacity' || /opslagcapaciteit|opslag|storage/i.test(String(q?.label||''));
   const changed=String(buybackAnswers[qid]??'')!==String(value??'');
   if(changed){
     const currentIndex=orderedQuestions.findIndex(item=>item.id===qid);
@@ -936,8 +938,8 @@ function setQuestionValue(qid,value){
   }
   buybackAnswers[qid]=value;
   buybackExpandedQuestionIds.delete(qid);
-  // While locked, keep the condition fixed to Kapot even when the customer selects storage.
-  if(isLockedIphoneSelected()){
+  // Preserve Kapot when the customer changes storage; the condition price is tied to that storage.
+  if(isLockedIphoneSelected() || (wasKapotSelected && storageQuestion)){
     const conditionQuestion=getConditionQuestion();
     const brokenOption=active(conditionQuestion?.options).find(o=>/kapot/i.test(String(o.label||'')));
     if(conditionQuestion && brokenOption) buybackAnswers[conditionQuestion.id]=brokenOption.label;
@@ -998,7 +1000,8 @@ function renderDynamicQuestions(){
   const box=$('dynamicQuestions'); if(!box)return;
   const allQs=Array.isArray(selectedModel?.typeQuestions)?selectedModel.typeQuestions:[];
   const conditionQ=allQs.find(q=>{const l=String(q.label||'').toLowerCase();return l.includes('conditie')||l.includes('staat');});
-  const qs=isKapotSelected()?allQs.filter(q=>q===conditionQ):allQs;
+  const storageQ=allQs.find(q=>q.id==='protocol4_capacity' || /opslagcapaciteit|opslag|storage/i.test(String(q.label||'')));
+  const qs=isKapotSelected()?allQs.filter(q=>q===conditionQ || (selectedModel?.protocol==='protocol4' && q===storageQ)):allQs;
   if(!qs.length){box.innerHTML='<div style="padding:14px;background:#f8fafc;border-radius:12px;color:#64748b">Voor dit type zijn nog geen extra vragen ingesteld.</div>';return;}
   if(isLockedIphoneSelected()){
     const lockQ=getLockQuestion();
@@ -1052,7 +1055,8 @@ function validateDynamicQuestions(){
   }
   const allQs=selectedModel?.typeQuestions||[];
   const conditionQ=allQs.find(q=>{const l=String(q.label||'').toLowerCase();return l.includes('conditie')||l.includes('staat');});
-  const qs=isKapotSelected()?allQs.filter(q=>q===conditionQ):allQs;
+  const storageQ=allQs.find(q=>q.id==='protocol4_capacity' || /opslagcapaciteit|opslag|storage/i.test(String(q.label||'')));
+  const qs=isKapotSelected()?allQs.filter(q=>q===conditionQ || (selectedModel?.protocol==='protocol4' && q===storageQ)):allQs;
   const missing=qs.find(q=>q.required!==false && !String(questionValue(q)).trim());
   if(missing){alert('Kies of vul eerst in: '+missing.label);return false;}
   const action=getSelectedBuybackAction();
