@@ -4097,7 +4097,7 @@ app.put("/api/admin/buyback-orders/:id/offer", requirePermission("buyback_orders
 
 app.put("/api/admin/buyback-orders/:id/status", requirePermission("buyback_orders.update"), async (req, res) => {
   try {
-    const allowed = ["Nieuw","In behandeling","Goedgekeurd","Afgewezen","Voltooid"];
+    const allowed = ["Nieuw","In behandeling","Aanbod verzonden","Goedgekeurd","Afgewezen","Voltooid"];
     const status = String(req.body?.status || "").trim();
     if (!allowed.includes(status)) {
       return res.status(400).json({ error: "Ongeldige status." });
