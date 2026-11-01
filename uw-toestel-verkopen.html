@@ -497,6 +497,18 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 #dynamicQuestions .dynamic-answer-summary button{border:0;background:transparent;color:#176fe5;font-size:12px;font-weight:800;padding:5px 0}
 #dynamicQuestions .dynamic-info-line{display:flex;align-items:flex-start;gap:9px;padding:9px 4px;border:0;font-size:12px;line-height:1.5;color:#536276}
 @media(max-width:520px){#dynamicQuestions .dynamic-option-grid{grid-template-columns:1fr}#dynamicQuestions .dynamic-option{min-height:43px}#dynamicQuestions .dynamic-question-complete{gap:8px}#dynamicQuestions .dynamic-answer-summary{gap:8px}}
+
+/* Compact accordion chevrons for answered and active trade-in questions */
+#dynamicQuestions .dynamic-question-expanded{padding:12px 4px 14px;border-bottom:1px solid #e7edf4;background:#fff}
+#dynamicQuestions .dynamic-question-expanded-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px;color:#172b42;font-size:13px;line-height:1.4}
+#dynamicQuestions .dynamic-question-expanded .dynamic-question{padding:0;border:0}
+#dynamicQuestions .dynamic-question-expanded .dynamic-question-title{display:none}
+#dynamicQuestions .question-chevron{width:30px;height:30px;display:inline-grid;place-items:center;flex:none;border:1px solid #dfe6ef;border-radius:50%;background:#f7f9fc;color:#53657b;padding:0;cursor:pointer}
+#dynamicQuestions .question-chevron span{font-size:19px;line-height:1;font-weight:700;transform:translateY(-1px)}
+#dynamicQuestions .question-chevron:active{background:#eaf2ff;border-color:#9fc4fa;color:#075fe8}
+#dynamicQuestions .dynamic-question-complete{min-height:53px}
+#dynamicQuestions .dynamic-answer-summary{gap:12px}
+#dynamicQuestions .dynamic-question-pending .dynamic-answer-summary strong{font-weight:600;color:#8a97a7}
 </style>
 
 </head>
@@ -625,7 +637,7 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 </footer>
 
 <script>
-let devices=[],selected=null,selectedModel=null,selectedCondition='',pay='money',siteData={},buybackAnswers={};
+let devices=[],selected=null,selectedModel=null,selectedCondition='',pay='money',siteData={},buybackAnswers={},buybackExpandedQuestionId=null;
 const $=id=>document.getElementById(id);
 const money=n=>new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(Number(n||0));
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -719,6 +731,7 @@ function setQuestionValue(qid,value){
     orderedQuestions.slice(currentIndex+1).forEach(item=>{delete buybackAnswers[item.id];});
   }
   buybackAnswers[qid]=value;
+  buybackExpandedQuestionId=null;
   // A kapot toestel needs no further inspection questions.
   if((q?.id==='p2_condition' || String(q?.label||'').toLowerCase().includes('conditie') || String(q?.label||'').toLowerCase().includes('staat')) && String(value||'').toLowerCase().includes('kapot')){
     const conditionId=q.id;
@@ -760,6 +773,10 @@ function renderQuestion(q){
   }
   return '';
 }
+function toggleBuybackQuestion(qid){
+  buybackExpandedQuestionId=buybackExpandedQuestionId===qid?null:qid;
+  renderDynamicQuestions();
+}
 function renderDynamicQuestions(){
   const box=$('dynamicQuestions'); if(!box)return;
   const allQs=Array.isArray(selectedModel?.typeQuestions)?selectedModel.typeQuestions:[];
@@ -774,16 +791,24 @@ function renderDynamicQuestions(){
       continue;
     }
     const answer=String(questionValue(q)??'').trim();
-    if(answer){
+    const expanded=buybackExpandedQuestionId===q.id;
+    if(answer&&!expanded){
       visible.push(`<div class="dynamic-question dynamic-question-complete">
         <div class="dynamic-question-title">${esc(q.label)}</div>
-        <div class="dynamic-answer-summary"><strong>${esc(answer)}</strong><button type="button" onclick="setQuestionValue('${esc(q.id)}','')">Wijzigen</button></div>
+        <div class="dynamic-answer-summary"><strong>${esc(answer)}</strong><button type="button" class="question-chevron" aria-label="Vraag openen" onclick="toggleBuybackQuestion('${esc(q.id)}')"><span>⌄</span></button></div>
       </div>`);
       continue;
     }
-    visible.push(renderQuestion(q));
-    waitingForAnswer=true;
-    break;
+    if(!answer&&!expanded){
+      visible.push(`<div class="dynamic-question dynamic-question-complete dynamic-question-pending">
+        <div class="dynamic-question-title">${esc(q.label)}</div>
+        <div class="dynamic-answer-summary"><strong>Nog niet gekozen</strong><button type="button" class="question-chevron" aria-label="Vraag openen" onclick="toggleBuybackQuestion('${esc(q.id)}')"><span>⌄</span></button></div>
+      </div>`);
+      waitingForAnswer=true;
+      break;
+    }
+    visible.push(`<div class="dynamic-question-expanded"><div class="dynamic-question-expanded-head"><strong>${esc(q.label)}</strong><button type="button" class="question-chevron" aria-label="Vraag sluiten" onclick="toggleBuybackQuestion('${esc(q.id)}')"><span>⌃</span></button></div>${renderQuestion(q)}</div>`);
+    if(!answer){waitingForAnswer=true;break;}
   }
   box.innerHTML=visible.join('');
 }
