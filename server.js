@@ -4306,7 +4306,7 @@ function buildInvoicePdf(invoice){
  const xref=Buffer.byteLength(pdf,"latin1");pdf+="xref\n0 "+(objects.length+1)+"\n0000000000 65535 f \n";for(let i=1;i<offsets.length;i++)pdf+=String(offsets[i]).padStart(10,"0")+" 00000 n \n";pdf+="trailer\n<< /Size "+(objects.length+1)+" /Root 1 0 R >>\nstartxref\n"+xref+"\n%%EOF";return Buffer.from(pdf,"latin1");
 }
 app.get("/api/admin/emails",requirePermission("site.save"),async(req,res)=>{
-  try{const r=await pool.query("SELECT id,direction,from_address,to_addresses,subject,attachments,is_read,created_at FROM admin_emails ORDER BY created_at DESC,id DESC LIMIT 200");res.json({emails:r.rows});}
+  try{const r=await pool.query("SELECT id,direction,from_address,to_addresses,subject,LEFT(text_body,180) AS preview,attachments,is_read,created_at FROM admin_emails ORDER BY created_at DESC,id DESC LIMIT 200");res.json({emails:r.rows});}
   catch(e){console.error("Admin email list:",e);res.status(500).json({error:"E-mails laden is mislukt."});}
 });
 app.get("/api/admin/emails/:id",requirePermission("site.save"),async(req,res)=>{
@@ -4335,16 +4335,18 @@ app.post("/api/admin/emails/send",requirePermission("site.save"),async(req,res)=
     const allowedTypes=new Set(["image/jpeg","image/png","image/webp","image/gif","image/heic","application/pdf","application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","text/plain"]);
     let attachmentTotal=0;
     const attachments=rawAttachments.map(file=>{
-      const filename=String(file?.filename||"").replace(/[\\/\\r\\n]/g,"_").slice(0,180);
-      const mime=String(file?.content_type||"application/octet-stream").toLowerCase();
+      const filename=String(file?.filename||"").replace(/[\/\r\n]/g,"_").slice(0,180);
+      const ext=filename.split(".").pop().toLowerCase();
+      const fallbackTypes={jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png",webp:"image/webp",gif:"image/gif",heic:"image/heic",pdf:"application/pdf",doc:"application/msword",docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",xls:"application/vnd.ms-excel",xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",txt:"text/plain"};
+      const mime=String(file?.content_type||fallbackTypes[ext]||"application/octet-stream").toLowerCase();
       const content=String(file?.content||"");
       if(!filename||!content||!allowedTypes.has(mime)||!/^[A-Za-z0-9+/]+={0,2}$/.test(content))throw new Error("Een bijlage heeft een ongeldig formaat.");
       const size=Buffer.from(content,"base64").length;attachmentTotal+=size;
       if(size>10*1024*1024||attachmentTotal>20*1024*1024)throw new Error("Bijlagen mogen maximaal 10 MB per bestand en 20 MB totaal zijn.");
       return {filename,content,content_type:mime};
     });
-    const messageHtml=textBody.split(/\\r?\\n/).map(line=>escapeHtml(line)).join("<br>");
-    const signatureText="\\n\\n—\\nHOMS TECH | Customer Support\\nwww.homs-tech.nl";
+    const messageHtml=textBody.split(/\r?\n/).map(line=>escapeHtml(line).replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/__(.+?)__/g,"<u>$1</u>").replace(/_(.+?)_/g,"<em>$1</em>")).join("<br>");
+    const signatureText="\n\n—\nHOMS TECH | Customer Support\nwww.homs-tech.nl";
     const textWithSignature=textBody+signatureText;
     const signatureHtml=`
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:26px;width:100%;max-width:520px;font-family:Arial,Helvetica,sans-serif">
