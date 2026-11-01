@@ -3693,11 +3693,10 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
         if (!sameId && !sameLegacyIdentity) {
           return res.status(409).json({ error: "Dit product is ondertussen gewijzigd of verplaatst. Vernieuw de pagina om overschrijven te voorkomen." });
         }
-        const preserved = preserveExistingCatalogPhotos(
-          { phones: [existingPhone] },
-          { phones: [incomingPhone] }
-        );
-        phones[phoneIndex] = preserved.phones[0];
+        // Match by the already-validated array slot, not by editable name/brand.
+        // This preserves old photos even when the admin changes the product name.
+        preserveExistingProductPhotos(existingPhone, incomingPhone);
+        phones[phoneIndex] = incomingPhone;
       }
       const saved = await queryWithConnectionRetry(
         "UPDATE site_settings SET data = jsonb_set(data, '{phones}', $1::jsonb, true) WHERE id = 1 RETURNING data->'phones' AS phones",
