@@ -537,6 +537,26 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
   #dynamicQuestions .dynamic-option-grid{animation:none!important}
   #dynamicQuestions .question-chevron span{transition:none}
 }
+
+/* Real vertical accordion expansion: animate height, not translate/opacity alone */
+@keyframes buybackExpandDown{
+  from{max-height:0;opacity:.35}
+  to{max-height:520px;opacity:1}
+}
+#dynamicQuestions .dynamic-question-open-panel{
+  display:grid;
+  grid-template-rows:1fr;
+  animation:buybackExpandDown .48s cubic-bezier(.2,.65,.25,1) both;
+  overflow:hidden;
+  min-height:0;
+}
+#dynamicQuestions .dynamic-question-open-inner{min-height:0;overflow:hidden}
+#dynamicQuestions .dynamic-question-expanded{overflow:hidden}
+#dynamicQuestions .dynamic-question-expanded .dynamic-question-open-panel .dynamic-question{padding:0;border:0}
+#dynamicQuestions .dynamic-question-expanded .dynamic-question-open-panel .dynamic-question-title{display:block}
+#dynamicQuestions .dynamic-question-expanded .dynamic-question-open-panel .dynamic-question{animation:none}
+#dynamicQuestions .dynamic-question-open-panel .dynamic-option-grid{animation:none}
+@media(prefers-reduced-motion:reduce){#dynamicQuestions .dynamic-question-open-panel{animation:none!important}}
 </style>
 
 </head>
@@ -830,11 +850,11 @@ function renderDynamicQuestions(){
       continue;
     }
     if(!answer&&!expanded){
-      visible.push(renderQuestion(q));
+      visible.push(`<div class="dynamic-question-open-panel"><div class="dynamic-question-open-inner">${renderQuestion(q)}</div></div>`);
       waitingForAnswer=true;
       break;
     }
-    visible.push(`<div class="dynamic-question-expanded"><div class="dynamic-question-expanded-head"><strong>${esc(q.label)}</strong><button type="button" class="question-chevron" aria-label="Vraag sluiten" onclick="toggleBuybackQuestion('${esc(q.id)}')"><span>⌃</span></button></div>${renderQuestion(q)}</div>`);
+    visible.push(`<div class="dynamic-question-expanded"><div class="dynamic-question-expanded-head"><strong>${esc(q.label)}</strong><button type="button" class="question-chevron" aria-label="Vraag sluiten" onclick="toggleBuybackQuestion('${esc(q.id)}')"><span>⌃</span></button></div><div class="dynamic-question-open-panel"><div class="dynamic-question-open-inner">${renderQuestion(q)}</div></div></div>`);
     if(!answer){waitingForAnswer=true;break;}
   }
   box.innerHTML=visible.join('');
