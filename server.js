@@ -3845,6 +3845,9 @@ async function ensureBuybackOrdersTable() {
   await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS model TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS iban TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS answers JSONB NOT NULL DEFAULT '{}'::jsonb`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS final_offer NUMERIC(12,2)`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS final_offer_sent_at TIMESTAMPTZ`);
   await pool.query(`UPDATE buyback_orders SET order_no = 'BT-LEGACY-' || id WHERE order_no IS NULL`);
   await pool.query(`ALTER TABLE buyback_orders ALTER COLUMN order_no SET NOT NULL`);
 }
@@ -3988,10 +3991,11 @@ app.post("/api/buyback/orders", async (req, res) => {
 
     const orderNo = `BT-${Date.now()}`;
 
+    const answers = b.answers && typeof b.answers === "object" && !Array.isArray(b.answers) ? b.answers : {};
     const result = await pool.query(`
       INSERT INTO buyback_orders
-      (order_no,name,email,phone,address,device,brand,model,storage,condition,face_id,battery,screen,offered_price,iban,payment_method,status)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,'Nieuw')
+      (order_no,name,email,phone,address,device,brand,model,storage,condition,face_id,battery,screen,offered_price,iban,payment_method,answers,status)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17::jsonb,'Nieuw')
       RETURNING id,order_no,status,created_at
     `, [
       orderNo,
@@ -4008,10 +4012,38 @@ app.post("/api/buyback/orders", async (req, res) => {
       String(b.screen || "").trim(),
       offeredPrice,
       String(b.iban || "").trim(),
-      String(b.paymentMethod || "").trim()
+      String(b.paymentMethod || "").trim(),
+      JSON.stringify(answers)
     ]);
 
-    res.status(201).json({ success: true, order: result.rows[0] });
+    const order = result.rows[0];
+    const apiKey = process.env.RESEND_API_KEY;
+    const from = process.env.RESEND_FROM_EMAIL;
+    const ownerEmail = "Appelavcd116@gmail.com";
+    if (apiKey && from) {
+      const safeDevice = escapeHtml(b.device || "iPhone");
+      const safeName = escapeHtml(name);
+      const safeOrder = escapeHtml(order.order_no);
+      const customerEmail = {
+        from, to:[email], subject:"We hebben uw verkoopaanvraag ontvangen – HOMS TECH",
+        html:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#1f2937;line-height:1.6"><h2 style="color:#0f2740">Bedankt voor uw aanvraag!</h2><p>Beste ${safeName},</p><p>We hebben uw aanvraag om uw <strong>${safeDevice}</strong> te verkopen goed ontvangen.</p><p>Uw aanvraagnummer is <strong>${safeOrder}</strong>.</p><p>We bekijken de door u ingevulde gegevens en controleren het toestel. Daarna ontvangt u van ons een persoonlijk definitief prijsvoorstel. De getoonde geschatte prijs is nog geen definitief aanbod.</p><p>Met vriendelijke groet,<br><strong>HOMS TECH</strong></p></div>`
+      };
+      const ownerNotice = {
+        from, to:[ownerEmail], subject:"Nieuwe iPhone-verkoopaanvraag "+order.order_no,
+        html:`<div style="font-family:Arial,sans-serif;max-width:650px;margin:auto;padding:24px;color:#1f2937;line-height:1.6"><h2>Nieuwe verkoopaanvraag ontvangen</h2><p><strong>Nummer:</strong> ${safeOrder}<br><strong>Toestel:</strong> ${safeDevice}<br><strong>Klant:</strong> ${safeName}<br><strong>E-mail:</strong> ${escapeHtml(email)}<br><strong>Telefoon:</strong> ${escapeHtml(b.phone||"-")}<br><strong>Geschatte prijs:</strong> € ${offeredPrice.toFixed(2)}</p><p>Open de HOMS TECH-adminpagina → Verkoopaanvragen om alle antwoorden te bekijken en een definitief aanbod te sturen.</p></div>`
+      };
+      const sendMail = async mail => {
+        const response = await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify(mail)});
+        const data = await response.json().catch(()=>({}));
+        if(!response.ok) throw new Error("Resend "+response.status+": "+JSON.stringify(data));
+      };
+      const mailResults = await Promise.allSettled([sendMail(customerEmail),sendMail(ownerNotice)]);
+      mailResults.forEach((r,i)=>{if(r.status==="rejected")console.error(i===0?"Buyback customer confirmation email failed:":"Buyback owner notification email failed:",r.reason?.message||r.reason);});
+    } else {
+      console.error("Buyback emails skipped: RESEND_API_KEY or RESEND_FROM_EMAIL is missing.");
+    }
+
+    res.status(201).json({ success: true, order });
   } catch (error) {
     console.error("BUYBACK ORDER ERROR:", error);
     res.status(500).json({ error: "Verkoopaanvraag kon niet worden opgeslagen." });
@@ -4023,7 +4055,7 @@ app.get("/api/admin/buyback-orders", requirePermission("buyback_orders.view"), a
     await ensureBuybackOrdersTable();
     const result = await pool.query(`
       SELECT id,order_no,name,email,phone,address,device,brand,model,storage,condition,
-             face_id,battery,screen,offered_price,iban,payment_method,status,created_at
+             face_id,battery,screen,offered_price,iban,payment_method,answers,final_offer,final_offer_sent_at,status,created_at
       FROM buyback_orders
       ORDER BY created_at DESC
     `);
@@ -4031,6 +4063,35 @@ app.get("/api/admin/buyback-orders", requirePermission("buyback_orders.view"), a
   } catch (error) {
     console.error("BUYBACK LOAD ERROR:", error);
     res.status(500).json({ error: "Verkoopaanvragen konden niet worden geladen." });
+  }
+});
+
+app.put("/api/admin/buyback-orders/:id/offer", requirePermission("buyback_orders.update"), async (req, res) => {
+  try {
+    const offer = Number(req.body?.finalOffer);
+    if (!Number.isFinite(offer) || offer < 0 || offer > 1000000) {
+      return res.status(400).json({ error: "Vul een geldig definitief bedrag in." });
+    }
+    const found = await pool.query("SELECT id,order_no,name,email,device FROM buyback_orders WHERE id=$1", [req.params.id]);
+    if (!found.rows.length) return res.status(404).json({ error: "Verkoopaanvraag niet gevonden." });
+    const order = found.rows[0];
+    const apiKey = process.env.RESEND_API_KEY;
+    const from = process.env.RESEND_FROM_EMAIL;
+    if (!apiKey || !from) return res.status(503).json({ error: "E-mail is niet ingesteld. Controleer RESEND_API_KEY en RESEND_FROM_EMAIL." });
+    const response = await fetch("https://api.resend.com/emails", {
+      method:"POST", headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},
+      body:JSON.stringify({
+        from, to:[order.email], subject:"Uw definitieve prijsvoorstel van HOMS TECH – "+order.order_no,
+        html:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#1f2937;line-height:1.6"><h2 style="color:#0f2740">Uw prijsvoorstel is klaar</h2><p>Beste ${escapeHtml(order.name)},</p><p>Na beoordeling van uw ${escapeHtml(order.device)} bieden wij u definitief:</p><p style="font-size:30px;font-weight:800;color:#2563eb">€ ${offer.toFixed(2)}</p><p>Dit aanbod is gebaseerd op de door u verstrekte informatie en onze beoordeling. Wilt u akkoord gaan? Beantwoord dan deze e-mail of neem contact met ons op.</p><p>Met vriendelijke groet,<br><strong>HOMS TECH</strong></p></div>`
+      })
+    });
+    const mailData = await response.json().catch(()=>({}));
+    if (!response.ok) throw new Error("Resend "+response.status+": "+JSON.stringify(mailData));
+    const updated = await pool.query("UPDATE buyback_orders SET final_offer=$1,final_offer_sent_at=NOW(),status='Aanbod verzonden' WHERE id=$2 RETURNING id,status,final_offer,final_offer_sent_at",[offer,req.params.id]);
+    res.json({success:true,order:updated.rows[0]});
+  } catch (error) {
+    console.error("BUYBACK OFFER EMAIL ERROR:",error);
+    res.status(500).json({error:"Het prijsvoorstel kon niet worden verstuurd. "+String(error.message||"")});
   }
 });
 
