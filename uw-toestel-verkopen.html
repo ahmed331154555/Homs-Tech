@@ -2581,5 +2581,102 @@ loadBuyback();
 }
 </style>
 
+
+<style id="homs-buyback-mobile-layout-preview-v2">
+/* Correct mobile card stacking; only presentation rules are changed. */
+@media (max-width:700px){
+  #step2 .product-card{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:12px!important;
+    padding:12px!important;
+    min-width:0!important;
+  }
+  #step2 #productImage.product-image{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:100%!important;
+    height:190px!important;
+    min-height:190px!important;
+    max-height:190px!important;
+    padding:8px!important;
+    margin:0!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+  }
+  #step2 #productImage.product-image img{
+    display:block!important;
+    width:auto!important;
+    height:174px!important;
+    max-width: min(72vw, 190px)!important;
+    max-height:174px!important;
+    object-fit:contain!important;
+    object-position:center!important;
+    margin:0 auto!important;
+  }
+  #step2 #productImage .phone-icon{
+    width:74px!important;height:142px!important;
+  }
+  #step2 .product-card>.product-info{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    justify-content:flex-start!important;
+    gap:9px!important;
+    width:100%!important;
+    min-width:0!important;
+    padding:2px 0 0!important;
+    text-align:center!important;
+  }
+  #step2 .product-card>.product-info>#modelName{
+    order:1!important;margin:0!important;
+    font-size:clamp(21px,6vw,27px)!important;line-height:1.2!important;
+  }
+  #step2 .product-card>.product-info>#modelSub{
+    order:2!important;margin:0!important;font-size:13px!important;
+  }
+  #step2 .product-card>.product-info>.quote-inline{
+    order:3!important;
+    display:flex!important;align-items:center!important;
+    width:100%!important;min-height:0!important;
+    margin:2px 0!important;padding:14px 12px!important;
+    gap:8px!important;box-sizing:border-box!important;
+    border-radius:16px!important;
+  }
+  #step2 .product-card>.product-info>.quote-inline strong{
+    font-size:clamp(28px,8vw,36px)!important;
+  }
+  #step2 .product-card>.product-info>.buyback-summary-chips{
+    order:4!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    width:100%!important;min-width:0!important;
+    gap:5px!important;margin:2px 0 0!important;
+  }
+  #step2 .product-card>.product-info>.buyback-summary-chips .buyback-summary-chip{
+    display:flex!important;align-items:center!important;justify-content:center!important;
+    width:100%!important;min-width:0!important;max-width:none!important;
+    min-height:38px!important;padding:6px 3px!important;
+    white-space:normal!important;text-align:center!important;
+    overflow-wrap:anywhere!important;font-size:clamp(8px,2.35vw,10px)!important;
+    line-height:1.2!important;box-sizing:border-box!important;
+  }
+  #step2 .questions-panel{margin-top:14px!important}
+  #step2 .dynamic-question{grid-template-columns:minmax(0,1fr)!important;gap:9px!important}
+  #homs-ai-launch{
+    right:10px!important;bottom:calc(76px + env(safe-area-inset-bottom))!important;
+    left:auto!important;max-width:142px!important;
+    padding:8px 10px!important;font-size:11px!important;
+    box-shadow:0 4px 14px #0002!important;
+  }
+}
+@media(max-width:380px){
+  #step2 #productImage.product-image{height:170px!important;min-height:170px!important;max-height:170px!important}
+  #step2 #productImage.product-image img{height:154px!important;max-height:154px!important}
+}
+</style>
+
 </body>
 </html>
