@@ -936,9 +936,8 @@ function setQuestionValue(qid,value){
   }
   buybackAnswers[qid]=value;
   buybackExpandedQuestionIds.delete(qid);
-  // A locked iPhone is valued immediately using the configured "Kapot" condition price.
-  const isLockQuestion=q?.id==='protocol4_connectivity' || /ontgrendeld|vergrendeld/i.test(String(q?.label||''));
-  if(isLockQuestion && /vergrendeld|locked/i.test(String(value||'')) && !/ontgrendeld|unlocked/i.test(String(value||''))){
+  // While locked, keep the condition fixed to Kapot even when the customer selects storage.
+  if(isLockedIphoneSelected()){
     const conditionQuestion=getConditionQuestion();
     const brokenOption=active(conditionQuestion?.options).find(o=>/kapot/i.test(String(o.label||'')));
     if(conditionQuestion && brokenOption) buybackAnswers[conditionQuestion.id]=brokenOption.label;
@@ -1003,13 +1002,15 @@ function renderDynamicQuestions(){
   if(!qs.length){box.innerHTML='<div style="padding:14px;background:#f8fafc;border-radius:12px;color:#64748b">Voor dit type zijn nog geen extra vragen ingesteld.</div>';return;}
   if(isLockedIphoneSelected()){
     const lockQ=getLockQuestion();
+    const storageQ=allQs.find(q=>q.id==='protocol4_capacity' || /opslagcapaciteit|opslag|storage/i.test(String(q.label||'')));
     const brokenPrice=getConditionBasePrice();
     box.innerHTML=`<div class="dynamic-question-open-panel"><div class="dynamic-question-open-inner">${renderQuestion(lockQ)}</div></div>
+      ${storageQ?`<div class="dynamic-question-open-panel locked-storage-question"><div class="dynamic-question-open-inner">${renderQuestion(storageQ)}</div></div>`:''}
       <div class="locked-device-price-panel">
         <strong>🔒 iPhone vergrendeld — staat: Kapot</strong>
         <span>Uw geschatte inruilwaarde</span>
         <b>${money(brokenPrice)}</b>
-        <small>Wilt u verdergaan? Kies hierboven <b>🔓 Ontgrendeld</b> om de overige vragen te beantwoorden.</small>
+        <small>${storageQ&&!questionValue(storageQ)?'Kies de opslagcapaciteit om de juiste Kapot-prijs te berekenen.':'Wilt u doorgaan met de verkoop? Kies hierboven 🔓 Ontgrendeld om de overige vragen te beantwoorden.'}</small>
       </div>`;
     return;
   }
@@ -1041,7 +1042,12 @@ function renderDynamicQuestions(){
 }
 function validateDynamicQuestions(){
   if(isLockedIphoneSelected()){
-    alert('Uw iPhone is vergrendeld. Kies eerst “Ontgrendeld” om verder te gaan.');
+    const storageQ=(selectedModel?.typeQuestions||[]).find(q=>q.id==='protocol4_capacity' || /opslagcapaciteit|opslag|storage/i.test(String(q.label||'')));
+    if(storageQ && !String(questionValue(storageQ)||'').trim()){
+      alert('Kies eerst de opslagcapaciteit om de Kapot-prijs te berekenen.');
+      return false;
+    }
+    alert('Uw iPhone is vergrendeld. Kies “Ontgrendeld” als u de overige vragen wilt beantwoorden.');
     return false;
   }
   const allQs=selectedModel?.typeQuestions||[];
