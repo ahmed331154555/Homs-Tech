@@ -594,7 +594,7 @@ function buildCustomerQuestions(phone,type){
     return questions;
   }
   const p=phone?.[protocol]||{},base=Number(phone?.price||0),questions=[];
-  const addSection=(key,label)=>{const sec=p[key];if(!sec||sec.active===false)return;const opts=Array.isArray(sec.options)?sec.options.filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>{const out={...o};if(key==='condition'&&protocol!=='protocol4'){const exact=(o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):((o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):((o.priceDelta!==undefined&&o.priceDelta!=='')?Number(o.priceDelta):base));out.buyPrice=Math.max(0,Number.isFinite(exact)?exact:base);out.conditionPrice=out.buyPrice;}return out;}):[];if(opts.length)questions.push({id:protocol+'_'+key,label,type:'options',required:true,options:opts});};
+  const addSection=(key,label)=>{const sec=p[key];if(!sec||sec.active===false)return;const opts=Array.isArray(sec.options)?sec.options.filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>{const out={...o};if(key==='condition'){const exact=(o.conditionPrice!==undefined&&o.conditionPrice!=='')?Number(o.conditionPrice):((o.buyPrice!==undefined&&o.buyPrice!=='')?Number(o.buyPrice):base+Number(o.priceDelta||0));out.buyPrice=Math.max(0,Number.isFinite(exact)?exact:base);out.conditionPrice=out.buyPrice;out.priceDelta=0;}return out;}):[];if(opts.length)questions.push({id:protocol+'_'+key,label,type:'options',required:true,options:opts});};
   const addChecklist=()=>{const sec=p.checklist;if(!sec||sec.active===false)return;(Array.isArray(sec.items)?sec.items:[]).filter(x=>x&&x.active!==false&&String(x.text||'').trim()).forEach((x,i)=>questions.push({id:protocol+'_check_'+i,label:String(x.text),type:'info',required:false,options:[]}));};
   const addFunctions=()=>{const sec=p.functions;if(!sec||sec.active===false)return;questions.push({id:protocol+'_functions',label:String(sec.label||'Werken alle functies van het toestel goed?'),type:'options',required:true,options:[{label:'Ja',priceDelta:Number(sec.yesDelta||0),active:true},{label:'Nee',priceDelta:Number(sec.noDelta||0),active:true}]});};
   const addBattery=()=>{const sec=p.battery;if(!sec||sec.active===false)return;const opts=Array.isArray(sec.options)&&sec.options.length?sec.options.filter(o=>o&&o.active!==false&&String(o.label||'').trim()).map(o=>({...o})):[{label:'Ja',priceDelta:Number(sec.yesDelta||0),active:true},{label:'Nee',priceDelta:Number(sec.noDelta||0),active:true}];questions.push({id:protocol+'_battery',label:String(sec.label||'Wat is de status van de batterij?'),type:'options',required:true,options:opts});};
@@ -679,7 +679,7 @@ function renderQuestion(q){
 
   if(q.type==='yesno' || q.type==='options'){
     if(!opts.length)return '';
-    const isCondition=selectedModel?.protocol!=='protocol4' && (String(q.id||'')==='p2_condition' || String(q.label||'').toLowerCase().includes('conditie') || String(q.label||'').toLowerCase().includes('staat'));
+    const isCondition=String(q.id||'')==='p2_condition' || String(q.label||'').toLowerCase().includes('conditie') || String(q.label||'').toLowerCase().includes('staat');
     const iconText=/opslag|storage/i.test(q.label)?'▤':/batterij|battery/i.test(q.label)?'ϟ':/scherm|display/i.test(q.label)?'▣':/behuizing|achterkant|glas/i.test(q.label)?'◇':isCondition?'✦':'✓';
     return `<div class="dynamic-question ${isCondition?'dynamic-condition-question':''}">
       <div class="dynamic-question-title"><span class="question-icon">${iconText}</span><span>${esc(q.label)}${required?'<span class="dynamic-question-required">*</span>':''}</span></div>
@@ -851,8 +851,11 @@ function getSelectedAnswerByWords(words){
 }
 function getConditionBasePrice(){
   const opt=getSelectedConditionOption();
-  const base=Number(selectedModel?.base||0);
-  if(selectedModel?.protocol==='protocol4') return Math.max(0,base+Number(opt?.priceDelta||0));
+  const base=Number(selectedModel?.base??selectedModel?.price??0);
+  if(selectedModel?.protocol==='protocol4'){
+    const fixed=(opt?.conditionPrice!==undefined&&opt?.conditionPrice!=='')?Number(opt.conditionPrice):((opt?.buyPrice!==undefined&&opt?.buyPrice!=='')?Number(opt.buyPrice):base+Number(opt?.priceDelta||0));
+    return Math.max(0,Number.isFinite(fixed)?fixed:base);
+  }
   if(isKapotSelected()) return Math.max(0,Number(selectedModel?.scrapPrice||0));
   const raw=(opt?.conditionPrice!==undefined&&opt?.conditionPrice!=='')?opt.conditionPrice:opt?.buyPrice;
   const n=Number(raw);
