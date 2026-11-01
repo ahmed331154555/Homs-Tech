@@ -83,8 +83,8 @@ app.post("/api/webhooks/resend/inbound", express.raw({ type: "application/json",
       console.error("Resend receiving API returned an unexpected payload:",JSON.stringify(payload).slice(0,1200));
       return res.status(502).send("Could not retrieve received email");
     }
-    await pool.query("INSERT INTO admin_emails(resend_email_id,direction,from_address,to_addresses,subject,text_body,html_body,is_read,created_at) VALUES($1,'inbound',$2,$3::jsonb,$4,$5,$6,FALSE,COALESCE($7::timestamptz,NOW())) ON CONFLICT(resend_email_id) DO NOTHING",
-      [String(mail.id||event.data.email_id),String(mail.from||event.data.from||"").slice(0,320),JSON.stringify(Array.isArray(mail.to)?mail.to:Array.isArray(event.data.to)?event.data.to:[]),String(mail.subject||event.data.subject||"(geen onderwerp)").slice(0,500),String(mail.text||"").slice(0,100000),String(mail.html||"").slice(0,200000),mail.created_at||event.data.created_at||null]);
+    await pool.query("INSERT INTO admin_emails(resend_email_id,direction,from_address,to_addresses,subject,text_body,html_body,attachments,is_read,created_at) VALUES($1,'inbound',$2,$3::jsonb,$4,$5,$6,$7::jsonb,FALSE,COALESCE($8::timestamptz,NOW())) ON CONFLICT(resend_email_id) DO NOTHING",
+      [String(mail.id||event.data.email_id),String(mail.from||event.data.from||"").slice(0,320),JSON.stringify(Array.isArray(mail.to)?mail.to:Array.isArray(event.data.to)?event.data.to:[]),String(mail.subject||event.data.subject||"(geen onderwerp)").slice(0,500),String(mail.text||"").slice(0,100000),String(mail.html||"").slice(0,200000),JSON.stringify(Array.isArray(mail.attachments)?mail.attachments.map(x=>({filename:String(x.filename||x.name||"Bijlage").slice(0,240),content_type:String(x.content_type||x.type||"").slice(0,120),size:Number(x.size)||0,id:x.id||null})):[]),mail.created_at||event.data.created_at||null]);
     // Send a short notification to the owner's Gmail; the full message remains in the admin inbox.
     const from=process.env.RESEND_FROM_EMAIL;
     if(from){fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({from,to:["Appelavcd116@gmail.com"],subject:"Nieuwe HOMS TECH e-mail: "+String(mail.subject||"").slice(0,120),text:"Nieuwe e-mail ontvangen van "+String(mail.from||"onbekend")+". Open de HOMS TECH admin inbox om het bericht te lezen."})}).catch(err=>console.error("Inbound notification failed:",err.message));}
@@ -263,6 +263,7 @@ async function initDatabase() {
     CREATE INDEX IF NOT EXISTS admin_emails_created_idx ON admin_emails(created_at DESC);
     CREATE INDEX IF NOT EXISTS admin_emails_inbox_idx ON admin_emails(direction,is_read,created_at DESC);
   `);
+  await pool.query(`ALTER TABLE admin_emails ADD COLUMN IF NOT EXISTS attachments JSONB NOT NULL DEFAULT '[]'::jsonb`);
 
 
   await pool.query(`
@@ -4305,7 +4306,7 @@ function buildInvoicePdf(invoice){
  const xref=Buffer.byteLength(pdf,"latin1");pdf+="xref\n0 "+(objects.length+1)+"\n0000000000 65535 f \n";for(let i=1;i<offsets.length;i++)pdf+=String(offsets[i]).padStart(10,"0")+" 00000 n \n";pdf+="trailer\n<< /Size "+(objects.length+1)+" /Root 1 0 R >>\nstartxref\n"+xref+"\n%%EOF";return Buffer.from(pdf,"latin1");
 }
 app.get("/api/admin/emails",requirePermission("site.save"),async(req,res)=>{
-  try{const r=await pool.query("SELECT id,direction,from_address,to_addresses,subject,is_read,created_at FROM admin_emails ORDER BY created_at DESC,id DESC LIMIT 200");res.json({emails:r.rows});}
+  try{const r=await pool.query("SELECT id,direction,from_address,to_addresses,subject,attachments,is_read,created_at FROM admin_emails ORDER BY created_at DESC,id DESC LIMIT 200");res.json({emails:r.rows});}
   catch(e){console.error("Admin email list:",e);res.status(500).json({error:"E-mails laden is mislukt."});}
 });
 app.get("/api/admin/emails/:id",requirePermission("site.save"),async(req,res)=>{
@@ -4326,7 +4327,22 @@ app.post("/api/admin/emails/send",requirePermission("site.save"),async(req,res)=
     const apiKey=process.env.RESEND_API_KEY,from=process.env.RESEND_FROM_EMAIL;
     if(!apiKey||!from||from==="onboarding@resend.dev")return res.status(503).json({error:"Stel RESEND_API_KEY en een geverifieerd RESEND_FROM_EMAIL in."});
     const to=String(req.body?.to||"").trim().slice(0,254),subject=String(req.body?.subject||"").trim().slice(0,240),textBody=String(req.body?.text||"").trim().slice(0,50000);
+    const parseRecipients=value=>String(value||"").split(/[;,]+/).map(x=>x.trim()).filter(Boolean);
+    const cc=parseRecipients(req.body?.cc),bcc=parseRecipients(req.body?.bcc),rawAttachments=Array.isArray(req.body?.attachments)?req.body.attachments:[];
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)||!subject||!textBody)return res.status(400).json({error:"Vul een geldig e-mailadres, onderwerp en bericht in."});
+    const recipients=[...cc,...bcc];if(recipients.length>20||recipients.some(x=>!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x)))return res.status(400).json({error:"Controleer de Cc- en Bcc-e-mailadressen."});
+    if(rawAttachments.length>10)return res.status(400).json({error:"Je kunt maximaal 10 bijlagen toevoegen."});
+    const allowedTypes=new Set(["image/jpeg","image/png","image/webp","image/gif","image/heic","application/pdf","application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","text/plain"]);
+    let attachmentTotal=0;
+    const attachments=rawAttachments.map(file=>{
+      const filename=String(file?.filename||"").replace(/[\\/\\r\\n]/g,"_").slice(0,180);
+      const mime=String(file?.content_type||"application/octet-stream").toLowerCase();
+      const content=String(file?.content||"");
+      if(!filename||!content||!allowedTypes.has(mime)||!/^[A-Za-z0-9+/]+={0,2}$/.test(content))throw new Error("Een bijlage heeft een ongeldig formaat.");
+      const size=Buffer.from(content,"base64").length;attachmentTotal+=size;
+      if(size>10*1024*1024||attachmentTotal>20*1024*1024)throw new Error("Bijlagen mogen maximaal 10 MB per bestand en 20 MB totaal zijn.");
+      return {filename,content,content_type:mime};
+    });
     const messageHtml=textBody.split(/\\r?\\n/).map(line=>escapeHtml(line)).join("<br>");
     const signatureText="\\n\\n—\\nHOMS TECH | Customer Support\\nwww.homs-tech.nl";
     const textWithSignature=textBody+signatureText;
@@ -4347,11 +4363,11 @@ app.post("/api/admin/emails/send",requirePermission("site.save"),async(req,res)=
         </tr>
       </table>`;
     const html=`<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.7;color:#263445">${messageHtml}${signatureHtml}</div>`;
-    const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({from,to:[to],subject,text:textWithSignature,html,reply_to:"mail@inbound.homs-tech.nl"})});
+    const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({from,to:[to],cc,bcc,subject,text:textWithSignature,html,reply_to:"mail@inbound.homs-tech.nl",attachments:attachments.map(x=>({filename:x.filename,content:x.content}))})});
     const data=await response.json().catch(()=>({}));
     if(!response.ok){console.error("Admin email send provider error:",response.status,JSON.stringify(data));return res.status(502).json({error:"E-mailprovider kon het bericht niet versturen."});}
-    await pool.query("INSERT INTO admin_emails(resend_email_id,direction,from_address,to_addresses,subject,text_body,html_body,is_read) VALUES($1,'outbound',$2,$3::jsonb,$4,$5,$6,TRUE)",[String(data.id||"sent-"+Date.now()+"-"+crypto.randomBytes(5).toString("hex")),from,JSON.stringify([to]),subject,textBody,html]);
-    res.json({success:true,to});
+    await pool.query("INSERT INTO admin_emails(resend_email_id,direction,from_address,to_addresses,subject,text_body,html_body,attachments,is_read) VALUES($1,'outbound',$2,$3::jsonb,$4,$5,$6,$7::jsonb,TRUE)",[String(data.id||"sent-"+Date.now()+"-"+crypto.randomBytes(5).toString("hex")),from,JSON.stringify([to,...cc,...bcc]),subject,textBody,html,JSON.stringify(attachments.map(x=>({filename:x.filename,content_type:x.content_type,size:Buffer.from(x.content,"base64").length}))) ]);
+    res.json({success:true,to,attachmentCount:attachments.length});
   }catch(e){console.error("Admin email send:",e);res.status(500).json({error:"E-mail versturen is mislukt."});}
 });
 app.get("/api/admin/invoices",requirePermission("site.save"),async(req,res)=>{try{const r=await pool.query("SELECT id,invoice_number,customer_name,customer_email,subtotal,vat_total,total,status,created_at FROM manual_invoices ORDER BY id DESC LIMIT 200");res.json({invoices:r.rows});}catch(e){console.error("Invoice list:",e);res.status(500).json({error:"Facturen laden is mislukt."});}});
