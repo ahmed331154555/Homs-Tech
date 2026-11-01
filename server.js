@@ -3666,7 +3666,8 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       req.body && req.body.phoneItem && typeof req.body.phoneItem === "object" &&
       !Array.isArray(req.body.phoneItem) &&
       Number.isInteger(Number(req.body.phoneIndex)) &&
-      Object.keys(req.body).length === 2;
+      req.body.phoneIdentity && typeof req.body.phoneIdentity === "object" &&
+      Object.keys(req.body).length === 3;
 
     if (isSinglePhonePatch) {
       const phoneIndex = Number(req.body.phoneIndex);
@@ -3685,9 +3686,10 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
         const existingPhone = phones[phoneIndex];
         const sameId = incomingPhone.id != null && existingPhone?.id != null &&
           String(incomingPhone.id) === String(existingPhone.id);
+        const expected = req.body.phoneIdentity || {};
         const sameLegacyIdentity = incomingPhone.id == null && existingPhone?.id == null &&
-          String(incomingPhone.name || "").trim() === String(existingPhone?.name || "").trim() &&
-          String(incomingPhone.brand || "").trim() === String(existingPhone?.brand || "").trim();
+          String(expected.name || "").trim() === String(existingPhone?.name || "").trim() &&
+          String(expected.brand || "").trim() === String(existingPhone?.brand || "").trim();
         if (!sameId && !sameLegacyIdentity) {
           return res.status(409).json({ error: "Dit product is ondertussen gewijzigd of verplaatst. Vernieuw de pagina om overschrijven te voorkomen." });
         }
