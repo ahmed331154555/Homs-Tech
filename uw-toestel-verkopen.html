@@ -436,6 +436,25 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
  .buyback-step .totalbar .primary{width:100%;white-space:normal}
  .buyback-side{grid-template-columns:1fr}
 }
+
+/* Progressive buyback questions: one active choice at a time */
+.dynamic-questions{display:flex;flex-direction:column;gap:10px;padding:14px 18px 4px}
+.dynamic-question{display:grid;grid-template-columns:1fr;gap:12px;margin:0;padding:15px;border:1px solid #e4eaf2;border-radius:14px;background:#fff}
+.dynamic-question-active{border-color:#b8d3fb;background:linear-gradient(180deg,#fff,#f8fbff);box-shadow:0 5px 16px rgba(15,75,145,.06)}
+.dynamic-question-title{font-size:14px;line-height:1.45}
+.dynamic-option-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.dynamic-option{display:flex;align-items:center;gap:10px;min-height:48px;padding:11px 13px;border:1px solid #dce4ee;border-radius:11px;background:#fff;color:#24364b;text-align:left;font-size:14px;font-weight:700;cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s}
+.dynamic-option:hover{border-color:#7eaff4;background:#f6faff}
+.dynamic-option.selected{border-color:#1677ff;background:#edf5ff;color:#075fe8;box-shadow:0 0 0 2px #1677ff18}
+.dynamic-option-radio{width:17px;height:17px;flex:none;border:1.7px solid #9aaabd;border-radius:50%;background:#fff}
+.dynamic-option.selected .dynamic-option-radio{border:5px solid #1677ff}
+.dynamic-question-complete{grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:11px 13px;background:#f8fafc;border-color:#e8edf3}
+.dynamic-question-complete .dynamic-question-title{font-size:12px;color:#62748a}
+.dynamic-question-complete .question-icon{background:#e6f7ee;color:#159653}
+.dynamic-answer-summary{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;color:#1b2e44}
+.dynamic-answer-summary button{border:0;background:#edf4ff;color:#075fe8;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:800}
+.dynamic-info-line{margin:0 0 0 4px;padding:8px 4px;border:0;font-size:12px;color:#52647a}
+@media(max-width:520px){.dynamic-questions{padding:12px 12px 4px;gap:9px}.dynamic-question{padding:13px;border-radius:12px}.dynamic-question-title{font-size:13px}.dynamic-option{min-height:46px;padding:10px;font-size:13px}.dynamic-question-complete{grid-template-columns:1fr;gap:8px}.dynamic-answer-summary{justify-content:space-between}}
 </style>
 
 </head>
@@ -681,18 +700,11 @@ function renderQuestion(q){
     if(!opts.length)return '';
     const isCondition=String(q.id||'')==='p2_condition' || String(q.label||'').toLowerCase().includes('conditie') || String(q.label||'').toLowerCase().includes('staat');
     const iconText=/opslag|storage/i.test(q.label)?'▤':/batterij|battery/i.test(q.label)?'ϟ':/scherm|display/i.test(q.label)?'▣':/behuizing|achterkant|glas/i.test(q.label)?'◇':isCondition?'✦':'✓';
-    return `<div class="dynamic-question ${isCondition?'dynamic-condition-question':''}">
+    return `<div class="dynamic-question dynamic-question-active ${isCondition?'dynamic-condition-question':''}">
       <div class="dynamic-question-title"><span class="question-icon">${iconText}</span><span>${esc(q.label)}${required?'<span class="dynamic-question-required">*</span>':''}</span></div>
-      <select class="dynamic-select" aria-label="${esc(q.label)}" onchange="setQuestionValue('${esc(q.id)}',this.value)">
-        <option value="">Maak een keuze</option>
-        ${opts.map(o=>{
-          const delta=Number(o.priceDelta||0);
-          const buyPrice=Number(o.buyPrice||0);
-          const hideProtocol4OptionPrices=selectedModel?.protocol==='protocol4';
-          const suffix=hideProtocol4OptionPrices?'':(isCondition&&buyPrice>0?' — '+money(buyPrice):(!isCondition&&delta?' — '+(delta>0?'+':'')+money(delta):''));
-          return `<option value="${esc(o.label)}" ${val===o.label?'selected':''}>${esc(o.label+suffix)}</option>`;
-        }).join('')}
-      </select>
+      <div class="dynamic-option-grid ${opts.length===2?'two-options':''}">
+        ${opts.map(o=>`<button type="button" class="dynamic-option ${val===o.label?'selected':''}" onclick="setQuestionValue('${esc(q.id)}','${esc(o.label)}')"><span class="dynamic-option-radio"></span><span>${esc(o.label)}</span></button>`).join('')}
+      </div>
     </div>`;
   }
   return '';
@@ -703,7 +715,18 @@ function renderDynamicQuestions(){
   const conditionQ=allQs.find(q=>{const l=String(q.label||'').toLowerCase();return l.includes('conditie')||l.includes('staat');});
   const qs=isKapotSelected()?allQs.filter(q=>q===conditionQ):allQs;
   if(!qs.length){box.innerHTML='<div style="padding:14px;background:#f8fafc;border-radius:12px;color:#64748b">Voor dit type zijn nog geen extra vragen ingesteld.</div>';return;}
-  box.innerHTML=qs.map(renderQuestion).join('');
+  const visible=[];
+  for(const q of qs){
+    if(q.type==='info'){visible.push(renderQuestion(q));continue;}
+    const answer=String(questionValue(q)||'').trim();
+    if(answer){
+      visible.push(`<div class="dynamic-question dynamic-question-complete"><div class="dynamic-question-title"><span class="question-icon">✓</span><span>${esc(q.label)}</span></div><div class="dynamic-answer-summary"><span>${esc(answer)}</span><button type="button" onclick="setQuestionValue('${esc(q.id)}','')">Wijzigen</button></div></div>`);
+      continue;
+    }
+    visible.push(renderQuestion(q));
+    break;
+  }
+  box.innerHTML=visible.join('');
 }
 function validateDynamicQuestions(){
   const allQs=selectedModel?.typeQuestions||[];
