@@ -3761,7 +3761,7 @@ app.put("/api/admin/site-section", async (req, res) => {
       general: ["homepage", "services", "why"],
       services: ["services"],
       repair: ["repairPage"],
-      categories: ["deviceCategories"],
+      categories: ["deviceCategories", "globalConditionDetails", "globalConditionOverviewImage"],
       used: ["usedPhones"],
       why: ["why"],
       gsm: ["gsmServices"]
@@ -3787,6 +3787,8 @@ app.put("/api/admin/site-section", async (req, res) => {
     }
     if (section === "services" && !Array.isArray(body.data.services)) return res.status(400).json({ error: "Ongeldige dienstenlijst." });
     if (section === "categories" && !Array.isArray(body.data.deviceCategories)) return res.status(400).json({ error: "Ongeldige categorielijst." });
+    if (section === "categories" && body.data.globalConditionDetails !== undefined && !Array.isArray(body.data.globalConditionDetails)) return res.status(400).json({ error: "Ongeldige conditiebeschrijvingen." });
+    if (section === "categories" && body.data.globalConditionOverviewImage !== undefined && typeof body.data.globalConditionOverviewImage !== "string") return res.status(400).json({ error: "Ongeldige conditie-afbeelding." });
     if (section === "used" && !Array.isArray(body.data.usedPhones)) return res.status(400).json({ error: "Ongeldige gebruikte telefoons." });
     if (section === "why" && !Array.isArray(body.data.why)) return res.status(400).json({ error: "Ongeldige voordelenlijst." });
     if (section === "gsm" && (!body.data.gsmServices || typeof body.data.gsmServices !== "object" || Array.isArray(body.data.gsmServices))) return res.status(400).json({ error: "Ongeldige GSM-diensten." });
