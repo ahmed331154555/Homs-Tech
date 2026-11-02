@@ -6,6 +6,7 @@ on:
       - feature/repair-quote-request-integration
       - build-gsm-system-2026-10-10
       - gsm-rebuild-no-firmware-2026-10-11
+      - fix/buyback-page-init-null-guard
   pull_request:
     branches:
       - feature/repair-quote-request-integration
