@@ -2356,7 +2356,7 @@ textarea{
   <div class="save-bar">
     <div>
       <div id="saveStatus" class="status">Wijzigingen nog niet opgeslagen</div>
-      <div class="small">✓ Wijzigingen worden opgeslagen wanneer jij op «Wijzigingen opslaan» drukt.</div>
+      <div class="small">✓ Wijzigingen worden automatisch opgeslagen. Je kunt ook handmatig opslaan.</div>
     </div>
 
     <button id="saveBtn" class="btn btn-green" onclick="save()" style="font-size:16px;padding:13px 25px">
@@ -7583,7 +7583,7 @@ async function save(isAuto=false,pageOverride=null){
       const upserts=(Array.isArray(payload.shopProducts)?payload.shopProducts:[]).filter(product=>product&&shopDirtyIds.has(String(product.id)));
       requestUrl="/api/admin/shop-products";
       requestPayload={upserts,deletes:[]};
-    }else if(changeRevision===saveRevision && savePage==="buyback"){
+    }else if(savePage==="buyback"){
       requestUrl="/api/admin/buyback-catalog";
       requestPayload={buybackCatalog:Array.isArray(payload.buybackCatalog)?payload.buybackCatalog:[],buybackPhones:Array.isArray(payload.buybackPhones)?payload.buybackPhones:[]};
     }
@@ -7607,12 +7607,12 @@ async function save(isAuto=false,pageOverride=null){
     // Use the exact data returned by the server (the persisted DB state).
     // Do not normalize again here, so Protocol 1–8 values cannot be reset
     // immediately after a successful save.
-    if(savePage==="phones"){
+    if(changeRevision===saveRevision && savePage==="phones"){
       if(Array.isArray(result.phones)) data.phones=result.phones;
       else if(Array.isArray(payload.phones)) data.phones=payload.phones;
-    }else if(savePage==="shop"){
+    }else if(changeRevision===saveRevision && savePage==="shop"){
       shopDirtyIds.clear();
-    }else if(savePage==="buyback"){
+    }else if(changeRevision===saveRevision && savePage==="buyback"){
       if(Array.isArray(result.buybackCatalog)) data.buybackCatalog=result.buybackCatalog;
       else data.buybackCatalog=payload.buybackCatalog;
       if(Array.isArray(result.buybackPhones)) data.buybackPhones=result.buybackPhones;
@@ -7623,7 +7623,7 @@ async function save(isAuto=false,pageOverride=null){
 
     // A successful server save is the source of truth. Clear the local phone draft
     // so an old IndexedDB snapshot cannot restore deleted or outdated products.
-    if(savePage==="phones"){
+    if(changeRevision===saveRevision && savePage==="phones"){
       phoneDraftCommitted=true;
       await clearPhoneDraft();
     }
