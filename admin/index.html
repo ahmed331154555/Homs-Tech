@@ -7534,11 +7534,26 @@ async function save(isAuto=false){
 
     // Shop saves should not clone the full site settings object (which may contain
     // many megabytes of unrelated page images). Snapshot only the edited catalog.
+    const sectionKeysByPage={
+      general:["homepage","services","why"],
+      services:["services"],
+      repair:["repairPage"],
+      categories:["deviceCategories"],
+      used:["usedPhones"],
+      why:["why"],
+      gsm:["gsmServices"]
+    };
+    const sectionKeys=sectionKeysByPage[currentPage];
+    if(!["shop","buyback","phones"].includes(currentPage) && !sectionKeys){
+      throw new Error("Voor deze pagina is geen veilige, afzonderlijke opslagroute ingesteld.");
+    }
     const payload=currentPage==="shop"
       ? {shopProducts:JSON.parse(JSON.stringify(Array.isArray(data.shopProducts)?data.shopProducts:[]))}
       : currentPage==="buyback"
         ? {buybackCatalog:JSON.parse(JSON.stringify(Array.isArray(data.buybackCatalog)?data.buybackCatalog:[])),buybackPhones:JSON.parse(JSON.stringify(Array.isArray(data.buybackPhones)?data.buybackPhones:[]))}
-        : JSON.parse(JSON.stringify(data));
+        : currentPage==="phones"
+          ? {phones:JSON.parse(JSON.stringify(Array.isArray(data.phones)?data.phones:[]))}
+          : Object.fromEntries(sectionKeys.filter(key=>Object.prototype.hasOwnProperty.call(data,key)).map(key=>[key,JSON.parse(JSON.stringify(data[key]))]));
     if(currentPage==="phones"){
       setStatus("Foto's verkleinen en product opslaan...","info");
       payload.phones=await compressPhoneCatalogPhotos(payload.phones||[]);
@@ -7555,6 +7570,10 @@ async function save(isAuto=false){
     // section when editing phones instead of the full site settings document.
     let requestUrl="/api/site";
     let requestPayload=currentPage==="phones" ? {phones:Array.isArray(payload.phones)?payload.phones:[]} : payload;
+    if(sectionKeys){
+      requestUrl="/api/admin/site-section";
+      requestPayload={section:currentPage,data:payload};
+    }
     if(currentPage==="shop"){
       const upserts=(Array.isArray(payload.shopProducts)?payload.shopProducts:[]).filter(product=>product&&shopDirtyIds.has(String(product.id)));
       requestUrl="/api/admin/shop-products";
@@ -7593,8 +7612,8 @@ async function save(isAuto=false){
       else data.buybackCatalog=payload.buybackCatalog;
       if(Array.isArray(result.buybackPhones)) data.buybackPhones=result.buybackPhones;
       else data.buybackPhones=payload.buybackPhones;
-    }else{
-      data=result.data || data;
+    }else if(result.data && typeof result.data==="object" && !Array.isArray(result.data)){
+      Object.assign(data,result.data);
     }
 
     // A successful server save is the source of truth. Clear the local phone draft
