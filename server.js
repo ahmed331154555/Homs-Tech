@@ -3665,6 +3665,45 @@ function preserveExistingCatalogPhotos(existingData, incomingData) {
   return incomingData;
 }
 
+// Isolated phone catalog save. Uses the same explicit transaction and row lock
+// as Shop product saves, while updating only data.phones (never all site settings).
+app.put("/api/admin/phone-catalog", requireSiteOrPhoneUpdate, async (req, res) => {
+  const body = req.body && typeof req.body === "object" && !Array.isArray(req.body) ? req.body : {};
+  if (Object.keys(body).length !== 1 || !Array.isArray(body.phones) || body.phones.length > 5000 ||
+      body.phones.some(phone => !phone || typeof phone !== "object" || Array.isArray(phone))) {
+    return res.status(400).json({ error: "Ongeldige telefooncatalogus-wijzigingen." });
+  }
+
+  let client;
+  try {
+    client = await pool.connect();
+    await client.query("BEGIN");
+    const locked = await client.query("SELECT data->'phones' AS phones FROM site_settings WHERE id=1 FOR UPDATE");
+    if (!locked.rows.length) throw new Error("Telefooncatalogus niet gevonden.");
+
+    const existing = {
+      phones: Array.isArray(locked.rows[0].phones) ? locked.rows[0].phones : []
+    };
+    const incoming = { phones: body.phones };
+    preserveExistingCatalogPhotos(existing, incoming);
+
+    const saved = await client.query(
+      "UPDATE site_settings SET data=jsonb_set(data, '{phones}', $1::jsonb, true) WHERE id=1 RETURNING data->'phones' AS phones",
+      [JSON.stringify(incoming.phones)]
+    );
+    await client.query("COMMIT");
+    return res.json({ success: true, phones: saved.rows[0]?.phones || [] });
+  } catch (error) {
+    if (client) {
+      try { await client.query("ROLLBACK"); } catch {}
+    }
+    console.error("Save phone catalog patch failed:", error);
+    return res.status(500).json({ error: "Telefooncatalogus kon niet worden opgeslagen." });
+  } finally {
+    if (client) client.release();
+  }
+});
+
 app.put("/api/admin/shop-products", requireSiteOrPhoneUpdate, async (req, res) => {
   const body = req.body || {};
   if (Object.keys(body).some(key => !["upserts", "deletes"].includes(key)) ||
