@@ -2356,7 +2356,7 @@ textarea{
   <div class="save-bar">
     <div>
       <div id="saveStatus" class="status">Wijzigingen nog niet opgeslagen</div>
-      <div class="small">✓ Wijzigingen worden automatisch opgeslagen. Je kunt ook handmatig opslaan.</div>
+      <div class="small">Wijzigingen worden pas opgeslagen wanneer je op “Wijzigingen opslaan” klikt.</div>
     </div>
 
     <button id="saveBtn" class="btn btn-green" onclick="save()" style="font-size:16px;padding:13px 25px">
@@ -7655,7 +7655,9 @@ async function save(isAuto=false,pageOverride=null){
   }finally{
     loading=false;
     autoSaveAgain=false;
-    if(pendingAutoSavePages.size){clearTimeout(autoSaveTimer);autoSaveTimer=setTimeout(()=>runNextAutoSave(),900);}
+    // Manual-save mode: do not schedule another save after this request.
+    pendingAutoSavePages.clear();
+    clearTimeout(autoSaveTimer);
   }
 }
 
@@ -8157,13 +8159,14 @@ function runNextAutoSave(){
   save(true,page);
 }
 function markChanged(){
+  // Manual-save mode: edits only mark the page as dirty.
+  // Never send a network save until the user clicks "Wijzigingen opslaan".
   schedulePhoneDraftSave();
   changeRevision++;
   pageChangeRevisions[currentPage]=(pageChangeRevisions[currentPage]||0)+1;
-  pendingAutoSavePages.add(currentPage);
-  setStatus("● Wijziging gedetecteerd — automatisch opslaan...","info");
+  pendingAutoSavePages.delete(currentPage);
   clearTimeout(autoSaveTimer);
-  autoSaveTimer=setTimeout(()=>runNextAutoSave(),1100);
+  setStatus("● Wijzigingen nog niet opgeslagen — klik op “Wijzigingen opslaan”.","info");
 }
 
 function setStatus(text,type){
