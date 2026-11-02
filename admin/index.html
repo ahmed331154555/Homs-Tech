@@ -5491,8 +5491,10 @@ function normalizeBuybackCatalog(){
 
   data.buybackCatalog=data.buybackCatalog.map(brand=>{
     brand=brand||{};
+    const legacyKey=brand._legacyKey||("brand:"+String(brand.name||"Nieuw merk").trim().toLowerCase());
     return {
-      id:brand.id||newBuybackId("brand"),
+      id:brand.id||("legacy-brand-"+stableCatalogHash(legacyKey)),
+      _legacyKey:legacyKey,
       name:String(brand.name||"Nieuw merk"),
       image:brand.image||brand.brandImage||"",
       types:Array.isArray(brand.types)?brand.types.filter(type=>type && typeof type==="object" && !Array.isArray(type)).map(type=>({
@@ -7621,7 +7623,7 @@ async function save(isAuto=false,pageOverride=null){
       const brands=catalogItemsChanged(payload.buybackCatalog,catalogSaveBaseline.buybackCatalog);
       const phones=catalogItemsChanged(payload.buybackPhones,catalogSaveBaseline.buybackPhones);
       const buybackUpserts=(buybackProtocolMigrationPending?payload.buybackPhones:phones.upserts).map(phone=>{const clean=cloneCatalogValue(phone);clean.protocol="protocol4";["protocol2","protocol3","protocol5","protocol6","protocol7","protocol8"].forEach(key=>delete clean[key]);return clean;});
-      requestPayload={brandUpserts:brands.upserts,brandDeletes:brands.deletes.map(x=>x.id),phoneUpserts:buybackUpserts,phoneDeletes:phones.deletes.map(x=>({id:x.id,_legacyKey:x._legacyKey||""}))};
+      requestPayload={brandUpserts:brands.upserts,brandDeletes:brands.deletes.map(x=>({id:x.id,_legacyKey:x._legacyKey||"",name:x.name||""})),phoneUpserts:buybackUpserts,phoneDeletes:phones.deletes.map(x=>({id:x.id,_legacyKey:x._legacyKey||""}))};
     }
     const r=await fetch(requestUrl,{
       method:"PUT",
