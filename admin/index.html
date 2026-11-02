@@ -2377,6 +2377,7 @@ let phoneIdentityMigrationPending=false;
 function stableCatalogHash(value){let hash=2166136261;for(let i=0;i<value.length;i++){hash^=value.charCodeAt(i);hash=Math.imul(hash,16777619);}return (hash>>>0).toString(36);}
 function cloneCatalogValue(value){return JSON.parse(JSON.stringify(value??[]));}
 function captureCatalogSaveBaseline(){catalogSaveBaseline={phones:cloneCatalogValue(data.phones),phoneFolders:cloneCatalogValue(data.phoneFolders),buybackCatalog:cloneCatalogValue(data.buybackCatalog),buybackPhones:cloneCatalogValue(data.buybackPhones)};}
+function ensurePhoneCatalogIds(){const counts=new Map();data.phones=(Array.isArray(data.phones)?data.phones:[]).map(phone=>{const base=JSON.stringify([String(phone.sku||""),String(phone.brand||"Apple"),String(phone.name||phone.model||""),String(phone.storage||""),String(phone.color||phone.colour||"")]);const n=counts.get(base)||0;counts.set(base,n+1);const key=phone._legacyKey||base+"#"+n;return {...phone,id:phone.id||("legacy-phone-"+stableCatalogHash(key)),_legacyKey:key};});}
 function catalogItemsChanged(current,baseline){const old=new Map((Array.isArray(baseline)?baseline:[]).filter(x=>x&&x.id!=null).map(x=>[String(x.id),x]));const next=Array.isArray(current)?current:[];const ids=next.filter(x=>x&&x.id!=null).map(x=>String(x.id));if(new Set(ids).size!==ids.length)throw new Error("Er staan dubbele product-ID’s in de catalogus. Opslaan is gestopt om producten niet door elkaar te halen.");const upserts=next.filter(x=>x&&x.id!=null&&(!old.has(String(x.id))||JSON.stringify(x)!==JSON.stringify(old.get(String(x.id)))));const nextIds=new Set(ids);const deletes=(Array.isArray(baseline)?baseline:[]).filter(x=>x&&x.id!=null&&!nextIds.has(String(x.id))).map(x=>({id:String(x.id),_legacyKey:x._legacyKey||"",sku:x.sku||"",name:x.name||x.model||"",brand:x.brand||""}));return {upserts,deletes};}
 let autoSaveTimer = null;
 let autoSaveAgain = false;
@@ -3498,6 +3499,7 @@ async function loadData(){
     }
 
     const phoneDraftRestored=await restorePhoneDraft();
+    ensurePhoneCatalogIds();
     renderAll();
 
     setStatus("✓ Gegevens geladen","success");
