@@ -48,6 +48,7 @@ async function withBuybackTransactionRetry(work, attempts = 5) {
   let lastError;
   for (let attempt = 1; attempt <= attempts; attempt++) {
     let client;
+    let attemptError;
     let transactionStarted = false;
     try {
       client = await pool.connect();
@@ -59,6 +60,7 @@ async function withBuybackTransactionRetry(work, attempts = 5) {
       return result;
     } catch (error) {
       lastError = error;
+      attemptError = error;
       if (client && transactionStarted) {
         try { await client.query("ROLLBACK"); } catch (_) { /* broken connection; release it below */ }
       }
@@ -66,7 +68,7 @@ async function withBuybackTransactionRetry(work, attempts = 5) {
       console.warn(`Buyback settings database connection failed (attempt ${attempt}/${attempts}); retrying the complete transaction.`);
       await wait(Math.min(1000 * attempt, 5000));
     } finally {
-      if (client) client.release(lastError && isRetryableDatabaseConnectionError(lastError) ? lastError : undefined);
+      if (client) client.release(attemptError && isRetryableDatabaseConnectionError(attemptError) ? attemptError : undefined);
     }
   }
   throw lastError;
