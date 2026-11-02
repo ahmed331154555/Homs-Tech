@@ -262,8 +262,9 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
         let changed = false;
         items = items.map(item => {
           if(String(item.type || "").toLowerCase() !== "shop") return item;
-          const id = Number(item.id);
-          const product = Number.isInteger(id) ? shopProducts[id] : null;
+          const rawId = item.id;
+          const numericId = typeof rawId === "number" || (typeof rawId === "string" && /^\d+$/.test(rawId));
+          const product = numericId ? shopProducts[Number(rawId)] : shopProducts.find(p => p && String(p.id) === String(rawId));
           if(!product) return item;
           const variants = Array.isArray(product.variants) ? product.variants : [];
           const variant = variants.find(v => String(v.id || v.sku || v.quality || "") === String(item.variantId || item.sku || ""));
