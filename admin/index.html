@@ -2413,6 +2413,7 @@ function canEditSite(){return hasPermission("site.save");}
 function canEditCurrentPage(){
   if(currentPage==="phones") return hasPermission("phones.update") || canEditSite();
   if(currentPage==="shop") return canEditSite();
+  if(currentPage==="buyback") return hasPermission("buyback.update") || canEditSite();
   if(currentPage==="repair") return hasPermission("repair_page.update") || canEditSite();
   return canEditSite();
 }
@@ -5628,7 +5629,8 @@ function deleteBuybackQuestionOption(qid,index){
 }
 
 function getBuybackBrand(){
-  return data.buybackCatalog.find(x=>x.id===selectedBuybackBrandId)||null;
+  const catalog=Array.isArray(data?.buybackCatalog)?data.buybackCatalog:[];
+  return catalog.find(x=>x&&x.id===selectedBuybackBrandId)||null;
 }
 function getBuybackType(){
   const b=getBuybackBrand();
@@ -5639,7 +5641,8 @@ function getBuybackModel(){
   return t ? (t.models||[]).find(x=>x.id===selectedBuybackModelId)||null : null;
 }
 function getBuybackPhoneById(id){
-  return data.buybackPhones.find(x=>x.id===id)||null;
+  const phones=Array.isArray(data?.buybackPhones)?data.buybackPhones:[];
+  return phones.find(x=>x&&x.id===id)||null;
 }
 
 function getSelectedBuybackPhone(){
