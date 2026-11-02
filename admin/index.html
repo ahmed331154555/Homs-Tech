@@ -5409,7 +5409,7 @@ function normalizeBuybackProtocol4(x){
 
 function normalizeBuybackPhones(){
   if(!Array.isArray(data.buybackPhones)) data.buybackPhones=[];
-  data.buybackPhones=data.buybackPhones.map((x,i)=>({
+  data.buybackPhones=data.buybackPhones.filter(x=>x && typeof x==="object" && !Array.isArray(x)).map((x,i)=>({
     id:x.id || ('buyback-'+Date.now()+'-'+i),
     name:x.name||'', brand:x.brand||'', image:x.image||'', price:Number(x.price||0), scrapPrice:Math.max(0,Number(x.scrapPrice??0)||0), active:x.active!==false,
     protocol:x.protocol==='protocol8'?'protocol8':(x.protocol==='protocol7'?'protocol7':(x.protocol==='protocol6'?'protocol6':(x.protocol==='protocol5'?'protocol5':(x.protocol==='protocol4'?'protocol4':(x.protocol==='protocol3'?'protocol3':(x.protocol==='protocol2'?'protocol2':'protocol1')))))),
@@ -5468,11 +5468,11 @@ function normalizeBuybackCatalog(){
       id:brand.id||newBuybackId("brand"),
       name:String(brand.name||"Nieuw merk"),
       image:brand.image||brand.brandImage||"",
-      types:Array.isArray(brand.types)?brand.types.map(type=>({
+      types:Array.isArray(brand.types)?brand.types.filter(type=>type && typeof type==="object" && !Array.isArray(type)).map(type=>({
         id:type.id||newBuybackId("type"),
         name:String(type.name||"Telefoon"),
         questions:Array.isArray(type.questions)?type.questions:[],
-        models:Array.isArray(type.models)?type.models.map(model=>({
+        models:Array.isArray(type.models)?type.models.filter(model=>model && typeof model==="object" && !Array.isArray(model)).map(model=>({
           id:model.id||newBuybackId("model"),
           name:String(model.name||"Nieuw model"),
           buybackId:model.buybackId||""
