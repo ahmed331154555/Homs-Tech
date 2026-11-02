@@ -3714,8 +3714,6 @@ app.put("/api/admin/phone-catalog", requireSiteOrPhoneUpdate, async (req, res) =
   finally{if(client)client.release();}
 });
 
-app.put("/api/admin/shop-products"
-
 app.put("/api/admin/shop-products", requireSiteOrPhoneUpdate, async (req, res) => {
   const body = req.body || {};
   if (Object.keys(body).some(key => !["upserts", "deletes"].includes(key)) ||
@@ -3801,8 +3799,6 @@ app.put("/api/admin/buyback-catalog", requireSiteOrPhoneUpdate, async (req, res)
   }catch(error){try{await client.query("ROLLBACK");}catch{}console.error("Save buyback catalog patch failed:",error);return res.status(400).json({error:error.message||"Inkoopcatalogus kon niet worden opgeslagen."});}
   finally{client.release();}
 });
-
-app.put("/api/admin/site-section"
 
 app.put("/api/admin/site-section", async (req, res) => {
   try {
