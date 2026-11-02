@@ -2373,6 +2373,8 @@ let data = {};
 let loading = false;
 let autoSaveTimer = null;
 let autoSaveAgain = false;
+let changeRevision = 0;
+const pendingAutoSavePages = new Set();
 let currentPage = (()=>{try{return localStorage.getItem("homsAdminCurrentPage")||"general";}catch{return "general";}})();
 let currentUser = {username:"",role:"admin",permissions:[]};
 let selectedBuybackBrandId = "";
@@ -2410,11 +2412,11 @@ const ADMIN_PERMISSION_LABELS = {
 
 function hasPermission(p){return currentUser.role==="superadmin"||currentUser.permissions.includes("*")||currentUser.permissions.includes(p);}
 function canEditSite(){return hasPermission("site.save");}
-function canEditCurrentPage(){
-  if(currentPage==="phones") return hasPermission("phones.update") || canEditSite();
-  if(currentPage==="shop") return canEditSite();
-  if(currentPage==="buyback") return hasPermission("buyback.update") || canEditSite();
-  if(currentPage==="repair") return hasPermission("repair_page.update") || canEditSite();
+function canEditCurrentPage(page=currentPage){
+  if(page==="phones") return hasPermission("phones.update") || canEditSite();
+  if(page==="shop") return canEditSite();
+  if(page==="buyback") return hasPermission("buyback.update") || canEditSite();
+  if(page==="repair") return hasPermission("repair_page.update") || canEditSite();
   return canEditSite();
 }
 function firstAllowedPage(){
@@ -7466,13 +7468,14 @@ async function compressPhoneCatalogPhotos(phones){
 
 /* ---------------- SAVE ---------------- */
 
-async function save(isAuto=false){
-  if(!canEditCurrentPage()){setStatus("✕ Je hebt geen toestemming om wijzigingen op te slaan.","error");return false;}
-  if(isAuto) autoSaveAgain=false;
-  if(loading) return false;
+async function save(isAuto=false,pageOverride=null){
+  const savePage=pageOverride||currentPage;
+  if(!canEditCurrentPage(savePage)){setStatus("✕ Je hebt geen toestemming om wijzigingen op te slaan.","error");return false;}
+  
+  if(loading){pendingAutoSavePages.add(savePage);autoSaveAgain=true;return false;}
   // Validate the phone currently being edited before persisting the catalog.
   // This is scoped to the phone page so unrelated admin sections keep their existing save flow.
-  if(currentPage==="shop"){
+  if(savePage==="shop"){
     ensureShopProducts();
     for(let i=0;i<data.shopProducts.length;i++){
       const product=data.shopProducts[i];
@@ -7506,6 +7509,8 @@ async function save(isAuto=false){
       return false;
     }
   }
+  pendingAutoSavePages.delete(savePage);
+  const saveRevision=changeRevision;
   loading=true;
   setStatus("Opslaan...","info");
 
@@ -7543,11 +7548,11 @@ async function save(isAuto=false){
       why:["why"],
       gsm:["gsmServices"]
     };
-    const sectionKeys=sectionKeysByPage[currentPage];
-    if(!["shop","buyback","phones"].includes(currentPage) && !sectionKeys){
+    const sectionKeys=sectionKeysByPage[savePage];
+    if(!["shop","buyback","phones"].includes(savePage) && !sectionKeys){
       throw new Error("Voor deze pagina is geen veilige, afzonderlijke opslagroute ingesteld.");
     }
-    const payload=currentPage==="shop"
+    const payload=savePage==="shop"
       ? {shopProducts:JSON.parse(JSON.stringify(Array.isArray(data.shopProducts)?data.shopProducts:[]))}
       : currentPage==="buyback"
         ? {buybackCatalog:JSON.parse(JSON.stringify(Array.isArray(data.buybackCatalog)?data.buybackCatalog:[])),buybackPhones:JSON.parse(JSON.stringify(Array.isArray(data.buybackPhones)?data.buybackPhones:[]))}
@@ -7572,7 +7577,7 @@ async function save(isAuto=false){
     let requestPayload=currentPage==="phones" ? {phones:Array.isArray(payload.phones)?payload.phones:[]} : payload;
     if(sectionKeys){
       requestUrl="/api/admin/site-section";
-      requestPayload={section:currentPage,data:payload};
+      requestPayload={section:savePage,data:payload};
     }
     if(currentPage==="shop"){
       const upserts=(Array.isArray(payload.shopProducts)?payload.shopProducts:[]).filter(product=>product&&shopDirtyIds.has(String(product.id)));
@@ -7584,7 +7589,7 @@ async function save(isAuto=false){
     }
     const r=await fetch(requestUrl,{
       method:"PUT",
-      headers:{"Content-Type":"application/json","Accept":"application/json","X-Homs-Admin-Section":currentPage},
+      headers:{"Content-Type":"application/json","Accept":"application/json","X-Homs-Admin-Section":savePage},
       credentials:"same-origin",
       body:JSON.stringify(requestPayload)
     });
@@ -7612,7 +7617,7 @@ async function save(isAuto=false){
       else data.buybackCatalog=payload.buybackCatalog;
       if(Array.isArray(result.buybackPhones)) data.buybackPhones=result.buybackPhones;
       else data.buybackPhones=payload.buybackPhones;
-    }else if(result.data && typeof result.data==="object" && !Array.isArray(result.data)){
+    }else if(changeRevision===saveRevision && result.data && typeof result.data==="object" && !Array.isArray(result.data)){
       Object.assign(data,result.data);
     }
 
@@ -7634,7 +7639,8 @@ async function save(isAuto=false){
     else if(currentPage==="why") renderWhy();
     else if(currentPage==="gsm") renderGsmServices();
 
-    setStatus("✓ Alle wijzigingen zijn succesvol opgeslagen","success");
+    if(changeRevision===saveRevision) setStatus("✓ Alle wijzigingen zijn succesvol opgeslagen","success");
+    else setStatus("● Nieuwe wijzigingen worden direct hierna opgeslagen...","info");
     return true;
   }catch(e){
     setStatus("✕ Opslaan mislukt: "+e.message,"error");
@@ -7642,6 +7648,7 @@ async function save(isAuto=false){
   }finally{
     loading=false;
     autoSaveAgain=false;
+    if(pendingAutoSavePages.size){clearTimeout(autoSaveTimer);autoSaveTimer=setTimeout(()=>runNextAutoSave(),900);}
   }
 }
 
@@ -8134,16 +8141,21 @@ function renderAll(){
   showPage(currentPage);
 }
 
+function runNextAutoSave(){
+  autoSaveTimer=null;
+  if(loading){autoSaveAgain=true;return;}
+  const page=pendingAutoSavePages.values().next().value;
+  if(!page)return;
+  pendingAutoSavePages.delete(page);
+  save(true,page);
+}
 function markChanged(){
   schedulePhoneDraftSave();
-  setStatus(
-    "● Wijziging موجودة — اضغط «Wijzigingen opslaan» للحفظ.",
-    "info"
-  );
-  // Geen autosave meer. De beheerder kan eerst meerdere velden aanpassen
-  // en pas daarna één keer op «Wijzigingen opslaan» drukken.
+  changeRevision++;
+  pendingAutoSavePages.add(currentPage);
+  setStatus("● Wijziging gedetecteerd — automatisch opslaan...","info");
   clearTimeout(autoSaveTimer);
-  autoSaveAgain = false;
+  autoSaveTimer=setTimeout(()=>runNextAutoSave(),1100);
 }
 
 function setStatus(text,type){
