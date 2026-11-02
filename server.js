@@ -31,6 +31,17 @@ pool.on("error", (error) => {
   console.error("Unexpected idle PostgreSQL client error:", error.message);
 });
 
+// Checked-out pg clients are not covered by Pool's idle-client error handler.
+// Attach a listener immediately so a transient database restart cannot crash
+// the entire Node process with an unhandled Client "error" event.
+async function acquireDatabaseClient() {
+  const client = await pool.connect();
+  client.on("error", (error) => {
+    console.error("Checked-out PostgreSQL client connection error:", error.message);
+  });
+  return client;
+}
+
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function queryWithConnectionRetry(sql, params, attempts = 4) {
@@ -1028,7 +1039,7 @@ app.post("/api/admin/device-register/:id/operations",requirePermission("device_r
     if(parts.some(p=>!p.name||!Number.isFinite(p.cost)))return res.status(400).json({error:"Controleer de onderdelen en hun kosten."});
     const allowed=device.rows[0].device_type==="customer_repair"?customerDeviceStatuses:commercialDeviceStatuses;
     if(status&&!allowed.has(status))return res.status(400).json({error:"Ongeldige status."});
-    const client=await pool.connect();try{await client.query("BEGIN");
+    const client=await acquireDatabaseClient();try{await client.query("BEGIN");
       const inserted=await client.query("INSERT INTO device_register_operations(device_id,operation_type,status,description,parts,additional_cost,sale_price) VALUES($1,$2,$3,$4,$5::jsonb,$6,$7) RETURNING *",[id,operationType,status,description,JSON.stringify(parts),additionalCost,salePrice]);
       if(status)await client.query("UPDATE device_register SET status=$2,updated_at=NOW(),sale_price=CASE WHEN $2='تم البيع' AND $3>0 THEN $3 ELSE sale_price END WHERE id=$1",[id,status,salePrice]);
       else await client.query("UPDATE device_register SET updated_at=NOW() WHERE id=$1",[id]);
@@ -1093,7 +1104,7 @@ app.get("/api/firmware/download/:id", async (req,res) => {
       const returnTo="/api/firmware/download/"+id;
       return res.redirect(302,"/account.html?returnTo="+encodeURIComponent(returnTo));
     }
-    client=await pool.connect();
+    client=await acquireDatabaseClient();
     await client.query("BEGIN");
     const result=await client.query("UPDATE firmware_items SET download_count=download_count+1 WHERE id=$1 AND kind='file' RETURNING id,name,file_name,mime_type,file_data,download_url",[id]);
     if(!result.rows.length){await client.query("ROLLBACK");return res.status(404).send("Firmware file not found");}
@@ -1387,7 +1398,7 @@ app.post("/api/customer/register", async (req, res) => {
     const passwordHash = await hashPassword(String(password));
     const code = String(crypto.randomInt(100000, 1000000));
     const codeHash = crypto.createHash("sha256").update(code).digest("hex");
-    const client = await pool.connect();
+    const client = await acquireDatabaseClient();
     let customer;
     try {
       await client.query("BEGIN");
@@ -1562,7 +1573,7 @@ app.post("/api/customer/reset-password", async (req, res) => {
 
     const reset = result.rows[0];
     const passwordHash = await hashPassword(password);
-    const client = await pool.connect();
+    const client = await acquireDatabaseClient();
     try {
       await client.query("BEGIN");
       const locked = await client.query(
@@ -2333,7 +2344,7 @@ function priceProductFromCatalog(data, item) {
 }
 
 async function deductPaidOrderInventory(orderId) {
-  const client = await pool.connect();
+  const client = await acquireDatabaseClient();
   try {
     await client.query('BEGIN');
     const result = await client.query('SELECT id, items, payment_status, inventory_deducted_at FROM webshop_orders WHERE id=$1 FOR UPDATE', [orderId]);
@@ -3676,7 +3687,7 @@ app.put("/api/admin/phone-catalog", requireSiteOrPhoneUpdate, async (req, res) =
 
   let client;
   try {
-    client = await pool.connect();
+    client = await acquireDatabaseClient();
     await client.query("BEGIN");
     const locked = await client.query("SELECT data->'phones' AS phones FROM site_settings WHERE id=1 FOR UPDATE");
     if (!locked.rows.length) throw new Error("Telefooncatalogus niet gevonden.");
@@ -3724,7 +3735,7 @@ app.put("/api/admin/shop-products", requireSiteOrPhoneUpdate, async (req, res) =
     if (!id || id.length > 160 || ids.has(id)) return res.status(400).json({ error: "Ongeldige of dubbele Shop-product-ID." });
     ids.add(id);
   }
-  const client = await pool.connect();
+  const client = await acquireDatabaseClient();
   try {
     await client.query("BEGIN");
     const locked = await client.query("SELECT data->'shopProducts' AS products FROM site_settings WHERE id=1 FOR UPDATE");
@@ -3767,7 +3778,7 @@ app.put("/api/admin/buyback-catalog", requireSiteOrPhoneUpdate, async (req, res)
   if (Object.keys(body).length !== 2 || !Array.isArray(body.buybackCatalog) || !Array.isArray(body.buybackPhones) || body.buybackCatalog.length > 5000 || body.buybackPhones.length > 5000) {
     return res.status(400).json({ error: "Ongeldige inkoopcatalogus-wijzigingen." });
   }
-  const client = await pool.connect();
+  const client = await acquireDatabaseClient();
   try {
     await client.query("BEGIN");
     const locked = await client.query("SELECT data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones FROM site_settings WHERE id=1 FOR UPDATE");
@@ -3834,7 +3845,7 @@ app.put("/api/admin/site-section", async (req, res) => {
     if (section === "repair" && (!body.data.repairPage || typeof body.data.repairPage !== "object" || Array.isArray(body.data.repairPage))) return res.status(400).json({ error: "Ongeldige reparatiepagina." });
     if (section === "general" && (!body.data.homepage || typeof body.data.homepage !== "object" || Array.isArray(body.data.homepage))) return res.status(400).json({ error: "Ongeldige homepage-instellingen." });
 
-    const client = await pool.connect();
+    const client = await acquireDatabaseClient();
     try {
       await client.query("BEGIN");
       const locked = await client.query("SELECT data FROM site_settings WHERE id = 1 FOR UPDATE");
