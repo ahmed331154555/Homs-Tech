@@ -6207,12 +6207,10 @@ function renderBuybackModelEditor(){
         <div class="field"><label>Basis inkoopprijs (€)</label><input type="number" step="1" value="${Number(phone.price||0)}" oninput="updateSelectedBuybackPhoneField('price',this.value)"></div>
         <div class="field"><label>Scrapprijs / prijs voor onderdelen (€)</label><input type="number" min="0" step="1" value="${Number(phone.scrapPrice||0)}" oninput="updateSelectedBuybackPhoneField('scrapPrice',this.value)"><div class="small">Wordt gebruikt als de klant aangeeft dat het toestel kapot is.</div></div>
         <div class="field"><label>Protocol voor dit toestel</label><div class="buyback-protocol-fixed"><strong>Protocol 4 — iPhone / ontgrendeld</strong><div class="small">Alle inkoopmodellen gebruiken dit protocol.</div></div></div>
-        <div class="field"><label>Website</label></select></div>
         <div class="field"><label>Website</label><label class="buyback-check-v5"><input type="checkbox" ${phone.active!==false?'checked':''} onchange="updateSelectedBuybackPhoneField('active',this.checked);renderBuybackPhones()"> Tonen op Uw toestel verkopen</label></div>
         <div class="field buyback-photo-v5"><label>📷 Foto van toestel</label><div class="buyback-photo-line-v5">${phone.image?`<img src="${esc(phone.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen foto</div>'}<input type="file" accept="image/*" onchange="handleBuybackImageForModel(event)">${phone.image?'<button type="button" class="btn btn-light" onclick="removeBuybackModelImage()">Verwijder foto</button>':''}</div></div>
       </div>
       ${renderProtocol4Settings(phone)}
-      <div id="buybackOptionsArea"
       <div id="buybackOptionsArea" class="buyback-model-options" style="display:${phone.protocol==='protocol2'||phone.protocol==='protocol3'||phone.protocol==='protocol4'||phone.protocol==='protocol5'||phone.protocol==='protocol6'||phone.protocol==='protocol8'||phone.protocol==='protocol7'?'none':(buybackOptionsOpen?'block':'none')}">
         ${buybackOptionEditorForModel(phone,'Opslag','storageOptions')}
         ${buybackOptionEditorForModel(phone,'Conditie','conditionOptions')}
