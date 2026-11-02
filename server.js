@@ -33,6 +33,45 @@ pool.on("error", (error) => {
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+function isRetryableDatabaseConnectionError(error) {
+  return [
+    "ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "EPIPE",
+    "57P01", "57P02", "57P03", "08000", "08003", "08006",
+    "08001", "08004", "08007", "08P01"
+  ].includes(error?.code) ||
+    /connection terminated unexpectedly|connection closed|connection timeout|socket disconnected before secure TLS|consist(ent)? recovery state has not been reached|database system is not yet accepting connections/i.test(String(error?.message || ""));
+}
+
+// Retry the complete, idempotent Buyback settings replacement as one transaction.
+// A failed SELECT/UPDATE never leaves a partially applied settings save.
+async function withBuybackTransactionRetry(work, attempts = 5) {
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    let client;
+    let transactionStarted = false;
+    try {
+      client = await pool.connect();
+      await client.query("BEGIN");
+      transactionStarted = true;
+      const result = await work(client);
+      await client.query("COMMIT");
+      transactionStarted = false;
+      return result;
+    } catch (error) {
+      lastError = error;
+      if (client && transactionStarted) {
+        try { await client.query("ROLLBACK"); } catch (_) { /* broken connection; release it below */ }
+      }
+      if (!isRetryableDatabaseConnectionError(error) || attempt === attempts) throw error;
+      console.warn(`Buyback settings database connection failed (attempt ${attempt}/${attempts}); retrying the complete transaction.`);
+      await wait(Math.min(1000 * attempt, 5000));
+    } finally {
+      if (client) client.release(lastError && isRetryableDatabaseConnectionError(lastError) ? lastError : undefined);
+    }
+  }
+  throw lastError;
+}
+
 async function queryWithConnectionRetry(sql, params, attempts = 4) {
   let lastError;
   for (let attempt = 1; attempt <= attempts; attempt++) {
@@ -3740,30 +3779,42 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
     Object.keys(req.body).length === 2;
 
     if (isBuybackCatalogPatch) {
-    const currentBuyback = await queryWithConnectionRetry(
-      "SELECT data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones FROM site_settings WHERE id = 1",
-      [],
-      4
-    );
-    const incomingBuyback = preserveExistingBuybackPhotos({
-      buybackCatalog: currentBuyback.rows[0]?.catalog || [],
-      buybackPhones: currentBuyback.rows[0]?.phones || []
-    }, {
-      buybackCatalog: req.body.buybackCatalog,
-      buybackPhones: req.body.buybackPhones
-    });
+      const savedBuyback = await withBuybackTransactionRetry(async (client) => {
+        // Lock the settings row so simultaneous admin saves cannot overwrite each other.
+        const currentBuyback = await client.query(
+          "SELECT data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones FROM site_settings WHERE id = 1 FOR UPDATE"
+        );
+        if (!currentBuyback.rows.length) {
+          const missing = new Error("Site settings record is missing.");
+          missing.code = "SITE_SETTINGS_MISSING";
+          throw missing;
+        }
 
-    const savedBuyback = await queryWithConnectionRetry(
-      "UPDATE site_settings SET data = jsonb_set(jsonb_set(data, '{buybackCatalog}', $1::jsonb, true), '{buybackPhones}', $2::jsonb, true) WHERE id = 1 RETURNING data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones",
-      [JSON.stringify(incomingBuyback.buybackCatalog), JSON.stringify(incomingBuyback.buybackPhones)],
-      4
-    );
-    if (!savedBuyback.rows.length) throw new Error("Site settings record is missing.");
-    return res.json({
-      success: true,
-      buybackCatalog: savedBuyback.rows[0].catalog || [],
-      buybackPhones: savedBuyback.rows[0].phones || []
-    });
+        const incomingBuyback = preserveExistingBuybackPhotos({
+          buybackCatalog: currentBuyback.rows[0].catalog || [],
+          buybackPhones: currentBuyback.rows[0].phones || []
+        }, {
+          buybackCatalog: req.body.buybackCatalog,
+          buybackPhones: req.body.buybackPhones
+        });
+
+        const saved = await client.query(
+          "UPDATE site_settings SET data = jsonb_set(jsonb_set(data, '{buybackCatalog}', $1::jsonb, true), '{buybackPhones}', $2::jsonb, true) WHERE id = 1 RETURNING data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones",
+          [JSON.stringify(incomingBuyback.buybackCatalog), JSON.stringify(incomingBuyback.buybackPhones)]
+        );
+        if (!saved.rows.length) {
+          const missing = new Error("Site settings record is missing.");
+          missing.code = "SITE_SETTINGS_MISSING";
+          throw missing;
+        }
+        return saved.rows[0];
+      }, 5);
+
+      return res.json({
+        success: true,
+        buybackCatalog: savedBuyback.catalog || [],
+        buybackPhones: savedBuyback.phones || []
+      });
     }
 
     const isShopCatalogPatch = section === "shop" &&
@@ -3809,9 +3860,19 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
 
     res.json({ success: true, data: incoming });
   } catch (error) {
-    console.error("Save site settings failed:", error);
+    console.error("Save site settings failed:", {
+      code: error?.code || "UNKNOWN",
+      message: String(error?.message || "Unknown error").slice(0, 500)
+    });
     if (!res.headersSent) {
-      res.status(500).json({ error: "Could not save settings" });
+      const retryable = isRetryableDatabaseConnectionError(error);
+      const status = error?.code === "SITE_SETTINGS_MISSING" ? 404 : retryable ? 503 : 500;
+      const message = error?.code === "SITE_SETTINGS_MISSING"
+        ? "Websitegegevens ontbreken in de database. Er zijn geen gegevens gewijzigd."
+        : retryable
+          ? "De databaseverbinding is tijdelijk onderbroken. Probeer opnieuw; je ingevoerde gegevens zijn niet bevestigd als opgeslagen."
+          : "Opslaan is mislukt door een serverfout. Je ingevoerde gegevens zijn niet bevestigd als opgeslagen.";
+      res.status(status).json({ error: message });
     }
   }
 });
