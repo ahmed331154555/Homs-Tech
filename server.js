@@ -52,6 +52,14 @@ async function withBuybackTransactionRetry(work, attempts = 5) {
     let transactionStarted = false;
     try {
       client = await pool.connect();
+      // A checked-out pg client can emit an idle socket error between queries.
+      // Always handle that event so a transient database disconnect cannot crash Node.
+      client.on("error", (error) => {
+        console.warn("Buyback PostgreSQL client connection dropped:", {
+          code: error?.code || "UNKNOWN",
+          message: String(error?.message || "Unknown connection error").slice(0, 300)
+        });
+      });
       await client.query("BEGIN");
       transactionStarted = true;
       const result = await work(client);
