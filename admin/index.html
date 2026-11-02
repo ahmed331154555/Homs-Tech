@@ -2371,6 +2371,13 @@ textarea{
 
 let data = {};
 let loading = false;
+let catalogSaveBaseline={phones:[],phoneFolders:[],buybackCatalog:[],buybackPhones:[]};
+let buybackProtocolMigrationPending=false;
+let phoneIdentityMigrationPending=false;
+function stableCatalogHash(value){let hash=2166136261;for(let i=0;i<value.length;i++){hash^=value.charCodeAt(i);hash=Math.imul(hash,16777619);}return (hash>>>0).toString(36);}
+function cloneCatalogValue(value){return JSON.parse(JSON.stringify(value??[]));}
+function captureCatalogSaveBaseline(){catalogSaveBaseline={phones:cloneCatalogValue(data.phones),phoneFolders:cloneCatalogValue(data.phoneFolders),buybackCatalog:cloneCatalogValue(data.buybackCatalog),buybackPhones:cloneCatalogValue(data.buybackPhones)};}
+function catalogItemsChanged(current,baseline){const old=new Map((Array.isArray(baseline)?baseline:[]).filter(x=>x&&x.id!=null).map(x=>[String(x.id),x]));const next=Array.isArray(current)?current:[];const ids=next.filter(x=>x&&x.id!=null).map(x=>String(x.id));if(new Set(ids).size!==ids.length)throw new Error("Er staan dubbele product-ID’s in de catalogus. Opslaan is gestopt om producten niet door elkaar te halen.");const upserts=next.filter(x=>x&&x.id!=null&&(!old.has(String(x.id))||JSON.stringify(x)!==JSON.stringify(old.get(String(x.id)))));const nextIds=new Set(ids);const deletes=(Array.isArray(baseline)?baseline:[]).filter(x=>x&&x.id!=null&&!nextIds.has(String(x.id))).map(x=>({id:String(x.id),_legacyKey:x._legacyKey||"",sku:x.sku||"",name:x.name||x.model||"",brand:x.brand||""}));return {upserts,deletes};}
 let autoSaveTimer = null;
 let autoSaveAgain = false;
 let changeRevision = 0;
@@ -3239,8 +3246,14 @@ function normalizeData(){
     image:String(x?.image||"")
   })).filter(x=>x.model);
 
+  const legacyPhoneKeyCounts=new Map();
   data.phones=data.phones.map(x=>{
+    const legacyBase=JSON.stringify([String(x.sku||""),String(x.brand||"Apple"),String(x.name||x.model||""),String(x.storage||""),String(x.color||x.colour||"")]);
+    const legacyOccurrence=legacyPhoneKeyCounts.get(legacyBase)||0;legacyPhoneKeyCounts.set(legacyBase,legacyOccurrence+1);
+    const legacyKey=x._legacyKey||legacyBase+"#"+legacyOccurrence;
     const phone={
+      id:x.id||("legacy-phone-"+stableCatalogHash(legacyKey)),
+      _legacyKey:legacyKey,
       // Preserve legacy photo fields when rebuilding normalized admin product records.
       image:x.image || "",
       imageUrl:x.imageUrl || "",
@@ -3463,9 +3476,12 @@ async function loadData(){
     const loadedData=await r.json();
     if(!loadedData || typeof loadedData!=="object" || Array.isArray(loadedData)) throw new Error("De server heeft ongeldige websitegegevens teruggestuurd.");
     data=loadedData;
+    buybackProtocolMigrationPending=Array.isArray(loadedData.buybackPhones)&&loadedData.buybackPhones.some(p=>p&&(p.protocol!=="protocol4"||["protocol2","protocol3","protocol5","protocol6","protocol7","protocol8"].some(k=>p[k]!=null)));
+    phoneIdentityMigrationPending=Array.isArray(loadedData.phones)&&loadedData.phones.some(p=>p&&p.id==null);
     buybackCatalogDeleteLock=false;
 
     normalizeData();
+    captureCatalogSaveBaseline();
 
     // The guided setup wizard is a temporary editor state, not product data.
     // Older saves may have persisted setupWizard=true and reopened the same
@@ -4330,6 +4346,7 @@ function addPhoneInFolder(group,model){
   const cleanGroup=String(group||'Overige').trim()||'Overige';
   const cleanModel=String(model||'Nieuwe telefoon').trim()||'Nieuwe telefoon';
   data.phones.push({
+    id:"phone-"+Date.now()+"-"+Math.random().toString(36).slice(2,8),
     name:cleanModel,brand:cleanGroup,price:"",storage:"",color:"",
     condition:"Zichtbaar gebruikt",warranty:"12 maanden",description:"",subtitle:"",
     sku:"",stock:0,category:"Smartphones",connectivity:"",processor:"",memory:"",
@@ -5020,6 +5037,8 @@ function duplicatePhone(i){
   if(!source) return;
   // Clone the complete product, including option settings and photos, without sharing nested objects.
   const copy=JSON.parse(JSON.stringify(source));
+  copy.id="phone-"+Date.now()+"-"+Math.random().toString(36).slice(2,8);
+  delete copy._legacyKey;
   const baseName=String(source.name||"Telefoon").trim()||"Telefoon";
   copy.name=baseName+" (kopie)";
   copy.sku="";
@@ -5418,14 +5437,8 @@ function normalizeBuybackPhones(){
   data.buybackPhones=data.buybackPhones.filter(x=>x && typeof x==="object" && !Array.isArray(x)).map((x,i)=>({
     id:x.id || ('buyback-'+Date.now()+'-'+i),
     name:x.name||'', brand:x.brand||'', image:x.image||'', price:Number(x.price||0), scrapPrice:Math.max(0,Number(x.scrapPrice??0)||0), active:x.active!==false,
-    protocol:x.protocol==='protocol8'?'protocol8':(x.protocol==='protocol7'?'protocol7':(x.protocol==='protocol6'?'protocol6':(x.protocol==='protocol5'?'protocol5':(x.protocol==='protocol4'?'protocol4':(x.protocol==='protocol3'?'protocol3':(x.protocol==='protocol2'?'protocol2':'protocol1')))))),
-    protocol2:normalizeBuybackProtocol2(x),
-    protocol3:normalizeBuybackProtocol3(x),
+    protocol:"protocol4",
     protocol4:normalizeBuybackProtocol4(x),
-    protocol5:normalizeBuybackProtocol5(x),
-    protocol6:normalizeBuybackProtocol6(x),
-    protocol7:normalizeBuybackProtocol7(x),
-    protocol8:normalizeBuybackProtocol8(x),
     storageOptions:Array.isArray(x.storageOptions)?x.storageOptions:[
       {label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}
     ],
@@ -5813,7 +5826,7 @@ function renderBuybackPhones(){
 
 function updateBuybackProtocol(value){
   const phone=getSelectedBuybackPhone();if(!phone)return;
-  phone.protocol=value==='protocol8'?'protocol8':(value==='protocol7'?'protocol7':(value==='protocol6'?'protocol6':(value==='protocol5'?'protocol5':(value==='protocol4'?'protocol4':(value==='protocol3'?'protocol3':(value==='protocol2'?'protocol2':'protocol1'))))));
+  phone.protocol="protocol4";
   if(phone.protocol==='protocol2') phone.protocol2=normalizeBuybackProtocol2(phone);
   if(phone.protocol==='protocol3') phone.protocol3=normalizeBuybackProtocol3(phone);
   if(phone.protocol==='protocol4') phone.protocol4=normalizeBuybackProtocol4(phone);
@@ -6189,15 +6202,17 @@ function renderBuybackModelEditor(){
       </div>
       <div class="grid" style="margin-top:15px">
         <div class="field"><label>Merk</label><input value="${esc(b.name)}" oninput="renameBuybackBrand(this.value)"></div>
-        <div class="field"><label>📷 Afbeelding van merk</label><div class="buyback-photo-line-v5">${b.image?`<img src="${esc(b.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen merkafbeelding</div>'}<input type="file" accept="image/*" onchange="handleBuybackBrandImage(event)"></div></div>
+        <div class="field"><label>📷 Afbeelding van merk</label><div class="buyback-photo-line-v5">${b.image?`<img src="${esc(b.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen merkafbeelding</div>'}<input type="file" accept="image/*" onchange="handleBuybackBrandImage(event)">${b.image?'<button type="button" class="btn btn-light" onclick="removeBuybackBrandImage()">Verwijder foto</button>':''}</div></div>
         <div class="field"><label>Model</label><input value="${esc(phone.name||m.name)}" oninput="renameBuybackModel(this.value)"></div>
         <div class="field"><label>Basis inkoopprijs (€)</label><input type="number" step="1" value="${Number(phone.price||0)}" oninput="updateSelectedBuybackPhoneField('price',this.value)"></div>
         <div class="field"><label>Scrapprijs / prijs voor onderdelen (€)</label><input type="number" min="0" step="1" value="${Number(phone.scrapPrice||0)}" oninput="updateSelectedBuybackPhoneField('scrapPrice',this.value)"><div class="small">Wordt gebruikt als de klant aangeeft dat het toestel kapot is.</div></div>
-        <div class="field"><label>Protocol voor dit toestel</label><select onchange="updateBuybackProtocol(this.value)"><option value="protocol1" ${phone.protocol!=='protocol2'&&phone.protocol!=='protocol3'&&phone.protocol!=='protocol4'&&phone.protocol!=='protocol5'&&phone.protocol!=='protocol6'&&phone.protocol!=='protocol8'&&phone.protocol!=='protocol7'?'selected':''}>Protocol 1 — bestaand</option><option value="protocol2" ${phone.protocol==='protocol2'?'selected':''}>Protocol 2 — nieuwe controle</option><option value="protocol3" ${phone.protocol==='protocol3'?'selected':''}>Protocol 3 — Watch / uitgebreid</option><option value="protocol4" ${phone.protocol==='protocol4'?'selected':''}>Protocol 4 — iPhone / ontgrendeld</option><option value="protocol5" ${phone.protocol==='protocol5'?'selected':''}>Protocol 5 — iPad / Wi-Fi & Cellular</option><option value="protocol6" ${phone.protocol==='protocol6'?'selected':''}>Protocol 6 — Samsung Galaxy / RAM & batterijstatus</option><option value="protocol7" ${phone.protocol==='protocol7'?'selected':''}>Protocol 7 — Samsung Tab / Wi-Fi & tablet</option><option value="protocol8" ${phone.protocol==='protocol8'?'selected':''}>Protocol 8 — MacBook Pro / uitgebreide configuratie</option></select></div>
+        <div class="field"><label>Protocol voor dit toestel</label><div class="buyback-protocol-fixed"><strong>Protocol 4 — iPhone / ontgrendeld</strong><div class="small">Alle inkoopmodellen gebruiken dit protocol.</div></div></div>
+        <div class="field"><label>Website</label></select></div>
         <div class="field"><label>Website</label><label class="buyback-check-v5"><input type="checkbox" ${phone.active!==false?'checked':''} onchange="updateSelectedBuybackPhoneField('active',this.checked);renderBuybackPhones()"> Tonen op Uw toestel verkopen</label></div>
-        <div class="field buyback-photo-v5"><label>📷 Foto van toestel</label><div class="buyback-photo-line-v5">${phone.image?`<img src="${esc(phone.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen foto</div>'}<input type="file" accept="image/*" onchange="handleBuybackImageForModel(event)"></div></div>
+        <div class="field buyback-photo-v5"><label>📷 Foto van toestel</label><div class="buyback-photo-line-v5">${phone.image?`<img src="${esc(phone.image)}" alt="">`:'<div class="buyback-no-photo-v5">Geen foto</div>'}<input type="file" accept="image/*" onchange="handleBuybackImageForModel(event)">${phone.image?'<button type="button" class="btn btn-light" onclick="removeBuybackModelImage()">Verwijder foto</button>':''}</div></div>
       </div>
-      ${phone.protocol==='protocol2' ? renderProtocol2Settings(phone) : (phone.protocol==='protocol3' ? renderProtocol3Settings(phone) : (phone.protocol==='protocol4' ? renderProtocol4Settings(phone) : (phone.protocol==='protocol5' ? renderProtocol5Settings(phone) : (phone.protocol==='protocol6' ? renderProtocol6Settings(phone) : (phone.protocol==='protocol8' ? renderProtocol8Settings(phone) : (phone.protocol==='protocol7' ? renderProtocol7Settings(phone) : renderBuybackTypeSettings()))))))}
+      ${renderProtocol4Settings(phone)}
+      <div id="buybackOptionsArea"
       <div id="buybackOptionsArea" class="buyback-model-options" style="display:${phone.protocol==='protocol2'||phone.protocol==='protocol3'||phone.protocol==='protocol4'||phone.protocol==='protocol5'||phone.protocol==='protocol6'||phone.protocol==='protocol8'||phone.protocol==='protocol7'?'none':(buybackOptionsOpen?'block':'none')}">
         ${buybackOptionEditorForModel(phone,'Opslag','storageOptions')}
         ${buybackOptionEditorForModel(phone,'Conditie','conditionOptions')}
@@ -6391,7 +6406,7 @@ function addBuybackModel(){
   if(!name||!name.trim())return;
 
   const phone={
-    id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,protocol:'protocol1',protocol2:defaultBuybackProtocol2(),protocol3:defaultBuybackProtocol3(),protocol4:defaultBuybackProtocol4(),protocol5:defaultBuybackProtocol5(),protocol6:defaultBuybackProtocol6(),protocol7:defaultBuybackProtocol7(),protocol8:defaultBuybackProtocol8(),
+    id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,protocol:'protocol4',protocol4:defaultBuybackProtocol4(),
     storageOptions:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}],
     conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}],
     batteryOptions:[{label:'85% of hoger',priceDelta:0,active:true},{label:'Onder 85%',priceDelta:-25,active:true}],
@@ -6444,7 +6459,7 @@ function attachBuybackModel(){
   if(!b||!t||!m)return;
   const name=prompt("Naam van het bestaande inkooptoestel:","Nieuwe telefoon");
   if(!name||!name.trim())return;
-  const phone={id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,protocol:'protocol1',protocol2:defaultBuybackProtocol2(),protocol3:defaultBuybackProtocol3(),protocol4:defaultBuybackProtocol4(),protocol5:defaultBuybackProtocol5(),protocol6:defaultBuybackProtocol6(),protocol7:defaultBuybackProtocol7(),protocol8:defaultBuybackProtocol8(),
+  const phone={id:newBuybackId("buyback"),name:name.trim(),brand:b.name,image:'',price:0,active:true,protocol:'protocol4',protocol4:defaultBuybackProtocol4(),
     storageOptions:[{label:'128 GB',priceDelta:0,active:true},{label:'256 GB',priceDelta:30,active:true},{label:'512 GB',priceDelta:80,active:true}],
     conditionOptions:[{label:'Zo goed als nieuw',priceDelta:0,active:true},{label:'Licht gebruikt',priceDelta:-40,active:true},{label:'Zichtbaar gebruikt',priceDelta:-90,active:true},{label:'Kapot',priceDelta:-200,active:true}],
     batteryOptions:[{label:'85% of hoger',priceDelta:0,active:true},{label:'Onder 85%',priceDelta:-25,active:true}],
@@ -6464,6 +6479,8 @@ function handleBuybackBrandImage(event){
   r.readAsDataURL(file);
 }
 
+function removeBuybackBrandImage(){const b=getBuybackBrand();if(!b||!b.image)return;if(!confirm("De merkafbeelding verwijderen?"))return;b.image="";markChanged();renderBuybackModelEditor();}
+function removeBuybackModelImage(){const m=getBuybackModel(),p=m&&getBuybackPhoneById(m.buybackId);if(!p||!p.image)return;if(!confirm("De toestelfoto verwijderen?"))return;p.image="";markChanged();renderBuybackModelEditor();}
 function handleBuybackImageForModel(event){
   const m=getBuybackModel(),p=m&&getBuybackPhoneById(m.buybackId);
   const file=event.target.files&&event.target.files[0];
@@ -7585,14 +7602,20 @@ async function save(isAuto=false,pageOverride=null){
       // pattern as Shop products. This avoids the legacy /api/site full-settings
       // write path and only updates the phones JSON key.
       requestUrl="/api/admin/phone-catalog";
-      requestPayload={phones:Array.isArray(payload.phones)?payload.phones:[]};
+      const changes=catalogItemsChanged(data.phones,catalogSaveBaseline.phones);
+      const compressedById=new Map((payload.phones||[]).filter(x=>x&&x.id!=null).map(x=>[String(x.id),x]));
+      const upserts=(phoneIdentityMigrationPending?data.phones:changes.upserts).map(x=>compressedById.get(String(x.id))||x);
+      requestPayload={upserts,deletes:changes.deletes,...(JSON.stringify(data.phoneFolders)!==JSON.stringify(catalogSaveBaseline.phoneFolders)?{phoneFolders:cloneCatalogValue(data.phoneFolders)}:{})};
     }else if(savePage==="shop"){
       const upserts=(Array.isArray(payload.shopProducts)?payload.shopProducts:[]).filter(product=>product&&shopDirtyIds.has(String(product.id)));
       requestUrl="/api/admin/shop-products";
       requestPayload={upserts,deletes:[]};
     }else if(savePage==="buyback"){
       requestUrl="/api/admin/buyback-catalog";
-      requestPayload={buybackCatalog:Array.isArray(payload.buybackCatalog)?payload.buybackCatalog:[],buybackPhones:Array.isArray(payload.buybackPhones)?payload.buybackPhones:[]};
+      const brands=catalogItemsChanged(payload.buybackCatalog,catalogSaveBaseline.buybackCatalog);
+      const phones=catalogItemsChanged(payload.buybackPhones,catalogSaveBaseline.buybackPhones);
+      const buybackUpserts=(buybackProtocolMigrationPending?payload.buybackPhones:phones.upserts).map(phone=>{const clean=cloneCatalogValue(phone);clean.protocol="protocol4";["protocol2","protocol3","protocol5","protocol6","protocol7","protocol8"].forEach(key=>delete clean[key]);return clean;});
+      requestPayload={brandUpserts:brands.upserts,brandDeletes:brands.deletes.map(x=>x.id),phoneUpserts:buybackUpserts,phoneDeletes:phones.deletes.map(x=>x.id)};
     }
     const r=await fetch(requestUrl,{
       method:"PUT",
@@ -7617,13 +7640,17 @@ async function save(isAuto=false,pageOverride=null){
     if((pageChangeRevisions[savePage]||0)===saveRevision && savePage==="phones"){
       if(Array.isArray(result.phones)) data.phones=result.phones;
       else if(Array.isArray(payload.phones)) data.phones=payload.phones;
+      if(Array.isArray(result.phoneFolders)) data.phoneFolders=result.phoneFolders;
+      phoneIdentityMigrationPending=false;
+      captureCatalogSaveBaseline();
     }else if((pageChangeRevisions[savePage]||0)===saveRevision && savePage==="shop"){
       shopDirtyIds.clear();
     }else if((pageChangeRevisions[savePage]||0)===saveRevision && savePage==="buyback"){
       if(Array.isArray(result.buybackCatalog)) data.buybackCatalog=result.buybackCatalog;
       else data.buybackCatalog=payload.buybackCatalog;
       if(Array.isArray(result.buybackPhones)) data.buybackPhones=result.buybackPhones;
-      else data.buybackPhones=payload.buybackPhones;
+      buybackProtocolMigrationPending=false;
+      captureCatalogSaveBaseline();
     }else if((pageChangeRevisions[savePage]||0)===saveRevision && result.data && typeof result.data==="object" && !Array.isArray(result.data)){
       Object.assign(data,result.data);
     }
