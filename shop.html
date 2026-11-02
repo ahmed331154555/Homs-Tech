@@ -99,7 +99,7 @@ function addToCart(id){
   if(quantityInput&&stock!==null)quantityInput.max=String(Math.max(1,stock));
   const price=Number(variant.price??p.price)||0;
   if(existing)existing.qty=currentQty+requestedQty;
-  else cart.push({key,type:'shop',id:index,variantId:String(variant.id||variant.sku||variant.quality),sku:String(variant.sku||''),brand:'HOMS TECH Shop',name:p.name,price,unitPrice:price,image:imgFor(p),qty:requestedQty,options:{category:String(p.category||'Accessoires'),quality:String(variant.quality||'Standaard'),sku:String(variant.sku||'')}});
+  else cart.push({key,type:'shop',id:String(p.id),variantId:String(variant.id||variant.sku||variant.quality),sku:String(variant.sku||''),brand:'HOMS TECH Shop',name:p.name,price,unitPrice:price,image:imgFor(p),qty:requestedQty,options:{category:String(p.category||'Accessoires'),quality:String(variant.quality||'Standaard'),sku:String(variant.sku||'')}});
   localStorage.setItem(CART_KEY,JSON.stringify(cart));updateCartCount();
   button=document.querySelector('.detail-add')||Array.from(document.querySelectorAll('[data-add]')).find(el=>el.getAttribute('data-add')===String(id));
   if(button)animateProductToCart(button,imgFor(p));
