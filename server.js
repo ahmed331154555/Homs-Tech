@@ -3718,6 +3718,32 @@ app.put("/api/admin/shop-products", requireSiteOrPhoneUpdate, async (req, res) =
   }
 });
 
+// Isolated buyback catalog write: only these two JSON keys can be changed.
+app.put("/api/admin/buyback-catalog", requirePermission("buyback.update"), async (req, res) => {
+  const body = req.body && typeof req.body === "object" && !Array.isArray(req.body) ? req.body : {};
+  if (Object.keys(body).length !== 2 || !Array.isArray(body.buybackCatalog) || !Array.isArray(body.buybackPhones) || body.buybackCatalog.length > 5000 || body.buybackPhones.length > 5000) {
+    return res.status(400).json({ error: "Ongeldige inkoopcatalogus-wijzigingen." });
+  }
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const locked = await client.query("SELECT data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones FROM site_settings WHERE id=1 FOR UPDATE");
+    if (!locked.rows.length) throw new Error("Inkoopcatalogus niet gevonden.");
+    const existing = { buybackCatalog: Array.isArray(locked.rows[0].catalog) ? locked.rows[0].catalog : [], buybackPhones: Array.isArray(locked.rows[0].phones) ? locked.rows[0].phones : [] };
+    const incoming = { buybackCatalog: body.buybackCatalog, buybackPhones: body.buybackPhones };
+    preserveExistingCatalogPhotos(existing, incoming);
+    const saved = await client.query("UPDATE site_settings SET data=jsonb_set(jsonb_set(data, '{buybackCatalog}', $1::jsonb, true), '{buybackPhones}', $2::jsonb, true) WHERE id=1 RETURNING data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones", [JSON.stringify(incoming.buybackCatalog), JSON.stringify(incoming.buybackPhones)]);
+    await client.query("COMMIT");
+    return res.json({ success: true, buybackCatalog: saved.rows[0]?.catalog || [], buybackPhones: saved.rows[0]?.phones || [] });
+  } catch (error) {
+    try { await client.query("ROLLBACK"); } catch {}
+    console.error("Save buyback catalog patch failed:", error);
+    return res.status(500).json({ error: "Inkoopcatalogus kon niet worden opgeslagen." });
+  } finally {
+    client.release();
+  }
+});
+
 app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
   try {
     const section = String(req.headers["x-homs-admin-section"] || "").trim().toLowerCase();
