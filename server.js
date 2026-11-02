@@ -35,7 +35,7 @@ pool.on("error", (error) => {
 // only handles idle clients; an unhandled socket error on a checked-out client
 // can otherwise terminate the Node process during a database restart.
 async function getSafeDatabaseClient() {
-  const client = await getSafeDatabaseClient();
+  const client = await pool.connect();
   client.on("error", (error) => {
     console.error("Checked-out PostgreSQL client connection dropped:", {
       code: error?.code || "UNKNOWN",
