@@ -3610,6 +3610,63 @@ function preserveExistingCatalogPhotos(existingData, incomingData) {
   return incomingData;
 }
 
+app.put("/api/admin/shop-products", requireSiteOrPhoneUpdate, async (req, res) => {
+  const body = req.body || {};
+  if (Object.keys(body).some(key => !["upserts", "deletes"].includes(key)) ||
+      !Array.isArray(body.upserts) || !Array.isArray(body.deletes) ||
+      body.upserts.length > 50 || body.deletes.length > 50) {
+    return res.status(400).json({ error: "Ongeldige Shop-wijzigingen." });
+  }
+  const ids = new Set();
+  for (const product of body.upserts) {
+    const id = String(product?.id ?? "").trim();
+    if (!id || id.length > 160 || ids.has(id) || typeof product !== "object" || Array.isArray(product)) {
+      return res.status(400).json({ error: "Elk Shop-product moet één unieke ID hebben." });
+    }
+    ids.add(id);
+  }
+  for (const value of body.deletes) {
+    const id = String(value ?? "").trim();
+    if (!id || id.length > 160 || ids.has(id)) return res.status(400).json({ error: "Ongeldige of dubbele Shop-product-ID." });
+    ids.add(id);
+  }
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const locked = await client.query("SELECT data->'shopProducts' AS products FROM site_settings WHERE id=1 FOR UPDATE");
+    if (!locked.rows.length) throw new Error("Shop-catalogus niet gevonden.");
+    const products = Array.isArray(locked.rows[0].products) ? locked.rows[0].products : [];
+    const currentIds = products.filter(Boolean).map(p => String(p.id ?? ""));
+    if (currentIds.some((id, i) => id && currentIds.indexOf(id) !== i)) throw new Error("Dubbele bestaande Shop-product-ID gevonden.");
+    for (const incoming of body.upserts) {
+      const id = String(incoming.id);
+      const matches = products.map((p, i) => ({ p, i })).filter(x => x.p && String(x.p.id ?? "") === id);
+      if (matches.length > 1) throw new Error("Shop-product-ID is niet uniek.");
+      const next = { ...incoming, id };
+      if (matches.length) {
+        preserveExistingProductPhotos(matches[0].p, next);
+        products[matches[0].i] = next;
+      } else {
+        products.push(next);
+      }
+    }
+    for (const id of body.deletes) {
+      const matches = products.map((p, i) => ({ p, i })).filter(x => x.p && String(x.p.id ?? "") === String(id));
+      if (matches.length !== 1) throw new Error("Shop-product voor verwijderen niet uniek gevonden.");
+      products[matches[0].i] = { ...matches[0].p, active: false };
+    }
+    await client.query("UPDATE site_settings SET data=jsonb_set(data, '{shopProducts}', $1::jsonb, true) WHERE id=1", [JSON.stringify(products)]);
+    await client.query("COMMIT");
+    return res.json({ success: true, savedIds: [...ids] });
+  } catch (error) {
+    try { await client.query("ROLLBACK"); } catch {}
+    console.error("Save Shop product patch failed:", error.message);
+    return res.status(400).json({ error: error.message || "Shop-product kon niet worden opgeslagen." });
+  } finally {
+    client.release();
+  }
+});
+
 app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
   try {
     const section = String(req.headers["x-homs-admin-section"] || "").trim().toLowerCase();
