@@ -3678,42 +3678,34 @@ function preserveExistingCatalogPhotos(existingData, incomingData) {
 
 // Isolated phone catalog save. Uses the same explicit transaction and row lock
 // as Shop product saves, while updating only data.phones (never all site settings).
-app.put("/api/admin/phone-catalog", requireSiteOrPhoneUpdate, async (req, res) => {
-  const body = req.body && typeof req.body === "object" && !Array.isArray(req.body) ? req.body : {};
-  if (Object.keys(body).length !== 1 || !Array.isArray(body.phones) || body.phones.length > 5000 ||
-      body.phones.some(phone => !phone || typeof phone !== "object" || Array.isArray(phone))) {
-    return res.status(400).json({ error: "Ongeldige telefooncatalogus-wijzigingen." });
-  }
-
-  let client;
-  try {
-    client = await acquireDatabaseClient();
-    await client.query("BEGIN");
-    const locked = await client.query("SELECT data->'phones' AS phones FROM site_settings WHERE id=1 FOR UPDATE");
-    if (!locked.rows.length) throw new Error("Telefooncatalogus niet gevonden.");
-
-    const existing = {
-      phones: Array.isArray(locked.rows[0].phones) ? locked.rows[0].phones : []
-    };
-    const incoming = { phones: body.phones };
-    preserveExistingCatalogPhotos(existing, incoming);
-
-    const saved = await client.query(
-      "UPDATE site_settings SET data=jsonb_set(data, '{phones}', $1::jsonb, true) WHERE id=1 RETURNING data->'phones' AS phones",
-      [JSON.stringify(incoming.phones)]
-    );
-    await client.query("COMMIT");
-    return res.json({ success: true, phones: saved.rows[0]?.phones || [] });
-  } catch (error) {
-    if (client) {
-      try { await client.query("ROLLBACK"); } catch {}
+app.put("/api/admin/phone-catalog", requireSiteOrPhoneUpdate, async (req,res)=>{
+  const body=req.body&&typeof req.body==="object"&&!Array.isArray(req.body)?req.body:{},legacy=Array.isArray(body.phones);
+  if(legacy){if(Object.keys(body).some(k=>!["phones","phoneFolders"].includes(k))||body.phones.length>5000||body.phones.some(p=>!p||typeof p!=="object"||Array.isArray(p)))return res.status(400).json({error:"Ongeldige telefooncatalogus-wijzigingen."});}
+  else if(Object.keys(body).some(k=>!["upserts","deletes","phoneFolders"].includes(k))||!Array.isArray(body.upserts)||!Array.isArray(body.deletes)||body.upserts.length>5000||body.deletes.length>5000||body.upserts.some(p=>!p||typeof p!=="object"||Array.isArray(p)))return res.status(400).json({error:"Ongeldige telefooncatalogus-wijzigingen."});
+  if(body.phoneFolders!==undefined&&(!Array.isArray(body.phoneFolders)||body.phoneFolders.length>2000))return res.status(400).json({error:"Ongeldige telefoonmappen."});
+  let client;try{
+    client=await acquireDatabaseClient();await client.query("BEGIN");
+    const locked=await client.query("SELECT data->'phones' AS phones,data->'phoneFolders' AS folders FROM site_settings WHERE id=1 FOR UPDATE");
+    if(!locked.rows.length)throw new Error("Telefooncatalogus niet gevonden.");
+    const phones=Array.isArray(locked.rows[0].phones)?locked.rows[0].phones:[],folders=Array.isArray(locked.rows[0].folders)?locked.rows[0].folders:[];
+    if(legacy){const incoming={phones:body.phones};preserveExistingCatalogPhotos({phones},incoming);phones.splice(0,phones.length,...incoming.phones);}
+    else{
+      const seen=new Set();for(const item of body.upserts){const id=String(item.id??"").trim();if(!id||id.length>180||seen.has(id))throw new Error("Elk telefoonproduct moet één unieke ID hebben.");seen.add(id);}
+      const base=p=>JSON.stringify([String(p?.sku||""),String(p?.brand||"Apple"),String(p?.name||p?.model||""),String(p?.storage||""),String(p?.color||p?.colour||"")]);
+      const counts=new Map(),existingWithKeys=phones.map((p,i)=>{const b=base(p),n=counts.get(b)||0;counts.set(b,n+1);return {p,i,key:p?._legacyKey||b+"#"+n};});
+      const matchesFor=value=>existingWithKeys.filter(x=>x.p&&((value.id!=null&&x.p.id!=null&&String(x.p.id)===String(value.id))||(value._legacyKey&&x.key===String(value._legacyKey))));
+      for(const item of body.upserts){const matches=matchesFor(item);if(matches.length>1)throw new Error("Telefoonproduct is niet uniek; wijziging afgebroken om gegevensverlies te voorkomen.");const next={...item,id:String(item.id)};if(matches.length)phones[matches[0].i]=next;else phones.push(next);}
+      const del=[];for(const value of body.deletes){const matches=matchesFor(value);if(matches.length!==1)throw new Error("Telefoonproduct voor verwijderen niet uniek gevonden.");del.push(matches[0].i);}
+      [...new Set(del)].sort((a,b)=>b-a).forEach(i=>phones.splice(i,1));
     }
-    console.error("Save phone catalog patch failed:", error);
-    return res.status(500).json({ error: "Telefooncatalogus kon niet worden opgeslagen." });
-  } finally {
-    if (client) client.release();
-  }
+    const nextFolders=body.phoneFolders===undefined?folders:body.phoneFolders;
+    const saved=await client.query("UPDATE site_settings SET data=jsonb_set(jsonb_set(data,'{phones}',$1::jsonb,true),'{phoneFolders}',$2::jsonb,true) WHERE id=1 RETURNING data->'phones' AS phones,data->'phoneFolders' AS folders",[JSON.stringify(phones),JSON.stringify(nextFolders)]);
+    await client.query("COMMIT");return res.json({success:true,phones:saved.rows[0]?.phones||[],phoneFolders:saved.rows[0]?.folders||[]});
+  }catch(error){if(client){try{await client.query("ROLLBACK");}catch{}}console.error("Save phone catalog patch failed:",error);return res.status(400).json({error:error.message||"Telefooncatalogus kon niet worden opgeslagen."});}
+  finally{if(client)client.release();}
 });
+
+app.put("/api/admin/shop-products"
 
 app.put("/api/admin/shop-products", requireSiteOrPhoneUpdate, async (req, res) => {
   const body = req.body || {};
@@ -3773,30 +3765,31 @@ app.put("/api/admin/shop-products", requireSiteOrPhoneUpdate, async (req, res) =
 });
 
 // Isolated buyback catalog write: only these two JSON keys can be changed.
-app.put("/api/admin/buyback-catalog", requireSiteOrPhoneUpdate, async (req, res) => {
-  const body = req.body && typeof req.body === "object" && !Array.isArray(req.body) ? req.body : {};
-  if (Object.keys(body).length !== 2 || !Array.isArray(body.buybackCatalog) || !Array.isArray(body.buybackPhones) || body.buybackCatalog.length > 5000 || body.buybackPhones.length > 5000) {
-    return res.status(400).json({ error: "Ongeldige inkoopcatalogus-wijzigingen." });
-  }
-  const client = await acquireDatabaseClient();
-  try {
+app.put("/api/admin/buyback-catalog", requireSiteOrPhoneUpdate, async (req,res)=>{
+  const body=req.body&&typeof req.body==="object"&&!Array.isArray(req.body)?req.body:{},legacy=Array.isArray(body.buybackCatalog)&&Array.isArray(body.buybackPhones),keys=["brandUpserts","brandDeletes","phoneUpserts","phoneDeletes"];
+  if(legacy){if(Object.keys(body).length!==2||body.buybackCatalog.length>5000||body.buybackPhones.length>5000)return res.status(400).json({error:"Ongeldige inkoopcatalogus-wijzigingen."});}
+  else if(Object.keys(body).some(k=>!keys.includes(k))||keys.some(k=>!Array.isArray(body[k])||body[k].length>5000))return res.status(400).json({error:"Ongeldige inkoopcatalogus-wijzigingen."});
+  const client=await acquireDatabaseClient();try{
     await client.query("BEGIN");
-    const locked = await client.query("SELECT data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones FROM site_settings WHERE id=1 FOR UPDATE");
-    if (!locked.rows.length) throw new Error("Inkoopcatalogus niet gevonden.");
-    const existing = { buybackCatalog: Array.isArray(locked.rows[0].catalog) ? locked.rows[0].catalog : [], buybackPhones: Array.isArray(locked.rows[0].phones) ? locked.rows[0].phones : [] };
-    const incoming = { buybackCatalog: body.buybackCatalog, buybackPhones: body.buybackPhones };
-    preserveExistingCatalogPhotos(existing, incoming);
-    const saved = await client.query("UPDATE site_settings SET data=jsonb_set(jsonb_set(data, '{buybackCatalog}', $1::jsonb, true), '{buybackPhones}', $2::jsonb, true) WHERE id=1 RETURNING data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones", [JSON.stringify(incoming.buybackCatalog), JSON.stringify(incoming.buybackPhones)]);
-    await client.query("COMMIT");
-    return res.json({ success: true, buybackCatalog: saved.rows[0]?.catalog || [], buybackPhones: saved.rows[0]?.phones || [] });
-  } catch (error) {
-    try { await client.query("ROLLBACK"); } catch {}
-    console.error("Save buyback catalog patch failed:", error);
-    return res.status(500).json({ error: "Inkoopcatalogus kon niet worden opgeslagen." });
-  } finally {
-    client.release();
-  }
+    const locked=await client.query("SELECT data->'buybackCatalog' AS catalog,data->'buybackPhones' AS phones FROM site_settings WHERE id=1 FOR UPDATE");
+    if(!locked.rows.length)throw new Error("Inkoopcatalogus niet gevonden.");
+    let catalog=Array.isArray(locked.rows[0].catalog)?locked.rows[0].catalog:[],phones=Array.isArray(locked.rows[0].phones)?locked.rows[0].phones:[];
+    if(legacy){catalog=body.buybackCatalog;phones=body.buybackPhones;}
+    else{
+      const validate=(items,label)=>{const seen=new Set();for(const item of items){const id=String(typeof item==="object"&&item?item.id??"":item??"").trim();if(!id||id.length>180||seen.has(id))throw new Error("Ongeldige of dubbele ID in "+label+".");seen.add(id);}};
+      validate(body.brandUpserts,"merken");validate(body.phoneUpserts,"telefoons");
+      const merge=(current,incoming,label)=>{for(const item of incoming){const id=String(item.id),matches=current.map((x,i)=>({x,i})).filter(v=>v.x&&(String(v.x.id)===id||(v.x.id==null&&String(v.x.name||"").trim().toLowerCase()===String(item.name||"").trim().toLowerCase()&&(label==="merken"||String(v.x.brand||"").trim().toLowerCase()===String(item.brand||"").trim().toLowerCase()))));if(matches.length>1)throw new Error("Bestaand item niet uniek in "+label+"; opslaan afgebroken.");const next={...item,id};if(matches.length)current[matches[0].i]=next;else current.push(next);}};
+      merge(catalog,body.brandUpserts,"merken");merge(phones,body.phoneUpserts,"telefoons");
+      for(const value of body.brandDeletes){const id=String(value),found=catalog.filter(x=>x&&String(x.id)===id);if(found.length!==1)throw new Error("Merk voor verwijderen niet uniek gevonden.");const linked=new Set();(found[0].types||[]).forEach(t=>(t.models||[]).forEach(m=>{if(m?.buybackId)linked.add(String(m.buybackId));}));catalog=catalog.filter(x=>String(x?.id)!==id);phones=phones.filter(p=>!linked.has(String(p?.id)));}
+      for(const value of body.phoneDeletes){const id=String(value),found=phones.filter(x=>x&&String(x.id)===id);if(found.length>1)throw new Error("Inkooptelefoon voor verwijderen niet uniek gevonden.");if(!found.length)continue;phones=phones.filter(x=>String(x?.id)!==id);catalog.forEach(b=>(b.types||[]).forEach(t=>{t.models=(t.models||[]).filter(m=>String(m?.buybackId||"")!==id);}));}
+    }
+    const saved=await client.query("UPDATE site_settings SET data=jsonb_set(jsonb_set(data,'{buybackCatalog}',$1::jsonb,true),'{buybackPhones}',$2::jsonb,true) WHERE id=1 RETURNING data->'buybackCatalog' AS catalog,data->'buybackPhones' AS phones",[JSON.stringify(catalog),JSON.stringify(phones)]);
+    await client.query("COMMIT");return res.json({success:true,buybackCatalog:saved.rows[0]?.catalog||[],buybackPhones:saved.rows[0]?.phones||[]});
+  }catch(error){try{await client.query("ROLLBACK");}catch{ }console.error("Save buyback catalog patch failed:",error);return res.status(400).json({error:error.message||"Inkoopcatalogus kon niet worden opgeslagen."});}
+  finally{client.release();}
 });
+
+app.put("/api/admin/site-section"
 
 app.put("/api/admin/site-section", async (req, res) => {
   try {
