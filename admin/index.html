@@ -3456,7 +3456,9 @@ async function loadData(){
       throw new Error("Websitegegevens konden niet worden geladen");
     }
 
-    data=await r.json();
+    const loadedData=await r.json();
+    if(!loadedData || typeof loadedData!=="object" || Array.isArray(loadedData)) throw new Error("De server heeft ongeldige websitegegevens teruggestuurd.");
+    data=loadedData;
     buybackCatalogDeleteLock=false;
 
     normalizeData();
@@ -7530,8 +7532,10 @@ async function save(isAuto=false){
     // Shop saves should not clone the full site settings object (which may contain
     // many megabytes of unrelated page images). Snapshot only the edited catalog.
     const payload=currentPage==="shop"
-      ? {shopProducts:JSON.parse(JSON.stringify(data.shopProducts||[]))}
-      : JSON.parse(JSON.stringify(data));
+      ? {shopProducts:JSON.parse(JSON.stringify(Array.isArray(data.shopProducts)?data.shopProducts:[]))}
+      : currentPage==="buyback"
+        ? {buybackCatalog:JSON.parse(JSON.stringify(Array.isArray(data.buybackCatalog)?data.buybackCatalog:[])),buybackPhones:JSON.parse(JSON.stringify(Array.isArray(data.buybackPhones)?data.buybackPhones:[]))}
+        : JSON.parse(JSON.stringify(data));
     if(currentPage==="phones"){
       setStatus("Foto's verkleinen en product opslaan...","info");
       payload.phones=await compressPhoneCatalogPhotos(payload.phones||[]);
@@ -7547,11 +7551,14 @@ async function save(isAuto=false){
     // The phone catalog can contain several MB of images. Send only that
     // section when editing phones instead of the full site settings document.
     let requestUrl="/api/site";
-    let requestPayload=currentPage==="phones" ? {phones:payload.phones||[]} : payload;
+    let requestPayload=currentPage==="phones" ? {phones:Array.isArray(payload.phones)?payload.phones:[]} : payload;
     if(currentPage==="shop"){
-      const upserts=payload.shopProducts.filter(product=>shopDirtyIds.has(String(product.id)));
+      const upserts=(Array.isArray(payload.shopProducts)?payload.shopProducts:[]).filter(product=>product&&shopDirtyIds.has(String(product.id)));
       requestUrl="/api/admin/shop-products";
       requestPayload={upserts,deletes:[]};
+    }else if(currentPage==="buyback"){
+      requestUrl="/api/admin/buyback-catalog";
+      requestPayload={buybackCatalog:Array.isArray(payload.buybackCatalog)?payload.buybackCatalog:[],buybackPhones:Array.isArray(payload.buybackPhones)?payload.buybackPhones:[]};
     }
     const r=await fetch(requestUrl,{
       method:"PUT",
@@ -7578,6 +7585,11 @@ async function save(isAuto=false){
       else if(Array.isArray(payload.phones)) data.phones=payload.phones;
     }else if(currentPage==="shop"){
       shopDirtyIds.clear();
+    }else if(currentPage==="buyback"){
+      if(Array.isArray(result.buybackCatalog)) data.buybackCatalog=result.buybackCatalog;
+      else data.buybackCatalog=payload.buybackCatalog;
+      if(Array.isArray(result.buybackPhones)) data.buybackPhones=result.buybackPhones;
+      else data.buybackPhones=payload.buybackPhones;
     }else{
       data=result.data || data;
     }
