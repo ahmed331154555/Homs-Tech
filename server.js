@@ -3745,6 +3745,77 @@ app.put("/api/admin/buyback-catalog", requirePermission("buyback.update"), async
   }
 });
 
+app.put("/api/admin/site-section", async (req, res) => {
+  try {
+    let user = getAdminFromRequest(req);
+    if (!user) return res.status(401).json({ error: "Not authenticated" });
+    user = await refreshAdminUserFromDb(user);
+    if (!user) return res.status(401).json({ error: "Admin account is inactive or no longer exists." });
+
+    const body = req.body && typeof req.body === "object" && !Array.isArray(req.body) ? req.body : {};
+    const section = String(body.section || "").trim().toLowerCase();
+    const allowedBySection = {
+      general: ["homepage", "services", "why"],
+      services: ["services"],
+      repair: ["repairPage"],
+      categories: ["deviceCategories"],
+      used: ["usedPhones"],
+      why: ["why"],
+      gsm: ["gsmServices"]
+    };
+    const allowedKeys = allowedBySection[section];
+    if (!allowedKeys || Object.keys(body).some(key => !["section", "data"].includes(key)) ||
+        !body.data || typeof body.data !== "object" || Array.isArray(body.data)) {
+      return res.status(400).json({ error: "Ongeldige sectie-wijzigingen." });
+    }
+    if (section === "repair") {
+      if (!(user.role === "superadmin" || user.username === String(process.env.ADMIN_USERNAME || "") ||
+          user.permissions.includes("*") || user.permissions.includes("site.save") ||
+          user.permissions.includes("repair_page.update"))) {
+        return res.status(403).json({ error: "Geen toestemming voor deze wijziging." });
+      }
+    } else if (!(user.role === "superadmin" || user.username === String(process.env.ADMIN_USERNAME || "") ||
+        user.permissions.includes("*") || user.permissions.includes("site.save"))) {
+      return res.status(403).json({ error: "Geen toestemming voor deze wijziging." });
+    }
+    const incomingKeys = Object.keys(body.data);
+    if (!incomingKeys.length || incomingKeys.some(key => !allowedKeys.includes(key))) {
+      return res.status(400).json({ error: "Deze sectie mag de opgegeven websitegegevens niet wijzigen." });
+    }
+    if (section === "services" && !Array.isArray(body.data.services)) return res.status(400).json({ error: "Ongeldige dienstenlijst." });
+    if (section === "categories" && !Array.isArray(body.data.deviceCategories)) return res.status(400).json({ error: "Ongeldige categorielijst." });
+    if (section === "used" && !Array.isArray(body.data.usedPhones)) return res.status(400).json({ error: "Ongeldige gebruikte telefoons." });
+    if (section === "why" && !Array.isArray(body.data.why)) return res.status(400).json({ error: "Ongeldige voordelenlijst." });
+    if (section === "gsm" && (!body.data.gsmServices || typeof body.data.gsmServices !== "object" || Array.isArray(body.data.gsmServices))) return res.status(400).json({ error: "Ongeldige GSM-diensten." });
+    if (section === "repair" && (!body.data.repairPage || typeof body.data.repairPage !== "object" || Array.isArray(body.data.repairPage))) return res.status(400).json({ error: "Ongeldige reparatiepagina." });
+    if (section === "general" && (!body.data.homepage || typeof body.data.homepage !== "object" || Array.isArray(body.data.homepage))) return res.status(400).json({ error: "Ongeldige homepage-instellingen." });
+
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const locked = await client.query("SELECT data FROM site_settings WHERE id = 1 FOR UPDATE");
+      if (!locked.rows.length) throw new Error("Website-instellingen niet gevonden.");
+      const existing = locked.rows[0].data && typeof locked.rows[0].data === "object" ? locked.rows[0].data : {};
+      const incoming = { ...body.data };
+      preserveExistingCatalogPhotos(existing, incoming);
+      await client.query(
+        "UPDATE site_settings SET data = data || $1::jsonb WHERE id = 1",
+        [JSON.stringify(incoming)]
+      );
+      await client.query("COMMIT");
+      return res.json({ success: true, data: incoming });
+    } catch (error) {
+      try { await client.query("ROLLBACK"); } catch {}
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error("Save admin site section failed:", error);
+    if (!res.headersSent) return res.status(500).json({ error: "Deze sectie kon niet worden opgeslagen." });
+  }
+});
+
 app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
   try {
     const section = String(req.headers["x-homs-admin-section"] || "").trim().toLowerCase();
