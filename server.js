@@ -2210,10 +2210,12 @@ function priceProductFromCatalog(data, item) {
     return { error: "Een product in uw winkelwagen is niet meer beschikbaar." };
   }
   if (type === "shop") {
-    const variants = Array.isArray(product.variants) ? product.variants.filter(v => v && v.active !== false) : [];
+    const hasConfiguredVariants = Array.isArray(product.variants) && product.variants.length > 0;
+    const variants = hasConfiguredVariants ? product.variants.filter(v => v && v.active !== false) : [];
     let variant = null;
     let variantId = "";
-    if (variants.length) {
+    if (hasConfiguredVariants && !variants.length) return { error: "Dit Shop-product heeft momenteel geen beschikbare kwaliteit." };
+    if (hasConfiguredVariants) {
       const requestedVariantId = String(item?.variantId ?? "").trim();
       if (requestedVariantId) {
         const matches = variants.filter(v => String(v.id || v.sku || v.quality || "") === requestedVariantId);
@@ -2360,10 +2362,15 @@ async function deductPaidOrderInventory(orderId) {
       if (!Number.isInteger(qty) || qty < 1) throw new Error('Paid order item quantity is invalid.'); const options = item.options && typeof item.options === 'object' ? item.options : {};
       if (type === 'shop' && Array.isArray(product.variants) && product.variants.length) {
         const variants = product.variants.filter(v => v && v.active !== false);
-        const requestedVariantId = String(item.variantId ?? options.sku ?? options.quality ?? '').trim();
+        const requestedVariantId = String(item.variantId ?? '').trim();
+        const requestedVariantLabel = String(options.sku ?? options.quality ?? '').trim();
         let variant;
         if (requestedVariantId) {
           const matches = variants.filter(v => String(v.id || v.sku || v.quality || '') === requestedVariantId);
+          if (matches.length !== 1) throw new Error('Paid Shop quality could not be matched uniquely.');
+          variant = matches[0];
+        } else if (requestedVariantLabel) {
+          const matches = variants.filter(v => [v.id, v.sku, v.quality].some(value => String(value ?? '') === requestedVariantLabel));
           if (matches.length !== 1) throw new Error('Paid Shop quality could not be matched uniquely.');
           variant = matches[0];
         } else {
