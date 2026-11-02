@@ -852,6 +852,7 @@ const ADMIN_PERMISSION_NAMES = {
   "orders.update":"GSM Order-status wijzigen","orders.delete":"GSM Orders verwijderen",
   "webshop_orders.view":"Webshop bestellingen bekijken",
   "webshop_orders.update":"Webshop order-status wijzigen","webshop_orders.delete":"Webshop bestellingen verwijderen",
+  "buyback.view":"Inkoopcatalogus bekijken","buyback.update":"Inkoopcatalogus wijzigen",
   "buyback_orders.view":"Inruil aanvragen bekijken","buyback_orders.update":"Inruil status wijzigen","buyback_orders.delete":"Inruil aanvragen verwijderen",
   "gsm.view":"GSM Services bekijken","gsm.import":"GSM Services importeren",
   "site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
