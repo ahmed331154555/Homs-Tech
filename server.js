@@ -2308,9 +2308,11 @@ async function deductPaidOrderInventory(orderId) {
     const settings = await client.query('SELECT data FROM site_settings WHERE id=1 FOR UPDATE');
     if (!settings.rows.length) throw new Error('Catalog settings row is missing.');
     const data = settings.rows[0].data || {};
+    const changedCollections = new Set();
     for (const item of (Array.isArray(order.items) ? order.items : [])) {
       const type = String(item && item.type || '').toLowerCase();
-      const list = type === 'shop' ? (Array.isArray(data.shopProducts) ? data.shopProducts : []) : type === 'used' ? (Array.isArray(data.usedPhones) ? data.usedPhones : []) : (Array.isArray(data.phones) && data.phones.length ? data.phones : (Array.isArray(data.devices) ? data.devices : []));
+      const collectionKey = type === 'shop' ? 'shopProducts' : type === 'used' ? 'usedPhones' : (Array.isArray(data.phones) && data.phones.length ? 'phones' : 'devices');
+      const list = Array.isArray(data[collectionKey]) ? data[collectionKey] : [];
       const id = Number(item && item.id); const qty = Number(item && item.qty || 1);
       if (!Number.isInteger(id) || id < 0 || !list[id] || !Number.isInteger(qty) || qty < 1) throw new Error('Paid order item could not be matched to catalog.');
       const product = list[id]; const options = item.options && typeof item.options === 'object' ? item.options : {};
@@ -2338,8 +2340,17 @@ async function deductPaidOrderInventory(orderId) {
         }
       }
       list[id] = product;
+      data[collectionKey] = list;
+      changedCollections.add(collectionKey);
     }
-    await client.query('UPDATE site_settings SET data=$1::jsonb WHERE id=1', [JSON.stringify(data)]);
+    // Persist only catalog keys whose stock actually changed. Updating the full
+    // settings document here could overwrite unrelated admin edits made elsewhere.
+    for (const key of changedCollections) {
+      await client.query(
+        'UPDATE site_settings SET data = jsonb_set(data, $1::text[], $2::jsonb, true) WHERE id = 1',
+        [[key], JSON.stringify(data[key])]
+      );
+    }
     await client.query('UPDATE webshop_orders SET inventory_deducted_at=NOW(), inventory_error=$1 WHERE id=$2 AND inventory_deducted_at IS NULL', ['', orderId]);
     await client.query('COMMIT'); return { deducted: true };
   } catch (error) {
