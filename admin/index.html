@@ -2374,6 +2374,7 @@ let loading = false;
 let autoSaveTimer = null;
 let autoSaveAgain = false;
 let changeRevision = 0;
+const pageChangeRevisions = Object.create(null);
 const pendingAutoSavePages = new Set();
 let currentPage = (()=>{try{return localStorage.getItem("homsAdminCurrentPage")||"general";}catch{return "general";}})();
 let currentUser = {username:"",role:"admin",permissions:[]};
@@ -7510,7 +7511,7 @@ async function save(isAuto=false,pageOverride=null){
     }
   }
   pendingAutoSavePages.delete(savePage);
-  const saveRevision=changeRevision;
+  const saveRevision=pageChangeRevisions[savePage]||0;
   loading=true;
   setStatus("Opslaan...","info");
 
@@ -7607,23 +7608,23 @@ async function save(isAuto=false,pageOverride=null){
     // Use the exact data returned by the server (the persisted DB state).
     // Do not normalize again here, so Protocol 1–8 values cannot be reset
     // immediately after a successful save.
-    if(changeRevision===saveRevision && savePage==="phones"){
+    if((pageChangeRevisions[savePage]||0)===saveRevision && savePage==="phones"){
       if(Array.isArray(result.phones)) data.phones=result.phones;
       else if(Array.isArray(payload.phones)) data.phones=payload.phones;
-    }else if(changeRevision===saveRevision && savePage==="shop"){
+    }else if((pageChangeRevisions[savePage]||0)===saveRevision && savePage==="shop"){
       shopDirtyIds.clear();
-    }else if(changeRevision===saveRevision && savePage==="buyback"){
+    }else if((pageChangeRevisions[savePage]||0)===saveRevision && savePage==="buyback"){
       if(Array.isArray(result.buybackCatalog)) data.buybackCatalog=result.buybackCatalog;
       else data.buybackCatalog=payload.buybackCatalog;
       if(Array.isArray(result.buybackPhones)) data.buybackPhones=result.buybackPhones;
       else data.buybackPhones=payload.buybackPhones;
-    }else if(changeRevision===saveRevision && result.data && typeof result.data==="object" && !Array.isArray(result.data)){
+    }else if((pageChangeRevisions[savePage]||0)===saveRevision && result.data && typeof result.data==="object" && !Array.isArray(result.data)){
       Object.assign(data,result.data);
     }
 
     // A successful server save is the source of truth. Clear the local phone draft
     // so an old IndexedDB snapshot cannot restore deleted or outdated products.
-    if(changeRevision===saveRevision && savePage==="phones"){
+    if((pageChangeRevisions[savePage]||0)===saveRevision && savePage==="phones"){
       phoneDraftCommitted=true;
       await clearPhoneDraft();
     }
@@ -7639,7 +7640,7 @@ async function save(isAuto=false,pageOverride=null){
     else if(savePage==="why") renderWhy();
     else if(savePage==="gsm") renderGsmServices();
 
-    if(changeRevision===saveRevision) setStatus("✓ Alle wijzigingen zijn succesvol opgeslagen","success");
+    if((pageChangeRevisions[savePage]||0)===saveRevision) setStatus("✓ Alle wijzigingen zijn succesvol opgeslagen","success");
     else setStatus("● Nieuwe wijzigingen worden direct hierna opgeslagen...","info");
     return true;
   }catch(e){
@@ -8152,6 +8153,7 @@ function runNextAutoSave(){
 function markChanged(){
   schedulePhoneDraftSave();
   changeRevision++;
+  pageChangeRevisions[currentPage]=(pageChangeRevisions[currentPage]||0)+1;
   pendingAutoSavePages.add(currentPage);
   setStatus("● Wijziging gedetecteerd — automatisch opslaan...","info");
   clearTimeout(autoSaveTimer);
