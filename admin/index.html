@@ -7486,7 +7486,7 @@ async function save(isAuto=false,pageOverride=null){
       if(product.videoEnabled&&product.videoUrl&&!/^https?:\/\//i.test(String(product.videoUrl).trim())){setStatus("✕ Vul een geldige https-video-URL in bij "+product.name+".","error");return false;}
     }
   }
-  if(currentPage==="phones" && phoneEditOnly){
+  if(savePage==="phones" && phoneEditOnly){
     const phone=data.phones?.[selectedPhoneIndex];
     if(!phone || !String(phone.name||"").trim()){
       setStatus("✕ Vul eerst de modelnaam in voordat je opslaat.","error");
@@ -7554,16 +7554,16 @@ async function save(isAuto=false,pageOverride=null){
     }
     const payload=savePage==="shop"
       ? {shopProducts:JSON.parse(JSON.stringify(Array.isArray(data.shopProducts)?data.shopProducts:[]))}
-      : currentPage==="buyback"
+      : savePage==="buyback"
         ? {buybackCatalog:JSON.parse(JSON.stringify(Array.isArray(data.buybackCatalog)?data.buybackCatalog:[])),buybackPhones:JSON.parse(JSON.stringify(Array.isArray(data.buybackPhones)?data.buybackPhones:[]))}
-        : currentPage==="phones"
+        : savePage==="phones"
           ? {phones:JSON.parse(JSON.stringify(Array.isArray(data.phones)?data.phones:[]))}
           : Object.fromEntries(sectionKeys.filter(key=>Object.prototype.hasOwnProperty.call(data,key)).map(key=>[key,JSON.parse(JSON.stringify(data[key]))]));
-    if(currentPage==="phones"){
+    if(savePage==="phones"){
       setStatus("Foto's verkleinen en product opslaan...","info");
       payload.phones=await compressPhoneCatalogPhotos(payload.phones||[]);
     }
-    if(currentPage==="phones" && payload.phones?.[selectedPhoneIndex]?.setupWizard){
+    if(savePage==="phones" && payload.phones?.[selectedPhoneIndex]?.setupWizard){
       payload.phones[selectedPhoneIndex].setupWizard=false;
       delete payload.phones[selectedPhoneIndex].setupStep;
       delete payload.phones[selectedPhoneIndex].setupDone;
@@ -7574,16 +7574,16 @@ async function save(isAuto=false,pageOverride=null){
     // The phone catalog can contain several MB of images. Send only that
     // section when editing phones instead of the full site settings document.
     let requestUrl="/api/site";
-    let requestPayload=currentPage==="phones" ? {phones:Array.isArray(payload.phones)?payload.phones:[]} : payload;
+    let requestPayload=savePage==="phones" ? {phones:Array.isArray(payload.phones)?payload.phones:[]} : payload;
     if(sectionKeys){
       requestUrl="/api/admin/site-section";
       requestPayload={section:savePage,data:payload};
     }
-    if(currentPage==="shop"){
+    if(savePage==="shop"){
       const upserts=(Array.isArray(payload.shopProducts)?payload.shopProducts:[]).filter(product=>product&&shopDirtyIds.has(String(product.id)));
       requestUrl="/api/admin/shop-products";
       requestPayload={upserts,deletes:[]};
-    }else if(currentPage==="buyback"){
+    }else if(changeRevision===saveRevision && savePage==="buyback"){
       requestUrl="/api/admin/buyback-catalog";
       requestPayload={buybackCatalog:Array.isArray(payload.buybackCatalog)?payload.buybackCatalog:[],buybackPhones:Array.isArray(payload.buybackPhones)?payload.buybackPhones:[]};
     }
@@ -7607,12 +7607,12 @@ async function save(isAuto=false,pageOverride=null){
     // Use the exact data returned by the server (the persisted DB state).
     // Do not normalize again here, so Protocol 1–8 values cannot be reset
     // immediately after a successful save.
-    if(currentPage==="phones"){
+    if(savePage==="phones"){
       if(Array.isArray(result.phones)) data.phones=result.phones;
       else if(Array.isArray(payload.phones)) data.phones=payload.phones;
-    }else if(currentPage==="shop"){
+    }else if(savePage==="shop"){
       shopDirtyIds.clear();
-    }else if(currentPage==="buyback"){
+    }else if(savePage==="buyback"){
       if(Array.isArray(result.buybackCatalog)) data.buybackCatalog=result.buybackCatalog;
       else data.buybackCatalog=payload.buybackCatalog;
       if(Array.isArray(result.buybackPhones)) data.buybackPhones=result.buybackPhones;
@@ -7623,21 +7623,21 @@ async function save(isAuto=false,pageOverride=null){
 
     // A successful server save is the source of truth. Clear the local phone draft
     // so an old IndexedDB snapshot cannot restore deleted or outdated products.
-    if(currentPage==="phones"){
+    if(savePage==="phones"){
       phoneDraftCommitted=true;
       await clearPhoneDraft();
     }
 
     // Alleen de huidige pagina opnieuw tekenen. Geen renderAll-loop na opslaan.
-    if(currentPage==="general") renderHomepageSettings();
-    else if(currentPage==="services") renderServices();
-    else if(currentPage==="phones") renderPhones();
-    else if(currentPage==="repair") renderRepairPageAdmin();
-    else if(currentPage==="buyback") renderBuybackPhones();
-    else if(currentPage==="categories") renderDeviceCategories();
-    else if(currentPage==="used") renderUsedPhones();
-    else if(currentPage==="why") renderWhy();
-    else if(currentPage==="gsm") renderGsmServices();
+    if(savePage==="general") renderHomepageSettings();
+    else if(savePage==="services") renderServices();
+    else if(savePage==="phones") renderPhones();
+    else if(savePage==="repair") renderRepairPageAdmin();
+    else if(savePage==="buyback") renderBuybackPhones();
+    else if(savePage==="categories") renderDeviceCategories();
+    else if(savePage==="used") renderUsedPhones();
+    else if(savePage==="why") renderWhy();
+    else if(savePage==="gsm") renderGsmServices();
 
     if(changeRevision===saveRevision) setStatus("✓ Alle wijzigingen zijn succesvol opgeslagen","success");
     else setStatus("● Nieuwe wijzigingen worden direct hierna opgeslagen...","info");
