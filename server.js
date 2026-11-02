@@ -2210,15 +2210,38 @@ function priceProductFromCatalog(data, item) {
     return { error: "Een product in uw winkelwagen is niet meer beschikbaar." };
   }
   if (type === "shop") {
-    const price = moneyNumber(product.price);
+    const variants = Array.isArray(product.variants) ? product.variants.filter(v => v && v.active !== false) : [];
+    let variant = null;
+    let variantId = "";
+    if (variants.length) {
+      const requestedVariantId = String(item?.variantId ?? "").trim();
+      if (requestedVariantId) {
+        const matches = variants.filter(v => String(v.id || v.sku || v.quality || "") === requestedVariantId);
+        if (matches.length !== 1) return { error: "De gekozen Shop-kwaliteit is niet meer uniek beschikbaar. Kies de kwaliteit opnieuw." };
+        variant = matches[0];
+      } else {
+        // Legacy carts/orders did not store variantId; keep their first-option behavior.
+        variant = variants[0];
+      }
+      variantId = String(variant.id || variant.sku || variant.quality || "");
+    }
+    const price = moneyNumber(variant?.price ?? product.price);
     const qty = Number(item?.qty ?? 1);
-    if (!Number.isFinite(price) || price <= 0) return { error: "Dit Shop-product heeft geen geldige prijs." };
+    if (!Number.isFinite(price) || price <= 0) return { error: "Deze Shop-kwaliteit heeft geen geldige prijs." };
     if (!Number.isInteger(qty) || qty < 1 || qty > 99) return { error: "Kies een geldige hoeveelheid (1–99)." };
-    const stockText = String(product.stock ?? "").trim();
+    const stockText = String(variant ? variant.stock : (product.stock ?? "")).trim();
     const stockMatch = stockText.match(/^(\d+)/);
-    if (stockMatch && Number(stockMatch[1]) < qty) return { error: "Er is onvoldoende voorraad voor dit product." };
-    if (stockMatch && Number(stockMatch[1]) <= 0) return { error: "Dit product is momenteel uitverkocht." };
-    return { item: { name: String(product.name || "Shop-product"), brand: "HOMS TECH Shop", type, id, options: { category: String(product.category || "Accessoires") }, qty, unitPrice: Math.round(price * 100) / 100 } };
+    if (stockMatch && Number(stockMatch[1]) < qty) return { error: "Er is onvoldoende voorraad voor deze Shop-kwaliteit." };
+    if (stockMatch && Number(stockMatch[1]) <= 0) return { error: "Deze Shop-kwaliteit is momenteel uitverkocht." };
+    return { item: {
+      name: String(product.name || "Shop-product"), brand: "HOMS TECH Shop", type, id,
+      variantId,
+      options: {
+        category: String(product.category || "Accessoires"),
+        ...(variant ? { quality: String(variant.quality || "Standaard"), sku: String(variant.sku || "") } : {})
+      },
+      qty, unitPrice: Math.round(price * 100) / 100
+    } };
   }
   const options = item.options && typeof item.options === "object" && !Array.isArray(item.options) ? item.options : {};
   const getList = key => {
@@ -2335,7 +2358,28 @@ async function deductPaidOrderInventory(orderId) {
         product = list[id];
       }
       if (!Number.isInteger(qty) || qty < 1) throw new Error('Paid order item quantity is invalid.'); const options = item.options && typeof item.options === 'object' ? item.options : {};
-      if (product.pricingMode === 'variant') {
+      if (type === 'shop' && Array.isArray(product.variants) && product.variants.length) {
+        const variants = product.variants.filter(v => v && v.active !== false);
+        const requestedVariantId = String(item.variantId ?? options.sku ?? options.quality ?? '').trim();
+        let variant;
+        if (requestedVariantId) {
+          const matches = variants.filter(v => String(v.id || v.sku || v.quality || '') === requestedVariantId);
+          if (matches.length !== 1) throw new Error('Paid Shop quality could not be matched uniquely.');
+          variant = matches[0];
+        } else {
+          // Compatibility for historical orders created before variantId was stored.
+          variant = variants[0];
+        }
+        if (!variant) throw new Error('Paid Shop quality is no longer available.');
+        const stockText = String(variant.stock ?? '').trim();
+        const stockMatch = stockText.match(/^(\d+)/);
+        if (stockMatch) {
+          const stock = Number(stockMatch[1]);
+          if (!Number.isFinite(stock) || stock < qty) throw new Error('Insufficient stock for paid Shop quality.');
+          variant.stock = String(stock - qty);
+          if (product.variants[0] === variant) product.stock = String(stock - qty) + ' stuks';
+        }
+      } else if (product.pricingMode === 'variant') {
         const rows = Array.isArray(product.variantPrices) ? product.variantPrices : [];
         const row = rows.find(x => x && String(x.condition ?? '') === String(options.condition ?? '') && String(x.color ?? '') === String(options.color ?? '') && String(x.storage ?? '') === String(options.storage ?? ''));
         if (!row) throw new Error('Paid order variant was not found.');
