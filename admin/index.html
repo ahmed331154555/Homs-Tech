@@ -7527,7 +7527,11 @@ async function save(isAuto=false){
       });
     }
 
-    const payload=JSON.parse(JSON.stringify(data));
+    // Shop saves should not clone the full site settings object (which may contain
+    // many megabytes of unrelated page images). Snapshot only the edited catalog.
+    const payload=currentPage==="shop"
+      ? {shopProducts:JSON.parse(JSON.stringify(data.shopProducts||[]))}
+      : JSON.parse(JSON.stringify(data));
     if(currentPage==="phones"){
       setStatus("Foto's verkleinen en product opslaan...","info");
       payload.phones=await compressPhoneCatalogPhotos(payload.phones||[]);
