@@ -2194,9 +2194,18 @@ function priceProductFromCatalog(data, item) {
     : type === "used"
       ? (Array.isArray(data.usedPhones) ? data.usedPhones : [])
       : (Array.isArray(data.phones) && data.phones.length ? data.phones : (Array.isArray(data.devices) ? data.devices : []));
-  const id = Number(item?.id);
-  if (!Number.isInteger(id) || id < 0 || id >= list.length) return { error: "Een product in uw winkelwagen is verouderd. Verwijder het en voeg het opnieuw toe." };
-  const product = list[id];
+  const rawId = item?.id;
+  const numericId = typeof rawId === "number" || (typeof rawId === "string" && /^\d+$/.test(rawId));
+  let id, product;
+  if (type === "shop" && !numericId) {
+    const matches = list.filter(entry => entry && String(entry.id) === String(rawId));
+    if (matches.length !== 1) return { error: "Een Shop-product in uw winkelwagen is niet meer uniek beschikbaar. Verwijder het en voeg het opnieuw toe." };
+    id = String(rawId); product = matches[0];
+  } else {
+    id = Number(rawId);
+    if (!Number.isInteger(id) || id < 0 || id >= list.length) return { error: "Een product in uw winkelwagen is verouderd. Verwijder het en voeg het opnieuw toe." };
+    product = list[id];
+  }
   if (!product || product.active === false || product.available === false || String(product.stockStatus || "").toLowerCase() === "sold") {
     return { error: "Een product in uw winkelwagen is niet meer beschikbaar." };
   }
@@ -2313,9 +2322,19 @@ async function deductPaidOrderInventory(orderId) {
       const type = String(item && item.type || '').toLowerCase();
       const collectionKey = type === 'shop' ? 'shopProducts' : type === 'used' ? 'usedPhones' : (Array.isArray(data.phones) && data.phones.length ? 'phones' : 'devices');
       const list = Array.isArray(data[collectionKey]) ? data[collectionKey] : [];
-      const id = Number(item && item.id); const qty = Number(item && item.qty || 1);
-      if (!Number.isInteger(id) || id < 0 || !list[id] || !Number.isInteger(qty) || qty < 1) throw new Error('Paid order item could not be matched to catalog.');
-      const product = list[id]; const options = item.options && typeof item.options === 'object' ? item.options : {};
+      const rawId = item && item.id; const qty = Number(item && item.qty || 1);
+      const numericId = typeof rawId === 'number' || (typeof rawId === 'string' && /^\d+$/.test(rawId));
+      let id, product;
+      if (type === 'shop' && !numericId) {
+        const matches = list.map((entry, index) => ({ entry, index })).filter(x => x.entry && String(x.entry.id) === String(rawId));
+        if (matches.length !== 1) throw new Error('Paid Shop order item could not be matched uniquely to catalog.');
+        id = matches[0].index; product = matches[0].entry;
+      } else {
+        id = Number(rawId);
+        if (!Number.isInteger(id) || id < 0 || !list[id]) throw new Error('Paid order item could not be matched to catalog.');
+        product = list[id];
+      }
+      if (!Number.isInteger(qty) || qty < 1) throw new Error('Paid order item quantity is invalid.'); const options = item.options && typeof item.options === 'object' ? item.options : {};
       if (product.pricingMode === 'variant') {
         const rows = Array.isArray(product.variantPrices) ? product.variantPrices : [];
         const row = rows.find(x => x && String(x.condition ?? '') === String(options.condition ?? '') && String(x.color ?? '') === String(options.color ?? '') && String(x.storage ?? '') === String(options.storage ?? ''));
@@ -3576,7 +3595,7 @@ function preserveExistingProductPhotos(existingProduct, incomingProduct) {
 }
 
 function preserveExistingCatalogPhotos(existingData, incomingData) {
-  for (const collection of ["phones", "usedPhones", "devices"]) {
+  for (const collection of ["phones", "usedPhones", "devices", "shopProducts"]) {
     const oldItems = Array.isArray(existingData?.[collection]) ? existingData[collection] : [];
     const newItems = Array.isArray(incomingData?.[collection]) ? incomingData[collection] : [];
     for (const item of newItems) {
