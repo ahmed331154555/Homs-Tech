@@ -7580,7 +7580,13 @@ async function save(isAuto=false,pageOverride=null){
       requestUrl="/api/admin/site-section";
       requestPayload={section:savePage,data:payload};
     }
-    if(savePage==="shop"){
+    if(savePage==="phones"){
+      // Save the phone catalog through the same isolated, row-locked transaction
+      // pattern as Shop products. This avoids the legacy /api/site full-settings
+      // write path and only updates the phones JSON key.
+      requestUrl="/api/admin/phone-catalog";
+      requestPayload={phones:Array.isArray(payload.phones)?payload.phones:[]};
+    }else if(savePage==="shop"){
       const upserts=(Array.isArray(payload.shopProducts)?payload.shopProducts:[]).filter(product=>product&&shopDirtyIds.has(String(product.id)));
       requestUrl="/api/admin/shop-products";
       requestPayload={upserts,deletes:[]};
