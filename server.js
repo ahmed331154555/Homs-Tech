@@ -3623,6 +3623,9 @@ async function requireSiteOrPhoneUpdate(req,res,next){
       req.admin=user; return next();
     }
     const section=String(req.headers["x-homs-admin-section"]||"").trim().toLowerCase();
+    if(section==="buyback" && user.permissions.includes("buyback.update")){
+      req.admin=user; return next();
+    }
     if(section==="phones" && user.permissions.includes("phones.update")){
       req.admin=user; return next();
     }
@@ -3720,7 +3723,7 @@ app.put("/api/admin/shop-products", requireSiteOrPhoneUpdate, async (req, res) =
 });
 
 // Isolated buyback catalog write: only these two JSON keys can be changed.
-app.put("/api/admin/buyback-catalog", requirePermission("buyback.update"), async (req, res) => {
+app.put("/api/admin/buyback-catalog", requireSiteOrPhoneUpdate, async (req, res) => {
   const body = req.body && typeof req.body === "object" && !Array.isArray(req.body) ? req.body : {};
   if (Object.keys(body).length !== 2 || !Array.isArray(body.buybackCatalog) || !Array.isArray(body.buybackPhones) || body.buybackCatalog.length > 5000 || body.buybackPhones.length > 5000) {
     return res.status(400).json({ error: "Ongeldige inkoopcatalogus-wijzigingen." });
