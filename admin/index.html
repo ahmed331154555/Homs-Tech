@@ -5436,8 +5436,14 @@ function normalizeBuybackProtocol4(x){
 
 function normalizeBuybackPhones(){
   if(!Array.isArray(data.buybackPhones)) data.buybackPhones=[];
-  data.buybackPhones=data.buybackPhones.filter(x=>x && typeof x==="object" && !Array.isArray(x)).map((x,i)=>({
-    id:x.id || ('buyback-'+Date.now()+'-'+i),
+  const legacyBuybackKeyCounts=new Map();
+  data.buybackPhones=data.buybackPhones.filter(x=>x && typeof x==="object" && !Array.isArray(x)).map((x,i)=>{
+    const legacyBase=JSON.stringify([String(x.brand||""),String(x.name||""),String(x.price||0)]);
+    const occurrence=legacyBuybackKeyCounts.get(legacyBase)||0;legacyBuybackKeyCounts.set(legacyBase,occurrence+1);
+    const legacyKey=x._legacyKey||legacyBase+"#"+occurrence;
+    return ({
+    id:x.id || ("legacy-buyback-"+stableCatalogHash(legacyKey)),
+    _legacyKey:legacyKey,
     name:x.name||'', brand:x.brand||'', image:x.image||'', price:Number(x.price||0), scrapPrice:Math.max(0,Number(x.scrapPrice??0)||0), active:x.active!==false,
     protocol:"protocol4",
     protocol4:normalizeBuybackProtocol4(x),
@@ -7615,7 +7621,7 @@ async function save(isAuto=false,pageOverride=null){
       const brands=catalogItemsChanged(payload.buybackCatalog,catalogSaveBaseline.buybackCatalog);
       const phones=catalogItemsChanged(payload.buybackPhones,catalogSaveBaseline.buybackPhones);
       const buybackUpserts=(buybackProtocolMigrationPending?payload.buybackPhones:phones.upserts).map(phone=>{const clean=cloneCatalogValue(phone);clean.protocol="protocol4";["protocol2","protocol3","protocol5","protocol6","protocol7","protocol8"].forEach(key=>delete clean[key]);return clean;});
-      requestPayload={brandUpserts:brands.upserts,brandDeletes:brands.deletes.map(x=>x.id),phoneUpserts:buybackUpserts,phoneDeletes:phones.deletes.map(x=>x.id)};
+      requestPayload={brandUpserts:brands.upserts,brandDeletes:brands.deletes.map(x=>x.id),phoneUpserts:buybackUpserts,phoneDeletes:phones.deletes.map(x=>({id:x.id,_legacyKey:x._legacyKey||""}))};
     }
     const r=await fetch(requestUrl,{
       method:"PUT",
