@@ -514,14 +514,20 @@ async function initDatabase() {
     );
   }
 
-  // Remove retired catalog and homepage settings from saved site configuration.
-  await pool.query("UPDATE site_settings SET data = data #- '{gsmServices}' #- '{gsmImport}' #- '{homepage,gsm}' WHERE id = 1");
   await pool.query("CREATE TABLE IF NOT EXISTS manual_invoices (id BIGSERIAL PRIMARY KEY, invoice_number TEXT NOT NULL UNIQUE, customer_name TEXT NOT NULL, customer_email TEXT NOT NULL, customer_address TEXT NOT NULL DEFAULT '', kvk_number TEXT NOT NULL DEFAULT '', vat_id TEXT NOT NULL DEFAULT '', lines JSONB NOT NULL, subtotal NUMERIC(12,2) NOT NULL, vat_total NUMERIC(12,2) NOT NULL, total NUMERIC(12,2) NOT NULL, status TEXT NOT NULL DEFAULT 'Concept / test', created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
 }
 
 // Public-facing settings omit supplier cost data and importer diagnostics.
 function sanitizePublicSiteData(input) {
-  return input && typeof input === "object" ? { ...input } : {};
+  const data = input && typeof input === "object" ? { ...input } : {};
+  // Retired catalog data is not exposed through public settings.
+  delete data.gsmImport;
+  delete data.gsmServices;
+  if (data.homepage && typeof data.homepage === "object") {
+    data.homepage = { ...data.homepage };
+    delete data.homepage.gsm;
+  }
+  return data;
 }
 
 // The homepage only needs these public fields; omit page-specific settings.
