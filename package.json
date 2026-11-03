@@ -5,8 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test test/*.test.js",
-    "test:api": "node --test test/easy-unlocker-api.test.js"
+    "test": "node --test test/*.test.js"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",
