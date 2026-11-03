@@ -205,9 +205,7 @@ input:focus{outline:3px solid rgba(37,99,235,.12);border-color:#2563eb}
 <div class="info"><strong>Telefoon</strong><span id="customerPhone"></span></div>
 <div class="info"><strong>Adres</strong><span id="customerAddress"></span></div>
 </div>
-<div class="orders">
-<h2>Mijn bestellingen</h2>
-<div id="myOrders" class="order-list"><div class="orders-empty">Bestellingen laden...</div></div>
+
 </div>
 <div class="actions">
 <a class="btn blue" href="devices.html">📱 Bekijk telefoons</a>
@@ -274,8 +272,7 @@ document.getElementById("customerName").textContent=c.name||"";
 document.getElementById("customerEmail").textContent=c.email||"";
 document.getElementById("customerPhone").textContent=c.phone||"—";
 document.getElementById("customerAddress").textContent=c.address||"—";
-loadMyOrders();
-loadMyFirmwareDownloads();
+
 }
 
 async function api(url,options={}){
@@ -332,7 +329,6 @@ email:document.getElementById("loginEmail").value.trim(),
 password:document.getElementById("loginPassword").value
 })});
 showMessage("Welkom terug!","success");
-if(continueFirmwareDownloadAfterLogin())return;
 showAccount(data.customer);
 }catch(err){showMessage(err.message);}
 });
@@ -408,7 +404,6 @@ email:pendingVerificationEmail,
 code:document.getElementById("verificationCode").value.trim()
 })});
 showMessage(data.message||"Je account is geactiveerd.","success");
-if(continueFirmwareDownloadAfterLogin())return;
 showAccount(data.customer);
 }catch(err){showMessage(err.message);}
 });
@@ -429,7 +424,7 @@ accountCard.style.display="none";authCard.style.display="block";showLogin();
 if(resetToken){showReset();return;}
 try{
 const data=await api("/api/customer/me");
-if(data.authenticated){if(continueFirmwareDownloadAfterLogin())return;showAccount(data.customer);}
+if(data.authenticated){showAccount(data.customer);}
 }catch{}
 })();
 </script>
