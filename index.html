@@ -198,7 +198,6 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 @media(max-width:700px){.ht-topbar,.topbar{height:38px!important}.ht-marquee,.top-info{gap:28px!important;animation-duration:13s!important}.ht-marquee-track{gap:28px!important}.ht-marquee-item,.top-info span{font-size:13px!important}}
 @media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
 </style><style id="homepage-gpu-motion">
-#homeGsmSection .products.auto-moving,
 #homePopularSection .products.auto-moving{
  overflow:hidden!important;
  display:block!important;
@@ -208,9 +207,7 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
  scrollbar-width:none;
  padding:3px 0 15px;
 }
-#homeGsmSection .products.auto-moving::-webkit-scrollbar,
 #homePopularSection .products.auto-moving::-webkit-scrollbar{display:none}
-#homeGsmSection .products.auto-moving .home-motion-track,
 #homePopularSection .products.auto-moving .home-motion-track{
  display:flex!important;
  flex-flow:row nowrap!important;
@@ -266,7 +263,7 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 
 <div class="topbar" id="homeTopBar"><div class="container"><div class="top-info" id="homeTopInfo"></div></div></div>
 
-<header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div><nav class="ht-nav"><a class="active" href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a><a href="used.html">Tweedehands</a><a href="gsm-services.html">GSM Services</a>
+<header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div><nav class="ht-nav"><a class="active" href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a><a href="used.html">Tweedehands</a>
    <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a></nav></div></header>
 
 <section class="hero">
@@ -361,11 +358,6 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
  </div>
 </section>
 
-<section class="section" id="homeGsmSection">
- <h2 class="section-title" id="gsmHomeTitle">GSM Services</h2>
- <div id="gsmHomeTicker" class="products auto-moving" style="padding-top:3px"></div>
-</section>
-
 <section class="section" id="homePopularSection">
  <h2 class="section-title" id="popularTitle">Populaire apparaten</h2>
  <div class="product-nav" id="popularNav" style="display:none"></div>
@@ -392,7 +384,7 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 <footer id="homeFooter">
  <div class="container">
   <div class="footer-grid">
-   <div><div class="footer-logo">HOMS <span>TECH</span></div><p id="footerDescription">Refurbished apparaten · Reparatie aan huis · GSM Services</p></div>
+   <div><div class="footer-logo">HOMS <span>TECH</span></div><p id="footerDescription">Refurbished apparaten · Reparatie aan huis</p></div>
    <div><h3>Snelle links</h3><ul><li><a href="index.html">Home</a></li><li><a href="devices.html">Apparaten</a></li><li><a href="repair.html">Reparaties</a></li><li><a href="prices.html">Prijzen</a></li></ul></div>
    <div><h3>Service</h3><ul><li><a href="about.html">Garantie</a></li><li><a href="used.html">Verzending</a></li><li><a href="used.html">Retour</a></li><li><a href="about.html">Voorwaarden</a></li></ul></div>
    <div><h3>Contact</h3><p id="footerArea">Rotterdam en omgeving</p><p id="footerContact">WhatsApp · Telefoon · E-mail</p></div>
@@ -413,13 +405,12 @@ const defaults={
   topBar:{enabled:true,items:["1 jaar garantie","Snel geleverd","Betrouwbare service","Betaalbare prijzen"]},
   hero:{enabled:true,titleTop:"Reparatie, refurbished",titleBottom:"en verkoop van telefoons",text:"Professionele telefoonreparatie, refurbished iPhones, oude telefoons verkopen en eenvoudig je toestel naar ons opsturen.",button1Text:"Bekijk onze diensten →",button1Link:"repair.html",button2Text:"Stuur je toestel op",button2Link:"repair.html",showDevice:true},
   banners:{enabled:true,buybackTitle:"Uw toestel verkopen?",buybackText:"Verkoop je oude iPhone eenvoudig, snel en veilig bij HOMS TECH. Ontvang binnen enkele minuten een eerlijk bod.",buybackButton:"Toestel verkopen →",buybackLink:"uw-toestel-verkopen.html",buybackArt:"",refurbishedTitle:"Refurbished apparaten",refurbishedText:"Geteste apparaten met duidelijke informatie en garantie.",refurbishedButton:"Bekijk apparaten →",refurbishedLink:"devices.html",refurbishedArt:"📱"},
-  gsm:{enabled:true,title:"GSM Services",items:[{icon:"▥",label:"IMEI Services",link:"gsm-services.html#imei"},{icon:"🔒",label:"Unlock",link:"gsm-services.html#imei"},{icon:"G",label:"FRP Services",link:"gsm-services.html#frp"},{icon:"☁",label:"iCloud",link:"gsm-services.html#imei"},{icon:"☁",label:"Server Services",link:"gsm-services.html#server"},{icon:"⚡",label:"Server Credits",link:"gsm-services.html#server"}]},
   categories:{enabled:true,title:"Refurbished apparaten"},
   popular:{enabled:true,title:"Populaire apparaten",limit:12,indexes:[]},
   homeVisit:{enabled:true,title:"📍 Wij komen bij u thuis!",text:"Rotterdam en omgeving · Professionele reparatie aan huis",buttonText:"💬 WhatsApp"},
   services:{enabled:true,title:"Onze reparatie diensten"},
   why:{enabled:true,title:"Waarom HOMS TECH?"},
-  footer:{enabled:true,description:"Refurbished apparaten · Reparatie aan huis · GSM Services",area:"Rotterdam en omgeving",contact:"WhatsApp · Telefoon · E-mail"}
+  footer:{enabled:true,description:"Refurbished apparaten · Reparatie aan huis",area:"Rotterdam en omgeving",contact:"WhatsApp · Telefoon · E-mail"}
  }
 };
 let data={...defaults};
@@ -452,7 +443,6 @@ function mergeHomepageSettings(){
   topBar:{...d.topBar,...(h.topBar||{})},
   hero:{...d.hero,...(h.hero||{})},
   banners:{...d.banners,...(h.banners||{})},
-  gsm:{...d.gsm,...(h.gsm||{}),items:Array.isArray(h.gsm?.items)?h.gsm.items:d.gsm.items},
   categories:{...d.categories,...(h.categories||{})},
   popular:{...d.popular,...(h.popular||{})},
   homeVisit:{...d.homeVisit,...(h.homeVisit||{})},
@@ -502,36 +492,6 @@ function renderBanners(){
   document.getElementById("refurbishedBannerButton").href=b.refurbishedLink||"devices.html";
   document.getElementById("refurbishedBannerArt").textContent=b.refurbishedArt||"";
  }
-}
-function renderHomepageGsm(){
- const section=document.getElementById("homeGsmSection"),box=document.getElementById("gsmHomeTicker"),g=data.homepage.gsm;
- if(!section||!box)return;
- section.style.display=g.enabled?"":"none";
- document.getElementById("gsmHomeTitle").textContent=g.title||"GSM Services";
- const items=Array.isArray(g.items)?g.items:[];
- if(!items.length){box.innerHTML="";return;}
- const html=items.concat(items).map(x=>`<a class="product" href="${esc(x.link||"gsm-services.html")}" style="min-height:72px;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;text-decoration:none;color:var(--navy)"><span style="font-size:24px;margin-right:7px">${esc(x.icon||"🔧")}</span><strong>${esc(x.label||"Service")}</strong></a>`).join("");
- box.innerHTML='<div class="home-motion-track">'+html+"</div>";
- startSimpleTicker(box);
-}
-function startSimpleTicker(box){
- const track=box.querySelector(".home-motion-track");
- if(!track||track.children.length<2)return;
- let paused=false,start=null,half=0;
- box.onmouseenter=()=>paused=true;box.onmouseleave=()=>paused=false;
- const measure=()=>{half=track.scrollWidth/2;};
- requestAnimationFrame(measure);
- const speed=42;
- function frame(now){
-  if(document.hidden || window.matchMedia("(prefers-reduced-motion: reduce)").matches){start=now;requestAnimationFrame(frame);return;}
-  if(!start)start=now;
-  if(!paused&&half>0){
-   const x=((now-start)*speed/1000)%half;
-   track.style.transform="translate3d("+(-x)+"px,0,0)";
-  }
-  requestAnimationFrame(frame);
- }
- requestAnimationFrame(frame);
 }
 function startPopularTicker(box){
  const old=box.querySelector(".home-motion-track");
@@ -735,7 +695,7 @@ async function loadSite(){
   if(r.ok){const x=await r.json();if(x&&typeof x==="object")data={...defaults,...x}}
  }catch(e){console.warn("Website data unavailable, using defaults.")}
  mergeHomepageSettings();
- common();renderTopBar();renderHero();renderBanners();renderHomepageGsm();renderHomepageVisibility();renderCategories();renderProducts();renderServices();renderWhy();
+ common();renderTopBar();renderHero();renderBanners();renderHomepageVisibility();renderCategories();renderProducts();renderServices();renderWhy();
 }
 
 // Interactive screen before/after comparison: precise drag, same direction as pointer.
