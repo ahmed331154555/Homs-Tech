@@ -827,7 +827,7 @@ async function loadSite(){
 
 try{
 
-const response = await fetch("/api/site");
+const response = await fetch("/api/site?view=devices",{cache:"no-store"});
 
 if(!response.ok){
 throw new Error("API error");
