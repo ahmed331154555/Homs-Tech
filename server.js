@@ -518,6 +518,9 @@ async function initDatabase() {
 }
 
 // Public-facing settings omit supplier cost data and importer diagnostics.
+// Compact public catalog payloads for customer-facing phone and cart pages.
+function sanitizeDevicesCatalogData(source){const input=source&&typeof source==="object"?source:{};const output={phone:input.phone||"",whatsapp:input.whatsapp||"",businessName:input.businessName||input.siteName||"HOMS TECH",tagline:input.tagline||"Telefoonreparatie aan huis"};if(Array.isArray(input.phones))output.phones=input.phones.map(phone=>{if(!phone||typeof phone!=="object")return phone;const compact={};for(const key of ["id","name","brand","active","warranty","garantie","description","price","salePrice","sellPrice","verkoopprijs","storage","geheugen","color","kleur","condition","conditie","stock","image","imageUrl"])if(Object.prototype.hasOwnProperty.call(phone,key))compact[key]=phone[key];if(Array.isArray(phone.images))compact.images=phone.images.filter(Boolean).slice(0,1);if(Array.isArray(phone.conditionOptions))compact.conditionOptions=phone.conditionOptions.filter(o=>o&&o.active!==false&&o.available!==false).map(o=>({active:o.active,available:o.available,basePrice:o.basePrice,conditionBasePrice:o.conditionBasePrice}));if(Array.isArray(phone.variantPrices))compact.variantPrices=phone.variantPrices.filter(r=>r&&r.active!==false).map(r=>({storage:r.storage,color:r.color,price:r.price,stock:r.stock,active:r.active}));if(phone.colorGalleryImages&&typeof phone.colorGalleryImages==="object"){compact.colorGalleryImages={};for(const [color,gallery] of Object.entries(phone.colorGalleryImages))if(Array.isArray(gallery)&&gallery[0])compact.colorGalleryImages[color]=[gallery[0]];}if(phone.colorImages&&typeof phone.colorImages==="object")compact.colorImages=phone.colorImages;if(Array.isArray(phone.colorOptions))compact.colorOptions=phone.colorOptions.map(o=>({label:o?.label,image:o?.image}));return compact;});if(Array.isArray(input.devices))output.devices=input.devices.map(d=>({name:d?.name,brand:d?.brand,price:d?.price}));return output;}
+function sanitizeCartStockData(products){if(!Array.isArray(products))return [];return products.map(p=>!p||typeof p!=="object"?p:{stock:p.stock,variants:Array.isArray(p.variants)?p.variants.map(v=>({id:v?.id,sku:v?.sku,quality:v?.quality,stock:v?.stock})):[]});}
 function sanitizePublicSiteData(input) {
   const data = input && typeof input === "object" ? { ...input } : {};
   // Retired catalog data is not exposed through public settings.
@@ -635,6 +638,17 @@ app.get("/api/buyback/catalog", async (req, res) => {
 // Get website settings
 app.get("/api/site", async (req, res) => {
   try {
+    const view=String(req.query.view||"").trim().toLowerCase();
+    if(view==="devices"){
+      const result=await queryWithConnectionRetry("SELECT data->'phones' AS phones,data->'devices' AS devices,data->'phone' AS phone,data->'whatsapp' AS whatsapp,data->'businessName' AS business_name,data->'siteName' AS site_name,data->'tagline' AS tagline FROM site_settings WHERE id=1",[],4);
+      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
+      const row=result.rows[0];return res.json(sanitizeDevicesCatalogData({phones:row.phones,devices:row.devices,phone:row.phone,whatsapp:row.whatsapp,businessName:row.business_name,siteName:row.site_name,tagline:row.tagline}));
+    }
+    if(view==="cart"){
+      const result=await queryWithConnectionRetry("SELECT data->'shopProducts' AS shop_products FROM site_settings WHERE id=1",[],4);
+      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
+      return res.json({shopProducts:sanitizeCartStockData(result.rows[0].shop_products)});
+    }
     const result = await queryWithConnectionRetry(
       "SELECT data FROM site_settings WHERE id = 1",
       [],
