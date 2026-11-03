@@ -7,7 +7,6 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const path = require("path");
-const { importSamFwPage } = 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
