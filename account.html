@@ -282,42 +282,6 @@ if(!response.ok)throw new Error(data.error||"Er is iets misgegaan.");
 return data;
 }
 
-async function loadMyOrders(){
-const box=document.getElementById("myOrders");
-if(!box)return;
-try{
-const data=await api("/api/customer/orders");
-const orders=data.orders||[];
-if(!orders.length){box.innerHTML='<div class="orders-empty">Nog geen GSM-service bestellingen.</div>';return;}
-box.innerHTML=orders.map(order=>{
-const date=order.created_at?new Date(order.created_at).toLocaleString("nl-NL",{dateStyle:"medium",timeStyle:"short"}):"—";
-const price=order.price!==null&&order.price!==undefined&&order.price!==""?new Intl.NumberFormat("nl-NL",{style:"currency",currency:order.price_currency||"EUR"}).format(Number(order.price)):"Op aanvraag";
-const status=order.status||"Nieuw";
-const statusClass=/voltooid|afgerond|geleverd/i.test(status)?"done":/behandeling|bezig|processing/i.test(status)?"progress":/annul|geweigerd/i.test(status)?"cancelled":"new";
-const details=[
-["Type service",order.service_category],
-["Categorie",order.service_group],
-["Prijs",price],
-["IMEI",order.imei],
-["Telefoon",order.phone],
-["Gebruikersnaam",order.username],
-["E-mail",order.email],
-["Referentie",order.service_source_id]
-].filter(x=>x[1]!==null&&x[1]!==undefined&&String(x[1]).trim()!=="");
-const extra=order.extra_fields&&typeof order.extra_fields==="object"?Object.entries(order.extra_fields):[];
-const required=order.required_fields&&typeof order.required_fields==="object"?Object.entries(order.required_fields):[];
-const extraRows=[...required,...extra].filter(x=>x[1]!==null&&x[1]!==undefined&&String(x[1]).trim()!=="");
-return '<article class="order-item"><div class="order-item-head"><div><div class="order-name">Bestelling #'+escapeHtml(order.id)+' — '+escapeHtml(order.service_name||"Service")+'</div><div class="order-date">Aangemaakt: '+escapeHtml(date)+'</div></div><span class="order-status '+statusClass+'">'+escapeHtml(status)+'</span></div><div class="order-details-grid">'+details.map(x=>'<div class="order-detail-cell">'+escapeHtml(x[0])+'<strong>'+escapeHtml(x[1])+'</strong></div>').join("")+extraRows.map(x=>'<div class="order-detail-cell">'+escapeHtml(x[0])+'<strong>'+escapeHtml(typeof x[1]==="object"?JSON.stringify(x[1]):x[1])+'</strong></div>').join("")+'</div>'+(order.service_instructions?'<div class="order-notes"><strong>Instructies</strong><br>'+escapeHtml(order.service_instructions)+'</div>':'')+(order.notes?'<div class="order-notes"><strong>Extra informatie</strong><br>'+escapeHtml(order.notes)+'</div>':'')+'</article>';
-}).join("");
-}catch(e){box.innerHTML='<div class="orders-empty">Bestellingen konden niet worden geladen.</div>';}
-}
-
-
-function continueFirmwareDownloadAfterLogin(){
-const target=new URLSearchParams(window.location.search).get("returnTo")||"";
-if(/^\/api\/firmware\/download\/\d+$/.test(target)){window.location.replace(target);return true;}
-return false;
-}
 
 function escapeHtml(value){return String(value??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
 
