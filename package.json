@@ -6,7 +6,6 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test test/*.test.js",
-    "test:gsm": "node --test test/gsm-provider.test.js",
     "test:api": "node --test test/easy-unlocker-api.test.js"
   },
   "dependencies": {
