@@ -524,8 +524,7 @@ function sanitizePublicSiteData(input) {
   return input && typeof input === "object" ? { ...input } : {};
 }
 
-// The homepage only needs these public fields. Avoid sending the full GSM catalog,
-// admin settings, order settings and other page-specific data on the initial visit.
+// The homepage only needs these public fields; omit page-specific settings.
 function sanitizeHomepageSiteData(input) {
   const source = input && typeof input === "object" ? input : {};
   const fields = ["phone", "whatsapp", "homepage", "deviceCategories", "phones", "services", "why"];
@@ -981,7 +980,7 @@ app.get("/api/admin/search",requirePermission("search"),async(req,res)=>{
         WHERE name ILIKE $1 OR email ILIKE $1 OR phone ILIKE $1 OR address ILIKE $1
         ORDER BY created_at DESC LIMIT 20`,[like]),
       pool.query(`SELECT id,service_name,service_category,name,email,phone,username,imei,status,created_at FROM service_orders
-        WHERE LOWER(service_category) IN ('reparatie','repair') AND (CAST(id AS TEXT) ILIKE $1 OR service_name ILIKE $1 OR service_category ILIKE $1 OR name ILIKE $1 OR email ILIKE $1 OR phone ILIKE $1 OR username ILIKE $1 OR imei ILIKE $1
+        WHERE LOWER(service_category) IN ('reparatie','repair') AND (CAST(id AS TEXT) ILIKE $1 OR service_name ILIKE $1 OR service_category ILIKE $1 OR name ILIKE $1 OR email ILIKE $1 OR phone ILIKE $1 OR username ILIKE $1 OR imei ILIKE $1)
         ORDER BY created_at DESC LIMIT 20`,[like]),
       pool.query(`SELECT id,name,email,phone,city,postcode,status,total,created_at FROM webshop_orders
         WHERE CAST(id AS TEXT) ILIKE $1 OR name ILIKE $1 OR email ILIKE $1 OR phone ILIKE $1 OR city ILIKE $1 OR postcode ILIKE $1
@@ -2741,7 +2740,7 @@ app.delete("/api/admin/orders/:id", requirePermission("orders.delete"), async (r
 
     res.json({ success: true });
   } catch (error) {
-    console.error("Delete GSM order error:", error);
+    console.error("Delete repair request error:", error);
     res.status(500).json({ error: "Order kon niet worden verwijderd." });
   }
 });
