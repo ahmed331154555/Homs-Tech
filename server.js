@@ -644,6 +644,24 @@ app.get("/api/site", async (req, res) => {
       if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
       const row=result.rows[0];return res.json(sanitizeDevicesCatalogData({phones:row.phones,devices:row.devices,phone:row.phone,whatsapp:row.whatsapp,businessName:row.business_name,siteName:row.site_name,tagline:row.tagline}));
     }
+    if(view==="product"){
+      const result=await queryWithConnectionRetry(
+        "SELECT data->'phones' AS phones,data->'usedPhones' AS used_phones,data->'phone' AS phone,data->'whatsapp' AS whatsapp,data->'businessName' AS business_name,data->'siteName' AS site_name,data->'tagline' AS tagline FROM site_settings WHERE id=1",
+        [],
+        4
+      );
+      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
+      const row=result.rows[0];
+      return res.json({
+        phones:Array.isArray(row.phones)?row.phones:[],
+        usedPhones:Array.isArray(row.used_phones)?row.used_phones:[],
+        phone:row.phone||"",
+        whatsapp:row.whatsapp||"",
+        businessName:row.business_name||row.site_name||"HOMS TECH",
+        siteName:row.site_name||"HOMS TECH",
+        tagline:row.tagline||"Telefoonreparatie aan huis"
+      });
+    }
     if(view==="cart"){
       const result=await queryWithConnectionRetry("SELECT data->'shopProducts' AS shop_products FROM site_settings WHERE id=1",[],4);
       if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
