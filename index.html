@@ -158,52 +158,38 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
  .footer-grid{grid-template-columns:1fr}.copyright{display:block}.copyright span{display:block;margin-top:5px}
 }
 
-/* HOMS TECH — premium before / after comparison */
+/* HOMS TECH — interactive phone repair animation */
 .screen-before-after{
- background:linear-gradient(145deg,#fff 0%,#f7faff 100%);
- border:1px solid #e5ebf3;border-radius:26px;
- padding:clamp(18px,3vw,34px);margin:30px auto 36px;
- box-shadow:0 18px 48px rgba(7,29,45,.08);
+ background:linear-gradient(145deg,#0f172a 0%,#13243a 100%);
+ color:#f8fafc;border:1px solid rgba(148,163,184,.18);border-radius:26px;
+ padding:clamp(22px,4vw,38px);margin:30px auto 36px;text-align:center;
+ box-shadow:0 18px 48px rgba(7,29,45,.12)
 }
-.screen-before-after .section-title{margin:0 0 8px;font-size:clamp(23px,3vw,32px);font-weight:900;letter-spacing:-.7px}
-.screen-ba-subtitle{text-align:center;color:#64748b;font-size:14px;line-height:1.6;margin:0 0 22px}
+.screen-before-after .section-title{margin:0 0 8px;color:#f8fafc;font-size:clamp(23px,3vw,32px);font-weight:900}
+.screen-ba-subtitle{color:#cbd5e1;font-size:14px;line-height:1.7;margin:0 0 18px}
 .screen-ba-stage{
- position:relative;width:min(100%,720px);aspect-ratio:3/2;height:auto;margin:auto;
- border-radius:28px;overflow:hidden;background:#eef2f7;touch-action:pan-y;
- cursor:ew-resize;user-select:none;isolation:isolate;box-shadow:0 18px 42px rgba(15,23,42,.16);
+ width:min(100%,340px);margin:0 auto;position:relative;display:flex;justify-content:center;
+ cursor:pointer;outline:none;touch-action:manipulation
 }
-.screen-ba-half{position:absolute;inset:0;overflow:hidden}
-.screen-ba-half img,.screen-ba-half svg{display:block;width:100%;height:100%;object-fit:contain}
-.screen-ba-clean{clip-path:inset(0 0 0 50%);z-index:2}
-.screen-ba-label{
- position:absolute;top:16px;z-index:5;padding:8px 13px;border-radius:999px;
- color:#fff;background:rgba(7,29,45,.82);font-size:12px;font-weight:800;
- letter-spacing:.3px;box-shadow:0 3px 12px #0002;backdrop-filter:blur(8px)
+.screen-ba-phone{
+ display:block;width:100%;height:auto;overflow:visible;
+ filter:drop-shadow(0 15px 25px rgba(0,0,0,.5));
+ transition:transform .3s ease
 }
-.screen-ba-label.before{left:16px}
-.screen-ba-label.after{right:16px;background:rgba(37,99,235,.9)}
-.screen-ba-divider{
- position:absolute;z-index:6;top:0;bottom:0;left:50%;width:3px;
- background:#fff;box-shadow:0 0 14px rgba(0,0,0,.28);transform:translateX(-50%);
- pointer-events:none;display:flex;align-items:center;justify-content:center
-}
-.screen-ba-knob{
- width:52px;height:52px;border:3px solid #fff;border-radius:50%;
- background:rgba(255,255,255,.96);color:#0b2940;display:flex;
- align-items:center;justify-content:center;font-size:23px;font-weight:900;
- box-shadow:0 5px 20px rgba(0,0,0,.25)
-}
-.screen-ba-stage:focus-visible{outline:3px solid #2563eb;outline-offset:4px}
-.screen-ba-help{text-align:center;color:#64748b;font-size:12px;margin:13px 0 0}
-@media(max-width:600px){
- .screen-before-after{padding:18px 12px;border-radius:20px;margin:22px 0 28px}
- .screen-ba-stage{aspect-ratio:1/1;border-radius:22px}
- .screen-ba-label{top:11px;padding:7px 10px;font-size:11px}
- .screen-ba-label.before{left:11px}.screen-ba-label.after{right:11px}
- .screen-ba-knob{width:46px;height:46px;font-size:21px}
- .screen-ba-subtitle{font-size:13px;margin-bottom:16px}
-}
-
+.screen-ba-stage:hover .screen-ba-phone,.screen-ba-stage.is-repaired .screen-ba-phone{transform:scale(1.025)}
+.screen-ba-phone .phone-body{fill:#334155;stroke:#475569;stroke-width:3;transition:fill .4s ease,stroke .4s ease,stroke-width .4s ease}
+.screen-ba-phone .screen-bg{fill:#1e293b;transition:fill .4s ease}
+.screen-ba-phone .crack{opacity:1;transition:opacity .3s ease}
+.screen-ba-phone .repaired-glow{opacity:0;transition:opacity .4s ease}
+.screen-ba-phone .crack-screen-content{opacity:.3;transition:opacity .3s ease}
+.screen-ba-stage:hover .crack,.screen-ba-stage.is-repaired .crack{opacity:0}
+.screen-ba-stage:hover .repaired-glow,.screen-ba-stage.is-repaired .repaired-glow{opacity:1}
+.screen-ba-stage:hover .crack-screen-content,.screen-ba-stage.is-repaired .crack-screen-content{opacity:0}
+.screen-ba-stage:hover .phone-body,.screen-ba-stage.is-repaired .phone-body{fill:#0f172a;stroke:#38bdf8;stroke-width:4}
+.screen-ba-stage:hover .screen-bg,.screen-ba-stage.is-repaired .screen-bg{fill:#0369a1}
+.screen-ba-help{color:#cbd5e1;font-size:13px;margin:14px 0 0}
+.screen-ba-stage:focus-visible{outline:3px solid #38bdf8;outline-offset:8px;border-radius:24px}
+@media(max-width:600px){.screen-before-after{padding:22px 14px;border-radius:20px;margin:22px 0 28px}.screen-ba-stage{width:min(100%,290px)}.screen-ba-subtitle{font-size:13px}}
 /* Approved hero layout: keep the text readable and the phone artwork crisp on mobile. */
 @media(max-width:850px){.hero{background:radial-gradient(ellipse at 50% 100%,#123e5b 0%,#071d2d 78%)}.hero-inner{grid-template-columns:1fr;text-align:center;padding:28px 0 20px;gap:8px;min-height:0}.hero h1{font-size:clamp(27px,7.2vw,36px);line-height:1.08;letter-spacing:-.7px;margin-bottom:12px}.hero p{margin:0 auto;max-width:560px;font-size:14px;line-height:1.55;padding:0 4px}.actions{justify-content:center;margin-top:16px;gap:9px}.btn{font-size:12px;padding:11px 13px}.hero-device{display:flex;height:150px;margin-top:0;background:radial-gradient(ellipse at center,#087dff38,transparent 70%)}.hero-device svg{max-width:340px}}
 @media(max-width:520px){.hero-inner{padding:24px 0 15px}.hero h1{font-size:clamp(26px,7vw,32px)}.hero p{font-size:13px}.actions{gap:8px}.btn{font-size:11px;padding:11px 12px}.hero-device{height:132px}}
@@ -371,16 +357,36 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
  </a>
 </section>
 
-<section class="screen-before-after" id="screenBeforeAfter" aria-label="Schermreparatie voor en na">
+<section class="screen-before-after" id="screenBeforeAfter" aria-label="Interactieve telefoonreparatie">
  <h2 class="section-title">Van beschadigd naar als nieuw</h2>
- <p class="screen-ba-subtitle">Schuif de lijn en bekijk het verschil na een professionele reparatie</p>
- <div class="screen-ba-stage" id="screenBaStage" tabindex="0" role="group" aria-label="Sleep de scheidingslijn om voor en na te vergelijken">
-  <span class="screen-ba-label before">VOOR</span><span class="screen-ba-label after">NA</span>
-  <div class="screen-ba-half screen-ba-broken" aria-label="iPhone vóór schermreparatie"><svg viewBox="0 0 1200 800" role="img" aria-hidden="true" preserveAspectRatio="xMidYMid meet"><defs><clipPath id="baBeforeClip"><rect x="0" y="0" width="600" height="800"/></clipPath></defs><image href="/assets/screen-repair-before-after.jpg" width="1200" height="800" clip-path="url(#baBeforeClip)"/></svg></div>
-  <div class="screen-ba-half screen-ba-clean" id="screenBaClean" aria-label="iPhone na schermreparatie"><svg viewBox="0 0 1200 800" role="img" aria-hidden="true" preserveAspectRatio="xMidYMid meet"><defs><clipPath id="baAfterClip"><rect x="600" y="0" width="600" height="800"/></clipPath></defs><image href="/assets/screen-repair-before-after.jpg" width="1200" height="800" clip-path="url(#baAfterClip)"/></svg></div>
-  <div class="screen-ba-divider" id="screenBaDivider" aria-hidden="true"><div class="screen-ba-knob">↔</div></div>
+ <p class="screen-ba-subtitle">Beweeg over de telefoon of tik erop om het scherm te herstellen</p>
+ <div class="screen-ba-stage" id="screenBaStage" tabindex="0" role="button" aria-pressed="false" aria-label="Tik of druk op Enter om de telefoon te repareren">
+  <svg class="screen-ba-phone" viewBox="0 0 200 380" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+   <rect class="phone-body" x="10" y="10" width="180" height="360" rx="32"/>
+   <path d="M 80 22 L 120 22 L 115 30 L 85 30 Z" fill="#020617"/>
+   <circle cx="100" cy="26" r="2.5" fill="#1e293b"/>
+   <rect class="screen-bg" x="22" y="42" width="156" height="296" rx="16"/>
+   <g class="repaired-glow">
+    <circle cx="100" cy="140" r="30" fill="#38bdf8" opacity=".4"/>
+    <circle cx="100" cy="140" r="15" fill="#bae6fd" opacity=".8"/>
+    <rect x="55" y="200" width="90" height="8" rx="4" fill="#fff" opacity=".9"/>
+    <rect x="70" y="218" width="60" height="6" rx="3" fill="#7dd3fc" opacity=".7"/>
+    <rect x="50" y="250" width="100" height="30" rx="8" fill="#38bdf8" opacity=".3"/>
+   </g>
+   <g class="crack-screen-content">
+    <rect x="55" y="200" width="90" height="8" rx="4" fill="#64748b"/>
+    <rect x="70" y="218" width="60" height="6" rx="3" fill="#475569"/>
+   </g>
+   <g class="crack" stroke="#e2e8f0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M 35 70 L 75 130 L 60 155 L 105 220 L 90 245 L 145 320"/>
+    <path d="M 75 130 L 135 100"/>
+    <path d="M 105 220 L 155 190"/>
+    <path d="M 60 155 L 30 185"/>
+   </g>
+   <rect x="80" y="348" width="40" height="4" rx="2" fill="#64748b"/>
+  </svg>
  </div>
- <p class="screen-ba-help">↔ Sleep de lijn of gebruik de pijltjestoetsen</p>
+ <p class="screen-ba-help">✨ Beweeg met je muis of tik op de telefoon</p>
 </section>
 
 <section class="section" id="homePopularSection">
@@ -718,39 +724,19 @@ async function loadSite(){
  try{
   const r=await fetch("/api/site?view=home",{cache:"no-cache"});
   if(r.ok){const x=await r.json();if(x&&typeof x==="object")data={...defaults,...x}}
- }catch(e){console.warn("Website data unavailable, using defaults.")}
- mergeHomepageSettings();
- common();renderTopBar();renderHero();renderBanners();renderHomepageVisibility();renderCategories();renderProducts();renderServices();renderWhy();
-}
-
-// Interactive screen before/after comparison: precise drag, same direction as pointer.
+ }catch(e){console.warn("Website data unavaila// Interactive phone repair animation: hover on desktop, tap/click on touch devices.
 (function initScreenBeforeAfter(){
- const stage=document.getElementById("screenBaStage"),clean=document.getElementById("screenBaClean"),divider=document.getElementById("screenBaDivider");
- if(!stage||!clean||!divider)return;
- let dragging=false;
- function setPositionFromPointer(e){
-  const r=stage.getBoundingClientRect();
-  if(!r.width)return;
-  const x=Math.max(0,Math.min(r.width,e.clientX-r.left));
-  const v=x/r.width*100;
-  clean.style.clipPath="inset(0 0 0 "+v+"%)";
-  divider.style.left=v+"%";
+ const stage=document.getElementById("screenBaStage");
+ if(!stage)return;
+ function toggleRepair(){
+  const repaired=stage.classList.toggle("is-repaired");
+  stage.setAttribute("aria-pressed",String(repaired));
  }
- stage.addEventListener("pointerdown",e=>{
-  if(e.pointerType==="mouse"&&e.button!==0)return;
-  dragging=true;
-  stage.setPointerCapture?.(e.pointerId);
-  setPositionFromPointer(e);
-  e.preventDefault();
- });
- stage.addEventListener("pointermove",e=>{if(dragging)setPositionFromPointer(e);});
- stage.addEventListener("pointerup",()=>{dragging=false;});
- stage.addEventListener("pointercancel",()=>{dragging=false;});
+ stage.addEventListener("click",toggleRepair);
  stage.addEventListener("keydown",e=>{
-  const now=parseFloat(divider.style.left)||50;
-  if(e.key==="ArrowLeft"){const v=Math.max(0,now-2);clean.style.clipPath="inset(0 0 0 "+v+"%)";divider.style.left=v+"%";e.preventDefault();}
-  if(e.key==="ArrowRight"){const v=Math.min(100,now+2);clean.style.clipPath="inset(0 0 0 "+v+"%)";divider.style.left=v+"%";e.preventDefault();}
-  if(e.key==="Home"){clean.style.clipPath="inset(0 0 0 0%)";divider.style.left="0%";e.preventDefault();}
+  if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleRepair();}
+ });
+})();tDefault();}
   if(e.key==="End"){clean.style.clipPath="inset(0 0 0 100%)";divider.style.left="100%";e.preventDefault();}
  });
  clean.style.clipPath="inset(0 0 0 50%)";
