@@ -724,7 +724,12 @@ async function loadSite(){
  try{
   const r=await fetch("/api/site?view=home",{cache:"no-cache"});
   if(r.ok){const x=await r.json();if(x&&typeof x==="object")data={...defaults,...x}}
- }catch(e){console.warn("Website data unavaila// Interactive phone repair animation: hover on desktop, tap/click on touch devices.
+ }catch(e){console.warn("Website data unavailable, using defaults.")}
+ mergeHomepageSettings();
+ common();renderTopBar();renderHero();renderBanners();renderHomepageVisibility();renderCategories();renderProducts();renderServices();renderWhy();
+}
+
+// Interactive phone repair animation: hover on desktop, tap/click on touch devices.
 (function initScreenBeforeAfter(){
  const stage=document.getElementById("screenBaStage");
  if(!stage)return;
@@ -736,11 +741,6 @@ async function loadSite(){
  stage.addEventListener("keydown",e=>{
   if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleRepair();}
  });
-})();tDefault();}
-  if(e.key==="End"){clean.style.clipPath="inset(0 0 0 100%)";divider.style.left="100%";e.preventDefault();}
- });
- clean.style.clipPath="inset(0 0 0 50%)";
- divider.style.left="50%";
 })();
 
 loadSite();
