@@ -252,90 +252,40 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
     saveCart(items);
   };
 
-  async function render(){
-    let items = readCart();
+  function render(){paint(readCart());refreshShopStock();}
+
+  function paint(items){
+    const area=document.getElementById("cartArea");if(!area)return;updateCartCount(items);
+    if(!items.length){area.innerHTML='<div class="empty"><h2>Je winkelwagen is leeg</h2><p>Voeg eerst een telefoon toe aan je winkelwagen.</p><a class="btn red" href="devices.html">📱 Bekijk telefoons</a></div>';return;}
+    let total=0;
+    const rows=items.map((item,index)=>{const qty=Math.max(1,Number(item.qty||1));const lineTotal=Number(item.unitPrice??item.price??0)*qty;total+=lineTotal;const image=item.image?'<img class="item-img" src="'+esc(item.image)+'" alt="'+esc(item.name||"Smartphone")+'">':'<div class="item-img" style="display:flex;align-items:center;justify-content:center;font-size:40px">📱</div>';return '<div class="cart-item">'+image+'<div><div class="item-brand">'+esc(item.brand||"")+'</div><div class="item-title">'+esc(item.name||"Smartphone")+'</div><div class="opts">'+optionsText(item.options)+'</div><div class="qty"><button type="button" onclick="changeQty('+index+',-1)">−</button><span>'+qty+'</span><button type="button" onclick="changeQty('+index+',1)">+</button><button type="button" class="remove delete-cart-btn" onclick="removeItem('+index+')" aria-label="Verwijder product" title="Verwijder product">🗑</button></div></div><div class="item-price">'+money(lineTotal)+'</div></div>';}).join("");
+    area.innerHTML=rows+'<div class="summary"><div><small>Totaal</small><div class="summary-total">'+money(total)+'</div></div><div class="actions"><a class="btn gray" href="devices.html">← Verder winkelen</a><a class="btn blue" href="checkout.html" style="background:#2563eb!important;color:#fff!important;border:0!important;box-shadow:0 5px 14px rgba(37,99,235,.22)!important;">Naar afrekenen →</a></div></div>';
+  }
+
+  async function refreshShopStock(){
+    if(!readCart().some(item=>String(item.type||"").toLowerCase()==="shop"))return;
     try{
-      const response = await fetch("/api/site",{cache:"no-store"});
-      if(response.ok){
-        const catalog = await response.json();
-        const shopProducts = Array.isArray(catalog.shopProducts) ? catalog.shopProducts : [];
-        let changed = false;
-        items = items.map(item => {
-          if(String(item.type || "").toLowerCase() !== "shop") return item;
-          const id = Number(item.id);
-          const product = Number.isInteger(id) ? shopProducts[id] : null;
-          if(!product) return item;
-          const variants = Array.isArray(product.variants) ? product.variants : [];
-          const variant = variants.find(v => String(v.id || v.sku || v.quality || "") === String(item.variantId || item.sku || ""));
-          const rawStock = variant ? variant.stock : product.stock;
-          const match = String(rawStock ?? "").trim().match(/^(\d+)/);
-          if(!match) return item;
-          const stock = Math.max(0,Number(match[1]));
-          const qty = Math.max(1,Number(item.qty || 1));
-          if(stock === 0){changed=true;return {...item,qty:0,unavailable:true};}
-          if(qty > stock){changed=true;return {...item,qty:stock};}
-          return item;
-        }).filter(item => !(item.unavailable && Number(item.qty)===0));
-        if(changed){
-          try{localStorage.setItem(CART_KEY,JSON.stringify(items));}catch(error){}
-        }
-      }
+      const response=await fetch("/api/site?view=cart",{cache:"no-store"});
+      if(!response.ok)return;
+      const catalog=await response.json();
+      const shopProducts=Array.isArray(catalog.shopProducts)?catalog.shopProducts:[];
+      let changed=false;
+      const items=readCart().map(item=>{
+        if(String(item.type||"").toLowerCase()!=="shop")return item;
+        const id=Number(item.id),product=Number.isInteger(id)?shopProducts[id]:null;
+        if(!product)return item;
+        const variants=Array.isArray(product.variants)?product.variants:[];
+        const variant=variants.find(v=>String(v.id||v.sku||v.quality||"")===String(item.variantId||item.sku||""));
+        const rawStock=variant?variant.stock:product.stock;
+        const match=String(rawStock??"").trim().match(/^(\d+)/);
+        if(!match)return item;
+        const stock=Math.max(0,Number(match[1])),qty=Math.max(1,Number(item.qty||1));
+        if(stock===0){changed=true;return {...item,qty:0,unavailable:true};}
+        if(qty>stock){changed=true;return {...item,qty:stock};}
+        return item;
+      }).filter(item=>!(item.unavailable&&Number(item.qty)===0));
+      if(changed){try{localStorage.setItem(CART_KEY,JSON.stringify(items));}catch(error){}paint(items);}
     }catch(error){console.warn("Voorraadcontrole kon niet worden geladen:",error);}
-    const area = document.getElementById("cartArea");
-    if(!area) return;
-
-    updateCartCount(items);
-
-    if(!items.length){
-      area.innerHTML =
-        '<div class="empty">' +
-          '<h2>Je winkelwagen is leeg</h2>' +
-          '<p>Voeg eerst een telefoon toe aan je winkelwagen.</p>' +
-          '<a class="btn red" href="devices.html">📱 Bekijk telefoons</a>' +
-        '</div>';
-      return;
-    }
-
-    let total = 0;
-
-    const rows = items.map((item,index) => {
-      const qty = Math.max(1, Number(item.qty || 1));
-      const unitPrice = Number(item.unitPrice ?? item.price ?? 0);
-      const lineTotal = unitPrice * qty;
-      total += lineTotal;
-
-      const image = item.image
-        ? '<img class="item-img" src="' + esc(item.image) + '" alt="' + esc(item.name || "Smartphone") + '">'
-        : '<div class="item-img" style="display:flex;align-items:center;justify-content:center;font-size:40px">📱</div>';
-
-      return (
-        '<div class="cart-item">' +
-          image +
-          '<div>' +
-            '<div class="item-brand">' + esc(item.brand || "") + '</div>' +
-            '<div class="item-title">' + esc(item.name || "Smartphone") + '</div>' +
-            '<div class="opts">' + optionsText(item.options) + '</div>' +
-            '<div class="qty">' +
-              '<button type="button" onclick="changeQty(' + index + ',-1)">−</button>' +
-              '<span>' + qty + '</span>' +
-              '<button type="button" onclick="changeQty(' + index + ',1)">+</button>' +
-              '<button type="button" class="remove delete-cart-btn" onclick="removeItem(' + index + ')" aria-label="Verwijder product" title="Verwijder product">🗑</button>' +
-            '</div>' +
-          '</div>' +
-          '<div class="item-price">' + money(lineTotal) + '</div>' +
-        '</div>'
-      );
-    }).join("");
-
-    area.innerHTML =
-      rows +
-      '<div class="summary">' +
-        '<div><small>Totaal</small><div class="summary-total">' + money(total) + '</div></div>' +
-        '<div class="actions">' +
-          '<a class="btn gray" href="devices.html">← Verder winkelen</a>' +
-          '<a class="btn blue" href="checkout.html" style="background:#2563eb!important;color:#fff!important;border:0!important;box-shadow:0 5px 14px rgba(37,99,235,.22)!important;">Naar afrekenen →</a>' +
-        '</div>' +
-      '</div>';
   }
 
   function start(){
