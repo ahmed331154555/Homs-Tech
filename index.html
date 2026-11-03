@@ -168,12 +168,12 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 .screen-before-after .section-title{margin:0 0 8px;font-size:clamp(23px,3vw,32px);font-weight:900;letter-spacing:-.7px}
 .screen-ba-subtitle{text-align:center;color:#64748b;font-size:14px;line-height:1.6;margin:0 0 22px}
 .screen-ba-stage{
- position:relative;width:min(100%,720px);aspect-ratio:1.22/1;height:auto;margin:auto;
+ position:relative;width:min(100%,720px);aspect-ratio:3/2;height:auto;margin:auto;
  border-radius:28px;overflow:hidden;background:#eef2f7;touch-action:pan-y;
  cursor:ew-resize;user-select:none;isolation:isolate;box-shadow:0 18px 42px rgba(15,23,42,.16);
 }
 .screen-ba-half{position:absolute;inset:0;overflow:hidden}
-.screen-ba-half img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+.screen-ba-half img,.screen-ba-half svg{display:block;width:100%;height:100%;object-fit:contain}
 .screen-ba-clean{clip-path:inset(0 0 0 50%);z-index:2}
 .screen-ba-label{
  position:absolute;top:16px;z-index:5;padding:8px 13px;border-radius:999px;
@@ -376,8 +376,8 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
  <p class="screen-ba-subtitle">Schuif de lijn en bekijk het verschil na een professionele reparatie</p>
  <div class="screen-ba-stage" id="screenBaStage" tabindex="0" role="group" aria-label="Sleep de scheidingslijn om voor en na te vergelijken">
   <span class="screen-ba-label before">VOOR</span><span class="screen-ba-label after">NA</span>
-  <div class="screen-ba-half screen-ba-broken"><img src="assets/screen-repair-before.svg" alt="iPhone vóór schermreparatie" loading="lazy" decoding="async"></div>
-  <div class="screen-ba-half screen-ba-clean" id="screenBaClean"><img src="assets/screen-repair-after.svg" alt="iPhone na schermreparatie" loading="lazy" decoding="async"></div>
+  <div class="screen-ba-half screen-ba-broken" aria-label="iPhone vóór schermreparatie"><svg viewBox="0 0 1200 800" role="img" aria-hidden="true" preserveAspectRatio="xMidYMid meet"><defs><clipPath id="baBeforeClip"><rect x="0" y="0" width="600" height="800"/></clipPath></defs><image href="/assets/screen-repair-before-after.jpg" width="1200" height="800" clip-path="url(#baBeforeClip)"/></svg></div>
+  <div class="screen-ba-half screen-ba-clean" id="screenBaClean" aria-label="iPhone na schermreparatie"><svg viewBox="0 0 1200 800" role="img" aria-hidden="true" preserveAspectRatio="xMidYMid meet"><defs><clipPath id="baAfterClip"><rect x="600" y="0" width="600" height="800"/></clipPath></defs><image href="/assets/screen-repair-before-after.jpg" width="1200" height="800" clip-path="url(#baAfterClip)"/></svg></div>
   <div class="screen-ba-divider" id="screenBaDivider" aria-hidden="true"><div class="screen-ba-knob">↔</div></div>
  </div>
  <p class="screen-ba-help">↔ Sleep de lijn of gebruik de pijltjestoetsen</p>
