@@ -39,5 +39,39 @@ scripts.forEach((source, index) => {
   }
 });
 
+const declaredFunctions = new Set();
+for (const source of scripts) {
+  for (const match of source.matchAll(/^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/gm)) {
+    declaredFunctions.add(match[1]);
+  }
+}
+
+const allowedGlobals = new Set([
+  "if", "alert", "confirm", "prompt", "setTimeout", "setInterval",
+  "clearTimeout", "clearInterval", "parseInt", "parseFloat", "Number",
+  "String", "Boolean", "Array", "Object", "Math", "Date", "JSON",
+  "Event", "FileReader", "URL", "encodeURIComponent", "decodeURIComponent"
+]);
+const missingHandlers = new Map();
+const handlerAttributes = /on(?:click|change|input|submit|keydown|keyup|focus|blur)\s*=\s*["']([^"']+)["']/gi;
+
+for (const attribute of html.matchAll(handlerAttributes)) {
+  const expression = attribute[1];
+  for (const call of expression.matchAll(/(?:^|[^\w$.])([A-Za-z_$][\w$]*)\s*\(/g)) {
+    const name = call[1];
+    if (declaredFunctions.has(name) || allowedGlobals.has(name)) continue;
+    missingHandlers.set(name, (missingHandlers.get(name) || 0) + 1);
+  }
+}
+
+if (missingHandlers.size) {
+  failed = true;
+  console.error("Admin inline handlers reference undeclared functions:");
+  for (const [name, count] of missingHandlers) {
+    console.error(" - " + name + " (" + count + " reference(s))");
+  }
+}
+
 if (failed) process.exit(1);
-console.log("Checked " + scripts.length + " admin inline script blocks.");
+console.log("Checked " + scripts.length + " admin inline script blocks and " +
+  handlerAttributes.lastIndex + " inline handler references.");
