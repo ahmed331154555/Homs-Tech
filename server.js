@@ -17,6 +17,8 @@ const {
   sanitizeCartStockData
 } = require("./utils/catalog-sanitizers");
 const app = express();
+// Render runs the app behind one trusted reverse proxy; use its client IP for rate limits.
+app.set("trust proxy", 1);
 const { registerAdminOrderRoutes } = require("./routes/admin-orders");
 const { registerAdminWebshopOrderRoutes } = require("./routes/admin-webshop-orders");
 const { validateRepairQuotePayload } = require("./utils/repair-quote");
@@ -1891,7 +1893,7 @@ app.post("/api/repair-requests", async (req, res) => {
     }
 
     // 2. Rate limiting check (per IP)
-    const clientIp = String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown").split(",")[0].trim();
+    const clientIp = String(req.ip || req.socket.remoteAddress || "unknown").trim();
     if (!checkRepairRequestRateLimit(clientIp)) {
       return res.status(429).json({ error: "Te veel aanvragen vanaf uw netwerk. Wacht 15 minuten en probeer het opnieuw." });
     }
