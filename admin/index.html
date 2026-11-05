@@ -259,11 +259,6 @@ textarea{
   min-width:0;
 }
 
-/* ترتيب بطاقات الهواتف المستعملة */
-#usedPhonesList .used-card{
-  grid-column:span 1;
-}
-
 /* على الشاشات الصغيرة */
 
 /* Modern orders dashboard */
@@ -310,13 +305,8 @@ textarea{
 
   #servicesList,
   #phonesList,
-  #usedPhonesList,
   #whyList{
     grid-template-columns:1fr;
-  }
-
-  #usedPhonesList .used-card{
-    grid-column:span 1;
   }
 
   .grid{
@@ -2867,8 +2857,6 @@ function renderGeneral(){
   document.querySelectorAll("[data-u]").forEach(el=>{
 
     const key=el.dataset.u;
-
-    if(key==="usedPhones") return;
 
     el.value=data[key] ?? "";
 
