@@ -1,13 +1,26 @@
 "use strict";
 
-// Public-facing settings omit supplier cost data and importer diagnostics.
+// Public settings are recursively filtered so nested catalog records cannot expose
+// supplier costs, credentials, or internal-only metadata.
+const PRIVATE_FIELD_PATTERN = /(?:supplier|purchase|wholesale|cost|margin|profit|inkoop|kostprijs|winst|secret|password|credential|token|api.?key|private|internal|admin.?only|webhook.?secret|client.?secret)/i;
+
+function stripPrivatePublicFields(value) {
+  if (Array.isArray(value)) return value.map(stripPrivatePublicFields);
+  if (!value || typeof value !== "object") return value;
+  const output = {};
+  for (const [key, nested] of Object.entries(value)) {
+    if (PRIVATE_FIELD_PATTERN.test(key)) continue;
+    output[key] = stripPrivatePublicFields(nested);
+  }
+  return output;
+}
+
 function sanitizePublicSiteData(input) {
-  const data = input && typeof input === "object" ? { ...input } : {};
+  const data = input && typeof input === "object" ? stripPrivatePublicFields(input) : {};
   // Retired catalog data is not exposed through public settings.
   delete data.gsmImport;
   delete data.gsmServices;
   if (data.homepage && typeof data.homepage === "object") {
-    data.homepage = { ...data.homepage };
     delete data.homepage.gsm;
   }
   return data;
