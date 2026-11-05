@@ -59,6 +59,7 @@ const deductPaidOrderInventory = createPaidOrderInventoryDeductor({ pool });
 const {
   getSuperAdminUser,
   getAdminFromRequest,
+  refreshAdminUserFromDb,
   requirePermission,
   requireSiteOrPhoneUpdate
 } = createAdminAuth({
@@ -322,7 +323,8 @@ app.get("/api/site", async (req, res) => {
 
     let canViewPrivate = false;
     try {
-      const user = getAdminFromRequest(req);
+      const tokenUser = getAdminFromRequest(req);
+      const user = await refreshAdminUserFromDb(tokenUser);
       canViewPrivate = !!user && (
         user.role === "superadmin" ||
         user.username === String(process.env.ADMIN_USERNAME || "") ||
