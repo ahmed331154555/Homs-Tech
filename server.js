@@ -33,7 +33,7 @@ const { priceProductFromCatalog } = require("./utils/cart-pricing");
 const { validateCartInventoryQuantities } = require("./utils/cart-inventory-validation");
 const { sanitizeProductCatalogData } = require("./utils/product-catalog-sanitizer");
 const { createAdminAuth } = require("./utils/admin-auth");
-const { normalizeAdminPermissions } = require("./utils/admin-permissions");
+const { normalizeAdminPermissions, sanitizeStoredAdminPermissions } = require("./utils/admin-permissions");
 const { createCustomerEmails } = require("./utils/customer-emails");
 const { ensureBuybackOrdersTable } = require("./utils/buyback-schema");
 const { initializeDatabaseWithRetry } = require("./utils/database-initialization");
@@ -438,7 +438,7 @@ app.post("/api/login", async (req,res)=>{
     if(!await verifyPassword(password,a.password_hash))
       return res.status(401).json({error:"Invalid username or password"});
 
-    const user={id:a.id,username:a.username,role:a.role||"admin",permissions:Array.isArray(a.permissions)?a.permissions:[]};
+    const user={id:a.id,username:a.username,role:a.role||"admin",permissions:sanitizeStoredAdminPermissions(a.permissions)};
     const token=jwt.sign(user,process.env.JWT_SECRET,{expiresIn:"7d"});
     res.cookie("token",token,{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",maxAge:7*24*60*60*1000});
     res.json({success:true,user});
@@ -470,7 +470,7 @@ app.get("/api/me",async (req,res)=>{
       return res.status(401).json({authenticated:false,reason:"admin_inactive"});
     }
     const a=q.rows[0];
-    const normalized={id:a.id,username:a.username,role:a.role||"admin",permissions:Array.isArray(a.permissions)?a.permissions:[]};
+    const normalized={id:a.id,username:a.username,role:a.role||"admin",permissions:sanitizeStoredAdminPermissions(a.permissions)};
     res.json({authenticated:true,...normalized});
   }catch(e){
     console.error("Admin session check failed:",String(e?.name||"Error"),String(e?.code||""));
