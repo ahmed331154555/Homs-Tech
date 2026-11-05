@@ -78,3 +78,44 @@ test("sanitizeHomepageSiteData compacts variants and drops inactive rows", () =>
   assert.deepEqual(output.phones[0].colorOptions, [{ label: "Black", image: "black.webp" }]);
   assert.deepEqual(output.phones[0].colorGalleryImages, { Black: ["one.webp"] });
 });
+
+test("sanitizePublicSiteData recursively removes private costs and credentials while keeping sale prices", () => {
+  const input = {
+    phones: [{
+      name: "iPhone 15",
+      price: 499,
+      supplierCost: 250,
+      purchasePrice: 220,
+      internalCost: 200,
+      margin: 279,
+      profit: 99,
+      variantPrices: [{ color: "Black", price: 499, supplierCost: 210 }]
+    }],
+    buybackCatalog: [{
+      name: "iPhone 12",
+      buyPrice: 100,
+      inkoopprijs: 70,
+      publicOffer: 120
+    }],
+    paymentSettings: {
+      mollieApiKey: "private-key",
+      paypalClientSecret: "private-secret",
+      webhookSecret: "private-webhook"
+    },
+    homepage: { title: "Home", privateNote: "internal" }
+  };
+  const output = sanitizePublicSiteData(input);
+  assert.equal(output.phones[0].price, 499);
+  assert.equal(output.phones[0].supplierCost, undefined);
+  assert.equal(output.phones[0].purchasePrice, undefined);
+  assert.equal(output.phones[0].internalCost, undefined);
+  assert.equal(output.phones[0].variantPrices[0].supplierCost, undefined);
+  assert.equal(output.buybackCatalog[0].publicOffer, 120);
+  assert.equal(output.buybackCatalog[0].buyPrice, undefined);
+  assert.equal(output.buybackCatalog[0].inkoopprijs, undefined);
+  assert.equal(output.paymentSettings.mollieApiKey, undefined);
+  assert.equal(output.paymentSettings.paypalClientSecret, undefined);
+  assert.equal(output.paymentSettings.webhookSecret, undefined);
+  assert.equal(output.homepage.privateNote, undefined);
+  assert.equal(input.phones[0].supplierCost, 250);
+});
