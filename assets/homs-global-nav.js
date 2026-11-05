@@ -91,6 +91,16 @@
  var close=document.createElement('button');close.className='homs-menu-close';close.type='button';close.setAttribute('aria-label','Menu sluiten');close.textContent='×';head.appendChild(close);drawer.appendChild(head);
  var label=document.createElement('div');label.className='homs-menu-label';label.textContent='Alle afdelingen';drawer.appendChild(label);
  links.forEach(function(item){var a=document.createElement('a');a.href=item[2];if(item[2]===active){a.className='active';a.setAttribute('aria-current','page')}var icon=document.createElement('span');icon.className='homs-menu-icon';icon.textContent=item[0];var title=document.createElement('span');title.textContent=item[1];a.appendChild(icon);a.appendChild(title);drawer.appendChild(a)});
+ // Hide the Shop navigation entry whenever the admin has temporarily disabled the page.
+ fetch('/api/shop/status',{cache:'no-store'}).then(function(response){
+  if(!response.ok)throw new Error('Shop status unavailable');
+  return response.json();
+ }).then(function(status){
+  if(status.enabled===false){
+   drawer.querySelectorAll('a[href="shop.html"]').forEach(function(link){link.remove()});
+  }
+ }).catch(function(){/* Keep navigation unchanged if status cannot be checked. */});
+
  function setOpen(v){
   var wasOpen=drawer.classList.contains('open');
   drawer.classList.toggle('open',v);
