@@ -351,12 +351,13 @@ app.get("/api/site", async (req, res) => {
   } catch (error) {
     console.error(error);
 
+    res.status(500).json({
+      error: "Server error"
+    });
   }
 });
 
 registerContactRoutes(app, { pool, escapeHtml, cryptoImpl: crypto, getEnv: () => process.env, fetchImpl: fetch });
-  }
-});
 
 // Admin login + permissions
 const ADMIN_PERMISSION_NAMES = {
