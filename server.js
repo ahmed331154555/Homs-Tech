@@ -29,7 +29,6 @@ const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-lim
 const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-inventory");
 const { priceProductFromCatalog } = require("./utils/cart-pricing");
 const { createAdminAuth } = require("./utils/admin-auth");
-const { createCustomerAuth } = require("./utils/customer-auth");
 const { createCustomerEmails } = require("./utils/customer-emails");
 const { ensureBuybackOrdersTable } = require("./utils/buyback-schema");
 const { initializeDatabaseWithRetry } = require("./utils/database-initialization");
@@ -65,7 +64,6 @@ const {
   getAdminUsername: () => String(process.env.ADMIN_USERNAME || ""),
   getJwtSecret: () => process.env.JWT_SECRET
 });
-const { requireCustomerAuth } = createCustomerAuth({ jwt, getJwtSecret: () => process.env.JWT_SECRET });
 const { sendCustomerVerificationEmail, sendWelcomeEmail } = createCustomerEmails({
   getEnv: () => process.env,
   fetchImpl: fetch,
