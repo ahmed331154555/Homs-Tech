@@ -129,10 +129,13 @@ function priceShopVariant(product, item, id, moneyNumber) {
     return { error: "Kies een geldige hoeveelheid (1–99)." };
   }
 
-  const stockText = String(variant?.stock ?? product.stock ?? "").trim();
+  const stockText = String(variant ? (variant.stock ?? "") : (product.stock ?? "")).trim();
   const stockMatch = variant
     ? stockText.match(/^(\d+)$/)
     : stockText.match(/^(\d+)/);
+  if (variant && !stockMatch) {
+    return { error: "De voorraad voor deze productkwaliteit is niet correct ingesteld. Neem contact met ons op." };
+  }
   if (stockMatch && Number(stockMatch[1]) < qty) {
     return { error: variant
       ? "Er is onvoldoende voorraad voor deze productkwaliteit."
