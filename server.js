@@ -28,6 +28,7 @@ const { allowLiveChat, liveChatAutomaticReply } = require("./utils/live-chat");
 const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-limit");
 const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-inventory");
 const { priceProductFromCatalog } = require("./utils/cart-pricing");
+const { validateCartInventoryQuantities } = require("./utils/cart-inventory-validation");
 const { createAdminAuth } = require("./utils/admin-auth");
 const { createCustomerEmails } = require("./utils/customer-emails");
 const { ensureBuybackOrdersTable } = require("./utils/buyback-schema");
@@ -1310,6 +1311,8 @@ app.post("/api/webshop/orders", async (req, res) => {
       if (priced.error) return res.status(400).json({ error: priced.error });
       safeItems.push(priced.item);
     }
+    const inventoryValidationError = validateCartInventoryQuantities(catalogData, safeItems);
+    if (inventoryValidationError) return res.status(400).json({ error: inventoryValidationError });
     const total = safeItems.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
     if (!Number.isFinite(total) || total <= 0 || total > 100000) {
       return res.status(400).json({ error: "Het totaalbedrag van uw bestelling is ongeldig." });
