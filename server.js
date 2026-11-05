@@ -2568,8 +2568,10 @@ app.get("/api/admin/buyback-orders", requirePermission("buyback_orders.view"), a
 
 app.put("/api/admin/buyback-orders/:id/offer", requirePermission("buyback_orders.update"), async (req, res) => {
   try {
-    const offer = Number(req.body?.finalOffer);
-    if (!Number.isFinite(offer) || offer < 0 || offer > 1000000) {
+    let offer;
+    try {
+      offer = validateBuybackOfferedPrice(req.body?.finalOffer, { max: 1000000 });
+    } catch {
       return res.status(400).json({ error: "Vul een geldig definitief bedrag in." });
     }
     const found = await pool.query("SELECT id,order_no,name,email,device FROM buyback_orders WHERE id=$1", [req.params.id]);
