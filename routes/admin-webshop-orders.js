@@ -82,12 +82,28 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       }
   
       const result = await pool.query(
-        "DELETE FROM webshop_orders WHERE id = $1 RETURNING id",
+        `DELETE FROM webshop_orders
+         WHERE id = $1
+           AND payment_status <> 'Paid'
+           AND payment_status <> 'Pending'
+           AND inventory_deducted_at IS NULL
+           AND COALESCE(paypal_order_id, '') = ''
+           AND COALESCE(mollie_payment_id, '') = ''
+         RETURNING id`,
         [id]
       );
   
       if (!result.rows.length) {
-        return res.status(404).json({ error: "Bestelling niet gevonden." });
+        const existing = await pool.query(
+          "SELECT id, payment_status, inventory_deducted_at, paypal_order_id, mollie_payment_id FROM webshop_orders WHERE id = $1",
+          [id]
+        );
+        if (!existing.rows.length) {
+          return res.status(404).json({ error: "Bestelling niet gevonden." });
+        }
+        return res.status(409).json({
+          error: "Deze bestelling kan niet worden verwijderd omdat de betaling is bevestigd, nog loopt of aan een betaalprovider is gekoppeld. Bewaar het besteloverzicht voor uw administratie."
+        });
       }
   
       res.json({ success: true });
