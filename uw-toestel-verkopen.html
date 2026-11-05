@@ -2398,8 +2398,8 @@ $('finish').onclick=async()=>{
       name:$('cName').value.trim(),email:$('cEmail').value.trim(),phone:$('cPhone').value.trim(),
       address:[$('cAddress').value.trim(),$('cZip').value.trim(),$('cCity').value.trim()].filter(Boolean).join(', '),
       device:selectedModel.name||'',brand:selectedModel.brand||'',model:selectedModel.name||'',storage:firstAnswerByLabel(['opslag'])||'',
-      condition:firstAnswerByLabel(['conditie','staat'])||'',
-      battery:firstAnswerByLabel(['batterij'])||'',
+      condition:firstAnswerByLabel(['conditie','staat'])||'',faceId:firstAnswerByLabel(['face id'])||'',
+      battery:firstAnswerByLabel(['batterij'])||'',screen:firstAnswerByLabel(['scherm'])||'',
       offeredPrice:Number(offer.toFixed(2)),iban:$('cIban').value.trim(),paymentMethod:$('cMethod').value,
       answers,deviceType:selectedModel.deviceType||selectedModel.typeName||''
     };
