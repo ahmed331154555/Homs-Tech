@@ -6440,6 +6440,8 @@ function deleteWhy(i){
 
 
 /* ---------------- SHOP PRODUCTS ---------------- */
+let shopImageUploadsPending=0;
+
 const SHOP_CATEGORIES=[
  {value:"Schermen",label:"Schermen"},{value:"Laadpoorten & Flexkabels",label:"Laadpoorten & Flexkabels"},
  {value:"Batterijen",label:"Batterijen"},{value:"Reparatiemachines & Gereedschap",label:"Reparatiemachines & Gereedschap"},
@@ -6479,12 +6481,16 @@ function updateShopVariant(index,variantIndex,key,value){ensureShopProducts();co
 function deleteShopVariant(index,variantIndex){ensureShopProducts();const p=data.shopProducts[index];if(!p||p.variants.length<2){alert("Een product moet minimaal één optie hebben.");return;}p.variants.splice(variantIndex,1);p.price=p.variants[0].price;p.stock=String(p.variants[0].stock??"")+" stuks";renderShopProductsAdmin();markChanged();}
 function shopProductImageUpload(event,index,slot){
  const input=event.target,file=input.files&&input.files[0];if(!file)return;
- if(!file.type.startsWith("image/")||file.type==="image/svg+xml"){alert("Kies een geldige afbeeldingsbestand (geen SVG).");input.value="";return;}
+ if(!file.type.startsWith("image/")||file.type==="image/svg+xml"){alert("Kies een geldig afbeeldingsbestand (geen SVG).");input.value="";return;}
  if(file.size>1.2*1024*1024){alert("Elke foto mag maximaal 1,2 MB zijn. Verklein de foto en probeer opnieuw.");input.value="";return;}
  ensureShopProducts();
  const product=data.shopProducts[index];if(!product){input.value="";return;}
  const productId=String(product.id),reader=new FileReader();
+ let completed=false;
+ const finish=()=>{if(completed)return;completed=true;shopImageUploadsPending=Math.max(0,shopImageUploadsPending-1);};
+ shopImageUploadsPending++;
  reader.onload=()=>{
+  finish();
   const currentIndex=data.shopProducts.findIndex(item=>String(item?.id)===productId);
   if(currentIndex<0){setStatus("De foto is niet toegevoegd: het product is intussen verwijderd.","error");return;}
   const current=data.shopProducts[currentIndex];
@@ -6494,8 +6500,8 @@ function shopProductImageUpload(event,index,slot){
   current.images[slot]=String(reader.result||"");
   renderShopProductsAdmin();markChanged();
  };
- reader.onerror=()=>{alert("De foto kon niet worden gelezen. Probeer een andere afbeelding.");input.value="";};
- reader.readAsDataURL(file);
+ reader.onerror=()=>{finish();alert("De foto kon niet worden gelezen. Probeer een andere afbeelding.");input.value="";};
+ try{reader.readAsDataURL(file);}catch(error){finish();alert("De foto kon niet worden gelezen. Probeer opnieuw.");input.value="";}
 }
 function renderShopProductsAdmin(){
  const box=document.getElementById("shopProductsAdmin");if(!box)return;ensureShopProducts();
@@ -6595,6 +6601,7 @@ async function save(isAuto=false){
   // Validate the phone currently being edited before persisting the catalog.
   // This is scoped to the phone page so unrelated admin sections keep their existing save flow.
   if(currentPage==="shop"){
+    if(shopImageUploadsPending>0){setStatus("Wacht tot alle Shopfoto’s volledig zijn ingelezen voordat je opslaat.","error");return false;}
     ensureShopProducts();
     for(let i=0;i<data.shopProducts.length;i++){
       const product=data.shopProducts[i];
@@ -6638,6 +6645,11 @@ async function save(isAuto=false){
   }
   loading=true;
   setStatus("Opslaan...","info");
+  const shopEditor=document.getElementById("shopProductsAdmin");
+  const shopEditorControls=currentPage==="shop"&&shopEditor
+    ? Array.from(shopEditor.querySelectorAll("input,select,textarea,button")).map(element=>({element,wasDisabled:element.disabled}))
+    : [];
+  shopEditorControls.forEach(({element})=>{element.disabled=true;});
 
   try{
     // Do NOT run the global normalizer before saving.
@@ -6763,6 +6775,7 @@ async function save(isAuto=false){
     setStatus("✕ Opslaan mislukt: "+e.message,"error");
     return false;
   }finally{
+    shopEditorControls.forEach(({element,wasDisabled})=>{element.disabled=wasDisabled;});
     loading=false;
     autoSaveAgain=false;
   }
