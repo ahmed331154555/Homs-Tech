@@ -60,3 +60,12 @@ test("aggregate validation does not confuse separate Shop variants", () => {
   ];
   assert.equal(validateCartInventoryQuantities(catalog, items), null);
 });
+
+test("aggregate validation treats phone and device aliases as the same stock item", () => {
+  const catalog = { phones: [{ name: "Phone", stock: 2 }] };
+  const items = [
+    { type: "phone", id: 0, qty: 1 },
+    { type: "device", id: 0, qty: 2 }
+  ];
+  assert.match(validateCartInventoryQuantities(catalog, items), /totale hoeveelheid/i);
+});
