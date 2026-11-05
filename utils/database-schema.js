@@ -26,8 +26,7 @@ async function initializeDatabaseSchema(pool) {
     await pool.query(`ALTER TABLE admin_emails ADD COLUMN IF NOT EXISTS attachments JSONB NOT NULL DEFAULT '[]'::jsonb`);
     await pool.query(`ALTER TABLE admin_emails ADD COLUMN IF NOT EXISTS message_id TEXT NOT NULL DEFAULT ''`);
     await pool.query(`ALTER TABLE admin_emails ADD COLUMN IF NOT EXISTS references_header TEXT NOT NULL DEFAULT ''`);
-  
-  
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS device_register (
         id BIGSERIAL PRIMARY KEY,
@@ -86,7 +85,7 @@ async function initializeDatabaseSchema(pool) {
         data JSONB NOT NULL
       )
     `);
-  
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS customers (
         id SERIAL PRIMARY KEY,
@@ -98,13 +97,13 @@ async function initializeDatabaseSchema(pool) {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
-  
+
     // Existing accounts stay active. Public signups explicitly start unverified.
     await pool.query("ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT TRUE");
     await pool.query("ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verification_code_hash TEXT");
     await pool.query("ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verification_expires_at TIMESTAMPTZ");
     await pool.query("ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verification_attempts INTEGER NOT NULL DEFAULT 0");
-  
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS customer_password_resets (
         id BIGSERIAL PRIMARY KEY,
@@ -116,7 +115,7 @@ async function initializeDatabaseSchema(pool) {
       )
     `);
     await pool.query("CREATE INDEX IF NOT EXISTS customer_password_resets_customer_idx ON customer_password_resets (customer_id, created_at DESC)");
-  
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS admin_users (
         id SERIAL PRIMARY KEY,
@@ -128,7 +127,7 @@ async function initializeDatabaseSchema(pool) {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
-  
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS service_orders (
         id SERIAL PRIMARY KEY,
@@ -147,7 +146,7 @@ async function initializeDatabaseSchema(pool) {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
-  
+
     await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS username TEXT DEFAULT ''`);
     await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS provider_reference TEXT DEFAULT ''`);
     await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS execution_note TEXT DEFAULT ''`);
@@ -172,7 +171,7 @@ async function initializeDatabaseSchema(pool) {
         AND appointment_time IS NOT NULL
         AND status <> 'Geannuleerd'
     `);
-  
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS webshop_orders (
         id SERIAL PRIMARY KEY,
@@ -190,7 +189,7 @@ async function initializeDatabaseSchema(pool) {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
-  
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS order_settings (
         id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
@@ -198,7 +197,7 @@ async function initializeDatabaseSchema(pool) {
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
-  
+
     // Payment fields for webshop checkout / PayPal.
     await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS checkout_token TEXT NOT NULL DEFAULT ''`);
     await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT ''`);
@@ -210,11 +209,11 @@ async function initializeDatabaseSchema(pool) {
     await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS tracking_url TEXT DEFAULT ''`);
     await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS inventory_deducted_at TIMESTAMPTZ`);
     await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS inventory_error TEXT NOT NULL DEFAULT ''`);
-  
+
     const result = await pool.query(
       "SELECT id FROM site_settings WHERE id = 1"
     );
-  
+
     if (result.rows.length === 0) {
       const defaultData = {
         siteName: "HOMS TECH",
@@ -262,13 +261,13 @@ async function initializeDatabaseSchema(pool) {
           }
         ]
       };
-  
+
       await pool.query(
         "INSERT INTO site_settings (id, data) VALUES (1, $1)",
         [JSON.stringify(defaultData)]
       );
     }
-  
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS manual_invoices (
         id BIGSERIAL PRIMARY KEY,
