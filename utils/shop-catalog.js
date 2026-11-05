@@ -189,6 +189,7 @@ function deductShopVariantInventory(product, item) {
 module.exports = {
   saveShopCatalog,
   validateShopCatalogIdentifiers,
+  validateShopCatalogImages,
   findShopProductIndex,
   resolveShopVariant,
   priceShopVariant,
