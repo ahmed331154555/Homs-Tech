@@ -14,6 +14,7 @@ const {
 const app = express();
 const { registerAdminOrderRoutes } = require("./routes/admin-orders");
 const { registerAdminWebshopOrderRoutes } = require("./routes/admin-webshop-orders");
+const { validateRepairQuotePayload } = require("./utils/repair-quote");
 const { saveShopCatalog, validateShopCatalogIdentifiers, validateShopCatalogImages, findShopProductIndex, priceShopVariant, deductShopVariantInventory } = require("./utils/shop-catalog");
 const PORT = process.env.PORT || 3000;
 
@@ -2507,49 +2508,13 @@ app.post("/api/repair-requests", async (req, res) => {
       return res.status(429).json({ error: "Te veel aanvragen vanaf uw netwerk. Wacht 15 minuten en probeer het opnieuw." });
     }
 
-    const brand = String(b.brand || "").trim().slice(0, 80);
-    const model = String(b.model || "").trim().slice(0, 100);
-    const issue = String(b.issue || "").trim().slice(0, 3000);
-    const name = String(b.name || "").trim().slice(0, 120);
-    const email = String(b.email || "").trim().toLowerCase().slice(0, 254);
-    const phone = String(b.phone || "").trim().slice(0, 40);
-
-    if (!brand || !model || !issue || !name || !email || b.consent !== true) {
-      return res.status(400).json({ error: "Vul alle verplichte velden in en geef toestemming om contact op te nemen." });
+    let validated;
+    try {
+      validated = validateRepairQuotePayload(b);
+    } catch (validationError) {
+      return res.status(400).json({ error: validationError.message });
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: "Vul een geldig e-mailadres in." });
-    }
-
-    // 3. Photo validation & size bounds
-    const incomingPhotos = Array.isArray(b.photos) ? b.photos : [];
-    if (incomingPhotos.length > 4) {
-      return res.status(400).json({ error: "U kunt maximaal 4 foto's toevoegen." });
-    }
-
-    const photos = [];
-    const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/heic"]);
-    let totalPhotoBytes = 0;
-    const MAX_SINGLE_PHOTO = 2 * 1024 * 1024; // 2 MB
-    const MAX_TOTAL_PHOTOS = 6 * 1024 * 1024; // 6 MB combined
-
-    for (const photo of incomingPhotos) {
-      const type = String(photo?.type || "").toLowerCase();
-      const dataUrl = String(photo?.dataUrl || "");
-      const match = dataUrl.match(/^data:(image\/(?:jpeg|png|webp|heic));base64,([a-z0-9+/=]+)$/i);
-      if (!allowedTypes.has(type) || !match || match[1].toLowerCase() !== type) {
-        return res.status(400).json({ error: "Een foto heeft een ongeldig formaat. Alleen JPG, PNG, WEBP en HEIC zijn toegestaan." });
-      }
-      const bytes = Buffer.from(match[2], "base64");
-      if (!bytes.length || bytes.length > MAX_SINGLE_PHOTO) {
-        return res.status(400).json({ error: "Elke foto mag maximaal 2 MB groot zijn." });
-      }
-      totalPhotoBytes += bytes.length;
-      if (totalPhotoBytes > MAX_TOTAL_PHOTOS) {
-        return res.status(400).json({ error: "De totale grootte van alle foto's mag maximaal 6 MB zijn." });
-      }
-      photos.push({ name: String(photo.name || "foto").replace(/[\/\\r\\n]/g, "_").slice(0, 140), type, dataUrl });
-    }
+    const { brand, model, issue, name, email, phone, photos } = validated;
 
     // 4. Link customer_id if user is authenticated or customer exists by email
     let customerId = null;
