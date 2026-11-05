@@ -9,7 +9,7 @@ function registerAdminOrderRoutes(app, { pool, requirePermission }) {
          WHERE LOWER(service_category) IN ('reparatie','repair')
          ORDER BY created_at DESC`
       );
-  
+
       const sanitizedOrders = result.rows.map(order => {
         if (!order.extra_fields) return order;
         try {
@@ -28,14 +28,14 @@ function registerAdminOrderRoutes(app, { pool, requirePermission }) {
         } catch {}
         return order;
       });
-  
+
       res.json({ orders: sanitizedOrders });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Bestellingen konden niet worden geladen." });
     }
   });
-  
+
   app.get("/api/admin/repair-requests/:id/photos/:index", requirePermission("orders.view"), async (req, res) => {
     try {
       const id = Number(req.params.id);
@@ -45,13 +45,13 @@ function registerAdminOrderRoutes(app, { pool, requirePermission }) {
       }
       const result = await pool.query("SELECT extra_fields FROM service_orders WHERE id = $1", [id]);
       if (!result.rows.length) return res.status(404).send("Aanvraag niet gevonden.");
-  
+
       let meta = {};
       try { meta = JSON.parse(result.rows[0].extra_fields || "{}"); } catch {}
       const photos = Array.isArray(meta.photos) ? meta.photos : [];
       const photo = photos[index];
       if (!photo || !photo.dataUrl) return res.status(404).send("Foto niet gevonden.");
-  
+
       const match = String(photo.dataUrl).match(/^data:([^;]+);base64,(.+)$/);
       if (!match) return res.status(400).send("Fotoformaat ongeldig.");
       const contentType = match[1];
@@ -64,48 +64,48 @@ function registerAdminOrderRoutes(app, { pool, requirePermission }) {
       res.status(500).send("Foto kon niet worden geladen.");
     }
   });
-  
+
   app.put("/api/admin/orders/:id/status", requirePermission("orders.update"), async (req, res) => {
     try {
       const allowed = ["Nieuw", "In behandeling", "Wacht op klant", "Wacht op leverancier", "Resultaat ontvangen", "Mislukt", "Voltooid", "Geannuleerd"];
       const status = String(req.body?.status || "").trim();
-  
+
       if (!allowed.includes(status)) {
         return res.status(400).json({ error: "Ongeldige status." });
       }
-  
+
       const result = await pool.query(
         `UPDATE service_orders SET status = $1 WHERE id = $2 RETURNING id, status`,
         [status, req.params.id]
       );
-  
+
       if (!result.rows.length) {
         return res.status(404).json({ error: "Bestelling niet gevonden." });
       }
-  
+
       res.json({ success: true, order: result.rows[0] });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Status kon niet worden gewijzigd." });
     }
   });
-  
+
   app.delete("/api/admin/orders/:id", requirePermission("orders.delete"), async (req, res) => {
     try {
       const id = Number(req.params.id);
       if (!Number.isInteger(id) || id < 1) {
         return res.status(400).json({ error: "Ongeldig order-ID." });
       }
-  
+
       const result = await pool.query(
         "DELETE FROM service_orders WHERE id = $1 RETURNING id",
         [id]
       );
-  
+
       if (!result.rows.length) {
         return res.status(404).json({ error: "Order niet gevonden." });
       }
-  
+
       res.json({ success: true });
     } catch (error) {
       console.error("Delete repair request error:", error);
