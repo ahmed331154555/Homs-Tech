@@ -29,7 +29,7 @@ test("saveShopCatalog returns an empty list when the database has no returned ca
   assert.deepEqual(saved, []);
 });
 
-const { resolveShopVariant, priceShopVariant, deductShopVariantInventory } = require("../utils/shop-catalog");
+const { findShopProductIndex, resolveShopVariant, priceShopVariant, deductShopVariantInventory } = require("../utils/shop-catalog");
 
 test("resolveShopVariant selects the requested quality instead of the first quality", () => {
   const product = { variants: [
@@ -109,4 +109,23 @@ test("priceShopVariant rejects quantity above selected quality stock", () => {
   ] };
   const result = priceShopVariant(product, { variantId: "lcd", qty: 2 }, 0, Number);
   assert.match(result.error, /onvoldoende voorraad/i);
+});
+
+
+test("findShopProductIndex resolves stable ids after catalog reordering", () => {
+  const products = [
+    { id: "shop-new", name: "New product" },
+    { id: "shop-original", name: "Original product" }
+  ];
+  assert.equal(findShopProductIndex(products, "shop-original"), 1);
+});
+
+test("findShopProductIndex keeps legacy numeric cart indexes working", () => {
+  const products = [
+    { id: "shop-a", name: "First product" },
+    { id: "shop-b", name: "Second product" }
+  ];
+  assert.equal(findShopProductIndex(products, "1"), 1);
+  assert.equal(findShopProductIndex(products, "9"), -1);
+  assert.equal(findShopProductIndex(products, "missing"), -1);
 });
