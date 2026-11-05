@@ -27,4 +27,6 @@ test("stored permissions are filtered against the application permission allowli
     ["orders.view", "site.save"]
   );
   assert.ok(ADMIN_PERMISSION_KEYS.includes("device_register.update"));
+  assert.equal(ADMIN_PERMISSION_KEYS.includes("used.view"), false);
+  assert.deepEqual(sanitizeStoredAdminPermissions(["used.view"]), []);
 });
