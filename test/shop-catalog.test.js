@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { saveShopCatalog, validateShopCatalogIdentifiers } = require("../utils/shop-catalog");
+const { saveShopCatalog, validateShopCatalogIdentifiers, validateShopCatalogImages } = require("../utils/shop-catalog");
 
 test("saveShopCatalog updates only the Shop JSON key and returns saved products", async () => {
   const products = [
@@ -29,6 +29,23 @@ test("saveShopCatalog updates only the Shop JSON key and returns saved products"
 test("saveShopCatalog returns null when another admin changed the catalog first", async () => {
   const saved = await saveShopCatalog(async () => ({ rows: [] }), [], []);
   assert.equal(saved, null);
+});
+
+
+test("validateShopCatalogImages accepts supported images and up to four photos", () => {
+  const validPng = "data:image/png;base64," + "a".repeat(100);
+  assert.equal(validateShopCatalogImages([{ images: [validPng, "https://cdn.example.test/photo.webp", "", null] }]), null);
+});
+
+test("validateShopCatalogImages rejects more than four photos and unsupported formats", () => {
+  assert.match(validateShopCatalogImages([{ images: ["", "", "", "", ""] }]), /at most four/i);
+  assert.match(validateShopCatalogImages([{ images: ["data:image/svg+xml;base64,PHN2Zz4="] }]), /Unsupported Shop photo format/i);
+});
+
+test("validateShopCatalogImages rejects oversized and aggregate image payloads", () => {
+  assert.match(validateShopCatalogImages([{ images: ["data:image/png;base64," + "a".repeat(1_800_001)] }]), /too large/i);
+  const tooManyBytes = "data:image/png;base64," + "a".repeat(1_700_000);
+  assert.match(validateShopCatalogImages(Array.from({ length: 6 }, () => ({ images: [tooManyBytes] }))), /total Shop photo data/i);
 });
 
 const { findShopProductIndex, resolveShopVariant, priceShopVariant, deductShopVariantInventory } = require("../utils/shop-catalog");
