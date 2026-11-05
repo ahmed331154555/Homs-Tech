@@ -80,7 +80,16 @@
  var close=document.createElement('button');close.className='homs-menu-close';close.type='button';close.setAttribute('aria-label','Menu sluiten');close.textContent='×';head.appendChild(close);drawer.appendChild(head);
  var label=document.createElement('div');label.className='homs-menu-label';label.textContent='Alle afdelingen';drawer.appendChild(label);
  links.forEach(function(item){var a=document.createElement('a');a.href=item[2];if(item[2]===active){a.className='active';a.setAttribute('aria-current','page')}var icon=document.createElement('span');icon.className='homs-menu-icon';icon.textContent=item[0];var title=document.createElement('span');title.textContent=item[1];a.appendChild(icon);a.appendChild(title);drawer.appendChild(a)});
- function setOpen(v){drawer.classList.toggle('open',v);backdrop.classList.toggle('open',v);document.body.classList.toggle('homs-menu-open',v);button.setAttribute('aria-expanded',String(v));drawer.setAttribute('aria-hidden',String(!v))}
+ function setOpen(v){
+  var wasOpen=drawer.classList.contains('open');
+  drawer.classList.toggle('open',v);
+  backdrop.classList.toggle('open',v);
+  document.body.classList.toggle('homs-menu-open',v);
+  button.setAttribute('aria-expanded',String(v));
+  drawer.setAttribute('aria-hidden',String(!v));
+  if(v&&!wasOpen)close.focus();
+  if(!v&&wasOpen)button.focus();
+ }
  button.addEventListener('click',function(){setOpen(true)});close.addEventListener('click',function(){setOpen(false)});backdrop.addEventListener('click',function(){setOpen(false)});drawer.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){setOpen(false)})});document.addEventListener('keydown',function(e){if(e.key==='Escape')setOpen(false)});
  var siteHeader=document.querySelector('header');
  var headerRow=siteHeader&&siteHeader.querySelector('.ht-header-main,.header-main,.head,.wrap');
