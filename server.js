@@ -28,6 +28,7 @@ const { mollieStatusToLocal, molliePaymentMatchesOrder } = require("./utils/moll
 const { encryptPayPalSecret, decryptPayPalSecret, getPayPalBaseUrl } = require("./utils/payment-secrets");
 const { allowLiveChat, liveChatAutomaticReply } = require("./utils/live-chat");
 const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-limit");
+const { checkAuthLoginRateLimit } = require("./utils/auth-login-rate-limit");
 const { resolveRepairRequestCustomerId } = require("./utils/repair-request-customer");
 const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-inventory");
 const { priceProductFromCatalog } = require("./utils/cart-pricing");
@@ -421,6 +422,10 @@ const ADMIN_PERMISSION_NAMES = {
 
 app.post("/api/login", async (req,res)=>{
   try{
+    const loginIp = String(req.ip || req.socket.remoteAddress || "").trim();
+    if (!checkAuthLoginRateLimit("admin", loginIp)) {
+      return res.status(429).json({ error: "Te veel inlogpogingen. Wacht 15 minuten en probeer het opnieuw." });
+    }
     const username=String(req.body?.username||"").trim();
     const password=String(req.body?.password||"");
 
@@ -927,6 +932,10 @@ app.post("/api/customer/reset-password", async (req, res) => {
 // Customer login
 app.post("/api/customer/login", async (req, res) => {
   try {
+    const loginIp = String(req.ip || req.socket.remoteAddress || "").trim();
+    if (!checkAuthLoginRateLimit("customer", loginIp)) {
+      return res.status(429).json({ error: "Te veel inlogpogingen. Wacht 15 minuten en probeer het opnieuw." });
+    }
     const {
       email,
       password
