@@ -20,7 +20,7 @@ app.post("/api/webhooks/resend/inbound", express.raw({ type: "application/json",
     const secretBytes=Buffer.from(secret.replace(/^whsec_/,""),"base64");
     const signed=Buffer.concat([Buffer.from(id+"."+timestamp+"."),raw]);
     const expected=cryptoImpl.createHmac("sha256",secretBytes).update(signed).digest("base64");
-    const valid=signature.split(" ").some(part=>{const [version,value]=part.split(",");if(version!=="v1"||!value)return false;const a=Buffer.from(value),b=Buffer.from(expected);return a.length===b.length&&crypto.timingSafeEqual(a,b);});
+    const valid=signature.split(" ").some(part=>{const [version,value]=part.split(",");if(version!=="v1"||!value)return false;const a=Buffer.from(value),b=Buffer.from(expected);return a.length===b.length&&cryptoImpl.timingSafeEqual(a,b);});
     if(!valid)return res.status(401).send("Invalid signature");
     const event=JSON.parse(raw.toString("utf8"));
     if(event.type!=="email.received"||!event.data?.email_id)return res.status(200).send("Ignored");
