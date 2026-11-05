@@ -72,7 +72,7 @@ app.post("/api/webhooks/resend/inbound", express.raw({ type: "application/json",
       mail.references || headerValue("references", "in-reply-to") || ""
     ).trim().slice(0, 4000);
 
-    await pool.query(
+    const stored = await pool.query(
       `INSERT INTO admin_emails(
         resend_email_id, message_id, references_header, direction, from_address,
         to_addresses, subject, text_body, html_body, attachments, is_read, created_at
@@ -115,7 +115,13 @@ app.post("/api/webhooks/resend/inbound", express.raw({ type: "application/json",
 
     // Send a short notification to the owner's Gmail; the full message remains in the admin inbox.
     const from = getEnv().RESEND_FROM_EMAIL;
-    if (from) {
+    const notifyEmail = String(
+      getEnv().RESEND_INBOUND_NOTIFY_EMAIL ||
+      getEnv().ORDER_NOTIFICATION_EMAIL ||
+      getEnv().REPAIR_REQUEST_EMAIL ||
+      ""
+    ).trim();
+    if (stored.rowCount > 0 && from && notifyEmail) {
       fetchImpl("https://api.resend.com/emails", {
         method: "POST",
         headers: {
@@ -124,7 +130,7 @@ app.post("/api/webhooks/resend/inbound", express.raw({ type: "application/json",
         },
         body: JSON.stringify({
           from,
-          to: ["Appelavcd116@gmail.com"],
+          to: [notifyEmail],
           subject: "Nieuwe HOMS TECH e-mail: " + String(mail.subject || "").slice(0, 120),
           text:
             "Nieuwe e-mail ontvangen van " +
