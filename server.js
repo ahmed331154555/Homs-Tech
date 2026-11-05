@@ -14,6 +14,7 @@ const {
 const app = express();
 const { registerAdminOrderRoutes } = require("./routes/admin-orders");
 const { registerAdminWebshopOrderRoutes } = require("./routes/admin-webshop-orders");
+const { saveShopCatalog } = require("./utils/shop-catalog");
 const PORT = process.env.PORT || 3000;
 
 
@@ -2851,12 +2852,11 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       Object.keys(req.body).length === 1;
 
     if (isShopCatalogPatch) {
-      const saved = await queryWithConnectionRetry(
-        "UPDATE site_settings SET data = jsonb_set(data, '{shopProducts}', $1::jsonb, true) WHERE id = 1 RETURNING data->'shopProducts' AS products",
-        [JSON.stringify(req.body.shopProducts)],
-        4
+      const shopProducts = await saveShopCatalog(
+        queryWithConnectionRetry,
+        req.body.shopProducts
       );
-      return res.json({ success: true, shopProducts: saved.rows[0]?.products || [] });
+      return res.json({ success: true, shopProducts });
     }
 
     const current = await queryWithConnectionRetry(
