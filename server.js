@@ -23,6 +23,7 @@ const { registerAdminWebshopOrderRoutes } = require("./routes/admin-webshop-orde
 const { validateRepairQuotePayload } = require("./utils/repair-quote");
 const { validateBuybackOfferedPrice } = require("./utils/buyback-order");
 const { sanitizePublicSiteData, sanitizeHomepageSiteData } = require("./utils/site-data-sanitizers");
+const { mollieStatusToLocal, molliePaymentMatchesOrder } = require("./utils/mollie-payment");
 const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-limit");
 const {
   preserveExistingProductPhotos,
@@ -1816,21 +1817,6 @@ async function mollieRequest(endpoint, options = {}) {
     throw error;
   }
   return data;
-}
-
-function mollieStatusToLocal(status) {
-  const map = { paid: "Paid", canceled: "Cancelled", expired: "Expired", failed: "Failed", pending: "Pending", authorized: "Pending" };
-  return map[String(status || "").toLowerCase()] || "Pending";
-}
-
-function molliePaymentMatchesOrder(payment, order) {
-  const expectedAmount = moneyNumber(order.total);
-  const actualAmount = moneyNumber(payment && payment.amount && payment.amount.value);
-  return String(payment && payment.id || "") !== "" &&
-    String(payment && payment.metadata && payment.metadata.orderId || "") === String(order.id) &&
-    String(payment && payment.amount && payment.amount.currency || "").toUpperCase() === "EUR" &&
-    Number.isFinite(expectedAmount) && Number.isFinite(actualAmount) &&
-    Math.abs(expectedAmount - actualAmount) < 0.005;
 }
 
 app.get("/api/mollie/config", async (req, res) => {
