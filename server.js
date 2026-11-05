@@ -14,7 +14,7 @@ const {
 const app = express();
 const { registerAdminOrderRoutes } = require("./routes/admin-orders");
 const { registerAdminWebshopOrderRoutes } = require("./routes/admin-webshop-orders");
-const { saveShopCatalog, resolveShopVariant, deductShopVariantInventory } = require("./utils/shop-catalog");
+const { saveShopCatalog, priceShopVariant, deductShopVariantInventory } = require("./utils/shop-catalog");
 const PORT = process.env.PORT || 3000;
 
 
@@ -1698,41 +1698,7 @@ function priceProductFromCatalog(data, item) {
   if (!product || product.active === false || product.available === false || String(product.stockStatus || "").toLowerCase() === "sold") {
     return { error: "Een product in uw winkelwagen is niet meer beschikbaar." };
   }
-  if (type === "shop") {
-    const resolved = resolveShopVariant(product, item);
-    if (resolved.error) return { error: resolved.error };
-    const variant = resolved.variant;
-    const price = moneyNumber(variant?.price ?? product.price);
-    const qty = Number(item?.qty ?? 1);
-    if (!Number.isFinite(price) || price <= 0) return { error: "Dit Shop-product heeft geen geldige prijs voor de gekozen kwaliteit." };
-    if (!Number.isInteger(qty) || qty < 1 || qty > 99) return { error: "Kies een geldige hoeveelheid (1–99)." };
-    if (variant) {
-      const stockText = String(variant.stock ?? "").trim();
-      const stockMatch = stockText.match(/^(\d+)$/);
-      if (stockMatch && Number(stockMatch[1]) < qty) return { error: "Er is onvoldoende voorraad voor deze productkwaliteit." };
-    } else {
-      const stockText = String(product.stock ?? "").trim();
-      const stockMatch = stockText.match(/^(\d+)/);
-      if (stockMatch && Number(stockMatch[1]) < qty) return { error: "Er is onvoldoende voorraad voor dit product." };
-    }
-    return {
-      item: {
-        name: String(product.name || "Shop-product"),
-        brand: "HOMS TECH Shop",
-        type,
-        id,
-        variantId: variant ? String(variant.id || variant.sku || variant.quality) : "",
-        sku: String(variant?.sku || ""),
-        options: {
-          category: String(product.category || "Accessoires"),
-          quality: String(variant?.quality || "Standaard"),
-          sku: String(variant?.sku || "")
-        },
-        qty,
-        unitPrice: Math.round(price * 100) / 100
-      }
-    };
-  }
+  if (type === "shop") return priceShopVariant(product, item, id, moneyNumber);
   const options = item.options && typeof item.options === "object" && !Array.isArray(item.options) ? item.options : {};
   const getList = key => {
     const map = { condition: "conditionOptions", storage: "storageOptions", color: "colorOptions", battery: "batteryOptions", vat: "vatOptions", tradeIn: "tradeInOptions" };
