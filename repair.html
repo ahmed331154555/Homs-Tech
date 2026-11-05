@@ -671,7 +671,7 @@
     document.getElementById("repairOptionsList").innerHTML=p.options.map((o,i)=>{
       const sendClass=o.method==="send"?" send":"";
       const fallback=i%2===0?'<div class="phone"></div>':'<div class="box"></div>';
-      const media=o.image?`<img class="custom-option-image" src="${esc(o.image)}" alt="">`:fallback;
+      const media=o.image?`<img class="custom-option-image" src="${esc(o.image)}" alt="" loading="lazy" decoding="async">`:fallback;
       return `<article class="option-card${sendClass}">
         <div>
           <div class="option-icon">${esc(o.icon)}</div>
@@ -723,10 +723,21 @@
   }
 
   async function loadSite(){
+    // Render the lightweight built-in content immediately; do not make the
+    // first visible page wait for the full website settings document.
+    siteData = {};
+    renderRepairPage();
+    renderServices();
+
     try{
-      const response = await fetch("/api/site", {headers:{Accept:"application/json"}});
-      if(!response.ok) throw new Error("API error");
-      siteData = await response.json();
+      const response = await fetch("/api/site?view=repair", {
+        headers:{Accept:"application/json"},
+        credentials:"same-origin"
+      });
+      if(!response.ok) throw new Error("Repair page data could not be loaded");
+      const freshData = await response.json();
+      if(!freshData || typeof freshData !== "object") throw new Error("Invalid repair page data");
+      siteData = freshData;
 
       document.querySelectorAll("[data-name]").forEach(el=>{
         el.textContent = siteData.businessName || siteData.siteName || "HOMS TECH";
@@ -738,10 +749,7 @@
       renderRepairPage();
       renderServices();
     }catch(error){
-      console.error("HOMS TECH /api/site:", error);
-      siteData = {};
-      renderRepairPage();
-      renderServices();
+      console.warn("HOMS TECH repair page: using built-in content.", error);
     }
   }
 
