@@ -272,7 +272,7 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
       let changed=false;
       const items=readCart().map(item=>{
         if(String(item.type||"").toLowerCase()!=="shop")return item;
-        const id=Number(item.id),product=Number.isInteger(id)?shopProducts[id]:null;
+        const rawId=String(item.id??""),stableIndex=shopProducts.findIndex(p=>String(p?.id??"")===rawId),legacyIndex=/^\d+$/.test(rawId)?Number(rawId):-1,product=stableIndex>=0?shopProducts[stableIndex]:(Number.isInteger(legacyIndex)?shopProducts[legacyIndex]:null);
         if(!product)return item;
         const variants=Array.isArray(product.variants)?product.variants:[];
         const variant=variants.find(v=>String(v.id||v.sku||v.quality||"")===String(item.variantId||item.sku||""));
