@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { invoicePdfEscape } = require("../utils/invoice-pdf");
+const { invoicePdfEscape, buildInvoicePdf } = require("../utils/invoice-pdf");
 
 test("invoicePdfEscape escapes PDF string delimiters and backslashes", () => {
   assert.equal(invoicePdfEscape("A (test) \\ file"), "A \\(test\\) \\\\ file");
@@ -17,4 +17,63 @@ test("invoicePdfEscape safely converts nullish and numeric values", () => {
   assert.equal(invoicePdfEscape(null), "");
   assert.equal(invoicePdfEscape(undefined), "");
   assert.equal(invoicePdfEscape(123), "123");
+});
+
+
+test("buildInvoicePdf creates a valid PDF document with invoice details", () => {
+  const pdf = buildInvoicePdf({
+    invoice_number: "HT-2026-001",
+    created_at: "2026-11-05T12:00:00Z",
+    customer_name: "Customer Example",
+    customer_address: "Main Street 1",
+    customer_email: "customer@example.test",
+    subtotal: 100,
+    vat_total: 21,
+    total: 121,
+    lines: [{ description: "Screen repair", quantity: 1, unitPrice: 100, vatRate: 21 }]
+  });
+  const source = pdf.toString("latin1");
+  assert.ok(Buffer.isBuffer(pdf));
+  assert.ok(source.startsWith("%PDF-1.4"));
+  assert.ok(source.endsWith("%%EOF"));
+  assert.match(source, /HT-2026-001/);
+  assert.match(source, /Customer Example/);
+  assert.match(source, /Screen repair/);
+  assert.match(source, /TOTAAL/);
+});
+
+test("buildInvoicePdf paginates invoice lines in groups of eleven", () => {
+  const lines = Array.from({ length: 12 }, (_, index) => ({
+    description: "Item " + (index + 1),
+    quantity: 1,
+    unitPrice: 10,
+    vatRate: 21
+  }));
+  const pdf = buildInvoicePdf({
+    invoice_number: "HT-MULTI",
+    created_at: "2026-11-05T12:00:00Z",
+    customer_name: "Customer",
+    subtotal: 120,
+    vat_total: 25.2,
+    total: 145.2,
+    lines
+  }).toString("latin1");
+  assert.equal((pdf.match(/\/Type \/Page /g) || []).length, 2);
+  assert.match(pdf, /Pagina 1 \/ 2/);
+  assert.match(pdf, /Pagina 2 \/ 2/);
+  assert.match(pdf, /Item 12/);
+});
+
+test("buildInvoicePdf escapes customer-controlled PDF text", () => {
+  const pdf = buildInvoicePdf({
+    invoice_number: "HT-(A)\\B",
+    created_at: "2026-11-05T12:00:00Z",
+    customer_name: "Test (Customer)\\Name",
+    subtotal: 1,
+    vat_total: 0,
+    total: 1,
+    lines: []
+  }).toString("latin1");
+  assert.match(pdf, /HT-\\\\-A/);
+  assert.match(pdf, /Test \\(Customer\\\)/);
 });
