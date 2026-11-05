@@ -74,6 +74,6 @@ test("buildInvoicePdf escapes customer-controlled PDF text", () => {
     total: 1,
     lines: []
   }).toString("latin1");
-  assert.match(pdf, /HT-\\\\-A/);
-  assert.match(pdf, /Test \\(Customer\\\)/);
+  assert.ok(pdf.includes("HT-\\(A\\)\\\\B"));
+  assert.ok(pdf.includes("Test \\(Customer\\)\\\\Name"));
 });
