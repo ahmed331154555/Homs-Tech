@@ -7,7 +7,17 @@ function allowLiveChat(ip) {
   const now = Date.now(), windowMs = 15 * 60 * 1000;
   const recent = (liveChatRateLimits.get(ip) || []).filter(t => now - t < windowMs);
   if (recent.length >= 30) return false;
-  recent.push(now); liveChatRateLimits.set(ip, recent);
+  recent.push(now);
+  liveChatRateLimits.set(ip, recent);
+
+  // Bound memory use when many distinct IPs visit the public chat.
+  if (liveChatRateLimits.size > 5000) {
+    for (const [key, timestamps] of liveChatRateLimits.entries()) {
+      if (timestamps.every(timestamp => now - timestamp >= windowMs)) {
+        liveChatRateLimits.delete(key);
+      }
+    }
+  }
   return true;
 }
 
