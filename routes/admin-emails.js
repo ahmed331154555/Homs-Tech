@@ -135,9 +135,14 @@ function registerAdminEmailRoutes(app, {
         if(!original||original.direction!=="inbound")return res.status(400).json({error:"Het oorspronkelijke inkomende bericht is niet gevonden. Verstuur dit bericht als nieuw e-mailbericht."});
         // Website contact-form entries are stored locally and have no RFC Message-ID.
         // Allow replying to them as a normal new email; only add threading headers when available.
-        if(String(original.message_id||"").trim()){
-          const refs=[...new Set((String(original.references_header||"")+" "+String(original.message_id)).match(/<[^<>\s]+>/g)||[])].slice(-20);
-          replyHeaders={"In-Reply-To":String(original.message_id).trim(),"References":refs.join(" ")};
+        const messageId = String(original.message_id || "").match(/<[^<>\\s\\r\\n]+>/)?.[0] || "";
+        if (messageId) {
+          const referenceIds = String(original.references_header || "").match(/<[^<>\\s\\r\\n]+>/g) || [];
+          const refs = [...new Set([...referenceIds, messageId])].slice(-20);
+          replyHeaders = {
+            "In-Reply-To": messageId,
+            References: refs.join(" ")
+          };
         }
       }
       const sendPayload={from,to:[to],cc,bcc,subject,text:textWithSignature,html,reply_to:"mail@inbound.homs-tech.nl",attachments:attachments.map(x=>({filename:x.filename,content:x.content}))};
