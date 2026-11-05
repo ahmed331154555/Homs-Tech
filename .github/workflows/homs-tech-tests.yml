@@ -30,6 +30,9 @@ jobs:
       - name: Check admin inline scripts
         run: node scripts/check-admin-inline.js
 
+      - name: Check local HTML assets
+        run: node scripts/check-local-assets.js
+
       - name: Install dependencies
         run: npm install
 
