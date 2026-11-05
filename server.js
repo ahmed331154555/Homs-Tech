@@ -15,6 +15,7 @@ const app = express();
 const { registerAdminOrderRoutes } = require("./routes/admin-orders");
 const { registerAdminWebshopOrderRoutes } = require("./routes/admin-webshop-orders");
 const { validateRepairQuotePayload } = require("./utils/repair-quote");
+const { validateBuybackOfferedPrice } = require("./utils/buyback-order");
 const { saveShopCatalog, validateShopCatalogIdentifiers, validateShopCatalogImages, findShopProductIndex, priceShopVariant, deductShopVariantInventory } = require("./utils/shop-catalog");
 const PORT = process.env.PORT || 3000;
 
@@ -3195,9 +3196,11 @@ app.post("/api/buyback/orders", async (req, res) => {
       return res.status(400).json({ error: "Naam, e-mailadres en toestel zijn verplicht." });
     }
 
-    const offeredPrice = Number(b.offeredPrice || 0);
-    if (!Number.isFinite(offeredPrice) || offeredPrice < 0) {
-      return res.status(400).json({ error: "Ongeldige prijs." });
+    let offeredPrice;
+    try {
+      offeredPrice = validateBuybackOfferedPrice(b.offeredPrice);
+    } catch (validationError) {
+      return res.status(400).json({ error: validationError.message });
     }
 
     const orderNo = `BT-${Date.now()}`;
