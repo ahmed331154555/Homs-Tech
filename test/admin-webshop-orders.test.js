@@ -29,15 +29,18 @@ function createResponse() {
   };
 }
 
-test("admin webshop order list returns database rows", async () => {
-  const expectedOrders = [{ id: 12, name: "Customer", total: "129.00" }];
-  const routes = createHarness({ async query() { return { rows: expectedOrders }; } });
+test("admin webshop order list includes inventory processing diagnostics", async () => {
+  const expectedOrders = [{ id: 12, name: "Customer", total: "129.00", inventory_error: "Missing variant" }];
+  let selectSql = "";
+  const routes = createHarness({ async query(sql) { selectSql = sql; return { rows: expectedOrders }; } });
   const response = createResponse();
 
   await routes.get("GET /api/admin/webshop-orders")({}, response);
 
   assert.equal(response.statusCode, 200);
   assert.deepEqual(response.body, { orders: expectedOrders });
+  assert.match(selectSql, /inventory_deducted_at/);
+  assert.match(selectSql, /inventory_error/);
 });
 
 test("webshop shipping rejects unsupported carriers before database update", async () => {
