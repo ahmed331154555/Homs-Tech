@@ -11,6 +11,7 @@ const { escapeHtml } = require("./utils/html");
 const { moneyNumber } = require("./utils/money");
 const { serverOptionDelta, serverOptionDefaults } = require("./utils/product-options");
 const { deviceText, deviceMoney } = require("./utils/device-register");
+const { invoicePdfEscape } = require("./utils/invoice-pdf");
 const path = require("path");
 const {
   sanitizeDevicesCatalogData,
@@ -3497,7 +3498,7 @@ app.post("/api/chat", (_req, res) => {
   });
 });
 
-function invoicePdfEscape(value){return String(value??"").normalize("NFKD").replace(/[^\x20-\x7E]/g,"?").replace(/\\/g,"\\\\").replace(/\(/g,"\\(").replace(/\)/g,"\\)");}
+
 function buildInvoicePdf(invoice){
  const W=595,H=842,navy=[0.04,0.11,0.19],green=[0.14,0.83,0.40],ink=[0.12,0.16,0.23],muted=[0.38,0.43,0.50],pale=[0.95,0.97,0.98],line=[0.87,0.90,0.93];
  const pages=[];let c=[];
