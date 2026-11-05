@@ -4,7 +4,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { createAdminAuth } = require("../utils/admin-auth");
 
-function makeAuth(users = {}) {
+function makeAuth(users = {}, pool = { query: async () => ({ rows: [] }) }) {
   const jwt = {
     verify(token, secret) {
       assert.equal(secret, "test-jwt-secret");
@@ -16,7 +16,9 @@ function makeAuth(users = {}) {
   return createAdminAuth({
     jwt,
     getAdminUsername: () => "root-admin",
-    getJwtSecret: () => "test-jwt-secret"
+    getJwtSecret: () => "test-jwt-secret",
+    pool,
+    logError: () => {}
   });
 }
 
@@ -94,4 +96,77 @@ test("requirePermission rejects users without permission and unauthenticated use
   const unauthenticated = makeResponse();
   auth.requirePermission("orders.view")({ cookies: {} }, unauthenticated, () => assert.fail("next must not run"));
   assert.equal(unauthenticated.statusCode, 401);
+});
+
+
+test("admin permission refresh uses current database permissions and rejects inactive accounts", async () => {
+  const pool = {
+    async query(_sql, params) {
+      if (params[0] === 10) return { rows: [{ id: 10, username: "staff", role: "admin", permissions: ["site.save"], active: true }] };
+      if (params[0] === 11) return { rows: [{ id: 11, username: "disabled", role: "admin", permissions: ["*"], active: false }] };
+      return { rows: [] };
+    }
+  };
+  const auth = makeAuth({
+    active: { id: 10, username: "staff", permissions: ["orders.delete"] },
+    inactive: { id: 11, username: "disabled", permissions: ["site.save"] }
+  }, pool);
+  const refreshed = await auth.refreshAdminUserFromDb(auth.getAdminFromRequest({ cookies: { token: "active" } }));
+  assert.deepEqual(refreshed, { id: 10, username: "staff", role: "admin", permissions: ["site.save"] });
+  const inactive = await auth.refreshAdminUserFromDb(auth.getAdminFromRequest({ cookies: { token: "inactive" } }));
+  assert.equal(inactive, null);
+});
+
+test("admin permission refresh fails closed when the database is unavailable", async () => {
+  const auth = makeAuth(
+    { stale: { id: 15, username: "staff", permissions: ["site.save"] } },
+    { query: async () => { throw new Error("database unavailable"); } }
+  );
+  const user = auth.getAdminFromRequest({ cookies: { token: "stale" } });
+  assert.equal(await auth.refreshAdminUserFromDb(user), null);
+});
+
+test("site update middleware uses refreshed permissions and fails closed", async () => {
+  const activePool = {
+    async query(_sql, params) {
+      if (params[0] === 20) return { rows: [{ id: 20, username: "editor", role: "admin", permissions: ["phones.update"], active: true }] };
+      if (params[0] === 21) return { rows: [{ id: 21, username: "disabled", role: "admin", permissions: ["site.save"], active: false }] };
+      return { rows: [] };
+    }
+  };
+  const auth = makeAuth({
+    editor: { id: 20, username: "editor", permissions: ["orders.delete"] },
+    disabled: { id: 21, username: "disabled", permissions: ["site.save"] }
+  }, activePool);
+
+  const allowedRequest = { cookies: { token: "editor" }, headers: { "x-homs-admin-section": "phones" } };
+  const allowedResponse = makeResponse();
+  let nextCalled = false;
+  await auth.requireSiteOrPhoneUpdate(allowedRequest, allowedResponse, () => { nextCalled = true; });
+  assert.equal(nextCalled, true);
+  assert.deepEqual(allowedRequest.admin.permissions, ["phones.update"]);
+
+  const deniedRequest = { cookies: { token: "editor" }, headers: { "x-homs-admin-section": "general" } };
+  const deniedResponse = makeResponse();
+  await auth.requireSiteOrPhoneUpdate(deniedRequest, deniedResponse, () => assert.fail("next must not run"));
+  assert.equal(deniedResponse.statusCode, 403);
+
+  const inactiveRequest = { cookies: { token: "disabled" }, headers: { "x-homs-admin-section": "general" } };
+  const inactiveResponse = makeResponse();
+  await auth.requireSiteOrPhoneUpdate(inactiveRequest, inactiveResponse, () => assert.fail("next must not run"));
+  assert.equal(inactiveResponse.statusCode, 401);
+});
+
+test("site update middleware denies access when permission refresh query fails", async () => {
+  const auth = makeAuth(
+    { stale: { id: 22, username: "staff", permissions: ["site.save"] } },
+    { query: async () => { throw new Error("database unavailable"); } }
+  );
+  const response = makeResponse();
+  await auth.requireSiteOrPhoneUpdate(
+    { cookies: { token: "stale" }, headers: {} },
+    response,
+    () => assert.fail("next must not run")
+  );
+  assert.equal(response.statusCode, 401);
 });
