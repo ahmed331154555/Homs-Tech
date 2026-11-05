@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const { hashPassword, verifyPassword } = require("./utils/password");
+const { escapeHtml } = require("./utils/html");
 const path = require("path");
 const {
   sanitizeDevicesCatalogData,
@@ -257,15 +258,6 @@ async function sendWelcomeEmail(customer) {
   }
 
   console.log("Welcome email sent:", data.id || "ok");
-}
-
-function escapeHtml(value) {
-  return String(value || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 }
 
 // Create database tables and default settings
