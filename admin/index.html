@@ -1815,6 +1815,16 @@ textarea{
   <!-- SHOP PRODUCTEN -->
   <section class="section admin-page" id="page-shop" data-permission="site.save">
     <div class="section-head"><div><h2>🛍️ Shop producten</h2><p>Beheer accessoires en onderdelen apart van de telefooncatalogus. Per product maximaal 4 foto's en optioneel een uitlegvideo.</p></div><div class="actions"><a class="btn btn-light" href="../shop.html" target="_blank" rel="noopener">👁 Shop bekijken</a><button class="btn btn-green" type="button" onclick="addShopProduct()">＋ Product toevoegen</button></div></div>
+    <div class="card" style="margin:0 0 16px;padding:16px;border:1px solid #dbe3ec;border-radius:12px;background:#fff">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+        <div style="min-width:220px;flex:1">
+          <strong style="display:block;font-size:15px">🌐 Zichtbaarheid van de Shop-pagina</strong>
+          <span id="shopVisibilityStatus" class="small" style="display:block;margin-top:5px">Status laden...</span>
+        </div>
+        <button id="shopVisibilityButton" class="btn btn-light" type="button" onclick="toggleShopVisibility()" disabled>Instelling laden...</button>
+      </div>
+      <p class="small" style="margin:10px 0 0">Verberg de Shop tijdelijk zolang deze nog niet klaar is. Producten en voorraad blijven bewaard. Je kunt de pagina later met één klik opnieuw zichtbaar maken.</p>
+    </div>
     <div class="small" style="padding:12px;background:#f4f8ff;border:1px solid #dce9ff;border-radius:10px;margin-bottom:16px">Vul de productgegevens in en druk daarna bovenaan op <strong>Wijzigingen opslaan</strong>. Foto's: maximaal 1,2 MB per foto. Voor een video kun je de YouTube-link invullen en de video-optie aanzetten.</div>
     <div id="shopProductsAdmin"></div>
   </section>
@@ -2203,6 +2213,7 @@ function showPage(page){
     if(page==="webshop-orders")loadWebshopOrders();
     if(page==="order-settings")loadOrderSettings();
     if(page==="buyback")renderBuybackPhones();
+    if(page==="shop")loadShopVisibility();
     if(page==="buyback-orders")loadBuybackOrders();
     if(page==="admins")loadAdmins();
     }
@@ -6354,6 +6365,63 @@ function validateShopCatalogIdentifiers(products){
   }
  }
  return {valid:true};
+}
+
+let shopPageEnabled = true;
+async function loadShopVisibility(){
+ const status=document.getElementById("shopVisibilityStatus");
+ const button=document.getElementById("shopVisibilityButton");
+ if(!status||!button)return;
+ button.disabled=true;button.textContent="Status laden...";
+ try{
+  const response=await fetch("/api/admin/shop-visibility",{credentials:"same-origin",cache:"no-store"});
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(result.error||"Shopstatus laden is mislukt.");
+  shopPageEnabled=result.enabled!==false;
+  renderShopVisibility();
+ }catch(error){
+  status.textContent=error.message;
+  button.textContent="Opnieuw proberen";
+  button.disabled=false;
+  button.onclick=loadShopVisibility;
+ }
+}
+function renderShopVisibility(){
+ const status=document.getElementById("shopVisibilityStatus");
+ const button=document.getElementById("shopVisibilityButton");
+ if(!status||!button)return;
+ status.textContent=shopPageEnabled
+  ?"De Shop-pagina is zichtbaar voor bezoekers."
+  :"De Shop-pagina is verborgen. Bezoekers worden naar de homepage gestuurd.";
+ status.style.color=shopPageEnabled?"#15803d":"#b45309";
+ button.textContent=shopPageEnabled?"Shop tijdelijk verbergen":"Shop weer zichtbaar maken";
+ button.className=shopPageEnabled?"btn btn-light":"btn btn-green";
+ button.disabled=false;
+ button.onclick=toggleShopVisibility;
+}
+async function toggleShopVisibility(){
+ const button=document.getElementById("shopVisibilityButton");
+ const nextValue=!shopPageEnabled;
+ if(!confirm(nextValue
+  ?"De Shop-pagina weer zichtbaar maken voor bezoekers?"
+  :"De Shop-pagina tijdelijk verbergen? Producten en voorraad blijven bewaard."))return;
+ button.disabled=true;button.textContent="Opslaan...";
+ try{
+  const response=await fetch("/api/admin/shop-visibility",{
+   method:"PUT",credentials:"same-origin",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({enabled:nextValue})
+  });
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(result.error||"Shopinstelling opslaan is mislukt.");
+  shopPageEnabled=result.enabled!==false;
+  renderShopVisibility();
+  if(typeof setStatus==="function")setStatus(shopPageEnabled?"✓ Shop-pagina is weer zichtbaar":"✓ Shop-pagina is tijdelijk verborgen","success");
+ }catch(error){
+  button.disabled=false;renderShopVisibility();
+  if(typeof setStatus==="function")setStatus("✕ "+error.message,"error");
+  else alert(error.message);
+ }
 }
 
 function ensureShopProducts(){
