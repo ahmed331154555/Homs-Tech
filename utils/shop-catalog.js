@@ -48,8 +48,8 @@ function priceShopVariant(product, item, id, moneyNumber) {
 
   const stockText = String(variant?.stock ?? product.stock ?? "").trim();
   const stockMatch = variant
-    ? stockText.match(/^(\\d+)$/)
-    : stockText.match(/^(\\d+)/);
+    ? stockText.match(/^(\d+)$/)
+    : stockText.match(/^(\d+)/);
   if (stockMatch && Number(stockMatch[1]) < qty) {
     return { error: variant
       ? "Er is onvoldoende voorraad voor deze productkwaliteit."
@@ -83,7 +83,7 @@ function deductShopVariantInventory(product, item) {
 
   if (resolved.variant) {
     const rawStock = String(resolved.variant.stock ?? "").trim();
-    const match = rawStock.match(/^(\\d+)$/);
+    const match = rawStock.match(/^(\d+)$/);
     if (!match) throw new Error("Shop variant stock is not a valid whole number.");
     const stock = Number(match[1]);
     if (stock < qty) throw new Error("Insufficient stock for paid Shop variant.");
@@ -93,7 +93,7 @@ function deductShopVariantInventory(product, item) {
   }
 
   const rawStock = String(product.stock ?? "").trim();
-  const match = rawStock.match(/^(\\d+)/);
+  const match = rawStock.match(/^(\d+)/);
   if (match) {
     const stock = Number(match[1]);
     if (stock < qty) throw new Error("Insufficient stock for paid Shop product.");
