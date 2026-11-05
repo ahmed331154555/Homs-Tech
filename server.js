@@ -30,6 +30,7 @@ const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-invento
 const { priceProductFromCatalog } = require("./utils/cart-pricing");
 const { createAdminAuth } = require("./utils/admin-auth");
 const { createCustomerAuth } = require("./utils/customer-auth");
+const { ensureBuybackOrdersTable } = require("./utils/buyback-schema");
 const { initializeDatabaseWithRetry } = require("./utils/database-initialization");
 const { createPaymentSettings } = require("./utils/payment-settings");
 const { createPaymentGatewayClients } = require("./utils/payment-gateways");
@@ -2443,43 +2444,6 @@ initializeDatabaseWithRetry(initDatabase, wait)
 // =====================================================
 // BUYBACK / UW TOESTEL VERKOPEN ORDERS
 // =====================================================
-async function ensureBuybackOrdersTable() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS buyback_orders (
-      id SERIAL PRIMARY KEY,
-      order_no TEXT NOT NULL UNIQUE,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      phone TEXT DEFAULT '',
-      address TEXT DEFAULT '',
-      device TEXT DEFAULT '',
-      brand TEXT DEFAULT '',
-      model TEXT DEFAULT '',
-      storage TEXT DEFAULT '',
-      condition TEXT DEFAULT '',
-      face_id TEXT DEFAULT '',
-      battery TEXT DEFAULT '',
-      screen TEXT DEFAULT '',
-      offered_price NUMERIC(12,2) NOT NULL DEFAULT 0,
-      iban TEXT DEFAULT '',
-      payment_method TEXT DEFAULT '',
-      status TEXT NOT NULL DEFAULT 'Nieuw',
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `);
-
-  // Keep this compatible with an already-existing buyback_orders table.
-  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS order_no TEXT`);
-  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS model TEXT DEFAULT ''`);
-  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS iban TEXT DEFAULT ''`);
-  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT ''`);
-  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS answers JSONB NOT NULL DEFAULT '{}'::jsonb`);
-  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS final_offer NUMERIC(12,2)`);
-  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS final_offer_sent_at TIMESTAMPTZ`);
-  await pool.query(`UPDATE buyback_orders SET order_no = 'BT-LEGACY-' || id WHERE order_no IS NULL`);
-  await pool.query(`ALTER TABLE buyback_orders ALTER COLUMN order_no SET NOT NULL`);
-}
-
 // Buyback quote calculator. The admin supplies only the four condition base prices.
 // The server applies the shared evaluation rules to the selected answers.
 const BUYBACK_PROTOCOLS = Object.freeze({
@@ -2603,7 +2567,7 @@ app.post("/api/buyback/calculate", async (req, res) => {
 
 app.post("/api/buyback/orders", async (req, res) => {
   try {
-    await ensureBuybackOrdersTable();
+    await ensureBuybackOrdersTable(pool);
     const b = req.body || {};
     const name = String(b.name || "").trim();
     const email = String(b.email || "").trim().toLowerCase();
@@ -2682,7 +2646,7 @@ app.post("/api/buyback/orders", async (req, res) => {
 
 app.get("/api/admin/buyback-orders", requirePermission("buyback_orders.view"), async (req, res) => {
   try {
-    await ensureBuybackOrdersTable();
+    await ensureBuybackOrdersTable(pool);
     const result = await pool.query(`
       SELECT id,order_no,name,email,phone,address,device,brand,model,storage,condition,
              face_id,battery,screen,offered_price,iban,payment_method,answers,final_offer,final_offer_sent_at,status,created_at
