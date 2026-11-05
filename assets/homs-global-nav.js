@@ -84,9 +84,9 @@
   });
  });
  navObserver.observe(document.documentElement,{childList:true,subtree:true});
- var button=document.createElement('button');button.id='homsMenuButton';button.type='button';button.setAttribute('aria-label','Menu openen');button.setAttribute('aria-expanded','false');button.innerHTML='<span></span><span></span><span></span>';
+ var button=document.createElement('button');button.id='homsMenuButton';button.type='button';button.setAttribute('aria-label','Menu openen');button.setAttribute('aria-expanded','false');button.setAttribute('aria-controls','homsMenuDrawer');button.innerHTML='<span></span><span></span><span></span>';
  var backdrop=document.createElement('div');backdrop.id='homsMenuBackdrop';
- var drawer=document.createElement('aside');drawer.id='homsMenuDrawer';drawer.setAttribute('aria-label','Hoofdnavigatie');drawer.setAttribute('aria-hidden','true');
+ var drawer=document.createElement('aside');drawer.id='homsMenuDrawer';drawer.setAttribute('role','dialog');drawer.setAttribute('aria-modal','true');drawer.setAttribute('aria-label','Hoofdnavigatie');drawer.setAttribute('aria-hidden','true');
  var head=document.createElement('div');head.className='homs-menu-head';head.innerHTML='HOMS <span>TECH</span>';
  var close=document.createElement('button');close.className='homs-menu-close';close.type='button';close.setAttribute('aria-label','Menu sluiten');close.textContent='×';head.appendChild(close);drawer.appendChild(head);
  var label=document.createElement('div');label.className='homs-menu-label';label.textContent='Alle afdelingen';drawer.appendChild(label);
@@ -101,7 +101,16 @@
   if(v&&!wasOpen)close.focus();
   if(!v&&wasOpen)button.focus();
  }
- button.addEventListener('click',function(){setOpen(true)});close.addEventListener('click',function(){setOpen(false)});backdrop.addEventListener('click',function(){setOpen(false)});drawer.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){setOpen(false)})});document.addEventListener('keydown',function(e){if(e.key==='Escape')setOpen(false)});
+ button.addEventListener('click',function(){setOpen(true)});close.addEventListener('click',function(){setOpen(false)});backdrop.addEventListener('click',function(){setOpen(false)});drawer.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){setOpen(false)})});document.addEventListener('keydown',function(e){
+  if(!drawer.classList.contains('open'))return;
+  if(e.key==='Escape'){e.preventDefault();setOpen(false);return}
+  if(e.key==='Tab'){
+   var focusable=[close].concat(Array.from(drawer.querySelectorAll('a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])')));
+   var first=focusable[0];var last=focusable[focusable.length-1];
+   if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+   else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+  }
+ });
  var siteHeader=document.querySelector('header');
  var headerRow=siteHeader&&siteHeader.querySelector('.ht-header-main,.header-main,.head,.wrap');
  if(headerRow){
