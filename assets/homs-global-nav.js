@@ -64,14 +64,25 @@
 
  document.head.appendChild(headerFix);
 
- function removeLegacyNavigation(){
-
-  document.querySelectorAll('.homs-global-nav, header nav, .desktop-nav, .nav-inner, nav.nav, .navbar, .main-nav, .site-nav, .ht-nav').forEach(function(el){
+ var legacyNavigationSelector='.homs-global-nav, header nav, .desktop-nav, .nav-inner, nav.nav, .navbar, .main-nav, .site-nav, .ht-nav';
+ function removeLegacyNavigation(root){
+  var elements=[];
+  if(root===document){
+   elements=Array.from(document.querySelectorAll(legacyNavigationSelector));
+  }else if(root&&root.nodeType===1){
+   if(root.matches(legacyNavigationSelector))elements.push(root);
+   elements=elements.concat(Array.from(root.querySelectorAll(legacyNavigationSelector)));
+  }
+  elements.forEach(function(el){
    if(!el.closest('#homsMenuDrawer'))el.remove();
   });
  }
- removeLegacyNavigation();
- var navObserver=new MutationObserver(function(){removeLegacyNavigation()});
+ removeLegacyNavigation(document);
+ var navObserver=new MutationObserver(function(records){
+  records.forEach(function(record){
+   record.addedNodes.forEach(function(node){removeLegacyNavigation(node)});
+  });
+ });
  navObserver.observe(document.documentElement,{childList:true,subtree:true});
  var button=document.createElement('button');button.id='homsMenuButton';button.type='button';button.setAttribute('aria-label','Menu openen');button.setAttribute('aria-expanded','false');button.innerHTML='<span></span><span></span><span></span>';
  var backdrop=document.createElement('div');backdrop.id='homsMenuBackdrop';
