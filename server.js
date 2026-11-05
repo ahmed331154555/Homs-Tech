@@ -8,6 +8,7 @@ const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const { hashPassword, verifyPassword } = require("./utils/password");
 const { escapeHtml } = require("./utils/html");
+const { moneyNumber } = require("./utils/money");
 const path = require("path");
 const {
   sanitizeDevicesCatalogData,
@@ -1602,21 +1603,6 @@ app.post("/api/orders", async (req, res) => {
 });
 
 // Recalculate webshop prices from the trusted catalog; never trust browser-supplied totals.
-function moneyNumber(value) {
-  let cleaned = String(value ?? "").replace(/[€\s]/g, "").trim();
-  if (!cleaned) return NaN;
-  const comma = cleaned.lastIndexOf(",");
-  const dot = cleaned.lastIndexOf(".");
-  if (comma >= 0 && dot >= 0) {
-    cleaned = comma > dot ? cleaned.replace(/\./g, "").replace(",", ".") : cleaned.replace(/,/g, "");
-  } else if (comma >= 0) {
-    cleaned = /,\d{3}$/.test(cleaned) ? cleaned.replace(/,/g, "") : cleaned.replace(",", ".");
-  } else if (/\.\d{3}(?:\.\d{3})*$/.test(cleaned)) {
-    cleaned = cleaned.replace(/\./g, "");
-  }
-  const n = Number(cleaned);
-  return Number.isFinite(n) ? n : NaN;
-}
 function serverOptionDelta(option, key) {
   if (!option) return 0;
   const label = String(option.label || "").toLowerCase();
