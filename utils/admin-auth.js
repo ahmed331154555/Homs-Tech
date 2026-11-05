@@ -7,6 +7,9 @@ function createAdminAuth({ jwt, getAdminUsername, getJwtSecret, pool, logError =
   if (typeof getAdminUsername !== "function" || typeof getJwtSecret !== "function") {
     throw new TypeError("Admin username and JWT secret providers are required.");
   }
+  if (!pool || typeof pool.query !== "function") {
+    throw new TypeError("A database pool is required for admin permission refresh.");
+  }
 
   function getSuperAdminUser(username) {
     return { id: null, username, role: "superadmin", permissions: ["*"] };
