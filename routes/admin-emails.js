@@ -135,9 +135,9 @@ function registerAdminEmailRoutes(app, {
         if(!original||original.direction!=="inbound")return res.status(400).json({error:"Het oorspronkelijke inkomende bericht is niet gevonden. Verstuur dit bericht als nieuw e-mailbericht."});
         // Website contact-form entries are stored locally and have no RFC Message-ID.
         // Allow replying to them as a normal new email; only add threading headers when available.
-        const messageId = String(original.message_id || "").match(/<[^<>\\s\\r\\n]+>/)?.[0] || "";
+        const messageId = String(original.message_id || "").match(/<[^<>\s\r\n]+>/)?.[0] || "";
         if (messageId) {
-          const referenceIds = String(original.references_header || "").match(/<[^<>\\s\\r\\n]+>/g) || [];
+          const referenceIds = String(original.references_header || "").match(/<[^<>\s\r\n]+>/g) || [];
           const refs = [...new Set([...referenceIds, messageId])].slice(-20);
           replyHeaders = {
             "In-Reply-To": messageId,
