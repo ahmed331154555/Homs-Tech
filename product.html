@@ -309,7 +309,7 @@ nav{justify-content:center}
 
 <script>
 const params = new URLSearchParams(location.search);
-const type = params.get("type") || "phone";
+const type = "phone";
 const id = Number(params.get("id"));
 let currentProductId = id;
 
@@ -505,7 +505,7 @@ function productBaseModel(product){
 }
 function productFamilyRecords(product){
   if(!currentData||!product)return [];
-  const list=type==="used"?(Array.isArray(currentData.usedPhones)?currentData.usedPhones:[]):(Array.isArray(currentData.phones)?currentData.phones:[]);
+  const list=Array.isArray(currentData.phones)?currentData.phones:[];
   const base=productBaseModel(product);
   const records=list.map((p,i)=>({p,i})).filter(x=>productBaseModel(x.p)===base);
   return records.length?records:[{p:product,i:currentProductId}];
