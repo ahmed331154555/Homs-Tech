@@ -17,14 +17,13 @@ function validateCartInventoryQuantities(catalog, items) {
 
   for (const item of Array.isArray(items) ? items : []) {
     const type = String(item?.type || "").toLowerCase();
+    if (type === "used") return "Tweedehands telefoons zijn niet meer beschikbaar.";
     const list = type === "shop"
       ? (Array.isArray(catalog?.shopProducts) ? catalog.shopProducts : [])
-      : type === "used"
-        ? (Array.isArray(catalog?.usedPhones) ? catalog.usedPhones : [])
-        : (Array.isArray(catalog?.phones) && catalog.phones.length ? catalog.phones : (Array.isArray(catalog?.devices) ? catalog.devices : []));
+      : (Array.isArray(catalog?.phones) && catalog.phones.length ? catalog.phones : (Array.isArray(catalog?.devices) ? catalog.devices : []));
     const index = type === "shop" ? findShopProductIndex(list, item?.id) : Number(item?.id);
     const product = Number.isInteger(index) && index >= 0 ? list[index] : null;
-    const catalogType = type === "shop" ? "shop" : type === "used" ? "used" : "phones";
+    const catalogType = type === "shop" ? "shop" : "phones";
     const qty = Number(item?.qty ?? 1);
     if (!product || !Number.isInteger(qty) || qty < 1) return "Een product in uw winkelwagen is niet meer beschikbaar.";
 
