@@ -1,19 +1,343 @@
 (() => {
-  if(window.__homsLiveChatLoaded)return; window.__homsLiveChatLoaded=true;
-  const tokenKey="homsTechLiveChatToken";
-  const style=document.createElement("style");
-  style.textContent="#homs-ai-launch{position:fixed;right:22px;bottom:22px;z-index:9998;border:0;border-radius:999px;background:#25d366;color:#062313;box-shadow:0 8px 28px #0003;padding:14px 19px;font:700 15px Arial,sans-serif;cursor:pointer}#homs-ai-panel{position:fixed;right:20px;bottom:82px;z-index:9999;width:min(390px,calc(100vw - 28px));height:min(610px,calc(100dvh - 115px));background:#fff;color:#172330;border:1px solid #dbe3ea;border-radius:18px;box-shadow:0 18px 55px #0003;display:none;overflow:hidden;font:14px/1.45 Arial,Helvetica,sans-serif}#homs-ai-panel.open{display:flex;flex-direction:column}.homs-ai-head{background:#071d2d;color:#fff;padding:15px 16px;display:flex;align-items:center;gap:10px}.homs-ai-avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#25d366;color:#071d2d;font-size:21px}.homs-ai-head strong{display:block;font-size:15px}.homs-ai-head small{display:block;color:#b8d8c9;margin-top:2px}.homs-ai-close{margin-left:auto;border:0;background:transparent;color:white;font-size:25px;cursor:pointer;padding:3px 8px}.homs-ai-messages{flex:1;overflow:auto;padding:14px;background:#f5f8fa;display:flex;flex-direction:column;gap:10px}.homs-ai-msg{max-width:88%;padding:10px 12px;border-radius:13px;white-space:pre-wrap;overflow-wrap:anywhere}.homs-ai-msg.bot{background:white;border:1px solid #e3e9ee;align-self:flex-start;border-bottom-left-radius:4px}.homs-ai-msg.user{background:#dcfce7;align-self:flex-end;border-bottom-right-radius:4px}.homs-ai-form{display:flex;gap:8px;padding:10px;border-top:1px solid #e5eaf0;background:white}.homs-ai-form input{min-width:0;flex:1;border:1px solid #cbd7e2;border-radius:999px;padding:11px 13px;font-size:14px}.homs-ai-form button{border:0;border-radius:999px;background:#2563eb;color:#fff;padding:0 15px;font-weight:700;cursor:pointer}.homs-ai-form button:disabled{opacity:.6}.homs-ai-note{font-size:10px;color:#64748b;text-align:center;padding:7px;background:#fff}@media(max-width:480px){#homs-ai-launch{right:14px;bottom:14px;padding:12px 15px}#homs-ai-panel{right:8px;bottom:68px;width:calc(100vw - 16px);height:min(650px,calc(100dvh - 85px));border-radius:15px}}";
+  if (window.__homsLiveChatLoaded) return;
+  window.__homsLiveChatLoaded = true;
+
+  const tokenKey = "homsTechLiveChatToken";
+  const style = document.createElement("style");
+
+  style.textContent = `
+    #homs-ai-launch {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 9998;
+      border: 0;
+      border-radius: 999px;
+      background: #25d366;
+      color: #062313;
+      box-shadow: 0 8px 28px #0003;
+      padding: 14px 19px;
+      font: 700 15px Arial, sans-serif;
+      cursor: pointer;
+    }
+    #homs-ai-panel {
+      position: fixed;
+      right: 20px;
+      bottom: 82px;
+      z-index: 9999;
+      width: min(390px, calc(100vw - 28px));
+      height: min(610px, calc(100dvh - 115px));
+      background: #fff;
+      color: #172330;
+      border: 1px solid #dbe3ea;
+      border-radius: 18px;
+      box-shadow: 0 18px 55px #0003;
+      display: none;
+      overflow: hidden;
+      font: 14px/1.45 Arial, Helvetica, sans-serif;
+    }
+    #homs-ai-panel.open {
+      display: flex;
+      flex-direction: column;
+    }
+    .homs-ai-head {
+      background: #071d2d;
+      color: #fff;
+      padding: 15px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .homs-ai-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #25d366;
+      color: #071d2d;
+      font-size: 21px;
+    }
+    .homs-ai-head strong {
+      display: block;
+      font-size: 15px;
+    }
+    .homs-ai-head small {
+      display: block;
+      color: #b8d8c9;
+      margin-top: 2px;
+    }
+    .homs-ai-close {
+      margin-left: auto;
+      border: 0;
+      background: transparent;
+      color: white;
+      font-size: 25px;
+      cursor: pointer;
+      padding: 3px 8px;
+    }
+    .homs-ai-messages {
+      flex: 1;
+      overflow: auto;
+      padding: 14px;
+      background: #f5f8fa;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .homs-ai-msg {
+      max-width: 88%;
+      padding: 10px 12px;
+      border-radius: 13px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .homs-ai-msg.bot {
+      background: white;
+      border: 1px solid #e3e9ee;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    .homs-ai-msg.user {
+      background: #dcfce7;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+    .homs-ai-form {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      border-top: 1px solid #e5eaf0;
+      background: white;
+    }
+    .homs-ai-form input {
+      min-width: 0;
+      flex: 1;
+      border: 1px solid #cbd7e2;
+      border-radius: 999px;
+      padding: 11px 13px;
+      font-size: 14px;
+    }
+    .homs-ai-form button {
+      border: 0;
+      border-radius: 999px;
+      background: #2563eb;
+      color: #fff;
+      padding: 0 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .homs-ai-form button:disabled {
+      opacity: .6;
+    }
+    .homs-ai-note {
+      font-size: 10px;
+      color: #64748b;
+      text-align: center;
+      padding: 7px;
+      background: #fff;
+    }
+    @media (max-width: 480px) {
+      #homs-ai-launch {
+        right: 14px;
+        bottom: 14px;
+        padding: 12px 15px;
+      }
+      #homs-ai-panel {
+        right: 8px;
+        bottom: 68px;
+        width: calc(100vw - 16px);
+        height: min(650px, calc(100dvh - 85px));
+        border-radius: 15px;
+      }
+    }
+  `;
+
   document.head.appendChild(style);
-  const launch=document.createElement("button");launch.id="homs-ai-launch";launch.type="button";launch.textContent="💬 HOMS TECH Chat";launch.setAttribute("aria-expanded","false");
-  const panel=document.createElement("section");panel.id="homs-ai-panel";panel.setAttribute("aria-label","HOMS TECH klantenservice");
-  panel.innerHTML='<header class="homs-ai-head"><div class="homs-ai-avatar">💬</div><div><strong>HOMS TECH Chat</strong><small>Klantenservice · Nederlands</small></div><button class="homs-ai-close" type="button" aria-label="Sluiten">×</button></header><div class="homs-ai-messages" role="log" aria-live="polite"></div><form class="homs-ai-form"><input name="message" maxlength="2000" autocomplete="off" required placeholder="Typ je bericht…"><button type="submit">Verstuur</button></form><div class="homs-ai-note">We beantwoorden je bericht zo snel mogelijk. Bedankt voor je geduld!</div>';
-  document.body.append(launch,panel);
-  const messages=panel.querySelector(".homs-ai-messages"),form=panel.querySelector(".homs-ai-form"),input=form.elements.message;let token="";try{token=localStorage.getItem(tokenKey)||""}catch{}let seen=new Set(),timer=null;
-  function add(m){const id=m.id==null?null:String(m.id);if(id&&seen.has(id))return;if(id)seen.add(id);const el=document.createElement("div");el.className="homs-ai-msg "+(m.sender==="customer"?"user":"bot");el.textContent=m.message;messages.appendChild(el);messages.scrollTop=messages.scrollHeight}
-  function welcome(){if(!messages.children.length)add({sender:"admin",message:"Hallo! Welkom bij HOMS TECH. 👋\nWaarmee kan ik u helpen? Schrijf hieronder uw probleem of vraag."})}
-  async function refresh(){if(!token){welcome();return}try{const r=await fetch("/api/chat/conversations/"+encodeURIComponent(token)+"/messages",{credentials:"same-origin",cache:"no-store"});if(!r.ok){if(r.status===404){token="";try{localStorage.removeItem(tokenKey)}catch{}}return}const d=await r.json();if(!d.messages.length)welcome();d.messages.forEach(add);if(d.status==="closed"){input.disabled=true;form.querySelector("button").disabled=true}}catch{}}
-  launch.addEventListener("click",()=>{const open=!panel.classList.contains("open");panel.classList.toggle("open",open);launch.setAttribute("aria-expanded",String(open));if(open){refresh();if(!timer)timer=setInterval(refresh,5000);input.focus()}else if(timer){clearInterval(timer);timer=null}});
-  panel.querySelector(".homs-ai-close").addEventListener("click",()=>{panel.classList.remove("open");launch.setAttribute("aria-expanded","false");if(timer){clearInterval(timer);timer=null}});
-  form.addEventListener("submit",async e=>{e.preventDefault();const message=input.value.trim();if(!message)return;const btn=form.querySelector("button");btn.disabled=true;input.disabled=true;input.value="";try{let r;if(!token){r=await fetch("/api/chat/conversations",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({message})});const d=await r.json();if(!r.ok)throw Error(d.error||"Bericht versturen is mislukt.");token=d.token;try{localStorage.setItem(tokenKey,token)}catch{}d.messages.forEach(add)}else{add({sender:"customer",message});r=await fetch("/api/chat/conversations/"+encodeURIComponent(token)+"/messages",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({message})});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||"Bericht versturen is mislukt.")}await refresh()}catch(err){add({sender:"admin",message:err.message||"Bericht versturen is mislukt."})}finally{btn.disabled=false;input.disabled=false;input.focus()}});
+
+  const launch = document.createElement("button");
+  launch.id = "homs-ai-launch";
+  launch.type = "button";
+  launch.textContent = "💬 HOMS TECH Chat";
+  launch.setAttribute("aria-expanded", "false");
+
+  const panel = document.createElement("section");
+  panel.id = "homs-ai-panel";
+  panel.setAttribute("aria-label", "HOMS TECH klantenservice");
+  panel.innerHTML = `
+    <header class="homs-ai-head">
+      <div class="homs-ai-avatar">💬</div>
+      <div>
+        <strong>HOMS TECH Chat</strong>
+        <small>Klantenservice · Nederlands</small>
+      </div>
+      <button class="homs-ai-close" type="button" aria-label="Sluiten">×</button>
+    </header>
+    <div class="homs-ai-messages" role="log" aria-live="polite"></div>
+    <form class="homs-ai-form">
+      <input name="message" maxlength="2000" autocomplete="off" required placeholder="Typ je bericht…">
+      <button type="submit">Verstuur</button>
+    </form>
+    <div class="homs-ai-note">We beantwoorden je bericht zo snel mogelijk. Bedankt voor je geduld!</div>
+  `;
+
+  document.body.append(launch, panel);
+
+  const messages = panel.querySelector(".homs-ai-messages");
+  const form = panel.querySelector(".homs-ai-form");
+  const input = form.elements.message;
+
+  let token = "";
+  try {
+    token = localStorage.getItem(tokenKey) || "";
+  } catch {}
+
+  const seen = new Set();
+  let timer = null;
+
+  function add(message) {
+    const id = message.id == null ? null : String(message.id);
+    if (id && seen.has(id)) return;
+    if (id) seen.add(id);
+
+    const element = document.createElement("div");
+    element.className = "homs-ai-msg " +
+      (message.sender === "customer" ? "user" : "bot");
+    element.textContent = message.message;
+    messages.appendChild(element);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function welcome() {
+    if (!messages.children.length) {
+      add({
+        sender: "admin",
+        message: "Hallo! Welkom bij HOMS TECH. 👋\nWaarmee kan ik u helpen? Schrijf hieronder uw probleem of vraag."
+      });
+    }
+  }
+
+  async function refresh() {
+    if (!token) {
+      welcome();
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "/api/chat/conversations/" + encodeURIComponent(token) + "/messages",
+        { credentials: "same-origin", cache: "no-store" }
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          token = "";
+          try {
+            localStorage.removeItem(tokenKey);
+          } catch {}
+        }
+        return;
+      }
+
+      const data = await response.json();
+      if (!data.messages.length) welcome();
+      data.messages.forEach(add);
+
+      if (data.status === "closed") {
+        input.disabled = true;
+        form.querySelector("button").disabled = true;
+      }
+    } catch {}
+  }
+
+  launch.addEventListener("click", () => {
+    const open = !panel.classList.contains("open");
+    panel.classList.toggle("open", open);
+    launch.setAttribute("aria-expanded", String(open));
+
+    if (open) {
+      refresh();
+      if (!timer) timer = setInterval(refresh, 5000);
+      input.focus();
+    } else if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+  });
+
+  panel.querySelector(".homs-ai-close").addEventListener("click", () => {
+    panel.classList.remove("open");
+    launch.setAttribute("aria-expanded", "false");
+
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const message = input.value.trim();
+    if (!message) return;
+
+    const button = form.querySelector("button");
+    button.disabled = true;
+    input.disabled = true;
+    input.value = "";
+
+    try {
+      let response;
+
+      if (!token) {
+        response = await fetch("/api/chat/conversations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ message })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw Error(data.error || "Bericht versturen is mislukt.");
+        }
+
+        token = data.token;
+        try {
+          localStorage.setItem(tokenKey, token);
+        } catch {}
+        data.messages.forEach(add);
+      } else {
+        add({ sender: "customer", message });
+
+        response = await fetch(
+          "/api/chat/conversations/" + encodeURIComponent(token) + "/messages",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify({ message })
+          }
+        );
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw Error(data.error || "Bericht versturen is mislukt.");
+        }
+      }
+
+      await refresh();
+    } catch (error) {
+      add({
+        sender: "admin",
+        message: error.message || "Bericht versturen is mislukt."
+      });
+    } finally {
+      button.disabled = false;
+      input.disabled = false;
+      input.focus();
+    }
+  });
+
   welcome();
 })();
