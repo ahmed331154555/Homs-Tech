@@ -10,6 +10,7 @@ const { hashPassword, verifyPassword } = require("./utils/password");
 const { escapeHtml } = require("./utils/html");
 const { moneyNumber } = require("./utils/money");
 const { serverOptionDelta, serverOptionDefaults } = require("./utils/product-options");
+const { deviceText, deviceMoney } = require("./utils/device-register");
 const path = require("path");
 const {
   sanitizeDevicesCatalogData,
@@ -891,8 +892,7 @@ function requirePermission(permission){
 
 const customerDeviceStatuses = new Set(["مفتوح","قيد العمل","مكتمل"]);
 const commercialDeviceStatuses = new Set(["تم الشراء","قيد الفحص","قيد التجديد","جاهز للبيع","تم البيع"]);
-function deviceText(v,max=240){return String(v??"").trim().slice(0,max);}
-function deviceMoney(v){const n=Number(v??0);return Number.isFinite(n)&&n>=0&&n<=100000000?n:NaN;}
+
 app.get("/api/admin/device-register",requirePermission("device_register.view"),async(req,res)=>{
   try{
     const type=["customer_repair","commercial"].includes(req.query.type)?req.query.type:null;
