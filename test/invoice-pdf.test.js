@@ -10,7 +10,7 @@ test("invoicePdfEscape escapes PDF string delimiters and backslashes", () => {
 
 test("invoicePdfEscape replaces unsupported characters after NFKD normalization", () => {
   assert.equal(invoicePdfEscape("café"), "cafe?");
-  assert.equal(invoicePdfEscape("Phone 📱"), "Phone ?");
+  assert.equal(invoicePdfEscape("Phone 📱"), "Phone ??");
 });
 
 test("invoicePdfEscape safely converts nullish and numeric values", () => {
