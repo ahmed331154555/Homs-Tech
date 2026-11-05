@@ -1451,7 +1451,10 @@ app.post("/api/mollie/create-payment", async (req, res) => {
         const existing = await mollieRequest("/payments/" + encodeURIComponent(order.mollie_payment_id));
         if (molliePaymentMatchesOrder(existing, order) && String(existing.status || "").toLowerCase() === "paid") {
           await pool.query("UPDATE webshop_orders SET payment_status='Paid', payment_method='Mollie' WHERE id=$1 AND mollie_payment_id=$2", [localOrderId, order.mollie_payment_id]);
-          await deductPaidOrderInventory(localOrderId);
+          const inventoryResult = await deductPaidOrderInventory(localOrderId);
+          if (inventoryResult?.error) {
+            return res.status(409).json({ error: "De betaling is bevestigd, maar de voorraad kon niet worden bijgewerkt. HOMS TECH controleert dit handmatig." });
+          }
           return res.status(409).json({ error: "Deze bestelling is al betaald." });
         }
         if (molliePaymentMatchesOrder(existing, order) &&
@@ -1505,7 +1508,13 @@ app.post("/api/mollie/webhook", async (req, res) => {
     }
     const localStatus = mollieStatusToLocal(payment.status);
     await pool.query("UPDATE webshop_orders SET payment_status=CASE WHEN payment_status='Paid' THEN 'Paid' ELSE $1 END, payment_method='Mollie' WHERE id=$2 AND mollie_payment_id=$3", [localStatus, orderId, paymentId]);
-    if (localStatus === 'Paid') await deductPaidOrderInventory(orderId);
+    if (localStatus === 'Paid') {
+      const inventoryResult = await deductPaidOrderInventory(orderId);
+      if (inventoryResult?.error) {
+        console.error("Mollie webhook inventory processing failed; provider retry requested:", { orderId, paymentId });
+        return res.sendStatus(500);
+      }
+    }
     res.sendStatus(200);
   } catch (error) {
     console.error("Mollie webhook error:", error.statusCode || error.message);
@@ -1528,7 +1537,12 @@ app.post("/api/mollie/verify-payment", async (req, res) => {
     if (!molliePaymentMatchesOrder(payment, order) || payment.id !== order.mollie_payment_id) return res.status(409).json({ error: "De betaling komt niet overeen met deze bestelling." });
     const status = mollieStatusToLocal(payment.status);
     await pool.query("UPDATE webshop_orders SET payment_status=CASE WHEN payment_status='Paid' THEN 'Paid' ELSE $1 END WHERE id=$2 AND mollie_payment_id=$3", [status, localOrderId, order.mollie_payment_id]);
-    if (status === 'Paid') await deductPaidOrderInventory(localOrderId);
+    if (status === 'Paid') {
+      const inventoryResult = await deductPaidOrderInventory(localOrderId);
+      if (inventoryResult?.error) {
+        return res.status(409).json({ error: "De betaling is bevestigd, maar de voorraad kon niet worden bijgewerkt. HOMS TECH controleert dit handmatig.", paid: true, orderId: localOrderId });
+      }
+    }
     const paid = String(payment.status || "").toLowerCase() === "paid";
     res.json({ success: true, paid, status, orderId: localOrderId });
   } catch (error) {
@@ -1727,7 +1741,10 @@ app.post("/api/paypal/capture-order", async (req, res) => {
       }
       return res.status(409).json({ error: "De bestelling is ondertussen gewijzigd. Neem contact op met HOMS TECH." });
     }
-    await deductPaidOrderInventory(localOrderId);
+    const inventoryResult = await deductPaidOrderInventory(localOrderId);
+    if (inventoryResult?.error) {
+      return res.status(409).json({ error: "PayPal heeft de betaling bevestigd, maar de voorraad kon niet worden bijgewerkt. HOMS TECH controleert dit handmatig.", paid: true, orderId: localOrderId });
+    }
 
     res.json({
       success: true,
