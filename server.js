@@ -257,13 +257,35 @@ app.get("/api/site", async (req, res) => {
   try {
     const view=String(req.query.view||"").trim().toLowerCase();
     if(view==="devices"){
-      const result=await queryWithConnectionRetry("SELECT data->'phones' AS phones,data->'devices' AS devices,data->'phone' AS phone,data->'whatsapp' AS whatsapp,data->'businessName' AS business_name,data->'siteName' AS site_name,data->'tagline' AS tagline FROM site_settings WHERE id=1",[],4);
+      const result = await queryWithConnectionRetry(
+        `SELECT
+          data->'phones' AS phones,
+          data->'devices' AS devices,
+          data->'phone' AS phone,
+          data->'whatsapp' AS whatsapp,
+          data->'businessName' AS business_name,
+          data->'siteName' AS site_name,
+          data->'tagline' AS tagline
+        FROM site_settings
+        WHERE id = 1`,
+        [],
+        4
+      );
       if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
       const row=result.rows[0];return res.json(sanitizeDevicesCatalogData({phones:row.phones,devices:row.devices,phone:row.phone,whatsapp:row.whatsapp,businessName:row.business_name,siteName:row.site_name,tagline:row.tagline}));
     }
     if(view==="product"){
       const result=await queryWithConnectionRetry(
-        "SELECT data->'phones' AS phones,data->'usedPhones' AS used_phones,data->'phone' AS phone,data->'whatsapp' AS whatsapp,data->'businessName' AS business_name,data->'siteName' AS site_name,data->'tagline' AS tagline FROM site_settings WHERE id=1",
+        `SELECT
+          data->'phones' AS phones,
+          data->'usedPhones' AS used_phones,
+          data->'phone' AS phone,
+          data->'whatsapp' AS whatsapp,
+          data->'businessName' AS business_name,
+          data->'siteName' AS site_name,
+          data->'tagline' AS tagline
+        FROM site_settings
+        WHERE id = 1`,
         [],
         4
       );
@@ -492,8 +514,33 @@ app.put("/api/admin/device-register/:id",requirePermission("device_register.upda
     if(!existing.rows.length)return res.status(404).json({error:"Toestel niet gevonden."});
     const allowed=existing.rows[0].device_type==="commercial"?commercialDeviceStatuses:customerDeviceStatuses;
     if(!allowed.has(status)||!Number.isFinite(purchaseCost)||!Number.isFinite(salePrice))return res.status(400).json({error:"Controleer status en bedragen."});
-    const result=await pool.query(`UPDATE device_register SET status=$2,customer_name=$3,customer_phone=$4,customer_email=$5,repair_order_number=$6,purchase_cost=$7,sale_price=$8,model=CASE WHEN $9='' THEN model ELSE $9 END,brand=CASE WHEN $10='' THEN brand ELSE $10 END,updated_at=NOW()
-      WHERE id=$1 AND archived=FALSE RETURNING *`,[id,status,deviceText(b.customerName,160),deviceText(b.customerPhone,60),deviceText(b.customerEmail,180),deviceText(b.repairOrderNumber,100),purchaseCost,salePrice,model,brand]);
+    const result = await pool.query(
+      `UPDATE device_register
+       SET status = $2,
+           customer_name = $3,
+           customer_phone = $4,
+           customer_email = $5,
+           repair_order_number = $6,
+           purchase_cost = $7,
+           sale_price = $8,
+           model = CASE WHEN $9 = '' THEN model ELSE $9 END,
+           brand = CASE WHEN $10 = '' THEN brand ELSE $10 END,
+           updated_at = NOW()
+       WHERE id = $1 AND archived = FALSE
+       RETURNING *`,
+      [
+        id,
+        status,
+        deviceText(b.customerName, 160),
+        deviceText(b.customerPhone, 60),
+        deviceText(b.customerEmail, 180),
+        deviceText(b.repairOrderNumber, 100),
+        purchaseCost,
+        salePrice,
+        model,
+        brand
+      ]
+    );
     if(!result.rows.length)return res.status(404).json({error:"Toestel niet gevonden."});
     res.json({device:result.rows[0]});
   }catch(e){console.error("Device register update error:",e);res.status(500).json({error:"Toestel kon niet worden bijgewerkt."});}
@@ -508,14 +555,28 @@ app.post("/api/admin/device-register/:id/operations",requirePermission("device_r
   try{
     const id=Number(req.params.id),b=req.body||{},operationType=deviceText(b.operationType,30),description=deviceText(b.description,2000),status=deviceText(b.status,40);
     const additionalCost=deviceMoney(b.additionalCost),salePrice=deviceMoney(b.salePrice);
-    if(!Number.isSafeInteger(id)||id<=0||!["repair","refurbishment","purchase","sale","note"].includes(operationType)||!Number.isFinite(additionalCost)||!Number.isFinite(salePrice))return res.status(400).json({error:"Controleer de handeling en bedragen."});
+    if (
+      !Number.isSafeInteger(id) ||
+      id <= 0 ||
+      !["repair", "refurbishment", "purchase", "sale", "note"].includes(operationType) ||
+      !Number.isFinite(additionalCost) ||
+      !Number.isFinite(salePrice)
+    ) {
+      return res.status(400).json({ error: "Controleer de handeling en bedragen." });
+    }
     const device=await pool.query("SELECT device_type FROM device_register WHERE id=$1 AND archived=FALSE",[id]);if(!device.rows.length)return res.status(404).json({error:"Actief toestel niet gevonden."});
     const parts=Array.isArray(b.parts)?b.parts.slice(0,100).map(p=>({name:deviceText(p?.name,160),quantity:Math.max(1,Math.min(999,Math.floor(Number(p?.quantity)||1))),cost:deviceMoney(p?.cost)})): [];
     if(parts.some(p=>!p.name||!Number.isFinite(p.cost)))return res.status(400).json({error:"Controleer de onderdelen en hun kosten."});
     const allowed=device.rows[0].device_type==="customer_repair"?customerDeviceStatuses:commercialDeviceStatuses;
     if(status&&!allowed.has(status))return res.status(400).json({error:"Ongeldige status."});
     const client=await pool.connect();try{await client.query("BEGIN");
-      const inserted=await client.query("INSERT INTO device_register_operations(device_id,operation_type,status,description,parts,additional_cost,sale_price) VALUES($1,$2,$3,$4,$5::jsonb,$6,$7) RETURNING *",[id,operationType,status,description,JSON.stringify(parts),additionalCost,salePrice]);
+      const inserted = await client.query(
+        `INSERT INTO device_register_operations(
+          device_id, operation_type, status, description, parts, additional_cost, sale_price
+        ) VALUES($1, $2, $3, $4, $5::jsonb, $6, $7)
+        RETURNING *`,
+        [id, operationType, status, description, JSON.stringify(parts), additionalCost, salePrice]
+      );
       if(status)await client.query("UPDATE device_register SET status=$2,updated_at=NOW(),sale_price=CASE WHEN $2='تم البيع' AND $3>0 THEN $3 ELSE sale_price END WHERE id=$1",[id,status,salePrice]);
       else await client.query("UPDATE device_register SET updated_at=NOW() WHERE id=$1",[id]);
       await client.query("COMMIT");res.status(201).json({operation:inserted.rows[0]});
@@ -524,7 +585,14 @@ app.post("/api/admin/device-register/:id/operations",requirePermission("device_r
 });
 app.post("/api/admin/device-register/:id/archive",requirePermission("device_register.update"),async(req,res)=>{
   try{const id=Number(req.params.id),archived=Boolean(req.body?.archived);if(!Number.isSafeInteger(id)||id<=0)return res.status(400).json({error:"Ongeldig toestel."});
-    const q=await pool.query("UPDATE device_register SET archived=$2,updated_at=NOW() WHERE id=$1 RETURNING id,archived",[id,archived]);if(!q.rows.length)return res.status(404).json({error:"Toestel niet gevonden."});res.json({success:true,device:q.rows[0]});
+    const result = await pool.query(
+      "UPDATE device_register SET archived=$2, updated_at=NOW() WHERE id=$1 RETURNING id, archived",
+      [id, archived]
+    );
+    if (!result.rows.length) {
+      return res.status(404).json({ error: "Toestel niet gevonden." });
+    }
+    res.json({ success: true, device: result.rows[0] });
   }catch(e){console.error("Device archive error:",e);res.status(500).json({error:"Archiveren/herstellen is mislukt."});}
 });
 
@@ -1075,7 +1143,12 @@ app.post("/api/orders", async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO service_orders
-       (customer_id, service_category, service_name, service_group, price, name, email, phone, username, imei, notes, service_source_id, service_source_url, price_currency, appointment_date, appointment_time, service_instructions, required_fields, source_price, source_currency, extra_fields)
+       (
+         customer_id, service_category, service_name, service_group, price, name,
+         email, phone, username, imei, notes, service_source_id, service_source_url,
+         price_currency, appointment_date, appointment_time, service_instructions,
+         required_fields, source_price, source_currency, extra_fields
+       )
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
        RETURNING id, status, created_at, appointment_date, appointment_time`,
       [
@@ -2087,7 +2160,11 @@ app.post("/api/admin/customers", requirePermission("customers.view"), async (req
     if(!name||!email||password.length<8) return res.status(400).json({error:"Vul naam, e-mail en een wachtwoord van minimaal 8 tekens in."});
     const passwordHash=await hashPassword(password);
     const result=await pool.query(
-      "INSERT INTO customers (name,email,phone,address,password_hash,email_verified,email_verification_code_hash,email_verification_expires_at,email_verification_attempts) VALUES ($1,$2,$3,$4,$5,TRUE,NULL,NULL,0) RETURNING id,name,email,phone,address,created_at",
+      `INSERT INTO customers (
+        name, email, phone, address, password_hash, email_verified,
+        email_verification_code_hash, email_verification_expires_at, email_verification_attempts
+      ) VALUES ($1, $2, $3, $4, $5, TRUE, NULL, NULL, 0)
+      RETURNING id, name, email, phone, address, created_at`,
       [name,email,phone,address,passwordHash]
     );
     sendWelcomeEmail(result.rows[0]).catch(e=>console.error("Admin-created customer welcome email failed:",e.message));
@@ -2753,8 +2830,21 @@ app.post("/api/chat", (_req, res) => {
 
 
 app.get("/api/admin/emails",requirePermission("site.save"),async(req,res)=>{
-  try{const r=await pool.query("SELECT id,direction,from_address,to_addresses,subject,LEFT(text_body,180) AS preview,attachments,is_read,created_at,message_id,references_header FROM admin_emails ORDER BY created_at DESC,id DESC LIMIT 200");res.json({emails:r.rows});}
-  catch(e){console.error("Admin email list:",e);res.status(500).json({error:"E-mails laden is mislukt."});}
+  try {
+    const result = await pool.query(
+      `SELECT
+        id, direction, from_address, to_addresses, subject,
+        LEFT(text_body, 180) AS preview, attachments, is_read,
+        created_at, message_id, references_header
+      FROM admin_emails
+      ORDER BY created_at DESC, id DESC
+      LIMIT 200`
+    );
+    res.json({ emails: result.rows });
+  } catch (error) {
+    console.error("Admin email list:", error);
+    res.status(500).json({ error: "E-mails laden is mislukt." });
+  }
 });
 app.get("/api/admin/emails/:id", requirePermission("site.save"), async (req, res) => {
   try {
