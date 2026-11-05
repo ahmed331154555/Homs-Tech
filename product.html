@@ -1129,11 +1129,7 @@ if(footerName) footerName.textContent=data.businessName||data.siteName||"HOMS TE
 const footerTag=document.getElementById("footerTag");
 if(footerTag) footerTag.textContent=data.tagline||"Telefoonreparatie aan huis";
 let list=[];
-if(type==="used"){
-  list=Array.isArray(data.usedPhones)?data.usedPhones:[];
-}else{
-  list=Array.isArray(data.phones)?data.phones:[];
-}
+list=Array.isArray(data.phones)?data.phones:[];
 const product=Number.isInteger(id)&&id>=0?list[id]:null;
 if(!product){
   document.getElementById("productArea").innerHTML=
