@@ -42,3 +42,22 @@ test("molliePaymentMatchesOrder rejects wrong order, currency, amount or missing
   assert.equal(molliePaymentMatchesOrder({ ...base, amount: { currency: "EUR", value: "invalid" } }, order), false);
   assert.equal(molliePaymentMatchesOrder(base, { id: 42, total: "invalid" }), false);
 });
+
+test("does not downgrade paid or terminal payment states after stale events", () => {
+  const { resolveMolliePaymentStatus } = require("../utils/mollie-payment");
+  for (const status of ["pending", "authorized", "canceled", "expired", "failed"]) {
+    assert.equal(resolveMolliePaymentStatus("Paid", status), "Paid");
+  }
+  for (const current of ["Cancelled", "Expired", "Failed"]) {
+    for (const incoming of ["pending", "authorized", "canceled", "expired", "failed"]) {
+      assert.equal(resolveMolliePaymentStatus(current, incoming), current);
+    }
+  }
+});
+
+test("a confirmed Mollie payment takes precedence over a prior non-paid state", () => {
+  const { resolveMolliePaymentStatus } = require("../utils/mollie-payment");
+  for (const current of ["Unpaid", "Pending", "Cancelled", "Expired", "Failed"]) {
+    assert.equal(resolveMolliePaymentStatus(current, "paid"), "Paid");
+  }
+});
