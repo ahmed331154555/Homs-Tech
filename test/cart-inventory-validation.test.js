@@ -69,3 +69,12 @@ test("aggregate validation treats phone and device aliases as the same stock ite
   ];
   assert.match(validateCartInventoryQuantities(catalog, items), /totale hoeveelheid/i);
 });
+
+test("aggregate validation rejects legacy second-hand cart lines", () => {
+  const catalog = { usedPhones: [{ name: "Legacy phone", stock: 5 }] };
+  const items = [{ type: "used", id: 0, qty: 1 }];
+  assert.equal(
+    validateCartInventoryQuantities(catalog, items),
+    "Tweedehands telefoons zijn niet meer beschikbaar."
+  );
+});
