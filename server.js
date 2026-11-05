@@ -24,7 +24,7 @@ const { registerAdminWebshopOrderRoutes } = require("./routes/admin-webshop-orde
 const { validateRepairQuotePayload } = require("./utils/repair-quote");
 const { validateBuybackOfferedPrice } = require("./utils/buyback-order");
 const { sanitizePublicSiteData, sanitizeHomepageSiteData } = require("./utils/site-data-sanitizers");
-const { mollieStatusToLocal, molliePaymentMatchesOrder } = require("./utils/mollie-payment");
+const { mollieStatusToLocal, resolveMolliePaymentStatus, molliePaymentMatchesOrder } = require("./utils/mollie-payment");
 const { encryptPayPalSecret, decryptPayPalSecret, getPayPalBaseUrl } = require("./utils/payment-secrets");
 const { allowLiveChat, liveChatAutomaticReply } = require("./utils/live-chat");
 const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-limit");
@@ -1537,8 +1537,8 @@ app.post("/api/mollie/webhook", async (req, res) => {
       console.error("Mollie webhook order mismatch", { orderId, paymentId });
       return res.sendStatus(200);
     }
-    const localStatus = mollieStatusToLocal(payment.status);
-    await pool.query("UPDATE webshop_orders SET payment_status=CASE WHEN payment_status='Paid' THEN 'Paid' ELSE $1 END, payment_method='Mollie' WHERE id=$2 AND mollie_payment_id=$3", [localStatus, orderId, paymentId]);
+    const localStatus = resolveMolliePaymentStatus(order.payment_status, payment.status);
+    await pool.query("UPDATE webshop_orders SET payment_status=CASE WHEN payment_status IN ('Paid','Cancelled','Expired','Failed') AND $1 <> 'Paid' THEN payment_status ELSE $1 END, payment_method='Mollie' WHERE id=$2 AND mollie_payment_id=$3", [localStatus, orderId, paymentId]);
     if (localStatus === 'Paid') {
       const inventoryResult = await deductPaidOrderInventory(orderId);
       if (inventoryResult?.error) {
@@ -1566,8 +1566,8 @@ app.post("/api/mollie/verify-payment", async (req, res) => {
     if (!order.mollie_payment_id || order.payment_method !== "Mollie") return res.status(409).json({ error: "Er is geen Mollie-betaling gekoppeld aan deze bestelling." });
     const payment = await mollieRequest("/payments/" + encodeURIComponent(order.mollie_payment_id));
     if (!molliePaymentMatchesOrder(payment, order) || payment.id !== order.mollie_payment_id) return res.status(409).json({ error: "De betaling komt niet overeen met deze bestelling." });
-    const status = mollieStatusToLocal(payment.status);
-    await pool.query("UPDATE webshop_orders SET payment_status=CASE WHEN payment_status='Paid' THEN 'Paid' ELSE $1 END WHERE id=$2 AND mollie_payment_id=$3", [status, localOrderId, order.mollie_payment_id]);
+    const status = resolveMolliePaymentStatus(order.payment_status, payment.status);
+    await pool.query("UPDATE webshop_orders SET payment_status=CASE WHEN payment_status IN ('Paid','Cancelled','Expired','Failed') AND $1 <> 'Paid' THEN payment_status ELSE $1 END WHERE id=$2 AND mollie_payment_id=$3", [status, localOrderId, order.mollie_payment_id]);
     if (status === 'Paid') {
       const inventoryResult = await deductPaidOrderInventory(localOrderId);
       if (inventoryResult?.error) {
