@@ -2872,6 +2872,7 @@ async function loadData(){
     }
 
     data=await r.json();
+    shopCatalogOriginalSnapshot=JSON.parse(JSON.stringify(Array.isArray(data.shopProducts)?data.shopProducts:[]));
     phoneOriginalIdentities=(Array.isArray(data.phones)?data.phones:[]).map(p=>({id:p?.id??null,name:String(p?.name||""),brand:String(p?.brand||"")}));
     buybackCatalogDeleteLock=false;
 
@@ -6441,6 +6442,7 @@ function deleteWhy(i){
 
 /* ---------------- SHOP PRODUCTS ---------------- */
 let shopImageUploadsPending=0;
+let shopCatalogOriginalSnapshot=[];
 
 const SHOP_CATEGORIES=[
  {value:"Schermen",label:"Schermen"},{value:"Laadpoorten & Flexkabels",label:"Laadpoorten & Flexkabels"},
@@ -6730,7 +6732,7 @@ async function save(isAuto=false){
       ? (phoneEditOnly
           ? {phoneItem:payload.phones?.[selectedPhoneIndex],phoneIndex:selectedPhoneIndex,phoneIdentity:phoneOriginalIdentities[selectedPhoneIndex]||{}}
           : {phones:payload.phones||[]})
-      : currentPage==="shop" ? {shopProducts:payload.shopProducts||[]} : currentPage==="buyback" ? {buybackCatalog:payload.buybackCatalog||[],buybackPhones:payload.buybackPhones||[]} : payload;
+      : currentPage==="shop" ? {shopProducts:payload.shopProducts||[],expectedShopProducts:shopCatalogOriginalSnapshot} : currentPage==="buyback" ? {buybackCatalog:payload.buybackCatalog||[],buybackPhones:payload.buybackPhones||[]} : payload;
     if(currentPage==="phones" && phoneEditOnly && requestPayload.phoneItem){
       if(requestPayload.phoneItem.setupWizard){
         requestPayload.phoneItem.setupWizard=false;
@@ -6772,6 +6774,7 @@ async function save(isAuto=false){
     }else if(currentPage==="shop"){
       if(Array.isArray(result.shopProducts)) data.shopProducts=result.shopProducts;
       else if(Array.isArray(payload.shopProducts)) data.shopProducts=payload.shopProducts;
+      shopCatalogOriginalSnapshot=JSON.parse(JSON.stringify(Array.isArray(data.shopProducts)?data.shopProducts:[]));
     }else if(currentPage==="buyback"){
       if(Array.isArray(result.buybackCatalog)) data.buybackCatalog=result.buybackCatalog;
       else if(Array.isArray(payload.buybackCatalog)) data.buybackCatalog=payload.buybackCatalog;
