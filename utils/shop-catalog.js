@@ -3,13 +3,14 @@
 /**
  * Persist only the Shop catalog key so unrelated site settings are not overwritten.
  */
-async function saveShopCatalog(queryWithConnectionRetry, shopProducts) {
+async function saveShopCatalog(queryWithConnectionRetry, shopProducts, expectedShopProducts) {
   const result = await queryWithConnectionRetry(
-    "UPDATE site_settings SET data = jsonb_set(data, '{shopProducts}', $1::jsonb, true) WHERE id = 1 RETURNING data->'shopProducts' AS products",
-    [JSON.stringify(shopProducts)],
+    "UPDATE site_settings SET data = jsonb_set(data, '{shopProducts}', $1::jsonb, true) WHERE id = 1 AND COALESCE(data->'shopProducts', '[]'::jsonb) = $2::jsonb RETURNING data->'shopProducts' AS products",
+    [JSON.stringify(shopProducts), JSON.stringify(expectedShopProducts)],
     4
   );
 
+  if (!result.rows.length) return null;
   return Array.isArray(result.rows[0]?.products)
     ? result.rows[0].products
     : [];
