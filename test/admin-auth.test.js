@@ -78,13 +78,13 @@ test("requireAuth allows valid users and rejects missing or invalid tokens", () 
   assert.equal(invalid.statusCode, 401);
 });
 
-test("requirePermission allows exact permissions and wildcard permissions", async () => {
+test("requirePermission allows exact permissions and the configured superadmin", async () => {
   const auth = makeAuth({
     exact: { id: 1, username: "staff", permissions: ["orders.view"] },
     wildcard: { id: 2, username: "manager", permissions: ["*"] },
     root: { id: 3, username: "root-admin", permissions: [] }
   });
-  for (const token of ["exact", "wildcard", "root"]) {
+  for (const token of ["exact", "root"]) {
     const req = { cookies: { token } };
     const response = makeResponse();
     let nextCalled = false;
@@ -93,6 +93,14 @@ test("requirePermission allows exact permissions and wildcard permissions", asyn
     assert.ok(req.admin);
     assert.equal(response.statusCode, 200);
   }
+
+  const wildcardResponse = makeResponse();
+  await auth.requirePermission("orders.view")(
+    { cookies: { token: "wildcard" } },
+    wildcardResponse,
+    () => assert.fail("legacy wildcard grants must not elevate non-superadmin users")
+  );
+  assert.equal(wildcardResponse.statusCode, 403);
 });
 
 test("requirePermission rejects users without permission and unauthenticated users", async () => {
@@ -229,4 +237,14 @@ test("requirePermission denies access when the database cannot refresh permissio
     () => assert.fail("database failure must not allow access")
   );
   assert.equal(response.statusCode, 401);
+});
+
+test("admin permission refresh strips legacy wildcard and unknown stored grants", async () => {
+  const auth = makeAuth({
+    legacy: { id: 45, username: "legacy", permissions: ["*", "orders.view", "unknown.permission"] }
+  });
+  const refreshed = await auth.refreshAdminUserFromDb(
+    auth.getAdminFromRequest({ cookies: { token: "legacy" } })
+  );
+  assert.deepEqual(refreshed.permissions, ["orders.view"]);
 });
