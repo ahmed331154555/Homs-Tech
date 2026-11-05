@@ -14,13 +14,12 @@ function allowLiveChat(ip) {
 function liveChatAutomaticReply(message) {
   const raw = String(message || "").trim();
   const normalized = raw.toLocaleLowerCase("nl-NL")
-    .normalize("NFD").replace(/[\\u0300-\\u036f]/g, "")
-    .replace(/[^\\p{L}\\p{N}]+/gu, " ").trim();
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\p{L}\p{N}]+/gu, " ").trim();
   if (!normalized) {
     return "Bedankt voor uw bericht. Kunt u iets meer vertellen, zodat we u goed kunnen helpen?";
   }
 
-  const words = new Set(normalized.split(/\\s+/));
   const hasAny = (terms) => terms.some(term => normalized.includes(term));
   const greetings = new Set(["hi","hoi","halo","hallo","hello","hey","heya","goedemorgen","goedemiddag","goedenavond","goedenacht"]);
   if (greetings.has(normalized)) {
