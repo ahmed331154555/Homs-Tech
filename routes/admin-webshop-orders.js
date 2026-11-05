@@ -1,6 +1,6 @@
 "use strict";
 
-function registerAdminWebshopOrderRoutes(app, { pool, requirePermission }) {
+function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory }) {
   app.put("/api/admin/webshop-orders/:id/shipping", requirePermission("webshop_orders.update"), async (req,res) => {
     try{
       const id=Number(req.params.id);
@@ -17,10 +17,22 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission }) {
         `UPDATE webshop_orders
          SET shipping_method=$1, payment_status=$2, tracking_number=$3, tracking_url=$4
          WHERE id=$5
+           AND (payment_status <> 'Paid' OR $2 = 'Paid')
+           AND (inventory_deducted_at IS NULL OR $2 = 'Paid')
          RETURNING id,shipping_method,payment_status,tracking_number,tracking_url`,
         [carrier,paymentStatus,trackingNumber,trackingUrl,id]
       );
-      if(!result.rows.length)return res.status(404).json({error:"Bestelling niet gevonden."});
+      if(!result.rows.length){
+        const existing=await pool.query("SELECT id,payment_status,inventory_deducted_at FROM webshop_orders WHERE id=$1",[id]);
+        if(!existing.rows.length)return res.status(404).json({error:"Bestelling niet gevonden."});
+        return res.status(409).json({error:"Deze bestelling is al betaald of de voorraad is al verwerkt. De betaalstatus kan niet worden teruggezet."});
+      }
+      if(paymentStatus==="Paid"){
+        const inventoryResult=await deductPaidOrderInventory(id);
+        if(inventoryResult?.error){
+          return res.status(409).json({error:"De betaling staat op betaald, maar de voorraad kon niet worden bijgewerkt. Controleer de voorraadfout bij deze bestelling."});
+        }
+      }
       res.json({success:true,order:result.rows[0]});
     }catch(error){
       console.error("Save webshop shipping details error:",error);
