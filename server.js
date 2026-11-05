@@ -2353,7 +2353,12 @@ app.post("/api/buyback/orders", async (req, res) => {
     const order = result.rows[0];
     const apiKey = process.env.RESEND_API_KEY;
     const from = process.env.RESEND_FROM_EMAIL;
-    const ownerEmail = "Appelavcd116@gmail.com";
+    const ownerEmail = String(
+      process.env.BUYBACK_NOTIFICATION_EMAIL ||
+      process.env.ORDER_NOTIFICATION_EMAIL ||
+      process.env.REPAIR_REQUEST_EMAIL ||
+      ""
+    ).trim();
     if (apiKey && from) {
       const safeDevice = escapeHtml(b.device || "iPhone");
       const safeName = escapeHtml(name);
@@ -2390,8 +2395,19 @@ app.post("/api/buyback/orders", async (req, res) => {
         const data = await response.json().catch(()=>({}));
         if(!response.ok) throw new Error("Resend "+response.status+": "+JSON.stringify(data));
       };
-      const mailResults = await Promise.allSettled([sendMail(customerEmail),sendMail(ownerNotice)]);
-      mailResults.forEach((r,i)=>{if(r.status==="rejected")console.error(i===0?"Buyback customer confirmation email failed:":"Buyback owner notification email failed:",r.reason?.message||r.reason);});
+      const mailTasks = [sendMail(customerEmail)];
+      if (ownerEmail) mailTasks.push(sendMail(ownerNotice));
+      const mailResults = await Promise.allSettled(mailTasks);
+      mailResults.forEach((result, index) => {
+        if (result.status !== "rejected") return;
+        const label = index === 0
+          ? "Buyback customer confirmation email failed:"
+          : "Buyback owner notification email failed:";
+        console.error(label, result.reason?.message || result.reason);
+      });
+      if (!ownerEmail) {
+        console.warn("Buyback owner notification skipped: configure BUYBACK_NOTIFICATION_EMAIL or ORDER_NOTIFICATION_EMAIL.");
+      }
     } else {
       console.error("Buyback emails skipped: RESEND_API_KEY or RESEND_FROM_EMAIL is missing.");
     }
