@@ -15,18 +15,20 @@ test("saveShopCatalog updates only the Shop JSON key and returns saved products"
     return { rows: [{ products }] };
   };
 
-  const saved = await saveShopCatalog(queryWithConnectionRetry, products);
+  const expected = [{ id: "HT-001", name: "iPhone case", price: 10 }];
+  const saved = await saveShopCatalog(queryWithConnectionRetry, products, expected);
 
   assert.deepEqual(saved, products);
   assert.match(captured[0], /jsonb_set\(data, '\{shopProducts\}'/);
-  assert.match(captured[0], /WHERE id = 1 RETURNING data->'shopProducts'/);
-  assert.deepEqual(captured[1], [JSON.stringify(products)]);
+  assert.match(captured[0], /COALESCE\(data->'shopProducts', '\[\]'::jsonb\) = \$2::jsonb/);
+  assert.match(captured[0], /WHERE id = 1 AND/);
+  assert.deepEqual(captured[1], [JSON.stringify(products), JSON.stringify(expected)]);
   assert.equal(captured[2], 4);
 });
 
-test("saveShopCatalog returns an empty list when the database has no returned catalog", async () => {
-  const saved = await saveShopCatalog(async () => ({ rows: [] }), []);
-  assert.deepEqual(saved, []);
+test("saveShopCatalog returns null when another admin changed the catalog first", async () => {
+  const saved = await saveShopCatalog(async () => ({ rows: [] }), [], []);
+  assert.equal(saved, null);
 });
 
 const { findShopProductIndex, resolveShopVariant, priceShopVariant, deductShopVariantInventory } = require("../utils/shop-catalog");
