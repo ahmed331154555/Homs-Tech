@@ -287,7 +287,6 @@ app.get("/api/site", async (req, res) => {
       const result=await queryWithConnectionRetry(
         `SELECT
           data->'phones' AS phones,
-          data->'usedPhones' AS used_phones,
           data->'phone' AS phone,
           data->'whatsapp' AS whatsapp,
           data->'businessName' AS business_name,
@@ -302,7 +301,6 @@ app.get("/api/site", async (req, res) => {
       const row=result.rows[0];
       return res.json(sanitizeProductCatalogData({
         phones: row.phones,
-        usedPhones: row.used_phones,
         phone: row.phone,
         whatsapp: row.whatsapp,
         businessName: row.business_name,
