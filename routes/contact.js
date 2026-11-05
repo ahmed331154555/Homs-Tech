@@ -6,7 +6,7 @@ function registerContactRoutes(app, {
   cryptoImpl,
   getEnv = () => process.env,
   fetchImpl = fetch,
-  now = () => Date.now()
+  getNow = () => Date.now()
 }) {
   const contactFormAttempts = new Map();
 /* Public HOMS TECH contact form. Messages are stored in the existing admin email inbox. */
@@ -14,7 +14,7 @@ app.post("/api/contact", async (req,res) => {
   const env = getEnv();
   try {
     const ip=String(req.ip||req.headers["x-forwarded-for"]||"unknown").split(",")[0].trim();
-    const now=now();
+    const now=getNow();
     const recent=(contactFormAttempts.get(ip)||[]).filter(t=>now-t<60*60*1000);
     if(recent.length>=5)return res.status(429).json({error:"U heeft te veel berichten verstuurd. Probeer het later opnieuw."});
     // Honeypot: silently accept automated submissions without storing them.
