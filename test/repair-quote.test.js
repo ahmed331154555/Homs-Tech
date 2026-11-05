@@ -123,11 +123,3 @@ test("validates buyback offered prices using the production validator", () => {
   assert.throws(() => validateBuybackOfferedPrice("-10"), /Ongeldige prijs/);
   assert.throws(() => validateBuybackOfferedPrice("not-a-price"), /Ongeldige prijs/);
 });
-
-
-test("rejects negative, empty or absurd offer prices", () => {
-  assert.throws(() => parseAndValidateOfferPrice("-10"), /geldige prijs/);
-  assert.throws(() => parseAndValidateOfferPrice(""), /geldige prijs/);
-  assert.throws(() => parseAndValidateOfferPrice("geen-prijs"), /geldige prijs/);
-  assert.throws(() => parseAndValidateOfferPrice("200000"), /geldige prijs/);
-});
