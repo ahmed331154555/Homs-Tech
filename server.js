@@ -479,8 +479,113 @@ async function initDatabase() {
 
 // Public-facing settings omit supplier cost data and importer diagnostics.
 // Compact public catalog payloads for customer-facing phone and cart pages.
-function sanitizeDevicesCatalogData(source){const input=source&&typeof source==="object"?source:{};const output={phone:input.phone||"",whatsapp:input.whatsapp||"",businessName:input.businessName||input.siteName||"HOMS TECH",tagline:input.tagline||"Telefoonreparatie aan huis"};if(Array.isArray(input.phones))output.phones=input.phones.map(phone=>{if(!phone||typeof phone!=="object")return phone;const compact={};for(const key of ["id","name","brand","active","warranty","garantie","description","price","salePrice","sellPrice","verkoopprijs","storage","geheugen","color","kleur","condition","conditie","stock","image","imageUrl"])if(Object.prototype.hasOwnProperty.call(phone,key))compact[key]=phone[key];if(Array.isArray(phone.images))compact.images=phone.images.filter(Boolean).slice(0,1);if(Array.isArray(phone.conditionOptions))compact.conditionOptions=phone.conditionOptions.filter(o=>o&&o.active!==false&&o.available!==false).map(o=>({active:o.active,available:o.available,basePrice:o.basePrice,conditionBasePrice:o.conditionBasePrice}));if(Array.isArray(phone.variantPrices))compact.variantPrices=phone.variantPrices.filter(r=>r&&r.active!==false).map(r=>({storage:r.storage,color:r.color,price:r.price,stock:r.stock,active:r.active}));if(phone.colorGalleryImages&&typeof phone.colorGalleryImages==="object"){compact.colorGalleryImages={};for(const [color,gallery] of Object.entries(phone.colorGalleryImages))if(Array.isArray(gallery)&&gallery[0])compact.colorGalleryImages[color]=[gallery[0]];}if(phone.colorImages&&typeof phone.colorImages==="object")compact.colorImages=phone.colorImages;if(Array.isArray(phone.colorOptions))compact.colorOptions=phone.colorOptions.map(o=>({label:o?.label,image:o?.image}));return compact;});if(Array.isArray(input.devices))output.devices=input.devices.map(d=>({name:d?.name,brand:d?.brand,price:d?.price}));return output;}
-function sanitizeCartStockData(products){if(!Array.isArray(products))return [];return products.map(p=>!p||typeof p!=="object"?p:{stock:p.stock,variants:Array.isArray(p.variants)?p.variants.map(v=>({id:v?.id,sku:v?.sku,quality:v?.quality,stock:v?.stock})):[]});}
+function sanitizeDevicesCatalogData(source) {
+  const input = source && typeof source === "object" ? source : {};
+  const output = {
+    phone: input.phone || "",
+    whatsapp: input.whatsapp || "",
+    businessName: input.businessName || input.siteName || "HOMS TECH",
+    tagline: input.tagline || "Telefoonreparatie aan huis"
+  };
+
+  if (Array.isArray(input.phones)) {
+    output.phones = input.phones.map((phone) => {
+      if (!phone || typeof phone !== "object") return phone;
+
+      const compact = {};
+      const allowedFields = [
+        "id", "name", "brand", "active", "warranty", "garantie",
+        "description", "price", "salePrice", "sellPrice", "verkoopprijs",
+        "storage", "geheugen", "color", "kleur", "condition", "conditie",
+        "stock", "image", "imageUrl"
+      ];
+
+      for (const key of allowedFields) {
+        if (Object.prototype.hasOwnProperty.call(phone, key)) {
+          compact[key] = phone[key];
+        }
+      }
+
+      if (Array.isArray(phone.images)) {
+        compact.images = phone.images.filter(Boolean).slice(0, 1);
+      }
+
+      if (Array.isArray(phone.conditionOptions)) {
+        compact.conditionOptions = phone.conditionOptions
+          .filter((option) => option && option.active !== false && option.available !== false)
+          .map((option) => ({
+            active: option.active,
+            available: option.available,
+            basePrice: option.basePrice,
+            conditionBasePrice: option.conditionBasePrice
+          }));
+      }
+
+      if (Array.isArray(phone.variantPrices)) {
+        compact.variantPrices = phone.variantPrices
+          .filter((row) => row && row.active !== false)
+          .map((row) => ({
+            storage: row.storage,
+            color: row.color,
+            price: row.price,
+            stock: row.stock,
+            active: row.active
+          }));
+      }
+
+      if (phone.colorGalleryImages && typeof phone.colorGalleryImages === "object") {
+        compact.colorGalleryImages = {};
+        for (const [color, gallery] of Object.entries(phone.colorGalleryImages)) {
+          if (Array.isArray(gallery) && gallery[0]) {
+            compact.colorGalleryImages[color] = [gallery[0]];
+          }
+        }
+      }
+
+      if (phone.colorImages && typeof phone.colorImages === "object") {
+        compact.colorImages = phone.colorImages;
+      }
+
+      if (Array.isArray(phone.colorOptions)) {
+        compact.colorOptions = phone.colorOptions.map((option) => ({
+          label: option?.label,
+          image: option?.image
+        }));
+      }
+
+      return compact;
+    });
+  }
+
+  if (Array.isArray(input.devices)) {
+    output.devices = input.devices.map((device) => ({
+      name: device?.name,
+      brand: device?.brand,
+      price: device?.price
+    }));
+  }
+
+  return output;
+}
+function sanitizeCartStockData(products) {
+  if (!Array.isArray(products)) return [];
+
+  return products.map((product) => {
+    if (!product || typeof product !== "object") return product;
+
+    return {
+      stock: product.stock,
+      variants: Array.isArray(product.variants)
+        ? product.variants.map((variant) => ({
+            id: variant?.id,
+            sku: variant?.sku,
+            quality: variant?.quality,
+            stock: variant?.stock
+          }))
+        : []
+    };
+  });
+}
 function sanitizePublicSiteData(input) {
   const data = input && typeof input === "object" ? { ...input } : {};
   // Retired catalog data is not exposed through public settings.
