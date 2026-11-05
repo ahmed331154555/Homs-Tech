@@ -14,7 +14,7 @@ const {
 const app = express();
 const { registerAdminOrderRoutes } = require("./routes/admin-orders");
 const { registerAdminWebshopOrderRoutes } = require("./routes/admin-webshop-orders");
-const { saveShopCatalog, findShopProductIndex, priceShopVariant, deductShopVariantInventory } = require("./utils/shop-catalog");
+const { saveShopCatalog, validateShopCatalogIdentifiers, findShopProductIndex, priceShopVariant, deductShopVariantInventory } = require("./utils/shop-catalog");
 const PORT = process.env.PORT || 3000;
 
 
@@ -2850,6 +2850,8 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       Object.keys(req.body).length === 2;
 
     if (isShopCatalogPatch) {
+      const identifierError = validateShopCatalogIdentifiers(req.body.shopProducts);
+      if (identifierError) return res.status(400).json({ error: identifierError });
       const shopProducts = await saveShopCatalog(
         queryWithConnectionRetry,
         req.body.shopProducts,
