@@ -78,7 +78,7 @@ test("requireAuth allows valid users and rejects missing or invalid tokens", () 
   assert.equal(invalid.statusCode, 401);
 });
 
-test("requirePermission allows exact permissions and wildcard permissions", () => {
+test("requirePermission allows exact permissions and wildcard permissions", async () => {
   const auth = makeAuth({
     exact: { id: 1, username: "staff", permissions: ["orders.view"] },
     wildcard: { id: 2, username: "manager", permissions: ["*"] },
@@ -88,22 +88,22 @@ test("requirePermission allows exact permissions and wildcard permissions", () =
     const req = { cookies: { token } };
     const response = makeResponse();
     let nextCalled = false;
-    auth.requirePermission("orders.view")(req, response, () => { nextCalled = true; });
+    await auth.requirePermission("orders.view")(req, response, () => { nextCalled = true; });
     assert.equal(nextCalled, true);
     assert.ok(req.admin);
     assert.equal(response.statusCode, 200);
   }
 });
 
-test("requirePermission rejects users without permission and unauthenticated users", () => {
+test("requirePermission rejects users without permission and unauthenticated users", async () => {
   const auth = makeAuth({ limited: { id: 4, username: "staff", permissions: ["orders.view"] } });
   const denied = makeResponse();
-  auth.requirePermission("orders.delete")({ cookies: { token: "limited" } }, denied, () => assert.fail("next must not run"));
+  await auth.requirePermission("orders.delete")({ cookies: { token: "limited" } }, denied, () => assert.fail("next must not run"));
   assert.equal(denied.statusCode, 403);
   assert.match(denied.body.error, /Geen toestemming/);
 
   const unauthenticated = makeResponse();
-  auth.requirePermission("orders.view")({ cookies: {} }, unauthenticated, () => assert.fail("next must not run"));
+  await auth.requirePermission("orders.view")({ cookies: {} }, unauthenticated, () => assert.fail("next must not run"));
   assert.equal(unauthenticated.statusCode, 401);
 });
 
