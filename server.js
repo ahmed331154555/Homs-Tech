@@ -24,6 +24,7 @@ const { validateRepairQuotePayload } = require("./utils/repair-quote");
 const { validateBuybackOfferedPrice } = require("./utils/buyback-order");
 const { sanitizePublicSiteData, sanitizeHomepageSiteData } = require("./utils/site-data-sanitizers");
 const { mollieStatusToLocal, molliePaymentMatchesOrder } = require("./utils/mollie-payment");
+const { paypalEncryptionKey, encryptPayPalSecret, decryptPayPalSecret, getPayPalBaseUrl } = require("./utils/payment-secrets");
 const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-limit");
 const {
   preserveExistingProductPhotos,
@@ -1931,26 +1932,6 @@ app.post("/api/mollie/verify-payment", async (req, res) => {
   }
 });
 
-function paypalEncryptionKey() {
-  const secret = String(process.env.JWT_SECRET || "").trim();
-  if (!secret) throw new Error("JWT_SECRET ontbreekt op de server; PayPal-gegevens kunnen niet veilig worden opgeslagen.");
-  return crypto.createHash("sha256").update(secret).digest();
-}
-
-function encryptPayPalSecret(value) {
-  const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv("aes-256-gcm", paypalEncryptionKey(), iv);
-  const encrypted = Buffer.concat([cipher.update(String(value), "utf8"), cipher.final()]);
-  return { iv: iv.toString("hex"), tag: cipher.getAuthTag().toString("hex"), data: encrypted.toString("hex") };
-}
-
-function decryptPayPalSecret(value) {
-  if (!value || !value.iv || !value.tag || !value.data) return "";
-  const decipher = crypto.createDecipheriv("aes-256-gcm", paypalEncryptionKey(), Buffer.from(value.iv, "hex"));
-  decipher.setAuthTag(Buffer.from(value.tag, "hex"));
-  return Buffer.concat([decipher.update(Buffer.from(value.data, "hex")), decipher.final()]).toString("utf8");
-}
-
 async function getPayPalSettings() {
   const result = await pool.query("SELECT data FROM order_settings WHERE id=1");
   const saved = result.rows[0]?.data?.paypal || {};
@@ -1962,12 +1943,6 @@ async function getPayPalSettings() {
   const mode = String(saved.mode || process.env.PAYPAL_MODE || "sandbox").toLowerCase() === "live" ? "live" : "sandbox";
   const enabled = typeof saved.enabled === "boolean" ? saved.enabled : Boolean(envClientId && envClientSecret);
   return { enabled, clientId, clientSecret, mode, merchantId: String(saved.merchantId || "").trim() };
-}
-
-function getPayPalBaseUrl(mode = "sandbox") {
-  return String(mode).toLowerCase() === "live"
-    ? "https://api-m.paypal.com"
-    : "https://api-m.sandbox.paypal.com";
 }
 
 async function getPayPalAccessToken(settings = null) {
