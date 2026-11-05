@@ -675,7 +675,7 @@ app.post("/api/customer/forgot-password", async (req, res) => {
     if (!email || email.length > 254) return res.status(200).json({ success: true, message: genericMessage });
 
     const result = await pool.query("SELECT id, name, email FROM customers WHERE email = $1", [email]);
-    if (result.rows.length && process.env.RESEND_API_KEY) {
+    if (result.rows.length && process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL) {
       const customer = result.rows[0];
       const rawToken = crypto.randomBytes(32).toString("hex");
       const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
@@ -684,7 +684,7 @@ app.post("/api/customer/forgot-password", async (req, res) => {
         "INSERT INTO customer_password_resets (customer_id, token_hash, expires_at) VALUES ($1, $2, NOW() + INTERVAL '1 hour')",
         [customer.id, tokenHash]
       );
-      const from = process.env.RESEND_FROM_EMAIL || "noreply@homs-tech.nl";
+      const from = process.env.RESEND_FROM_EMAIL;
       const resetUrl = "https://homs-tech.nl/account.html?reset=" + encodeURIComponent(rawToken);
       const response = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -1188,10 +1188,10 @@ app.post("/api/webshop/orders", async (req, res) => {
     );
 
     // Send the customer an order confirmation to the email address used at checkout.
-    if (process.env.RESEND_API_KEY) {
+    if (process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL) {
       try {
         const order = result.rows[0];
-        const orderFromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+        const orderFromEmail = process.env.RESEND_FROM_EMAIL;
         const itemLines = safeItems.map(item => `<li>${escapeHtml(String(item.name || item.title || "Product"))} × ${Number(item.qty || 1)} — €${(Number(item.unitPrice || 0) * Number(item.qty || 1)).toFixed(2)}</li>`).join("");
         const customerResponse = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -1233,10 +1233,10 @@ app.post("/api/webshop/orders", async (req, res) => {
 
     // Notify the site owner when a webshop order is created.
     const notifyEmail = process.env.ORDER_NOTIFICATION_EMAIL || process.env.REPAIR_REQUEST_EMAIL;
-    if (process.env.RESEND_API_KEY && notifyEmail) {
+    if (process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL && notifyEmail) {
       try {
         const order = result.rows[0];
-        const orderFromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+        const orderFromEmail = process.env.RESEND_FROM_EMAIL;
         const itemLines = safeItems.map(item => `<li>${escapeHtml(String(item.name || item.title || "Product"))} × ${Number(item.qty || 1)} — €${(Number(item.unitPrice || 0) * Number(item.qty || 1)).toFixed(2)}</li>`).join("");
         const response = await fetch("https://api.resend.com/emails", {
           method: "POST",
