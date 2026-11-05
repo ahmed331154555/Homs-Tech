@@ -25,7 +25,7 @@ function findShopProductIndex(products, productId) {
   );
   if (stableIndex >= 0) return stableIndex;
 
-  if (!/^\\d+$/.test(requested)) return -1;
+  if (!/^\d+$/.test(requested)) return -1;
   const legacyIndex = Number(requested);
   return Number.isSafeInteger(legacyIndex) && legacyIndex >= 0 && legacyIndex < products.length
     ? legacyIndex
