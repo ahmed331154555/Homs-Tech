@@ -177,6 +177,36 @@ test("email reply requires an inbound original and adds threading headers", asyn
   assert.equal(sentPayload.headers.References, "<root@example.com> <original@example.com>");
 });
 
+test("email reply strips injected header lines from inbound message IDs", async () => {
+  let sentPayload;
+  const pool = { async query(sql) {
+    if (sql.startsWith("SELECT direction")) {
+      return { rows: [{
+        direction: "inbound",
+        message_id: "<original@example.com>\\r\\nBcc: attacker@example.com",
+        references_header: "<root@example.com>\\r\\nCc: attacker@example.com"
+      }] };
+    }
+    return { rows: [] };
+  } };
+  const { routes } = harness({
+    pool,
+    env: { RESEND_API_KEY: "test-key", RESEND_FROM_EMAIL: "support@example.com" },
+    fetchImpl: async (_url, options) => {
+      sentPayload = JSON.parse(options.body);
+      return { ok: true, async json() { return { id: "reply_safe_1" }; } };
+    }
+  });
+  const res = response();
+  await routes.get("POST /api/admin/emails/send")({
+    body: { to: "customer@example.com", subject: "Re: Question", text: "Reply", replyToId: 10 }
+  }, res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(sentPayload.headers["In-Reply-To"], "<original@example.com>");
+  assert.equal(sentPayload.headers.References, "<root@example.com> <original@example.com>");
+  assert.equal(JSON.stringify(sentPayload.headers).includes("attacker@example.com"), false);
+});
+
 test("email send rejects unsafe attachments and provider failures", async () => {
   const base = { RESEND_API_KEY: "test-key", RESEND_FROM_EMAIL: "support@example.com" };
   const { routes } = harness({
