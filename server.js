@@ -1467,8 +1467,13 @@ app.post("/api/mollie/create-payment", async (req, res) => {
     const total = Number(order.total);
     if (!Number.isFinite(total) || total <= 0) return res.status(400).json({ error: "Het orderbedrag is ongeldig." });
     const baseUrl = String(process.env.PUBLIC_BASE_URL || "https://homs-tech.nl").trim().replace(/\/+$/, "");
+    // Keep concurrent retries for the same checkout attempt idempotent.
+    // A new attempt gets a new key after the previous Mollie payment reaches a terminal state.
+    const previousPaymentRef = String(order.mollie_payment_id || "initial").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 80) || "initial";
+    const mollieIdempotencyKey = `homs-tech-order-${localOrderId}-${previousPaymentRef}`;
     const payment = await mollieRequest("/payments", {
       method: "POST",
+      headers: { "Idempotency-Key": mollieIdempotencyKey },
       body: JSON.stringify({
         amount: { currency: "EUR", value: total.toFixed(2) },
         description: "HOMS TECH bestelling #" + localOrderId,
