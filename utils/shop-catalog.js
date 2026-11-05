@@ -15,6 +15,23 @@ async function saveShopCatalog(queryWithConnectionRetry, shopProducts) {
     : [];
 }
 
+function findShopProductIndex(products, productId) {
+  if (!Array.isArray(products)) return -1;
+  const requested = String(productId ?? "").trim();
+  if (!requested) return -1;
+
+  const stableIndex = products.findIndex((product) =>
+    product && product.id != null && String(product.id) === requested
+  );
+  if (stableIndex >= 0) return stableIndex;
+
+  if (!/^\\d+$/.test(requested)) return -1;
+  const legacyIndex = Number(requested);
+  return Number.isSafeInteger(legacyIndex) && legacyIndex >= 0 && legacyIndex < products.length
+    ? legacyIndex
+    : -1;
+}
+
 function resolveShopVariant(product, item) {
   const variants = Array.isArray(product?.variants) ? product.variants : [];
   if (!variants.length) return { variant: null, variantIndex: -1 };
