@@ -29,6 +29,7 @@ const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-lim
 const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-inventory");
 const { priceProductFromCatalog } = require("./utils/cart-pricing");
 const { createAdminAuth } = require("./utils/admin-auth");
+const { initializeDatabaseWithRetry } = require("./utils/database-initialization");
 const {
   preserveExistingProductPhotos,
   preserveExistingCatalogPhotos,
@@ -2497,24 +2498,7 @@ app.get("/admin/", (req, res) => {
 });
 
 // Start server
-async function initializeDatabaseWithRetry(maxAttempts = 12) {
-  let lastError;
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      await initDatabase();
-      return;
-    } catch (error) {
-      lastError = error;
-      console.error(`Database initialization attempt ${attempt}/${maxAttempts} failed:`, error?.message || error);
-      if (attempt < maxAttempts) {
-        await wait(Math.min(2000 * attempt, 10000));
-      }
-    }
-  }
-  throw lastError;
-}
-
-initializeDatabaseWithRetry()
+initializeDatabaseWithRetry(initDatabase, wait)
   .then(() => {
     app.listen(PORT, () => {
       console.log(
