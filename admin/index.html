@@ -295,6 +295,21 @@ textarea{
 .order-notes{margin-top:12px;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:10px;font-size:13px}
 .order-status-select{padding:9px 11px;border:1px solid #dbe2ea;border-radius:9px;font-weight:800;background:#fff;min-width:150px}
 .order-empty{padding:30px;text-align:center;color:#64748b;background:#f8fafc;border-radius:12px}
+#page-all-orders .unified-orders-intro{margin:0 0 16px;color:#64748b;font-size:13px}
+#page-all-orders .unified-orders-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 18px}
+#page-all-orders .unified-orders-tab{display:flex;align-items:center;gap:11px;min-width:0;padding:14px 15px;border:1px solid #e1e8f0;border-radius:13px;background:#fff;color:#26364b;text-align:left;cursor:pointer;transition:border-color .16s,background .16s,box-shadow .16s}
+#page-all-orders .unified-orders-tab:hover{border-color:#b8ccec;background:#f8fbff}
+#page-all-orders .unified-orders-tab[aria-selected="true"]{border-color:#2563eb;background:#eff6ff;box-shadow:0 0 0 2px rgba(37,99,235,.08)}
+#page-all-orders .unified-orders-tab-icon{width:40px;height:40px;display:grid;place-items:center;flex:none;border-radius:11px;background:#f1f5f9;font-size:20px}
+#page-all-orders .unified-orders-tab[aria-selected="true"] .unified-orders-tab-icon{background:#dbeafe}
+#page-all-orders .unified-orders-tab-copy{min-width:0}
+#page-all-orders .unified-orders-tab-copy strong{display:block;font-size:13px;line-height:1.35}
+#page-all-orders .unified-orders-tab-copy small{display:block;margin-top:4px;color:#718096;font-size:11px;line-height:1.35}
+#page-all-orders .unified-orders-panel{min-width:0;padding:18px;border:1px solid #e5eaf1;border-radius:15px;background:#f8fafc}
+#page-all-orders .unified-orders-panel>[id^="page-"]{margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+#page-all-orders .unified-orders-panel>[id^="page-"]>.section-head{margin-bottom:16px}
+@media(max-width:760px){#page-all-orders .unified-orders-tabs{grid-template-columns:1fr}#page-all-orders .unified-orders-tab{padding:12px}#page-all-orders .unified-orders-panel{padding:12px}}
+
 @media(max-width:900px){.order-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:550px){.order-card-head{flex-direction:column}.order-grid{grid-template-columns:1fr}.order-status-select{width:100%}}
 
@@ -2191,7 +2206,7 @@ function applyPermissionUI(){
       if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=!canEditCurrentPage();
     });
   });
-  document.querySelectorAll(".order-status-select").forEach(el=>{const page=el.closest(".admin-page")?.id||"";const permission=page==="page-orders"||page==="page-repair-requests"?"orders.update":"webshop_orders.update";el.disabled=!hasPermission(permission);});
+  document.querySelectorAll(".order-status-select").forEach(el=>{const section=el.closest("[data-order-category]");const key=section?.dataset.orderCategory;const category=unifiedOrderCategories.find(item=>item.key===key);const permission=category?.updatePermission||(el.closest("#page-repair-requests")?"orders.update":"webshop_orders.update");el.disabled=!hasPermission(permission);});
 }
 let liveChatCurrentId=null,liveChatRefreshTimer=null;
 function liveChatEsc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/\'/g,"&#39;");}
@@ -2215,7 +2230,8 @@ function showPage(page){
     if(page==="emails")loadAdminEmails();
     if(page==="invoices"){if(!document.querySelector("#invoiceLines tr"))addInvoiceLine();loadInvoices();}
     if(page==="live-chat"){loadLiveChat();if(liveChatRefreshTimer)clearInterval(liveChatRefreshTimer);liveChatRefreshTimer=setInterval(()=>{if(currentPage==="live-chat")loadLiveChat();},8000);}
-    if(page==="orders"||page==="repair-requests"||page==="all-orders"){loadOrders();loadWebshopOrders();loadBuybackOrders();}
+    if(page==="all-orders"){const key=unifiedOrdersActiveKey||unifiedOrderCategories.find(item=>hasPermission(item.permission))?.key;if(key)showUnifiedOrderSection(key,true);}
+    if(page==="orders"||page==="repair-requests")loadOrders();
     if(page==="webshop-orders")loadWebshopOrders();
     if(page==="order-settings")loadOrderSettings();
     if(page==="buyback")renderBuybackPhones();
@@ -7168,27 +7184,59 @@ async function showBuybackDetails(id){
   }catch(error){alert(error.message)}
 }
 
+let unifiedOrdersActiveKey="";
+const unifiedOrderCategories=[
+  {id:"page-repair-requests",key:"repair-requests",permission:"orders.view",updatePermission:"orders.update",icon:"🔧",title:"Reparatieaanvragen",description:"Reparatie- en prijsaanvragen",loader:()=>loadOrders()},
+  {id:"page-buyback-orders",key:"buyback-orders",permission:"buyback_orders.view",updatePermission:"buyback_orders.update",icon:"📱",title:"Telefoon inkopen",description:"Telefoons die klanten aan HOMS TECH verkopen",loader:()=>loadBuybackOrders()},
+  {id:"page-webshop-orders",key:"webshop-orders",permission:"webshop_orders.view",updatePermission:"webshop_orders.update",icon:"🛍️",title:"Webshop bestellingen",description:"Onderdelen, batterijen en accessoires",loader:()=>loadWebshopOrders()}
+];
+function showUnifiedOrderSection(key,shouldLoad=true){
+  const category=unifiedOrderCategories.find(item=>item.key===key&&hasPermission(item.permission));
+  const parent=document.getElementById("page-all-orders");
+  if(!category||!parent)return;
+  unifiedOrdersActiveKey=category.key;
+  unifiedOrderCategories.forEach(item=>{
+    const section=document.getElementById(item.id);
+    const tab=parent.querySelector('[data-order-tab="'+item.key+'"]');
+    const active=item.key===category.key;
+    if(section){section.hidden=!active;section.style.display=active?"block":"none";section.setAttribute("aria-hidden",String(!active));}
+    if(tab){tab.setAttribute("aria-selected",String(active));tab.tabIndex=active?0:-1;}
+  });
+  if(shouldLoad&&parent.classList.contains("active"))category.loader();
+}
+function refreshUnifiedOrders(){
+  const category=unifiedOrderCategories.find(item=>item.key===unifiedOrdersActiveKey);
+  if(category&&hasPermission(category.permission))category.loader();
+}
 function setupUnifiedOrdersAdmin(){
   if(document.getElementById("page-all-orders"))return;
-  const ids=["page-orders","page-repair-requests","page-webshop-orders","page-buyback-orders"];
-  const sections=ids.map(id=>document.getElementById(id)).filter(Boolean);
+  const sections=unifiedOrderCategories.map(item=>({item,section:document.getElementById(item.id)})).filter(entry=>entry.section);
   if(!sections.length)return;
   const parent=document.createElement("section");
   parent.className="section admin-page";
   parent.id="page-all-orders";
-  parent.innerHTML='<div class="section-head"><div><h2>📋 Alle bestellingen</h2><p>Alle aanvragen en bestellingen op één plek, gegroepeerd per type.</p></div><button class="btn btn-light" type="button" onclick="loadOrders();loadWebshopOrders();loadBuybackOrders()">↻ Alles vernieuwen</button></div><div class="small" style="margin-bottom:14px;color:#64748b">Kies hieronder het juiste overzicht. Bestaande gegevens en statussen blijven behouden.</div><div id="allOrdersSections"></div>';
+  parent.innerHTML='<div class="section-head"><div><h2>📋 Alle bestellingen</h2><p>Alle aanvragen overzichtelijk verdeeld per soort.</p></div><button class="btn btn-light" type="button" onclick="refreshUnifiedOrders()">↻ Huidig overzicht vernieuwen</button></div><div class="unified-orders-intro">Kies één onderdeel. Alleen de geselecteerde bestellingen worden getoond; de andere onderdelen blijven verborgen.</div><div class="unified-orders-tabs" role="tablist" aria-label="Soort bestelling"></div><div id="allOrdersSections" class="unified-orders-panel"></div>';
+  const tabs=parent.querySelector(".unified-orders-tabs");
   const host=parent.querySelector("#allOrdersSections");
-  sections.forEach(section=>{
-    section.classList.remove("admin-page","active");
-    section.style.display="block";
-    const head=section.querySelector(".section-head h2");
-    if(head)head.style.fontSize="18px";
-    section.style.marginTop="14px";
-    host.appendChild(section);
+  sections.forEach(({item,section})=>{
+    if(!hasPermission(item.permission)){section.hidden=true;section.style.display="none";return;}
+    const button=document.createElement("button");
+    button.type="button";button.className="unified-orders-tab";button.dataset.orderTab=item.key;
+    button.setAttribute("role","tab");button.setAttribute("aria-selected","false");button.tabIndex=-1;
+    button.innerHTML='<span class="unified-orders-tab-icon" aria-hidden="true">'+item.icon+'</span><span class="unified-orders-tab-copy"><strong>'+item.title+'</strong><small>'+item.description+'</small></span>';
+    button.addEventListener("click",()=>showUnifiedOrderSection(item.key,true));
+    section.classList.remove("admin-page","active");section.removeAttribute("data-permission");
+    section.dataset.orderCategory=item.key;section.hidden=true;section.style.display="none";
+    section.setAttribute("role","tabpanel");section.setAttribute("aria-labelledby","unified-orders-tab-"+item.key);
+    button.id="unified-orders-tab-"+item.key;
+    section.style.marginTop="0";
+    tabs.appendChild(button);host.appendChild(section);
   });
   const container=document.querySelector("#dashboard .container");
   if(container)container.insertBefore(parent,container.querySelector(".save-bar"));
   document.querySelectorAll('.nav-btn[data-page="orders"],.nav-btn[data-page="repair-requests"],.nav-btn[data-page="webshop-orders"],.nav-btn[data-page="buyback-orders"]').forEach(button=>button.remove());
+  const first=unifiedOrderCategories.find(item=>hasPermission(item.permission)&&document.getElementById(item.id));
+  if(first)showUnifiedOrderSection(first.key,false);
 }
 function renderAll(){
 
