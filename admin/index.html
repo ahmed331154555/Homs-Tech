@@ -7191,7 +7191,7 @@ async function showBuybackDetails(id){
 let unifiedOrdersActiveKey="";
 const unifiedOrderCategories=[
   {id:"page-repair-requests",key:"repair-requests",permission:"orders.view",updatePermission:"orders.update",icon:"🔧",title:"Reparatieaanvragen",description:"Reparatie- en prijsaanvragen",loader:()=>loadOrders()},
-  {id:"page-phone-orders",key:"phone-orders",permission:"webshop_orders.view",updatePermission:"webshop_orders.update",icon:"📱",title:"Telefoon verkopen",description:"Bestellingen van nieuwe telefoons",loader:()=>loadWebshopOrders()},
+  {id:"page-phone-orders",key:"phone-orders",permission:"webshop_orders.view",updatePermission:"webshop_orders.update",icon:"📱",title:"Telefoonbestellingen",description:"Verkoop van HOMS TECH telefoons en combinatiebestellingen",loader:()=>loadWebshopOrders()},
   {id:"page-buyback-orders",key:"buyback-orders",permission:"buyback_orders.view",updatePermission:"buyback_orders.update",icon:"↩️",title:"Telefoon inkopen",description:"Telefoons die klanten aan HOMS TECH verkopen",loader:()=>loadBuybackOrders()},
   {id:"page-webshop-orders",key:"webshop-orders",permission:"webshop_orders.view",updatePermission:"webshop_orders.update",icon:"🔋",title:"Onderdelen & accessoires",description:"Batterijen, onderdelen en accessoires",loader:()=>loadWebshopOrders()}
 ];
