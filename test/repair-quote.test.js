@@ -2,17 +2,8 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { validateRepairQuotePayload } = require("../utils/repair-quote");
+const { validateBuybackOfferedPrice } = require("../utils/buyback-order");
 
-function parseAndValidateOfferPrice(priceInput) {
-  const sanitized = String(priceInput ?? "").trim().replace(",", ".");
-  const price = Number(sanitized);
-  if (!sanitized || !Number.isFinite(price) || price < 0 || price > 100000) {
-    throw new Error("Vul een geldige prijs in (tussen 0 en 100.000).");
-  }
-  const formattedPrice = price.toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const rawPrice = price.toFixed(2);
-  return { price, formattedPrice, rawPrice };
-}
 
 test("accepts valid repair quote request with photos and consent", () => {
   const dummyBase64 = Buffer.from("small test image content").toString("base64");
@@ -124,17 +115,15 @@ test("enforces total photo payload budget (max 6 MB combined)", () => {
   }), /maximaal 6 MB zijn/);
 });
 
-test("parses both comma and dot decimal prices safely", () => {
-  const withComma = parseAndValidateOfferPrice("85,50");
-  assert.equal(withComma.price, 85.50);
-  assert.equal(withComma.rawPrice, "85.50");
-  assert.equal(withComma.formattedPrice, "85,50");
 
-  const withDot = parseAndValidateOfferPrice("120.00");
-  assert.equal(withDot.price, 120.00);
-  assert.equal(withDot.rawPrice, "120.00");
-  assert.equal(withDot.formattedPrice, "120,00");
+test("validates buyback offered prices using the production validator", () => {
+  assert.equal(validateBuybackOfferedPrice(85.5), 85.5);
+  assert.equal(validateBuybackOfferedPrice("120.00"), 120);
+  assert.equal(validateBuybackOfferedPrice(0), 0);
+  assert.throws(() => validateBuybackOfferedPrice("-10"), /Ongeldige prijs/);
+  assert.throws(() => validateBuybackOfferedPrice("not-a-price"), /Ongeldige prijs/);
 });
+
 
 test("rejects negative, empty or absurd offer prices", () => {
   assert.throws(() => parseAndValidateOfferPrice("-10"), /geldige prijs/);
