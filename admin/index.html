@@ -6469,7 +6469,7 @@ function ensureShopProducts(){
 }
 function addShopProduct(){
  ensureShopProducts();const category="Accessoires";
- data.shopProducts.unshift({id:"shop-"+Date.now(),name:"",description:"",category,brand:"",deviceModel:"",price:"",stock:"0 stuks",images:["","","",""],videoEnabled:false,videoUrl:"",active:true,variants:[{id:"var-"+Date.now(),quality:"Standaard",sku:nextShopSku(category),price:"",stock:"0",active:true}]});
+ data.shopProducts.unshift({id:"shop-"+Date.now()+"-"+Math.random().toString(36).slice(2,8),name:"",description:"",category,brand:"",deviceModel:"",price:"",stock:"0 stuks",images:["","","",""],videoEnabled:false,videoUrl:"",active:true,variants:[{id:"var-"+Date.now()+"-"+Math.random().toString(36).slice(2,8),quality:"Standaard",sku:nextShopSku(category),price:"",stock:"0",active:true}]});
  renderShopProductsAdmin();markChanged();
 }
 function deleteShopProduct(index){if(!confirm("Dit Shop-product verwijderen?"))return;data.shopProducts.splice(index,1);renderShopProductsAdmin();markChanged();}
@@ -6478,10 +6478,24 @@ function addShopVariant(index){ensureShopProducts();const p=data.shopProducts[in
 function updateShopVariant(index,variantIndex,key,value){ensureShopProducts();const p=data.shopProducts[index],v=p&&p.variants[variantIndex];if(!v||key==="sku")return;v[key]=value;if(variantIndex===0){p.price=v.price;p.stock=String(v.stock??"")+" stuks";}markChanged();}
 function deleteShopVariant(index,variantIndex){ensureShopProducts();const p=data.shopProducts[index];if(!p||p.variants.length<2){alert("Een product moet minimaal één optie hebben.");return;}p.variants.splice(variantIndex,1);p.price=p.variants[0].price;p.stock=String(p.variants[0].stock??"")+" stuks";renderShopProductsAdmin();markChanged();}
 function shopProductImageUpload(event,index,slot){
- const file=event.target.files&&event.target.files[0];if(!file)return;
- if(!file.type.startsWith("image/")){alert("Kies een afbeeldingsbestand.");event.target.value="";return;}
- if(file.size>1.2*1024*1024){alert("Elke foto mag maximaal 1,2 MB zijn. Verklein de foto en probeer opnieuw.");event.target.value="";return;}
- const reader=new FileReader();reader.onload=()=>{ensureShopProducts();if(!data.shopProducts[index])return;data.shopProducts[index].images[slot]=String(reader.result||"");renderShopProductsAdmin();markChanged();};reader.readAsDataURL(file);
+ const input=event.target,file=input.files&&input.files[0];if(!file)return;
+ if(!file.type.startsWith("image/")||file.type==="image/svg+xml"){alert("Kies een geldige afbeeldingsbestand (geen SVG).");input.value="";return;}
+ if(file.size>1.2*1024*1024){alert("Elke foto mag maximaal 1,2 MB zijn. Verklein de foto en probeer opnieuw.");input.value="";return;}
+ ensureShopProducts();
+ const product=data.shopProducts[index];if(!product){input.value="";return;}
+ const productId=String(product.id),reader=new FileReader();
+ reader.onload=()=>{
+  const currentIndex=data.shopProducts.findIndex(item=>String(item?.id)===productId);
+  if(currentIndex<0){setStatus("De foto is niet toegevoegd: het product is intussen verwijderd.","error");return;}
+  const current=data.shopProducts[currentIndex];
+  if(!Array.isArray(current.images))current.images=["","","",""];
+  while(current.images.length<4)current.images.push("");
+  if(!Number.isInteger(slot)||slot<0||slot>3)return;
+  current.images[slot]=String(reader.result||"");
+  renderShopProductsAdmin();markChanged();
+ };
+ reader.onerror=()=>{alert("De foto kon niet worden gelezen. Probeer een andere afbeelding.");input.value="";};
+ reader.readAsDataURL(file);
 }
 function renderShopProductsAdmin(){
  const box=document.getElementById("shopProductsAdmin");if(!box)return;ensureShopProducts();
@@ -6536,6 +6550,41 @@ async function compressPhoneCatalogPhotos(phones){
   await walk(phones);
   return phones;
 }
+/* Compress Shop photos in the outgoing payload while preserving transparent backgrounds when WebP is supported. */
+async function compressShopPhotoData(value){
+  if(typeof value!=="string"||!/^data:image\\/(?!svg\\+xml)[^;]+;base64,/i.test(value)||value.length<180000)return value;
+  return new Promise(resolve=>{
+    const img=new Image();
+    img.onload=()=>{
+      try{
+        const maxSide=1600,scale=Math.min(1,maxSide/Math.max(img.naturalWidth||1,img.naturalHeight||1));
+        const canvas=document.createElement("canvas");
+        canvas.width=Math.max(1,Math.round((img.naturalWidth||1)*scale));
+        canvas.height=Math.max(1,Math.round((img.naturalHeight||1)*scale));
+        const ctx=canvas.getContext("2d");if(!ctx){resolve(value);return;}
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        let compressed=canvas.toDataURL("image/webp",0.82);
+        if(compressed.length>=value.length)compressed=canvas.toDataURL("image/webp",0.68);
+        if(compressed.length>=value.length){
+          ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
+          ctx.drawImage(img,0,0,canvas.width,canvas.height);
+          compressed=canvas.toDataURL("image/jpeg",0.72);
+        }
+        resolve(compressed.length<value.length?compressed:value);
+      }catch(error){console.warn("[HOMS TECH] Shop photo compression skipped:",error);resolve(value);}
+    };
+    img.onerror=()=>resolve(value);img.src=value;
+  });
+}
+async function compressShopCatalogPhotos(products){
+  if(!Array.isArray(products))return [];
+  for(const product of products){
+    if(!product||!Array.isArray(product.images))continue;
+    for(let i=0;i<Math.min(product.images.length,4);i++)product.images[i]=await compressShopPhotoData(product.images[i]);
+  }
+  return products;
+}
+
 
 /* ---------------- SAVE ---------------- */
 
@@ -6623,6 +6672,9 @@ async function save(isAuto=false){
       setStatus("Foto's verkleinen en product opslaan...","info");
       if(phoneEditOnly && payload.phones?.[selectedPhoneIndex]) payload.phones[selectedPhoneIndex]=(await compressPhoneCatalogPhotos([payload.phones[selectedPhoneIndex]]))[0];
       else payload.phones=await compressPhoneCatalogPhotos(payload.phones||[]);
+    }else if(currentPage==="shop"){
+      setStatus("Shopfoto's verkleinen en producten opslaan...","info");
+      payload.shopProducts=await compressShopCatalogPhotos(payload.shopProducts||[]);
     }
     if(currentPage==="phones" && payload.phones?.[selectedPhoneIndex]?.setupWizard){
       payload.phones[selectedPhoneIndex].setupWizard=false;
