@@ -30,6 +30,7 @@ const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-invento
 const { priceProductFromCatalog } = require("./utils/cart-pricing");
 const { createAdminAuth } = require("./utils/admin-auth");
 const { initializeDatabaseWithRetry } = require("./utils/database-initialization");
+const { createPaymentSettings } = require("./utils/payment-settings");
 const {
   preserveExistingProductPhotos,
   preserveExistingCatalogPhotos,
@@ -37,6 +38,11 @@ const {
 } = require("./utils/catalog-photo-preservation");
 const { saveShopCatalog, validateShopCatalogIdentifiers, validateShopCatalogImages } = require("./utils/shop-catalog");
 const PORT = process.env.PORT || 3000;
+const { getMollieApiKey, getPayPalSettings } = createPaymentSettings({
+  pool,
+  getEnv: () => process.env,
+  decryptSecret: decryptPayPalSecret
+});
 const deductPaidOrderInventory = createPaidOrderInventoryDeductor({ pool });
 const {
   getSuperAdminUser,
@@ -1616,13 +1622,6 @@ app.post("/api/webshop/orders", async (req, res) => {
 });
 
 // ---------------- MOLLIE PAYMENTS ----------------
-async function getMollieApiKey() {
-  const result = await pool.query("SELECT data FROM order_settings WHERE id=1");
-  const saved = result.rows[0]?.data?.mollie || {};
-  if (saved.apiKeyEncrypted) return decryptPayPalSecret(saved.apiKeyEncrypted);
-  return String(process.env.MOLLIE_API_KEY || "").trim();
-}
-
 async function mollieRequest(endpoint, options = {}) {
   const apiKey = await getMollieApiKey();
   if (!apiKey) throw new Error("Mollie is nog niet geconfigureerd. Voeg MOLLIE_API_KEY toe aan de serveromgeving.");
@@ -1755,19 +1754,6 @@ app.post("/api/mollie/verify-payment", async (req, res) => {
     res.status(500).json({ error: "De betaalstatus kon niet worden gecontroleerd. Probeer het opnieuw." });
   }
 });
-
-async function getPayPalSettings() {
-  const result = await pool.query("SELECT data FROM order_settings WHERE id=1");
-  const saved = result.rows[0]?.data?.paypal || {};
-  const envClientId = String(process.env.PAYPAL_CLIENT_ID || "").trim();
-  const envClientSecret = String(process.env.PAYPAL_CLIENT_SECRET || "").trim();
-  const savedSecret = saved.clientSecretEncrypted ? decryptPayPalSecret(saved.clientSecretEncrypted) : "";
-  const clientId = String(saved.clientId || envClientId).trim();
-  const clientSecret = savedSecret || envClientSecret;
-  const mode = String(saved.mode || process.env.PAYPAL_MODE || "sandbox").toLowerCase() === "live" ? "live" : "sandbox";
-  const enabled = typeof saved.enabled === "boolean" ? saved.enabled : Boolean(envClientId && envClientSecret);
-  return { enabled, clientId, clientSecret, mode, merchantId: String(saved.merchantId || "").trim() };
-}
 
 async function getPayPalAccessToken(settings = null) {
   const config = settings || await getPayPalSettings();
