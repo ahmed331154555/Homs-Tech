@@ -32,13 +32,13 @@ function validateCartInventoryQuantities(catalog, items) {
       const resolved = resolveShopVariant(product, item);
       if (resolved.error) return resolved.error;
       if (resolved.variant) {
-        const error = register("shop-variant:" + product.id + ":" + resolved.variant.id, resolved.variant.stock,
+        const error = register("shop-variant:" + JSON.stringify([product.id, resolved.variant.id]), resolved.variant.stock,
           qty, "De voorraad voor deze productkwaliteit is niet correct ingesteld. Neem contact met ons op.");
         if (error) return error;
       } else if (product.stock !== undefined && product.stock !== null && product.stock !== "") {
         const match = String(product.stock).trim().match(/^(\d+)/);
         if (match) {
-          const error = register("shop-product:" + product.id, Number(match[1]), qty,
+          const error = register("shop-product:" + JSON.stringify([product.id]), Number(match[1]), qty,
             "De voorraad voor dit Shop-product is niet correct ingesteld.");
           if (error) return error;
         }
@@ -49,14 +49,14 @@ function validateCartInventoryQuantities(catalog, items) {
         String(x.color ?? "") === String(options.color ?? "") && String(x.storage ?? "") === String(options.storage ?? ""));
       if (!row) return "Deze uitvoering is niet meer beschikbaar.";
       if (row.stock !== undefined && row.stock !== null && row.stock !== "") {
-        const error = register("catalog-variant:" + type + ":" + index + ":" + String(row.condition) + ":" + String(row.color) + ":" + String(row.storage),
+        const error = register("catalog-variant:" + JSON.stringify([type, index, String(row.condition), String(row.color), String(row.storage)]),
           row.stock, qty, "De voorraad voor deze uitvoering is niet correct ingesteld.");
         if (error) return error;
       }
     } else {
       const stockKey = ["stock", "quantity", "stockQuantity"].find(key => product[key] !== undefined && product[key] !== null && product[key] !== "");
       if (stockKey) {
-        const error = register("catalog-product:" + type + ":" + index, product[stockKey], qty,
+        const error = register("catalog-product:" + JSON.stringify([type, index]), product[stockKey], qty,
           "De voorraad voor dit product is niet correct ingesteld.");
         if (error) return error;
       }
@@ -71,7 +71,7 @@ function validateCartInventoryQuantities(catalog, items) {
         const option = (Array.isArray(groups[i]?.options) ? groups[i].options : []).find(x => x && String(x.label) === label);
         if (!option) return "Een extra of variant is niet meer beschikbaar.";
         if (option.stock !== undefined && option.stock !== null && option.stock !== "") {
-          const error = register("catalog-option:" + type + ":" + index + ":" + groupType + ":" + i + ":" + label,
+          const error = register("catalog-option:" + JSON.stringify([type, index, groupType, i, label]),
             option.stock, qty, "Deze optie heeft onvoldoende of onjuist ingestelde voorraad.");
           if (error) return error;
         }
