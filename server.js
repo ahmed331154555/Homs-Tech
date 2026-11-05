@@ -27,6 +27,7 @@ const { paypalEncryptionKey, encryptPayPalSecret, decryptPayPalSecret, getPayPal
 const { allowLiveChat, liveChatAutomaticReply } = require("./utils/live-chat");
 const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-limit");
 const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-inventory");
+const { priceProductFromCatalog } = require("./utils/cart-pricing");
 const {
   preserveExistingProductPhotos,
   preserveExistingCatalogPhotos,
