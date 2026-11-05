@@ -6550,8 +6550,17 @@ async function save(isAuto=false){
     for(let i=0;i<data.shopProducts.length;i++){
       const product=data.shopProducts[i];
       if(!String(product.name||"").trim()){setStatus("✕ Vul de productnaam in bij product "+(i+1)+".","error");return false;}
-      const price=Number(String(product.price??"").replace(",","."));
-      if(!Number.isFinite(price)||price<=0){setStatus("✕ Vul een geldige prijs groter dan € 0 in bij "+product.name+".","error");return false;}
+      const variants=Array.isArray(product.variants)?product.variants:[];
+      if(!variants.length){setStatus("✕ Voeg minimaal één kwaliteitsoptie toe bij "+product.name+".","error");return false;}
+      for(let j=0;j<variants.length;j++){
+        const variant=variants[j];
+        const label=String(variant.quality||("optie "+(j+1))).trim();
+        const price=Number(String(variant.price??"").replace(",","."));
+        const stock=Number(String(variant.stock??"").trim());
+        if(!label){setStatus("✕ Vul de kwaliteit in bij "+product.name+" (optie "+(j+1)+").","error");return false;}
+        if(!Number.isFinite(price)||price<=0){setStatus("✕ Vul een geldige prijs groter dan € 0 in bij "+product.name+" — "+label+".","error");return false;}
+        if(!Number.isInteger(stock)||stock<0){setStatus("✕ Vul een geldig voorraadgetal van 0 of hoger in bij "+product.name+" — "+label+".","error");return false;}
+      }
       if(product.videoEnabled&&product.videoUrl&&!/^https?:\/\//i.test(String(product.videoUrl).trim())){setStatus("✕ Vul een geldige https-video-URL in bij "+product.name+".","error");return false;}
     }
   }
