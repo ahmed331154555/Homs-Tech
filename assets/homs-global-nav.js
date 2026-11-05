@@ -65,7 +65,7 @@
  document.head.appendChild(headerFix);
 
  function removeLegacyNavigation(){
-  
+
   document.querySelectorAll('.homs-global-nav, header nav, .desktop-nav, .nav-inner, nav.nav, .navbar, .main-nav, .site-nav, .ht-nav').forEach(function(el){
    if(!el.closest('#homsMenuDrawer'))el.remove();
   });
