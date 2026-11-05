@@ -187,3 +187,62 @@ test("admin can delete an unpaid webshop order with no payment provider referenc
   assert.deepEqual(response.body, { success: true });
   assert.equal(lookupCalled, false);
 });
+
+
+test("webshop order status validates the order ID before database access", async () => {
+  let queryCalled = false;
+  const routes = createHarness({ async query() { queryCalled = true; return { rows: [] }; } });
+  const response = createResponse();
+
+  await routes.get("PUT /api/admin/webshop-orders/:id/status")({
+    params: { id: "0" },
+    body: { status: "Geannuleerd" }
+  }, response);
+
+  assert.equal(response.statusCode, 400);
+  assert.deepEqual(response.body, { error: "Ongeldig order-ID." });
+  assert.equal(queryCalled, false);
+});
+
+test("admin cannot directly cancel a paid webshop order", async () => {
+  const calls = [];
+  const routes = createHarness({
+    async query(sql, params) {
+      calls.push({ sql, params });
+      if (sql.startsWith("UPDATE")) return { rows: [] };
+      return { rows: [{ id: 12, payment_status: "Paid" }] };
+    }
+  });
+  const response = createResponse();
+
+  await routes.get("PUT /api/admin/webshop-orders/:id/status")({
+    params: { id: "12" },
+    body: { status: "Geannuleerd" }
+  }, response);
+
+  assert.equal(response.statusCode, 409);
+  assert.match(response.body.error, /betaalde bestelling kan niet rechtstreeks worden geannuleerd/i);
+  assert.match(calls[0].sql, /NOT \(payment_status = 'Paid' AND \$1 = 'Geannuleerd'\)/);
+  assert.equal(calls[0].params[1], 12);
+  assert.equal(calls.length, 2);
+});
+
+test("admin can change the fulfillment status of a paid webshop order without changing payment state", async () => {
+  let query = "";
+  const routes = createHarness({
+    async query(sql) {
+      query = sql;
+      return { rows: [{ id: 12, status: "Verzonden" }] };
+    }
+  });
+  const response = createResponse();
+
+  await routes.get("PUT /api/admin/webshop-orders/:id/status")({
+    params: { id: "12" },
+    body: { status: "Verzonden" }
+  }, response);
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.body, { success: true, order: { id: 12, status: "Verzonden" } });
+  assert.match(query, /NOT \(payment_status = 'Paid' AND \$1 = 'Geannuleerd'\)/);
+});
