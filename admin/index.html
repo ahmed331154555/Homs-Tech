@@ -6453,6 +6453,32 @@ function nextShopSku(category){
  (Array.isArray(data.shopProducts)?data.shopProducts:[]).forEach(p=>(Array.isArray(p.variants)?p.variants:[]).forEach(v=>{const m=String(v.sku||"").match(/-(\d+)$/);if(m)max=Math.max(max,Number(m[1])||0)}));
  return "HT-"+(codes[category]||"PART")+"-"+String(max+1).padStart(6,"0");
 }
+function validateShopCatalogIdentifiers(products){
+ const productIds=new Set(),variantIds=new Set(),skus=new Map();
+ for(let i=0;i<products.length;i++){
+  const product=products[i]||{},productId=String(product.id??"").trim();
+  if(!productId)return {error:"Product "+(i+1)+" heeft geen unieke product-ID."};
+  if(productIds.has(productId))return {error:"Dubbele product-ID gevonden bij product "+(i+1)+". Vernieuw de pagina en probeer opnieuw."};
+  productIds.add(productId);
+  const variants=Array.isArray(product.variants)?product.variants:[];
+  const qualities=new Set();
+  for(let j=0;j<variants.length;j++){
+   const variant=variants[j]||{},variantId=String(variant.id??"").trim();
+   if(!variantId)return {error:"Product "+(i+1)+", optie "+(j+1)+" heeft geen optie-ID."};
+   if(variantIds.has(variantId))return {error:"Dubbele optie-ID gevonden bij "+(product.name||"product "+(i+1))+"."};
+   variantIds.add(variantId);
+   const sku=String(variant.sku??"").trim(),skuKey=sku.toUpperCase();
+   if(!sku)return {error:"Vul een SKU in bij "+(product.name||"product "+(i+1))+" — "+(variant.quality||"optie "+(j+1))+"."};
+   if(skus.has(skuKey))return {error:"Dubbele SKU "+sku+" gevonden bij "+(product.name||"product "+(i+1))+" en "+skus.get(skuKey)+". Elke optie moet een eigen SKU hebben."};
+   skus.set(skuKey,product.name||"product "+(i+1));
+   const quality=String(variant.quality??"").trim().toLocaleLowerCase();
+   if(quality&&qualities.has(quality))return {error:"De kwaliteitsnaam "+variant.quality+" komt dubbel voor bij "+(product.name||"product "+(i+1))+"."};
+   if(quality)qualities.add(quality);
+  }
+ }
+ return {valid:true};
+}
+
 function ensureShopProducts(){
  if(!Array.isArray(data.shopProducts))data.shopProducts=[];
  data.shopProducts.forEach((p,i)=>{
@@ -6603,6 +6629,8 @@ async function save(isAuto=false){
   if(currentPage==="shop"){
     if(shopImageUploadsPending>0){setStatus("Wacht tot alle Shopfoto’s volledig zijn ingelezen voordat je opslaat.","error");return false;}
     ensureShopProducts();
+    const identifierCheck=validateShopCatalogIdentifiers(data.shopProducts);
+    if(!identifierCheck.valid){setStatus("✕ "+identifierCheck.error,"error");return false;}
     for(let i=0;i<data.shopProducts.length;i++){
       const product=data.shopProducts[i];
       if(!String(product.name||"").trim()){setStatus("✕ Vul de productnaam in bij product "+(i+1)+".","error");return false;}
