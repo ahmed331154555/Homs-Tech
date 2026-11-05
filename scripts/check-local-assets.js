@@ -7,7 +7,6 @@ const htmlFiles = [];
 function collectHtml(directory) {
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
     if (entry.name === ".git" || entry.name === "node_modules") continue;
-
     const fullPath = path.join(directory, entry.name);
     if (entry.isDirectory()) {
       collectHtml(fullPath);
@@ -25,34 +24,33 @@ let checked = 0;
 for (const htmlFile of htmlFiles) {
   const source = fs.readFileSync(htmlFile, "utf8");
   const references = [
-    ...source.matchAll(/<script\\b[^>]*?\\bsrc\\s*=\\s*["']([^"'<>]+)["'][^>]*>/gi),
-    ...source.matchAll(/<link\\b[^>]*?\\bhref\\s*=\\s*["']([^"'<>]+)["'][^>]*>/gi)
+    ...source.matchAll(/<script\b[^>]*?\bsrc\s*=\s*["']([^"'<>]+)["'][^>]*>/gi),
+    ...source.matchAll(/<link\b[^>]*?\bhref\s*=\s*["']([^"'<>]+)["'][^>]*>/gi)
   ];
 
   for (const match of references) {
     const reference = match[1].trim();
-    if (!reference || /^(?:[a-z][a-z0-9+.-]*:|\\/\\/|#)/i.test(reference)) continue;
-
+    if (!reference || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(reference)) continue;
     const pathname = reference.split(/[?#]/, 1)[0];
-    if (!pathname || pathname.includes("{{") || pathname.includes("${")) continue;
+    if (!pathname || pathname.includes("{{") || pathname.includes("$" + "{")) continue;
 
     let decodedPath;
     try {
       decodedPath = decodeURIComponent(pathname);
     } catch {
-      missing.push(`${path.relative(root, htmlFile)}: invalid URL encoding in ${reference}`);
+      missing.push(path.relative(root, htmlFile) + ": invalid URL encoding in " + reference);
       continue;
     }
 
     const target = path.resolve(path.dirname(htmlFile), decodedPath);
     if (!target.startsWith(root + path.sep) && target !== root) {
-      missing.push(`${path.relative(root, htmlFile)}: path escapes project root: ${reference}`);
+      missing.push(path.relative(root, htmlFile) + ": path escapes project root: " + reference);
       continue;
     }
 
     checked += 1;
     if (!fs.existsSync(target) || !fs.statSync(target).isFile()) {
-      missing.push(`${path.relative(root, htmlFile)}: missing ${reference}`);
+      missing.push(path.relative(root, htmlFile) + ": missing " + reference);
     }
   }
 }
@@ -63,4 +61,4 @@ if (missing.length) {
   process.exit(1);
 }
 
-console.log(`Checked ${checked} local script and stylesheet references across ${htmlFiles.length} HTML files.`);
+console.log("Checked " + checked + " local script and stylesheet references across " + htmlFiles.length + " HTML files.");
