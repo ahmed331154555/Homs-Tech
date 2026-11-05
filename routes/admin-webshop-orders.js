@@ -44,7 +44,8 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
     try {
       const result = await pool.query(
         `SELECT id, customer_id, name, email, phone, street, house_number, postcode, city, items, total, status,
-                payment_method, payment_status, paypal_order_id, created_at
+                payment_method, payment_status, paypal_order_id, mollie_payment_id,
+                inventory_deducted_at, inventory_error, created_at
          FROM webshop_orders
          ORDER BY created_at DESC`
       );
