@@ -2,7 +2,6 @@
 
 /**
  * Persist only the Shop catalog key so unrelated site settings are not overwritten.
- * The JSONB update is performed by PostgreSQL in one statement.
  */
 async function saveShopCatalog(queryWithConnectionRetry, shopProducts) {
   const result = await queryWithConnectionRetry(
@@ -16,4 +15,53 @@ async function saveShopCatalog(queryWithConnectionRetry, shopProducts) {
     : [];
 }
 
-module.exports = { saveShopCatalog };
+function resolveShopVariant(product, item) {
+  const variants = Array.isArray(product?.variants) ? product.variants : [];
+  if (!variants.length) return { variant: null, variantIndex: -1 };
+
+  const options = item?.options && typeof item.options === "object" ? item.options : {};
+  const requested = String(item?.variantId || item?.sku || options.sku || options.quality || "").trim();
+  let variantIndex = requested
+    ? variants.findIndex((variant) => variant && [variant.id, variant.sku, variant.quality]
+        .some((value) => value != null && String(value) === requested))
+    : variants.findIndex((variant) => variant && variant.active !== false);
+
+  if (variantIndex < 0) return { error: "De gekozen productkwaliteit is niet meer beschikbaar. Kies de kwaliteit opnieuw." };
+  const variant = variants[variantIndex];
+  if (!variant || variant.active === false) return { error: "De gekozen productkwaliteit is niet meer beschikbaar." };
+  return { variant, variantIndex };
+}
+
+function deductShopVariantInventory(product, item) {
+  const resolved = resolveShopVariant(product, item);
+  if (resolved.error) throw new Error(resolved.error);
+  const qty = Number(item?.qty ?? 1);
+  if (!Number.isInteger(qty) || qty < 1) throw new Error("Invalid Shop item quantity.");
+
+  if (resolved.variant) {
+    const rawStock = String(resolved.variant.stock ?? "").trim();
+    const match = rawStock.match(/^(\\d+)$/);
+    if (!match) throw new Error("Shop variant stock is not a valid whole number.");
+    const stock = Number(match[1]);
+    if (stock < qty) throw new Error("Insufficient stock for paid Shop variant.");
+    resolved.variant.stock = String(stock - qty);
+    if (resolved.variantIndex === 0) product.stock = String(stock - qty) + " stuks";
+    return { variant: resolved.variant, remaining: stock - qty };
+  }
+
+  const rawStock = String(product.stock ?? "").trim();
+  const match = rawStock.match(/^(\\d+)/);
+  if (match) {
+    const stock = Number(match[1]);
+    if (stock < qty) throw new Error("Insufficient stock for paid Shop product.");
+    product.stock = String(stock - qty) + " stuks";
+    return { variant: null, remaining: stock - qty };
+  }
+  return { variant: null, remaining: null };
+}
+
+module.exports = {
+  saveShopCatalog,
+  resolveShopVariant,
+  deductShopVariantInventory
+};
