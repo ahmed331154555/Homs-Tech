@@ -3000,9 +3000,30 @@ app.get("/api/admin/emails",requirePermission("site.save"),async(req,res)=>{
   try{const r=await pool.query("SELECT id,direction,from_address,to_addresses,subject,LEFT(text_body,180) AS preview,attachments,is_read,created_at,message_id,references_header FROM admin_emails ORDER BY created_at DESC,id DESC LIMIT 200");res.json({emails:r.rows});}
   catch(e){console.error("Admin email list:",e);res.status(500).json({error:"E-mails laden is mislukt."});}
 });
-app.get("/api/admin/emails/:id",requirePermission("site.save"),async(req,res)=>{
-  try{const id=Number(req.params.id);if(!Number.isSafeInteger(id)||id<1)return res.status(400).json({error:"Ongeldig bericht."});const r=await pool.query("UPDATE admin_emails SET is_read=TRUE WHERE id=$1 AND direction='inbound' RETURNING *",[id]);if(!r.rows.length){const other=await pool.query("SELECT * FROM admin_emails WHERE id=$1",[id]);if(!other.rows.length)return res.status(404).json({error:"Bericht niet gevonden."});return res.json({email:other.rows[0]});}res.json({email:r.rows[0]});}
-  catch(e){console.error("Admin email detail:",e);res.status(500).json({error:"Bericht laden is mislukt."});}
+app.get("/api/admin/emails/:id", requirePermission("site.save"), async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isSafeInteger(id) || id < 1) {
+      return res.status(400).json({ error: "Ongeldig bericht." });
+    }
+
+    const result = await pool.query(
+      "UPDATE admin_emails SET is_read=TRUE WHERE id=$1 AND direction='inbound' RETURNING *",
+      [id]
+    );
+    if (result.rows.length) {
+      return res.json({ email: result.rows[0] });
+    }
+
+    const other = await pool.query("SELECT * FROM admin_emails WHERE id=$1", [id]);
+    if (!other.rows.length) {
+      return res.status(404).json({ error: "Bericht niet gevonden." });
+    }
+    return res.json({ email: other.rows[0] });
+  } catch (error) {
+    console.error("Admin email detail:", error);
+    return res.status(500).json({ error: "Bericht laden is mislukt." });
+  }
 });
 app.delete("/api/admin/emails/:id",requirePermission("site.save"),async(req,res)=>{
   try{
@@ -3023,12 +3044,37 @@ app.post("/api/admin/emails/send",requirePermission("site.save"),async(req,res)=
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)||!subject||!textBody)return res.status(400).json({error:"Vul een geldig e-mailadres, onderwerp en bericht in."});
     const recipients=[...cc,...bcc];if(recipients.length>20||recipients.some(x=>!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x)))return res.status(400).json({error:"Controleer de Cc- en Bcc-e-mailadressen."});
     if(rawAttachments.length>10)return res.status(400).json({error:"Je kunt maximaal 10 bijlagen toevoegen."});
-    const allowedTypes=new Set(["image/jpeg","image/png","image/webp","image/gif","image/heic","application/pdf","application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","text/plain"]);
+    const allowedTypes = new Set([
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+      "image/heic",
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "text/plain"
+    ]);
     let attachmentTotal=0;
     const attachments=rawAttachments.map(file=>{
       const filename=String(file?.filename||"").replace(/[\/\\\r\n]/g,"_").slice(0,180);
       const ext=filename.split(".").pop().toLowerCase();
-      const fallbackTypes={jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png",webp:"image/webp",gif:"image/gif",heic:"image/heic",pdf:"application/pdf",doc:"application/msword",docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",xls:"application/vnd.ms-excel",xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",txt:"text/plain"};
+      const fallbackTypes = {
+        jpg: "image/jpeg",
+        jpeg: "image/jpeg",
+        png: "image/png",
+        webp: "image/webp",
+        gif: "image/gif",
+        heic: "image/heic",
+        pdf: "application/pdf",
+        doc: "application/msword",
+        docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        xls: "application/vnd.ms-excel",
+        xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        txt: "text/plain"
+      };
       const mime=String(file?.content_type||fallbackTypes[ext]||"application/octet-stream").toLowerCase();
       const content=String(file?.content||"");
       if(!filename||!content||!allowedTypes.has(mime)||!/^[A-Za-z0-9+/]+={0,2}$/.test(content))throw new Error("Een bijlage heeft een ongeldig formaat.");
@@ -3074,7 +3120,25 @@ app.post("/api/admin/emails/send",requirePermission("site.save"),async(req,res)=
     const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify(sendPayload)});
     const data=await response.json().catch(()=>({}));
     if(!response.ok){console.error("Admin email send provider error:",response.status,JSON.stringify(data));return res.status(502).json({error:"E-mailprovider kon het bericht niet versturen."});}
-    await pool.query("INSERT INTO admin_emails(resend_email_id,direction,from_address,to_addresses,subject,text_body,html_body,attachments,is_read) VALUES($1,'outbound',$2,$3::jsonb,$4,$5,$6,$7::jsonb,TRUE)",[String(data.id||"sent-"+Date.now()+"-"+crypto.randomBytes(5).toString("hex")),from,JSON.stringify([to,...cc,...bcc]),subject,textBody,html,JSON.stringify(attachments.map(x=>({filename:x.filename,content_type:x.content_type,size:Buffer.from(x.content,"base64").length}))) ]);
+    await pool.query(
+      `INSERT INTO admin_emails(
+        resend_email_id, direction, from_address, to_addresses, subject,
+        text_body, html_body, attachments, is_read
+      ) VALUES($1, 'outbound', $2, $3::jsonb, $4, $5, $6, $7::jsonb, TRUE)`,
+      [
+        String(data.id || "sent-" + Date.now() + "-" + crypto.randomBytes(5).toString("hex")),
+        from,
+        JSON.stringify([to, ...cc, ...bcc]),
+        subject,
+        textBody,
+        html,
+        JSON.stringify(attachments.map(file => ({
+          filename: file.filename,
+          content_type: file.content_type,
+          size: Buffer.from(file.content, "base64").length
+        })))
+      ]
+    );
     res.json({success:true,to,attachmentCount:attachments.length});
   }catch(e){console.error("Admin email send:",e);res.status(500).json({error:"E-mail versturen is mislukt."});}
 });
