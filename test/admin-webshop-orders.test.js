@@ -138,3 +138,49 @@ test("admin cannot revert a paid webshop order to Unpaid", async () => {
   assert.equal(calls, 2);
   assert.match(response.body.error, /kan niet worden teruggezet/i);
 });
+
+
+test("admin cannot delete a paid or payment-linked webshop order", async () => {
+  let deleteSql = "";
+  const routes = createHarness({
+    async query(sql) {
+      if (sql.startsWith("DELETE")) {
+        deleteSql = sql;
+        return { rows: [] };
+      }
+      return { rows: [{ id: 12, payment_status: "Paid", inventory_deducted_at: "2026-11-05T12:00:00Z" }] };
+    }
+  });
+  const response = createResponse();
+
+  await routes.get("DELETE /api/admin/webshop-orders/:id")({
+    params: { id: "12" }
+  }, response);
+
+  assert.equal(response.statusCode, 409);
+  assert.match(deleteSql, /payment_status <> 'Paid'/);
+  assert.match(deleteSql, /payment_status <> 'Pending'/);
+  assert.match(deleteSql, /inventory_deducted_at IS NULL/);
+  assert.match(deleteSql, /paypal_order_id/);
+  assert.match(deleteSql, /mollie_payment_id/);
+  assert.match(response.body.error, /kan niet worden verwijderd/i);
+});
+
+test("admin can delete an unpaid webshop order with no payment provider reference", async () => {
+  let lookupCalled = false;
+  const routes = createHarness({
+    async query(sql) {
+      assert.match(sql, /^DELETE FROM webshop_orders/);
+      return { rows: [{ id: 13 }] };
+    }
+  });
+  const response = createResponse();
+
+  await routes.get("DELETE /api/admin/webshop-orders/:id")({
+    params: { id: "13" }
+  }, response);
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.body, { success: true });
+  assert.equal(lookupCalled, false);
+});
