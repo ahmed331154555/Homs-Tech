@@ -463,6 +463,10 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 .dynamic-question-complete .question-icon{background:#e6f7ee;color:#159653}
 .dynamic-answer-summary{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;color:#1b2e44}
 .dynamic-answer-summary button{border:0;background:#edf4ff;color:#075fe8;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:800}
+.locked-device-price-panel{margin:8px 0;padding:16px 18px;border:1px solid #dbe7f5;border-radius:14px;background:#f5f9ff;display:flex;flex-direction:column;gap:7px;color:#17324a}
+.locked-device-price-panel>span{font-size:12px;color:#64748b}
+.locked-device-price-panel>b{font-size:27px;font-weight:850;color:#176fe5}
+@media(max-width:520px){.locked-device-price-panel{padding:14px}.locked-device-price-panel>b{font-size:24px}}
 .dynamic-info-line{margin:0 0 0 4px;padding:8px 4px;border:0;font-size:12px;color:#52647a}
 @media(max-width:520px){.dynamic-questions{padding:12px 12px 4px;gap:9px}.dynamic-question{padding:13px;border-radius:12px}.dynamic-question-title{font-size:13px}.dynamic-option{min-height:46px;padding:10px;font-size:13px}.dynamic-question-complete{grid-template-columns:1fr;gap:8px}.dynamic-answer-summary{justify-content:space-between}}
 
@@ -2130,7 +2134,7 @@ function renderDynamicQuestions(){
         <div class="dynamic-answer-summary"><strong>${esc(questionValue(lockQ)||'Vergrendeld')}</strong></div>
       </div>
       ${storageQ?(storageAnswer
-        ?`<div class="dynamic-question dynamic-question-complete"><div class="dynamic-question-title">${esc(storageQ.label)}</div><div class="dynamic-answer-summary"><strong>${esc(storageAnswer)}</strong><button type="button" class="question-chevron" aria-label="Opslag wijzigen" onclick="toggleBuybackQuestion('${esc(storageQ.id)}')"><span>⌄</span></button></div></div>`
+        ?`<div class="dynamic-question dynamic-question-complete"><div class="dynamic-question-title">${esc(storageQ.label)}</div><div class="dynamic-answer-summary"><strong>${esc(storageAnswer)}</strong></div></div>`
         :`<div class="dynamic-question-open-panel"><div class="dynamic-question-open-inner">${renderQuestion(storageQ)}</div></div>`):''}
       <div class="locked-device-price-panel">
         <strong>🔒 iPhone vergrendeld — automatisch beoordeeld als Kapot</strong>
