@@ -6,6 +6,7 @@ const { pool, wait, queryWithConnectionRetry } = require("./config/database");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
+const { hashPassword, verifyPassword } = require("./utils/password");
 const path = require("path");
 const {
   sanitizeDevicesCatalogData,
@@ -173,42 +174,6 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.static(__dirname, { dotfiles: "deny", index: "index.html" }));
-
-// Password hashing helpers
-function hashPassword(password) {
-  return new Promise((resolve, reject) => {
-    const salt = crypto.randomBytes(16).toString("hex");
-
-    crypto.scrypt(password, salt, 64, (error, derivedKey) => {
-      if (error) return reject(error);
-
-      resolve(`${salt}:${derivedKey.toString("hex")}`);
-    });
-  });
-}
-
-function verifyPassword(password, storedHash) {
-  return new Promise((resolve, reject) => {
-    const parts = String(storedHash || "").split(":");
-
-    if (parts.length !== 2) {
-      return resolve(false);
-    }
-
-    const salt = parts[0];
-    const storedKey = Buffer.from(parts[1], "hex");
-
-    crypto.scrypt(password, salt, 64, (error, derivedKey) => {
-      if (error) return reject(error);
-
-      if (storedKey.length !== derivedKey.length) {
-        return resolve(false);
-      }
-
-      resolve(crypto.timingSafeEqual(storedKey, derivedKey));
-    });
-  });
-}
 
 // Send a welcome email through Resend
 async function sendCustomerVerificationEmail(customer, code) {
