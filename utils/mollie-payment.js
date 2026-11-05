@@ -2,6 +2,8 @@
 
 const { moneyNumber } = require("./money");
 
+const TERMINAL_PAYMENT_STATUSES = new Set(["Cancelled", "Expired", "Failed"]);
+
 function mollieStatusToLocal(status) {
   const map = {
     paid: "Paid",
@@ -12,6 +14,14 @@ function mollieStatusToLocal(status) {
     authorized: "Pending"
   };
   return map[String(status || "").toLowerCase()] || "Pending";
+}
+
+function resolveMolliePaymentStatus(currentStatus, providerStatus) {
+  const current = String(currentStatus || "").trim();
+  const next = mollieStatusToLocal(providerStatus);
+  if (current === "Paid") return "Paid";
+  if (TERMINAL_PAYMENT_STATUSES.has(current) && next !== "Paid") return current;
+  return next;
 }
 
 function molliePaymentMatchesOrder(payment, order) {
@@ -26,5 +36,6 @@ function molliePaymentMatchesOrder(payment, order) {
 
 module.exports = {
   mollieStatusToLocal,
+  resolveMolliePaymentStatus,
   molliePaymentMatchesOrder
 };
