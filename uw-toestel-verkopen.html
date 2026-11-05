@@ -1979,6 +1979,10 @@ function getConditionQuestion(){
 function getLockQuestion(){
   return (selectedModel?.typeQuestions||[]).find(q=>q.id==='protocol4_connectivity' || /ontgrendeld|vergrendeld/i.test(String(q.label||'')));
 }
+function isLockedIphoneSelected(){
+  const q=getLockQuestion(),value=String(q?questionValue(q):'').toLowerCase();
+  return !!q && /vergrendeld|locked/.test(value) && !/ontgrendeld|unlocked/.test(value);
+}
 function isKapotSelected(){
   const q=getConditionQuestion();
   if(!q)return false;
@@ -2032,6 +2036,16 @@ function setQuestionValue(qid,value){
   }
   buybackAnswers[qid]=value;
   buybackExpandedQuestionIds.delete(qid);
+  // A locked iPhone is automatically classified as Kapot. The customer only needs
+  // to choose storage; the matching broken-device price is then shown immediately.
+  const lockQuestion=q===getLockQuestion();
+  const lockValue=String(value||'').toLowerCase();
+  const selectedAsLocked=lockQuestion && /vergrendeld|locked/.test(lockValue) && !/ontgrendeld|unlocked/.test(lockValue);
+  if(selectedAsLocked){
+    const conditionQuestion=getConditionQuestion();
+    const brokenOption=active(conditionQuestion?.options).find(o=>/kapot/i.test(String(o.label||'')));
+    if(conditionQuestion && brokenOption) buybackAnswers[conditionQuestion.id]=brokenOption.label;
+  }
   // Preserve Kapot when the customer changes storage; the condition price is tied to that storage.
   if(wasKapotSelected && storageQuestion){
     const conditionQuestion=getConditionQuestion();
@@ -2106,6 +2120,25 @@ function renderDynamicQuestions(){
   const storageQ=allQs.find(q=>q.id==='protocol4_capacity' || /opslagcapaciteit|opslag|storage/i.test(String(q.label||'')));
   const qs=isKapotSelected()?allQs.filter(q=>q===conditionQ || (selectedModel?.protocol==='protocol4' && q===storageQ)):allQs;
   if(!qs.length){box.innerHTML='<div style="padding:14px;background:#f8fafc;border-radius:12px;color:#64748b">Voor dit type zijn nog geen extra vragen ingesteld.</div>';return;}
+  if(isLockedIphoneSelected() && selectedModel?.protocol==='protocol4'){
+    const lockQ=getLockQuestion();
+    const storageAnswer=String(storageQ?questionValue(storageQ):'').trim();
+    const brokenPrice=getConditionBasePrice();
+    box.innerHTML=`
+      <div class="dynamic-question dynamic-question-complete">
+        <div class="dynamic-question-title">${esc(lockQ?.label||'Is je iPhone ontgrendeld of vergrendeld?')}</div>
+        <div class="dynamic-answer-summary"><strong>${esc(questionValue(lockQ)||'Vergrendeld')}</strong></div>
+      </div>
+      ${storageQ?(storageAnswer
+        ?`<div class="dynamic-question dynamic-question-complete"><div class="dynamic-question-title">${esc(storageQ.label)}</div><div class="dynamic-answer-summary"><strong>${esc(storageAnswer)}</strong><button type="button" class="question-chevron" aria-label="Opslag wijzigen" onclick="toggleBuybackQuestion('${esc(storageQ.id)}')"><span>⌄</span></button></div></div>`
+        :`<div class="dynamic-question-open-panel"><div class="dynamic-question-open-inner">${renderQuestion(storageQ)}</div></div>`):''}
+      <div class="locked-device-price-panel">
+        <strong>🔒 iPhone vergrendeld — automatisch beoordeeld als Kapot</strong>
+        <span>${storageAnswer?'Uw geschatte inruilwaarde':'Kies de opslagcapaciteit om direct de Kapot-prijs te zien.'}</span>
+        ${storageAnswer?`<b>${money(brokenPrice)}</b>`:''}
+      </div>`;
+    return;
+  }
   const visible=[];
   let waitingForAnswer=false;
   for(const q of qs){
@@ -2133,6 +2166,14 @@ function renderDynamicQuestions(){
   box.innerHTML=visible.join('');
 }
 function validateDynamicQuestions(){
+  if(isLockedIphoneSelected() && selectedModel?.protocol==='protocol4'){
+    const storageQ=(selectedModel?.typeQuestions||[]).find(q=>q.id==='protocol4_capacity' || /opslagcapaciteit|opslag|storage/i.test(String(q.label||'')));
+    if(storageQ && !String(questionValue(storageQ)||'').trim()){
+      alert('Kies eerst de opslagcapaciteit om direct de Kapot-prijs te berekenen.');
+      return false;
+    }
+    return true;
+  }
   const allQs=selectedModel?.typeQuestions||[];
   const conditionQ=allQs.find(q=>{const l=String(q.label||'').toLowerCase();return l.includes('conditie')||l.includes('staat');});
   const storageQ=allQs.find(q=>q.id==='protocol4_capacity' || /opslagcapaciteit|opslag|storage/i.test(String(q.label||'')));
