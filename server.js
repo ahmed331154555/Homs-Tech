@@ -182,6 +182,30 @@ app.get("/api/buyback/catalog", async (req, res) => {
 app.get("/api/site", async (req, res) => {
   try {
     const view=String(req.query.view||"").trim().toLowerCase();
+    if(view==="repair"){
+      const result = await queryWithConnectionRetry(
+        `SELECT
+          data->'repairPage' AS repair_page,
+          data->'services' AS services,
+          data->>'businessName' AS business_name,
+          data->>'siteName' AS site_name,
+          data->>'tagline' AS tagline
+        FROM site_settings
+        WHERE id = 1`,
+        [],
+        4
+      );
+      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
+      const row=result.rows[0];
+      res.set("Cache-Control","public, max-age=60, stale-while-revalidate=300");
+      return res.json(sanitizePublicSiteData({
+        repairPage:row.repair_page,
+        services:Array.isArray(row.services)?row.services:[],
+        businessName:row.business_name,
+        siteName:row.site_name,
+        tagline:row.tagline
+      }));
+    }
     if(view==="devices"){
       const result = await queryWithConnectionRetry(
         `SELECT
