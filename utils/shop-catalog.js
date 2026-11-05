@@ -16,6 +16,34 @@ async function saveShopCatalog(queryWithConnectionRetry, shopProducts, expectedS
     : [];
 }
 
+function validateShopCatalogImages(products) {
+  if (!Array.isArray(products)) return "Shop catalog must be a product list.";
+  const maxImageChars = 1_800_000;
+  const maxCatalogImageChars = 40_000_000;
+  let catalogImageChars = 0;
+
+  for (let productIndex = 0; productIndex < products.length; productIndex += 1) {
+    const product = products[productIndex] || {};
+    const images = Array.isArray(product.images) ? product.images : [];
+    if (images.length > 4) return "A Shop product may contain at most four photos.";
+    for (let imageIndex = 0; imageIndex < images.length; imageIndex += 1) {
+      const image = images[imageIndex];
+      if (image == null || image === "") continue;
+      if (typeof image !== "string") return "Invalid Shop photo at product " + (productIndex + 1) + ".";
+      if (/^https?:\/\//i.test(image)) continue;
+      if (!/^data:image\/(?:png|jpe?g|webp|gif);base64,[a-z0-9+/]+=*$/i.test(image)) {
+        return "Unsupported Shop photo format at product " + (productIndex + 1) + ". Use PNG, JPG, WebP or GIF.";
+      }
+      if (image.length > maxImageChars) return "A Shop photo is too large. Reduce each photo to 1.2 MB or less.";
+      catalogImageChars += image.length;
+      if (catalogImageChars > maxCatalogImageChars) {
+        return "The total Shop photo data is too large. Reduce or remove some photos before saving.";
+      }
+    }
+  }
+  return null;
+}
+
 function validateShopCatalogIdentifiers(products) {
   if (!Array.isArray(products)) return "Shop catalog must be a product list.";
   const productIds = new Set();
