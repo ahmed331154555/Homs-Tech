@@ -551,10 +551,6 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 /* Real vertical accordion expansion: animate height, not translate/opacity alone */
 .lock-choice-icon{display:inline-flex;align-items:center;justify-content:center;font-size:25px;line-height:1;min-width:30px;transform:scale(1.12);margin-right:3px}
 .dynamic-option:has(.lock-choice-icon){display:inline-flex;align-items:center;gap:8px;min-height:54px}
-.locked-device-price-panel{border:1px solid #dbeafe;background:#eff6ff;border-radius:14px;padding:15px 17px;display:flex;flex-direction:column;gap:6px;color:#17324a}
-.locked-device-price-panel>span{font-size:12px;color:#64748b}
-.locked-device-price-panel>b{font-size:25px;color:#2563eb}
-.locked-device-price-panel>small{font-size:12px;line-height:1.6;color:#475569;margin-top:3px}
 
 @keyframes buybackExpandDown{
   from{max-height:0;opacity:.35}
@@ -606,9 +602,6 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 #step2 .dynamic-condition-question .dynamic-option{min-height:76px!important;display:flex!important;align-items:center!important;gap:12px!important;text-align:left!important}
 #step2 .lock-choice-icon{width:48px!important;height:48px!important;min-width:48px!important;margin:0!important;transform:none!important;border-radius:13px!important;background:#eef4fc!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;box-shadow:inset 0 0 0 1px #e2eaf5!important}
 #step2 .lock-choice-icon svg{width:42px;height:42px;display:block;overflow:visible}
-#step2 .locked-device-price-panel{margin:4px 0 8px!important;padding:16px 18px!important;border-radius:14px!important;background:#eef5ff!important}
-#step2 .locked-device-price-panel strong{font-size:14px!important}
-#step2 .locked-device-price-panel>b{font-size:27px!important}
 #step2 .inspection-note{margin:10px 18px 0!important;padding:12px 14px!important}
 #step2 .buyback-step .totalbar{margin:14px 18px 18px!important;padding:14px 0 0!important;display:flex!important;justify-content:space-between!important;align-items:center!important;gap:14px!important}
 #step2 .totalbar .total strong{font-size:29px!important}
@@ -1985,10 +1978,6 @@ function getConditionQuestion(){
 }
 function getLockQuestion(){
   return (selectedModel?.typeQuestions||[]).find(q=>q.id==='protocol4_connectivity' || /ontgrendeld|vergrendeld/i.test(String(q.label||'')));
-}
-function isLockedIphoneSelected(){
-  const q=getLockQuestion(),v=String(q?questionValue(q):'').toLowerCase();
-  return !!q && /vergrendeld|locked/.test(v) && !/ontgrendeld|unlocked/.test(v);
 }
 function isKapotSelected(){
   const q=getConditionQuestion();
