@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { saveShopCatalog } = require("../utils/shop-catalog");
+const { saveShopCatalog, validateShopCatalogIdentifiers } = require("../utils/shop-catalog");
 
 test("saveShopCatalog updates only the Shop JSON key and returns saved products", async () => {
   const products = [
@@ -32,6 +32,47 @@ test("saveShopCatalog returns null when another admin changed the catalog first"
 });
 
 const { findShopProductIndex, resolveShopVariant, priceShopVariant, deductShopVariantInventory } = require("../utils/shop-catalog");
+
+test("validateShopCatalogIdentifiers accepts unique product, option, SKU and quality identifiers", () => {
+  assert.equal(validateShopCatalogIdentifiers([
+    { id: "p1", name: "Screen", variants: [
+      { id: "v1", sku: "HT-SCH-100001", quality: "LCD" },
+      { id: "v2", sku: "HT-SCH-100002", quality: "OLED" }
+    ] }
+  ]), null);
+});
+
+test("validateShopCatalogIdentifiers rejects duplicate SKUs case-insensitively", () => {
+  const error = validateShopCatalogIdentifiers([
+    { id: "p1", name: "Screen A", variants: [{ id: "v1", sku: "HT-SCH-1", quality: "LCD" }] },
+    { id: "p2", name: "Screen B", variants: [{ id: "v2", sku: "ht-sch-1", quality: "OLED" }] }
+  ]);
+  assert.match(error, /Duplicate Shop SKU/i);
+});
+
+test("validateShopCatalogIdentifiers rejects duplicate product and option IDs", () => {
+  assert.match(validateShopCatalogIdentifiers([
+    { id: "same", variants: [{ id: "v1", sku: "SKU-1", quality: "LCD" }] },
+    { id: "same", variants: [{ id: "v2", sku: "SKU-2", quality: "OLED" }] }
+  ]), /Duplicate Shop product ID/i);
+  assert.match(validateShopCatalogIdentifiers([
+    { id: "p1", variants: [{ id: "same", sku: "SKU-1", quality: "LCD" }] },
+    { id: "p2", variants: [{ id: "same", sku: "SKU-2", quality: "OLED" }] }
+  ]), /Duplicate Shop option ID/i);
+});
+
+test("validateShopCatalogIdentifiers rejects duplicate quality names and missing SKUs", () => {
+  assert.match(validateShopCatalogIdentifiers([
+    { id: "p1", name: "Screen", variants: [
+      { id: "v1", sku: "SKU-1", quality: "LCD" },
+      { id: "v2", sku: "SKU-2", quality: "lcd" }
+    ] }
+  ]), /Duplicate quality name/i);
+  assert.match(validateShopCatalogIdentifiers([
+    { id: "p1", variants: [{ id: "v1", sku: "", quality: "LCD" }] }
+  ]), /Missing SKU/i);
+});
+
 
 test("resolveShopVariant selects the requested quality instead of the first quality", () => {
   const product = { variants: [
