@@ -22,6 +22,7 @@ const { registerAdminOrderRoutes } = require("./routes/admin-orders");
 const { registerAdminWebshopOrderRoutes } = require("./routes/admin-webshop-orders");
 const { validateRepairQuotePayload } = require("./utils/repair-quote");
 const { validateBuybackOfferedPrice } = require("./utils/buyback-order");
+const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-limit");
 const {
   preserveExistingProductPhotos,
   preserveExistingCatalogPhotos,
@@ -2389,27 +2390,6 @@ app.put("/api/admin/order-settings", requirePermission("site.save"), async (req,
 
 // Admin webshop order endpoints live in their own route module.
 registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory });
-
-// Rate limiting map for public repair quote requests: IP -> array of timestamps
-const repairRequestRateLimits = new Map();
-function checkRepairRequestRateLimit(ip) {
-  const now = Date.now();
-  const windowMs = 15 * 60 * 1000; // 15 minutes window
-  const maxRequests = 5;
-  const timestamps = (repairRequestRateLimits.get(ip) || []).filter(t => now - t < windowMs);
-  if (timestamps.length >= maxRequests) {
-    return false;
-  }
-  timestamps.push(now);
-  repairRequestRateLimits.set(ip, timestamps);
-  // Periodic cleanup if map grows too large
-  if (repairRequestRateLimits.size > 5000) {
-    for (const [k, v] of repairRequestRateLimits.entries()) {
-      if (v.every(t => now - t >= windowMs)) repairRequestRateLimits.delete(k);
-    }
-  }
-  return true;
-}
 
 // Public repair quote requests from the Prices page. Photos are limited and stored with the request.
 app.post("/api/repair-requests", async (req, res) => {
