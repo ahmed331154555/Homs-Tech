@@ -1904,6 +1904,38 @@ registerAdminEmailRoutes(app, {
 // Authentication middleware
 // Update website settings
 
+// Admin-only toggle for temporarily hiding the public Shop without deleting products.
+app.get("/api/admin/shop-visibility", requirePermission("site.save"), async (req, res) => {
+  try {
+    const result = await queryWithConnectionRetry(
+      "SELECT COALESCE((data->>'shopPageEnabled')::boolean, TRUE) AS enabled FROM site_settings WHERE id = 1",
+      [], 4
+    );
+    if (!result.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
+    return res.json({ enabled: result.rows[0].enabled !== false });
+  } catch (error) {
+    console.error("[ADMIN SHOP VISIBILITY] Load failed:", error);
+    return res.status(500).json({ error: "Shopinstelling laden is mislukt." });
+  }
+});
+
+app.put("/api/admin/shop-visibility", requirePermission("site.save"), async (req, res) => {
+  try {
+    if (typeof req.body?.enabled !== "boolean") {
+      return res.status(400).json({ error: "Ongeldige Shop-instelling." });
+    }
+    const result = await queryWithConnectionRetry(
+      "UPDATE site_settings SET data = jsonb_set(data, '{shopPageEnabled}', to_jsonb($1::boolean), TRUE), updated_at = NOW() WHERE id = 1 RETURNING (data->>'shopPageEnabled')::boolean AS enabled",
+      [req.body.enabled], 4
+    );
+    if (!result.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
+    return res.json({ success: true, enabled: result.rows[0].enabled });
+  } catch (error) {
+    console.error("[ADMIN SHOP VISIBILITY] Save failed:", error);
+    return res.status(500).json({ error: "Shopinstelling opslaan is mislukt." });
+  }
+});
+
 app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
   try {
     const section = String(req.headers["x-homs-admin-section"] || "").trim().toLowerCase();
