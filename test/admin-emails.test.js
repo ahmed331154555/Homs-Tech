@@ -183,8 +183,8 @@ test("email reply strips injected header lines from inbound message IDs", async 
     if (sql.startsWith("SELECT direction")) {
       return { rows: [{
         direction: "inbound",
-        message_id: "<original@example.com>\\r\\nBcc: attacker@example.com",
-        references_header: "<root@example.com>\\r\\nCc: attacker@example.com"
+        message_id: "<original@example.com>\r\nBcc: attacker@example.com",
+        references_header: "<root@example.com>\r\nCc: attacker@example.com"
       }] };
     }
     return { rows: [] };
