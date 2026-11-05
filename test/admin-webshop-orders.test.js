@@ -4,7 +4,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { registerAdminWebshopOrderRoutes } = require("../routes/admin-webshop-orders");
 
-function createHarness(pool) {
+function createHarness(pool, deductPaidOrderInventory = async () => ({ deducted: true })) {
   const routes = new Map();
   const app = {
     get(path, ...handlers) { routes.set(`GET ${path}`, handlers.at(-1)); },
@@ -15,7 +15,7 @@ function createHarness(pool) {
     assert.ok(permission.startsWith("webshop_orders."));
     return (_req, _res, next) => next();
   };
-  registerAdminWebshopOrderRoutes(app, { pool, requirePermission });
+  registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory });
   return routes;
 }
 
@@ -68,4 +68,73 @@ test("webshop order status rejects values outside the allowed list", async () =>
   assert.equal(response.statusCode, 400);
   assert.deepEqual(response.body, { error: "Ongeldige status." });
   assert.equal(queryCalled, false);
+});
+
+
+test("admin marking a webshop order Paid deducts inventory", async () => {
+  let deductionOrderId = null;
+  let updateSql = "";
+  const routes = createHarness({
+    async query(sql) {
+      updateSql = sql;
+      return { rows: [{ id: 12, payment_status: "Paid", shipping_method: "PostNL" }] };
+    }
+  }, async (id) => {
+    deductionOrderId = id;
+    return { deducted: true };
+  });
+  const response = createResponse();
+
+  await routes.get("PUT /api/admin/webshop-orders/:id/shipping")({
+    params: { id: "12" },
+    body: { shipping_method: "PostNL", payment_status: "Paid" }
+  }, response);
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(deductionOrderId, 12);
+  assert.match(updateSql, /payment_status <> 'Paid' OR \$2 = 'Paid'/);
+  assert.deepEqual(response.body, {
+    success: true,
+    order: { id: 12, payment_status: "Paid", shipping_method: "PostNL" }
+  });
+});
+
+test("admin Paid update reports a stock deduction failure without hiding it", async () => {
+  const routes = createHarness({
+    async query() {
+      return { rows: [{ id: 12, payment_status: "Paid" }] };
+    }
+  }, async () => ({ error: true }));
+  const response = createResponse();
+
+  await routes.get("PUT /api/admin/webshop-orders/:id/shipping")({
+    params: { id: "12" },
+    body: { payment_status: "Paid" }
+  }, response);
+
+  assert.equal(response.statusCode, 409);
+  assert.match(response.body.error, /voorraad kon niet worden bijgewerkt/i);
+});
+
+test("admin cannot revert a paid webshop order to Unpaid", async () => {
+  let calls = 0;
+  const routes = createHarness({
+    async query(sql) {
+      calls += 1;
+      if (sql.startsWith("UPDATE")) return { rows: [] };
+      return { rows: [{ id: 12, payment_status: "Paid", inventory_deducted_at: "2026-11-05T12:00:00Z" }] };
+    }
+  }, async () => {
+    throw new Error("Inventory must not be deducted for a rejected downgrade.");
+  });
+  const response = createResponse();
+
+  await routes.get("PUT /api/admin/webshop-orders/:id/shipping")({
+    params: { id: "12" },
+    body: { payment_status: "Unpaid" }
+  }, response);
+
+  assert.equal(response.statusCode, 409);
+  assert.equal(calls, 2);
+  assert.match(response.body.error, /kan niet worden teruggezet/i);
 });
