@@ -135,3 +135,8 @@ test("cart pricing rejects invalid quantities and non-positive prices", () => {
   });
   assert.match(invalidPrice.error, /geen geldige verkoopprijs/);
 });
+
+test("cart pricing rejects legacy second-hand cart items", () => {
+  const result = priceProductFromCatalog({ phones: [], shopProducts: [] }, { type: "used", id: 0 });
+  assert.equal(result.error, "Tweedehands telefoons zijn niet meer beschikbaar.");
+});
