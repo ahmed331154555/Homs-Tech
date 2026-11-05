@@ -88,6 +88,28 @@ test("registers the inbound webhook with raw JSON body parsing", () => {
   assert.deepEqual(handlers[0].rawOptions, { type: "application/json", limit: "2mb" });
 });
 
+test("returns service unavailable when the webhook secret is missing", async () => {
+  const { handlers, queries, fetchCalls } = makeHarness({ env: { RESEND_WEBHOOK_SECRET: "" } });
+  const req = makeRequest({ type: "email.received", data: { email_id: "email_1" } });
+  const res = response();
+  await handlers[1](req, res);
+  assert.equal(res.statusCode, 503);
+  assert.equal(res.body, "Webhook secret not configured");
+  assert.equal(queries.length, 0);
+  assert.equal(fetchCalls.length, 0);
+});
+
+test("returns service unavailable when the Resend API key is missing", async () => {
+  const { handlers, queries, fetchCalls } = makeHarness({ env: { RESEND_API_KEY: "" } });
+  const req = makeRequest({ type: "email.received", data: { email_id: "email_1" } });
+  const res = response();
+  await handlers[1](req, res);
+  assert.equal(res.statusCode, 503);
+  assert.equal(res.body, "Resend API key not configured");
+  assert.equal(queries.length, 0);
+  assert.equal(fetchCalls.length, 0);
+});
+
 test("rejects invalid Svix signatures without calling Resend or the database", async () => {
   const { handlers, queries, fetchCalls } = makeHarness();
   const req = makeRequest({ type: "email.received", data: { email_id: "email_1" } }, { valid: false });
