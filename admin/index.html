@@ -296,7 +296,7 @@ textarea{
 .order-status-select{padding:9px 11px;border:1px solid #dbe2ea;border-radius:9px;font-weight:800;background:#fff;min-width:150px}
 .order-empty{padding:30px;text-align:center;color:#64748b;background:#f8fafc;border-radius:12px}
 #page-all-orders .unified-orders-intro{margin:0 0 16px;color:#64748b;font-size:13px}
-#page-all-orders .unified-orders-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 18px}
+#page-all-orders .unified-orders-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 18px}
 #page-all-orders .unified-orders-tab{display:flex;align-items:center;gap:11px;min-width:0;padding:14px 15px;border:1px solid #e1e8f0;border-radius:13px;background:#fff;color:#26364b;text-align:left;cursor:pointer;transition:border-color .16s,background .16s,box-shadow .16s}
 #page-all-orders .unified-orders-tab:hover{border-color:#b8ccec;background:#f8fbff}
 #page-all-orders .unified-orders-tab[aria-selected="true"]{border-color:#2563eb;background:#eff6ff;box-shadow:0 0 0 2px rgba(37,99,235,.08)}
@@ -308,7 +308,7 @@ textarea{
 #page-all-orders .unified-orders-panel{min-width:0;padding:18px;border:1px solid #e5eaf1;border-radius:15px;background:#f8fafc}
 #page-all-orders .unified-orders-panel>[id^="page-"]{margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
 #page-all-orders .unified-orders-panel>[id^="page-"]>.section-head{margin-bottom:16px}
-@media(max-width:760px){#page-all-orders .unified-orders-tabs{grid-template-columns:1fr}#page-all-orders .unified-orders-tab{padding:12px}#page-all-orders .unified-orders-panel{padding:12px}}
+@media(max-width:980px){#page-all-orders .unified-orders-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}\n@media(max-width:560px){#page-all-orders .unified-orders-tabs{grid-template-columns:1fr}#page-all-orders .unified-orders-tab{padding:12px}#page-all-orders .unified-orders-panel{padding:12px}}\n#page-all-orders .unified-order-mixed-note{margin-top:10px;padding:9px 11px;border:1px solid #bfdbfe;border-radius:9px;background:#eff6ff;color:#1e40af;font-size:12px;font-weight:700}
 
 @media(max-width:900px){.order-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:550px){.order-card-head{flex-direction:column}.order-grid{grid-template-columns:1fr}.order-status-select{width:100%}}
@@ -5849,6 +5849,10 @@ function clearWebshopOrderFilters(){
   const q=document.getElementById('webshopOrderSearch'), f=document.getElementById('webshopOrderStatusFilter'), p=document.getElementById('webshopOrderPaymentFilter');
   if(q)q.value=''; if(f)f.value=''; if(p)p.value=''; renderWebshopOrders();
 }
+function clearPhoneOrderFilters(){
+  const q=document.getElementById('phoneOrderSearch'), f=document.getElementById('phoneOrderStatusFilter'), p=document.getElementById('phoneOrderPaymentFilter');
+  if(q)q.value=''; if(f)f.value=''; if(p)p.value=''; renderPhoneOrders();
+}
 function renderOrderSummary(id,orders,kind){
   const box=document.getElementById(id); if(!box)return;
   const total=orders.length;
@@ -5983,60 +5987,60 @@ async function updateOrderStatus(id,statusValue){
 }
 
 /* ---------------- WEBSHOP ORDERS ---------------- */
-function renderWebshopOrders(){
-  const box=document.getElementById('webshopOrdersList'); if(!box)return;
-  const q=(document.getElementById('webshopOrderSearch')?.value||'').trim().toLowerCase();
-  const filter=(document.getElementById('webshopOrderStatusFilter')?.value||'');
-  const paymentFilter=(document.getElementById('webshopOrderPaymentFilter')?.value||'');
-  const filtered=adminWebshopOrdersCache.filter(o=>{
-    const payment=String(o.payment_status||'').toLowerCase();
-    const paid=['paid','betaald','completed'].includes(payment);
-    const failed=['failed','mislukt','cancelled','canceled','geannuleerd'].includes(payment);
-    const processing=['processing','pending','in behandeling','in afwachting'].includes(payment);
-    const paymentMatch=!paymentFilter||(paymentFilter==='paid'&&paid)||(paymentFilter==='unpaid'&&!paid&&!failed&&!processing)||(paymentFilter==='failed'&&failed)||(paymentFilter==='processing'&&processing);
-    return (!q||orderSearchText(o).includes(q))&&(!filter||o.status===filter)&&paymentMatch;
+function webshopOrderMatchesType(order,type){
+  const items=Array.isArray(order.items)?order.items:[];
+  if(!items.length)return false;
+  const isShopItem=item=>String(item?.type||"phone").toLowerCase()==="shop";
+  return type==="shop"?items.every(isShopItem):items.some(item=>!isShopItem(item));
+}
+function renderWebshopOrderList(type){
+  const phone=type==="phone";
+  const prefix=phone?"phoneOrder":"webshopOrder";
+  const box=document.getElementById(phone?"phoneOrdersList":"webshopOrdersList");
+  if(!box)return;
+  const q=(document.getElementById(prefix+"Search")?.value||"").trim().toLowerCase();
+  const filter=document.getElementById(prefix+"StatusFilter")?.value||"";
+  const paymentFilter=document.getElementById(prefix+"PaymentFilter")?.value||"";
+  const orders=adminWebshopOrdersCache.filter(order=>webshopOrderMatchesType(order,type));
+  const filtered=orders.filter(order=>{
+    const payment=String(order.payment_status||"").toLowerCase();
+    const paid=["paid","betaald","completed"].includes(payment);
+    const failed=["failed","mislukt","cancelled","canceled","geannuleerd"].includes(payment);
+    const processing=["processing","pending","in behandeling","in afwachting"].includes(payment);
+    const paymentMatch=!paymentFilter||(paymentFilter==="paid"&&paid)||(paymentFilter==="unpaid"&&!paid&&!failed&&!processing)||(paymentFilter==="failed"&&failed)||(paymentFilter==="processing"&&processing);
+    const itemText=(Array.isArray(order.items)?order.items:[]).map(item=>item.name||item.title||"").join(" ");
+    return (!q||(orderSearchText(order)+" "+itemText).toLowerCase().includes(q))&&(!filter||order.status===filter)&&paymentMatch;
   });
-  renderOrderSummary('webshopOrderSummary',adminWebshopOrdersCache,'webshop');
-  const status=document.getElementById('webshopOrdersStatus');
-  if(status){status.className='order-count';status.textContent=`${filtered.length} van ${adminWebshopOrdersCache.length} webshop bestelling(en) zichtbaar`;}
-  if(!filtered.length){box.innerHTML='<div class="order-empty">Geen webshop bestellingen gevonden met deze zoekopdracht.</div>';return;}
+  renderOrderSummary(phone?"phoneOrderSummary":"webshopOrderSummary",orders,type);
+  const status=document.getElementById(phone?"phoneOrdersStatus":"webshopOrdersStatus");
+  const label=phone?"telefoonbestelling(en)":"onderdelen-/accessoirebestelling(en)";
+  if(status){status.className="order-count";status.textContent=filtered.length+" van "+orders.length+" "+label+" zichtbaar";}
+  if(!filtered.length){box.innerHTML='<div class="order-empty">'+(phone?"Geen telefoonbestellingen gevonden.":"Geen onderdelen- of accessoirebestellingen gevonden.")+'</div>';return;}
   box.innerHTML=filtered.map(order=>{
     const items=Array.isArray(order.items)?order.items:[];
-    const date=order.created_at?new Date(order.created_at).toLocaleString('nl-NL'):'';
-    const total=Number(order.total||0).toFixed(2).replace('.',',');
-    const itemNames=items.map(x=>x.name||x.title||'Product').slice(0,2).join(' · ');
-    const totalUnits=items.reduce((sum,x)=>sum+Math.max(0,Number(x.qty||x.quantity||1)),0);
-    const itemExtra=items.length>2?` + ${items.length-2}`:'';
-    const statusLabel=order.status||'Nieuw';
-    const payment=order.payment_status||'Onbekend';
-    const paymentLabel=/paid|betaald|completed/i.test(payment)?'Betaald':(/pending|unpaid|open|wacht/i.test(payment)?'Openstaand':payment);
-    return `<article class="order-card webshop-order-card webshop-order-list-card">
-      <div class="webshop-list-top">
-        <div class="webshop-order-identity">
-          <span class="order-number">#${esc(order.id)}</span>
-          <div class="webshop-order-primary">
-            <button class="webshop-order-title-link" type="button" onclick="showWebshopOrderDetails(${Number(order.id)})">Webshop bestelling #${esc(order.id)}</button>
-            <div class="order-meta">${esc(date)}</div>
-          </div>
-        </div>
-        <span class="webshop-status-pill">${esc(statusLabel)}</span>
-      </div>
-      <div class="webshop-list-customer">${esc(order.name||'Klant onbekend')}</div>
-      <div class="webshop-list-summary">
-        <div><span>Producten</span><strong>${items.length}</strong><small>${esc(itemNames||'Geen productgegevens')}${itemExtra}</small></div>
-        <div><span>Totaal</span><strong>€ ${esc(total)}</strong></div>
-      </div>
-      <div class="webshop-list-bottom">
-        <span class="webshop-payment-pill ${paymentLabel==='Betaald'?'is-paid':'is-pending'}">${esc(paymentLabel)}</span>
-        <div class="webshop-list-actions">
-          <select aria-label="Bestelstatus" class="order-status-select status-select-${statusLabel.replace(/\s+/g,'-').toLowerCase()}" data-webshop-order-id="${Number(order.id)}" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">${['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(x=>`<option value="${esc(x)}" ${statusLabel===x?'selected':''}>${esc(x)}</option>`).join('')}</select>
-          <button class="btn btn-light order-detail-btn" onclick="showWebshopOrderDetails(${Number(order.id)})">◉ Details</button>
-          ${hasPermission('webshop_orders.delete')?`<button class="btn btn-red order-delete-btn" onclick="deleteWebshopOrder(${Number(order.id)})">▣ Verwijderen</button>`:''}
-        </div>
-      </div>
-    </article>`;
-  }).join('');
+    const date=order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"";
+    const total=Number(order.total||0).toFixed(2).replace(".",",");
+    const itemNames=items.map(item=>item.name||item.title||"Product").slice(0,2).join(" · ");
+    const itemExtra=items.length>2?" + "+(items.length-2):"";
+    const statusLabel=order.status||"Nieuw";
+    const payment=order.payment_status||"Onbekend";
+    const paymentLabel=/paid|betaald|completed/i.test(payment)?"Betaald":(/pending|unpaid|open|wacht/i.test(payment)?"Openstaand":payment);
+    const mixed=items.some(item=>String(item?.type||"phone").toLowerCase()==="shop")&&items.some(item=>String(item?.type||"phone").toLowerCase()!=="shop");
+    const heading=phone?"Telefoonbestelling":"Shopbestelling";
+    return '<article class="order-card webshop-order-card webshop-order-list-card">'+
+      '<div class="webshop-list-top"><div class="webshop-order-identity"><span class="order-number">#'+esc(order.id)+'</span><div class="webshop-order-primary"><button class="webshop-order-title-link" type="button" onclick="showWebshopOrderDetails('+Number(order.id)+')">'+heading+' #'+esc(order.id)+'</button><div class="order-meta">'+esc(date)+'</div></div></div><span class="webshop-status-pill">'+esc(statusLabel)+'</span></div>'+
+      '<div class="webshop-list-customer">'+esc(order.name||"Klant onbekend")+'</div>'+
+      '<div class="webshop-list-summary"><div><span>Producten</span><strong>'+items.length+'</strong><small>'+esc(itemNames||"Geen productgegevens")+itemExtra+'</small></div><div><span>Totaal</span><strong>€ '+esc(total)+'</strong></div></div>'+
+      (mixed?'<div class="unified-order-mixed-note">Combinatiebestelling: deze bestelling bevat een telefoon én shopartikelen.</div>':"")+
+      '<div class="webshop-list-bottom"><span class="webshop-payment-pill '+(paymentLabel==="Betaald"?"is-paid":"is-pending")+'">'+esc(paymentLabel)+'</span><div class="webshop-list-actions">'+
+      '<select aria-label="Bestelstatus" class="order-status-select status-select-'+statusLabel.replace(/\s+/g,"-").toLowerCase()+'" data-webshop-order-id="'+Number(order.id)+'" onchange="updateWebshopOrderStatus('+Number(order.id)+',this.value)">'+["Nieuw","In behandeling","Verzonden","Voltooid","Geannuleerd"].map(value=>'<option value="'+esc(value)+'" '+(statusLabel===value?"selected":"")+'>'+esc(value)+'</option>').join("")+'</select>'+
+      '<button class="btn btn-light order-detail-btn" type="button" onclick="showWebshopOrderDetails('+Number(order.id)+')">◉ Details</button>'+
+      (hasPermission("webshop_orders.delete")?'<button class="btn btn-red order-delete-btn" type="button" onclick="deleteWebshopOrder('+Number(order.id)+')">▣ Verwijderen</button>':"")+
+      '</div></div></article>';
+  }).join("");
 }
+function renderWebshopOrders(){renderWebshopOrderList("shop");}
+function renderPhoneOrders(){renderWebshopOrderList("phone");}
 
 async function orderSettingsRequest(method="GET",body){
   const options={method,credentials:"same-origin",headers:{"Content-Type":"application/json"}};
@@ -6116,7 +6120,7 @@ async function loadWebshopOrders(){
     const r=await fetch('/api/admin/webshop-orders',{credentials:'same-origin'}); const raw=await r.text(); let result={};
     try{result=raw?JSON.parse(raw):{};}catch{throw new Error('Server antwoord is geen JSON.');}
     if(!r.ok)throw new Error(result.error||'Webshop bestellingen konden niet worden geladen');
-    adminWebshopOrdersCache=result.orders||[]; renderWebshopOrders();
+    adminWebshopOrdersCache=result.orders||[]; renderWebshopOrders(); renderPhoneOrders();
   }catch(e){status.className='status error';status.textContent='✕ '+e.message;}
 }
 
@@ -7187,8 +7191,9 @@ async function showBuybackDetails(id){
 let unifiedOrdersActiveKey="";
 const unifiedOrderCategories=[
   {id:"page-repair-requests",key:"repair-requests",permission:"orders.view",updatePermission:"orders.update",icon:"🔧",title:"Reparatieaanvragen",description:"Reparatie- en prijsaanvragen",loader:()=>loadOrders()},
-  {id:"page-buyback-orders",key:"buyback-orders",permission:"buyback_orders.view",updatePermission:"buyback_orders.update",icon:"📱",title:"Telefoon inkopen",description:"Telefoons die klanten aan HOMS TECH verkopen",loader:()=>loadBuybackOrders()},
-  {id:"page-webshop-orders",key:"webshop-orders",permission:"webshop_orders.view",updatePermission:"webshop_orders.update",icon:"🛍️",title:"Webshop bestellingen",description:"Onderdelen, batterijen en accessoires",loader:()=>loadWebshopOrders()}
+  {id:"page-phone-orders",key:"phone-orders",permission:"webshop_orders.view",updatePermission:"webshop_orders.update",icon:"📱",title:"Telefoon verkopen",description:"Bestellingen van nieuwe telefoons",loader:()=>loadWebshopOrders()},
+  {id:"page-buyback-orders",key:"buyback-orders",permission:"buyback_orders.view",updatePermission:"buyback_orders.update",icon:"↩️",title:"Telefoon inkopen",description:"Telefoons die klanten aan HOMS TECH verkopen",loader:()=>loadBuybackOrders()},
+  {id:"page-webshop-orders",key:"webshop-orders",permission:"webshop_orders.view",updatePermission:"webshop_orders.update",icon:"🔋",title:"Onderdelen & accessoires",description:"Batterijen, onderdelen en accessoires",loader:()=>loadWebshopOrders()}
 ];
 function showUnifiedOrderSection(key,shouldLoad=true){
   const category=unifiedOrderCategories.find(item=>item.key===key&&hasPermission(item.permission));
@@ -7210,6 +7215,14 @@ function refreshUnifiedOrders(){
 }
 function setupUnifiedOrdersAdmin(){
   if(document.getElementById("page-all-orders"))return;
+  if(!document.getElementById("page-phone-orders")){
+    const phoneSection=document.createElement("section");
+    phoneSection.className="section admin-page";
+    phoneSection.id="page-phone-orders";
+    phoneSection.dataset.permission="webshop_orders.view";
+    phoneSection.innerHTML='<div class="section-head"><div><h2>📱 Telefoonbestellingen</h2><p>Bestellingen van telefoons via de HOMS TECH website.</p></div><button class="btn btn-light" type="button" onclick="loadWebshopOrders()">↻ Vernieuwen</button></div><div id="phoneOrderSummary" class="order-summary"></div><div class="orders-toolbar"><div class="orders-search"><input id="phoneOrderSearch" type="search" placeholder="Zoeken op klant, e-mail, telefoon of ordernummer..." oninput="renderPhoneOrders()"></div><select id="phoneOrderStatusFilter" class="order-filter" onchange="renderPhoneOrders()"><option value="">Alle bestelstatussen</option><option>Nieuw</option><option>In behandeling</option><option>Verzonden</option><option>Voltooid</option><option>Geannuleerd</option></select><select id="phoneOrderPaymentFilter" class="order-filter" onchange="renderPhoneOrders()"><option value="">Alle betaalstatussen</option><option value="paid">Betaald</option><option value="unpaid">Niet betaald</option><option value="processing">In behandeling</option><option value="failed">Mislukt</option></select><button class="order-filter-btn" type="button" onclick="clearPhoneOrderFilters()">↻ Filters wissen</button></div><div id="phoneOrdersStatus" class="order-count"></div><div id="phoneOrdersList" class="orders-list"></div>';
+    document.querySelector("#dashboard .container")?.appendChild(phoneSection);
+  }
   const sections=unifiedOrderCategories.map(item=>({item,section:document.getElementById(item.id)})).filter(entry=>entry.section);
   if(!sections.length)return;
   const parent=document.createElement("section");
@@ -7234,7 +7247,7 @@ function setupUnifiedOrdersAdmin(){
   });
   const container=document.querySelector("#dashboard .container");
   if(container)container.insertBefore(parent,container.querySelector(".save-bar"));
-  document.querySelectorAll('.nav-btn[data-page="orders"],.nav-btn[data-page="repair-requests"],.nav-btn[data-page="webshop-orders"],.nav-btn[data-page="buyback-orders"]').forEach(button=>button.remove());
+  document.querySelectorAll('.nav-btn[data-page="orders"],.nav-btn[data-page="repair-requests"],.nav-btn[data-page="webshop-orders"],.nav-btn[data-page="buyback-orders"],.nav-btn[data-page="phone-orders"]').forEach(button=>button.remove());
   const first=unifiedOrderCategories.find(item=>hasPermission(item.permission)&&document.getElementById(item.id));
   if(first)showUnifiedOrderSection(first.key,false);
 }
