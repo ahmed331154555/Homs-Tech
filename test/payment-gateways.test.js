@@ -37,13 +37,13 @@ test("Mollie request sends authenticated JSON requests and returns the response 
   const result = await clients.mollieRequest("/payments", {
     method: "POST",
     body: JSON.stringify({ amount: { currency: "EUR", value: "10.00" } }),
-    headers: { "X-Request-ID": "test-request" }
+    headers: { "Idempotency-Key": "homs-tech-order-123-initial" }
   });
   assert.deepEqual(result, { id: "tr_123", status: "open" });
   assert.equal(clients.calls[0].url, "https://api.mollie.com/v2/payments");
   assert.equal(clients.calls[0].options.headers.Authorization, "Bearer mollie-test-key");
   assert.equal(clients.calls[0].options.headers.Accept, "application/json");
-  assert.equal(clients.calls[0].options.headers["X-Request-ID"], "test-request");
+  assert.equal(clients.calls[0].options.headers["Idempotency-Key"], "homs-tech-order-123-initial");
   assert.equal(clients.calls[0].options.method, "POST");
 });
 
