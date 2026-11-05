@@ -45,7 +45,7 @@ test("validateShopCatalogImages rejects more than four photos and unsupported fo
 test("validateShopCatalogImages rejects oversized and aggregate image payloads", () => {
   assert.match(validateShopCatalogImages([{ images: ["data:image/png;base64," + "a".repeat(1_800_001)] }]), /too large/i);
   const tooManyBytes = "data:image/png;base64," + "a".repeat(1_700_000);
-  assert.match(validateShopCatalogImages(Array.from({ length: 6 }, () => ({ images: [tooManyBytes] }))), /total Shop photo data/i);
+  assert.match(validateShopCatalogImages(Array.from({ length: 6 }, () => ({ images: Array(4).fill(tooManyBytes) }))), /total Shop photo data/i);
 });
 
 const { findShopProductIndex, resolveShopVariant, priceShopVariant, deductShopVariantInventory } = require("../utils/shop-catalog");
