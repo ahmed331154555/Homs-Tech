@@ -45,8 +45,7 @@ function createAdminAuth({ jwt, getAdminUsername, getJwtSecret, pool, logError =
     if (!user) return null;
     if (
       user.role === "superadmin" ||
-      user.username === String(getAdminUsername() || "") ||
-      user.permissions?.includes("*")
+      user.username === String(getAdminUsername() || "")
     ) return user;
 
     try {
@@ -98,10 +97,14 @@ function createAdminAuth({ jwt, getAdminUsername, getJwtSecret, pool, logError =
   }
 
   function requirePermission(permission) {
-    return (req, res, next) => {
+    return async (req, res, next) => {
       try {
-        const user = getAdminFromRequest(req);
+        let user = getAdminFromRequest(req);
         if (!user) return res.status(401).json({ error: "Not authenticated" });
+        user = await refreshAdminUserFromDb(user);
+        if (!user) {
+          return res.status(401).json({ error: "Admin account is inactive or no longer exists." });
+        }
         if (
           user.role === "superadmin" ||
           user.username === String(getAdminUsername() || "") ||
