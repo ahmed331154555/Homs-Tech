@@ -1816,14 +1816,20 @@ textarea{
   <section class="section admin-page" id="page-shop" data-permission="site.save">
     <div class="section-head"><div><h2>🛍️ Shop producten</h2><p>Beheer accessoires en onderdelen apart van de telefooncatalogus. Per product maximaal 4 foto's en optioneel een uitlegvideo.</p></div><div class="actions"><a class="btn btn-light" href="../shop.html" target="_blank" rel="noopener">👁 Shop bekijken</a><button class="btn btn-green" type="button" onclick="addShopProduct()">＋ Product toevoegen</button></div></div>
     <div class="card" style="margin:0 0 16px;padding:16px;border:1px solid #dbe3ec;border-radius:12px;background:#fff">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap">
         <div style="min-width:220px;flex:1">
-          <strong style="display:block;font-size:15px">🌐 Zichtbaarheid van de Shop-pagina</strong>
+          <strong style="display:block;font-size:15px">🌐 Shop-pagina aan / uit</strong>
           <span id="shopVisibilityStatus" class="small" style="display:block;margin-top:5px">Status laden...</span>
         </div>
-        <button id="shopVisibilityButton" class="btn btn-light" type="button" onclick="toggleShopVisibility()" disabled>Instelling laden...</button>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <button id="shopVisibilitySwitch" type="button" role="switch" aria-checked="true" aria-label="Shop-pagina aan of uit" onclick="toggleShopVisibilityDraft()" disabled style="width:66px;height:36px;padding:4px;border:0;border-radius:99px;background:#94a3b8;cursor:pointer;display:inline-flex;align-items:center;justify-content:flex-start;transition:background .18s ease">
+            <span id="shopVisibilityKnob" aria-hidden="true" style="display:block;width:28px;height:28px;border-radius:50%;background:#fff;box-shadow:0 1px 4px #0003;transition:transform .18s ease"></span>
+          </button>
+          <strong id="shopVisibilityLabel" style="min-width:34px;font-size:13px;color:#64748b">—</strong>
+          <button id="shopVisibilitySave" class="btn btn-green" type="button" onclick="saveShopVisibility()" disabled>Wijziging opslaan</button>
+        </div>
       </div>
-      <p class="small" style="margin:10px 0 0">Verberg de Shop tijdelijk zolang deze nog niet klaar is. Producten en voorraad blijven bewaard. Je kunt de pagina later met één klik opnieuw zichtbaar maken.</p>
+      <p class="small" style="margin:12px 0 0">Zet de schakelaar op AAN of UIT en druk daarna op Wijziging opslaan. Producten, foto's, prijzen en voorraad blijven altijd bewaard.</p>
     </div>
     <div class="small" style="padding:12px;background:#f4f8ff;border:1px solid #dce9ff;border-radius:10px;margin-bottom:16px">Vul de productgegevens in en druk daarna bovenaan op <strong>Wijzigingen opslaan</strong>. Foto's: maximaal 1,2 MB per foto. Voor een video kun je de YouTube-link invullen en de video-optie aanzetten.</div>
     <div id="shopProductsAdmin"></div>
@@ -6368,57 +6374,72 @@ function validateShopCatalogIdentifiers(products){
 }
 
 let shopPageEnabled = true;
+let shopPageEnabledDraft = true;
 async function loadShopVisibility(){
  const status=document.getElementById("shopVisibilityStatus");
- const button=document.getElementById("shopVisibilityButton");
- if(!status||!button)return;
- button.disabled=true;button.textContent="Status laden...";
+ if(!status)return;
+ const toggle=document.getElementById("shopVisibilitySwitch");
+ const save=document.getElementById("shopVisibilitySave");
+ if(toggle)toggle.disabled=true;
+ if(save)save.disabled=true;
+ status.textContent="Status laden...";
  try{
   const response=await fetch("/api/admin/shop-visibility",{credentials:"same-origin",cache:"no-store"});
   const result=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(result.error||"Shopstatus laden is mislukt.");
   shopPageEnabled=result.enabled!==false;
+  shopPageEnabledDraft=shopPageEnabled;
   renderShopVisibility();
  }catch(error){
   status.textContent=error.message;
-  button.textContent="Opnieuw proberen";
-  button.disabled=false;
-  button.onclick=loadShopVisibility;
+  status.style.color="#b91c1c";
  }
 }
 function renderShopVisibility(){
  const status=document.getElementById("shopVisibilityStatus");
- const button=document.getElementById("shopVisibilityButton");
- if(!status||!button)return;
- status.textContent=shopPageEnabled
-  ?"De Shop-pagina is zichtbaar voor bezoekers."
-  :"De Shop-pagina is verborgen. Bezoekers worden naar de homepage gestuurd.";
- status.style.color=shopPageEnabled?"#15803d":"#b45309";
- button.textContent=shopPageEnabled?"Shop tijdelijk verbergen":"Shop weer zichtbaar maken";
- button.className=shopPageEnabled?"btn btn-light":"btn btn-green";
- button.disabled=false;
- button.onclick=toggleShopVisibility;
+ const toggle=document.getElementById("shopVisibilitySwitch");
+ const knob=document.getElementById("shopVisibilityKnob");
+ const label=document.getElementById("shopVisibilityLabel");
+ const save=document.getElementById("shopVisibilitySave");
+ if(!status||!toggle||!knob||!label||!save)return;
+ const enabled=shopPageEnabledDraft;
+ toggle.setAttribute("aria-checked",String(enabled));
+ toggle.style.background=enabled?"#16a34a":"#94a3b8";
+ toggle.style.justifyContent=enabled?"flex-start":"flex-end";
+ knob.style.transform="translateX(0)";
+ label.textContent=enabled?"AAN":"UIT";
+ label.style.color=enabled?"#15803d":"#64748b";
+ status.textContent=enabled
+  ?"De Shop-pagina staat AAN en is zichtbaar voor bezoekers."
+  :"De Shop-pagina staat UIT en wordt verborgen voor bezoekers.";
+ status.style.color=enabled?"#15803d":"#b45309";
+ save.disabled=enabled===shopPageEnabled;
+ save.textContent=enabled===shopPageEnabled?"Geen wijzigingen":"Wijziging opslaan";
+ toggle.disabled=false;
 }
-async function toggleShopVisibility(){
- const button=document.getElementById("shopVisibilityButton");
- const nextValue=!shopPageEnabled;
- if(!confirm(nextValue
-  ?"De Shop-pagina weer zichtbaar maken voor bezoekers?"
-  :"De Shop-pagina tijdelijk verbergen? Producten en voorraad blijven bewaard."))return;
- button.disabled=true;button.textContent="Opslaan...";
+function toggleShopVisibilityDraft(){
+ shopPageEnabledDraft=!shopPageEnabledDraft;
+ renderShopVisibility();
+}
+async function saveShopVisibility(){
+ const save=document.getElementById("shopVisibilitySave");
+ if(!save||shopPageEnabledDraft===shopPageEnabled)return;
+ save.disabled=true;save.textContent="Opslaan...";
  try{
   const response=await fetch("/api/admin/shop-visibility",{
    method:"PUT",credentials:"same-origin",
    headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({enabled:nextValue})
+   body:JSON.stringify({enabled:shopPageEnabledDraft})
   });
   const result=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(result.error||"Shopinstelling opslaan is mislukt.");
   shopPageEnabled=result.enabled!==false;
+  shopPageEnabledDraft=shopPageEnabled;
   renderShopVisibility();
-  if(typeof setStatus==="function")setStatus(shopPageEnabled?"✓ Shop-pagina is weer zichtbaar":"✓ Shop-pagina is tijdelijk verborgen","success");
+  if(typeof setStatus==="function")setStatus(shopPageEnabled?"✓ Shop-pagina staat aan en is zichtbaar":"✓ Shop-pagina staat uit en is verborgen","success");
  }catch(error){
-  button.disabled=false;renderShopVisibility();
+  renderShopVisibility();
+  save.disabled=false;save.textContent="Opnieuw proberen";
   if(typeof setStatus==="function")setStatus("✕ "+error.message,"error");
   else alert(error.message);
  }
