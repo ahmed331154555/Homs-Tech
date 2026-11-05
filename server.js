@@ -624,7 +624,8 @@ app.post("/api/admin/users",requirePermission("admins.manage"),async(req,res)=>{
   try{
     const username=String(req.body?.username||"").trim();
     const password=String(req.body?.password||"");
-    const permissionResult=normalizeAdminPermissions(req.body?.permissions,[...Object.keys(ADMIN_PERMISSION_NAMES)]);
+    const grantablePermissions=req.admin?.permissions?.includes("*")?Object.keys(ADMIN_PERMISSION_NAMES):(req.admin?.permissions||[]);
+    const permissionResult=normalizeAdminPermissions(req.body?.permissions,grantablePermissions);
     if(permissionResult.error)return res.status(400).json({error:permissionResult.error});
     const permissions=permissionResult.permissions;
     if(!username||!password) return res.status(400).json({error:"Gebruikersnaam en wachtwoord zijn verplicht."});
@@ -645,7 +646,8 @@ app.put("/api/admin/users/:id",requirePermission("admins.manage"),async(req,res)
   try{
     const id=Number(req.params.id), username=String(req.body?.username||"").trim();
     const password=String(req.body?.password||"");
-    const permissionResult=normalizeAdminPermissions(req.body?.permissions,[...Object.keys(ADMIN_PERMISSION_NAMES)]);
+    const grantablePermissions=req.admin?.permissions?.includes("*")?Object.keys(ADMIN_PERMISSION_NAMES):(req.admin?.permissions||[]);
+    const permissionResult=normalizeAdminPermissions(req.body?.permissions,grantablePermissions);
     if(permissionResult.error)return res.status(400).json({error:permissionResult.error});
     const permissions=permissionResult.permissions;
     const active=req.body?.active!==false;
