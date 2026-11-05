@@ -29,6 +29,7 @@ const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-lim
 const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-inventory");
 const { priceProductFromCatalog } = require("./utils/cart-pricing");
 const { validateCartInventoryQuantities } = require("./utils/cart-inventory-validation");
+const { sanitizeProductCatalogData } = require("./utils/product-catalog-sanitizer");
 const { createAdminAuth } = require("./utils/admin-auth");
 const { createCustomerEmails } = require("./utils/customer-emails");
 const { ensureBuybackOrdersTable } = require("./utils/buyback-schema");
@@ -292,15 +293,15 @@ app.get("/api/site", async (req, res) => {
       );
       if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
       const row=result.rows[0];
-      return res.json({
-        phones:Array.isArray(row.phones)?row.phones:[],
-        usedPhones:Array.isArray(row.used_phones)?row.used_phones:[],
-        phone:row.phone||"",
-        whatsapp:row.whatsapp||"",
-        businessName:row.business_name||row.site_name||"HOMS TECH",
-        siteName:row.site_name||"HOMS TECH",
-        tagline:row.tagline||"Telefoonreparatie aan huis"
-      });
+      return res.json(sanitizeProductCatalogData({
+        phones: row.phones,
+        usedPhones: row.used_phones,
+        phone: row.phone,
+        whatsapp: row.whatsapp,
+        businessName: row.business_name,
+        siteName: row.site_name,
+        tagline: row.tagline
+      }));
     }
     if(view==="cart"){
       const result=await queryWithConnectionRetry("SELECT data->'shopProducts' AS shop_products FROM site_settings WHERE id=1",[],4);
