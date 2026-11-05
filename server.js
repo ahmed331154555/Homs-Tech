@@ -36,21 +36,102 @@ app.post("/api/webhooks/resend/inbound", express.raw({ type: "application/json",
     }
     // Resend's REST endpoint returns the received email object directly (not wrapped in { data }).
     // Accept both shapes to remain compatible with SDK-style wrappers.
-    const mail=payload?.data&&typeof payload.data==="object"?payload.data:payload;
-    if(!mail?.id){
-      console.error("Resend receiving API returned an unexpected payload:",JSON.stringify(payload).slice(0,1200));
+    const mail =
+      payload?.data && typeof payload.data === "object"
+        ? payload.data
+        : payload;
+
+    if (!mail?.id) {
+      console.error(
+        "Resend receiving API returned an unexpected payload:",
+        JSON.stringify(payload).slice(0, 1200)
+      );
       return res.status(502).send("Could not retrieve received email");
     }
-    const headerValue=(...names)=>{const headers=mail.headers&&typeof mail.headers==="object"?mail.headers:{};for(const name of names){const key=Object.keys(headers).find(k=>k.toLowerCase()===name.toLowerCase());if(key){const value=headers[key];return (Array.isArray(value)?value.join(" "):String(value||"")).trim();}}return "";};
+
+    const headerValue = (...names) => {
+      const headers =
+        mail.headers && typeof mail.headers === "object" ? mail.headers : {};
+
+      for (const name of names) {
+        const key = Object.keys(headers).find(
+          (headerName) => headerName.toLowerCase() === name.toLowerCase()
+        );
+        if (!key) continue;
+
+        const value = headers[key];
+        return (Array.isArray(value) ? value.join(" ") : String(value || "")).trim();
+      }
+
+      return "";
+    };
+
     // Resend exposes the RFC Message-ID as a top-level message_id field.
     // Keep header fallback for compatibility with alternate payload shapes.
-    const originalMessageId=String(mail.message_id||headerValue("message-id")||"").trim().slice(0,998);
-    const originalReferences=String(mail.references||headerValue("references","in-reply-to")||"").trim().slice(0,4000);
-    await pool.query("INSERT INTO admin_emails(resend_email_id,message_id,references_header,direction,from_address,to_addresses,subject,text_body,html_body,attachments,is_read,created_at) VALUES($1,$2,$3,'inbound',$4,$5::jsonb,$6,$7,$8,$9::jsonb,FALSE,COALESCE($10::timestamptz,NOW())) ON CONFLICT(resend_email_id) DO NOTHING",
-      [String(mail.id||event.data.email_id),originalMessageId,originalReferences,String(mail.from||event.data.from||"").slice(0,320),JSON.stringify(Array.isArray(mail.to)?mail.to:Array.isArray(event.data.to)?event.data.to:[]),String(mail.subject||event.data.subject||"(geen onderwerp)").slice(0,500),String(mail.text||"").slice(0,100000),String(mail.html||"").slice(0,200000),JSON.stringify(Array.isArray(mail.attachments)?mail.attachments.map(x=>({filename:String(x.filename||x.name||"Bijlage").slice(0,240),content_type:String(x.content_type||x.type||"").slice(0,120),size:Number(x.size)||0,id:x.id||null})):[]),mail.created_at||event.data.created_at||null]);
+    const originalMessageId = String(
+      mail.message_id || headerValue("message-id") || ""
+    ).trim().slice(0, 998);
+    const originalReferences = String(
+      mail.references || headerValue("references", "in-reply-to") || ""
+    ).trim().slice(0, 4000);
+
+    await pool.query(
+      "INSERT INTO admin_emails(resend_email_id,message_id,references_header,direction,from_address,to_addresses,subject,text_body,html_body,attachments,is_read,created_at) VALUES($1,$2,$3,'inbound',$4,$5::jsonb,$6,$7,$8,$9::jsonb,FALSE,COALESCE($10::timestamptz,NOW())) ON CONFLICT(resend_email_id) DO NOTHING",
+      [
+        String(mail.id || event.data.email_id),
+        originalMessageId,
+        originalReferences,
+        String(mail.from || event.data.from || "").slice(0, 320),
+        JSON.stringify(
+          Array.isArray(mail.to)
+            ? mail.to
+            : Array.isArray(event.data.to)
+              ? event.data.to
+              : []
+        ),
+        String(mail.subject || event.data.subject || "(geen onderwerp)").slice(0, 500),
+        String(mail.text || "").slice(0, 100000),
+        String(mail.html || "").slice(0, 200000),
+        JSON.stringify(
+          Array.isArray(mail.attachments)
+            ? mail.attachments.map((attachment) => ({
+                filename: String(
+                  attachment.filename || attachment.name || "Bijlage"
+                ).slice(0, 240),
+                content_type: String(
+                  attachment.content_type || attachment.type || ""
+                ).slice(0, 120),
+                size: Number(attachment.size) || 0,
+                id: attachment.id || null
+              }))
+            : []
+        ),
+        mail.created_at || event.data.created_at || null
+      ]
+    );
+
     // Send a short notification to the owner's Gmail; the full message remains in the admin inbox.
-    const from=process.env.RESEND_FROM_EMAIL;
-    if(from){fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({from,to:["Appelavcd116@gmail.com"],subject:"Nieuwe HOMS TECH e-mail: "+String(mail.subject||"").slice(0,120),text:"Nieuwe e-mail ontvangen van "+String(mail.from||"onbekend")+". Open de HOMS TECH admin inbox om het bericht te lezen."})}).catch(err=>console.error("Inbound notification failed:",err.message));}
+    const from = process.env.RESEND_FROM_EMAIL;
+    if (from) {
+      fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + apiKey,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          from,
+          to: ["Appelavcd116@gmail.com"],
+          subject: "Nieuwe HOMS TECH e-mail: " + String(mail.subject || "").slice(0, 120),
+          text:
+            "Nieuwe e-mail ontvangen van " +
+            String(mail.from || "onbekend") +
+            ". Open de HOMS TECH admin inbox om het bericht te lezen."
+        })
+      }).catch((error) => {
+        console.error("Inbound notification failed:", error.message);
+      });
+    }
     return res.status(200).send("OK");
   }catch(e){console.error("Resend inbound webhook:",e);return res.status(500).send("Webhook processing failed");}
 });
