@@ -2264,7 +2264,7 @@ app.post("/api/paypal/create-order", async (req, res) => {
       `UPDATE webshop_orders
        SET paypal_order_id = $1, payment_method = 'PayPal', payment_status = 'Pending'
        WHERE id = $2 AND checkout_token = $3`,
-      [String(data.id), localOrderId, checkoutToken]
+      [String(data.id), localOrderId, checkoutTokenHash]
     );
 
     res.json({ success: true, id: data.id, orderId: localOrderId });
