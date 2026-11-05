@@ -32,6 +32,49 @@ function resolveShopVariant(product, item) {
   return { variant, variantIndex };
 }
 
+function priceShopVariant(product, item, id, moneyNumber) {
+  const resolved = resolveShopVariant(product, item);
+  if (resolved.error) return { error: resolved.error };
+
+  const variant = resolved.variant;
+  const price = moneyNumber(variant?.price ?? product.price);
+  const qty = Number(item?.qty ?? 1);
+  if (!Number.isFinite(price) || price <= 0) {
+    return { error: "Dit Shop-product heeft geen geldige prijs voor de gekozen kwaliteit." };
+  }
+  if (!Number.isInteger(qty) || qty < 1 || qty > 99) {
+    return { error: "Kies een geldige hoeveelheid (1–99)." };
+  }
+
+  const stockText = String(variant?.stock ?? product.stock ?? "").trim();
+  const stockMatch = variant
+    ? stockText.match(/^(\\d+)$/)
+    : stockText.match(/^(\\d+)/);
+  if (stockMatch && Number(stockMatch[1]) < qty) {
+    return { error: variant
+      ? "Er is onvoldoende voorraad voor deze productkwaliteit."
+      : "Er is onvoldoende voorraad voor dit product." };
+  }
+
+  return {
+    item: {
+      name: String(product.name || "Shop-product"),
+      brand: "HOMS TECH Shop",
+      type: "shop",
+      id,
+      variantId: variant ? String(variant.id || variant.sku || variant.quality) : "",
+      sku: String(variant?.sku || ""),
+      options: {
+        category: String(product.category || "Accessoires"),
+        quality: String(variant?.quality || "Standaard"),
+        sku: String(variant?.sku || "")
+      },
+      qty,
+      unitPrice: Math.round(price * 100) / 100
+    }
+  };
+}
+
 function deductShopVariantInventory(product, item) {
   const resolved = resolveShopVariant(product, item);
   if (resolved.error) throw new Error(resolved.error);
