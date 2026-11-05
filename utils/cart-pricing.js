@@ -20,6 +20,8 @@ function priceProductFromCatalog(data, item) {
     return { error: "Een product in uw winkelwagen is niet meer beschikbaar." };
   }
   if (type === "shop") return priceShopVariant(product, item, product.id ?? id, moneyNumber);
+  const qty = Number(item?.qty ?? 1);
+  if (!Number.isInteger(qty) || qty < 1 || qty > 99) return { error: "Kies een geldige hoeveelheid (1–99)." };
   const options = item.options && typeof item.options === "object" && !Array.isArray(item.options) ? item.options : {};
   const getList = key => {
     const map = { condition: "conditionOptions", storage: "storageOptions", color: "colorOptions", battery: "batteryOptions", vat: "vatOptions", tradeIn: "tradeInOptions" };
@@ -54,7 +56,7 @@ function priceProductFromCatalog(data, item) {
       const option=(Array.isArray(group?.options)?group.options:[]).find(x=>x&&String(x.label)===requested&&x.active!==false&&x.available!==false);
       if(!option){customValidationError="Een extra of variant is niet meer beschikbaar. Controleer uw winkelwagen.";return;}
       const stock=option.stock;
-      if(stock!==undefined&&stock!==null&&stock!==""&&(!Number.isFinite(Number(stock))||Number(stock)<1)){
+      if(stock!==undefined&&stock!==null&&stock!==""&&(!Number.isFinite(Number(stock))||Number(stock)<qty)){
         customValidationError="Deze optie is momenteel niet op voorraad.";return;
       }
       verifiedCustom[key]=requested;
@@ -75,9 +77,7 @@ function priceProductFromCatalog(data, item) {
     let exact=moneyNumber(row.price);
     for(const key of ["battery","vat","tradeIn"]) exact+=serverOptionDelta(chosen[key],key);
     exact+=customTotal;
-    const qty=Number(item?.qty ?? 1);
-    if(!Number.isInteger(qty)||qty<1||qty>99) return {error:"Kies een geldige hoeveelheid (1–99)."};
-    if(row.stock!==undefined&&row.stock!==null&&row.stock!==""&&Number.isFinite(Number(row.stock))&&qty>Number(row.stock)) return {error:"Er is onvoldoende voorraad voor deze uitvoering."};
+    if(row.stock!==undefined&&row.stock!==null&&row.stock!==""&&(!Number.isFinite(Number(row.stock))||qty>Number(row.stock))) return {error:"Er is onvoldoende voorraad voor deze uitvoering."};
     if(row.available===false||row.active===false) return {error:"Deze uitvoering is niet beschikbaar."};
     return {item:{name:String(product.name||"Smartphone"),brand:String(product.brand||""),type,id,options:Object.fromEntries(Object.entries(options).filter(([key,value])=>["storage","color","condition","battery","vat","tradeIn","custom"].includes(key)&&String(value??"").trim()!=="").map(([key,value])=>[key,key==="custom"?verifiedCustom:value])),qty,unitPrice:Math.round(Math.max(0,exact)*100)/100}};
   }
@@ -91,8 +91,11 @@ function priceProductFromCatalog(data, item) {
   total += customTotal;
   total = Math.max(0, total);
   if (!Number.isFinite(total) || total <= 0) return { error: "Dit product heeft momenteel geen geldige verkoopprijs." };
-  const qty = Number(item?.qty ?? 1);
-  if (!Number.isInteger(qty) || qty < 1 || qty > 99) return { error: "Kies een geldige hoeveelheid (1–99)." };
+  const stockKey = ["stock", "quantity", "stockQuantity"].find(key => product[key] !== undefined && product[key] !== null && product[key] !== "");
+  if (stockKey) {
+    const stock = Number(product[stockKey]);
+    if (!Number.isFinite(stock) || stock < qty) return { error: "Er is onvoldoende voorraad voor dit product." };
+  }
   return {
     item: {
       name: String(product.name || "Smartphone"),
