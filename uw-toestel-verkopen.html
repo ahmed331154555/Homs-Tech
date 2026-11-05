@@ -346,16 +346,18 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 .hero{padding:18px 0 18px!important;background:#f7faff!important}
 .sell-page-intro{padding:0 12px}
 .sell-page-intro .crumb{color:#52647a;font-size:13px;margin:0 0 12px}
-.sell-intro-row{display:grid;grid-template-columns:1fr minmax(440px,.95fr);gap:24px;align-items:center}
-.sell-intro-row h1{margin:0 0 8px;color:#071d2d;font-size:clamp(30px,3.4vw,42px);line-height:1.1;letter-spacing:-1.2px}
+.sell-intro-row{display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center}
+.sell-intro-copy{width:100%;display:flex;flex-direction:column;align-items:center;text-align:center}
+.refurbished-buy-visual{width:min(100%,250px);height:132px;margin:0 auto 8px;display:grid;place-items:center}
+.refurbished-buy-visual svg{display:block;width:100%;height:100%;overflow:visible}
+.sell-intro-row h1{margin:0 0 9px;color:#071d2d;font-size:clamp(30px,3.4vw,42px);line-height:1.1;letter-spacing:-1.2px;text-align:center}
 .sell-intro-row h1 span{display:inline!important;color:#1265e8!important}
-.sell-intro-row p{color:#34465b;font-size:16px;max-width:700px}
-.sell-progress{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sell-intro-row p{margin:0 auto;color:#34465b;font-size:16px;max-width:700px;text-align:center}
+.sell-progress{display:flex;align-items:center;justify-content:space-between;gap:8px;width:min(100%,560px);margin:4px auto 0}
 .sell-progress-step{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:68px;color:#30445d;font-size:12px;font-weight:700;white-space:nowrap}
 .sell-progress-step b{width:38px;height:38px;border:1px solid #cbd7e5;border-radius:50%;display:grid;place-items:center;background:#fff;font-size:17px}
 .sell-progress-step.active b{background:#075fe8;color:#fff;border-color:#075fe8}.sell-progress-step.done b{background:#e8f2ff;color:#075fe8;border-color:#b7d3ff}
 .sell-progress>i{height:2px;background:#d6e0ed;flex:1;margin-top:-22px}
-.iphone-only-label{border-radius:999px;background:#edf4ff;color:#075fe8;padding:9px 14px;font-size:12px;font-weight:850;white-space:nowrap}
 #step1{margin-top:2px}
 #step1 .panel-head{align-items:center}
 #step1 .panel-head h2{font-size:21px}
@@ -411,7 +413,8 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 .trust-panel li:before{content:"✓";color:#0873ed;font-weight:900;margin-right:9px}
 .trust-panel a{display:block;padding:12px;border-radius:10px;background:#edf4ff;color:#075fe8;font-size:12px;font-weight:800;text-align:center}
 @media(max-width:900px){
- .sell-intro-row{grid-template-columns:1fr;gap:16px}
+ .sell-intro-row{gap:14px}
+ .refurbished-buy-visual{width:220px;height:116px}
  .sell-progress{max-width:600px}
  .buyback-layout{grid-template-columns:1fr}
  .buyback-side{grid-template-columns:1fr 1fr}
@@ -421,6 +424,7 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
  .sell-page-intro{padding:0 2px}
  .sell-intro-row h1{font-size:31px}
  .sell-intro-row p{font-size:13px}
+ .refurbished-buy-visual{width:185px;height:100px;margin-bottom:4px}
  .sell-progress-step{font-size:9px;min-width:54px}
  .sell-progress-step b{width:31px;height:31px;font-size:14px}
  .sell-progress>i{margin-top:-18px}
@@ -1771,7 +1775,35 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
     <div class="sell-page-intro">
       <div class="crumb">Home <b>›</b> Verkopen</div>
       <div class="sell-intro-row">
-        <div>
+        <div class="sell-intro-copy">
+          <div class="refurbished-buy-visual" role="img" aria-label="Refurbished smartphone kopen bij HOMS TECH">
+            <svg viewBox="0 0 420 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <defs>
+                <linearGradient id="htRefurbPhone" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#62b5ff"/><stop offset="1" stop-color="#075fe8"/>
+                </linearGradient>
+                <linearGradient id="htRefurbBag" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#163b5d"/><stop offset="1" stop-color="#071d2d"/>
+                </linearGradient>
+              </defs>
+              <circle cx="210" cy="110" r="94" fill="#eaf3ff"/>
+              <circle cx="210" cy="110" r="77" fill="none" stroke="#b8d8ff" stroke-width="2" stroke-dasharray="5 8"/>
+              <path d="M106 82a112 112 0 0 1 178-30" fill="none" stroke="#1684ff" stroke-width="8" stroke-linecap="round"/>
+              <path d="m273 37 16 15-22 5" fill="none" stroke="#1684ff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M314 145a112 112 0 0 1-178 30" fill="none" stroke="#20a66a" stroke-width="8" stroke-linecap="round"/>
+              <path d="m147 190-16-15 22-5" fill="none" stroke="#20a66a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="154" y="28" width="90" height="164" rx="19" fill="#102b45" transform="rotate(-8 199 110)"/>
+              <rect x="161" y="37" width="76" height="146" rx="13" fill="url(#htRefurbPhone)" transform="rotate(-8 199 110)"/>
+              <path d="M176 68c16-17 37-18 52-5M172 139c16 16 40 20 57 8" fill="none" stroke="#d9efff" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+              <circle cx="198" cy="111" r="23" fill="#fff" opacity=".18"/>
+              <rect x="264" y="89" width="91" height="91" rx="15" fill="url(#htRefurbBag)" transform="rotate(7 309 134)"/>
+              <path d="M285 98v-9a25 25 0 0 1 50 0v9" fill="none" stroke="#163b5d" stroke-width="9" stroke-linecap="round"/>
+              <path d="M285 98v-9a25 25 0 0 1 50 0v9" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+              <path d="m294 137 10 10 22-25" fill="none" stroke="#55d69a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="112" cy="153" r="18" fill="#fff" stroke="#c9e3ff" stroke-width="2"/>
+              <path d="m104 153 6 6 11-13" fill="none" stroke="#1684ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
           <h1>Uw <span>iPhone</span> verkopen</h1>
           <p>Verkoop uw iPhone snel, veilig en voor een eerlijke prijs bij HOMS TECH.</p>
         </div>
@@ -1791,7 +1823,6 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
   <div id="modelChooser" class="panel forzastyle-panel">
   <div class="panel-head forzastyle-head">
     <div><h2 id="chooseTitle">Welk iPhone-model wilt u verkopen?</h2><p>Kies uw iPhone-model om de geschatte verkoopwaarde te bekijken.</p></div>
-    <span class="iphone-only-label">Alleen iPhone</span>
   </div>
   <div class="forza-searchrow">
     <div class="searchbox"><span>⌕</span><input id="deviceSearch" class="field" placeholder="Zoek jouw iPhone-model..."></div>
@@ -2888,16 +2919,15 @@ loadBuyback();
   box-shadow:0 10px 30px rgba(20,44,70,.055)
 }
 #modelChooser .forzastyle-head{
-  display:flex;align-items:center;gap:14px;text-align:left;
-  margin:0 0 18px
+  display:block;text-align:center;margin:0 0 20px
 }
+#modelChooser .forzastyle-head>div{width:100%}
 #modelChooser .forzastyle-head:before{display:none}
 #modelChooser .forzastyle-head h2{
-  margin:0 0 5px;color:#102438;font-size:clamp(20px,2vw,27px);
-  font-weight:850;line-height:1.2;letter-spacing:-.45px
+  margin:0 0 7px;color:#102438;font-size:clamp(20px,2vw,27px);
+  font-weight:850;line-height:1.2;letter-spacing:-.45px;text-align:center
 }
-#modelChooser .forzastyle-head p{margin:0;color:#758493;font-size:12px;line-height:1.5}
-#modelChooser .iphone-only-label{display:inline-flex!important;margin-left:auto}
+#modelChooser .forzastyle-head p{margin:0 auto;color:#758493;font-size:12px;line-height:1.5;text-align:center}
 #modelChooser .forza-searchrow{max-width:none;margin:0 0 20px}
 #modelChooser .searchbox{
   height:50px;border:1px solid #d5e0ea;border-radius:11px;
@@ -2972,7 +3002,6 @@ loadBuyback();
   #modelChooser .forzastyle-head{gap:8px;margin-bottom:14px}
   #modelChooser .forzastyle-head h2{font-size:19px}
   #modelChooser .forzastyle-head p{font-size:11px}
-  #modelChooser .iphone-only-label{font-size:10px;padding:6px 9px}
   #modelChooser .family-grid,#modelChooser .device-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
   #modelChooser .family-card,#modelChooser .device{height:145px;border-radius:11px}
   #modelChooser .family-card .device-img,#modelChooser .device-img{height:90px;min-height:90px}
