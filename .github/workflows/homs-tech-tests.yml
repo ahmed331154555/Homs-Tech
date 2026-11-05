@@ -24,6 +24,9 @@ jobs:
         with:
           node-version: 24
 
+      - name: Check JavaScript syntax
+        run: find server.js config routes utils test -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+
       - name: Install dependencies
         run: npm install
 
