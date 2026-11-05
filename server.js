@@ -351,7 +351,10 @@ app.get("/api/site", async (req, res) => {
   } catch (error) {
     console.error(error);
 
-    res.stregisterContactRoutes(app, { pool, escapeHtml, cryptoImpl: crypto, getEnv: () => process.env, fetchImpl: fetch }); niet worden verstuurd. Probeer het later opnieuw."});
+  }
+});
+
+registerContactRoutes(app, { pool, escapeHtml, cryptoImpl: crypto, getEnv: () => process.env, fetchImpl: fetch });
   }
 });
 
