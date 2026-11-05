@@ -129,3 +129,25 @@ test("findShopProductIndex keeps legacy numeric cart indexes working", () => {
   assert.equal(findShopProductIndex(products, "9"), -1);
   assert.equal(findShopProductIndex(products, "missing"), -1);
 });
+
+
+test("stable Shop cart identity still prices and deducts the same product after reordering", () => {
+  const products = [
+    { id: "shop-added-later", name: "New product", variants: [
+      { id: "new-quality", quality: "LCD", price: "9", stock: "10", active: true }
+    ] },
+    { id: "shop-original", name: "Original product", variants: [
+      { id: "original-quality", quality: "OLED", price: "35", stock: "4", active: true }
+    ] }
+  ];
+  const cartItem = { id: "shop-original", variantId: "original-quality", qty: 2, unitPrice: 0.01 };
+  const index = findShopProductIndex(products, cartItem.id);
+  const product = products[index];
+  const priced = priceShopVariant(product, cartItem, product.id, Number);
+  assert.equal(priced.item.id, "shop-original");
+  assert.equal(priced.item.unitPrice, 35);
+
+  const deduction = deductShopVariantInventory(product, priced.item);
+  assert.equal(deduction.remaining, 2);
+  assert.equal(products[0].variants[0].stock, "10");
+});
