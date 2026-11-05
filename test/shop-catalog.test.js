@@ -171,6 +171,14 @@ test("priceShopVariant rejects quantity above selected quality stock", () => {
   assert.match(result.error, /onvoldoende voorraad/i);
 });
 
+test("priceShopVariant rejects a selected quality with missing or malformed stock", () => {
+  for (const stock of ["", "Op voorraad", "3 stuks", undefined]) {
+    const product = { variants: [{ id: "lcd", quality: "LCD", price: "45", stock, active: true }] };
+    const result = priceShopVariant(product, { variantId: "lcd", qty: 1 }, 0, Number);
+    assert.match(result.error, /voorraad.*niet correct ingesteld/i);
+  }
+});
+
 
 test("findShopProductIndex resolves stable ids after catalog reordering", () => {
   const products = [
