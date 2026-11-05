@@ -122,3 +122,21 @@ test("inventory deduction fails safely when the catalog row is missing", async (
   assert.ok(fake.calls.some(call => call.sql === "ROLLBACK"));
   assert.equal(fake.savedCatalog, null);
 });
+
+test("legacy second-hand paid orders fail safely without changing the catalog", async () => {
+  const fake = createFakePool(
+    { id: 8, payment_status: "Paid", items: [{ type: "used", id: 0, qty: 1 }] },
+    { usedPhones: [{ name: "Legacy phone", stock: 3 }], phones: [] }
+  );
+  const originalError = console.error;
+  console.error = () => {};
+  try {
+    const deduct = createPaidOrderInventoryDeductor({ pool: fake.pool });
+    assert.deepEqual(await deduct(8), { error: true });
+  } finally {
+    console.error = originalError;
+  }
+  assert.ok(fake.calls.some(call => call.sql === "ROLLBACK"));
+  assert.equal(fake.savedCatalog, null);
+  assert.ok(fake.calls.some(call => call.scope === "pool" && call.sql.includes("inventory_error=$1")));
+});
