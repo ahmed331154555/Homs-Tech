@@ -28,7 +28,7 @@ function sanitizeDevicesCatalogData(source) {
       }
 
       if (Array.isArray(phone.images)) {
-        compact.images = phone.images.filter(Boolean).slice(0, 1);
+        compact.images = phone.images.filter(image => typeof image === "string" && image).slice(0, 1);
       }
 
       if (Array.isArray(phone.conditionOptions)) {
@@ -57,14 +57,18 @@ function sanitizeDevicesCatalogData(source) {
       if (phone.colorGalleryImages && typeof phone.colorGalleryImages === "object") {
         compact.colorGalleryImages = {};
         for (const [color, gallery] of Object.entries(phone.colorGalleryImages)) {
-          if (Array.isArray(gallery) && gallery[0]) {
-            compact.colorGalleryImages[color] = [gallery[0]];
+          if (Array.isArray(gallery)) {
+            const firstImage = gallery.find(image => typeof image === "string" && image);
+            if (firstImage) compact.colorGalleryImages[color] = [firstImage];
           }
         }
       }
 
-      if (phone.colorImages && typeof phone.colorImages === "object") {
-        compact.colorImages = phone.colorImages;
+      if (phone.colorImages && typeof phone.colorImages === "object" && !Array.isArray(phone.colorImages)) {
+        compact.colorImages = {};
+        for (const [color, image] of Object.entries(phone.colorImages)) {
+          if (typeof image === "string") compact.colorImages[color] = image;
+        }
       }
 
       if (Array.isArray(phone.colorOptions)) {
