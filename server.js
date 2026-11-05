@@ -1444,6 +1444,7 @@ app.post("/api/mollie/create-payment", async (req, res) => {
     );
     if (!local.rows.length) return res.status(404).json({ error: "Webshop bestelling niet gevonden." });
     const order = local.rows[0];
+    if (order.payment_method !== "Mollie") return res.status(409).json({ error: "Deze bestelling is niet aangemaakt met Mollie als betaalmethode." });
     if (order.payment_status === "Paid") return res.status(409).json({ error: "Deze bestelling is al betaald." });
     if (order.mollie_payment_id) {
       try {
@@ -1560,7 +1561,7 @@ app.post("/api/paypal/create-order", async (req, res) => {
 
     const checkoutTokenHash = crypto.createHash("sha256").update(checkoutToken).digest("hex");
     const local = await pool.query(
-      `SELECT id, name, email, total, payment_status
+      `SELECT id, name, email, total, payment_status, payment_method
        FROM webshop_orders
        WHERE id = $1 AND checkout_token = $2`,
       [localOrderId, checkoutTokenHash]
@@ -1571,6 +1572,7 @@ app.post("/api/paypal/create-order", async (req, res) => {
     }
 
     const order = local.rows[0];
+    if (order.payment_method !== "PayPal") return res.status(409).json({ error: "Deze bestelling is niet aangemaakt met PayPal als betaalmethode." });
     if (order.payment_status === "Paid") {
       return res.status(409).json({ error: "Deze bestelling is al betaald." });
     }
