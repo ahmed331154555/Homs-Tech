@@ -94,7 +94,7 @@ a{text-decoration:none;color:inherit}
 .totalbar{margin-top:18px;padding:16px;border:1px solid var(--line);border-radius:18px;background:#fbfdff;display:grid;grid-template-columns:1fr auto auto;gap:25px;align-items:center}.totalbar .total small{display:block;color:var(--muted);font-weight:700}.totalbar .total strong{font-size:32px;color:var(--blue)}
 
 /* CHECKOUT */
-.checkout{display:grid;grid-template-columns:1fr 360px;gap:22px}.summary{border:1px solid var(--line);border-radius:15px;padding:18px}.summary h3{margin:0 0 16px}.summary-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #edf1f5;font-size:13px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}.agree{display:flex;gap:9px;font-size:12px;color:#536579;line-height:1.5;margin-top:15px}.success{display:none;text-align:center;padding:55px 20px}.success .bigcheck{width:80px;height:80px;border-radius:50%;background:#e9f8f0;color:#16a34a;font-size:42px;display:grid;place-items:center;margin:0 auto 18px}.success h2{font-size:30px;margin:0 0 8px}.success p{color:var(--muted)}
+.checkout{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,390px);gap:22px;align-items:start}.summary{border:1px solid var(--line);border-radius:18px;padding:20px;background:#fff;box-shadow:0 10px 28px rgba(15,39,64,.06)}.summary h3{margin:0 0 17px;color:#10283f;font-size:19px}.summary-product{display:flex;align-items:center;gap:14px;padding:13px;margin-bottom:10px;border:1px solid #e8eef5;border-radius:14px;background:#f8fafc}.summary-product-image{width:88px;height:94px;flex:0 0 88px;display:grid;place-items:center;overflow:hidden;border-radius:11px;background:#fff}.summary-product-image img{display:block;width:100%;height:100%;max-height:90px;object-fit:contain}.summary-product-image .phone-icon{transform:scale(.8)}.summary-product-info{display:flex;flex-direction:column;gap:5px;min-width:0}.summary-product-info strong{font-size:15px;line-height:1.35;color:#10283f}.summary-product-info span{font-size:11px;color:#718096}.summary-row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid #edf1f5;font-size:13px}.summary-row>span{color:#64748b}.summary-row>b{text-align:right;color:#24384e;font-weight:750}.summary-price-row{margin-top:4px;padding:15px 0}.summary-price-row>b{font-size:21px;color:#0874d1}.shipping-note{display:flex;gap:11px;margin-top:17px;padding:13px;border:1px solid #dbeafe;border-radius:12px;background:#f3f8ff;color:#17416a}.shipping-note>span{font-size:19px;line-height:1.2}.shipping-note strong{display:block;font-size:12px;margin-bottom:4px}.shipping-note p{margin:0;font-size:11px;line-height:1.55;color:#526b85}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}.agree{display:flex;gap:9px;font-size:12px;color:#536579;line-height:1.5;margin-top:15px}.success{display:none;text-align:center;padding:55px 20px}.success .bigcheck{width:80px;height:80px;border-radius:50%;background:#e9f8f0;color:#16a34a;font-size:42px;display:grid;place-items:center;margin:0 auto 18px}.success h2{font-size:30px;margin:0 0 8px}.success p{color:var(--muted)}
 
 /* INFO / FOOTER */
 .info{padding:8px 0 48px}.info h2{font-size:22px;color:var(--navy)}.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.info-card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:20px;text-align:center;min-height:175px}.info-icon{font-size:34px;margin-bottom:10px}.info-card h3{font-size:16px}.info-card p{font-size:12px;color:var(--muted);line-height:1.7}
@@ -1886,11 +1886,24 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
       <div class="formgrid"><input id="cName" class="field" placeholder="Naam *"><input id="cEmail" class="field" type="email" placeholder="E-mailadres *"><input id="cPhone" class="field" placeholder="Telefoonnummer"><input id="cIban" class="field" placeholder="IBAN (voor uitbetaling)"><input id="cAddress" class="field full" placeholder="Adres"><input id="cZip" class="field" placeholder="Postcode"><input id="cCity" class="field" placeholder="Plaats"><select id="cMethod" class="field full"><option value="Geld ontvangen via bank">Geld ontvangen via bank</option><option value="HOMS TECH tegoed">HOMS TECH tegoed (+10%)</option></select></div>
       <label class="agree"><input id="agree" type="checkbox"> Ik ga akkoord met de beoordeling en verkoopvoorwaarden.</label>
     </div>
-    <div class="summary"><h3>Uw aanvraag</h3><div class="summary-row"><span>Toestel</span><b id="sumDevice">—</b></div><div class="summary-row"><span>Staat</span><b id="sumCondition">—</b></div><div class="summary-row"><span>Batterij</span><b id="sumBattery">—</b></div><div class="summary-row"><span>Geschatte waarde</span><b id="sumPrice">€ 0,00</b></div><div class="summary-row"><span>Ontvangst</span><b id="sumMethod">Geld</b></div><button id="finish" class="primary blue" style="width:100%;margin-top:18px">Verkoopaanvraag versturen →</button></div>
+    <div class="summary buyback-order-summary">
+      <h3>Uw verkoopaanvraag</h3>
+      <div class="summary-product">
+        <div id="summaryProductImage" class="summary-product-image"><div class="phone-icon"></div></div>
+        <div class="summary-product-info"><strong id="sumDevice">—</strong><span id="sumProductSub">HOMS TECH inkoop</span></div>
+      </div>
+      <div class="summary-row"><span>Opslag</span><b id="sumStorage">—</b></div>
+      <div class="summary-row"><span>Staat</span><b id="sumCondition">—</b></div>
+      <div class="summary-row"><span>Vergrendeling</span><b id="sumLock">—</b></div>
+      <div class="summary-row summary-price-row"><span>Geschatte waarde</span><b id="sumPrice">€ 0,00</b></div>
+      <div class="summary-row"><span>Ontvangst</span><b id="sumMethod">Geld</b></div>
+      <div class="shipping-note"><span aria-hidden="true">✉</span><div><strong>Verzendlabel per e-mail</strong><p>Na beoordeling en akkoord ontvangt u de verzendinstructies en, indien van toepassing, het verzendlabel als PDF per e-mail.</p></div></div>
+      <button id="finish" class="primary blue" style="width:100%;margin-top:18px">Verkoopaanvraag versturen →</button>
+    </div>
   </div>
 </section>
 
-<section id="step4" class="panel success"><div class="bigcheck">✓</div><h2>Aanvraag ontvangen!</h2><p>Bedankt. HOMS TECH heeft uw aanvraag ontvangen en neemt contact met u op over de definitieve beoordeling.</p><a class="primary blue" style="display:inline-flex;align-items:center;padding:0 25px" href="index.html">Terug naar home</a></section>
+<section id="step4" class="panel success"><div class="bigcheck">✓</div><h2>Aanvraag ontvangen!</h2><p>Bedankt. HOMS TECH heeft uw aanvraag ontvangen. Na beoordeling nemen we contact met u op. Als verzending nodig is, ontvangt u de verzendinstructies en het verzendlabel per e-mail.</p><a class="primary blue" style="display:inline-flex;align-items:center;padding:0 25px" href="index.html">Terug naar home</a></section>
 
 </div></main>
 
@@ -2423,8 +2436,11 @@ $('toCheckout').onclick=()=>{
   if(!selectedModel||!validateDynamicQuestions())return;
   const v=calcQuote();
   $('sumDevice').textContent=selectedModel.name||'—';
+  $('summaryProductImage').innerHTML=imageFor(selectedModel);
+  $('sumProductSub').textContent=[selectedModel.brand,selectedModel.deviceType||selectedModel.typeName].filter(Boolean).join(' · ')||'HOMS TECH inkoop';
+  $('sumStorage').textContent=firstAnswerByLabel(['opslag','storage','capaciteit'])||'—';
   $('sumCondition').textContent=firstAnswerByLabel(['conditie','staat'])||'—';
-  $('sumBattery').textContent=firstAnswerByLabel(['batterij'])||'—';
+  $('sumLock').textContent=firstAnswerByLabel(['vergrendeld','ontgrendeld','lock'])||'—';
   $('sumPrice').textContent=money($('cMethod').value.includes('tegoed')?v*1.10:v);
   $('sumMethod').textContent=$('cMethod').value;
   go(3);
