@@ -1379,7 +1379,22 @@ app.post("/api/orders", async (req, res) => {
               from: process.env.RESEND_FROM_EMAIL,
               to: [notifyEmail],
               subject: `Nieuwe HOMS TECH reparatiebestelling #${result.rows[0].id}`,
-              html: `<div style="font-family:Arial,sans-serif;color:#203449"><h2>Nieuwe reparatiebestelling #${result.rows[0].id}</h2><p><b>Toestel/service:</b> ${escapeHtml(clean.serviceName)}</p><p><b>Klant:</b> ${escapeHtml(clean.name)}</p><p><b>E-mail:</b> ${escapeHtml(clean.email)}</p><p><b>Telefoon:</b> ${escapeHtml(clean.phone)}</p><p><b>Prijs:</b> ${escapeHtml(clean.price || "Op aanvraag")} ${escapeHtml(clean.priceCurrency || "EUR")}</p>${appointment}<p><b>Opmerking:</b><br>${escapeHtml(clean.notes || "-").replace(/\\n/g, "<br>")}</p><p>Bekijk de aanvraag in de HOMS TECH-admin.</p></div>`
+              html: `<div style="font-family:Arial,sans-serif;color:#203449">
+                <h2>Nieuwe reparatiebestelling #${result.rows[0].id}</h2>
+                <p>
+                <b>Toestel/service:</b> ${escapeHtml(clean.serviceName)}</p>
+                <p>
+                <b>Klant:</b> ${escapeHtml(clean.name)}</p>
+                <p>
+                <b>E-mail:</b> ${escapeHtml(clean.email)}</p>
+                <p>
+                <b>Telefoon:</b> ${escapeHtml(clean.phone)}</p>
+                <p>
+                <b>Prijs:</b> ${escapeHtml(clean.price || "Op aanvraag")} ${escapeHtml(clean.priceCurrency || "EUR")}</p>${appointment}<p>
+                <b>Opmerking:</b>
+                <br>${escapeHtml(clean.notes || "-").replace(/\\n/g, "<br>")}</p>
+                <p>Bekijk de aanvraag in de HOMS TECH-admin.</p>
+                </div>`
             })
           });
           if (!mailResponse.ok) console.error("Service repair notification failed:", mailResponse.status, await mailResponse.text().catch(() => ""));
@@ -1401,7 +1416,16 @@ app.post("/api/orders", async (req, res) => {
             from: process.env.RESEND_FROM_EMAIL,
             to: [clean.email],
             subject: `HOMS TECH — ontvangstbevestiging reparatie #${result.rows[0].id}`,
-            html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;padding:24px;color:#203449"><h2>Bedankt voor uw reparatieaanvraag</h2><p>Beste ${escapeHtml(clean.name)},</p><p>We hebben uw aanvraag voor <b>${escapeHtml(clean.serviceName)}</b> goed ontvangen.</p><p>We bekijken uw aanvraag en nemen zo snel mogelijk contact met u op.</p><p>De definitieve reparatieprijs is pas bevestigd nadat we uw aanvraag hebben beoordeeld.</p><p>Met vriendelijke groet,<br><b>HOMS TECH</b></p></div>`
+            html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;padding:24px;color:#203449">
+              <h2>Bedankt voor uw reparatieaanvraag</h2>
+              <p>Beste ${escapeHtml(clean.name)},</p>
+              <p>We hebben uw aanvraag voor <b>${escapeHtml(clean.serviceName)}</b> goed ontvangen.</p>
+              <p>We bekijken uw aanvraag en nemen zo snel mogelijk contact met u op.</p>
+              <p>De definitieve reparatieprijs is pas bevestigd nadat we uw aanvraag hebben beoordeeld.</p>
+              <p>Met vriendelijke groet,<br>
+              <b>HOMS TECH</b>
+              </p>
+              </div>`
           })
         });
         if (!customerResponse.ok) console.error("Service repair customer confirmation failed:", customerResponse.status, await customerResponse.text().catch(() => ""));
@@ -1512,7 +1536,30 @@ app.post("/api/webshop/orders", async (req, res) => {
             from: orderFromEmail,
             to: [email],
             subject: `HOMS TECH — bevestiging van bestelling #${order.id}`,
-            html: `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;padding:24px;color:#203449;line-height:1.6"><h1 style="color:#0f2740">Bedankt voor je bestelling!</h1><p>Hallo ${escapeHtml(name)},</p><p>We hebben je bestelling bij HOMS TECH ontvangen. Hieronder vind je het overzicht.</p><p><strong>Bestelnummer:</strong> #${escapeHtml(String(order.id))}</p><h3>Bestelde producten</h3><ul>${itemLines}</ul><p style="font-size:18px"><strong>Totaal: €${total.toFixed(2)}</strong></p><p><strong>Betaalmethode:</strong> ${escapeHtml(paymentMethod)}</p><p><strong>Betaalstatus:</strong> ${escapeHtml(String(order.payment_status || "Unpaid"))}</p><p><strong>Verzendadres:</strong><br>${escapeHtml(street)} ${escapeHtml(houseNumber)}<br>${escapeHtml(postcode)} ${escapeHtml(city)}</p><p>Bewaar deze e-mail als bevestiging van je bestelling. We sturen een update als de status verandert.</p><p>Met vriendelijke groet,<br><strong>Team HOMS TECH</strong></p><p style="font-size:12px;color:#64748b">https://homs-tech.nl</p></div>`
+            html: `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;padding:24px;color:#203449;line-height:1.6">
+              <h1 style="color:#0f2740">Bedankt voor je bestelling!</h1>
+              <p>Hallo ${escapeHtml(name)},</p>
+              <p>We hebben je bestelling bij HOMS TECH ontvangen. Hieronder vind je het overzicht.</p>
+              <p>
+              <strong>Bestelnummer:</strong> #${escapeHtml(String(order.id))}</p>
+              <h3>Bestelde producten</h3>
+              <ul>${itemLines}</ul>
+              <p style="font-size:18px">
+              <strong>Totaal: €${total.toFixed(2)}</strong>
+              </p>
+              <p>
+              <strong>Betaalmethode:</strong> ${escapeHtml(paymentMethod)}</p>
+              <p>
+              <strong>Betaalstatus:</strong> ${escapeHtml(String(order.payment_status || "Unpaid"))}</p>
+              <p>
+              <strong>Verzendadres:</strong>
+              <br>${escapeHtml(street)} ${escapeHtml(houseNumber)}<br>${escapeHtml(postcode)} ${escapeHtml(city)}</p>
+              <p>Bewaar deze e-mail als bevestiging van je bestelling. We sturen een update als de status verandert.</p>
+              <p>Met vriendelijke groet,<br>
+              <strong>Team HOMS TECH</strong>
+              </p>
+              <p style="font-size:12px;color:#64748b">https://homs-tech.nl</p>
+              </div>`
           })
         });
         if (!customerResponse.ok) console.error("Webshop customer confirmation failed:", customerResponse.status, await customerResponse.text().catch(() => ""));
@@ -1534,7 +1581,27 @@ app.post("/api/webshop/orders", async (req, res) => {
             from: orderFromEmail,
             to: [notifyEmail],
             subject: `Nieuwe HOMS TECH webshopbestelling #${order.id}`,
-            html: `<div style="font-family:Arial,sans-serif;color:#203449"><h2>Nieuwe webshopbestelling #${order.id}</h2><p><b>Klant:</b> ${escapeHtml(name)}</p><p><b>E-mail:</b> ${escapeHtml(email)}</p><p><b>Telefoon:</b> ${escapeHtml(phone)}</p><p><b>Adres:</b> ${escapeHtml(street)} ${escapeHtml(houseNumber)}, ${escapeHtml(postcode)} ${escapeHtml(city)}</p><p><b>Producten:</b></p><ul>${itemLines}</ul><p><b>Totaal:</b> €${total.toFixed(2)}</p><p><b>Betaalmethode:</b> ${escapeHtml(paymentMethod)}</p><p><b>Betaalstatus:</b> ${escapeHtml(String(order.payment_status || "Unpaid"))}</p></div>`
+            html: `<div style="font-family:Arial,sans-serif;color:#203449">
+              <h2>Nieuwe webshopbestelling #${order.id}</h2>
+              <p>
+              <b>Klant:</b> ${escapeHtml(name)}</p>
+              <p>
+              <b>E-mail:</b> ${escapeHtml(email)}</p>
+              <p>
+              <b>Telefoon:</b> ${escapeHtml(phone)}</p>
+              <p>
+              <b>Adres:</b> ${escapeHtml(street)} ${escapeHtml(houseNumber)}, ${escapeHtml(postcode)} ${escapeHtml(city)}</p>
+              <p>
+              <b>Producten:</b>
+              </p>
+              <ul>${itemLines}</ul>
+              <p>
+              <b>Totaal:</b> €${total.toFixed(2)}</p>
+              <p>
+              <b>Betaalmethode:</b> ${escapeHtml(paymentMethod)}</p>
+              <p>
+              <b>Betaalstatus:</b> ${escapeHtml(String(order.payment_status || "Unpaid"))}</p>
+              </div>`
           })
         });
         if (!response.ok) console.error("Webshop order notification failed:", response.status, await response.text().catch(() => ""));
@@ -2014,7 +2081,16 @@ app.post("/api/repair-requests", async (req, res) => {
             from: process.env.RESEND_FROM_EMAIL,
             to: [email],
             subject: `HOMS TECH — ontvangstbevestiging reparatieaanvraag #${request.id}`,
-            html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;padding:24px;color:#203449"><h2>Bedankt voor uw reparatieaanvraag</h2><p>Beste ${escapeHtml(name)},</p><p>We hebben uw reparatieaanvraag voor <b>${escapeHtml(brand)} ${escapeHtml(model)}</b> goed ontvangen.</p><p>Ons team bekijkt uw aanvraag en neemt zo snel mogelijk contact met u op over de reparatiemogelijkheden en de prijs.</p><p>Dit bericht is een automatische ontvangstbevestiging; er is nog geen reparatieprijs bevestigd.</p><p>Met vriendelijke groet,<br><b>HOMS TECH</b></p></div>`
+            html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;padding:24px;color:#203449">
+              <h2>Bedankt voor uw reparatieaanvraag</h2>
+              <p>Beste ${escapeHtml(name)},</p>
+              <p>We hebben uw reparatieaanvraag voor <b>${escapeHtml(brand)} ${escapeHtml(model)}</b> goed ontvangen.</p>
+              <p>Ons team bekijkt uw aanvraag en neemt zo snel mogelijk contact met u op over de reparatiemogelijkheden en de prijs.</p>
+              <p>Dit bericht is een automatische ontvangstbevestiging; er is nog geen reparatieprijs bevestigd.</p>
+              <p>Met vriendelijke groet,<br>
+              <b>HOMS TECH</b>
+              </p>
+              </div>`
           })
         });
         if (!customerResponse.ok) console.error("Repair customer confirmation failed:", customerResponse.status, await customerResponse.text().catch(() => ""));
@@ -2035,7 +2111,21 @@ app.post("/api/repair-requests", async (req, res) => {
             from: process.env.RESEND_FROM_EMAIL,
             to: [repairNotifyEmail],
             subject: `Nieuwe HOMS TECH reparatieaanvraag #${request.id}`,
-            html: `<div style="font-family:Arial,sans-serif;color:#203449"><h2>Nieuwe reparatieaanvraag #${request.id}</h2><p><b>Toestel:</b> ${escapeHtml(brand)} ${escapeHtml(model)}</p><p><b>Probleem:</b><br>${escapeHtml(issue).replace(/\\n/g,"<br>")}</p><p><b>Klant:</b> ${escapeHtml(name)}</p><p><b>E-mail:</b> ${escapeHtml(email)}</p><p><b>Telefoon:</b> ${escapeHtml(phone || "-")}</p><p>Bekijk de aanvraag in de HOMS TECH-admin. Foto's zijn opgeslagen bij de aanvraag.</p></div>`
+            html: `<div style="font-family:Arial,sans-serif;color:#203449">
+              <h2>Nieuwe reparatieaanvraag #${request.id}</h2>
+              <p>
+              <b>Toestel:</b> ${escapeHtml(brand)} ${escapeHtml(model)}</p>
+              <p>
+              <b>Probleem:</b>
+              <br>${escapeHtml(issue).replace(/\\n/g,"<br>")}</p>
+              <p>
+              <b>Klant:</b> ${escapeHtml(name)}</p>
+              <p>
+              <b>E-mail:</b> ${escapeHtml(email)}</p>
+              <p>
+              <b>Telefoon:</b> ${escapeHtml(phone || "-")}</p>
+              <p>Bekijk de aanvraag in de HOMS TECH-admin. Foto's zijn opgeslagen bij de aanvraag.</p>
+              </div>`
           })
         });
         if (!response.ok) console.error("Repair request notification failed:", response.status, await response.text().catch(() => ""));
@@ -2540,11 +2630,30 @@ app.post("/api/buyback/orders", async (req, res) => {
       const safeOrder = escapeHtml(order.order_no);
       const customerEmail = {
         from, to:[email], subject:"We hebben uw verkoopaanvraag ontvangen – HOMS TECH",
-        html:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#1f2937;line-height:1.6"><h2 style="color:#0f2740">Bedankt voor uw aanvraag!</h2><p>Beste ${safeName},</p><p>We hebben uw aanvraag om uw <strong>${safeDevice}</strong> te verkopen goed ontvangen.</p><p>Uw aanvraagnummer is <strong>${safeOrder}</strong>.</p><p>We bekijken de door u ingevulde gegevens en controleren het toestel. Daarna ontvangt u van ons een persoonlijk definitief prijsvoorstel. De getoonde geschatte prijs is nog geen definitief aanbod.</p><p>Met vriendelijke groet,<br><strong>HOMS TECH</strong></p></div>`
+        html:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#1f2937;line-height:1.6">
+          <h2 style="color:#0f2740">Bedankt voor uw aanvraag!</h2>
+          <p>Beste ${safeName},</p>
+          <p>We hebben uw aanvraag om uw <strong>${safeDevice}</strong> te verkopen goed ontvangen.</p>
+          <p>Uw aanvraagnummer is <strong>${safeOrder}</strong>.</p>
+          <p>We bekijken de door u ingevulde gegevens en controleren het toestel. Daarna ontvangt u van ons een persoonlijk definitief prijsvoorstel. De getoonde geschatte prijs is nog geen definitief aanbod.</p>
+          <p>Met vriendelijke groet,<br>
+          <strong>HOMS TECH</strong>
+          </p>
+          </div>`
       };
       const ownerNotice = {
         from, to:[ownerEmail], subject:"Nieuwe iPhone-verkoopaanvraag "+order.order_no,
-        html:`<div style="font-family:Arial,sans-serif;max-width:650px;margin:auto;padding:24px;color:#1f2937;line-height:1.6"><h2>Nieuwe verkoopaanvraag ontvangen</h2><p><strong>Nummer:</strong> ${safeOrder}<br><strong>Toestel:</strong> ${safeDevice}<br><strong>Klant:</strong> ${safeName}<br><strong>E-mail:</strong> ${escapeHtml(email)}<br><strong>Telefoon:</strong> ${escapeHtml(b.phone||"-")}<br><strong>Geschatte prijs:</strong> € ${offeredPrice.toFixed(2)}</p><p>Open de HOMS TECH-adminpagina → Verkoopaanvragen om alle antwoorden te bekijken en een definitief aanbod te sturen.</p></div>`
+        html:`<div style="font-family:Arial,sans-serif;max-width:650px;margin:auto;padding:24px;color:#1f2937;line-height:1.6">
+          <h2>Nieuwe verkoopaanvraag ontvangen</h2>
+          <p>
+          <strong>Nummer:</strong> ${safeOrder}<br>
+          <strong>Toestel:</strong> ${safeDevice}<br>
+          <strong>Klant:</strong> ${safeName}<br>
+          <strong>E-mail:</strong> ${escapeHtml(email)}<br>
+          <strong>Telefoon:</strong> ${escapeHtml(b.phone||"-")}<br>
+          <strong>Geschatte prijs:</strong> € ${offeredPrice.toFixed(2)}</p>
+          <p>Open de HOMS TECH-adminpagina → Verkoopaanvragen om alle antwoorden te bekijken en een definitief aanbod te sturen.</p>
+          </div>`
       };
       const sendMail = async mail => {
         const response = await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify(mail)});
@@ -2597,7 +2706,16 @@ app.put("/api/admin/buyback-orders/:id/offer", requirePermission("buyback_orders
       body:JSON.stringify({
         from, to:[order.email], subject:"Uw definitieve prijsvoorstel van HOMS TECH – "+order.order_no,
         reply_to:"mail@inbound.homs-tech.nl",
-        html:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#1f2937;line-height:1.6"><h2 style="color:#0f2740">Uw prijsvoorstel is klaar</h2><p>Beste ${escapeHtml(order.name)},</p><p>Na beoordeling van uw ${escapeHtml(order.device)} bieden wij u definitief:</p><p style="font-size:30px;font-weight:800;color:#2563eb">€ ${offer.toFixed(2)}</p><p>Dit aanbod is gebaseerd op de door u verstrekte informatie en onze beoordeling. Wilt u akkoord gaan? Beantwoord dan deze e-mail of neem contact met ons op.</p><p>Met vriendelijke groet,<br><strong>HOMS TECH</strong></p></div>`
+        html:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#1f2937;line-height:1.6">
+          <h2 style="color:#0f2740">Uw prijsvoorstel is klaar</h2>
+          <p>Beste ${escapeHtml(order.name)},</p>
+          <p>Na beoordeling van uw ${escapeHtml(order.device)} bieden wij u definitief:</p>
+          <p style="font-size:30px;font-weight:800;color:#2563eb">€ ${offer.toFixed(2)}</p>
+          <p>Dit aanbod is gebaseerd op de door u verstrekte informatie en onze beoordeling. Wilt u akkoord gaan? Beantwoord dan deze e-mail of neem contact met ons op.</p>
+          <p>Met vriendelijke groet,<br>
+          <strong>HOMS TECH</strong>
+          </p>
+          </div>`
       })
     });
     const mailData = await response.json().catch(()=>({}));
