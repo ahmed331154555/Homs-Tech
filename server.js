@@ -23,7 +23,7 @@ const { validateRepairQuotePayload } = require("./utils/repair-quote");
 const { validateBuybackOfferedPrice } = require("./utils/buyback-order");
 const { sanitizePublicSiteData, sanitizeHomepageSiteData } = require("./utils/site-data-sanitizers");
 const { mollieStatusToLocal, molliePaymentMatchesOrder } = require("./utils/mollie-payment");
-const { paypalEncryptionKey, encryptPayPalSecret, decryptPayPalSecret, getPayPalBaseUrl } = require("./utils/payment-secrets");
+const { encryptPayPalSecret, decryptPayPalSecret, getPayPalBaseUrl } = require("./utils/payment-secrets");
 const { allowLiveChat, liveChatAutomaticReply } = require("./utils/live-chat");
 const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-limit");
 const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-inventory");
@@ -41,9 +41,7 @@ const deductPaidOrderInventory = createPaidOrderInventoryDeductor({ pool });
 const {
   getSuperAdminUser,
   getAdminFromRequest,
-  requireAuth,
   requirePermission,
-  refreshAdminUserFromDb,
   requireSiteOrPhoneUpdate
 } = createAdminAuth({
   jwt,
