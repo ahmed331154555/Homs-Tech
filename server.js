@@ -1925,7 +1925,7 @@ app.put("/api/admin/shop-visibility", requirePermission("site.save"), async (req
       return res.status(400).json({ error: "Ongeldige Shop-instelling." });
     }
     const result = await queryWithConnectionRetry(
-      "UPDATE site_settings SET data = jsonb_set(data, '{shopPageEnabled}', to_jsonb($1::boolean), TRUE), updated_at = NOW() WHERE id = 1 RETURNING (data->>'shopPageEnabled')::boolean AS enabled",
+      "UPDATE site_settings SET data = jsonb_set(data, '{shopPageEnabled}', to_jsonb($1::boolean), TRUE) WHERE id = 1 RETURNING (data->>'shopPageEnabled')::boolean AS enabled",
       [req.body.enabled], 4
     );
     if (!result.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
