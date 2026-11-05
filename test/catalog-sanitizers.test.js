@@ -79,3 +79,22 @@ test("sanitizeCartStockData exposes stock identifiers without internal product f
   ]);
   assert.deepEqual(sanitizeCartStockData("invalid"), []);
 });
+
+test("device sanitizer keeps only image strings in nested color image maps", () => {
+  const output = sanitizeDevicesCatalogData({
+    phones: [{
+      name: "iPhone",
+      images: ["front.webp", { url: "private", supplierCost: 2 }],
+      colorImages: {
+        Black: "black.webp",
+        Blue: { url: "blue.webp", internalCost: 5 }
+      },
+      colorGalleryImages: {
+        Black: ["black-front.webp", { url: "private.webp" }]
+      }
+    }]
+  });
+  assert.deepEqual(output.phones[0].images, ["front.webp"]);
+  assert.deepEqual(output.phones[0].colorImages, { Black: "black.webp" });
+  assert.deepEqual(output.phones[0].colorGalleryImages, { Black: ["black-front.webp"] });
+});
