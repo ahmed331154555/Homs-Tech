@@ -2468,7 +2468,7 @@ app.put("/api/admin/order-settings", requirePermission("site.save"), async (req,
 });
 
 // Admin webshop order endpoints live in their own route module.
-registerAdminWebshopOrderRoutes(app, { pool, requirePermission });
+registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory });
 
 // Rate limiting map for public repair quote requests: IP -> array of timestamps
 const repairRequestRateLimits = new Map();
