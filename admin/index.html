@@ -2161,7 +2161,7 @@ function canEditCurrentPage(){
   return canEditSite();
 }
 function firstAllowedPage(){
-  const pages=["general","services","repair","phones","shop","buyback","buyback-orders","categories","used","why","customers","orders","repair-requests","webshop-orders","emails","invoices","search","admins"];
+  const pages=["general","services","repair","phones","shop","buyback","buyback-orders","categories","why","customers","orders","repair-requests","webshop-orders","emails","invoices","search","admins"];
   return pages.find(p=>hasPermission(PAGE_PERMISSIONS[p]))||null;
 }
 function applyPermissionUI(){
@@ -2169,7 +2169,7 @@ function applyPermissionUI(){
   const saveBtn=document.getElementById("saveBtn"); if(saveBtn) saveBtn.style.display=canEditCurrentPage()?"":"none";
   document.querySelectorAll(".admin-page").forEach(page=>{
     const n=(page.id||"").replace(/^page-/,"");
-    if(!["general","services","repair","phones","buyback","categories","used","why"].includes(n))return;
+    if(!["general","services","repair","phones","buyback","categories","why"].includes(n))return;
     page.querySelectorAll("input,textarea").forEach(el=>el.disabled=!canEditCurrentPage());
     page.querySelectorAll("button").forEach(btn=>{
       if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=!canEditCurrentPage();
