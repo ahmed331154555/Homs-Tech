@@ -14,7 +14,7 @@ const {
 const app = express();
 const { registerAdminOrderRoutes } = require("./routes/admin-orders");
 const { registerAdminWebshopOrderRoutes } = require("./routes/admin-webshop-orders");
-const { saveShopCatalog, priceShopVariant, deductShopVariantInventory } = require("./utils/shop-catalog");
+const { saveShopCatalog, findShopProductIndex, priceShopVariant, deductShopVariantInventory } = require("./utils/shop-catalog");
 const PORT = process.env.PORT || 3000;
 
 
@@ -1692,13 +1692,15 @@ function priceProductFromCatalog(data, item) {
     : type === "used"
       ? (Array.isArray(data.usedPhones) ? data.usedPhones : [])
       : (Array.isArray(data.phones) && data.phones.length ? data.phones : (Array.isArray(data.devices) ? data.devices : []));
-  const id = Number(item?.id);
+  const id = type === "shop"
+    ? findShopProductIndex(list, item?.id)
+    : Number(item?.id);
   if (!Number.isInteger(id) || id < 0 || id >= list.length) return { error: "Een product in uw winkelwagen is verouderd. Verwijder het en voeg het opnieuw toe." };
   const product = list[id];
   if (!product || product.active === false || product.available === false || String(product.stockStatus || "").toLowerCase() === "sold") {
     return { error: "Een product in uw winkelwagen is niet meer beschikbaar." };
   }
-  if (type === "shop") return priceShopVariant(product, item, id, moneyNumber);
+  if (type === "shop") return priceShopVariant(product, item, product.id ?? id, moneyNumber);
   const options = item.options && typeof item.options === "object" && !Array.isArray(item.options) ? item.options : {};
   const getList = key => {
     const map = { condition: "conditionOptions", storage: "storageOptions", color: "colorOptions", battery: "batteryOptions", vat: "vatOptions", tradeIn: "tradeInOptions" };
@@ -1799,7 +1801,10 @@ async function deductPaidOrderInventory(orderId) {
     for (const item of (Array.isArray(order.items) ? order.items : [])) {
       const type = String(item && item.type || '').toLowerCase();
       const list = type === 'shop' ? (Array.isArray(data.shopProducts) ? data.shopProducts : []) : type === 'used' ? (Array.isArray(data.usedPhones) ? data.usedPhones : []) : (Array.isArray(data.phones) && data.phones.length ? data.phones : (Array.isArray(data.devices) ? data.devices : []));
-      const id = Number(item && item.id); const qty = Number(item && item.qty || 1);
+      const id = type === 'shop'
+        ? findShopProductIndex(list, item && item.id)
+        : Number(item && item.id);
+      const qty = Number(item && item.qty || 1);
       if (!Number.isInteger(id) || id < 0 || !list[id] || !Number.isInteger(qty) || qty < 1) throw new Error('Paid order item could not be matched to catalog.');
       const product = list[id]; const options = item.options && typeof item.options === 'object' ? item.options : {};
       if (type === 'shop') {
