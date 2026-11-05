@@ -2,7 +2,7 @@
 
 // Public settings are recursively filtered so nested catalog records cannot expose
 // supplier costs, credentials, or internal-only metadata.
-const PRIVATE_FIELD_PATTERN = /(?:supplier|purchase|wholesale|cost|margin|profit|inkoop|kostprijs|winst|secret|password|credential|token|api.?key|private|internal|admin.?only|webhook.?secret|client.?secret)/i;
+const PRIVATE_FIELD_PATTERN = /(?:supplier|purchase|buy.?price|wholesale|cost|margin|profit|inkoop|kostprijs|winst|secret|password|credential|token|api.?key|private|internal|admin.?only|webhook.?secret|client.?secret)/i;
 
 function stripPrivatePublicFields(value) {
   if (Array.isArray(value)) return value.map(stripPrivatePublicFields);
