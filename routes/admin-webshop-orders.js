@@ -58,16 +58,28 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
   
   app.put("/api/admin/webshop-orders/:id/status", requirePermission("webshop_orders.update"), async (req, res) => {
     try {
+      const id = Number(req.params.id);
+      if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig order-ID." });
       const allowed = ["Nieuw", "In behandeling", "Verzonden", "Voltooid", "Geannuleerd"];
       const status = String(req.body?.status || "").trim();
       if (!allowed.includes(status)) {
         return res.status(400).json({ error: "Ongeldige status." });
       }
       const result = await pool.query(
-        `UPDATE webshop_orders SET status = $1 WHERE id = $2 RETURNING id, status`,
-        [status, req.params.id]
+        `UPDATE webshop_orders
+         SET status = $1
+         WHERE id = $2 AND NOT (payment_status = 'Paid' AND $1 = 'Geannuleerd')
+         RETURNING id, status`,
+        [status, id]
       );
-      if (!result.rows.length) return res.status(404).json({ error: "Webshop bestelling niet gevonden." });
+      if (!result.rows.length) {
+        const existing = await pool.query("SELECT id, payment_status FROM webshop_orders WHERE id = $1", [id]);
+        if (!existing.rows.length) return res.status(404).json({ error: "Webshop bestelling niet gevonden." });
+        if (existing.rows[0].payment_status === "Paid" && status === "Geannuleerd") {
+          return res.status(409).json({ error: "Een betaalde bestelling kan niet rechtstreeks worden geannuleerd. Verwerk eerst de terugbetaling." });
+        }
+        return res.status(409).json({ error: "De bestelstatus kon niet worden gewijzigd." });
+      }
       res.json({ success: true, order: result.rows[0] });
     } catch (error) {
       console.error(error);
