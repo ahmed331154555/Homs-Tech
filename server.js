@@ -136,7 +136,13 @@ app.post("/api/webhooks/resend/inbound", express.raw({ type: "application/json",
     ).trim().slice(0, 4000);
 
     await pool.query(
-      "INSERT INTO admin_emails(resend_email_id,message_id,references_header,direction,from_address,to_addresses,subject,text_body,html_body,attachments,is_read,created_at) VALUES($1,$2,$3,'inbound',$4,$5::jsonb,$6,$7,$8,$9::jsonb,FALSE,COALESCE($10::timestamptz,NOW())) ON CONFLICT(resend_email_id) DO NOTHING",
+      `INSERT INTO admin_emails(
+        resend_email_id, message_id, references_header, direction, from_address,
+        to_addresses, subject, text_body, html_body, attachments, is_read, created_at
+      ) VALUES(
+        $1, $2, $3, 'inbound', $4, $5::jsonb, $6, $7, $8, $9::jsonb, FALSE,
+        COALESCE($10::timestamptz, NOW())
+      ) ON CONFLICT(resend_email_id) DO NOTHING`,
       [
         String(mail.id || event.data.email_id),
         originalMessageId,
@@ -2902,7 +2908,28 @@ app.get("/api/chat/conversations/:token/messages", async (req, res) => {
 app.get("/api/admin/live-chat", requirePermission("orders.view"), async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT c.id,c.status,c.created_at,c.updated_at,(SELECT message FROM live_chat_messages m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1) AS last_message,(SELECT COUNT(*)::int FROM live_chat_messages m WHERE m.conversation_id=c.id AND m.sender='customer' AND m.read_at IS NULL) AS unread FROM live_chat_conversations c ORDER BY c.updated_at DESC LIMIT 200"
+      `SELECT
+        c.id,
+        c.status,
+        c.created_at,
+        c.updated_at,
+        (
+          SELECT message
+          FROM live_chat_messages m
+          WHERE m.conversation_id = c.id
+          ORDER BY m.id DESC
+          LIMIT 1
+        ) AS last_message,
+        (
+          SELECT COUNT(*)::int
+          FROM live_chat_messages m
+          WHERE m.conversation_id = c.id
+            AND m.sender = 'customer'
+            AND m.read_at IS NULL
+        ) AS unread
+      FROM live_chat_conversations c
+      ORDER BY c.updated_at DESC
+      LIMIT 200`
     );
     res.json({ conversations: result.rows });
   } catch (error) {
