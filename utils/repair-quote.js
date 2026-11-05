@@ -43,7 +43,7 @@ function validateRepairQuotePayload(b = {}) {
     if (totalPhotoBytes > MAX_TOTAL_PHOTOS) {
       throw new Error("De totale grootte van alle foto's mag maximaal 6 MB zijn.");
     }
-    photos.push({ name: String(photo.name || "foto").replace(/[\/\\r\n]/g, "_").slice(0, 140), type, dataUrl });
+    photos.push({ name: String(photo.name || "foto").replace(/[\/\\r\\n]/g, "_").slice(0, 140), type, dataUrl });
   }
 
   return { isSpam: false, brand, model, issue, name, email, phone, photos };
