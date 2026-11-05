@@ -25,6 +25,7 @@ const { registerAdminBuybackOrderRoutes } = require("./routes/admin-buyback-orde
 const { registerAdminInvoiceRoutes } = require("./routes/admin-invoices");
 const { registerAdminEmailRoutes } = require("./routes/admin-emails");
 const { registerContactRoutes } = require("./routes/contact");
+const { registerResendInboundWebhook } = require("./routes/resend-inbound");
 const { validateRepairQuotePayload } = require("./utils/repair-quote");
 const { validateBuybackOfferedPrice } = require("./utils/buyback-order");
 const { sanitizePublicSiteData, sanitizeHomepageSiteData } = require("./utils/site-data-sanitizers");
@@ -86,7 +87,6 @@ const { sendCustomerVerificationEmail, sendWelcomeEmail } = createCustomerEmails
 
 
 app.use(compression({ threshold: 1024 }));
-const { registerResendInboundWebhook } = require("./routes/resend-inbound");
 registerResendInboundWebhook(app, {
   express,
   pool,
