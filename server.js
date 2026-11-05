@@ -2436,6 +2436,7 @@ app.post("/api/buyback/orders", async (req, res) => {
           <p>We hebben uw aanvraag om uw <strong>${safeDevice}</strong> te verkopen goed ontvangen.</p>
           <p>Uw aanvraagnummer is <strong>${safeOrder}</strong>.</p>
           <p>We bekijken de door u ingevulde gegevens en controleren het toestel. Daarna ontvangt u van ons een persoonlijk definitief prijsvoorstel. De getoonde geschatte prijs is nog geen definitief aanbod.</p>
+          <p>Na akkoord spreken we de verzending met u af. Als verzending nodig is, ontvangt u de verzendinstructies en het verzendlabel als PDF-bijlage per e-mail.</p>
           <p>Met vriendelijke groet,<br>
           <strong>HOMS TECH</strong>
           </p>
@@ -2451,6 +2452,8 @@ app.post("/api/buyback/orders", async (req, res) => {
           <strong>Klant:</strong> ${safeName}<br>
           <strong>E-mail:</strong> ${escapeHtml(email)}<br>
           <strong>Telefoon:</strong> ${escapeHtml(b.phone||"-")}<br>
+          <strong>Opslag:</strong> ${escapeHtml(b.storage||"-")}<br>
+          <strong>Staat:</strong> ${escapeHtml(b.condition||"-")}<br>
           <strong>Geschatte prijs:</strong> € ${offeredPrice.toFixed(2)}</p>
           <p>Open de HOMS TECH-adminpagina → Verkoopaanvragen om alle antwoorden te bekijken en een definitief aanbod te sturen.</p>
           </div>`
