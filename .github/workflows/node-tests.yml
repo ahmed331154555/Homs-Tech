@@ -1,0 +1,34 @@
+name: Node.js tests
+
+on:
+  push:
+    branches:
+      - main
+      - HomsTech-Clean
+  pull_request:
+    branches:
+      - main
+      - HomsTech-Clean
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package.json
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Run automated tests
+        run: npm test
