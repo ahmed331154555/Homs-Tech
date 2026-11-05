@@ -245,10 +245,10 @@ app.get("/api/buyback/catalog", async (req, res) => {
       return res.status(404).json({ error: "Buyback catalog not found" });
     }
     res.set("Cache-Control", "no-store");
-    return res.json({
+    return res.json(sanitizePublicSiteData({
       buybackCatalog: Array.isArray(result.rows[0].catalog) ? result.rows[0].catalog : [],
       buybackPhones: Array.isArray(result.rows[0].phones) ? result.rows[0].phones : []
-    });
+    }));
   } catch (error) {
     console.error("[BUYBACK CATALOG] Load failed:", error);
     return res.status(500).json({ error: "Buyback catalog could not be loaded" });
