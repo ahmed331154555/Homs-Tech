@@ -6,11 +6,10 @@ const { findShopProductIndex, priceShopVariant } = require("./shop-catalog");
 
 function priceProductFromCatalog(data, item) {
   const type = String(item?.type || "").toLowerCase();
+  if (type === "used") return { error: "Tweedehands telefoons zijn niet meer beschikbaar." };
   const list = type === "shop"
     ? (Array.isArray(data.shopProducts) ? data.shopProducts : [])
-    : type === "used"
-      ? (Array.isArray(data.usedPhones) ? data.usedPhones : [])
-      : (Array.isArray(data.phones) && data.phones.length ? data.phones : (Array.isArray(data.devices) ? data.devices : []));
+    : (Array.isArray(data.phones) && data.phones.length ? data.phones : (Array.isArray(data.devices) ? data.devices : []));
   const id = type === "shop"
     ? findShopProductIndex(list, item?.id)
     : Number(item?.id);
