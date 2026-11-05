@@ -81,7 +81,7 @@ test("enforces maximum 4 photos limit", () => {
   }), /maximaal 4 foto's/);
 });
 
-test("rejects unauthorized photo mime-types or executable extensions", () => {
+test("rejects unsupported photo MIME types", () => {
   const dummy = Buffer.from("data").toString("base64");
   assert.throws(() => validateRepairQuotePayload({
     brand: "Apple",
