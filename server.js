@@ -26,6 +26,7 @@ const { validateBuybackOfferedPrice } = require("./utils/buyback-order");
 const { sanitizePublicSiteData, sanitizeHomepageSiteData } = require("./utils/site-data-sanitizers");
 const { resolveMolliePaymentStatus, molliePaymentMatchesOrder } = require("./utils/mollie-payment");
 const { encryptPayPalSecret, decryptPayPalSecret, getPayPalBaseUrl } = require("./utils/payment-secrets");
+const { cancelPaypalOrder } = require("./utils/paypal-payment");
 const { allowLiveChat, liveChatAutomaticReply } = require("./utils/live-chat");
 const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-limit");
 const { checkAuthLoginRateLimit } = require("./utils/auth-login-rate-limit");
@@ -1799,14 +1800,8 @@ app.post("/api/paypal/cancel-order", async (req, res) => {
     }
 
     const checkoutTokenHash = crypto.createHash("sha256").update(checkoutToken).digest("hex");
-    await pool.query(
-      `UPDATE webshop_orders
-       SET payment_status = CASE WHEN payment_status <> 'Paid' THEN 'Cancelled' ELSE payment_status END
-       WHERE id = $1 AND checkout_token = $2`,
-      [localOrderId, checkoutTokenHash]
-    );
-
-    res.json({ success: true });
+    const result = await cancelPaypalOrder({ pool, orderId: localOrderId, checkoutTokenHash });
+    res.status(result.statusCode).json(result.body);
   } catch (error) {
     console.error("PayPal cancel error:", error);
     res.status(500).json({ error: "Betaling kon niet worden bijgewerkt." });
