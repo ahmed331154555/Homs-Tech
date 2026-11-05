@@ -29,7 +29,7 @@ test("saveShopCatalog returns an empty list when the database has no returned ca
   assert.deepEqual(saved, []);
 });
 
-const { resolveShopVariant, deductShopVariantInventory } = require("../utils/shop-catalog");
+const { resolveShopVariant, priceShopVariant, deductShopVariantInventory } = require("../utils/shop-catalog");
 
 test("resolveShopVariant selects the requested quality instead of the first quality", () => {
   const product = { variants: [
@@ -76,4 +76,37 @@ test("deductShopVariantInventory rejects insufficient selected variant stock", (
   const product = { variants: [{ id: "v-a", quality: "LCD", stock: "1", active: true }] };
   assert.throws(() => deductShopVariantInventory(product, { variantId: "v-a", qty: 2 }), /Insufficient stock/);
   assert.equal(product.variants[0].stock, "1");
+});
+
+
+test("priceShopVariant uses the selected quality price, not the first quality price", () => {
+  const product = {
+    id: "shop-1",
+    name: "iPhone display",
+    category: "Schermen",
+    price: "45",
+    variants: [
+      { id: "lcd", quality: "LCD", sku: "HT-SCH-100001", price: "45", stock: "8", active: true },
+      { id: "oled", quality: "OLED", sku: "HT-SCH-100002", price: "79,95", stock: "3", active: true }
+    ]
+  };
+  const result = priceShopVariant(product, {
+    variantId: "oled",
+    qty: 2,
+    unitPrice: 0.01,
+    options: { quality: "OLED" }
+  }, 0, value => Number(String(value).replace(",", ".")));
+
+  assert.equal(result.item.unitPrice, 79.95);
+  assert.equal(result.item.variantId, "oled");
+  assert.equal(result.item.sku, "HT-SCH-100002");
+  assert.equal(result.item.qty, 2);
+});
+
+test("priceShopVariant rejects quantity above selected quality stock", () => {
+  const product = { price: "45", variants: [
+    { id: "lcd", quality: "LCD", price: "45", stock: "1", active: true }
+  ] };
+  const result = priceShopVariant(product, { variantId: "lcd", qty: 2 }, 0, Number);
+  assert.match(result.error, /onvoldoende voorraad/i);
 });
