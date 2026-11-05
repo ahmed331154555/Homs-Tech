@@ -1965,7 +1965,13 @@ app.get("/api/admin/order-settings", requirePermission("site.save"), async (req,
     const envConfigured = !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
     res.json({
       settings:{postnlEnabled:!!settings.postnlEnabled,dhlEnabled:!!settings.dhlEnabled,cashOnDeliveryEnabled:!!settings.cashOnDeliveryEnabled},
-      paypal:{enabled:typeof paypal.enabled==="boolean"?paypal.enabled:envConfigured,mode:String(paypal.mode||process.env.PAYPAL_MODE||"sandbox").toLowerCase()==="live"?"live":"sandbox",clientId:String(paypal.clientId||process.env.PAYPAL_CLIENT_ID||""),merchantId:String(paypal.merchantId||""),configured:!!(paypal.clientSecretEncrypted||process.env.PAYPAL_CLIENT_SECRET)},
+      paypal: {
+        enabled: typeof paypal.enabled === "boolean" ? paypal.enabled : envConfigured,
+        mode: String(paypal.mode || process.env.PAYPAL_MODE || "sandbox").toLowerCase() === "live" ? "live" : "sandbox",
+        clientId: String(paypal.clientId || process.env.PAYPAL_CLIENT_ID || ""),
+        merchantId: String(paypal.merchantId || ""),
+        configured: !!(paypal.clientSecretEncrypted || process.env.PAYPAL_CLIENT_SECRET)
+      },
       mollie:{configured:!!(result.rows[0]?.data?.mollie?.apiKeyEncrypted||process.env.MOLLIE_API_KEY)},
       api:{postnl:!!process.env.POSTNL_API_KEY,dhl:!!process.env.DHL_API_KEY}
     });
@@ -2011,7 +2017,13 @@ app.put("/api/admin/order-settings", requirePermission("site.save"), async (req,
       "INSERT INTO order_settings (id,data,updated_at) VALUES (1,$1::jsonb,NOW()) ON CONFLICT (id) DO UPDATE SET data=EXCLUDED.data,updated_at=NOW()",
       [JSON.stringify(settings)]
     );
-    res.json({success:true,settings:{postnlEnabled,dhlEnabled,cashOnDeliveryEnabled},paypal:{enabled:paypalEnabled,mode,clientId,merchantId,configured:hasServerSecret},mollie:{configured:!!(mollieApiKeyEncrypted||process.env.MOLLIE_API_KEY)},api:{postnl:!!process.env.POSTNL_API_KEY,dhl:!!process.env.DHL_API_KEY}});
+    res.json({
+      success: true,
+      settings: { postnlEnabled, dhlEnabled, cashOnDeliveryEnabled },
+      paypal: { enabled: paypalEnabled, mode, clientId, merchantId, configured: hasServerSecret },
+      mollie: { configured: !!(mollieApiKeyEncrypted || process.env.MOLLIE_API_KEY) },
+      api: { postnl: !!process.env.POSTNL_API_KEY, dhl: !!process.env.DHL_API_KEY }
+    });
   }catch(error){
     console.error("Order settings save error:",error.message);
     res.status(500).json({error:error.message.includes("JWT_SECRET")?error.message:"Orderinstellingen konden niet worden opgeslagen."});
