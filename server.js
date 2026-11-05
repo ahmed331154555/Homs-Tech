@@ -118,6 +118,39 @@ app.use((req, res, next) => {
   )) return res.sendStatus(404);
   next();
 });
+// Public shop availability switch. Missing setting keeps the existing Shop visible by default.
+app.get("/api/shop/status", async (req, res) => {
+  try {
+    const result = await queryWithConnectionRetry(
+      "SELECT COALESCE((data->>'shopPageEnabled')::boolean, TRUE) AS enabled FROM site_settings WHERE id = 1",
+      [], 4
+    );
+    if (!result.rows.length) return res.status(404).json({ enabled: true });
+    res.set("Cache-Control", "no-store");
+    return res.json({ enabled: result.rows[0].enabled !== false });
+  } catch (error) {
+    console.error("[SHOP STATUS] Load failed:", error);
+    return res.status(503).json({ error: "Shopstatus kon niet worden gecontroleerd." });
+  }
+});
+
+// Serve Shop only while enabled. Redirect direct product links home when temporarily hidden.
+app.get("/shop.html", async (req, res) => {
+  try {
+    const result = await queryWithConnectionRetry(
+      "SELECT COALESCE((data->>'shopPageEnabled')::boolean, TRUE) AS enabled FROM site_settings WHERE id = 1",
+      [], 4
+    );
+    if (!result.rows.length || result.rows[0].enabled === false) {
+      return res.redirect(302, "/");
+    }
+    return res.sendFile(path.join(__dirname, "shop.html"));
+  } catch (error) {
+    console.error("[SHOP PAGE] Availability check failed:", error);
+    return res.redirect(302, "/");
+  }
+});
+
 app.use(express.static(__dirname, { dotfiles: "deny", index: "index.html" }));
 
 // Create database tables and default settings
