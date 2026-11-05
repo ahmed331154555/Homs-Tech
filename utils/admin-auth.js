@@ -1,5 +1,7 @@
 "use strict";
 
+const { sanitizeStoredAdminPermissions } = require("./admin-permissions");
+
 function createAdminAuth({ jwt, getAdminUsername, getJwtSecret, pool, logError = console.error }) {
   if (!jwt || typeof jwt.verify !== "function") {
     throw new TypeError("A JWT verifier is required.");
@@ -59,7 +61,7 @@ function createAdminAuth({ jwt, getAdminUsername, getJwtSecret, pool, logError =
         id: admin.id,
         username: admin.username,
         role: admin.role || "admin",
-        permissions: Array.isArray(admin.permissions) ? admin.permissions : []
+        permissions: sanitizeStoredAdminPermissions(admin.permissions)
       };
     } catch (error) {
       // Fail closed: a database error must never preserve stale permissions.
