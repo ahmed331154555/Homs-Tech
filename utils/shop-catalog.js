@@ -16,6 +16,43 @@ async function saveShopCatalog(queryWithConnectionRetry, shopProducts, expectedS
     : [];
 }
 
+function validateShopCatalogIdentifiers(products) {
+  if (!Array.isArray(products)) return "Shop catalog must be a product list.";
+  const productIds = new Set();
+  const variantIds = new Set();
+  const skus = new Map();
+
+  for (let productIndex = 0; productIndex < products.length; productIndex += 1) {
+    const product = products[productIndex] || {};
+    const productLabel = String(product.name || "product " + (productIndex + 1));
+    const productId = String(product.id ?? "").trim();
+    if (!productId) return "Missing product ID at " + productLabel + ".";
+    if (productIds.has(productId)) return "Duplicate Shop product ID: " + productId + ".";
+    productIds.add(productId);
+
+    const variants = Array.isArray(product.variants) ? product.variants : [];
+    const qualities = new Set();
+    for (let variantIndex = 0; variantIndex < variants.length; variantIndex += 1) {
+      const variant = variants[variantIndex] || {};
+      const variantId = String(variant.id ?? "").trim();
+      if (!variantId) return "Missing option ID at " + productLabel + ".";
+      if (variantIds.has(variantId)) return "Duplicate Shop option ID: " + variantId + ".";
+      variantIds.add(variantId);
+
+      const sku = String(variant.sku ?? "").trim();
+      if (!sku) return "Missing SKU at " + productLabel + ".";
+      const skuKey = sku.toUpperCase();
+      if (skus.has(skuKey)) return "Duplicate Shop SKU: " + sku + ".";
+      skus.set(skuKey, productLabel);
+
+      const quality = String(variant.quality ?? "").trim().toLocaleLowerCase();
+      if (quality && qualities.has(quality)) return "Duplicate quality name at " + productLabel + ": " + variant.quality + ".";
+      if (quality) qualities.add(quality);
+    }
+  }
+  return null;
+}
+
 function findShopProductIndex(products, productId) {
   if (!Array.isArray(products)) return -1;
   const requested = String(productId ?? "").trim();
