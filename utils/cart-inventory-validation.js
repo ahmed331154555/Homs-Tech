@@ -24,6 +24,7 @@ function validateCartInventoryQuantities(catalog, items) {
         : (Array.isArray(catalog?.phones) && catalog.phones.length ? catalog.phones : (Array.isArray(catalog?.devices) ? catalog.devices : []));
     const index = type === "shop" ? findShopProductIndex(list, item?.id) : Number(item?.id);
     const product = Number.isInteger(index) && index >= 0 ? list[index] : null;
+    const catalogType = type === "shop" ? "shop" : type === "used" ? "used" : "phones";
     const qty = Number(item?.qty ?? 1);
     if (!product || !Number.isInteger(qty) || qty < 1) return "Een product in uw winkelwagen is niet meer beschikbaar.";
 
@@ -49,14 +50,14 @@ function validateCartInventoryQuantities(catalog, items) {
         String(x.color ?? "") === String(options.color ?? "") && String(x.storage ?? "") === String(options.storage ?? ""));
       if (!row) return "Deze uitvoering is niet meer beschikbaar.";
       if (row.stock !== undefined && row.stock !== null && row.stock !== "") {
-        const error = register("catalog-variant:" + JSON.stringify([type, index, String(row.condition), String(row.color), String(row.storage)]),
+        const error = register("catalog-variant:" + JSON.stringify([catalogType, index, String(row.condition), String(row.color), String(row.storage)]),
           row.stock, qty, "De voorraad voor deze uitvoering is niet correct ingesteld.");
         if (error) return error;
       }
     } else {
       const stockKey = ["stock", "quantity", "stockQuantity"].find(key => product[key] !== undefined && product[key] !== null && product[key] !== "");
       if (stockKey) {
-        const error = register("catalog-product:" + JSON.stringify([type, index]), product[stockKey], qty,
+        const error = register("catalog-product:" + JSON.stringify([catalogType, index]), product[stockKey], qty,
           "De voorraad voor dit product is niet correct ingesteld.");
         if (error) return error;
       }
@@ -71,7 +72,7 @@ function validateCartInventoryQuantities(catalog, items) {
         const option = (Array.isArray(groups[i]?.options) ? groups[i].options : []).find(x => x && String(x.label) === label);
         if (!option) return "Een extra of variant is niet meer beschikbaar.";
         if (option.stock !== undefined && option.stock !== null && option.stock !== "") {
-          const error = register("catalog-option:" + JSON.stringify([type, index, groupType, i, label]),
+          const error = register("catalog-option:" + JSON.stringify([catalogType, index, groupType, i, label]),
             option.stock, qty, "Deze optie heeft onvoldoende of onjuist ingestelde voorraad.");
           if (error) return error;
         }
