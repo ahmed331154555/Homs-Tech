@@ -39,7 +39,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       res.status(500).json({error:"Verzend- en betaalgegevens konden niet worden opgeslagen."});
     }
   });
-  
+
   app.get("/api/admin/webshop-orders", requirePermission("webshop_orders.view"), async (req, res) => {
     try {
       const result = await pool.query(
@@ -55,7 +55,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       res.status(500).json({ error: "Webshop bestellingen konden niet worden geladen." });
     }
   });
-  
+
   app.put("/api/admin/webshop-orders/:id/status", requirePermission("webshop_orders.update"), async (req, res) => {
     try {
       const id = Number(req.params.id);
@@ -86,14 +86,14 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       res.status(500).json({ error: "Status kon niet worden gewijzigd." });
     }
   });
-  
+
   app.delete("/api/admin/webshop-orders/:id", requirePermission("webshop_orders.delete"), async (req, res) => {
     try {
       const id = Number(req.params.id);
       if (!Number.isInteger(id) || id < 1) {
         return res.status(400).json({ error: "Ongeldig order-ID." });
       }
-  
+
       const result = await pool.query(
         `DELETE FROM webshop_orders
          WHERE id = $1
@@ -105,7 +105,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
          RETURNING id`,
         [id]
       );
-  
+
       if (!result.rows.length) {
         const existing = await pool.query(
           "SELECT id, payment_status, inventory_deducted_at, paypal_order_id, mollie_payment_id FROM webshop_orders WHERE id = $1",
@@ -118,7 +118,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
           error: "Deze bestelling kan niet worden verwijderd omdat de betaling is bevestigd, nog loopt of aan een betaalprovider is gekoppeld. Bewaar het besteloverzicht voor uw administratie."
         });
       }
-  
+
       res.json({ success: true });
     } catch (error) {
       console.error("Delete webshop order error:", error);
