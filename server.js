@@ -474,7 +474,23 @@ async function initDatabase() {
     );
   }
 
-  await pool.query("CREATE TABLE IF NOT EXISTS manual_invoices (id BIGSERIAL PRIMARY KEY, invoice_number TEXT NOT NULL UNIQUE, customer_name TEXT NOT NULL, customer_email TEXT NOT NULL, customer_address TEXT NOT NULL DEFAULT '', kvk_number TEXT NOT NULL DEFAULT '', vat_id TEXT NOT NULL DEFAULT '', lines JSONB NOT NULL, subtotal NUMERIC(12,2) NOT NULL, vat_total NUMERIC(12,2) NOT NULL, total NUMERIC(12,2) NOT NULL, status TEXT NOT NULL DEFAULT 'Concept / test', created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS manual_invoices (
+      id BIGSERIAL PRIMARY KEY,
+      invoice_number TEXT NOT NULL UNIQUE,
+      customer_name TEXT NOT NULL,
+      customer_email TEXT NOT NULL,
+      customer_address TEXT NOT NULL DEFAULT '',
+      kvk_number TEXT NOT NULL DEFAULT '',
+      vat_id TEXT NOT NULL DEFAULT '',
+      lines JSONB NOT NULL,
+      subtotal NUMERIC(12,2) NOT NULL,
+      vat_total NUMERIC(12,2) NOT NULL,
+      total NUMERIC(12,2) NOT NULL,
+      status TEXT NOT NULL DEFAULT 'Concept / test',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
 }
 
 // Public-facing settings omit supplier cost data and importer diagnostics.
