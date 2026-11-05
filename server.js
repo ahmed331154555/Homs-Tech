@@ -29,6 +29,7 @@ const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-lim
 const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-inventory");
 const { priceProductFromCatalog } = require("./utils/cart-pricing");
 const { createAdminAuth } = require("./utils/admin-auth");
+const { createCustomerAuth } = require("./utils/customer-auth");
 const { initializeDatabaseWithRetry } = require("./utils/database-initialization");
 const { createPaymentSettings } = require("./utils/payment-settings");
 const { createPaymentGatewayClients } = require("./utils/payment-gateways");
@@ -62,6 +63,7 @@ const {
   getAdminUsername: () => String(process.env.ADMIN_USERNAME || ""),
   getJwtSecret: () => process.env.JWT_SECRET
 });
+const { requireCustomerAuth } = createCustomerAuth({ jwt, getJwtSecret: () => process.env.JWT_SECRET });
 
 
 app.use(compression({ threshold: 1024 }));
@@ -2130,26 +2132,6 @@ app.post("/api/repair-requests", async (req, res) => {
 registerAdminOrderRoutes(app, { pool, requirePermission });
 // Dedicated photo endpoint to serve images on-demand with caching
 // Authentication middleware
-function requireCustomerAuth(req, res, next) {
-  try {
-    const token = req.cookies.customerToken;
-
-    if (!token) {
-      return res.status(401).json({
-        error: "Niet ingelogd"
-      });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.customerId = decoded.customerId;
-    next();
-  } catch (error) {
-    res.status(401).json({
-      error: "Niet ingelogd"
-    });
-  }
-}
-
 // Update website settings
 
 app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
