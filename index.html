@@ -528,7 +528,7 @@ function renderCategories(){
  ];
  cats.slice(0,6).forEach(c=>{
   const a=document.createElement("a");a.className="category-card"+(c.image?"":" no-image");a.href=c.link||"devices.html";
-  if(c.image){const img=document.createElement("img");img.src=c.image;img.alt=c.title||"";a.appendChild(img)}
+  if(c.image){const img=document.createElement("img");img.src=c.image;img.alt=c.title||"";img.loading="lazy";img.decoding="async";a.appendChild(img)}
   const d=document.createElement("div");d.className="category-content";
   d.innerHTML="<h3>"+esc(c.title||"Apparaat")+"</h3><span>"+esc(c.buttonText||"Bekijk")+" →</span>";
   a.appendChild(d);box.appendChild(a);
@@ -674,13 +674,34 @@ function startProductTicker(){
  requestAnimationFrame(tick);
 }
 
-async function loadSite(){
- try{
-  const r=await fetch("/api/site?view=home",{cache:"no-cache"});
-  if(r.ok){const x=await r.json();if(x&&typeof x==="object")data={...defaults,...x}}
- }catch(e){console.warn("Website data unavailable, using defaults.")}
+function renderHomepage(){
  mergeHomepageSettings();
- common();renderTopBar();renderHero();renderBanners();renderHomepageVisibility();renderCategories();renderProducts();renderServices();renderWhy();
+ common();
+ renderTopBar();
+ renderHero();
+ renderBanners();
+ renderHomepageVisibility();
+ renderCategories();
+ renderProducts();
+ renderServices();
+ renderWhy();
+}
+
+async function loadSite(){
+ // Paint the page structure and default service content immediately.
+ // Product data is refreshed asynchronously without blocking the first view.
+ renderHomepage();
+ try{
+  const r=await fetch("/api/site?view=home",{headers:{Accept:"application/json"}});
+  if(!r.ok) throw new Error("Homepage data could not be loaded");
+  const x=await r.json();
+  if(x&&typeof x==="object"){
+   data={...defaults,...x};
+   renderHomepage();
+  }
+ }catch(e){
+  console.warn("Website data unavailable, using defaults.",e);
+ }
 }
 
 // Draggable real-photo before/after comparison; supports mouse, touch and keyboard.
