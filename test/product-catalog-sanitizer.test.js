@@ -15,7 +15,6 @@ test("public product catalog keeps storefront fields and strips internal costs r
       optionGroups: [{ title: "Extra", options: [{ label: "Case", priceDelta: 10, supplierId: "private", cost: 2 }] }],
       specifications: [{ label: "Scherm", value: "6.1 inch", purchasePrice: 50 }]
     }],
-    usedPhones: [{ name: "iPhone 12", price: 199, costPrice: 70, images: ["a.webp", "b.webp"] }],
     adminSettings: { secret: "must not be returned" }
   };
   const result = sanitizeProductCatalogData(input);
@@ -27,14 +26,13 @@ test("public product catalog keeps storefront fields and strips internal costs r
   assert.equal(result.phones[0].conditionOptions[0].internalCost, undefined);
   assert.deepEqual(result.phones[0].optionGroups[0].options, [{ label: "Case", priceDelta: 10 }]);
   assert.deepEqual(result.phones[0].specifications, [{ label: "Scherm", value: "6.1 inch" }]);
-  assert.equal(result.usedPhones[0].costPrice, undefined);
   assert.equal(result.adminSettings, undefined);
   assert.equal(input.phones[0].supplierCost, 250);
 });
 
 test("public product sanitizer safely handles invalid catalog shapes", () => {
   assert.deepEqual(sanitizeProductCatalogData(null), {
-    phones: [], usedPhones: [], phone: "", whatsapp: "",
+    phones: [], phone: "", whatsapp: "",
     businessName: "HOMS TECH", siteName: "HOMS TECH",
     tagline: "Telefoonreparatie aan huis"
   });
