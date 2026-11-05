@@ -28,6 +28,7 @@ const { mollieStatusToLocal, molliePaymentMatchesOrder } = require("./utils/moll
 const { encryptPayPalSecret, decryptPayPalSecret, getPayPalBaseUrl } = require("./utils/payment-secrets");
 const { allowLiveChat, liveChatAutomaticReply } = require("./utils/live-chat");
 const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-limit");
+const { resolveRepairRequestCustomerId } = require("./utils/repair-request-customer");
 const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-inventory");
 const { priceProductFromCatalog } = require("./utils/cart-pricing");
 const { validateCartInventoryQuantities } = require("./utils/cart-inventory-validation");
@@ -1914,20 +1915,21 @@ app.post("/api/repair-requests", async (req, res) => {
     }
     const { brand, model, issue, name, email, phone, photos } = validated;
 
-    // 4. Link customer_id if user is authenticated or customer exists by email
-    let customerId = null;
-    if (req.cookies?.customer_token) {
-      try {
-        const decoded = jwt.verify(req.cookies.customer_token, process.env.JWT_SECRET || "customer-secret-key");
-        if (decoded?.customerId) customerId = decoded.customerId;
-      } catch {}
-    }
-    if (!customerId && email) {
-      try {
-        const custCheck = await pool.query("SELECT id FROM customers WHERE LOWER(email) = LOWER($1) LIMIT 1", [email]);
-        if (custCheck.rows.length) customerId = custCheck.rows[0].id;
-      } catch {}
-    }
+    // 4. Link only a verified customer session whose account email matches the request.
+    // Never attach a public form to an account based on an email address alone.
+    const customerId = await resolveRepairRequestCustomerId({
+      token: req.cookies?.customerToken,
+      jwtSecret: process.env.JWT_SECRET,
+      verifyToken: jwt.verify,
+      email,
+      findVerifiedCustomer: async (customerIdFromToken, customerEmail) => {
+        const customerResult = await pool.query(
+          "SELECT id FROM customers WHERE id = $1 AND LOWER(email) = $2 AND email_verified = TRUE LIMIT 1",
+          [customerIdFromToken, customerEmail]
+        );
+        return customerResult.rows[0] || null;
+      }
+    });
 
     // 5. Save order in PostgreSQL FIRST
     const extraFields = JSON.stringify({ repairQuote: true, brand, model, photos });
