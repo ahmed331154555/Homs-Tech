@@ -1591,7 +1591,7 @@ app.post("/api/paypal/create-order", async (req, res) => {
       headers: {
         "Authorization": `Bearer ${accessToken}`,
         "Content-Type": "application/json",
-        "PayPal-Request-Id": `homs-tech-${localOrderId}-${Date.now()}`
+        "PayPal-Request-Id": `homs-tech-create-${localOrderId}`
       },
       body: JSON.stringify({
         intent: "CAPTURE",
@@ -1644,7 +1644,7 @@ app.post("/api/paypal/capture-order", async (req, res) => {
 
     const checkoutTokenHash = crypto.createHash("sha256").update(checkoutToken).digest("hex");
     const local = await pool.query(
-      `SELECT id, total, paypal_order_id, payment_status
+      `SELECT id, total, paypal_order_id, payment_status, payment_method
        FROM webshop_orders
        WHERE id = $1 AND checkout_token = $2`,
       [localOrderId, checkoutTokenHash]
@@ -1656,6 +1656,7 @@ app.post("/api/paypal/capture-order", async (req, res) => {
 
     const order = local.rows[0];
 
+    if (order.payment_method !== "PayPal") return res.status(409).json({ error: "Deze bestelling is niet aangemaakt met PayPal als betaalmethode." });
     if (String(order.paypal_order_id || "") !== paypalOrderId) {
       return res.status(400).json({ error: "PayPal order komt niet overeen met de webshop bestelling." });
     }
@@ -1674,7 +1675,8 @@ app.post("/api/paypal/capture-order", async (req, res) => {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${accessToken}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "PayPal-Request-Id": `homs-tech-capture-${localOrderId}`
         },
         body: "{}"
       }
@@ -1695,6 +1697,8 @@ app.post("/api/paypal/capture-order", async (req, res) => {
     const expectedAmount = moneyNumber(order.total);
     if (
       data.id !== paypalOrderId ||
+      data.purchase_units?.[0]?.custom_id !== String(localOrderId) ||
+      data.purchase_units?.[0]?.reference_id !== `HOMS-${localOrderId}` ||
       captureStatus !== "COMPLETED" ||
       captureState !== "COMPLETED" ||
       captureCurrency !== "EUR" ||
@@ -1703,18 +1707,26 @@ app.post("/api/paypal/capture-order", async (req, res) => {
       Math.abs(captureAmount - expectedAmount) > 0.005
     ) {
       await pool.query(
-        `UPDATE webshop_orders SET payment_status = $1 WHERE id = $2`,
-        ["Failed", localOrderId]
+        `UPDATE webshop_orders SET payment_status = $1 WHERE id = $2 AND paypal_order_id = $3 AND payment_method = 'PayPal' AND payment_status <> 'Paid'`,
+        ["Failed", localOrderId, paypalOrderId]
       );
       return res.status(402).json({ error: "PayPal betaling is niet voltooid.", paypalStatus: captureStatus });
     }
 
-    await pool.query(
+    const paidUpdate = await pool.query(
       `UPDATE webshop_orders
        SET payment_status = 'Paid', payment_method = 'PayPal'
-       WHERE id = $1`,
-      [localOrderId]
+       WHERE id = $1 AND paypal_order_id = $2 AND payment_method = 'PayPal' AND payment_status <> 'Paid'
+       RETURNING id`,
+      [localOrderId, paypalOrderId]
     );
+    if (!paidUpdate.rowCount) {
+      const latest = await pool.query("SELECT payment_status FROM webshop_orders WHERE id = $1", [localOrderId]);
+      if (latest.rows[0]?.payment_status === "Paid") {
+        return res.json({ success: true, paid: true, orderId: localOrderId, paypalOrderId, captureId: capture?.id || null });
+      }
+      return res.status(409).json({ error: "De bestelling is ondertussen gewijzigd. Neem contact op met HOMS TECH." });
+    }
     await deductPaidOrderInventory(localOrderId);
 
     res.json({
