@@ -31,6 +31,7 @@ const { priceProductFromCatalog } = require("./utils/cart-pricing");
 const { createAdminAuth } = require("./utils/admin-auth");
 const { initializeDatabaseWithRetry } = require("./utils/database-initialization");
 const { createPaymentSettings } = require("./utils/payment-settings");
+const { createPaymentGatewayClients } = require("./utils/payment-gateways");
 const {
   preserveExistingProductPhotos,
   preserveExistingCatalogPhotos,
@@ -42,6 +43,12 @@ const { getMollieApiKey, getPayPalSettings } = createPaymentSettings({
   pool,
   getEnv: () => process.env,
   decryptSecret: decryptPayPalSecret
+});
+const { mollieRequest, getPayPalAccessToken } = createPaymentGatewayClients({
+  getMollieApiKey,
+  getPayPalSettings,
+  getPayPalBaseUrl,
+  fetchImpl: fetch
 });
 const deductPaidOrderInventory = createPaidOrderInventoryDeductor({ pool });
 const {
@@ -1622,27 +1629,6 @@ app.post("/api/webshop/orders", async (req, res) => {
 });
 
 // ---------------- MOLLIE PAYMENTS ----------------
-async function mollieRequest(endpoint, options = {}) {
-  const apiKey = await getMollieApiKey();
-  if (!apiKey) throw new Error("Mollie is nog niet geconfigureerd. Voeg MOLLIE_API_KEY toe aan de serveromgeving.");
-  const response = await fetch("https://api.mollie.com/v2" + endpoint, {
-    ...options,
-    headers: {
-      "Authorization": "Bearer " + apiKey,
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-      ...(options.headers || {})
-    }
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const error = new Error("Mollie kon de betaling niet verwerken.");
-    error.statusCode = response.status;
-    throw error;
-  }
-  return data;
-}
-
 app.get("/api/mollie/config", async (req, res) => {
   res.set("Cache-Control", "no-store");
   try { res.json({ enabled: !!(await getMollieApiKey()), provider: "Mollie" }); }
@@ -1754,32 +1740,6 @@ app.post("/api/mollie/verify-payment", async (req, res) => {
     res.status(500).json({ error: "De betaalstatus kon niet worden gecontroleerd. Probeer het opnieuw." });
   }
 });
-
-async function getPayPalAccessToken(settings = null) {
-  const config = settings || await getPayPalSettings();
-  const clientId = String(config.clientId || "").trim();
-  const clientSecret = String(config.clientSecret || "").trim();
-
-  if (!clientId || !clientSecret) {
-    throw new Error("Vul de PayPal Client ID en Client Secret in via Admin > Orderinstellingen.");
-  }
-
-  const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
-  const response = await fetch(`${getPayPalBaseUrl(config.mode)}/v1/oauth2/token`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Basic ${auth}`,
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: "grant_type=client_credentials"
-  });
-
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok || !data.access_token) {
-    throw new Error(`PayPal authenticatie mislukt (${response.status}). Controleer de Client ID, Client Secret en gekozen modus.`);
-  }
-  return data.access_token;
-}
 
 // Public checkout receives only the public client ID and never receives the secret.
 app.get("/api/paypal/config", async (req, res) => {
