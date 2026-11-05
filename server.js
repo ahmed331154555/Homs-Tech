@@ -409,7 +409,7 @@ app.post("/api/contact", async (req,res) => {
 const ADMIN_PERMISSION_NAMES = {
   "general.view":"Algemeen bekijken","services.view":"Diensten bekijken",
   "phones.view":"Telefoons & prijzen bekijken","phones.update":"Telefoons & prijzen wijzigen","categories.view":"Apparaten & categorieën bekijken",
-  "used.view":"Gebruikte telefoons bekijken","why.view":"Waarom HOMS TECH bekijken",
+  "why.view":"Waarom HOMS TECH bekijken",
   "customers.view":"Klanten bekijken","orders.view":"Reparatieaanvragen bekijken",
   "orders.update":"Reparatieaanvraag-status wijzigen","orders.delete":"Reparatieaanvragen verwijderen",
   "webshop_orders.view":"Webshop bestellingen bekijken",
