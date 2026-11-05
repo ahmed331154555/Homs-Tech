@@ -111,6 +111,20 @@ test("cart pricing validates custom option availability and stock", () => {
   assert.match(noStock.error, /niet op voorraad/);
 });
 
+test("cart pricing rejects quantities above standard product stock", () => {
+  const result = priceProductFromCatalog({ phones: [{ name: "Phone", price: 100, stock: 2 }] }, {
+    type: "phone", id: 0, qty: 3
+  });
+  assert.match(result.error, /onvoldoende voorraad/);
+});
+
+test("cart pricing checks custom option stock against requested quantity", () => {
+  const result = priceProductFromCatalog({
+    phones: [{ name: "Phone", price: 100, optionGroups: [{ options: [{ label: "Case", stock: 2 }] }] }]
+  }, { type: "phone", id: 0, qty: 3, options: { custom: { "optionGroups:0": "Case" } } });
+  assert.match(result.error, /momenteel niet op voorraad/);
+});
+
 test("cart pricing rejects invalid quantities and non-positive prices", () => {
   const invalidQty = priceProductFromCatalog({ phones: [{ name: "Phone", price: 100 }] }, {
     type: "phone", id: 0, qty: 0
