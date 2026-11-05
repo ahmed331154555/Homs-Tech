@@ -33,6 +33,7 @@ const { priceProductFromCatalog } = require("./utils/cart-pricing");
 const { validateCartInventoryQuantities } = require("./utils/cart-inventory-validation");
 const { sanitizeProductCatalogData } = require("./utils/product-catalog-sanitizer");
 const { createAdminAuth } = require("./utils/admin-auth");
+const { normalizeAdminPermissions } = require("./utils/admin-permissions");
 const { createCustomerEmails } = require("./utils/customer-emails");
 const { ensureBuybackOrdersTable } = require("./utils/buyback-schema");
 const { initializeDatabaseWithRetry } = require("./utils/database-initialization");
@@ -413,6 +414,7 @@ const ADMIN_PERMISSION_NAMES = {
   "webshop_orders.view":"Webshop bestellingen bekijken",
   "webshop_orders.update":"Webshop order-status wijzigen","webshop_orders.delete":"Webshop bestellingen verwijderen",
   "buyback_orders.view":"Inruil aanvragen bekijken","buyback_orders.update":"Inruil status wijzigen","buyback_orders.delete":"Inruil aanvragen verwijderen",
+  "device_register.view":"Apparaatregister bekijken","device_register.update":"Apparaatregister wijzigen",
   "site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
 };
 
@@ -622,7 +624,9 @@ app.post("/api/admin/users",requirePermission("admins.manage"),async(req,res)=>{
   try{
     const username=String(req.body?.username||"").trim();
     const password=String(req.body?.password||"");
-    const permissions=Array.isArray(req.body?.permissions)?[...new Set(req.body.permissions.map(String))]:[];
+    const permissionResult=normalizeAdminPermissions(req.body?.permissions,[...Object.keys(ADMIN_PERMISSION_NAMES)]);
+    if(permissionResult.error)return res.status(400).json({error:permissionResult.error});
+    const permissions=permissionResult.permissions;
     if(!username||!password) return res.status(400).json({error:"Gebruikersnaam en wachtwoord zijn verplicht."});
     if(username.toLowerCase()===String(process.env.ADMIN_USERNAME||"").trim().toLowerCase())
       return res.status(400).json({error:"Deze gebruikersnaam is gereserveerd voor de hoofdadmin."});
@@ -641,7 +645,9 @@ app.put("/api/admin/users/:id",requirePermission("admins.manage"),async(req,res)
   try{
     const id=Number(req.params.id), username=String(req.body?.username||"").trim();
     const password=String(req.body?.password||"");
-    const permissions=Array.isArray(req.body?.permissions)?[...new Set(req.body.permissions.map(String))]:[];
+    const permissionResult=normalizeAdminPermissions(req.body?.permissions,[...Object.keys(ADMIN_PERMISSION_NAMES)]);
+    if(permissionResult.error)return res.status(400).json({error:permissionResult.error});
+    const permissions=permissionResult.permissions;
     const active=req.body?.active!==false;
     if(!Number.isInteger(id)||id<1) return res.status(400).json({error:"Ongeldig admin-ID."});
     if(!username) return res.status(400).json({error:"Gebruikersnaam is verplicht."});
