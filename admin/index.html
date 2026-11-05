@@ -6509,7 +6509,7 @@ function updateShopVariant(index,variantIndex,key,value){ensureShopProducts();co
 function deleteShopVariant(index,variantIndex){ensureShopProducts();const p=data.shopProducts[index];if(!p||p.variants.length<2){alert("Een product moet minimaal één optie hebben.");return;}p.variants.splice(variantIndex,1);p.price=p.variants[0].price;p.stock=String(p.variants[0].stock??"")+" stuks";renderShopProductsAdmin();markChanged();}
 function shopProductImageUpload(event,index,slot){
  const input=event.target,file=input.files&&input.files[0];if(!file)return;
- if(!file.type.startsWith("image/")||file.type==="image/svg+xml"){alert("Kies een geldig afbeeldingsbestand (geen SVG).");input.value="";return;}
+ if(!["image/png","image/jpeg","image/webp","image/gif"].includes(String(file.type||"").toLowerCase())){alert("Gebruik een PNG-, JPG-, WebP- of GIF-afbeelding.");input.value="";return;}
  if(file.size>1.2*1024*1024){alert("Elke foto mag maximaal 1,2 MB zijn. Verklein de foto en probeer opnieuw.");input.value="";return;}
  ensureShopProducts();
  const product=data.shopProducts[index];if(!product){input.value="";return;}
