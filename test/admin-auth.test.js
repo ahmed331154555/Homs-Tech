@@ -4,7 +4,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { createAdminAuth } = require("../utils/admin-auth");
 
-function makeAuth(users = {}, pool = { query: async () => ({ rows: [] }) }) {
+function makeAuth(users = {}, pool = null) {
   const jwt = {
     verify(token, secret) {
       assert.equal(secret, "test-jwt-secret");
@@ -13,11 +13,20 @@ function makeAuth(users = {}, pool = { query: async () => ({ rows: [] }) }) {
       return users[token];
     }
   };
+  const database = pool || {
+    async query(_sql, params) {
+      const user = Object.values(users).find(candidate =>
+        (candidate.id || 0) === params[0] ||
+        String(candidate.username || "").toLowerCase() === String(params[1] || "").toLowerCase()
+      );
+      return { rows: user ? [{ ...user, active: true }] : [] };
+    }
+  };
   return createAdminAuth({
     jwt,
     getAdminUsername: () => "root-admin",
     getJwtSecret: () => "test-jwt-secret",
-    pool,
+    pool: database,
     logError: () => {}
   });
 }
@@ -167,6 +176,57 @@ test("site update middleware denies access when permission refresh query fails",
     { cookies: { token: "stale" }, headers: {} },
     response,
     () => assert.fail("next must not run")
+  );
+  assert.equal(response.statusCode, 401);
+});
+
+
+test("requirePermission refreshes current database permissions and rejects disabled wildcard admins", async () => {
+  const pool = {
+    async query(_sql, params) {
+      if (params[0] === 30) return { rows: [{ id: 30, username: "staff", role: "admin", permissions: ["orders.view"], active: true }] };
+      if (params[0] === 31) return { rows: [{ id: 31, username: "disabled", role: "admin", permissions: ["*"], active: false }] };
+      return { rows: [] };
+    }
+  };
+  const auth = makeAuth({
+    staff: { id: 30, username: "staff", permissions: ["orders.delete"] },
+    disabled: { id: 31, username: "disabled", permissions: ["*"] }
+  }, pool);
+
+  const allowedRequest = { cookies: { token: "staff" } };
+  let allowedNext = false;
+  await auth.requirePermission("orders.view")(allowedRequest, makeResponse(), () => { allowedNext = true; });
+  assert.equal(allowedNext, true);
+  assert.deepEqual(allowedRequest.admin.permissions, ["orders.view"]);
+
+  const stalePermissionResponse = makeResponse();
+  await auth.requirePermission("orders.delete")(
+    { cookies: { token: "staff" } },
+    stalePermissionResponse,
+    () => assert.fail("stale token permission must not be trusted")
+  );
+  assert.equal(stalePermissionResponse.statusCode, 403);
+
+  const disabledResponse = makeResponse();
+  await auth.requirePermission("orders.view")(
+    { cookies: { token: "disabled" } },
+    disabledResponse,
+    () => assert.fail("disabled admin must not be allowed")
+  );
+  assert.equal(disabledResponse.statusCode, 401);
+});
+
+test("requirePermission denies access when the database cannot refresh permissions", async () => {
+  const auth = makeAuth(
+    { stale: { id: 32, username: "staff", permissions: ["orders.delete"] } },
+    { query: async () => { throw new Error("database unavailable"); } }
+  );
+  const response = makeResponse();
+  await auth.requirePermission("orders.delete")(
+    { cookies: { token: "stale" } },
+    response,
+    () => assert.fail("database failure must not allow access")
   );
   assert.equal(response.statusCode, 401);
 });
