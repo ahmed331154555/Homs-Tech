@@ -6597,13 +6597,10 @@ async function compressShopPhotoData(value){
         canvas.height=Math.max(1,Math.round((img.naturalHeight||1)*scale));
         const ctx=canvas.getContext("2d");if(!ctx){resolve(value);return;}
         ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        // WebP preserves transparency. Never fall back to JPEG here because
+        // flattening a transparent product cutout onto white changes the asset.
         let compressed=canvas.toDataURL("image/webp",0.82);
         if(compressed.length>=value.length)compressed=canvas.toDataURL("image/webp",0.68);
-        if(compressed.length>=value.length){
-          ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
-          ctx.drawImage(img,0,0,canvas.width,canvas.height);
-          compressed=canvas.toDataURL("image/jpeg",0.72);
-        }
         resolve(compressed.length<value.length?compressed:value);
       }catch(error){console.warn("[HOMS TECH] Shop photo compression skipped:",error);resolve(value);}
     };
