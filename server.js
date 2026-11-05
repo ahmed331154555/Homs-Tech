@@ -364,8 +364,17 @@ app.post("/api/contact", async (req,res) => {
     if(name.length<2||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||message.length<8){
       return res.status(400).json({error:"Vul uw naam, een geldig e-mailadres en een bericht in."});
     }
-    recent.push(now);contactFormAttempts.set(ip,recent);
-    const subject=("Website contact: "+topic).slice(0,240);
+    recent.push(now);
+    contactFormAttempts.set(ip, recent);
+    // Remove expired IP entries if the public form receives traffic from many clients.
+    if (contactFormAttempts.size > 5000) {
+      for (const [key, timestamps] of contactFormAttempts.entries()) {
+        if (timestamps.every(timestamp => now - timestamp >= 60 * 60 * 1000)) {
+          contactFormAttempts.delete(key);
+        }
+      }
+    }
+    const subject = ("Website contact: " + topic).slice(0, 240);
     const body=["Nieuw contactbericht via HOMS TECH","Naam: "+name,"E-mail: "+email,"Telefoon: "+(phone||"-"),"Onderwerp: "+topic,"","Bericht:",message].join("\n");
     const id="contact-"+crypto.randomUUID();
     const notifyEmail=String(process.env.REPAIR_REQUEST_EMAIL||process.env.ORDER_NOTIFICATION_EMAIL||"").trim();
