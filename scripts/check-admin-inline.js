@@ -2,8 +2,8 @@ const fs = require("node:fs");
 
 const html = fs.readFileSync("admin/index.html", "utf8");
 const scripts = [];
-const openingScriptTag = /<script\\b[^>]*>/gi;
-const closingScriptTag = /<\\/script\\s*>/gi;
+const openingScriptTag = /<script\b[^>]*>/gi;
+const closingScriptTag = /<\/script\s*>/gi;
 
 let cursor = 0;
 while (cursor < html.length) {
@@ -19,7 +19,7 @@ while (cursor < html.length) {
   }
 
   const tag = opening[0];
-  if (!/\\bsrc\\s*=\\s*["'][^"']*["']/i.test(tag)) {
+  if (!/\bsrc\s*=\s*["'][^"']*["']/i.test(tag)) {
     const source = html.slice(openingScriptTag.lastIndex, closing.index);
     if (source.trim()) scripts.push(source);
   }
