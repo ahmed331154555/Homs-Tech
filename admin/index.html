@@ -1849,7 +1849,7 @@ textarea{
         </div>
         <div class="buyback-hierarchy-add">
           <button class="btn btn-light" type="button" onclick="addBuybackBrand()">+ Merk</button>
-          <button class="btn btn-light" type="button" onclick="addBuybackType()">+ Type apparaat</button>
+          
           <button class="btn btn-green" type="button" onclick="addBuybackModel()">+ Model</button>
         </div>
       </div>
@@ -5883,6 +5883,43 @@ function deleteUsedPhone(i){
     renderUsedPhones();
     markChanged();
   }
+}
+
+function handleImage(event,phoneIndex,imageIndex){
+  const phone=data.usedPhones[phoneIndex];
+  const file=event.target.files&&event.target.files[0];
+  if(!phone||!file)return;
+  if(!file.type.startsWith('image/')){
+    alert('Kies een afbeelding.');
+    event.target.value='';
+    return;
+  }
+  if(file.size>2*1024*1024){
+    alert('De afbeelding mag maximaal 2 MB zijn.');
+    event.target.value='';
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    phone.images=Array.isArray(phone.images)?phone.images:["","","",""];
+    phone.images[imageIndex]=reader.result;
+    markChanged();
+    renderUsedPhones();
+  };
+  reader.onerror=()=>{
+    alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');
+    event.target.value='';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage(phoneIndex,imageIndex){
+  const phone=data.usedPhones[phoneIndex];
+  if(!phone||!Array.isArray(phone.images)||!phone.images[imageIndex])return;
+  if(!confirm('Deze foto verwijderen?'))return;
+  phone.images[imageIndex]="";
+  markChanged();
+  renderUsedPhones();
 }
 
 /* ---------------- REPAIR REQUESTS ---------------- */
