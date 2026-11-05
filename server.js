@@ -28,6 +28,7 @@ const { allowLiveChat, liveChatAutomaticReply } = require("./utils/live-chat");
 const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-limit");
 const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-inventory");
 const { priceProductFromCatalog } = require("./utils/cart-pricing");
+const { createAdminAuth } = require("./utils/admin-auth");
 const {
   preserveExistingProductPhotos,
   preserveExistingCatalogPhotos,
@@ -36,6 +37,11 @@ const {
 const { saveShopCatalog, validateShopCatalogIdentifiers, validateShopCatalogImages } = require("./utils/shop-catalog");
 const PORT = process.env.PORT || 3000;
 const deductPaidOrderInventory = createPaidOrderInventoryDeductor({ pool });
+const { getSuperAdminUser, getAdminFromRequest, requireAuth, requirePermission } = createAdminAuth({
+  jwt,
+  getAdminUsername: () => String(process.env.ADMIN_USERNAME || ""),
+  getJwtSecret: () => process.env.JWT_SECRET
+});
 
 
 app.use(compression({ threshold: 1024 }));
@@ -707,10 +713,6 @@ const ADMIN_PERMISSION_NAMES = {
   "site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
 };
 
-function getSuperAdminUser(username){
-  return {id:null,username,role:"superadmin",permissions:["*"]};
-}
-
 app.post("/api/login", async (req,res)=>{
   try{
     const username=String(req.body?.username||"").trim();
@@ -775,36 +777,6 @@ app.post("/api/logout",(req,res)=>{
   res.clearCookie("token");
   res.json({success:true});
 });
-
-function getAdminFromRequest(req){
-  const token=req.cookies.token;
-  if(!token) return null;
-  const user=jwt.verify(token,process.env.JWT_SECRET);
-  if(user.username===String(process.env.ADMIN_USERNAME||"")) return getSuperAdminUser(user.username);
-  return {id:user.id||null,username:user.username,role:user.role||"admin",permissions:Array.isArray(user.permissions)?user.permissions:[]};
-}
-
-function requireAuth(req,res,next){
-  try{
-    const user=getAdminFromRequest(req);
-    if(!user) return res.status(401).json({error:"Not authenticated"});
-    req.admin=user; next();
-  }catch(e){res.status(401).json({error:"Not authenticated"});}
-}
-
-function requirePermission(permission){
-  return (req,res,next)=>{
-    try{
-      const user=getAdminFromRequest(req);
-      if(!user) return res.status(401).json({error:"Not authenticated"});
-      if(user.role==="superadmin" || user.username===String(process.env.ADMIN_USERNAME||"") || user.permissions.includes("*") || user.permissions.includes(permission)){
-        req.admin=user; return next();
-      }
-      res.status(403).json({error:"Geen toestemming voor deze actie."});
-    }catch(e){res.status(401).json({error:"Not authenticated"});}
-  };
-}
-
 
 const customerDeviceStatuses = new Set(["مفتوح","قيد العمل","مكتمل"]);
 const commercialDeviceStatuses = new Set(["تم الشراء","قيد الفحص","قيد التجديد","جاهز للبيع","تم البيع"]);
