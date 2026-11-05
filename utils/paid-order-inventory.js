@@ -20,7 +20,8 @@ function createPaidOrderInventoryDeductor({ pool }) {
       const data = settings.rows[0].data || {};
       for (const item of (Array.isArray(order.items) ? order.items : [])) {
         const type = String(item && item.type || '').toLowerCase();
-        const list = type === 'shop' ? (Array.isArray(data.shopProducts) ? data.shopProducts : []) : type === 'used' ? (Array.isArray(data.usedPhones) ? data.usedPhones : []) : (Array.isArray(data.phones) && data.phones.length ? data.phones : (Array.isArray(data.devices) ? data.devices : []));
+        if (type === 'used') throw new Error('Legacy second-hand order item cannot be processed automatically.');
+        const list = type === 'shop' ? (Array.isArray(data.shopProducts) ? data.shopProducts : []) : (Array.isArray(data.phones) && data.phones.length ? data.phones : (Array.isArray(data.devices) ? data.devices : []));
         const id = type === 'shop'
           ? findShopProductIndex(list, item && item.id)
           : Number(item && item.id);
