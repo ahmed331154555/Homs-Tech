@@ -2846,13 +2846,20 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
 
     const isShopCatalogPatch = section === "shop" &&
       req.body && Array.isArray(req.body.shopProducts) &&
-      Object.keys(req.body).length === 1;
+      Array.isArray(req.body.expectedShopProducts) &&
+      Object.keys(req.body).length === 2;
 
     if (isShopCatalogPatch) {
       const shopProducts = await saveShopCatalog(
         queryWithConnectionRetry,
-        req.body.shopProducts
+        req.body.shopProducts,
+        req.body.expectedShopProducts
       );
+      if (shopProducts === null) {
+        return res.status(409).json({
+          error: "De Shop-catalogus is ondertussen door iemand anders gewijzigd. Vernieuw de pagina en controleer de nieuwste gegevens voordat je opnieuw opslaat."
+        });
+      }
       return res.json({ success: true, shopProducts });
     }
 
