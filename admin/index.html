@@ -7043,7 +7043,9 @@ async function showWebshopOrderDetails(id){
         </div>
         <div class="ht-order-customer-grid" style="margin-top:12px">
           <div><span>Betaalmethode</span><strong>${esc(order.payment_method||"Niet geregistreerd")}</strong></div>
-          <div><span>Betaalreferentie</span><strong>${esc(order.paypal_order_id||"Niet beschikbaar")}</strong></div>
+          <div><span>Betaalreferentie</span><strong>${esc(order.mollie_payment_id||order.paypal_order_id||"Niet beschikbaar")}</strong></div>
+          <div><span>Vervoerder</span><strong>${esc(order.shipping_method||"Nog niet gekozen")}</strong></div>
+          <div><span>Tracking</span><strong>${order.tracking_number?esc(order.tracking_number):"Nog niet beschikbaar"}${order.tracking_url?` · <a href="${esc(order.tracking_url)}" target="_blank" rel="noopener noreferrer">Volg zending</a>`:""}</strong></div>
         </div>
         <div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn btn-primary" type="button" onclick="saveWebshopOrderShipping(${Number(order.id)})">Verzend- en betaalgegevens opslaan</button></div>
         <p class="ht-order-note">De vervoerder en trackinggegevens worden alleen opgeslagen; een echt verzendlabel wordt pas beschikbaar nadat de API-koppeling met de vervoerder is geïmplementeerd en getest.</p>
