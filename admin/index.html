@@ -6997,6 +6997,9 @@ async function showWebshopOrderDetails(id){
     const existing=document.getElementById("orderDetailsModal");
     if(existing)existing.remove();
     const items=Array.isArray(order.items)?order.items:[];
+    const hasShopItems=items.some(item=>String(item?.type||"phone").toLowerCase()==="shop");
+    const hasPhoneItems=items.some(item=>String(item?.type||"phone").toLowerCase()!=="shop");
+    const orderCategory=hasShopItems&&hasPhoneItems?"COMBINATIEBESTELLING":(hasPhoneItems?"TELEFOONBESTELLING":"ONDERDELEN & ACCESSOIRES");
     const address=[order.street,order.house_number].filter(Boolean).join(" ")+
       ([order.postcode,order.city].filter(Boolean).length?", "+[order.postcode,order.city].filter(Boolean).join(" "):"");
     const money=value=>"€ "+Number(value||0).toLocaleString("nl-NL",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -7012,7 +7015,8 @@ async function showWebshopOrderDetails(id){
       const quantity=Number(item.qty||item.quantity||1);
       const price=Number(item.unitPrice??item.unit_price??item.price??0);
       const options=item.options&&typeof item.options==="object"?item.options:{};
-      const meta=[options.condition||item.condition||item.product_condition,options.color||options.colour||item.color||item.colour,options.storage||item.storage,options.battery,options.vat,options.tradeIn,item.sku?"SKU: "+item.sku:""].filter(Boolean).join(" · ");
+      const itemCategory=String(item.type||"phone").toLowerCase()==="shop"?"Onderdeel / accessoire":"Telefoon";
+      const meta=[itemCategory,options.condition||item.condition||item.product_condition,options.color||options.colour||item.color||item.colour,options.storage||item.storage,options.battery,options.vat,options.tradeIn,item.sku?"SKU: "+item.sku:""].filter(Boolean).join(" · ");
       return `<div class="ht-order-product-row">
         ${image?`<img src="${esc(image)}" alt="" loading="lazy" onerror="this.style.display='none'">`:'<div class="ht-order-product-placeholder">▣</div>'}
         <div class="ht-order-product-copy"><strong>${esc(name)}</strong><small>${esc(meta||"")}</small><small>× ${quantity} · ${money(price)} per stuk</small></div>
@@ -7025,7 +7029,7 @@ async function showWebshopOrderDetails(id){
     modal.id="orderDetailsModal";
     modal.className="ht-order-detail-overlay";
     modal.innerHTML=`<div class="ht-order-detail-panel" role="dialog" aria-modal="true" aria-label="Bestelling #${Number(order.id)}">
-      <div class="ht-order-detail-top"><div><div class="ht-order-eyebrow">HOMS TECH · WEBSHOP</div><h2>Bestelling #${Number(order.id)}</h2><p>${esc(date)}</p></div><button type="button" class="btn btn-light" aria-label="Sluiten" onclick="document.getElementById('orderDetailsModal')?.remove()">✕</button></div>
+      <div class="ht-order-detail-top"><div><div class="ht-order-eyebrow">HOMS TECH · ${orderCategory}</div><h2>Bestelling #${Number(order.id)}</h2><p>${esc(date)}</p></div><button type="button" class="btn btn-light" aria-label="Sluiten" onclick="document.getElementById('orderDetailsModal')?.remove()">✕</button></div>
       <section class="ht-order-detail-section ht-order-status-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">✓</span><strong>Status van de bestelling</strong></div><div class="ht-order-status-grid"><label>Status bestelling<select class="order-status-select" data-webshop-order-id="${Number(order.id)}" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">${['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(x=>`<option value="${esc(x)}" ${status===x?'selected':''}>${esc(x)}</option>`).join('')}</select></label><div><span>Betaalstatus</span><strong><span class="ht-order-payment-state ${paymentClass}">${esc(paymentLabel)}</span></strong></div></div></section>
       ${order.inventory_error?'<section class="ht-order-detail-section" style="border:1px solid #ef4444;background:#fff7f7"><div class="ht-order-section-heading"><span class="ht-order-section-icon">⚠</span><strong>Voorraadcontrole vereist</strong></div><p style="margin:8px 0 0;color:#991b1b;white-space:pre-wrap;overflow-wrap:anywhere">${esc(order.inventory_error)}</p></section>':''}
       <div class="ht-order-note" style="margin:8px 0 12px">${order.inventory_deducted_at?'Voorraad verwerkt op: '+esc(new Date(order.inventory_deducted_at).toLocaleString('nl-NL')):'Voorraad nog niet als verwerkt geregistreerd.'}</div>
