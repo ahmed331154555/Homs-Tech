@@ -7026,6 +7026,14 @@ async function printWebshopShippingLabel(id){
   w.document.close();
 }
 
+function closePhoneOrderDetails(){
+  selectedPhoneOrderId=null;
+  const host=document.getElementById("phoneOrdersDetailHost");
+  if(host)host.innerHTML='<div class="ht-phone-orders-detail-empty"><div><div class="empty-icon">▣</div><strong>Selecteer een bestelling</strong><p>De volledige klant- en telefoongegevens verschijnen hier.</p></div></div>';
+  document.getElementById("orderDetailsModal")?.remove();
+  renderPhoneOrders();
+}
+
 async function showWebshopOrderDetails(id){
   try{
     const r=await fetch("/api/admin/webshop-orders",{credentials:"same-origin"});
@@ -7071,7 +7079,7 @@ async function showWebshopOrderDetails(id){
     const isPhoneOnlyOrder=hasPhoneItems&&!hasShopItems;
     modal.className="ht-order-detail-overlay"+(isPhoneOnlyOrder?" phone-order-detail-overlay":"");
     modal.innerHTML=`<div class="ht-order-detail-panel${isPhoneOnlyOrder?" phone-order-detail-panel":""}" role="dialog" aria-modal="true" aria-label="Bestelling #${Number(order.id)}">
-      <div class="ht-order-detail-top"><div><div class="ht-order-eyebrow">HOMS TECH · ${orderCategory}</div><h2>Bestelling #${Number(order.id)}</h2><p>${esc(date)}</p></div><button type="button" class="btn btn-light" aria-label="Sluiten" onclick="document.getElementById('orderDetailsModal')?.remove()">✕</button></div>
+      <div class="ht-order-detail-top"><div><div class="ht-order-eyebrow">HOMS TECH · ${orderCategory}</div><h2>Bestelling #${Number(order.id)}</h2><p>${esc(date)}</p></div><button type="button" class="btn btn-light" aria-label="Sluiten" onclick="closePhoneOrderDetails()">✕</button></div>
       <section class="ht-order-detail-section ht-order-status-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">✓</span><strong>Status van de bestelling</strong></div><div class="ht-order-status-grid"><label>Status bestelling<select class="order-status-select" data-webshop-order-id="${Number(order.id)}" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">${['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(x=>`<option value="${esc(x)}" ${status===x?'selected':''}>${esc(x)}</option>`).join('')}</select></label><div><span>Betaalstatus</span><strong><span class="ht-order-payment-state ${paymentClass}">${esc(paymentLabel)}</span></strong></div></div></section>
       ${order.inventory_error?'<section class="ht-order-detail-section" style="border:1px solid #ef4444;background:#fff7f7"><div class="ht-order-section-heading"><span class="ht-order-section-icon">⚠</span><strong>Voorraadcontrole vereist</strong></div><p style="margin:8px 0 0;color:#991b1b;white-space:pre-wrap;overflow-wrap:anywhere">${esc(order.inventory_error)}</p></section>':''}
       <div class="ht-order-note" style="margin:8px 0 12px">${order.inventory_deducted_at?'Voorraad verwerkt op: '+esc(new Date(order.inventory_deducted_at).toLocaleString('nl-NL')):'Voorraad nog niet als verwerkt geregistreerd.'}</div>
