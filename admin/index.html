@@ -6088,7 +6088,7 @@ function renderWebshopOrderList(type){
       const orderNumber="#"+String(order.id);
       const productCount=items.reduce((sum,item)=>sum+Math.max(0,Number(item.qty||item.quantity||1)),0);
       const statusTone=statusLabel==="Voltooid"?"is-complete":statusLabel==="Geannuleerd"?"is-cancelled":statusLabel==="Verzonden"?"is-shipped":"is-active";
-      return '<article class="ht-phone-sale-row '+statusTone+'">'+
+      return '<article class="ht-phone-sale-row '+statusTone+'" data-order-id="'+Number(order.id)+'">'+
         '<button type="button" class="ht-phone-sale-open" onclick="showWebshopOrderDetails('+Number(order.id)+')" aria-label="Open bestelling '+esc(orderNumber)+'">'+
           '<span class="ht-phone-sale-number">'+esc(orderNumber)+'</span>'+
           '<span class="ht-phone-sale-device">'+imageMarkup+'<span><strong>'+esc(itemName)+'</strong><small>'+esc(itemMeta||"Telefoonbestelling")+esc(extraItems)+'</small></span></span>'+
@@ -7033,10 +7033,40 @@ async function printWebshopShippingLabel(id){
     <hr class="rule">
     <section><div class="caption">Verzendgegevens</div><div class="meta">Vervoerder: <strong>${escLabel(carrier||"Zelf te kiezen bij verzending")}</strong></div><div class="meta">Ordernummer: <strong>#${Number(order.id)}</strong></div>${tracking?'<div class="meta">Trackingnummer</div><div class="tracking">'+escLabel(tracking)+'</div>':''}</section>
     <div class="spacer"></div><hr class="rule"><footer class="foot">Adreslabel van HOMS TECH. Dit is geen officieel betaald PostNL- of DHL-verzendlabel en bevat geen door de vervoerder aangemaakt verzendbewijs of barcode.</footer>
-  </main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),300));<\/script></body></html>`);
+  </main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),300));<\/script><style id="homs-phone-orders-split-workspace-v1">
+#page-phone-orders .ht-phone-orders-workspace{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(390px,.98fr);gap:16px;align-items:stretch;margin-top:14px;min-width:0}
+#page-phone-orders .ht-phone-orders-list-pane,#page-phone-orders .ht-phone-orders-detail-pane{min-width:0;overflow:hidden;border:1px solid #e1e8f0;border-radius:15px;background:#fff;box-shadow:0 4px 18px rgba(15,35,61,.05)}
+#page-phone-orders .ht-phone-orders-pane-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;padding:12px 15px;background:#10233d;color:#fff;font-size:13px;font-weight:800}
+#page-phone-orders .ht-phone-orders-pane-head .order-count{margin:0;color:#dbeafe;font-size:10px;font-weight:600}
+#page-phone-orders .ht-phone-orders-list-pane .phone-orders-list{max-height:720px;min-height:360px;overflow:auto;border:0;border-radius:0;box-shadow:none}
+#page-phone-orders .ht-phone-orders-detail-host{min-height:480px;max-height:760px;overflow:auto;background:#f5f7fb}
+#page-phone-orders .ht-phone-orders-detail-empty{display:grid;min-height:480px;place-items:center;padding:28px;text-align:center;color:#64748b}
+#page-phone-orders .ht-phone-orders-empty-icon{display:grid;width:56px;height:56px;place-items:center;margin:0 auto 14px;border-radius:15px;background:#eaf1fc;color:#2563eb;font-size:25px}
+#page-phone-orders .ht-phone-orders-detail-empty strong{color:#10233d;font-size:14px}
+#page-phone-orders .ht-phone-orders-detail-empty p{margin:7px 0 0;font-size:11px;line-height:1.6}
+#page-phone-orders .ht-phone-sale-row.is-selected{background:#eaf2ff;box-shadow:inset 3px 0 #2563eb}
+#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail{position:static;inset:auto;z-index:auto;display:block;overflow:visible;padding:0;background:transparent;backdrop-filter:none}
+#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel{width:100%;height:auto;max-height:none;min-height:480px;margin:0;padding:14px;border-radius:0;overflow:visible;background:#f5f7fb;box-shadow:none}
+#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel .ht-order-detail-top{position:sticky;top:-14px;z-index:3;margin:-14px -14px 12px;padding:14px;background:#10233d;color:#fff;border-radius:0 0 11px 11px}
+#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel .ht-order-detail-top h2,#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel .ht-order-detail-top p{color:#fff}
+#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel .ht-order-detail-top .ht-order-eyebrow{color:#b9d2f5}
+#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel .ht-order-detail-footer{position:sticky;bottom:0;z-index:2;padding:10px 0 0;background:#f5f7fb}
+@media(max-width:1050px){#page-phone-orders .ht-phone-orders-workspace{grid-template-columns:minmax(0,1fr) minmax(330px,.95fr);gap:12px}}
+@media(max-width:760px){#page-phone-orders .ht-phone-orders-workspace{grid-template-columns:1fr}#page-phone-orders .ht-phone-orders-list-pane .phone-orders-list{max-height:440px;min-height:160px}#page-phone-orders .ht-phone-orders-detail-host{max-height:none;min-height:260px}#page-phone-orders .ht-phone-orders-detail-empty{min-height:240px}}
+</style>
+</body></html>`);
   w.document.close();
 }
 
+function closeWebshopOrderDetails(){
+  const modal=document.getElementById("orderDetailsModal");
+  if(modal)modal.remove();
+  const host=document.getElementById("phoneOrderDetailHost");
+  if(host){
+    host.innerHTML='<div class="ht-phone-orders-detail-empty"><div><div class="ht-phone-orders-empty-icon">▣</div><strong>Selecteer een bestelling</strong><p>De volledige bestelgegevens verschijnen hier.</p></div></div>';
+  }
+  document.querySelectorAll("#phoneOrdersList .ht-phone-sale-row").forEach(row=>row.classList.remove("is-selected"));
+}
 async function showWebshopOrderDetails(id){
   try{
     const r=await fetch("/api/admin/webshop-orders",{credentials:"same-origin"});
@@ -7080,7 +7110,7 @@ async function showWebshopOrderDetails(id){
     const isPhoneOnlyOrder=hasPhoneItems&&!hasShopItems;
     modal.className="ht-order-detail-overlay"+(isPhoneOnlyOrder?" phone-order-detail-overlay":"");
     modal.innerHTML=`<div class="ht-order-detail-panel${isPhoneOnlyOrder?" phone-order-detail-panel":""}" role="dialog" aria-modal="true" aria-label="Bestelling #${Number(order.id)}">
-      <div class="ht-order-detail-top"><div><div class="ht-order-eyebrow">HOMS TECH · ${orderCategory}</div><h2>Bestelling #${Number(order.id)}</h2><p>${esc(date)}</p></div><button type="button" class="btn btn-light" aria-label="Sluiten" onclick="document.getElementById('orderDetailsModal')?.remove()">✕</button></div>
+      <div class="ht-order-detail-top"><div><div class="ht-order-eyebrow">HOMS TECH · ${orderCategory}</div><h2>Bestelling #${Number(order.id)}</h2><p>${esc(date)}</p></div><button type="button" class="btn btn-light" aria-label="Sluiten" onclick="closeWebshopOrderDetails()">✕</button></div>
       <section class="ht-order-detail-section ht-order-status-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">✓</span><strong>Status van de bestelling</strong></div><div class="ht-order-status-grid"><label>Status bestelling<select class="order-status-select" data-webshop-order-id="${Number(order.id)}" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">${['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(x=>`<option value="${esc(x)}" ${status===x?'selected':''}>${esc(x)}</option>`).join('')}</select></label><div><span>Betaalstatus</span><strong><span class="ht-order-payment-state ${paymentClass}">${esc(paymentLabel)}</span></strong></div></div></section>
       ${order.inventory_error?'<section class="ht-order-detail-section" style="border:1px solid #ef4444;background:#fff7f7"><div class="ht-order-section-heading"><span class="ht-order-section-icon">⚠</span><strong>Voorraadcontrole vereist</strong></div><p style="margin:8px 0 0;color:#991b1b;white-space:pre-wrap;overflow-wrap:anywhere">${esc(order.inventory_error)}</p></section>':''}
       <div class="ht-order-note" style="margin:8px 0 12px">${order.inventory_deducted_at?'Voorraad verwerkt op: '+esc(new Date(order.inventory_deducted_at).toLocaleString('nl-NL')):'Voorraad nog niet als verwerkt geregistreerd.'}</div>
@@ -7105,10 +7135,25 @@ async function showWebshopOrderDetails(id){
         <div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn btn-primary" type="button" onclick="saveWebshopOrderShipping(${Number(order.id)})">Verzend- en betaalgegevens opslaan</button></div>
         <p class="ht-order-note">De vervoerder en trackinggegevens worden alleen opgeslagen; een echt verzendlabel wordt pas beschikbaar nadat de API-koppeling met de vervoerder is geïmplementeerd en getest.</p>
       </section>
-      <div class="ht-order-detail-footer"><button class="btn btn-light" type="button" onclick="document.getElementById('orderDetailsModal')?.remove()">Sluiten</button><button class="btn btn-light" type="button" onclick="printWebshopShippingLabel(${Number(order.id)})">Verzendlabel afdrukken</button><button class="btn btn-dark" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
+      <div class="ht-order-detail-footer"><button class="btn btn-light" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button><button class="btn btn-light" type="button" onclick="printWebshopShippingLabel(${Number(order.id)})">Verzendlabel afdrukken</button><button class="btn btn-dark" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
     </div>`;
-    document.body.appendChild(modal);
-    modal.addEventListener("click",event=>{if(event.target===modal)modal.remove();});
+    const useInlinePhoneDetails=currentPage==="all-orders"&&unifiedOrdersActiveKey==="phone-orders";
+    const detailHost=document.getElementById("phoneOrderDetailHost");
+    if(useInlinePhoneDetails&&detailHost){
+      detailHost.replaceChildren(modal);
+      modal.classList.add("ht-phone-inline-detail");
+      document.querySelectorAll("#phoneOrdersList .ht-phone-sale-row").forEach(row=>{
+        row.classList.toggle("is-selected",row.dataset.orderId===String(order.id));
+      });
+    }else{
+      document.body.appendChild(modal);
+    }
+    modal.addEventListener("click",event=>{
+      if(event.target===modal){
+        if(modal.classList.contains("ht-phone-inline-detail"))closeWebshopOrderDetails();
+        else modal.remove();
+      }
+    });
   }catch(e){alert(e.message);}
 }
 
@@ -7346,7 +7391,7 @@ function setupUnifiedOrdersAdmin(){
     phoneSection.className="section admin-page";
     phoneSection.id="page-phone-orders";
     phoneSection.dataset.permission="webshop_orders.view";
-    phoneSection.innerHTML='<div class="section-head phone-orders-heading"><div><h2>📱 Telefoonbestellingen</h2><p>Bestellingen van telefoons via de HOMS TECH website.</p></div><button class="btn btn-light" type="button" onclick="loadWebshopOrders()">↻ Vernieuwen</button></div><div id="phoneOrderSummary" class="order-summary phone-order-summary"></div><div class="phone-orders-toolbar"><label class="phone-orders-search"><span>Zoeken</span><input id="phoneOrderSearch" type="search" placeholder="Ordernummer, klant of telefoon..." oninput="renderPhoneOrders()"></label><label><span>Bestelstatus</span><select id="phoneOrderStatusFilter" class="order-filter" onchange="renderPhoneOrders()"><option value="">Alle statussen</option><option>Nieuw</option><option>In behandeling</option><option>Verzonden</option><option>Voltooid</option><option>Geannuleerd</option></select></label><label><span>Betaalstatus</span><select id="phoneOrderPaymentFilter" class="order-filter" onchange="renderPhoneOrders()"><option value="">Alle betaalstatussen</option><option value="paid">Betaald</option><option value="unpaid">Niet betaald</option><option value="processing">In behandeling</option><option value="failed">Mislukt</option></select></label><button class="order-filter-btn" type="button" onclick="clearPhoneOrderFilters()">Filters wissen</button></div><div id="phoneOrdersStatus" class="order-count"></div><div id="phoneOrdersList" class="orders-list phone-orders-list"></div>';
+    phoneSection.innerHTML='<div class="section-head phone-orders-heading"><div><h2>📱 Telefoonbestellingen</h2><p>Bestellingen van telefoons via de HOMS TECH website.</p></div><button class="btn btn-light" type="button" onclick="loadWebshopOrders()">↻ Vernieuwen</button></div><div id="phoneOrderSummary" class="order-summary phone-order-summary"></div><div class="phone-orders-toolbar"><label class="phone-orders-search"><span>Zoeken</span><input id="phoneOrderSearch" type="search" placeholder="Ordernummer, klant of telefoon..." oninput="renderPhoneOrders()"></label><label><span>Bestelstatus</span><select id="phoneOrderStatusFilter" class="order-filter" onchange="renderPhoneOrders()"><option value="">Alle statussen</option><option>Nieuw</option><option>In behandeling</option><option>Verzonden</option><option>Voltooid</option><option>Geannuleerd</option></select></label><label><span>Betaalstatus</span><select id="phoneOrderPaymentFilter" class="order-filter" onchange="renderPhoneOrders()"><option value="">Alle betaalstatussen</option><option value="paid">Betaald</option><option value="unpaid">Niet betaald</option><option value="processing">In behandeling</option><option value="failed">Mislukt</option></select></label><button class="order-filter-btn" type="button" onclick="clearPhoneOrderFilters()">Filters wissen</button></div><div class="ht-phone-orders-workspace"><section class="ht-phone-orders-list-pane"><div class="ht-phone-orders-pane-head"><strong>Alle telefoonbestellingen</strong><span id="phoneOrdersStatus" class="order-count"></span></div><div id="phoneOrdersList" class="orders-list phone-orders-list"></div></section><aside class="ht-phone-orders-detail-pane"><div class="ht-phone-orders-pane-head"><strong>Bestelgegevens</strong><span>HOMS TECH</span></div><div id="phoneOrderDetailHost" class="ht-phone-orders-detail-host"><div class="ht-phone-orders-detail-empty"><div><div class="ht-phone-orders-empty-icon">▣</div><strong>Selecteer een bestelling</strong><p>De volledige bestelgegevens verschijnen hier.</p></div></div></div></aside></div>';
     document.querySelector("#dashboard .container")?.appendChild(phoneSection);
   }
   const sections=unifiedOrderCategories.map(item=>({item,section:document.getElementById(item.id)})).filter(entry=>entry.section);
