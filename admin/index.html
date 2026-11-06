@@ -2303,10 +2303,6 @@ function showPage(page){
     if(page==="invoices"){if(!document.querySelector("#invoiceLines tr"))addInvoiceLine();loadInvoices();}
     if(page==="live-chat"){loadLiveChat();if(liveChatRefreshTimer)clearInterval(liveChatRefreshTimer);liveChatRefreshTimer=setInterval(()=>{if(currentPage==="live-chat")loadLiveChat();},8000);}
     if(page==="all-orders"){
-      const menu=document.getElementById("ordersSubmenu");
-      const parent=document.querySelector('.nav-btn[data-page="all-orders"]');
-      if(menu)menu.hidden=false;
-      if(parent){parent.setAttribute("aria-expanded","true");parent.classList.add("expanded");}
       const key=unifiedOrdersActiveKey||unifiedOrderCategories.find(item=>hasPermission(item.permission))?.key;
       if(key)showUnifiedOrderSection(key,true);
     }
@@ -7391,8 +7387,9 @@ function setupOrdersSubmenu(){
     menu.appendChild(button);
   });
   const parent=document.querySelector('.nav-btn[data-page="all-orders"]');
-  const active=!!parent&&parent.getAttribute("aria-expanded")==="true";
+  const active=!!parent&&(parent.getAttribute("aria-expanded")==="true"||currentPage==="all-orders");
   menu.hidden=!active;
+  if(parent){parent.setAttribute("aria-expanded",String(active));parent.classList.toggle("expanded",active);}
 }
 function toggleOrdersMenu(){
   const menu=document.getElementById("ordersSubmenu");
