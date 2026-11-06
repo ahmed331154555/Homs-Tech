@@ -1682,7 +1682,26 @@ textarea{
 .nav-orders-submenu .nav-sub-btn.active{background:#1d4ed8;color:#fff;font-weight:800;box-shadow:0 3px 10px rgba(29,78,216,.22)}
 .nav-orders-submenu .nav-sub-icon{width:18px;text-align:center;flex:none}
 #page-all-orders .unified-orders-panel{min-width:0;padding:0;border:0;background:transparent}
-</style></head>
+</style><style id="homs-phone-orders-layout-refinement-v2">
+/* Phone orders: keep the split view clean and remove unused empty-state chrome. */
+#page-phone-orders .ht-phone-orders-detail-pane{min-height:0;background:#fff}
+#page-phone-orders .ht-phone-orders-detail-host{min-height:0;max-height:760px;overflow:auto;background:#fff}
+#page-phone-orders .ht-phone-orders-detail-empty,
+#page-phone-orders .ht-phone-orders-pane-head{display:none!important}
+#page-phone-orders .ht-phone-orders-workspace{grid-template-columns:minmax(0,1fr) minmax(390px,.92fr);gap:14px}
+#page-phone-orders .ht-phone-sale-head,
+#page-phone-orders .ht-phone-sale-open{grid-template-columns:36px minmax(128px,.9fr) minmax(220px,1.45fr) minmax(88px,.62fr) minmax(112px,.78fr) minmax(100px,.68fr);gap:8px}
+#page-phone-orders .ht-phone-sale-open{padding-left:11px;padding-right:11px}
+#page-phone-orders .ht-phone-sale-device{gap:8px}
+#page-phone-orders .ht-phone-product-thumb{flex-basis:48px;width:48px;height:54px}
+#page-phone-orders .ht-phone-sale-date{font-variant-numeric:tabular-nums}
+#page-phone-orders .ht-phone-sale-date strong{font-size:11px;letter-spacing:.01em}
+#page-all-orders.active:has(#page-phone-orders:not([hidden])) ~ .save-bar{display:none!important}
+@media(max-width:1100px){
+  #page-phone-orders .ht-phone-orders-workspace{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+</head>
 
 <body>
 
@@ -6100,6 +6119,22 @@ function handlePhoneOrderImageError(image){
   if(fallback)fallback.hidden=false;
 }
 
+function formatPhoneOrderDateTime(value){
+  if(!value)return {date:"—",time:""};
+  const raw=String(value).trim();
+  const hasTimezone=/(?:Z|[+-]\d{2}:?\d{2})$/i.test(raw);
+  const normalized=/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$/.test(raw)&&!hasTimezone
+    ?raw.replace(" ","T")+"Z"
+    :raw;
+  const parsed=new Date(normalized);
+  if(Number.isNaN(parsed.getTime()))return {date:"—",time:""};
+  const options={timeZone:"Europe/Amsterdam"};
+  return {
+    date:new Intl.DateTimeFormat("nl-NL",{...options,day:"2-digit",month:"2-digit",year:"numeric"}).format(parsed),
+    time:new Intl.DateTimeFormat("nl-NL",{...options,hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(parsed)
+  };
+}
+
 function renderWebshopOrderList(type){
   const phone=type==="phone";
   const prefix=phone?"phoneOrder":"webshopOrder";
@@ -6145,8 +6180,7 @@ function renderWebshopOrderList(type){
     const items=Array.isArray(order.items)?order.items:[];
     const firstItem=items[0]||{};
     const options=firstItem.options&&typeof firstItem.options==="object"?firstItem.options:{};
-    const date=order.created_at?new Date(order.created_at).toLocaleDateString("nl-NL"):"—";
-    const time=order.created_at?new Date(order.created_at).toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"}):"";
+    const {date,time}=formatPhoneOrderDateTime(order.created_at);
     const total=money(order.total);
     const itemName=firstItem.name||firstItem.title||firstItem.product_name||"Productgegevens ontbreken";
     const storage=options.storage||firstItem.storage||firstItem.memory||"";
@@ -7198,7 +7232,7 @@ function closeWebshopOrderDetails(){
   if(modal)modal.remove();
   const host=document.getElementById("phoneOrderDetailHost");
   if(host){
-    host.innerHTML='<div class="ht-phone-orders-detail-empty" aria-label="Geen bestelling geselecteerd"><div class="ht-phone-orders-empty-icon">▣</div></div>';
+    host.replaceChildren();
   }
   document.querySelectorAll("#phoneOrdersList .ht-phone-sale-row").forEach(row=>row.classList.remove("is-selected"));
 }
@@ -7525,7 +7559,7 @@ function setupUnifiedOrdersAdmin(){
     phoneSection.className="section admin-page";
     phoneSection.id="page-phone-orders";
     phoneSection.dataset.permission="webshop_orders.view";
-    phoneSection.innerHTML='<div id="phoneOrderSummary" class="order-summary phone-order-summary"></div><div class="ht-phone-orders-searchbar"><label class="phone-orders-search" for="phoneOrderSearch"><span class="ht-phone-search-icon" aria-hidden="true">⌕</span><input id="phoneOrderSearch" type="search" placeholder="Zoek op ordernummer, klant of telefoon..." oninput="renderPhoneOrders()" aria-label="Zoek telefoonbestellingen"></label><span id="phoneOrdersStatus" class="ht-phone-orders-result-count" aria-live="polite"></span></div><div class="ht-phone-orders-workspace"><section class="ht-phone-orders-list-pane"><div id="phoneOrdersList" class="orders-list phone-orders-list"></div></section><aside class="ht-phone-orders-detail-pane"><div class="ht-phone-orders-pane-head"><strong>Bestelgegevens</strong></div><div id="phoneOrderDetailHost" class="ht-phone-orders-detail-host"><div class="ht-phone-orders-detail-empty" aria-label="Geen bestelling geselecteerd"><div class="ht-phone-orders-empty-icon">▣</div></div></div></aside></div>';
+    phoneSection.innerHTML='<div id="phoneOrderSummary" class="order-summary phone-order-summary"></div><div class="ht-phone-orders-searchbar"><label class="phone-orders-search" for="phoneOrderSearch"><span class="ht-phone-search-icon" aria-hidden="true">⌕</span><input id="phoneOrderSearch" type="search" placeholder="Zoek op ordernummer, klant of telefoon..." oninput="renderPhoneOrders()" aria-label="Zoek telefoonbestellingen"></label><span id="phoneOrdersStatus" class="ht-phone-orders-result-count" aria-live="polite"></span></div><div class="ht-phone-orders-workspace"><section class="ht-phone-orders-list-pane"><div id="phoneOrdersList" class="orders-list phone-orders-list"></div></section><aside class="ht-phone-orders-detail-pane"><div id="phoneOrderDetailHost" class="ht-phone-orders-detail-host" aria-live="polite"></div></aside></div>';
     document.querySelector("#dashboard .container")?.appendChild(phoneSection);
   }
   const sections=unifiedOrderCategories.map(item=>({item,section:document.getElementById(item.id)})).filter(entry=>entry.section);
