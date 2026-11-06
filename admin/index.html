@@ -7211,32 +7211,38 @@ async function showBuybackDetails(id){
   try{
     const response=await fetch("/api/admin/buyback-orders",{credentials:"same-origin"});
     const result=await response.json().catch(()=>({}));
-    if(!response.ok) throw new Error(result.error||"Verkoopaanvraag kon niet worden geladen.");
-    const order=(result.orders||[]).find(x=>Number(x.id)===Number(id));
-    if(!order) throw new Error("Verkoopaanvraag niet gevonden.");
-
-    const price=Number(order.offered_price||0).toFixed(2).replace('.',',');
-    showOrderDetails("Verkoopaanvraag #"+(order.order_no||order.id), {
-      "Ordernummer": order.order_no || ("BT-"+order.id),
-      "Datum": order.created_at ? new Date(order.created_at).toLocaleString("nl-NL") : "-",
-      "Status": order.status || "-",
-      "Klant": order.name || "-",
-      "E-mail": order.email || "-",
-      "Telefoon": order.phone || "-",
-      "Adres": order.address || "-",
-      "Toestel": order.device || "-",
-      "Merk": order.brand || "-",
-      "Model": order.model || "-",
-      "Opslag": order.storage || "-",
-      "Conditie": order.condition || "-",
-      "Face ID": order.face_id || "-",
-      "Batterij": order.battery || "-",
-      "Scherm": order.screen || "-",
-      "Aangeboden prijs": "€ " + price,
-      "Betaalmethode": order.payment_method || "-",
-      "IBAN": order.iban || "-",
-      "Definitief aanbod": order.final_offer!==null&&order.final_offer!==undefined ? "€ "+Number(order.final_offer).toFixed(2).replace(".",",") : "-",
-      "Antwoorden": order.answers && typeof order.answers==="object" ? Object.entries(order.answers).map(([key,value])=>{const item=value&&typeof value==="object"?value:{};return (item.question||key)+": "+(item.value||"-")}).join("\n") || "-" : "-"
+    if(!response.ok)throw new Error(result.error||"Verkoopaanvraag kon niet worden geladen.");
+    const order=(result.orders||[]).find(item=>Number(item.id)===Number(id));
+    if(!order)throw new Error("Verkoopaanvraag niet gevonden.");
+    const date=order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"-";
+    const money=value=>value===null||value===undefined||value===""?"-":"€ "+Number(value).toLocaleString("nl-NL",{minimumFractionDigits:2,maximumFractionDigits:2});
+    const answers=order.answers&&typeof order.answers==="object"?Object.entries(order.answers).map(([key,value])=>{
+      const item=value&&typeof value==="object"?value:{};
+      return (item.question||key)+": "+(item.value??value??"-");
+    }).join("\n"):"-";
+    showOrderDetails("Inkoopaanvraag #"+(order.order_no||order.id),{
+      "Aanvraagnummer":order.order_no||("BT-"+order.id),
+      "Ontvangen op":date,
+      "Status":order.status||"Nieuw",
+      "Klantnaam":order.name||"-",
+      "E-mailadres":order.email||"-",
+      "Telefoonnummer":order.phone||"-",
+      "Adres":order.address||"-",
+      "Postcode":order.postcode||"-",
+      "Plaats":order.city||"-",
+      "Toestel":order.device||"-",
+      "Merk":order.brand||"-",
+      "Model":order.model||"-",
+      "Opslag":order.storage||"-",
+      "Conditie":order.condition||"-",
+      "Face ID":order.face_id||"-",
+      "Batterijconditie":order.battery||"-",
+      "Schermconditie":order.screen||"-",
+      "Aangeboden prijs":money(order.offered_price),
+      "Definitief bod":money(order.final_offer),
+      "Betaalmethode":order.payment_method||"-",
+      "IBAN":order.iban||"-",
+      "Extra antwoorden":answers
     });
   }catch(error){alert(error.message)}
 }
