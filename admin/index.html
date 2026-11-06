@@ -7141,7 +7141,8 @@ async function showWebshopOrderDetails(id){
     const detailHost=document.getElementById("phoneOrderDetailHost");
     if(useInlinePhoneDetails&&detailHost){
       detailHost.replaceChildren(modal);
-      modal.classList.add("ht-phone-inline-detail");
+      modal.classList.add("ht-phone-inline-detail","phone-order-detail-overlay");
+      modal.querySelector(".ht-order-detail-panel")?.classList.add("phone-order-detail-panel");
       document.querySelectorAll("#phoneOrdersList .ht-phone-sale-row").forEach(row=>{
         row.classList.toggle("is-selected",row.dataset.orderId===String(order.id));
       });
