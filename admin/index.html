@@ -2325,6 +2325,9 @@ function showDashboard(){
   document.getElementById("logoutBtn").style.display="block";
   document.getElementById("adminNav").style.display="block";
   if(!hasPermission(PAGE_PERMISSIONS[currentPage]||""))currentPage=firstAllowedPage()||"general";
+  // Build the unified orders workspace before the large site-catalog request.
+  // This lets the selected orders tab render and fetch its own data immediately.
+  try{setupUnifiedOrdersAdmin();}catch(error){console.error("[HOMS TECH] Orders workspace initialization failed:",error);}
   applyPermissionUI();showPage(currentPage);
 }
 async function login(){
