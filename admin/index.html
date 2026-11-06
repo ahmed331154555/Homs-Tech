@@ -1639,6 +1639,38 @@ textarea{
 #page-device-register .device-register-toolbar .btn{white-space:nowrap}
 </style>
 
+<style id="homs-orders-clean-detail-v1">
+#page-all-orders{max-width:100%;min-width:0}
+#page-all-orders>.section-head{padding:4px 2px 16px}
+#page-all-orders>.section-head h2{font-size:25px;font-weight:850;letter-spacing:-.5px;color:#102338}
+#page-all-orders>.section-head p{color:#64748b;font-size:13px;margin-top:5px}
+.unified-orders-intro{margin:0 0 14px;padding:12px 15px;border:1px solid #e5edf5;border-radius:12px;background:#f8fbff;color:#52677d;font-size:13px}
+.unified-orders-tabs{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px!important;margin:0 0 18px!important}
+.unified-orders-tab{min-width:0!important;min-height:76px!important;display:flex!important;align-items:center!important;gap:12px!important;padding:13px 15px!important;border:1px solid #e2e8f0!important;border-radius:13px!important;background:#fff!important;color:#172b40!important;text-align:left!important;box-shadow:0 2px 8px rgba(15,23,42,.035)!important}
+.unified-orders-tab[aria-selected=true]{border-color:#2563eb!important;background:#eff6ff!important;box-shadow:0 0 0 2px rgba(37,99,235,.10)!important;color:#174ea6!important}
+.unified-orders-tab-icon{width:40px;height:40px;flex:none;display:grid;place-items:center;border-radius:11px;background:#f1f5f9;font-size:21px}
+.unified-orders-tab-copy{min-width:0;display:grid;gap:4px}
+.unified-orders-tab-copy strong{font-size:13px;line-height:1.25}
+.unified-orders-tab-copy small{font-size:11px;line-height:1.35;color:#718096}
+#allOrdersSections>.section{padding:0!important}
+#allOrdersSections .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
+#allOrdersSections .section-head h2{font-size:21px;color:#102338}
+#allOrdersSections .orders-toolbar{grid-template-columns:minmax(180px,1fr) minmax(140px,190px) minmax(140px,190px) auto!important}
+#allOrdersSections .order-card{border:1px solid #e3eaf2!important;border-radius:13px!important;box-shadow:0 2px 9px rgba(15,23,42,.035)!important}
+#allOrdersSections .order-detail-btn{background:#eff6ff!important;color:#1d4ed8!important;border:1px solid #dbeafe!important}
+#allOrdersSections .order-status-select{max-width:175px}
+#orderDetailsModal{z-index:10050!important}
+#orderDetailsModal:not(.ht-order-detail-overlay)>div{max-width:760px!important;width:min(760px,100%)!important;max-height:90vh!important;overflow:auto!important;padding:0!important;border:1px solid #e3eaf2!important;box-shadow:0 24px 70px rgba(7,29,45,.25)!important}
+#orderDetailsModal:not(.ht-order-detail-overlay)>div>div:first-child{position:sticky;top:0;z-index:2;padding:17px 20px!important;background:#0b2033!important;color:#fff!important;border-radius:16px 16px 0 0}
+#orderDetailsModal:not(.ht-order-detail-overlay)>div>div:first-child h2{font-size:19px!important;color:#fff!important}
+#orderDetailsModal:not(.ht-order-detail-overlay)>div>div:first-child button{background:#fff!important;color:#102338!important}
+#orderDetailsModal:not(.ht-order-detail-overlay)>div>div:last-child{padding:8px 20px 20px!important}
+#orderDetailsModal:not(.ht-order-detail-overlay)>div>div:last-child>div{display:grid;grid-template-columns:minmax(130px,.7fr) minmax(0,1.3fr);gap:12px;padding:12px 0!important;border-bottom:1px solid #edf1f5!important}
+#orderDetailsModal:not(.ht-order-detail-overlay)>div>div:last-child>div strong{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#64748b}
+#orderDetailsModal:not(.ht-order-detail-overlay)>div>div:last-child>div span{font-size:13px;color:#172b40;overflow-wrap:anywhere}
+@media(max-width:1000px){.unified-orders-tabs{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:650px){.unified-orders-tabs{grid-template-columns:1fr!important}.unified-orders-tab{min-height:64px!important}#allOrdersSections .orders-toolbar{grid-template-columns:1fr!important}#allOrdersSections .section-head{align-items:flex-start;flex-direction:column}#orderDetailsModal:not(.ht-order-detail-overlay)>div>div:last-child>div{grid-template-columns:1fr;gap:4px}}
+</style>
 </head>
 
 <body>
@@ -5896,7 +5928,7 @@ function renderRepairRequests(){
   const statuses=['Nieuw','In behandeling','Wacht op klant','Wacht op leverancier','Resultaat ontvangen','Mislukt','Voltooid','Geannuleerd'];
   const options=statuses.map(s=>'<option'+((order.status||'Nieuw')===s?' selected':'')+'>'+s+'</option>').join('');
   const deleteBtn=hasPermission('orders.delete')?'<button class="btn btn-red order-delete-btn" onclick="deleteRepairRequest('+Number(order.id)+')">🗑️ Verwijderen</button>':'';
-  return '<article class="order-card repair-request-card '+(open?'is-open':'')+'"><div class="repair-request-row"><button type="button" class="repair-request-toggle" aria-expanded="'+(open?'true':'false')+'" aria-controls="repair-request-details-'+Number(order.id)+'" onclick="toggleRepairRequest('+Number(order.id)+')"><span class="repair-request-chevron" aria-hidden="true">'+(open?'▾':'▸')+'</span><span class="repair-request-heading"><strong>#'+esc(order.id)+' · '+esc((meta.brand?meta.brand+' ':'')+(meta.model||order.service_name||'Reparatie'))+'</strong><span>'+esc(order.name||'Onbekende klant')+'</span><span>'+esc(date)+'</span></span></button><div class="repair-request-row-actions"><span class="repair-request-summary-status">'+esc(order.status||'Nieuw')+'</span><select aria-label="Status aanvraag '+esc(order.id)+'" class="order-status-select" data-order-id="'+esc(order.id)+'" onchange="updateOrderStatus('+Number(order.id)+',this.value)">'+options+'</select>'+deleteBtn+'</div></div><div id="repair-request-details-'+Number(order.id)+'" class="repair-request-details" '+(open?'':'hidden')+'><div class="order-grid repair-request-grid"><div class="order-info"><strong>Klant</strong><span>'+esc(order.name||'-')+'</span></div><div class="order-info"><strong>E-mail</strong><span>'+esc(order.email||'-')+'</span></div><div class="order-info"><strong>Telefoon</strong><span>'+esc(order.phone||'-')+'</span></div><div class="order-info"><strong>Status</strong><span>'+esc(order.status||'Nieuw')+'</span></div><div class="order-info"><strong>Toestel / service</strong><span>'+esc((meta.brand?meta.brand+' ':'')+(meta.model||order.service_name||'-'))+'</span></div><div class="order-info"><strong>Aangemaakt</strong><span>'+esc(date||'-')+'</span></div></div><div class="order-notes"><strong>Probleem / klacht</strong><div class="repair-request-problem">'+esc(order.notes||'-')+'</div></div>'+photoHtml+offerHtml+'</div></article>';
+  return '<article class="order-card repair-request-card '+(open?'is-open':'')+'"><div class="repair-request-row"><button type="button" class="repair-request-toggle" aria-expanded="'+(open?'true':'false')+'" aria-controls="repair-request-details-'+Number(order.id)+'" onclick="toggleRepairRequest('+Number(order.id)+')"><span class="repair-request-chevron" aria-hidden="true">'+(open?'▾':'▸')+'</span><span class="repair-request-heading"><strong>#'+esc(order.id)+' · '+esc((meta.brand?meta.brand+' ':'')+(meta.model||order.service_name||'Reparatie'))+'</strong><span>'+esc(order.name||'Onbekende klant')+'</span><span>'+esc(date)+'</span></span></button><div class="repair-request-row-actions"><span class="repair-request-summary-status">'+esc(order.status||'Nieuw')+'</span><button type="button" class="btn btn-light order-detail-btn" onclick="showRepairRequestDetails('+Number(order.id)+')">◉ Details</button><select aria-label="Status aanvraag '+esc(order.id)+'" class="order-status-select" data-order-id="'+esc(order.id)+'" onchange="updateOrderStatus('+Number(order.id)+',this.value)">'+options+'</select>'+deleteBtn+'</div></div><div id="repair-request-details-'+Number(order.id)+'" class="repair-request-details" '+(open?'':'hidden')+'><div class="order-grid repair-request-grid"><div class="order-info"><strong>Klant</strong><span>'+esc(order.name||'-')+'</span></div><div class="order-info"><strong>E-mail</strong><span>'+esc(order.email||'-')+'</span></div><div class="order-info"><strong>Telefoon</strong><span>'+esc(order.phone||'-')+'</span></div><div class="order-info"><strong>Status</strong><span>'+esc(order.status||'Nieuw')+'</span></div><div class="order-info"><strong>Toestel / service</strong><span>'+esc((meta.brand?meta.brand+' ':'')+(meta.model||order.service_name||'-'))+'</span></div><div class="order-info"><strong>Aangemaakt</strong><span>'+esc(date||'-')+'</span></div></div><div class="order-notes"><strong>Probleem / klacht</strong><div class="repair-request-problem">'+esc(order.notes||'-')+'</div></div>'+photoHtml+offerHtml+'</div></article>';
  }).join('');
 }
 function setRepairQuickReply(id, kind){
@@ -6867,6 +6899,27 @@ async function deleteAdmin(id){
   const r=await fetch("/api/admin/users/"+encodeURIComponent(id),{method:"DELETE",credentials:"same-origin"});
   const x=await r.json().catch(()=>({}));if(!r.ok){document.getElementById("adminsStatus").textContent=x.error||"Verwijderen mislukt.";return;}
   await loadAdmins();
+}
+
+async function showRepairRequestDetails(id){
+  const order=adminRepairOrdersCache.find(item=>Number(item.id)===Number(id));
+  if(!order){alert("Reparatieaanvraag niet gevonden. Vernieuw de lijst.");return;}
+  let meta={};try{meta=JSON.parse(order.extra_fields||"{}")}catch{}
+  const photos=Array.isArray(meta.photos)?meta.photos:[];
+  const offer=meta.offer||{};
+  const date=order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"-";
+  const photoLinks=photos.map((photo,index)=>"Foto "+(index+1)+": "+(photo.url||photo.dataUrl||"niet beschikbaar")).join("\n");
+  showOrderDetails("Reparatieaanvraag #"+order.id,{
+    "Ordernummer":"R-"+String(order.id).padStart(4,"0"),"Datum":date,"Status":order.status||"Nieuw",
+    "Klant":order.name||"-","E-mail":order.email||"-","Telefoon":order.phone||"-",
+    "Toestel":((meta.brand||"")+" "+(meta.model||order.service_name||"")).trim()||"-",
+    "Reparatie":order.service_name||order.service_category||"-","Servicegroep":order.service_group||"-",
+    "IMEI / serienummer":order.imei||"-","Probleem / opmerkingen":order.notes||"-",
+    "Straat":order.street||"-","Huisnummer":order.house_number||"-","Postcode":order.postcode||"-","Plaats":order.city||"-",
+    "Prijs":order.price||"-","Offerte":offer.price||"-",
+    "Offerte verstuurd":offer.sentAt?new Date(offer.sentAt).toLocaleString("nl-NL"):"Nog niet",
+    "Foto's":photoLinks||"Geen foto's toegevoegd"
+  });
 }
 
 /* ---------------- ORDER DETAILS / DELETE ---------------- */
