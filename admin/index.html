@@ -1695,6 +1695,18 @@ textarea{
 @media(max-width:1100px){#page-phone-orders .ht-phone-orders-workspace{grid-template-columns:minmax(0,1fr) minmax(340px,.9fr)}}
 @media(max-width:850px){#page-phone-orders .ht-phone-orders-workspace{grid-template-columns:1fr}#page-phone-orders .ht-phone-orders-list-pane .phone-orders-list{max-height:480px}#page-phone-orders .ht-phone-orders-detail-host{max-height:none;min-height:260px}#page-phone-orders .ht-phone-orders-detail-empty{min-height:240px}}
 @media(max-width:560px){#page-phone-orders .ht-phone-orders-pane-head{padding:11px 12px}#page-phone-orders .phone-order-detail-panel .ht-order-status-grid{grid-template-columns:1fr}}
+</style><style id="homs-orders-sidebar-submenu-v1">
+.nav-orders-parent{display:flex!important;align-items:center;justify-content:space-between;gap:8px}
+.nav-orders-chevron{margin-left:auto;transition:transform .18s ease}
+.nav-orders-parent.expanded .nav-orders-chevron{transform:rotate(180deg)}
+.nav-orders-submenu{display:flex;flex-direction:column;gap:4px;margin:3px 0 9px 12px;padding:6px 0 6px 12px;border-left:2px solid rgba(148,163,184,.28)}
+.nav-orders-submenu[hidden]{display:none!important}
+.nav-orders-submenu .nav-sub-btn{display:flex;align-items:center;gap:9px;width:100%;min-height:37px;padding:8px 10px;border:0;border-radius:8px;background:transparent;color:#cbd5e1;text-align:left;font:inherit;font-size:12px;cursor:pointer}
+.nav-orders-submenu .nav-sub-btn:hover{background:rgba(148,163,184,.12);color:#fff}
+.nav-orders-submenu .nav-sub-btn.active{background:#1d4ed8;color:#fff;font-weight:800;box-shadow:0 3px 10px rgba(29,78,216,.22)}
+.nav-orders-submenu .nav-sub-icon{width:18px;text-align:center;flex:none}
+#page-all-orders>.section-head{margin-bottom:16px}
+#page-all-orders .unified-orders-panel{min-width:0;padding:0;border:0;background:transparent}
 </style></head>
 
 <body>
@@ -1720,7 +1732,7 @@ textarea{
     <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
     <button class="nav-btn" data-page="emails" data-permission="site.save" onclick="showPage('emails')">✉️ E-mail inbox</button>
     <button class="nav-btn" data-page="invoices" data-permission="site.save" onclick="showPage('invoices')">🧾 Facturen</button>
-    <button class="nav-btn" data-page="all-orders" onclick="showPage('all-orders')">📋 Alle bestellingen</button>
+    <button class="nav-btn nav-orders-parent" data-page="all-orders" aria-expanded="false" aria-controls="ordersSubmenu" onclick="toggleOrdersMenu()">📋 Alle bestellingen <span class="nav-orders-chevron">⌄</span></button><div id="ordersSubmenu" class="nav-orders-submenu" hidden></div>
     <button class="nav-btn" data-page="order-settings" data-permission="site.save" onclick="showPage('order-settings')">📦 Orderinstellingen</button>
     <button class="nav-btn" data-page="search" data-permission="search" onclick="showPage('search')">🔎 Zoeken</button>
     <button class="nav-btn" data-page="admins" data-permission="admins.manage" onclick="showPage('admins')">👤 Admins</button>
@@ -2290,7 +2302,14 @@ function showPage(page){
     if(page==="emails")loadAdminEmails();
     if(page==="invoices"){if(!document.querySelector("#invoiceLines tr"))addInvoiceLine();loadInvoices();}
     if(page==="live-chat"){loadLiveChat();if(liveChatRefreshTimer)clearInterval(liveChatRefreshTimer);liveChatRefreshTimer=setInterval(()=>{if(currentPage==="live-chat")loadLiveChat();},8000);}
-    if(page==="all-orders"){const key=unifiedOrdersActiveKey||unifiedOrderCategories.find(item=>hasPermission(item.permission))?.key;if(key)showUnifiedOrderSection(key,true);}
+    if(page==="all-orders"){
+      const menu=document.getElementById("ordersSubmenu");
+      const parent=document.querySelector('.nav-btn[data-page="all-orders"]');
+      if(menu)menu.hidden=false;
+      if(parent){parent.setAttribute("aria-expanded","true");parent.classList.add("expanded");}
+      const key=unifiedOrdersActiveKey||unifiedOrderCategories.find(item=>hasPermission(item.permission))?.key;
+      if(key)showUnifiedOrderSection(key,true);
+    }
     if(page==="orders"||page==="repair-requests")loadOrders();
     if(page==="webshop-orders")loadWebshopOrders();
     if(page==="order-settings")loadOrderSettings();
@@ -7335,10 +7354,10 @@ async function showBuybackDetails(id){
 
 let unifiedOrdersActiveKey="";
 const unifiedOrderCategories=[
-  {id:"page-repair-requests",key:"repair-requests",permission:"orders.view",updatePermission:"orders.update",icon:"🔧",title:"Reparatieaanvragen",description:"Reparatie- en prijsaanvragen",loader:()=>loadOrders()},
-  {id:"page-phone-orders",key:"phone-orders",permission:"webshop_orders.view",updatePermission:"webshop_orders.update",icon:"📱",title:"Telefoonbestellingen",description:"Verkoop van HOMS TECH telefoons en combinatiebestellingen",loader:()=>loadWebshopOrders()},
-  {id:"page-buyback-orders",key:"buyback-orders",permission:"buyback_orders.view",updatePermission:"buyback_orders.update",icon:"↩️",title:"Telefoon inkopen",description:"Telefoons die klanten aan HOMS TECH verkopen",loader:()=>loadBuybackOrders()},
-  {id:"page-webshop-orders",key:"webshop-orders",permission:"webshop_orders.view",updatePermission:"webshop_orders.update",icon:"🔋",title:"Onderdelen & accessoires",description:"Batterijen, onderdelen en accessoires",loader:()=>loadWebshopOrders()}
+  {id:"page-phone-orders",key:"phone-orders",permission:"webshop_orders.view",updatePermission:"webshop_orders.update",icon:"📱",title:"Telefoonbestellingen",description:"Telefoonbestellingen van klanten",loader:()=>loadWebshopOrders()},
+  {id:"page-webshop-orders",key:"webshop-orders",permission:"webshop_orders.view",updatePermission:"webshop_orders.update",icon:"🛍️",title:"Shop",description:"Bestellingen uit de webshop",loader:()=>loadWebshopOrders()},
+  {id:"page-buyback-orders",key:"buyback-orders",permission:"buyback_orders.view",updatePermission:"buyback_orders.update",icon:"📥",title:"Inkoop",description:"Telefoons die klanten aan HOMS TECH verkopen",loader:()=>loadBuybackOrders()},
+  {id:"page-repair-requests",key:"repair-requests",permission:"orders.view",updatePermission:"orders.update",icon:"🔧",title:"Repair",description:"Reparatie- en prijsaanvragen",loader:()=>loadOrders()}
 ];
 function showUnifiedOrderSection(key,shouldLoad=true){
   const category=unifiedOrderCategories.find(item=>item.key===key&&hasPermission(item.permission));
@@ -7347,12 +7366,51 @@ function showUnifiedOrderSection(key,shouldLoad=true){
   unifiedOrdersActiveKey=category.key;
   unifiedOrderCategories.forEach(item=>{
     const section=document.getElementById(item.id);
-    const tab=parent.querySelector('[data-order-tab="'+item.key+'"]');
     const active=item.key===category.key;
     if(section){section.hidden=!active;section.style.display=active?"block":"none";section.setAttribute("aria-hidden",String(!active));}
-    if(tab){tab.setAttribute("aria-selected",String(active));tab.tabIndex=active?0:-1;}
   });
+  const heading=document.getElementById("ordersPageHeading");
+  const description=document.getElementById("ordersPageDescription");
+  if(heading)heading.textContent=category.title;
+  if(description)description.textContent=category.description;
+  document.querySelectorAll("#ordersSubmenu [data-order-subpage]").forEach(button=>button.classList.toggle("active",button.dataset.orderSubpage===category.key));
   if(shouldLoad&&parent.classList.contains("active"))category.loader();
+}
+function setupOrdersSubmenu(){
+  const menu=document.getElementById("ordersSubmenu");
+  if(!menu)return;
+  menu.innerHTML="";
+  unifiedOrderCategories.forEach(item=>{
+    if(!hasPermission(item.permission))return;
+    const button=document.createElement("button");
+    button.type="button";
+    button.className="nav-sub-btn";
+    button.dataset.orderSubpage=item.key;
+    button.innerHTML='<span class="nav-sub-icon">'+item.icon+'</span><span>'+item.title+'</span>';
+    button.addEventListener("click",()=>showOrderSubpage(item.key));
+    menu.appendChild(button);
+  });
+  const parent=document.querySelector('.nav-btn[data-page="all-orders"]');
+  const active=!!parent&&parent.getAttribute("aria-expanded")==="true";
+  menu.hidden=!active;
+}
+function toggleOrdersMenu(){
+  const menu=document.getElementById("ordersSubmenu");
+  const parent=document.querySelector('.nav-btn[data-page="all-orders"]');
+  if(!menu||!parent)return;
+  const opening=menu.hidden;
+  menu.hidden=!opening;
+  parent.setAttribute("aria-expanded",String(opening));
+  parent.classList.toggle("expanded",opening);
+  showPage("all-orders");
+}
+function showOrderSubpage(key){
+  const menu=document.getElementById("ordersSubmenu");
+  const parent=document.querySelector('.nav-btn[data-page="all-orders"]');
+  if(menu)menu.hidden=false;
+  if(parent){parent.setAttribute("aria-expanded","true");parent.classList.add("expanded");}
+  unifiedOrdersActiveKey=key;
+  showPage("all-orders");
 }
 function refreshUnifiedOrders(){
   const category=unifiedOrderCategories.find(item=>item.key===unifiedOrdersActiveKey);
@@ -7373,26 +7431,20 @@ function setupUnifiedOrdersAdmin(){
   const parent=document.createElement("section");
   parent.className="section admin-page";
   parent.id="page-all-orders";
-  parent.innerHTML='<div class="section-head"><div><h2>📋 Alle bestellingen</h2><p>Alle aanvragen overzichtelijk verdeeld per soort.</p></div><button class="btn btn-light" type="button" onclick="refreshUnifiedOrders()">↻ Huidig overzicht vernieuwen</button></div><div class="unified-orders-intro">Kies één onderdeel. Alleen de geselecteerde bestellingen worden getoond; de andere onderdelen blijven verborgen.</div><div class="unified-orders-tabs" role="tablist" aria-label="Soort bestelling"></div><div id="allOrdersSections" class="unified-orders-panel"></div>';
-  const tabs=parent.querySelector(".unified-orders-tabs");
+  parent.innerHTML='<div class="section-head"><div><h2 id="ordersPageHeading">Alle bestellingen</h2><p id="ordersPageDescription">Kies links een soort bestelling om de aanvragen te bekijken.</p></div><button class="btn btn-light" type="button" onclick="refreshUnifiedOrders()">↻ Vernieuwen</button></div><div id="allOrdersSections" class="unified-orders-panel"></div>';
   const host=parent.querySelector("#allOrdersSections");
   sections.forEach(({item,section})=>{
     if(!hasPermission(item.permission)){section.hidden=true;section.style.display="none";return;}
-    const button=document.createElement("button");
-    button.type="button";button.className="unified-orders-tab";button.dataset.orderTab=item.key;
-    button.setAttribute("role","tab");button.setAttribute("aria-selected","false");button.tabIndex=-1;
-    button.innerHTML='<span class="unified-orders-tab-icon" aria-hidden="true">'+item.icon+'</span><span class="unified-orders-tab-copy"><strong>'+item.title+'</strong><small>'+item.description+'</small></span>';
-    button.addEventListener("click",()=>showUnifiedOrderSection(item.key,true));
     section.classList.remove("admin-page","active");section.removeAttribute("data-permission");
     section.dataset.orderCategory=item.key;section.hidden=true;section.style.display="none";
-    section.setAttribute("role","tabpanel");section.setAttribute("aria-labelledby","unified-orders-tab-"+item.key);
-    button.id="unified-orders-tab-"+item.key;
+    section.removeAttribute("role");section.removeAttribute("aria-labelledby");
     section.style.marginTop="0";
-    tabs.appendChild(button);host.appendChild(section);
+    host.appendChild(section);
   });
   const container=document.querySelector("#dashboard .container");
   if(container)container.insertBefore(parent,container.querySelector(".save-bar"));
   document.querySelectorAll('.nav-btn[data-page="orders"],.nav-btn[data-page="repair-requests"],.nav-btn[data-page="webshop-orders"],.nav-btn[data-page="buyback-orders"],.nav-btn[data-page="phone-orders"]').forEach(button=>button.remove());
+  setupOrdersSubmenu();
   const first=unifiedOrderCategories.find(item=>hasPermission(item.permission)&&document.getElementById(item.id));
   if(first)showUnifiedOrderSection(first.key,false);
 }
