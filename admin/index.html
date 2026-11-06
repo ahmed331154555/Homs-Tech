@@ -6042,6 +6042,64 @@ function webshopOrderMatchesType(order,type){
   const isShopItem=item=>String(item?.type||"phone").toLowerCase()==="shop";
   return type==="shop"?items.every(isShopItem):items.some(item=>!isShopItem(item));
 }
+function getPhoneOrderCatalogProduct(item){
+  const catalog=Array.isArray(data?.phones)?data.phones:[];
+  const productId=Number(item?.id);
+  if(Number.isInteger(productId)&&productId>=0&&catalog[productId])return catalog[productId];
+  const wanted=String(item?.name||item?.title||"").trim().toLocaleLowerCase();
+  if(!wanted)return null;
+  return catalog.find(product=>String(product?.name||"").trim().toLocaleLowerCase()===wanted)||null;
+}
+
+function normalizePhoneOrderImageSource(value){
+  const source=String(value||"").trim();
+  if(!source)return "";
+  if(/^(data:image\/|blob:|https?:\/\/|\/\/|\/)/i.test(source))return source;
+  return "/"+source.replace(/^\.\//,"");
+}
+
+function getPhoneOrderImageSources(item){
+  const product=getPhoneOrderCatalogProduct(item);
+  const options=item?.options&&typeof item.options==="object"?item.options:{};
+  const selectedColor=String(options.color||options.colour||item?.color||item?.colour||"").trim();
+  const sources=[];
+  const add=value=>{
+    const source=normalizePhoneOrderImageSource(value);
+    if(source&&!sources.includes(source))sources.push(source);
+  };
+  add(item?.image||item?.image_url||item?.imageUrl||item?.product_image||item?.productImage||item?.thumbnail||item?.photo);
+  if(product&&selectedColor){
+    const galleries=product.colorGalleryImages&&typeof product.colorGalleryImages==="object"?product.colorGalleryImages:{};
+    const galleryKey=Object.keys(galleries).find(key=>String(key).trim().toLocaleLowerCase()===selectedColor.toLocaleLowerCase());
+    if(galleryKey&&Array.isArray(galleries[galleryKey]))add(galleries[galleryKey].find(Boolean));
+    const colorImages=product.colorImages&&typeof product.colorImages==="object"?product.colorImages:{};
+    const colorImageKey=Object.keys(colorImages).find(key=>String(key).trim().toLocaleLowerCase()===selectedColor.toLocaleLowerCase());
+    if(colorImageKey)add(colorImages[colorImageKey]);
+    const colorOption=Array.isArray(product.colorOptions)?product.colorOptions.find(option=>String(option?.label||"").trim().toLocaleLowerCase()===selectedColor.toLocaleLowerCase()):null;
+    add(colorOption?.image);
+  }
+  if(product){
+    add(Array.isArray(product.images)?product.images.find(Boolean):"");
+    add(product.image||product.imageUrl);
+  }
+  return sources;
+}
+
+function handlePhoneOrderImageError(image){
+  if(!image)return;
+  let sources=[];
+  try{sources=JSON.parse(image.dataset.fallbackSources||"[]");}catch{}
+  const next=Number(image.dataset.fallbackIndex||0);
+  if(next<sources.length){
+    image.dataset.fallbackIndex=String(next+1);
+    image.src=sources[next];
+    return;
+  }
+  image.hidden=true;
+  const fallback=image.nextElementSibling;
+  if(fallback)fallback.hidden=false;
+}
+
 function renderWebshopOrderList(type){
   const phone=type==="phone";
   const prefix=phone?"phoneOrder":"webshopOrder";
@@ -6096,7 +6154,8 @@ function renderWebshopOrderList(type){
     const condition=options.condition||firstItem.condition||"";
     const itemMeta=[storage,color,condition].filter(Boolean).join(" · ");
     const extraItems=items.length>1?" + "+(items.length-1)+" product(en)":"";
-    const image=firstItem.image||firstItem.image_url||firstItem.imageUrl||firstItem.product_image||firstItem.productImage||firstItem.thumbnail||firstItem.photo||firstItem.product?.image||"";
+    const imageSources=phone?getPhoneOrderImageSources(firstItem):[firstItem.image||firstItem.image_url||firstItem.imageUrl||firstItem.product_image||firstItem.productImage||firstItem.thumbnail||firstItem.photo||firstItem.product?.image||""].filter(Boolean);
+    const image=imageSources[0]||"";
     const statusLabel=order.status||"Nieuw";
     const status=statusPresentation(statusLabel);
     const phoneNumber=String(order.phone||"").trim();
@@ -6105,8 +6164,9 @@ function renderWebshopOrderList(type){
     const productCount=items.reduce((sum,item)=>sum+Math.max(0,Number(item.qty||item.quantity||1)),0);
 
     if(phone){
+      const fallbackSources=esc(JSON.stringify(imageSources.slice(1)));
       const imageHtml=image
-        ?'<span class="ht-phone-product-thumb"><img src="'+esc(image)+'" alt="'+esc(itemName)+'" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.hidden=false"><span class="ht-phone-product-fallback" hidden>📱</span></span>'
+        ?'<span class="ht-phone-product-thumb"><img src="'+esc(image)+'" data-fallback-sources="'+fallbackSources+'" data-fallback-index="0" alt="'+esc(itemName)+'" loading="lazy" onerror="handlePhoneOrderImageError(this)"><span class="ht-phone-product-fallback" hidden>📱</span></span>'
         :'<span class="ht-phone-product-thumb"><span class="ht-phone-product-fallback">📱</span></span>';
       const payment=String(order.payment_status||"Onbekend");
       const paymentLabel=/paid|betaald|completed/i.test(payment)?"Betaald":(/pending|unpaid|open|wacht/i.test(payment)?"Openstaand":payment);
@@ -7123,6 +7183,12 @@ async function printWebshopShippingLabel(id){
 #page-phone-orders .ht-phone-sale-head{border-radius:10px 10px 0 0}
 @media(max-width:600px){#page-all-orders>.ht-orders-page-head h2{font-size:21px}#page-phone-orders .ht-phone-orders-searchbar{align-items:flex-start;flex-direction:column;gap:8px}#page-phone-orders .ht-phone-orders-searchbar .phone-orders-search{width:100%;flex-basis:auto}#page-phone-orders .ht-phone-orders-result-count{align-self:flex-start}}
 </style>
+<style id="homs-phone-orders-final-cleanup-v1">
+body:has(#page-phone-orders.active) .save-bar{display:none!important}
+#page-phone-orders .ht-phone-orders-detail-empty{min-height:300px;display:grid;place-items:center;padding:24px}
+#page-phone-orders .ht-phone-orders-empty-icon{width:52px;height:52px;margin:0;border-radius:14px}
+#page-phone-orders .ht-phone-product-thumb img[hidden]+.ht-phone-product-fallback{display:grid!important;place-items:center;width:100%;height:100%}
+</style>
 </body></html>`);
   w.document.close();
 }
@@ -7132,7 +7198,7 @@ function closeWebshopOrderDetails(){
   if(modal)modal.remove();
   const host=document.getElementById("phoneOrderDetailHost");
   if(host){
-    host.innerHTML='<div class="ht-phone-orders-detail-empty"><div><div class="ht-phone-orders-empty-icon">▣</div><strong>Selecteer een bestelling</strong><p>De volledige bestelgegevens verschijnen hier.</p></div></div>';
+    host.innerHTML='<div class="ht-phone-orders-detail-empty" aria-label="Geen bestelling geselecteerd"><div class="ht-phone-orders-empty-icon">▣</div></div>';
   }
   document.querySelectorAll("#phoneOrdersList .ht-phone-sale-row").forEach(row=>row.classList.remove("is-selected"));
 }
@@ -7459,7 +7525,7 @@ function setupUnifiedOrdersAdmin(){
     phoneSection.className="section admin-page";
     phoneSection.id="page-phone-orders";
     phoneSection.dataset.permission="webshop_orders.view";
-    phoneSection.innerHTML='<div id="phoneOrderSummary" class="order-summary phone-order-summary"></div><div class="ht-phone-orders-searchbar"><label class="phone-orders-search" for="phoneOrderSearch"><span class="ht-phone-search-icon" aria-hidden="true">⌕</span><input id="phoneOrderSearch" type="search" placeholder="Zoek op ordernummer, klant of telefoon..." oninput="renderPhoneOrders()" aria-label="Zoek telefoonbestellingen"></label><span id="phoneOrdersStatus" class="ht-phone-orders-result-count" aria-live="polite"></span></div><div class="ht-phone-orders-workspace"><section class="ht-phone-orders-list-pane"><div id="phoneOrdersList" class="orders-list phone-orders-list"></div></section><aside class="ht-phone-orders-detail-pane"><div class="ht-phone-orders-pane-head"><strong>Bestelgegevens</strong></div><div id="phoneOrderDetailHost" class="ht-phone-orders-detail-host"><div class="ht-phone-orders-detail-empty"><div><div class="ht-phone-orders-empty-icon">▣</div><strong>Selecteer een bestelling</strong><p>De volledige bestelgegevens verschijnen hier.</p></div></div></div></aside></div>';
+    phoneSection.innerHTML='<div id="phoneOrderSummary" class="order-summary phone-order-summary"></div><div class="ht-phone-orders-searchbar"><label class="phone-orders-search" for="phoneOrderSearch"><span class="ht-phone-search-icon" aria-hidden="true">⌕</span><input id="phoneOrderSearch" type="search" placeholder="Zoek op ordernummer, klant of telefoon..." oninput="renderPhoneOrders()" aria-label="Zoek telefoonbestellingen"></label><span id="phoneOrdersStatus" class="ht-phone-orders-result-count" aria-live="polite"></span></div><div class="ht-phone-orders-workspace"><section class="ht-phone-orders-list-pane"><div id="phoneOrdersList" class="orders-list phone-orders-list"></div></section><aside class="ht-phone-orders-detail-pane"><div class="ht-phone-orders-pane-head"><strong>Bestelgegevens</strong></div><div id="phoneOrderDetailHost" class="ht-phone-orders-detail-host"><div class="ht-phone-orders-detail-empty" aria-label="Geen bestelling geselecteerd"><div class="ht-phone-orders-empty-icon">▣</div></div></div></aside></div>';
     document.querySelector("#dashboard .container")?.appendChild(phoneSection);
   }
   const sections=unifiedOrderCategories.map(item=>({item,section:document.getElementById(item.id)})).filter(entry=>entry.section);
