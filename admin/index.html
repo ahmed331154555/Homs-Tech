@@ -6071,7 +6071,29 @@ function renderWebshopOrderList(type){
     const heading=phone?"Telefoonbestelling":"Shopbestelling";
     const phoneContact=order.phone?'<span>☎ '+esc(order.phone)+'</span>':"";
     const imageMarkup=itemImage?'<img class="phone-order-product-image" src="'+esc(itemImage)+'" alt="" loading="lazy" onerror="this.style.display=\'none\'">':'<span class="phone-order-product-placeholder">📱</span>';
-    return '<article class="order-card webshop-order-card webshop-order-list-card '+(phone?"phone-order-row":"")+'">'+
+    if(phone){
+      const customer=order.name||"Klant onbekend";
+      const customerPhone=order.phone||"";
+      const orderNumber="#"+String(order.id);
+      const productCount=items.reduce((sum,item)=>sum+Math.max(0,Number(item.qty||item.quantity||1)),0);
+      const statusTone=statusLabel==="Voltooid"?"is-complete":statusLabel==="Geannuleerd"?"is-cancelled":statusLabel==="Verzonden"?"is-shipped":"is-active";
+      return '<article class="ht-phone-sale-row '+statusTone+'">'+
+        '<button type="button" class="ht-phone-sale-open" onclick="showWebshopOrderDetails('+Number(order.id)+')" aria-label="Open bestelling '+esc(orderNumber)+'">'+
+          '<span class="ht-phone-sale-number">'+esc(orderNumber)+'</span>'+
+          '<span class="ht-phone-sale-device">'+imageMarkup+'<span><strong>'+esc(itemName)+'</strong><small>'+esc(itemMeta||"Telefoonbestelling")+esc(extraItems)+'</small></span></span>'+
+          '<span class="ht-phone-sale-customer"><strong>'+esc(customer)+'</strong><small>'+esc(customerPhone||order.email||"Geen contactgegevens")+'</small></span>'+
+          '<strong class="ht-phone-sale-price">'+esc(total)+'</strong>'+
+          '<span class="ht-phone-sale-badges"><span class="webshop-status-pill '+(statusLabel==="Geannuleerd"?"is-cancelled":statusLabel==="Voltooid"?"is-complete":"")+'">'+esc(statusLabel)+'</span><span class="webshop-payment-pill '+paymentClass+'">'+esc(paymentLabel)+'</span></span>'+
+          '<span class="ht-phone-sale-date">'+esc(date)+'</span><span class="ht-phone-sale-chevron" aria-hidden="true">›</span>'+
+        '</button>'+
+        '<div class="ht-phone-sale-actions"><label class="ht-phone-sale-status-control"><span>Status wijzigen</span><select aria-label="Bestelstatus" class="order-status-select status-select-'+statusLabel.replace(/\\s+/g,"-").toLowerCase()+'" data-webshop-order-id="'+Number(order.id)+'" onchange="updateWebshopOrderStatus('+Number(order.id)+',this.value)">'+["Nieuw","In behandeling","Verzonden","Voltooid","Geannuleerd"].map(value=>'<option value="'+esc(value)+'" '+(statusLabel===value?"selected":"")+'>'+esc(value)+'</option>').join("")+'</select></label>'+
+        '<span class="ht-phone-sale-count">'+productCount+' product(en)</span>'+
+        (hasPermission("webshop_orders.delete")?'<button class="btn btn-red order-delete-btn" type="button" onclick="deleteWebshopOrder('+Number(order.id)+')">Verwijderen</button>':"")+
+        '</div>'+
+        (mixed?'<div class="unified-order-mixed-note">Combinatiebestelling: telefoon en shopartikelen.</div>':"")+
+      '</article>';
+    }
+    return '<article class="order-card webshop-order-card webshop-order-list-card">'+
       '<div class="phone-order-main">'+
         '<div class="phone-order-product">'+imageMarkup+'</div>'+
         '<div class="phone-order-info"><div class="phone-order-title-line"><button class="webshop-order-title-link" type="button" onclick="showWebshopOrderDetails('+Number(order.id)+')">'+esc(itemName)+'</button><span class="phone-order-number">#'+esc(order.id)+'</span></div>'+
@@ -7761,6 +7783,50 @@ if ("serviceWorker" in navigator) {
 .phone-order-detail-panel .ht-order-total-banner strong{color:#fff}
 .phone-order-detail-panel .ht-order-section-icon{background:#eaf1fc;color:#1d4ed8}
 @media(max-width:700px){.phone-order-detail-overlay{padding:0}.phone-order-detail-panel{width:100%;border-radius:0;padding:14px}.phone-order-detail-panel .ht-order-detail-top{top:-14px;margin:-14px 0 12px;padding-top:12px}.phone-order-detail-panel .ht-order-status-grid,.phone-order-detail-panel .ht-order-customer-grid{grid-template-columns:1fr}}
+</style>
+<style id="homs-phone-sales-workspace-v2">
+/* Focused phone-sales workspace: clear table hierarchy, HOMS TECH navy/blue palette. */
+#page-phone-orders .phone-orders-heading h2{color:#10233d;font-weight:850;letter-spacing:-.025em}
+#page-phone-orders .phone-orders-heading p{color:#64748b}
+#page-phone-orders .phone-order-summary .order-stat{position:relative;overflow:hidden;border-color:#e1e8f2;background:linear-gradient(145deg,#fff,#f7faff)}
+#page-phone-orders .phone-order-summary .order-stat:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:#2563eb}
+#page-phone-orders .phone-orders-toolbar{box-shadow:0 5px 18px rgba(15,35,61,.045)}
+#page-phone-orders .phone-orders-list{display:block;overflow:hidden;border:1px solid #dfe7f1;border-radius:15px;background:#fff;box-shadow:0 5px 20px rgba(15,35,61,.05)}
+.ht-phone-sale-head,.ht-phone-sale-open{display:grid;grid-template-columns:66px minmax(190px,1.35fr) minmax(145px,1fr) minmax(105px,.75fr) minmax(150px,1fr) minmax(125px,.9fr) 20px;gap:12px;align-items:center}
+.ht-phone-sale-head{padding:12px 16px;background:#10233d;color:#fff;font-size:11px;font-weight:800;letter-spacing:.035em;text-transform:uppercase}
+.ht-phone-sale-row{border-top:1px solid #edf1f6;background:#fff;transition:background .15s}
+.ht-phone-sale-row:first-of-type{border-top:0}
+.ht-phone-sale-row:hover{background:#f5f8fe}
+.ht-phone-sale-row.is-active{box-shadow:inset 3px 0 #2563eb}
+.ht-phone-sale-row.is-complete{box-shadow:inset 3px 0 #16a34a}
+.ht-phone-sale-row.is-cancelled{box-shadow:inset 3px 0 #dc2626}
+.ht-phone-sale-open{width:100%;border:0;background:transparent;text-align:left;padding:12px 16px;color:#172033;cursor:pointer;font:inherit}
+.ht-phone-sale-number{font-weight:850;color:#1d4ed8;font-size:13px}
+.ht-phone-sale-device{display:flex;align-items:center;gap:11px;min-width:0}
+.ht-phone-sale-device img,.ht-phone-sale-device .phone-order-product-placeholder{width:48px;height:52px;flex:0 0 48px;object-fit:contain;padding:3px;border:1px solid #e7edf5;border-radius:9px;background:#f5f8fc}
+.ht-phone-sale-device>span:last-child,.ht-phone-sale-customer{display:grid;gap:4px;min-width:0}
+.ht-phone-sale-device strong,.ht-phone-sale-customer strong{font-size:13px;color:#10233d;overflow-wrap:anywhere}
+.ht-phone-sale-device small,.ht-phone-sale-customer small{font-size:11px;color:#64748b;line-height:1.4;overflow-wrap:anywhere}
+.ht-phone-sale-price{color:#15803d;font-size:16px;white-space:nowrap}
+.ht-phone-sale-badges{display:flex;flex-wrap:wrap;gap:5px}
+.ht-phone-sale-badges .webshop-status-pill,.ht-phone-sale-badges .webshop-payment-pill{font-size:10px;white-space:nowrap}
+.ht-phone-sale-date{font-size:11px;color:#64748b;line-height:1.5}
+.ht-phone-sale-chevron{font-size:24px;color:#2563eb;text-align:right}
+.ht-phone-sale-actions{display:flex;align-items:center;gap:10px;padding:0 16px 10px 94px}
+.ht-phone-sale-status-control{display:flex;align-items:center;gap:8px;font-size:10px;color:#64748b;font-weight:700}
+.ht-phone-sale-status-control select{min-height:30px;border:1px solid #dbe3ed;border-radius:8px;background:#f8fafc;padding:4px 8px;font-size:11px;color:#172033}
+.ht-phone-sale-count{font-size:10px;color:#64748b;margin-right:auto}
+#page-phone-orders .order-empty{padding:38px 18px;text-align:center;color:#64748b}
+.phone-order-detail-overlay{background:rgba(8,20,37,.58);backdrop-filter:blur(3px)}
+.phone-order-detail-panel{background:#f5f7fb;box-shadow:-18px 0 48px rgba(3,13,28,.22)}
+.phone-order-detail-panel .ht-order-detail-top{background:#10233d;color:#fff;border-radius:0 0 12px 12px;padding:18px 18px 14px;margin:-20px -20px 14px}
+.phone-order-detail-panel .ht-order-detail-top h2,.phone-order-detail-panel .ht-order-detail-top p{color:#fff}
+.phone-order-detail-panel .ht-order-detail-top .ht-order-eyebrow{color:#a9c8f5}
+.phone-order-detail-panel .ht-order-detail-section{border:1px solid #e2e8f0;border-radius:13px;box-shadow:0 3px 12px rgba(15,35,61,.04)}
+.phone-order-detail-panel .ht-order-total-banner{background:#10233d;border-radius:12px}
+.phone-order-detail-panel .ht-order-grand-total strong,.phone-order-detail-panel .ht-order-product-price{color:#15803d}
+@media(max-width:1050px){.ht-phone-sale-head,.ht-phone-sale-open{grid-template-columns:54px minmax(170px,1.3fr) minmax(125px,1fr) minmax(95px,.7fr) minmax(135px,1fr) 20px}.ht-phone-sale-head span:nth-child(6),.ht-phone-sale-date{display:none}.ht-phone-sale-open .ht-phone-sale-badges{grid-column:5}}
+@media(max-width:700px){.ht-phone-sale-head{display:none}.ht-phone-sale-open{grid-template-columns:42px minmax(0,1fr) auto 18px;gap:8px;padding:12px}.ht-phone-sale-number{font-size:12px}.ht-phone-sale-device img,.ht-phone-sale-device .phone-order-product-placeholder{width:44px;height:48px;flex-basis:44px}.ht-phone-sale-customer{grid-column:2;grid-row:2}.ht-phone-sale-price{grid-column:3;grid-row:1;font-size:15px}.ht-phone-sale-badges{grid-column:2/4;grid-row:3}.ht-phone-sale-chevron{grid-column:4;grid-row:1/4}.ht-phone-sale-date{display:block;grid-column:2/4;grid-row:4}.ht-phone-sale-actions{padding:0 12px 10px 62px;flex-wrap:wrap}.ht-phone-sale-status-control{width:100%;justify-content:space-between}.ht-phone-sale-status-control select{flex:1;max-width:190px}}
 </style>
 </body>
 </html>
