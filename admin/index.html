@@ -1671,7 +1671,31 @@ textarea{
 @media(max-width:1000px){.unified-orders-tabs{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:650px){.unified-orders-tabs{grid-template-columns:1fr!important}.unified-orders-tab{min-height:64px!important}#allOrdersSections .orders-toolbar{grid-template-columns:1fr!important}#allOrdersSections .section-head{align-items:flex-start;flex-direction:column}#orderDetailsModal:not(.ht-order-detail-overlay)>div>div:last-child>div{grid-template-columns:1fr;gap:4px}}
 </style>
-</head>
+<style id="homs-phone-orders-split-layout-v1">
+#page-phone-orders .ht-phone-orders-workspace{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(390px,.92fr);gap:16px;align-items:start;margin-top:12px}
+#page-phone-orders .ht-phone-orders-list-pane,#page-phone-orders .ht-phone-orders-detail-pane{min-width:0;background:#fff;border:1px solid #e1e8f0;border-radius:15px;overflow:hidden;box-shadow:0 4px 18px rgba(15,35,61,.05)}
+#page-phone-orders .ht-phone-orders-pane-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 16px;background:#10233d;color:#fff;font-size:14px}
+#page-phone-orders .ht-phone-orders-pane-head .order-count{color:#dbeafe;font-size:11px}
+#page-phone-orders .ht-phone-orders-list-pane .phone-orders-list{padding:0;max-height:calc(100vh - 390px);min-height:360px;overflow:auto}
+#page-phone-orders .ht-phone-orders-detail-host{min-height:480px;max-height:calc(100vh - 320px);overflow:auto;background:#f5f7fb}
+#page-phone-orders .ht-phone-orders-detail-empty{min-height:480px;display:grid;place-items:center;padding:28px;text-align:center;color:#64748b}
+#page-phone-orders .ht-phone-orders-empty-icon{width:58px;height:58px;display:grid;place-items:center;margin:0 auto 14px;border-radius:16px;background:#eaf1fc;color:#2563eb;font-size:27px}
+#page-phone-orders .ht-phone-orders-detail-empty strong{color:#10233d;font-size:15px}
+#page-phone-orders .ht-phone-orders-detail-empty p{font-size:12px;line-height:1.6}
+#page-phone-orders .phone-order-detail-overlay{position:static;inset:auto;z-index:auto;display:block;padding:0;background:transparent;overflow:visible;backdrop-filter:none}
+#page-phone-orders .phone-order-detail-panel{width:100%;height:auto;max-height:none;overflow:visible;margin:0;padding:14px;border-radius:0;background:#f5f7fb;box-shadow:none}
+#page-phone-orders .phone-order-detail-panel .ht-order-detail-top{position:sticky;top:0;z-index:2;margin:-14px -14px 12px;padding:14px;background:#10233d;color:#fff;border-radius:0}
+#page-phone-orders .phone-order-detail-panel .ht-order-detail-top h2,#page-phone-orders .phone-order-detail-panel .ht-order-detail-top p{color:#fff}
+#page-phone-orders .phone-order-detail-panel .ht-order-eyebrow{color:#b9d2f5}
+#page-phone-orders .phone-order-detail-panel .ht-order-detail-top .btn{color:#fff;border-color:#52647b;background:transparent}
+#page-phone-orders .phone-order-detail-panel .ht-order-total-banner{background:#eaf1fc;color:#10233d;border:1px solid #d5e3f7}
+#page-phone-orders .phone-order-detail-panel .ht-order-total-banner strong{color:#15803d}
+#page-phone-orders .phone-order-detail-panel .ht-order-detail-footer{position:sticky;bottom:0;padding:10px 0 0;background:#f5f7fb}
+#page-phone-orders .ht-phone-sale-row.is-selected{background:#eaf2ff;box-shadow:inset 3px 0 #2563eb}
+@media(max-width:1100px){#page-phone-orders .ht-phone-orders-workspace{grid-template-columns:minmax(0,1fr) minmax(340px,.9fr)}}
+@media(max-width:850px){#page-phone-orders .ht-phone-orders-workspace{grid-template-columns:1fr}#page-phone-orders .ht-phone-orders-list-pane .phone-orders-list{max-height:480px}#page-phone-orders .ht-phone-orders-detail-host{max-height:none;min-height:260px}#page-phone-orders .ht-phone-orders-detail-empty{min-height:240px}}
+@media(max-width:560px){#page-phone-orders .ht-phone-orders-pane-head{padding:11px 12px}#page-phone-orders .phone-order-detail-panel .ht-order-status-grid{grid-template-columns:1fr}}
+</style></head>
 
 <body>
 
@@ -7096,7 +7120,15 @@ async function showWebshopOrderDetails(id){
       </section>
       <div class="ht-order-detail-footer"><button class="btn btn-light" type="button" onclick="document.getElementById('orderDetailsModal')?.remove()">Sluiten</button><button class="btn btn-light" type="button" onclick="printWebshopShippingLabel(${Number(order.id)})">Verzendlabel afdrukken</button><button class="btn btn-dark" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
     </div>`;
-    document.body.appendChild(modal);
+    if(isPhoneOnlyOrder){
+      const host=document.getElementById("phoneOrderDetailHost");
+      if(host){host.innerHTML="";host.appendChild(modal);}
+      else document.body.appendChild(modal);
+      document.querySelectorAll("#phoneOrdersList .ht-phone-sale-row").forEach(row=>row.classList.remove("is-selected"));
+      const selected=document.querySelector('#phoneOrdersList [onclick*="showWebshopOrderDetails('+Number(0)+')"]');
+      const selectedButton=Array.from(document.querySelectorAll("#phoneOrdersList .ht-phone-sale-open")).find(button=>button.getAttribute("onclick")=== "showWebshopOrderDetails("+Number(order.id)+")");
+      selectedButton?.closest(".ht-phone-sale-row")?.classList.add("is-selected");
+    }else{document.body.appendChild(modal);}
     modal.addEventListener("click",event=>{if(event.target===modal)modal.remove();});
   }catch(e){alert(e.message);}
 }
@@ -7325,7 +7357,7 @@ function setupUnifiedOrdersAdmin(){
     phoneSection.className="section admin-page";
     phoneSection.id="page-phone-orders";
     phoneSection.dataset.permission="webshop_orders.view";
-    phoneSection.innerHTML='<div class="section-head phone-orders-heading"><div><h2>📱 Telefoonbestellingen</h2><p>Bestellingen van telefoons via de HOMS TECH website.</p></div><button class="btn btn-light" type="button" onclick="loadWebshopOrders()">↻ Vernieuwen</button></div><div id="phoneOrderSummary" class="order-summary phone-order-summary"></div><div class="phone-orders-toolbar"><label class="phone-orders-search"><span>Zoeken</span><input id="phoneOrderSearch" type="search" placeholder="Ordernummer, klant of telefoon..." oninput="renderPhoneOrders()"></label><label><span>Bestelstatus</span><select id="phoneOrderStatusFilter" class="order-filter" onchange="renderPhoneOrders()"><option value="">Alle statussen</option><option>Nieuw</option><option>In behandeling</option><option>Verzonden</option><option>Voltooid</option><option>Geannuleerd</option></select></label><label><span>Betaalstatus</span><select id="phoneOrderPaymentFilter" class="order-filter" onchange="renderPhoneOrders()"><option value="">Alle betaalstatussen</option><option value="paid">Betaald</option><option value="unpaid">Niet betaald</option><option value="processing">In behandeling</option><option value="failed">Mislukt</option></select></label><button class="order-filter-btn" type="button" onclick="clearPhoneOrderFilters()">Filters wissen</button></div><div id="phoneOrdersStatus" class="order-count"></div><div id="phoneOrdersList" class="orders-list phone-orders-list"></div>';
+    phoneSection.innerHTML='<div class="section-head phone-orders-heading"><div><h2>📱 Telefoonbestellingen</h2><p>Bestellingen van telefoons via de HOMS TECH website.</p></div><button class="btn btn-light" type="button" onclick="loadWebshopOrders()">↻ Vernieuwen</button></div><div id="phoneOrderSummary" class="order-summary phone-order-summary"></div><div class="phone-orders-toolbar"><label class="phone-orders-search"><span>Zoeken</span><input id="phoneOrderSearch" type="search" placeholder="Ordernummer, klant of telefoon..." oninput="renderPhoneOrders()"></label><label><span>Bestelstatus</span><select id="phoneOrderStatusFilter" class="order-filter" onchange="renderPhoneOrders()"><option value="">Alle statussen</option><option>Nieuw</option><option>In behandeling</option><option>Verzonden</option><option>Voltooid</option><option>Geannuleerd</option></select></label><label><span>Betaalstatus</span><select id="phoneOrderPaymentFilter" class="order-filter" onchange="renderPhoneOrders()"><option value="">Alle betaalstatussen</option><option value="paid">Betaald</option><option value="unpaid">Niet betaald</option><option value="processing">In behandeling</option><option value="failed">Mislukt</option></select></label><button class="order-filter-btn" type="button" onclick="clearPhoneOrderFilters()">Filters wissen</button></div><div class="ht-phone-orders-workspace"><section class="ht-phone-orders-list-pane"><div class="ht-phone-orders-pane-head"><strong>Alle telefoonbestellingen</strong><span id="phoneOrdersStatus" class="order-count"></span></div><div id="phoneOrdersList" class="orders-list phone-orders-list"></div></section><aside class="ht-phone-orders-detail-pane"><div class="ht-phone-orders-pane-head"><strong>Bestelgegevens</strong><span>HOMS TECH</span></div><div id="phoneOrderDetailHost" class="ht-phone-orders-detail-host"><div class="ht-phone-orders-detail-empty"><div><div class="ht-phone-orders-empty-icon">▣</div><strong>Selecteer een bestelling</strong><p>De volledige bestelgegevens verschijnen hier.</p></div></div></div></aside></div>';
     document.querySelector("#dashboard .container")?.appendChild(phoneSection);
   }
   const sections=unifiedOrderCategories.map(item=>({item,section:document.getElementById(item.id)})).filter(entry=>entry.section);
