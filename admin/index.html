@@ -1743,6 +1743,7 @@ textarea{
 #page-phone-orders .ht-phone-sale-badges{display:flex;align-items:center;min-width:0}
 #page-phone-orders .ht-phone-status-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;max-width:100%;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}
 #page-phone-orders .ht-phone-status-chip.is-new{background:#e8f1ff;color:#1d4ed8}
+#page-phone-orders .ht-phone-status-chip.is-accepted{background:#dcfce7;color:#15803d}
 #page-phone-orders .ht-phone-status-chip.is-processing{background:#fff4d9;color:#a16207}
 #page-phone-orders .ht-phone-status-chip.is-shipped{background:#e9edff;color:#4338ca}
 #page-phone-orders .ht-phone-status-chip.is-complete{background:#dcfce7;color:#15803d}
@@ -6268,6 +6269,7 @@ function renderWebshopOrderList(type){
   const statusPresentation=value=>{
     const map={
       "Nieuw":{icon:"🆕",className:"is-new"},
+      "Geaccepteerd":{icon:"✓",className:"is-accepted"},
       "In behandeling":{icon:"⏳",className:"is-processing"},
       "Verzonden":{icon:"🚚",className:"is-shipped"},
       "Voltooid":{icon:"✅",className:"is-complete"},
