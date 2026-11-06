@@ -1682,22 +1682,113 @@ textarea{
 .nav-orders-submenu .nav-sub-btn.active{background:#1d4ed8;color:#fff;font-weight:800;box-shadow:0 3px 10px rgba(29,78,216,.22)}
 .nav-orders-submenu .nav-sub-icon{width:18px;text-align:center;flex:none}
 #page-all-orders .unified-orders-panel{min-width:0;padding:0;border:0;background:transparent}
-</style><style id="homs-phone-orders-layout-refinement-v2">
-/* Phone orders: keep the split view clean and remove unused empty-state chrome. */
-#page-phone-orders .ht-phone-orders-detail-pane{min-height:0;background:#fff}
-#page-phone-orders .ht-phone-orders-detail-host{min-height:0;max-height:760px;overflow:auto;background:#fff}
+</style>
+<style id="homs-phone-orders-v4">
+/* Summary cards are intentionally removed from the phone-orders page. */
+#page-phone-orders .phone-order-summary,
+#page-phone-orders #phoneOrderSummary{display:none!important}
+
+/* Page heading */
+#page-all-orders>.ht-orders-page-head{display:flex;align-items:center;min-height:48px;margin:0 0 18px;padding:0;border:0;background:transparent}
+#page-all-orders>.ht-orders-page-head h2{margin:0;color:#10233d;font-size:25px;font-weight:850;letter-spacing:-.025em;line-height:1.2}
+#page-phone-orders .phone-orders-heading{display:none!important}
+
+/* Search and filters */
+#page-phone-orders .ht-phone-orders-searchbar{display:flex;align-items:center;justify-content:flex-start;flex-wrap:nowrap;gap:10px;width:100%;min-width:0;margin:0 0 14px;padding:0;border:0;background:transparent;box-shadow:none}
+#page-phone-orders .ht-phone-orders-searchbar .phone-orders-search{display:flex;align-items:center;flex:1 1 320px;gap:10px;width:auto;max-width:390px;min-width:180px;min-height:42px;margin:0;padding:0 13px;border:1px solid #dbe3ed;border-radius:11px;background:#fff;box-shadow:0 2px 8px rgba(15,35,61,.05);color:#64748b;box-sizing:border-box}
+#page-phone-orders .ht-phone-orders-searchbar .phone-orders-search:focus-within{border-color:#8ab0ee;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+#page-phone-orders .ht-phone-orders-searchbar .ht-phone-search-icon{display:flex;flex:0 0 19px;align-items:center;justify-content:center;width:19px;height:19px;color:#64748b;font-size:19px;line-height:1}
+#page-phone-orders .ht-phone-orders-searchbar .phone-orders-search input{display:block;flex:1 1 auto;width:100%;min-width:0;height:40px;margin:0;padding:0;border:0;outline:0;background:transparent;box-shadow:none;color:#172033;font-size:13px;line-height:normal}
+#page-phone-orders .ht-phone-orders-searchbar .phone-orders-search input::placeholder{color:#94a3b8;opacity:1}
+#page-phone-orders .ht-phone-orders-filter{display:flex;flex:0 1 190px;align-items:center;min-width:145px;min-height:42px;margin:0;padding:0 11px;border:1px solid #dbe3ed;border-radius:11px;background:#fff;box-shadow:0 2px 8px rgba(15,35,61,.04);box-sizing:border-box}
+#page-phone-orders .ht-phone-orders-filter select{display:block;width:100%;min-width:0;height:40px;margin:0;padding:0 20px 0 1px;border:0;outline:0;background:transparent;color:#172033;font-size:12px;font-weight:700;cursor:pointer}
+#page-phone-orders .ht-phone-orders-filter:focus-within{border-color:#8ab0ee;box-shadow:0 0 0 3px rgba(37,99,235,.09)}
+#page-phone-orders .ht-phone-orders-result-count{display:none!important}
+
+/* List and optional order-details pane */
+#page-phone-orders .ht-phone-orders-workspace{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;min-width:0;margin-top:14px}
+#page-phone-orders .ht-phone-orders-list-pane{min-width:0}
+#page-phone-orders .ht-phone-orders-detail-pane{display:none;min-width:0;min-height:0;padding:0;border:0;background:#fff}
+#page-phone-orders .ht-phone-orders-workspace.has-selection{grid-template-columns:minmax(0,1.12fr) minmax(360px,.88fr);align-items:start}
+#page-phone-orders .ht-phone-orders-workspace.has-selection .ht-phone-orders-detail-pane{display:block;overflow:hidden;border:1px solid #e3eaf3;border-radius:14px;background:#fff;box-shadow:0 3px 13px rgba(15,35,61,.045)}
+#page-phone-orders .ht-phone-orders-detail-host{min-height:0;max-height:calc(100vh - 150px);overflow:auto;background:#fff}
 #page-phone-orders .ht-phone-orders-detail-empty,
 #page-phone-orders .ht-phone-orders-pane-head{display:none!important}
-#page-phone-orders .ht-phone-orders-workspace{grid-template-columns:minmax(0,1fr) minmax(390px,.92fr);gap:14px}
+#page-phone-orders .phone-orders-list{display:block;width:100%;min-width:0;max-height:720px;overflow:auto;border:1px solid #e1e8f1;border-radius:13px;background:#fff;box-shadow:0 3px 13px rgba(15,35,61,.045)}
+#page-phone-orders .order-empty{padding:38px 18px;text-align:center;color:#64748b}
+
+/* Orders table */
 #page-phone-orders .ht-phone-sale-head,
-#page-phone-orders .ht-phone-sale-open{grid-template-columns:36px minmax(128px,.9fr) minmax(220px,1.45fr) minmax(88px,.62fr) minmax(112px,.78fr) minmax(100px,.68fr);gap:8px}
-#page-phone-orders .ht-phone-sale-open{padding-left:11px;padding-right:11px}
-#page-phone-orders .ht-phone-sale-device{gap:8px}
-#page-phone-orders .ht-phone-product-thumb{flex-basis:48px;width:48px;height:54px}
-#page-phone-orders .ht-phone-sale-date{font-variant-numeric:tabular-nums}
-#page-phone-orders .ht-phone-sale-date strong{font-size:11px;letter-spacing:.01em}
+#page-phone-orders .ht-phone-sale-open{display:grid;grid-template-columns:42px minmax(135px,1.05fr) minmax(180px,1.35fr) minmax(90px,.72fr) minmax(112px,.95fr) minmax(100px,.78fr) 18px;gap:9px;align-items:center}
+#page-phone-orders .ht-phone-sale-head{position:sticky;top:0;z-index:2;min-height:43px;padding:10px 13px;border-radius:10px 10px 0 0;background:#edf2fa;color:#17243a;font-size:12px;font-weight:800;letter-spacing:0;text-transform:none}
+#page-phone-orders .ht-phone-sale-row{border-top:1px solid #edf1f6;background:#fff;transition:background .15s}
+#page-phone-orders .ht-phone-sale-row:first-of-type{border-top:0}
+#page-phone-orders .ht-phone-sale-row:hover{background:#f7faff}
+#page-phone-orders .ht-phone-sale-row.is-selected{background:#e7f1ff;box-shadow:inset 3px 0 #2563eb}
+#page-phone-orders .ht-phone-sale-open{width:100%;min-height:66px;padding:9px 13px;border:0;background:transparent;color:#172033;text-align:left;cursor:pointer;font:inherit}
+#page-phone-orders .ht-phone-sale-number{color:#1d4ed8;font-size:13px;font-weight:850}
+#page-phone-orders .ht-phone-sale-customer,
+#page-phone-orders .ht-phone-product-copy{display:grid;gap:4px;min-width:0}
+#page-phone-orders .ht-phone-sale-customer strong{display:flex;align-items:center;gap:6px;color:#10233d;font-size:12px;font-weight:750;line-height:1.35;overflow-wrap:anywhere}
+#page-phone-orders .ht-phone-customer-icon{font-size:13px}
+#page-phone-orders .ht-phone-sale-customer small{display:flex;align-items:center;gap:5px;color:#64748b;font-size:11px;line-height:1.35;white-space:nowrap}
+#page-phone-orders .ht-whatsapp-mark{color:#16a34a;font-size:14px}
+#page-phone-orders .ht-phone-sale-device{display:flex;align-items:center;gap:9px;min-width:0}
+#page-phone-orders .ht-phone-product-thumb{display:grid;place-items:center;flex:0 0 43px;width:43px;height:49px;overflow:hidden;border:1px solid #e5ebf3;border-radius:8px;background:#f7f9fc}
+#page-phone-orders .ht-phone-product-thumb img{display:block;width:100%;height:100%;padding:2px;object-fit:contain}
+#page-phone-orders .ht-phone-product-fallback{font-size:22px}
+#page-phone-orders .ht-phone-product-copy strong{color:#10233d;font-size:12px;font-weight:800;line-height:1.35;overflow-wrap:anywhere}
+#page-phone-orders .ht-phone-product-copy small{color:#64748b;font-size:11px;line-height:1.4;overflow-wrap:anywhere}
+#page-phone-orders .ht-phone-sale-price{color:#16803c;font-size:15px;font-weight:850;white-space:nowrap}
+#page-phone-orders .ht-phone-sale-badges{display:flex;align-items:center;min-width:0}
+#page-phone-orders .ht-phone-status-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;max-width:100%;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}
+#page-phone-orders .ht-phone-status-chip.is-new{background:#e8f1ff;color:#1d4ed8}
+#page-phone-orders .ht-phone-status-chip.is-processing{background:#fff4d9;color:#a16207}
+#page-phone-orders .ht-phone-status-chip.is-shipped{background:#e9edff;color:#4338ca}
+#page-phone-orders .ht-phone-status-chip.is-complete{background:#dcfce7;color:#15803d}
+#page-phone-orders .ht-phone-status-chip.is-cancelled{background:#fee2e2;color:#b91c1c}
+#page-phone-orders .ht-phone-status-chip.is-unknown{background:#f1f5f9;color:#475569}
+#page-phone-orders .ht-phone-sale-date{display:flex;flex-direction:column;gap:2px;color:#334155;font-variant-numeric:tabular-nums;white-space:nowrap}
+#page-phone-orders .ht-phone-sale-date strong{font-size:11px;font-weight:750}
+#page-phone-orders .ht-phone-sale-date small{color:#64748b;font-size:11px}
+#page-phone-orders .ht-phone-sale-chevron{display:flex;justify-content:flex-end;color:#64748b;font-size:21px;line-height:1}
+#page-phone-orders .ht-phone-sale-actions{display:none}
+
+/* Inline order details */
+#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail{position:static;inset:auto;z-index:auto;display:block;overflow:visible;padding:0;background:transparent;backdrop-filter:none}
+#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel{width:100%;height:auto;max-height:none;min-height:480px;margin:0;padding:14px;overflow:visible;border-radius:0;background:#f5f7fb;box-shadow:none}
+#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel .ht-order-detail-top{position:sticky;top:-14px;z-index:3;margin:-14px -14px 12px;padding:14px;border-radius:0 0 11px 11px;background:#10233d;color:#fff}
+#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel .ht-order-detail-top h2,
+#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel .ht-order-detail-top p{color:#fff}
+#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel .ht-order-detail-top .ht-order-eyebrow{color:#b9d2f5}
+#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel .ht-order-detail-footer{position:sticky;bottom:0;z-index:2;padding:10px 0 0;background:#f5f7fb}
+
+/* Fixed save bar: active only while the phone-orders subsection is open. */
+body.phone-orders-page-active .save-bar{position:fixed!important;left:clamp(230px,18vw,290px)!important;right:22px!important;bottom:12px!important;z-index:1100!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;min-height:56px!important;margin:0!important;padding:8px 12px!important;border:1px solid #e2e8f0!important;border-radius:12px!important;background:rgba(255,255,255,.98)!important;box-shadow:0 5px 20px rgba(15,35,61,.13)!important}
+body.phone-orders-page-active .save-bar>div{margin-right:auto;min-width:0}
+body.phone-orders-page-active .save-bar>div .small{display:none!important}
+body.phone-orders-page-active .save-bar #saveStatus{font-size:11px;line-height:1.3}
+body.phone-orders-page-active .save-bar #saveBtn{display:inline-flex!important;align-items:center;justify-content:center;min-height:39px!important;padding:8px 15px!important;border-radius:9px!important;font-size:13px!important;white-space:nowrap}
+body.phone-orders-page-active #page-all-orders{padding-bottom:78px}
+
 @media(max-width:1100px){
-  #page-phone-orders .ht-phone-orders-workspace{grid-template-columns:minmax(0,1fr)}
+  #page-phone-orders .ht-phone-orders-workspace.has-selection{grid-template-columns:minmax(0,1fr)}
+  #page-phone-orders .ht-phone-orders-detail-host{max-height:none}
+}
+@media(max-width:760px){
+  #page-phone-orders .ht-phone-orders-searchbar{flex-wrap:wrap}
+  #page-phone-orders .ht-phone-orders-searchbar .phone-orders-search{flex:1 1 100%;max-width:none}
+  #page-phone-orders .ht-phone-orders-filter{flex:1 1 0;min-width:0}
+  #page-phone-orders .ht-phone-sale-head{display:none}
+  #page-phone-orders .ht-phone-sale-open{grid-template-columns:42px minmax(0,1fr) auto 18px;gap:8px;padding:12px}
+  #page-phone-orders .ht-phone-sale-number{grid-column:1;grid-row:1/4}
+  #page-phone-orders .ht-phone-sale-customer{grid-column:2;grid-row:1}
+  #page-phone-orders .ht-phone-sale-device{grid-column:2;grid-row:2}
+  #page-phone-orders .ht-phone-sale-price{grid-column:3;grid-row:1;font-size:14px}
+  #page-phone-orders .ht-phone-sale-badges{grid-column:2/4;grid-row:3}
+  #page-phone-orders .ht-phone-sale-date{grid-column:2/4;grid-row:4;flex-direction:row;gap:8px}
+  #page-phone-orders .ht-phone-sale-chevron{grid-column:4;grid-row:1/5}
+  body.phone-orders-page-active .save-bar{left:10px!important;right:10px!important;bottom:8px!important}
 }
 </style>
 </head>
@@ -6223,6 +6314,7 @@ function renderWebshopOrderList(type){
           '<strong class="ht-phone-sale-price">'+esc(total)+'</strong>'+
           '<span class="ht-phone-sale-badges"><span class="ht-phone-status-chip '+status.className+'"><span aria-hidden="true">'+status.icon+'</span>'+esc(statusLabel)+'</span></span>'+
           '<span class="ht-phone-sale-date"><strong>'+esc(date)+'</strong><small>'+esc(time)+'</small></span>'+
+          '<span class="ht-phone-sale-chevron" aria-hidden="true">›</span>'+
         '</button>'+
         (mixed?'<div class="unified-order-mixed-note">Combinatiebestelling: telefoon en shopartikelen.</div>':"")+
       '</article>';
@@ -7151,158 +7243,10 @@ async function printWebshopShippingLabel(id){
     <hr class="rule">
     <section><div class="caption">Verzendgegevens</div><div class="meta">Vervoerder: <strong>${escLabel(carrier||"Zelf te kiezen bij verzending")}</strong></div><div class="meta">Ordernummer: <strong>#${Number(order.id)}</strong></div>${tracking?'<div class="meta">Trackingnummer</div><div class="tracking">'+escLabel(tracking)+'</div>':''}</section>
     <div class="spacer"></div><hr class="rule"><footer class="foot">Adreslabel van HOMS TECH. Dit is geen officieel betaald PostNL- of DHL-verzendlabel en bevat geen door de vervoerder aangemaakt verzendbewijs of barcode.</footer>
-  </main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),300));<\/script><style id="homs-phone-orders-split-workspace-v1">
-#page-phone-orders .ht-phone-orders-workspace{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(390px,.98fr);gap:16px;align-items:stretch;margin-top:14px;min-width:0}
-#page-phone-orders .ht-phone-orders-list-pane,#page-phone-orders .ht-phone-orders-detail-pane{min-width:0;overflow:hidden;border:1px solid #e1e8f0;border-radius:15px;background:#fff;box-shadow:0 4px 18px rgba(15,35,61,.05)}
-#page-phone-orders .ht-phone-orders-pane-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;padding:12px 15px;background:#10233d;color:#fff;font-size:13px;font-weight:800}
-#page-phone-orders .ht-phone-orders-pane-head .order-count{margin:0;color:#dbeafe;font-size:10px;font-weight:600}
-#page-phone-orders .ht-phone-orders-list-pane .phone-orders-list{max-height:720px;min-height:360px;overflow:auto;border:0;border-radius:0;box-shadow:none}
-#page-phone-orders .ht-phone-orders-detail-host{min-height:480px;max-height:760px;overflow:auto;background:#f5f7fb}
-#page-phone-orders .ht-phone-orders-detail-empty{display:grid;min-height:480px;place-items:center;padding:28px;text-align:center;color:#64748b}
-#page-phone-orders .ht-phone-orders-empty-icon{display:grid;width:56px;height:56px;place-items:center;margin:0 auto 14px;border-radius:15px;background:#eaf1fc;color:#2563eb;font-size:25px}
-#page-phone-orders .ht-phone-orders-detail-empty strong{color:#10233d;font-size:14px}
-#page-phone-orders .ht-phone-orders-detail-empty p{margin:7px 0 0;font-size:11px;line-height:1.6}
-#page-phone-orders .ht-phone-sale-row.is-selected{background:#eaf2ff;box-shadow:inset 3px 0 #2563eb}
-#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail{position:static;inset:auto;z-index:auto;display:block;overflow:visible;padding:0;background:transparent;backdrop-filter:none}
-#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel{width:100%;height:auto;max-height:none;min-height:480px;margin:0;padding:14px;border-radius:0;overflow:visible;background:#f5f7fb;box-shadow:none}
-#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel .ht-order-detail-top{position:sticky;top:-14px;z-index:3;margin:-14px -14px 12px;padding:14px;background:#10233d;color:#fff;border-radius:0 0 11px 11px}
-#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel .ht-order-detail-top h2,#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel .ht-order-detail-top p{color:#fff}
-#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel .ht-order-detail-top .ht-order-eyebrow{color:#b9d2f5}
-#page-phone-orders .phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel .ht-order-detail-footer{position:sticky;bottom:0;z-index:2;padding:10px 0 0;background:#f5f7fb}
-@media(max-width:1050px){#page-phone-orders .ht-phone-orders-workspace{grid-template-columns:minmax(0,1fr) minmax(330px,.95fr);gap:12px}}
-@media(max-width:760px){#page-phone-orders .ht-phone-orders-workspace{grid-template-columns:1fr}#page-phone-orders .ht-phone-orders-list-pane .phone-orders-list{max-height:440px;min-height:160px}#page-phone-orders .ht-phone-orders-detail-host{max-height:none;min-height:260px}#page-phone-orders .ht-phone-orders-detail-empty{min-height:240px}}
-</style>
-<style id="homs-phone-orders-clean-table-v1">
-#page-phone-orders .ht-phone-orders-searchbar{display:flex;justify-content:flex-start;margin:12px 0 14px}
-#page-phone-orders .ht-phone-orders-searchbar .phone-orders-search{display:flex;align-items:center;gap:8px;width:min(340px,100%);min-height:38px;padding:0 11px;border:1px solid #dce5f0;border-radius:9px;background:#fff;box-shadow:0 2px 8px rgba(15,35,61,.035);color:#64748b}
-#page-phone-orders .ht-phone-orders-searchbar .phone-orders-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#172033;font-size:12px}
-#page-phone-orders .ht-phone-orders-searchbar .phone-orders-search input:focus{outline:0;box-shadow:none}
-#page-phone-orders .ht-phone-orders-workspace{grid-template-columns:minmax(0,1fr) minmax(390px,.92fr)}
-#page-phone-orders .ht-phone-orders-list-pane .phone-orders-list{max-height:720px;overflow:auto}
-#page-phone-orders .ht-phone-sale-head,#page-phone-orders .ht-phone-sale-open{display:grid;grid-template-columns:42px minmax(145px,1fr) minmax(185px,1.25fr) minmax(95px,.7fr) minmax(125px,.9fr) minmax(92px,.7fr);gap:10px;align-items:center}
-#page-phone-orders .ht-phone-sale-head{position:sticky;top:0;z-index:2;padding:12px 13px;background:#10233d;color:#fff;font-size:11px;font-weight:800;letter-spacing:.02em}
-#page-phone-orders .ht-phone-sale-row{border-top:1px solid #edf1f6;background:#fff}
-#page-phone-orders .ht-phone-sale-row:hover{background:#f6f9ff}
-#page-phone-orders .ht-phone-sale-row.is-selected{background:#eaf2ff;box-shadow:inset 3px 0 #2563eb}
-#page-phone-orders .ht-phone-sale-open{width:100%;min-height:78px;padding:10px 13px;border:0;background:transparent;text-align:left;color:#172033;cursor:pointer;font:inherit}
-#page-phone-orders .ht-phone-sale-number{color:#1d4ed8;font-size:12px;font-weight:850}
-#page-phone-orders .ht-phone-sale-customer,#page-phone-orders .ht-phone-product-copy{display:grid;gap:5px;min-width:0}
-#page-phone-orders .ht-phone-sale-customer strong{display:flex;align-items:center;gap:6px;color:#10233d;font-size:12px;line-height:1.35;overflow-wrap:anywhere}
-#page-phone-orders .ht-phone-customer-icon{font-size:13px}
-#page-phone-orders .ht-phone-sale-customer small{display:flex;align-items:center;gap:5px;color:#64748b;font-size:10px;white-space:nowrap}
-#page-phone-orders .ht-whatsapp-mark{color:#16a34a;font-size:14px}
-#page-phone-orders .ht-phone-sale-device{display:flex;align-items:center;gap:9px;min-width:0}
-#page-phone-orders .ht-phone-product-thumb{display:grid;place-items:center;flex:0 0 52px;width:52px;height:58px;overflow:hidden;border:1px solid #e5ebf3;border-radius:9px;background:#f7f9fc}
-#page-phone-orders .ht-phone-product-thumb img{display:block;width:100%;height:100%;padding:3px;object-fit:contain}
-#page-phone-orders .ht-phone-product-fallback{font-size:24px}
-#page-phone-orders .ht-phone-product-copy strong{color:#10233d;font-size:12px;line-height:1.35;overflow-wrap:anywhere}
-#page-phone-orders .ht-phone-product-copy small{color:#64748b;font-size:10px;line-height:1.4;overflow-wrap:anywhere}
-#page-phone-orders .ht-phone-sale-price{color:#15803d;font-size:14px;white-space:nowrap}
-#page-phone-orders .ht-phone-status-chip{display:inline-flex;align-items:center;gap:5px;width:max-content;max-width:100%;padding:6px 8px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap}
-#page-phone-orders .ht-phone-status-chip.is-new{background:#e8f1ff;color:#1d4ed8}
-#page-phone-orders .ht-phone-status-chip.is-processing{background:#fff4d9;color:#a16207}
-#page-phone-orders .ht-phone-status-chip.is-shipped{background:#e9edff;color:#4338ca}
-#page-phone-orders .ht-phone-status-chip.is-complete{background:#dcfce7;color:#15803d}
-#page-phone-orders .ht-phone-status-chip.is-cancelled{background:#fee2e2;color:#b91c1c}
-#page-phone-orders .ht-phone-status-chip.is-unknown{background:#f1f5f9;color:#475569}
-#page-phone-orders .ht-phone-sale-date{display:grid;gap:4px;color:#334155;font-size:11px;white-space:nowrap}
-#page-phone-orders .ht-phone-sale-date small{color:#94a3b8;font-size:10px}
-#page-phone-orders .ht-phone-sale-actions{display:none}
-@media(max-width:1100px){#page-phone-orders .ht-phone-orders-workspace{grid-template-columns:minmax(0,1fr)}#page-phone-orders .ht-phone-orders-list-pane .phone-orders-list{max-height:460px}}
-@media(max-width:760px){#page-phone-orders .ht-phone-sale-head{display:none}#page-phone-orders .ht-phone-sale-open{grid-template-columns:34px minmax(0,1fr) auto;gap:8px;min-height:72px;padding:10px}#page-phone-orders .ht-phone-sale-customer{grid-column:2;grid-row:1}#page-phone-orders .ht-phone-sale-device{grid-column:2;grid-row:2}#page-phone-orders .ht-phone-product-thumb{width:42px;height:46px;flex-basis:42px}#page-phone-orders .ht-phone-sale-price{grid-column:3;grid-row:1;font-size:13px}#page-phone-orders .ht-phone-sale-badges{grid-column:3;grid-row:2}#page-phone-orders .ht-phone-sale-date{grid-column:2/4;grid-row:3;display:flex;gap:7px}#page-phone-orders .ht-phone-sale-number{grid-column:1;grid-row:1/4}}
-</style>
-<style id="homs-phone-orders-header-search-fix-v1">
-#page-all-orders>.ht-orders-page-head{display:flex;align-items:center;min-height:48px;margin:0 0 18px;padding:0;border:0;background:transparent}
-#page-all-orders>.ht-orders-page-head h2{margin:0;color:#10233d;font-size:25px;font-weight:850;letter-spacing:-.025em;line-height:1.2}
-#page-phone-orders .phone-orders-heading{display:none!important}
-#page-phone-orders .ht-phone-orders-searchbar{display:flex!important;align-items:center;justify-content:space-between;gap:12px;width:100%;min-width:0;margin:0 0 14px;padding:0;background:transparent;border:0;box-shadow:none}
-#page-phone-orders .ht-phone-orders-searchbar .phone-orders-search{display:flex!important;align-items:center;flex:0 1 340px;gap:9px;width:340px;max-width:100%;min-width:0;min-height:40px;margin:0;padding:0 12px;border:1px solid #d7e0eb;border-radius:9px;background:#fff;box-shadow:0 2px 7px rgba(15,35,61,.04);color:#64748b;box-sizing:border-box}
-#page-phone-orders .ht-phone-orders-searchbar .phone-orders-search:focus-within{border-color:#7aa7ed;box-shadow:0 0 0 3px rgba(37,99,235,.09)}
-#page-phone-orders .ht-phone-orders-searchbar .ht-phone-search-icon{flex:0 0 auto;font-size:19px;line-height:1}
-#page-phone-orders .ht-phone-orders-searchbar .phone-orders-search input{display:block!important;flex:1 1 auto;width:100%!important;min-width:0!important;height:36px!important;margin:0!important;padding:0!important;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;color:#172033;font-size:12px;line-height:normal}
-#page-phone-orders .ht-phone-orders-searchbar .phone-orders-search input::placeholder{color:#94a3b8;opacity:1}
-#page-phone-orders .ht-phone-orders-result-count{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-height:28px;padding:5px 10px;border:1px solid #e2e8f0;border-radius:999px;background:#f8fafc;color:#64748b;font-size:11px;font-weight:700;white-space:nowrap}
-#page-phone-orders .ht-phone-orders-list-pane>.ht-phone-orders-pane-head{display:none!important}
-#page-phone-orders .ht-phone-sale-head{border-radius:10px 10px 0 0}
-@media(max-width:600px){#page-all-orders>.ht-orders-page-head h2{font-size:21px}#page-phone-orders .ht-phone-orders-searchbar{align-items:flex-start;flex-direction:column;gap:8px}#page-phone-orders .ht-phone-orders-searchbar .phone-orders-search{width:100%;flex-basis:auto}#page-phone-orders .ht-phone-orders-result-count{align-self:flex-start}}
-</style>
-<style id="homs-phone-orders-final-cleanup-v3">
-/* Match the approved phone-orders table reference. */
-#page-phone-orders .phone-order-summary,
-#page-phone-orders #phoneOrderSummary{display:none!important}
-#page-phone-orders .ht-phone-orders-searchbar{display:flex!important;align-items:center;justify-content:flex-start;flex-wrap:nowrap;gap:10px;width:100%;margin:0 0 14px;padding:0;background:transparent;border:0;box-shadow:none}
-#page-phone-orders .ht-phone-orders-searchbar .phone-orders-search{display:flex!important;align-items:center;gap:10px;flex:1 1 320px;width:auto;max-width:390px;min-width:180px;min-height:42px;margin:0;padding:0 13px;border:1px solid #dbe3ed;border-radius:11px;background:#fff;box-shadow:0 2px 8px rgba(15,35,61,.05);box-sizing:border-box}
-#page-phone-orders .ht-phone-orders-searchbar .phone-orders-search:focus-within{border-color:#8ab0ee;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
-#page-phone-orders .ht-phone-orders-searchbar .ht-phone-search-icon{display:block;flex:0 0 19px;width:19px;height:19px;color:#64748b}
-#page-phone-orders .ht-phone-orders-searchbar .phone-orders-search input{display:block!important;flex:1 1 auto;width:100%!important;min-width:0!important;height:40px!important;margin:0!important;padding:0!important;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;color:#172033;font-size:13px;line-height:normal}
-#page-phone-orders .ht-phone-orders-searchbar .phone-orders-search input::placeholder{color:#94a3b8;opacity:1}
-#page-phone-orders .ht-phone-orders-filter{display:flex;align-items:center;flex:0 1 190px;min-width:145px;min-height:42px;margin:0;padding:0 11px;border:1px solid #dbe3ed;border-radius:11px;background:#fff;box-shadow:0 2px 8px rgba(15,35,61,.04);box-sizing:border-box}
-#page-phone-orders .ht-phone-orders-filter select{display:block;width:100%;min-width:0;height:40px;margin:0;padding:0 20px 0 1px;border:0;outline:0;background:transparent;color:#172033;font-size:12px;font-weight:700;cursor:pointer}
-#page-phone-orders .ht-phone-orders-filter:focus-within{border-color:#8ab0ee;box-shadow:0 0 0 3px rgba(37,99,235,.09)}
-#page-phone-orders .ht-phone-orders-result-count{display:none!important}
+  </main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),300));<\/script>
 
-/* Show the list at full width until an order is opened; then show the details on the right. */
-#page-phone-orders .ht-phone-orders-workspace{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;min-width:0}
-#page-phone-orders .ht-phone-orders-detail-pane{display:none;min-width:0;min-height:0;padding:0;border:0;background:#fff}
-#page-phone-orders .ht-phone-orders-workspace.has-selection{grid-template-columns:minmax(0,1.12fr) minmax(360px,.88fr);align-items:start}
-#page-phone-orders .ht-phone-orders-workspace.has-selection .ht-phone-orders-detail-pane{display:block;border:1px solid #e3eaf3;border-radius:14px;overflow:hidden}
-#page-phone-orders .ht-phone-orders-detail-host{min-height:0;max-height:calc(100vh - 150px);overflow:auto;background:#fff}
-#page-phone-orders .ht-phone-orders-detail-empty,
-#page-phone-orders .ht-phone-orders-pane-head{display:none!important}
 
-/* Table proportions and light header match the supplied reference. */
-#page-phone-orders .phone-orders-list{display:block;width:100%;min-width:0;overflow:hidden;border:1px solid #e1e8f1;border-radius:13px;background:#fff;box-shadow:0 3px 13px rgba(15,35,61,.045)}
-#page-phone-orders .ht-phone-sale-head,
-#page-phone-orders .ht-phone-sale-open{display:grid;grid-template-columns:48px minmax(145px,1.05fr) minmax(185px,1.35fr) minmax(100px,.72fr) minmax(128px,.95fr) minmax(105px,.78fr) 18px;gap:10px;align-items:center}
-#page-phone-orders .ht-phone-sale-head{min-height:43px;padding:10px 13px;border-radius:10px 10px 0 0;background:#edf2fa;color:#17243a;font-size:12px;font-weight:800;letter-spacing:0;text-transform:none}
-#page-phone-orders .ht-phone-sale-row{border-top:1px solid #edf1f6;background:#fff;transition:background .15s}
-#page-phone-orders .ht-phone-sale-row:hover{background:#f7faff}
-#page-phone-orders .ht-phone-sale-row.is-selected{background:#e7f1ff;box-shadow:inset 3px 0 #2563eb}
-#page-phone-orders .ht-phone-sale-open{min-height:66px;padding:9px 13px;color:#172033}
-#page-phone-orders .ht-phone-sale-number{font-size:13px;font-weight:850}
-#page-phone-orders .ht-phone-sale-customer{display:grid;gap:3px;min-width:0}
-#page-phone-orders .ht-phone-sale-customer strong{font-size:12px;font-weight:750}
-#page-phone-orders .ht-phone-sale-customer small{font-size:11px;line-height:1.35}
-#page-phone-orders .ht-phone-sale-device{display:flex;align-items:center;gap:10px;min-width:0}
-#page-phone-orders .ht-phone-sale-device img,
-#page-phone-orders .ht-phone-sale-device .phone-order-product-placeholder{width:43px;height:49px;flex:0 0 43px;object-fit:contain;padding:2px;border:1px solid #e6ebf2;border-radius:7px;background:#f7f9fc}
-#page-phone-orders .ht-phone-sale-device strong{font-size:12px;font-weight:800}
-#page-phone-orders .ht-phone-sale-device small{font-size:11px;line-height:1.35}
-#page-phone-orders .ht-phone-sale-price{color:#16803c;font-size:15px;font-weight:850;white-space:nowrap}
-#page-phone-orders .ht-phone-sale-badges{display:flex;align-items:center;min-width:0}
-#page-phone-orders .ht-phone-status-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;max-width:100%;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}
-#page-phone-orders .ht-phone-sale-date{display:flex;flex-direction:column;gap:2px;font-variant-numeric:tabular-nums}
-#page-phone-orders .ht-phone-sale-date strong{font-size:11px;font-weight:750}
-#page-phone-orders .ht-phone-sale-date small{font-size:11px;color:#64748b}
-#page-phone-orders .ht-phone-sale-chevron{display:flex;justify-content:flex-end;color:#64748b;font-size:21px}
 
-/* Fixed, visible save bar is toggled by the actual selected admin subsection. */
-body.phone-orders-page-active .save-bar{position:fixed!important;left:clamp(230px,18vw,290px)!important;right:22px!important;bottom:12px!important;z-index:1100!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;min-height:56px!important;margin:0!important;padding:8px 12px!important;border:1px solid #e2e8f0!important;border-radius:12px!important;background:rgba(255,255,255,.98)!important;box-shadow:0 5px 20px rgba(15,35,61,.13)!important}
-body.phone-orders-page-active .save-bar>div{margin-right:auto;min-width:0}
-body.phone-orders-page-active .save-bar>div .small{display:none!important}
-body.phone-orders-page-active .save-bar #saveStatus{font-size:11px;line-height:1.3}
-body.phone-orders-page-active .save-bar #saveBtn{display:inline-flex!important;align-items:center;justify-content:center;min-height:39px!important;padding:8px 15px!important;border-radius:9px!important;font-size:13px!important;white-space:nowrap}
-body.phone-orders-page-active #page-all-orders{padding-bottom:78px}
-@media(max-width:1100px){
- #page-phone-orders .ht-phone-orders-workspace.has-selection{grid-template-columns:minmax(0,1fr)}
- #page-phone-orders .ht-phone-orders-detail-host{max-height:none}
-}
-@media(max-width:760px){
- #page-phone-orders .ht-phone-orders-searchbar{flex-wrap:wrap}
- #page-phone-orders .ht-phone-orders-searchbar .phone-orders-search{flex:1 1 100%;max-width:none}
- #page-phone-orders .ht-phone-orders-filter{flex:1 1 0;min-width:0}
- #page-phone-orders .ht-phone-sale-head{display:none}
- #page-phone-orders .ht-phone-sale-open{grid-template-columns:42px minmax(0,1fr) auto 18px;gap:8px;padding:12px}
- #page-phone-orders .ht-phone-sale-number{grid-column:1;grid-row:1/4}
- #page-phone-orders .ht-phone-sale-customer{grid-column:2;grid-row:1}
- #page-phone-orders .ht-phone-sale-device{grid-column:2;grid-row:2}
- #page-phone-orders .ht-phone-sale-price{grid-column:3;grid-row:1;font-size:14px}
- #page-phone-orders .ht-phone-sale-badges{grid-column:2/4;grid-row:3}
- #page-phone-orders .ht-phone-sale-date{grid-column:2/4;grid-row:4;flex-direction:row;gap:8px}
- #page-phone-orders .ht-phone-sale-chevron{grid-column:4;grid-row:1/5}
- body.phone-orders-page-active .save-bar{left:10px!important;right:10px!important;bottom:8px!important}
-}
-</style>
 </body></html>`);
   w.document.close();
 }
@@ -7333,7 +7277,8 @@ async function showWebshopOrderDetails(id){
     const address=[order.street,order.house_number].filter(Boolean).join(" ")+
       ([order.postcode,order.city].filter(Boolean).length?", "+[order.postcode,order.city].filter(Boolean).join(" "):"");
     const money=value=>"€ "+Number(value||0).toLocaleString("nl-NL",{minimumFractionDigits:2,maximumFractionDigits:2});
-    const date=order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"-";
+    const {date:orderDate,time:orderTime}=formatPhoneOrderDateTime(order.created_at);
+    const date=orderDate+(orderTime?" · "+orderTime:"");
     const status=order.status||"Nieuw";
     const payment=order.payment_status||"Onbekend";
     const paymentKey=String(payment).toLowerCase();
@@ -8150,49 +8095,6 @@ if ("serviceWorker" in navigator) {
 .phone-order-detail-panel .ht-order-section-icon{background:#eaf1fc;color:#1d4ed8}
 @media(max-width:700px){.phone-order-detail-overlay{padding:0}.phone-order-detail-panel{width:100%;border-radius:0;padding:14px}.phone-order-detail-panel .ht-order-detail-top{top:-14px;margin:-14px 0 12px;padding-top:12px}.phone-order-detail-panel .ht-order-status-grid,.phone-order-detail-panel .ht-order-customer-grid{grid-template-columns:1fr}}
 </style>
-<style id="homs-phone-sales-workspace-v2">
-/* Focused phone-sales workspace: clear table hierarchy, HOMS TECH navy/blue palette. */
-#page-phone-orders .phone-orders-heading h2{color:#10233d;font-weight:850;letter-spacing:-.025em}
-#page-phone-orders .phone-orders-heading p{color:#64748b}
-#page-phone-orders .phone-order-summary .order-stat{position:relative;overflow:hidden;border-color:#e1e8f2;background:linear-gradient(145deg,#fff,#f7faff)}
-#page-phone-orders .phone-order-summary .order-stat:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:#2563eb}
-#page-phone-orders .phone-orders-toolbar{box-shadow:0 5px 18px rgba(15,35,61,.045)}
-#page-phone-orders .phone-orders-list{display:block;overflow:hidden;border:1px solid #dfe7f1;border-radius:15px;background:#fff;box-shadow:0 5px 20px rgba(15,35,61,.05)}
-.ht-phone-sale-head,.ht-phone-sale-open{display:grid;grid-template-columns:66px minmax(190px,1.35fr) minmax(145px,1fr) minmax(105px,.75fr) minmax(150px,1fr) minmax(125px,.9fr) 20px;gap:12px;align-items:center}
-.ht-phone-sale-head{padding:12px 16px;background:#10233d;color:#fff;font-size:11px;font-weight:800;letter-spacing:.035em;text-transform:uppercase}
-.ht-phone-sale-row{border-top:1px solid #edf1f6;background:#fff;transition:background .15s}
-.ht-phone-sale-row:first-of-type{border-top:0}
-.ht-phone-sale-row:hover{background:#f5f8fe}
-.ht-phone-sale-row.is-active{box-shadow:inset 3px 0 #2563eb}
-.ht-phone-sale-row.is-complete{box-shadow:inset 3px 0 #16a34a}
-.ht-phone-sale-row.is-cancelled{box-shadow:inset 3px 0 #dc2626}
-.ht-phone-sale-open{width:100%;border:0;background:transparent;text-align:left;padding:12px 16px;color:#172033;cursor:pointer;font:inherit}
-.ht-phone-sale-number{font-weight:850;color:#1d4ed8;font-size:13px}
-.ht-phone-sale-device{display:flex;align-items:center;gap:11px;min-width:0}
-.ht-phone-sale-device img,.ht-phone-sale-device .phone-order-product-placeholder{width:48px;height:52px;flex:0 0 48px;object-fit:contain;padding:3px;border:1px solid #e7edf5;border-radius:9px;background:#f5f8fc}
-.ht-phone-sale-device>span:last-child,.ht-phone-sale-customer{display:grid;gap:4px;min-width:0}
-.ht-phone-sale-device strong,.ht-phone-sale-customer strong{font-size:13px;color:#10233d;overflow-wrap:anywhere}
-.ht-phone-sale-device small,.ht-phone-sale-customer small{font-size:11px;color:#64748b;line-height:1.4;overflow-wrap:anywhere}
-.ht-phone-sale-price{color:#15803d;font-size:16px;white-space:nowrap}
-.ht-phone-sale-badges{display:flex;flex-wrap:wrap;gap:5px}
-.ht-phone-sale-badges .webshop-status-pill,.ht-phone-sale-badges .webshop-payment-pill{font-size:10px;white-space:nowrap}
-.ht-phone-sale-date{font-size:11px;color:#64748b;line-height:1.5}
-.ht-phone-sale-chevron{font-size:24px;color:#2563eb;text-align:right}
-.ht-phone-sale-actions{display:flex;align-items:center;gap:10px;padding:0 16px 10px 94px}
-.ht-phone-sale-status-control{display:flex;align-items:center;gap:8px;font-size:10px;color:#64748b;font-weight:700}
-.ht-phone-sale-status-control select{min-height:30px;border:1px solid #dbe3ed;border-radius:8px;background:#f8fafc;padding:4px 8px;font-size:11px;color:#172033}
-.ht-phone-sale-count{font-size:10px;color:#64748b;margin-right:auto}
-#page-phone-orders .order-empty{padding:38px 18px;text-align:center;color:#64748b}
-.phone-order-detail-overlay{background:rgba(8,20,37,.58);backdrop-filter:blur(3px)}
-.phone-order-detail-panel{background:#f5f7fb;box-shadow:-18px 0 48px rgba(3,13,28,.22)}
-.phone-order-detail-panel .ht-order-detail-top{background:#10233d;color:#fff;border-radius:0 0 12px 12px;padding:18px 18px 14px;margin:-20px -20px 14px}
-.phone-order-detail-panel .ht-order-detail-top h2,.phone-order-detail-panel .ht-order-detail-top p{color:#fff}
-.phone-order-detail-panel .ht-order-detail-top .ht-order-eyebrow{color:#a9c8f5}
-.phone-order-detail-panel .ht-order-detail-section{border:1px solid #e2e8f0;border-radius:13px;box-shadow:0 3px 12px rgba(15,35,61,.04)}
-.phone-order-detail-panel .ht-order-total-banner{background:#10233d;border-radius:12px}
-.phone-order-detail-panel .ht-order-grand-total strong,.phone-order-detail-panel .ht-order-product-price{color:#15803d}
-@media(max-width:1050px){.ht-phone-sale-head,.ht-phone-sale-open{grid-template-columns:54px minmax(170px,1.3fr) minmax(125px,1fr) minmax(95px,.7fr) minmax(135px,1fr) 20px}.ht-phone-sale-head span:nth-child(6),.ht-phone-sale-date{display:none}.ht-phone-sale-open .ht-phone-sale-badges{grid-column:5}}
-@media(max-width:700px){.ht-phone-sale-head{display:none}.ht-phone-sale-open{grid-template-columns:42px minmax(0,1fr) auto 18px;gap:8px;padding:12px}.ht-phone-sale-number{font-size:12px}.ht-phone-sale-device img,.ht-phone-sale-device .phone-order-product-placeholder{width:44px;height:48px;flex-basis:44px}.ht-phone-sale-customer{grid-column:2;grid-row:2}.ht-phone-sale-price{grid-column:3;grid-row:1;font-size:15px}.ht-phone-sale-badges{grid-column:2/4;grid-row:3}.ht-phone-sale-chevron{grid-column:4;grid-row:1/4}.ht-phone-sale-date{display:block;grid-column:2/4;grid-row:4}.ht-phone-sale-actions{padding:0 12px 10px 62px;flex-wrap:wrap}.ht-phone-sale-status-control{width:100%;justify-content:space-between}.ht-phone-sale-status-control select{flex:1;max-width:190px}}
-</style>
+
 </body>
 </html>
