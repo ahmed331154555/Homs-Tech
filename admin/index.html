@@ -7125,7 +7125,6 @@ async function showWebshopOrderDetails(id){
       if(host){host.innerHTML="";host.appendChild(modal);}
       else document.body.appendChild(modal);
       document.querySelectorAll("#phoneOrdersList .ht-phone-sale-row").forEach(row=>row.classList.remove("is-selected"));
-      const selected=document.querySelector('#phoneOrdersList [onclick*="showWebshopOrderDetails('+Number(0)+')"]');
       const selectedButton=Array.from(document.querySelectorAll("#phoneOrdersList .ht-phone-sale-open")).find(button=>button.getAttribute("onclick")=== "showWebshopOrderDetails("+Number(order.id)+")");
       selectedButton?.closest(".ht-phone-sale-row")?.classList.add("is-selected");
     }else{document.body.appendChild(modal);}
