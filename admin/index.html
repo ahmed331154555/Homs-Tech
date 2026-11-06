@@ -7076,7 +7076,7 @@ async function showWebshopOrderDetails(id){
     const subtotal=items.reduce((sum,item)=>sum+Number(item.unitPrice??item.unit_price??item.price??0)*Number(item.qty||item.quantity||1),0);
     const modal=document.createElement("div");
     modal.id="orderDetailsModal";
-    const isPhoneOnlyOrder=hasPhoneItems&&!hasShopItems;
+    const isPhoneOnlyOrder=hasPhoneItems;
     modal.className="ht-order-detail-overlay"+(isPhoneOnlyOrder?" phone-order-detail-overlay":"");
     modal.innerHTML=`<div class="ht-order-detail-panel${isPhoneOnlyOrder?" phone-order-detail-panel":""}" role="dialog" aria-modal="true" aria-label="Bestelling #${Number(order.id)}">
       <div class="ht-order-detail-top"><div><div class="ht-order-eyebrow">HOMS TECH · ${orderCategory}</div><h2>Bestelling #${Number(order.id)}</h2><p>${esc(date)}</p></div><button type="button" class="btn btn-light" aria-label="Sluiten" onclick="closePhoneOrderDetails()">✕</button></div>
