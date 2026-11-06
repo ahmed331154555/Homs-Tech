@@ -2258,6 +2258,10 @@ function showPage(page){
   const target=document.getElementById("page-"+page);
   if(target){
     target.classList.add("active");
+    if(adminSiteDataLoaded&&adminRenderedDataPage!==page){
+      renderAdminPageData(page);
+      adminRenderedDataPage=page;
+    }
     if(page==="customers")loadCustomers();
     if(page==="emails")loadAdminEmails();
     if(page==="invoices"){if(!document.querySelector("#invoiceLines tr"))addInvoiceLine();loadInvoices();}
@@ -2266,7 +2270,6 @@ function showPage(page){
     if(page==="orders"||page==="repair-requests")loadOrders();
     if(page==="webshop-orders")loadWebshopOrders();
     if(page==="order-settings")loadOrderSettings();
-    if(page==="buyback")renderBuybackPhones();
     if(page==="shop")loadShopVisibility();
     if(page==="buyback-orders")loadBuybackOrders();
     if(page==="admins")loadAdmins();
@@ -7319,19 +7322,27 @@ function setupUnifiedOrdersAdmin(){
   const first=unifiedOrderCategories.find(item=>hasPermission(item.permission)&&document.getElementById(item.id));
   if(first)showUnifiedOrderSection(first.key,false);
 }
+let adminSiteDataLoaded=false;
+let adminRenderedDataPage="";
+
+function renderAdminPageData(page){
+  if(!adminSiteDataLoaded)return;
+  if(page==="general"){renderGeneral();renderHomepageSettings();return;}
+  if(page==="services"){renderServices();return;}
+  if(page==="repair"){renderRepairPageAdmin();return;}
+  if(page==="phones"){renderPhones();renderGlobalConditionDetails();return;}
+  if(page==="shop"){renderShopProductsAdmin();return;}
+  if(page==="buyback"){renderBuybackPhones();return;}
+  if(page==="categories"){renderDeviceCategories();renderGlobalConditionDetails();return;}
+  if(page==="why"){renderWhy();return;}
+}
+
 function renderAll(){
-
   setupUnifiedOrdersAdmin();
-  renderHomepageSettings();
-  renderServices();
-  renderRepairPageAdmin();
-  renderPhones();
-  renderShopProductsAdmin();
-  renderBuybackPhones();
-  renderDeviceCategories();
-  renderGlobalConditionDetails();
-
-  renderWhy();
+  adminSiteDataLoaded=true;
+  adminRenderedDataPage="";
+  renderAdminPageData(currentPage);
+  adminRenderedDataPage=currentPage;
   showPage(currentPage);
 }
 
