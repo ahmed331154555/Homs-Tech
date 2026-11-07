@@ -246,7 +246,13 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
         '<div class="item-price">' + money(line) + '</div></div>';
     }).join("");
 
-    totalEl.textContent = money(total);
+    const tradeInToken=localStorage.getItem("homsTechTradeInToken")||"";
+    const tradeInCredit=Number(localStorage.getItem("homsTechTradeInCredit")||0);
+    const appliedCredit=tradeInToken?Math.min(total,Math.max(0,tradeInCredit)):0;
+    const payable=Math.max(0,Math.round((total-appliedCredit)*100)/100);
+    totalEl.textContent = appliedCredit>0
+      ? "Producten: "+money(total)+" · Inruil: −"+money(appliedCredit)+" · Te betalen: "+money(payable)
+      : money(total);
   }
 
   async function prefill(){
