@@ -375,6 +375,77 @@
       .section-head h2 { font-size: clamp(26px, 7vw, 30px) !important; line-height: 1.15 !important; }
     }
 
+
+    /* HOMS TECH repair page refinement */
+    .repair-hero{min-height:560px!important}
+    .hero-inner{
+      width:100%!important;
+      grid-template-columns:minmax(0,650px) minmax(0,1fr)!important;
+      align-items:center!important;
+      padding-top:68px!important;
+      padding-bottom:112px!important;
+    }
+    .hero-inner>div{max-width:650px!important;min-width:0!important}
+    .hero-title{max-width:650px!important;text-wrap:balance}
+    .hero-sub{max-width:560px!important}
+    .hero-actions{display:flex!important;align-items:center!important;gap:10px!important;flex-wrap:wrap!important}
+    .hero-actions .btn-main{
+      min-height:50px!important;
+      padding:13px 18px!important;
+      border-radius:12px!important;
+      font-size:14px!important;
+      white-space:nowrap!important;
+      text-decoration:none!important;
+    }
+    .hero-actions .btn-whatsapp{
+      background:#25d366!important;
+      color:#062d18!important;
+      box-shadow:0 10px 24px rgba(37,211,102,.22)!important;
+    }
+    .hero-actions .btn-whatsapp:hover{background:#1fbd5b!important;transform:translateY(-2px)}
+    .hero-actions .btn-whatsapp[hidden]{display:none!important}
+    .options{gap:18px!important;align-items:stretch!important}
+    .option-card{border-radius:18px!important}
+    .option-card>div:first-child{padding:22px!important}
+    .option-card h2{font-size:23px!important;line-height:1.2!important}
+    .option-card p{line-height:1.65!important}
+    .option-img{height:220px!important;min-height:220px!important}
+    .section{padding-top:70px!important;padding-bottom:70px!important}
+    .section-head{margin-bottom:38px!important}
+    .services-grid{gap:16px!important}
+    .service-card{border-radius:16px!important}
+    @media(max-width:900px){
+      .repair-hero{min-height:0!important}
+      .hero-inner{grid-template-columns:minmax(0,1fr)!important;padding:58px 20px 112px!important}
+      .hero-inner>div{max-width:720px!important}
+      .hero-actions .btn-main{white-space:normal!important}
+    }
+    @media(max-width:600px){
+      .hero-inner{padding:38px 16px 72px!important}
+      .hero-title{font-size:clamp(34px,9vw,42px)!important;letter-spacing:-1.2px!important}
+      .hero-sub{font-size:16px!important}
+      .hero-actions{
+        display:grid!important;
+        grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+        gap:9px!important;
+      }
+      .hero-actions .btn-main{
+        width:100%!important;
+        min-width:0!important;
+        min-height:48px!important;
+        padding:10px 9px!important;
+        font-size:13px!important;
+        white-space:normal!important;
+        text-align:center!important;
+      }
+      .hero-actions .btn-green{grid-column:1/-1!important}
+      .options{gap:14px!important;margin-top:-34px!important}
+      .option-img{height:185px!important;min-height:185px!important}
+      .option-card>div:first-child{padding:18px!important}
+      .section{padding:48px 0!important}
+      .section-head{margin-bottom:28px!important}
+    }
+
   </style>
   <link rel="stylesheet" href="assets/homs-global-nav.css">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5361560605027063"
@@ -443,6 +514,9 @@
           <div class="hero-actions">
             <button class="btn-main btn-green" type="button" onclick="openRepair('home')">Afspraak aan huis maken →</button>
             <button class="btn-main btn-light" type="button" onclick="openRepair('send')">Toestel opsturen</button>
+            <a class="btn-main btn-whatsapp" id="repairWhatsAppButton" href="#" target="_blank" rel="noopener noreferrer" hidden>
+              <span aria-hidden="true">◉</span> WhatsApp
+            </a>
           </div>
         </div>
       </div>
@@ -738,6 +812,18 @@
       const freshData = await response.json();
       if(!freshData || typeof freshData !== "object") throw new Error("Invalid repair page data");
       siteData = freshData;
+
+      const whatsappNumber = String(siteData.whatsapp || "").replace(/\\D/g, "");
+      const whatsappButton = document.getElementById("repairWhatsAppButton");
+      if (whatsappButton) {
+        if (whatsappNumber.length >= 8) {
+          const message = "Hallo, ik wil graag informatie over een telefoonreparatie bij HOMS TECH.";
+          whatsappButton.href = "https://wa.me/" + whatsappNumber + "?text=" + encodeURIComponent(message);
+          whatsappButton.hidden = false;
+        } else {
+          whatsappButton.hidden = true;
+        }
+      }
 
       document.querySelectorAll("[data-name]").forEach(el=>{
         el.textContent = siteData.businessName || siteData.siteName || "HOMS TECH";
