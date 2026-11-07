@@ -6506,10 +6506,11 @@ async function updateWebshopOrderStatus(id,statusValue){
       select.classList.add("is-saved");
       setTimeout(()=>select.classList.remove("is-saved"),900);
     }
-    setStatus("✓ Webshop order #"+id+" automatisch opgeslagen","success");
+    await loadWebshopOrders();
     if(document.getElementById("orderDetailsModal")&&document.querySelector("#page-phone-orders .ht-phone-orders-workspace.has-selection")){
       await showWebshopOrderDetails(id);
     }
+    setStatus("✓ Webshop order #"+id+" automatisch opgeslagen","success");
   }catch(e){
     if(select){select.classList.remove("is-saving");}
     setStatus("✕ "+e.message,"error");
@@ -7388,7 +7389,7 @@ async function showWebshopOrderDetails(id){
       const formatted=timestamp?formatPhoneOrderDateTime(timestamp):null;
       const dateLabel=formatted?(formatted.date+(formatted.time?" "+formatted.time:"")):(isCurrent?"Tijdstip niet geregistreerd":(isDone?"Historisch tijdstip niet beschikbaar":"—"));
       return '<div class="ht-phone-timeline-row '+(isDone?"is-done":(isCurrent?"is-current":""))+'"><span class="ht-phone-timeline-dot">'+(isDone?"✓":(isCurrent?"◷":""))+'</span><span class="ht-phone-timeline-copy"><strong>'+esc(stage.title)+'</strong><small>'+esc(stage.description)+'</small></span><span class="ht-phone-timeline-date">'+esc(dateLabel)+'</span></div>';
-    }).join("")+(status==="Geannuleerd"?'<div class="ht-phone-timeline-row is-current"><span class="ht-phone-timeline-dot">!</span><span class="ht-phone-timeline-copy"><strong>Geannuleerd</strong><small>Deze bestelling is geannuleerd.</small></span><span class="ht-phone-timeline-date">Tijdstip niet geregistreerd</span></div>':"");
+    }).join("")+(status==="Geannuleerd"?'<div class="ht-phone-timeline-row is-current"><span class="ht-phone-timeline-dot">!</span><span class="ht-phone-timeline-copy"><strong>Geannuleerd</strong><small>Deze bestelling is geannuleerd.</small></span><span class="ht-phone-timeline-date">'+(statusHistory.some(event=>event.status==="Geannuleerd")?esc((()=>{const event=statusHistory.filter(item=>item.status==="Geannuleerd").slice(-1)[0];const value=formatPhoneOrderDateTime(event.created_at);return value.date+(value.time?" "+value.time:"");})()):"Tijdstip niet geregistreerd")+'</span></div>':"");
     const firstPhoneItem=items[0]||{};
     const firstPhoneOptions=firstPhoneItem.options&&typeof firstPhoneItem.options==="object"?firstPhoneItem.options:{};
     const firstPhoneImage=firstPhoneItem.image||firstPhoneItem.image_url||firstPhoneItem.thumbnail||firstPhoneItem.product_image||"";
@@ -7401,6 +7402,8 @@ async function showWebshopOrderDetails(id){
       '<div class="ht-phone-product-visual"><div class="ht-phone-product-thumbs">'+firstPhoneImages.map((src,index)=>'<button type="button" aria-label="Productfoto '+(index+1)+'" onclick="this.parentElement.nextElementSibling.src=this.firstElementChild.src"><img src="'+esc(src)+'" alt="" loading="lazy"></button>').join("")+'</div><img class="ht-phone-product-main-image" src="'+esc(firstPhoneImages[0])+'" alt="'+esc(firstPhoneName)+'" onerror="this.style.display=\'none\'"></div>':
       '<div class="ht-phone-product-visual"><div class="ht-phone-product-placeholder">Geen productfoto beschikbaar</div></div>';
     const phoneExtraProducts=items.length>1?'<div class="ht-phone-product-extra">'+itemRows+'</div>':"";
+    const phoneStreetAddress=[order.street,order.house_number].filter(Boolean).join(" ");
+    const phonePostcodeCity=[order.postcode,order.city].filter(Boolean).join(" ");
     const phoneDigits=String(order.phone||"").replace(/[^\d]/g,"");
     const phoneWhatsapp=phoneDigits?'<a class="btn btn-light" target="_blank" rel="noopener noreferrer" href="https://wa.me/'+esc(phoneDigits)+'?text='+encodeURIComponent("Hoi, over bestelling #"+Number(order.id)+" bij HOMS TECH.")+'">WhatsApp-bericht sturen</a>':"";
     const phoneStatusOptions=['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(value=>'<option value="'+esc(value)+'" '+(status===value?'selected':'')+'>'+esc(value)+'</option>').join("");
@@ -7446,7 +7449,7 @@ async function showWebshopOrderDetails(id){
           </section>
           <section class="ht-phone-detail-card">
             <div class="ht-phone-detail-card-head"><span class="icon">⌖</span>Verzendadres</div>
-            <div class="ht-phone-detail-card-body"><div class="ht-phone-address">${esc(address.trim().replace(/^,\s*/,"")||"Geen verzendadres opgegeven")}<br>${esc(order.city||"")}${order.city?" · ":""}${esc(order.postcode||"")}<br>Nederland</div>
+            <div class="ht-phone-detail-card-body"><div class="ht-phone-address">${esc(phoneStreetAddress||"Geen straatadres opgegeven")}<br>${esc(phonePostcodeCity||"Geen postcode of plaats opgegeven")}</div>
               ${address.trim()?'<a class="btn btn-light" style="margin-top:10px" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(address.trim()+", "+(order.city||"")+", "+(order.postcode||""))+'">Adres op kaart openen</a>':""}
             </div>
           </section>
