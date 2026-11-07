@@ -297,7 +297,9 @@
         } catch {}
         data.messages.forEach(add);
       } else {
-        add({ sender: "customer", message });
+        // The server response is the source of truth. Do not add an optimistic
+        // copy here, otherwise refresh() will append the same message again
+        // with its database ID and it will appear twice in the chat.
 
         response = await fetch(
           "/api/chat/conversations/" + encodeURIComponent(token) + "/messages",
