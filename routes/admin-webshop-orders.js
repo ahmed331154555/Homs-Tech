@@ -1,5 +1,7 @@
 "use strict";
 
+const { calculateTradeInAdjustment } = require("../utils/trade-in");
+
 function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory }) {
   app.put("/api/admin/webshop-orders/:id/payment", requirePermission("webshop_orders.update"), async (req,res) => {
     try {
@@ -50,6 +52,14 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       const body=req.body||{};
       const carrier=String(body.shipping_method||"").trim();
       const paymentStatus=String(body.payment_status||"Unpaid").trim();
+      const tradeInCheck=await pool.query(
+        "SELECT trade_in_order_id,trade_in_status FROM webshop_orders WHERE id=$1",
+        [id]
+      );
+      if(!tradeInCheck.rows.length)return res.status(404).json({error:"Bestelling niet gevonden."});
+      if(tradeInCheck.rows[0].trade_in_order_id && tradeInCheck.rows[0].trade_in_status!=="Settled" && carrier){
+        return res.status(409).json({error:"Verzending is geblokkeerd totdat het inruiltoestel is gecontroleerd en het prijsverschil is afgehandeld."});
+      }
       const trackingNumber=String(body.tracking_number||"").trim().slice(0,160);
       const trackingUrl=String(body.tracking_url||"").trim().slice(0,1000);
       if(carrier&&!["PostNL","DHL"].includes(carrier))return res.status(400).json({error:"Kies alleen PostNL of DHL."});
@@ -87,7 +97,10 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       const result = await pool.query(
         `SELECT id, customer_id, name, email, phone, street, house_number, postcode, city, items, total, status,
                 payment_method, payment_status, paypal_order_id, mollie_payment_id,
-                inventory_deducted_at, inventory_error, created_at,
+                inventory_deducted_at, inventory_error,
+                trade_in_order_id, trade_in_estimated_value, trade_in_applied_credit,
+                trade_in_inspected_value, trade_in_adjustment, trade_in_status, trade_in_snapshot,
+                created_at,
                 COALESCE((
                   SELECT json_agg(
                     json_build_object('status', history.status, 'created_at', history.created_at)
@@ -142,6 +155,13 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig order-ID." });
       const allowed = ["Nieuw", "In behandeling", "Verzonden", "Voltooid", "Geannuleerd"];
       const status = String(req.body?.status || "").trim();
+      if(["Verzonden","Voltooid"].includes(status)){
+        const tradeInCheck=await pool.query("SELECT trade_in_order_id,trade_in_status FROM webshop_orders WHERE id=$1",[id]);
+        if(!tradeInCheck.rows.length)return res.status(404).json({error:"Webshop bestelling niet gevonden."});
+        if(tradeInCheck.rows[0].trade_in_order_id && tradeInCheck.rows[0].trade_in_status!=="Settled"){
+          return res.status(409).json({error:"Deze bestelling kan pas worden verzonden of voltooid nadat de inruilcontrole en eventuele verrekening zijn afgerond."});
+        }
+      }
       if (!allowed.includes(status)) {
         return res.status(400).json({ error: "Ongeldige status." });
       }
@@ -179,6 +199,87 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       console.error(error);
       res.status(500).json({ error: "Status kon niet worden gewijzigd." });
     }
+  });
+
+  app.put("/api/admin/webshop-orders/:id/trade-in-inspection", requirePermission("webshop_orders.update"), async (req,res) => {
+    const id=Number(req.params.id);
+    const inspectedValue=Number(req.body?.inspectedValue);
+    const reason=String(req.body?.reason||"").trim().slice(0,1000);
+    if(!Number.isInteger(id)||id<1)return res.status(400).json({error:"Ongeldig order-ID."});
+    if(!Number.isFinite(inspectedValue)||inspectedValue<0||inspectedValue>100000)return res.status(400).json({error:"Vul een geldige definitieve inruilwaarde in."});
+    if(reason.length<5)return res.status(400).json({error:"Geef een korte reden voor de inspectie."});
+    const client=await pool.connect();
+    try{
+      await client.query("BEGIN");
+      const found=await client.query(
+        "SELECT id,trade_in_order_id,trade_in_estimated_value,trade_in_status FROM webshop_orders WHERE id=$1 FOR UPDATE",
+        [id]
+      );
+      if(!found.rows.length){await client.query("ROLLBACK");return res.status(404).json({error:"Webshop bestelling niet gevonden."});}
+      const order=found.rows[0];
+      if(!order.trade_in_order_id){await client.query("ROLLBACK");return res.status(409).json({error:"Deze bestelling heeft geen gekoppelde inruil."});}
+      if(order.trade_in_status==="Settled"){await client.query("ROLLBACK");return res.status(409).json({error:"De inruil is al definitief afgehandeld."});}
+      const buyback=await client.query("SELECT id,offered_price FROM buyback_orders WHERE id=$1 FOR UPDATE",[order.trade_in_order_id]);
+      if(!buyback.rows.length){await client.query("ROLLBACK");return res.status(409).json({error:"De gekoppelde inruilaanvraag ontbreekt."});}
+      const adjustment=calculateTradeInAdjustment(order.trade_in_estimated_value,inspectedValue);
+      const nextStatus=adjustment.direction==="no_change"?"Settled":"AdjustmentRequired";
+      const updated=await client.query(
+        `UPDATE webshop_orders
+         SET trade_in_inspected_value=$1,trade_in_adjustment=$2,trade_in_status=$3,
+             trade_in_snapshot=COALESCE(trade_in_snapshot,'{}'::jsonb) || $4::jsonb
+         WHERE id=$5
+         RETURNING id,trade_in_order_id,trade_in_estimated_value,trade_in_applied_credit,
+                   trade_in_inspected_value,trade_in_adjustment,trade_in_status,trade_in_snapshot`,
+        [inspectedValue,adjustment.customerCredit-adjustment.customerDue,nextStatus,
+         JSON.stringify({inspectionReason:reason,inspectionAt:new Date().toISOString(),adjustmentDirection:adjustment.direction,
+           customerDue:adjustment.customerDue,customerCredit:adjustment.customerCredit}),id]
+      );
+      await client.query(
+        `UPDATE buyback_orders
+         SET trade_in_inspected_value=$1,trade_in_adjustment_reason=$2,trade_in_adjustment_status=$3,
+             status=CASE WHEN $3='Settled' THEN 'Voltooid' ELSE 'In behandeling' END
+         WHERE id=$4`,
+        [inspectedValue,reason,nextStatus==="Settled"?"Settled":"AdjustmentRequired",order.trade_in_order_id]
+      );
+      await client.query("COMMIT");
+      return res.json({success:true,order:updated.rows[0],adjustment});
+    }catch(error){
+      try{await client.query("ROLLBACK");}catch{}
+      console.error("Webshop trade-in inspection error:",error);
+      return res.status(500).json({error:"De inruilcontrole kon niet worden opgeslagen."});
+    }finally{client.release();}
+  });
+
+  app.put("/api/admin/webshop-orders/:id/trade-in-settlement", requirePermission("webshop_orders.update"), async (req,res) => {
+    const id=Number(req.params.id);
+    const note=String(req.body?.settlementNote||"").trim().slice(0,1000);
+    if(!Number.isInteger(id)||id<1)return res.status(400).json({error:"Ongeldig order-ID."});
+    if(note.length<5)return res.status(400).json({error:"Vermeld hoe het prijsverschil is afgehandeld."});
+    const client=await pool.connect();
+    try{
+      await client.query("BEGIN");
+      const found=await client.query("SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot FROM webshop_orders WHERE id=$1 FOR UPDATE",[id]);
+      if(!found.rows.length){await client.query("ROLLBACK");return res.status(404).json({error:"Webshop bestelling niet gevonden."});}
+      const order=found.rows[0];
+      if(!order.trade_in_order_id||order.trade_in_status!=="AdjustmentRequired"){
+        await client.query("ROLLBACK");return res.status(409).json({error:"Er staat geen openstaand inruilverschil klaar om af te handelen."});
+      }
+      const snapshot={...(order.trade_in_snapshot||{}),settlementNote:note,settledAt:new Date().toISOString()};
+      const updated=await client.query(
+        "UPDATE webshop_orders SET trade_in_status='Settled',trade_in_snapshot=$1::jsonb WHERE id=$2 RETURNING id,trade_in_status,trade_in_snapshot",
+        [JSON.stringify(snapshot),id]
+      );
+      await client.query(
+        "UPDATE buyback_orders SET trade_in_adjustment_status='Settled',status='Voltooid' WHERE id=$1",
+        [order.trade_in_order_id]
+      );
+      await client.query("COMMIT");
+      return res.json({success:true,order:updated.rows[0]});
+    }catch(error){
+      try{await client.query("ROLLBACK");}catch{}
+      console.error("Webshop trade-in settlement error:",error);
+      return res.status(500).json({error:"De verrekening kon niet worden opgeslagen."});
+    }finally{client.release();}
   });
 
   app.delete("/api/admin/webshop-orders/:id", requirePermission("webshop_orders.delete"), async (req, res) => {
