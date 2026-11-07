@@ -1996,6 +1996,38 @@ body.phone-orders-page-active #page-all-orders{padding-bottom:78px}
 }
 </style>
 <style id="ht-phone-order-detail-final">
+
+/* Independent vertical columns eliminate the empty gaps below shorter cards. */
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-columns{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr)!important;
+  align-items:start!important;
+  gap:8px!important;
+  margin:0 0 8px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-column{
+  display:flex!important;
+  min-width:0!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:8px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-column>.ht-phone-detail-card{
+  width:100%!important;
+  margin:0!important;
+  flex:0 0 auto!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-columns+.ht-phone-detail-card{
+  margin-top:0!important;
+}
+@media(max-width:760px){
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-columns{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:7px!important;
+  }
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-column{gap:7px!important}
+}
+
 /* HOMS TECH phone-order detail: one compact, consistent layout. */
 #orderDetailsModal.phone-order-detail-overlay{
   padding:14px!important;
@@ -8058,14 +8090,57 @@ async function showWebshopOrderDetails(id){
           <span class="ht-phone-detail-head-status">${esc(status)}</span>
           <button type="button" class="btn btn-light ht-phone-detail-close" aria-label="Sluiten" onclick="closeWebshopOrderDetails()">✕</button>
         </div>
-        <div class="ht-phone-detail-grid">
-          <section class="ht-phone-detail-card">
+        <div class="ht-phone-detail-columns">
+  <div class="ht-phone-detail-column ht-phone-detail-column-main">
+    <section class="ht-phone-detail-card">
             <div class="ht-phone-detail-card-head"><span class="icon">▣</span>Besteld product</div>
             <div class="ht-phone-detail-card-body"><div class="ht-phone-product-feature">${phoneProductVisual}
               <div><div class="ht-phone-product-title">${esc(firstPhoneName)}</div><div class="ht-phone-product-tags">${firstPhoneMeta.map(value=>'<span>'+esc(value)+'</span>').join("")||'<span>Specificaties niet opgegeven</span>'}</div><div class="ht-phone-product-qty">Aantal: ${firstPhoneQuantity}</div><strong class="ht-phone-product-price">${money(firstPhoneUnitPrice*firstPhoneQuantity)}</strong></div>
             </div></div>${phoneExtraProducts}
           </section>
-          <section class="ht-phone-detail-card">
+    <section class="ht-phone-detail-card">
+            <div class="ht-phone-detail-card-head"><span class="icon">♙</span>Klantgegevens</div>
+            <div class="ht-phone-detail-card-body ht-phone-info-list">
+              <div class="ht-phone-info-line"><span>Naam</span><strong>${esc(order.name||"Niet opgegeven")}</strong></div>
+              <div class="ht-phone-info-line"><span>Telefoon</span><strong>${order.phone?'<a class="ht-phone-contact-link" href="tel:'+esc(String(order.phone).replace(/[^\d+]/g,''))+'">'+esc(order.phone)+'</a>':'Niet opgegeven'}</strong></div>
+              <div class="ht-phone-info-line"><span>E-mail</span><strong>${order.email?'<a class="ht-phone-contact-link" href="mailto:'+esc(order.email)+'">'+esc(order.email)+'</a>':'Niet opgegeven'}</strong></div>
+              <div class="ht-phone-detail-actions">${phoneWhatsapp}</div>
+            </div>
+          </section>
+    <section class="ht-phone-detail-card">
+            <div class="ht-phone-detail-card-head"><span class="icon">▣</span>Betaalinformatie</div>
+            <div class="ht-phone-detail-card-body ht-phone-info-list">
+              <div class="ht-phone-info-line"><span>Betaalmethode</span><strong>${esc(order.payment_method||"Niet geregistreerd")}</strong></div>
+              <div class="ht-phone-info-line"><span>Betaalstatus</span><strong><span class="ht-phone-detail-pill ${phonePaymentTone}">${esc(paymentLabel)}</span></strong></div>
+              <div class="ht-phone-info-line"><span>Transactie-ID</span><strong>${esc(phonePaymentReference)}</strong></div>
+              <label class="ht-phone-detail-field">Betaalstatus aanpassen
+                <select id="webshopPaymentStatus"><option value="Unpaid" ${/^(unpaid|open)$/i.test(payment)?"selected":""}>Niet betaald</option><option value="Processing" ${/^processing$/i.test(payment)?"selected":""}>In behandeling</option><option value="Paid" ${/^(paid|betaald|completed)$/i.test(payment)?"selected":""}>Betaald</option><option value="Failed" ${/^(failed|mislukt)$/i.test(payment)?"selected":""}>Mislukt</option></select>
+              </label>
+              <div class="ht-phone-detail-muted">Sla de betaalstatus hier apart op. Bij Betaald wordt de voorraad automatisch gecontroleerd.</div>
+              <button class="btn btn-primary ht-phone-payment-save" type="button" onclick="saveWebshopOrderPayment(${Number(order.id)})">💾 Betaalstatus opslaan</button>
+            </div>
+          </section>
+    <section class="ht-phone-detail-card">
+            <div class="ht-phone-detail-card-head"><span class="icon">♧</span>Verzending</div>
+            <div class="ht-phone-detail-card-body ht-phone-info-list">
+              <div class="ht-phone-shipping-status">
+                <span class="ht-phone-shipping-status-icon">🚚</span>
+                <div><strong>${order.tracking_number?"Verzendgegevens geregistreerd":"Verzending nog niet aangemaakt"}</strong><small>${order.tracking_number?"Het pakket heeft een trackingnummer.":"Kies hieronder een vervoerder en vul het trackingnummer in zodra het pakket is aangemeld."}</small></div>
+              </div>
+              <div class="ht-phone-info-line"><span>Gekozen vervoerder</span><strong>${esc(order.shipping_method||"Nog niet gekozen")}</strong></div>
+              <div class="ht-phone-info-line"><span>Trackingnummer</span><strong>${esc(order.tracking_number||"Wordt ingevuld na verzending")}</strong></div>
+              ${order.tracking_url?'<div class="ht-phone-info-line"><span>Trackinglink</span><strong><a href="'+esc(order.tracking_url)+'" target="_blank" rel="noopener noreferrer">Pakket volgen ↗</a></strong></div>':""}
+              <div class="ht-phone-shipping-form">
+                <label class="ht-phone-detail-field">Vervoerder<select id="webshopShippingCarrier"><option value="">Selecteer vervoerder</option><option value="PostNL" ${order.shipping_method==="PostNL"?"selected":""}>PostNL</option><option value="DHL" ${order.shipping_method==="DHL"?"selected":""}>DHL</option></select></label>
+                <label class="ht-phone-detail-field">Trackingnummer<input id="webshopTrackingNumber" type="text" maxlength="160" value="${esc(order.tracking_number||"")}" placeholder="Vul trackingnummer in"></label>
+                <label class="ht-phone-detail-field ht-phone-tracking-url">Trackinglink<input id="webshopTrackingUrl" type="url" maxlength="1000" value="${esc(order.tracking_url||"")}" placeholder="https://..."></label>
+              </div>
+              <button class="btn btn-primary ht-phone-shipping-save" type="button" onclick="saveWebshopOrderShipping(${Number(order.id)})">💾 Verzendgegevens opslaan</button>
+            </div>
+          </section>
+  </div>
+  <div class="ht-phone-detail-column ht-phone-detail-column-side">
+    <section class="ht-phone-detail-card">
             <div class="ht-phone-detail-card-head"><span class="icon">▤</span>Overzicht bestelling</div>
             <div class="ht-phone-detail-card-body ht-phone-info-list">
               <div class="ht-phone-info-line"><span>Bestelnummer</span><strong>#${Number(order.id)}</strong></div>
@@ -8077,18 +8152,7 @@ async function showWebshopOrderDetails(id){
               <div class="ht-phone-detail-muted">${order.inventory_deducted_at?"Voorraad verwerkt op: "+esc(formatPhoneOrderDateTime(order.inventory_deducted_at).date):"Voorraad nog niet als verwerkt geregistreerd."}</div>
             </div>
           </section>
-        </div>
-        <div class="ht-phone-detail-grid equal">
-          <section class="ht-phone-detail-card">
-            <div class="ht-phone-detail-card-head"><span class="icon">♙</span>Klantgegevens</div>
-            <div class="ht-phone-detail-card-body ht-phone-info-list">
-              <div class="ht-phone-info-line"><span>Naam</span><strong>${esc(order.name||"Niet opgegeven")}</strong></div>
-              <div class="ht-phone-info-line"><span>Telefoon</span><strong>${order.phone?'<a class="ht-phone-contact-link" href="tel:'+esc(String(order.phone).replace(/[^\d+]/g,''))+'">'+esc(order.phone)+'</a>':'Niet opgegeven'}</strong></div>
-              <div class="ht-phone-info-line"><span>E-mail</span><strong>${order.email?'<a class="ht-phone-contact-link" href="mailto:'+esc(order.email)+'">'+esc(order.email)+'</a>':'Niet opgegeven'}</strong></div>
-              <div class="ht-phone-detail-actions">${phoneWhatsapp}</div>
-            </div>
-          </section>
-          <section class="ht-phone-detail-card">
+    <section class="ht-phone-detail-card">
             <div class="ht-phone-detail-card-head"><span class="icon">⌖</span>Verzendadres</div>
             <div class="ht-phone-detail-card-body ht-phone-address-card">
               <div class="ht-phone-address-recipient">
@@ -8119,22 +8183,7 @@ async function showWebshopOrderDetails(id){
               ${phoneStreetAddress||phonePostcodeCity?'<a class="btn btn-light ht-phone-map-link" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(phoneFullAddress)+'">⌖ Adres op kaart openen</a>':""}
             </div>
           </section>
-        </div>
-        <div class="ht-phone-detail-grid equal">
-          <section class="ht-phone-detail-card">
-            <div class="ht-phone-detail-card-head"><span class="icon">▣</span>Betaalinformatie</div>
-            <div class="ht-phone-detail-card-body ht-phone-info-list">
-              <div class="ht-phone-info-line"><span>Betaalmethode</span><strong>${esc(order.payment_method||"Niet geregistreerd")}</strong></div>
-              <div class="ht-phone-info-line"><span>Betaalstatus</span><strong><span class="ht-phone-detail-pill ${phonePaymentTone}">${esc(paymentLabel)}</span></strong></div>
-              <div class="ht-phone-info-line"><span>Transactie-ID</span><strong>${esc(phonePaymentReference)}</strong></div>
-              <label class="ht-phone-detail-field">Betaalstatus aanpassen
-                <select id="webshopPaymentStatus"><option value="Unpaid" ${/^(unpaid|open)$/i.test(payment)?"selected":""}>Niet betaald</option><option value="Processing" ${/^processing$/i.test(payment)?"selected":""}>In behandeling</option><option value="Paid" ${/^(paid|betaald|completed)$/i.test(payment)?"selected":""}>Betaald</option><option value="Failed" ${/^(failed|mislukt)$/i.test(payment)?"selected":""}>Mislukt</option></select>
-              </label>
-              <div class="ht-phone-detail-muted">Sla de betaalstatus hier apart op. Bij Betaald wordt de voorraad automatisch gecontroleerd.</div>
-              <button class="btn btn-primary ht-phone-payment-save" type="button" onclick="saveWebshopOrderPayment(${Number(order.id)})">💾 Betaalstatus opslaan</button>
-            </div>
-          </section>
-          <section class="ht-phone-detail-card">
+    <section class="ht-phone-detail-card">
             <div class="ht-phone-detail-card-head"><span class="icon">🛒</span>Besteloverzicht</div>
             <div class="ht-phone-detail-card-body">
               ${items.map(item=>'<div class="ht-phone-summary-line"><span>'+esc(item.name||item.title||item.product_name||"Product")+' × '+Number(item.qty||item.quantity||1)+'</span><strong>'+money(Number(item.unitPrice??item.unit_price??item.price??0)*Number(item.qty||item.quantity||1))+'</strong></div>').join("")}
@@ -8143,43 +8192,23 @@ async function showWebshopOrderDetails(id){
               <div class="ht-phone-summary-line ht-phone-summary-total"><span>Totaal</span><strong>${money(total)}</strong></div>
             </div>
           </section>
-        </div>
-        <div class="ht-phone-detail-grid equal">
-          <section class="ht-phone-detail-card">
-            <div class="ht-phone-detail-card-head"><span class="icon">♧</span>Verzending</div>
-            <div class="ht-phone-detail-card-body ht-phone-info-list">
-              <div class="ht-phone-shipping-status">
-                <span class="ht-phone-shipping-status-icon">🚚</span>
-                <div><strong>${order.tracking_number?"Verzendgegevens geregistreerd":"Verzending nog niet aangemaakt"}</strong><small>${order.tracking_number?"Het pakket heeft een trackingnummer.":"Kies hieronder een vervoerder en vul het trackingnummer in zodra het pakket is aangemeld."}</small></div>
-              </div>
-              <div class="ht-phone-info-line"><span>Gekozen vervoerder</span><strong>${esc(order.shipping_method||"Nog niet gekozen")}</strong></div>
-              <div class="ht-phone-info-line"><span>Trackingnummer</span><strong>${esc(order.tracking_number||"Wordt ingevuld na verzending")}</strong></div>
-              ${order.tracking_url?'<div class="ht-phone-info-line"><span>Trackinglink</span><strong><a href="'+esc(order.tracking_url)+'" target="_blank" rel="noopener noreferrer">Pakket volgen ↗</a></strong></div>':""}
-              <div class="ht-phone-shipping-form">
-                <label class="ht-phone-detail-field">Vervoerder<select id="webshopShippingCarrier"><option value="">Selecteer vervoerder</option><option value="PostNL" ${order.shipping_method==="PostNL"?"selected":""}>PostNL</option><option value="DHL" ${order.shipping_method==="DHL"?"selected":""}>DHL</option></select></label>
-                <label class="ht-phone-detail-field">Trackingnummer<input id="webshopTrackingNumber" type="text" maxlength="160" value="${esc(order.tracking_number||"")}" placeholder="Vul trackingnummer in"></label>
-                <label class="ht-phone-detail-field ht-phone-tracking-url">Trackinglink<input id="webshopTrackingUrl" type="url" maxlength="1000" value="${esc(order.tracking_url||"")}" placeholder="https://..."></label>
-              </div>
-              <button class="btn btn-primary ht-phone-shipping-save" type="button" onclick="saveWebshopOrderShipping(${Number(order.id)})">💾 Verzendgegevens opslaan</button>
-            </div>
-          </section>
-          <section class="ht-phone-detail-card">
+    <section class="ht-phone-detail-card">
             <div class="ht-phone-detail-card-head"><span class="icon">✓</span>Status bijwerken</div>
             <div class="ht-phone-detail-card-body ht-phone-info-list">
               <label class="ht-phone-detail-field">Nieuwe bestelstatus<select class="order-status-select" data-webshop-order-id="${Number(order.id)}" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value,this)">${phoneStatusOptions}</select></label>
               <div class="ht-phone-detail-muted">Bij het wijzigen wordt de status automatisch opgeslagen en aan de tijdlijn toegevoegd.</div>
             </div>
           </section>
-        </div>
-        <section class="ht-phone-detail-card" id="phoneOrderNoteCard" style="margin-bottom:12px">
+  </div>
+</div>
+<section class="ht-phone-detail-card" id="phoneOrderNoteCard" style="margin-bottom:12px">
           <div class="ht-phone-detail-card-head"><span class="icon">▤</span>Interne notities</div>
           <div class="ht-phone-detail-card-body">${phoneNotesMarkup}${phoneNoteForm}</div>
         </section>
-        <section class="ht-phone-detail-card" style="margin-bottom:12px">
+<section class="ht-phone-detail-card" style="margin-bottom:12px">
           <div class="ht-phone-detail-card-head"><span class="icon">◷</span>Bestelstatus (log)</div>
           <div class="ht-phone-timeline">${timelineRows}</div>
-        </section>
-        <div class="ht-phone-detail-actions">${hasPermission("webshop_orders.update")?'<button class="btn btn-light" type="button" onclick="focusPhoneOrderNote()">Notitie</button>':""}<button class="btn btn-light" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button><button class="btn btn-light" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
+        </section><div class="ht-phone-detail-actions">${hasPermission("webshop_orders.update")?'<button class="btn btn-light" type="button" onclick="focusPhoneOrderNote()">Notitie</button>':""}<button class="btn btn-light" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button><button class="btn btn-light" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
       </div>`;
 
     const modal=document.createElement("div");
