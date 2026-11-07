@@ -7479,6 +7479,61 @@ async function printWebshopShippingLabel(id){
 }
 </style>
 
+
+<style id="homs-phone-order-detail-layout-v3">
+.phone-order-detail-overlay{position:fixed!important;inset:0!important;z-index:10020!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:24px!important;background:rgba(8,20,36,.68)!important}
+.phone-order-detail-overlay .phone-order-detail-panel{width:min(1120px,96vw)!important;height:min(92vh,980px)!important;max-height:92vh!important;margin:0 auto!important;padding:20px!important;overflow:auto!important;border:1px solid #dce5ef!important;border-radius:18px!important;background:#f4f7fb!important;box-shadow:0 24px 80px rgba(5,18,35,.28)!important}
+.phone-order-detail-overlay .ht-order-detail-top{position:sticky!important;top:-20px!important;z-index:8!important;margin:-20px -20px 16px!important;padding:16px 20px!important;border-radius:17px 17px 12px 12px!important;background:#10233d!important;color:#fff!important}
+.phone-order-detail-overlay .ht-phone-detail-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important;margin-bottom:14px!important;align-items:stretch!important}
+.phone-order-detail-overlay .ht-phone-detail-grid.equal{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.phone-order-detail-overlay .ht-phone-detail-card{min-width:0!important;height:100%;border:1px solid #dfe7f1!important;border-radius:14px!important;background:#fff!important;overflow:hidden!important;box-shadow:0 3px 12px rgba(15,35,61,.055)!important}
+.phone-order-detail-overlay .ht-phone-detail-card-head{min-height:48px;padding:12px 15px!important;background:#edf2fa!important;border-bottom:1px solid #e4eaf2!important;font-size:14px!important;font-weight:850!important}
+.phone-order-detail-overlay .ht-phone-detail-card-body{padding:15px!important}
+.phone-order-detail-overlay .ht-phone-product-feature{display:grid!important;grid-template-columns:minmax(0,1.15fr) minmax(180px,.85fr)!important;gap:18px!important;align-items:center!important}
+.phone-order-detail-overlay .ht-phone-product-visual{display:grid!important;grid-template-columns:58px minmax(0,1fr)!important;gap:10px!important;min-width:0!important;align-items:start!important}
+.phone-order-detail-overlay .ht-phone-product-thumbs{display:grid!important;gap:8px!important}
+.phone-order-detail-overlay .ht-phone-product-thumbs button{width:56px!important;height:58px!important;border:1px solid #dfe7f0!important;border-radius:9px!important;background:#fff!important}
+.phone-order-detail-overlay .ht-phone-product-thumbs img,.phone-order-detail-overlay .ht-phone-product-main-image{width:100%!important;height:100%!important;object-fit:contain!important}
+.phone-order-detail-overlay .ht-phone-product-main-image{min-height:240px!important;height:270px!important;padding:8px!important;border:1px solid #edf1f6!important;border-radius:12px!important;background:#fff!important}
+.phone-order-detail-overlay .ht-phone-product-title{font-size:23px!important;font-weight:900!important;color:#10233d!important}
+.phone-order-detail-overlay .ht-phone-product-tags span{font-size:13px!important;padding:7px 10px!important}
+.phone-order-detail-overlay .ht-phone-product-price{font-size:28px!important}
+.phone-order-detail-overlay .ht-phone-info-line{display:grid!important;grid-template-columns:minmax(120px,.85fr) minmax(0,1.15fr)!important;gap:12px!important;align-items:start!important;font-size:13px!important;line-height:1.5!important}
+.phone-order-detail-overlay .ht-phone-info-line>strong{text-align:right!important;overflow-wrap:anywhere!important}
+.phone-order-detail-overlay .ht-phone-address-card{display:grid!important;gap:14px!important}
+.phone-order-detail-overlay .ht-phone-address-recipient{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid #e4ebf4;border-radius:11px;background:#f8fafc}
+.phone-order-detail-overlay .ht-phone-address-symbol{display:grid;place-items:center;width:38px;height:38px;flex:none;border-radius:10px;background:#eaf1fc;color:#1d4ed8;font-size:19px}
+.phone-order-detail-overlay .ht-phone-address-recipient div,.phone-order-detail-overlay .ht-phone-address-lines>div{display:grid;gap:3px;min-width:0}
+.phone-order-detail-overlay .ht-phone-address-recipient small,.phone-order-detail-overlay .ht-phone-address-lines small{color:#64748b;font-size:11px;font-weight:750}
+.phone-order-detail-overlay .ht-phone-address-recipient strong,.phone-order-detail-overlay .ht-phone-address-lines strong{color:#172b40;font-size:14px;line-height:1.45;overflow-wrap:anywhere}
+.phone-order-detail-overlay .ht-phone-address-lines{display:grid;grid-template-columns:1fr 1fr;gap:13px 18px}
+.phone-order-detail-overlay .ht-phone-map-link{justify-self:start;margin-top:2px!important}
+.phone-order-detail-overlay .ht-phone-shipping-status{display:flex;gap:11px;align-items:center;padding:12px;border:1px solid #dbeafe;border-radius:11px;background:#eff6ff}
+.phone-order-detail-overlay .ht-phone-shipping-status-icon{font-size:23px}
+.phone-order-detail-overlay .ht-phone-shipping-status div{display:grid;gap:3px}
+.phone-order-detail-overlay .ht-phone-shipping-status strong{font-size:13px;color:#1e3a5f}
+.phone-order-detail-overlay .ht-phone-shipping-status small{font-size:11px;line-height:1.45;color:#526b89}
+.phone-order-detail-overlay .ht-phone-shipping-form{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.phone-order-detail-overlay .ht-phone-shipping-form .ht-phone-tracking-url{grid-column:1/-1}
+.phone-order-detail-overlay .ht-phone-shipping-save{justify-self:start}
+@media(max-width:760px){
+.phone-order-detail-overlay{align-items:stretch!important;padding:0!important}
+.phone-order-detail-overlay .phone-order-detail-panel{width:100%!important;height:100dvh!important;max-height:100dvh!important;padding:12px!important;border:0!important;border-radius:0!important}
+.phone-order-detail-overlay .ht-order-detail-top{top:-12px!important;margin:-12px -12px 12px!important;padding:13px 14px!important;border-radius:0 0 13px 13px!important}
+.phone-order-detail-overlay .ht-phone-detail-grid,.phone-order-detail-overlay .ht-phone-detail-grid.equal{grid-template-columns:minmax(0,1fr)!important;gap:11px!important}
+.phone-order-detail-overlay .ht-phone-product-feature{grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
+.phone-order-detail-overlay .ht-phone-product-visual{grid-template-columns:54px minmax(0,1fr)!important}
+.phone-order-detail-overlay .ht-phone-product-main-image{height:230px!important;min-height:210px!important}
+.phone-order-detail-overlay .ht-phone-address-lines{grid-template-columns:1fr!important;gap:10px!important}
+.phone-order-detail-overlay .ht-phone-shipping-form{grid-template-columns:1fr!important}
+.phone-order-detail-overlay .ht-phone-shipping-form .ht-phone-tracking-url{grid-column:auto}
+.phone-order-detail-overlay .ht-phone-detail-grid .ht-phone-info-line{grid-template-columns:minmax(105px,.8fr) minmax(0,1.2fr)!important}
+}
+@media print{
+.phone-order-detail-overlay{position:static!important;display:block!important;padding:0!important;background:#fff!important}
+.phone-order-detail-overlay .phone-order-detail-panel{width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important;box-shadow:none!important;border:0!important}
+}
+</style>
 </body></html>`);
   w.document.close();
 }
@@ -7503,6 +7558,31 @@ async function showWebshopOrderDetails(id){
     const existing=document.getElementById("orderDetailsModal");
     if(existing)existing.remove();
     const items=Array.isArray(order.items)?order.items:[];
+    // Resolve product photos from the live public catalog when older order snapshots
+    // do not contain an image URL. The order record itself remains unchanged.
+    let phoneOrderCatalog={};
+    try{
+      const catalogResponse=await fetch("/api/site",{credentials:"same-origin",cache:"no-store"});
+      if(catalogResponse.ok)phoneOrderCatalog=await catalogResponse.json();
+    }catch(catalogError){
+      console.warn("[HOMS TECH] Product photo lookup failed:",catalogError);
+    }
+    const resolveOrderItemImages=item=>{
+      const snapshot=[item?.image,item?.image_url,item?.imageUrl,item?.thumbnail,item?.product_image,item?.photo,item?.product?.image,
+        ...(Array.isArray(item?.images)?item.images:[])].filter(value=>typeof value==="string"&&value.trim());
+      if(snapshot.length)return [...new Set(snapshot)];
+      if(String(item?.type||"").toLowerCase()==="shop"){
+        const products=Array.isArray(phoneOrderCatalog.shopProducts)?phoneOrderCatalog.shopProducts:[];
+        const product=products.find(value=>String(value?.id??"")===String(item?.id??""));
+        return [product?.image,product?.imageUrl,product?.thumbnail,...(Array.isArray(product?.images)?product.images:[])].filter(value=>typeof value==="string"&&value.trim());
+      }
+      const products=Array.isArray(phoneOrderCatalog.phones)&&phoneOrderCatalog.phones.length?phoneOrderCatalog.phones:
+        (Array.isArray(phoneOrderCatalog.devices)?phoneOrderCatalog.devices:[]);
+      const index=Number(item?.id);
+      const product=Number.isInteger(index)&&index>=0?products[index]:null;
+      return [product?.image,product?.imageUrl,product?.thumbnail,product?.photo,
+        ...(Array.isArray(product?.images)?product.images:[])].filter(value=>typeof value==="string"&&value.trim());
+    };
     const hasShopItems=items.some(item=>String(item?.type||"phone").toLowerCase()==="shop");
     const hasPhoneItems=items.some(item=>String(item?.type||"phone").toLowerCase()!=="shop");
     const orderCategory=hasShopItems&&hasPhoneItems?"COMBINATIEBESTELLING":(hasPhoneItems?"TELEFOONBESTELLING":"ONDERDELEN & ACCESSOIRES");
@@ -7518,7 +7598,7 @@ async function showWebshopOrderDetails(id){
     const paymentClass=paymentLabel==="Betaald"?"is-paid":(["Mislukt","Geannuleerd"].includes(paymentLabel)?"is-failed":"");
     const itemRows=items.length?items.map((item,index)=>{
       const name=item.name||item.title||item.product_name||"Product";
-      const image=item.image||item.image_url||item.thumbnail||item.product_image||"";
+      const image=resolveOrderItemImages(item)[0]||"";
       const quantity=Number(item.qty||item.quantity||1);
       const price=Number(item.unitPrice??item.unit_price??item.price??0);
       const options=item.options&&typeof item.options==="object"?item.options:{};
@@ -7553,8 +7633,7 @@ async function showWebshopOrderDetails(id){
     }).join("")+(status==="Geannuleerd"?'<div class="ht-phone-timeline-row is-current"><span class="ht-phone-timeline-dot">!</span><span class="ht-phone-timeline-copy"><strong>Geannuleerd</strong><small>Deze bestelling is geannuleerd.</small></span><span class="ht-phone-timeline-date">'+(statusHistory.some(event=>event.status==="Geannuleerd")?esc((()=>{const event=statusHistory.filter(item=>item.status==="Geannuleerd").slice(-1)[0];const value=formatPhoneOrderDateTime(event.created_at);return value.date+(value.time?" "+value.time:"");})()):"Tijdstip niet geregistreerd")+'</span></div>':"");
     const firstPhoneItem=items[0]||{};
     const firstPhoneOptions=firstPhoneItem.options&&typeof firstPhoneItem.options==="object"?firstPhoneItem.options:{};
-    const firstPhoneImage=firstPhoneItem.image||firstPhoneItem.image_url||firstPhoneItem.thumbnail||firstPhoneItem.product_image||"";
-    const firstPhoneImages=[firstPhoneImage,...(Array.isArray(firstPhoneItem.images)?firstPhoneItem.images:[]),...(Array.isArray(firstPhoneOptions.images)?firstPhoneOptions.images:[])].filter((value,index,array)=>typeof value==="string"&&value.trim()&&array.indexOf(value)===index).slice(0,5);
+    const firstPhoneImages=[...resolveOrderItemImages(firstPhoneItem),...(Array.isArray(firstPhoneOptions.images)?firstPhoneOptions.images:[])].filter((value,index,array)=>typeof value==="string"&&value.trim()&&array.indexOf(value)===index).slice(0,5);
     const firstPhoneName=firstPhoneItem.name||firstPhoneItem.title||firstPhoneItem.product_name||"Telefoon";
     const firstPhoneMeta=[firstPhoneOptions.storage||firstPhoneItem.storage,firstPhoneOptions.color||firstPhoneOptions.colour||firstPhoneItem.color||firstPhoneItem.colour,firstPhoneOptions.condition||firstPhoneItem.condition||firstPhoneItem.product_condition].filter(Boolean);
     const firstPhoneQuantity=Number(firstPhoneItem.qty||firstPhoneItem.quantity||1);
@@ -7563,8 +7642,14 @@ async function showWebshopOrderDetails(id){
       '<div class="ht-phone-product-visual"><div class="ht-phone-product-thumbs">'+firstPhoneImages.map((src,index)=>'<button type="button" aria-label="Productfoto '+(index+1)+'" onclick="this.parentElement.nextElementSibling.src=this.firstElementChild.src"><img src="'+esc(src)+'" alt="" loading="lazy"></button>').join("")+'</div><img class="ht-phone-product-main-image" src="'+esc(firstPhoneImages[0])+'" alt="'+esc(firstPhoneName)+'" onerror="this.style.display=\'none\'"></div>':
       '<div class="ht-phone-product-visual"><div class="ht-phone-product-placeholder">Geen productfoto beschikbaar</div></div>';
     const phoneExtraProducts=items.length>1?'<div class="ht-phone-product-extra">'+itemRows+'</div>':"";
-    const phoneStreetAddress=[order.street,order.house_number].filter(Boolean).join(" ");
-    const phonePostcodeCity=[order.postcode,order.city].filter(Boolean).join(" ");
+    const phoneStreetName=String(order.street||"").trim();
+    const phoneHouseNumber=String(order.house_number||"").trim();
+    const phoneStreetAddress=[phoneStreetName,phoneHouseNumber].filter(Boolean).join(" ");
+    const phonePostcode=String(order.postcode||"").trim();
+    const phoneCity=String(order.city||"").trim();
+    const phonePostcodeCity=[phonePostcode,phoneCity].filter(Boolean).join(" ");
+    const phoneCountry=String(order.country||"Nederland").trim();
+    const phoneFullAddress=[phoneStreetAddress,phonePostcodeCity,phoneCountry].filter(Boolean).join(", ");
     const phoneDigitsRaw=String(order.phone||"").replace(/[^\d]/g,"");
     const phoneDigits=phoneDigitsRaw.startsWith("0")?"31"+phoneDigitsRaw.slice(1):phoneDigitsRaw;
     const phoneWhatsapp=phoneDigits?'<a class="btn btn-light" target="_blank" rel="noopener noreferrer" href="https://wa.me/'+esc(phoneDigits)+'?text='+encodeURIComponent("Hoi, over bestelling #"+Number(order.id)+" bij HOMS TECH.")+'">WhatsApp-bericht sturen</a>':"";
@@ -7618,8 +7703,15 @@ async function showWebshopOrderDetails(id){
           </section>
           <section class="ht-phone-detail-card">
             <div class="ht-phone-detail-card-head"><span class="icon">⌖</span>Verzendadres</div>
-            <div class="ht-phone-detail-card-body"><div class="ht-phone-address">${esc(phoneStreetAddress||"Geen straatadres opgegeven")}<br>${esc(phonePostcodeCity||"Geen postcode of plaats opgegeven")}</div>
-              ${address.trim()?'<a class="btn btn-light" style="margin-top:10px" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(phoneStreetAddress+", "+phonePostcodeCity)+'">Adres op kaart openen</a>':""}
+            <div class="ht-phone-detail-card-body ht-phone-address-card">
+              <div class="ht-phone-address-recipient"><span class="ht-phone-address-symbol">♙</span><div><small>Ontvanger</small><strong>${esc(order.name||"Naam niet opgegeven")}</strong></div></div>
+              <div class="ht-phone-address-lines">
+                <div><small>Huisadres</small><strong>${esc(phoneStreetAddress||"Niet opgegeven")}</strong></div>
+                <div><small>Postcode</small><strong>${esc(phonePostcode||"Niet opgegeven")}</strong></div>
+                <div><small>Plaats</small><strong>${esc(phoneCity||"Niet opgegeven")}</strong></div>
+                <div><small>Land</small><strong>${esc(phoneCountry||"Nederland")}</strong></div>
+              </div>
+              ${phoneStreetAddress||phonePostcodeCity?'<a class="btn btn-light ht-phone-map-link" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(phoneFullAddress)+'">⌖ Adres op kaart openen</a>':""}
             </div>
           </section>
         </div>
@@ -7650,15 +7742,19 @@ async function showWebshopOrderDetails(id){
           <section class="ht-phone-detail-card">
             <div class="ht-phone-detail-card-head"><span class="icon">♧</span>Verzending</div>
             <div class="ht-phone-detail-card-body ht-phone-info-list">
-              <div class="ht-phone-info-line"><span>Vervoerder</span><strong>${esc(order.shipping_method||"Nog niet gekozen")}</strong></div>
-              <div class="ht-phone-info-line"><span>Trackingnummer</span><strong>${esc(order.tracking_number||"Nog niet beschikbaar")}</strong></div>
-              ${order.tracking_url?'<div class="ht-phone-info-line"><span>Trackinglink</span><strong><a href="'+esc(order.tracking_url)+'" target="_blank" rel="noopener noreferrer">Zending volgen</a></strong></div>':""}
-              <div class="ht-phone-detail-form-grid">
-                <label class="ht-phone-detail-field">Verzendbedrijf<select id="webshopShippingCarrier"><option value="">Nog niet gekozen</option><option value="PostNL" ${order.shipping_method==="PostNL"?"selected":""}>PostNL</option><option value="DHL" ${order.shipping_method==="DHL"?"selected":""}>DHL</option></select></label>
-                <label class="ht-phone-detail-field">Trackingnummer<input id="webshopTrackingNumber" type="text" maxlength="160" value="${esc(order.tracking_number||"")}" placeholder="Trackingnummer"></label>
+              <div class="ht-phone-shipping-status">
+                <span class="ht-phone-shipping-status-icon">🚚</span>
+                <div><strong>${order.tracking_number?"Verzendgegevens geregistreerd":"Verzending nog niet aangemaakt"}</strong><small>${order.tracking_number?"Het pakket heeft een trackingnummer.":"Kies hieronder een vervoerder en vul het trackingnummer in zodra het pakket is aangemeld."}</small></div>
               </div>
-              <label class="ht-phone-detail-field">Tracking-URL<input id="webshopTrackingUrl" type="url" maxlength="1000" value="${esc(order.tracking_url||"")}" placeholder="https://..."></label>
-              <button class="btn btn-primary" type="button" onclick="saveWebshopOrderShipping(${Number(order.id)})">Verzendgegevens opslaan</button>
+              <div class="ht-phone-info-line"><span>Gekozen vervoerder</span><strong>${esc(order.shipping_method||"Nog niet gekozen")}</strong></div>
+              <div class="ht-phone-info-line"><span>Trackingnummer</span><strong>${esc(order.tracking_number||"Wordt ingevuld na verzending")}</strong></div>
+              ${order.tracking_url?'<div class="ht-phone-info-line"><span>Trackinglink</span><strong><a href="'+esc(order.tracking_url)+'" target="_blank" rel="noopener noreferrer">Pakket volgen ↗</a></strong></div>':""}
+              <div class="ht-phone-shipping-form">
+                <label class="ht-phone-detail-field">Vervoerder<select id="webshopShippingCarrier"><option value="">Selecteer vervoerder</option><option value="PostNL" ${order.shipping_method==="PostNL"?"selected":""}>PostNL</option><option value="DHL" ${order.shipping_method==="DHL"?"selected":""}>DHL</option></select></label>
+                <label class="ht-phone-detail-field">Trackingnummer<input id="webshopTrackingNumber" type="text" maxlength="160" value="${esc(order.tracking_number||"")}" placeholder="Vul trackingnummer in"></label>
+                <label class="ht-phone-detail-field ht-phone-tracking-url">Trackinglink<input id="webshopTrackingUrl" type="url" maxlength="1000" value="${esc(order.tracking_url||"")}" placeholder="https://..."></label>
+              </div>
+              <button class="btn btn-primary ht-phone-shipping-save" type="button" onclick="saveWebshopOrderShipping(${Number(order.id)})">💾 Verzendgegevens opslaan</button>
             </div>
           </section>
           <section class="ht-phone-detail-card">
