@@ -208,18 +208,8 @@
     messages.scrollTop = messages.scrollHeight;
   }
 
-  function welcome() {
-    if (!messages.children.length) {
-      add({
-        sender: "admin",
-        message: "Hallo! Welkom bij HOMS TECH. 👋\nWaarmee kan ik u helpen? Schrijf hieronder uw probleem of vraag."
-      });
-    }
-  }
-
   async function refresh() {
     if (!token) {
-      welcome();
       return;
     }
 
@@ -240,7 +230,6 @@
       }
 
       const data = await response.json();
-      if (!data.messages.length) welcome();
       data.messages.forEach(add);
 
       if (data.status === "closed") {
@@ -339,5 +328,4 @@
     }
   });
 
-  welcome();
 })();
