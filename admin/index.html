@@ -8705,29 +8705,55 @@ if ("serviceWorker" in navigator) {
 }
 #orderDetailsModal.phone-order-detail-overlay .ht-phone-address-field,
 #phoneOrderDetailHost .ht-phone-address-field {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
+  display: grid !important;
+  grid-template-columns: minmax(105px, 0.8fr) minmax(0, 1.2fr) !important;
+  align-items: baseline !important;
+  column-gap: 12px !important;
   width: 100% !important;
   min-width: 0 !important;
   height: auto !important;
+  padding: 9px 2px !important;
+  border-bottom: 1px solid #e8edf4 !important;
   white-space: normal !important;
   overflow: visible !important;
 }
 #orderDetailsModal.phone-order-detail-overlay .ht-phone-address-field-label,
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-field-value,
-#phoneOrderDetailHost .ht-phone-address-field-label,
-#phoneOrderDetailHost .ht-phone-address-field-value {
+#phoneOrderDetailHost .ht-phone-address-field-label {
   display: block !important;
-  width: 100% !important;
+  width: auto !important;
   max-width: 100% !important;
   height: auto !important;
+  color: #64748b !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
+  line-height: 1.5 !important;
+  white-space: nowrap !important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-field-value,
+#phoneOrderDetailHost .ht-phone-address-field-value {
+  display: block !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  color: #172b40 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.55 !important;
+  text-align: left !important;
   white-space: normal !important;
   overflow: visible !important;
   text-overflow: clip !important;
   overflow-wrap: anywhere !important;
   word-break: normal !important;
-  line-height: 1.55 !important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-recipient .ht-phone-address-field,
+#phoneOrderDetailHost .ht-phone-address-recipient .ht-phone-address-field {
+  display: grid !important;
+  grid-template-columns: minmax(105px, 0.8fr) minmax(0, 1.2fr) !important;
+  flex: 1 1 auto !important;
+  border: 0 !important;
+  padding: 0 !important;
 }
 #orderDetailsModal.phone-order-detail-overlay .ht-phone-map-link,
 #phoneOrderDetailHost .ht-phone-map-link {
