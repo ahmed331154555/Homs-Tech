@@ -7554,154 +7554,6 @@ async function printWebshopShippingLabel(id){
 .phone-order-detail-overlay .phone-order-detail-panel{width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important;box-shadow:none!important;border:0!important}
 }
 
-/* HOMS TECH: tighter phone-order detail layout (desktop + mobile). */
-.phone-order-detail-overlay .phone-order-detail-panel{
-  width:min(1080px,calc(100vw - 28px))!important;
-  max-width:1080px!important;
-  padding:12px!important;
-  gap:10px!important;
-}
-.phone-order-detail-overlay .ht-order-detail-top{
-  margin:0 0 8px!important;
-  padding:11px 14px!important;
-  min-height:0!important;
-}
-.phone-order-detail-overlay .ht-phone-detail-grid,
-.phone-order-detail-overlay .ht-phone-detail-grid.equal{
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  gap:10px!important;
-  margin:0 0 8px!important;
-  align-items:start!important;
-  align-content:start!important;
-}
-.phone-order-detail-overlay .ht-phone-detail-card{
-  margin:0!important;
-  min-width:0!important;
-  border-radius:10px!important;
-}
-.phone-order-detail-overlay .ht-phone-detail-card-head{
-  min-height:0!important;
-  padding:9px 11px!important;
-  margin:0!important;
-  gap:7px!important;
-  font-size:13px!important;
-}
-.phone-order-detail-overlay .ht-phone-detail-card-body{
-  padding:8px 11px!important;
-  gap:6px!important;
-}
-.phone-order-detail-overlay .ht-phone-info-list{
-  gap:5px!important;
-}
-.phone-order-detail-overlay .ht-phone-info-line{
-  padding:3px 0!important;
-  line-height:1.35!important;
-  gap:8px!important;
-  font-size:12px!important;
-}
-.phone-order-detail-overlay .ht-phone-shipping-status{
-  padding:8px 9px!important;
-  margin:0 0 5px!important;
-  gap:8px!important;
-}
-.phone-order-detail-overlay .ht-phone-shipping-form{
-  gap:7px!important;
-  margin-top:5px!important;
-}
-.phone-order-detail-overlay .ht-phone-detail-field{
-  margin:0!important;
-  gap:4px!important;
-  font-size:11px!important;
-}
-.phone-order-detail-overlay .ht-phone-detail-field input,
-.phone-order-detail-overlay .ht-phone-detail-field select{
-  min-height:36px!important;
-  padding:7px 9px!important;
-  font-size:12px!important;
-}
-.phone-order-detail-overlay .ht-phone-summary-line{
-  padding:4px 0!important;
-  margin:0!important;
-  line-height:1.35!important;
-  font-size:12px!important;
-}
-.phone-order-detail-overlay .ht-phone-summary-total{
-  margin-top:5px!important;
-  padding-top:8px!important;
-}
-.phone-order-detail-overlay .ht-phone-detail-muted{
-  margin:4px 0 0!important;
-  line-height:1.35!important;
-  font-size:10px!important;
-}
-.phone-order-detail-overlay .ht-phone-shipping-save{
-  min-height:36px!important;
-  padding:7px 11px!important;
-  margin-top:4px!important;
-}
-@media(max-width:760px){
-  .phone-order-detail-overlay .phone-order-detail-panel{
-    width:100%!important;
-    max-width:none!important;
-    padding:10px!important;
-    gap:8px!important;
-  }
-  .phone-order-detail-overlay .ht-phone-detail-grid,
-  .phone-order-detail-overlay .ht-phone-detail-grid.equal{
-    grid-template-columns:minmax(0,1fr)!important;
-    gap:8px!important;
-    margin-bottom:7px!important;
-  }
-  .phone-order-detail-overlay .ht-phone-detail-card-head{padding:9px 10px!important}
-  .phone-order-detail-overlay .ht-phone-detail-card-body{padding:8px 10px!important}
-}
-
-
-/* Final override: stop equal-column cards from inheriting the height of the taller card. */
-#orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid.equal,
-#orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid{
-  display:grid!important;
-  grid-auto-rows:max-content!important;
-  align-items:start!important;
-  align-content:start!important;
-  justify-items:stretch!important;
-  row-gap:8px!important;
-}
-#orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid.equal > .ht-phone-detail-card,
-#orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid > .ht-phone-detail-card{
-  align-self:start!important;
-  justify-self:stretch!important;
-  height:max-content!important;
-  min-height:0!important;
-  max-height:none!important;
-  flex:0 0 auto!important;
-}
-#orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-card-body{
-  height:auto!important;
-  min-height:0!important;
-  flex:0 0 auto!important;
-}
-#orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-info-list{
-  display:flex!important;
-  flex-direction:column!important;
-  align-items:stretch!important;
-  justify-content:flex-start!important;
-  gap:5px!important;
-}
-#orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-actions:empty{
-  display:none!important;
-}
-@media(min-width:761px){
-  #orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid.equal{
-    grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  }
-}
-@media(max-width:760px){
-  #orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid.equal{
-    grid-template-columns:minmax(0,1fr)!important;
-  }
-}
-
 </style>
 </body></html>`);
   w.document.close();
@@ -7901,6 +7753,7 @@ async function showWebshopOrderDetails(id){
                 <select id="webshopPaymentStatus"><option value="Unpaid" ${/^(unpaid|open)$/i.test(payment)?"selected":""}>Niet betaald</option><option value="Processing" ${/^processing$/i.test(payment)?"selected":""}>In behandeling</option><option value="Paid" ${/^(paid|betaald|completed)$/i.test(payment)?"selected":""}>Betaald</option><option value="Failed" ${/^(failed|mislukt)$/i.test(payment)?"selected":""}>Mislukt</option></select>
               </label>
               <div class="ht-phone-detail-muted">De betaalstatus en voorraadregels worden via de bestaande beveiligde opslag bijgewerkt.</div>
+              <button class="btn btn-primary ht-phone-payment-save" type="button" onclick="saveWebshopOrderPayment(${Number(order.id)})">💾 Betaalstatus opslaan</button>
             </div>
           </section>
           <section class="ht-phone-detail-card">
@@ -8102,6 +7955,35 @@ async function saveWebshopOrderNote(id){
     await showWebshopOrderDetails(id);
     setStatus("✓ Notitie opgeslagen bij bestelling #"+id,"success");
   }catch(error){alert(error.message);}
+}
+
+async function saveWebshopOrderPayment(id){
+  if(!hasPermission("webshop_orders.update")){alert("Je hebt geen toestemming om deze bestelling te wijzigen.");return;}
+  const select=document.getElementById("webshopPaymentStatus");
+  const button=document.querySelector("#orderDetailsModal .ht-phone-payment-save");
+  const paymentStatus=select?.value||"Unpaid";
+  if(button){button.disabled=true;button.textContent="Opslaan...";}
+  try{
+    const response=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/payment",{
+      method:"PUT",credentials:"same-origin",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({payment_status:paymentStatus})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Betaalstatus kon niet worden opgeslagen.");
+    await loadWebshopOrders();
+    await showWebshopOrderDetails(id);
+    if(result.inventory_warning){
+      setStatus("✓ Betaalstatus opgeslagen als Betaald. Voorraadcontrole vereist: "+result.inventory_warning,"error");
+      alert("De betaalstatus is opgeslagen als Betaald, maar de voorraad kon niet automatisch worden verwerkt. Controleer de voorraadmelding bij deze bestelling.\n\n"+result.inventory_warning);
+    }else{
+      setStatus("✓ Betaalstatus opgeslagen voor bestelling #"+id,"success");
+    }
+  }catch(error){
+    setStatus("✕ "+error.message,"error");
+    alert(error.message);
+    if(button){button.disabled=false;button.textContent="💾 Betaalstatus opslaan";}
+  }
 }
 
 async function saveWebshopOrderShipping(id){
@@ -8990,3 +8872,51 @@ if ("serviceWorker" in navigator) {
   }
 }
 </style>
+<style id="ht-phone-order-layout-clean-v1">
+/* Real admin-page styles: compact cards that only occupy their content height. */
+#orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel{
+  height:auto!important;min-height:0!important;max-height:92vh!important;
+  overflow-x:hidden!important;overflow-y:auto!important;padding:12px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-grid,
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-grid.equal{
+  display:grid!important;grid-auto-rows:min-content!important;
+  align-items:start!important;align-content:start!important;
+  gap:8px!important;margin:0 0 8px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-grid.equal{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-grid > .ht-phone-detail-card{
+  align-self:start!important;height:auto!important;min-height:0!important;
+  max-height:none!important;margin:0!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-card-body{
+  height:auto!important;min-height:0!important;padding:8px 10px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-info-list{
+  display:flex!important;flex-direction:column!important;
+  align-items:stretch!important;justify-content:flex-start!important;gap:5px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-card-head{
+  min-height:0!important;padding:8px 10px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-info-line{
+  padding:2px 0!important;line-height:1.35!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-payment-save{
+  align-self:flex-start!important;min-height:34px!important;
+  margin-top:5px!important;padding:6px 10px!important;font-size:12px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-muted:empty,
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-actions:empty{display:none!important}
+@media(max-width:760px){
+  #orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel{
+    height:100dvh!important;max-height:100dvh!important;padding:10px!important;
+  }
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-grid.equal{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+}
+</style>
+
