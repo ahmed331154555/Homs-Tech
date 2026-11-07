@@ -99,7 +99,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   <link rel="stylesheet" href="assets/homs-global-nav.css">
 
 <link rel="stylesheet" href="assets/homs-layout-system.css?v=20261030">
-</head>
+<style id="ht-checkout-tradein-total">.total #total{display:block;text-align:right}.ht-checkout-total-lines{display:grid;gap:7px;min-width:210px}.ht-checkout-total-lines>span{display:flex;justify-content:space-between;gap:18px;align-items:center}.ht-checkout-total-lines small{font-size:12px;color:#64748b}.ht-checkout-total-lines b{font-size:14px;color:#1e293b}.ht-checkout-total-lines .discount b{color:#15803d}.ht-checkout-total-lines .payable{padding-top:8px;border-top:1px solid #e2e8f0}.ht-checkout-total-lines .payable b{font-size:20px;color:#075fc4}</style>\n</head>
 <body>
 <div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div>
 <header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a>
@@ -250,8 +250,8 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
     const tradeInCredit=Number(localStorage.getItem("homsTechTradeInCredit")||0);
     const appliedCredit=tradeInToken?Math.min(total,Math.max(0,tradeInCredit)):0;
     const payable=Math.max(0,Math.round((total-appliedCredit)*100)/100);
-    totalEl.textContent = appliedCredit>0
-      ? "Producten: "+money(total)+" · Inruil: −"+money(appliedCredit)+" · Te betalen: "+money(payable)
+    totalEl.innerHTML = appliedCredit>0
+      ? '<span class="ht-checkout-total-lines"><span><small>Producttotaal</small><b>'+money(total)+'</b></span><span class="discount"><small>Inruilkorting</small><b>− '+money(appliedCredit)+'</b></span><span class="payable"><small>Te betalen</small><b>'+money(payable)+'</b></span></span>'
       : money(total);
   }
 
@@ -439,6 +439,9 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 
       if(selectedMethod === "CashOnDelivery"){
         localStorage.removeItem(CART_KEY);
+        localStorage.removeItem("homsTechTradeInToken");
+        localStorage.removeItem("homsTechTradeInCredit");
+        localStorage.removeItem("homsTechTradeInDevice");
         localStorage.removeItem("homsTechPendingWebshopOrderId");
         document.getElementById("checkoutContent").classList.add("hidden");
         document.getElementById("success").classList.remove("hidden");
@@ -529,6 +532,9 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
       if(!r.ok) throw new Error(result.error || "De betaalstatus kon niet worden gecontroleerd.");
       if(result.paid){
         localStorage.removeItem(CART_KEY);
+        localStorage.removeItem("homsTechTradeInToken");
+        localStorage.removeItem("homsTechTradeInCredit");
+        localStorage.removeItem("homsTechTradeInDevice");
         localStorage.removeItem("homsTechPendingWebshopOrderId");
         sessionStorage.removeItem("homsTechMollieOrderId");
         sessionStorage.removeItem("homsTechMollieCheckoutToken");
