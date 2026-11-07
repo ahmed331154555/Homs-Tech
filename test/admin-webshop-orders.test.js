@@ -9,6 +9,7 @@ function createHarness(pool, deductPaidOrderInventory = async () => ({ deducted:
   const app = {
     get(path, ...handlers) { routes.set(`GET ${path}`, handlers.at(-1)); },
     put(path, ...handlers) { routes.set(`PUT ${path}`, handlers.at(-1)); },
+    post(path, ...handlers) { routes.set(`POST ${path}`, handlers.at(-1)); },
     delete(path, ...handlers) { routes.set(`DELETE ${path}`, handlers.at(-1)); }
   };
   const requirePermission = (permission) => {
@@ -41,6 +42,43 @@ test("admin webshop order list includes inventory processing diagnostics", async
   assert.deepEqual(response.body, { orders: expectedOrders });
   assert.match(selectSql, /inventory_deducted_at/);
   assert.match(selectSql, /inventory_error/);
+  assert.match(selectSql, /webshop_order_status_history/);
+  assert.match(selectSql, /webshop_order_notes/);
+});
+
+
+test("admin can save an internal note on a webshop order", async () => {
+  let insertSql = "";
+  const routes = createHarness({
+    async query(sql, params) {
+      insertSql = sql;
+      return { rows: [{ id: 8, note: params[1], created_by: "HOMS TECH Admin" }] };
+    }
+  });
+  const response = createResponse();
+
+  await routes.get("POST /api/admin/webshop-orders/:id/notes")({
+    params: { id: "12" },
+    body: { note: "Klant terugbellen" }
+  }, response);
+
+  assert.equal(response.statusCode, 201);
+  assert.equal(response.body.note.note, "Klant terugbellen");
+  assert.match(insertSql, /INSERT INTO webshop_order_notes/);
+});
+
+test("webshop order notes reject empty or oversized text", async () => {
+  let queryCalled = false;
+  const routes = createHarness({ async query() { queryCalled = true; return { rows: [] }; } });
+  const response = createResponse();
+
+  await routes.get("POST /api/admin/webshop-orders/:id/notes")({
+    params: { id: "12" },
+    body: { note: "   " }
+  }, response);
+
+  assert.equal(response.statusCode, 400);
+  assert.equal(queryCalled, false);
 });
 
 test("webshop shipping rejects unsupported carriers before database update", async () => {
@@ -124,7 +162,7 @@ test("admin cannot revert a paid webshop order to Unpaid", async () => {
   const routes = createHarness({
     async query(sql) {
       calls += 1;
-      if (sql.startsWith("UPDATE")) return { rows: [] };
+      if (sql.includes("WITH previous AS")) return { rows: [] };
       return { rows: [{ id: 12, payment_status: "Paid", inventory_deducted_at: "2026-11-05T12:00:00Z" }] };
     }
   }, async () => {
