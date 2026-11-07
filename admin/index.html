@@ -7483,6 +7483,10 @@ async function printWebshopShippingLabel(id){
 <style id="homs-phone-order-detail-layout-v3">
 .phone-order-detail-overlay{position:fixed!important;inset:0!important;z-index:10020!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:24px!important;background:rgba(8,20,36,.68)!important}
 .phone-order-detail-overlay .phone-order-detail-panel{width:min(1120px,96vw)!important;height:min(92vh,980px)!important;max-height:92vh!important;margin:0 auto!important;padding:20px!important;overflow:auto!important;border:1px solid #dce5ef!important;border-radius:18px!important;background:#f4f7fb!important;box-shadow:0 24px 80px rgba(5,18,35,.28)!important}
+/* On wide screens keep the selected order beside the list instead of covering it. */
+.phone-order-detail-overlay.ht-phone-inline-detail{position:relative!important;inset:auto!important;display:block!important;width:100%!important;height:auto!important;max-height:none!important;padding:0!important;background:transparent!important;backdrop-filter:none!important}
+.phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel{width:100%!important;height:auto!important;max-height:none!important;min-height:100%!important;margin:0!important;padding:16px!important;border-radius:14px!important;box-shadow:0 3px 12px rgba(15,35,61,.055)!important}
+.phone-order-detail-overlay.ht-phone-inline-detail .ht-order-detail-top{top:-16px!important;margin:-16px -16px 14px!important;padding:14px 16px!important}
 .phone-order-detail-overlay .ht-order-detail-top{position:sticky!important;top:-20px!important;z-index:8!important;margin:-20px -20px 16px!important;padding:16px 20px!important;border-radius:17px 17px 12px 12px!important;background:#10233d!important;color:#fff!important}
 .phone-order-detail-overlay .ht-phone-detail-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important;margin-bottom:14px!important;align-items:stretch!important}
 .phone-order-detail-overlay .ht-phone-detail-grid.equal{grid-template-columns:repeat(2,minmax(0,1fr))!important}
