@@ -8083,6 +8083,21 @@ async function showWebshopOrderDetails(id){
       return '<div class="ht-phone-note-entry"><div class="ht-phone-note-meta">'+esc(note.created_by||"HOMS TECH Admin")+' · '+esc(noteDate)+'</div><p>'+esc(note.note||"")+'</p></div>';
     }).join(""):'<div class="ht-phone-detail-muted">Nog geen notities bij deze bestelling.</div>';
     const phoneNoteForm=hasPermission("webshop_orders.update")?'<div class="ht-phone-note-form"><label class="ht-phone-detail-field">Nieuwe notitie<textarea id="webshopOrderNote" maxlength="2000" rows="3" placeholder="Schrijf een interne notitie over deze bestelling..."></textarea></label><button class="btn btn-primary" type="button" onclick="saveWebshopOrderNote('+Number(order.id)+')">Notitie opslaan</button></div>':"";
+    const tradeInStatusLabels={AwaitingDevice:"Wacht op inruiltoestel",Received:"Toestel ontvangen",Inspecting:"Wordt gecontroleerd",Approved:"Goedgekeurd",AdjustmentRequired:"Prijsverschil afhandelen",Settled:"Afgehandeld",Rejected:"Afgekeurd",Returned:"Teruggestuurd"};
+    const tradeInStatus=String(order.trade_in_status||"AwaitingDevice");
+    const tradeInCard=order.trade_in_order_id?'<section class="ht-phone-detail-card"><div class="ht-phone-detail-card-head"><span class="icon">♻</span>Inruil · '+esc(order.trade_in_model||order.trade_in_device||"Oud toestel")+'</div><div class="ht-phone-detail-card-body ht-phone-info-list">'+
+      '<div class="ht-phone-info-line"><span>Inruilaanvraag</span><strong>#'+Number(order.trade_in_order_id)+'</strong></div>'+
+      '<div class="ht-phone-info-line"><span>Toestel</span><strong>'+esc(order.trade_in_device||order.trade_in_model||"Niet opgegeven")+'</strong></div>'+
+      '<div class="ht-phone-info-line"><span>Opslag</span><strong>'+esc(order.trade_in_storage||"—")+'</strong></div>'+
+      '<div class="ht-phone-info-line"><span>Geschatte waarde</span><strong>'+money(order.trade_in_estimated_value)+'</strong></div>'+
+      '<div class="ht-phone-info-line"><span>Verrekende korting</span><strong>'+money(order.trade_in_applied_credit)+'</strong></div>'+
+      '<div class="ht-phone-info-line"><span>Waarde na inspectie</span><strong>'+ (order.trade_in_inspected_value===null||order.trade_in_inspected_value===undefined?"Nog niet gecontroleerd":money(order.trade_in_inspected_value))+'</strong></div>'+
+      '<div class="ht-phone-info-line"><span>Verschil</span><strong>'+money(Math.abs(Number(order.trade_in_adjustment||0)))+'</strong></div>'+
+      '<div class="ht-phone-info-line"><span>Inruilstatus</span><strong>'+esc(tradeInStatusLabels[tradeInStatus]||tradeInStatus)+'</strong></div>'+
+      (hasPermission("webshop_orders.update")&&tradeInStatus!=="Settled"?'<label class="ht-phone-detail-field">Definitieve inruilwaarde (€)<input id="webshopTradeInInspectedValue" type="number" min="0" max="100000" step="0.01" value="'+esc(order.trade_in_inspected_value??order.trade_in_estimated_value??"")+'"></label><label class="ht-phone-detail-field">Inspectienotitie<textarea id="webshopTradeInInspectionReason" rows="2" maxlength="1000" placeholder="Beschrijf de staat van het toestel en eventuele afwijkingen..."></textarea></label><button class="btn btn-primary" type="button" onclick="saveWebshopTradeInInspection('+Number(order.id)+')">Inspectie opslaan</button>':"")+
+      (hasPermission("webshop_orders.update")&&tradeInStatus==="AdjustmentRequired"?'<label class="ht-phone-detail-field">Verrekening uitgevoerd · toelichting<textarea id="webshopTradeInSettlementNote" rows="2" maxlength="1000" placeholder="Bijv. betaalverzoek voldaan of terugbetaling uitgevoerd..."></textarea></label><button class="btn btn-primary" type="button" onclick="settleWebshopTradeIn('+Number(order.id)+')">Prijsverschil als afgehandeld markeren</button>':"")+
+      '<div class="ht-phone-detail-muted">Verzending blijft geblokkeerd totdat het toestel is gecontroleerd en een eventueel prijsverschil is afgehandeld.</div></div></section>':"";
+
     const phoneDetailMarkup=`
       <div class="ht-order-detail-panel phone-order-detail-panel" role="dialog" aria-modal="true" aria-label="Bestelling #${Number(order.id)}">
         <div class="ht-order-detail-top">
@@ -8098,6 +8113,7 @@ async function showWebshopOrderDetails(id){
               <div><div class="ht-phone-product-title">${esc(firstPhoneName)}</div><div class="ht-phone-product-tags">${firstPhoneMeta.map(value=>'<span>'+esc(value)+'</span>').join("")||'<span>Specificaties niet opgegeven</span>'}</div><div class="ht-phone-product-qty">Aantal: ${firstPhoneQuantity}</div><strong class="ht-phone-product-price">${money(firstPhoneUnitPrice*firstPhoneQuantity)}</strong></div>
             </div></div>${phoneExtraProducts}
           </section>
+    ${phoneTradeInCard}
     <section class="ht-phone-detail-card">
             <div class="ht-phone-detail-card-head"><span class="icon">♙</span>Klantgegevens</div>
             <div class="ht-phone-detail-card-body ht-phone-info-list">
@@ -8361,6 +8377,45 @@ async function saveWebshopOrderNote(id){
     if(!response.ok)throw new Error(result.error||"Notitie kon niet worden opgeslagen.");
     await showWebshopOrderDetails(id);
     setStatus("✓ Notitie opgeslagen bij bestelling #"+id,"success");
+  }catch(error){alert(error.message);}
+}
+
+async function saveWebshopTradeInInspection(id){
+  if(!hasPermission("webshop_orders.update"))return;
+  const value=Number(document.getElementById("webshopTradeInInspectedValue")?.value);
+  const reason=String(document.getElementById("webshopTradeInInspectionReason")?.value||"").trim();
+  if(!Number.isFinite(value)||value<0){alert("Vul een geldige definitieve inruilwaarde in.");return;}
+  if(reason.length<5){alert("Geef een korte inspectienotitie van minimaal 5 tekens.");return;}
+  try{
+    const response=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/trade-in-inspection",{
+      method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({inspectedValue:value,reason})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Inruilinspectie kon niet worden opgeslagen.");
+    await loadWebshopOrders();
+    await showWebshopOrderDetails(id);
+    if(result.adjustment?.customerDue>0)alert("Er is een bedrag van "+money(result.adjustment.customerDue)+" bij te betalen. De verzending blijft geblokkeerd totdat dit bedrag is afgehandeld.");
+    else if(result.adjustment?.customerCredit>0)alert("Er moet "+money(result.adjustment.customerCredit)+" aan de klant worden terugbetaald of als tegoed worden verwerkt. Rond dit eerst af.");
+    else setStatus("✓ Inruilinspectie afgerond bij bestelling #"+id,"success");
+  }catch(error){alert(error.message);}
+}
+
+async function settleWebshopTradeIn(id){
+  if(!hasPermission("webshop_orders.update"))return;
+  const note=String(document.getElementById("webshopTradeInSettlementNote")?.value||"").trim();
+  if(note.length<5){alert("Beschrijf eerst hoe het prijsverschil is afgehandeld.");return;}
+  if(!confirm("Weet je zeker dat het prijsverschil daadwerkelijk is betaald of terugbetaald?"))return;
+  try{
+    const response=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/trade-in-settlement",{
+      method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({settlementNote:note})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Verrekening kon niet worden opgeslagen.");
+    await loadWebshopOrders();
+    await showWebshopOrderDetails(id);
+    setStatus("✓ Inruilverschil afgehandeld bij bestelling #"+id,"success");
   }catch(error){alert(error.message);}
 }
 
