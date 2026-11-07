@@ -1115,7 +1115,7 @@ function renderBasicProductFallback(product){
 async function load(){
 let data;
 try{
-  const response=await fetch("/api/site?view=product",{cache:"no-store"});
+  const response=await fetch("/api/site?view=product",{headers:{Accept:"application/json"}});
   if(!response.ok) throw new Error("API returned HTTP "+response.status);
   data=await response.json();
 }catch(e){
