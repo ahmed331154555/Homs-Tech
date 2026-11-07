@@ -446,6 +446,64 @@
       .section-head{margin-bottom:28px!important}
     }
 
+
+    /* Wider repair hero and clearer service photography */
+    .repair-hero{
+      min-height:640px!important;
+      width:100%!important;
+    }
+    .hero-photo{
+      inset:0 0 0 31%!important;
+      width:auto!important;
+    }
+    .hero-photo img{
+      object-fit:cover!important;
+      object-position:center 48%!important;
+      transform:scale(1.035);
+    }
+    .hero-photo:after{
+      background:linear-gradient(90deg,
+        rgba(3,18,31,.98) 0%,
+        rgba(3,18,31,.82) 20%,
+        rgba(3,18,31,.30) 58%,
+        rgba(3,18,31,.08) 100%)!important;
+    }
+    .hero-inner{
+      max-width:1320px!important;
+      grid-template-columns:minmax(0, .95fr) minmax(0, 1.05fr)!important;
+      padding-top:78px!important;
+      padding-bottom:120px!important;
+    }
+    .wrap{max-width:1320px!important}
+    .options{gap:20px!important}
+    .option-img{
+      height:270px!important;
+      min-height:270px!important;
+      background:#edf2f6!important;
+    }
+    .option-img .custom-option-image{
+      width:100%!important;
+      height:100%!important;
+      object-fit:cover!important;
+      object-position:center!important;
+    }
+    @media(max-width:900px){
+      .repair-hero{min-height:0!important}
+      .hero-photo{inset:0!important;opacity:.68!important}
+      .hero-inner{
+        max-width:100%!important;
+        grid-template-columns:minmax(0,1fr)!important;
+      }
+      .option-img{height:250px!important;min-height:250px!important}
+    }
+    @media(max-width:600px){
+      .hero-photo{inset:0!important;opacity:.58!important}
+      .hero-photo img{transform:none!important;object-position:60% center!important}
+      .hero-inner{padding:42px 16px 76px!important}
+      .option-img{height:220px!important;min-height:220px!important}
+      .options{gap:15px!important}
+    }
+
   </style>
   <link rel="stylesheet" href="assets/homs-global-nav.css">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5361560605027063"
@@ -813,7 +871,10 @@
       if(!freshData || typeof freshData !== "object") throw new Error("Invalid repair page data");
       siteData = freshData;
 
-      const whatsappNumber = String(siteData.whatsapp || "").replace(/\D/g, "");
+      const rawWhatsApp = String(siteData.whatsapp || "").trim();
+      let whatsappNumber = rawWhatsApp.replace(/\D/g, "");
+      if (whatsappNumber.startsWith("00")) whatsappNumber = whatsappNumber.slice(2);
+      if (whatsappNumber.startsWith("0")) whatsappNumber = "31" + whatsappNumber.slice(1);
       const whatsappButton = document.getElementById("repairWhatsAppButton");
       if (whatsappButton) {
         if (whatsappNumber.length >= 8) {
