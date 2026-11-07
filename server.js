@@ -1799,7 +1799,7 @@ app.put("/api/admin/order-settings", requirePermission("site.save"), async (req,
 });
 
 // Admin webshop order endpoints live in their own route module.
-registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory });
+registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory, ensureBuybackOrdersTable });
 
 // Public repair quote requests from the Prices page. Photos are limited and stored with the request.
 app.post("/api/repair-requests", async (req, res) => {
