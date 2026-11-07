@@ -191,6 +191,15 @@ async function initializeDatabaseSchema(pool) {
     `);
 
     await pool.query(`
+      CREATE TABLE IF NOT EXISTS webshop_order_status_history (
+        id BIGSERIAL PRIMARY KEY,
+        order_id INTEGER NOT NULL REFERENCES webshop_orders(id) ON DELETE CASCADE,
+        status TEXT NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS webshop_order_status_history_order_idx
+        ON webshop_order_status_history(order_id, created_at ASC);
+
       CREATE TABLE IF NOT EXISTS order_settings (
         id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
         data JSONB NOT NULL DEFAULT '{"postnlEnabled":false,"dhlEnabled":false}'::jsonb,
