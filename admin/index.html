@@ -7656,6 +7656,52 @@ async function printWebshopShippingLabel(id){
   .phone-order-detail-overlay .ht-phone-detail-card-body{padding:8px 10px!important}
 }
 
+
+/* Final override: stop equal-column cards from inheriting the height of the taller card. */
+#orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid.equal,
+#orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid{
+  display:grid!important;
+  grid-auto-rows:max-content!important;
+  align-items:start!important;
+  align-content:start!important;
+  justify-items:stretch!important;
+  row-gap:8px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid.equal > .ht-phone-detail-card,
+#orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid > .ht-phone-detail-card{
+  align-self:start!important;
+  justify-self:stretch!important;
+  height:max-content!important;
+  min-height:0!important;
+  max-height:none!important;
+  flex:0 0 auto!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-card-body{
+  height:auto!important;
+  min-height:0!important;
+  flex:0 0 auto!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-info-list{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  gap:5px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-actions:empty{
+  display:none!important;
+}
+@media(min-width:761px){
+  #orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid.equal{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:760px){
+  #orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid.equal{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+}
+
 </style>
 </body></html>`);
   w.document.close();
