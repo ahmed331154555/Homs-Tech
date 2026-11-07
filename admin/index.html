@@ -7518,7 +7518,16 @@ async function printWebshopShippingLabel(id){
 .phone-order-detail-overlay .ht-phone-address-recipient div{display:block!important;min-width:0!important}
 .phone-order-detail-overlay .ht-phone-address-recipient small{display:block!important;margin:0 0 4px!important}
 .phone-order-detail-overlay .ht-phone-address-recipient strong{display:block!important;line-height:1.45!important}
-.phone-order-detail-overlay .ht-phone-map-link{justify-self:start;margin-top:8px!important}
+/* Address labels and values use separate block elements to prevent inline collisions. */
+.phone-order-detail-overlay .ht-phone-address-card{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:12px!important}
+.phone-order-detail-overlay .ht-phone-address-recipient{display:flex!important;align-items:center!important;gap:11px!important;min-width:0!important}
+.phone-order-detail-overlay .ht-phone-address-recipient .ht-phone-address-field{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;min-width:0!important}
+.phone-order-detail-overlay .ht-phone-address-lines{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;width:100%!important;min-width:0!important}
+.phone-order-detail-overlay .ht-phone-address-field{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;width:100%!important;min-width:0!important;padding:10px 2px!important;border-bottom:1px solid #e8edf4!important}
+.phone-order-detail-overlay .ht-phone-address-lines>.ht-phone-address-field:last-child{border-bottom:0!important}
+.phone-order-detail-overlay .ht-phone-address-field-label{display:block!important;width:100%!important;margin:0!important;color:#64748b!important;font-size:11px!important;font-weight:750!important;line-height:1.35!important;text-align:left!important}
+.phone-order-detail-overlay .ht-phone-address-field-value{display:block!important;width:100%!important;margin:0!important;color:#172b40!important;font-size:14px!important;font-weight:700!important;line-height:1.5!important;text-align:left!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important}
+.phone-order-detail-overlay .ht-phone-map-link{align-self:flex-start!important;justify-self:start!important;margin-top:8px!important}
 .phone-order-detail-overlay .ht-phone-shipping-status{display:flex;gap:11px;align-items:center;padding:12px;border:1px solid #dbeafe;border-radius:11px;background:#eff6ff}
 .phone-order-detail-overlay .ht-phone-shipping-status-icon{font-size:23px}
 .phone-order-detail-overlay .ht-phone-shipping-status div{display:grid;gap:3px}
@@ -7703,12 +7712,30 @@ async function showWebshopOrderDetails(id){
           <section class="ht-phone-detail-card">
             <div class="ht-phone-detail-card-head"><span class="icon">⌖</span>Verzendadres</div>
             <div class="ht-phone-detail-card-body ht-phone-address-card">
-              <div class="ht-phone-address-recipient"><span class="ht-phone-address-symbol">♙</span><div><small>Ontvanger</small><strong>${esc(order.name||"Naam niet opgegeven")}</strong></div></div>
+              <div class="ht-phone-address-recipient">
+                <span class="ht-phone-address-symbol">♙</span>
+                <div class="ht-phone-address-field">
+                  <span class="ht-phone-address-field-label">Ontvanger</span>
+                  <span class="ht-phone-address-field-value">${esc(order.name||"Naam niet opgegeven")}</span>
+                </div>
+              </div>
               <div class="ht-phone-address-lines">
-                <div><small>Huisadres</small><strong>${esc(phoneStreetAddress||"Niet opgegeven")}</strong></div>
-                <div><small>Postcode</small><strong>${esc(phonePostcode||"Niet opgegeven")}</strong></div>
-                <div><small>Plaats</small><strong>${esc(phoneCity||"Niet opgegeven")}</strong></div>
-                <div><small>Land</small><strong>${esc(phoneCountry||"Nederland")}</strong></div>
+                <div class="ht-phone-address-field">
+                  <span class="ht-phone-address-field-label">Huisadres</span>
+                  <span class="ht-phone-address-field-value">${esc(phoneStreetAddress||"Niet opgegeven")}</span>
+                </div>
+                <div class="ht-phone-address-field">
+                  <span class="ht-phone-address-field-label">Postcode</span>
+                  <span class="ht-phone-address-field-value">${esc(phonePostcode||"Niet opgegeven")}</span>
+                </div>
+                <div class="ht-phone-address-field">
+                  <span class="ht-phone-address-field-label">Plaats</span>
+                  <span class="ht-phone-address-field-value">${esc(phoneCity||"Niet opgegeven")}</span>
+                </div>
+                <div class="ht-phone-address-field">
+                  <span class="ht-phone-address-field-label">Land</span>
+                  <span class="ht-phone-address-field-value">${esc(phoneCountry||"Nederland")}</span>
+                </div>
               </div>
               ${phoneStreetAddress||phonePostcodeCity?'<a class="btn btn-light ht-phone-map-link" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(phoneFullAddress)+'">⌖ Adres op kaart openen</a>':""}
             </div>
