@@ -54,6 +54,57 @@ test("admin webshop order list includes inventory processing diagnostics", async
 });
 
 
+test("admin can set payment status to Paid when the stored payment status is NULL", async () => {
+  let updateSql = "";
+  let deductedId = null;
+  const routes = createHarness({
+    async query(sql, params) {
+      if (sql.startsWith("UPDATE webshop_orders")) {
+        updateSql = sql;
+        assert.equal(params[0], "Paid");
+        return { rows: [{ id: 21, payment_status: "Paid", inventory_deducted_at: null }] };
+      }
+      if (sql.includes("SELECT id,payment_status,inventory_deducted_at,inventory_error")) {
+        return { rows: [{ id: 21, payment_status: "Paid", inventory_deducted_at: "2026-11-07T12:00:00Z", inventory_error: "" }] };
+      }
+      throw new Error("Unexpected query: " + sql);
+    }
+  }, async (id) => { deductedId = id; return { deducted: true }; });
+  const response = createResponse();
+
+  await routes.get("PUT /api/admin/webshop-orders/:id/payment")({
+    params: { id: "21" }, body: { payment_status: "Paid" }
+  }, response);
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(deductedId, 21);
+  assert.match(updateSql, /COALESCE\(payment_status,'Unpaid'\) <> 'Paid'/);
+  assert.equal(response.body.order.payment_status, "Paid");
+  assert.equal(response.body.inventory_warning, null);
+});
+
+test("payment status remains visibly Paid and reports stock warning when inventory deduction fails", async () => {
+  const routes = createHarness({
+    async query(sql) {
+      if (sql.startsWith("UPDATE webshop_orders")) return { rows: [{ id: 22, payment_status: "Paid" }] };
+      if (sql.includes("SELECT inventory_error")) return { rows: [{ inventory_error: "Variant not found" }] };
+      if (sql.includes("SELECT id,payment_status,inventory_deducted_at,inventory_error")) {
+        return { rows: [{ id: 22, payment_status: "Paid", inventory_deducted_at: null, inventory_error: "Variant not found" }] };
+      }
+      throw new Error("Unexpected query: " + sql);
+    }
+  }, async () => ({ error: true }));
+  const response = createResponse();
+
+  await routes.get("PUT /api/admin/webshop-orders/:id/payment")({
+    params: { id: "22" }, body: { payment_status: "Paid" }
+  }, response);
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.order.payment_status, "Paid");
+  assert.equal(response.body.inventory_warning, "Variant not found");
+});
+
 test("admin can save an internal note on a webshop order", async () => {
   let insertSql = "";
   const routes = createHarness({
