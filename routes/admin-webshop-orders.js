@@ -2,7 +2,7 @@
 
 const { calculateTradeInAdjustment } = require("../utils/trade-in");
 
-function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory }) {
+function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory, ensureBuybackOrdersTable }) {
   app.put("/api/admin/webshop-orders/:id/payment", requirePermission("webshop_orders.update"), async (req,res) => {
     try {
       const id=Number(req.params.id);
@@ -94,6 +94,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
 
   app.get("/api/admin/webshop-orders", requirePermission("webshop_orders.view"), async (req, res) => {
     try {
+      if (typeof ensureBuybackOrdersTable === "function") await ensureBuybackOrdersTable(pool);
       const result = await pool.query(
         `SELECT webshop_orders.id, webshop_orders.customer_id, webshop_orders.name, webshop_orders.email,
                 webshop_orders.phone, webshop_orders.street, webshop_orders.house_number,
