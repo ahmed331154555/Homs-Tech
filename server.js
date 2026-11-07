@@ -200,7 +200,8 @@ app.get("/api/site", async (req, res) => {
           data->'services' AS services,
           data->>'businessName' AS business_name,
           data->>'siteName' AS site_name,
-          data->>'tagline' AS tagline
+          data->>'tagline' AS tagline,
+          data->'whatsapp' AS whatsapp
         FROM site_settings
         WHERE id = 1`,
         [],
@@ -214,7 +215,8 @@ app.get("/api/site", async (req, res) => {
         services:Array.isArray(row.services)?row.services:[],
         businessName:row.business_name,
         siteName:row.site_name,
-        tagline:row.tagline
+        tagline:row.tagline,
+        whatsapp:row.whatsapp
       }));
     }
     if(view==="devices"){
