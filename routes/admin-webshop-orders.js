@@ -45,7 +45,15 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       const result = await pool.query(
         `SELECT id, customer_id, name, email, phone, street, house_number, postcode, city, items, total, status,
                 payment_method, payment_status, paypal_order_id, mollie_payment_id,
-                inventory_deducted_at, inventory_error, created_at
+                inventory_deducted_at, inventory_error, created_at,
+                COALESCE((
+                  SELECT json_agg(
+                    json_build_object('status', history.status, 'created_at', history.created_at)
+                    ORDER BY history.created_at ASC, history.id ASC
+                  )
+                  FROM webshop_order_status_history history
+                  WHERE history.order_id = webshop_orders.id
+                ), '[]'::json) AS status_history
          FROM webshop_orders
          ORDER BY created_at DESC`
       );
@@ -66,10 +74,24 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
         return res.status(400).json({ error: "Ongeldige status." });
       }
       const result = await pool.query(
-        `UPDATE webshop_orders
-         SET status = $1
-         WHERE id = $2 AND NOT (payment_status = 'Paid' AND $1 = 'Geannuleerd')
-         RETURNING id, status`,
+        `WITH previous AS (
+           SELECT status FROM webshop_orders WHERE id = $2
+         ),
+         updated AS (
+           UPDATE webshop_orders
+           SET status = $1
+           WHERE id = $2 AND NOT (payment_status = 'Paid' AND $1 = 'Geannuleerd')
+           RETURNING id, status
+         ),
+         logged AS (
+           INSERT INTO webshop_order_status_history (order_id, status, created_at)
+           SELECT updated.id, updated.status, NOW()
+           FROM updated
+           CROSS JOIN previous
+           WHERE previous.status IS DISTINCT FROM updated.status
+           RETURNING id
+         )
+         SELECT updated.id, updated.status FROM updated`,
         [status, id]
       );
       if (!result.rows.length) {
