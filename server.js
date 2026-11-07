@@ -201,7 +201,7 @@ app.get("/api/site", async (req, res) => {
           data->>'businessName' AS business_name,
           data->>'siteName' AS site_name,
           data->>'tagline' AS tagline,
-          data->'whatsapp' AS whatsapp
+          data->>'whatsapp' AS whatsapp
         FROM site_settings
         WHERE id = 1`,
         [],
@@ -209,7 +209,7 @@ app.get("/api/site", async (req, res) => {
       );
       if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
       const row=result.rows[0];
-      res.set("Cache-Control","public, max-age=60, stale-while-revalidate=300");
+      res.set("Cache-Control","no-store");
       return res.json(sanitizePublicSiteData({
         repairPage:row.repair_page,
         services:Array.isArray(row.services)?row.services:[],
