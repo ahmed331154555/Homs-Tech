@@ -52,16 +52,16 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       const body=req.body||{};
       const carrier=String(body.shipping_method||"").trim();
       const paymentStatus=String(body.payment_status||"Unpaid").trim();
+      const trackingNumber=String(body.tracking_number||"").trim().slice(0,160);
+      const trackingUrl=String(body.tracking_url||"").trim().slice(0,1000);
       const tradeInCheck=await pool.query(
         "SELECT trade_in_order_id,trade_in_status FROM webshop_orders WHERE id=$1",
         [id]
       );
       if(!tradeInCheck.rows.length)return res.status(404).json({error:"Bestelling niet gevonden."});
-      if(tradeInCheck.rows[0].trade_in_order_id && tradeInCheck.rows[0].trade_in_status!=="Settled" && carrier){
+      if(tradeInCheck.rows[0].trade_in_order_id && tradeInCheck.rows[0].trade_in_status!=="Settled" && (carrier||trackingNumber||trackingUrl)){
         return res.status(409).json({error:"Verzending is geblokkeerd totdat het inruiltoestel is gecontroleerd en het prijsverschil is afgehandeld."});
       }
-      const trackingNumber=String(body.tracking_number||"").trim().slice(0,160);
-      const trackingUrl=String(body.tracking_url||"").trim().slice(0,1000);
       if(carrier&&!["PostNL","DHL"].includes(carrier))return res.status(400).json({error:"Kies alleen PostNL of DHL."});
       if(!["Unpaid","Processing","Paid","Failed"].includes(paymentStatus))return res.status(400).json({error:"Ongeldige betaalstatus."});
       if(trackingUrl&&!/^https:\/\//i.test(trackingUrl))return res.status(400).json({error:"De tracking-URL moet beginnen met https://"});
@@ -95,9 +95,12 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
   app.get("/api/admin/webshop-orders", requirePermission("webshop_orders.view"), async (req, res) => {
     try {
       const result = await pool.query(
-        `SELECT webshop_orders.id, customer_id, name, email, phone, street, house_number, postcode, city, items, total, status,
-                payment_method, payment_status, paypal_order_id, mollie_payment_id,
-                inventory_deducted_at, inventory_error,
+        `SELECT webshop_orders.id, webshop_orders.customer_id, webshop_orders.name, webshop_orders.email,
+                webshop_orders.phone, webshop_orders.street, webshop_orders.house_number,
+                webshop_orders.postcode, webshop_orders.city, webshop_orders.items, webshop_orders.total,
+                webshop_orders.status, webshop_orders.payment_method, webshop_orders.payment_status,
+                webshop_orders.paypal_order_id, webshop_orders.mollie_payment_id,
+                webshop_orders.inventory_deducted_at, webshop_orders.inventory_error,
                 trade_in_order_id, trade_in_estimated_value, trade_in_applied_credit,
                 trade_in_inspected_value, trade_in_adjustment, trade_in_status, trade_in_snapshot,
                 buyback_orders.device AS trade_in_device, buyback_orders.model AS trade_in_model,
