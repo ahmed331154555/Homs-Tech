@@ -151,7 +151,18 @@ app.get("/shop.html", async (req, res) => {
   }
 });
 
-app.use(express.static(__dirname, { dotfiles: "deny", index: "index.html" }));
+app.use(express.static(__dirname, {
+  dotfiles: "deny",
+  index: "index.html",
+  etag: true,
+  lastModified: true,
+  setHeaders(res, filePath) {
+    // Cache versionless static assets briefly; HTML remains revalidated.
+    if (/\\.(?:css|js|png|jpe?g|webp|svg|gif|ico|woff2?)$/i.test(filePath)) {
+      res.setHeader("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
+    }
+  }
+}));
 
 // Create database tables and default settings
 // Lightweight public catalog for the customer buyback page.
