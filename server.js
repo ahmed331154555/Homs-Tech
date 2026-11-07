@@ -222,7 +222,9 @@ app.get("/api/site", async (req, res) => {
         4
       );
       if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
-      const row=result.rows[0];return res.json(sanitizeDevicesCatalogData({phones:row.phones,devices:row.devices,phone:row.phone,whatsapp:row.whatsapp,businessName:row.business_name,siteName:row.site_name,tagline:row.tagline}));
+      const row=result.rows[0];
+      res.set("Cache-Control","public, max-age=0, must-revalidate");
+      return res.json(sanitizeDevicesCatalogData({phones:row.phones,devices:row.devices,phone:row.phone,whatsapp:row.whatsapp,businessName:row.business_name,siteName:row.site_name,tagline:row.tagline}));
     }
     if(view==="product"){
       const result=await queryWithConnectionRetry(
@@ -240,6 +242,7 @@ app.get("/api/site", async (req, res) => {
       );
       if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
       const row=result.rows[0];
+      res.set("Cache-Control","public, max-age=0, must-revalidate");
       return res.json(sanitizeProductCatalogData({
         phones: row.phones,
         phone: row.phone,
@@ -252,6 +255,7 @@ app.get("/api/site", async (req, res) => {
     if(view==="cart"){
       const result=await queryWithConnectionRetry("SELECT data->'shopProducts' AS shop_products FROM site_settings WHERE id=1",[],4);
       if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
+      res.set("Cache-Control","public, max-age=0, must-revalidate");
       return res.json({shopProducts:sanitizeCartStockData(result.rows[0].shop_products)});
     }
     const result = await queryWithConnectionRetry(
