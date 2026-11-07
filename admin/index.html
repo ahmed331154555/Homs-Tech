@@ -7703,10 +7703,10 @@ async function showWebshopOrderDetails(id){
           <section class="ht-phone-detail-card">
             <div class="ht-phone-detail-card-head"><span class="icon">♙</span>Klantgegevens</div>
             <div class="ht-phone-detail-card-body ht-phone-info-list">
-              <div class="ht-phone-info-line"><span>Naam</span><strong>${esc(order.name||"Niet opgegeven")}</strong></div>
-              <div class="ht-phone-info-line"><span>Telefoon</span><strong>${esc(order.phone||"Niet opgegeven")}</strong></div>
-              <div class="ht-phone-info-line"><span>E-mail</span><strong>${esc(order.email||"Niet opgegeven")}</strong></div>
-              <div class="ht-phone-detail-actions">${order.phone?'<a class="btn btn-light" href="tel:'+esc(String(order.phone).replace(/[^+\d]/g,''))+'">Bellen</a>':""}${phoneWhatsapp}${order.email?'<a class="btn btn-light" href="mailto:'+esc(order.email)+'">E-mail</a>':""}</div>
+              <div class="ht-phone-info-line"><span>Naam</span><strong>\${esc(order.name||"Niet opgegeven")}</strong></div>
+              <div class="ht-phone-info-line"><span>Telefoon</span><strong>\${order.phone?'<a class="ht-phone-contact-link" href="tel:'+esc(String(order.phone).replace(/[^\d+]/g,''))+'">'+esc(order.phone)+'</a>':'Niet opgegeven'}</strong></div>
+              <div class="ht-phone-info-line"><span>E-mail</span><strong>\${order.email?'<a class="ht-phone-contact-link" href="mailto:'+esc(order.email)+'">'+esc(order.email)+'</a>':'Niet opgegeven'}</strong></div>
+              <div class="ht-phone-detail-actions">\${phoneWhatsapp}</div>
             </div>
           </section>
           <section class="ht-phone-detail-card">
@@ -8765,3 +8765,9 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
+<style id="ht-phone-customer-contact-links">
+.phone-order-detail-overlay .ht-phone-contact-link{color:#172b40;text-decoration:none;font-weight:750;overflow-wrap:anywhere}
+.phone-order-detail-overlay .ht-phone-contact-link:hover{text-decoration:underline;color:#2563eb}
+.phone-order-detail-overlay .ht-phone-detail-actions:empty{display:none!important}
+</style>
