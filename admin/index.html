@@ -7510,8 +7510,15 @@ async function printWebshopShippingLabel(id){
 .phone-order-detail-overlay .ht-phone-address-recipient div,.phone-order-detail-overlay .ht-phone-address-lines>div{display:grid;gap:3px;min-width:0}
 .phone-order-detail-overlay .ht-phone-address-recipient small,.phone-order-detail-overlay .ht-phone-address-lines small{color:#64748b;font-size:11px;font-weight:750}
 .phone-order-detail-overlay .ht-phone-address-recipient strong,.phone-order-detail-overlay .ht-phone-address-lines strong{color:#172b40;font-size:14px;line-height:1.45;overflow-wrap:anywhere}
-.phone-order-detail-overlay .ht-phone-address-lines{display:grid;grid-template-columns:1fr 1fr;gap:13px 18px}
-.phone-order-detail-overlay .ht-phone-map-link{justify-self:start;margin-top:2px!important}
+.phone-order-detail-overlay .ht-phone-address-lines{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:0!important;width:100%!important}
+.phone-order-detail-overlay .ht-phone-address-lines>div{display:block!important;min-width:0!important;padding:11px 2px!important;border-bottom:1px solid #e8edf4!important}
+.phone-order-detail-overlay .ht-phone-address-lines>div:last-child{border-bottom:0!important}
+.phone-order-detail-overlay .ht-phone-address-lines small{display:block!important;margin:0 0 4px!important;line-height:1.3!important}
+.phone-order-detail-overlay .ht-phone-address-lines strong{display:block!important;margin:0!important;white-space:normal!important;line-height:1.5!important;overflow-wrap:anywhere!important}
+.phone-order-detail-overlay .ht-phone-address-recipient div{display:block!important;min-width:0!important}
+.phone-order-detail-overlay .ht-phone-address-recipient small{display:block!important;margin:0 0 4px!important}
+.phone-order-detail-overlay .ht-phone-address-recipient strong{display:block!important;line-height:1.45!important}
+.phone-order-detail-overlay .ht-phone-map-link{justify-self:start;margin-top:8px!important}
 .phone-order-detail-overlay .ht-phone-shipping-status{display:flex;gap:11px;align-items:center;padding:12px;border:1px solid #dbeafe;border-radius:11px;background:#eff6ff}
 .phone-order-detail-overlay .ht-phone-shipping-status-icon{font-size:23px}
 .phone-order-detail-overlay .ht-phone-shipping-status div{display:grid;gap:3px}
@@ -7554,38 +7561,26 @@ function closeWebshopOrderDetails(){
 }
 async function showWebshopOrderDetails(id){
   try{
-    const r=await fetch("/api/admin/webshop-orders",{credentials:"same-origin"});
-    const result=await r.json().catch(()=>({}));
-    if(!r.ok) throw new Error(result.error||"Bestelling kon niet worden geladen.");
-    const order=(result.orders||[]).find(x=>Number(x.id)===Number(id));
+    // Use the already loaded admin order cache first. Opening a row must not
+    // download the complete order list again.
+    let order=(Array.isArray(adminWebshopOrdersCache)?adminWebshopOrdersCache:[]).find(x=>Number(x.id)===Number(id));
+    if(!order){
+      const r=await fetch("/api/admin/webshop-orders",{credentials:"same-origin"});
+      const result=await r.json().catch(()=>({}));
+      if(!r.ok) throw new Error(result.error||"Bestelling kon niet worden geladen.");
+      adminWebshopOrdersCache=Array.isArray(result.orders)?result.orders:[];
+      order=adminWebshopOrdersCache.find(x=>Number(x.id)===Number(id));
+    }
     if(!order) throw new Error("Bestelling niet gevonden.");
     const existing=document.getElementById("orderDetailsModal");
     if(existing)existing.remove();
     const items=Array.isArray(order.items)?order.items:[];
-    // Resolve product photos from the live public catalog when older order snapshots
-    // do not contain an image URL. The order record itself remains unchanged.
-    let phoneOrderCatalog={};
-    try{
-      const catalogResponse=await fetch("/api/site",{credentials:"same-origin",cache:"no-store"});
-      if(catalogResponse.ok)phoneOrderCatalog=await catalogResponse.json();
-    }catch(catalogError){
-      console.warn("[HOMS TECH] Product photo lookup failed:",catalogError);
-    }
+    // Product-photo lookup is deliberately deferred until after the order view
+    // is visible, so a slow catalog endpoint never delays opening the details.
     const resolveOrderItemImages=item=>{
       const snapshot=[item?.image,item?.image_url,item?.imageUrl,item?.thumbnail,item?.product_image,item?.photo,item?.product?.image,
         ...(Array.isArray(item?.images)?item.images:[])].filter(value=>typeof value==="string"&&value.trim());
-      if(snapshot.length)return [...new Set(snapshot)];
-      if(String(item?.type||"").toLowerCase()==="shop"){
-        const products=Array.isArray(phoneOrderCatalog.shopProducts)?phoneOrderCatalog.shopProducts:[];
-        const product=products.find(value=>String(value?.id??"")===String(item?.id??""));
-        return [product?.image,product?.imageUrl,product?.thumbnail,...(Array.isArray(product?.images)?product.images:[])].filter(value=>typeof value==="string"&&value.trim());
-      }
-      const products=Array.isArray(phoneOrderCatalog.phones)&&phoneOrderCatalog.phones.length?phoneOrderCatalog.phones:
-        (Array.isArray(phoneOrderCatalog.devices)?phoneOrderCatalog.devices:[]);
-      const index=Number(item?.id);
-      const product=Number.isInteger(index)&&index>=0?products[index]:null;
-      return [product?.image,product?.imageUrl,product?.thumbnail,product?.photo,
-        ...(Array.isArray(product?.images)?product.images:[])].filter(value=>typeof value==="string"&&value.trim());
+      return [...new Set(snapshot)];
     };
     const hasShopItems=items.some(item=>String(item?.type||"phone").toLowerCase()==="shop");
     const hasPhoneItems=items.some(item=>String(item?.type||"phone").toLowerCase()!=="shop");
@@ -7812,8 +7807,9 @@ async function showWebshopOrderDetails(id){
       </section>
       <div class="ht-order-detail-footer"><button class="btn btn-light" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button><button class="btn btn-light" type="button" onclick="printWebshopShippingLabel(${Number(order.id)})">Verzendlabel afdrukken</button><button class="btn btn-dark" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
     </div>`;
-    const useInlinePhoneDetails=currentPage==="all-orders"&&unifiedOrdersActiveKey==="phone-orders"&&window.matchMedia("(min-width: 1101px)").matches;
-    const useMobilePhoneDetail=currentPage==="all-orders"&&unifiedOrdersActiveKey==="phone-orders"&&!useInlinePhoneDetails;
+    // Phone-order details always use a true full-screen overlay on desktop and mobile.
+    const useInlinePhoneDetails=false;
+    const useMobilePhoneDetail=isPhoneOnlyOrder;
     const detailHost=document.getElementById("phoneOrderDetailHost");
     if(useInlinePhoneDetails&&detailHost){
       detailHost.replaceChildren(modal);
@@ -7826,6 +7822,61 @@ async function showWebshopOrderDetails(id){
     }else{
       if(useMobilePhoneDetail)modal.classList.add("ht-phone-mobile-detail");
       document.body.appendChild(modal);
+    }
+    // Fetch the catalog in the background and fill the product image only
+    // when the order snapshot did not store one. The detail panel is already open.
+    if(isPhoneOnlyOrder&&!firstPhoneImages.length){
+      const visual=modal.querySelector(".ht-phone-product-visual");
+      if(visual){
+        (async()=>{
+          try{
+            if(!window.__homsPhoneOrderCatalogPromise){
+              window.__homsPhoneOrderCatalogPromise=fetch("/api/site",{credentials:"same-origin",cache:"no-store"})
+                .then(response=>{if(!response.ok)throw new Error("Catalogus niet beschikbaar");return response.json();})
+                .catch(error=>{window.__homsPhoneOrderCatalogPromise=null;throw error;});
+            }
+            const catalog=await window.__homsPhoneOrderCatalogPromise;
+            const item=firstPhoneItem;
+            let product=null;
+            if(String(item?.type||"").toLowerCase()==="shop"){
+              const products=Array.isArray(catalog.shopProducts)?catalog.shopProducts:[];
+              product=products.find(value=>String(value?.id??"")===String(item?.id??""));
+              if(!product&&Number.isInteger(Number(item?.id)))product=products[Number(item.id)]||null;
+            }else{
+              const products=Array.isArray(catalog.phones)&&catalog.phones.length?catalog.phones:
+                (Array.isArray(catalog.devices)?catalog.devices:[]);
+              const productIndex=Number(item?.id);
+              if(Number.isInteger(productIndex)&&productIndex>=0)product=products.find(value=>Number(value?._index)===productIndex)||products[productIndex]||null;
+              if(!product)product=products.find(value=>String(value?.name||"").trim().toLowerCase()===String(item?.name||item?.title||"").trim().toLowerCase())||null;
+            }
+            if(!product)return;
+            const selectedColor=String(firstPhoneOptions.color||firstPhoneOptions.colour||item?.color||item?.colour||"").trim();
+            const colorKey=Object.keys(product.colorGalleryImages||{}).find(key=>key.toLowerCase()===selectedColor.toLowerCase());
+            const colorImageKey=Object.keys(product.colorImages||{}).find(key=>key.toLowerCase()===selectedColor.toLowerCase());
+            const colorOption=Array.isArray(product.colorOptions)?product.colorOptions.find(option=>String(option?.label||"").toLowerCase()===selectedColor.toLowerCase()):null;
+            const candidates=[
+              colorKey?product.colorGalleryImages[colorKey]?.[0]:null,
+              colorImageKey?product.colorImages[colorImageKey]:null,
+              colorOption?.image,
+              product.image,
+              product.imageUrl,
+              product.thumbnail,
+              ...(Array.isArray(product.images)?product.images.map(value=>typeof value==="string"?value:value?.url||value?.image):[])
+            ];
+            const imageUrl=candidates.find(value=>typeof value==="string"&&value.trim());
+            if(!imageUrl||!visual.isConnected)return;
+            const image=document.createElement("img");
+            image.className="ht-phone-product-main-image";
+            image.alt=firstPhoneName;
+            image.loading="eager";
+            image.src=imageUrl;
+            image.onerror=()=>{image.remove();};
+            visual.replaceChildren(image);
+          }catch(error){
+            console.warn("[HOMS TECH] Deferred product photo lookup failed:",error);
+          }
+        })();
+      }
     }
     modal.addEventListener("click",event=>{
       if(event.target===modal){
