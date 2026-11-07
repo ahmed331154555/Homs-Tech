@@ -7703,10 +7703,10 @@ async function showWebshopOrderDetails(id){
           <section class="ht-phone-detail-card">
             <div class="ht-phone-detail-card-head"><span class="icon">♙</span>Klantgegevens</div>
             <div class="ht-phone-detail-card-body ht-phone-info-list">
-              <div class="ht-phone-info-line"><span>Naam</span><strong>\${esc(order.name||"Niet opgegeven")}</strong></div>
-              <div class="ht-phone-info-line"><span>Telefoon</span><strong>\${order.phone?'<a class="ht-phone-contact-link" href="tel:'+esc(String(order.phone).replace(/[^\d+]/g,''))+'">'+esc(order.phone)+'</a>':'Niet opgegeven'}</strong></div>
-              <div class="ht-phone-info-line"><span>E-mail</span><strong>\${order.email?'<a class="ht-phone-contact-link" href="mailto:'+esc(order.email)+'">'+esc(order.email)+'</a>':'Niet opgegeven'}</strong></div>
-              <div class="ht-phone-detail-actions">\${phoneWhatsapp}</div>
+              <div class="ht-phone-info-line"><span>Naam</span><strong>${esc(order.name||"Niet opgegeven")}</strong></div>
+              <div class="ht-phone-info-line"><span>Telefoon</span><strong>${order.phone?'<a class="ht-phone-contact-link" href="tel:'+esc(String(order.phone).replace(/[^\d+]/g,''))+'">'+esc(order.phone)+'</a>':'Niet opgegeven'}</strong></div>
+              <div class="ht-phone-info-line"><span>E-mail</span><strong>${order.email?'<a class="ht-phone-contact-link" href="mailto:'+esc(order.email)+'">'+esc(order.email)+'</a>':'Niet opgegeven'}</strong></div>
+              <div class="ht-phone-detail-actions">${phoneWhatsapp}</div>
             </div>
           </section>
           <section class="ht-phone-detail-card">
