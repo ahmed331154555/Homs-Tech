@@ -376,134 +376,166 @@
     }
 
 
-    /* HOMS TECH repair page refinement */
-    .repair-hero{min-height:560px!important}
-    .hero-inner{
+    /* HOMS TECH repair page — consolidated layout */
+    .repair-hero{
+      position:relative!important;
       width:100%!important;
-      grid-template-columns:minmax(0,650px) minmax(0,1fr)!important;
-      align-items:center!important;
-      padding-top:68px!important;
-      padding-bottom:112px!important;
+      min-height:650px!important;
+      overflow:hidden!important;
     }
-    .hero-inner>div{max-width:650px!important;min-width:0!important}
-    .hero-title{max-width:650px!important;text-wrap:balance}
-    .hero-sub{max-width:560px!important}
-    .hero-actions{display:flex!important;align-items:center!important;gap:10px!important;flex-wrap:wrap!important}
+    .hero-photo{
+      position:absolute!important;
+      inset:0 0 0 27%!important;
+      width:auto!important;
+      overflow:hidden!important;
+    }
+    .hero-photo img{
+      width:100%!important;
+      height:100%!important;
+      object-fit:cover!important;
+      object-position:center 48%!important;
+      transform:none!important;
+    }
+    .hero-photo:after{
+      background:linear-gradient(90deg,
+        rgba(3,18,31,.99) 0%,
+        rgba(3,18,31,.90) 18%,
+        rgba(3,18,31,.52) 48%,
+        rgba(3,18,31,.12) 100%)!important;
+    }
+    .hero-inner{
+      box-sizing:border-box!important;
+      width:100%!important;
+      max-width:1320px!important;
+      min-height:650px!important;
+      margin:0 auto!important;
+      grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+      align-items:center!important;
+      gap:28px!important;
+      padding:76px 28px 112px!important;
+    }
+    .hero-inner>div{
+      max-width:650px!important;
+      min-width:0!important;
+    }
+    .hero-title{
+      max-width:650px!important;
+      text-wrap:balance!important;
+    }
+    .hero-sub{max-width:570px!important}
+    .hero-actions{
+      display:flex!important;
+      flex-wrap:wrap!important;
+      align-items:center!important;
+      gap:10px!important;
+    }
     .hero-actions .btn-main{
+      display:inline-flex!important;
+      width:auto!important;
+      min-width:0!important;
       min-height:50px!important;
-      padding:13px 18px!important;
+      align-items:center!important;
+      justify-content:center!important;
+      padding:12px 18px!important;
       border-radius:12px!important;
       font-size:14px!important;
-      white-space:nowrap!important;
+      line-height:1.25!important;
+      text-align:center!important;
       text-decoration:none!important;
+      white-space:nowrap!important;
     }
     .hero-actions .btn-whatsapp{
       background:#25d366!important;
       color:#062d18!important;
-      box-shadow:0 10px 24px rgba(37,211,102,.22)!important;
+      box-shadow:0 8px 22px rgba(37,211,102,.22)!important;
     }
-    .hero-actions .btn-whatsapp:hover{background:#1fbd5b!important;transform:translateY(-2px)}
+    .hero-actions .btn-whatsapp:hover{
+      background:#1fbd5b!important;
+      transform:translateY(-1px);
+    }
     .hero-actions .btn-whatsapp[hidden]{display:none!important}
-    .options{gap:18px!important;align-items:stretch!important}
-    .option-card{border-radius:18px!important}
+    .options{
+      width:100%!important;
+      max-width:1320px!important;
+      margin:0 auto!important;
+      gap:20px!important;
+      align-items:stretch!important;
+    }
+    .option-card{
+      min-width:0!important;
+      overflow:hidden!important;
+      border-radius:18px!important;
+    }
     .option-card>div:first-child{padding:22px!important}
     .option-card h2{font-size:23px!important;line-height:1.2!important}
     .option-card p{line-height:1.65!important}
-    .option-img{height:220px!important;min-height:220px!important}
-    .section{padding-top:70px!important;padding-bottom:70px!important}
-    .section-head{margin-bottom:38px!important}
+    .option-img{
+      height:270px!important;
+      min-height:270px!important;
+      overflow:hidden!important;
+      background:#edf2f6!important;
+    }
+    .option-img .custom-option-image{
+      display:block!important;
+      width:100%!important;
+      height:100%!important;
+      object-fit:cover!important;
+      object-position:center!important;
+    }
+    .section{
+      padding-top:64px!important;
+      padding-bottom:64px!important;
+    }
+    .section-head{margin-bottom:32px!important}
     .services-grid{gap:16px!important}
     .service-card{border-radius:16px!important}
     @media(max-width:900px){
       .repair-hero{min-height:0!important}
-      .hero-inner{grid-template-columns:minmax(0,1fr)!important;padding:58px 20px 112px!important}
+      .hero-photo{inset:0!important;opacity:.62!important}
+      .hero-photo:after{
+        background:linear-gradient(90deg,rgba(3,18,31,.96),rgba(3,18,31,.55))!important;
+      }
+      .hero-inner{
+        min-height:0!important;
+        max-width:100%!important;
+        grid-template-columns:minmax(0,1fr)!important;
+        gap:0!important;
+        padding:58px 22px 108px!important;
+      }
       .hero-inner>div{max-width:720px!important}
-      .hero-actions .btn-main{white-space:normal!important}
+      .options{gap:16px!important}
+      .option-img{height:245px!important;min-height:245px!important}
     }
     @media(max-width:600px){
-      .hero-inner{padding:38px 16px 72px!important}
-      .hero-title{font-size:clamp(34px,9vw,42px)!important;letter-spacing:-1.2px!important}
+      .hero-photo{inset:0!important;opacity:.55!important}
+      .hero-photo img{object-position:62% center!important}
+      .hero-inner{padding:40px 16px 78px!important}
+      .hero-title{
+        font-size:clamp(34px,9vw,42px)!important;
+        line-height:1.08!important;
+        letter-spacing:-1.2px!important;
+      }
       .hero-sub{font-size:16px!important}
       .hero-actions{
         display:grid!important;
-        grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+        grid-template-columns:repeat(2,minmax(0,1fr))!important;
         gap:9px!important;
       }
       .hero-actions .btn-main{
         width:100%!important;
         min-width:0!important;
         min-height:48px!important;
-        padding:10px 9px!important;
+        padding:10px 8px!important;
         font-size:13px!important;
         white-space:normal!important;
-        text-align:center!important;
       }
       .hero-actions .btn-green{grid-column:1/-1!important}
-      .options{gap:14px!important;margin-top:-34px!important}
-      .option-img{height:185px!important;min-height:185px!important}
+      .options{gap:14px!important}
+      .option-img{height:220px!important;min-height:220px!important}
       .option-card>div:first-child{padding:18px!important}
       .section{padding:48px 0!important}
-      .section-head{margin-bottom:28px!important}
+      .section-head{margin-bottom:26px!important}
     }
-
-
-    /* Wider repair hero and clearer service photography */
-    .repair-hero{
-      min-height:640px!important;
-      width:100%!important;
-    }
-    .hero-photo{
-      inset:0 0 0 31%!important;
-      width:auto!important;
-    }
-    .hero-photo img{
-      object-fit:cover!important;
-      object-position:center 48%!important;
-      transform:scale(1.035);
-    }
-    .hero-photo:after{
-      background:linear-gradient(90deg,
-        rgba(3,18,31,.98) 0%,
-        rgba(3,18,31,.82) 20%,
-        rgba(3,18,31,.30) 58%,
-        rgba(3,18,31,.08) 100%)!important;
-    }
-    .hero-inner{
-      max-width:1320px!important;
-      grid-template-columns:minmax(0, .95fr) minmax(0, 1.05fr)!important;
-      padding-top:78px!important;
-      padding-bottom:120px!important;
-    }
-    .wrap{max-width:1320px!important}
-    .options{gap:20px!important}
-    .option-img{
-      height:270px!important;
-      min-height:270px!important;
-      background:#edf2f6!important;
-    }
-    .option-img .custom-option-image{
-      width:100%!important;
-      height:100%!important;
-      object-fit:cover!important;
-      object-position:center!important;
-    }
-    @media(max-width:900px){
-      .repair-hero{min-height:0!important}
-      .hero-photo{inset:0!important;opacity:.68!important}
-      .hero-inner{
-        max-width:100%!important;
-        grid-template-columns:minmax(0,1fr)!important;
-      }
-      .option-img{height:250px!important;min-height:250px!important}
-    }
-    @media(max-width:600px){
-      .hero-photo{inset:0!important;opacity:.58!important}
-      .hero-photo img{transform:none!important;object-position:60% center!important}
-      .hero-inner{padding:42px 16px 76px!important}
-      .option-img{height:220px!important;min-height:220px!important}
-      .options{gap:15px!important}
-    }
-
   </style>
   <link rel="stylesheet" href="assets/homs-global-nav.css">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5361560605027063"
@@ -874,7 +906,11 @@
       const rawWhatsApp = String(siteData.whatsapp || "").trim();
       let whatsappNumber = rawWhatsApp.replace(/\D/g, "");
       if (whatsappNumber.startsWith("00")) whatsappNumber = whatsappNumber.slice(2);
-      if (whatsappNumber.startsWith("0")) whatsappNumber = "31" + whatsappNumber.slice(1);
+      if (whatsappNumber.startsWith("31") && whatsappNumber.charAt(2) === "0") {
+        whatsappNumber = "31" + whatsappNumber.slice(3);
+      } else if (whatsappNumber.startsWith("0")) {
+        whatsappNumber = "31" + whatsappNumber.slice(1);
+      }
       const whatsappButton = document.getElementById("repairWhatsAppButton");
       if (whatsappButton) {
         if (whatsappNumber.length >= 8) {
