@@ -1243,8 +1243,29 @@ app.post("/api/webshop/orders", async (req, res) => {
     }
     const inventoryValidationError = validateCartInventoryQuantities(catalogData, safeItems);
     if (inventoryValidationError) return res.status(400).json({ error: inventoryValidationError });
-    const total = safeItems.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
-    if (!Number.isFinite(total) || total <= 0 || total > 100000) {
+    const productTotal = safeItems.reduce((sum, item) => sum + Math.round(item.unitPrice * 100) * item.qty, 0) / 100;
+    const tradeInToken = String(body.tradeInToken || "").trim();
+    let tradeInOrder = null;
+    let tradeInCredit = 0;
+    if (tradeInToken) {
+      if (!/^[a-f0-9]{64}$/.test(tradeInToken)) return res.status(400).json({ error: "Ongeldige inruilcode." });
+      const tokenHash = crypto.createHash("sha256").update(tradeInToken).digest("hex");
+      const quote = await pool.query(
+        `SELECT id,offered_price,device,model,name,email,trade_in,trade_in_linked_order_id
+         FROM buyback_orders
+         WHERE trade_in_quote_token_hash=$1 AND trade_in_quote_expires_at>NOW()
+         FOR UPDATE`,
+        [tokenHash]
+      );
+      if (!quote.rows.length || quote.rows[0].trade_in !== true || quote.rows[0].trade_in_linked_order_id) {
+        return res.status(409).json({ error: "De inruilaanvraag is verlopen of al gebruikt. Start de inruil opnieuw." });
+      }
+      tradeInOrder = quote.rows[0];
+      if (String(tradeInOrder.email).toLowerCase() !== email) return res.status(403).json({ error: "Gebruik hetzelfde e-mailadres als bij uw inruilaanvraag." });
+      tradeInCredit = Math.min(productTotal, Math.round(Number(tradeInOrder.offered_price) * 100) / 100);
+    }
+    const total = Math.max(0, Math.round((productTotal - tradeInCredit) * 100) / 100);
+    if (!Number.isFinite(total) || productTotal <= 0 || total > 100000) {
       return res.status(400).json({ error: "Het totaalbedrag van uw bestelling is ongeldig." });
     }
     const checkoutToken = crypto.randomBytes(32).toString("hex");
@@ -1252,14 +1273,26 @@ app.post("/api/webshop/orders", async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO webshop_orders
-       (customer_id, name, email, phone, street, house_number, postcode, city, items, total, checkout_token, payment_method, payment_status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+       (customer_id, name, email, phone, street, house_number, postcode, city, items, total, checkout_token, payment_method, payment_status,
+        trade_in_order_id,trade_in_estimated_value,trade_in_applied_credit,trade_in_status,trade_in_snapshot)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18::jsonb)
        RETURNING id, status, payment_method, payment_status, paypal_order_id, mollie_payment_id, created_at`,
       [
         customerId, name, email, phone, street, houseNumber, postcode, city,
-        JSON.stringify(safeItems), total.toFixed(2), checkoutTokenHash, paymentMethod, "Unpaid"
+        JSON.stringify(safeItems), total.toFixed(2), checkoutTokenHash, paymentMethod, "Unpaid",
+        tradeInOrder ? tradeInOrder.id : null,
+        tradeInOrder ? Number(tradeInOrder.offered_price) : null,
+        tradeInCredit,
+        tradeInOrder ? "AwaitingDevice" : "",
+        JSON.stringify(tradeInOrder ? { productTotal, estimatedValue:Number(tradeInOrder.offered_price), appliedCredit:tradeInCredit, device:tradeInOrder.device || tradeInOrder.model } : {})
       ]
     );
+    if (tradeInOrder) {
+      await pool.query(
+        "UPDATE buyback_orders SET trade_in_linked_order_id=$1,trade_in_quote_token_hash='',status='Inruil gekoppeld' WHERE id=$2 AND trade_in_linked_order_id IS NULL",
+        [result.rows[0].id,tradeInOrder.id]
+      );
+    }
 
     // Send the customer an order confirmation to the email address used at checkout.
     if (process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL) {
@@ -2429,13 +2462,16 @@ app.post("/api/buyback/orders", async (req, res) => {
       return res.status(400).json({ error: validationError.message });
     }
 
+    const isTradeIn = b.tradeIn === true;
+    const tradeInToken = isTradeIn ? crypto.randomBytes(32).toString("hex") : "";
+    const tradeInTokenHash = tradeInToken ? crypto.createHash("sha256").update(tradeInToken).digest("hex") : "";
     const orderNo = `BT-${Date.now()}`;
 
     const answers = b.answers && typeof b.answers === "object" && !Array.isArray(b.answers) ? b.answers : {};
     const result = await pool.query(`
       INSERT INTO buyback_orders
-      (order_no,name,email,phone,address,device,brand,model,storage,condition,face_id,battery,screen,offered_price,iban,payment_method,answers,status)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17::jsonb,'Nieuw')
+      (order_no,name,email,phone,address,device,brand,model,storage,condition,face_id,battery,screen,offered_price,iban,payment_method,answers,status,trade_in,trade_in_quote_token_hash,trade_in_quote_expires_at)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17::jsonb,'Nieuw',$18,$19,CASE WHEN $18 THEN NOW()+INTERVAL '24 hours' ELSE NULL END)
       RETURNING id,order_no,status,created_at
     `, [
       orderNo,
@@ -2453,7 +2489,9 @@ app.post("/api/buyback/orders", async (req, res) => {
       offeredPrice,
       String(b.iban || "").trim(),
       String(b.paymentMethod || "").trim(),
-      JSON.stringify(answers)
+      JSON.stringify(answers),
+      isTradeIn,
+      tradeInTokenHash
     ]);
 
     const order = result.rows[0];
@@ -2521,7 +2559,7 @@ app.post("/api/buyback/orders", async (req, res) => {
       console.error("Buyback emails skipped: RESEND_API_KEY or RESEND_FROM_EMAIL is missing.");
     }
 
-    res.status(201).json({ success: true, order });
+    res.status(201).json({ success: true, order, ...(isTradeIn ? { tradeInToken, tradeInCredit: offeredPrice } : {}) });
   } catch (error) {
     console.error("BUYBACK ORDER ERROR:", error);
     res.status(500).json({ error: "Verkoopaanvraag kon niet worden opgeslagen." });
