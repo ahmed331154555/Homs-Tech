@@ -2509,6 +2509,19 @@ if(tradeInMode){
   sessionStorage.setItem('homsTechTradeInMode','1');
   const notice=document.getElementById('htTradeInModeNotice');
   if(notice)notice.hidden=false;
+  const method=document.getElementById('cMethod');
+  const iban=document.getElementById('cIban');
+  if(method){
+    method.innerHTML='<option value="Inruil bij aankoop">Inruil bij aankoop</option>';
+    method.value='Inruil bij aankoop';
+  }
+  if(iban)iban.hidden=true;
+  const methodSummary=document.getElementById('sumMethod');
+  if(methodSummary)methodSummary.textContent='Korting op nieuwe telefoon';
+  const priceCaption=document.querySelector('.summary-price-row span');
+  if(priceCaption)priceCaption.textContent='Inruilwaarde (korting)';
+  const summaryTitle=document.querySelector('.buyback-order-summary h3');
+  if(summaryTitle)summaryTitle.textContent='Uw inruil voor aankoop';
 }
 $('deviceSearch').oninput=()=>{window._modelLimit=12;categories()};
 $('familyBack').onclick=()=>{selectedFamily='iPhone';window._modelLimit=12;$('deviceSearch').value='';categories()};
