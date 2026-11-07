@@ -7553,6 +7553,109 @@ async function printWebshopShippingLabel(id){
 .phone-order-detail-overlay{position:static!important;display:block!important;padding:0!important;background:#fff!important}
 .phone-order-detail-overlay .phone-order-detail-panel{width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important;box-shadow:none!important;border:0!important}
 }
+
+/* HOMS TECH: tighter phone-order detail layout (desktop + mobile). */
+.phone-order-detail-overlay .phone-order-detail-panel{
+  width:min(1080px,calc(100vw - 28px))!important;
+  max-width:1080px!important;
+  padding:12px!important;
+  gap:10px!important;
+}
+.phone-order-detail-overlay .ht-order-detail-top{
+  margin:0 0 8px!important;
+  padding:11px 14px!important;
+  min-height:0!important;
+}
+.phone-order-detail-overlay .ht-phone-detail-grid,
+.phone-order-detail-overlay .ht-phone-detail-grid.equal{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px!important;
+  margin:0 0 8px!important;
+  align-items:start!important;
+  align-content:start!important;
+}
+.phone-order-detail-overlay .ht-phone-detail-card{
+  margin:0!important;
+  min-width:0!important;
+  border-radius:10px!important;
+}
+.phone-order-detail-overlay .ht-phone-detail-card-head{
+  min-height:0!important;
+  padding:9px 11px!important;
+  margin:0!important;
+  gap:7px!important;
+  font-size:13px!important;
+}
+.phone-order-detail-overlay .ht-phone-detail-card-body{
+  padding:8px 11px!important;
+  gap:6px!important;
+}
+.phone-order-detail-overlay .ht-phone-info-list{
+  gap:5px!important;
+}
+.phone-order-detail-overlay .ht-phone-info-line{
+  padding:3px 0!important;
+  line-height:1.35!important;
+  gap:8px!important;
+  font-size:12px!important;
+}
+.phone-order-detail-overlay .ht-phone-shipping-status{
+  padding:8px 9px!important;
+  margin:0 0 5px!important;
+  gap:8px!important;
+}
+.phone-order-detail-overlay .ht-phone-shipping-form{
+  gap:7px!important;
+  margin-top:5px!important;
+}
+.phone-order-detail-overlay .ht-phone-detail-field{
+  margin:0!important;
+  gap:4px!important;
+  font-size:11px!important;
+}
+.phone-order-detail-overlay .ht-phone-detail-field input,
+.phone-order-detail-overlay .ht-phone-detail-field select{
+  min-height:36px!important;
+  padding:7px 9px!important;
+  font-size:12px!important;
+}
+.phone-order-detail-overlay .ht-phone-summary-line{
+  padding:4px 0!important;
+  margin:0!important;
+  line-height:1.35!important;
+  font-size:12px!important;
+}
+.phone-order-detail-overlay .ht-phone-summary-total{
+  margin-top:5px!important;
+  padding-top:8px!important;
+}
+.phone-order-detail-overlay .ht-phone-detail-muted{
+  margin:4px 0 0!important;
+  line-height:1.35!important;
+  font-size:10px!important;
+}
+.phone-order-detail-overlay .ht-phone-shipping-save{
+  min-height:36px!important;
+  padding:7px 11px!important;
+  margin-top:4px!important;
+}
+@media(max-width:760px){
+  .phone-order-detail-overlay .phone-order-detail-panel{
+    width:100%!important;
+    max-width:none!important;
+    padding:10px!important;
+    gap:8px!important;
+  }
+  .phone-order-detail-overlay .ht-phone-detail-grid,
+  .phone-order-detail-overlay .ht-phone-detail-grid.equal{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:8px!important;
+    margin-bottom:7px!important;
+  }
+  .phone-order-detail-overlay .ht-phone-detail-card-head{padding:9px 10px!important}
+  .phone-order-detail-overlay .ht-phone-detail-card-body{padding:8px 10px!important}
+}
+
 </style>
 </body></html>`);
   w.document.close();
