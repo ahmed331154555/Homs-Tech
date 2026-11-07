@@ -162,7 +162,7 @@ test("admin cannot revert a paid webshop order to Unpaid", async () => {
   const routes = createHarness({
     async query(sql) {
       calls += 1;
-      if (sql.includes("WITH previous AS")) return { rows: [] };
+      if (sql.startsWith("UPDATE")) return { rows: [] };
       return { rows: [{ id: 12, payment_status: "Paid", inventory_deducted_at: "2026-11-05T12:00:00Z" }] };
     }
   }, async () => {
@@ -247,7 +247,7 @@ test("admin cannot directly cancel a paid webshop order", async () => {
   const routes = createHarness({
     async query(sql, params) {
       calls.push({ sql, params });
-      if (sql.startsWith("UPDATE")) return { rows: [] };
+      if (sql.includes("WITH previous AS")) return { rows: [] };
       return { rows: [{ id: 12, payment_status: "Paid" }] };
     }
   });
