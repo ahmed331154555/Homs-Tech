@@ -32,7 +32,7 @@ const { sanitizePublicSiteData, sanitizeHomepageSiteData } = require("./utils/si
 const { resolveMolliePaymentStatus, molliePaymentMatchesOrder } = require("./utils/mollie-payment");
 const { encryptPayPalSecret, decryptPayPalSecret, getPayPalBaseUrl } = require("./utils/payment-secrets");
 const { cancelPaypalOrder } = require("./utils/paypal-payment");
-const { allowLiveChat, liveChatAutomaticReply } = require("./utils/live-chat");
+const { allowLiveChat, liveChatFirstReply } = require("./utils/live-chat");
 const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-limit");
 const { checkAuthLoginRateLimit } = require("./utils/auth-login-rate-limit");
 const { resolveRepairRequestCustomerId } = require("./utils/repair-request-customer");
@@ -2550,7 +2550,7 @@ app.post("/api/chat/conversations", async (req, res) => {
     );
     const automaticReply = await pool.query(
       "INSERT INTO live_chat_messages(conversation_id,sender,message) VALUES($1,'admin',$2) RETURNING id,sender,message,created_at",
-      [conversationId, liveChatAutomaticReply(message)]
+      [conversationId, liveChatFirstReply()]
     );
 
     await pool.query(
@@ -2598,10 +2598,6 @@ app.post("/api/chat/conversations/:token/messages", async (req, res) => {
     await pool.query(
       "INSERT INTO live_chat_messages(conversation_id,sender,message) VALUES($1,'customer',$2)",
       [conversationId, message]
-    );
-    await pool.query(
-      "INSERT INTO live_chat_messages(conversation_id,sender,message) VALUES($1,'admin',$2)",
-      [conversationId, liveChatAutomaticReply(message)]
     );
     await pool.query(
       "UPDATE live_chat_conversations SET updated_at=NOW() WHERE id=$1",
