@@ -201,7 +201,7 @@ app.get("/api/site", async (req, res) => {
           data->>'businessName' AS business_name,
           data->>'siteName' AS site_name,
           data->>'tagline' AS tagline,
-          data->>'whatsapp' AS whatsapp
+          COALESCE(NULLIF(BTRIM(data->>'whatsapp'), ''), NULLIF(BTRIM(data->'homepage'->'footer'->>'whatsapp'), '')) AS whatsapp
         FROM site_settings
         WHERE id = 1`,
         [],
