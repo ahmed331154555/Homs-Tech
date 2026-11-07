@@ -228,6 +228,20 @@ async function initializeDatabaseSchema(pool) {
     await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS tracking_url TEXT DEFAULT ''`);
     await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS inventory_deducted_at TIMESTAMPTZ`);
     await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS inventory_error TEXT NOT NULL DEFAULT ''`);
+    // Trade-in accounting snapshot: keep the estimate and inspection result separate.
+    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_order_id INTEGER`);
+    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_estimated_value NUMERIC(12,2)`);
+    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_applied_credit NUMERIC(12,2)`);
+    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_inspected_value NUMERIC(12,2)`);
+    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_adjustment NUMERIC(12,2) NOT NULL DEFAULT 0`);
+    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_status TEXT NOT NULL DEFAULT ''`);
+    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_snapshot JSONB NOT NULL DEFAULT '{}'::jsonb`);
+    await pool.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS webshop_orders_trade_in_order_unique
+      ON webshop_orders(trade_in_order_id)
+      WHERE trade_in_order_id IS NOT NULL
+    `);
+
 
     const result = await pool.query(
       "SELECT id FROM site_settings WHERE id = 1"
