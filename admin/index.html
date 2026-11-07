@@ -8682,5 +8682,60 @@ if ("serviceWorker" in navigator) {
 @media(max-width:700px){.phone-order-detail-overlay{padding:0}.phone-order-detail-panel{width:100%;border-radius:0;padding:14px}.phone-order-detail-panel .ht-order-detail-top{top:-14px;margin:-14px 0 12px;padding-top:12px}.phone-order-detail-panel .ht-order-status-grid,.phone-order-detail-panel .ht-order-customer-grid{grid-template-columns:1fr}}
 </style>
 
+
+<style id="homs-phone-order-address-overflow-fix">
+/* Keep the complete shipping address visible at every viewport size. */
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-grid,
+#phoneOrderDetailHost .ht-phone-detail-grid,
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-card,
+#phoneOrderDetailHost .ht-phone-detail-card,
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-card,
+#phoneOrderDetailHost .ht-phone-address-card {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-card,
+#phoneOrderDetailHost .ht-phone-address-card {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 12px !important;
+  overflow: visible !important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-field,
+#phoneOrderDetailHost .ht-phone-address-field {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  white-space: normal !important;
+  overflow: visible !important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-field-label,
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-field-value,
+#phoneOrderDetailHost .ht-phone-address-field-label,
+#phoneOrderDetailHost .ht-phone-address-field-value {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+  line-height: 1.55 !important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-map-link,
+#phoneOrderDetailHost .ht-phone-map-link {
+  align-self: flex-start !important;
+  flex: 0 0 auto !important;
+  margin-top: 8px !important;
+}
+</style>
+
 </body>
 </html>
