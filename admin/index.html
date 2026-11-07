@@ -8113,7 +8113,7 @@ async function showWebshopOrderDetails(id){
               <div><div class="ht-phone-product-title">${esc(firstPhoneName)}</div><div class="ht-phone-product-tags">${firstPhoneMeta.map(value=>'<span>'+esc(value)+'</span>').join("")||'<span>Specificaties niet opgegeven</span>'}</div><div class="ht-phone-product-qty">Aantal: ${firstPhoneQuantity}</div><strong class="ht-phone-product-price">${money(firstPhoneUnitPrice*firstPhoneQuantity)}</strong></div>
             </div></div>${phoneExtraProducts}
           </section>
-    ${phoneTradeInCard}
+    ${tradeInCard}
     <section class="ht-phone-detail-card">
             <div class="ht-phone-detail-card-head"><span class="icon">♙</span>Klantgegevens</div>
             <div class="ht-phone-detail-card-body ht-phone-info-list">
