@@ -1854,6 +1854,12 @@ body.phone-orders-page-active #page-all-orders{padding-bottom:78px}
 #page-phone-orders .phone-order-detail-panel .ht-phone-detail-actions{display:flex;flex-wrap:wrap;gap:8px;padding-top:2px}
 #page-phone-orders .phone-order-detail-panel .ht-phone-detail-actions .btn{min-height:39px;margin:0}
 #page-phone-orders .phone-order-detail-panel .ht-phone-detail-muted{color:#94a3b8;font-size:11px}
+#page-phone-orders .phone-order-detail-panel .ht-phone-note-entry{padding:9px 10px;margin:0 0 8px;border:1px solid #e7edf4;border-radius:9px;background:#f8fafc}
+#page-phone-orders .phone-order-detail-panel .ht-phone-note-entry p{margin:5px 0 0;color:#334155;font-size:12px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+#page-phone-orders .phone-order-detail-panel .ht-phone-note-meta{font-size:10px;color:#64748b}
+#page-phone-orders .phone-order-detail-panel .ht-phone-note-entry:last-child{margin-bottom:0}
+#page-phone-orders .phone-order-detail-panel .ht-phone-note-form{display:grid;gap:9px;margin-top:12px;padding-top:12px;border-top:1px solid #e9eef5}
+#page-phone-orders .phone-order-detail-panel .ht-phone-note-form textarea{width:100%;min-height:84px;padding:9px 10px;border:1px solid #dbe3ed;border-radius:8px;resize:vertical;font:inherit;font-size:12px;color:#172033}
 @media(max-width:760px){#page-phone-orders .phone-order-detail-panel{padding:10px}#page-phone-orders .phone-order-detail-panel .ht-phone-detail-grid,#page-phone-orders .phone-order-detail-panel .ht-phone-detail-grid.equal{grid-template-columns:1fr}#page-phone-orders .phone-order-detail-panel .ht-phone-product-feature{grid-template-columns:1fr}#page-phone-orders .phone-order-detail-panel .ht-phone-product-main-image{height:190px}#page-phone-orders .phone-order-detail-panel .ht-phone-product-visual{grid-template-columns:48px minmax(0,1fr)}#page-phone-orders .phone-order-detail-panel .ht-phone-product-thumbs button{width:46px;height:49px}#page-phone-orders .phone-order-detail-panel .ht-phone-timeline-row{grid-template-columns:27px minmax(0,1fr)}#page-phone-orders .phone-order-detail-panel .ht-phone-timeline-date{grid-column:2}}
 </style>
 
@@ -7411,6 +7417,13 @@ async function showWebshopOrderDetails(id){
     const phoneShippingLabel=status==="Verzonden"?"Verzonden":(order.tracking_number?"Verzending geregistreerd":"Nog niet verzonden");
     const phonePaymentReference=order.mollie_payment_id||order.paypal_order_id||"Niet beschikbaar";
     const phonePaymentTone=paymentClass==="is-paid"?"is-paid":(paymentClass==="is-failed"?"is-failed":"is-pending");
+    const phoneNotes=Array.isArray(order.notes)?order.notes:[];
+    const phoneNotesMarkup=phoneNotes.length?phoneNotes.map(note=>{
+      const stamp=note.created_at?formatPhoneOrderDateTime(note.created_at):null;
+      const noteDate=stamp?stamp.date+(stamp.time?" "+stamp.time:""):"Datum niet beschikbaar";
+      return '<div class="ht-phone-note-entry"><div class="ht-phone-note-meta">'+esc(note.created_by||"HOMS TECH Admin")+' · '+esc(noteDate)+'</div><p>'+esc(note.note||"")+'</p></div>';
+    }).join(""):'<div class="ht-phone-detail-muted">Nog geen notities bij deze bestelling.</div>';
+    const phoneNoteForm=hasPermission("webshop_orders.update")?'<div class="ht-phone-note-form"><label class="ht-phone-detail-field">Nieuwe notitie<textarea id="webshopOrderNote" maxlength="2000" rows="3" placeholder="Schrijf een interne notitie over deze bestelling..."></textarea></label><button class="btn btn-primary" type="button" onclick="saveWebshopOrderNote('+Number(order.id)+')">Notitie opslaan</button></div>':"";
     const phoneDetailMarkup=`
       <div class="ht-order-detail-panel phone-order-detail-panel" role="dialog" aria-modal="true" aria-label="Bestelling #${Number(order.id)}">
         <div class="ht-order-detail-top">
@@ -7501,11 +7514,15 @@ async function showWebshopOrderDetails(id){
             </div>
           </section>
         </div>
+        <section class="ht-phone-detail-card" id="phoneOrderNoteCard" style="margin-bottom:12px">
+          <div class="ht-phone-detail-card-head"><span class="icon">▤</span>Interne notities</div>
+          <div class="ht-phone-detail-card-body">${phoneNotesMarkup}${phoneNoteForm}</div>
+        </section>
         <section class="ht-phone-detail-card" style="margin-bottom:12px">
           <div class="ht-phone-detail-card-head"><span class="icon">◷</span>Bestelstatus (log)</div>
           <div class="ht-phone-timeline">${timelineRows}</div>
         </section>
-        <div class="ht-phone-detail-actions"><button class="btn btn-light" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button><button class="btn btn-light" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
+        <div class="ht-phone-detail-actions">${hasPermission("webshop_orders.update")?'<button class="btn btn-light" type="button" onclick="focusPhoneOrderNote()">Notitie</button>':""}<button class="btn btn-light" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button><button class="btn btn-light" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
       </div>`;
 
     const modal=document.createElement("div");
@@ -7575,6 +7592,32 @@ async function deleteRepairRequest(id){
     await loadOrders();
     if(currentPage==="search") await adminSearch();
   }catch(e){ alert(e.message); }
+}
+
+function focusPhoneOrderNote(){
+  const card=document.getElementById("phoneOrderNoteCard");
+  const field=document.getElementById("webshopOrderNote");
+  card?.scrollIntoView({behavior:"smooth",block:"center"});
+  field?.focus();
+}
+
+async function saveWebshopOrderNote(id){
+  if(!hasPermission("webshop_orders.update"))return;
+  const field=document.getElementById("webshopOrderNote");
+  const note=String(field?.value||"").trim();
+  if(!note){alert("Vul eerst een notitie in.");field?.focus();return;}
+  if(note.length>2000){alert("Een notitie mag maximaal 2000 tekens bevatten.");return;}
+  try{
+    const response=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/notes",{
+      method:"POST",credentials:"same-origin",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({note})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Notitie kon niet worden opgeslagen.");
+    await showWebshopOrderDetails(id);
+    setStatus("✓ Notitie opgeslagen bij bestelling #"+id,"success");
+  }catch(error){alert(error.message);}
 }
 
 async function saveWebshopOrderShipping(id){
