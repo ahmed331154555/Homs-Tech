@@ -39,6 +39,20 @@ async function ensureBuybackOrdersTable(pool) {
   await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS final_offer_sent_at TIMESTAMPTZ`);
   await pool.query(`UPDATE buyback_orders SET order_no = 'BT-LEGACY-' || id WHERE order_no IS NULL`);
   await pool.query(`ALTER TABLE buyback_orders ALTER COLUMN order_no SET NOT NULL`);
+  // Link an inruil application to at most one webshop order and retain inspection history.
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS trade_in BOOLEAN NOT NULL DEFAULT FALSE`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS trade_in_quote_token_hash TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS trade_in_quote_expires_at TIMESTAMPTZ`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS trade_in_linked_order_id INTEGER`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS trade_in_inspected_value NUMERIC(12,2)`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS trade_in_adjustment_reason TEXT NOT NULL DEFAULT ''`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS trade_in_adjustment_status TEXT NOT NULL DEFAULT ''`);
+  await pool.query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS buyback_orders_trade_in_linked_order_unique
+    ON buyback_orders(trade_in_linked_order_id)
+    WHERE trade_in_linked_order_id IS NOT NULL
+  `);
+
 }
 
 module.exports = { ensureBuybackOrdersTable };
