@@ -8771,3 +8771,25 @@ if ("serviceWorker" in navigator) {
 .phone-order-detail-overlay .ht-phone-contact-link:hover{text-decoration:underline;color:#2563eb}
 .phone-order-detail-overlay .ht-phone-detail-actions:empty{display:none!important}
 </style>
+
+<style id="ht-phone-order-compact-cards">
+/* Keep phone-order cards content-height; do not stretch them to match taller neighbors. */
+.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid,
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-grid{
+  align-items:start!important;
+  align-content:start!important;
+  grid-auto-rows:max-content!important;
+}
+.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-card,
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-card{
+  align-self:start!important;
+  height:auto!important;
+  min-height:0!important;
+}
+.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-card-body{
+  min-height:0!important;
+}
+.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-info-list{
+  align-content:start!important;
+}
+</style>
