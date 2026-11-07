@@ -8793,3 +8793,51 @@ if ("serviceWorker" in navigator) {
   align-content:start!important;
 }
 </style>
+
+<style id="ht-phone-order-tight-layout">
+/* Compact desktop order details: modal grows with its content instead of filling the viewport. */
+.phone-order-detail-overlay .phone-order-detail-panel{
+  height:auto!important;
+  max-height:92vh!important;
+  min-height:0!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+}
+.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid,
+.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid.equal,
+.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-grid,
+.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-grid.equal{
+  align-items:start!important;
+  align-content:start!important;
+  grid-auto-rows:min-content!important;
+  margin-bottom:8px!important;
+  row-gap:8px!important;
+}
+.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-card,
+.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-card{
+  align-self:start!important;
+  height:fit-content!important;
+  min-height:0!important;
+}
+.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-card-body{
+  height:auto!important;
+  min-height:0!important;
+  padding-top:10px!important;
+  padding-bottom:10px!important;
+}
+.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-info-list{
+  display:grid!important;
+  align-content:start!important;
+  gap:7px!important;
+}
+.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-actions{
+  margin:0!important;
+  padding-top:0!important;
+}
+@media(max-width:760px){
+  .phone-order-detail-overlay .phone-order-detail-panel{
+    height:100dvh!important;
+    max-height:100dvh!important;
+  }
+}
+</style>
