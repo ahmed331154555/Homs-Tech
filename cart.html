@@ -141,7 +141,7 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
   <link rel="stylesheet" href="assets/homs-global-nav.css">
 
 <link rel="stylesheet" href="assets/homs-layout-system.css?v=20261030">
-</head><body>
+<style id="ht-cart-tradein-clean">.ht-cart-tradein,.ht-cart-tradein-cta{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 16px;margin:12px 0;border:1px solid #bfdbfe;border-radius:12px;background:#eff6ff}.ht-cart-tradein small{display:block;color:#64748b;margin-top:3px}.ht-cart-tradein button{border:0;background:transparent;color:#dc2626;font-weight:700;cursor:pointer}.ht-cart-tradein-cta a{color:#2563eb;font-weight:800}</style>\n</head><body>
 <div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div>
 <header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="account.html">♙ Mijn account</a><a class="active" href="cart.html">🛒 Winkelwagen <span id="cartCount" class="cart-count">0</span></a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a>
    <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a></nav></div></header>
@@ -252,6 +252,13 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
     saveCart(items);
   };
 
+  window.removeTradeInCredit=function(){
+    localStorage.removeItem("homsTechTradeInToken");
+    localStorage.removeItem("homsTechTradeInCredit");
+    localStorage.removeItem("homsTechTradeInDevice");
+    render();
+  };
+
   function render(){paint(readCart());refreshShopStock();}
 
   function paint(items){
@@ -259,7 +266,15 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
     if(!items.length){area.innerHTML='<div class="empty"><h2>Je winkelwagen is leeg</h2><p>Voeg eerst een telefoon toe aan je winkelwagen.</p><a class="btn red" href="devices.html">📱 Bekijk telefoons</a></div>';return;}
     let total=0;
     const rows=items.map((item,index)=>{const qty=Math.max(1,Number(item.qty||1));const lineTotal=Number(item.unitPrice??item.price??0)*qty;total+=lineTotal;const image=item.image?'<img class="item-img" src="'+esc(item.image)+'" alt="'+esc(item.name||"Smartphone")+'">':'<div class="item-img" style="display:flex;align-items:center;justify-content:center;font-size:40px">📱</div>';return '<div class="cart-item">'+image+'<div><div class="item-brand">'+esc(item.brand||"")+'</div><div class="item-title">'+esc(item.name||"Smartphone")+'</div><div class="opts">'+optionsText(item.options)+'</div><div class="qty"><button type="button" onclick="changeQty('+index+',-1)">−</button><span>'+qty+'</span><button type="button" onclick="changeQty('+index+',1)">+</button><button type="button" class="remove delete-cart-btn" onclick="removeItem('+index+')" aria-label="Verwijder product" title="Verwijder product">🗑</button></div></div><div class="item-price">'+money(lineTotal)+'</div></div>';}).join("");
-    area.innerHTML=rows+'<div class="summary"><div><small>Totaal</small><div class="summary-total">'+money(total)+'</div></div><div class="actions"><a class="btn gray" href="devices.html">← Verder winkelen</a><a class="btn blue" href="checkout.html" style="background:#2563eb!important;color:#fff!important;border:0!important;box-shadow:0 5px 14px rgba(37,99,235,.22)!important;">Naar afrekenen →</a></div></div>';
+    const tradeInToken=localStorage.getItem("homsTechTradeInToken")||"";
+    const tradeInCredit=Number(localStorage.getItem("homsTechTradeInCredit")||0);
+    const tradeInDevice=localStorage.getItem("homsTechTradeInDevice")||"Uw oude toestel";
+    const appliedCredit=Math.min(total,Math.max(0,tradeInCredit));
+    const payable=Math.max(0,Math.round((total-appliedCredit)*100)/100);
+    const tradeInHtml=tradeInToken&&tradeInCredit>0
+      ? '<div class="ht-cart-tradein"><div><strong>♻ Inruilkorting toegepast</strong><small>'+esc(tradeInDevice)+' · '+money(tradeInCredit)+'</small></div><strong>− '+money(appliedCredit)+'</strong><button type="button" onclick="removeTradeInCredit()" aria-label="Inruil verwijderen">Verwijderen</button></div>'
+      : '<div class="ht-cart-tradein-cta"><span>Heeft u een oude iPhone?</span><a href="uw-toestel-verkopen.html?tradeIn=1">Inruilen en korting ontvangen →</a></div>';
+    area.innerHTML=rows+'<div class="summary">'+tradeInHtml+'<div><small>Producttotaal</small><div>'+money(total)+'</div></div>'+(tradeInToken&&tradeInCredit>0?'<div><small>Inruilkorting</small><div>− '+money(appliedCredit)+'</div></div>':'')+'<div><small>Te betalen</small><div class="summary-total">'+money(payable)+'</div></div><div class="actions"><a class="btn gray" href="devices.html">← Verder winkelen</a><a class="btn blue" href="checkout.html" style="background:#2563eb!important;color:#fff!important;border:0!important;box-shadow:0 5px 14px rgba(37,99,235,.22)!important;">Naar afrekenen →</a></div></div>';
   }
 
   async function refreshShopStock(){
