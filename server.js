@@ -1265,7 +1265,7 @@ app.post("/api/webshop/orders", async (req, res) => {
       tradeInCredit = Math.min(productTotal, Math.round(Number(tradeInOrder.offered_price) * 100) / 100);
     }
     const total = Math.max(0, Math.round((productTotal - tradeInCredit) * 100) / 100);
-    if (!Number.isFinite(total) || productTotal <= 0 || total > 100000) {
+    if (!Number.isFinite(total) || productTotal <= 0 || total <= 0 || total > 100000) {
       return res.status(400).json({ error: "Het totaalbedrag van uw bestelling is ongeldig." });
     }
     const checkoutToken = crypto.randomBytes(32).toString("hex");
