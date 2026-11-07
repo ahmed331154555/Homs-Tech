@@ -7752,7 +7752,7 @@ async function showWebshopOrderDetails(id){
               <label class="ht-phone-detail-field">Betaalstatus aanpassen
                 <select id="webshopPaymentStatus"><option value="Unpaid" ${/^(unpaid|open)$/i.test(payment)?"selected":""}>Niet betaald</option><option value="Processing" ${/^processing$/i.test(payment)?"selected":""}>In behandeling</option><option value="Paid" ${/^(paid|betaald|completed)$/i.test(payment)?"selected":""}>Betaald</option><option value="Failed" ${/^(failed|mislukt)$/i.test(payment)?"selected":""}>Mislukt</option></select>
               </label>
-              <div class="ht-phone-detail-muted">De betaalstatus en voorraadregels worden via de bestaande beveiligde opslag bijgewerkt.</div>
+              <div class="ht-phone-detail-muted">Sla de betaalstatus hier apart op. Bij Betaald wordt de voorraad automatisch gecontroleerd.</div>
               <button class="btn btn-primary ht-phone-payment-save" type="button" onclick="saveWebshopOrderPayment(${Number(order.id)})">💾 Betaalstatus opslaan</button>
             </div>
           </section>
