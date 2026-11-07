@@ -2486,10 +2486,19 @@ $('finish').onclick=async()=>{
       condition:firstAnswerByLabel(['conditie','staat'])||'',faceId:firstAnswerByLabel(['face id'])||'',
       battery:firstAnswerByLabel(['batterij'])||'',screen:firstAnswerByLabel(['scherm'])||'',
       offeredPrice:Number(offer.toFixed(2)),iban:$('cIban').value.trim(),paymentMethod:$('cMethod').value,
-      answers,deviceType:selectedModel.deviceType||selectedModel.typeName||''
+      answers,deviceType:selectedModel.deviceType||selectedModel.typeName||'',
+      tradeIn:new URLSearchParams(location.search).get('tradeIn')==='1'
     };
     const r=await fetch('/api/buyback/orders',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(payload)});
     const j=await r.json().catch(()=>({}));if(!r.ok||(!j.ok&&!j.success))throw new Error(j.error||'Kon de aanvraag niet verzenden.');
+    if(payload.tradeIn){
+      if(!/^[a-f0-9]{64}$/.test(String(j.tradeInToken||'')))throw new Error('De inruilcode kon niet veilig worden aangemaakt.');
+      localStorage.setItem('homsTechTradeInToken',j.tradeInToken);
+      localStorage.setItem('homsTechTradeInCredit',String(Number(j.tradeInCredit||offer).toFixed(2)));
+      localStorage.setItem('homsTechTradeInDevice',String(payload.device||'iPhone'));
+      location.assign('cart.html?tradeIn=applied');
+      return;
+    }
     go(4);
   }catch(e){console.error(e);alert(e.message||'Er ging iets mis bij het verzenden.')}finally{btn.disabled=false;btn.textContent=old}
 };
