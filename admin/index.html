@@ -6483,10 +6483,10 @@ async function loadWebshopOrders(){
   }catch(e){status.className='status error';status.textContent='✕ '+e.message;}
 }
 
-async function updateWebshopOrderStatus(id,statusValue){
+async function updateWebshopOrderStatus(id,statusValue,sourceSelect){
   if(!hasPermission("webshop_orders.update"))return;
   const selects=[...document.querySelectorAll(".order-status-select")];
-  const select=selects.find(el=>el.dataset.webshopOrderId===String(id));
+  const select=sourceSelect||selects.find(el=>el.dataset.webshopOrderId===String(id));
   if(select){select.disabled=true; select.classList.add("is-saving");}
   try{
     setStatus("Opslaan van webshop order #"+id+"...","info");
@@ -7404,10 +7404,11 @@ async function showWebshopOrderDetails(id){
     const phoneExtraProducts=items.length>1?'<div class="ht-phone-product-extra">'+itemRows+'</div>':"";
     const phoneStreetAddress=[order.street,order.house_number].filter(Boolean).join(" ");
     const phonePostcodeCity=[order.postcode,order.city].filter(Boolean).join(" ");
-    const phoneDigits=String(order.phone||"").replace(/[^\d]/g,"");
+    const phoneDigitsRaw=String(order.phone||"").replace(/[^\d]/g,"");
+    const phoneDigits=phoneDigitsRaw.startsWith("0")?"31"+phoneDigitsRaw.slice(1):phoneDigitsRaw;
     const phoneWhatsapp=phoneDigits?'<a class="btn btn-light" target="_blank" rel="noopener noreferrer" href="https://wa.me/'+esc(phoneDigits)+'?text='+encodeURIComponent("Hoi, over bestelling #"+Number(order.id)+" bij HOMS TECH.")+'">WhatsApp-bericht sturen</a>':"";
     const phoneStatusOptions=['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(value=>'<option value="'+esc(value)+'" '+(status===value?'selected':'')+'>'+esc(value)+'</option>').join("");
-    const phoneShippingLabel=order.tracking_number?"Verzending geregistreerd":"Nog niet verzonden";
+    const phoneShippingLabel=status==="Verzonden"?"Verzonden":(order.tracking_number?"Verzending geregistreerd":"Nog niet verzonden");
     const phonePaymentReference=order.mollie_payment_id||order.paypal_order_id||"Niet beschikbaar";
     const phonePaymentTone=paymentClass==="is-paid"?"is-paid":(paymentClass==="is-failed"?"is-failed":"is-pending");
     const phoneDetailMarkup=`
@@ -7450,7 +7451,7 @@ async function showWebshopOrderDetails(id){
           <section class="ht-phone-detail-card">
             <div class="ht-phone-detail-card-head"><span class="icon">⌖</span>Verzendadres</div>
             <div class="ht-phone-detail-card-body"><div class="ht-phone-address">${esc(phoneStreetAddress||"Geen straatadres opgegeven")}<br>${esc(phonePostcodeCity||"Geen postcode of plaats opgegeven")}</div>
-              ${address.trim()?'<a class="btn btn-light" style="margin-top:10px" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(address.trim()+", "+(order.city||"")+", "+(order.postcode||""))+'">Adres op kaart openen</a>':""}
+              ${address.trim()?'<a class="btn btn-light" style="margin-top:10px" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(phoneStreetAddress+", "+phonePostcodeCity)+'">Adres op kaart openen</a>':""}
             </div>
           </section>
         </div>
@@ -7495,7 +7496,7 @@ async function showWebshopOrderDetails(id){
           <section class="ht-phone-detail-card">
             <div class="ht-phone-detail-card-head"><span class="icon">✓</span>Status bijwerken</div>
             <div class="ht-phone-detail-card-body ht-phone-info-list">
-              <label class="ht-phone-detail-field">Nieuwe bestelstatus<select class="order-status-select" data-webshop-order-id="${Number(order.id)}" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">${phoneStatusOptions}</select></label>
+              <label class="ht-phone-detail-field">Nieuwe bestelstatus<select class="order-status-select" data-webshop-order-id="${Number(order.id)}" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value,this)">${phoneStatusOptions}</select></label>
               <div class="ht-phone-detail-muted">Bij het wijzigen wordt de status automatisch opgeslagen en aan de tijdlijn toegevoegd.</div>
             </div>
           </section>
