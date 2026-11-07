@@ -95,12 +95,15 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
   app.get("/api/admin/webshop-orders", requirePermission("webshop_orders.view"), async (req, res) => {
     try {
       const result = await pool.query(
-        `SELECT id, customer_id, name, email, phone, street, house_number, postcode, city, items, total, status,
+        `SELECT webshop_orders.id, customer_id, name, email, phone, street, house_number, postcode, city, items, total, status,
                 payment_method, payment_status, paypal_order_id, mollie_payment_id,
                 inventory_deducted_at, inventory_error,
                 trade_in_order_id, trade_in_estimated_value, trade_in_applied_credit,
                 trade_in_inspected_value, trade_in_adjustment, trade_in_status, trade_in_snapshot,
-                created_at,
+                buyback_orders.device AS trade_in_device, buyback_orders.model AS trade_in_model,
+                buyback_orders.storage AS trade_in_storage, buyback_orders.answers AS trade_in_answers,
+                buyback_orders.status AS trade_in_buyback_status,
+                webshop_orders.created_at,
                 COALESCE((
                   SELECT json_agg(
                     json_build_object('status', history.status, 'created_at', history.created_at)
@@ -118,7 +121,8 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
                   WHERE notes.order_id = webshop_orders.id
                 ), '[]'::json) AS notes
          FROM webshop_orders
-         ORDER BY created_at DESC`
+         LEFT JOIN buyback_orders ON buyback_orders.id = webshop_orders.trade_in_order_id
+         ORDER BY webshop_orders.created_at DESC`
       );
       res.json({ orders: result.rows });
     } catch (error) {
