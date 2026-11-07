@@ -741,7 +741,7 @@ function renderOptionSection(key,title,list){
         : ' disabled aria-disabled="true"';
       return '<button type="button" class="option-btn color-option-btn '+(active?"active ":"")+
         (availableNow?"":"unavailable")+'"'+colorClick+' aria-label="Kleur '+esc(x.label)+'">'+
-        (img?'<img class="color-option-image" src="'+esc(img)+'" alt="'+esc(x.label)+'">':"")+
+        (img?'<img class="color-option-image" src="'+esc(img)+'" alt="'+esc(x.label)+'" loading="lazy" decoding="async">':"")+
         '<span class="color-option-label">'+esc(x.label)+'</span></button>';
     }
 
@@ -993,11 +993,11 @@ function renderProductBody(){
   galleryImagesState=galleryImages.slice();
   galleryIndex=0;
   let gallery=mainImage?`<div class="gallery-wrap">
-    <img id="mainImage" class="main-image" src="${esc(mainImage)}" alt="${esc(product.name)}">
+    <img id="mainImage" class="main-image" src="${esc(mainImage)}" alt="${esc(product.name)}" decoding="async">
     ${galleryImages.length>1?`<button type="button" class="gallery-nav prev" onclick="changeGalleryImage(-1)" aria-label="Vorige foto">‹</button>
     <button type="button" class="gallery-nav next" onclick="changeGalleryImage(1)" aria-label="Volgende foto">›</button>`:""}
   </div>`:`<div class="main-image" style="display:flex;align-items:center;justify-content:center;font-size:80px;">📱</div>`;
-  if(galleryImages.length>1) gallery+=`<div class="thumbs">${galleryImages.map((img,i)=>`<button type="button" class="thumb-button" onclick="setGalleryImage(${i})" aria-label="Foto ${i+1}"><img class="thumb ${i===0?"active":""}" src="${esc(img)}" alt=""></button>`).join("")}</div>`;
+  if(galleryImages.length>1) gallery+=`<div class="thumbs">${galleryImages.map((img,i)=>`<button type="button" class="thumb-button" onclick="setGalleryImage(${i})" aria-label="Foto ${i+1}"><img class="thumb ${i===0?"active":""}" src="${esc(img)}" alt="" loading="lazy" decoding="async"></button>`).join("")}</div>`;
 
   const basePrice=num(product.price||product.salePrice||product.sellPrice||0);
   const hasOptions=true;
