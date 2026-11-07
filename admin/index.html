@@ -6512,7 +6512,8 @@ async function updateWebshopOrderStatus(id,statusValue,sourceSelect){
       select.classList.add("is-saved");
       setTimeout(()=>select.classList.remove("is-saved"),900);
     }
-    const phoneDetailIsOpen=!!(document.getElementById("orderDetailsModal")&&document.querySelector("#page-phone-orders .ht-phone-orders-workspace.has-selection"));
+    const activePhoneDetail=document.getElementById("orderDetailsModal");
+    const phoneDetailIsOpen=!!(activePhoneDetail&&(document.querySelector("#page-phone-orders .ht-phone-orders-workspace.has-selection")||activePhoneDetail.classList.contains("ht-phone-mobile-detail")));
     if(phoneDetailIsOpen){
       await loadWebshopOrders();
       await showWebshopOrderDetails(id);
@@ -7325,6 +7326,145 @@ async function printWebshopShippingLabel(id){
 
 
 
+
+<style id="homs-phone-order-detail-readable-v2">
+/* Reference-inspired, readable full-screen phone order detail. */
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail{
+  position:fixed!important;inset:0!important;z-index:10020!important;
+  display:flex!important;align-items:stretch!important;justify-content:center!important;
+  width:100vw!important;height:100dvh!important;max-height:100dvh!important;
+  overflow:hidden!important;padding:0!important;margin:0!important;
+  background:rgba(8,20,36,.72)!important;backdrop-filter:blur(3px);
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .phone-order-detail-panel{
+  width:100%!important;max-width:100%!important;height:100%!important;max-height:100%!important;
+  min-height:0!important;margin:0!important;padding:14px 16px 20px!important;
+  overflow-y:auto!important;overscroll-behavior:contain!important;
+  border-radius:0!important;background:#f4f7fb!important;box-shadow:none!important;
+  font-size:14px!important;line-height:1.45!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-order-detail-top{
+  position:sticky!important;top:-14px!important;z-index:5!important;
+  display:flex!important;align-items:center!important;gap:12px!important;
+  margin:-14px -16px 14px!important;padding:14px 16px!important;
+  min-height:72px!important;border-radius:0 0 14px 14px!important;
+  background:#10233d!important;color:#fff!important;
+  box-shadow:0 4px 14px rgba(15,35,61,.16)!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-order-detail-top h2{font-size:23px!important;line-height:1.2!important;margin:3px 0!important}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-order-detail-top p{font-size:13px!important;color:#d9e5f2!important}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-order-eyebrow{font-size:10px!important;letter-spacing:.1em!important;color:#b9d2f5!important}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-head-status{font-size:13px!important;padding:8px 12px!important}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-close{margin-left:auto!important;min-width:40px!important;min-height:40px!important;padding:8px!important}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;margin-bottom:12px!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-grid.equal{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-card{
+  border:1px solid #dfe7f1!important;border-radius:14px!important;
+  box-shadow:0 2px 9px rgba(15,35,61,.055)!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-card-head{
+  gap:10px!important;padding:12px 14px!important;min-height:47px!important;
+  font-size:14px!important;line-height:1.3!important;background:#edf2fa!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-card-head .icon{
+  width:28px!important;height:28px!important;flex:0 0 28px!important;font-size:15px!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-card-body{padding:14px!important}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-feature{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:14px!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-visual{
+  grid-template-columns:48px minmax(0,1fr)!important;gap:8px!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-thumbs button{
+  width:46px!important;height:50px!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-main-image{
+  height:210px!important;min-width:0!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-title{
+  font-size:20px!important;line-height:1.25!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-tags{gap:7px!important;margin:10px 0!important}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-tags span{
+  font-size:12px!important;padding:6px 9px!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-qty{font-size:13px!important}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-price{font-size:26px!important}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-info-list{gap:12px!important}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-info-line{
+  grid-template-columns:minmax(95px,.85fr) minmax(0,1.15fr)!important;gap:9px!important;
+  font-size:13px!important;line-height:1.45!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-info-line>span{color:#64748b!important}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-info-line>strong{
+  font-size:13px!important;color:#172b40!important;overflow-wrap:anywhere!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-pill{
+  font-size:12px!important;padding:6px 9px!important;white-space:normal!important;text-align:center!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-address{
+  font-size:14px!important;line-height:1.7!important;color:#172b40!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-summary-line{
+  font-size:13px!important;line-height:1.45!important;padding:9px 0!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-summary-total{
+  font-size:16px!important;padding-top:12px!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-summary-total strong{font-size:22px!important}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-field{
+  font-size:12px!important;gap:7px!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-field input,
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-field select{
+  min-height:43px!important;font-size:13px!important;padding:9px 11px!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-actions{
+  display:flex!important;flex-wrap:wrap!important;gap:9px!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-actions .btn{
+  min-height:42px!important;font-size:13px!important;padding:9px 13px!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline{padding:14px 16px!important}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline-row{
+  grid-template-columns:30px minmax(0,1fr) auto!important;gap:11px!important;min-height:58px!important;padding-bottom:13px!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline-dot{
+  width:28px!important;height:28px!important;font-size:13px!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline-row:not(:last-child):before{
+  left:13px!important;top:28px!important;
+}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline-copy strong{font-size:14px!important}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline-copy small,
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline-date{font-size:12px!important;line-height:1.4!important}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-note-entry{padding:11px 12px!important}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-note-entry p{font-size:13px!important;line-height:1.5!important}
+.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-note-meta{font-size:11px!important}
+@media(max-width:560px){
+  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .phone-order-detail-panel{padding:11px 12px 18px!important}
+  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-order-detail-top{margin:-11px -12px 11px!important;padding:12px!important}
+  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-grid,
+  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-grid.equal{grid-template-columns:minmax(0,1fr)!important}
+  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-feature{grid-template-columns:minmax(0,1fr)!important}
+  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-main-image{height:220px!important}
+  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-visual{grid-template-columns:48px minmax(0,1fr)!important}
+  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-info-line{grid-template-columns:minmax(100px,.8fr) minmax(0,1.2fr)!important}
+  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline-row{grid-template-columns:30px minmax(0,1fr)!important}
+  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline-date{grid-column:2!important}
+}
+@media print{
+  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail{position:static!important;display:block!important;width:auto!important;height:auto!important;background:#fff!important;overflow:visible!important}
+  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .phone-order-detail-panel{width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important;padding:0!important}
+  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-close{display:none!important}
+}
+</style>
+
 </body></html>`);
   w.document.close();
 }
@@ -7558,7 +7698,8 @@ async function showWebshopOrderDetails(id){
       </section>
       <div class="ht-order-detail-footer"><button class="btn btn-light" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button><button class="btn btn-light" type="button" onclick="printWebshopShippingLabel(${Number(order.id)})">Verzendlabel afdrukken</button><button class="btn btn-dark" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
     </div>`;
-    const useInlinePhoneDetails=currentPage==="all-orders"&&unifiedOrdersActiveKey==="phone-orders";
+    const useInlinePhoneDetails=currentPage==="all-orders"&&unifiedOrdersActiveKey==="phone-orders"&&window.matchMedia("(min-width: 1101px)").matches;
+    const useMobilePhoneDetail=currentPage==="all-orders"&&unifiedOrdersActiveKey==="phone-orders"&&!useInlinePhoneDetails;
     const detailHost=document.getElementById("phoneOrderDetailHost");
     if(useInlinePhoneDetails&&detailHost){
       detailHost.replaceChildren(modal);
@@ -7569,6 +7710,7 @@ async function showWebshopOrderDetails(id){
         row.classList.toggle("is-selected",row.dataset.orderId===String(order.id));
       });
     }else{
+      if(useMobilePhoneDetail)modal.classList.add("ht-phone-mobile-detail");
       document.body.appendChild(modal);
     }
     modal.addEventListener("click",event=>{
