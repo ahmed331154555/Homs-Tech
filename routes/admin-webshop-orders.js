@@ -53,7 +53,15 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
                   )
                   FROM webshop_order_status_history history
                   WHERE history.order_id = webshop_orders.id
-                ), '[]'::json) AS status_history
+                ), '[]'::json) AS status_history,
+                COALESCE((
+                  SELECT json_agg(
+                    json_build_object('note', notes.note, 'created_by', notes.created_by, 'created_at', notes.created_at)
+                    ORDER BY notes.created_at DESC, notes.id DESC
+                  )
+                  FROM webshop_order_notes notes
+                  WHERE notes.order_id = webshop_orders.id
+                ), '[]'::json) AS notes
          FROM webshop_orders
          ORDER BY created_at DESC`
       );
@@ -61,6 +69,28 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Webshop bestellingen konden niet worden geladen." });
+    }
+  });
+
+  app.post("/api/admin/webshop-orders/:id/notes", requirePermission("webshop_orders.update"), async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      const note = String(req.body?.note || "").trim();
+      if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig order-ID." });
+      if (!note || note.length > 2000) return res.status(400).json({ error: "Een notitie moet tussen 1 en 2000 tekens bevatten." });
+      const result = await pool.query(
+        `INSERT INTO webshop_order_notes (order_id, note, created_by)
+         SELECT id, $2, 'HOMS TECH Admin'
+         FROM webshop_orders
+         WHERE id = $1
+         RETURNING id, note, created_by, created_at`,
+        [id, note]
+      );
+      if (!result.rows.length) return res.status(404).json({ error: "Bestelling niet gevonden." });
+      res.status(201).json({ success: true, note: result.rows[0] });
+    } catch (error) {
+      console.error("Save webshop order note error:", error);
+      res.status(500).json({ error: "Notitie kon niet worden opgeslagen." });
     }
   });
 
@@ -75,7 +105,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       }
       const result = await pool.query(
         `WITH previous AS (
-           SELECT status FROM webshop_orders WHERE id = $2
+           SELECT status FROM webshop_orders WHERE id = $2 FOR UPDATE
          ),
          updated AS (
            UPDATE webshop_orders
