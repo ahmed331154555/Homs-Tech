@@ -31,7 +31,14 @@ function createResponse() {
 }
 
 test("admin webshop order list includes inventory processing diagnostics", async () => {
-  const expectedOrders = [{ id: 12, name: "Customer", total: "129.00", inventory_error: "Missing variant" }];
+  const expectedOrders = [{
+    id: 12,
+    name: "Customer",
+    total: "129.00",
+    inventory_error: "Missing variant",
+    status_history: [{ status: "In behandeling", created_at: "2026-11-07T12:00:00Z" }],
+    notes: [{ note: "Klant terugbellen", created_by: "HOMS TECH Admin" }]
+  }];
   let selectSql = "";
   const routes = createHarness({ async query(sql) { selectSql = sql; return { rows: expectedOrders }; } });
   const response = createResponse();
