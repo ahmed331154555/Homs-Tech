@@ -1751,7 +1751,7 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
 </style>
 
   <script src="assets/homs-analytics-consent.js" defer></script>
-</head>
+<style id="ht-tradein-mode-style">.ht-tradein-mode{padding:12px 0;background:#eff6ff;border-bottom:1px solid #bfdbfe}.ht-tradein-mode[hidden]{display:none}.ht-tradein-mode .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px}.ht-tradein-mode strong{color:#123d68;font-size:14px}.ht-tradein-mode p{margin:3px 0 0;color:#45627e;font-size:12px}.ht-tradein-mode a{flex:none;padding:10px 14px;border-radius:9px;background:#2563eb;color:#fff;font-size:12px;font-weight:800}@media(max-width:600px){.ht-tradein-mode .wrap{align-items:flex-start;flex-direction:column}.ht-tradein-mode a{width:100%;text-align:center}}</style>\n</head>
 <body>
 
 <div class="topbar"><div class="wrap"><div class="top-info"><span>1 jaar garantie</span><span>Snel geleverd</span><span>Betrouwbare service</span><span>Betaalbare prijzen</span></div></div></div>
@@ -1767,6 +1767,7 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
   <a class="active" href="uw-toestel-verkopen.html">Verkopen</a><a href="about.html">Over ons</a>
 </div></nav>
 
+<section id="htTradeInModeNotice" class="ht-tradein-mode" hidden><div class="wrap"><div><strong>♻ Inruilen bij aankoop</strong><p>We verrekenen de geschatte waarde van uw oude iPhone met de nieuwe telefoon die u bij HOMS TECH kiest.</p></div><a href="cart.html">Bekijk winkelwagen</a></div></section>
 <section class="hero">
   <div class="wrap">
     <div class="sell-page-intro">
@@ -2487,21 +2488,28 @@ $('finish').onclick=async()=>{
       battery:firstAnswerByLabel(['batterij'])||'',screen:firstAnswerByLabel(['scherm'])||'',
       offeredPrice:Number(offer.toFixed(2)),iban:$('cIban').value.trim(),paymentMethod:$('cMethod').value,
       answers,deviceType:selectedModel.deviceType||selectedModel.typeName||'',
-      tradeIn:new URLSearchParams(location.search).get('tradeIn')==='1'
+      tradeIn:tradeInMode
     };
     const r=await fetch('/api/buyback/orders',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(payload)});
     const j=await r.json().catch(()=>({}));if(!r.ok||(!j.ok&&!j.success))throw new Error(j.error||'Kon de aanvraag niet verzenden.');
     if(payload.tradeIn){
       if(!/^[a-f0-9]{64}$/.test(String(j.tradeInToken||'')))throw new Error('De inruilcode kon niet veilig worden aangemaakt.');
       localStorage.setItem('homsTechTradeInToken',j.tradeInToken);
-      localStorage.setItem('homsTechTradeInCredit',String(Number(j.tradeInCredit||offer).toFixed(2)));
+      localStorage.setItem('homsTechTradeInCredit',String(Number(j.tradeInCredit??offer).toFixed(2)));
       localStorage.setItem('homsTechTradeInDevice',String(payload.device||'iPhone'));
-      location.assign('cart.html?tradeIn=applied');
+      sessionStorage.removeItem('homsTechTradeInMode');
+      location.replace('cart.html?tradeIn=applied');
       return;
     }
     go(4);
   }catch(e){console.error(e);alert(e.message||'Er ging iets mis bij het verzenden.')}finally{btn.disabled=false;btn.textContent=old}
 };
+const tradeInMode=new URLSearchParams(location.search).get('tradeIn')==='1'||sessionStorage.getItem('homsTechTradeInMode')==='1';
+if(tradeInMode){
+  sessionStorage.setItem('homsTechTradeInMode','1');
+  const notice=document.getElementById('htTradeInModeNotice');
+  if(notice)notice.hidden=false;
+}
 $('deviceSearch').oninput=()=>{window._modelLimit=12;categories()};
 $('familyBack').onclick=()=>{selectedFamily='iPhone';window._modelLimit=12;$('deviceSearch').value='';categories()};
 $('loadMoreModels').onclick=()=>{window._modelLimit=(window._modelLimit||12)+12;renderFamilyModels()};
