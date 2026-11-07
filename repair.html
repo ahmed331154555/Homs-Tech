@@ -813,7 +813,7 @@
       if(!freshData || typeof freshData !== "object") throw new Error("Invalid repair page data");
       siteData = freshData;
 
-      const whatsappNumber = String(siteData.whatsapp || "").replace(/\\D/g, "");
+      const whatsappNumber = String(siteData.whatsapp || "").replace(/\D/g, "");
       const whatsappButton = document.getElementById("repairWhatsAppButton");
       if (whatsappButton) {
         if (whatsappNumber.length >= 8) {
