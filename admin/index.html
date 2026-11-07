@@ -6512,8 +6512,9 @@ async function updateWebshopOrderStatus(id,statusValue,sourceSelect){
       select.classList.add("is-saved");
       setTimeout(()=>select.classList.remove("is-saved"),900);
     }
-    await loadWebshopOrders();
-    if(document.getElementById("orderDetailsModal")&&document.querySelector("#page-phone-orders .ht-phone-orders-workspace.has-selection")){
+    const phoneDetailIsOpen=!!(document.getElementById("orderDetailsModal")&&document.querySelector("#page-phone-orders .ht-phone-orders-workspace.has-selection"));
+    if(phoneDetailIsOpen){
+      await loadWebshopOrders();
       await showWebshopOrderDetails(id);
     }
     setStatus("✓ Webshop order #"+id+" automatisch opgeslagen","success");
