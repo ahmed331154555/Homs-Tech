@@ -53,6 +53,7 @@ async function ensureBuybackOrdersTable(pool) {
     WHERE trade_in_linked_order_id IS NOT NULL
   `);
 
+
 }
 
 module.exports = { ensureBuybackOrdersTable };
