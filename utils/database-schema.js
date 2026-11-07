@@ -200,6 +200,16 @@ async function initializeDatabaseSchema(pool) {
       CREATE INDEX IF NOT EXISTS webshop_order_status_history_order_idx
         ON webshop_order_status_history(order_id, created_at ASC);
 
+      CREATE TABLE IF NOT EXISTS webshop_order_notes (
+        id BIGSERIAL PRIMARY KEY,
+        order_id INTEGER NOT NULL REFERENCES webshop_orders(id) ON DELETE CASCADE,
+        note TEXT NOT NULL CHECK (char_length(note) BETWEEN 1 AND 2000),
+        created_by TEXT NOT NULL DEFAULT 'HOMS TECH Admin',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS webshop_order_notes_order_idx
+        ON webshop_order_notes(order_id, created_at DESC);
+
       CREATE TABLE IF NOT EXISTS order_settings (
         id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
         data JSONB NOT NULL DEFAULT '{"postnlEnabled":false,"dhlEnabled":false}'::jsonb,
