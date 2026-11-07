@@ -1877,11 +1877,130 @@ body.phone-orders-page-active #page-all-orders{padding-bottom:78px}
 }
 
 </style>
+<style id="homs-phone-orders-premium-v1">
+/* Dedicated phone-sales workspace — shared HOMS TECH navy, white and blue palette. */
+.phone-orders-heading{margin-bottom:16px}
+.phone-order-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 18px}
+.phone-order-summary .order-stat{min-height:82px;border:1px solid #e2e8f0;border-radius:14px;background:#fff;box-shadow:0 4px 14px rgba(15,23,42,.05);padding:14px 16px}
+.phone-order-summary .order-stat b{font-size:25px;color:#101d32}
+.phone-orders-toolbar{display:grid;grid-template-columns:minmax(220px,1.6fr) minmax(150px,1fr) minmax(150px,1fr) auto;gap:12px;align-items:end;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:12px}
+.phone-orders-toolbar label{display:flex;flex-direction:column;gap:6px;min-width:0}
+.phone-orders-toolbar label>span{font-size:11px;font-weight:800;color:#64748b}
+.phone-orders-toolbar input,.phone-orders-toolbar select{width:100%;min-width:0;min-height:42px;border:1px solid #dbe3ed;border-radius:9px;background:#fff;padding:9px 11px;color:#172033}
+.phone-orders-list{display:grid;gap:10px}
+.phone-order-row{padding:0!important;overflow:hidden;border:1px solid #dfe7f1;border-radius:14px;background:#fff;box-shadow:0 3px 12px rgba(15,23,42,.045);transition:border-color .16s,box-shadow .16s}
+.phone-order-row:hover{border-color:#93b4e8;box-shadow:0 7px 20px rgba(15,23,42,.08)}
+.phone-order-main{display:grid;grid-template-columns:76px minmax(0,1fr) minmax(120px,auto);gap:14px;align-items:center;padding:14px 16px}
+.phone-order-product{width:76px;height:76px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:#f1f5f9;border:1px solid #e7edf5;overflow:hidden}
+.phone-order-product-image{width:100%;height:100%;object-fit:contain;padding:5px}
+.phone-order-product-placeholder{font-size:28px;color:#64748b}
+.phone-order-info{min-width:0;display:grid;gap:5px}
+.phone-order-title-line{display:flex;align-items:center;gap:9px;min-width:0;flex-wrap:wrap}
+.phone-order-title-line .webshop-order-title-link{font-size:15px;color:#10213a}
+.phone-order-number{font-size:11px;font-weight:800;color:#1d4ed8;background:#eff6ff;padding:4px 7px;border-radius:6px}
+.phone-order-item-meta{font-size:12px;color:#64748b;overflow-wrap:anywhere}
+.phone-order-customer{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;color:#475569}
+.phone-order-customer strong{color:#172033}
+.phone-order-price{text-align:right;display:grid;gap:4px}
+.phone-order-price strong{font-size:20px;color:#15803d;white-space:nowrap}
+.phone-order-price small{font-size:11px;color:#64748b}
+.phone-order-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 16px;background:#f8fafc;border-top:1px solid #edf1f6}
+.phone-order-state{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.phone-order-state time{font-size:11px;color:#64748b}
+.phone-order-row .webshop-status-pill.is-cancelled{background:#fee2e2;color:#991b1b}
+.phone-order-row .webshop-status-pill.is-complete{background:#dcfce7;color:#166534}
+.phone-order-row .webshop-payment-pill.is-failed{background:#fee2e2;color:#991b1b}
+.phone-order-row .webshop-list-actions{gap:8px}
+.phone-order-row .webshop-list-actions .order-status-select{min-height:36px;max-width:155px}
+.phone-order-row .webshop-list-actions .btn{min-height:36px}
+@media(max-width:900px){.phone-orders-toolbar{grid-template-columns:1fr 1fr}.phone-orders-toolbar .phone-orders-search{grid-column:1/-1}.phone-order-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.phone-order-main{grid-template-columns:58px minmax(0,1fr);gap:10px;padding:12px}.phone-order-product{width:58px;height:64px}.phone-order-price{grid-column:2;text-align:left;display:flex;align-items:baseline;gap:8px}.phone-order-price strong{font-size:18px}.phone-order-footer{padding:10px 12px}.phone-order-footer .webshop-list-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.phone-order-row .webshop-list-actions .order-status-select{max-width:none;width:100%;grid-column:1/-1}.phone-order-row .webshop-list-actions .btn{width:100%}.phone-orders-toolbar{grid-template-columns:1fr}.phone-orders-toolbar .phone-orders-search{grid-column:auto}}
+</style>
+<style id="homs-phone-order-address-overflow-fix">
+/* Keep the complete shipping address visible at every viewport size. */
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-grid,
+#phoneOrderDetailHost .ht-phone-detail-grid,
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-card,
+#phoneOrderDetailHost .ht-phone-detail-card,
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-card,
+#phoneOrderDetailHost .ht-phone-address-card {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-card,
+#phoneOrderDetailHost .ht-phone-address-card {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 12px !important;
+  overflow: visible !important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-field,
+#phoneOrderDetailHost .ht-phone-address-field {
+  display: grid !important;
+  grid-template-columns: minmax(105px, 0.8fr) minmax(0, 1.2fr) !important;
+  align-items: baseline !important;
+  column-gap: 12px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  padding: 9px 2px !important;
+  border-bottom: 1px solid #e8edf4 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-field-label,
+#phoneOrderDetailHost .ht-phone-address-field-label {
+  display: block !important;
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  color: #64748b !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
+  line-height: 1.5 !important;
+  white-space: nowrap !important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-field-value,
+#phoneOrderDetailHost .ht-phone-address-field-value {
+  display: block !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  color: #172b40 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.55 !important;
+  text-align: left !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-recipient .ht-phone-address-field,
+#phoneOrderDetailHost .ht-phone-address-recipient .ht-phone-address-field {
+  display: grid !important;
+  grid-template-columns: minmax(105px, 0.8fr) minmax(0, 1.2fr) !important;
+  flex: 1 1 auto !important;
+  border: 0 !important;
+  padding: 0 !important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-map-link,
+#phoneOrderDetailHost .ht-phone-map-link {
+  align-self: flex-start !important;
+  flex: 0 0 auto !important;
+  margin-top: 8px !important;
+}
+</style>
 <style id="ht-phone-order-detail-final">
 /* HOMS TECH phone-order detail: one compact, consistent layout. */
 #orderDetailsModal.phone-order-detail-overlay{
   padding:14px!important;
   align-items:flex-start!important;
+  justify-content:center!important;
 }
 #orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel{
   box-sizing:border-box!important;
@@ -8921,137 +9040,12 @@ if ("serviceWorker" in navigator) {
 }
 </script>
 
-<style id="homs-phone-orders-premium-v1">
-/* Dedicated phone-sales workspace — shared HOMS TECH navy, white and blue palette. */
-.phone-orders-heading{margin-bottom:16px}
-.phone-order-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 18px}
-.phone-order-summary .order-stat{min-height:82px;border:1px solid #e2e8f0;border-radius:14px;background:#fff;box-shadow:0 4px 14px rgba(15,23,42,.05);padding:14px 16px}
-.phone-order-summary .order-stat b{font-size:25px;color:#101d32}
-.phone-orders-toolbar{display:grid;grid-template-columns:minmax(220px,1.6fr) minmax(150px,1fr) minmax(150px,1fr) auto;gap:12px;align-items:end;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:12px}
-.phone-orders-toolbar label{display:flex;flex-direction:column;gap:6px;min-width:0}
-.phone-orders-toolbar label>span{font-size:11px;font-weight:800;color:#64748b}
-.phone-orders-toolbar input,.phone-orders-toolbar select{width:100%;min-width:0;min-height:42px;border:1px solid #dbe3ed;border-radius:9px;background:#fff;padding:9px 11px;color:#172033}
-.phone-orders-list{display:grid;gap:10px}
-.phone-order-row{padding:0!important;overflow:hidden;border:1px solid #dfe7f1;border-radius:14px;background:#fff;box-shadow:0 3px 12px rgba(15,23,42,.045);transition:border-color .16s,box-shadow .16s}
-.phone-order-row:hover{border-color:#93b4e8;box-shadow:0 7px 20px rgba(15,23,42,.08)}
-.phone-order-main{display:grid;grid-template-columns:76px minmax(0,1fr) minmax(120px,auto);gap:14px;align-items:center;padding:14px 16px}
-.phone-order-product{width:76px;height:76px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:#f1f5f9;border:1px solid #e7edf5;overflow:hidden}
-.phone-order-product-image{width:100%;height:100%;object-fit:contain;padding:5px}
-.phone-order-product-placeholder{font-size:28px;color:#64748b}
-.phone-order-info{min-width:0;display:grid;gap:5px}
-.phone-order-title-line{display:flex;align-items:center;gap:9px;min-width:0;flex-wrap:wrap}
-.phone-order-title-line .webshop-order-title-link{font-size:15px;color:#10213a}
-.phone-order-number{font-size:11px;font-weight:800;color:#1d4ed8;background:#eff6ff;padding:4px 7px;border-radius:6px}
-.phone-order-item-meta{font-size:12px;color:#64748b;overflow-wrap:anywhere}
-.phone-order-customer{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;color:#475569}
-.phone-order-customer strong{color:#172033}
-.phone-order-price{text-align:right;display:grid;gap:4px}
-.phone-order-price strong{font-size:20px;color:#15803d;white-space:nowrap}
-.phone-order-price small{font-size:11px;color:#64748b}
-.phone-order-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 16px;background:#f8fafc;border-top:1px solid #edf1f6}
-.phone-order-state{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.phone-order-state time{font-size:11px;color:#64748b}
-.phone-order-row .webshop-status-pill.is-cancelled{background:#fee2e2;color:#991b1b}
-.phone-order-row .webshop-status-pill.is-complete{background:#dcfce7;color:#166534}
-.phone-order-row .webshop-payment-pill.is-failed{background:#fee2e2;color:#991b1b}
-.phone-order-row .webshop-list-actions{gap:8px}
-.phone-order-row .webshop-list-actions .order-status-select{min-height:36px;max-width:155px}
-.phone-order-row .webshop-list-actions .btn{min-height:36px}
-@media(max-width:900px){.phone-orders-toolbar{grid-template-columns:1fr 1fr}.phone-orders-toolbar .phone-orders-search{grid-column:1/-1}.phone-order-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.phone-order-main{grid-template-columns:58px minmax(0,1fr);gap:10px;padding:12px}.phone-order-product{width:58px;height:64px}.phone-order-price{grid-column:2;text-align:left;display:flex;align-items:baseline;gap:8px}.phone-order-price strong{font-size:18px}.phone-order-footer{padding:10px 12px}.phone-order-footer .webshop-list-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.phone-order-row .webshop-list-actions .order-status-select{max-width:none;width:100%;grid-column:1/-1}.phone-order-row .webshop-list-actions .btn{width:100%}.phone-orders-toolbar{grid-template-columns:1fr}.phone-orders-toolbar .phone-orders-search{grid-column:auto}}
-</style>
-
-<style id="homs-phone-order-detail-drawer-v1">
-/* Phone purchase details open as a focused right-side drawer on desktop. */
-.phone-order-detail-overlay{justify-content:flex-end;align-items:stretch;padding:0}
-.phone-order-detail-panel{width:min(680px,94vw);height:100%;max-height:100%;margin:0;border-radius:18px 0 0 18px;padding:20px;overflow-y:auto;overscroll-behavior:contain}
-.phone-order-detail-panel .ht-order-detail-top{position:sticky;top:-20px;z-index:3;background:#f4f6f8;padding:16px 2px 14px;margin:-20px 0 12px;border-bottom:1px solid #e2e8f0}
-.phone-order-detail-panel .ht-order-total-banner{background:#10233d}
-.phone-order-detail-panel .ht-order-total-banner strong{color:#fff}
-.phone-order-detail-panel .ht-order-section-icon{background:#eaf1fc;color:#1d4ed8}
-@media(max-width:700px){.phone-order-detail-overlay{padding:0}.phone-order-detail-panel{width:100%;border-radius:0;padding:14px}.phone-order-detail-panel .ht-order-detail-top{top:-14px;margin:-14px 0 12px;padding-top:12px}.phone-order-detail-panel .ht-order-status-grid,.phone-order-detail-panel .ht-order-customer-grid{grid-template-columns:1fr}}
-</style>
 
 
-<style id="homs-phone-order-address-overflow-fix">
-/* Keep the complete shipping address visible at every viewport size. */
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-grid,
-#phoneOrderDetailHost .ht-phone-detail-grid,
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-card,
-#phoneOrderDetailHost .ht-phone-detail-card,
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-card,
-#phoneOrderDetailHost .ht-phone-address-card {
-  min-width: 0 !important;
-  min-height: 0 !important;
-  height: auto !important;
-}
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-card,
-#phoneOrderDetailHost .ht-phone-address-card {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-  gap: 12px !important;
-  overflow: visible !important;
-}
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-field,
-#phoneOrderDetailHost .ht-phone-address-field {
-  display: grid !important;
-  grid-template-columns: minmax(105px, 0.8fr) minmax(0, 1.2fr) !important;
-  align-items: baseline !important;
-  column-gap: 12px !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  height: auto !important;
-  padding: 9px 2px !important;
-  border-bottom: 1px solid #e8edf4 !important;
-  white-space: normal !important;
-  overflow: visible !important;
-}
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-field-label,
-#phoneOrderDetailHost .ht-phone-address-field-label {
-  display: block !important;
-  width: auto !important;
-  max-width: 100% !important;
-  height: auto !important;
-  color: #64748b !important;
-  font-size: 12px !important;
-  font-weight: 750 !important;
-  line-height: 1.5 !important;
-  white-space: nowrap !important;
-}
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-field-value,
-#phoneOrderDetailHost .ht-phone-address-field-value {
-  display: block !important;
-  width: auto !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  height: auto !important;
-  color: #172b40 !important;
-  font-size: 14px !important;
-  font-weight: 700 !important;
-  line-height: 1.55 !important;
-  text-align: left !important;
-  white-space: normal !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
-  overflow-wrap: anywhere !important;
-  word-break: normal !important;
-}
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-recipient .ht-phone-address-field,
-#phoneOrderDetailHost .ht-phone-address-recipient .ht-phone-address-field {
-  display: grid !important;
-  grid-template-columns: minmax(105px, 0.8fr) minmax(0, 1.2fr) !important;
-  flex: 1 1 auto !important;
-  border: 0 !important;
-  padding: 0 !important;
-}
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-map-link,
-#phoneOrderDetailHost .ht-phone-map-link {
-  align-self: flex-start !important;
-  flex: 0 0 auto !important;
-  margin-top: 8px !important;
-}
-</style>
+
+
+
+
 
 </body>
 </html>
