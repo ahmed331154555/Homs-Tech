@@ -779,7 +779,7 @@ return `
 ${
 image
 ?
-`<img src="${escapeHtml(image)}" alt="${escapeHtml(device.name)}">`
+`<img src="${escapeHtml(image)}" alt="${escapeHtml(device.name)}" loading="lazy" decoding="async">`
 :
 `<div class="device-placeholder">📱</div>`
 }
