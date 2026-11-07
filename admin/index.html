@@ -1877,6 +1877,265 @@ body.phone-orders-page-active #page-all-orders{padding-bottom:78px}
 }
 
 </style>
+<style id="ht-phone-order-detail-final">
+/* HOMS TECH phone-order detail: one compact, consistent layout. */
+#orderDetailsModal.phone-order-detail-overlay{
+  padding:14px!important;
+  align-items:flex-start!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel{
+  box-sizing:border-box!important;
+  width:min(1040px,100%)!important;
+  max-width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:calc(100vh - 28px)!important;
+  margin:0 auto!important;
+  padding:12px!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  border-radius:16px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-order-detail-top{
+  margin:0 0 9px!important;
+  padding:14px 16px!important;
+  border-radius:12px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-grid{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr)!important;
+  grid-auto-rows:min-content!important;
+  align-items:start!important;
+  align-content:start!important;
+  gap:8px!important;
+  margin:0 0 8px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-grid.equal{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-card{
+  align-self:start!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0!important;
+  overflow:hidden!important;
+  border:1px solid #dfe7f1!important;
+  border-radius:11px!important;
+  background:#fff!important;
+  box-shadow:0 1px 4px rgba(15,35,61,.045)!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-card-head{
+  min-height:0!important;
+  padding:8px 11px!important;
+  gap:8px!important;
+  font-size:12px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-card-head .icon{
+  width:23px!important;
+  height:23px!important;
+  flex:0 0 23px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-card-body{
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  padding:9px 11px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-info-list{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  align-content:start!important;
+  gap:5px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-info-line{
+  display:grid!important;
+  grid-template-columns:minmax(90px,.8fr) minmax(0,1.2fr)!important;
+  align-items:start!important;
+  gap:8px!important;
+  padding:2px 0!important;
+  line-height:1.35!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-info-line>strong{
+  min-width:0!important;
+  text-align:right!important;
+  overflow-wrap:anywhere!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-actions:empty,
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-muted:empty{
+  display:none!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-contact-link{
+  color:#172b40!important;
+  font-weight:750!important;
+  text-decoration:none!important;
+  overflow-wrap:anywhere!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-contact-link:hover{
+  color:#2563eb!important;
+  text-decoration:underline!important;
+}
+/* Product hero: larger clear photo, tidy thumbnails, and readable product details. */
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-product-feature{
+  display:grid!important;
+  grid-template-columns:minmax(125px,155px) minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:14px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-product-visual{
+  display:flex!important;
+  min-width:0!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:7px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-product-main-image{
+  display:block!important;
+  order:1!important;
+  width:100%!important;
+  height:155px!important;
+  min-width:0!important;
+  padding:8px!important;
+  object-fit:contain!important;
+  border:1px solid #e8edf4!important;
+  border-radius:10px!important;
+  background:#f8fafc!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-product-thumbs{
+  display:flex!important;
+  order:2!important;
+  flex-wrap:wrap!important;
+  align-content:start!important;
+  gap:5px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-product-thumbs button{
+  width:34px!important;
+  height:34px!important;
+  padding:2px!important;
+  border:1px solid #dfe7f1!important;
+  border-radius:6px!important;
+  background:#fff!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-product-thumbs img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-product-placeholder{
+  display:grid!important;
+  order:1!important;
+  min-height:155px!important;
+  place-items:center!important;
+  padding:10px!important;
+  border:1px dashed #d5deea!important;
+  border-radius:10px!important;
+  background:#f8fafc!important;
+  color:#8291a5!important;
+  text-align:center!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-product-title{
+  margin:0!important;
+  color:#10233d!important;
+  font-size:21px!important;
+  font-weight:850!important;
+  line-height:1.2!important;
+  overflow-wrap:anywhere!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-product-tags{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:5px!important;
+  margin:8px 0!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-product-tags span{
+  padding:4px 7px!important;
+  border:1px solid #e4eaf2!important;
+  border-radius:6px!important;
+  background:#f5f7fa!important;
+  font-size:11px!important;
+  line-height:1.25!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-product-qty{
+  margin:5px 0!important;
+  color:#64748b!important;
+  font-size:12px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-product-price{
+  display:block!important;
+  margin-top:8px!important;
+  color:#16835d!important;
+  font-size:23px!important;
+  font-weight:900!important;
+  line-height:1.15!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-payment-save{
+  align-self:flex-start!important;
+  min-height:34px!important;
+  margin-top:4px!important;
+  padding:6px 10px!important;
+  font-size:12px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-lines{
+  display:grid!important;
+  gap:6px!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-field{
+  min-width:0!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-address-field-value{
+  overflow-wrap:anywhere!important;
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-map-link{
+  margin-top:7px!important;
+}
+@media(max-width:760px){
+  #orderDetailsModal.phone-order-detail-overlay{
+    padding:0!important;
+  }
+  #orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel{
+    width:100%!important;
+    max-width:100%!important;
+    max-height:100dvh!important;
+    min-height:100dvh!important;
+    padding:10px!important;
+    border-radius:0!important;
+  }
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-grid,
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-grid.equal{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:7px!important;
+    margin-bottom:7px!important;
+  }
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-product-feature{
+    grid-template-columns:minmax(105px,125px) minmax(0,1fr)!important;
+    gap:10px!important;
+  }
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-product-main-image,
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-product-placeholder{
+    height:132px!important;
+    min-height:132px!important;
+  }
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-product-title{
+    font-size:18px!important;
+  }
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-product-price{
+    font-size:20px!important;
+  }
+}
+@media(max-width:390px){
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-product-feature{
+    grid-template-columns:100px minmax(0,1fr)!important;
+    gap:8px!important;
+  }
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-product-main-image,
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-product-placeholder{
+    height:115px!important;
+    min-height:115px!important;
+  }
+}
+</style>
 </head>
 
 <body>
@@ -8796,127 +9055,3 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
-
-<style id="ht-phone-customer-contact-links">
-.phone-order-detail-overlay .ht-phone-contact-link{color:#172b40;text-decoration:none;font-weight:750;overflow-wrap:anywhere}
-.phone-order-detail-overlay .ht-phone-contact-link:hover{text-decoration:underline;color:#2563eb}
-.phone-order-detail-overlay .ht-phone-detail-actions:empty{display:none!important}
-</style>
-
-<style id="ht-phone-order-compact-cards">
-/* Keep phone-order cards content-height; do not stretch them to match taller neighbors. */
-.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid,
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-grid{
-  align-items:start!important;
-  align-content:start!important;
-  grid-auto-rows:max-content!important;
-}
-.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-card,
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-card{
-  align-self:start!important;
-  height:auto!important;
-  min-height:0!important;
-}
-.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-card-body{
-  min-height:0!important;
-}
-.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-info-list{
-  align-content:start!important;
-}
-</style>
-
-<style id="ht-phone-order-tight-layout">
-/* Compact desktop order details: modal grows with its content instead of filling the viewport. */
-.phone-order-detail-overlay .phone-order-detail-panel{
-  height:auto!important;
-  max-height:92vh!important;
-  min-height:0!important;
-  overflow-x:hidden!important;
-  overflow-y:auto!important;
-}
-.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid,
-.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-grid.equal,
-.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-grid,
-.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-grid.equal{
-  align-items:start!important;
-  align-content:start!important;
-  grid-auto-rows:min-content!important;
-  margin-bottom:8px!important;
-  row-gap:8px!important;
-}
-.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-card,
-.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-card{
-  align-self:start!important;
-  height:fit-content!important;
-  min-height:0!important;
-}
-.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-card-body{
-  height:auto!important;
-  min-height:0!important;
-  padding-top:10px!important;
-  padding-bottom:10px!important;
-}
-.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-info-list{
-  display:grid!important;
-  align-content:start!important;
-  gap:7px!important;
-}
-.phone-order-detail-overlay .phone-order-detail-panel .ht-phone-detail-actions{
-  margin:0!important;
-  padding-top:0!important;
-}
-@media(max-width:760px){
-  .phone-order-detail-overlay .phone-order-detail-panel{
-    height:100dvh!important;
-    max-height:100dvh!important;
-  }
-}
-</style>
-<style id="ht-phone-order-layout-clean-v1">
-/* Real admin-page styles: compact cards that only occupy their content height. */
-#orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel{
-  height:auto!important;min-height:0!important;max-height:92vh!important;
-  overflow-x:hidden!important;overflow-y:auto!important;padding:12px!important;
-}
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-grid,
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-grid.equal{
-  display:grid!important;grid-auto-rows:min-content!important;
-  align-items:start!important;align-content:start!important;
-  gap:8px!important;margin:0 0 8px!important;
-}
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-grid.equal{
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
-}
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-grid > .ht-phone-detail-card{
-  align-self:start!important;height:auto!important;min-height:0!important;
-  max-height:none!important;margin:0!important;
-}
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-card-body{
-  height:auto!important;min-height:0!important;padding:8px 10px!important;
-}
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-info-list{
-  display:flex!important;flex-direction:column!important;
-  align-items:stretch!important;justify-content:flex-start!important;gap:5px!important;
-}
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-card-head{
-  min-height:0!important;padding:8px 10px!important;
-}
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-info-line{
-  padding:2px 0!important;line-height:1.35!important;
-}
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-payment-save{
-  align-self:flex-start!important;min-height:34px!important;
-  margin-top:5px!important;padding:6px 10px!important;font-size:12px!important;
-}
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-muted:empty,
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-actions:empty{display:none!important}
-@media(max-width:760px){
-  #orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel{
-    height:100dvh!important;max-height:100dvh!important;padding:10px!important;
-  }
-  #orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-grid.equal{
-    grid-template-columns:minmax(0,1fr)!important;
-  }
-}
-</style>
-
