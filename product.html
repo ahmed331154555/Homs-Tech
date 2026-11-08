@@ -1069,7 +1069,7 @@ function renderProductBody(){
     ${specs?`<div class="meta">${specs}</div>`:""}
     ${optionsHtml}
     ${localStorage.getItem("homsTechTradeInToken")?`<section id="tradeInProductSummary" class="ht-product-tradein-summary" aria-live="polite">
-      <div class="ht-product-tradein-heading"><span class="ht-product-tradein-check">✓</span><div><strong>Je oude telefoon is gekoppeld</strong><small>Inruil bij aankoop van dit toestel</small></div><button type="button" class="ht-product-tradein-edit" onclick="openTradeInModal()">Wijzigen</button></div>
+      <div class="ht-product-tradein-heading"><span class="ht-product-tradein-check">✓</span><div><strong>Je oude telefoon is aangemeld</strong><small>Inruil bij aankoop van dit toestel</small></div><button type="button" class="ht-product-tradein-edit" onclick="openTradeInModal()">Wijzigen</button></div>
       <div class="ht-product-tradein-device"><div><strong>${esc(localStorage.getItem("homsTechTradeInDevice")||"Oude telefoon")}</strong><small>Geschatte inruilwaarde</small></div><strong class="ht-product-tradein-value">${money(Number(localStorage.getItem("homsTechTradeInCredit")||0))}</strong></div>
       <p>Je betaalt nu de volledige prijs van je nieuwe telefoon. Na ontvangst en controle maken we de definitieve inruilwaarde aan je over.</p>
     </section>`: ""}
