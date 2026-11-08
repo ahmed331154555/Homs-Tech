@@ -52,6 +52,15 @@ async function ensureBuybackOrdersTable(pool) {
     ON buyback_orders(trade_in_linked_order_id)
     WHERE trade_in_linked_order_id IS NOT NULL
   `);
+  // Remove abandoned, unlinked trade-in quotes after their 24-hour checkout window.
+  await pool.query(`
+    DELETE FROM buyback_orders
+    WHERE trade_in = TRUE
+      AND status = 'Wacht op aankoop'
+      AND trade_in_linked_order_id IS NULL
+      AND trade_in_quote_expires_at IS NOT NULL
+      AND trade_in_quote_expires_at <= NOW()
+  `);
 
 
 }
