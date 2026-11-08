@@ -263,11 +263,11 @@ function registerAdminBuybackOrderRoutes(app, {
   // Upload a manually purchased PostNL PDF label. No carrier API or filesystem storage is used.
   app.put("/api/admin/buyback-orders/:id/shipping-label", requirePermission("buyback_orders.update"), async (req, res) => {
     const id = Number(req.params.id);
-    const fileName = String(req.body?.fileName || "").replace(/[\\/\\\\]/g, "").replace(/[\\u0000-\\u001f]/g, "").trim().slice(0, 180);
+    const fileName = String(req.body?.fileName || "").replace(/[\/\\]/g, "").replace(/[\u0000-\u001f]/g, "").trim().slice(0, 180);
     const trackingNumber = String(req.body?.trackingNumber || "").trim().slice(0, 80);
-    const encoded = String(req.body?.fileData || "").replace(/^data:application\\/pdf;base64,/i, "").trim();
+    const encoded = String(req.body?.fileData || "").replace(/^data:application\/pdf;base64,/i, "").trim();
     if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig aanvraagnummer." });
-    if (!fileName || !/\\.pdf$/i.test(fileName)) return res.status(400).json({ error: "Upload een geldig PDF-verzendlabel." });
+    if (!fileName || !/\.pdf$/i.test(fileName)) return res.status(400).json({ error: "Upload een geldig PDF-verzendlabel." });
     if (!encoded || encoded.length > 11_184_812 || !/^[A-Za-z0-9+/]+={0,2}$/.test(encoded)) {
       return res.status(400).json({ error: "Het PDF-bestand ontbreekt of is te groot (maximaal 8 MB)." });
     }
