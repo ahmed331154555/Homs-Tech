@@ -1,6 +1,17 @@
 "use strict";
 
+const { sendPaidWebshopOrderNotifications } = require("../utils/webshop-paid-notifications");
+
 function registerPaymentRoutes(app, { pool, crypto, requirePermission, getMollieApiKey, mollieRequest, getPayPalSettings, getPayPalAccessToken, cancelPaypalOrder, resolveMolliePaymentStatus, molliePaymentMatchesOrder, encryptPayPalSecret, getPayPalBaseUrl, deductPaidOrderInventory, fetchImpl, getEnv }) {
+  async function notifyPaidTradeInOrder(orderId) {
+    try {
+      await sendPaidWebshopOrderNotifications({ pool, orderId, fetchImpl, getEnv, escapeHtml });
+    } catch (error) {
+      // Payment is already confirmed. Email failures must not reverse or hide the paid order.
+      console.error("Paid trade-in notification processing failed:", orderId, error.message || error);
+    }
+  }
+
 // ---------------- MOLLIE PAYMENTS ----------------
 app.get("/api/mollie/config", async (req, res) => {
   res.set("Cache-Control", "no-store");
@@ -33,6 +44,7 @@ app.post("/api/mollie/create-payment", async (req, res) => {
           if (inventoryResult?.error) {
             return res.status(409).json({ error: "De betaling is bevestigd, maar de voorraad kon niet worden bijgewerkt. HOMS TECH controleert dit handmatig." });
           }
+          await notifyPaidTradeInOrder(localOrderId);
           return res.status(409).json({ error: "Deze bestelling is al betaald." });
         }
         if (molliePaymentMatchesOrder(existing, order) &&
@@ -97,6 +109,7 @@ app.post("/api/mollie/webhook", async (req, res) => {
         console.error("Mollie webhook inventory processing failed; provider retry requested:", { orderId, paymentId });
         return res.sendStatus(500);
       }
+      await notifyPaidTradeInOrder(orderId);
     }
     res.sendStatus(200);
   } catch (error) {
@@ -114,7 +127,10 @@ app.post("/api/mollie/verify-payment", async (req, res) => {
     const local = await pool.query("SELECT id, total, payment_status, payment_method, mollie_payment_id FROM webshop_orders WHERE id=$1 AND checkout_token=$2", [localOrderId, checkoutTokenHash]);
     if (!local.rows.length) return res.status(404).json({ error: "Webshop bestelling niet gevonden." });
     const order = local.rows[0];
-    if (order.payment_status === "Paid") return res.json({ success: true, paid: true, status: "Paid", orderId: localOrderId });
+    if (order.payment_status === "Paid") {
+      await notifyPaidTradeInOrder(localOrderId);
+      return res.json({ success: true, paid: true, status: "Paid", orderId: localOrderId });
+    }
     if (!order.mollie_payment_id || order.payment_method !== "Mollie") return res.status(409).json({ error: "Er is geen Mollie-betaling gekoppeld aan deze bestelling." });
     const payment = await mollieRequest("/payments/" + encodeURIComponent(order.mollie_payment_id));
     if (!molliePaymentMatchesOrder(payment, order) || payment.id !== order.mollie_payment_id) return res.status(409).json({ error: "De betaling komt niet overeen met deze bestelling." });
@@ -125,6 +141,7 @@ app.post("/api/mollie/verify-payment", async (req, res) => {
       if (inventoryResult?.error) {
         return res.status(409).json({ error: "De betaling is bevestigd, maar de voorraad kon niet worden bijgewerkt. HOMS TECH controleert dit handmatig.", paid: true, orderId: localOrderId });
       }
+      await notifyPaidTradeInOrder(localOrderId);
     }
     const paid = String(payment.status || "").toLowerCase() === "paid";
     res.json({ success: true, paid, status, orderId: localOrderId });
@@ -259,6 +276,7 @@ app.post("/api/paypal/capture-order", async (req, res) => {
     }
 
     if (order.payment_status === "Paid") {
+      await notifyPaidTradeInOrder(localOrderId);
       return res.json({ success: true, paid: true, orderId: localOrderId });
     }
 
@@ -328,6 +346,7 @@ app.post("/api/paypal/capture-order", async (req, res) => {
     if (inventoryResult?.error) {
       return res.status(409).json({ error: "PayPal heeft de betaling bevestigd, maar de voorraad kon niet worden bijgewerkt. HOMS TECH controleert dit handmatig.", paid: true, orderId: localOrderId });
     }
+    await notifyPaidTradeInOrder(localOrderId);
 
     res.json({
       success: true,
