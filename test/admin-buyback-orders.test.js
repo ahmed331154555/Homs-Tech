@@ -127,7 +127,7 @@ test("buyback offer is not marked as sent when email provider fails", async () =
   const response = createResponse();
   await routes.get("PUT /api/admin/buyback-orders/:id/offer")({ params: { id: "2" }, body: {} }, response);
   assert.equal(response.statusCode, 502);
-  assert.match(response.body.error, /prijsvoorstel/i);
+  assert.match(response.body.error, /E-mail kon niet worden verzonden/i);
   assert.equal(queries.length, 3);
   assert.match(queries[2].sql, /status='Aanbod klaar'/);
 });
