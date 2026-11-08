@@ -2,7 +2,7 @@
 
 const { sendPaidWebshopOrderNotifications } = require("../utils/webshop-paid-notifications");
 
-function registerPaymentRoutes(app, { pool, crypto, requirePermission, getMollieApiKey, mollieRequest, getPayPalSettings, getPayPalAccessToken, cancelPaypalOrder, resolveMolliePaymentStatus, molliePaymentMatchesOrder, encryptPayPalSecret, getPayPalBaseUrl, deductPaidOrderInventory, fetchImpl, getEnv }) {
+function registerPaymentRoutes(app, { pool, crypto, requirePermission, getMollieApiKey, mollieRequest, getPayPalSettings, getPayPalAccessToken, cancelPaypalOrder, resolveMolliePaymentStatus, molliePaymentMatchesOrder, encryptPayPalSecret, getPayPalBaseUrl, deductPaidOrderInventory, fetchImpl, getEnv, escapeHtml }) {
   async function notifyPaidTradeInOrder(orderId) {
     try {
       await sendPaidWebshopOrderNotifications({ pool, orderId, fetchImpl, getEnv, escapeHtml });
