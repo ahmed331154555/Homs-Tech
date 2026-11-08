@@ -61,6 +61,12 @@ async function ensureBuybackOrdersTable(pool) {
   await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS sale_settlement_note TEXT NOT NULL DEFAULT ''`);
   await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS sale_settled_at TIMESTAMPTZ`);
   await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS sale_payout_email_sent_at TIMESTAMPTZ`);
+  // Manual PostNL label storage (no carrier API required).
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS postnl_tracking_number TEXT NOT NULL DEFAULT ''`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS shipping_label_pdf BYTEA`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS shipping_label_filename TEXT NOT NULL DEFAULT ''`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS shipping_label_uploaded_at TIMESTAMPTZ`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS shipping_label_email_sent_at TIMESTAMPTZ`);
 
   // Remove abandoned, unlinked trade-in quotes after their 24-hour checkout window.
   await pool.query(`
