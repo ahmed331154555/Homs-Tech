@@ -42,7 +42,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       "UPDATE webshop_orders SET trade_in_status='AwaitingCustomerApproval',trade_in_snapshot=$1::jsonb WHERE id=$2",
       [JSON.stringify(snapshot),orderId]
     );
-    const baseUrl=String(env.PUBLIC_SITE_URL||env.APP_URL||"https://homs-tech.nl").trim().replace(/\\/$/,"");
+    const baseUrl=String(env.PUBLIC_SITE_URL||env.APP_URL||"https://homs-tech.nl").trim().replace(/[/]+$/,"");
     const acceptUrl=baseUrl+"/trade-in-response.html?token="+encodeURIComponent(token)+"&decision=accept";
     const rejectUrl=baseUrl+"/trade-in-response.html?token="+encodeURIComponent(token)+"&decision=reject";
     const safe=value=>escapeHtml(String(value??""));
