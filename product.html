@@ -1175,15 +1175,18 @@ load();
 </div>
 <script>
 function openTradeInPage(){
-  if(!Number.isInteger(Number(currentProductId)) || Number(currentProductId)<0){
-    alert("Productgegevens ontbreken. Vernieuw de pagina en probeer het opnieuw.");
+  const modal=document.getElementById("tradeInModal");
+  const frame=document.getElementById("tradeInModalFrame");
+  if(!modal||!frame){
+    console.error("[HOMS TECH] Trade-in modal is unavailable.");
     return;
   }
-  const returnUrl=new URL(window.location.href);
-  returnUrl.searchParams.delete("tradeIn");
-  sessionStorage.setItem("homsTechTradeInReturnTo",returnUrl.pathname+returnUrl.search+returnUrl.hash);
   sessionStorage.setItem("homsTechTradeInMode","1");
-  window.location.href="uw-toestel-verkopen.html?tradeIn=1";
+  if(frame.getAttribute("src")==="about:blank"){
+    frame.setAttribute("src","uw-toestel-verkopen.html?embed=1&tradeIn=1");
+  }
+  modal.classList.add("open");
+  document.body.style.overflow="hidden";
 }
 window.addEventListener("message",function(event){
   const frame=document.getElementById("tradeInModalFrame");
