@@ -240,6 +240,7 @@ body.embed-tradein footer,
 body.embed-tradein .homs-global-nav,
 body.embed-tradein .ht-topbar,
 body.embed-tradein .ht-header{display:none!important}
+body.embed-tradein .ht-tradein-mode a{display:none!important}
 /* Keep a small HOMS TECH logo header visible inside the trade-in embed. */
 body.embed-tradein header.head{display:block!important;min-height:58px!important;height:58px!important;background:#fff!important;border-bottom:1px solid #e2e8f0!important}
 body.embed-tradein header.head .wrap{width:100%!important;max-width:none!important;min-height:58px!important;height:58px!important;margin:0!important;padding:6px 14px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important}
@@ -1767,7 +1768,7 @@ body.embed-tradein .forzastyle-panel{margin-top:0!important}
   <a class="active" href="uw-toestel-verkopen.html">Verkopen</a><a href="about.html">Over ons</a>
 </div></nav>
 
-<section id="htTradeInModeNotice" class="ht-tradein-mode" hidden><div class="wrap"><div><strong>♻ Inruilen bij aankoop</strong><p>We verrekenen de geschatte waarde van uw oude iPhone met de nieuwe telefoon die u bij HOMS TECH kiest.</p></div><a href="cart.html">Bekijk winkelwagen</a></div></section>
+<section id="htTradeInModeNotice" class="ht-tradein-mode" hidden><div class="wrap"><div><strong>♻ Inruilen bij aankoop</strong><p>U ziet de geschatte inruilwaarde apart bij uw bestelling. De definitieve waarde bepalen we na ontvangst en inspectie van uw oude iPhone.</p></div><a href="cart.html">Bekijk winkelwagen</a></div></section>
 <section class="hero">
   <div class="wrap">
     <div class="sell-page-intro">
@@ -2521,9 +2522,9 @@ if(tradeInMode){
   }
   if(iban)iban.hidden=true;
   const methodSummary=document.getElementById('sumMethod');
-  if(methodSummary)methodSummary.textContent='Korting op nieuwe telefoon';
+  if(methodSummary)methodSummary.textContent='Inruil bij aankoop · afhandeling na inspectie';
   const priceCaption=document.querySelector('.summary-price-row span');
-  if(priceCaption)priceCaption.textContent='Inruilwaarde (korting)';
+  if(priceCaption)priceCaption.textContent='Geschatte inruilwaarde';
   const summaryTitle=document.querySelector('.buyback-order-summary h3');
   if(summaryTitle)summaryTitle.textContent='Uw inruil voor aankoop';
 }
