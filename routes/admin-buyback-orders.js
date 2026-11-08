@@ -13,7 +13,7 @@ function registerAdminBuybackOrderRoutes(app, {
       await ensureBuybackOrdersTable(pool);
       const result = await pool.query(`
         SELECT id,order_no,name,email,phone,address,device,brand,model,storage,condition,
-               face_id,battery,screen,offered_price,iban,payment_method,answers,final_offer,final_offer_sent_at,status,created_at
+               face_id,battery,screen,offered_price,iban,payment_method,answers,trade_in,trade_in_linked_order_id,final_offer,final_offer_sent_at,status,created_at
         FROM buyback_orders
         WHERE status NOT IN ('Wacht op aankoop', 'Wacht op betaling')
         ORDER BY created_at DESC
