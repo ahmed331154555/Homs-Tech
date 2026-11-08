@@ -1,5 +1,7 @@
 /* HOMS TECH homepage hero
-   Scoped component styles. Shared navigation and layout stay in their own files. */
+ * Layout is intentionally centered to match the approved reference.
+ * Keep component styles isolated from the global site stylesheet.
+ */
 :root {
   --ht-hero-navy: #061a2b;
   --ht-hero-blue: #0878f9;
@@ -12,8 +14,7 @@
   overflow: hidden;
   color: var(--ht-hero-text);
   background:
-    radial-gradient(ellipse at 78% 48%, rgba(8, 120, 249, .34), transparent 36%),
-    radial-gradient(ellipse at 53% 110%, rgba(8, 120, 249, .16), transparent 45%),
+    radial-gradient(ellipse at 50% 72%, rgba(8, 120, 249, .24), transparent 43%),
     linear-gradient(112deg, #061827 0%, #08243a 58%, #061a2b 100%);
 }
 
@@ -23,32 +24,39 @@
   inset: 0;
   content: "";
   pointer-events: none;
-  opacity: .22;
-  background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  opacity: .16;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, .035) 1px, transparent 1px);
   background-size: 48px 48px;
-  mask-image: linear-gradient(90deg, transparent, #000 65%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 50%, transparent);
 }
 
 .hero-inner {
-  min-height: 490px;
-  padding-top: 54px;
-  padding-bottom: 54px;
-  grid-template-columns: minmax(0, 1.04fr) minmax(360px, .96fr);
-  gap: clamp(24px, 4vw, 64px);
+  display: flex;
+  min-height: 0;
+  width: min(100% - 36px, 1160px);
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  padding: 62px 0 18px;
+  text-align: center;
 }
 
 .hero-copy {
   position: relative;
   z-index: 1;
-  max-width: 650px;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
 }
 
 .hero-eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  margin: 0 0 22px;
+  margin: 0 0 20px;
   padding: 8px 13px;
   border: 1px solid rgba(112, 184, 255, .28);
   border-radius: 999px;
@@ -70,13 +78,13 @@
 }
 
 .hero h1 {
-  max-width: 720px;
-  margin: 0 0 22px;
+  max-width: 1080px;
+  margin: 0 auto 20px;
   color: #f8fbff;
-  font-size: clamp(40px, 4.2vw, 62px);
+  font-size: clamp(42px, 5.1vw, 72px);
   font-weight: 850;
   letter-spacing: -.055em;
-  line-height: 1.02;
+  line-height: 1.04;
   text-wrap: balance;
 }
 
@@ -84,32 +92,32 @@
 .hero #heroBottom { color: #168cff; }
 
 .hero p {
-  max-width: 590px;
-  margin: 0;
+  max-width: 1060px;
+  margin: 0 auto;
   color: #c6d6e4;
-  font-size: clamp(15px, 1.25vw, 18px);
-  line-height: 1.75;
+  font-size: clamp(16px, 1.55vw, 21px);
+  line-height: 1.7;
 }
 
 .hero .actions {
+  display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 30px;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 28px;
 }
 
 .hero .btn {
-  min-height: 54px;
-  padding: 0 23px;
+  min-height: 58px;
+  padding: 0 27px;
   border: 1px solid transparent;
-  border-radius: 12px;
-  font-size: 14px;
+  border-radius: 14px;
+  font-size: 15px;
   font-weight: 800;
   transition: transform .18s ease, background-color .18s ease, box-shadow .18s ease;
 }
 
-.hero .btn:hover {
-  transform: translateY(-2px);
-}
+.hero .btn:hover { transform: translateY(-2px); }
 
 .hero .btn-blue {
   color: #fff;
@@ -123,7 +131,7 @@
 }
 
 .hero .btn-light {
-  border-color: rgba(255,255,255,.78);
+  border-color: rgba(255, 255, 255, .78);
   color: #10283b;
   background: #f8fbff;
 }
@@ -132,44 +140,25 @@
 
 .hero-device {
   position: relative;
-  height: 390px;
-  min-width: 0;
-  overflow: visible;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at 50% 58%, rgba(10, 129, 255, .3), rgba(10, 129, 255, .08) 43%, transparent 72%);
+  width: min(100%, 900px);
+  height: auto;
+  margin: 18px auto 0;
+  overflow: hidden;
+  border-radius: 18px;
+  background: transparent;
 }
 
-.hero-device::before {
-  position: absolute;
-  right: 3%;
-  bottom: 7%;
-  left: 3%;
-  height: 18%;
-  border: 1px solid rgba(103, 194, 255, .65);
-  border-radius: 50%;
-  content: "";
-  background: linear-gradient(180deg, rgba(37, 150, 255, .2), rgba(4, 31, 54, .4));
-  box-shadow: 0 0 28px rgba(0, 132, 255, .35), inset 0 1px 8px rgba(255,255,255,.15);
-}
+.hero-device::before { content: none; }
 
 .hero-device img {
-  position: relative;
-  z-index: 1;
   display: block;
-  width: min(100%, 520px);
-  height: 100%;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 720 / 368;
   object-fit: contain;
-  object-position: center bottom;
-  filter: drop-shadow(0 20px 22px rgba(0, 0, 0, .34));
-}
-
-.hero-device svg {
-  position: relative;
-  z-index: 1;
-  width: min(100%, 510px);
-  height: 100%;
-  overflow: visible;
-  filter: drop-shadow(0 20px 18px rgba(0,0,0,.3));
+  object-position: center;
+  border: 0;
+  filter: drop-shadow(0 16px 24px rgba(0, 0, 0, .2));
 }
 
 .trust {
@@ -207,34 +196,57 @@
 
 @media (max-width: 850px) {
   .hero-inner {
-    min-height: 0;
+    width: min(100% - 32px, 760px);
     padding-top: 42px;
-    padding-bottom: 28px;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
-    text-align: center;
+    padding-bottom: 14px;
   }
 
-  .hero-copy { margin: 0 auto; }
-  .hero-eyebrow { margin-bottom: 17px; }
-  .hero h1 { margin-bottom: 16px; font-size: clamp(36px, 7vw, 48px); }
-  .hero p { margin: 0 auto; max-width: 620px; }
-  .hero .actions { justify-content: center; margin-top: 23px; }
-  .hero-device { width: min(100%, 480px); height: 285px; margin: 0 auto; }
-  .hero-device img { width: 100%; }
+  .hero h1 { font-size: clamp(38px, 6.2vw, 54px); }
+  .hero p { max-width: 720px; font-size: 17px; }
+  .hero-device { width: min(100%, 720px); margin-top: 20px; }
   .trust { padding: 15px 18px; }
 }
 
 @media (max-width: 560px) {
-  .hero-inner { padding-top: 32px; padding-bottom: 16px; }
-  .hero-eyebrow { margin-bottom: 15px; font-size: 9px; letter-spacing: .1em; }
-  .hero h1 { font-size: clamp(31px, 8.2vw, 39px); letter-spacing: -.045em; }
+  .hero-inner {
+    width: min(100% - 28px, 480px);
+    padding-top: 32px;
+    padding-bottom: 10px;
+  }
+
+  .hero-eyebrow {
+    margin-bottom: 15px;
+    padding: 7px 10px;
+    font-size: 9px;
+    letter-spacing: .1em;
+  }
+
+  .hero h1 {
+    margin-bottom: 16px;
+    font-size: clamp(31px, 8.2vw, 39px);
+    letter-spacing: -.045em;
+    line-height: 1.08;
+  }
+
   .hero p { font-size: 14px; line-height: 1.65; }
-  .hero .actions { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; }
+
+  .hero .actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
   .hero .btn { width: 100%; min-height: 50px; }
-  .hero-device { height: 225px; margin-top: 4px; }
+  .hero-device { width: 100%; margin-top: 14px; border-radius: 12px; }
   .hero-device img { width: 100%; }
-  .trust { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 10px; padding: 13px 14px; }
+
+  .trust {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px 10px;
+    padding: 13px 14px;
+  }
+
   .trust-item { justify-content: flex-start; min-height: 40px; font-size: 11px; }
   .trust-item b { width: 30px; height: 30px; flex-basis: 30px; }
 }
