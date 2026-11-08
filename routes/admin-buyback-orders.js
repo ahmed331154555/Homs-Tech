@@ -15,6 +15,7 @@ function registerAdminBuybackOrderRoutes(app, {
         SELECT id,order_no,name,email,phone,address,device,brand,model,storage,condition,
                face_id,battery,screen,offered_price,iban,payment_method,answers,final_offer,final_offer_sent_at,status,created_at
         FROM buyback_orders
+        WHERE status NOT IN ('Wacht op aankoop', 'Wacht op betaling')
         ORDER BY created_at DESC
       `);
       res.json({ orders: result.rows });
