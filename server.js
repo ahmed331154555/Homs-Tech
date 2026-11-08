@@ -723,23 +723,6 @@ app.get("/admin/", (req, res) => {
   );
 });
 
-// Start server
-initializeDatabaseWithRetry(() => initializeDatabaseSchema(pool), wait)
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(
-        `HOMS TECH running on port ${PORT}`
-      );
-    });
-  })
-  .catch((error) => {
-    console.error(
-      "Database initialization failed after retries:",
-      error
-    );
-    process.exit(1);
-  });
-
 registerBuybackRoutes(app, {
   pool,
   crypto,
@@ -763,4 +746,19 @@ registerLiveChatRoutes(app, {
   getAdminUsername: () => String(process.env.ADMIN_USERNAME || "")
 });
 
-
+// Start server
+initializeDatabaseWithRetry(() => initializeDatabaseSchema(pool), wait)
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(
+        `HOMS TECH running on port ${PORT}`
+      );
+    });
+  })
+  .catch((error) => {
+    console.error(
+      "Database initialization failed after retries:",
+      error
+    );
+    process.exit(1);
+  });
