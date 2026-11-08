@@ -218,30 +218,32 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5361560605027063"
      crossorigin="anonymous"></script>
 
-<style id="homs-tradein-embed-mode-v1">
-/* Compact in-product trade-in modal: show the actual buyback flow only. */
-body.embed-tradein{background:#f7faff!important}
-body.embed-tradein .topbar,
-body.embed-tradein nav,
-body.embed-tradein .hero,
-body.embed-tradein .info,
-body.embed-tradein footer,
-body.embed-tradein .homs-global-nav,
-body.embed-tradein .ht-topbar,
-body.embed-tradein .ht-header{display:none!important}
-body.embed-tradein .ht-tradein-mode a{display:none!important}
-/* Keep a small HOMS TECH logo header visible inside the trade-in embed. */
-body.embed-tradein header.head{display:block!important;min-height:58px!important;height:58px!important;background:#fff!important;border-bottom:1px solid #e2e8f0!important}
-body.embed-tradein header.head .wrap{width:100%!important;max-width:none!important;min-height:58px!important;height:58px!important;margin:0!important;padding:6px 14px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important}
-body.embed-tradein header.head .logo{display:flex!important;min-width:0!important}
-body.embed-tradein header.head .logo img{display:block!important;width:126px!important;max-height:42px!important;object-fit:contain!important}
-body.embed-tradein header.head .search,
-body.embed-tradein header.head .headlinks{display:none!important}
-body.embed-tradein .main{padding-top:12px!important;padding-bottom:20px!important}
-body.embed-tradein .main>.wrap{width:100%!important;max-width:none!important;margin:0!important;padding:0 12px!important}
-body.embed-tradein .panel{border-radius:14px!important;box-shadow:none!important}
-body.embed-tradein .panel-head{padding-top:10px!important}
-body.embed-tradein .forzastyle-panel{margin-top:0!important}
+<style id="homs-tradein-embed-mode-v2">
+/* In the product modal, render only the trade-in workflow. The parent product page owns the modal header and close button. */
+html.tradein-embed,body.embed-tradein{background:#f7faff!important;min-height:100%!important}
+body.embed-tradein{margin:0!important;padding:0!important;overflow-x:hidden!important}
+/* Hide every page-level element outside the actual trade-in form, including global navigation, cookie controls, chat, hero, banners and footer. */
+body.embed-tradein>:not(main):not(script):not(style):not(link){display:none!important}
+body.embed-tradein main.main{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:12px 0 22px!important;background:#f7faff!important}
+body.embed-tradein main.main>.wrap{width:100%!important;max-width:none!important;margin:0!important;padding:0 12px!important}
+body.embed-tradein #step1{display:block!important;margin:0!important;padding:0!important}
+body.embed-tradein #step1>.buyback-layout{display:block!important;grid-template-columns:minmax(0,1fr)!important;gap:0!important}
+body.embed-tradein .buyback-side{display:none!important}
+body.embed-tradein #step1 .panel{border-radius:14px!important;box-shadow:none!important}
+body.embed-tradein #step1 .panel-head{padding-top:10px!important}
+body.embed-tradein #modelChooser{margin:0 0 14px!important}
+body.embed-tradein #step2{padding:0!important;margin:0!important}
+body.embed-tradein #step2 .buyback-layout{grid-template-columns:minmax(0,1fr)!important}
+body.embed-tradein #step2 .buyback-side{display:none!important}
+body.embed-tradein #step2 .buyback-main-column{gap:12px!important}
+body.embed-tradein .ht-tradein-mode{display:none!important}
+body.embed-tradein .sell-page-intro,body.embed-tradein .sell-progress,body.embed-tradein .sell-progress-wrap{display:none!important}
+body.embed-tradein .panel{max-width:none!important}
+@media(max-width:600px){
+ body.embed-tradein main.main{padding:8px 0 16px!important}
+ body.embed-tradein main.main>.wrap{padding:0 10px!important}
+ body.embed-tradein #modelChooser{margin-bottom:10px!important}
+}
 </style>
 <script>
 (function(){
