@@ -1107,6 +1107,7 @@ function render(product,data){
   customSelectedOptions={};
   ["storage","color","condition","battery","vat","tradeIn"].forEach(key=>{const map={condition:'conditionOptions',storage:'storageOptions',color:'colorOptions',battery:'batteryOptions',vat:'vatOptions',tradeIn:'tradeInOptions'}; const variantKey=familyVariantRows(product).length&&["storage","color","condition"].includes(key); const raw=Array.isArray(product[map[key]])?product[map[key]]:[]; const source=variantKey?effectiveOptions(product,key):(raw.length?raw:effectiveOptions(product,key)); const list=source.filter(x=>x&&x.label&&(x.active!==false&&x.enabled!==false&&((key==="storage"||key==="color")||x.available!==false))); if(list.length) selectedOptions[key]=list[0].label;});
   ["storage","color","condition"].forEach(key=>{const requested=params.get(key);if(!requested)return;const options=effectiveOptions(product,key);const match=options.find(x=>String(x.label||"").trim().toLocaleLowerCase()===requested.trim().toLocaleLowerCase());if(match)selectedOptions[key]=match.label;});
+  if(params.get("tradeIn")==="ready" && /^[a-f0-9]{64}$/.test(localStorage.getItem("homsTechTradeInToken")||"")) selectedOptions.tradeIn="Ja";
   renderProductBody();
 }
 function renderBasicProductFallback(product){
@@ -1174,12 +1175,15 @@ load();
 </div>
 <script>
 function openTradeInModal(){
-  const modal=document.getElementById("tradeInModal");
-  const frame=document.getElementById("tradeInModalFrame");
-  if(!modal||!frame)return;
-  if(frame.getAttribute("src")==="about:blank") frame.setAttribute("src","uw-toestel-verkopen.html?embed=1&tradeIn=1");
-  modal.classList.add("open");
-  document.body.style.overflow="hidden";
+  if(!Number.isInteger(Number(currentProductId)) || Number(currentProductId)<0){
+    alert("Productgegevens ontbreken. Vernieuw de pagina en probeer het opnieuw.");
+    return;
+  }
+  const returnUrl=new URL(window.location.href);
+  returnUrl.searchParams.delete("tradeIn");
+  sessionStorage.setItem("homsTechTradeInReturnTo",returnUrl.pathname+returnUrl.search+returnUrl.hash);
+  sessionStorage.setItem("homsTechTradeInMode","1");
+  window.location.href="uw-toestel-verkopen.html?tradeIn=1";
 }
 window.addEventListener("message",function(event){
   const frame=document.getElementById("tradeInModalFrame");
