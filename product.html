@@ -111,6 +111,7 @@ nav{justify-content:center}
 .ht-product-tradein-answer{display:inline-flex;align-items:center;max-width:100%;padding:5px 9px;border-radius:7px;font-size:12px;font-weight:750;line-height:1.4;overflow-wrap:anywhere}
 .ht-product-tradein-answer.is-neutral{background:#e7f0ff;color:#1d4ed8}
 .ht-product-tradein-answer.is-positive{background:#dcfce7;color:#15803d}
+.ht-product-tradein-answer.is-negative{background:#fee2e2;color:#b91c1c}
 .ht-product-tradein-feature{grid-column:1/-1;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:11px 12px;border:1px solid #bfdbfe;border-radius:11px;background:#f5f9ff}
 .ht-product-tradein-feature-title{color:#1e3a5f;font-size:12px;font-weight:850;line-height:1.5}
 .ht-product-tradein-feature .ht-product-tradein-answer{align-self:flex-start;padding:6px 11px}
@@ -450,13 +451,10 @@ function renderTradeInSummary(newPhoneTotal){
   try{details=JSON.parse(localStorage.getItem("homsTechTradeInDetails")||"{}")||{};}catch{}
   const device=String(details.name||localStorage.getItem("homsTechTradeInDevice")||"Oude telefoon");
   const image=String(details.image||"");
-  // Show storage first, then device condition, followed by the full battery-health question.
-  // The battery answer is saved in details.battery by the trade-in form.
+  // Keep the first two details compact, then show the unlock question before battery health.
   const rows=[
     details.storage?["Opslag",details.storage]:null,
-    details.condition?["Staat",details.condition]:null,
-    details.battery?["Is de batterijcapaciteit minimaal 85%?",details.battery]:null,
-    details.screen?["Scherm",details.screen]:null
+    details.condition?["Staat",details.condition]:null
   ].filter(Boolean);
   const rawAnswers=details.answers;
   const answers=Array.isArray(rawAnswers)?rawAnswers:
@@ -466,6 +464,12 @@ function renderTradeInSummary(newPhoneTotal){
     const v=String(item?.value??item?.answer??"").trim();
     if(q&&v&&!/(opslag|storage|conditie|staat|batterij|battery|scherm|screen)/i.test(q)&&rows.length<8)rows.push([q,v]);
   });
+  // Place battery health immediately after the unlock/lock question, as requested.
+  if(details.battery){
+    const unlockIndex=rows.findIndex(([question])=>/ontgrendeld|vergrendeld|unlocked|locked/i.test(String(question)));
+    rows.splice(unlockIndex>=0?unlockIndex+1:rows.length,0,["Is de batterijcapaciteit minimaal 85%?",details.battery]);
+  }
+  if(details.screen&&!rows.some(([question])=>/scherm|screen/i.test(String(question))))rows.push(["Scherm",details.screen]);
   const saleSpecs=details.saleSpecifications&&typeof details.saleSpecifications==="object"?details.saleSpecifications:{};
   [
     ["Schermgrootte",saleSpecs.screenSize],
@@ -486,7 +490,8 @@ function renderTradeInSummary(newPhoneTotal){
     const label=String(question||"").trim(),value=String(answer||"").trim();
     const isFunctionCheck=/werken alle functies/i.test(label);
     const isPositive=/^(ja|yes|goed|zeer goed|zo goed als nieuw|ontgrendeld|unlocked|werkt|100%|nieuw)$/i.test(value);
-    const answerClass=isPositive?"is-positive":"is-neutral";
+    const isNegative=/^(nee|no|niet|werkt niet)$/i.test(value);
+    const answerClass=isPositive?"is-positive":(isNegative?"is-negative":"is-neutral");
     const fullWidth=index>=2||isFunctionCheck;
     if(isFunctionCheck){
       return '<div class="ht-product-tradein-feature"><strong class="ht-product-tradein-feature-title">'+esc(label)+'</strong><span class="ht-product-tradein-answer '+answerClass+'">'+esc(value)+'</span></div>';
