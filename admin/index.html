@@ -8207,7 +8207,7 @@ async function showWebshopOrderDetails(id){
       return '<div class="ht-phone-note-entry"><div class="ht-phone-note-meta">'+esc(note.created_by||"HOMS TECH Admin")+' · '+esc(noteDate)+'</div><p>'+esc(note.note||"")+'</p></div>';
     }).join(""):'<div class="ht-phone-detail-muted">Nog geen notities bij deze bestelling.</div>';
     const phoneNoteForm=hasPermission("webshop_orders.update")?'<div class="ht-phone-note-form"><label class="ht-phone-detail-field">Nieuwe notitie<textarea id="webshopOrderNote" maxlength="2000" rows="3" placeholder="Schrijf een interne notitie over deze bestelling..."></textarea></label><button class="btn btn-primary" type="button" onclick="saveWebshopOrderNote('+Number(order.id)+')">Notitie opslaan</button></div>':"";
-    const tradeInStatusLabels={AwaitingPayment:"Wacht op betaling nieuwe telefoon",AwaitingDevice:"Wacht op inruiltoestel",Received:"Oud toestel ontvangen",Inspecting:"Oud toestel wordt gecontroleerd",Approved:"Controle afgerond",AdjustmentRequired:"Bedrag afhandelen",Settled:"Volledig afgehandeld",Rejected:"Afgekeurd",Returned:"Teruggestuurd"};
+    const tradeInStatusLabels={AwaitingPayment:"Wacht op betaling nieuwe telefoon",AwaitingDevice:"Wacht op inruiltoestel",Received:"Oud toestel ontvangen",Inspecting:"Oud toestel wordt gecontroleerd",Approved:"Controle afgerond",AdjustmentRequired:"Klantvoorstel nog niet verzonden",AwaitingCustomerApproval:"Wacht op akkoord klant",CustomerAccepted:"Klant akkoord – uitbetaling",CustomerRejected:"Klant niet akkoord",Settled:"Uitbetaling afgerond",Rejected:"Afgekeurd",Returned:"Teruggestuurd"};
     const tradeInStatus=String(order.trade_in_status||"AwaitingDevice");
     const tradeInPaid=/^(paid|betaald|completed)$/i.test(String(order.payment_status||""));
     const tradeInInspected=order.trade_in_inspected_value!==null&&order.trade_in_inspected_value!==undefined;
@@ -8239,16 +8239,24 @@ async function showWebshopOrderDetails(id){
       :!tradeInInspected&&hasPermission("webshop_orders.update")
         ?'<div class="ht-tradein-notice"><span>ℹ️</span><div><strong>Volgende stap: controleer de oude iPhone</strong>Registreer de definitieve waarde pas nadat je het oude toestel hebt ontvangen en getest.</div></div><div class="ht-tradein-inspection"><h4>Inspectie oude telefoon</h4><label class="ht-phone-detail-field">Definitieve inruilwaarde (€)<input id="webshopTradeInInspectedValue" type="number" min="0" max="100000" step="0.01" value="'+esc(order.trade_in_estimated_value??"")+'"></label><label class="ht-phone-detail-field">Inspectienotitie<textarea id="webshopTradeInInspectionReason" rows="3" maxlength="1000" placeholder="Beschrijf de staat, eventuele schade en testresultaten..."></textarea></label><button class="btn btn-primary" type="button" onclick="saveWebshopTradeInInspection('+Number(order.id)+')">✓ Inspectie opslaan</button></div>'
         :"";
-    const tradeInSettlementMarkup=tradeInStatus==="AdjustmentRequired"&&hasPermission("webshop_orders.update")
-      ?'<div class="ht-tradein-inspection"><h4>Financiële afhandeling</h4><div class="ht-phone-summary-line"><span>Definitieve waarde</span><strong>'+money(order.trade_in_inspected_value)+'</strong></div><div class="ht-phone-summary-line"><span>Geschatte waarde</span><strong>'+money(order.trade_in_estimated_value)+'</strong></div><div class="ht-phone-summary-line ht-phone-summary-total"><span>Verschil af te handelen</span><strong>'+money(Math.abs(Number(order.trade_in_adjustment||0)))+'</strong></div><label class="ht-phone-detail-field">Betalingskenmerk / toelichting<textarea id="webshopTradeInSettlementNote" rows="2" maxlength="1000" placeholder="Vermeld hoe en wanneer het verschil is afgehandeld..."></textarea></label><button class="btn btn-primary" type="button" onclick="settleWebshopTradeIn('+Number(order.id)+')">Afhandeling bevestigen</button></div>'
+    const tradeInCustomerApprovalMarkup=tradeInStatus==="AwaitingCustomerApproval"
+      ?'<div class="ht-tradein-notice is-warning"><span>✉️</span><div><strong>Voorstel naar klant verzonden</strong>De klant heeft een e-mail ontvangen met de definitieve waarde van '+money(order.trade_in_inspected_value)+' en kan akkoord of niet akkoord kiezen. Wacht op de reactie. Er mag nog niets worden uitbetaald.</div></div>'
+      :tradeInStatus==="CustomerRejected"
+        ?'<div class="ht-tradein-notice is-warning"><span>✕</span><div><strong>Klant is niet akkoord gegaan</strong>Stop de uitbetaling. Neem contact op met de klant om het oude toestel terug te sturen of een andere oplossing af te spreken.</div></div>'
+        :tradeInStatus==="AdjustmentRequired"
+          ?'<div class="ht-tradein-inspection"><h4>Klant om akkoord vragen</h4><div class="ht-phone-summary-line"><span>Definitief voorstel</span><strong>'+money(order.trade_in_inspected_value)+'</strong></div><p style="font-size:11px;color:#64748b;margin:0">Verzend de definitieve inruilwaarde per e-mail. De klant kan akkoord of niet akkoord geven via een beveiligde link.</p><button class="btn btn-primary" type="button" onclick="sendWebshopTradeInOffer('+Number(order.id)+')">✉ Stuur voorstel naar klant</button></div>'
+          :"";
+    const tradeInSettlementMarkup=tradeInStatus==="CustomerAccepted"&&hasPermission("webshop_orders.update")
+      ?'<div class="ht-tradein-inspection"><h4>Klant heeft akkoord gegeven – uitbetaling</h4><div class="ht-phone-summary-line"><span>Definitieve uit te betalen waarde</span><strong>'+money(order.trade_in_inspected_value)+'</strong></div><div class="ht-phone-summary-line"><span>Eerdere schatting</span><strong>'+money(order.trade_in_estimated_value)+'</strong></div><div class="ht-phone-summary-line"><span>Verschil met schatting (ter informatie)</span><strong>'+money(Math.abs(Number(order.trade_in_adjustment||0)))+'</strong></div><label class="ht-phone-detail-field">Uitbetalingskenmerk / toelichting<textarea id="webshopTradeInSettlementNote" rows="2" maxlength="1000" placeholder="Vermeld wanneer en hoe je '+money(order.trade_in_inspected_value)+' hebt overgemaakt..."></textarea></label><button class="btn btn-primary" type="button" onclick="settleWebshopTradeIn('+Number(order.id)+')">✓ Uitbetaling bevestigen</button></div>'
       :"";
+
     const tradeInCard=order.trade_in_order_id?'<section class="ht-phone-detail-card ht-tradein-panel"><div class="ht-tradein-head"><div>♻ Inruil oude telefoon<small>Gekoppeld aan bestelling #'+Number(order.id)+' · Inruilaanvraag #'+Number(order.trade_in_order_id)+'</small></div><span class="ht-tradein-status '+tradeInStatusClass+'">'+esc(tradeInStatusLabels[tradeInDisplayStatus]||tradeInDisplayStatus)+'</span></div><div class="ht-tradein-body">'+
       '<div class="ht-tradein-hero"><div class="ht-tradein-device-icon">📱</div><div><div class="ht-tradein-device-name">'+esc(order.trade_in_model||order.trade_in_device||"Oude iPhone")+'</div><div class="ht-tradein-device-meta">'+esc(order.trade_in_storage||"Opslag niet opgegeven")+' · Geschatte inruilwaarde</div><div class="ht-tradein-estimate">'+money(order.trade_in_estimated_value)+'</div></div><span class="ht-tradein-status '+tradeInStatusClass+'">'+(tradeInPaid?"Betaling ontvangen":"Niet betaald")+'</span></div>'+
       '<div class="ht-tradein-facts">'+tradeInFacts.map(([label,value])=>'<div class="ht-tradein-fact"><span>'+esc(label)+'</span><strong>'+esc(value)+'</strong></div>').join("")+'</div>'+
       (tradeAnswerMarkup?'<div><div class="ht-phone-detail-muted" style="margin-bottom:7px">Antwoorden van de klant</div>'+tradeAnswerMarkup+'</div>':"")+
       '<div class="ht-tradein-calculation"><div class="ht-phone-summary-line"><span>Prijs nieuwe telefoon</span><strong>'+money(total)+'</strong></div><div class="ht-phone-summary-line"><span>Geschatte inruilwaarde (apart uit te betalen)</span><strong style="color:#15803d">'+money(order.trade_in_estimated_value)+'</strong></div><div class="ht-phone-summary-line"><span>Direct verrekend bij aankoop</span><strong>'+money(order.trade_in_applied_credit)+'</strong></div><div class="ht-phone-summary-line ht-phone-summary-total"><span>Door klant te betalen</span><strong>'+money(total)+'</strong></div></div>'+
       (tradeInInspected?'<div class="ht-tradein-facts"><div class="ht-tradein-fact"><span>Definitieve waarde na inspectie</span><strong>'+money(order.trade_in_inspected_value)+'</strong></div><div class="ht-tradein-fact"><span>Verschil t.o.v. schatting</span><strong>'+money(Math.abs(Number(order.trade_in_adjustment||0)))+'</strong></div></div>':"")+
-      tradeInInspectionMarkup+tradeInSettlementMarkup+
+      tradeInInspectionMarkup+tradeInCustomerApprovalMarkup+tradeInSettlementMarkup+
       '<div class="ht-phone-detail-muted">Belangrijk: de geschatte inruilwaarde wordt niet automatisch van de aankoopprijs afgetrokken. De klant betaalt de volledige prijs van de nieuwe telefoon. Na ontvangst en inspectie van de oude iPhone wordt de definitieve inruilwaarde afzonderlijk aan de klant overgemaakt.</div></div></section>':"";
 
     const phoneDetailMarkup=`
@@ -8548,16 +8556,30 @@ async function saveWebshopTradeInInspection(id){
     if(!response.ok)throw new Error(result.error||"Inruilinspectie kon niet worden opgeslagen.");
     await loadWebshopOrders();
     await showWebshopOrderDetails(id);
-    if(result.adjustment?.customerDue>0)alert("Er is een bedrag van "+money(result.adjustment.customerDue)+" bij te betalen. De verzending blijft geblokkeerd totdat dit bedrag is afgehandeld.");
-    else if(result.adjustment?.customerCredit>0)alert("Er moet "+money(result.adjustment.customerCredit)+" aan de klant worden terugbetaald of als tegoed worden verwerkt. Rond dit eerst af.");
-    else setStatus("✓ Inruilinspectie afgerond bij bestelling #"+id,"success");
+    if(result.customerOffer?.sent)alert("Het voorstel van "+money(value)+" is per e-mail naar de klant verzonden. Wacht op akkoord voordat je uitbetaalt.");
+    else alert("De inspectie is opgeslagen, maar de e-mail naar de klant is niet verzonden. Controleer Resend en gebruik daarna 'Stuur voorstel naar klant'.");
+  }catch(error){alert(error.message);}
+}
+
+async function sendWebshopTradeInOffer(id){
+  if(!hasPermission("webshop_orders.update"))return;
+  if(!confirm("Wil je de definitieve inruilwaarde per e-mail naar de klant sturen met opties voor akkoord of niet akkoord?"))return;
+  try{
+    const response=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/trade-in-offer",{
+      method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:"{}"
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Het voorstel kon niet worden verzonden.");
+    await loadWebshopOrders();
+    await showWebshopOrderDetails(id);
+    setStatus("✓ Inruilvoorstel verzonden naar "+(result.customerEmail||"de klant"),"success");
   }catch(error){alert(error.message);}
 }
 
 async function settleWebshopTradeIn(id){
   if(!hasPermission("webshop_orders.update"))return;
   const note=String(document.getElementById("webshopTradeInSettlementNote")?.value||"").trim();
-  if(note.length<5){alert("Vermeld eerst wanneer en hoe de inruilwaarde aan de klant is overgemaakt.");return;}
+  if(note.length<5){alert("Vermeld eerst wanneer en hoe de definitieve inruilwaarde aan de klant is overgemaakt.");return;}
   if(!confirm("Bevestig je dat de definitieve inruilwaarde daadwerkelijk aan de klant is overgemaakt?"))return;
   try{
     const response=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/trade-in-settlement",{
