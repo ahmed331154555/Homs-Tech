@@ -90,6 +90,19 @@ nav{justify-content:center}
 .thumb-button{border:0;background:transparent;padding:0;cursor:pointer;border-radius:10px}
 .thumb-button .thumb{display:block}
 </style>
+<style id="homs-product-tradein-summary-v2">
+.ht-product-tradein-summary{margin:22px 0;padding:18px;border:1.5px solid #86d6a2;border-radius:16px;background:linear-gradient(135deg,#f0fdf4,#fff);box-shadow:0 8px 24px rgba(21,128,61,.07)}
+.ht-product-tradein-heading{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.ht-product-tradein-check{display:grid;place-items:center;width:30px;height:30px;flex:0 0 30px;border-radius:50%;background:#16a34a;color:#fff;font-weight:900}
+.ht-product-tradein-heading strong{display:block;color:#14532d;font-size:16px}
+.ht-product-tradein-heading small,.ht-product-tradein-device small{display:block;margin-top:4px;color:#64748b;font-size:12px}
+.ht-product-tradein-edit{margin-left:auto;border:0;background:transparent;color:#2563eb;font-weight:700;cursor:pointer;padding:8px}
+.ht-product-tradein-device{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px;background:#fff;border:1px solid #dcfce7;border-radius:12px}
+.ht-product-tradein-device strong{color:#172536}
+.ht-product-tradein-value{font-size:20px!important;color:#15803d!important;white-space:nowrap}
+.ht-product-tradein-summary p{margin:12px 2px 0;color:#475569;font-size:12px;line-height:1.55}
+@media(max-width:600px){.ht-product-tradein-summary{padding:14px;margin:16px 0}.ht-product-tradein-heading strong{font-size:14px}.ht-product-tradein-device{align-items:flex-start}.ht-product-tradein-value{font-size:17px!important}}
+</style>
 <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20260922-final-header">
 <style>
 /* HOMS TECH FINAL HEADER OVERRIDE — self-contained */
@@ -1055,6 +1068,11 @@ function renderProductBody(){
     ${selectedOptions.condition?`<div style="margin-top:-12px;margin-bottom:16px;color:#64748b;font-size:13px">Prijs voor staat: <strong style="color:#111827">${esc(selectedOptions.condition)}</strong></div>`:""}
     ${specs?`<div class="meta">${specs}</div>`:""}
     ${optionsHtml}
+    ${localStorage.getItem("homsTechTradeInToken")?`<section id="tradeInProductSummary" class="ht-product-tradein-summary" aria-live="polite">
+      <div class="ht-product-tradein-heading"><span class="ht-product-tradein-check">✓</span><div><strong>Je oude telefoon is gekoppeld</strong><small>Inruil bij aankoop van dit toestel</small></div><button type="button" class="ht-product-tradein-edit" onclick="openTradeInModal()">Wijzigen</button></div>
+      <div class="ht-product-tradein-device"><div><strong>${esc(localStorage.getItem("homsTechTradeInDevice")||"Oude telefoon")}</strong><small>Geschatte inruilwaarde</small></div><strong class="ht-product-tradein-value">${money(Number(localStorage.getItem("homsTechTradeInCredit")||0))}</strong></div>
+      <p>Je betaalt nu de volledige prijs van je nieuwe telefoon. Na ontvangst en controle maken we de definitieve inruilwaarde aan je over.</p>
+    </section>`: ""}
     ${hasOptions?`<div class="order-summary"><h3>Jouw bestelling</h3>${renderInventoryNotice(product)}${["storage","color","condition","battery","vat","tradeIn"].filter(k=>selectedOptions[k]).map(k=>`<div class="summary-row"><span>${esc(k==="storage"?"Geheugen":k==="color"?"Kleur":k==="condition"?"Conditie":k==="battery"?"Batterij":k==="vat"?"BTW":"Inruil")}</span><strong>${esc(selectedOptions[k])}</strong></div>`).join("")}${Object.entries(customSelectedOptions).filter(([k,v])=>v).map(([k,v])=>{const [type,index]=k.split(":");const group=currentProduct?.[type]?.[Number(index)];return `<div class="summary-row"><span>${esc(group?.name||"Extra")}</span><strong>${esc(v)}</strong></div>`}).join("")}<div class="summary-total">Totaal: ${money(total)}</div></div>`:""}
     ${description?`<div class="description">${esc(description)}</div>`:""}
     ${(adminSpecs.length || specsList.length)?`<div class="spec-box"><h2>Productspecificaties</h2><div class="spec-list">
@@ -1170,7 +1188,8 @@ window.addEventListener("message",function(event){
   selectedOptions.tradeIn="Ja";
   closeTradeInModal();
   renderProductBody();
-  addCurrentProductToCart();
+  const summary=document.getElementById("tradeInProductSummary");
+  if(summary) summary.scrollIntoView({behavior:"smooth",block:"nearest"});
 });
 function closeTradeInModal(event){
   if(event && event.target && event.target.id!=="tradeInModal") return;
