@@ -131,6 +131,13 @@ app.post("/api/buyback/orders", async (req, res) => {
     const b = req.body || {};
     const name = String(b.name || "").trim();
     const email = String(b.email || "").trim().toLowerCase();
+    const accountHolderName = String(b.accountHolderName || "").trim().slice(0,160);
+    const iban = String(b.iban || "").replace(/\s+/g, "").toUpperCase().slice(0,34);
+    const paymentMethod = String(b.paymentMethod || "").trim().slice(0,80);
+    const requiresBankDetails = b.tradeIn === true || !paymentMethod.toLowerCase().includes("tegoed");
+    if (requiresBankDetails && (!accountHolderName || !/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(iban))) {
+      return res.status(400).json({ error: "Vul een geldige IBAN en de naam van de rekeninghouder in." });
+    }
 
     if (!name || !email || !String(b.device || "").trim()) {
       return res.status(400).json({ error: "Naam, e-mailadres en toestel zijn verplicht." });
@@ -151,8 +158,8 @@ app.post("/api/buyback/orders", async (req, res) => {
     const answers = b.answers && typeof b.answers === "object" && !Array.isArray(b.answers) ? b.answers : {};
     const result = await pool.query(`
       INSERT INTO buyback_orders
-      (order_no,name,email,phone,address,device,brand,model,storage,condition,face_id,battery,screen,offered_price,iban,payment_method,answers,status,trade_in,trade_in_quote_token_hash,trade_in_quote_expires_at)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17::jsonb,CASE WHEN $18 THEN 'Wacht op aankoop' ELSE 'Nieuw' END,$18,$19,CASE WHEN $18 THEN NOW()+INTERVAL '24 hours' ELSE NULL END)
+      (order_no,name,email,phone,address,device,brand,model,storage,condition,face_id,battery,screen,offered_price,iban,account_holder_name,payment_method,answers,status,trade_in,trade_in_quote_token_hash,trade_in_quote_expires_at)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18::jsonb,CASE WHEN $19 THEN 'Wacht op aankoop' ELSE 'Nieuw' END,$19,$20,CASE WHEN $19 THEN NOW()+INTERVAL '24 hours' ELSE NULL END)
       RETURNING id,order_no,status,created_at
     `, [
       orderNo,
@@ -168,8 +175,9 @@ app.post("/api/buyback/orders", async (req, res) => {
       String(b.battery || "").trim(),
       String(b.screen || "").trim(),
       offeredPrice,
-      String(b.iban || "").trim(),
-      String(b.paymentMethod || "").trim(),
+      iban,
+      accountHolderName,
+      paymentMethod,
       JSON.stringify(answers),
       isTradeIn,
       tradeInTokenHash
@@ -214,6 +222,8 @@ app.post("/api/buyback/orders", async (req, res) => {
           <strong>Klant:</strong> ${safeName}<br>
           <strong>E-mail:</strong> ${escapeHtml(email)}<br>
           <strong>Telefoon:</strong> ${escapeHtml(b.phone||"-")}<br>
+          <strong>Rekeninghouder:</strong> ${escapeHtml(accountHolderName||"-")}<br>
+          <strong>IBAN:</strong> ${escapeHtml(iban||"-")}<br>
           <strong>Opslag:</strong> ${escapeHtml(b.storage||"-")}<br>
           <strong>Staat:</strong> ${escapeHtml(b.condition||"-")}<br>
           <strong>Geschatte prijs:</strong> € ${offeredPrice.toFixed(2)}</p>
