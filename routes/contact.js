@@ -3,7 +3,7 @@
 const CONTACT_RATE_LIMIT = 5;
 const CONTACT_RATE_WINDOW_MS = 60 * 60 * 1000;
 const MAX_TRACKED_IPS = 5000;
-const EMAIL_PATTERN = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function normalizeContactRequest(body = {}) {
   return {
@@ -48,7 +48,7 @@ function buildContactMessage({ name, email, phone, topic, message }) {
     "",
     "Bericht:",
     message
-  ].join("\\n");
+  ].join("\n");
 }
 
 function registerContactRoutes(app, {
