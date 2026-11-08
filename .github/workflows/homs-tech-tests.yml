@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - HomsTech-Clean
+      - feature/phone-orders-split-detail
+      - chore/homs-tech-code-cleanup
   pull_request:
     branches:
       - HomsTech-Clean
