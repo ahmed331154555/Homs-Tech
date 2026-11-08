@@ -77,7 +77,7 @@ test("invoice creation validates input and calculates totals", async () => {
       vatId: "NL123",
       lines: [
         { description: "Screen", quantity: 1, unitPrice: 100, vatRate: 21 },
-        { description: "Case", quantity: 1, unitPrice: 8, vatRate: 0 }
+        { description: "Case", quantity: 1, unitPrice: 8, vatRate: 21 }
       ]
     }
   }, res);
