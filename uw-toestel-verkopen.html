@@ -2444,7 +2444,11 @@ function go(n){
   const progressStep=n===4?3:(n===3?2:1);
   document.querySelectorAll('.sell-progress-step').forEach(el=>{const step=Number(el.dataset.step||0);el.classList.toggle('active',step===progressStep);el.classList.toggle('done',step<progressStep);});
   document.querySelectorAll('.sell-progress-line').forEach(el=>{const line=Number(el.dataset.line||0);el.classList.toggle('active',progressStep>line);});
-  window.scrollTo({top:document.querySelector('.hero').offsetTop-10,behavior:'smooth'});
+  const scrollTarget=n===3?$('step3'):n===4?$('step4'):n===2?assessment:document.querySelector('.hero');
+  if(scrollTarget){
+    scrollTarget.style.scrollMarginTop='14px';
+    requestAnimationFrame(()=>scrollTarget.scrollIntoView({behavior:'smooth',block:'start'}));
+  }
 }
 const toStep3 = $('toStep3');
 if (toStep3) toStep3.onclick = () => $('toCheckout')?.click();
