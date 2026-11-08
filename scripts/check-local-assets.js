@@ -42,7 +42,9 @@ for (const htmlFile of htmlFiles) {
       continue;
     }
 
-    const target = path.resolve(path.dirname(htmlFile), decodedPath);
+    const target = decodedPath.startsWith("/")
+      ? path.resolve(root, decodedPath.replace(/^\\/+/, ""))
+      : path.resolve(path.dirname(htmlFile), decodedPath);
     if (!target.startsWith(root + path.sep) && target !== root) {
       missing.push(path.relative(root, htmlFile) + ": path escapes project root: " + reference);
       continue;
