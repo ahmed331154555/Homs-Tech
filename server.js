@@ -183,7 +183,7 @@ const ANNOUNCEMENT_BAR_PAGES = new Set(["home","about","devices","product","repa
 function normalizeAnnouncementBarSettings(input){
   const value=input&&typeof input==="object"&&!Array.isArray(input)?input:{};
   const color=(v,f)=>/^#[0-9a-f]{6}$/i.test(String(v||""))?String(v):f;
-  const messages=Array.isArray(value.messages)?value.messages.map(x=>String(x||"").trim().slice(0,120)).filter(Boolean).slice(0,8):[];
+  const messages=Array.isArray(value.messages)&&value.messages.length?value.messages.map(x=>String(x||"").trim().slice(0,120)).filter(Boolean).slice(0,8):["1 jaar garantie","Snel geleverd","Betrouwbare service","Betaalbare prijzen"];
   return {enabled:value.enabled!==false,messages,background:color(value.background,"#071d2d"),textColor:color(value.textColor,"#eaf4ff"),accentColor:color(value.accentColor,"#60a5fa"),speed:Math.max(20,Math.min(600,Number(value.speed)||140)),direction:value.direction==="ltr"?"ltr":"rtl",mode:value.mode==="static"?"static":"scroll",height:Math.max(30,Math.min(64,Number(value.height)||42)),fontSize:Math.max(10,Math.min(22,Number(value.fontSize)||14))};
 }
 app.get("/api/announcement-bars",async(req,res)=>{
