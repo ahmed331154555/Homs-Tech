@@ -1954,6 +1954,21 @@ function buildCustomerQuestions(phone,type){
   (maps[protocol]||[]).forEach(([key,label])=>addSection(key,label));if(protocol==='protocol4'){const lockQ=questions.find(q=>q.id==='protocol4_connectivity');if(lockQ&&!lockQ.options.some(o=>/vergrendeld|locked/i.test(String(o.label||''))))lockQ.options.push({label:'🔒 Vergrendeld',priceDelta:0,active:true});}addChecklist();addFunctions();addBattery();return questions;
 }
 
+function normalizeBuybackModelName(value){
+  return String(value||"").toLowerCase()
+    .replace(/\\b(apple|iphone|smartphone|telefoon)\\b/g," ")
+    .replace(/\\b(16|32|64|128|256|512)\\s*gb\\b|\\b1\\s*tb\\b/g," ")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\\s+/g," ");
+}
+function findSalesPhoneForBuyback(phone){
+  const target=normalizeBuybackModelName(phone?.name);
+  if(!target)return null;
+  const sales=Array.isArray(siteData.salesPhones)?siteData.salesPhones:[];
+  return sales.find(item=>{
+    const candidate=normalizeBuybackModelName(item?.name);
+    return candidate===target || (candidate.length>=5 && target.length>=5 && (candidate.includes(target)||target.includes(candidate)));
+  })||null;
+}
 function flattenBuybackCatalog(catalog){
   const out=[];
   (Array.isArray(catalog)?catalog:[]).forEach(b=>{
@@ -1961,7 +1976,21 @@ function flattenBuybackCatalog(catalog){
       (t.models||[]).forEach(m=>{
         const p=(siteData.buybackPhones||[]).find(x=>String(x.id)===String(m.buybackId));
         if(p && p.active!==false){
-          out.push({...p,brand:b.name,deviceType:t.name,typeId:t.id,typeName:t.name,brandId:b.id,modelId:m.id,
+          const salesPhone=findSalesPhoneForBuyback(p);
+          const salesImages=Array.isArray(salesPhone?.images)?salesPhone.images.filter(Boolean):[];
+          out.push({...p,
+            // Prefer the dedicated buyback photo; fall back to the exact matching webshop phone photo.
+            image:p.image||salesPhone?.image||salesImages[0]||'',
+            saleSpecifications:salesPhone?{
+              screenSize:salesPhone.screenSize||'',
+              processor:salesPhone.processor||'',
+              memory:salesPhone.memory||'',
+              gpu:salesPhone.gpu||'',
+              releaseYear:salesPhone.releaseYear||'',
+              connectivity:salesPhone.connectivity||'',
+              specifications:Array.isArray(salesPhone.specifications)?salesPhone.specifications:[]
+            }:{},
+            brand:b.name,deviceType:t.name,typeId:t.id,typeName:t.name,brandId:b.id,modelId:m.id,
             typeQuestions:buildCustomerQuestions(p,t),protocol:String(p.buybackProtocol||p.protocol||'1'),protocol2:p.protocol2||{},protocolSettings:p.buybackProtocolSettings?.[p.buybackProtocol==='1'?'1':'2']||{},brandImage:b.image||b.brandImage||''});
         }
       });
@@ -2507,7 +2536,8 @@ $('finish').onclick=async()=>{
         condition:String(payload.condition||''),
         battery:String(payload.battery||''),
         screen:String(payload.screen||''),
-        answers:tradeInAnswers
+        answers:tradeInAnswers,
+        saleSpecifications:selectedModel?.saleSpecifications||{}
       }));
       sessionStorage.removeItem('homsTechTradeInMode');
       const returnTo=sessionStorage.getItem('homsTechTradeInReturnTo')||'';
@@ -2577,7 +2607,10 @@ async function loadBuyback(){
     const linkedIds=new Set(devices.map(d=>String(d.id)));
     (Array.isArray(siteData.buybackPhones)?siteData.buybackPhones:[]).forEach(phone=>{
       if(!phone||phone.active===false||linkedIds.has(String(phone.id)))return;
-      devices.push({...phone,brand:phone.brand||'',deviceType:phone.deviceType||phone.type||'Telefoon',
+      const salesPhone=findSalesPhoneForBuyback(phone);
+      devices.push({...phone,image:phone.image||salesPhone?.image||(Array.isArray(salesPhone?.images)?salesPhone.images.find(Boolean):'')||'',
+        saleSpecifications:salesPhone?{screenSize:salesPhone.screenSize||'',processor:salesPhone.processor||'',memory:salesPhone.memory||'',gpu:salesPhone.gpu||'',releaseYear:salesPhone.releaseYear||'',connectivity:salesPhone.connectivity||'',specifications:Array.isArray(salesPhone.specifications)?salesPhone.specifications:[]}:{},
+        brand:phone.brand||'',deviceType:phone.deviceType||phone.type||'Telefoon',
         typeQuestions:buildCustomerQuestions(phone,{questions:[]}),
         protocol:String(phone.buybackProtocol||phone.protocol||'1'),protocol2:phone.protocol2||{},
         protocolSettings:phone.buybackProtocolSettings?.[phone.buybackProtocol==='1'?'1':'2']||{}});
