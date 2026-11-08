@@ -60,7 +60,7 @@ test("contact form stores a normalized inbound message and sends owner notificat
   assert.equal(queries[0].params[0], "contact-test-uuid");
   assert.equal(queries[0].params[1], "sam@example.com");
   assert.deepEqual(JSON.parse(queries[0].params[2]), ["owner@example.com"]);
-  assert.match(queries[0].params[4], /Website contact: Scherm reparatie/);
+  assert.match(queries[0].params[3], /Website contact: Scherm reparatie/);
   assert.match(queries[0].params[5], /Mijn iPhone scherm is kapot/);
   assert.equal(mailRequest.url, "https://api.resend.com/emails");
   assert.equal(JSON.parse(mailRequest.options.body).reply_to, "sam@example.com");
