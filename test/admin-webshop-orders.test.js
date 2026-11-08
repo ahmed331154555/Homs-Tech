@@ -13,7 +13,7 @@ function createHarness(pool, deductPaidOrderInventory = async () => ({ deducted:
     delete(path, ...handlers) { routes.set(`DELETE ${path}`, handlers.at(-1)); }
   };
   const requirePermission = (permission) => {
-    assert.ok(permission.startsWith("webshop_orders."));
+    assert.ok(permission.startsWith("webshop_orders.") || permission.startsWith("buyback_orders."));
     return (_req, _res, next) => next();
   };
   registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory });
