@@ -2287,6 +2287,24 @@ body.phone-orders-page-active #page-all-orders{padding-bottom:78px}
   }
 }
 </style>
+<style id="ht-cod-admin-switch">
+.ht-cod-setting{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:16px;margin:16px 0;border:1px solid #dbe5ef;border-radius:14px;background:#f8fbff}
+.ht-cod-setting-copy{display:grid;gap:5px;min-width:0}
+.ht-cod-setting-copy strong{color:#172b43;font-size:15px;font-weight:800}
+.ht-cod-setting-copy small{color:#64748b;font-size:13px;line-height:1.5}
+.ht-cod-status{font-size:12px;font-weight:800;color:#b45309}
+.ht-cod-status.is-enabled{color:#15803d}
+.ht-cod-status.is-disabled{color:#64748b}
+.ht-admin-switch{position:relative;display:inline-flex;flex:0 0 54px;width:54px;height:30px;cursor:pointer}
+.ht-admin-switch input{position:absolute;width:1px;height:1px;opacity:0}
+.ht-admin-switch-track{position:absolute;inset:0;border-radius:99px;background:#cbd5e1;transition:background .18s ease;box-shadow:inset 0 0 0 1px rgba(15,23,42,.08)}
+.ht-admin-switch-track:before{content:"";position:absolute;width:22px;height:22px;left:4px;top:4px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(15,23,42,.22);transition:transform .18s ease}
+.ht-admin-switch input:checked+.ht-admin-switch-track{background:#16a34a}
+.ht-admin-switch input:checked+.ht-admin-switch-track:before{transform:translateX(24px)}
+.ht-admin-switch input:focus-visible+.ht-admin-switch-track{outline:3px solid #93c5fd;outline-offset:3px}
+.ht-admin-switch input:disabled+.ht-admin-switch-track{opacity:.55;cursor:wait}
+@media(max-width:520px){.ht-cod-setting{padding:13px}.ht-cod-setting-copy small{max-width:250px}}
+</style>
 </head>
 
 <body>
@@ -2655,10 +2673,17 @@ body.phone-orders-page-active #page-all-orders{padding-bottom:78px}
         <input type="checkbox" id="orderDhlEnabled" style="margin-top:4px">
         <span><strong>DHL</strong><br><small id="orderDhlApiStatus">API-status controleren...</small></span>
       </label>
-      <label style="display:flex;gap:10px;align-items:flex-start;margin:14px 0">
-        <input type="checkbox" id="orderCashOnDeliveryEnabled" style="margin-top:4px">
-        <span><strong>Betalen bij ontvangst</strong><br><small>Laat klanten bestellen zonder online betaling. De bestelling blijft onbetaald tot ontvangst.</small></span>
-      </label>
+      <div class="ht-cod-setting">
+        <div class="ht-cod-setting-copy">
+          <strong>Betalen bij ontvangst</strong>
+          <small>Sta contante betaling bij bezorging toe. Dit geldt ook voor bestellingen met inruil.</small>
+          <span id="orderCashOnDeliveryStatus" class="ht-cod-status" aria-live="polite">Instelling laden...</span>
+        </div>
+        <label class="ht-admin-switch" for="orderCashOnDeliveryEnabled" aria-label="Betalen bij ontvangst in- of uitschakelen">
+          <input type="checkbox" id="orderCashOnDeliveryEnabled" onchange="toggleCashOnDeliverySetting()">
+          <span class="ht-admin-switch-track" aria-hidden="true"></span>
+        </label>
+      </div>
       <button class="btn btn-primary" type="button" onclick="saveOrderSettings()">Instellingen opslaan</button>
     </div>
     <div class="card" style="padding:18px;margin-bottom:14px;border:1px solid #d6e2f0">
@@ -6864,6 +6889,7 @@ async function loadOrderSettings(){
     document.getElementById("orderPostnlEnabled").checked=!!data.settings?.postnlEnabled;
     document.getElementById("orderDhlEnabled").checked=!!data.settings?.dhlEnabled;
     document.getElementById("orderCashOnDeliveryEnabled").checked=!!data.settings?.cashOnDeliveryEnabled;
+    updateCashOnDeliveryStatus(!!data.settings?.cashOnDeliveryEnabled);
     document.getElementById("orderPaypalEnabled").checked=!!data.paypal?.enabled;
     document.getElementById("orderPaypalMode").value=data.paypal?.mode==="live"?"live":"sandbox";
     document.getElementById("orderPaypalClientId").value=data.paypal?.clientId||"";
@@ -6883,6 +6909,37 @@ async function loadOrderSettings(){
     orderSettingsStatus("Instellingen geladen.");
   }catch(error){orderSettingsStatus(error.message,true);}
 }
+function updateCashOnDeliveryStatus(enabled){
+  const status=document.getElementById("orderCashOnDeliveryStatus");
+  if(!status)return;
+  status.textContent=enabled?"● Ingeschakeld — zichtbaar bij afrekenen":"○ Uitgeschakeld — verborgen bij afrekenen";
+  status.className="ht-cod-status "+(enabled?"is-enabled":"is-disabled");
+}
+async function toggleCashOnDeliverySetting(){
+  const input=document.getElementById("orderCashOnDeliveryEnabled");
+  const nextValue=!!input.checked;
+  input.disabled=true;
+  try{
+    const data=await orderSettingsRequest("PUT",{
+      postnlEnabled:document.getElementById("orderPostnlEnabled").checked,
+      dhlEnabled:document.getElementById("orderDhlEnabled").checked,
+      cashOnDeliveryEnabled:nextValue,
+      paypalEnabled:document.getElementById("orderPaypalEnabled").checked,
+      paypalMode:document.getElementById("orderPaypalMode").value,
+      paypalClientId:document.getElementById("orderPaypalClientId").value.trim(),
+      paypalClientSecret:"",
+      paypalMerchantId:document.getElementById("orderPaypalMerchantId").value.trim(),
+      mollieApiKey:""
+    });
+    input.checked=!!data.settings?.cashOnDeliveryEnabled;
+    updateCashOnDeliveryStatus(input.checked);
+    orderSettingsStatus(input.checked?"Betalen bij ontvangst ingeschakeld.":"Betalen bij ontvangst uitgeschakeld.");
+  }catch(error){
+    input.checked=!nextValue;
+    updateCashOnDeliveryStatus(input.checked);
+    orderSettingsStatus(error.message,true);
+  }finally{input.disabled=false;}
+}
 async function saveOrderSettings(){
   try{
     const data=await orderSettingsRequest("PUT",{
@@ -6898,6 +6955,8 @@ async function saveOrderSettings(){
     });
     document.getElementById("orderPostnlEnabled").checked=!!data.settings?.postnlEnabled;
     document.getElementById("orderDhlEnabled").checked=!!data.settings?.dhlEnabled;
+    document.getElementById("orderCashOnDeliveryEnabled").checked=!!data.settings?.cashOnDeliveryEnabled;
+    updateCashOnDeliveryStatus(!!data.settings?.cashOnDeliveryEnabled);
     document.getElementById("orderPaypalEnabled").checked=!!data.paypal?.enabled;
     document.getElementById("orderPaypalClientSecret").value="";
     document.getElementById("orderPaypalClientSecret").placeholder=data.paypal?.configured?"Ingesteld — leeg laten om te behouden":"Vul je PayPal Client Secret in";
