@@ -232,7 +232,8 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       const buyback=await client.query("SELECT id,offered_price FROM buyback_orders WHERE id=$1 FOR UPDATE",[order.trade_in_order_id]);
       if(!buyback.rows.length){await client.query("ROLLBACK");return res.status(409).json({error:"De gekoppelde inruilaanvraag ontbreekt."});}
       const adjustment=calculateTradeInAdjustment(order.trade_in_estimated_value,inspectedValue);
-      const nextStatus=adjustment.direction==="no_change"?"Settled":"AdjustmentRequired";
+      // Always require an explicit payout record after inspection, even when the inspected value matches the estimate.
+      const nextStatus="AdjustmentRequired";
       const updated=await client.query(
         `UPDATE webshop_orders
          SET trade_in_inspected_value=$1,trade_in_adjustment=$2,trade_in_status=$3,
