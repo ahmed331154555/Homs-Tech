@@ -8745,139 +8745,214 @@ async function deleteWebshopOrder(id){
 // =====================================================
 // BUYBACK ORDERS ADMIN
 // =====================================================
+let buybackOrdersCache = [];
+let selectedBuybackOrderId = null;
+
+function buybackMoney(value){
+  if(value===null||value===undefined||value==="")return "—";
+  return "€ "+Number(value).toLocaleString("nl-NL",{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function buybackDate(value){
+  if(!value)return "—";
+  const date=new Date(value);
+  return Number.isNaN(date.getTime())?"—":date.toLocaleString("nl-NL");
+}
+function buybackStatusClass(status){
+  if(status==="Klant akkoord"||status==="Voltooid")return "is-ok";
+  if(status==="Klant niet akkoord")return "is-no";
+  if(["Aanbod klaar","Aanbod verzonden","In behandeling"].includes(status))return "is-wait";
+  return "";
+}
 async function loadBuybackOrders(){
   const list=document.getElementById("buybackOrdersList");
   const status=document.getElementById("buybackOrdersStatus");
+  const detail=document.getElementById("buybackOrdersDetail");
   if(!list)return;
   list.innerHTML='<div style="padding:25px;text-align:center">Laden...</div>';
+  if(detail){detail.hidden=true;detail.innerHTML="";}
+  selectedBuybackOrderId=null;
   try{
-    const response=await fetch("/api/admin/buyback-orders",{credentials:"same-origin"});
+    const response=await fetch("/api/admin/buyback-orders",{credentials:"same-origin",headers:{"Accept":"application/json"}});
     const result=await response.json().catch(()=>({}));
-    if(!response.ok)throw new Error(result.error||"Verkoopaanvragen konden niet worden geladen.");
-    const orders=result.orders||[];
-    status.textContent=orders.length+" verkoopaanvragen gevonden.";
-    if(!orders.length){
-      list.innerHTML='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:35px;text-align:center;color:#64748b">Nog geen verkoopaanvragen.</div>';
+    if(!response.ok)throw new Error(result.error||"Inkoopaanvragen konden niet worden geladen.");
+    buybackOrdersCache=Array.isArray(result.orders)?result.orders:[];
+    status.textContent=buybackOrdersCache.length+" inkoopaanvragen gevonden.";
+    if(!buybackOrdersCache.length){
+      list.innerHTML='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:32px;text-align:center;color:#64748b">Er zijn nog geen zelfstandige verkoopaanvragen.</div>';
       return;
     }
-    list.innerHTML=orders.map(order=>{
-      const date=order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"";
-      const price=Number(order.offered_price||0).toFixed(2).replace(".",",");
-      return `
-      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:20px;box-shadow:0 4px 15px rgba(15,23,42,.05)">
-        <div style="display:flex;justify-content:space-between;gap:15px;align-items:flex-start;flex-wrap:wrap">
-          <div>
-            <div style="font-size:13px;color:#64748b;margin-bottom:5px">Aanvraag #${order.id}</div>
-            <h3 style="margin:0 0 5px">${esc(order.device||"-")}</h3>
-            <div>${esc(order.name||"-")}</div>
-            <div style="color:#64748b;font-size:14px">${esc(order.email||"-")}${order.phone?" · "+esc(order.phone):""}</div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-size:24px;font-weight:800;color:#2563eb">€ ${price}</div>
-            <div style="color:#64748b;font-size:13px">${date}</div>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:18px">
-          ${bbInfo("Opslag",order.storage)}
-          ${bbInfo("Conditie",order.condition)}
-          ${bbInfo("Face ID",order.face_id)}
-          ${bbInfo("Batterij",order.battery)}
-          ${bbInfo("Scherm",order.screen)}
-        </div>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px;padding-top:15px;border-top:1px solid #e5e7eb">
-          <label style="font-weight:700">Status:</label>
-          <select ${hasPermission("buyback_orders.update")?"":"disabled"} onchange="updateBuybackStatus(${order.id},this.value)" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:10px">
-            ${bbOpt("Nieuw",order.status)}
-            ${bbOpt("In behandeling",order.status)}
-            ${bbOpt("Aanbod verzonden",order.status)}
-            ${bbOpt("Goedgekeurd",order.status)}
-            ${bbOpt("Afgewezen",order.status)}
-            ${bbOpt("Voltooid",order.status)}
-          </select>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <input id="buybackOffer-${order.id}" type="number" min="0" step="0.01" placeholder="Definitief bod (€)" value="${order.final_offer!==null&&order.final_offer!==undefined?Number(order.final_offer).toFixed(2):""}" style="width:155px;padding:9px 10px;border:1px solid #cbd5e1;border-radius:10px">
-            <button class="btn btn-green" onclick="sendBuybackOffer(${order.id})" ${hasPermission("buyback_orders.update")?"":"disabled"}>✉️ Verstuur prijsvoorstel</button>
-          </div>
-          <button class="btn btn-light" onclick="showBuybackDetails(${order.id})">Details</button>
-          ${hasPermission("buyback_orders.delete")?`<button class="btn btn-red" onclick="deleteBuybackOrder(${order.id})">Verwijderen</button>`:""}
-        </div>
-      </div>`;
-    }).join("");
+    list.innerHTML='<div class="ht-inkoop-list">'+buybackOrdersCache.map(function(order){
+      const id=Number(order.id);
+      const price=buybackMoney(order.sale_inspected_value??order.offered_price);
+      const statusText=String(order.status||"Nieuw");
+      return '<button type="button" class="ht-inkoop-row" onclick="showBuybackDetails('+id+')">'+
+        '<span class="ht-inkoop-number">#'+esc(order.order_no||id)+'</span>'+
+        '<span class="ht-inkoop-main"><strong>'+esc(order.name||"Klant onbekend")+' · '+esc(order.device||"Telefoon")+'</strong>'+
+        '<small>'+esc(order.email||"Geen e-mail")+' · '+esc(buybackDate(order.created_at))+'</small>'+
+        '<span class="ht-inkoop-chip '+buybackStatusClass(statusText)+'">'+esc(statusText)+'</span></span>'+
+        '<strong class="ht-inkoop-price">'+price+'</strong><span aria-hidden="true">›</span></button>';
+    }).join("")+'</div>';
   }catch(error){
     status.textContent="";
     list.innerHTML='<div style="background:#fef2f2;color:#991b1b;padding:18px;border-radius:12px">'+esc(error.message)+'</div>';
   }
 }
-function bbInfo(label,value){return `<div style="background:#f8fafc;padding:12px;border-radius:10px"><div style="font-size:12px;color:#64748b">${label}</div><strong>${esc(value||"-")}</strong></div>`}
-function bbOpt(value,current){return `<option value="${esc(value)}" ${value===current?"selected":""}>${esc(value)}</option>`}
-async function sendBuybackOffer(id){
-  const input=document.getElementById("buybackOffer-"+id);
-  const finalOffer=Number(input?.value);
-  if(!Number.isFinite(finalOffer)||finalOffer<0){alert("Vul eerst een geldig definitief bedrag in.");return;}
-  if(!confirm("Het definitieve prijsvoorstel van € "+finalOffer.toFixed(2).replace(".",",")+" per e-mail naar de klant versturen?"))return;
+
+function buybackFact(label,value){
+  return '<div class="ht-inkoop-fact"><span>'+esc(label)+'</span><strong>'+esc(value||"—")+'</strong></div>';
+}
+function buybackAnswerMarkup(answers){
+  if(!answers||typeof answers!=="object"||Array.isArray(answers))return "";
+  const entries=Object.entries(answers).map(function(pair){
+    const key=pair[0],raw=pair[1],item=raw&&typeof raw==="object"&&!Array.isArray(raw)?raw:{value:raw};
+    const value=item.value??raw;
+    if(value===undefined||value===null||String(value).trim()==="")return "";
+    const label=String(item.question||key.replace(/[_-]+/g," "));
+    const answer=Array.isArray(value)?value.join(", "):(typeof value==="object"?JSON.stringify(value):String(value));
+    return '<div class="ht-inkoop-answer"><span>'+esc(label)+'</span><strong>'+esc(answer)+'</strong></div>';
+  }).filter(Boolean);
+  return entries.length?'<div class="ht-inkoop-answers">'+entries.join("")+'</div>':"";
+}
+function showBuybackDetails(id){
+  const order=buybackOrdersCache.find(function(item){return Number(item.id)===Number(id);});
+  const host=document.getElementById("buybackOrdersDetail");
+  if(!order||!host)return;
+  selectedBuybackOrderId=Number(id);
+  host.hidden=false;
+  const status=String(order.status||"Nieuw");
+  const inspected=order.sale_inspected_value!==null&&order.sale_inspected_value!==undefined;
+  const answers=buybackAnswerMarkup(order.answers);
+  const phoneDigits=String(order.phone||"").replace(/[^\d+]/g,"");
+  const phoneLink=phoneDigits?'<a href="tel:'+esc(phoneDigits)+'">'+esc(order.phone)+'</a>':esc(order.phone||"Niet opgegeven");
+  const emailLink=order.email?'<a href="mailto:'+esc(order.email)+'">'+esc(order.email)+'</a>':"Niet opgegeven";
+  let workflow="";
+  if(status==="Nieuw"||status==="In behandeling"||status==="Aanbod klaar"){
+    workflow='<div class="ht-inkoop-notice"><strong>Volgende stap: inspecteer de ontvangen telefoon.</strong><br>Vul de definitieve waarde in na controle van het toestel. Na opslaan verstuurt HOMS TECH automatisch het prijsvoorstel naar de klant.</div>'+
+      '<div class="ht-inkoop-form"><label>Definitieve inkoopwaarde (€)<input id="buybackInspectedValue" type="number" min="0" max="100000" step="0.01" value="'+(inspected?esc(order.sale_inspected_value):esc(order.offered_price||""))+'"></label>'+
+      '<label>Inspectienotitie<textarea id="buybackInspectionReason" rows="3" maxlength="1000" placeholder="Beschrijf de staat, schade en testresultaten...">'+esc(order.sale_inspection_reason||"")+'</textarea></label>'+
+      '<div class="ht-inkoop-actions"><button class="btn btn-green" type="button" onclick="saveBuybackInspection('+Number(order.id)+')">✓ Inspectie opslaan en voorstel versturen</button>'+
+      (status==="Aanbod klaar"&&inspected?'<button class="btn btn-light" type="button" onclick="sendBuybackOffer('+Number(order.id)+')">✉ Voorstel opnieuw versturen</button>':"")+'</div></div>';
+  }else if(status==="Aanbod verzonden"){
+    workflow='<div class="ht-inkoop-notice is-warn"><strong>✉ Prijsvoorstel verzonden.</strong><br>De klant heeft een e-mail ontvangen met de definitieve waarde van '+buybackMoney(order.sale_inspected_value)+' en kan akkoord of niet akkoord kiezen. Wacht op de reactie voordat je betaalt.'+
+      (order.sale_approval_expires_at?'<br><small>Link geldig tot: '+esc(buybackDate(order.sale_approval_expires_at))+'</small>':"")+'</div>'+
+      '<button class="btn btn-light" type="button" onclick="sendBuybackOffer('+Number(order.id)+')">✉ Stuur voorstel opnieuw</button>';
+  }else if(status==="Klant akkoord"){
+    workflow='<div class="ht-inkoop-notice is-good"><strong>✓ Klant heeft akkoord gegeven.</strong><br>Maak nu '+buybackMoney(order.sale_inspected_value)+' over naar de IBAN van de klant. Bevestig de uitbetaling pas nadat de overschrijving daadwerkelijk is uitgevoerd.</div>'+
+      '<div class="ht-inkoop-total"><span>Uit te betalen aan klant</span><strong>'+buybackMoney(order.sale_inspected_value)+'</strong></div>'+
+      '<div class="ht-inkoop-form"><label>Betalingskenmerk / toelichting<textarea id="buybackSettlementNote" rows="3" maxlength="1000" placeholder="Bijvoorbeeld: € '+esc(Number(order.sale_inspected_value).toFixed(2))+' overgemaakt op datum ... via bankoverschrijving."></textarea></label>'+
+      '<button class="btn btn-green" type="button" onclick="settleBuybackOrder('+Number(order.id)+')">✓ Afhandeling bevestigen</button></div>';
+  }else if(status==="Klant niet akkoord"){
+    workflow='<div class="ht-inkoop-notice is-warn"><strong>✕ Klant is niet akkoord gegaan.</strong><br>Er mag geen bedrag worden overgemaakt. Neem contact op met de klant en spreek af hoe het toestel wordt teruggestuurd of wat de vervolgstap is.</div>';
+  }else if(status==="Voltooid"){
+    workflow=order.sale_payout_email_sent_at?
+      '<div class="ht-inkoop-notice is-good"><strong>✓ Verkoop afgerond en bevestigingsmail verzonden.</strong><br>De klant heeft een e-mail ontvangen dat '+buybackMoney(order.sale_inspected_value)+' is overgemaakt.</div>':
+      '<div class="ht-inkoop-notice is-warn"><strong>Uitbetaling geregistreerd – e-mail nog niet bevestigd.</strong><br>Verstuur de bevestiging opnieuw naar de klant.</div><button class="btn btn-primary" type="button" onclick="sendBuybackPayoutEmail('+Number(order.id)+')">✉ Bevestigingsmail verzenden</button>';
+    workflow+='<div class="ht-inkoop-total"><span>Uitbetaald bedrag</span><strong>'+buybackMoney(order.sale_inspected_value)+'</strong></div>'+
+      '<div class="ht-inkoop-notice">Betalingsnotitie: '+esc(order.sale_settlement_note||"—")+'</div>';
+  }
+  const canDelete=hasPermission("buyback_orders.delete");
+  host.innerHTML='<section class="ht-inkoop-detail">'+
+    '<div class="ht-inkoop-detail-head"><div><small>HOMS TECH · INKOOP / VERKOOP AAN ONS</small><h3>Aanvraag '+esc(order.order_no||("#"+order.id))+'</h3></div><div class="ht-inkoop-actions"><span class="ht-inkoop-chip '+buybackStatusClass(status)+'">'+esc(status)+'</span><button type="button" class="btn btn-light" onclick="closeBuybackDetails()">✕ Sluiten</button></div></div>'+
+    '<div class="ht-inkoop-columns"><div style="display:grid;gap:12px;min-width:0">'+
+      '<section class="ht-inkoop-card"><div class="ht-inkoop-card-head">📱 Telefoon die de klant wil verkopen</div><div class="ht-inkoop-card-body">'+
+        '<div class="ht-inkoop-device"><div class="ht-inkoop-device-icon">📱</div><div><strong>'+esc(order.device||order.model||"Telefoon onbekend")+'</strong><small>'+esc(order.brand||"Merk onbekend")+(order.storage?" · "+esc(order.storage):"")+'</small><small>Aanvraag ontvangen: '+esc(buybackDate(order.created_at))+'</small></div></div>'+
+        '<div class="ht-inkoop-facts">'+buybackFact("Opslag",order.storage)+buybackFact("Conditie",order.condition)+buybackFact("Face ID",order.face_id)+buybackFact("Batterij",order.battery)+buybackFact("Scherm",order.screen)+buybackFact("Geschatte waarde",buybackMoney(order.offered_price))+
+        (inspected?buybackFact("Definitieve waarde",buybackMoney(order.sale_inspected_value)):"")+'</div>'+
+        (answers?'<div style="margin-top:13px;font-size:11px;font-weight:850;color:#475569">Antwoorden van de klant</div>'+answers:"")+
+      '</div></section>'+
+      '<section class="ht-inkoop-card"><div class="ht-inkoop-card-head">♙ Klantgegevens</div><div class="ht-inkoop-card-body"><div class="ht-inkoop-info">'+
+        '<div><span>Naam</span><strong>'+esc(order.name||"—")+'</strong></div><div><span>Telefoon</span><strong>'+phoneLink+'</strong></div><div><span>E-mail</span><strong>'+emailLink+'</strong></div>'+
+        '<div><span>Adres</span><strong>'+esc(order.address||"—")+'</strong></div><div><span>IBAN</span><strong>'+esc(order.iban||"—")+'</strong></div><div><span>Betaalmethode</span><strong>'+esc(order.payment_method||"Bankoverschrijving")+'</strong></div>'+
+      '</div></div></section></div>'+
+      '<div style="display:grid;gap:12px;align-content:start;min-width:0"><section class="ht-inkoop-card"><div class="ht-inkoop-card-head">✓ Afhandeling en betaling</div><div class="ht-inkoop-card-body"><div class="ht-inkoop-workflow">'+workflow+'</div></div></section>'+
+      '<section class="ht-inkoop-card"><div class="ht-inkoop-card-head">Overzicht aanvraag</div><div class="ht-inkoop-card-body"><div class="ht-inkoop-info">'+
+        '<div><span>Aanvraagnummer</span><strong>'+esc(order.order_no||("BT-"+order.id))+'</strong></div><div><span>Ontvangen op</span><strong>'+esc(buybackDate(order.created_at))+'</strong></div><div><span>Huidige status</span><strong>'+esc(status)+'</strong></div>'+
+        (order.sale_inspection_reason?'<div><span>Inspectienotitie</span><strong>'+esc(order.sale_inspection_reason)+'</strong></div>':"")+
+      '</div></div></section></div></div>'+
+    '<div class="ht-inkoop-detail-foot"><span style="font-size:10px;color:#64748b">Dit is een zelfstandige inkoopaanvraag. Er is geen nieuwe telefoonbestelling gekoppeld.</span>'+
+    (canDelete?'<button class="btn btn-red" type="button" onclick="deleteBuybackOrder('+Number(order.id)+')">Aanvraag verwijderen</button>':"")+'</div></section>';
+  host.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function closeBuybackDetails(){
+  const host=document.getElementById("buybackOrdersDetail");
+  if(host){host.hidden=true;host.innerHTML="";}
+  selectedBuybackOrderId=null;
+}
+async function refreshBuybackOrderDetails(id){
+  await loadBuybackOrders();
+  showBuybackDetails(id);
+}
+async function saveBuybackInspection(id){
+  if(!hasPermission("buyback_orders.update"))return;
+  const inspectedValue=Number(document.getElementById("buybackInspectedValue")?.value);
+  const reason=String(document.getElementById("buybackInspectionReason")?.value||"").trim();
+  if(!Number.isFinite(inspectedValue)||inspectedValue<0){alert("Vul een geldige definitieve inkoopwaarde in.");return;}
+  if(reason.length<5){alert("Geef een korte inspectienotitie van minimaal 5 tekens.");return;}
+  if(!confirm("Inspectie opslaan en het definitieve prijsvoorstel per e-mail naar de klant versturen?"))return;
   try{
-    const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id)+"/offer",{method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({finalOffer})});
+    const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id)+"/inspection",{method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({inspectedValue,reason})});
     const result=await response.json().catch(()=>({}));
-    if(!response.ok)throw new Error(result.error||"Prijsvoorstel kon niet worden verstuurd.");
-    alert("Het prijsvoorstel is per e-mail verstuurd.");
-    await loadBuybackOrders();
+    if(!response.ok)throw new Error(result.error||"Inspectie kon niet worden opgeslagen.");
+    await refreshBuybackOrderDetails(id);
+    if(result.customerOffer?.sent)alert("Het definitieve voorstel is per e-mail naar de klant verzonden. Wacht op akkoord voordat je uitbetaalt.");
+    else alert("De inspectie is opgeslagen, maar de e-mail is niet verzonden. Controleer de e-mailinstellingen en gebruik daarna 'Voorstel opnieuw versturen'.");
+  }catch(error){alert(error.message);}
+}
+async function sendBuybackOffer(id){
+  if(!hasPermission("buyback_orders.update"))return;
+  if(!confirm("Wil je het opgeslagen definitieve prijsvoorstel opnieuw per e-mail naar de klant sturen?"))return;
+  try{
+    const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id)+"/offer",{method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:"{}"});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Het voorstel kon niet worden verzonden.");
+    await refreshBuybackOrderDetails(id);
+    alert("Het prijsvoorstel is per e-mail naar de klant verzonden.");
+  }catch(error){alert(error.message);}
+}
+async function settleBuybackOrder(id){
+  if(!hasPermission("buyback_orders.update"))return;
+  const note=String(document.getElementById("buybackSettlementNote")?.value||"").trim();
+  if(note.length<5){alert("Vermeld eerst wanneer en hoe het bedrag aan de klant is overgemaakt.");return;}
+  if(!confirm("Bevestig je dat het bedrag daadwerkelijk naar de klant is overgemaakt? Na bevestiging ontvangt de klant automatisch een e-mail."))return;
+  try{
+    const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id)+"/settlement",{method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({settlementNote:note})});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"De uitbetaling kon niet worden geregistreerd.");
+    await refreshBuybackOrderDetails(id);
+    if(result.payoutEmail?.sent)alert("De uitbetaling is geregistreerd en de bevestigingsmail is verzonden naar de klant.");
+    else alert("De uitbetaling is geregistreerd, maar de e-mail kon niet worden verzonden. Je kunt deze opnieuw versturen vanuit de aanvraag.");
+  }catch(error){alert(error.message);}
+}
+async function sendBuybackPayoutEmail(id){
+  if(!hasPermission("buyback_orders.update"))return;
+  if(!confirm("Wil je de bevestiging van de overgemaakte betaling opnieuw naar de klant sturen?"))return;
+  try{
+    const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id)+"/settlement-email",{method:"POST",credentials:"same-origin",headers:{"Accept":"application/json"}});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"De bevestigingsmail kon niet worden verzonden.");
+    await refreshBuybackOrderDetails(id);
+    alert("De bevestigingsmail is verzonden naar de klant.");
   }catch(error){alert(error.message);}
 }
 async function updateBuybackStatus(id,newStatus){
+  if(!["Nieuw","In behandeling"].includes(newStatus))return;
   try{
     const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id)+"/status",{method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:newStatus})});
     const result=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(result.error||"Status kon niet worden gewijzigd.");
-    await loadBuybackOrders();
-  }catch(error){alert(error.message)}
+    await refreshBuybackOrderDetails(id);
+  }catch(error){alert(error.message);}
 }
 async function deleteBuybackOrder(id){
-  if(!confirm("Deze verkoopaanvraag echt verwijderen?"))return;
+  if(!hasPermission("buyback_orders.delete"))return;
+  if(!confirm("Deze zelfstandige inkoopaanvraag echt verwijderen?"))return;
   try{
     const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id),{method:"DELETE",credentials:"same-origin"});
     const result=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(result.error||"Verwijderen mislukt.");
+    closeBuybackDetails();
     await loadBuybackOrders();
-  }catch(error){alert(error.message)}
-}
-async function showBuybackDetails(id){
-  try{
-    const response=await fetch("/api/admin/buyback-orders",{credentials:"same-origin"});
-    const result=await response.json().catch(()=>({}));
-    if(!response.ok)throw new Error(result.error||"Verkoopaanvraag kon niet worden geladen.");
-    const order=(result.orders||[]).find(item=>Number(item.id)===Number(id));
-    if(!order)throw new Error("Verkoopaanvraag niet gevonden.");
-    const date=order.created_at?new Date(order.created_at).toLocaleString("nl-NL"):"-";
-    const money=value=>value===null||value===undefined||value===""?"-":"€ "+Number(value).toLocaleString("nl-NL",{minimumFractionDigits:2,maximumFractionDigits:2});
-    const answers=order.answers&&typeof order.answers==="object"?Object.entries(order.answers).map(([key,value])=>{
-      const item=value&&typeof value==="object"?value:{};
-      return (item.question||key)+": "+(item.value??value??"-");
-    }).join("\n"):"-";
-    showOrderDetails("Inkoopaanvraag #"+(order.order_no||order.id),{
-      "Aanvraagnummer":order.order_no||("BT-"+order.id),
-      "Ontvangen op":date,
-      "Status":order.status||"Nieuw",
-      "Klantnaam":order.name||"-",
-      "E-mailadres":order.email||"-",
-      "Telefoonnummer":order.phone||"-",
-      "Adres":order.address||"-",
-      "Postcode":order.postcode||"-",
-      "Plaats":order.city||"-",
-      "Toestel":order.device||"-",
-      "Merk":order.brand||"-",
-      "Model":order.model||"-",
-      "Opslag":order.storage||"-",
-      "Conditie":order.condition||"-",
-      "Face ID":order.face_id||"-",
-      "Batterijconditie":order.battery||"-",
-      "Schermconditie":order.screen||"-",
-      "Aangeboden prijs":money(order.offered_price),
-      "Definitief bod":money(order.final_offer),
-      "Betaalmethode":order.payment_method||"-",
-      "IBAN":order.iban||"-",
-      "Extra antwoorden":answers
-    });
-  }catch(error){alert(error.message)}
+  }catch(error){alert(error.message);}
 }
 
 let unifiedOrdersActiveKey="";
