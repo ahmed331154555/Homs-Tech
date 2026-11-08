@@ -2489,8 +2489,22 @@ $('finish').onclick=async()=>{
       localStorage.setItem('homsTechTradeInDevice',String(payload.device||'iPhone'));
       localStorage.setItem('homsTechTradeInEmail',String(payload.email||'').trim().toLowerCase());
       sessionStorage.removeItem('homsTechTradeInMode');
+      const returnTo=sessionStorage.getItem('homsTechTradeInReturnTo')||'';
+      sessionStorage.removeItem('homsTechTradeInReturnTo');
       if(new URLSearchParams(location.search).get('embed')==='1' && window.parent!==window){
         window.parent.postMessage({type:'HOMS_TRADEIN_READY'},location.origin);
+      }else if(returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//')){
+        try{
+          const destination=new URL(returnTo,location.origin);
+          if(destination.origin===location.origin){
+            destination.searchParams.set('tradeIn','ready');
+            location.replace(destination.pathname+destination.search+destination.hash);
+          }else{
+            location.replace('cart.html?tradeIn=applied');
+          }
+        }catch(error){
+          location.replace('cart.html?tradeIn=applied');
+        }
       }else{
         location.replace('cart.html?tradeIn=applied');
       }
