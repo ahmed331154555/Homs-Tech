@@ -342,3 +342,65 @@ test("admin can change the fulfillment status of a paid webshop order without ch
   assert.deepEqual(response.body, { success: true, order: { id: 12, status: "Verzonden" } });
   assert.match(query, /NOT \(payment_status = 'Paid' AND \$1 = 'Geannuleerd'\)/);
 });
+
+
+test("trade-in inspection requires explicit payout confirmation even when inspected value matches estimate", async () => {
+  const statements = [];
+  const client = {
+    async query(sql, params) {
+      statements.push({ sql, params });
+      if (sql.includes("SELECT id,trade_in_order_id,trade_in_estimated_value,trade_in_status")) {
+        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_estimated_value: "165.00", trade_in_status: "AwaitingDevice" }] };
+      }
+      if (sql.includes("SELECT id,offered_price FROM buyback_orders")) return { rows: [{ id: 77, offered_price: "165.00" }] };
+      if (sql.includes("UPDATE webshop_orders")) {
+        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_estimated_value: "165.00", trade_in_inspected_value: 165, trade_in_adjustment: 0, trade_in_status: "AdjustmentRequired" }] };
+      }
+      if (sql.includes("UPDATE buyback_orders")) return { rows: [] };
+      return { rows: [] };
+    },
+    release() {}
+  };
+  const pool = { async connect() { return client; } };
+  const routes = createHarness(pool);
+  const response = createResponse();
+
+  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-inspection")({
+    params: { id: "31" },
+    body: { inspectedValue: 165, reason: "Toestel gecontroleerd, waarde bevestigd." }
+  }, response);
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.order.trade_in_status, "AdjustmentRequired");
+  assert.ok(statements.some(({ sql, params }) => sql.includes("UPDATE webshop_orders") && params[2] === "AdjustmentRequired"));
+  assert.ok(statements.some(({ sql }) => sql === "COMMIT"));
+});
+
+test("trade-in payout is marked settled only after admin records a payout note", async () => {
+  const statements = [];
+  const client = {
+    async query(sql, params) {
+      statements.push({ sql, params });
+      if (sql.includes("SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot")) {
+        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_status: "AdjustmentRequired", trade_in_snapshot: {} }] };
+      }
+      if (sql.includes("UPDATE webshop_orders SET trade_in_status='Settled'")) {
+        return { rows: [{ id: 31, trade_in_status: "Settled", trade_in_snapshot: { settlementNote: params[0] } }] };
+      }
+      if (sql.includes("UPDATE buyback_orders")) return { rows: [] };
+      return { rows: [] };
+    },
+    release() {}
+  };
+  const routes = createHarness({ async connect() { return client; } });
+  const response = createResponse();
+
+  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-settlement")({
+    params: { id: "31" },
+    body: { settlementNote: "Overgemaakt op 08-11-2026, bankreferentie 12345." }
+  }, response);
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.order.trade_in_status, "Settled");
+  assert.ok(statements.some(({ sql }) => sql === "COMMIT"));
+});
