@@ -52,6 +52,9 @@ app.post("/api/webshop/orders", async (req, res) => {
     if (tradeInToken && !/^[a-f0-9]{64}$/.test(tradeInToken)) {
       return res.status(400).json({ error: "Ongeldige inruilcode." });
     }
+    if (tradeInToken && paymentMethod === "CashOnDelivery") {
+      return res.status(400).json({ error: "Bij een inruilbestelling moet u online betalen. De inruilaanvraag wordt pas bevestigd nadat de betaling van uw nieuwe telefoon is geslaagd." });
+    }
 
     const checkoutToken = crypto.randomBytes(32).toString("hex");
     const checkoutTokenHash = crypto.createHash("sha256").update(checkoutToken).digest("hex");
@@ -101,13 +104,13 @@ app.post("/api/webshop/orders", async (req, res) => {
           tradeInOrder ? tradeInOrder.id : null,
           tradeInOrder ? Number(tradeInOrder.offered_price) : null,
           tradeInCredit,
-          tradeInOrder ? "AwaitingDevice" : "",
+          tradeInOrder ? "AwaitingPayment" : "",
           JSON.stringify(tradeInOrder ? { productTotal, estimatedValue:Number(tradeInOrder.offered_price), appliedCredit:0, settlement:"after-inspection", device:tradeInOrder.device || tradeInOrder.model } : {})
         ]
       );
       if (tradeInOrder) {
         const linked = await client.query(
-          "UPDATE buyback_orders SET trade_in_linked_order_id=$1,trade_in_quote_token_hash='',status='Inruil gekoppeld' WHERE id=$2 AND trade_in_linked_order_id IS NULL RETURNING id",
+          "UPDATE buyback_orders SET trade_in_linked_order_id=$1,trade_in_quote_token_hash='',status='Wacht op betaling' WHERE id=$2 AND trade_in_linked_order_id IS NULL AND status='Wacht op aankoop' RETURNING id",
           [result.rows[0].id,tradeInOrder.id]
         );
         if (!linked.rows.length) throw new Error("Inruilcode is ondertussen al gebruikt.");
@@ -121,7 +124,7 @@ app.post("/api/webshop/orders", async (req, res) => {
     }
 
     // Send the customer an order confirmation to the email address used at checkout.
-    if (getEnv().RESEND_API_KEY && getEnv().RESEND_FROM_EMAIL) {
+    if (!tradeInOrder && getEnv().RESEND_API_KEY && getEnv().RESEND_FROM_EMAIL) {
       try {
         const order = result.rows[0];
         const orderFromEmail = getEnv().RESEND_FROM_EMAIL;
@@ -166,7 +169,7 @@ app.post("/api/webshop/orders", async (req, res) => {
 
     // Notify the site owner when a webshop order is created.
     const notifyEmail = getEnv().ORDER_NOTIFICATION_EMAIL || getEnv().REPAIR_REQUEST_EMAIL;
-    if (getEnv().RESEND_API_KEY && getEnv().RESEND_FROM_EMAIL && notifyEmail) {
+    if (!tradeInOrder && getEnv().RESEND_API_KEY && getEnv().RESEND_FROM_EMAIL && notifyEmail) {
       try {
         const order = result.rows[0];
         const orderFromEmail = getEnv().RESEND_FROM_EMAIL;
@@ -204,8 +207,10 @@ app.post("/api/webshop/orders", async (req, res) => {
         if (!response.ok) console.error("Webshop order notification failed:", response.status, await response.text().catch(() => ""));
         else console.log("Webshop order notification sent:", (await response.json().catch(() => ({}))).id || "ok");
       } catch (mailError) { console.error("Webshop order notification error:", mailError.message); }
-    } else {
+    } else if (!tradeInOrder) {
       console.error("Webshop order emails skipped: RESEND_API_KEY or order notification email is missing.");
+    } else {
+      console.log("Webshop order with trade-in created as unpaid; purchase and trade-in emails will be sent only after payment confirmation.");
     }
 
     res.status(201).json({ success: true, order: { ...result.rows[0], checkout_token: checkoutToken } });
