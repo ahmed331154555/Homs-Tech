@@ -125,7 +125,7 @@ function registerAdminBuybackOrderRoutes(app, {
       await ensureBuybackOrdersTable(pool);
       const result = await pool.query(`
         SELECT id,order_no,name,email,phone,address,device,brand,model,storage,condition,
-               face_id,battery,screen,offered_price,iban,payment_method,answers,trade_in,
+               face_id,battery,screen,offered_price,iban,account_holder_name,payment_method,answers,trade_in,
                trade_in_linked_order_id,final_offer,final_offer_sent_at,status,created_at,
                sale_inspected_value,sale_inspection_reason,sale_approval_expires_at,
                sale_approval_decision_at,sale_settlement_note,sale_settled_at,sale_payout_email_sent_at,
