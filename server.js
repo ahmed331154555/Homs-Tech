@@ -182,7 +182,7 @@ app.use(express.static(__dirname, {
 app.get("/api/buyback/catalog", async (req, res) => {
   try {
     const result = await queryWithConnectionRetry(
-      "SELECT data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones FROM site_settings WHERE id = 1",
+      "SELECT data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones, data->'phones' AS sales_phones FROM site_settings WHERE id = 1",
       [],
       4
     );
@@ -192,7 +192,24 @@ app.get("/api/buyback/catalog", async (req, res) => {
     res.set("Cache-Control", "no-store");
     return res.json(sanitizePublicSiteData({
       buybackCatalog: Array.isArray(result.rows[0].catalog) ? result.rows[0].catalog : [],
-      buybackPhones: Array.isArray(result.rows[0].phones) ? result.rows[0].phones : []
+      buybackPhones: Array.isArray(result.rows[0].phones) ? result.rows[0].phones : [],
+      // Only public model identity, display images and customer-facing specs are exposed.
+      salesPhones: (Array.isArray(result.rows[0].sales_phones) ? result.rows[0].sales_phones : []).map(phone => {
+        if (!phone || typeof phone !== "object") return null;
+        return {
+          name: phone.name || "",
+          brand: phone.brand || "",
+          image: phone.image || (Array.isArray(phone.images) ? phone.images.find(Boolean) : "") || "",
+          images: Array.isArray(phone.images) ? phone.images.filter(Boolean).slice(0, 4) : [],
+          screenSize: phone.screenSize || "",
+          processor: phone.processor || "",
+          memory: phone.memory || "",
+          gpu: phone.gpu || "",
+          releaseYear: phone.releaseYear || "",
+          connectivity: phone.connectivity || "",
+          specifications: Array.isArray(phone.specifications) ? phone.specifications : []
+        };
+      }).filter(Boolean)
     }));
   } catch (error) {
     console.error("[BUYBACK CATALOG] Load failed:", error);
