@@ -52,10 +52,6 @@ app.post("/api/webshop/orders", async (req, res) => {
     if (tradeInToken && !/^[a-f0-9]{64}$/.test(tradeInToken)) {
       return res.status(400).json({ error: "Ongeldige inruilcode." });
     }
-    if (tradeInToken && paymentMethod === "CashOnDelivery") {
-      return res.status(400).json({ error: "Bij een inruilbestelling moet u online betalen. De inruilaanvraag wordt pas bevestigd nadat de betaling van uw nieuwe telefoon is geslaagd." });
-    }
-
     const checkoutToken = crypto.randomBytes(32).toString("hex");
     const checkoutTokenHash = crypto.createHash("sha256").update(checkoutToken).digest("hex");
     const client = await pool.connect();
