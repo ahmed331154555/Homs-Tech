@@ -5,7 +5,7 @@ function formatEuro(value) {
   return new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" }).format(Number.isFinite(amount) ? amount : 0);
 }
 
-async function sendPaidWebshopOrderNotifications({ pool, orderId, fetchImpl, getEnv, escapeHtml }) {
+async function sendPaidWebshopOrderNotifications({ pool, orderId, fetchImpl, getEnv, escapeHtml, allowCashOnDelivery = false }) {
   const id = Number(orderId);
   if (!Number.isInteger(id) || id < 1) return { sent: false, reason: "invalid-order" };
 
@@ -29,30 +29,27 @@ async function sendPaidWebshopOrderNotifications({ pool, orderId, fetchImpl, get
   if (!result.rows.length) return { sent: false, reason: "order-not-found" };
 
   const order = result.rows[0];
-  if (order.payment_status !== "Paid" || !order.trade_in_order_id) {
-    return { sent: false, reason: "not-a-paid-trade-in-order" };
+  const isPaid = order.payment_status === "Paid";
+  const isCashOnDelivery = allowCashOnDelivery && order.payment_method === "CashOnDelivery" && order.payment_status === "Unpaid";
+  if ((!isPaid && !isCashOnDelivery) || !order.trade_in_order_id) {
+    return { sent: false, reason: "not-an-eligible-trade-in-order" };
   }
 
-  // Promote the temporary trade-in quote to a real admin request only after payment.
-  await pool.query(
-    `UPDATE buyback_orders
-     SET status = CASE
-       WHEN status IN ('Wacht op aankoop', 'Wacht op betaling', 'Inruil gekoppeld') THEN 'Nieuw'
-       ELSE status
-     END
-     WHERE id = $1`,
-    [order.trade_in_order_id]
-  );
-  await pool.query(
-    `UPDATE webshop_orders
-     SET trade_in_status = CASE
-       WHEN trade_in_status IN ('AwaitingPayment', '') THEN 'AwaitingDevice'
-       ELSE trade_in_status
-     END
-     WHERE id = $1 AND payment_status = 'Paid'`,
-    [id]
-  );
-
+  // Online-paid orders become active immediately. Cash-on-delivery orders remain unpaid.
+  if (isPaid) {
+    await pool.query(
+      `UPDATE buyback_orders
+       SET status = CASE WHEN status IN ('Wacht op aankoop', 'Wacht op betaling', 'Inruil gekoppeld') THEN 'Nieuw' ELSE status END
+       WHERE id = $1`,
+      [order.trade_in_order_id]
+    );
+    await pool.query(
+      `UPDATE webshop_orders
+       SET trade_in_status = CASE WHEN trade_in_status IN ('AwaitingPayment', '') THEN 'AwaitingDevice' ELSE trade_in_status END
+       WHERE id = $1 AND payment_status = 'Paid'`,
+      [id]
+    );
+  }
   const env = getEnv();
   const apiKey = String(env.RESEND_API_KEY || "").trim();
   const from = String(env.RESEND_FROM_EMAIL || "").trim();
@@ -89,10 +86,10 @@ async function sendPaidWebshopOrderNotifications({ pool, orderId, fetchImpl, get
     html: `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;padding:26px;color:#203449;line-height:1.65">
       <h1 style="color:#0f2740">Bedankt voor uw aankoop!</h1>
       <p>Beste ${customerName},</p>
-      <p>Uw betaling is bevestigd en uw bestelling bij HOMS TECH is succesvol afgerond.</p>
+      <p>${isCashOnDelivery ? "Uw bestelling bij HOMS TECH is ontvangen. U betaalt het volledige bedrag bij ontvangst van uw nieuwe telefoon." : "Uw betaling is bevestigd en uw bestelling bij HOMS TECH is succesvol afgerond."}</p>
       <p><strong>Bestelnummer:</strong> #${orderNo}</p>
       <h3>Uw nieuwe telefoon</h3><ul>${itemLines}</ul>
-      <p><strong>Totaal betaald:</strong> ${total}</p>
+      <p><strong>${isCashOnDelivery ? "Te betalen bij ontvangst:" : "Totaal betaald:"}</strong> ${total}</p>
       <p><strong>Betaalmethode:</strong> ${paymentMethod}</p>
       <p><strong>Bezorgadres:</strong><br>${customerAddress}</p>
       <p>We houden u op de hoogte van de verdere verwerking en verzending.</p>
@@ -107,7 +104,7 @@ async function sendPaidWebshopOrderNotifications({ pool, orderId, fetchImpl, get
     html: `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;padding:26px;color:#203449;line-height:1.65">
       <h1 style="color:#0f2740">Uw inruilaanvraag is bevestigd</h1>
       <p>Beste ${customerName},</p>
-      <p>Uw aankoop is betaald. Daarom is uw inruilaanvraag nu officieel aan uw bestelling gekoppeld.</p>
+      <p>${isCashOnDelivery ? "Uw bestelling met betaling bij ontvangst is ontvangen. Uw inruilaanvraag is aan deze bestelling gekoppeld en blijft in afwachting totdat de betaling bij ontvangst is voldaan." : "Uw aankoop is betaald. Daarom is uw inruilaanvraag nu officieel aan uw bestelling gekoppeld."}</p>
       <p><strong>Bestelnummer:</strong> #${orderNo}<br><strong>Inruilnummer:</strong> ${tradeOrderNo || "Wordt door ons verwerkt"}</p>
       <div style="padding:16px;border:1px solid #bfdbfe;border-radius:12px;background:#eff6ff">
         <strong>Oude telefoon:</strong> ${esc(tradeDevice)}<br>
@@ -123,12 +120,12 @@ async function sendPaidWebshopOrderNotifications({ pool, orderId, fetchImpl, get
   const ownerEmail = notifyEmail ? {
     from,
     to: [notifyEmail],
-    subject: `Nieuwe betaalde aankoop met inruil #${orderNo}`,
+    subject: `${isCashOnDelivery ? "Nieuwe bestelling met betaling bij ontvangst" : "Nieuwe betaalde aankoop met inruil"} #${orderNo}`,
     html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:auto;padding:24px;color:#203449;line-height:1.6">
-      <h2>Betaalde webshopbestelling met inruil</h2>
+      <h2>${isCashOnDelivery ? "Webshopbestelling met betaling bij ontvangst en inruil" : "Betaalde webshopbestelling met inruil"}</h2>
       <p><strong>Bestelnummer:</strong> #${orderNo}<br><strong>Inruilnummer:</strong> ${tradeOrderNo || "-"}<br><strong>Klant:</strong> ${customerName}<br><strong>E-mail:</strong> ${esc(order.email)}<br><strong>Telefoon:</strong> ${esc(order.phone)}<br><strong>Adres:</strong> ${customerAddress}</p>
       <h3>Nieuwe telefoon</h3><ul>${itemLines}</ul>
-      <p><strong>Betaald:</strong> ${total} · ${paymentMethod}</p>
+      <p><strong>${isCashOnDelivery ? "Te ontvangen bij levering:" : "Betaald:"}</strong> ${total} · ${paymentMethod}<br><strong>Betaalstatus:</strong> ${esc(order.payment_status)}</p>
       <h3>Inruiltoestel</h3>
       <p><strong>Toestel:</strong> ${esc(tradeDevice)}<br><strong>Geschatte waarde:</strong> ${tradeValue}<br><strong>Opslag:</strong> ${esc(order.trade_in_storage || "-")}<br><strong>Staat:</strong> ${esc(order.trade_in_condition || "-")}<br><strong>Batterij:</strong> ${esc(order.trade_in_battery || "-")}<br><strong>Scherm:</strong> ${esc(order.trade_in_screen || "-")}</p>
       ${answers ? `<h4>Antwoorden klant</h4><ul>${answers}</ul>` : ""}
@@ -140,7 +137,7 @@ async function sendPaidWebshopOrderNotifications({ pool, orderId, fetchImpl, get
     const claimed = await pool.query(
       `UPDATE webshop_orders
        SET ${claimColumn} = NOW()
-       WHERE id = $1 AND payment_status = 'Paid'
+       WHERE id = $1 AND ${isCashOnDelivery ? "payment_status = 'Unpaid' AND payment_method = 'CashOnDelivery'" : "payment_status = 'Paid'"}
          AND ${sentColumn} IS NULL
          AND (${claimColumn} IS NULL OR ${claimColumn} < NOW() - INTERVAL '10 minutes')
        RETURNING id`,
@@ -174,7 +171,7 @@ async function sendPaidWebshopOrderNotifications({ pool, orderId, fetchImpl, get
     console.warn("Paid webshop trade-in owner notification skipped: configure ORDER_NOTIFICATION_EMAIL or BUYBACK_NOTIFICATION_EMAIL.");
   }
 
-  return { sent: true };
+  return { sent: true, paymentStatus: order.payment_status, cashOnDelivery: isCashOnDelivery };
 }
 
 module.exports = { sendPaidWebshopOrderNotifications };
