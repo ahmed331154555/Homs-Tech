@@ -59,7 +59,7 @@ test("invoice creation validates input and calculates totals", async () => {
   const pool = { async query(sql, params) {
     calls.push({ sql, params });
     if (sql.startsWith("INSERT")) return { rows: [{ id: 12, created_at: createdAt, status: "open" }] };
-    return { rows: [{ total: "130.68" }] };
+    return { rows: [{ total: "129.00" }] };
   } };
   const { routes } = harness({ pool });
   const invalid = response();
@@ -83,14 +83,14 @@ test("invoice creation validates input and calculates totals", async () => {
   }, res);
   assert.equal(res.statusCode, 201);
   assert.equal(res.body.invoice.invoice_number, "HT-2026-000012");
-  assert.equal(res.body.invoice.total, "130.68");
+  assert.equal(res.body.invoice.total, "129.00");
   assert.equal(calls.length, 2);
   assert.deepEqual(calls[1].params, [12, "HT-2026-000012"]);
   const lines = JSON.parse(calls[0].params[6]);
   assert.equal(lines.length, 2);
   assert.equal(calls[0].params[7], "108.00");
-  assert.equal(calls[0].params[8], "22.68");
-  assert.equal(calls[0].params[9], "130.68");
+  assert.equal(calls[0].params[8], "21.00");
+  assert.equal(calls[0].params[9], "129.00");
 });
 
 test("invoice creation rejects invalid quantities, prices and VAT rates", async () => {
