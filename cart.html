@@ -129,7 +129,19 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
   <link rel="stylesheet" href="assets/homs-global-nav.css">
 
 <link rel="stylesheet" href="assets/homs-layout-system.css?v=20261030">
-<style id="ht-cart-tradein-clean">.ht-cart-tradein,.ht-cart-tradein-cta{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 16px;margin:12px 0;border:1px solid #bfdbfe;border-radius:12px;background:#eff6ff}.ht-cart-tradein small{display:block;color:#64748b;margin-top:3px}.ht-cart-tradein button{border:0;background:transparent;color:#dc2626;font-weight:700;cursor:pointer}.ht-cart-tradein-cta a{color:#2563eb;font-weight:800}</style>
+<style id="ht-cart-tradein-clean">
+.ht-cart-tradein{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:14px 0;padding:17px;border:1px solid #bfdbfe;border-radius:16px;background:linear-gradient(135deg,#eff6ff,#f8fbff);color:#18324a!important;box-shadow:0 5px 16px rgba(15,45,75,.06)}
+.ht-cart-tradein-main{display:flex;align-items:flex-start;gap:12px;min-width:0;flex:1}
+.ht-cart-tradein-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:12px;background:#dbeafe;color:#1d4ed8;font-size:19px}
+.ht-cart-tradein-copy{min-width:0}
+.ht-cart-tradein strong{display:block!important;color:#16324a!important;font-size:15px!important;font-weight:850!important;line-height:1.35}
+.ht-cart-tradein small{display:block;margin-top:5px;color:#31516d!important;font-size:13px;line-height:1.45}
+.ht-cart-tradein p{margin:7px 0 0;color:#64748b;font-size:12px;line-height:1.55}
+.ht-cart-tradein button{flex:0 0 auto;border:1px solid #fecaca;border-radius:9px;background:#fff;color:#b91c1c;font-weight:750;cursor:pointer;padding:8px 11px}
+.ht-cart-tradein-cta{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 16px;margin:12px 0;border:1px solid #bfdbfe;border-radius:12px;background:#eff6ff;color:#18324a}
+.ht-cart-tradein-cta a{color:#2563eb;font-weight:800}
+@media(max-width:560px){.ht-cart-tradein{padding:13px;gap:8px}.ht-cart-tradein-main{gap:9px}.ht-cart-tradein-icon{width:34px;height:34px;flex-basis:34px}.ht-cart-tradein strong{font-size:14px!important}.ht-cart-tradein small{font-size:12px}.ht-cart-tradein button{padding:7px 9px;font-size:12px}}
+</style>
 <style id="ht-tradein-empty-state">.ht-tradein-empty-note{margin:14px auto 0!important;padding:12px 15px;max-width:540px;border:1px solid #bfdbfe;border-radius:12px;background:#eff6ff;color:#17416a;font-size:13px;line-height:1.5}</style>
 </head><body>
 <div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div>
@@ -274,7 +286,7 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
     const tradeInCredit=Number(localStorage.getItem("homsTechTradeInCredit")||0);
     const tradeInDevice=localStorage.getItem("homsTechTradeInDevice")||"Uw oude toestel";
     const tradeInHtml=tradeInToken
-      ? '<div class="ht-cart-tradein"><div><strong>♻ Je verkoopt (inruil)</strong><small>'+esc(tradeInDevice)+' · Geschatte waarde '+money(tradeInCredit)+'</small><small>De definitieve waarde wordt na ontvangst en inspectie bevestigd. Deze waarde wordt niet direct van de telefoonprijs afgetrokken.</small></div><button type="button" onclick="removeTradeInCredit()" aria-label="Inruil verwijderen">Verwijderen</button></div>'
+      ? '<div class="ht-cart-tradein"><div class="ht-cart-tradein-main"><span class="ht-cart-tradein-icon" aria-hidden="true">♻</span><div class="ht-cart-tradein-copy"><strong>Uw oude telefoon wordt ingeruild</strong><small>'+esc(tradeInDevice)+' · Geschatte inruilwaarde '+money(tradeInCredit)+'</small><p>Uw inruil wordt pas definitief als uw nieuwe telefoon is besteld en betaald. Na ontvangst controleren we het toestel en betalen we de definitieve inruilwaarde aan u uit.</p></div></div><button type="button" onclick="removeTradeInCredit()" aria-label="Inruil verwijderen">Verwijderen</button></div>'
       : '<div class="ht-cart-tradein-cta"><span>Heeft u een oude iPhone?</span><a href="uw-toestel-verkopen.html?tradeIn=1">Oude telefoon inruilen →</a></div>';
     area.innerHTML=rows+'<div class="summary">'+tradeInHtml+'<div><small>Producttotaal</small><div>'+money(total)+'</div></div><div><small>Te betalen</small><div class="summary-total">'+money(total)+'</div></div><div class="actions"><a class="btn gray" href="devices.html">← Verder winkelen</a><a class="btn blue" href="checkout.html" style="background:#2563eb!important;color:#fff!important;border:0!important;box-shadow:0 5px 14px rgba(37,99,235,.22)!important;">Naar afrekenen →</a></div></div>';
   }
