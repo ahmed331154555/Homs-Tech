@@ -62,18 +62,18 @@ function registerAdminBuybackOrderRoutes(app, {
       await sendMail({
         to: order.email,
         subject: "Uw definitieve verkoopvoorstel van HOMS TECH – " + order.order_no,
-        html: \`<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;padding:28px;color:#1f2937;line-height:1.65">
+        html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;padding:28px;color:#1f2937;line-height:1.65">
           <div style="background:#071d2d;color:#fff;padding:18px 22px;border-radius:12px;font-size:22px;font-weight:800">HOMS <span style="color:#60a5fa">TECH</span></div>
           <h2 style="color:#102d42">Uw definitieve verkoopvoorstel</h2>
-          <p>Beste \${safe(order.name)},</p>
-          <p>We hebben uw \${safe(order.device || "telefoon")} gecontroleerd. Op basis van de inspectie kunnen wij u het volgende bedrag aanbieden:</p>
-          <p style="font-size:32px;font-weight:900;color:#15803d;margin:18px 0">€ \${money(order.sale_inspected_value)}</p>
-          <p><strong>Uw aanvraag:</strong> \${safe(order.order_no)}</p>
+          <p>Beste ${safe(order.name)},</p>
+          <p>We hebben uw ${safe(order.device || "telefoon")} gecontroleerd. Op basis van de inspectie kunnen wij u het volgende bedrag aanbieden:</p>
+          <p style="font-size:32px;font-weight:900;color:#15803d;margin:18px 0">€ ${money(order.sale_inspected_value)}</p>
+          <p><strong>Uw aanvraag:</strong> ${safe(order.order_no)}</p>
           <p>Wilt u uw telefoon voor dit bedrag aan HOMS TECH verkopen? Kies hieronder akkoord of niet akkoord. De link is 7 dagen geldig.</p>
-          <p style="margin:26px 0"><a href="\${approvalUrl}" style="display:inline-block;background:#16a34a;color:#fff;text-decoration:none;padding:14px 22px;border-radius:9px;font-weight:800">Akkoord / Niet akkoord</a></p>
+          <p style="margin:26px 0"><a href="${approvalUrl}" style="display:inline-block;background:#16a34a;color:#fff;text-decoration:none;padding:14px 22px;border-radius:9px;font-weight:800">Akkoord / Niet akkoord</a></p>
           <p>Na uw akkoord maken we het afgesproken bedrag over naar het door u opgegeven rekeningnummer. U ontvangt daarna een aparte bevestiging.</p>
           <p>Met vriendelijke groet,<br><strong>HOMS TECH</strong></p>
-        </div>\`
+        </div>`
       });
       return { sent: true, email: order.email, order: updated.rows[0] };
     } catch (error) {
@@ -105,16 +105,16 @@ function registerAdminBuybackOrderRoutes(app, {
     await sendMail({
       to: order.email,
       subject: "Uw betaling is overgemaakt – HOMS TECH " + order.order_no,
-      html: \`<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;padding:28px;color:#1f2937;line-height:1.65">
+      html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;padding:28px;color:#1f2937;line-height:1.65">
         <div style="background:#071d2d;color:#fff;padding:18px 22px;border-radius:12px;font-size:22px;font-weight:800">HOMS <span style="color:#60a5fa">TECH</span></div>
         <h2 style="color:#15803d">Uw verkoop is afgerond</h2>
-        <p>Beste \${safe(order.name)},</p>
-        <p>We bevestigen dat het afgesproken bedrag voor uw \${safe(order.device || "telefoon")} is overgemaakt.</p>
-        <p style="font-size:32px;font-weight:900;color:#15803d">€ \${money(order.sale_inspected_value)}</p>
-        <p><strong>Aanvraagnummer:</strong> \${safe(order.order_no)}</p>
+        <p>Beste ${safe(order.name)},</p>
+        <p>We bevestigen dat het afgesproken bedrag voor uw ${safe(order.device || "telefoon")} is overgemaakt.</p>
+        <p style="font-size:32px;font-weight:900;color:#15803d">€ ${money(order.sale_inspected_value)}</p>
+        <p><strong>Aanvraagnummer:</strong> ${safe(order.order_no)}</p>
         <p>Bedankt voor het verkopen van uw toestel aan HOMS TECH.</p>
         <p>Met vriendelijke groet,<br><strong>HOMS TECH</strong></p>
-      </div>\`
+      </div>`
     });
     await pool.query("UPDATE buyback_orders SET sale_payout_email_sent_at=NOW() WHERE id=$1",[orderId]);
     return { sent: true, email: order.email };
@@ -123,7 +123,7 @@ function registerAdminBuybackOrderRoutes(app, {
   app.get("/api/admin/buyback-orders", requirePermission("buyback_orders.view"), async (req, res) => {
     try {
       await ensureBuybackOrdersTable(pool);
-      const result = await pool.query(\`
+      const result = await pool.query(`
         SELECT id,order_no,name,email,phone,address,device,brand,model,storage,condition,
                face_id,battery,screen,offered_price,iban,payment_method,answers,trade_in,
                trade_in_linked_order_id,final_offer,final_offer_sent_at,status,created_at,
@@ -133,7 +133,7 @@ function registerAdminBuybackOrderRoutes(app, {
         WHERE status NOT IN ('Wacht op aankoop', 'Wacht op betaling')
           AND trade_in=FALSE
         ORDER BY created_at DESC
-      \`);
+      `);
       res.json({ orders: result.rows });
     } catch (error) {
       console.error("BUYBACK LOAD ERROR:", error);
