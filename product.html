@@ -450,12 +450,12 @@ function renderTradeInSummary(newPhoneTotal){
   try{details=JSON.parse(localStorage.getItem("homsTechTradeInDetails")||"{}")||{};}catch{}
   const device=String(details.name||localStorage.getItem("homsTechTradeInDevice")||"Oude telefoon");
   const image=String(details.image||"");
-  // Keep the first two compact fields in order: storage, then battery.
-  // From the third question onward, render each question as a full-width card.
+  // Show storage first, then device condition, followed by the full battery-health question.
+  // The battery answer is saved in details.battery by the trade-in form.
   const rows=[
     details.storage?["Opslag",details.storage]:null,
-    details.battery?["Batterij",details.battery]:null,
     details.condition?["Staat",details.condition]:null,
+    details.battery?["Is de batterijcapaciteit minimaal 85%?",details.battery]:null,
     details.screen?["Scherm",details.screen]:null
   ].filter(Boolean);
   const rawAnswers=details.answers;
