@@ -152,6 +152,17 @@
   box-shadow: 0 0 28px rgba(0, 132, 255, .35), inset 0 1px 8px rgba(255,255,255,.15);
 }
 
+.hero-device img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: min(100%, 520px);
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 20px 22px rgba(0, 0, 0, .34));
+}
+
 .hero-device svg {
   position: relative;
   z-index: 1;
@@ -210,6 +221,7 @@
   .hero p { margin: 0 auto; max-width: 620px; }
   .hero .actions { justify-content: center; margin-top: 23px; }
   .hero-device { width: min(100%, 480px); height: 285px; margin: 0 auto; }
+  .hero-device img { width: 100%; }
   .trust { padding: 15px 18px; }
 }
 
@@ -221,6 +233,7 @@
   .hero .actions { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; }
   .hero .btn { width: 100%; min-height: 50px; }
   .hero-device { height: 225px; margin-top: 4px; }
+  .hero-device img { width: 100%; }
   .trust { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 10px; padding: 13px 14px; }
   .trust-item { justify-content: flex-start; min-height: 40px; font-size: 11px; }
   .trust-item b { width: 30px; height: 30px; flex-basis: 30px; }
