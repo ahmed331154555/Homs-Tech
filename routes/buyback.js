@@ -222,8 +222,6 @@ app.post("/api/buyback/orders", async (req, res) => {
           <strong>Klant:</strong> ${safeName}<br>
           <strong>E-mail:</strong> ${escapeHtml(email)}<br>
           <strong>Telefoon:</strong> ${escapeHtml(b.phone||"-")}<br>
-          <strong>Rekeninghouder:</strong> ${escapeHtml(accountHolderName||"-")}<br>
-          <strong>IBAN:</strong> ${escapeHtml(iban||"-")}<br>
           <strong>Opslag:</strong> ${escapeHtml(b.storage||"-")}<br>
           <strong>Staat:</strong> ${escapeHtml(b.condition||"-")}<br>
           <strong>Geschatte prijs:</strong> € ${offeredPrice.toFixed(2)}</p>
