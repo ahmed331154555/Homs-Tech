@@ -2305,6 +2305,45 @@ body.phone-orders-page-active #page-all-orders{padding-bottom:78px}
 .ht-admin-switch input:disabled+.ht-admin-switch-track{opacity:.55;cursor:wait}
 @media(max-width:520px){.ht-cod-setting{padding:13px}.ht-cod-setting-copy small{max-width:250px}}
 </style>
+<style id="ht-tradein-admin-premium">
+#orderDetailsModal .ht-tradein-panel{border:1px solid #b9e2cb!important;border-radius:16px!important;background:linear-gradient(155deg,#f3fff8 0%,#fff 76%)!important;box-shadow:0 7px 22px rgba(22,101,52,.07)!important;overflow:hidden}
+#orderDetailsModal .ht-tradein-panel .ht-tradein-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;background:#e8f8ef;border-bottom:1px solid #ccebd8;color:#14532d;font-size:14px;font-weight:900}
+#orderDetailsModal .ht-tradein-panel .ht-tradein-head small{display:block;margin-top:3px;color:#527363;font-size:11px;font-weight:650}
+#orderDetailsModal .ht-tradein-panel .ht-tradein-body{display:grid;gap:12px;padding:14px}
+#orderDetailsModal .ht-tradein-hero{display:grid;grid-template-columns:78px minmax(0,1fr) auto;gap:13px;align-items:center;padding:12px;border:1px solid #e1eee6;border-radius:13px;background:#fff}
+#orderDetailsModal .ht-tradein-device-icon{display:grid;place-items:center;width:78px;height:82px;border-radius:11px;background:#f0f5fb;color:#2563eb;font-size:32px}
+#orderDetailsModal .ht-tradein-device-name{color:#14263d;font-size:17px;font-weight:900;line-height:1.25}
+#orderDetailsModal .ht-tradein-device-meta{margin-top:5px;color:#64748b;font-size:11px}
+#orderDetailsModal .ht-tradein-estimate{margin-top:7px;color:#15803d;font-size:22px;font-weight:950}
+#orderDetailsModal .ht-tradein-status{align-self:start;white-space:normal;text-align:center;padding:6px 9px;border-radius:999px;background:#fff4d6;color:#8a5700;font-size:10px;font-weight:850}
+#orderDetailsModal .ht-tradein-status.is-ready{background:#dcfce7;color:#166534}
+#orderDetailsModal .ht-tradein-status.is-done{background:#dbeafe;color:#1d4ed8}
+#orderDetailsModal .ht-tradein-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#orderDetailsModal .ht-tradein-fact{min-width:0;padding:10px 11px;border:1px solid #e2eaf3;border-radius:10px;background:#f7faff}
+#orderDetailsModal .ht-tradein-fact span{display:block;color:#64748b;font-size:10px;font-weight:750}
+#orderDetailsModal .ht-tradein-fact strong{display:block;margin-top:5px;color:#1e3a5f;font-size:12px;font-weight:850;overflow-wrap:anywhere}
+#orderDetailsModal .ht-tradein-calculation{padding:12px;border:1px solid #e3eaf1;border-radius:12px;background:#fff}
+#orderDetailsModal .ht-tradein-calculation .ht-phone-summary-line{padding:5px 0;font-size:12px}
+#orderDetailsModal .ht-tradein-calculation .ht-phone-summary-total{margin-top:7px;padding:10px;border:0;border-radius:9px;background:#eaf8ef;color:#14532d}
+#orderDetailsModal .ht-tradein-notice{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #bfdbfe;border-radius:11px;background:#eff6ff;color:#1e3a5f;font-size:12px;line-height:1.55}
+#orderDetailsModal .ht-tradein-notice.is-warning{border-color:#f5d58a;background:#fff8e7;color:#854d0e}
+#orderDetailsModal .ht-tradein-notice strong{display:block;margin-bottom:3px}
+#orderDetailsModal .ht-tradein-answers{display:grid;gap:7px}
+#orderDetailsModal .ht-tradein-answer{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;padding:8px 10px;border-radius:9px;background:#f7faff;font-size:11px}
+#orderDetailsModal .ht-tradein-answer span{color:#64748b}
+#orderDetailsModal .ht-tradein-answer strong{text-align:right;color:#1e3a5f;overflow-wrap:anywhere}
+#orderDetailsModal .ht-tradein-inspection{display:grid;gap:10px;padding:12px;border:1px solid #d8e5f4;border-radius:12px;background:#f8fbff}
+#orderDetailsModal .ht-tradein-inspection h4{margin:0;color:#172b43;font-size:13px}
+#orderDetailsModal .ht-tradein-inspection .ht-phone-detail-field{font-size:11px}
+#orderDetailsModal .ht-tradein-inspection textarea{width:100%;min-height:76px;padding:9px;border:1px solid #dbe3ed;border-radius:9px;resize:vertical;font:inherit;font-size:12px}
+#orderDetailsModal .ht-tradein-panel .ht-phone-detail-muted{padding:9px 10px;border-radius:9px;background:#f1f5f9;color:#64748b;font-size:10px;line-height:1.5}
+@media(max-width:600px){
+ #orderDetailsModal .ht-tradein-hero{grid-template-columns:66px minmax(0,1fr);gap:10px}
+ #orderDetailsModal .ht-tradein-device-icon{width:66px;height:70px}
+ #orderDetailsModal .ht-tradein-status{grid-column:1/-1;justify-self:start}
+ #orderDetailsModal .ht-tradein-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style>
 </head>
 
 <body>
@@ -8167,20 +8206,39 @@ async function showWebshopOrderDetails(id){
       return '<div class="ht-phone-note-entry"><div class="ht-phone-note-meta">'+esc(note.created_by||"HOMS TECH Admin")+' · '+esc(noteDate)+'</div><p>'+esc(note.note||"")+'</p></div>';
     }).join(""):'<div class="ht-phone-detail-muted">Nog geen notities bij deze bestelling.</div>';
     const phoneNoteForm=hasPermission("webshop_orders.update")?'<div class="ht-phone-note-form"><label class="ht-phone-detail-field">Nieuwe notitie<textarea id="webshopOrderNote" maxlength="2000" rows="3" placeholder="Schrijf een interne notitie over deze bestelling..."></textarea></label><button class="btn btn-primary" type="button" onclick="saveWebshopOrderNote('+Number(order.id)+')">Notitie opslaan</button></div>':"";
-    const tradeInStatusLabels={AwaitingDevice:"Wacht op inruiltoestel",Received:"Toestel ontvangen",Inspecting:"Wordt gecontroleerd",Approved:"Goedgekeurd",AdjustmentRequired:"Uitbetaling registreren",Settled:"Uitbetaling bevestigd",Rejected:"Afgekeurd",Returned:"Teruggestuurd"};
+    const tradeInStatusLabels={AwaitingPayment:"Wacht op betaling nieuwe telefoon",AwaitingDevice:"Wacht op inruiltoestel",Received:"Oud toestel ontvangen",Inspecting:"Oud toestel wordt gecontroleerd",Approved:"Controle afgerond",AdjustmentRequired:"Bedrag afhandelen",Settled:"Volledig afgehandeld",Rejected:"Afgekeurd",Returned:"Teruggestuurd"};
     const tradeInStatus=String(order.trade_in_status||"AwaitingDevice");
-    const tradeInCard=order.trade_in_order_id?'<section class="ht-phone-detail-card"><div class="ht-phone-detail-card-head"><span class="icon">♻</span>Inruil · '+esc(order.trade_in_model||order.trade_in_device||"Oud toestel")+'</div><div class="ht-phone-detail-card-body ht-phone-info-list">'+
-      '<div class="ht-phone-info-line"><span>Inruilaanvraag</span><strong>#'+Number(order.trade_in_order_id)+'</strong></div>'+
-      '<div class="ht-phone-info-line"><span>Toestel</span><strong>'+esc(order.trade_in_device||order.trade_in_model||"Niet opgegeven")+'</strong></div>'+
-      '<div class="ht-phone-info-line"><span>Opslag</span><strong>'+esc(order.trade_in_storage||"—")+'</strong></div>'+
-      '<div class="ht-phone-info-line"><span>Geschatte waarde</span><strong>'+money(order.trade_in_estimated_value)+'</strong></div>'+
-      '<div class="ht-phone-info-line"><span>Verrekende korting</span><strong>'+money(order.trade_in_applied_credit)+'</strong></div>'+
-      '<div class="ht-phone-info-line"><span>Waarde na inspectie</span><strong>'+ (order.trade_in_inspected_value===null||order.trade_in_inspected_value===undefined?"Nog niet gecontroleerd":money(order.trade_in_inspected_value))+'</strong></div>'+
-      '<div class="ht-phone-info-line"><span>Verschil</span><strong>'+money(Math.abs(Number(order.trade_in_adjustment||0)))+'</strong></div>'+
-      '<div class="ht-phone-info-line"><span>Inruilstatus</span><strong>'+esc(tradeInStatusLabels[tradeInStatus]||tradeInStatus)+'</strong></div>'+
-      (hasPermission("webshop_orders.update")&&(order.trade_in_inspected_value===null||order.trade_in_inspected_value===undefined)?'<label class="ht-phone-detail-field">Definitieve inruilwaarde (€)<input id="webshopTradeInInspectedValue" type="number" min="0" max="100000" step="0.01" value="'+esc(order.trade_in_inspected_value??order.trade_in_estimated_value??"")+'"></label><label class="ht-phone-detail-field">Inspectienotitie<textarea id="webshopTradeInInspectionReason" rows="2" maxlength="1000" placeholder="Beschrijf de staat van het toestel en eventuele afwijkingen..."></textarea></label><button class="btn btn-primary" type="button" onclick="saveWebshopTradeInInspection('+Number(order.id)+')">Inspectie opslaan</button>':"")+
-      (hasPermission("webshop_orders.update")&&tradeInStatus==="AdjustmentRequired"?'<label class="ht-phone-detail-field">Uitbetaling uitgevoerd · betalingskenmerk / toelichting<textarea id="webshopTradeInSettlementNote" rows="2" maxlength="1000" placeholder="Bijv. bankoverschrijving uitgevoerd op 08-11-2026, referentie..."></textarea></label><button class="btn btn-primary" type="button" onclick="settleWebshopTradeIn('+Number(order.id)+')">Uitbetaling bevestigen</button>':"")+
-      '<div class="ht-phone-detail-muted">Verzending blijft geblokkeerd totdat het toestel is gecontroleerd en de inruilwaarde daadwerkelijk aan de klant is overgemaakt en geregistreerd.</div></div></section>':"";
+    const tradeInPaid=/^(paid|betaald|completed)$/i.test(String(order.payment_status||""));
+    const tradeInInspected=order.trade_in_inspected_value!==null&&order.trade_in_inspected_value!==undefined;
+    const tradeInWaitingPayment=!tradeInPaid;
+    const tradeInDisplayStatus=tradeInWaitingPayment?"AwaitingPayment":(tradeInStatus==="AwaitingPayment"?"AwaitingDevice":tradeInStatus);
+    const tradeInStatusClass=tradeInDisplayStatus==="Settled"?"is-done":(tradeInPaid?"is-ready":"");
+    const rawTradeAnswers=order.trade_in_answers&&typeof order.trade_in_answers==="object"?order.trade_in_answers:{};
+    const tradeAnswerEntries=Object.entries(rawTradeAnswers).filter(([key,value])=>value!==null&&value!==undefined&&String(value).trim()!=="").slice(0,16);
+    const tradeAnswerMarkup=tradeAnswerEntries.length?'<div class="ht-tradein-answers">'+tradeAnswerEntries.map(([key,value])=>'<div class="ht-tradein-answer"><span>'+esc(String(key).replace(/[_-]+/g," ").replace(/\s+/g," ").trim())+'</span><strong>'+esc(typeof value==="object"?JSON.stringify(value):String(value))+'</strong></div>').join("")+'</div>':"";
+    const tradeInFacts=[
+      ["Opslag",order.trade_in_storage||"—"],
+      ["Staat",order.trade_in_condition||"—"],
+      ["Batterij",order.trade_in_battery||"—"],
+      ["Face ID",order.trade_in_face_id||"—"],
+      ["Scherm",order.trade_in_screen||"—"]
+    ].filter(([,value])=>String(value).trim()&&value!=="—");
+    const tradeInInspectionMarkup=!tradeInPaid
+      ?'<div class="ht-tradein-notice is-warning"><span>🔒</span><div><strong>Wacht op betaling van de nieuwe telefoon</strong>De klant koos voor betalen bij ontvangst. Zodra het volledige bedrag is ontvangen, zet je de betaalstatus hierboven op “Betaald”. Daarna kun je de oude iPhone inspecteren. De geschatte inruilwaarde is nog niet uitbetaald.</div></div>'
+      :!tradeInInspected&&hasPermission("webshop_orders.update")
+        ?'<div class="ht-tradein-notice"><span>ℹ️</span><div><strong>Volgende stap: controleer de oude iPhone</strong>Registreer de definitieve waarde pas nadat je het oude toestel hebt ontvangen en getest.</div></div><div class="ht-tradein-inspection"><h4>Inspectie oude telefoon</h4><label class="ht-phone-detail-field">Definitieve inruilwaarde (€)<input id="webshopTradeInInspectedValue" type="number" min="0" max="100000" step="0.01" value="'+esc(order.trade_in_estimated_value??"")+'"></label><label class="ht-phone-detail-field">Inspectienotitie<textarea id="webshopTradeInInspectionReason" rows="3" maxlength="1000" placeholder="Beschrijf de staat, eventuele schade en testresultaten..."></textarea></label><button class="btn btn-primary" type="button" onclick="saveWebshopTradeInInspection('+Number(order.id)+')">✓ Inspectie opslaan</button></div>'
+        :"";
+    const tradeInSettlementMarkup=tradeInStatus==="AdjustmentRequired"&&hasPermission("webshop_orders.update")
+      ?'<div class="ht-tradein-inspection"><h4>Financiële afhandeling</h4><div class="ht-phone-summary-line"><span>Definitieve waarde</span><strong>'+money(order.trade_in_inspected_value)+'</strong></div><div class="ht-phone-summary-line"><span>Geschatte waarde</span><strong>'+money(order.trade_in_estimated_value)+'</strong></div><div class="ht-phone-summary-line ht-phone-summary-total"><span>Verschil af te handelen</span><strong>'+money(Math.abs(Number(order.trade_in_adjustment||0)))+'</strong></div><label class="ht-phone-detail-field">Betalingskenmerk / toelichting<textarea id="webshopTradeInSettlementNote" rows="2" maxlength="1000" placeholder="Vermeld hoe en wanneer het verschil is afgehandeld..."></textarea></label><button class="btn btn-primary" type="button" onclick="settleWebshopTradeIn('+Number(order.id)+')">Afhandeling bevestigen</button></div>'
+      :"";
+    const tradeInCard=order.trade_in_order_id?'<section class="ht-phone-detail-card ht-tradein-panel"><div class="ht-tradein-head"><div>♻ Inruil oude telefoon<small>Gekoppeld aan bestelling #'+Number(order.id)+' · Inruilaanvraag #'+Number(order.trade_in_order_id)+'</small></div><span class="ht-tradein-status '+tradeInStatusClass+'">'+esc(tradeInStatusLabels[tradeInDisplayStatus]||tradeInDisplayStatus)+'</span></div><div class="ht-tradein-body">'+
+      '<div class="ht-tradein-hero"><div class="ht-tradein-device-icon">📱</div><div><div class="ht-tradein-device-name">'+esc(order.trade_in_model||order.trade_in_device||"Oude iPhone")+'</div><div class="ht-tradein-device-meta">'+esc(order.trade_in_storage||"Opslag niet opgegeven")+' · Geschatte inruilwaarde</div><div class="ht-tradein-estimate">'+money(order.trade_in_estimated_value)+'</div></div><span class="ht-tradein-status '+tradeInStatusClass+'">'+(tradeInPaid?"Betaling ontvangen":"Niet betaald")+'</span></div>'+
+      '<div class="ht-tradein-facts">'+tradeInFacts.map(([label,value])=>'<div class="ht-tradein-fact"><span>'+esc(label)+'</span><strong>'+esc(value)+'</strong></div>').join("")+'</div>'+
+      (tradeAnswerMarkup?'<div><div class="ht-phone-detail-muted" style="margin-bottom:7px">Antwoorden van de klant</div>'+tradeAnswerMarkup+'</div>':"")+
+      '<div class="ht-tradein-calculation"><div class="ht-phone-summary-line"><span>Prijs nieuwe telefoon</span><strong>'+money(total)+'</strong></div><div class="ht-phone-summary-line"><span>Geschatte inruilwaarde (apart uit te betalen)</span><strong style="color:#15803d">'+money(order.trade_in_estimated_value)+'</strong></div><div class="ht-phone-summary-line"><span>Direct verrekend bij aankoop</span><strong>'+money(order.trade_in_applied_credit)+'</strong></div><div class="ht-phone-summary-line ht-phone-summary-total"><span>Door klant te betalen</span><strong>'+money(total)+'</strong></div></div>'+
+      (tradeInInspected?'<div class="ht-tradein-facts"><div class="ht-tradein-fact"><span>Definitieve waarde na inspectie</span><strong>'+money(order.trade_in_inspected_value)+'</strong></div><div class="ht-tradein-fact"><span>Verschil t.o.v. schatting</span><strong>'+money(Math.abs(Number(order.trade_in_adjustment||0)))+'</strong></div></div>':"")+
+      tradeInInspectionMarkup+tradeInSettlementMarkup+
+      '<div class="ht-phone-detail-muted">Belangrijk: de geschatte inruilwaarde wordt niet automatisch van de aankoopprijs afgetrokken. De klant betaalt de volledige prijs van de nieuwe telefoon. Na ontvangst en inspectie van de oude iPhone wordt de definitieve inruilwaarde afzonderlijk aan de klant overgemaakt.</div></div></section>':"";
 
     const phoneDetailMarkup=`
       <div class="ht-order-detail-panel phone-order-detail-panel" role="dialog" aria-modal="true" aria-label="Bestelling #${Number(order.id)}">
