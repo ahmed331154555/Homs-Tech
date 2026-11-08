@@ -248,11 +248,13 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 
     const tradeInToken=localStorage.getItem("homsTechTradeInToken")||"";
     const tradeInCredit=Number(localStorage.getItem("homsTechTradeInCredit")||0);
-    const appliedCredit=tradeInToken?Math.min(total,Math.max(0,tradeInCredit)):0;
-    const payable=Math.max(0,Math.round((total-appliedCredit)*100)/100);
-    totalEl.innerHTML = appliedCredit>0
-      ? '<span class="ht-checkout-total-lines"><span><small>Producttotaal</small><b>'+money(total)+'</b></span><span class="discount"><small>Inruilkorting</small><b>− '+money(appliedCredit)+'</b></span><span class="payable"><small>Te betalen</small><b>'+money(payable)+'</b></span></span>'
-      : money(total);
+    const tradeInDevice=localStorage.getItem("homsTechTradeInDevice")||"Uw oude toestel";
+    if(tradeInToken && tradeInCredit>0){
+      box.insertAdjacentHTML("beforeend",
+        '<div class="ht-cart-tradein" style="margin-top:16px"><div><strong>♻ Je verkoopt</strong><small>'+esc(tradeInDevice)+' · Geschatte inruilwaarde '+money(tradeInCredit)+'</small><small>De definitieve waarde wordt na ontvangst en inspectie bevestigd. De geschatte waarde wordt niet afgetrokken van uw betaling.</small></div></div>'
+      );
+    }
+    totalEl.textContent=money(total);
   }
 
   async function prefill(){
