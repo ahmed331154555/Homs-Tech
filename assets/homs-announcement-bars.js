@@ -1,46 +1,140 @@
-(function(){
-"use strict";
-var path=(location.pathname||"/").toLowerCase().replace(/\/+$/,"")||"/";
-var page=path==="/"||path.endsWith("/index.html")?"home":path.endsWith("/about.html")?"about":path.endsWith("/devices.html")?"devices":path.endsWith("/product.html")?"product":path.endsWith("/repair.html")?"repair":path.endsWith("/uw-toestel-verkopen.html")?"sell":path.endsWith("/prices.html")?"prices":path.endsWith("/shop.html")?"shop":path.endsWith("/account.html")?"account":path.endsWith("/cart.html")?"cart":path.endsWith("/checkout.html")?"checkout":path.endsWith("/contact.html")?"contact":path.endsWith("/payment.html")?"payment":path.endsWith("/privacybeleid.html")?"privacy":path.endsWith("/design-preview.html")?"design":"home";
-function color(v,f){return /^#[0-9a-f]{6}$/i.test(String(v||""))?v:f}
-function render(c){
- // Remove legacy bars instead of merely hiding them, so only one bar can ever remain.
- document.querySelectorAll(".ht-topbar,.topbar").forEach(function(el){el.remove()});
- var old=document.getElementById("homsManagedAnnouncementBar");if(old)old.remove();
- if(!c||c.enabled===false)return;
- var messages=Array.isArray(c.messages)?c.messages.map(function(x){return String(x||"").trim().slice(0,120)}).filter(Boolean).slice(0,8):[];
- if(!messages.length)return;
- var bg=color(c.background,"#071d2d"),fg=color(c.textColor,"#eaf4ff"),accent=color(c.accentColor,"#60a5fa");
- var height=Math.max(30,Math.min(64,Number(c.height)||42)),font=Math.max(10,Math.min(22,Number(c.fontSize)||14));
- var bar=document.createElement("div");bar.id="homsManagedAnnouncementBar";bar.setAttribute("role","region");bar.setAttribute("aria-label","HOMS TECH mededelingen");
- bar.style.cssText="height:"+height+"px;min-height:"+height+"px;width:100%;overflow:hidden;background:"+bg+";color:"+fg+";display:flex;align-items:center;position:relative;z-index:10000;box-sizing:border-box";
- var inner=document.createElement("div");inner.style.cssText="width:100%;height:100%;overflow:hidden;display:flex;align-items:center";
- var track=document.createElement("div");track.style.cssText="display:flex;align-items:center;gap:44px;width:max-content;white-space:nowrap;will-change:transform;flex:0 0 auto";
- function addMessages(){messages.forEach(function(message){var item=document.createElement("span");item.style.cssText="display:inline-flex;align-items:center;gap:8px;font-size:"+font+"px;font-weight:800;letter-spacing:.1px;color:"+fg+";white-space:nowrap";var mark=document.createElement("b");mark.textContent="✓";mark.style.color=accent;item.appendChild(mark);item.appendChild(document.createTextNode(message));track.appendChild(item)})}
- var moving=c.mode==="scroll";
- if(moving){
-  addMessages();
-  var distance=track.scrollWidth;
-  var required=window.innerWidth+distance;
-  while(track.scrollWidth<required&&track.children.length<160)addMessages();
-  inner.appendChild(track);bar.appendChild(inner);
-  var direction=c.direction==="ltr"?1:-1,speed=Math.max(20,Math.min(600,Number(c.speed)||140));
-  requestAnimationFrame(function(){
-   var duration=Math.max(3,distance/speed);
-   var frames=direction<0?[{transform:"translate3d(0,0,0)"},{transform:"translate3d(-"+distance+"px,0,0)"}]:[{transform:"translate3d(-"+distance+"px,0,0)"},{transform:"translate3d(0,0,0)"}];
-   if(typeof track.animate==="function")track.animate(frames,{duration:duration*1000,iterations:Infinity,easing:"linear"});
-   else{
-    var style=document.createElement("style"),name="homsAnnouncementScroll";
-    style.textContent="@keyframes "+name+"{"+(direction<0?"from{transform:translate3d(0,0,0)}to{transform:translate3d(-"+distance+"px,0,0)}":"from{transform:translate3d(-"+distance+"px,0,0)}to{transform:translate3d(0,0,0)}")+"}";
-    document.head.appendChild(style);track.style.animation=name+" "+duration+"s linear infinite";
-   }
-  });
- }else{
-  inner.style.justifyContent="center";inner.style.padding="0 12px";track.style.width="100%";track.style.justifyContent="center";track.style.flexWrap="wrap";track.style.whiteSpace="normal";track.style.gap="8px 24px";
-  messages.forEach(function(message){var item=document.createElement("span");item.style.cssText="font-size:"+font+"px;font-weight:800;color:"+fg+";white-space:nowrap";item.textContent=message;track.appendChild(item)});
-  inner.appendChild(track);bar.appendChild(inner);
- }
- var header=document.querySelector(".ht-header,header");if(header&&header.parentNode)header.parentNode.insertBefore(bar,header);else document.body.insertBefore(bar,document.body.firstChild);
-}
-fetch("/api/announcement-bars?page="+encodeURIComponent(page),{cache:"no-store",credentials:"same-origin"}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.settings)render(d.settings)}).catch(function(){});
+(function () {
+  "use strict";
+  const markerId = "homs-announcement-bars-script";
+  if (document.getElementById(markerId)) return;
+  const marker = document.createElement("meta");
+  marker.id = markerId;
+  document.head.appendChild(marker);
+
+  const pages = [
+    ["/about.html","about"],["/devices.html","devices"],["/product.html","product"],
+    ["/repair.html","repair"],["/uw-toestel-verkopen.html","sell"],["/prices.html","prices"],
+    ["/shop.html","shop"],["/account.html","account"],["/cart.html","cart"],
+    ["/checkout.html","checkout"],["/contact.html","contact"],["/payment.html","payment"],
+    ["/privacybeleid.html","privacy"],["/design-preview.html","design"]
+  ];
+  const path = (location.pathname || "/").toLowerCase();
+  const page = path === "/" || path.endsWith("/index.html")
+    ? "home"
+    : (pages.find(function (entry) { return path.endsWith(entry[0]); }) || [null,"home"])[1];
+
+  const defaults = {
+    enabled:true,
+    messages:["1 jaar garantie","Snel geleverd","Betrouwbare service","Betaalbare prijzen"],
+    background:"#071d2d",textColor:"#eaf4ff",accentColor:"#60a5fa",
+    speed:90,direction:"rtl",mode:"scroll",height:42,fontSize:14
+  };
+
+  function safeColor(value,fallback) {
+    return /^#[0-9a-f]{6}$/i.test(String(value || "")) ? value : fallback;
+  }
+  function normalize(raw) {
+    const value = raw && typeof raw === "object" ? raw : {};
+    const messages = Array.isArray(value.messages)
+      ? value.messages.map(function (item) { return String(item || "").trim().slice(0,120); }).filter(Boolean).slice(0,8)
+      : defaults.messages;
+    return {
+      enabled:value.enabled !== false,
+      messages:messages.length ? messages : defaults.messages,
+      background:safeColor(value.background,defaults.background),
+      textColor:safeColor(value.textColor,defaults.textColor),
+      accentColor:safeColor(value.accentColor,defaults.accentColor),
+      speed:Math.max(20,Math.min(600,Number(value.speed) || defaults.speed)),
+      direction:value.direction === "ltr" ? "ltr" : "rtl",
+      mode:value.mode === "static" ? "static" : "scroll",
+      height:Math.max(30,Math.min(64,Number(value.height) || defaults.height)),
+      fontSize:Math.max(10,Math.min(22,Number(value.fontSize) || defaults.fontSize))
+    };
+  }
+  function removeOldBars() {
+    document.querySelectorAll("#homeTopBar,.ht-topbar,.topbar").forEach(function (node) { node.remove(); });
+    const previous = document.getElementById("homsManagedAnnouncementBar");
+    if (previous) previous.remove();
+    const oldStyle = document.getElementById("homs-announcement-motion-style");
+    if (oldStyle) oldStyle.remove();
+  }
+  function buildGroup(messages,settings) {
+    const group = document.createElement("div");
+    group.className = "homs-announcement-group";
+    group.style.cssText = "display:flex;align-items:center;gap:44px;padding-right:44px;white-space:nowrap;flex:0 0 auto";
+    messages.forEach(function (message) {
+      const item = document.createElement("span");
+      item.style.cssText = "display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-size:"+settings.fontSize+"px;font-weight:700;color:"+settings.textColor;
+      const check = document.createElement("b");
+      check.textContent = "✓";
+      check.style.color = settings.accentColor;
+      const label = document.createElement("span");
+      label.textContent = message;
+      item.append(check,label);
+      group.appendChild(item);
+    });
+    return group;
+  }
+  function render(raw) {
+    removeOldBars();
+    const settings = normalize(raw);
+    if (!settings.enabled || !settings.messages.length) return;
+
+    const bar = document.createElement("div");
+    bar.id = "homsManagedAnnouncementBar";
+    bar.setAttribute("role","region");
+    bar.setAttribute("aria-label","HOMS TECH mededelingen");
+    bar.style.cssText = "display:flex;align-items:center;width:100%;height:"+settings.height+"px;min-height:"+settings.height+"px;overflow:hidden;position:relative;z-index:1000;box-sizing:border-box;background:"+settings.background+";color:"+settings.textColor;
+
+    const viewport = document.createElement("div");
+    viewport.style.cssText = "width:100%;height:100%;overflow:hidden;display:flex;align-items:center";
+    const track = document.createElement("div");
+    track.className = "homs-announcement-track";
+    track.style.cssText = "display:flex;align-items:center;width:max-content;flex:0 0 auto;will-change:transform";
+
+    const first = buildGroup(settings.messages,settings);
+    track.appendChild(first);
+    if (settings.mode === "scroll") {
+      const second = first.cloneNode(true);
+      second.setAttribute("aria-hidden","true");
+      track.appendChild(second);
+    } else {
+      track.style.width = "100%";
+      track.style.justifyContent = "center";
+      first.style.width = "100%";
+      first.style.justifyContent = "center";
+      first.style.flexWrap = "wrap";
+      first.style.whiteSpace = "normal";
+      first.style.gap = "8px 24px";
+    }
+
+    viewport.appendChild(track);
+    bar.appendChild(viewport);
+    const header = document.querySelector(".ht-header,header");
+    if (header && header.parentNode) header.parentNode.insertBefore(bar,header);
+    else document.body.insertBefore(bar,document.body.firstChild);
+
+    if (settings.mode === "scroll") {
+      requestAnimationFrame(function () {
+        const width = first.getBoundingClientRect().width;
+        if (!width) return;
+        const duration = Math.max(3,width/settings.speed);
+        const from = settings.direction === "rtl" ? "0" : "-50%";
+        const to = settings.direction === "rtl" ? "-50%" : "0";
+        const style = document.createElement("style");
+        style.id = "homs-announcement-motion-style";
+        style.textContent = "@keyframes homsAnnouncementMove{from{transform:translate3d("+from+",0,0)}to{transform:translate3d("+to+",0,0)}}" +
+          "#homsManagedAnnouncementBar .homs-announcement-track{animation:homsAnnouncementMove "+duration+"s linear infinite!important}" +
+          "#homsManagedAnnouncementBar:hover .homs-announcement-track{animation-play-state:paused!important}";
+        document.head.appendChild(style);
+      });
+    }
+  }
+
+  fetch("/api/announcement-bars?page="+encodeURIComponent(page),{
+    cache:"no-store",credentials:"same-origin",headers:{"Accept":"application/json"}
+  })
+    .then(function (response) {
+      if (!response.ok) throw new Error("HTTP "+response.status);
+      return response.json();
+    })
+    .then(function (data) { render(data && data.settings); })
+    .catch(function (error) {
+      console.error("[HOMS TECH] Announcement bar kon niet worden geladen:",error);
+    });
 })();
