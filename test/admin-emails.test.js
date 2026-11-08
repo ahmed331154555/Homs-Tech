@@ -111,8 +111,13 @@ test("email send rejects missing configuration and invalid recipients", async ()
   const noConfig = response();
   await routes.get("POST /api/admin/emails/send")({ body: {} }, noConfig);
   assert.equal(noConfig.statusCode, 503);
+  const configured = harness({
+    pool: { async query() { return { rows: [] }; } },
+    env: { RESEND_API_KEY: "test-key", RESEND_FROM_EMAIL: "support@example.com" },
+    fetchImpl: async () => { fetchCount++; return { ok: true, async json() { return {}; } }; }
+  });
   const invalid = response();
-  await routes.get("POST /api/admin/emails/send")({
+  await configured.routes.get("POST /api/admin/emails/send")({
     body: { to: "bad", subject: "Hello", text: "Message" }
   }, invalid);
   assert.equal(invalid.statusCode, 400);
