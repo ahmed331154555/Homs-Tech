@@ -1192,6 +1192,7 @@ function closeTradeInModal(event){
   document.body.style.overflow="";
   if(!localStorage.getItem("homsTechTradeInToken")){
     selectedOptions.tradeIn="Nee";
+    sessionStorage.removeItem("homsTechTradeInMode");
     renderProductBody();
   }
   const frame=document.getElementById("tradeInModalFrame");
