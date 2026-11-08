@@ -376,13 +376,55 @@ test("trade-in inspection requires explicit payout confirmation even when inspec
   assert.ok(statements.some(({ sql }) => sql === "COMMIT"));
 });
 
-test("trade-in payout is marked settled only after admin records a payout note", async () => {
+test("customer can accept or reject the inspected trade-in offer using a one-time token", async () => {
+  const crypto = require("node:crypto");
+  const token = "a".repeat(64);
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  const statements = [];
+  const client = {
+    async query(sql, params) {
+      statements.push({sql,params});
+      if (sql.includes("SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot")) {
+        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_status: "AwaitingCustomerApproval", trade_in_snapshot: { customerApprovalTokenHash: tokenHash, customerApprovalExpiresAt: new Date(Date.now()+60000).toISOString() } }] };
+      }
+      return { rows: [] };
+    },
+    release() {}
+  };
+  const routes = createHarness({ async connect() { return client; } });
+  const response = createResponse();
+  await routes.get("POST /api/trade-in/decision")({ body: { token, decision: "accept" } }, response);
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.status, "CustomerAccepted");
+  assert.ok(statements.some(({sql,params}) => sql.includes("UPDATE webshop_orders") && params[0] === "CustomerAccepted"));
+  assert.ok(statements.some(({sql}) => sql === "COMMIT"));
+});
+
+test("trade-in settlement cannot be completed before customer acceptance", async () => {
+  const client = {
+    async query(sql) {
+      if (sql.includes("SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot")) {
+        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_status: "AwaitingCustomerApproval", trade_in_snapshot: {} }] };
+      }
+      return { rows: [] };
+    },
+    release() {}
+  };
+  const routes = createHarness({ async connect() { return client; } });
+  const response = createResponse();
+  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-settlement")({
+    params: { id: "31" }, body: { settlementNote: "Overgemaakt naar klant op 08-11." }
+  }, response);
+  assert.equal(response.statusCode, 409);
+});
+
+test("trade-in payout is marked settled only after customer acceptance and admin payout note", async () => {
   const statements = [];
   const client = {
     async query(sql, params) {
       statements.push({ sql, params });
       if (sql.includes("SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot")) {
-        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_status: "AdjustmentRequired", trade_in_snapshot: {} }] };
+        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_status: "CustomerAccepted", trade_in_snapshot: {} }] };
       }
       if (sql.includes("UPDATE webshop_orders SET trade_in_status='Settled'")) {
         return { rows: [{ id: 31, trade_in_status: "Settled", trade_in_snapshot: { settlementNote: params[0] } }] };
