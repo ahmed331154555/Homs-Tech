@@ -2494,6 +2494,21 @@ $('finish').onclick=async()=>{
       localStorage.setItem('homsTechTradeInCredit',String(Number(j.tradeInCredit??offer).toFixed(2)));
       localStorage.setItem('homsTechTradeInDevice',String(payload.device||'iPhone'));
       localStorage.setItem('homsTechTradeInEmail',String(payload.email||'').trim().toLowerCase());
+      const tradeInAnswers=Object.values(payload.answers||{}).map(item=>({
+        question:String(item?.question||'').trim(),
+        value:String(item?.value||'').trim()
+      })).filter(item=>item.question&&item.value);
+      const tradeInImage=selectedModel?.imageOutside||selectedModel?.image||'';
+      localStorage.setItem('homsTechTradeInDetails',JSON.stringify({
+        name:String(payload.device||'iPhone'),
+        brand:String(payload.brand||'Apple'),
+        image:String(tradeInImage||''),
+        storage:String(payload.storage||''),
+        condition:String(payload.condition||''),
+        battery:String(payload.battery||''),
+        screen:String(payload.screen||''),
+        answers:tradeInAnswers
+      }));
       sessionStorage.removeItem('homsTechTradeInMode');
       const returnTo=sessionStorage.getItem('homsTechTradeInReturnTo')||'';
       sessionStorage.removeItem('homsTechTradeInReturnTo');
