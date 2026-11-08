@@ -508,7 +508,10 @@ registerAdminBuybackOrderRoutes(app, {
   pool,
   requirePermission,
   ensureBuybackOrdersTable,
-  escapeHtml
+  escapeHtml,
+  crypto,
+  fetchImpl: fetch,
+  getEnv: () => process.env
 });
 
 registerAdminInvoiceRoutes(app, {
