@@ -104,13 +104,16 @@ test("email delete validates and returns deleted message ID", async () => {
 
 test("email send rejects missing configuration and invalid recipients", async () => {
   let fetchCount = 0;
+  const env = {};
   const { routes } = harness({
     pool: { async query() { return { rows: [] }; } },
+    env,
     fetchImpl: async () => { fetchCount++; return { ok: true, async json() { return {}; } }; }
   });
   const noConfig = response();
   await routes.get("POST /api/admin/emails/send")({ body: {} }, noConfig);
   assert.equal(noConfig.statusCode, 503);
+  Object.assign(env, { RESEND_API_KEY: "test-key", RESEND_FROM_EMAIL: "support@example.com" });
   const invalid = response();
   await routes.get("POST /api/admin/emails/send")({
     body: { to: "bad", subject: "Hello", text: "Message" }
