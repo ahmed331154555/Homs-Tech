@@ -738,7 +738,9 @@ registerLiveChatRoutes(app, {
   requirePermission,
   allowLiveChat,
   liveChatFirstReply
-});registerAdminUserRoutes(app, {
+});
+
+registerAdminUserRoutes(app, {
   pool,
   requirePermission,
   normalizeAdminPermissions,
