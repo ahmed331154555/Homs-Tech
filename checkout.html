@@ -258,6 +258,9 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   }
 
   async function prefill(){
+    const tradeInEmail=localStorage.getItem("homsTechTradeInEmail")||"";
+    const emailInput=document.getElementById("email");
+    if(emailInput && tradeInEmail && !emailInput.value) emailInput.value=tradeInEmail;
     try{
       const r = await fetch("/api/customer/me",{cache:"no-store",credentials:"same-origin"});
       if(!r.ok) return;
@@ -266,7 +269,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 
       const c = d.customer;
       document.getElementById("name").value = c.name || "";
-      document.getElementById("email").value = c.email || "";
+      document.getElementById("email").value = localStorage.getItem("homsTechTradeInEmail") || c.email || "";
       document.getElementById("phone").value = c.phone || "";
       if(c.address) document.getElementById("street").value = c.address || "";
 
@@ -390,6 +393,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
           localStorage.removeItem("homsTechTradeInToken");
           localStorage.removeItem("homsTechTradeInCredit");
           localStorage.removeItem("homsTechTradeInDevice");
+          localStorage.removeItem("homsTechTradeInEmail");
           localStorage.removeItem("homsTechPendingWebshopOrderId");
           pendingCheckoutToken = "";
 
@@ -444,6 +448,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
         localStorage.removeItem("homsTechTradeInToken");
         localStorage.removeItem("homsTechTradeInCredit");
         localStorage.removeItem("homsTechTradeInDevice");
+          localStorage.removeItem("homsTechTradeInEmail");
         localStorage.removeItem("homsTechPendingWebshopOrderId");
         document.getElementById("checkoutContent").classList.add("hidden");
         document.getElementById("success").classList.remove("hidden");
@@ -537,6 +542,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
         localStorage.removeItem("homsTechTradeInToken");
         localStorage.removeItem("homsTechTradeInCredit");
         localStorage.removeItem("homsTechTradeInDevice");
+          localStorage.removeItem("homsTechTradeInEmail");
         localStorage.removeItem("homsTechPendingWebshopOrderId");
         sessionStorage.removeItem("homsTechMollieOrderId");
         sessionStorage.removeItem("homsTechMollieCheckoutToken");
