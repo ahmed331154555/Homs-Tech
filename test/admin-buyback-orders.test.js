@@ -2,14 +2,16 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const crypto = require("node:crypto");
 const { registerAdminBuybackOrderRoutes } = require("../routes/admin-buyback-orders");
 
-function createHarness({ pool, env = {}, fetchImpl = async () => ({ ok: true, status: 200, async json() { return { id: "mail_1" }; } }) }) {
+function createHarness({ pool, env = {}, fetchImpl = async () => ({ ok: true, status: 200, async json() { return { id: "mail_1" }; } }), ensureBuybackOrdersTable = async () => {} }) {
   const routes = new Map();
   const permissions = [];
   const app = {
     get(path, ...handlers) { routes.set("GET " + path, handlers.at(-1)); },
     put(path, ...handlers) { routes.set("PUT " + path, handlers.at(-1)); },
+    post(path, ...handlers) { routes.set("POST " + path, handlers.at(-1)); },
     delete(path, ...handlers) { routes.set("DELETE " + path, handlers.at(-1)); }
   };
   const requirePermission = permission => {
@@ -19,7 +21,8 @@ function createHarness({ pool, env = {}, fetchImpl = async () => ({ ok: true, st
   registerAdminBuybackOrderRoutes(app, {
     pool,
     requirePermission,
-    ensureBuybackOrdersTable: async () => {},
+    ensureBuybackOrdersTable,
+    crypto,
     escapeHtml: value => String(value ?? "").replace(/[&<>"']/g, char => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     })[char]),
@@ -38,11 +41,15 @@ function createResponse() {
   };
 }
 
-test("admin buyback routes register with the expected permissions", () => {
-  const { routes, permissions } = createHarness({ pool: { async query() { return { rows: [] }; } } });
+test("admin buyback routes register the standalone-sale workflow with permissions", () => {
+  const { routes, permissions } = createHarness({ pool: { async query() { return { rows: [] }; }, async connect() { throw new Error("unused"); } } });
   assert.deepEqual([...routes.keys()], [
     "GET /api/admin/buyback-orders",
+    "PUT /api/admin/buyback-orders/:id/inspection",
     "PUT /api/admin/buyback-orders/:id/offer",
+    "POST /api/buyback/decision",
+    "PUT /api/admin/buyback-orders/:id/settlement",
+    "POST /api/admin/buyback-orders/:id/settlement-email",
     "PUT /api/admin/buyback-orders/:id/status",
     "DELETE /api/admin/buyback-orders/:id"
   ]);
@@ -50,29 +57,35 @@ test("admin buyback routes register with the expected permissions", () => {
     "buyback_orders.view",
     "buyback_orders.update",
     "buyback_orders.update",
+    "buyback_orders.update",
+    "buyback_orders.update",
+    "buyback_orders.update",
     "buyback_orders.delete"
   ]);
 });
 
-test("admin buyback list ensures schema and returns orders", async () => {
+test("admin buyback list returns standalone requests and excludes trade-ins", async () => {
   let ensured = false;
-  const pool = { async query() { return { rows: [{ id: 7, status: "Nieuw" }] }; } };
-  const { routes } = createHarness({ pool });
-  // The route harness schema callback is replaced by the registered callback in a separate focused check below.
+  const pool = { async query(sql) {
+    assert.match(sql, /trade_in=FALSE/);
+    return { rows: [{ id: 7, status: "Nieuw", trade_in: false }] };
+  } };
+  const { routes } = createHarness({ pool, ensureBuybackOrdersTable: async () => { ensured = true; } });
   const response = createResponse();
   await routes.get("GET /api/admin/buyback-orders")({}, response);
-  assert.deepEqual(response.body, { orders: [{ id: 7, status: "Nieuw" }] });
+  assert.equal(ensured, true);
+  assert.deepEqual(response.body.orders, [{ id: 7, status: "Nieuw", trade_in: false }]);
   assert.equal(response.statusCode, 200);
 });
 
-test("final buyback offer sends escaped email then stores offer and status", async () => {
+test("final buyback offer sends a secure approval link and updates status", async () => {
   const queries = [];
   let sentMail;
   const pool = {
     async query(sql, params) {
       queries.push({ sql, params });
-      if (sql.startsWith("SELECT")) return { rows: [{ id: 9, order_no: "BT-9", name: "<Sam>", email: "sam@example.com", device: "iPhone <16>" }] };
-      return { rows: [{ id: 9, status: "Aanbod verzonden", final_offer: 250, final_offer_sent_at: "now" }] };
+      if (sql.startsWith("SELECT")) return { rows: [{ id: 9, order_no: "BT-9", name: "<Sam>", email: "sam@example.com", device: "iPhone <16>", sale_inspected_value: "250.00", status: "Aanbod klaar" }] };
+      return { rows: [{ id: 9, status: "Aanbod verzonden" }] };
     }
   };
   const { routes } = createHarness({
@@ -84,26 +97,26 @@ test("final buyback offer sends escaped email then stores offer and status", asy
     }
   });
   const response = createResponse();
-  await routes.get("PUT /api/admin/buyback-orders/:id/offer")(
-    { params: { id: "9" }, body: { finalOffer: "250" } },
-    response
-  );
+  await routes.get("PUT /api/admin/buyback-orders/:id/offer")({ params: { id: "9" }, body: {} }, response);
   assert.equal(response.statusCode, 200);
-  assert.equal(response.body.order.status, "Aanbod verzonden");
+  assert.equal(response.body.customerOffer.sent, true);
+  assert.equal(response.body.customerOffer.email, "sam@example.com");
   assert.equal(queries.length, 2);
-  assert.deepEqual(queries[1].params, [250, "9"]);
+  assert.match(queries[1].sql, /sale_approval_token_hash/);
   assert.equal(sentMail.to[0], "sam@example.com");
   assert.match(sentMail.html, /&lt;Sam&gt;/);
   assert.match(sentMail.html, /iPhone &lt;16&gt;/);
-  assert.match(sentMail.html, /€ 250\.00/);
+  assert.match(sentMail.html, /buyback-response\.html\?token=[a-f0-9]{64}/);
+  assert.match(sentMail.html, /€ 250,00/);
 });
 
-test("final buyback offer does not update the order when email provider fails", async () => {
+test("buyback offer is not marked as sent when email provider fails", async () => {
   const queries = [];
   const pool = {
-    async query(sql) {
-      queries.push(sql);
-      return { rows: [{ id: 2, order_no: "BT-2", name: "Sam", email: "sam@example.com", device: "iPhone" }] };
+    async query(sql, params) {
+      queries.push({ sql, params });
+      if (sql.startsWith("SELECT")) return { rows: [{ id: 2, order_no: "BT-2", name: "Sam", email: "sam@example.com", device: "iPhone", sale_inspected_value: 100, status: "Aanbod klaar" }] };
+      return { rows: [{ id: 2, status: "Aanbod verzonden" }] };
     }
   };
   const { routes } = createHarness({
@@ -112,62 +125,52 @@ test("final buyback offer does not update the order when email provider fails", 
     fetchImpl: async () => ({ ok: false, status: 503, async json() { return { message: "unavailable" }; } })
   });
   const response = createResponse();
-  await routes.get("PUT /api/admin/buyback-orders/:id/offer")(
-    { params: { id: "2" }, body: { finalOffer: 100 } },
-    response
-  );
-  assert.equal(response.statusCode, 500);
-  assert.match(response.body.error, /Resend 503/);
-  assert.equal(queries.length, 1);
+  await routes.get("PUT /api/admin/buyback-orders/:id/offer")({ params: { id: "2" }, body: {} }, response);
+  assert.equal(response.statusCode, 502);
+  assert.match(response.body.error, /prijsvoorstel/i);
+  assert.equal(queries.length, 3);
+  assert.match(queries[2].sql, /status='Aanbod klaar'/);
 });
 
-test("final buyback offer validates amount and missing mail configuration", async () => {
+test("inspection validates the final value and requires an explanation", async () => {
   let queryCount = 0;
-  const pool = { async query() { queryCount++; return { rows: [{ id: 1, order_no: "BT-1", name: "Sam", email: "sam@example.com", device: "iPhone" }] }; } };
+  const pool = { async query() { queryCount++; return { rows: [] }; } };
   const { routes } = createHarness({ pool });
-  const invalid = createResponse();
-  await routes.get("PUT /api/admin/buyback-orders/:id/offer")(
-    { params: { id: "1" }, body: { finalOffer: -1 } },
-    invalid
+  const invalidValue = createResponse();
+  await routes.get("PUT /api/admin/buyback-orders/:id/inspection")(
+    { params: { id: "4" }, body: { inspectedValue: -1, reason: "Test reden" } },
+    invalidValue
   );
-  assert.equal(invalid.statusCode, 400);
+  assert.equal(invalidValue.statusCode, 400);
+  const missingReason = createResponse();
+  await routes.get("PUT /api/admin/buyback-orders/:id/inspection")(
+    { params: { id: "4" }, body: { inspectedValue: 60, reason: "nee" } },
+    missingReason
+  );
+  assert.equal(missingReason.statusCode, 400);
   assert.equal(queryCount, 0);
-
-  const missingConfig = createResponse();
-  await routes.get("PUT /api/admin/buyback-orders/:id/offer")(
-    { params: { id: "1" }, body: { finalOffer: 100 } },
-    missingConfig
-  );
-  assert.equal(missingConfig.statusCode, 503);
-  assert.equal(queryCount, 1);
 });
 
-test("buyback status rejects unknown values and updates allowed status", async () => {
+test("buyback status only allows non-terminal internal statuses", async () => {
   const queries = [];
   const pool = { async query(sql, params) { queries.push({ sql, params }); return { rows: [{ id: 3, status: params[0] }] }; } };
   const { routes } = createHarness({ pool });
   const invalid = createResponse();
-  await routes.get("PUT /api/admin/buyback-orders/:id/status")(
-    { params: { id: "3" }, body: { status: "Paid" } },
-    invalid
-  );
+  await routes.get("PUT /api/admin/buyback-orders/:id/status")({ params: { id: "3" }, body: { status: "Voltooid" } }, invalid);
   assert.equal(invalid.statusCode, 400);
-  assert.equal(queries.length, 0);
-
   const valid = createResponse();
-  await routes.get("PUT /api/admin/buyback-orders/:id/status")(
-    { params: { id: "3" }, body: { status: "Goedgekeurd" } },
-    valid
-  );
+  await routes.get("PUT /api/admin/buyback-orders/:id/status")({ params: { id: "3" }, body: { status: "In behandeling" } }, valid);
   assert.equal(valid.statusCode, 200);
-  assert.deepEqual(queries[0].params, ["Goedgekeurd", "3"]);
+  assert.deepEqual(queries[0].params, ["In behandeling", "3"]);
 });
 
-test("buyback delete returns success only when an order was deleted", async () => {
-  const pool = { async query() { return { rows: [{ id: 4 }] }; } };
+test("buyback delete returns success only when a standalone sale request was deleted", async () => {
+  let sqlSeen = "";
+  const pool = { async query(sql) { sqlSeen = sql; return { rows: [{ id: 4 }] }; } };
   const { routes } = createHarness({ pool });
   const response = createResponse();
   await routes.get("DELETE /api/admin/buyback-orders/:id")({ params: { id: "4" } }, response);
   assert.deepEqual(response.body, { success: true });
+  assert.match(sqlSeen, /trade_in=FALSE/);
   assert.equal(response.statusCode, 200);
 });
