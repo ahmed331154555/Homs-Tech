@@ -1,5 +1,5 @@
 /* HOMS TECH homepage hero
- * Layout is intentionally centered to match the approved reference.
+ * Compact desktop proportions with responsive mobile sizing.
  * Keep component styles isolated from the global site stylesheet.
  */
 :root {
@@ -39,7 +39,7 @@
   align-items: center;
   justify-content: flex-start;
   gap: 0;
-  padding: 62px 0 18px;
+  padding: 34px 0 10px;
   text-align: center;
 }
 
@@ -52,10 +52,10 @@
 }
 
 .hero h1 {
-  max-width: 1080px;
-  margin: 0 auto 20px;
+  max-width: 900px;
+  margin: 0 auto 12px;
   color: #f8fbff;
-  font-size: clamp(42px, 5.1vw, 72px);
+  font-size: clamp(34px, 3.8vw, 50px);
   font-weight: 850;
   letter-spacing: -.055em;
   line-height: 1.04;
@@ -66,27 +66,27 @@
 .hero #heroBottom { color: #168cff; }
 
 .hero p {
-  max-width: 1060px;
+  max-width: 820px;
   margin: 0 auto;
   color: #c6d6e4;
-  font-size: clamp(16px, 1.55vw, 21px);
-  line-height: 1.7;
+  font-size: clamp(14px, 1.15vw, 17px);
+  line-height: 1.55;
 }
 
 .hero .actions {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  margin-top: 28px;
+  gap: 12px;
+  margin-top: 18px;
 }
 
 .hero .btn {
-  min-height: 58px;
-  padding: 0 27px;
+  min-height: 48px;
+  padding: 0 22px;
   border: 1px solid transparent;
-  border-radius: 14px;
-  font-size: 15px;
+  border-radius: 12px;
+  font-size: 14px;
   font-weight: 800;
   transition: transform .18s ease, background-color .18s ease, box-shadow .18s ease;
 }
@@ -117,9 +117,9 @@
   position: relative;
   isolation: isolate;
   display: flex;
-  width: min(100%, 820px);
+  width: min(100%, 620px);
   height: auto;
-  margin: 16px auto 0;
+  margin: 8px auto 0;
   align-items: center;
   justify-content: center;
   overflow: visible;
@@ -135,7 +135,7 @@
 .hero-device img {
   display: block;
   width: 100%;
-  max-width: 820px;
+  max-width: 620px;
   height: auto;
   aspect-ratio: 400 / 203;
   object-fit: contain;
@@ -185,13 +185,15 @@
 @media (max-width: 850px) {
   .hero-inner {
     width: min(100% - 32px, 760px);
-    padding-top: 42px;
-    padding-bottom: 14px;
+    padding-top: 34px;
+    padding-bottom: 12px;
   }
 
-  .hero h1 { font-size: clamp(38px, 6.2vw, 54px); }
-  .hero p { max-width: 720px; font-size: 17px; }
-  .hero-device { width: min(100%, 740px); margin-top: 18px; }
+  .hero h1 { font-size: clamp(34px, 5.2vw, 46px); }
+  .hero p { max-width: 680px; font-size: 15px; }
+  .hero .actions { margin-top: 16px; }
+  .hero .btn { min-height: 46px; }
+  .hero-device { width: min(100%, 600px); margin-top: 12px; }
   .trust { padding: 15px 18px; }
 }
 
