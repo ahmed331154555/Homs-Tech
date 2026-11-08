@@ -90,41 +90,50 @@ nav{justify-content:center}
 .thumb-button{border:0;background:transparent;padding:0;cursor:pointer;border-radius:10px}
 .thumb-button .thumb{display:block}
 </style>
-<style id="homs-product-tradein-summary-v2">
-.ht-product-tradein-summary{margin:22px 0;padding:18px;border:1.5px solid #86d6a2;border-radius:16px;background:linear-gradient(135deg,#f0fdf4,#fff);box-shadow:0 8px 24px rgba(21,128,61,.07)}
-.ht-product-tradein-heading{display:flex;align-items:center;gap:11px;margin-bottom:14px}
-.ht-product-tradein-check{display:grid;place-items:center;width:30px;height:30px;flex:0 0 30px;border-radius:50%;background:#16a34a;color:#fff;font-weight:900}
-.ht-product-tradein-heading strong{display:block;color:#14532d;font-size:16px}
-.ht-product-tradein-heading small,.ht-product-tradein-device small{display:block;margin-top:4px;color:#64748b;font-size:12px}
-.ht-product-tradein-edit{margin-left:auto;border:0;background:transparent;color:#2563eb;font-weight:700;cursor:pointer;padding:8px}
-.ht-product-tradein-device{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px;background:#fff;border:1px solid #dcfce7;border-radius:12px}
-.ht-product-tradein-device strong{color:#172536}
-.ht-product-tradein-value{font-size:20px!important;color:#15803d!important;white-space:nowrap}
-.ht-product-tradein-summary p{margin:12px 2px 0;color:#475569;font-size:12px;line-height:1.55}
-@media(max-width:600px){.ht-product-tradein-summary{padding:14px;margin:16px 0}.ht-product-tradein-heading strong{font-size:14px}.ht-product-tradein-device{align-items:flex-start}.ht-product-tradein-value{font-size:17px!important}}
-</style>
-<style id="homs-product-tradein-summary-v3">
-.ht-product-tradein-summary{margin:22px 0;padding:18px;border:1.5px solid #86d6a2;border-radius:18px;background:linear-gradient(145deg,#f0fdf4,#fff);box-shadow:0 8px 24px rgba(21,128,61,.07)}
-.ht-product-tradein-heading{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+<style id="homs-product-tradein-summary-v4">
+/* Trade-in card: product identity beside image, specifications in a full-width grid. */
+.ht-product-tradein-summary{margin:20px 0;padding:17px;border:1.5px solid #86d6a2;border-radius:18px;background:linear-gradient(145deg,#f0fdf4,#fff);box-shadow:0 8px 24px rgba(21,128,61,.06)}
+.ht-product-tradein-heading{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .ht-product-tradein-check{display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;border-radius:50%;background:#16a34a;color:#fff;font-weight:900}
-.ht-product-tradein-heading strong{display:block;color:#14532d;font-size:16px}
+.ht-product-tradein-heading strong{display:block;color:#14532d;font-size:16px;line-height:1.3}
 .ht-product-tradein-heading small{display:block;margin-top:4px;color:#64748b;font-size:12px}
 .ht-product-tradein-edit{margin-left:auto;border:0;background:transparent;color:#2563eb;font-weight:800;cursor:pointer;padding:8px}
-.ht-product-tradein-device{display:grid;grid-template-columns:112px minmax(0,1fr);align-items:center;gap:15px;padding:13px;background:#fff;border:1px solid #dcfce7;border-radius:14px}
-.ht-product-tradein-image{width:112px;height:126px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:11px;background:linear-gradient(145deg,#f8fafc,#edf3fa);font-size:35px}
+.ht-product-tradein-device{display:grid;grid-template-columns:104px minmax(0,1fr);align-items:center;gap:15px;padding:13px;background:#fff;border:1px solid #dcfce7;border-radius:14px}
+.ht-product-tradein-image{width:104px;height:116px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:11px;background:linear-gradient(145deg,#f8fafc,#edf3fa);font-size:34px}
 .ht-product-tradein-image img{width:100%;height:100%;object-fit:contain}
-.ht-product-tradein-model{font-size:17px;line-height:1.3;color:#172536}
-.ht-product-tradein-value{display:block;margin-top:8px;font-size:19px!important;color:#15803d!important;white-space:nowrap}
-.ht-product-tradein-specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 12px;margin-top:9px}
-.ht-product-tradein-specs span{font-size:11px;color:#52647a;line-height:1.4}
-.ht-product-tradein-math{margin-top:14px;padding:13px 14px;border:1px solid #e2e8f0;border-radius:13px;background:#fff}
-.ht-product-tradein-math-row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;color:#475569;font-size:13px}
+.ht-product-tradein-model{display:block;color:#172536;font-size:18px;line-height:1.3;font-weight:800;overflow-wrap:anywhere}
+.ht-product-tradein-device small{display:block;margin-top:6px;color:#64748b;font-size:12px}
+.ht-product-tradein-value{display:block;margin-top:7px;color:#15803d!important;font-size:21px!important;font-weight:850;white-space:nowrap}
+.ht-product-tradein-specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px;margin-top:12px}
+.ht-product-tradein-specs span{min-width:0;padding:9px 10px;border:1px solid #e8eef3;border-radius:9px;background:#f8fafc;color:#475569;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.ht-product-tradein-specs span b{color:#243449;font-weight:800}
+.ht-product-tradein-math{margin-top:13px;padding:12px 13px;border:1px solid #e2e8f0;border-radius:13px;background:#fff}
+.ht-product-tradein-math-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 0;color:#475569;font-size:13px;line-height:1.4}
 .ht-product-tradein-math-row strong{color:#172536;white-space:nowrap}
 .ht-product-tradein-math-row.credit strong{color:#15803d}
 .ht-product-tradein-math-row.net{margin-top:5px;padding:11px 12px;border-radius:10px;background:#eaf8ef;color:#14532d;font-weight:850}
 .ht-product-tradein-math-row.net strong{color:#15803d;font-size:19px}
 .ht-product-tradein-note{margin:12px 1px 0;padding:12px 13px;border-radius:11px;background:#eff6ff;color:#24466b;font-size:12px;line-height:1.6}
-@media(max-width:600px){.ht-product-tradein-summary{padding:13px;margin:16px 0}.ht-product-tradein-heading strong{font-size:14px}.ht-product-tradein-device{grid-template-columns:88px minmax(0,1fr);gap:11px;padding:10px}.ht-product-tradein-image{width:88px;height:105px}.ht-product-tradein-model{font-size:15px}.ht-product-tradein-value{font-size:17px!important}.ht-product-tradein-specs{gap:5px 8px}.ht-product-tradein-specs span{font-size:10px}.ht-product-tradein-math{padding:10px}.ht-product-tradein-math-row{font-size:12px}.ht-product-tradein-math-row.net strong{font-size:17px}}
+@media(max-width:600px){
+ .ht-product-tradein-summary{margin:16px 0;padding:12px;border-radius:15px}
+ .ht-product-tradein-heading{gap:8px;margin-bottom:11px}
+ .ht-product-tradein-heading strong{font-size:14px}
+ .ht-product-tradein-device{grid-template-columns:82px minmax(0,1fr);gap:11px;padding:10px}
+ .ht-product-tradein-image{width:82px;height:94px}
+ .ht-product-tradein-model{font-size:16px}
+ .ht-product-tradein-value{font-size:19px!important}
+ .ht-product-tradein-specs{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
+ .ht-product-tradein-specs span{padding:8px;font-size:11px}
+ .ht-product-tradein-math{padding:9px}
+ .ht-product-tradein-math-row{font-size:12px}
+ .ht-product-tradein-math-row.net strong{font-size:17px}
+ .ht-product-tradein-note{padding:10px;font-size:11px}
+}
+@media(max-width:360px){
+ .ht-product-tradein-device{grid-template-columns:72px minmax(0,1fr);gap:9px}
+ .ht-product-tradein-image{width:72px;height:84px}
+ .ht-product-tradein-specs{grid-template-columns:1fr}
+}
 </style>
 <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20260922-final-header">
 <style>
@@ -464,7 +473,7 @@ function renderTradeInSummary(newPhoneTotal){
   const specsHtml=rows.length?'<div class="ht-product-tradein-specs">'+rows.map(row=>'<span><b>'+esc(row[0])+':</b> '+esc(row[1])+'</span>').join("")+'</div>':'<div class="ht-product-tradein-specs"><span>De ingevulde toestelinformatie wordt bij je aanvraag bewaard.</span></div>';
   return '<section id="tradeInProductSummary" class="ht-product-tradein-summary" aria-live="polite">'+
     '<div class="ht-product-tradein-heading"><span class="ht-product-tradein-check">✓</span><div><strong>Je oude telefoon is aangemeld</strong><small>Inruil bij aankoop van dit toestel</small></div><button type="button" class="ht-product-tradein-edit" onclick="openTradeInPage()">Wijzigen</button></div>'+
-    '<div class="ht-product-tradein-device"><div class="ht-product-tradein-image">'+imageHtml+'</div><div><strong class="ht-product-tradein-model">'+esc(device)+'</strong><small>Geschatte inruilwaarde</small><strong class="ht-product-tradein-value">'+money(credit)+'</strong>'+specsHtml+'</div></div>'+
+    '<div class="ht-product-tradein-device"><div class="ht-product-tradein-image">'+imageHtml+'</div><div class="ht-product-tradein-identity"><strong class="ht-product-tradein-model">'+esc(device)+'</strong><small>Geschatte inruilwaarde</small><strong class="ht-product-tradein-value">'+money(credit)+'</strong></div></div>'+specsHtml+
     '<div class="ht-product-tradein-math"><div class="ht-product-tradein-math-row"><span>Prijs nieuwe telefoon</span><strong>'+money(newPhoneTotal)+'</strong></div><div class="ht-product-tradein-math-row credit"><span>Geschatte inruilwaarde</span><strong>− '+money(credit)+'</strong></div><div class="ht-product-tradein-math-row net"><span>Effectieve prijs na uitbetaling</span><strong>'+money(net)+'</strong></div></div>'+
     '<p class="ht-product-tradein-note">Je betaalt nu de volledige prijs van je nieuwe telefoon ('+money(newPhoneTotal)+'). Nadat we je oude telefoon hebben ontvangen en gecontroleerd, bevestigen we de definitieve inruilwaarde en maken we dit bedrag aan je over. De uiteindelijke waarde kan na inspectie afwijken.</p></section>';
 }
