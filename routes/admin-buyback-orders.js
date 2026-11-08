@@ -289,7 +289,7 @@ function registerAdminBuybackOrderRoutes(app, {
         "UPDATE buyback_orders SET shipping_label_pdf=$1,shipping_label_filename=$2,postnl_tracking_number=$3,shipping_label_uploaded_at=NOW(),shipping_label_email_sent_at=NULL WHERE id=$4 RETURNING id,shipping_label_filename,postnl_tracking_number,shipping_label_uploaded_at",
         [pdf, fileName, trackingNumber, id]
       );
-      if (!updated.rows.length) return res.status(404).json({ error: "Zelfstandige inkoopaanvraag niet gevonden." });
+      if (!updated.rows.length) return res.status(404).json({ error: "Inkoopaanvraag niet gevonden." });
       return res.json({ success: true, shipping: updated.rows[0] });
     } catch (error) {
       console.error("PostNL shipping label upload failed:", error);
