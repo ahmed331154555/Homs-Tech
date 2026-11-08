@@ -340,7 +340,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
     }
   });
 
-  app.put("/api/admin/webshop-orders/:id/trade-in-inspection", requirePermission("webshop_orders.update"), async (req,res) => {
+  app.put("/api/admin/webshop-orders/:id/trade-in-inspection", requirePermission("buyback_orders.update"), async (req,res) => {
     const id=Number(req.params.id);
     const inspectedValue=Number(req.body?.inspectedValue);
     const reason=String(req.body?.reason||"").trim().slice(0,1000);
@@ -393,7 +393,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
     }finally{client.release();}
   });
 
-  app.put("/api/admin/webshop-orders/:id/trade-in-offer", requirePermission("webshop_orders.update"), async (req,res) => {
+  app.put("/api/admin/webshop-orders/:id/trade-in-offer", requirePermission("buyback_orders.update"), async (req,res) => {
     const id=Number(req.params.id);
     if(!Number.isInteger(id)||id<1)return res.status(400).json({error:"Ongeldig order-ID."});
     try{
@@ -435,7 +435,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
     }finally{client.release();}
   });
 
-  app.put("/api/admin/webshop-orders/:id/trade-in-settlement", requirePermission("webshop_orders.update"), async (req,res) => {
+  app.put("/api/admin/webshop-orders/:id/trade-in-settlement", requirePermission("buyback_orders.update"), async (req,res) => {
     const id=Number(req.params.id);
     const note=String(req.body?.settlementNote||"").trim().slice(0,1000);
     if(!Number.isInteger(id)||id<1)return res.status(400).json({error:"Ongeldig order-ID."});
@@ -469,7 +469,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
     }finally{client.release();}
   });
 
-  app.post("/api/admin/webshop-orders/:id/trade-in-settlement-email", requirePermission("webshop_orders.update"), async (req,res) => {
+  app.post("/api/admin/webshop-orders/:id/trade-in-settlement-email", requirePermission("buyback_orders.update"), async (req,res) => {
     const id=Number(req.params.id);
     if(!Number.isInteger(id)||id<1)return res.status(400).json({error:"Ongeldig order-ID."});
     try{
