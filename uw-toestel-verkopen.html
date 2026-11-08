@@ -1956,9 +1956,9 @@ function buildCustomerQuestions(phone,type){
 
 function normalizeBuybackModelName(value){
   return String(value||"").toLowerCase()
-    .replace(/\\b(apple|iphone|smartphone|telefoon)\\b/g," ")
-    .replace(/\\b(16|32|64|128|256|512)\\s*gb\\b|\\b1\\s*tb\\b/g," ")
-    .replace(/[^a-z0-9]+/g," ").trim().replace(/\\s+/g," ");
+    .replace(/\b(apple|iphone|smartphone|telefoon)\b/g," ")
+    .replace(/\b(16|32|64|128|256|512)\s*gb\b|\b1\s*tb\b/g," ")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
 }
 function findSalesPhoneForBuyback(phone){
   const target=normalizeBuybackModelName(phone?.name);
