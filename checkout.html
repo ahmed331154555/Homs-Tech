@@ -98,7 +98,15 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 .ht-cart-tradein small{display:block;margin-top:5px;color:#31516d;font-size:12px;line-height:1.45}
 .ht-cart-tradein p{margin:7px 0 0;color:#64748b;font-size:12px;line-height:1.55}
 </style>
-<style id="ht-checkout-tradein-total">.total #total{display:block;text-align:right}.ht-checkout-total-lines{display:grid;gap:7px;min-width:210px}.ht-checkout-total-lines>span{display:flex;justify-content:space-between;gap:18px;align-items:center}.ht-checkout-total-lines small{font-size:12px;color:#64748b}.ht-checkout-total-lines b{font-size:14px;color:#1e293b}.ht-checkout-total-lines .discount b{color:#15803d}.ht-checkout-total-lines .payable{padding-top:8px;border-top:1px solid #e2e8f0}.ht-checkout-total-lines .payable b{font-size:20px;color:#075fc4}</style>\n</head>
+<style id="ht-checkout-tradein-total">.total #total{display:block;text-align:right}.ht-checkout-total-lines{display:grid;gap:7px;min-width:210px}.ht-checkout-total-lines>span{display:flex;justify-content:space-between;gap:18px;align-items:center}.ht-checkout-total-lines small{font-size:12px;color:#64748b}.ht-checkout-total-lines b{font-size:14px;color:#1e293b}.ht-checkout-total-lines .discount b{color:#15803d}.ht-checkout-total-lines .payable{padding-top:8px;border-top:1px solid #e2e8f0}.ht-checkout-total-lines .payable b{font-size:20px;color:#075fc4}</style>\n<style id="ht-checkout-option-format">
+.ht-option-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;min-width:0}
+.ht-option-chip{display:inline-flex;align-items:baseline;gap:4px;max-width:100%;padding:5px 8px;border:1px solid #e2e8f0;border-radius:7px;background:#f8fafc;color:#475569;font-size:11px;line-height:1.35;overflow-wrap:anywhere}
+.ht-option-chip b{color:#334155;font-weight:750;white-space:nowrap}
+.ht-option-chip span{min-width:0}
+.item-meta .ht-option-list{margin:0 0 5px}
+@media(max-width:560px){.ht-option-list{gap:5px}.ht-option-chip{font-size:10px;padding:5px 7px}}
+</style>
+</head>
 <body>
 <div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div>
 <header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a>
@@ -169,12 +177,41 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
       .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
   }
 
-  function optionsText(o){
-    const m = {storage:"Geheugen",color:"Kleur",condition:"Conditie",battery:"Batterij",vat:"BTW",tradeIn:"Inruil"};
-    if(!o || typeof o !== "object") return "";
-    return Object.entries(o)
-      .filter(([_,v]) => String(v ?? "").trim() !== "")
-      .map(([k,v]) => (m[k] || k) + ": " + esc(v)).join(" • ");
+  function optionDisplayValue(value){
+    if(value===null||value===undefined)return "";
+    if(Array.isArray(value))return value.map(optionDisplayValue).filter(Boolean).join(", ");
+    if(typeof value==="object"){
+      const readable=value.label??value.name??value.value??value.title;
+      return readable===undefined?"":optionDisplayValue(readable);
+    }
+    if(typeof value==="boolean")return value?"Ja":"Nee";
+    return String(value).trim();
+  }
+
+  function optionsText(options){
+    if(!options||typeof options!=="object"||Array.isArray(options))return "";
+    const labels={
+      storage:"Geheugen",color:"Kleur",condition:"Conditie",battery:"Batterij",
+      vat:"BTW",tradeIn:"Inruil",category:"Categorie",quality:"Kwaliteit",sku:"Artikelnummer"
+    };
+    const entries=[];
+    Object.keys(labels).forEach(key=>{
+      const value=optionDisplayValue(options[key]);
+      if(value)entries.push([labels[key],value]);
+    });
+    const custom=options.custom&&typeof options.custom==="object"&&!Array.isArray(options.custom)?options.custom:{};
+    Object.entries(custom).forEach(([key,rawValue])=>{
+      const value=optionDisplayValue(rawValue);
+      if(!value)return;
+      const optionGroup=key.match(/^optionGroups:(\\d+)$/);
+      const addonGroup=key.match(/^addonGroups:(\\d+)$/);
+      if(optionGroup)entries.push(["Extra "+(Number(optionGroup[1])+1),value]);
+      else if(addonGroup)entries.push(["Accessoire "+(Number(addonGroup[1])+1),value]);
+    });
+    if(!entries.length)return "";
+    return '<div class="ht-option-list">'+entries.map(([label,value])=>
+      '<span class="ht-option-chip"><b>'+esc(label)+'</b><span>'+esc(value)+'</span></span>'
+    ).join("")+'</div>';
   }
 
   async function renderItems(){
