@@ -4,11 +4,11 @@ var path=(location.pathname||"/").toLowerCase().replace(/\/+$/,"")||"/";
 var page=path==="/"||path.endsWith("/index.html")?"home":path.endsWith("/about.html")?"about":path.endsWith("/devices.html")?"devices":path.endsWith("/product.html")?"product":path.endsWith("/repair.html")?"repair":path.endsWith("/uw-toestel-verkopen.html")?"sell":path.endsWith("/prices.html")?"prices":path.endsWith("/shop.html")?"shop":path.endsWith("/account.html")?"account":path.endsWith("/cart.html")?"cart":path.endsWith("/checkout.html")?"checkout":path.endsWith("/contact.html")?"contact":path.endsWith("/payment.html")?"payment":path.endsWith("/privacybeleid.html")?"privacy":path.endsWith("/design-preview.html")?"design":"home";
 function color(v,f){return /^#[0-9a-f]{6}$/i.test(String(v||""))?v:f}
 function render(c){
+ document.querySelectorAll(".ht-topbar,.topbar").forEach(function(el){el.style.setProperty("display","none","important")});
+ var old=document.getElementById("homsManagedAnnouncementBar");if(old)old.remove();
  if(!c||c.enabled===false)return;
  var messages=Array.isArray(c.messages)?c.messages.map(function(x){return String(x||"").trim().slice(0,120)}).filter(Boolean).slice(0,8):[];
  if(!messages.length)return;
- document.querySelectorAll(".ht-topbar,.topbar").forEach(function(el){el.style.setProperty("display","none","important")});
- var old=document.getElementById("homsManagedAnnouncementBar");if(old)old.remove();
  var bg=color(c.background,"#071d2d"),fg=color(c.textColor,"#eaf4ff"),accent=color(c.accentColor,"#60a5fa");
  var height=Math.max(30,Math.min(64,Number(c.height)||42)),font=Math.max(10,Math.min(22,Number(c.fontSize)||14));
  var bar=document.createElement("div");bar.id="homsManagedAnnouncementBar";bar.setAttribute("role","region");bar.setAttribute("aria-label","HOMS TECH mededelingen");
@@ -19,9 +19,12 @@ function render(c){
  addMessages();
  var moving=c.mode!=="static"&&window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
  if(moving){
-  addMessages();inner.appendChild(track);bar.appendChild(inner);
+  var distance=track.scrollWidth;
+  var required=window.innerWidth+distance;
+  while(track.scrollWidth<required&&track.children.length<160)addMessages();
+  inner.appendChild(track);bar.appendChild(inner);
   var direction=c.direction==="ltr"?1:-1,speed=Math.max(20,Math.min(600,Number(c.speed)||140));
-  requestAnimationFrame(function(){var distance=track.scrollWidth/2,duration=Math.max(3,distance/speed);track.animate(direction<0?[{transform:"translate3d(0,0,0)"},{transform:"translate3d(-"+distance+"px,0,0)"}]:[{transform:"translate3d(-"+distance+"px,0,0)"},{transform:"translate3d(0,0,0)"}],{duration:duration*1000,iterations:Infinity,easing:"linear"})});
+  requestAnimationFrame(function(){var duration=Math.max(3,distance/speed);track.animate(direction<0?[{transform:"translate3d(0,0,0)"},{transform:"translate3d(-"+distance+"px,0,0)"}]:[{transform:"translate3d(-"+distance+"px,0,0)"},{transform:"translate3d(0,0,0)"}],{duration:duration*1000,iterations:Infinity,easing:"linear"})});
  }else{
   inner.style.justifyContent="center";inner.style.padding="0 12px";track.style.width="100%";track.style.justifyContent="center";track.style.flexWrap="wrap";track.style.whiteSpace="normal";track.style.gap="8px 24px";
   messages.forEach(function(message){var item=document.createElement("span");item.style.cssText="font-size:"+font+"px;font-weight:800;color:"+fg+";white-space:nowrap";item.textContent=message;track.appendChild(item)});
