@@ -91,7 +91,7 @@ nav{justify-content:center}
 .thumb-button .thumb{display:block}
 </style>
 <style id="homs-product-tradein-summary-v4">
-/* Trade-in card: product identity beside image, specifications in a full-width grid. */
+/* Compact, readable trade-in summary: first two facts side by side, remaining questions full width. */
 .ht-product-tradein-summary{margin:20px 0;padding:17px;border:1.5px solid #86d6a2;border-radius:18px;background:linear-gradient(145deg,#f0fdf4,#fff);box-shadow:0 8px 24px rgba(21,128,61,.06)}
 .ht-product-tradein-heading{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .ht-product-tradein-check{display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;border-radius:50%;background:#16a34a;color:#fff;font-weight:900}
@@ -105,8 +105,15 @@ nav{justify-content:center}
 .ht-product-tradein-device small{display:block;margin-top:6px;color:#64748b;font-size:12px}
 .ht-product-tradein-value{display:block;margin-top:7px;color:#15803d!important;font-size:21px!important;font-weight:850;white-space:nowrap}
 .ht-product-tradein-specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px;margin-top:12px}
-.ht-product-tradein-specs span{min-width:0;padding:9px 10px;border:1px solid #e8eef3;border-radius:9px;background:#f8fafc;color:#475569;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
-.ht-product-tradein-specs span b{color:#243449;font-weight:800}
+.ht-product-tradein-spec{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0;padding:10px 11px;border:1px solid #dbeafe;border-radius:10px;background:#f3f8ff;color:#334155;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.ht-product-tradein-spec.is-wide{grid-column:1/-1}
+.ht-product-tradein-spec-title{display:block;color:#1e3a5f;font-size:12px;font-weight:850;line-height:1.45}
+.ht-product-tradein-answer{display:inline-flex;align-items:center;max-width:100%;padding:5px 9px;border-radius:7px;font-size:12px;font-weight:750;line-height:1.4;overflow-wrap:anywhere}
+.ht-product-tradein-answer.is-neutral{background:#e7f0ff;color:#1d4ed8}
+.ht-product-tradein-answer.is-positive{background:#dcfce7;color:#15803d}
+.ht-product-tradein-feature{grid-column:1/-1;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:11px 12px;border:1px solid #bfdbfe;border-radius:11px;background:#f5f9ff}
+.ht-product-tradein-feature-title{color:#1e3a5f;font-size:12px;font-weight:850;line-height:1.5}
+.ht-product-tradein-feature .ht-product-tradein-answer{align-self:flex-start;padding:6px 11px}
 .ht-product-tradein-math{margin-top:13px;padding:12px 13px;border:1px solid #e2e8f0;border-radius:13px;background:#fff}
 .ht-product-tradein-math-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 0;color:#475569;font-size:13px;line-height:1.4}
 .ht-product-tradein-math-row strong{color:#172536;white-space:nowrap}
@@ -122,8 +129,11 @@ nav{justify-content:center}
  .ht-product-tradein-image{width:82px;height:94px}
  .ht-product-tradein-model{font-size:16px}
  .ht-product-tradein-value{font-size:19px!important}
- .ht-product-tradein-specs{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
- .ht-product-tradein-specs span{padding:8px;font-size:11px}
+ .ht-product-tradein-specs{gap:7px;margin-top:10px}
+ .ht-product-tradein-spec{padding:9px;font-size:11px}
+ .ht-product-tradein-spec-title{font-size:11px}
+ .ht-product-tradein-answer{font-size:11px;padding:5px 8px}
+ .ht-product-tradein-feature{padding:10px}
  .ht-product-tradein-math{padding:9px}
  .ht-product-tradein-math-row{font-size:12px}
  .ht-product-tradein-math-row.net strong{font-size:17px}
@@ -134,24 +144,6 @@ nav{justify-content:center}
  .ht-product-tradein-image{width:72px;height:84px}
  .ht-product-tradein-specs{grid-template-columns:1fr}
 }
-
-/* Clear answer chips and a dedicated full-width final function-check card. */
-.ht-product-tradein-specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px;margin-top:12px}
-.ht-product-tradein-spec{display:flex;flex-wrap:wrap;align-items:center;gap:4px 5px;min-width:0;padding:9px 10px;border:1px solid #dbeafe;border-radius:10px;background:#f3f8ff;color:#334155;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
-.ht-product-tradein-spec b{color:#334155;font-weight:800}
-.ht-product-tradein-answer{display:inline-flex;align-items:center;max-width:100%;padding:2px 7px;border-radius:6px;font-weight:750;line-height:1.4;overflow-wrap:anywhere}
-.ht-product-tradein-answer.is-neutral{background:#e7f0ff;color:#1d4ed8}
-.ht-product-tradein-answer.is-positive{background:#dcfce7;color:#15803d}
-.ht-product-tradein-feature{grid-column:1/-1;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:11px 12px;border:1px solid #bfdbfe;border-radius:11px;background:#f5f9ff}
-.ht-product-tradein-feature-title{color:#1e3a5f;font-size:12px;font-weight:850;line-height:1.5}
-.ht-product-tradein-feature .ht-product-tradein-answer{align-self:flex-start;padding:6px 11px;font-size:12px}
-@media(max-width:600px){
- .ht-product-tradein-specs{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
- .ht-product-tradein-spec{padding:8px;font-size:11px}
- .ht-product-tradein-feature{padding:10px}
- .ht-product-tradein-feature-title{font-size:12px}
-}
-@media(max-width:360px){.ht-product-tradein-specs{grid-template-columns:1fr}}
 </style>
 <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20260922-final-header">
 <style>
@@ -458,10 +450,12 @@ function renderTradeInSummary(newPhoneTotal){
   try{details=JSON.parse(localStorage.getItem("homsTechTradeInDetails")||"{}")||{};}catch{}
   const device=String(details.name||localStorage.getItem("homsTechTradeInDevice")||"Oude telefoon");
   const image=String(details.image||"");
+  // Keep the first two compact fields in order: storage, then battery.
+  // From the third question onward, render each question as a full-width card.
   const rows=[
     details.storage?["Opslag",details.storage]:null,
-    details.condition?["Staat",details.condition]:null,
     details.battery?["Batterij",details.battery]:null,
+    details.condition?["Staat",details.condition]:null,
     details.screen?["Scherm",details.screen]:null
   ].filter(Boolean);
   const rawAnswers=details.answers;
@@ -488,16 +482,17 @@ function renderTradeInSummary(newPhoneTotal){
     if(label&&value&&rows.length<10&&!rows.some(row=>row[0]===label))rows.push([label,value]);
   });
   const imageHtml=image?'<img src="'+esc(image)+'" alt="'+esc(device)+'" loading="lazy">':'<span aria-label="Geen foto beschikbaar">📱</span>';
-  const specsHtml=rows.length?'<div class="ht-product-tradein-specs">'+rows.map(([question,answer])=>{
+  const specsHtml=rows.length?'<div class="ht-product-tradein-specs">'+rows.map(([question,answer],index)=>{
     const label=String(question||"").trim(),value=String(answer||"").trim();
     const isFunctionCheck=/werken alle functies/i.test(label);
     const isPositive=/^(ja|yes|goed|zeer goed|zo goed als nieuw|ontgrendeld|unlocked|werkt|100%|nieuw)$/i.test(value);
     const answerClass=isPositive?"is-positive":"is-neutral";
+    const fullWidth=index>=2||isFunctionCheck;
     if(isFunctionCheck){
       return '<div class="ht-product-tradein-feature"><strong class="ht-product-tradein-feature-title">'+esc(label)+'</strong><span class="ht-product-tradein-answer '+answerClass+'">'+esc(value)+'</span></div>';
     }
-    return '<div class="ht-product-tradein-spec"><b>'+esc(label)+':</b><span class="ht-product-tradein-answer '+answerClass+'">'+esc(value)+'</span></div>';
-  }).join("")+'</div>':'<div class="ht-product-tradein-specs"><div class="ht-product-tradein-spec"><span>De ingevulde toestelinformatie wordt bij je aanvraag bewaard.</span></div></div>';
+    return '<div class="ht-product-tradein-spec'+(fullWidth?' is-wide':'')+'"><strong class="ht-product-tradein-spec-title">'+esc(label)+'</strong><span class="ht-product-tradein-answer '+answerClass+'">'+esc(value)+'</span></div>';
+  }).join("")+'</div>':'<div class="ht-product-tradein-specs"><div class="ht-product-tradein-spec is-wide"><span>De ingevulde toestelinformatie wordt bij je aanvraag bewaard.</span></div></div>';
   return '<section id="tradeInProductSummary" class="ht-product-tradein-summary" aria-live="polite">'+
     '<div class="ht-product-tradein-heading"><span class="ht-product-tradein-check">✓</span><div><strong>Je oude telefoon is aangemeld</strong><small>Inruil bij aankoop van dit toestel</small></div><button type="button" class="ht-product-tradein-edit" onclick="openTradeInPage()">Wijzigen</button></div>'+
     '<div class="ht-product-tradein-device"><div class="ht-product-tradein-image">'+imageHtml+'</div><div class="ht-product-tradein-identity"><strong class="ht-product-tradein-model">'+esc(device)+'</strong><small>Geschatte inruilwaarde</small><strong class="ht-product-tradein-value">'+money(credit)+'</strong></div></div>'+specsHtml+
