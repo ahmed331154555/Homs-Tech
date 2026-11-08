@@ -3,6 +3,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { registerDeviceRegisterRoutes } = require("../routes/device-register");
+const { deviceText, deviceMoney } = require("../utils/device-register");
 
 function createHarness(pool) {
   const routes = new Map();
@@ -22,14 +23,6 @@ function createHarness(pool) {
     permissions.push(permission);
     return (_req, _res, next) => next();
   };
-  const deviceText = (value, max = 120) => String(value ?? "").trim().slice(0, max);
-  const deviceMoney = value => {
-    const number = Number(value);
-    return Number.isFinite(number) && number >= 0 && number <= 1000000
-      ? number
-      : NaN;
-  };
-
   registerDeviceRegisterRoutes(app, {
     pool,
     requirePermission,
