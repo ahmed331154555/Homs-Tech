@@ -129,7 +129,9 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
   <link rel="stylesheet" href="assets/homs-global-nav.css">
 
 <link rel="stylesheet" href="assets/homs-layout-system.css?v=20261030">
-<style id="ht-cart-tradein-clean">.ht-cart-tradein,.ht-cart-tradein-cta{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 16px;margin:12px 0;border:1px solid #bfdbfe;border-radius:12px;background:#eff6ff}.ht-cart-tradein small{display:block;color:#64748b;margin-top:3px}.ht-cart-tradein button{border:0;background:transparent;color:#dc2626;font-weight:700;cursor:pointer}.ht-cart-tradein-cta a{color:#2563eb;font-weight:800}</style>\n<style id="ht-tradein-empty-state">.ht-tradein-empty-note{margin:14px auto 0!important;padding:12px 15px;max-width:540px;border:1px solid #bfdbfe;border-radius:12px;background:#eff6ff;color:#17416a;font-size:13px;line-height:1.5}</style>\n</head><body>
+<style id="ht-cart-tradein-clean">.ht-cart-tradein,.ht-cart-tradein-cta{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 16px;margin:12px 0;border:1px solid #bfdbfe;border-radius:12px;background:#eff6ff}.ht-cart-tradein small{display:block;color:#64748b;margin-top:3px}.ht-cart-tradein button{border:0;background:transparent;color:#dc2626;font-weight:700;cursor:pointer}.ht-cart-tradein-cta a{color:#2563eb;font-weight:800}</style>
+<style id="ht-tradein-empty-state">.ht-tradein-empty-note{margin:14px auto 0!important;padding:12px 15px;max-width:540px;border:1px solid #bfdbfe;border-radius:12px;background:#eff6ff;color:#17416a;font-size:13px;line-height:1.5}</style>
+</head><body>
 <div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div>
 <header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="account.html">♙ Mijn account</a><a class="active" href="cart.html">🛒 Winkelwagen <span id="cartCount" class="cart-count">0</span></a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a>
    <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a></nav></div></header>
@@ -253,8 +255,7 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
   function paint(items){
     const area=document.getElementById("cartArea");if(!area)return;updateCartCount(items);
     if(!items.length){
-      const hasTradeIn=Boolean(localStorage.getItem("homsTechTradeInToken"));
-      area.innerHTML='<div class="empty"><h2>Je winkelwagen is leeg</h2><p>'+(hasTradeIn?'Uw inruilaanvraag is opgeslagen. Kies een nieuwe telefoon om uw inruil aan de bestelling te koppelen.':'Voeg eerst een telefoon toe aan uw winkelwagen.')+'</p><a class="btn red" href="devices.html">'+(hasTradeIn?'📱 Kies uw nieuwe telefoon':'📱 Bekijk telefoons')+'</a>'+(hasTradeIn?'<p class="ht-tradein-empty-note">♻ De geschatte inruilwaarde blijft bewaard en wordt apart bij uw bestelling getoond. De definitieve waarde volgt na inspectie.</p>':'<p style="margin-top:14px"><a href="uw-toestel-verkopen.html?tradeIn=1" style="color:#2563eb;font-weight:800">Eerst een oude telefoon inruilen →</a></p>')+'</div>';
+      area.innerHTML='<div class="empty"><h2>Je winkelwagen is leeg</h2><p>Voeg eerst een telefoon toe aan uw winkelwagen.</p><a class="btn red" href="devices.html">📱 Bekijk telefoons</a></div>';
       return;
     }
     let total=0;
