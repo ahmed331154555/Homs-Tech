@@ -52,6 +52,16 @@ async function ensureBuybackOrdersTable(pool) {
     ON buyback_orders(trade_in_linked_order_id)
     WHERE trade_in_linked_order_id IS NOT NULL
   `);
+  // Standalone customer-sale inspection, approval and payout lifecycle.
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS sale_inspected_value NUMERIC(12,2)`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS sale_inspection_reason TEXT NOT NULL DEFAULT ''`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS sale_approval_token_hash TEXT`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS sale_approval_expires_at TIMESTAMPTZ`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS sale_approval_decision_at TIMESTAMPTZ`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS sale_settlement_note TEXT NOT NULL DEFAULT ''`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS sale_settled_at TIMESTAMPTZ`);
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS sale_payout_email_sent_at TIMESTAMPTZ`);
+
   // Remove abandoned, unlinked trade-in quotes after their 24-hour checkout window.
   await pool.query(`
     DELETE FROM buyback_orders
