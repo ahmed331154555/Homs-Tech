@@ -35,7 +35,7 @@ function registerAdminBuybackOrderRoutes(app, {
       [orderId]
     );
     if (!found.rows.length) {
-      const error = new Error("Zelfstandige inkoopaanvraag niet gevonden.");
+      const error = new Error("Inkoopaanvraag niet gevonden.");
       error.status = 404;
       throw error;
     }
@@ -322,7 +322,7 @@ function registerAdminBuybackOrderRoutes(app, {
     try {
       await ensureBuybackOrdersTable(pool);
       const found = await pool.query(
-        "SELECT id,order_no,name,email,device,postnl_tracking_number,shipping_label_pdf,shipping_label_filename FROM buyback_orders WHERE id=$1 AND trade_in=FALSE",
+        "SELECT id,order_no,name,email,device,postnl_tracking_number,shipping_label_pdf,shipping_label_filename FROM buyback_orders WHERE id=$1",
         [id]
       );
       if (!found.rows.length) return res.status(404).json({ error: "Zelfstandige inkoopaanvraag niet gevonden." });
