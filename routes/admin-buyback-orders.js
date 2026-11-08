@@ -132,9 +132,11 @@ function registerAdminBuybackOrderRoutes(app, {
                b.postnl_tracking_number,b.shipping_label_filename,b.shipping_label_uploaded_at,b.shipping_label_email_sent_at,
                w.id AS linked_webshop_order_id,w.order_no AS linked_webshop_order_no,
                w.status AS linked_webshop_status,w.payment_status AS linked_webshop_payment_status,
-               w.trade_in_status AS linked_trade_in_status,
+               w.trade_in_status AS linked_trade_in_status,w.trade_in_snapshot AS linked_trade_in_snapshot,
                w.trade_in_estimated_value AS linked_trade_in_estimated_value,
-               w.trade_in_inspected_value AS linked_trade_in_inspected_value
+               w.trade_in_inspected_value AS linked_trade_in_inspected_value,
+               w.trade_in_adjustment AS linked_trade_in_adjustment,
+               w.trade_in_applied_credit AS linked_trade_in_applied_credit
         FROM buyback_orders b
         LEFT JOIN webshop_orders w ON w.trade_in_order_id=b.id
         WHERE (b.trade_in=FALSE AND b.status NOT IN ('Wacht op aankoop', 'Wacht op betaling'))
