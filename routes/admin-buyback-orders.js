@@ -11,7 +11,7 @@ function registerAdminBuybackOrderRoutes(app, {
 }) {
   const safe = value => escapeHtml(String(value ?? ""));
   const money = value => Number(value || 0).toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const sendMail = async ({ to, subject, html }) => {
+  const sendMail = async ({ to, subject, html, attachments }) => {
     const env = getEnv();
     if (!env.RESEND_API_KEY || !env.RESEND_FROM_EMAIL) {
       const error = new Error("E-mail is niet ingesteld. Controleer RESEND_API_KEY en RESEND_FROM_EMAIL.");
@@ -21,7 +21,7 @@ function registerAdminBuybackOrderRoutes(app, {
     const response = await fetchImpl("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: env.RESEND_FROM_EMAIL, to: [to], reply_to: "mail@inbound.homs-tech.nl", subject, html })
+      body: JSON.stringify({ from: env.RESEND_FROM_EMAIL, to: [to], reply_to: "mail@inbound.homs-tech.nl", subject, html, ...(Array.isArray(attachments) && attachments.length ? { attachments } : {}) })
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error("E-mail kon niet worden verzonden (" + response.status + ").");
@@ -128,7 +128,8 @@ function registerAdminBuybackOrderRoutes(app, {
                face_id,battery,screen,offered_price,iban,payment_method,answers,trade_in,
                trade_in_linked_order_id,final_offer,final_offer_sent_at,status,created_at,
                sale_inspected_value,sale_inspection_reason,sale_approval_expires_at,
-               sale_approval_decision_at,sale_settlement_note,sale_settled_at,sale_payout_email_sent_at
+               sale_approval_decision_at,sale_settlement_note,sale_settled_at,sale_payout_email_sent_at,
+               postnl_tracking_number,shipping_label_filename,shipping_label_uploaded_at,shipping_label_email_sent_at
         FROM buyback_orders
         WHERE status NOT IN ('Wacht op aankoop', 'Wacht op betaling')
           AND trade_in=FALSE
@@ -256,6 +257,88 @@ function registerAdminBuybackOrderRoutes(app, {
     } catch (error) {
       console.error("Buyback payout confirmation retry failed:", error);
       return res.status(error.status || (error.code === "EMAIL_NOT_CONFIGURED" ? 503 : 502)).json({ error: error.message || "De bevestigingsmail kon niet worden verzonden." });
+    }
+  });
+
+  // Upload a manually purchased PostNL PDF label. No carrier API or filesystem storage is used.
+  app.put("/api/admin/buyback-orders/:id/shipping-label", requirePermission("buyback_orders.update"), async (req, res) => {
+    const id = Number(req.params.id);
+    const fileName = String(req.body?.fileName || "").replace(/[\\/\\\\]/g, "").replace(/[\\u0000-\\u001f]/g, "").trim().slice(0, 180);
+    const trackingNumber = String(req.body?.trackingNumber || "").trim().slice(0, 80);
+    const encoded = String(req.body?.fileData || "").replace(/^data:application\\/pdf;base64,/i, "").trim();
+    if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig aanvraagnummer." });
+    if (!fileName || !/\\.pdf$/i.test(fileName)) return res.status(400).json({ error: "Upload een geldig PDF-verzendlabel." });
+    if (!encoded || encoded.length > 11_184_812 || !/^[A-Za-z0-9+/]+={0,2}$/.test(encoded)) {
+      return res.status(400).json({ error: "Het PDF-bestand ontbreekt of is te groot (maximaal 8 MB)." });
+    }
+    const pdf = Buffer.from(encoded, "base64");
+    if (!pdf.length || pdf.length > 8 * 1024 * 1024 || pdf.subarray(0, 5).toString("ascii") !== "%PDF-") {
+      return res.status(400).json({ error: "Het bestand is geen geldig PDF-verzendlabel of is groter dan 8 MB." });
+    }
+    try {
+      await ensureBuybackOrdersTable(pool);
+      const updated = await pool.query(
+        "UPDATE buyback_orders SET shipping_label_pdf=$1,shipping_label_filename=$2,postnl_tracking_number=$3,shipping_label_uploaded_at=NOW(),shipping_label_email_sent_at=NULL WHERE id=$4 AND trade_in=FALSE RETURNING id,shipping_label_filename,postnl_tracking_number,shipping_label_uploaded_at",
+        [pdf, fileName, trackingNumber, id]
+      );
+      if (!updated.rows.length) return res.status(404).json({ error: "Zelfstandige inkoopaanvraag niet gevonden." });
+      return res.json({ success: true, shipping: updated.rows[0] });
+    } catch (error) {
+      console.error("PostNL shipping label upload failed:", error);
+      return res.status(500).json({ error: "Het PostNL-verzendlabel kon niet worden opgeslagen." });
+    }
+  });
+
+  app.get("/api/admin/buyback-orders/:id/shipping-label", requirePermission("buyback_orders.view"), async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig aanvraagnummer." });
+    try {
+      await ensureBuybackOrdersTable(pool);
+      const found = await pool.query(
+        "SELECT shipping_label_pdf,shipping_label_filename FROM buyback_orders WHERE id=$1 AND trade_in=FALSE",
+        [id]
+      );
+      if (!found.rows.length || !found.rows[0].shipping_label_pdf) return res.status(404).json({ error: "Er is nog geen PostNL-verzendlabel geüpload." });
+      const fileName = String(found.rows[0].shipping_label_filename || "postnl-verzendlabel.pdf").replace(/[^a-zA-Z0-9._-]/g, "_");
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", 'inline; filename="' + fileName + '"');
+      res.setHeader("Cache-Control", "private, no-store");
+      return res.send(Buffer.from(found.rows[0].shipping_label_pdf));
+    } catch (error) {
+      console.error("PostNL shipping label download failed:", error);
+      return res.status(500).json({ error: "Het PostNL-verzendlabel kon niet worden geopend." });
+    }
+  });
+
+  app.post("/api/admin/buyback-orders/:id/shipping-label-email", requirePermission("buyback_orders.update"), async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig aanvraagnummer." });
+    try {
+      await ensureBuybackOrdersTable(pool);
+      const found = await pool.query(
+        "SELECT id,order_no,name,email,device,postnl_tracking_number,shipping_label_pdf,shipping_label_filename FROM buyback_orders WHERE id=$1 AND trade_in=FALSE",
+        [id]
+      );
+      if (!found.rows.length) return res.status(404).json({ error: "Zelfstandige inkoopaanvraag niet gevonden." });
+      const order = found.rows[0];
+      if (!order.shipping_label_pdf) return res.status(409).json({ error: "Upload eerst het PostNL-verzendlabel." });
+      if (!order.email) return res.status(409).json({ error: "Voor deze aanvraag is geen e-mailadres bekend." });
+      const tracking = String(order.postnl_tracking_number || "").trim();
+      const trackingHtml = tracking
+        ? '<p><strong>Track & Trace:</strong> ' + safe(tracking) + '</p><p>U kunt uw zending volgen via <a href="https://www.postnl.nl/tracktrace/">PostNL Track & Trace</a>.</p>'
+        : '<p>U ontvangt de Track & Trace-gegevens zodra deze beschikbaar zijn.</p>';
+      const fileName = String(order.shipping_label_filename || "PostNL-verzendlabel.pdf").replace(/[^a-zA-Z0-9._-]/g, "_");
+      await sendMail({
+        to: order.email,
+        subject: "Uw PostNL-verzendlabel – HOMS TECH " + order.order_no,
+        html: '<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;padding:28px;color:#1f2937;line-height:1.65"><div style="background:#071d2d;color:#fff;padding:18px 22px;border-radius:12px;font-size:22px;font-weight:800">HOMS <span style="color:#60a5fa">TECH</span></div><h2>Uw PostNL-verzendlabel</h2><p>Beste ' + safe(order.name) + ',</p><p>In de bijlage vindt u het verzendlabel voor uw ' + safe(order.device || "telefoon") + '. Print het label en bevestig het stevig op de verpakking. Lever het pakket in volgens de instructies van PostNL.</p>' + trackingHtml + '<p><strong>Aanvraagnummer:</strong> ' + safe(order.order_no) + '</p><p>Met vriendelijke groet,<br><strong>HOMS TECH</strong></p></div>',
+        attachments: [{ filename: fileName, content: Buffer.from(order.shipping_label_pdf).toString("base64") }]
+      });
+      await pool.query("UPDATE buyback_orders SET shipping_label_email_sent_at=NOW() WHERE id=$1 AND trade_in=FALSE", [id]);
+      return res.json({ success: true, sent: true, email: order.email });
+    } catch (error) {
+      console.error("PostNL shipping label email failed:", error);
+      return res.status(error.code === "EMAIL_NOT_CONFIGURED" ? 503 : 502).json({ error: error.message || "Het PostNL-verzendlabel kon niet per e-mail worden verstuurd." });
     }
   });
 
