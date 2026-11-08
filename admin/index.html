@@ -8860,8 +8860,12 @@ function buybackAnswerMarkup(answers){
     const key=pair[0],raw=pair[1],item=raw&&typeof raw==="object"&&!Array.isArray(raw)?raw:{value:raw};
     const value=item.value??raw;
     if(value===undefined||value===null||String(value).trim()==="")return "";
-    const label=String(item.question||key.replace(/[_-]+/g," ")).trim();
+    let label=String(item.question||key.replace(/[_-]+/g," ")).trim();
     const answer=Array.isArray(value)?value.join(", "):(typeof value==="object"?JSON.stringify(value):String(value));
+    // Keep the exact customer-facing battery question in the admin answer list.
+    if(/battery|batterij/i.test(key)||/batterijconditie/i.test(label)){
+      label="Is de batterijcapaciteit minimaal 85%?";
+    }
     if(!label||!String(answer).trim())return "";
     return '<div class="ht-inkoop-answer"><span>'+esc(label)+'</span><strong>'+esc(answer)+'</strong></div>';
   }).filter(Boolean);
