@@ -114,7 +114,7 @@
 
 .hero-device {
   position: relative;
-  width: min(100%, 900px);
+  width: min(100%, 780px);
   height: auto;
   margin: 18px auto 0;
   overflow: hidden;
