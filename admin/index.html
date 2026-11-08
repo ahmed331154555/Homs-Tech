@@ -8953,7 +8953,7 @@ function showBuybackDetails(id){
     workflow+='<div class="ht-inkoop-total"><span>Uitbetaald bedrag</span><strong>'+buybackMoney(order.sale_inspected_value)+'</strong></div>'+
       '<div class="ht-inkoop-notice">Betalingsnotitie: '+esc(order.sale_settlement_note||"—")+'</div>';
   }
-  const canDelete=hasPermission("buyback_orders.delete");
+  const canDelete=!isTradeIn&&hasPermission("buyback_orders.delete");
   host.innerHTML='<section class="ht-inkoop-detail">'+
     '<div class="ht-inkoop-detail-head"><div><small>HOMS TECH · INKOOP / '+(isTradeIn?'INRUIL':'VERKOOP')+'</small><h3>Aanvraag '+esc(order.order_no||("#"+order.id))+'</h3></div><div class="ht-inkoop-actions"><span class="ht-inkoop-chip '+buybackStatusClass(status)+'">'+esc(status)+'</span><button type="button" class="btn btn-light" onclick="closeBuybackDetails()">✕ Sluiten</button></div></div>'+
     '<div class="ht-inkoop-columns"><div class="ht-inkoop-main-stack">'+
