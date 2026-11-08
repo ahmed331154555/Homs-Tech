@@ -1,5 +1,7 @@
 "use strict";
 
+const crypto = require("node:crypto");
+
 const { calculateTradeInAdjustment } = require("../utils/trade-in");
 const { sendPaidWebshopOrderNotifications } = require("../utils/webshop-paid-notifications");
 
@@ -10,6 +12,68 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
     } catch (error) {
       console.error("Admin paid trade-in notification processing failed:", orderId, error.message || error);
     }
+  }
+
+  async function sendTradeInCustomerOffer(orderId) {
+    const found = await pool.query(
+      `SELECT orders.id,orders.name,orders.email,orders.trade_in_estimated_value,
+              orders.trade_in_inspected_value,orders.trade_in_status,orders.trade_in_snapshot,
+              buyback.model AS trade_in_model,buyback.device AS trade_in_device,
+              buyback.storage AS trade_in_storage
+       FROM webshop_orders orders
+       JOIN buyback_orders buyback ON buyback.id=orders.trade_in_order_id
+       WHERE orders.id=$1 LIMIT 1`,
+      [orderId]
+    );
+    if (!found.rows.length) return { sent:false, reason:"order-or-trade-in-not-found" };
+    const order=found.rows[0];
+    if (order.trade_in_inspected_value===null || order.trade_in_inspected_value===undefined) {
+      return { sent:false, reason:"inspection-not-saved" };
+    }
+    const env=getEnv();
+    const apiKey=String(env.RESEND_API_KEY||"").trim();
+    const from=String(env.RESEND_FROM_EMAIL||"").trim();
+    if(!apiKey||!from)return {sent:false,reason:"email-not-configured"};
+    const token=crypto.randomBytes(32).toString("hex");
+    const tokenHash=crypto.createHash("sha256").update(token).digest("hex");
+    const expiresAt=new Date(Date.now()+14*24*60*60*1000).toISOString();
+    const snapshot={...(order.trade_in_snapshot||{}),customerApprovalTokenHash:tokenHash,customerApprovalExpiresAt:expiresAt,customerApprovalSentAt:new Date().toISOString(),customerApprovalDecision:null,customerApprovalDecisionAt:null};
+    await pool.query(
+      "UPDATE webshop_orders SET trade_in_status='AwaitingCustomerApproval',trade_in_snapshot=$1::jsonb WHERE id=$2",
+      [JSON.stringify(snapshot),orderId]
+    );
+    const baseUrl=String(env.PUBLIC_SITE_URL||env.APP_URL||"https://homs-tech.nl").trim().replace(/\\/$/,"");
+    const acceptUrl=baseUrl+"/trade-in-response.html?token="+encodeURIComponent(token)+"&decision=accept";
+    const rejectUrl=baseUrl+"/trade-in-response.html?token="+encodeURIComponent(token)+"&decision=reject";
+    const safe=value=>escapeHtml(String(value??""));
+    const model=safe(order.trade_in_model||order.trade_in_device||"Oude iPhone");
+    const value=new Intl.NumberFormat("nl-NL",{style:"currency",currency:"EUR"}).format(Number(order.trade_in_inspected_value));
+    const estimate=new Intl.NumberFormat("nl-NL",{style:"currency",currency:"EUR"}).format(Number(order.trade_in_estimated_value||0));
+    const mail={
+      from,to:[order.email],
+      subject:"Bevestig de definitieve inruilwaarde van uw iPhone – HOMS TECH",
+      html:`<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#172b43;line-height:1.6">
+        <div style="background:#071d2d;padding:22px;border-radius:14px 14px 0 0;color:#fff;font-size:22px;font-weight:800">HOMS <span style="color:#60a5fa">TECH</span></div>
+        <div style="padding:24px;border:1px solid #e2e8f0;border-top:0;border-radius:0 0 14px 14px">
+          <h2>De inspectie van uw oude iPhone is afgerond</h2>
+          <p>Beste ${safe(order.name)},</p>
+          <p>We hebben uw ${model} gecontroleerd. De definitieve inruilwaarde is vastgesteld op:</p>
+          <div style="padding:18px;background:#ecfdf3;border:1px solid #bbf7d0;border-radius:12px;text-align:center">
+            <div style="font-size:13px;color:#64748b">Definitieve inruilwaarde</div>
+            <div style="font-size:32px;font-weight:800;color:#15803d">${value}</div>
+            <div style="font-size:13px;color:#64748b">Eerdere schatting: ${estimate}</div>
+          </div>
+          <p>Wilt u akkoord gaan met deze definitieve waarde? Kies hieronder akkoord of niet akkoord. We maken de inruil pas definitief nadat u uw keuze heeft bevestigd.</p>
+          <p style="margin:26px 0"><a href="${acceptUrl}" style="display:inline-block;background:#16a34a;color:#fff;text-decoration:none;padding:14px 22px;border-radius:9px;font-weight:700">✓ Akkoord met ${value}</a></p>
+          <p><a href="${rejectUrl}" style="display:inline-block;background:#fff;color:#b91c1c;text-decoration:none;padding:12px 18px;border:1px solid #fecaca;border-radius:9px;font-weight:700">Niet akkoord</a></p>
+          <p style="font-size:12px;color:#64748b">Deze keuze is 14 dagen geldig. Als u niet akkoord gaat, nemen we contact met u op over het terugsturen van uw toestel. Er wordt niets uitbetaald voordat u akkoord bent gegaan.</p>
+          <p>Met vriendelijke groet,<br>HOMS TECH</p>
+        </div></div>`
+    };
+    const response=await fetchImpl("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify(mail)});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error("Resend "+response.status+": "+JSON.stringify(data));
+    return {sent:true,email:order.email};
   }
   app.put("/api/admin/webshop-orders/:id/payment", requirePermission("webshop_orders.update"), async (req,res) => {
     try {
@@ -266,11 +330,55 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
         [inspectedValue,reason,nextStatus==="Settled"?"Settled":"AdjustmentRequired",order.trade_in_order_id]
       );
       await client.query("COMMIT");
-      return res.json({success:true,order:updated.rows[0],adjustment});
+      let customerOffer={sent:false,reason:"not-sent"};
+      try{customerOffer=await sendTradeInCustomerOffer(id);}catch(emailError){console.error("Trade-in offer email failed after inspection:",id,emailError.message||emailError);customerOffer={sent:false,reason:"send-failed"};}
+      return res.json({success:true,order:updated.rows[0],adjustment,customerOffer});
     }catch(error){
       try{await client.query("ROLLBACK");}catch{}
       console.error("Webshop trade-in inspection error:",error);
       return res.status(500).json({error:"De inruilcontrole kon niet worden opgeslagen."});
+    }finally{client.release();}
+  });
+
+  app.put("/api/admin/webshop-orders/:id/trade-in-offer", requirePermission("webshop_orders.update"), async (req,res) => {
+    const id=Number(req.params.id);
+    if(!Number.isInteger(id)||id<1)return res.status(400).json({error:"Ongeldig order-ID."});
+    try{
+      const result=await sendTradeInCustomerOffer(id);
+      if(!result.sent)return res.status(409).json({error:result.reason==="email-not-configured"?"E-mail is niet ingesteld. Controleer RESEND_API_KEY en RESEND_FROM_EMAIL.":"Sla eerst de definitieve inspectiewaarde op."});
+      return res.json({success:true,customerEmail:result.email});
+    }catch(error){
+      console.error("Trade-in customer offer email failed:",id,error.message||error);
+      return res.status(502).json({error:"Het voorstel kon niet naar de klant worden verzonden. Controleer de e-mailinstellingen en probeer opnieuw."});
+    }
+  });
+
+  app.post("/api/trade-in/decision", async (req,res) => {
+    const token=String(req.body?.token||"").trim();
+    const decision=String(req.body?.decision||"").trim();
+    if(!/^[a-f0-9]{64}$/i.test(token)||!["accept","reject"].includes(decision))return res.status(400).json({error:"Ongeldige bevestigingslink."});
+    const tokenHash=crypto.createHash("sha256").update(token).digest("hex");
+    const client=await pool.connect();
+    try{
+      await client.query("BEGIN");
+      const found=await client.query(
+        "SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot FROM webshop_orders WHERE trade_in_snapshot->>'customerApprovalTokenHash'=$1 FOR UPDATE",
+        [tokenHash]
+      );
+      if(!found.rows.length){await client.query("ROLLBACK");return res.status(404).json({error:"Deze bevestigingslink is ongeldig of al gebruikt."});}
+      const order=found.rows[0],snapshot=order.trade_in_snapshot||{};
+      if(order.trade_in_status!=="AwaitingCustomerApproval"){await client.query("ROLLBACK");return res.status(409).json({error:"Uw keuze is al verwerkt of dit voorstel is niet meer actief."});}
+      if(!snapshot.customerApprovalExpiresAt||new Date(snapshot.customerApprovalExpiresAt).getTime()<Date.now()){await client.query("ROLLBACK");return res.status(410).json({error:"Deze bevestigingslink is verlopen. Neem contact met HOMS TECH op."});}
+      const nextStatus=decision==="accept"?"CustomerAccepted":"CustomerRejected";
+      const updatedSnapshot={...snapshot,customerApprovalDecision:decision,customerApprovalDecisionAt:new Date().toISOString(),customerApprovalTokenHash:null};
+      await client.query("UPDATE webshop_orders SET trade_in_status=$1,trade_in_snapshot=$2::jsonb WHERE id=$3",[nextStatus,JSON.stringify(updatedSnapshot),order.id]);
+      await client.query("UPDATE buyback_orders SET trade_in_adjustment_status=$1,status=$2 WHERE id=$3",[nextStatus,decision==="accept"?"In behandeling":"Afgekeurd",order.trade_in_order_id]);
+      await client.query("COMMIT");
+      return res.json({success:true,decision,status:nextStatus});
+    }catch(error){
+      try{await client.query("ROLLBACK");}catch{}
+      console.error("Trade-in customer decision failed:",error);
+      return res.status(500).json({error:"Uw keuze kon niet worden opgeslagen. Probeer het later opnieuw."});
     }finally{client.release();}
   });
 
@@ -285,8 +393,8 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       const found=await client.query("SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot FROM webshop_orders WHERE id=$1 FOR UPDATE",[id]);
       if(!found.rows.length){await client.query("ROLLBACK");return res.status(404).json({error:"Webshop bestelling niet gevonden."});}
       const order=found.rows[0];
-      if(!order.trade_in_order_id||order.trade_in_status!=="AdjustmentRequired"){
-        await client.query("ROLLBACK");return res.status(409).json({error:"Er staat geen openstaand inruilverschil klaar om af te handelen."});
+      if(!order.trade_in_order_id||order.trade_in_status!=="CustomerAccepted"){
+        await client.query("ROLLBACK");return res.status(409).json({error:"De klant heeft nog niet akkoord gegeven op de definitieve inruilwaarde."});
       }
       const snapshot={...(order.trade_in_snapshot||{}),settlementNote:note,settledAt:new Date().toISOString()};
       const updated=await client.query(
