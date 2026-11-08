@@ -1347,6 +1347,14 @@ textarea{
   #page-buyback-orders .ht-inkoop-info>div{align-items:flex-start}
   #page-buyback-orders .ht-inkoop-info strong{max-width:62%}
 }
+#page-buyback-orders .ht-postnl-card .ht-inkoop-card-body{display:grid;gap:9px}
+#page-buyback-orders .ht-postnl-state{padding:9px 10px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#475569;font-size:11px;line-height:1.45}
+#page-buyback-orders .ht-postnl-state.is-ready{border-color:#bbf7d0;background:#f0fdf4;color:#166534;font-weight:750}
+#page-buyback-orders .ht-postnl-file{display:block;padding:8px 10px;border:1px solid #dbeafe;border-radius:8px;color:#1d4ed8;background:#eff6ff;font-size:11px;overflow-wrap:anywhere}
+#page-buyback-orders .ht-postnl-label{display:grid;gap:5px;color:#475569;font-size:11px;font-weight:750}
+#page-buyback-orders .ht-postnl-label input{width:100%;min-width:0;padding:9px;border:1px solid #d7e0ea;border-radius:8px;background:#fff;font:inherit}
+#page-buyback-orders .ht-postnl-help{margin:0;color:#64748b;font-size:10px;line-height:1.5}
+#page-buyback-orders .ht-postnl-sent{color:#15803d;font-size:10px;font-weight:700}
 </style>
 <style id="homs-buyback-orders-admin">
 #page-buyback-orders .order-card{background:#fff;border:1px solid #e3e8ef;border-radius:14px;padding:16px 18px;box-shadow:0 2px 10px rgba(15,23,42,.035)}
@@ -8928,7 +8936,20 @@ function showBuybackDetails(id){
       '<section class="ht-inkoop-card"><div class="ht-inkoop-card-head">Overzicht aanvraag</div><div class="ht-inkoop-card-body"><div class="ht-inkoop-info">'+
         '<div><span>Aanvraagnummer</span><strong>'+esc(order.order_no||("BT-"+order.id))+'</strong></div><div><span>Ontvangen op</span><strong>'+esc(buybackDate(order.created_at))+'</strong></div><div><span>Huidige status</span><strong>'+esc(status)+'</strong></div>'+
         (order.sale_inspection_reason?'<div><span>Inspectienotitie</span><strong>'+esc(order.sale_inspection_reason)+'</strong></div>':"")+
-      '</div></div></section></div></div>'+
+      '</div></div></section>'+
+      '<section class="ht-inkoop-card ht-postnl-card"><div class="ht-inkoop-card-head">📦 PostNL-verzending</div><div class="ht-inkoop-card-body">'+
+        (order.shipping_label_uploaded_at
+          ? '<div class="ht-postnl-state is-ready">✓ Verzendlabel opgeslagen</div><a class="ht-postnl-file" href="/api/admin/buyback-orders/'+Number(order.id)+'/shipping-label" target="_blank" rel="noopener">📄 '+esc(order.shipping_label_filename||"PostNL-verzendlabel.pdf")+'</a>'
+          : '<div class="ht-postnl-state">Upload hier het PDF-label dat je zelf bij PostNL hebt gekocht.</div>')+
+        '<label class="ht-postnl-label">PostNL Track & Trace-nummer<input id="buybackPostnlTracking" type="text" maxlength="80" value="'+esc(order.postnl_tracking_number||"")+'" placeholder="Bijv. 3SABCD1234567"></label>'+
+        '<label class="ht-postnl-label">Verzendlabel (PDF, maximaal 8 MB)<input id="buybackShippingLabelFile" type="file" accept=".pdf,application/pdf"></label>'+
+        '<button class="btn btn-green" type="button" onclick="saveBuybackShippingLabel('+Number(order.id)+')">💾 Verzendlabel opslaan</button>'+
+        (order.shipping_label_uploaded_at
+          ? '<button class="btn btn-light" type="button" onclick="sendBuybackShippingLabelEmail('+Number(order.id)+')">✉ '+(order.shipping_label_email_sent_at?"Verzendlabel opnieuw e-mailen":"Verzendlabel naar klant e-mailen")+'</button>'
+          : '')+
+        (order.shipping_label_email_sent_at?'<small class="ht-postnl-sent">✓ E-mail verzonden op '+esc(buybackDate(order.shipping_label_email_sent_at))+'</small>':'')+
+        '<p class="ht-postnl-help">Je koopt het label zelf in bij PostNL. HOMS TECH slaat het PDF-label veilig op en kan het als bijlage naar de klant versturen.</p>'+
+      '</div></section></div></div>'+
     '<div class="ht-inkoop-detail-foot"><span class="ht-inkoop-foot-note">Dit is een zelfstandige inkoopaanvraag. Er is geen nieuwe telefoonbestelling gekoppeld.</span>'+
     (canDelete?'<button class="btn btn-red" type="button" onclick="deleteBuybackOrder('+Number(order.id)+')">Aanvraag verwijderen</button>':"")+'</div></section>';
   host.scrollIntoView({behavior:"smooth",block:"start"});
@@ -8969,6 +8990,47 @@ async function sendBuybackOffer(id){
     alert("Het prijsvoorstel is per e-mail naar de klant verzonden.");
   }catch(error){alert(error.message);}
 }
+async function saveBuybackShippingLabel(id){
+  if(!hasPermission("buyback_orders.update"))return;
+  const fileInput=document.getElementById("buybackShippingLabelFile");
+  const file=fileInput?.files?.[0]||null;
+  const trackingNumber=String(document.getElementById("buybackPostnlTracking")?.value||"").trim();
+  if(!file){alert("Selecteer eerst het PDF-verzendlabel dat je bij PostNL hebt gekocht.");return;}
+  if(file.type!=="application/pdf"&&!/\.pdf$/i.test(file.name)){alert("Upload alleen een PDF-verzendlabel.");return;}
+  if(file.size>8*1024*1024){alert("Het PDF-bestand mag maximaal 8 MB groot zijn.");return;}
+  if(!confirm("Wil je dit PostNL-verzendlabel en het Track & Trace-nummer bij deze aanvraag opslaan?"))return;
+  try{
+    const fileData=await new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onerror=()=>reject(new Error("Het PDF-bestand kon niet worden gelezen."));
+      reader.onload=()=>resolve(String(reader.result||"").split(",")[1]||"");
+      reader.readAsDataURL(file);
+    });
+    const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id)+"/shipping-label",{
+      method:"PUT",credentials:"same-origin",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({fileName:file.name,fileData,trackingNumber})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Het PostNL-verzendlabel kon niet worden opgeslagen.");
+    await refreshBuybackOrderDetails(id);
+    alert("Het PostNL-verzendlabel is veilig opgeslagen. Je kunt het nu naar de klant e-mailen.");
+  }catch(error){alert(error.message||"Upload mislukt.");}
+}
+async function sendBuybackShippingLabelEmail(id){
+  if(!hasPermission("buyback_orders.update"))return;
+  if(!confirm("Wil je het PostNL-verzendlabel als PDF-bijlage naar de klant e-mailen?"))return;
+  try{
+    const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id)+"/shipping-label-email",{
+      method:"POST",credentials:"same-origin",headers:{"Accept":"application/json"}
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Het verzendlabel kon niet worden gemaild.");
+    await refreshBuybackOrderDetails(id);
+    alert("Het PostNL-verzendlabel is per e-mail naar "+(result.email||"de klant")+" verzonden.");
+  }catch(error){alert(error.message);}
+}
+
 async function settleBuybackOrder(id){
   if(!hasPermission("buyback_orders.update"))return;
   const note=String(document.getElementById("buybackSettlementNote")?.value||"").trim();
