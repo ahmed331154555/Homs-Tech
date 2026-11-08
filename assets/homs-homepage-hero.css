@@ -112,27 +112,41 @@
 
 .hero .btn-light:hover { background: #eaf4ff; }
 
+/* Transparent hero artwork: keep the phones and blue laser ring only. */
 .hero-device {
   position: relative;
-  width: min(100%, 780px);
+  isolation: isolate;
+  display: flex;
+  width: min(100%, 820px);
   height: auto;
-  margin: 18px auto 0;
-  overflow: hidden;
-  border-radius: 18px;
-  background: transparent;
+  margin: 16px auto 0;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none;
 }
 
-.hero-device::before { content: none; }
+.hero-device::before,
+.hero-device::after { content: none !important; }
 
 .hero-device img {
   display: block;
   width: 100%;
+  max-width: 820px;
   height: auto;
-  aspect-ratio: 720 / 368;
+  aspect-ratio: 400 / 203;
   object-fit: contain;
   object-position: center;
   border: 0;
-  filter: drop-shadow(0 16px 24px rgba(0, 0, 0, .2));
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none;
+  filter:
+    drop-shadow(0 0 9px rgba(0, 132, 255, .24))
+    drop-shadow(0 14px 22px rgba(0, 12, 30, .2));
 }
 
 .trust {
@@ -177,7 +191,7 @@
 
   .hero h1 { font-size: clamp(38px, 6.2vw, 54px); }
   .hero p { max-width: 720px; font-size: 17px; }
-  .hero-device { width: min(100%, 720px); margin-top: 20px; }
+  .hero-device { width: min(100%, 740px); margin-top: 18px; }
   .trust { padding: 15px 18px; }
 }
 
@@ -205,7 +219,7 @@
   }
 
   .hero .btn { width: 100%; min-height: 50px; }
-  .hero-device { width: 100%; margin-top: 14px; border-radius: 12px; }
+  .hero-device { width: 100%; margin-top: 12px; border-radius: 0; }
   .hero-device img { width: 100%; }
 
   .trust {
