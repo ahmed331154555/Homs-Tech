@@ -103,6 +103,29 @@ nav{justify-content:center}
 .ht-product-tradein-summary p{margin:12px 2px 0;color:#475569;font-size:12px;line-height:1.55}
 @media(max-width:600px){.ht-product-tradein-summary{padding:14px;margin:16px 0}.ht-product-tradein-heading strong{font-size:14px}.ht-product-tradein-device{align-items:flex-start}.ht-product-tradein-value{font-size:17px!important}}
 </style>
+<style id="homs-product-tradein-summary-v3">
+.ht-product-tradein-summary{margin:22px 0;padding:18px;border:1.5px solid #86d6a2;border-radius:18px;background:linear-gradient(145deg,#f0fdf4,#fff);box-shadow:0 8px 24px rgba(21,128,61,.07)}
+.ht-product-tradein-heading{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.ht-product-tradein-check{display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;border-radius:50%;background:#16a34a;color:#fff;font-weight:900}
+.ht-product-tradein-heading strong{display:block;color:#14532d;font-size:16px}
+.ht-product-tradein-heading small{display:block;margin-top:4px;color:#64748b;font-size:12px}
+.ht-product-tradein-edit{margin-left:auto;border:0;background:transparent;color:#2563eb;font-weight:800;cursor:pointer;padding:8px}
+.ht-product-tradein-device{display:grid;grid-template-columns:112px minmax(0,1fr);align-items:center;gap:15px;padding:13px;background:#fff;border:1px solid #dcfce7;border-radius:14px}
+.ht-product-tradein-image{width:112px;height:126px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:11px;background:linear-gradient(145deg,#f8fafc,#edf3fa);font-size:35px}
+.ht-product-tradein-image img{width:100%;height:100%;object-fit:contain}
+.ht-product-tradein-model{font-size:17px;line-height:1.3;color:#172536}
+.ht-product-tradein-value{display:block;margin-top:8px;font-size:19px!important;color:#15803d!important;white-space:nowrap}
+.ht-product-tradein-specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 12px;margin-top:9px}
+.ht-product-tradein-specs span{font-size:11px;color:#52647a;line-height:1.4}
+.ht-product-tradein-math{margin-top:14px;padding:13px 14px;border:1px solid #e2e8f0;border-radius:13px;background:#fff}
+.ht-product-tradein-math-row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;color:#475569;font-size:13px}
+.ht-product-tradein-math-row strong{color:#172536;white-space:nowrap}
+.ht-product-tradein-math-row.credit strong{color:#15803d}
+.ht-product-tradein-math-row.net{margin-top:5px;padding:11px 12px;border-radius:10px;background:#eaf8ef;color:#14532d;font-weight:850}
+.ht-product-tradein-math-row.net strong{color:#15803d;font-size:19px}
+.ht-product-tradein-note{margin:12px 1px 0;padding:12px 13px;border-radius:11px;background:#eff6ff;color:#24466b;font-size:12px;line-height:1.6}
+@media(max-width:600px){.ht-product-tradein-summary{padding:13px;margin:16px 0}.ht-product-tradein-heading strong{font-size:14px}.ht-product-tradein-device{grid-template-columns:88px minmax(0,1fr);gap:11px;padding:10px}.ht-product-tradein-image{width:88px;height:105px}.ht-product-tradein-model{font-size:15px}.ht-product-tradein-value{font-size:17px!important}.ht-product-tradein-specs{gap:5px 8px}.ht-product-tradein-specs span{font-size:10px}.ht-product-tradein-math{padding:10px}.ht-product-tradein-math-row{font-size:12px}.ht-product-tradein-math-row.net strong{font-size:17px}}
+</style>
 <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20260922-final-header">
 <style>
 /* HOMS TECH FINAL HEADER OVERRIDE — self-contained */
@@ -399,6 +422,34 @@ function optionDelta(x){
   return 0;
 }
 function money(n){ return "€"+Number(n||0).toFixed(2).replace(".00","").replace(".",","); }
+function renderTradeInSummary(newPhoneTotal){
+  const token=localStorage.getItem("homsTechTradeInToken")||"";
+  if(!/^[a-f0-9]{64}$/.test(token))return "";
+  const credit=Math.max(0,Number(localStorage.getItem("homsTechTradeInCredit")||0));
+  const net=Math.max(0,Number(newPhoneTotal||0)-credit);
+  let details={};
+  try{details=JSON.parse(localStorage.getItem("homsTechTradeInDetails")||"{}")||{};}catch{}
+  const device=String(details.name||localStorage.getItem("homsTechTradeInDevice")||"Oude telefoon");
+  const image=String(details.image||"");
+  const rows=[
+    details.storage?["Opslag",details.storage]:null,
+    details.condition?["Staat",details.condition]:null,
+    details.battery?["Batterij",details.battery]:null,
+    details.screen?["Scherm",details.screen]:null
+  ].filter(Boolean);
+  const answers=Array.isArray(details.answers)?details.answers:[];
+  answers.forEach(item=>{
+    const q=String(item?.question||"").trim(),v=String(item?.value||"").trim();
+    if(q&&v&&!/(opslag|storage|conditie|staat|batterij|battery|scherm|screen)/i.test(q)&&rows.length<8)rows.push([q,v]);
+  });
+  const imageHtml=image?'<img src="'+esc(image)+'" alt="'+esc(device)+'" loading="lazy">':'📱';
+  const specsHtml=rows.length?'<div class="ht-product-tradein-specs">'+rows.map(row=>'<span><b>'+esc(row[0])+':</b> '+esc(row[1])+'</span>').join("")+'</div>':"";
+  return '<section id="tradeInProductSummary" class="ht-product-tradein-summary" aria-live="polite">'+
+    '<div class="ht-product-tradein-heading"><span class="ht-product-tradein-check">✓</span><div><strong>Je oude telefoon is aangemeld</strong><small>Inruil bij aankoop van dit toestel</small></div><button type="button" class="ht-product-tradein-edit" onclick="openTradeInPage()">Wijzigen</button></div>'+
+    '<div class="ht-product-tradein-device"><div class="ht-product-tradein-image">'+imageHtml+'</div><div><strong class="ht-product-tradein-model">'+esc(device)+'</strong><small>Geschatte inruilwaarde</small><strong class="ht-product-tradein-value">'+money(credit)+'</strong>'+specsHtml+'</div></div>'+
+    '<div class="ht-product-tradein-math"><div class="ht-product-tradein-math-row"><span>Prijs nieuwe telefoon</span><strong>'+money(newPhoneTotal)+'</strong></div><div class="ht-product-tradein-math-row credit"><span>Geschatte inruilwaarde</span><strong>− '+money(credit)+'</strong></div><div class="ht-product-tradein-math-row net"><span>Effectieve prijs na uitbetaling</span><strong>'+money(net)+'</strong></div></div>'+
+    '<p class="ht-product-tradein-note">Je betaalt nu de volledige prijs van je nieuwe telefoon ('+money(newPhoneTotal)+'). Nadat we je oude telefoon hebben ontvangen en gecontroleerd, bevestigen we de definitieve inruilwaarde en maken we dit bedrag aan je over. De uiteindelijke waarde kan na inspectie afwijken.</p></section>';
+}
 function calculateTotal(product){
   if(product && familyVariantRows(product).length){
     const found=findFamilyVariant(selectedOptions.storage,selectedOptions.color,selectedOptions.condition);
@@ -1068,11 +1119,7 @@ function renderProductBody(){
     ${selectedOptions.condition?`<div style="margin-top:-12px;margin-bottom:16px;color:#64748b;font-size:13px">Prijs voor staat: <strong style="color:#111827">${esc(selectedOptions.condition)}</strong></div>`:""}
     ${specs?`<div class="meta">${specs}</div>`:""}
     ${optionsHtml}
-    ${localStorage.getItem("homsTechTradeInToken")?`<section id="tradeInProductSummary" class="ht-product-tradein-summary" aria-live="polite">
-      <div class="ht-product-tradein-heading"><span class="ht-product-tradein-check">✓</span><div><strong>Je oude telefoon is aangemeld</strong><small>Inruil bij aankoop van dit toestel</small></div><button type="button" class="ht-product-tradein-edit" onclick="openTradeInPage()">Wijzigen</button></div>
-      <div class="ht-product-tradein-device"><div><strong>${esc(localStorage.getItem("homsTechTradeInDevice")||"Oude telefoon")}</strong><small>Geschatte inruilwaarde</small></div><strong class="ht-product-tradein-value">${money(Number(localStorage.getItem("homsTechTradeInCredit")||0))}</strong></div>
-      <p>Je betaalt nu de volledige prijs van je nieuwe telefoon. Na ontvangst en controle maken we de definitieve inruilwaarde aan je over.</p>
-    </section>`: ""}
+    ${renderTradeInSummary(total)}
     ${hasOptions?`<div class="order-summary"><h3>Jouw bestelling</h3>${renderInventoryNotice(product)}${["storage","color","condition","battery","vat","tradeIn"].filter(k=>selectedOptions[k]).map(k=>`<div class="summary-row"><span>${esc(k==="storage"?"Geheugen":k==="color"?"Kleur":k==="condition"?"Conditie":k==="battery"?"Batterij":k==="vat"?"BTW":"Inruil")}</span><strong>${esc(selectedOptions[k])}</strong></div>`).join("")}${Object.entries(customSelectedOptions).filter(([k,v])=>v).map(([k,v])=>{const [type,index]=k.split(":");const group=currentProduct?.[type]?.[Number(index)];return `<div class="summary-row"><span>${esc(group?.name||"Extra")}</span><strong>${esc(v)}</strong></div>`}).join("")}<div class="summary-total">Totaal: ${money(total)}</div></div>`:""}
     ${description?`<div class="description">${esc(description)}</div>`:""}
     ${(adminSpecs.length || specsList.length)?`<div class="spec-box"><h2>Productspecificaties</h2><div class="spec-list">
