@@ -8,7 +8,7 @@ test("buyback schema creates the table and applies compatibility migrations in o
   const queries = [];
   const pool = { async query(sql) { queries.push(sql); return { rows: [] }; } };
   await ensureBuybackOrdersTable(pool);
-  assert.equal(queries.length, 18);
+  assert.equal(queries.length, 19);
   assert.match(queries[0], /CREATE TABLE IF NOT EXISTS buyback_orders/);
   assert.match(queries[0], /order_no TEXT NOT NULL UNIQUE/);
   assert.ok(queries[1].includes("ADD COLUMN IF NOT EXISTS order_no TEXT"));
@@ -28,6 +28,8 @@ test("buyback schema creates the table and applies compatibility migrations in o
   assert.ok(queries[15].includes("trade_in_adjustment_reason"));
   assert.ok(queries[16].includes("trade_in_adjustment_status"));
   assert.ok(queries[17].includes("buyback_orders_trade_in_linked_order_unique"));
+  assert.ok(queries[18].includes("DELETE FROM buyback_orders"));
+  assert.ok(queries[18].includes("trade_in_quote_expires_at <= NOW()"));
 });
 
 test("buyback schema stops and propagates an error from a failed migration", async () => {
