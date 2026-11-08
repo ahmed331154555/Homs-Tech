@@ -386,7 +386,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
     const id=Number(req.params.id);
     const note=String(req.body?.settlementNote||"").trim().slice(0,1000);
     if(!Number.isInteger(id)||id<1)return res.status(400).json({error:"Ongeldig order-ID."});
-    if(note.length<5)return res.status(400).json({error:"Vermeld hoe het prijsverschil is afgehandeld."});
+    if(note.length<5)return res.status(400).json({error:"Vermeld wanneer en hoe de definitieve inruilwaarde is overgemaakt."});
     const client=await pool.connect();
     try{
       await client.query("BEGIN");
