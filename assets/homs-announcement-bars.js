@@ -117,8 +117,17 @@
         const duration = Math.max(3,loopDistance/settings.speed);
         const startX = settings.direction === "rtl" ? 0 : -loopDistance;
         const endX = settings.direction === "rtl" ? -loopDistance : 0;
-        track.style.width = (loopDistance * 2) + "px";
-        track.style.flex = "0 0 " + (loopDistance * 2) + "px";
+
+        // Keep enough identical groups in the track to cover the viewport
+        // plus one complete loop segment. This prevents blank gaps on short messages.
+        const requiredWidth = viewport.clientWidth + loopDistance;
+        while (track.scrollWidth < requiredWidth) {
+          const clone = first.cloneNode(true);
+          clone.setAttribute("aria-hidden","true");
+          track.appendChild(clone);
+        }
+        track.style.width = "max-content";
+        track.style.flex = "0 0 auto";
         const style = document.createElement("style");
         style.id = "homs-announcement-motion-style";
         style.textContent = "@keyframes homsAnnouncementMove{from{transform:translate3d("+startX+"px,0,0)}to{transform:translate3d("+endX+"px,0,0)}}" +
