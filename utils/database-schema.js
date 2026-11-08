@@ -236,6 +236,13 @@ async function initializeDatabaseSchema(pool) {
     await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_adjustment NUMERIC(12,2) NOT NULL DEFAULT 0`);
     await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_status TEXT NOT NULL DEFAULT ''`);
     await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_snapshot JSONB NOT NULL DEFAULT '{}'::jsonb`);
+    // Idempotent email delivery after successful payment for orders containing a trade-in.
+    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS customer_order_email_claimed_at TIMESTAMPTZ`);
+    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS customer_order_email_sent_at TIMESTAMPTZ`);
+    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS customer_tradein_email_claimed_at TIMESTAMPTZ`);
+    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS customer_tradein_email_sent_at TIMESTAMPTZ`);
+    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS owner_order_email_claimed_at TIMESTAMPTZ`);
+    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS owner_order_email_sent_at TIMESTAMPTZ`);
     await pool.query(`
       CREATE UNIQUE INDEX IF NOT EXISTS webshop_orders_trade_in_order_unique
       ON webshop_orders(trade_in_order_id)
