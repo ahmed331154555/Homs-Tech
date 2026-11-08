@@ -555,10 +555,15 @@ function switchProductRecord(record,storage,color){
 function selectProductOption(key,label){
   if(key==="battery" || key==="vat" || key==="tradeIn"){
     selectedOptions[key]=label;
+    if(key==="tradeIn" && !/^ja$/i.test(String(label||"").trim())){
+      localStorage.removeItem("homsTechTradeInToken");
+      localStorage.removeItem("homsTechTradeInCredit");
+      localStorage.removeItem("homsTechTradeInDevice");
+    }
     renderProductBody();
     const priceEl=document.getElementById("selectedConditionPrice");
     if(priceEl&&currentProduct)priceEl.textContent=money(calculateTotal(currentProduct));
-    if(/^ja$/i.test(String(label||"").trim()))openTradeInModal();
+    if(key==="tradeIn" && /^ja$/i.test(String(label||"").trim()))openTradeInModal();
     return;
   }
   const next={...selectedOptions,[key]:label};
@@ -1184,6 +1189,12 @@ function closeTradeInModal(event){
   if(!modal)return;
   modal.classList.remove("open");
   document.body.style.overflow="";
+  if(!localStorage.getItem("homsTechTradeInToken")){
+    selectedOptions.tradeIn="Nee";
+    renderProductBody();
+  }
+  const frame=document.getElementById("tradeInModalFrame");
+  if(frame)frame.setAttribute("src","about:blank");
 }
 document.addEventListener("keydown",function(event){if(event.key==="Escape")closeTradeInModal();});
 </script>
