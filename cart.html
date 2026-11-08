@@ -265,7 +265,7 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
     const area=document.getElementById("cartArea");if(!area)return;updateCartCount(items);
     if(!items.length){
       const hasTradeIn=Boolean(localStorage.getItem("homsTechTradeInToken"));
-      area.innerHTML='<div class="empty"><h2>Je winkelwagen is leeg</h2><p>'+(hasTradeIn?'Uw inruilaanvraag is opgeslagen. Kies nu de nieuwe telefoon waarop de korting wordt verrekend.':'Voeg eerst een telefoon toe aan uw winkelwagen.')+'</p><a class="btn red" href="devices.html">'+(hasTradeIn?'📱 Kies uw nieuwe telefoon':'📱 Bekijk telefoons')+'</a>'+(hasTradeIn?'<p class="ht-tradein-empty-note">♻ Uw inruilkorting blijft bewaard en wordt automatisch berekend zodra u een telefoon toevoegt.</p>':'<p style="margin-top:14px"><a href="uw-toestel-verkopen.html?tradeIn=1" style="color:#2563eb;font-weight:800">Eerst een oude telefoon inruilen →</a></p>')+'</div>';
+      area.innerHTML='<div class="empty"><h2>Je winkelwagen is leeg</h2><p>'+(hasTradeIn?'Uw inruilaanvraag is opgeslagen. Kies een nieuwe telefoon om uw inruil aan de bestelling te koppelen.':'Voeg eerst een telefoon toe aan uw winkelwagen.')+'</p><a class="btn red" href="devices.html">'+(hasTradeIn?'📱 Kies uw nieuwe telefoon':'📱 Bekijk telefoons')+'</a>'+(hasTradeIn?'<p class="ht-tradein-empty-note">♻ De geschatte inruilwaarde blijft bewaard en wordt apart bij uw bestelling getoond. De definitieve waarde volgt na inspectie.</p>':'<p style="margin-top:14px"><a href="uw-toestel-verkopen.html?tradeIn=1" style="color:#2563eb;font-weight:800">Eerst een oude telefoon inruilen →</a></p>')+'</div>';
       return;
     }
     let total=0;
