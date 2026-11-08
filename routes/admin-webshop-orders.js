@@ -1,8 +1,16 @@
 "use strict";
 
 const { calculateTradeInAdjustment } = require("../utils/trade-in");
+const { sendPaidWebshopOrderNotifications } = require("../utils/webshop-paid-notifications");
 
-function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory, ensureBuybackOrdersTable }) {
+function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory, ensureBuybackOrdersTable, fetchImpl = fetch, getEnv = () => process.env, escapeHtml }) {
+  async function notifyPaidTradeInOrder(orderId) {
+    try {
+      await sendPaidWebshopOrderNotifications({ pool, orderId, fetchImpl, getEnv, escapeHtml });
+    } catch (error) {
+      console.error("Admin paid trade-in notification processing failed:", orderId, error.message || error);
+    }
+  }
   app.put("/api/admin/webshop-orders/:id/payment", requirePermission("webshop_orders.update"), async (req,res) => {
     try {
       const id=Number(req.params.id);
@@ -34,6 +42,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
           const latest=await pool.query("SELECT inventory_error FROM webshop_orders WHERE id=$1",[id]);
           inventoryWarning=String(latest.rows[0]?.inventory_error||"Controleer de voorraad van deze bestelling.");
         }
+        await notifyPaidTradeInOrder(id);
       }
       const latest=await pool.query(
         "SELECT id,payment_status,inventory_deducted_at,inventory_error FROM webshop_orders WHERE id=$1",[id]
@@ -85,6 +94,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
         if(inventoryResult?.error){
           return res.status(409).json({error:"De betaling staat op betaald, maar de voorraad kon niet worden bijgewerkt. Controleer de voorraadfout bij deze bestelling."});
         }
+        await notifyPaidTradeInOrder(id);
       }
       res.json({success:true,order:result.rows[0]});
     }catch(error){
@@ -222,11 +232,12 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
     try{
       await client.query("BEGIN");
       const found=await client.query(
-        "SELECT id,trade_in_order_id,trade_in_estimated_value,trade_in_status FROM webshop_orders WHERE id=$1 FOR UPDATE",
+        "SELECT id,trade_in_order_id,trade_in_estimated_value,trade_in_status,payment_status FROM webshop_orders WHERE id=$1 FOR UPDATE",
         [id]
       );
       if(!found.rows.length){await client.query("ROLLBACK");return res.status(404).json({error:"Webshop bestelling niet gevonden."});}
       const order=found.rows[0];
+      if(order.payment_status!=="Paid"){await client.query("ROLLBACK");return res.status(409).json({error:"De inruilcontrole kan pas starten nadat de betaling van de nieuwe telefoon is bevestigd."});}
       if(!order.trade_in_order_id){await client.query("ROLLBACK");return res.status(409).json({error:"Deze bestelling heeft geen gekoppelde inruil."});}
       if(order.trade_in_status==="Settled"){await client.query("ROLLBACK");return res.status(409).json({error:"De inruil is al definitief afgehandeld."});}
       const buyback=await client.query("SELECT id,offered_price FROM buyback_orders WHERE id=$1 FOR UPDATE",[order.trade_in_order_id]);
