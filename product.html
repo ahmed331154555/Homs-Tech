@@ -1165,10 +1165,19 @@ function openTradeInModal(){
   const modal=document.getElementById("tradeInModal");
   const frame=document.getElementById("tradeInModalFrame");
   if(!modal||!frame)return;
-  if(frame.getAttribute("src")==="about:blank") frame.setAttribute("src","uw-toestel-verkopen.html?embed=1");
+  if(frame.getAttribute("src")==="about:blank") frame.setAttribute("src","uw-toestel-verkopen.html?embed=1&tradeIn=1");
   modal.classList.add("open");
   document.body.style.overflow="hidden";
 }
+window.addEventListener("message",function(event){
+  const frame=document.getElementById("tradeInModalFrame");
+  if(event.origin!==window.location.origin || event.source!==frame?.contentWindow)return;
+  if(event.data?.type!=="HOMS_TRADEIN_READY")return;
+  selectedOptions.tradeIn="Ja";
+  closeTradeInModal();
+  renderProductBody();
+  addCurrentProductToCart();
+});
 function closeTradeInModal(event){
   if(event && event.target && event.target.id!=="tradeInModal") return;
   const modal=document.getElementById("tradeInModal");
