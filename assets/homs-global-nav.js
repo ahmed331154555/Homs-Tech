@@ -192,7 +192,7 @@
 // HOMS TECH configurable announcement bar on every page using the shared navigation.
 (function(){
  var script=document.createElement("script");
- script.src="/assets/homs-announcement-bars.js?v=20261108";
+ script.src="/assets/homs-announcement-bars.js?v=20261108-fix1";
  script.defer=true;
  document.head.appendChild(script);
 })();
