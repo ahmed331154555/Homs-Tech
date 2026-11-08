@@ -78,7 +78,7 @@ test("admin can set payment status to Paid when the stored payment status is NUL
 
   assert.equal(response.statusCode, 200);
   assert.equal(deductedId, 21);
-  assert.match(updateSql, /COALESCE\\(payment_status,'Unpaid'\\) <> 'Paid' OR \\$2 = 'Paid'/);
+  assert.match(updateSql, /COALESCE\(payment_status,'Unpaid'\) <> 'Paid' OR \$1 = 'Paid'/);
   assert.equal(response.body.order.payment_status, "Paid");
   assert.equal(response.body.inventory_warning, null);
 });
