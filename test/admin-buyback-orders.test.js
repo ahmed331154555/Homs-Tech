@@ -73,10 +73,11 @@ test("admin buyback routes register the standalone-sale workflow with permission
   ]);
 });
 
-test("admin buyback list returns standalone requests and excludes trade-ins", async () => {
+test("admin buyback list returns standalone sales and linked trade-ins", async () => {
   let ensured = false;
   const pool = { async query(sql) {
-    assert.match(sql, /trade_in=FALSE/);
+    assert.match(sql, /LEFT JOIN webshop_orders/);
+    assert.match(sql, /trade_in=TRUE AND w\.id IS NOT NULL/);
     return { rows: [{ id: 7, status: "Nieuw", trade_in: false }] };
   } };
   const { routes } = createHarness({ pool, ensureBuybackOrdersTable: async () => { ensured = true; } });
