@@ -437,7 +437,6 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
       if(selectedMethod === "Mollie" && !paymentAvailability.mollie) throw new Error("Mollie is nog niet actief. De eigenaar moet de Mollie API-sleutel instellen op de server.");
       if(selectedMethod === "PayPal" && !paymentAvailability.paypal) throw new Error("PayPal is nog niet geconfigureerd.");
       if(selectedMethod === "CashOnDelivery" && !paymentAvailability.cashOnDelivery) throw new Error("Betalen bij ontvangst is momenteel niet beschikbaar.");
-      if(selectedMethod === "CashOnDelivery" && localStorage.getItem("homsTechTradeInToken")) throw new Error("Bij een bestelling met inruil moet u online betalen. Uw inruil wordt pas bevestigd nadat de betaling is geslaagd.");
 
       const order = await createLocalOrder();
       pendingOrderId = Number(order?.id || 0);
