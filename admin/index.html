@@ -1276,7 +1276,15 @@ textarea{
 #page-buyback-orders .ht-inkoop-fact span{display:block;margin-bottom:3px;color:#748195;font-size:10px}
 #page-buyback-orders .ht-inkoop-fact strong{font-size:12px;color:#25364a;overflow-wrap:anywhere}
 #page-buyback-orders .ht-inkoop-answers{display:grid;gap:6px;margin-top:12px}
-#page-buyback-orders .ht-inkoop-answer{display:flex;justify-content:space-between;gap:12px;padding:9px 10px;border:1px solid #edf1f5;border-radius:8px;background:#fff;font-size:11px}
+#page-buyback-orders .ht-inkoop-answer{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(90px,.65fr);align-items:start;gap:12px;padding:9px 10px;border:1px solid #edf1f5;border-radius:8px;background:#fff;font-size:11px}
+#page-buyback-orders .ht-inkoop-answers{gap:7px;margin-top:0}
+#page-buyback-orders .ht-inkoop-answers-card .ht-inkoop-card-body{padding:10px}
+#page-buyback-orders .ht-inkoop-answer span{min-width:0;line-height:1.45;overflow-wrap:anywhere}
+#page-buyback-orders .ht-inkoop-answer strong{text-align:right;line-height:1.45;overflow-wrap:anywhere}
+@media(max-width:560px){
+  #page-buyback-orders .ht-inkoop-answer{grid-template-columns:minmax(0,1fr);gap:4px}
+  #page-buyback-orders .ht-inkoop-answer strong{text-align:left}
+}
 #page-buyback-orders .ht-inkoop-answer span{color:#64748b}
 #page-buyback-orders .ht-inkoop-answer strong{text-align:right;color:#25364a;overflow-wrap:anywhere}
 #page-buyback-orders .ht-inkoop-info{display:grid;gap:0}
@@ -8842,7 +8850,8 @@ async function loadBuybackOrders(){
 }
 
 function buybackFact(label,value){
-  return '<div class="ht-inkoop-fact"><span>'+esc(label)+'</span><strong>'+esc(value||"—")+'</strong></div>';
+  if(value===undefined||value===null||String(value).trim()==="")return "";
+  return '<div class="ht-inkoop-fact"><span>'+esc(label)+'</span><strong>'+esc(value)+'</strong></div>';
 }
 function buybackAnswerMarkup(answers){
   if(!answers||typeof answers!=="object"||Array.isArray(answers))return "";
@@ -8850,11 +8859,14 @@ function buybackAnswerMarkup(answers){
     const key=pair[0],raw=pair[1],item=raw&&typeof raw==="object"&&!Array.isArray(raw)?raw:{value:raw};
     const value=item.value??raw;
     if(value===undefined||value===null||String(value).trim()==="")return "";
-    const label=String(item.question||key.replace(/[_-]+/g," "));
+    const label=String(item.question||key.replace(/[_-]+/g," ")).trim();
     const answer=Array.isArray(value)?value.join(", "):(typeof value==="object"?JSON.stringify(value):String(value));
+    if(!label||!String(answer).trim())return "";
     return '<div class="ht-inkoop-answer"><span>'+esc(label)+'</span><strong>'+esc(answer)+'</strong></div>';
   }).filter(Boolean);
-  return entries.length?'<div class="ht-inkoop-answers">'+entries.join("")+'</div>':"";
+  return entries.length
+    ?'<section class="ht-inkoop-card ht-inkoop-answers-card"><div class="ht-inkoop-card-head">✓ Antwoorden van de klant</div><div class="ht-inkoop-card-body"><div class="ht-inkoop-answers">'+entries.join("")+'</div></div></section>'
+    :"";
 }
 function showBuybackDetails(id){
   const order=buybackOrdersCache.find(function(item){return Number(item.id)===Number(id);});
@@ -8899,9 +8911,10 @@ function showBuybackDetails(id){
     '<div class="ht-inkoop-columns"><div class="ht-inkoop-main-stack">'+
       '<section class="ht-inkoop-card"><div class="ht-inkoop-card-head">📱 Telefoon die de klant wil verkopen</div><div class="ht-inkoop-card-body">'+
         '<div class="ht-inkoop-device"><div class="ht-inkoop-device-icon">📱</div><div><strong>'+esc(order.device||order.model||"Telefoon onbekend")+'</strong><small>'+esc(order.brand||"Merk onbekend")+(order.storage?" · "+esc(order.storage):"")+'</small><small>Aanvraag ontvangen: '+esc(buybackDate(order.created_at))+'</small></div></div>'+
-        '<div class="ht-inkoop-facts">'+buybackFact("Opslag",order.storage)+buybackFact("Conditie",order.condition)+buybackFact("Face ID",order.face_id)+buybackFact("Batterij",order.battery)+buybackFact("Scherm",order.screen)+buybackFact("Geschatte waarde",buybackMoney(order.offered_price))+
+        '<div class="ht-inkoop-facts">'+buybackFact("Opslag",order.storage)+buybackFact("Conditie",order.condition)+buybackFact("Geschatte waarde",buybackMoney(order.offered_price))+
         (inspected?buybackFact("Definitieve waarde",buybackMoney(order.sale_inspected_value)):"")+'</div>'+
-        (answers?'<div class="ht-inkoop-answers-title">Antwoorden van de klant</div>'+answers:"")+
+      '</div></section>'+
+      answers+
       '</div></section>'+
       '<section class="ht-inkoop-card"><div class="ht-inkoop-card-head">♙ Klantgegevens</div><div class="ht-inkoop-card-body"><div class="ht-inkoop-info">'+
         '<div><span>Naam</span><strong>'+esc(order.name||"—")+'</strong></div><div><span>Telefoon</span><strong>'+phoneLink+'</strong></div><div><span>E-mail</span><strong>'+emailLink+'</strong></div>'+
