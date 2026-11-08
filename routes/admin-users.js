@@ -1,6 +1,6 @@
 "use strict";
 
-const ADMIN_PERMISSION_NAMES = Object.freeze({
+const ADMIN_PERMISSION_NAMES = {
   "general.view":"Algemeen bekijken","services.view":"Diensten bekijken",
   "phones.view":"Telefoons & prijzen bekijken","phones.update":"Telefoons & prijzen wijzigen","categories.view":"Apparaten & categorieën bekijken",
   "why.view":"Waarom HOMS TECH bekijken",
@@ -11,7 +11,7 @@ const ADMIN_PERMISSION_NAMES = Object.freeze({
   "buyback_orders.view":"Inruil aanvragen bekijken","buyback_orders.update":"Inruil status wijzigen","buyback_orders.delete":"Inruil aanvragen verwijderen",
   "device_register.view":"Apparaatregister bekijken","device_register.update":"Apparaatregister wijzigen",
   "site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
-}));
+};
 
 function registerAdminUserRoutes(app, { pool, requirePermission, normalizeAdminPermissions, hashPassword, getAdminUsername }) {
 app.get("/api/admin/users",requirePermission("admins.manage"),async(req,res)=>{
@@ -30,7 +30,7 @@ app.post("/api/admin/users",requirePermission("admins.manage"),async(req,res)=>{
     if(permissionResult.error)return res.status(400).json({error:permissionResult.error});
     const permissions=permissionResult.permissions;
     if(!username||!password) return res.status(400).json({error:"Gebruikersnaam en wachtwoord zijn verplicht."});
-    if(username.toLowerCase()===String(process.env.ADMIN_USERNAME||"").trim().toLowerCase())
+    if(username.toLowerCase()===String(getAdminUsername() || "").trim().toLowerCase())
       return res.status(400).json({error:"Deze gebruikersnaam is gereserveerd voor de hoofdadmin."});
     if(password.length<8) return res.status(400).json({error:"Het wachtwoord moet minimaal 8 tekens bevatten."});
     const exists=await pool.query("SELECT id FROM admin_users WHERE LOWER(username)=LOWER($1)",[username]);
@@ -54,7 +54,7 @@ app.put("/api/admin/users/:id",requirePermission("admins.manage"),async(req,res)
     const active=req.body?.active!==false;
     if(!Number.isInteger(id)||id<1) return res.status(400).json({error:"Ongeldig admin-ID."});
     if(!username) return res.status(400).json({error:"Gebruikersnaam is verplicht."});
-    if(username.toLowerCase()===String(process.env.ADMIN_USERNAME||"").trim().toLowerCase())
+    if(username.toLowerCase()===String(getAdminUsername() || "").trim().toLowerCase())
       return res.status(400).json({error:"De hoofdadmin wordt beheerd via Render Environment Variables."});
     const dup=await pool.query("SELECT id FROM admin_users WHERE LOWER(username)=LOWER($1) AND id<>$2",[username,id]);
     if(dup.rows.length) return res.status(409).json({error:"Deze gebruikersnaam bestaat al."});
