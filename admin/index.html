@@ -2457,7 +2457,7 @@ body.phone-orders-page-active #page-all-orders{padding-bottom:78px}
  #orderDetailsModal .ht-tradein-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 </style>
-</head>
+<style id="ht-inkoop-unified-styles">.ht-inkoop-toolbar{display:flex;align-items:center;gap:8px}.ht-inkoop-toolbar .field{min-width:170px;max-width:220px}.ht-inkoop-type{display:inline-flex;width:max-content;margin-top:5px;padding:3px 8px;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:10px;font-weight:800}.ht-inkoop-type.is-tradein{background:#ecfdf5;color:#047857}.ht-linked-order-card .btn{margin-top:12px}@media(max-width:640px){.ht-inkoop-toolbar{width:100%;margin-top:10px}.ht-inkoop-toolbar .field{flex:1;min-width:0}}</style></head>
 
 <body>
 
@@ -2946,10 +2946,10 @@ body.phone-orders-page-active #page-all-orders{padding-bottom:78px}
   <section class="section admin-page" id="page-buyback-orders" data-permission="buyback_orders.view">
     <div class="section-head">
       <div>
-        <h2>📥 Verkoopaanvragen</h2>
-        <p>Aanvragen van klanten die hun toestel aan HOMS TECH willen verkopen.</p>
+        <h2>📥 Inkoop</h2>
+        <p>Alle telefoons die klanten aan HOMS TECH verkopen: losse verkoop en inruil bij aankoop.</p>
       </div>
-      <button class="btn btn-light" onclick="loadBuybackOrders()">↻ Vernieuwen</button>
+      <div class="ht-inkoop-toolbar"><select id="buybackTypeFilter" class="field" aria-label="Filter inkoopaanvragen" onchange="loadBuybackOrders()"><option value="all">Alle aanvragen</option><option value="sale">Alleen verkoop</option><option value="tradein">Inruil</option></select><button class="btn btn-light" onclick="loadBuybackOrders()">↻ Vernieuwen</button></div>
     </div>
     <div id="buybackOrdersStatus" class="status info" style="margin-bottom:12px"></div>
     <div id="buybackOrdersList" class="orders-list"></div>
@@ -8835,12 +8835,14 @@ async function loadBuybackOrders(){
     const result=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(result.error||"Inkoopaanvragen konden niet worden geladen.");
     buybackOrdersCache=Array.isArray(result.orders)?result.orders:[];
-    status.textContent=buybackOrdersCache.length+" inkoopaanvragen gevonden.";
-    if(!buybackOrdersCache.length){
-      list.innerHTML='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:32px;text-align:center;color:#64748b">Er zijn nog geen zelfstandige verkoopaanvragen.</div>';
+    const filter=document.getElementById("buybackTypeFilter")?.value||"all";
+    const visibleOrders=buybackOrdersCache.filter(order=>filter==="all"||(filter==="sale"?!order.trade_in:!!order.trade_in));
+    status.textContent=visibleOrders.length+" inkoopaanvragen gevonden.";
+    if(!visibleOrders.length){
+      list.innerHTML='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:32px;text-align:center;color:#64748b">Geen aanvragen gevonden voor dit filter.</div>';
       return;
     }
-    list.innerHTML='<div class="ht-inkoop-list">'+buybackOrdersCache.map(function(order){
+    list.innerHTML='<div class="ht-inkoop-list">'+visibleOrders.map(function(order){
       const id=Number(order.id);
       const price=buybackMoney(order.sale_inspected_value??order.offered_price);
       const statusText=String(order.status||"Nieuw");
@@ -8849,6 +8851,7 @@ async function loadBuybackOrders(){
         '<span class="ht-inkoop-number">#'+esc(order.order_no||id)+'</span>'+
         '<strong>'+esc(order.name||"Klant onbekend")+' · '+esc(order.device||"Telefoon")+'</strong></span>'+
         '<small>'+esc(order.email||"Geen e-mail")+' · '+esc(buybackDate(order.created_at))+'</small>'+
+        '<span class="ht-inkoop-type '+(order.trade_in?'is-tradein':'is-sale')+'">'+(order.trade_in?'♻ Inruil':'Verkoop')+'</span>'+
         '<span class="ht-inkoop-chip '+buybackStatusClass(statusText)+'">'+esc(statusText)+'</span></span>'+
         '<strong class="ht-inkoop-price">'+price+'</strong><span aria-hidden="true">›</span></button>';
     }).join("")+'</div>';
@@ -8888,6 +8891,7 @@ function showBuybackDetails(id){
   selectedBuybackOrderId=Number(id);
   host.hidden=false;
   const status=String(order.status||"Nieuw");
+  const isTradeIn=!!order.trade_in;
   const inspected=order.sale_inspected_value!==null&&order.sale_inspected_value!==undefined;
   const answers=buybackAnswerMarkup(order.answers);
   const phoneDigits=String(order.phone||"").replace(/[^\d+]/g,"");
@@ -8920,7 +8924,7 @@ function showBuybackDetails(id){
   }
   const canDelete=hasPermission("buyback_orders.delete");
   host.innerHTML='<section class="ht-inkoop-detail">'+
-    '<div class="ht-inkoop-detail-head"><div><small>HOMS TECH · INKOOP / VERKOOP AAN ONS</small><h3>Aanvraag '+esc(order.order_no||("#"+order.id))+'</h3></div><div class="ht-inkoop-actions"><span class="ht-inkoop-chip '+buybackStatusClass(status)+'">'+esc(status)+'</span><button type="button" class="btn btn-light" onclick="closeBuybackDetails()">✕ Sluiten</button></div></div>'+
+    '<div class="ht-inkoop-detail-head"><div><small>HOMS TECH · INKOOP / '+(isTradeIn?'INRUIL':'VERKOOP')+'</small><h3>Aanvraag '+esc(order.order_no||("#"+order.id))+'</h3></div><div class="ht-inkoop-actions"><span class="ht-inkoop-chip '+buybackStatusClass(status)+'">'+esc(status)+'</span><button type="button" class="btn btn-light" onclick="closeBuybackDetails()">✕ Sluiten</button></div></div>'+
     '<div class="ht-inkoop-columns"><div class="ht-inkoop-main-stack">'+
       '<section class="ht-inkoop-card"><div class="ht-inkoop-card-head">📱 Telefoon die de klant wil verkopen</div><div class="ht-inkoop-card-body">'+
         '<div class="ht-inkoop-device"><div class="ht-inkoop-device-icon">📱</div><div><strong>'+esc(order.device||order.model||"Telefoon onbekend")+'</strong><small>'+esc(order.brand||"Merk onbekend")+(order.storage?" · "+esc(order.storage):"")+'</small><small>Aanvraag ontvangen: '+esc(buybackDate(order.created_at))+'</small></div></div>'+
@@ -8928,6 +8932,7 @@ function showBuybackDetails(id){
         (inspected?buybackFact("Definitieve waarde",buybackMoney(order.sale_inspected_value)):"")+'</div>'+
       '</div></section>'+
       answers+
+      (isTradeIn?'<section class="ht-inkoop-card ht-linked-order-card"><div class="ht-inkoop-card-head">♻ Gekoppelde telefoonbestelling</div><div class="ht-inkoop-card-body"><div class="ht-inkoop-info"><div><span>Telefoonbestelling</span><strong>#'+esc(order.linked_webshop_order_no||order.linked_webshop_order_id||"—")+'</strong></div><div><span>Betaalstatus nieuwe telefoon</span><strong>'+esc(order.linked_webshop_payment_status||"—")+'</strong></div><div><span>Inruilstatus</span><strong>'+esc(order.linked_trade_in_status||"—")+'</strong></div></div><button class="btn btn-light" type="button" onclick="openLinkedTradeInOrder('+Number(order.linked_webshop_order_id||0)+')">Open gekoppelde telefoonbestelling</button></div></section>':"")+
       '<section class="ht-inkoop-card"><div class="ht-inkoop-card-head">♙ Klantgegevens</div><div class="ht-inkoop-card-body"><div class="ht-inkoop-info">'+
         '<div><span>Naam</span><strong>'+esc(order.name||"—")+'</strong></div><div><span>Telefoon</span><strong>'+phoneLink+'</strong></div><div><span>E-mail</span><strong>'+emailLink+'</strong></div>'+
         '<div><span>Adres</span><strong>'+esc(order.address||"—")+'</strong></div><div><span>Naam rekeninghouder</span><strong>'+esc(order.account_holder_name||"—")+'</strong></div><div><span>IBAN</span><strong>'+esc(order.iban||"—")+'</strong></div><div><span>Betaalmethode</span><strong>'+esc(order.payment_method||"Bankoverschrijving")+'</strong></div>'+
@@ -8950,9 +8955,15 @@ function showBuybackDetails(id){
         (order.shipping_label_email_sent_at?'<small class="ht-postnl-sent">✓ E-mail verzonden op '+esc(buybackDate(order.shipping_label_email_sent_at))+'</small>':'')+
         '<p class="ht-postnl-help">Je koopt het label zelf in bij PostNL. HOMS TECH slaat het PDF-label veilig op en kan het als bijlage naar de klant versturen.</p>'+
       '</div></section></div></div>'+
-    '<div class="ht-inkoop-detail-foot"><span class="ht-inkoop-foot-note">Dit is een zelfstandige inkoopaanvraag. Er is geen nieuwe telefoonbestelling gekoppeld.</span>'+
+    '<div class="ht-inkoop-detail-foot"><span class="ht-inkoop-foot-note">'+(isTradeIn?'Inruilaanvraag gekoppeld aan een telefoonbestelling.':'Zelfstandige verkoopaanvraag zonder nieuwe telefoonbestelling.')+'</span>'+
     (canDelete?'<button class="btn btn-red" type="button" onclick="deleteBuybackOrder('+Number(order.id)+')">Aanvraag verwijderen</button>':"")+'</div></section>';
   host.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function openLinkedTradeInOrder(orderId){
+  const id=Number(orderId);
+  if(!Number.isInteger(id)||id<1){alert("De gekoppelde telefoonbestelling kon niet worden gevonden.");return;}
+  showUnifiedOrderSection("phone-orders",false);
+  showWebshopOrderDetails(id);
 }
 function closeBuybackDetails(){
   const host=document.getElementById("buybackOrdersDetail");
