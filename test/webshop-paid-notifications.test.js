@@ -74,7 +74,7 @@ test("trade-in confirmation emails are not sent before the new phone is paid", a
     getEnv: () => ({ RESEND_API_KEY: "test", RESEND_FROM_EMAIL: "shop@example.test", ORDER_NOTIFICATION_EMAIL: "owner@example.test" }),
     escapeHtml: value => String(value)
   });
-  assert.equal(result.reason, "not-a-paid-trade-in-order");
+  assert.equal(result.reason, "not-an-eligible-trade-in-order");
   assert.equal(emailCalls, 0);
 });
 
