@@ -6643,11 +6643,22 @@ async function updateOrderStatus(id,statusValue){
 }
 
 /* ---------------- WEBSHOP ORDERS ---------------- */
+function getWebshopOrderItems(order){
+  const raw=order?.items;
+  if(Array.isArray(raw))return raw;
+  if(typeof raw==="string"){
+    try{const parsed=JSON.parse(raw);return Array.isArray(parsed)?parsed:[];}catch{return [];}
+  }
+  return [];
+}
 function webshopOrderMatchesType(order,type){
-  const items=Array.isArray(order.items)?order.items:[];
-  if(!items.length)return false;
-  const isShopItem=item=>String(item?.type||"phone").toLowerCase()==="shop";
-  return type==="shop"?items.every(isShopItem):items.some(item=>!isShopItem(item));
+  const items=getWebshopOrderItems(order);
+  const isShopItem=item=>String(item?.type||"phone").trim().toLowerCase()==="shop";
+  if(type==="shop")return items.length>0&&items.every(isShopItem);
+  // Older phone orders can have their device data stored on the order row
+  // rather than in the items JSON array. Keep those visible in the phone queue.
+  if(!items.length)return !!(order?.phone_model||order?.device_model||order?.product_name||order?.product_title);
+  return items.some(item=>!isShopItem(item));
 }
 function getPhoneOrderCatalogProduct(item){
   const catalog=Array.isArray(data?.phones)?data.phones:[];
@@ -6904,14 +6915,27 @@ async function saveOrderSettings(){
 
 async function loadWebshopOrders(){
   const box=document.getElementById('webshopOrdersList'), status=document.getElementById('webshopOrdersStatus');
-  if(!box||!status)return;
+  const phoneBox=document.getElementById('phoneOrdersList');
+  if(!box||!status){
+    if(phoneBox)phoneBox.innerHTML='<div class="order-empty">De lijst met bestellingen kon niet worden voorbereid. Vernieuw de pagina en probeer opnieuw.</div>';
+    console.error('[HOMS TECH] Webshop order list containers are missing.');
+    return;
+  }
   status.className='status info'; status.textContent='Webshop bestellingen laden...'; box.innerHTML='';
+  if(phoneBox)phoneBox.innerHTML='<div class="order-empty">Telefoonbestellingen laden...</div>';
   try{
-    const r=await fetch('/api/admin/webshop-orders',{credentials:'same-origin'}); const raw=await r.text(); let result={};
+    const r=await fetch('/api/admin/webshop-orders',{credentials:'same-origin',cache:'no-store',headers:{'Accept':'application/json'}});
+    const raw=await r.text(); let result={};
     try{result=raw?JSON.parse(raw):{};}catch{throw new Error('Server antwoord is geen JSON.');}
-    if(!r.ok)throw new Error(result.error||'Webshop bestellingen konden niet worden geladen');
-    adminWebshopOrdersCache=result.orders||[]; renderWebshopOrders(); renderPhoneOrders();
-  }catch(e){status.className='status error';status.textContent='✕ '+e.message;}
+    if(!r.ok)throw new Error(result.error||'Webshop bestellingen konden niet worden geladen (HTTP '+r.status+').');
+    adminWebshopOrdersCache=Array.isArray(result.orders)?result.orders:[];
+    renderWebshopOrders(); renderPhoneOrders();
+    status.className='status success'; status.textContent='✓ '+adminWebshopOrdersCache.length+' webshopbestelling(en) geladen.';
+  }catch(e){
+    status.className='status error'; status.textContent='✕ '+e.message;
+    if(phoneBox)phoneBox.innerHTML='<div class="order-empty">Bestellingen konden niet worden geladen: '+esc(e.message)+'</div>';
+    console.error('[HOMS TECH] Webshop orders load failed:',e);
+  }
 }
 
 async function updateWebshopOrderStatus(id,statusValue,sourceSelect){
