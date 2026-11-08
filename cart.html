@@ -273,12 +273,10 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
     const tradeInToken=localStorage.getItem("homsTechTradeInToken")||"";
     const tradeInCredit=Number(localStorage.getItem("homsTechTradeInCredit")||0);
     const tradeInDevice=localStorage.getItem("homsTechTradeInDevice")||"Uw oude toestel";
-    const appliedCredit=Math.min(total,Math.max(0,tradeInCredit));
-    const payable=Math.max(0,Math.round((total-appliedCredit)*100)/100);
     const tradeInHtml=tradeInToken&&tradeInCredit>0
-      ? '<div class="ht-cart-tradein"><div><strong>♻ Inruilkorting toegepast</strong><small>'+esc(tradeInDevice)+' · '+money(tradeInCredit)+'</small></div><strong>− '+money(appliedCredit)+'</strong><button type="button" onclick="removeTradeInCredit()" aria-label="Inruil verwijderen">Verwijderen</button></div>'
-      : '<div class="ht-cart-tradein-cta"><span>Heeft u een oude iPhone?</span><a href="uw-toestel-verkopen.html?tradeIn=1">Inruilen en korting ontvangen →</a></div>';
-    area.innerHTML=rows+'<div class="summary">'+tradeInHtml+'<div><small>Producttotaal</small><div>'+money(total)+'</div></div>'+(tradeInToken&&tradeInCredit>0?'<div><small>Inruilkorting</small><div>− '+money(appliedCredit)+'</div></div>':'')+'<div><small>Te betalen</small><div class="summary-total">'+money(payable)+'</div></div><div class="actions"><a class="btn gray" href="devices.html">← Verder winkelen</a><a class="btn blue" href="checkout.html" style="background:#2563eb!important;color:#fff!important;border:0!important;box-shadow:0 5px 14px rgba(37,99,235,.22)!important;">Naar afrekenen →</a></div></div>';
+      ? '<div class="ht-cart-tradein"><div><strong>♻ Je verkoopt (inruil)</strong><small>'+esc(tradeInDevice)+' · Geschatte waarde '+money(tradeInCredit)+'</small><small>De definitieve waarde wordt na ontvangst en inspectie bevestigd. Deze waarde wordt niet direct van de telefoonprijs afgetrokken.</small></div><button type="button" onclick="removeTradeInCredit()" aria-label="Inruil verwijderen">Verwijderen</button></div>'
+      : '<div class="ht-cart-tradein-cta"><span>Heeft u een oude iPhone?</span><a href="uw-toestel-verkopen.html?tradeIn=1">Oude telefoon inruilen →</a></div>';
+    area.innerHTML=rows+'<div class="summary">'+tradeInHtml+'<div><small>Producttotaal</small><div>'+money(total)+'</div></div><div><small>Te betalen</small><div class="summary-total">'+money(total)+'</div></div><div class="actions"><a class="btn gray" href="devices.html">← Verder winkelen</a><a class="btn blue" href="checkout.html" style="background:#2563eb!important;color:#fff!important;border:0!important;box-shadow:0 5px 14px rgba(37,99,235,.22)!important;">Naar afrekenen →</a></div></div>';
   }
 
   async function refreshShopStock(){
