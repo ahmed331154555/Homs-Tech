@@ -8430,7 +8430,7 @@ async function settleWebshopTradeIn(id){
   if(!hasPermission("webshop_orders.update"))return;
   const note=String(document.getElementById("webshopTradeInSettlementNote")?.value||"").trim();
   if(note.length<5){alert("Vermeld eerst wanneer en hoe de inruilwaarde aan de klant is overgemaakt.");return;}
-  if(!confirm("Weet je zeker dat het prijsverschil daadwerkelijk is betaald of terugbetaald?"))return;
+  if(!confirm("Bevestig je dat de definitieve inruilwaarde daadwerkelijk aan de klant is overgemaakt?"))return;
   try{
     const response=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/trade-in-settlement",{
       method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},
