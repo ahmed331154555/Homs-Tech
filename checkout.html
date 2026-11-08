@@ -69,6 +69,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 .payment-choice{margin-top:22px;border:1px solid #e2e8f0;border-radius:14px;padding:16px;background:#fff}
 .payment-choice h3{margin:0 0 12px;font-size:18px}
 .payment-option{display:flex;align-items:center;gap:12px;padding:13px;border:1px solid #dbe3ec;border-radius:11px;margin-top:9px;cursor:pointer}
+.payment-option[hidden]{display:none!important}
 .payment-option:has(input:checked){border-color:#2563eb;background:#eff6ff}
 .payment-option input{width:18px;height:18px;flex:0 0 auto}
 .payment-option span{display:flex;flex:1;flex-direction:column;gap:4px}
@@ -490,28 +491,54 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
       const paypal = await paypalResponse.json().catch(()=>({}));
       const cod = await codResponse.json().catch(()=>({}));
       paymentAvailability = { mollie: !!(mollieResponse.ok && mollie.enabled), paypal: !!(paypalResponse.ok && paypal.enabled && paypal.clientId), cashOnDelivery: !!(codResponse.ok && cod.cashOnDeliveryEnabled) };
-      document.getElementById("cashOnDeliveryOption").hidden = !paymentAvailability.cashOnDelivery;
+      const hasTradeIn = !!localStorage.getItem("homsTechTradeInToken");
+      const cashOption = document.getElementById("cashOnDeliveryOption");
+      const cashInput = document.getElementById("paymentCashOnDelivery");
       const mollieInput = document.getElementById("paymentMollie");
       const paypalInput = document.getElementById("paymentPayPal");
+      // A trade-in is part of the online purchase: never offer cash on delivery here.
+      cashOption.hidden = hasTradeIn || !paymentAvailability.cashOnDelivery;
+      if(hasTradeIn) cashInput.checked = false;
       mollieInput.disabled = !paymentAvailability.mollie;
       paypalInput.disabled = !paymentAvailability.paypal;
       if(paymentAvailability.mollie) mollieInput.checked = true;
       else if(paymentAvailability.paypal) paypalInput.checked = true;
-      else if(paymentAvailability.cashOnDelivery) document.getElementById("paymentCashOnDelivery").checked = true;
+      else if(!hasTradeIn && paymentAvailability.cashOnDelivery) cashInput.checked = true;
+      const onlinePaymentAvailable = paymentAvailability.mollie || paymentAvailability.paypal;
+      const submitButton = document.getElementById("submitBtn");
+      if(hasTradeIn && !onlinePaymentAvailable){
+        submitButton.disabled = true;
+        submitButton.textContent = "Online betalen niet beschikbaar";
+      }else{
+        submitButton.disabled = false;
+        submitButton.textContent = "→ Doorgaan naar betaling";
+      }
       if(note){
-        note.textContent = paymentAvailability.mollie && paymentAvailability.paypal
-          ? "Mollie en PayPal zijn beschikbaar."
-          : paymentAvailability.mollie
-            ? "Mollie is beschikbaar. Kies iDEAL / Wero of een andere methode op de Mollie-betaalpagina."
-            : paymentAvailability.paypal
-              ? "Mollie is nog niet ingesteld; PayPal is beschikbaar."
-              : "Online betalen is nog niet geconfigureerd. De beheerder moet eerst de betaalprovider instellen.";
+        note.textContent = hasTradeIn
+          ? onlinePaymentAvailable
+            ? "Bij een bestelling met inruil is online betalen verplicht. Uw inruil wordt pas bevestigd nadat de betaling is geslaagd."
+            : "Voor een bestelling met inruil is online betaling verplicht. Er is momenteel geen online betaalmethode beschikbaar. Neem contact op met HOMS TECH."
+          : paymentAvailability.mollie && paymentAvailability.paypal
+            ? "Mollie en PayPal zijn beschikbaar."
+            : paymentAvailability.mollie
+              ? "Mollie is beschikbaar. Kies iDEAL / Wero of een andere methode op de Mollie-betaalpagina."
+              : paymentAvailability.paypal
+                ? "Mollie is nog niet ingesteld; PayPal is beschikbaar."
+                : "Online betalen is nog niet geconfigureerd. De beheerder moet eerst de betaalprovider instellen.";
       }
     } catch(error) {
       paymentAvailability = { mollie:false, paypal:false, cashOnDelivery:false };
       if(note) note.textContent = "Betaalmethoden konden niet worden gecontroleerd. Vernieuw de pagina of probeer later opnieuw.";
       document.getElementById("paymentMollie").disabled = true;
       document.getElementById("paymentPayPal").disabled = true;
+      const hasTradeIn = !!localStorage.getItem("homsTechTradeInToken");
+      document.getElementById("cashOnDeliveryOption").hidden = hasTradeIn || !paymentAvailability.cashOnDelivery;
+      if(hasTradeIn){
+        document.getElementById("paymentCashOnDelivery").checked = false;
+        document.getElementById("submitBtn").disabled = true;
+        document.getElementById("submitBtn").textContent = "Online betalen niet beschikbaar";
+        if(note) note.textContent = "Voor een bestelling met inruil is online betaling verplicht. Controleer uw verbinding of neem contact op met HOMS TECH.";
+      }
     }
   }
 
