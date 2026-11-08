@@ -1,5 +1,7 @@
 "use strict";
 
+const { sendPaidWebshopOrderNotifications } = require("../utils/webshop-paid-notifications");
+
 function registerWebshopCheckoutRoutes(app, { pool, jwt, crypto, escapeHtml, fetchImpl, getEnv, priceProductFromCatalog, validateCartInventoryQuantities }) {
 app.post("/api/webshop/orders", async (req, res) => {
   try {
@@ -117,6 +119,22 @@ app.post("/api/webshop/orders", async (req, res) => {
       throw transactionError;
     } finally {
       client.release();
+    }
+
+    // Cash-on-delivery trade-in orders are confirmed now, but remain unpaid.
+    // Send the customer and owner order/trade-in emails without marking the payment as paid.
+    if (tradeInOrder && paymentMethod === "CashOnDelivery") {
+      try {
+        const notificationResult = await sendPaidWebshopOrderNotifications({
+          pool, orderId: result.rows[0].id, fetchImpl, getEnv, escapeHtml,
+          allowCashOnDelivery: true
+        });
+        if (!notificationResult?.sent) {
+          console.error("Cash-on-delivery trade-in notifications were not sent:", notificationResult?.reason || "unknown");
+        }
+      } catch (mailError) {
+        console.error("Cash-on-delivery trade-in notification error:", mailError.message || mailError);
+      }
     }
 
     // Send the customer an order confirmation to the email address used at checkout.
