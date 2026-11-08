@@ -15,7 +15,7 @@
     .accept{background:#16a34a;color:#fff}.reject{background:#fff;color:#b91c1c;border:1px solid #fecaca}
     .status{padding:14px;border-radius:11px;background:#eff6ff;color:#1e3a5f;line-height:1.55}
     .status.error{background:#fff1f2;color:#9f1239}.status.success{background:#ecfdf3;color:#166534}
-    .muted{font-size:12px;color:#94a3b8;margin-top:22px}
+    .muted{font-size:12px;color:#94a3b8;margin-top:22px}.redirect{font-size:13px;color:#2563eb;font-weight:700;margin-top:14px}
     button:disabled{opacity:.6;cursor:wait}
   </style>
 </head>
@@ -50,8 +50,18 @@
           const result=await response.json().catch(()=>({}));
           if(!response.ok)throw new Error(result.error||"Uw keuze kon niet worden opgeslagen.");
           actions.hidden=true;
-          if(decision==="accept"){document.getElementById("intro").textContent="Bedankt voor uw akkoord. HOMS TECH heeft uw bevestiging ontvangen en verwerkt de uitbetaling van de definitieve inruilwaarde.";show("✓ U bent akkoord gegaan met de definitieve inruilwaarde.","success");}
-          else{document.getElementById("intro").textContent="Bedankt voor uw reactie. HOMS TECH neemt contact met u op over het terugsturen van uw oude iPhone.";show("Uw afwijzing is ontvangen. Er wordt geen bedrag uitbetaald.","success");}
+          if(decision==="accept"){
+            document.getElementById("intro").textContent="Bedankt voor uw akkoord. HOMS TECH heeft uw bevestiging ontvangen. Na afronding van de betaling ontvangt u een aparte bevestigingsmail.";
+            show("✓ U bent akkoord gegaan met de definitieve inruilwaarde.","success");
+          }else{
+            document.getElementById("intro").textContent="Bedankt voor uw reactie. HOMS TECH neemt contact met u op over het terugsturen van uw oude iPhone.";
+            show("Uw afwijzing is ontvangen. Er wordt geen bedrag uitbetaald.","success");
+          }
+          const redirect=document.createElement("p");
+          redirect.className="redirect";
+          redirect.textContent="U wordt over 5 seconden doorgestuurd naar de HOMS TECH-website…";
+          document.querySelector("main").appendChild(redirect);
+          window.setTimeout(()=>window.location.assign("/"),5000);
         }catch(error){show(error.message,"error");buttons.forEach(button=>button.disabled=false);}
       }
       buttons[0].addEventListener("click",()=>decide("accept"));
