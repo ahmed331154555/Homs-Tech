@@ -14,6 +14,59 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
     }
   }
 
+  async function sendTradeInPayoutConfirmation(orderId) {
+    const found=await pool.query(
+      `SELECT orders.id,orders.name,orders.email,orders.trade_in_inspected_value,
+              orders.trade_in_status,orders.trade_in_snapshot,
+              buyback.model AS trade_in_model,buyback.device AS trade_in_device
+       FROM webshop_orders orders
+       JOIN buyback_orders buyback ON buyback.id=orders.trade_in_order_id
+       WHERE orders.id=$1 LIMIT 1`,
+      [orderId]
+    );
+    if(!found.rows.length)return {sent:false,reason:"order-or-trade-in-not-found"};
+    const order=found.rows[0];
+    if(order.trade_in_status!=="Settled")return {sent:false,reason:"payout-not-confirmed"};
+    const snapshot=order.trade_in_snapshot||{};
+    if(snapshot.payoutConfirmationEmailSentAt)return {sent:true,alreadySent:true,email:order.email};
+    const env=getEnv();
+    const apiKey=String(env.RESEND_API_KEY||"").trim();
+    const from=String(env.RESEND_FROM_EMAIL||"").trim();
+    if(!apiKey||!from)return {sent:false,reason:"email-not-configured"};
+    if(!order.email)return {sent:false,reason:"customer-email-missing"};
+    const safe=value=>escapeHtml(String(value??""));
+    const value=new Intl.NumberFormat("nl-NL",{style:"currency",currency:"EUR"}).format(Number(order.trade_in_inspected_value||0));
+    const model=safe(order.trade_in_model||order.trade_in_device||"uw oude iPhone");
+    const mail={
+      from,to:[order.email],
+      subject:"Uw inruilbedrag is overgemaakt – HOMS TECH",
+      html:`<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#172b43;line-height:1.6">
+        <div style="background:#071d2d;padding:22px;border-radius:14px 14px 0 0;color:#fff;font-size:22px;font-weight:800">HOMS <span style="color:#60a5fa">TECH</span></div>
+        <div style="padding:24px;border:1px solid #e2e8f0;border-top:0;border-radius:0 0 14px 14px">
+          <h2>Uw inruil is afgerond</h2>
+          <p>Beste ${safe(order.name)},</p>
+          <p>We bevestigen dat het afgesproken inruilbedrag voor uw ${model} is overgemaakt.</p>
+          <div style="padding:18px;background:#ecfdf3;border:1px solid #bbf7d0;border-radius:12px;text-align:center">
+            <div style="font-size:13px;color:#64748b">Overgemaakt inruilbedrag</div>
+            <div style="font-size:32px;font-weight:800;color:#15803d">${value}</div>
+            <div style="font-size:13px;color:#64748b">HOMS TECH · Inruil afgerond</div>
+          </div>
+          <p>Afhankelijk van uw bank kan het even duren voordat het bedrag zichtbaar is op uw rekening.</p>
+          <p>Bedankt voor uw vertrouwen in HOMS TECH!</p>
+          <p>Met vriendelijke groet,<br>HOMS TECH</p>
+        </div></div>`
+    };
+    const response=await fetchImpl("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify(mail)});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error("Resend "+response.status+": "+JSON.stringify(data));
+    const sentAt=new Date().toISOString();
+    await pool.query(
+      "UPDATE webshop_orders SET trade_in_snapshot=COALESCE(trade_in_snapshot,'{}'::jsonb) || $1::jsonb WHERE id=$2 AND trade_in_status='Settled'",
+      [JSON.stringify({payoutConfirmationEmailSentAt:sentAt}),orderId]
+    );
+    return {sent:true,email:order.email,sentAt};
+  }
+
   async function sendTradeInCustomerOffer(orderId) {
     const found = await pool.query(
       `SELECT orders.id,orders.name,orders.email,orders.trade_in_estimated_value,
@@ -406,12 +459,27 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
         [order.trade_in_order_id]
       );
       await client.query("COMMIT");
-      return res.json({success:true,order:updated.rows[0]});
+      let payoutEmail={sent:false,reason:"not-sent"};
+      try{payoutEmail=await sendTradeInPayoutConfirmation(id);}catch(emailError){console.error("Trade-in payout confirmation email failed:",id,emailError.message||emailError);payoutEmail={sent:false,reason:"send-failed"};}
+      return res.json({success:true,order:updated.rows[0],payoutEmail});
     }catch(error){
       try{await client.query("ROLLBACK");}catch{}
       console.error("Webshop trade-in settlement error:",error);
       return res.status(500).json({error:"De verrekening kon niet worden opgeslagen."});
     }finally{client.release();}
+  });
+
+  app.post("/api/admin/webshop-orders/:id/trade-in-settlement-email", requirePermission("webshop_orders.update"), async (req,res) => {
+    const id=Number(req.params.id);
+    if(!Number.isInteger(id)||id<1)return res.status(400).json({error:"Ongeldig order-ID."});
+    try{
+      const payoutEmail=await sendTradeInPayoutConfirmation(id);
+      if(!payoutEmail.sent)return res.status(409).json({error:payoutEmail.reason==="email-not-configured"?"E-mail is niet ingesteld. Controleer RESEND_API_KEY en RESEND_FROM_EMAIL.":"De bevestiging kon niet worden verzonden."});
+      return res.json({success:true,payoutEmail});
+    }catch(error){
+      console.error("Retry trade-in payout confirmation email failed:",id,error.message||error);
+      return res.status(502).json({error:"De bevestigingsmail kon niet worden verzonden. Controleer de e-mailinstellingen en probeer opnieuw."});
+    }
   });
 
   app.delete("/api/admin/webshop-orders/:id", requirePermission("webshop_orders.delete"), async (req, res) => {
