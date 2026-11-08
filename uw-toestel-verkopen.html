@@ -2498,7 +2498,11 @@ $('finish').onclick=async()=>{
       localStorage.setItem('homsTechTradeInCredit',String(Number(j.tradeInCredit??offer).toFixed(2)));
       localStorage.setItem('homsTechTradeInDevice',String(payload.device||'iPhone'));
       sessionStorage.removeItem('homsTechTradeInMode');
-      location.replace('cart.html?tradeIn=applied');
+      if(new URLSearchParams(location.search).get('embed')==='1' && window.parent!==window){
+        window.parent.postMessage({type:'HOMS_TRADEIN_READY'},location.origin);
+      }else{
+        location.replace('cart.html?tradeIn=applied');
+      }
       return;
     }
     go(4);
