@@ -8375,7 +8375,7 @@ async function showWebshopOrderDetails(id){
       (tradeAnswerMarkup?'<div><div class="ht-phone-detail-muted" style="margin-bottom:7px">Antwoorden van de klant</div>'+tradeAnswerMarkup+'</div>':"")+
       '<div class="ht-tradein-calculation"><div class="ht-phone-summary-line"><span>Prijs nieuwe telefoon</span><strong>'+money(total)+'</strong></div><div class="ht-phone-summary-line"><span>Geschatte inruilwaarde (apart uit te betalen)</span><strong style="color:#15803d">'+money(order.trade_in_estimated_value)+'</strong></div><div class="ht-phone-summary-line"><span>Direct verrekend bij aankoop</span><strong>'+money(order.trade_in_applied_credit)+'</strong></div><div class="ht-phone-summary-line ht-phone-summary-total"><span>Door klant te betalen</span><strong>'+money(total)+'</strong></div></div>'+
       (tradeInInspected?'<div class="ht-tradein-facts"><div class="ht-tradein-fact"><span>Definitieve waarde na inspectie</span><strong>'+money(order.trade_in_inspected_value)+'</strong></div><div class="ht-tradein-fact"><span>Verschil t.o.v. schatting</span><strong>'+money(Math.abs(Number(order.trade_in_adjustment||0)))+'</strong></div></div>':"")+
-      tradeInInspectionMarkup+tradeInCustomerApprovalMarkup+tradeInSettlementMarkup+tradeInPayoutEmailMarkup+
+      '<button class="btn btn-light" type="button" onclick="openLinkedBuybackOrder('+Number(order.trade_in_order_id)+')">Open in Inkoop</button>'+
       '<div class="ht-phone-detail-muted">Belangrijk: de geschatte inruilwaarde wordt niet automatisch van de aankoopprijs afgetrokken. De klant betaalt de volledige prijs van de nieuwe telefoon. Na ontvangst en inspectie van de oude iPhone wordt de definitieve inruilwaarde afzonderlijk aan de klant overgemaakt.</div></div></section>':"";
 
     const phoneDetailMarkup=`
@@ -8898,7 +8898,38 @@ function showBuybackDetails(id){
   const phoneLink=phoneDigits?'<a href="tel:'+esc(phoneDigits)+'">'+esc(order.phone)+'</a>':esc(order.phone||"Niet opgegeven");
   const emailLink=order.email?'<a href="mailto:'+esc(order.email)+'">'+esc(order.email)+'</a>':"Niet opgegeven";
   let workflow="";
-  if(status==="Nieuw"||status==="In behandeling"||status==="Aanbod klaar"){
+  if(isTradeIn){
+    const linkedId=Number(order.linked_webshop_order_id||0);
+    const paid=/^(paid|betaald|completed)$/i.test(String(order.linked_webshop_payment_status||""));
+    const tradeStatus=String(order.linked_trade_in_status||"AwaitingPayment");
+    const tradeInspected=order.linked_trade_in_inspected_value!==null&&order.linked_trade_in_inspected_value!==undefined;
+    const snapshot=order.linked_trade_in_snapshot&&typeof order.linked_trade_in_snapshot==="object"?order.linked_trade_in_snapshot:{};
+    if(!paid){
+      workflow='<div class="ht-inkoop-notice is-warn"><strong>Wacht op betaling van de nieuwe telefoon.</strong><br>De inspectie van het oude toestel start zodra de betaling van de nieuwe telefoon is bevestigd.</div>';
+    }else if(!tradeInspected){
+      workflow='<div class="ht-inkoop-notice"><strong>Volgende stap: inspecteer de oude telefoon.</strong><br>Vul de definitieve inruilwaarde pas in nadat het toestel is ontvangen en getest.</div>'+
+        '<div class="ht-inkoop-form"><label>Definitieve inruilwaarde (€)<input id="buybackTradeInInspectedValue" type="number" min="0" max="100000" step="0.01" value="'+esc(order.linked_trade_in_estimated_value??order.offered_price??"")+'"></label>'+
+        '<label>Inspectienotitie<textarea id="buybackTradeInInspectionReason" rows="3" maxlength="1000" placeholder="Beschrijf de staat, schade en testresultaten..."></textarea></label>'+
+        '<button class="btn btn-green" type="button" onclick="saveBuybackTradeInInspection('+Number(order.id)+','+linkedId+')">✓ Inspectie opslaan en voorstel versturen</button></div>';
+    }else if(tradeStatus==="AdjustmentRequired"){
+      workflow='<div class="ht-inkoop-notice is-warn"><strong>Inspectie opgeslagen.</strong><br>Definitieve waarde: '+buybackMoney(order.linked_trade_in_inspected_value)+'. Stuur het voorstel naar de klant voor akkoord.</div>'+
+        '<button class="btn btn-primary" type="button" onclick="sendBuybackTradeInOffer('+Number(order.id)+','+linkedId+')">✉ Stuur definitief voorstel naar klant</button>';
+    }else if(tradeStatus==="AwaitingCustomerApproval"){
+      workflow='<div class="ht-inkoop-notice is-warn"><strong>Voorstel verzonden – wacht op klantakkoord.</strong><br>Definitieve waarde: '+buybackMoney(order.linked_trade_in_inspected_value)+'. Er mag nog niets worden uitbetaald.</div>';
+    }else if(tradeStatus==="CustomerRejected"){
+      workflow='<div class="ht-inkoop-notice is-warn"><strong>Klant is niet akkoord gegaan.</strong><br>Maak geen bedrag over. Neem contact op met de klant om de retourzending of vervolgstap af te spreken.</div>';
+    }else if(tradeStatus==="CustomerAccepted"){
+      workflow='<div class="ht-inkoop-notice is-good"><strong>Klant heeft akkoord gegeven.</strong><br>Maak '+buybackMoney(order.linked_trade_in_inspected_value)+' over naar de IBAN hieronder. Bevestig pas nadat de overschrijving echt is uitgevoerd.</div>'+
+        '<div class="ht-inkoop-form"><label>Betalingskenmerk / toelichting<textarea id="buybackTradeInSettlementNote" rows="3" maxlength="1000" placeholder="Bedrag en datum van de bankoverschrijving..."></textarea></label>'+
+        '<button class="btn btn-green" type="button" onclick="settleBuybackTradeIn('+Number(order.id)+','+linkedId+')">✓ Uitbetaling bevestigen</button></div>';
+    }else if(tradeStatus==="Settled"){
+      workflow='<div class="ht-inkoop-notice is-good"><strong>✓ Inruil afgerond.</strong><br>Uitbetaald bedrag: '+buybackMoney(order.linked_trade_in_inspected_value)+'.</div>'+
+        (snapshot.payoutConfirmationEmailSentAt?'<small class="ht-postnl-sent">✓ Bevestigingsmail verzonden</small>':'<button class="btn btn-primary" type="button" onclick="sendBuybackTradeInPayoutEmail('+Number(order.id)+','+linkedId+')">✉ Bevestigingsmail verzenden</button>')+
+        (snapshot.settlementNote?'<div class="ht-inkoop-notice">Betalingsnotitie: '+esc(snapshot.settlementNote)+'</div>':"");
+    }else{
+      workflow='<div class="ht-inkoop-notice">Inruilstatus: '+esc(tradeStatus)+'. Controleer de gekoppelde telefoonbestelling voor aanvullende informatie.</div>';
+    }
+  }else if(status==="Nieuw"||status==="In behandeling"||status==="Aanbod klaar"){
     workflow='<div class="ht-inkoop-notice"><strong>Volgende stap: inspecteer de ontvangen telefoon.</strong><br>Vul de definitieve waarde in na controle van het toestel. Na opslaan verstuurt HOMS TECH automatisch het prijsvoorstel naar de klant.</div>'+
       '<div class="ht-inkoop-form"><label>Definitieve inkoopwaarde (€)<input id="buybackInspectedValue" type="number" min="0" max="100000" step="0.01" value="'+(inspected?esc(order.sale_inspected_value):esc(order.offered_price||""))+'"></label>'+
       '<label>Inspectienotitie<textarea id="buybackInspectionReason" rows="3" maxlength="1000" placeholder="Beschrijf de staat, schade en testresultaten...">'+esc(order.sale_inspection_reason||"")+'</textarea></label>'+
@@ -8959,6 +8990,12 @@ function showBuybackDetails(id){
     (canDelete?'<button class="btn btn-red" type="button" onclick="deleteBuybackOrder('+Number(order.id)+')">Aanvraag verwijderen</button>':"")+'</div></section>';
   host.scrollIntoView({behavior:"smooth",block:"start"});
 }
+function openLinkedBuybackOrder(buybackId){
+  const id=Number(buybackId);
+  if(!Number.isInteger(id)||id<1){alert("De gekoppelde inkoopaanvraag kon niet worden gevonden.");return;}
+  showUnifiedOrderSection("buyback-orders",false);
+  loadBuybackOrders().then(()=>showBuybackDetails(id));
+}
 function openLinkedTradeInOrder(orderId){
   const id=Number(orderId);
   if(!Number.isInteger(id)||id<1){alert("De gekoppelde telefoonbestelling kon niet worden gevonden.");return;}
@@ -8999,6 +9036,56 @@ async function sendBuybackOffer(id){
     if(!response.ok)throw new Error(result.error||"Het voorstel kon niet worden verzonden.");
     await refreshBuybackOrderDetails(id);
     alert("Het prijsvoorstel is per e-mail naar de klant verzonden.");
+  }catch(error){alert(error.message);}
+}
+async function saveBuybackTradeInInspection(buybackId,webshopOrderId){
+  if(!hasPermission("buyback_orders.update"))return;
+  const inspectedValue=Number(document.getElementById("buybackTradeInInspectedValue")?.value);
+  const reason=String(document.getElementById("buybackTradeInInspectionReason")?.value||"").trim();
+  if(!Number.isFinite(inspectedValue)||inspectedValue<0){alert("Vul een geldige definitieve inruilwaarde in.");return;}
+  if(reason.length<5){alert("Geef een korte inspectienotitie van minimaal 5 tekens.");return;}
+  if(!confirm("Inspectie opslaan en het definitieve inruilvoorstel naar de klant versturen?"))return;
+  try{
+    const response=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(webshopOrderId)+"/trade-in-inspection",{method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({inspectedValue,reason})});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Inruilinspectie kon niet worden opgeslagen.");
+    await refreshBuybackOrderDetails(buybackId);
+    alert(result.customerOffer?.sent?"Het definitieve voorstel is naar de klant verzonden. Wacht op akkoord.":"Inspectie opgeslagen. De e-mail kon niet worden verzonden; probeer het voorstel later opnieuw.");
+  }catch(error){alert(error.message);}
+}
+async function sendBuybackTradeInOffer(buybackId,webshopOrderId){
+  if(!hasPermission("buyback_orders.update"))return;
+  if(!confirm("Wil je het definitieve inruilvoorstel naar de klant sturen?"))return;
+  try{
+    const response=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(webshopOrderId)+"/trade-in-offer",{method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:"{}"});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Het voorstel kon niet worden verzonden.");
+    await refreshBuybackOrderDetails(buybackId);
+    alert("Het definitieve voorstel is naar de klant verzonden.");
+  }catch(error){alert(error.message);}
+}
+async function settleBuybackTradeIn(buybackId,webshopOrderId){
+  if(!hasPermission("buyback_orders.update"))return;
+  const settlementNote=String(document.getElementById("buybackTradeInSettlementNote")?.value||"").trim();
+  if(settlementNote.length<5){alert("Vermeld wanneer en hoe het bedrag is overgemaakt.");return;}
+  if(!confirm("Bevestig je dat het definitieve inruilbedrag daadwerkelijk is overgemaakt?"))return;
+  try{
+    const response=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(webshopOrderId)+"/trade-in-settlement",{method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({settlementNote})});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"De uitbetaling kon niet worden geregistreerd.");
+    await refreshBuybackOrderDetails(buybackId);
+    alert(result.payoutEmail?.sent?"Uitbetaling geregistreerd en bevestigingsmail verzonden.":"Uitbetaling geregistreerd. De bevestigingsmail kon niet worden verzonden; je kunt deze opnieuw versturen.");
+  }catch(error){alert(error.message);}
+}
+async function sendBuybackTradeInPayoutEmail(buybackId,webshopOrderId){
+  if(!hasPermission("buyback_orders.update"))return;
+  if(!confirm("Wil je de bevestiging van de overgemaakte inruilwaarde opnieuw naar de klant sturen?"))return;
+  try{
+    const response=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(webshopOrderId)+"/trade-in-settlement-email",{method:"POST",credentials:"same-origin",headers:{"Accept":"application/json"}});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"De bevestigingsmail kon niet worden verzonden.");
+    await refreshBuybackOrderDetails(buybackId);
+    alert("De bevestigingsmail is verzonden.");
   }catch(error){alert(error.message);}
 }
 async function saveBuybackShippingLabel(id){
