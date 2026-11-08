@@ -245,7 +245,7 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
      crossorigin="anonymous"></script>
 
 <link rel="stylesheet" href="assets/homs-layout-system.css?v=20261030">
-  <link rel="stylesheet" href="assets/homs-homepage-hero.css?v=20261108-2">
+  <link rel="stylesheet" href="assets/homs-homepage-hero.css?v=20261108-3">
   <script src="assets/homs-analytics-consent.js" defer></script>
 </head>
 <body>
@@ -258,11 +258,10 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 <section class="hero">
  <div class="container hero-inner" id="homeHero">
   <div class="hero-copy">
-   <p class="hero-eyebrow">HOMS TECH · REPARATIE & REFURBISHED</p>
-   <h1><span id="heroTop">Reparatie, refurbished</span><br><span id="heroBottom">en inruil van iPhones</span></h1>
-   <p id="heroText">Professionele telefoonreparatie, zorgvuldig gecontroleerde refurbished iPhones en eenvoudig je oude toestel inruilen. Met persoonlijke service en garantie.</p>
+    <h1><span id="heroTop">Reparatie, refurbished</span><br><span id="heroBottom">en verkoop van telefoons</span></h1>
+   <p id="heroText">Professionele telefoonreparatie, refurbished iPhones, oude telefoons verkopen en eenvoudig je toestel naar ons opsturen.</p>
    <div class="actions">
-    <a class="btn btn-blue" id="heroButton1" href="devices.html">Bekijk refurbished iPhones →</a>
+    <a class="btn btn-blue" id="heroButton1" href="devices.html">Bekijk onze apparaten →</a>
     <a class="btn btn-light" id="heroButton2" href="repair.html">Reparatie aanvragen →</a>
    </div>
   </div>
@@ -434,10 +433,10 @@ function renderHero(){
  hero.style.display=h.enabled?"":"none";
  // Keep the approved homepage hero copy in sync even if older hero text is stored in site settings.
  document.getElementById("heroTop").textContent="Reparatie, refurbished";
- document.getElementById("heroBottom").textContent="en inruil van iPhones";
- document.getElementById("heroText").textContent="Professionele telefoonreparatie, zorgvuldig gecontroleerde refurbished iPhones en eenvoudig je oude toestel inruilen. Met persoonlijke service en garantie.";
+ document.getElementById("heroBottom").textContent="en verkoop van telefoons";
+ document.getElementById("heroText").textContent="Professionele telefoonreparatie, refurbished iPhones, oude telefoons verkopen en eenvoudig je toestel naar ons opsturen.";
  const b1=document.getElementById("heroButton1"),b2=document.getElementById("heroButton2");
- b1.textContent="Bekijk refurbished iPhones →";
+ b1.textContent="Bekijk onze apparaten →";
  b1.href="devices.html";
  b2.textContent="Reparatie aanvragen →";
  b2.href="repair.html";
