@@ -92,7 +92,7 @@ function registerAdminBuybackOrderRoutes(app, {
       [orderId]
     );
     if (!found.rows.length) {
-      const error = new Error("Zelfstandige inkoopaanvraag niet gevonden.");
+      const error = new Error("Inkoopaanvraag niet gevonden.");
       error.status = 404;
       throw error;
     }
@@ -130,7 +130,7 @@ function registerAdminBuybackOrderRoutes(app, {
                b.sale_inspected_value,b.sale_inspection_reason,b.sale_approval_expires_at,
                b.sale_approval_decision_at,b.sale_settlement_note,b.sale_settled_at,b.sale_payout_email_sent_at,
                b.postnl_tracking_number,b.shipping_label_filename,b.shipping_label_uploaded_at,b.shipping_label_email_sent_at,
-               w.id AS linked_webshop_order_id,w.order_no AS linked_webshop_order_no,
+               w.id AS linked_webshop_order_id,w.id AS linked_webshop_order_no,
                w.status AS linked_webshop_status,w.payment_status AS linked_webshop_payment_status,
                w.trade_in_status AS linked_trade_in_status,w.trade_in_snapshot AS linked_trade_in_snapshot,
                w.trade_in_estimated_value AS linked_trade_in_estimated_value,
