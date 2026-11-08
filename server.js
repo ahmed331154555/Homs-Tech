@@ -476,7 +476,8 @@ registerPaymentRoutes(app, {
   getPayPalBaseUrl,
   deductPaidOrderInventory,
   fetchImpl: fetch,
-  getEnv: () => process.env
+  getEnv: () => process.env,
+  escapeHtml
 });
 
 // Admin webshop order endpoints live in their own route module.
