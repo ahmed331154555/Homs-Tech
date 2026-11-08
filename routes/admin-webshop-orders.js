@@ -117,7 +117,9 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
                 webshop_orders.trade_in_applied_credit, webshop_orders.trade_in_inspected_value,
                 webshop_orders.trade_in_adjustment, webshop_orders.trade_in_status, webshop_orders.trade_in_snapshot,
                 buyback_orders.device AS trade_in_device, buyback_orders.model AS trade_in_model,
-                buyback_orders.storage AS trade_in_storage, buyback_orders.answers AS trade_in_answers,
+                buyback_orders.storage AS trade_in_storage, buyback_orders.condition AS trade_in_condition,
+                buyback_orders.battery AS trade_in_battery, buyback_orders.face_id AS trade_in_face_id,
+                buyback_orders.screen AS trade_in_screen, buyback_orders.answers AS trade_in_answers,
                 buyback_orders.status AS trade_in_buyback_status,
                 webshop_orders.created_at,
                 COALESCE((
