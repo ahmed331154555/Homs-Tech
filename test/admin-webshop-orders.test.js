@@ -175,7 +175,7 @@ test("admin marking a webshop order Paid deducts inventory", async () => {
   let updateSql = "";
   const routes = createHarness({
     async query(sql) {
-      updateSql = sql;
+      if (sql.includes("UPDATE webshop_orders")) updateSql = sql;
       return { rows: [{ id: 12, payment_status: "Paid", shipping_method: "PostNL" }] };
     }
   }, async (id) => {
@@ -350,7 +350,7 @@ test("trade-in inspection requires explicit payout confirmation even when inspec
     async query(sql, params) {
       statements.push({ sql, params });
       if (sql.includes("SELECT id,trade_in_order_id,trade_in_estimated_value,trade_in_status")) {
-        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_estimated_value: "165.00", trade_in_status: "AwaitingDevice" }] };
+        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_estimated_value: "165.00", trade_in_status: "AwaitingDevice", payment_status: "Paid" }] };
       }
       if (sql.includes("SELECT id,offered_price FROM buyback_orders")) return { rows: [{ id: 77, offered_price: "165.00" }] };
       if (sql.includes("UPDATE webshop_orders")) {
