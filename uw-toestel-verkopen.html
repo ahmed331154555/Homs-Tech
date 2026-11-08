@@ -2502,9 +2502,9 @@ $('finish').onclick=async()=>{
   if(!$('cName').value.trim()||!$('cEmail').value.trim()||!$('agree').checked){alert('Vul uw naam en e-mailadres in en accepteer de voorwaarden.');return}
   const needsBankDetails=tradeInMode||!$('cMethod').value.toLowerCase().includes('tegoed');
   const accountHolderName=$('cAccountHolderName').value.trim();
-  const iban=$('cIban').value.replace(/\\s+/g,'').toUpperCase();
+  const iban=$('cIban').value.replace(/\s+/g,'').toUpperCase();
   if(needsBankDetails&&(!accountHolderName||!iban)){alert('Vul de naam van de rekeninghouder en het IBAN-nummer in voor de uitbetaling.');return}
-  if(needsBankDetails&&!/^[A-Z]{2}\\d{2}[A-Z0-9]{11,30}$/.test(iban)){alert('Vul een geldig IBAN-nummer in.');return}
+  if(needsBankDetails&&!/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(iban)){alert('Vul een geldig IBAN-nummer in.');return}
   if(!validateDynamicQuestions())return;
   const btn=$('finish'),old=btn.textContent;btn.disabled=true;btn.textContent='Aanvraag wordt verzonden...';
   try{
@@ -2517,7 +2517,7 @@ $('finish').onclick=async()=>{
       device:selectedModel.name||'',brand:selectedModel.brand||'',model:selectedModel.name||'',storage:firstAnswerByLabel(['opslag'])||'',
       condition:firstAnswerByLabel(['conditie','staat'])||'',faceId:firstAnswerByLabel(['face id'])||'',
       battery:firstAnswerByLabel(['batterij'])||'',screen:firstAnswerByLabel(['scherm'])||'',
-      offeredPrice:Number(offer.toFixed(2)),iban:$('cIban').value.replace(/\\s+/g,'').toUpperCase(),accountHolderName:$('cAccountHolderName').value.trim(),paymentMethod:$('cMethod').value,
+      offeredPrice:Number(offer.toFixed(2)),iban:$('cIban').value.replace(/\s+/g,'').toUpperCase(),accountHolderName:$('cAccountHolderName').value.trim(),paymentMethod:$('cMethod').value,
       answers,deviceType:selectedModel.deviceType||selectedModel.typeName||'',
       tradeIn:tradeInMode
     };
