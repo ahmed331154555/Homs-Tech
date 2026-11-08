@@ -113,12 +113,15 @@
       requestAnimationFrame(function () {
         const width = first.getBoundingClientRect().width;
         if (!width) return;
-        const duration = Math.max(3,width/settings.speed);
-        const from = settings.direction === "rtl" ? "0" : "-50%";
-        const to = settings.direction === "rtl" ? "-50%" : "0";
+        const loopDistance = Math.ceil(width * 100) / 100;
+        const duration = Math.max(3,loopDistance/settings.speed);
+        const startX = settings.direction === "rtl" ? 0 : -loopDistance;
+        const endX = settings.direction === "rtl" ? -loopDistance : 0;
+        track.style.width = (loopDistance * 2) + "px";
+        track.style.flex = "0 0 " + (loopDistance * 2) + "px";
         const style = document.createElement("style");
         style.id = "homs-announcement-motion-style";
-        style.textContent = "@keyframes homsAnnouncementMove{from{transform:translate3d("+from+",0,0)}to{transform:translate3d("+to+",0,0)}}" +
+        style.textContent = "@keyframes homsAnnouncementMove{from{transform:translate3d("+startX+"px,0,0)}to{transform:translate3d("+endX+"px,0,0)}}" +
           "#homsManagedAnnouncementBar .homs-announcement-track{animation:homsAnnouncementMove "+duration+"s linear infinite!important}" +
           "#homsManagedAnnouncementBar:hover .homs-announcement-track{animation-play-state:paused!important}";
         document.head.appendChild(style);
