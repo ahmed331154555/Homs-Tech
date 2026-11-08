@@ -2499,7 +2499,7 @@ $('finish').onclick=async()=>{
     go(4);
   }catch(e){console.error(e);alert(e.message||'Er ging iets mis bij het verzenden.')}finally{btn.disabled=false;btn.textContent=old}
 };
-const tradeInMode=new URLSearchParams(location.search).get('tradeIn')==='1'||sessionStorage.getItem('homsTechTradeInMode')==='1';
+const tradeInMode=new URLSearchParams(location.search).get('tradeIn')==='1';
 if(tradeInMode){
   sessionStorage.setItem('homsTechTradeInMode','1');
   const notice=document.getElementById('htTradeInModeNotice');
