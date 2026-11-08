@@ -51,12 +51,12 @@ test("admin buyback routes register the standalone-sale workflow with permission
     "GET /api/admin/buyback-orders",
     "PUT /api/admin/buyback-orders/:id/inspection",
     "PUT /api/admin/buyback-orders/:id/offer",
-    "PUT /api/admin/buyback-orders/:id/shipping-label",
-    "GET /api/admin/buyback-orders/:id/shipping-label",
-    "POST /api/admin/buyback-orders/:id/shipping-label-email",
     "POST /api/buyback/decision",
     "PUT /api/admin/buyback-orders/:id/settlement",
     "POST /api/admin/buyback-orders/:id/settlement-email",
+    "PUT /api/admin/buyback-orders/:id/shipping-label",
+    "GET /api/admin/buyback-orders/:id/shipping-label",
+    "POST /api/admin/buyback-orders/:id/shipping-label-email",
     "PUT /api/admin/buyback-orders/:id/status",
     "DELETE /api/admin/buyback-orders/:id"
   ]);
@@ -65,9 +65,9 @@ test("admin buyback routes register the standalone-sale workflow with permission
     "buyback_orders.update",
     "buyback_orders.update",
     "buyback_orders.update",
+    "buyback_orders.update",
+    "buyback_orders.update",
     "buyback_orders.view",
-    "buyback_orders.update",
-    "buyback_orders.update",
     "buyback_orders.update",
     "buyback_orders.update",
     "buyback_orders.delete"
