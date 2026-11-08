@@ -1287,6 +1287,7 @@ textarea{
 }
 #page-buyback-orders .ht-inkoop-answer span{color:#64748b}
 #page-buyback-orders .ht-inkoop-answer strong{text-align:right;color:#25364a;overflow-wrap:anywhere}
+@media(max-width:560px){#page-buyback-orders .ht-inkoop-answer strong{text-align:left}}
 #page-buyback-orders .ht-inkoop-info{display:grid;gap:0}
 #page-buyback-orders .ht-inkoop-info>div{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #edf1f5;font-size:11px}
 #page-buyback-orders .ht-inkoop-info>div:last-child{border-bottom:0}
@@ -8915,7 +8916,6 @@ function showBuybackDetails(id){
         (inspected?buybackFact("Definitieve waarde",buybackMoney(order.sale_inspected_value)):"")+'</div>'+
       '</div></section>'+
       answers+
-      '</div></section>'+
       '<section class="ht-inkoop-card"><div class="ht-inkoop-card-head">♙ Klantgegevens</div><div class="ht-inkoop-card-body"><div class="ht-inkoop-info">'+
         '<div><span>Naam</span><strong>'+esc(order.name||"—")+'</strong></div><div><span>Telefoon</span><strong>'+phoneLink+'</strong></div><div><span>E-mail</span><strong>'+emailLink+'</strong></div>'+
         '<div><span>Adres</span><strong>'+esc(order.address||"—")+'</strong></div><div><span>IBAN</span><strong>'+esc(order.iban||"—")+'</strong></div><div><span>Betaalmethode</span><strong>'+esc(order.payment_method||"Bankoverschrijving")+'</strong></div>'+
