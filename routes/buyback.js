@@ -152,7 +152,7 @@ app.post("/api/buyback/orders", async (req, res) => {
     const result = await pool.query(`
       INSERT INTO buyback_orders
       (order_no,name,email,phone,address,device,brand,model,storage,condition,face_id,battery,screen,offered_price,iban,payment_method,answers,status,trade_in,trade_in_quote_token_hash,trade_in_quote_expires_at)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17::jsonb,'Nieuw',$18,$19,CASE WHEN $18 THEN NOW()+INTERVAL '24 hours' ELSE NULL END)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17::jsonb,CASE WHEN $18 THEN 'Wacht op aankoop' ELSE 'Nieuw' END,$18,$19,CASE WHEN $18 THEN NOW()+INTERVAL '24 hours' ELSE NULL END)
       RETURNING id,order_no,status,created_at
     `, [
       orderNo,
@@ -184,7 +184,9 @@ app.post("/api/buyback/orders", async (req, res) => {
       process.env.REPAIR_REQUEST_EMAIL ||
       ""
     ).trim();
-    if (apiKey && from) {
+    // A trade-in is only a temporary quote until the customer completes and pays for the new-phone order.
+    // Do not send a buyback confirmation or owner notification at this stage.
+    if (!isTradeIn && apiKey && from) {
       const safeDevice = escapeHtml(b.device || "iPhone");
       const safeName = escapeHtml(name);
       const safeOrder = escapeHtml(order.order_no);
@@ -236,6 +238,8 @@ app.post("/api/buyback/orders", async (req, res) => {
       if (!ownerEmail) {
         console.warn("Buyback owner notification skipped: configure BUYBACK_NOTIFICATION_EMAIL or ORDER_NOTIFICATION_EMAIL.");
       }
+    } else if (isTradeIn) {
+      console.log("Trade-in quote saved; confirmation emails are deferred until the linked webshop order is paid.");
     } else {
       console.error("Buyback emails skipped: RESEND_API_KEY or RESEND_FROM_EMAIL is missing.");
     }
