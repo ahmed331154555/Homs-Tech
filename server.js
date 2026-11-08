@@ -1277,8 +1277,10 @@ app.post("/api/webshop/orders", async (req, res) => {
           await client.query("ROLLBACK");
           return res.status(403).json({ error: "Gebruik hetzelfde e-mailadres als bij uw inruilaanvraag." });
         }
-        tradeInCredit = Math.min(productTotal, Math.round(Number(tradeInOrder.offered_price) * 100) / 100);
-        total = Math.round((productTotal - tradeInCredit) * 100) / 100;
+        // Mobico-style trade-in: the estimated buyback value is shown separately.
+        // The customer still pays the full new-device order total; inspection and payout happen later.
+        tradeInCredit = 0;
+        total = productTotal;
       }
       if (!Number.isFinite(total) || productTotal <= 0 || total <= 0 || total > 100000) {
         await client.query("ROLLBACK");
@@ -1297,7 +1299,7 @@ app.post("/api/webshop/orders", async (req, res) => {
           tradeInOrder ? Number(tradeInOrder.offered_price) : null,
           tradeInCredit,
           tradeInOrder ? "AwaitingDevice" : "",
-          JSON.stringify(tradeInOrder ? { productTotal, estimatedValue:Number(tradeInOrder.offered_price), appliedCredit:tradeInCredit, device:tradeInOrder.device || tradeInOrder.model } : {})
+          JSON.stringify(tradeInOrder ? { productTotal, estimatedValue:Number(tradeInOrder.offered_price), appliedCredit:0, settlement:"after-inspection", device:tradeInOrder.device || tradeInOrder.model } : {})
         ]
       );
       if (tradeInOrder) {
