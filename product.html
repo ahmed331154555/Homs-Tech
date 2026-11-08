@@ -776,7 +776,7 @@ function renderOptionSection(key,title,list){
 
   const note=key==="condition"
     ? (Array.isArray(currentProduct.variantPrices)&&currentProduct.variantPrices.length
-      ? '<div style="margin-top:7px;color:#64748b;font-size:12px">De prijs hangt af van de gekozen conditie, kleur en opslag. Batterij, BTW en inruil kunnen nog een toeslag hebben.</div>'
+      ? '<div style="margin-top:7px;color:#64748b;font-size:12px">De prijs hangt af van de gekozen conditie, kleur en opslag. Batterij en BTW kunnen een toeslag hebben. Inruil wordt apart beoordeeld en niet direct verrekend.</div>'
       : '<div style="margin-top:7px;color:#64748b;font-size:12px">De gekozen staat bepaalt de basisprijs. Opslag, kleur, batterij en andere opties worden daarna als +/- prijsverschil toegevoegd.</div>')
     : "";
 
