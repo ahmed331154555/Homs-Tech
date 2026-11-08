@@ -78,6 +78,33 @@ test("trade-in confirmation emails are not sent before the new phone is paid", a
   assert.equal(emailCalls, 0);
 });
 
+test("cash-on-delivery trade-in order sends unpaid purchase, trade-in and owner notifications", async () => {
+  const pool = createPool({ ...paidOrder, payment_method: "CashOnDelivery", payment_status: "Unpaid" });
+  const messages = [];
+  const result = await sendPaidWebshopOrderNotifications({
+    pool,
+    orderId: 42,
+    allowCashOnDelivery: true,
+    fetchImpl: async (_url, request) => {
+      messages.push(JSON.parse(request.body));
+      return { ok: true, json: async () => ({ id: "mail-" + messages.length }) };
+    },
+    getEnv: () => ({ RESEND_API_KEY: "test", RESEND_FROM_EMAIL: "shop@example.test", ORDER_NOTIFICATION_EMAIL: "owner@example.test" }),
+    escapeHtml: value => String(value)
+  });
+  assert.equal(result.sent, true);
+  assert.equal(result.cashOnDelivery, true);
+  assert.equal(result.paymentStatus, "Unpaid");
+  assert.equal(messages.length, 3);
+  assert.match(messages[0].html, /betaalt het volledige bedrag bij ontvangst/);
+  assert.match(messages[0].html, /Te betalen bij ontvangst/);
+  assert.match(messages[1].html, /blijft in afwachting/);
+  assert.match(messages[2].subject, /betaling bij ontvangst/);
+  assert.match(messages[2].html, /Betaalstatus:<\/strong> Unpaid/);
+  assert.equal(pool.sent.size, 3);
+  assert.equal(pool.updates.length, 0);
+});
+
 test("paid trade-in order sends purchase, trade-in and owner notifications once", async () => {
   const pool = createPool(paidOrder);
   const messages = [];
