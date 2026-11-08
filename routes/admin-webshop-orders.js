@@ -54,6 +54,10 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       const paymentStatus=String(body.payment_status||"Unpaid").trim();
       const trackingNumber=String(body.tracking_number||"").trim().slice(0,160);
       const trackingUrl=String(body.tracking_url||"").trim().slice(0,1000);
+      // Reject malformed client input before touching the database.
+      if(carrier&& !["PostNL","DHL"].includes(carrier))return res.status(400).json({error:"Kies alleen PostNL of DHL."});
+      if(!["Unpaid","Processing","Paid","Failed"].includes(paymentStatus))return res.status(400).json({error:"Ongeldige betaalstatus."});
+      if(trackingUrl&&!/^https:\/\//i.test(trackingUrl))return res.status(400).json({error:"De tracking-URL moet beginnen met https://"});
       const tradeInCheck=await pool.query(
         "SELECT trade_in_order_id,trade_in_status FROM webshop_orders WHERE id=$1",
         [id]
@@ -62,9 +66,6 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       if(tradeInCheck.rows[0].trade_in_order_id && tradeInCheck.rows[0].trade_in_status!=="Settled" && (carrier||trackingNumber||trackingUrl)){
         return res.status(409).json({error:"Verzending is geblokkeerd totdat het inruiltoestel is gecontroleerd en het prijsverschil is afgehandeld."});
       }
-      if(carrier&&!["PostNL","DHL"].includes(carrier))return res.status(400).json({error:"Kies alleen PostNL of DHL."});
-      if(!["Unpaid","Processing","Paid","Failed"].includes(paymentStatus))return res.status(400).json({error:"Ongeldige betaalstatus."});
-      if(trackingUrl&&!/^https:\/\//i.test(trackingUrl))return res.status(400).json({error:"De tracking-URL moet beginnen met https://"});
       const result=await pool.query(
         `UPDATE webshop_orders
          SET shipping_method=$1, payment_status=$2, tracking_number=$3, tracking_url=$4
