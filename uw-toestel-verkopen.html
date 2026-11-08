@@ -104,6 +104,7 @@ footer{background:var(--navy);color:#dbeafe;padding:34px 0}.footgrid{display:gri
 @media(max-width:1100px){.wrap{width:min(1040px,calc(100% - 32px))}.device-grid{grid-template-columns:repeat(4,1fr)}.product-card{grid-template-columns:200px 1fr 250px}}
 @media(max-width:850px){.hero-grid,.product-card,.checkout,.two-col{grid-template-columns:1fr}.benefits{display:none}.device-grid{grid-template-columns:repeat(2,1fr)}.condition-grid{grid-template-columns:repeat(2,1fr)}.totalbar{grid-template-columns:1fr}.searchrow{grid-template-columns:1fr}.headlinks{display:none}.search{max-width:none}.head .wrap{gap:12px}.logo{min-width:130px}.logo img{width:130px}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.footgrid{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.wrap{width:min(100% - 24px,1380px)}.topbar{display:none}.head{height:65px}.nav .wrap{gap:22px}.panel{padding:16px;border-radius:18px}.device-grid{grid-template-columns:1fr 1fr;gap:9px}.device{min-height:155px;padding:10px}.product-card{gap:14px}.product-image{min-height:220px}.condition-grid{grid-template-columns:1fr 1fr}.extra-row{grid-template-columns:1fr}.info-grid{grid-template-columns:1fr}.footgrid{grid-template-columns:1fr}.hero{padding-top:35px}.hero h1{font-size:36px}.stepper{max-width:95%}}
+.bank-payout-note{grid-column:1/-1;margin:0;padding:10px 12px;border:1px solid #dbeafe;border-radius:9px;background:#f8fbff;color:#475569;font-size:12px;line-height:1.55}@media(max-width:600px){.bank-payout-note{font-size:11px}}
 </style>
 <style id="homs-buyback-hierarchy-public">
 .bb-public-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.bb-public-tabs button{border:1px solid #dbe5ef;background:#fff;color:#17324a;border-radius:12px;padding:10px 16px;font-weight:800;cursor:pointer}.bb-public-tabs button.active{background:#2563eb;color:#fff;border-color:#2563eb}.bb-public-types{margin-top:4px}.bb-public-types:empty{display:none}
@@ -1876,7 +1877,7 @@ body.embed-tradein .panel{max-width:none!important}
   <div class="checkout">
     <div class="box">
       <h3>Contactgegevens</h3>
-      <div class="formgrid"><input id="cName" class="field" placeholder="Naam *"><input id="cEmail" class="field" type="email" placeholder="E-mailadres *"><input id="cPhone" class="field" placeholder="Telefoonnummer"><input id="cIban" class="field" placeholder="IBAN (voor uitbetaling)"><input id="cAddress" class="field full" placeholder="Adres"><input id="cZip" class="field" placeholder="Postcode"><input id="cCity" class="field" placeholder="Plaats"><select id="cMethod" class="field full"><option value="Geld ontvangen via bank">Geld ontvangen via bank</option><option value="HOMS TECH tegoed">HOMS TECH tegoed (+10%)</option></select></div>
+      <div class="formgrid"><input id="cName" class="field" placeholder="Naam *"><input id="cEmail" class="field" type="email" placeholder="E-mailadres *"><input id="cPhone" class="field" placeholder="Telefoonnummer"><input id="cAccountHolderName" class="field" autocomplete="name" placeholder="Naam rekeninghouder *"><input id="cIban" class="field" autocomplete="off" inputmode="text" placeholder="IBAN *"><input id="cAddress" class="field full" placeholder="Adres"><input id="cZip" class="field" placeholder="Postcode"><input id="cCity" class="field" placeholder="Plaats"><select id="cMethod" class="field full"><option value="Geld ontvangen via bank">Geld ontvangen via bank</option><option value="HOMS TECH tegoed">HOMS TECH tegoed (+10%)</option></select></div><p class="bank-payout-note">Uw bankgegevens worden alleen gebruikt voor de uitbetaling nadat wij uw toestel hebben ontvangen, gecontroleerd en het definitieve bedrag met u hebben bevestigd.</p>
       <label class="agree"><input id="agree" type="checkbox"> Ik ga akkoord met de beoordeling en verkoopvoorwaarden.</label>
     </div>
     <div class="summary buyback-order-summary">
@@ -2499,6 +2500,11 @@ $('back1').onclick=()=>go(1);$('back2').onclick=()=>go(2);
 $('cMethod').onchange=async()=>{const v=await calculateServerQuote();$('sumMethod').textContent=$('cMethod').value;$('sumPrice').textContent=money($('cMethod').value.includes('tegoed')?v*1.10:v)};
 $('finish').onclick=async()=>{
   if(!$('cName').value.trim()||!$('cEmail').value.trim()||!$('agree').checked){alert('Vul uw naam en e-mailadres in en accepteer de voorwaarden.');return}
+  const needsBankDetails=tradeInMode||!$('cMethod').value.toLowerCase().includes('tegoed');
+  const accountHolderName=$('cAccountHolderName').value.trim();
+  const iban=$('cIban').value.replace(/\\s+/g,'').toUpperCase();
+  if(needsBankDetails&&(!accountHolderName||!iban)){alert('Vul de naam van de rekeninghouder en het IBAN-nummer in voor de uitbetaling.');return}
+  if(needsBankDetails&&!/^[A-Z]{2}\\d{2}[A-Z0-9]{11,30}$/.test(iban)){alert('Vul een geldig IBAN-nummer in.');return}
   if(!validateDynamicQuestions())return;
   const btn=$('finish'),old=btn.textContent;btn.disabled=true;btn.textContent='Aanvraag wordt verzonden...';
   try{
@@ -2511,7 +2517,7 @@ $('finish').onclick=async()=>{
       device:selectedModel.name||'',brand:selectedModel.brand||'',model:selectedModel.name||'',storage:firstAnswerByLabel(['opslag'])||'',
       condition:firstAnswerByLabel(['conditie','staat'])||'',faceId:firstAnswerByLabel(['face id'])||'',
       battery:firstAnswerByLabel(['batterij'])||'',screen:firstAnswerByLabel(['scherm'])||'',
-      offeredPrice:Number(offer.toFixed(2)),iban:$('cIban').value.trim(),paymentMethod:$('cMethod').value,
+      offeredPrice:Number(offer.toFixed(2)),iban:$('cIban').value.replace(/\\s+/g,'').toUpperCase(),accountHolderName:$('cAccountHolderName').value.trim(),paymentMethod:$('cMethod').value,
       answers,deviceType:selectedModel.deviceType||selectedModel.typeName||'',
       tradeIn:tradeInMode
     };
@@ -2575,7 +2581,9 @@ if(tradeInMode){
     method.innerHTML='<option value="Inruil bij aankoop">Inruil bij aankoop</option>';
     method.value='Inruil bij aankoop';
   }
-  if(iban)iban.hidden=true;
+  if(iban)iban.hidden=false;
+  const accountHolder=$('cAccountHolderName');
+  if(accountHolder)accountHolder.hidden=false;
   const methodSummary=document.getElementById('sumMethod');
   if(methodSummary)methodSummary.textContent='Inruil bij aankoop · afhandeling na inspectie';
   const priceCaption=document.querySelector('.summary-price-row span');
