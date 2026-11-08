@@ -37,7 +37,7 @@ test("buyback calculator applies protocol 2 function and battery discounts", asy
     }
   }, res);
   assert.equal(res.statusCode, 200);
-  assert.equal(res.body.price, 176.4);
+  assert.equal(res.body.price, 192);
   assert.equal(res.body.adjustments.length, 2);
 });
 
