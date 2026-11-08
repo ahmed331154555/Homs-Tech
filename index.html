@@ -437,10 +437,10 @@ function mergeHomepageSettings(){
  };
 }
 function renderTopBar(){
- const bar=document.getElementById("homeTopBar"),box=document.getElementById("homeTopInfo"),t=data.homepage.topBar;
- if(!bar||!box)return;
- bar.style.display=t.enabled?"":"none";
- box.innerHTML=(t.items||[]).filter(Boolean).map(x=>"<span>"+esc(x)+"</span>").join("");
+ // The page-specific announcement bar manager owns the top bar.
+ // Remove the legacy homepage bar to prevent duplicate or static announcement bars.
+ const legacyBar=document.getElementById("homeTopBar");
+ if(legacyBar)legacyBar.remove();
 }
 function renderHero(){
  const h=data.homepage.hero;
