@@ -481,7 +481,15 @@ registerPaymentRoutes(app, {
 });
 
 // Admin webshop order endpoints live in their own route module.
-registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory, ensureBuybackOrdersTable });
+registerAdminWebshopOrderRoutes(app, {
+  pool,
+  requirePermission,
+  deductPaidOrderInventory,
+  ensureBuybackOrdersTable,
+  fetchImpl: fetch,
+  getEnv: () => process.env,
+  escapeHtml
+});
 
 registerRepairQuoteRoutes(app, {
   pool,
