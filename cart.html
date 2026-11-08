@@ -247,6 +247,7 @@ header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;box-shad
     localStorage.removeItem("homsTechTradeInCredit");
     localStorage.removeItem("homsTechTradeInDevice");
     localStorage.removeItem("homsTechTradeInEmail");
+    localStorage.removeItem("homsTechTradeInDetails");
     const items=readCart().map(item=>{
       if(!item||!item.options||!item.options.tradeIn)return item;
       const options={...item.options};
