@@ -77,7 +77,7 @@ async function ensureBuybackOrdersTable(pool) {
       AND trade_in_quote_expires_at IS NOT NULL
       AND trade_in_quote_expires_at <= NOW()
   `);
-
+  await pool.query(`ALTER TABLE buyback_orders ADD COLUMN IF NOT EXISTS account_holder_name TEXT NOT NULL DEFAULT ''`);
 
 }
 
