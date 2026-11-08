@@ -191,7 +191,7 @@ test("admin marking a webshop order Paid deducts inventory", async () => {
 
   assert.equal(response.statusCode, 200);
   assert.equal(deductionOrderId, 12);
-  assert.match(updateSql, /payment_status <> 'Paid' OR \$2 = 'Paid'/);
+  assert.match(updateSql, /COALESCE\(payment_status,'Unpaid'\) <> 'Paid' OR \$2 = 'Paid'/);
   assert.deepEqual(response.body, {
     success: true,
     order: { id: 12, payment_status: "Paid", shipping_method: "PostNL" }
