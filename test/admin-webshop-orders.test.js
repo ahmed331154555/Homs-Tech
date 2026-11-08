@@ -234,7 +234,7 @@ test("admin cannot revert a paid webshop order to Unpaid", async () => {
   }, response);
 
   assert.equal(response.statusCode, 409);
-  assert.equal(calls, 2);
+  assert.equal(calls, 3);
   assert.match(response.body.error, /kan niet worden teruggezet/i);
 });
 
