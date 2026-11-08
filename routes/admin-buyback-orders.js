@@ -31,7 +31,7 @@ function registerAdminBuybackOrderRoutes(app, {
   async function sendCustomerOffer(orderId) {
     await ensureBuybackOrdersTable(pool);
     const found = await pool.query(
-      "SELECT id,order_no,name,email,device,sale_inspected_value,sale_inspection_reason,status FROM buyback_orders WHERE id=$1 AND trade_in=FALSE",
+      "SELECT id,order_no,name,email,device,sale_inspected_value,sale_inspection_reason,status FROM buyback_orders WHERE id=$1",
       [orderId]
     );
     if (!found.rows.length) {
@@ -88,7 +88,7 @@ function registerAdminBuybackOrderRoutes(app, {
   async function sendPayoutConfirmation(orderId) {
     await ensureBuybackOrdersTable(pool);
     const found = await pool.query(
-      "SELECT id,order_no,name,email,device,sale_inspected_value,sale_settlement_note,status FROM buyback_orders WHERE id=$1 AND trade_in=FALSE",
+      "SELECT id,order_no,name,email,device,sale_inspected_value,sale_settlement_note,status FROM buyback_orders WHERE id=$1",
       [orderId]
     );
     if (!found.rows.length) {
@@ -124,16 +124,22 @@ function registerAdminBuybackOrderRoutes(app, {
     try {
       await ensureBuybackOrdersTable(pool);
       const result = await pool.query(`
-        SELECT id,order_no,name,email,phone,address,device,brand,model,storage,condition,
-               face_id,battery,screen,offered_price,iban,account_holder_name,payment_method,answers,trade_in,
-               trade_in_linked_order_id,final_offer,final_offer_sent_at,status,created_at,
-               sale_inspected_value,sale_inspection_reason,sale_approval_expires_at,
-               sale_approval_decision_at,sale_settlement_note,sale_settled_at,sale_payout_email_sent_at,
-               postnl_tracking_number,shipping_label_filename,shipping_label_uploaded_at,shipping_label_email_sent_at
-        FROM buyback_orders
-        WHERE status NOT IN ('Wacht op aankoop', 'Wacht op betaling')
-          AND trade_in=FALSE
-        ORDER BY created_at DESC
+        SELECT b.id,b.order_no,b.name,b.email,b.phone,b.address,b.device,b.brand,b.model,b.storage,b.condition,
+               b.face_id,b.battery,b.screen,b.offered_price,b.iban,b.account_holder_name,b.payment_method,b.answers,b.trade_in,
+               b.trade_in_linked_order_id,b.final_offer,b.final_offer_sent_at,b.status,b.created_at,
+               b.sale_inspected_value,b.sale_inspection_reason,b.sale_approval_expires_at,
+               b.sale_approval_decision_at,b.sale_settlement_note,b.sale_settled_at,b.sale_payout_email_sent_at,
+               b.postnl_tracking_number,b.shipping_label_filename,b.shipping_label_uploaded_at,b.shipping_label_email_sent_at,
+               w.id AS linked_webshop_order_id,w.order_no AS linked_webshop_order_no,
+               w.status AS linked_webshop_status,w.payment_status AS linked_webshop_payment_status,
+               w.trade_in_status AS linked_trade_in_status,
+               w.trade_in_estimated_value AS linked_trade_in_estimated_value,
+               w.trade_in_inspected_value AS linked_trade_in_inspected_value
+        FROM buyback_orders b
+        LEFT JOIN webshop_orders w ON w.trade_in_order_id=b.id
+        WHERE (b.trade_in=FALSE AND b.status NOT IN ('Wacht op aankoop', 'Wacht op betaling'))
+           OR (b.trade_in=TRUE AND w.id IS NOT NULL)
+        ORDER BY b.created_at DESC
       `);
       res.json({ orders: result.rows });
     } catch (error) {
@@ -278,7 +284,7 @@ function registerAdminBuybackOrderRoutes(app, {
     try {
       await ensureBuybackOrdersTable(pool);
       const updated = await pool.query(
-        "UPDATE buyback_orders SET shipping_label_pdf=$1,shipping_label_filename=$2,postnl_tracking_number=$3,shipping_label_uploaded_at=NOW(),shipping_label_email_sent_at=NULL WHERE id=$4 AND trade_in=FALSE RETURNING id,shipping_label_filename,postnl_tracking_number,shipping_label_uploaded_at",
+        "UPDATE buyback_orders SET shipping_label_pdf=$1,shipping_label_filename=$2,postnl_tracking_number=$3,shipping_label_uploaded_at=NOW(),shipping_label_email_sent_at=NULL WHERE id=$4 RETURNING id,shipping_label_filename,postnl_tracking_number,shipping_label_uploaded_at",
         [pdf, fileName, trackingNumber, id]
       );
       if (!updated.rows.length) return res.status(404).json({ error: "Zelfstandige inkoopaanvraag niet gevonden." });
@@ -295,7 +301,7 @@ function registerAdminBuybackOrderRoutes(app, {
     try {
       await ensureBuybackOrdersTable(pool);
       const found = await pool.query(
-        "SELECT shipping_label_pdf,shipping_label_filename FROM buyback_orders WHERE id=$1 AND trade_in=FALSE",
+        "SELECT shipping_label_pdf,shipping_label_filename FROM buyback_orders WHERE id=$1",
         [id]
       );
       if (!found.rows.length || !found.rows[0].shipping_label_pdf) return res.status(404).json({ error: "Er is nog geen PostNL-verzendlabel geüpload." });
