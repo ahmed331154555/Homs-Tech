@@ -36,7 +36,6 @@ function createResponse() {
   return {
     statusCode: 200,
     body: undefined,
-    status(code) { this.statusCode = code; return this; },
     headers: {},
     status(code) { this.statusCode = code; return this; },
     json(value) { this.body = value; return this; },
