@@ -8209,6 +8209,7 @@ async function showWebshopOrderDetails(id){
     const phoneNoteForm=hasPermission("webshop_orders.update")?'<div class="ht-phone-note-form"><label class="ht-phone-detail-field">Nieuwe notitie<textarea id="webshopOrderNote" maxlength="2000" rows="3" placeholder="Schrijf een interne notitie over deze bestelling..."></textarea></label><button class="btn btn-primary" type="button" onclick="saveWebshopOrderNote('+Number(order.id)+')">Notitie opslaan</button></div>':"";
     const tradeInStatusLabels={AwaitingPayment:"Wacht op betaling nieuwe telefoon",AwaitingDevice:"Wacht op inruiltoestel",Received:"Oud toestel ontvangen",Inspecting:"Oud toestel wordt gecontroleerd",Approved:"Controle afgerond",AdjustmentRequired:"Klantvoorstel nog niet verzonden",AwaitingCustomerApproval:"Wacht op akkoord klant",CustomerAccepted:"Klant akkoord – uitbetaling",CustomerRejected:"Klant niet akkoord",Settled:"Uitbetaling afgerond",Rejected:"Afgekeurd",Returned:"Teruggestuurd"};
     const tradeInStatus=String(order.trade_in_status||"AwaitingDevice");
+    const tradeInSnapshot=order.trade_in_snapshot&&typeof order.trade_in_snapshot==="object"?order.trade_in_snapshot:{};
     const tradeInPaid=/^(paid|betaald|completed)$/i.test(String(order.payment_status||""));
     const tradeInInspected=order.trade_in_inspected_value!==null&&order.trade_in_inspected_value!==undefined;
     const tradeInWaitingPayment=!tradeInPaid;
@@ -8246,6 +8247,11 @@ async function showWebshopOrderDetails(id){
         :tradeInStatus==="AdjustmentRequired"
           ?'<div class="ht-tradein-inspection"><h4>Klant om akkoord vragen</h4><div class="ht-phone-summary-line"><span>Definitief voorstel</span><strong>'+money(order.trade_in_inspected_value)+'</strong></div><p style="font-size:11px;color:#64748b;margin:0">Verzend de definitieve inruilwaarde per e-mail. De klant kan akkoord of niet akkoord geven via een beveiligde link.</p><button class="btn btn-primary" type="button" onclick="sendWebshopTradeInOffer('+Number(order.id)+')">✉ Stuur voorstel naar klant</button></div>'
           :"";
+    const tradeInPayoutEmailMarkup=tradeInStatus==="Settled"
+      ?tradeInSnapshot.payoutConfirmationEmailSentAt
+        ?'<div class="ht-tradein-notice"><span>✉️</span><div><strong>Bevestigingsmail verzonden</strong>De klant heeft een e-mail ontvangen met de bevestiging van de overgemaakte inruilwaarde van '+money(order.trade_in_inspected_value)+'.</div></div>'
+        :'<div class="ht-tradein-notice is-warning"><span>✉️</span><div><strong>Uitbetaling opgeslagen – e-mail nog niet bevestigd</strong>Verzend de bevestiging opnieuw naar de klant.</div><button class="btn btn-primary" type="button" onclick="sendWebshopTradeInPayoutEmail('+Number(order.id)+')">✉ Bevestigingsmail verzenden</button></div>'
+      :"";
     const tradeInSettlementMarkup=tradeInStatus==="CustomerAccepted"&&hasPermission("webshop_orders.update")
       ?'<div class="ht-tradein-inspection"><h4>Klant heeft akkoord gegeven – uitbetaling</h4><div class="ht-phone-summary-line"><span>Definitieve uit te betalen waarde</span><strong>'+money(order.trade_in_inspected_value)+'</strong></div><div class="ht-phone-summary-line"><span>Eerdere schatting</span><strong>'+money(order.trade_in_estimated_value)+'</strong></div><div class="ht-phone-summary-line"><span>Verschil met schatting (ter informatie)</span><strong>'+money(Math.abs(Number(order.trade_in_adjustment||0)))+'</strong></div><label class="ht-phone-detail-field">Uitbetalingskenmerk / toelichting<textarea id="webshopTradeInSettlementNote" rows="2" maxlength="1000" placeholder="Vermeld wanneer en hoe je '+money(order.trade_in_inspected_value)+' hebt overgemaakt..."></textarea></label><button class="btn btn-primary" type="button" onclick="settleWebshopTradeIn('+Number(order.id)+')">✓ Uitbetaling bevestigen</button></div>'
       :"";
@@ -8256,7 +8262,7 @@ async function showWebshopOrderDetails(id){
       (tradeAnswerMarkup?'<div><div class="ht-phone-detail-muted" style="margin-bottom:7px">Antwoorden van de klant</div>'+tradeAnswerMarkup+'</div>':"")+
       '<div class="ht-tradein-calculation"><div class="ht-phone-summary-line"><span>Prijs nieuwe telefoon</span><strong>'+money(total)+'</strong></div><div class="ht-phone-summary-line"><span>Geschatte inruilwaarde (apart uit te betalen)</span><strong style="color:#15803d">'+money(order.trade_in_estimated_value)+'</strong></div><div class="ht-phone-summary-line"><span>Direct verrekend bij aankoop</span><strong>'+money(order.trade_in_applied_credit)+'</strong></div><div class="ht-phone-summary-line ht-phone-summary-total"><span>Door klant te betalen</span><strong>'+money(total)+'</strong></div></div>'+
       (tradeInInspected?'<div class="ht-tradein-facts"><div class="ht-tradein-fact"><span>Definitieve waarde na inspectie</span><strong>'+money(order.trade_in_inspected_value)+'</strong></div><div class="ht-tradein-fact"><span>Verschil t.o.v. schatting</span><strong>'+money(Math.abs(Number(order.trade_in_adjustment||0)))+'</strong></div></div>':"")+
-      tradeInInspectionMarkup+tradeInCustomerApprovalMarkup+tradeInSettlementMarkup+
+      tradeInInspectionMarkup+tradeInCustomerApprovalMarkup+tradeInSettlementMarkup+tradeInPayoutEmailMarkup+
       '<div class="ht-phone-detail-muted">Belangrijk: de geschatte inruilwaarde wordt niet automatisch van de aankoopprijs afgetrokken. De klant betaalt de volledige prijs van de nieuwe telefoon. Na ontvangst en inspectie van de oude iPhone wordt de definitieve inruilwaarde afzonderlijk aan de klant overgemaakt.</div></div></section>':"";
 
     const phoneDetailMarkup=`
@@ -8576,6 +8582,21 @@ async function sendWebshopTradeInOffer(id){
   }catch(error){alert(error.message);}
 }
 
+async function sendWebshopTradeInPayoutEmail(id){
+  if(!hasPermission("webshop_orders.update"))return;
+  if(!confirm("Wil je de bevestiging van de overgemaakte inruilwaarde opnieuw naar de klant sturen?"))return;
+  try{
+    const response=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/trade-in-settlement-email",{
+      method:"POST",credentials:"same-origin",headers:{"Accept":"application/json"}
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"De bevestigingsmail kon niet worden verzonden.");
+    await loadWebshopOrders();
+    await showWebshopOrderDetails(id);
+    setStatus("✓ Bevestigingsmail verzonden naar "+(result.payoutEmail?.email||"de klant"),"success");
+  }catch(error){alert(error.message);}
+}
+
 async function settleWebshopTradeIn(id){
   if(!hasPermission("webshop_orders.update"))return;
   const note=String(document.getElementById("webshopTradeInSettlementNote")?.value||"").trim();
@@ -8590,7 +8611,12 @@ async function settleWebshopTradeIn(id){
     if(!response.ok)throw new Error(result.error||"Verrekening kon niet worden opgeslagen.");
     await loadWebshopOrders();
     await showWebshopOrderDetails(id);
-    setStatus("✓ Inruilverschil afgehandeld bij bestelling #"+id,"success");
+    if(result.payoutEmail?.sent){
+      alert("De uitbetaling is geregistreerd en de bevestigingsmail is verzonden naar de klant.");
+    }else{
+      alert("De uitbetaling is geregistreerd, maar de e-mail kon niet worden verzonden. Je kunt de bevestigingsmail opnieuw versturen vanuit de inruilkaart.");
+    }
+    setStatus("✓ Inruiluitbetaling geregistreerd bij bestelling #"+id,"success");
   }catch(error){alert(error.message);}
 }
 
