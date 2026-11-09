@@ -2525,7 +2525,21 @@ body.phone-orders-page-active #page-all-orders{padding-bottom:78px}
  #orderDetailsModal .ht-tradein-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 </style>
-<style id="ht-inkoop-unified-styles">.ht-inkoop-toolbar{display:flex;align-items:center;gap:8px}.ht-inkoop-toolbar .field{min-width:170px;max-width:220px}.ht-inkoop-type{display:inline-flex;width:max-content;margin-top:5px;padding:3px 8px;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:10px;font-weight:800}.ht-inkoop-type.is-tradein{background:#ecfdf5;color:#047857}.ht-linked-order-card .btn{margin-top:12px}@media(max-width:640px){.ht-inkoop-toolbar{width:100%;margin-top:10px}.ht-inkoop-toolbar .field{flex:1;min-width:0}}</style></head>
+<style id="ht-inkoop-unified-styles">.ht-inkoop-toolbar{display:flex;align-items:center;gap:8px}.ht-inkoop-toolbar .field{min-width:170px;max-width:220px}.ht-inkoop-type{display:inline-flex;width:max-content;margin-top:5px;padding:3px 8px;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:10px;font-weight:800}.ht-inkoop-type.is-tradein{background:#ecfdf5;color:#047857}.ht-linked-order-card .btn{margin-top:12px}@media(max-width:640px){.ht-inkoop-toolbar{width:100%;margin-top:10px}.ht-inkoop-toolbar .field{flex:1;min-width:0}}</style><style id="ht-phone-inspection-styles">
+.ht-phone-inspection-card .ht-phone-inspection-count{margin-left:auto;border-radius:999px;padding:4px 9px;background:#eaf1fb;color:#183b63;font-size:12px;font-weight:800}
+.ht-phone-inspection-progress{height:7px;border-radius:99px;background:#e8edf4;overflow:hidden;margin:0 0 12px}
+.ht-phone-inspection-progress span{display:block;height:100%;background:#16a36a;border-radius:99px;transition:width .2s ease}
+.ht-phone-inspection-notice{padding:10px 12px;border-radius:10px;font-size:12px;font-weight:700;line-height:1.45;margin-bottom:12px}
+.ht-phone-inspection-notice.is-pending{background:#fff7e6;color:#925b08;border:1px solid #f5d99b}
+.ht-phone-inspection-notice.is-complete{background:#ecfdf3;color:#137347;border:1px solid #b8e6cb}
+.ht-phone-inspection-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ht-phone-inspection-item{display:flex;align-items:flex-start;gap:9px;min-width:0;padding:10px 11px;border:1px solid #e1e8f0;border-radius:9px;background:#fff;font-size:12px;line-height:1.4;color:#26384d;cursor:pointer}
+.ht-phone-inspection-item input{width:17px;height:17px;flex:0 0 17px;margin:0;accent-color:#15945f}
+.ht-phone-inspection-item:has(input:checked){background:#f0fbf5;border-color:#b7e3ca}
+.ht-phone-inspection-save{width:100%;margin-top:12px;min-height:42px}
+@media(max-width:720px){.ht-phone-inspection-list{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
 
 <body>
 
