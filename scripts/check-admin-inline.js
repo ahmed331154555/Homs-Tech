@@ -5,8 +5,8 @@ const root = process.cwd();
 const htmlPath = path.join(root, "admin", "index.html");
 const html = fs.readFileSync(htmlPath, "utf8");
 const scripts = [];
-const openingScriptTag = /<script\\b[^>]*>/gi;
-const closingScriptTag = /<\\/script\\s*>/gi;
+const openingScriptTag = /<script\b[^>]*>/gi;
+const closingScriptTag = /<\/script\s*>/gi;
 
 let cursor = 0;
 while (cursor < html.length) {
@@ -22,7 +22,7 @@ while (cursor < html.length) {
   }
 
   const tag = opening[0];
-  const sourceAttribute = tag.match(/\\bsrc\\s*=\\s*["']([^"']+)["']/i);
+  const sourceAttribute = tag.match(/\bsrc\s*=\s*["']([^"']+)["']/i);
   if (sourceAttribute) {
     const relativeSource = sourceAttribute[1].split(/[?#]/, 1)[0];
     const sourcePath = path.resolve(path.dirname(htmlPath), relativeSource);
@@ -55,7 +55,7 @@ scripts.forEach((source, index) => {
 
 const declaredFunctions = new Set();
 for (const source of scripts) {
-  for (const match of source.matchAll(/^\\s*(?:async\\s+)?function\\s+([A-Za-z_$][\\w$]*)\\s*\\(/gm)) {
+  for (const match of source.matchAll(/^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/gm)) {
     declaredFunctions.add(match[1]);
   }
 }
@@ -67,12 +67,12 @@ const allowedGlobals = new Set([
   "Event", "FileReader", "URL", "encodeURIComponent", "decodeURIComponent"
 ]);
 const missingHandlers = new Map();
-const handlerAttributes = /on(?:click|change|input|submit|keydown|keyup|focus|blur)\\s*=\\s*["']([^"']+)["']/gi;
+const handlerAttributes = /on(?:click|change|input|submit|keydown|keyup|focus|blur)\s*=\s*["']([^"']+)["']/gi;
 let handlerCount = 0;
 
 for (const attribute of html.matchAll(handlerAttributes)) {
   handlerCount += 1;
-  for (const call of attribute[1].matchAll(/(?:^|[^\\w$.])([A-Za-z_$][\\w$]*)\\s*\\(/g)) {
+  for (const call of attribute[1].matchAll(/(?:^|[^\w$.])([A-Za-z_$][\w$]*)\s*\(/g)) {
     const name = call[1];
     if (declaredFunctions.has(name) || allowedGlobals.has(name)) continue;
     missingHandlers.set(name, (missingHandlers.get(name) || 0) + 1);
