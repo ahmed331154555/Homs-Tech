@@ -8873,7 +8873,7 @@ async function showWebshopOrderDetails(id){
         <div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn btn-primary" type="button" onclick="saveWebshopOrderShipping(${Number(order.id)})">Verzend- en betaalgegevens opslaan</button></div>
         <p class="ht-order-note">De vervoerder en trackinggegevens worden alleen opgeslagen; een echt verzendlabel wordt pas beschikbaar nadat de API-koppeling met de vervoerder is geïmplementeerd en getest.</p>
       </section>
-      <div class="ht-order-detail-footer"><button class="btn btn-light" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button><button class="btn btn-light" type="button" onclick="printWebshopShippingLabel(${Number(order.id)})">Verzendlabel afdrukken</button><button class="btn btn-dark" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
+      <div class="ht-order-detail-footer"><button class="btn btn-light" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button><button class="btn btn-light" type="button" onclick="printWebshopShippingLabel(Number(order.id))">Verzendlabel afdrukken</button><button class="btn btn-dark" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
     </div>`;
     // Phone-order details always use a true full-screen overlay on desktop and mobile.
     const useInlinePhoneDetails=false;
