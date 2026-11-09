@@ -447,17 +447,6 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
           return res.status(409).json({error:"Deze bestelling kan pas worden verzonden of voltooid nadat de inruilcontrole en eventuele verrekening zijn afgerond."});
         }
       }
-      if(false){
-        const inspection=await pool.query(
-          "SELECT checks FROM webshop_order_inspections WHERE order_id=$1",
-          [id]
-        );
-        const checks=inspection.rows[0]?.checks||{};
-        if(!REQUIRED_PHONE_INSPECTION_CHECKS.every(key=>checks[key]===true)){
-          return res.status(409).json({error:"Deze bestelling kan pas worden verzonden nadat alle verplichte controlepunten zijn afgevinkt en opgeslagen."});
-        }
-
-      }
       const result = await pool.query(
         `WITH previous AS (
            SELECT status FROM webshop_orders WHERE id = $2 FOR UPDATE
