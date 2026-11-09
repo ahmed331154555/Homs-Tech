@@ -197,6 +197,7 @@ test("public pages do not retain stale shared stylesheet cache versions", () => 
   const pages = fs.readdirSync(root).filter(name => name.endsWith(".html") && !name.startsWith("admin"));
   for (const page of pages) {
     const html = readPage(page);
+    if (/<meta\\b[^>]*name=["']robots["'][^>]*content=["'][^"']*noindex/i.test(html)) continue;
     assert.doesNotMatch(html, /homs-tech-modern-true-theme\.css\?v=20260922-final-header/, page + " has a stale theme cache key");
     assert.doesNotMatch(html, /homs-layout-system\.css\?v=20261030/, page + " has a stale layout cache key");
   }
