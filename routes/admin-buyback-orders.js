@@ -369,9 +369,13 @@ function registerAdminBuybackOrderRoutes(app, {
 
   app.delete("/api/admin/buyback-orders/:id", requirePermission("buyback_orders.delete", { allowSiteSave: true }), async (req, res) => {
     try {
+      const id = Number(req.params.id);
+      if (!Number.isInteger(id) || id < 1) {
+        return res.status(400).json({ error: "Ongeldig aanvraag-ID." });
+      }
       const result = await pool.query(
         "DELETE FROM buyback_orders WHERE id=$1 AND trade_in=FALSE RETURNING id",
-        [req.params.id]
+        [id]
       );
       if (!result.rows.length) return res.status(404).json({ error: "Verkoopaanvraag niet gevonden." });
       res.json({ success: true });
