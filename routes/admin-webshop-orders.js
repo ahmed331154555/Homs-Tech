@@ -23,7 +23,7 @@ const REQUIRED_PHONE_INSPECTION_CHECKS = Object.freeze([
 ]);
 
 
-function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory, ensureBuybackOrdersTable, fetchImpl = fetch, getEnv = () => process.env, escapeHtml }) {
+function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieRequest, deductPaidOrderInventory, ensureBuybackOrdersTable, fetchImpl = fetch, getEnv = () => process.env, escapeHtml }) {
   async function notifyPaidTradeInOrder(orderId) {
     try {
       await sendPaidWebshopOrderNotifications({ pool, orderId, fetchImpl, getEnv, escapeHtml });
@@ -239,7 +239,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
            FROM buyback_orders buyback
            WHERE buyback.id=webshop_orders.trade_in_order_id
              AND buyback.trade_in_linked_order_id=webshop_orders.id
-               AND COALESCE(webshop_orders.trade_in_applied_credit,0)>0
+               AND webshop_orders.trade_in_snapshot->>'settlement'='after-inspection'
          ) AS has_valid_trade_in,
          webshop_orders.trade_in_status
          FROM webshop_orders WHERE webshop_orders.id=$1`,
@@ -320,12 +320,22 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
                   )
                   FROM webshop_order_notes notes
                   WHERE notes.order_id = webshop_orders.id
-                ), '[]'::json) AS notes
+                ), '[]'::json) AS notes,
+                COALESCE((
+                  SELECT json_agg(json_build_object(
+                    'id',refund.id,'amount',refund.amount,'currency',refund.currency,
+                    'method',refund.method,'status',refund.status,'reason',refund.reason,
+                    'provider_refund_id',refund.provider_refund_id,
+                    'created_at',refund.created_at,'processed_at',refund.processed_at
+                  ) ORDER BY refund.created_at DESC,refund.id DESC)
+                  FROM webshop_order_refunds refund
+                  WHERE refund.order_id=webshop_orders.id
+                ), '[]'::json) AS refunds
          FROM webshop_orders
          LEFT JOIN webshop_order_inspections phone_inspection ON phone_inspection.order_id=webshop_orders.id
          LEFT JOIN buyback_orders ON buyback_orders.id = webshop_orders.trade_in_order_id
                                       AND buyback_orders.trade_in_linked_order_id = webshop_orders.id
-                                      AND COALESCE(webshop_orders.trade_in_applied_credit,0)>0
+                                      AND webshop_orders.trade_in_snapshot->>'settlement'='after-inspection'
          ORDER BY webshop_orders.created_at DESC`
       );
       res.json({ orders: result.rows });
@@ -357,6 +367,69 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
     }
   });
 
+  app.post("/api/admin/webshop-orders/:id/refund", requirePermission("webshop_orders.update"), async (req,res) => {
+    const id=Number(req.params.id);
+    const amount=Number(req.body?.amount);
+    const reason=String(req.body?.reason||"").trim().slice(0,500);
+    const method=String(req.body?.method||"Manual").trim();
+    if(!Number.isInteger(id)||id<1)return res.status(400).json({error:"Ongeldig order-ID."});
+    if(!Number.isFinite(amount)||amount<=0||amount>100000)return res.status(400).json({error:"Vul een geldig terug te betalen bedrag in."});
+    if(!["Mollie","Manual"].includes(method))return res.status(400).json({error:"Ongeldige terugbetaalmethode."});
+    const client=await pool.connect();
+    let refund;
+    let order;
+    try{
+      await client.query("BEGIN");
+      const found=await client.query(
+        "SELECT id,total,payment_status,payment_method,mollie_payment_id FROM webshop_orders WHERE id=$1 FOR UPDATE",
+        [id]
+      );
+      if(!found.rows.length){await client.query("ROLLBACK");return res.status(404).json({error:"Bestelling niet gevonden."});}
+      order=found.rows[0];
+      if(order.payment_status!=="Paid"){await client.query("ROLLBACK");return res.status(409).json({error:"Alleen een betaalde bestelling kan worden terugbetaald."});}
+      if(method==="Mollie"&&(order.payment_method!=="Mollie"||!order.mollie_payment_id)){
+        await client.query("ROLLBACK");return res.status(409).json({error:"Deze bestelling heeft geen Mollie-betaling om automatisch terug te betalen."});
+      }
+      const previous=await client.query(
+        "SELECT COALESCE(SUM(amount),0) AS total FROM webshop_order_refunds WHERE order_id=$1 AND status IN ('Processing','Pending manual','Processed')",
+        [id]
+      );
+      const remaining=Math.max(0,Number(order.total)-Number(previous.rows[0]?.total||0));
+      if(amount>remaining+0.009){await client.query("ROLLBACK");return res.status(409).json({error:"Het terug te betalen bedrag is hoger dan het resterende betaalde bedrag (€ "+remaining.toFixed(2)+")."});}
+      const inserted=await client.query(
+        `INSERT INTO webshop_order_refunds(order_id,amount,method,status,reason)
+         VALUES($1,$2,$3,$4,$5) RETURNING id,amount,currency,method,status,reason,created_at`,
+        [id,amount.toFixed(2),method,method==="Mollie"?"Processing":"Pending manual",reason]
+      );
+      refund=inserted.rows[0];
+      await client.query("COMMIT");
+    }catch(error){
+      try{await client.query("ROLLBACK");}catch{}
+      console.error("Create webshop refund request error:",error);
+      return res.status(500).json({error:"Terugbetaling kon niet worden aangemaakt."});
+    }finally{client.release();}
+
+    if(method==="Manual")return res.status(201).json({success:true,refund,message:"Terugbetaling geregistreerd als handmatig uit te voeren."});
+    try{
+      if(typeof mollieRequest!=="function")throw new Error("Mollie refund service is not configured.");
+      const value=Number(refund.amount).toFixed(2);
+      const result=await mollieRequest("/payments/"+encodeURIComponent(order.mollie_payment_id)+"/refunds",{
+        method:"POST",
+        headers:{"Idempotency-Key":"homs-tech-order-refund-"+id+"-"+value},
+        body:JSON.stringify({amount:{currency:"EUR",value},description:"HOMS TECH bestelling #"+id+" terugbetaling"})
+      });
+      const saved=await pool.query(
+        "UPDATE webshop_order_refunds SET status='Processed',provider_refund_id=$1,processed_at=NOW() WHERE id=$2 RETURNING id,amount,currency,method,status,reason,provider_refund_id,created_at,processed_at",
+        [String(result.id||""),refund.id]
+      );
+      return res.status(201).json({success:true,refund:saved.rows[0],message:"Mollie-terugbetaling is door Mollie geaccepteerd."});
+    }catch(error){
+      await pool.query("UPDATE webshop_order_refunds SET status='Failed' WHERE id=$1",[refund.id]).catch(()=>{});
+      console.error("Mollie refund failed:",error.statusCode||error.message);
+      return res.status(502).json({error:"Mollie kon de terugbetaling niet uitvoeren. De aanvraag staat op mislukt; controleer Mollie voordat je opnieuw probeert."});
+    }
+  });
+
   app.put("/api/admin/webshop-orders/:id/status", requirePermission("webshop_orders.update"), async (req, res) => {
     try {
       const id = Number(req.params.id);
@@ -371,7 +444,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
              FROM buyback_orders buyback
              WHERE buyback.id=webshop_orders.trade_in_order_id
                AND buyback.trade_in_linked_order_id=webshop_orders.id
-               AND COALESCE(webshop_orders.trade_in_applied_credit,0)>0
+               AND webshop_orders.trade_in_snapshot->>'settlement'='after-inspection'
            ) AS has_valid_trade_in,
            webshop_orders.trade_in_status
            FROM webshop_orders WHERE webshop_orders.id=$1`,
@@ -390,7 +463,15 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
          updated AS (
            UPDATE webshop_orders
            SET status = $1
-           WHERE id = $2 AND NOT (payment_status = 'Paid' AND $1 = 'Geannuleerd')
+           WHERE id = $2
+             AND (
+               NOT (payment_status = 'Paid' AND $1 = 'Geannuleerd')
+               OR EXISTS (
+                 SELECT 1 FROM webshop_order_refunds refund
+                 WHERE refund.order_id=webshop_orders.id
+                   AND refund.status IN ('Processing','Pending manual','Processed')
+               )
+             )
            RETURNING id, status
          ),
          logged AS (
@@ -408,7 +489,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
         const existing = await pool.query("SELECT id, payment_status FROM webshop_orders WHERE id = $1", [id]);
         if (!existing.rows.length) return res.status(404).json({ error: "Webshop bestelling niet gevonden." });
         if (existing.rows[0].payment_status === "Paid" && status === "Geannuleerd") {
-          return res.status(409).json({ error: "Een betaalde bestelling kan niet rechtstreeks worden geannuleerd. Verwerk eerst de terugbetaling." });
+          return res.status(409).json({ error: "Registreer eerst de volledige of gedeeltelijke terugbetaling voordat je deze betaalde bestelling annuleert." });
         }
         return res.status(409).json({ error: "De bestelstatus kon niet worden gewijzigd." });
       }
