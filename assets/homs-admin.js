@@ -15,6 +15,8 @@ let buybackOptionsOpen = false;
 let buybackTypeSettingsOpen = false;
 let buybackQuestionOpenId = "";
 let buybackCatalogDeleteLock = false;
+const deletingBuybackOrderIds = new Set();
+const deletingWebshopOrderIds = new Set();
 
 const PAGE_PERMISSIONS = {
   "all-orders":"orders.view","live-chat":"orders.view",
@@ -5805,21 +5807,22 @@ async function saveWebshopOrderShipping(id){
 }
 
 async function deleteWebshopOrder(id){
-  if(!hasPermission("webshop_orders.delete")) return;
-  if(!confirm("Webshop bestelling #"+id+" echt verwijderen? Dit kan niet ongedaan worden.")) return;
+  const orderId=Number(id);
+  if(!hasPermission("webshop_orders.delete"))return;
+  if(!Number.isInteger(orderId)||orderId<1){alert("Ongeldig bestelnummer.");return;}
+  if(deletingWebshopOrderIds.has(orderId))return;
+  if(!confirm("Webshop bestelling #"+orderId+" echt verwijderen? Dit kan niet ongedaan worden."))return;
+  deletingWebshopOrderIds.add(orderId);
   try{
-    const r=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id),{
-      method:"DELETE",
-      credentials:"same-origin"
-    });
-    const result=await r.json().catch(()=>({}));
-    if(!r.ok) throw new Error(result.error||"Bestelling kon niet worden verwijderd.");
+    const response=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(orderId),{method:"DELETE",credentials:"same-origin"});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Bestelling kon niet worden verwijderd.");
     closeWebshopOrderDetails();
     await loadWebshopOrders();
-    if(currentPage==="search") await adminSearch();
-  }catch(e){ alert(e.message); }
+    if(currentPage==="search")await adminSearch();
+  }catch(error){alert(error.message);}
+  finally{deletingWebshopOrderIds.delete(orderId);}
 }
-
 /* ---------------- HELPERS ---------------- */
 
 // =====================================================
@@ -6199,17 +6202,23 @@ async function updateBuybackStatus(id,newStatus){
   }catch(error){alert(error.message);}
 }
 async function deleteBuybackOrder(id){
+  const orderId=Number(id);
   if(!hasPermission("buyback_orders.delete"))return;
-  if(!confirm("Zelfstandige verkoopaanvraag #"+id+" definitief uit het Inkoop-overzicht verwijderen? Deze actie kan niet ongedaan worden gemaakt."))return;
+  if(!Number.isInteger(orderId)||orderId<1){alert("Ongeldig aanvraagnummer.");return;}
+  if(deletingBuybackOrderIds.has(orderId))return;
+  const order=buybackOrdersCache.find(item=>Number(item.id)===orderId);
+  if(order?.trade_in){alert("Deze aanvraag is gekoppeld aan een telefoonbestelling en kan niet afzonderlijk worden verwijderd.");return;}
+  if(!confirm("Zelfstandige verkoopaanvraag #"+orderId+" definitief uit het Inkoop-overzicht verwijderen? Deze actie kan niet ongedaan worden gemaakt."))return;
+  deletingBuybackOrderIds.add(orderId);
   try{
-    const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id),{method:"DELETE",credentials:"same-origin"});
+    const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(orderId),{method:"DELETE",credentials:"same-origin"});
     const result=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(result.error||"Verwijderen mislukt.");
     closeBuybackDetails();
     await loadBuybackOrders();
   }catch(error){alert(error.message);}
+  finally{deletingBuybackOrderIds.delete(orderId);}
 }
-
 let unifiedOrdersActiveKey="";
 const unifiedOrderCategories=[
   {id:"page-phone-orders",key:"phone-orders",permission:"webshop_orders.view",updatePermission:"webshop_orders.update",icon:"📱",title:"Telefoonbestellingen",description:"Telefoonbestellingen van klanten",loader:()=>loadWebshopOrders()},
