@@ -8377,7 +8377,35 @@ async function showWebshopOrderDetails(id){
     const phoneDigitsRaw=String(order.phone||"").replace(/[^\d]/g,"");
     const phoneDigits=phoneDigitsRaw.startsWith("0")?"31"+phoneDigitsRaw.slice(1):phoneDigitsRaw;
     const phoneWhatsapp=phoneDigits?'<a class="btn btn-light" target="_blank" rel="noopener noreferrer" href="https://wa.me/'+esc(phoneDigits)+'?text='+encodeURIComponent("Hoi, over bestelling #"+Number(order.id)+" bij HOMS TECH.")+'">WhatsApp-bericht sturen</a>':"";
-    const phoneStatusOptions=['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(value=>'<option value="'+esc(value)+'" '+(status===value?'selected':'')+'>'+esc(value)+'</option>').join("");
+    const phoneInspectionItems=[
+      ["model_storage_color","Juiste model, kleur en opslagcapaciteit"],
+      ["screen_touch","Scherm en touchscreen gecontroleerd"],
+      ["battery","Batterijconditie gecontroleerd"],
+      ["face_id_touch_id","Face ID / Touch ID getest"],
+      ["cameras","Voor- en achtercamera getest"],
+      ["speakers_microphone","Luidsprekers en microfoon getest"],
+      ["charging","Opladen en laadpoort getest"],
+      ["network_wifi_sim","Netwerk, wifi en simkaart getest"],
+      ["icloud_activation_lock","iCloud en Activation Lock gecontroleerd"],
+      ["cosmetic_condition","Uiterlijke staat en eventuele schade gecontroleerd"],
+      ["cleaning","Telefoon gereinigd"],
+      ["accessories","Accessoires en inhoud gecontroleerd"],
+      ["secure_packaging","Telefoon veilig verpakt"],
+      ["shipping_address","Verzendadres en klantgegevens gecontroleerd"]
+    ];
+    const phoneInspectionChecks=order.inspection_checks&&typeof order.inspection_checks==="object"?order.inspection_checks:{};
+    const phoneInspectionComplete=phoneInspectionItems.every(([key])=>phoneInspectionChecks[key]===true);
+    const phoneInspectionDoneCount=phoneInspectionItems.filter(([key])=>phoneInspectionChecks[key]===true).length;
+    const phoneInspectionMarkup='<section class="ht-phone-detail-card ht-phone-inspection-card">'+
+      '<div class="ht-phone-detail-card-head"><span class="icon">✓</span>Controle & Verpakking <span class="ht-phone-inspection-count">'+phoneInspectionDoneCount+'/'+phoneInspectionItems.length+'</span></div>'+
+      '<div class="ht-phone-detail-card-body">'+
+        '<div class="ht-phone-inspection-progress"><span style="width:'+Math.round(phoneInspectionDoneCount/phoneInspectionItems.length*100)+'%"></span></div>'+
+        '<div class="ht-phone-inspection-notice '+(phoneInspectionComplete?'is-complete':'is-pending')+'">'+(phoneInspectionComplete?'✓ Alle verplichte controles zijn opgeslagen. Verzending is vrijgegeven.':'🔒 Verzending geblokkeerd totdat alle controles zijn uitgevoerd en opgeslagen.')+'</div>'+
+        '<div class="ht-phone-inspection-list">'+phoneInspectionItems.map(([key,label])=>'<label class="ht-phone-inspection-item"><input type="checkbox" data-phone-inspection-check="'+key+'" '+(phoneInspectionChecks[key]===true?'checked':'')+'><span>'+esc(label)+'</span></label>').join('')+'</div>'+
+        '<button class="btn btn-primary ht-phone-inspection-save" type="button" onclick="saveWebshopOrderInspection('+Number(order.id)+')">✓ Controle opslaan</button>'+
+        (order.inspection_completed_at?'<small class="ht-phone-detail-muted">Volledig gecontroleerd op '+esc(formatPhoneOrderDateTime(order.inspection_completed_at).date)+' door '+esc(order.inspection_inspected_by||'HOMS TECH Admin')+'</small>':'')+
+      '</div></section>';
+    const phoneStatusOptions=['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(value=>'<option value="'+esc(value)+'" '+(status===value?'selected':'')+' '+(['Verzonden','Voltooid'].includes(value)&&!phoneInspectionComplete?'disabled':'')+'>'+esc(value)+'</option>').join("");
     const phoneShippingLabel=status==="Verzonden"?"Verzonden":(order.tracking_number?"Verzending geregistreerd":"Nog niet verzonden");
     const phonePaymentReference=order.mollie_payment_id||order.paypal_order_id||"Niet beschikbaar";
     const phonePaymentTone=paymentClass==="is-paid"?"is-paid":(paymentClass==="is-failed"?"is-failed":"is-pending");
@@ -8484,6 +8512,7 @@ async function showWebshopOrderDetails(id){
               <button class="btn btn-primary ht-phone-payment-save" type="button" onclick="saveWebshopOrderPayment(${Number(order.id)})">💾 Betaalstatus opslaan</button>
             </div>
           </section>
+    ${phoneInspectionMarkup}
     <section class="ht-phone-detail-card">
             <div class="ht-phone-detail-card-head"><span class="icon">♧</span>Verzending</div>
             <div class="ht-phone-detail-card-body ht-phone-info-list">
@@ -8830,12 +8859,47 @@ async function saveWebshopOrderPayment(id){
   }
 }
 
+async function saveWebshopOrderInspection(id){
+  if(!hasPermission("webshop_orders.update")){alert("Je hebt geen toestemming om deze bestelling te wijzigen.");return;}
+  const items=[...document.querySelectorAll("#orderDetailsModal [data-phone-inspection-check]")];
+  const checks={};
+  items.forEach(input=>{checks[input.dataset.phoneInspectionCheck]=input.checked===true;});
+  const button=document.querySelector("#orderDetailsModal .ht-phone-inspection-save");
+  if(button){button.disabled=true;button.textContent="Controle opslaan...";}
+  try{
+    const response=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/inspection",{
+      method:"PUT",credentials:"same-origin",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({checks})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"De controle kon niet worden opgeslagen.");
+    await loadWebshopOrders();
+    await showWebshopOrderDetails(id);
+    if(result.complete){
+      setStatus("✓ Alle verplichte controles zijn opgeslagen. Verzending is vrijgegeven voor bestelling #"+id,"success");
+    }else{
+      setStatus("Controle opgeslagen: "+Object.values(checks).filter(Boolean).length+"/"+items.length+". Verzending blijft geblokkeerd.","info");
+    }
+  }catch(error){
+    alert(error.message);
+    if(button){button.disabled=false;button.textContent="✓ Controle opslaan";}
+  }
+}
+
 async function saveWebshopOrderShipping(id){
   if(!hasPermission("webshop_orders.update")){alert("Je hebt geen toestemming om deze bestelling te wijzigen.");return;}
   const carrier=document.getElementById("webshopShippingCarrier")?.value||"";
   const paymentStatus=document.getElementById("webshopPaymentStatus")?.value||"Unpaid";
   const trackingNumber=(document.getElementById("webshopTrackingNumber")?.value||"").trim();
   const trackingUrl=(document.getElementById("webshopTrackingUrl")?.value||"").trim();
+  if(carrier||trackingNumber||trackingUrl){
+    const checklist=[...document.querySelectorAll("#orderDetailsModal [data-phone-inspection-check]")];
+    if(!checklist.length||!checklist.every(input=>input.checked)){
+      alert("Verzending geblokkeerd. Vink eerst alle verplichte controlepunten af en sla de controle op.");
+      return;
+    }
+  }
   if(carrier&&!["PostNL","DHL"].includes(carrier)){alert("Kies PostNL of DHL.");return;}
   if(trackingUrl&&!trackingUrl.startsWith("https://")){alert("De tracking-URL moet beginnen met https://");return;}
   try{
