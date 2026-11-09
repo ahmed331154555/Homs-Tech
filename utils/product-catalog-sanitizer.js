@@ -14,7 +14,7 @@ const PRODUCT_FIELDS = [
 
 const OPTION_FIELDS = [
   "id", "label", "active", "enabled", "available", "priceDelta",
-  "basePrice", "conditionBasePrice", "image"
+  "basePrice", "conditionBasePrice", "image", "description"
 ];
 
 function pickFields(source, fields) {
