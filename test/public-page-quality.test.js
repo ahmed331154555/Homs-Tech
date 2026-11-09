@@ -219,3 +219,19 @@ test("admin order layouts prevent narrow-screen overflow", () => {
   assert.ok(css.includes("min-width: 0;"), "order action controls should be allowed to shrink");
   assert.ok(css.includes("@media (max-width: 420px)"), "small-screen order layout should be defined");
 });
+
+
+test("admin interface has visible keyboard focus and compact mobile layout rules", () => {
+  const css = fs.readFileSync(path.join(root, "assets/homs-admin.css"), "utf8");
+  assert.ok(css.includes(".admin-nav .nav-btn:focus-visible"));
+  assert.ok(css.includes("outline: 3px solid #60a5fa"));
+  assert.ok(css.includes("@media (max-width: 760px)"));
+  assert.ok(css.includes("prefers-reduced-motion: reduce"));
+});
+
+test("admin document head does not contain excessive blank-line blocks", () => {
+  const html = fs.readFileSync(path.join(root, "admin/index.html"), "utf8");
+  const head = html.split("</head>")[0];
+  assert.doesNotMatch(head, /\\n[ \\t]*\\n[ \\t]*\\n[ \\t]*\\n/);
+  assert.match(head, /assets\\/homs-admin\\.css/);
+});
