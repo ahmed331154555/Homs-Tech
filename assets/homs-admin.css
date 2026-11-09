@@ -560,10 +560,6 @@ textarea{
   color:#64748b;
   padding:30px;
 }
-  display:grid;
-  grid-template-columns:1fr 1.35fr;
-  gap:18px;
-}
 @media(max-width:900px){
   .editor-layout{grid-template-columns:1fr}
 }
