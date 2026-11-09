@@ -301,7 +301,9 @@ textarea{
 #page-all-orders .unified-orders-panel{min-width:0;padding:18px;border:1px solid #e5eaf1;border-radius:15px;background:#f8fafc}
 #page-all-orders .unified-orders-panel>[id^="page-"]{margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
 #page-all-orders .unified-orders-panel>[id^="page-"]>.section-head{margin-bottom:16px}
-@media(max-width:980px){#page-all-orders .unified-orders-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}\n@media(max-width:560px){#page-all-orders .unified-orders-tabs{grid-template-columns:1fr}#page-all-orders .unified-orders-tab{padding:12px}#page-all-orders .unified-orders-panel{padding:12px}}\n#page-all-orders .unified-order-mixed-note{margin-top:10px;padding:9px 11px;border:1px solid #bfdbfe;border-radius:9px;background:#eff6ff;color:#1e40af;font-size:12px;font-weight:700}
+@media(max-width:980px){#page-all-orders .unified-orders-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){#page-all-orders .unified-orders-tabs{grid-template-columns:1fr}#page-all-orders .unified-orders-tab{padding:12px}#page-all-orders .unified-orders-panel{padding:12px}}
+#page-all-orders .unified-order-mixed-note{margin-top:10px;padding:9px 11px;border:1px solid #bfdbfe;border-radius:9px;background:#eff6ff;color:#1e40af;font-size:12px;font-weight:700}
 
 @media(max-width:900px){.order-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:550px){.order-card-head{flex-direction:column}.order-grid{grid-template-columns:1fr}.order-status-select{width:100%}}
@@ -3364,4 +3366,65 @@ img{max-width:100%}
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
+}
+
+
+/* HOMS TECH admin — responsive order workspace safeguards */
+#page-all-orders,
+#page-phone-orders,
+#page-webshop-orders,
+#page-buyback-orders,
+#page-repair-orders {
+  min-width: 0;
+}
+#page-all-orders .unified-orders-panel,
+#page-all-orders .unified-orders-tabs,
+.orders-list,
+.order-card,
+.order-grid,
+.order-actions {
+  min-width: 0;
+}
+.order-grid > *,
+.order-info,
+.order-card-head > *,
+.order-main > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.order-actions .btn,
+.order-actions .order-status-select {
+  min-width: 0;
+}
+@media (max-width: 760px) {
+  .order-card {
+    padding: 13px !important;
+  }
+  .order-card-head {
+    align-items: flex-start !important;
+    flex-wrap: wrap !important;
+    gap: 9px !important;
+  }
+  .order-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 9px !important;
+  }
+  .order-actions {
+    justify-content: stretch !important;
+    gap: 7px !important;
+  }
+  .order-actions .btn,
+  .order-actions .order-status-select {
+    flex: 1 1 135px !important;
+  }
+}
+@media (max-width: 420px) {
+  .order-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .order-actions .btn,
+  .order-actions .order-status-select {
+    flex-basis: 100% !important;
+    width: 100% !important;
+  }
 }
