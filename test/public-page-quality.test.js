@@ -130,3 +130,25 @@ test("admin order categories preserve their distinct business purposes", () => {
     assert.ok(admin.includes('key:"' + key + '"'), "missing order category " + key);
   }
 });
+
+
+test("every HTML page has a language, viewport and document title", () => {
+  const pages = fs.readdirSync(root).filter(name => name.endsWith(".html"));
+  for (const page of pages) {
+    const html = readPage(page);
+    assert.match(html, /<html\b[^>]*\blang=["'][a-z]{2}(?:-[A-Z]{2})?["']/i, page + " needs a document language");
+    assert.match(html, /<meta\b[^>]*name=["']viewport["']/i, page + " needs a responsive viewport");
+    assert.match(html, /<title\b[^>]*>[\s\S]*?\S[\s\S]*?<\/title>/i, page + " needs a meaningful title");
+  }
+});
+
+test("all static image elements provide alternative text", () => {
+  const pages = fs.readdirSync(root).filter(name => name.endsWith(".html"));
+  for (const page of pages) {
+    const html = readPage(page);
+    const images = [...html.matchAll(/<img\b[^>]*>/gi)];
+    for (const image of images) {
+      assert.match(image[0], /\balt=["'][^"']*["']/i, page + " contains an image without alt text");
+    }
+  }
+});
