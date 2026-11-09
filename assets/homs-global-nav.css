@@ -54,11 +54,15 @@
   transition:color .15s ease,background-color .15s ease;
 }
 .homs-global-nav-inner a:hover,
-.homs-global-nav-inner a:focus-visible,
 .homs-global-nav-inner a.active{
   color:#2563eb!important;
   background:#eaf2ff!important;
-  outline:none;
+}
+.homs-global-nav-inner a:focus-visible{
+  color:#1d4ed8!important;
+  background:#eaf2ff!important;
+  outline:3px solid #60a5fa!important;
+  outline-offset:2px!important;
 }
 @media(max-width:900px){
   .homs-global-nav{padding:7px 14px!important}
