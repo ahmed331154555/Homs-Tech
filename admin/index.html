@@ -2777,6 +2777,40 @@ body.phone-orders-page-active #page-all-orders{padding-bottom:78px}
   #orderDetailsModal.phone-order-detail-overlay *{transition:none!important;scroll-behavior:auto!important}
 }
 </style>
+<style id="homs-phone-order-dashboard-tabs-v1">
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-top{display:grid!important;grid-template-columns:minmax(0,1.12fr) minmax(245px,.9fr) minmax(230px,.72fr)!important;gap:12px!important;margin:0 0 14px!important;align-items:stretch!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-top>.ht-phone-detail-card,#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-card{min-width:0!important;margin:0!important;overflow:hidden!important;border:1px solid #dce5f0!important;border-radius:14px!important;background:#fff!important;box-shadow:0 3px 12px rgba(15,35,61,.045)!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-top>.ht-phone-detail-card .ht-phone-detail-card-head,#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-card-head{display:flex!important;align-items:center!important;gap:10px!important;min-height:45px!important;padding:10px 14px!important;border-bottom:1px solid #e8eef5!important;background:#f7f9fc!important;color:#142b45!important;font-size:13px!important;font-weight:850!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-card-head>span{font-size:18px!important;color:#155eef!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-status-current{margin:12px 13px 8px!important;padding:10px 12px!important;border-radius:10px!important;background:#fff4df!important;color:#8a4b08!important;font-size:14px!important;font-weight:850!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-status .ht-phone-detail-card{border:0!important;box-shadow:none!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-status .ht-phone-detail-card-head{display:none!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-status .ht-phone-detail-card-body{padding:0 13px 12px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-status .ht-phone-detail-field{display:grid!important;gap:6px!important;font-size:11px!important;color:#5b6d82!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-status select{min-height:38px!important;border:1px solid #d6e0ec!important;border-radius:9px!important;padding:7px 10px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-action-list{display:grid!important;gap:8px!important;padding:12px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-action-list .btn{display:flex!important;align-items:center!important;justify-content:flex-start!important;min-height:39px!important;padding:8px 11px!important;border:1px solid #d5dfeb!important;border-radius:9px!important;background:#fff!important;color:#18304d!important;font-size:11px!important;font-weight:750!important;text-align:left!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-action-list .btn:hover{border-color:#8db6f4!important;background:#f4f8ff!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-tabs{display:flex!important;align-items:stretch!important;gap:4px!important;overflow-x:auto!important;margin:0 0 13px!important;padding:0 2px!important;border-bottom:1px solid #d8e1ec!important;scrollbar-width:thin!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-tab{position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;flex:0 0 auto!important;min-height:48px!important;padding:9px 14px!important;border:0!important;border-radius:9px 9px 0 0!important;background:transparent!important;color:#56677c!important;font-size:12px!important;font-weight:750!important;white-space:nowrap!important;cursor:pointer!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-tab-icon{font-size:17px!important;color:#61748b!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-tab.is-active{color:#155eef!important;background:#eff5ff!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-tab.is-active:after{position:absolute!important;right:8px!important;bottom:-1px!important;left:8px!important;height:3px!important;border-radius:4px 4px 0 0!important;background:#155eef!important;content:""!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-tab:focus-visible{outline:2px solid #2563eb!important;outline-offset:-3px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-tab-content{min-width:0!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-tab-panel[hidden]{display:none!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-content-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;align-items:start!important;gap:11px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-content-grid>.ht-phone-detail-card{min-width:0!important;margin:0!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-content-grid>.ht-phone-detail-accordion{align-self:start!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-content-grid .ht-phone-detail-card-body{padding:12px 14px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-content-grid .ht-phone-detail-card-head{min-height:43px!important;padding:10px 13px!important;font-size:12px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-content-grid .ht-phone-detail-accordion>summary{cursor:pointer!important;list-style:none!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-content-grid .ht-phone-detail-accordion>summary::-webkit-details-marker{display:none!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-content-grid .ht-phone-detail-accordion>summary:after{content:"⌄"!important;margin-left:auto!important;color:#718198!important;font-size:18px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-content-grid .ht-phone-detail-accordion[open]>summary:after{content:"⌃"!important}
+@media(max-width:980px){#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-top{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-top>.ht-phone-detail-card{grid-column:1/-1!important}}
+@media(max-width:680px){#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-top{grid-template-columns:minmax(0,1fr)!important;gap:9px!important}#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-top>.ht-phone-detail-card{grid-column:auto!important}#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-content-grid{grid-template-columns:minmax(0,1fr)!important;gap:9px!important}#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-tab{min-height:44px!important;padding:8px 11px!important;font-size:11px!important}#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-tabs{margin-bottom:10px!important}}
+</style>
 </head>
 
 <body>
@@ -8844,10 +8878,90 @@ async function showWebshopOrderDetails(id){
     // Phone-order details always use a true full-screen overlay on desktop and mobile.
     const useInlinePhoneDetails=false;
     const useMobilePhoneDetail=isPhoneOnlyOrder;
+    // Rebuild phone-only order details into a dashboard layout:
+    // product + status + quick actions, followed by focused information tabs.
+    if(isPhoneOnlyOrder){
+      const panel=modal.querySelector(".phone-order-detail-panel");
+      const columns=panel?.querySelector(".ht-phone-detail-columns");
+      if(panel&&columns){
+        const cards=[...columns.querySelectorAll(".ht-phone-detail-card")];
+        const cardByTitle=(pattern)=>cards.find(card=>pattern.test(card.querySelector(".ht-phone-detail-card-head")?.textContent||""))||null;
+        const product=cardByTitle(/Besteld product/i);
+        const customer=cardByTitle(/Klantgegevens/i);
+        const payment=cardByTitle(/Betaalinformatie/i);
+        const inspection=cardByTitle(/Controle\s*&\s*Verpakking/i);
+        const shipping=cardByTitle(/Verzending/i);
+        const orderSummary=cardByTitle(/Overzicht bestelling/i);
+        const address=cardByTitle(/Verzendadres/i);
+        const cart=cardByTitle(/Besteloverzicht/i);
+        const statusEditor=cardByTitle(/Status bijwerken/i);
+        const notes=panel.querySelector("#phoneOrderNoteCard");
+        const noteCards=panel.querySelectorAll("#phoneOrderNoteCard, .ht-phone-detail-card");
+        const log=[...noteCards].reverse().find(card=>card!==notes&&/Bestelstatus\s*\(log\)/i.test(card.querySelector(".ht-phone-detail-card-head")?.textContent||""))||null;
+        const tradeIn=panel.querySelector(".ht-phone-inkoop-link");
+        const top=document.createElement("div");
+        top.className="ht-phone-dashboard-top";
+        const statusCard=document.createElement("section");
+        statusCard.className="ht-phone-dashboard-card ht-phone-dashboard-status";
+        statusCard.innerHTML='<div class="ht-phone-dashboard-card-head"><span>▣</span> Bestelstatus</div><div class="ht-phone-dashboard-status-current"><strong>'+String(status||"Nieuw").replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]))+'</strong></div>';
+        if(statusEditor)statusCard.append(statusEditor);
+        const actions=document.createElement("section");
+        actions.className="ht-phone-dashboard-card ht-phone-dashboard-actions";
+        actions.innerHTML='<div class="ht-phone-dashboard-card-head"><span>⇄</span> Snelle acties</div><div class="ht-phone-dashboard-action-list"><button type="button" class="btn btn-light" data-phone-quick-action="label">♧ Verzendlabel (PostNL)</button><button type="button" class="btn btn-light" data-phone-quick-action="print">▤ Bestelling afdrukken</button></div>';
+        actions.querySelector('[data-phone-quick-action="label"]').addEventListener("click",()=>printWebshopShippingLabel(${Number(order.id)}));
+        actions.querySelector('[data-phone-quick-action="print"]').addEventListener("click",()=>window.print());
+        if(product)top.append(product);
+        top.append(statusCard,actions);
+        columns.replaceWith(top);
+        const nav=document.createElement("div");
+        nav.className="ht-phone-dashboard-tabs";
+        nav.setAttribute("role","tablist");
+        nav.setAttribute("aria-label","Bestellingsonderdelen");
+        const content=document.createElement("div");
+        content.className="ht-phone-dashboard-tab-content";
+        const tabSpecs=[
+          {id:"overview",label:"Overzicht",icon:"▦",items:[orderSummary,inspection,cart]},
+          {id:"customer",label:"Klantgegevens",icon:"♙",items:[customer,address]},
+          {id:"payment",label:"Betaling",icon:"▤",items:[payment]},
+          {id:"shipping",label:"Verzending",icon:"♧",items:[shipping]},
+          {id:"tradein",label:"Oude telefoon (Inkoop)",icon:"⇄",items:[tradeIn]},
+          {id:"notes",label:"Notities & Log",icon:"▤",items:[notes,log]}
+        ].filter(tab=>tab.id!=="tradein"||tradeIn);
+        tabSpecs.forEach((tab,index)=>{
+          const button=document.createElement("button");
+          button.type="button";button.className="ht-phone-dashboard-tab"+(index===0?" is-active":"");
+          button.id="ht-phone-tab-"+tab.id;
+          button.setAttribute("role","tab");button.setAttribute("aria-selected",index===0?"true":"false");
+          button.setAttribute("aria-controls","ht-phone-panel-"+tab.id);button.tabIndex=index===0?0:-1;
+          button.innerHTML='<span class="ht-phone-dashboard-tab-icon" aria-hidden="true">'+tab.icon+'</span><span>'+tab.label+'</span>';
+          const pane=document.createElement("section");
+          pane.className="ht-phone-dashboard-tab-panel"+(index===0?" is-active":"");
+          pane.id="ht-phone-panel-"+tab.id;pane.setAttribute("role","tabpanel");pane.setAttribute("aria-labelledby",button.id);
+          pane.hidden=index!==0;
+          const grid=document.createElement("div");grid.className="ht-phone-dashboard-content-grid";
+          tab.items.filter(Boolean).forEach(item=>grid.append(item));
+          pane.append(grid);
+          button.addEventListener("click",()=>{
+            nav.querySelectorAll('[role="tab"]').forEach(el=>{const active=el===button;el.classList.toggle("is-active",active);el.setAttribute("aria-selected",active?"true":"false");el.tabIndex=active?0:-1;});
+            content.querySelectorAll('[role="tabpanel"]').forEach(el=>{const active=el===pane;el.hidden=!active;el.classList.toggle("is-active",active);});
+          });
+          button.addEventListener("keydown",event=>{
+            if(!["ArrowLeft","ArrowRight","Home","End"].includes(event.key))return;
+            event.preventDefault();
+            const buttons=[...nav.querySelectorAll('[role="tab"]')],current=buttons.indexOf(button);
+            const next=event.key==="Home"?0:event.key==="End"?buttons.length-1:(current+(event.key==="ArrowRight"?1:-1)+buttons.length)%buttons.length;
+            buttons[next]?.focus();buttons[next]?.click();
+          });
+          nav.append(button);content.append(pane);
+        });
+        panel.insertBefore(nav,panel.querySelector(".ht-phone-detail-actions"));
+        panel.insertBefore(content,panel.querySelector(".ht-phone-detail-actions"));
+      }
+    }
     // Turn the phone-order information cards into compact native accordions.
     // Native <details>/<summary> preserves keyboard access and all existing form actions.
     if(isPhoneOnlyOrder){
-      const accordionCards=Array.from(modal.querySelectorAll(".ht-phone-detail-card"))
+      const accordionCards=Array.from(modal.querySelectorAll(".ht-phone-dashboard-tab-panel .ht-phone-detail-card"))
         .filter(card=>card.querySelector(":scope > .ht-phone-detail-card-head"));
       accordionCards.forEach((card,index)=>{
         const heading=card.querySelector(":scope > .ht-phone-detail-card-head");
