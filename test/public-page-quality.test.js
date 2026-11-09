@@ -233,5 +233,5 @@ test("admin document head does not contain excessive blank-line blocks", () => {
   const html = fs.readFileSync(path.join(root, "admin/index.html"), "utf8");
   const head = html.split("</head>")[0];
   assert.doesNotMatch(head, /\\n[ \\t]*\\n[ \\t]*\\n[ \\t]*\\n/);
-  assert.match(head, /assets\\/homs-admin\\.css/);
+  assert.ok(head.includes("assets/homs-admin.css"));
 });
