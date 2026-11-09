@@ -1,6 +1,6 @@
 "use strict";
 
-function registerAdminCustomerRoutes(app, { pool, requirePermission, hashPassword }) {
+function registerAdminCustomerRoutes(app, { pool, requirePermission, hashPassword, sendWelcomeEmail }) {
 // Admin - get registered customers
 app.get("/api/admin/customers", requirePermission("customers.view"), async (req, res) => {
   try {
@@ -46,7 +46,11 @@ app.post("/api/admin/customers", requirePermission("customers.update"), async (r
       RETURNING id, name, email, phone, address, created_at`,
       [name,email,phone,address,passwordHash]
     );
-    sendWelcomeEmail(result.rows[0]).catch(e=>console.error("Admin-created customer welcome email failed:",e.message));
+    if (typeof sendWelcomeEmail === "function") {
+      Promise.resolve()
+        .then(() => sendWelcomeEmail(result.rows[0]))
+        .catch(error => console.error("Admin-created customer welcome email failed:", error.message));
+    }
     res.status(201).json({success:true,customer:result.rows[0]});
   } catch(e) {
     if(e.code==="23505") return res.status(409).json({error:"Er bestaat al een account met dit e-mailadres."});
