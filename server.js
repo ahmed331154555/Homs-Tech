@@ -484,6 +484,7 @@ registerPaymentRoutes(app, {
 registerAdminWebshopOrderRoutes(app, {
   pool,
   requirePermission,
+  mollieRequest,
   deductPaidOrderInventory,
   ensureBuybackOrdersTable,
   fetchImpl: fetch,
