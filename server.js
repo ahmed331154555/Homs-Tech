@@ -739,7 +739,7 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
   }
 });
 
-registerAdminCustomerRoutes(app, { pool, requirePermission, hashPassword });
+registerAdminCustomerRoutes(app, { pool, requirePermission, hashPassword, sendWelcomeEmail });
 
 // Admin page — always serve the latest editor UI, never a cached copy.
 app.get("/admin", (req, res) => {
