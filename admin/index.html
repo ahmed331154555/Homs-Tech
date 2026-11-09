@@ -8897,6 +8897,8 @@ async function loadBuybackOrders(){
   if(!list)return;
   list.innerHTML='<div style="padding:25px;text-align:center">Laden...</div>';
   if(detail){detail.hidden=true;detail.innerHTML="";}
+  document.body.style.overflow=document.body.dataset.htPreviousOverflow||"";
+  delete document.body.dataset.htPreviousOverflow;
   selectedBuybackOrderId=null;
   try{
     const response=await fetch("/api/admin/buyback-orders",{credentials:"same-origin",headers:{"Accept":"application/json"}});
@@ -9069,6 +9071,7 @@ function openLinkedBuybackOrder(buybackId){
 function openLinkedTradeInOrder(orderId){
   const id=Number(orderId);
   if(!Number.isInteger(id)||id<1){alert("De gekoppelde telefoonbestelling kon niet worden gevonden.");return;}
+  closeBuybackDetails();
   showUnifiedOrderSection("phone-orders",false);
   showWebshopOrderDetails(id);
 }
@@ -9079,6 +9082,10 @@ function closeBuybackDetails(){
   delete document.body.dataset.htPreviousOverflow;
   selectedBuybackOrderId=null;
 }
+document.addEventListener("keydown",function(event){
+  if(event.key==="Escape"&&selectedBuybackOrderId!==null)closeBuybackDetails();
+});
+
 async function refreshBuybackOrderDetails(id){
   await loadBuybackOrders();
   showBuybackDetails(id);
