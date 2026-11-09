@@ -99,8 +99,8 @@ test("shipping metadata is blocked until every phone inspection check is complet
   const routes = harness({
     async query(sql) {
       calls.push(sql);
-      if (sql.includes("SELECT checks FROM webshop_order_inspections")) {
-        return { rows: [{ checks: { screen_touch: true, battery: true } }] };
+      if (sql.includes("LEFT JOIN webshop_order_inspections")) {
+        return { rows: [{ items:[{type:"phone",name:"iPhone"}], checks: { screen_touch: true, battery: true } }] };
       }
       throw new Error("Shipping must not be saved before inspection");
     }
@@ -121,7 +121,7 @@ test("order cannot be marked shipped or completed before inspection is complete"
   const routes = harness({
     async query(sql) {
       if (sql.includes("SELECT checks FROM webshop_order_inspections")) {
-        return { rows: [{ checks: {} }] };
+        return { rows: [{ items:[{type:"phone",name:"iPhone"}], trade_in_order_id:null, trade_in_status:null, checks: {} }] };
       }
       throw new Error("Status update must not run before inspection");
     }
