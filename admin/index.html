@@ -1900,7 +1900,7 @@ textarea{
 #page-phone-orders .order-empty{padding:38px 18px;text-align:center;color:#64748b}
 
 /* Orders table */
-#page-phone-orders .ht-phone-sale-head,
+#page-phone-orders .ht-phone-sale-head{display:grid;grid-template-columns:42px minmax(135px,1.05fr) minmax(180px,1.35fr) minmax(90px,.72fr) minmax(112px,.95fr) minmax(100px,.78fr) 18px 112px;gap:9px;align-items:center}
 #page-phone-orders .ht-phone-sale-open{display:grid;grid-template-columns:42px minmax(135px,1.05fr) minmax(180px,1.35fr) minmax(90px,.72fr) minmax(112px,.95fr) minmax(100px,.78fr) 18px;gap:9px;align-items:center}
 #page-phone-orders .ht-phone-sale-head{position:sticky;top:0;z-index:2;min-height:43px;padding:10px 13px;border-radius:10px 10px 0 0;background:#edf2fa;color:#17243a;font-size:12px;font-weight:800;letter-spacing:0;text-transform:none}
 #page-phone-orders .ht-phone-sale-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;border-top:1px solid #edf1f6;background:#fff;transition:background .15s}
@@ -7534,7 +7534,7 @@ function renderWebshopOrderList(type){
   }).join("");
 
   if(phone){
-    box.innerHTML='<div class="ht-phone-sale-head" role="row"><span>#</span><span>Klant</span><span>Product</span><span>Totaal</span><span>Status</span><span>Datum</span><span aria-hidden="true"></span></div>'+rows;
+    box.innerHTML='<div class="ht-phone-sale-head" role="row"><span>#</span><span>Klant</span><span>Product</span><span>Totaal</span><span>Status</span><span>Datum</span><span aria-hidden="true"></span><span>Acties</span></div>'+rows;
   }else{
     box.innerHTML=rows;
   }
