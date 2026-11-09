@@ -61,3 +61,48 @@ test("account and payment pages are excluded from search indexing", () => {
 test("contact page has a canonical URL", () => {
   assert.match(readPage("contact.html"), /<link\b[^>]*rel=["']canonical["'][^>]*href=["']https:\/\/homs-tech\.nl\/contact\.html["']/i);
 });
+
+
+test("global navigation is grouped into clear customer journeys", () => {
+  const nav = fs.readFileSync(path.join(root, "assets/homs-global-nav.js"), "utf8");
+  for (const label of ["Start", "Winkel", "Service", "Account"]) assert.ok(nav.includes("label:'" + label + "'"), "missing navigation group " + label);
+  for (const page of ["contact.html", "devices.html", "shop.html", "repair.html", "prices.html", "uw-toestel-verkopen.html", "cart.html", "account.html"]) {
+    assert.ok(nav.includes("'" + page + "'"), "missing navigation destination " + page);
+  }
+});
+
+test("sitemap contains only existing, public canonical pages", () => {
+  const xml = fs.readFileSync(path.join(root, "sitemap.xml"), "utf8");
+  const urls = [...xml.matchAll(/<loc>https:\/\/homs-tech\.nl\/([^<]*)<\/loc>/g)].map(match => match[1]);
+  assert.ok(urls.includes("shop.html"));
+  assert.ok(urls.includes("contact.html"));
+  assert.ok(!urls.includes("used.html"), "removed page must not stay in sitemap");
+  assert.ok(!urls.includes("product.html"), "dynamic product template is not a standalone canonical page");
+  for (const url of urls) {
+    const page = url || "index.html";
+    assert.ok(fs.existsSync(path.join(root, page)), "sitemap points to missing page " + page);
+  }
+});
+
+test("robots.txt excludes admin, API and transactional response pages", () => {
+  const robots = fs.readFileSync(path.join(root, "robots.txt"), "utf8");
+  for (const route of ["/admin/", "/api/", "/checkout.html", "/cart.html", "/payment.html", "/buyback-response.html", "/trade-in-response.html"]) {
+    assert.ok(robots.includes("Disallow: " + route), "robots.txt should exclude " + route);
+  }
+  assert.match(robots, /Sitemap:\s+https:\/\/homs-tech\.nl\/sitemap\.xml/);
+});
+
+test("product metadata updates dynamically for the selected product", () => {
+  const html = readPage("product.html");
+  assert.match(html, /function updateProductMetadata\(product\)/);
+  assert.match(html, /productCanonical/);
+  assert.match(html, /canonical\.searchParams\.set\("id",String\(currentProductId\)\)/);
+  assert.match(html, /updateProductMetadata\(product\)/);
+});
+
+test("shop and product SEO head markup contains no escaped newline text", () => {
+  for (const page of ["shop.html", "product.html"]) {
+    const head = readPage(page).split("</head>")[0];
+    assert.ok(!head.includes("\\n<meta"), page + " contains a literal escaped newline in its head");
+  }
+});
