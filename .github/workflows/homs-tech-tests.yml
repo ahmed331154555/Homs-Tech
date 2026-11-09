@@ -1,4 +1,5 @@
 name: HOMS TECH tests
+# Professional cleanup branch: validate extracted admin CSS and JavaScript assets.
 
 on:
   push:
