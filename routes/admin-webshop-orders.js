@@ -663,7 +663,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
     }
   });
 
-  app.delete("/api/admin/webshop-orders/:id", requirePermission("webshop_orders.delete"), async (req, res) => {
+  app.delete("/api/admin/webshop-orders/:id", requirePermission("webshop_orders.delete", { allowSiteSave: true }), async (req, res) => {
     try {
       const id = Number(req.params.id);
       if (!Number.isInteger(id) || id < 1) {
