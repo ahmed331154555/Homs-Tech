@@ -8908,7 +8908,7 @@ async function showWebshopOrderDetails(id){
         const actions=document.createElement("section");
         actions.className="ht-phone-dashboard-card ht-phone-dashboard-actions";
         actions.innerHTML='<div class="ht-phone-dashboard-card-head"><span>⇄</span> Snelle acties</div><div class="ht-phone-dashboard-action-list"><button type="button" class="btn btn-light" data-phone-quick-action="label">♧ Verzendlabel (PostNL)</button><button type="button" class="btn btn-light" data-phone-quick-action="print">▤ Bestelling afdrukken</button></div>';
-        actions.querySelector('[data-phone-quick-action="label"]').addEventListener("click",()=>printWebshopShippingLabel(${Number(order.id)}));
+        actions.querySelector('[data-phone-quick-action="label"]').addEventListener("click",()=>printWebshopShippingLabel(Number(order.id)));
         actions.querySelector('[data-phone-quick-action="print"]').addEventListener("click",()=>window.print());
         if(product)top.append(product);
         top.append(statusCard,actions);
