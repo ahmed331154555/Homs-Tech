@@ -418,15 +418,35 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
         headers:{"Idempotency-Key":"homs-tech-order-refund-"+id+"-"+value},
         body:JSON.stringify({amount:{currency:"EUR",value},description:"HOMS TECH bestelling #"+id+" terugbetaling"})
       });
+      const providerStatus=String(result.status||"queued").toLowerCase();
+      const refundStatus=providerStatus==="refunded"?"Processed":"Processing";
       const saved=await pool.query(
-        "UPDATE webshop_order_refunds SET status='Processed',provider_refund_id=$1,processed_at=NOW() WHERE id=$2 RETURNING id,amount,currency,method,status,reason,provider_refund_id,created_at,processed_at",
-        [String(result.id||""),refund.id]
+        "UPDATE webshop_order_refunds SET status=$1,provider_refund_id=$2,processed_at=CASE WHEN $1='Processed' THEN NOW() ELSE NULL END WHERE id=$3 RETURNING id,amount,currency,method,status,reason,provider_refund_id,created_at,processed_at",
+        [refundStatus,String(result.id||""),refund.id]
       );
-      return res.status(201).json({success:true,refund:saved.rows[0],message:"Mollie-terugbetaling is door Mollie geaccepteerd."});
+      return res.status(201).json({success:true,refund:saved.rows[0],message:refundStatus==="Processed"?"Mollie bevestigde de terugbetaling.":"Mollie heeft de terugbetaling ontvangen en verwerkt deze verder."});
     }catch(error){
       await pool.query("UPDATE webshop_order_refunds SET status='Failed' WHERE id=$1",[refund.id]).catch(()=>{});
       console.error("Mollie refund failed:",error.statusCode||error.message);
       return res.status(502).json({error:"Mollie kon de terugbetaling niet uitvoeren. De aanvraag staat op mislukt; controleer Mollie voordat je opnieuw probeert."});
+    }
+  });
+
+  app.put("/api/admin/webshop-orders/:id/refund/:refundId/complete", requirePermission("webshop_orders.update"), async (req,res) => {
+    const orderId=Number(req.params.id), refundId=Number(req.params.refundId);
+    const reference=String(req.body?.reference||"").trim().slice(0,160);
+    if(!Number.isInteger(orderId)||orderId<1||!Number.isInteger(refundId)||refundId<1)return res.status(400).json({error:"Ongeldig order- of terugbetalingsnummer."});
+    if(!reference)return res.status(400).json({error:"Vul een bankreferentie of interne bevestiging in."});
+    try{
+      const result=await pool.query(
+        "UPDATE webshop_order_refunds SET status='Processed',provider_refund_id=$1,processed_at=NOW() WHERE id=$2 AND order_id=$3 AND method='Manual' AND status='Pending manual' RETURNING id,amount,currency,method,status,reason,provider_refund_id,created_at,processed_at",
+        [reference,refundId,orderId]
+      );
+      if(!result.rows.length)return res.status(409).json({error:"Deze handmatige terugbetaling bestaat niet meer of is al verwerkt."});
+      return res.json({success:true,refund:result.rows[0]});
+    }catch(error){
+      console.error("Complete manual webshop refund error:",error);
+      return res.status(500).json({error:"Handmatige terugbetaling kon niet worden bevestigd."});
     }
   });
 
