@@ -6,6 +6,7 @@ on:
       - HomsTech-Clean
       - feature/phone-orders-split-detail
       - chore/homs-tech-code-cleanup
+      - work/homs-tech-code-cleanup-professional
   pull_request:
     branches:
       - HomsTech-Clean
