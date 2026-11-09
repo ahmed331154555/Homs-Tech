@@ -79,3 +79,9 @@ test("admin customer create and update routes use shared input validation", () =
   const routes = read("routes/admin-customers.js");
   assert.equal((routes.match(/validateAdminCustomerInput\(req\.body/g) || []).length, 2);
 });
+
+
+test("admin password reset rejects excessively long passwords", () => {
+  const routes = read("routes/admin-customers.js");
+  assert.match(routes, /password\.length>256/);
+});
