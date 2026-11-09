@@ -22,15 +22,20 @@ function cssBraceBalance(css) {
   return depth;
 }
 
-test("shop inline stylesheets have balanced CSS blocks", () => {
-  const html = readPage("shop.html");
-  const blocks = [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)];
-  assert.ok(blocks.length > 0, "shop should contain its page styles");
-  for (let index = 0; index < blocks.length; index += 1) {
-    assert.equal(cssBraceBalance(blocks[index][1]), 0, "shop style block " + (index + 1) + " has unbalanced braces");
+test("all public page inline stylesheets have balanced CSS blocks", () => {
+  const pages = fs.readdirSync(root).filter(name => name.endsWith(".html"));
+  assert.ok(pages.length >= 10, "expected the public HTML pages to be present");
+  let checkedBlocks = 0;
+  for (const page of pages) {
+    const html = readPage(page);
+    const blocks = [...html.matchAll(/<style\\b[^>]*>([\\s\\S]*?)<\\/style>/gi)];
+    for (let index = 0; index < blocks.length; index += 1) {
+      checkedBlocks += 1;
+      assert.equal(cssBraceBalance(blocks[index][1]), 0, page + " style block " + (index + 1) + " has unbalanced braces");
+    }
   }
+  assert.ok(checkedBlocks > 0, "expected inline CSS blocks to be checked");
 });
-
 test("shop uses the shared HOMS TECH theme and a canonical URL", () => {
   const html = readPage("shop.html");
   assert.match(html, /assets\/homs-tech-modern-true-theme\.css/);
