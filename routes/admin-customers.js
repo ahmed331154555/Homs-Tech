@@ -1,5 +1,7 @@
 "use strict";
 
+const { validateAdminCustomerInput } = require("../utils/customer-validation");
+
 function registerAdminCustomerRoutes(app, { pool, requirePermission, hashPassword, sendWelcomeEmail }) {
 // Admin - get registered customers
 app.get("/api/admin/customers", requirePermission("customers.view"), async (req, res) => {
@@ -31,13 +33,10 @@ app.get("/api/admin/customers", requirePermission("customers.view"), async (req,
 // Admin customer management (protected by customer-management permission)
 app.post("/api/admin/customers", requirePermission("customers.update"), async (req, res) => {
   try {
-    const name=String(req.body?.name||"").trim();
-    const email=String(req.body?.email||"").trim().toLowerCase();
-    const phone=String(req.body?.phone||"").trim();
-    const address=String(req.body?.address||"").trim();
-    const password=String(req.body?.password||"");
-    if(!name||!email||password.length<8) return res.status(400).json({error:"Vul naam, e-mail en een wachtwoord van minimaal 8 tekens in."});
-    const passwordHash=await hashPassword(password);
+    const validation = validateAdminCustomerInput(req.body, { requirePassword: true });
+    if (validation.error) return res.status(400).json({ error: validation.error });
+    const { name, email, phone, address, password } = validation.customer;
+    const passwordHash = await hashPassword(password);
     const result=await pool.query(
       `INSERT INTO customers (
         name, email, phone, address, password_hash, email_verified,
@@ -62,11 +61,10 @@ app.post("/api/admin/customers", requirePermission("customers.update"), async (r
 app.put("/api/admin/customers/:id", requirePermission("customers.update"), async (req,res)=>{
   try {
     const id=Number(req.params.id);
-    const name=String(req.body?.name||"").trim();
-    const email=String(req.body?.email||"").trim().toLowerCase();
-    const phone=String(req.body?.phone||"").trim();
-    const address=String(req.body?.address||"").trim();
-    if(!Number.isInteger(id)||id<1||!name||!email) return res.status(400).json({error:"Naam en e-mail zijn verplicht."});
+    const validation = validateAdminCustomerInput(req.body);
+    if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig klantnummer." });
+    if (validation.error) return res.status(400).json({ error: validation.error });
+    const { name, email, phone, address } = validation.customer;
     const result=await pool.query(
       "UPDATE customers SET name=$1,email=$2,phone=$3,address=$4 WHERE id=$5 RETURNING id,name,email,phone,address,created_at",
       [name,email,phone,address,id]
