@@ -1,5 +1,5 @@
 name: HOMS TECH tests
-# Professional cleanup branch: validate extracted admin assets and order-inspection safeguards.
+# Professional cleanup branch: validate extracted admin assets, visual layer and order-inspection safeguards.
 
 on:
   push:
