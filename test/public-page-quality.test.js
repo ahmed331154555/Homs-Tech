@@ -54,10 +54,10 @@ test("product page has a useful search description", () => {
 
 test("account and payment pages are excluded from search indexing", () => {
   for (const page of ["account.html", "payment.html"]) {
-    assert.match(readPage(page), /<meta\\b[^>]*name=["']robots["'][^>]*content=["']noindex,nofollow["']/i, page + " should not be indexed");
+    assert.match(readPage(page), /<meta\b[^>]*name=["']robots["'][^>]*content=["']noindex,nofollow["']/i, page + " should not be indexed");
   }
 });
 
 test("contact page has a canonical URL", () => {
-  assert.match(readPage("contact.html"), /<link\\b[^>]*rel=["']canonical["'][^>]*href=["']https:\\/\\/homs-tech\\.nl\\/contact\\.html["']/i);
+  assert.match(readPage("contact.html"), /<link\b[^>]*rel=["']canonical["'][^>]*href=["']https:\/\/homs-tech\.nl\/contact\.html["']/i);
 });
