@@ -5,11 +5,11 @@
  var active={
   'product.html':'devices.html','client-area.html':'account.html','checkout.html':'cart.html'
  }[current]||current;
- var links=[
-  ['⌂','Home','index.html'],['♙','Over ons','about.html'],['🛠','Reparaties','repair.html'],
-  ['📱','Apparaten','devices.html'],['🛍','Shop','shop.html'],['€','Prijzen','prices.html'],
-  ['♻','Uw toestel verkopen','uw-toestel-verkopen.html'],['🛒','Winkelwagen','cart.html'],
-  ['♙','Mijn account','account.html']
+ var linkGroups=[
+  {label:'Start',items:[['⌂','Home','index.html'],['♙','Over HOMS TECH','about.html'],['✉','Contact','contact.html']]},
+  {label:'Winkel',items:[['📱','Telefoons & apparaten','devices.html'],['🛍','Shop & accessoires','shop.html'],['🛒','Winkelwagen','cart.html']]},
+  {label:'Service',items:[['🛠','Reparatie aanvragen','repair.html'],['€','Reparatieprijzen','prices.html'],['♻','Uw toestel verkopen','uw-toestel-verkopen.html']]},
+  {label:'Account',items:[['♙','Mijn account','account.html']]}
  ];
  var style=document.createElement('style');
  style.textContent=`
@@ -22,7 +22,7 @@
  #homsMenuDrawer{position:fixed;inset:0 auto 0 0;width:min(88vw,370px);background:#fff;z-index:100004;transform:translateX(-105%);transition:transform .25s ease;overflow:auto;box-shadow:15px 0 40px #0002;font-family:Arial,Helvetica,sans-serif}
  #homsMenuDrawer.open{transform:translateX(0)}
  #homsMenuDrawer .homs-menu-head{height:70px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5eaf0;font-size:20px;font-weight:900;color:#071d2d}
- #homsMenuDrawer .homs-menu-head span{color:#19a86b}
+ #homsMenuDrawer .homs-menu-head span{color:#60a5fa}\n #homsMenuDrawer .homs-menu-group{padding:0 0 7px}\n #homsMenuDrawer .homs-menu-group+.homs-menu-group{border-top:1px solid #edf1f5}\n #homsMenuDrawer .homs-menu-label{padding-top:15px;padding-bottom:7px}
  #homsMenuDrawer .homs-menu-close{border:0;background:transparent;font-size:30px;color:#334155;cursor:pointer}
  #homsMenuDrawer .homs-menu-label{padding:18px 20px 8px;color:#87939e;font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
  #homsMenuDrawer a{min-height:54px;padding:0 20px;display:flex;align-items:center;gap:13px;border-bottom:1px solid #edf0f3;color:#263747;text-decoration:none;font-size:15px;font-weight:700}
@@ -89,8 +89,16 @@
  var drawer=document.createElement('aside');drawer.id='homsMenuDrawer';drawer.setAttribute('role','dialog');drawer.setAttribute('aria-modal','true');drawer.setAttribute('aria-label','Hoofdnavigatie');drawer.setAttribute('aria-hidden','true');
  var head=document.createElement('div');head.className='homs-menu-head';head.innerHTML='HOMS <span>TECH</span>';
  var close=document.createElement('button');close.className='homs-menu-close';close.type='button';close.setAttribute('aria-label','Menu sluiten');close.textContent='×';head.appendChild(close);drawer.appendChild(head);
- var label=document.createElement('div');label.className='homs-menu-label';label.textContent='Alle afdelingen';drawer.appendChild(label);
- links.forEach(function(item){var a=document.createElement('a');a.href=item[2];if(item[2]===active){a.className='active';a.setAttribute('aria-current','page')}var icon=document.createElement('span');icon.className='homs-menu-icon';icon.textContent=item[0];var title=document.createElement('span');title.textContent=item[1];a.appendChild(icon);a.appendChild(title);drawer.appendChild(a)});
+ linkGroups.forEach(function(group){
+  var section=document.createElement('section');section.className='homs-menu-group';section.setAttribute('aria-label',group.label);
+  var label=document.createElement('div');label.className='homs-menu-label';label.textContent=group.label;section.appendChild(label);
+  group.items.forEach(function(item){
+   var a=document.createElement('a');a.href=item[2];if(item[2]===active){a.className='active';a.setAttribute('aria-current','page')}
+   var icon=document.createElement('span');icon.className='homs-menu-icon';icon.textContent=item[0];
+   var title=document.createElement('span');title.textContent=item[1];a.appendChild(icon);a.appendChild(title);section.appendChild(a);
+  });
+  drawer.appendChild(section);
+ });
  // Hide the Shop navigation entry whenever the admin has temporarily disabled the page.
  fetch('/api/shop/status',{cache:'no-store'}).then(function(response){
   if(!response.ok)throw new Error('Shop status unavailable');
