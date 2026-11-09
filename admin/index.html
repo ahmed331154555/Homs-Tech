@@ -7965,8 +7965,66 @@ async function loadWebshopOrders(){
   }
 }
 
+async function openWebshopRefundDialog(id,sourceSelect){
+  const order=(adminWebshopOrdersCache||[]).find(item=>Number(item.id)===Number(id));
+  if(!order){alert("Bestelling niet gevonden. Vernieuw de bestellingen en probeer opnieuw.");return;}
+  const refunds=Array.isArray(order.refunds)?order.refunds:[];
+  const alreadyReserved=refunds.filter(item=>["Processing","Pending manual","Processed"].includes(item.status)).reduce((sum,item)=>sum+Number(item.amount||0),0);
+  const remaining=Math.max(0,Number(order.total||0)-alreadyReserved);
+  if(remaining<=0.009){alert("Er is geen terug te betalen bedrag meer beschikbaar.");return;}
+  const canMollie=String(order.payment_method||"")==="Mollie"&&!!order.mollie_payment_id;
+  const overlay=document.createElement("div");
+  overlay.className="ht-refund-overlay";
+  overlay.style.cssText="position:fixed;inset:0;z-index:10080;background:rgba(8,20,36,.68);display:flex;align-items:center;justify-content:center;padding:18px";
+  overlay.innerHTML='<section role="dialog" aria-modal="true" aria-labelledby="htRefundTitle" style="width:min(100%,520px);background:#fff;border-radius:18px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.25);color:#172033">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2 id="htRefundTitle" style="margin:0;font-size:20px">Bestelling #'+Number(order.id)+' annuleren</h2><button type="button" data-refund-close aria-label="Sluiten" style="border:0;background:#f1f5f9;border-radius:9px;padding:8px 11px;cursor:pointer">✕</button></div>'+
+    '<p style="color:#64748b;font-size:13px;line-height:1.5">Deze bestelling is betaald. Registreer eerst het bedrag dat aan de klant wordt terugbetaald. Een handmatige terugbetaling moet daarna buiten HOMS TECH worden uitgevoerd.</p>'+
+    '<label style="display:block;font-size:13px;font-weight:700;margin:14px 0 6px">Terug te betalen bedrag (€)</label><input id="htRefundAmount" type="number" min="0.01" max="'+remaining.toFixed(2)+'" step="0.01" value="'+remaining.toFixed(2)+'" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;font:inherit">'+
+    '<label style="display:block;font-size:13px;font-weight:700;margin:14px 0 6px">Terugbetaalmethode</label><select id="htRefundMethod" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;font:inherit">'+
+    (canMollie?'<option value="Mollie">Automatisch via Mollie</option>':'')+'<option value="Manual" '+(!canMollie?'selected':'')+'>Handmatig (bankoverschrijving / buiten betaalprovider)</option></select>'+
+    '<label style="display:block;font-size:13px;font-weight:700;margin:14px 0 6px">Reden van annulering</label><textarea id="htRefundReason" rows="3" maxlength="500" placeholder="Bijvoorbeeld: klant heeft de bestelling geannuleerd..." style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;font:inherit;resize:vertical"></textarea>'+
+    '<div id="htRefundFeedback" style="min-height:20px;margin-top:10px;font-size:13px;color:#b45309"></div>'+
+    '<div style="display:flex;justify-content:flex-end;gap:9px;margin-top:12px;flex-wrap:wrap"><button type="button" data-refund-close class="btn btn-light">Terug</button><button type="button" id="htRefundConfirm" class="btn btn-primary">Terugbetaling registreren en annuleren</button></div></section>';
+  document.body.appendChild(overlay);
+  const close=()=>overlay.remove();
+  overlay.querySelectorAll("[data-refund-close]").forEach(button=>button.addEventListener("click",close));
+  overlay.addEventListener("click",event=>{if(event.target===overlay)close();});
+  overlay.querySelector("#htRefundConfirm").addEventListener("click",async()=>{
+    const button=overlay.querySelector("#htRefundConfirm");
+    const feedback=overlay.querySelector("#htRefundFeedback");
+    const amount=Number(overlay.querySelector("#htRefundAmount").value);
+    const method=overlay.querySelector("#htRefundMethod").value;
+    const reason=overlay.querySelector("#htRefundReason").value.trim();
+    if(!Number.isFinite(amount)||amount<=0||amount>remaining+0.009){feedback.textContent="Vul een bedrag in tot maximaal € "+remaining.toFixed(2)+".";return;}
+    if(!reason){feedback.textContent="Vul de reden van annulering in.";return;}
+    button.disabled=true;button.textContent="Bezig met verwerken...";feedback.textContent="";
+    try{
+      const refundResponse=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/refund",{
+        method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body:JSON.stringify({amount,method,reason})
+      });
+      const refundResult=await refundResponse.json().catch(()=>({}));
+      if(!refundResponse.ok)throw new Error(refundResult.error||"Terugbetaling kon niet worden geregistreerd.");
+      const statusResponse=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/status",{
+        method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body:JSON.stringify({status:"Geannuleerd"})
+      });
+      const statusResult=await statusResponse.json().catch(()=>({}));
+      if(!statusResponse.ok)throw new Error(statusResult.error||"Terugbetaling geregistreerd, maar annuleren is niet gelukt. Controleer de bestelling.");
+      close();
+      await loadWebshopOrders();
+      await showWebshopOrderDetails(id);
+      alert(method==="Mollie"?"Mollie heeft de terugbetaling geaccepteerd en de bestelling is geannuleerd.":"De bestelling is geannuleerd. De terugbetaling staat op 'handmatig uit te voeren'; maak het bedrag buiten HOMS TECH over en bevestig dit daarna.");
+    }catch(error){feedback.textContent=error.message;button.disabled=false;button.textContent="Opnieuw proberen";}
+  });
+}
 async function updateWebshopOrderStatus(id,statusValue,sourceSelect){
   if(!hasPermission("webshop_orders.update"))return;
+  const selectedOrder=(adminWebshopOrdersCache||[]).find(item=>Number(item.id)===Number(id));
+  if(statusValue==="Geannuleerd"&&String(selectedOrder?.payment_status||"") === "Paid"){
+    if(sourceSelect)sourceSelect.value=sourceSelect.dataset.savedStatus||selectedOrder.status||"In behandeling";
+    return openWebshopRefundDialog(id,sourceSelect);
+  }
   const selects=[...document.querySelectorAll(".order-status-select")];
   const select=sourceSelect||selects.find(el=>el.dataset.webshopOrderId===String(id));
   if(select){select.disabled=true; select.classList.add("is-saving");}
@@ -8771,253 +8829,47 @@ async function printWebshopShippingLabel(id){
   const postcodeCity=[order.postcode,order.city].filter(Boolean).join(" ").trim();
   if(!recipientName||!addressLine||!postcodeCity){alert("Het adres van de klant is niet volledig. Vul naam, straat/huisnummer, postcode en plaats in voordat je het label afdrukt.");return;}
   const tracking=String(order.tracking_number||"").trim();
-  const carrier=["PostNL","DHL"].includes(order.shipping_method)?order.shipping_method:"";
-  const w=window.open("","_blank","width=900,height=700");
+  const carrier=["PostNL","DHL"].includes(order.shipping_method)?order.shipping_method:"Nog niet gekozen";
+  const trackingUrl=String(order.tracking_url||"").trim();
+  const w=window.open("","_blank","width=900,height=800");
   if(!w){alert("Sta pop-ups toe om het verzendlabel te kunnen afdrukken.");return;}
   w.document.open();
-  w.document.write(`<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verzendlabel bestelling #${Number(order.id)}</title><style>
-    @page{size:100mm 150mm;margin:5mm}
-    *{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:0}
-    .label{width:90mm;min-height:140mm;border:1.5px solid #111;padding:5mm;display:flex;flex-direction:column;gap:5mm}
-    .brand{font-size:19pt;font-weight:800;letter-spacing:.5px;color:#145da0}
-    .sub{font-size:8pt;color:#555;margin-top:1mm}
-    .rule{border:0;border-top:1px solid #333;margin:0}
-    .caption{font-size:8pt;text-transform:uppercase;letter-spacing:.7px;color:#555;margin-bottom:2mm}
-    .recipient{font-size:16pt;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
-    .address{font-size:13pt;line-height:1.4;overflow-wrap:anywhere}
-    .meta{font-size:9pt;line-height:1.5;overflow-wrap:anywhere}
-    .tracking{font-size:11pt;font-weight:700;overflow-wrap:anywhere}
-    .spacer{flex:1}.foot{font-size:7.5pt;color:#555}
-    @media screen{body{padding:10px;background:#eee}.label{background:white;margin:auto;box-shadow:0 2px 10px #bbb}}
-    @media print{body{padding:0}.label{box-shadow:none}}
-
-</style></head><body><main class="label">
-    <header><div class="brand">HOMS TECH</div><div class="sub">Verzendlabel · bestelling #${Number(order.id)}</div></header>
-    <hr class="rule">
-    <section><div class="caption">Verzenden naar</div><div class="recipient">${escLabel(recipientName)}</div><div class="address">${escLabel(addressLine)}<br>${escLabel(postcodeCity)}<br>Nederland</div>${order.phone?'<div class="meta">Tel: '+escLabel(order.phone)+'</div>':''}</section>
-    <hr class="rule">
-    <section><div class="caption">Verzendgegevens</div><div class="meta">Vervoerder: <strong>${escLabel(carrier||"Zelf te kiezen bij verzending")}</strong></div><div class="meta">Ordernummer: <strong>#${Number(order.id)}</strong></div>${tracking?'<div class="meta">Trackingnummer</div><div class="tracking">'+escLabel(tracking)+'</div>':''}</section>
-    <div class="spacer"></div><hr class="rule"><footer class="foot">Adreslabel van HOMS TECH. Dit is geen officieel betaald PostNL- of DHL-verzendlabel en bevat geen door de vervoerder aangemaakt verzendbewijs of barcode.</footer>
-  </main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),300));<\/script>
-
-
-
-
-<style id="homs-phone-order-detail-readable-v2">
-/* Reference-inspired, readable full-screen phone order detail. */
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail{
-  position:fixed!important;inset:0!important;z-index:10020!important;
-  display:flex!important;align-items:stretch!important;justify-content:center!important;
-  width:100vw!important;height:100dvh!important;max-height:100dvh!important;
-  overflow:hidden!important;padding:0!important;margin:0!important;
-  background:rgba(8,20,36,.72)!important;backdrop-filter:blur(3px);
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .phone-order-detail-panel{
-  width:100%!important;max-width:100%!important;height:100%!important;max-height:100%!important;
-  min-height:0!important;margin:0!important;padding:14px 16px 20px!important;
-  overflow-y:auto!important;overscroll-behavior:contain!important;
-  border-radius:0!important;background:#f4f7fb!important;box-shadow:none!important;
-  font-size:14px!important;line-height:1.45!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-order-detail-top{
-  position:sticky!important;top:-14px!important;z-index:5!important;
-  display:flex!important;align-items:center!important;gap:12px!important;
-  margin:-14px -16px 14px!important;padding:14px 16px!important;
-  min-height:72px!important;border-radius:0 0 14px 14px!important;
-  background:#10233d!important;color:#fff!important;
-  box-shadow:0 4px 14px rgba(15,35,61,.16)!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-order-detail-top h2{font-size:23px!important;line-height:1.2!important;margin:3px 0!important}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-order-detail-top p{font-size:13px!important;color:#d9e5f2!important}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-order-eyebrow{font-size:10px!important;letter-spacing:.1em!important;color:#b9d2f5!important}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-head-status{font-size:13px!important;padding:8px 12px!important}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-close{margin-left:auto!important;min-width:40px!important;min-height:40px!important;padding:8px!important}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-grid{
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;margin-bottom:12px!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-grid.equal{
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-card{
-  border:1px solid #dfe7f1!important;border-radius:14px!important;
-  box-shadow:0 2px 9px rgba(15,35,61,.055)!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-card-head{
-  gap:10px!important;padding:12px 14px!important;min-height:47px!important;
-  font-size:14px!important;line-height:1.3!important;background:#edf2fa!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-card-head .icon{
-  width:28px!important;height:28px!important;flex:0 0 28px!important;font-size:15px!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-card-body{padding:14px!important}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-feature{
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:14px!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-visual{
-  grid-template-columns:48px minmax(0,1fr)!important;gap:8px!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-thumbs button{
-  width:46px!important;height:50px!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-main-image{
-  height:210px!important;min-width:0!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-title{
-  font-size:20px!important;line-height:1.25!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-tags{gap:7px!important;margin:10px 0!important}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-tags span{
-  font-size:12px!important;padding:6px 9px!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-qty{font-size:13px!important}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-price{font-size:26px!important}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-info-list{gap:12px!important}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-info-line{
-  grid-template-columns:minmax(95px,.85fr) minmax(0,1.15fr)!important;gap:9px!important;
-  font-size:13px!important;line-height:1.45!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-info-line>span{color:#64748b!important}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-info-line>strong{
-  font-size:13px!important;color:#172b40!important;overflow-wrap:anywhere!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-pill{
-  font-size:12px!important;padding:6px 9px!important;white-space:normal!important;text-align:center!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-address{
-  font-size:14px!important;line-height:1.7!important;color:#172b40!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-summary-line{
-  font-size:13px!important;line-height:1.45!important;padding:9px 0!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-summary-total{
-  font-size:16px!important;padding-top:12px!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-summary-total strong{font-size:22px!important}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-field{
-  font-size:12px!important;gap:7px!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-field input,
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-field select{
-  min-height:43px!important;font-size:13px!important;padding:9px 11px!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-actions{
-  display:flex!important;flex-wrap:wrap!important;gap:9px!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-actions .btn{
-  min-height:42px!important;font-size:13px!important;padding:9px 13px!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline{padding:14px 16px!important}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline-row{
-  grid-template-columns:30px minmax(0,1fr) auto!important;gap:11px!important;min-height:58px!important;padding-bottom:13px!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline-dot{
-  width:28px!important;height:28px!important;font-size:13px!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline-row:not(:last-child):before{
-  left:13px!important;top:28px!important;
-}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline-copy strong{font-size:14px!important}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline-copy small,
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline-date{font-size:12px!important;line-height:1.4!important}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-note-entry{padding:11px 12px!important}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-note-entry p{font-size:13px!important;line-height:1.5!important}
-.ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-note-meta{font-size:11px!important}
-@media(max-width:560px){
-  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .phone-order-detail-panel{padding:11px 12px 18px!important}
-  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-order-detail-top{margin:-11px -12px 11px!important;padding:12px!important}
-  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-grid,
-  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-grid.equal{grid-template-columns:minmax(0,1fr)!important}
-  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-feature{grid-template-columns:minmax(0,1fr)!important}
-  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-main-image{height:220px!important}
-  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-product-visual{grid-template-columns:48px minmax(0,1fr)!important}
-  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-info-line{grid-template-columns:minmax(100px,.8fr) minmax(0,1.2fr)!important}
-  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline-row{grid-template-columns:30px minmax(0,1fr)!important}
-  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-timeline-date{grid-column:2!important}
-}
-@media print{
-  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail{position:static!important;display:block!important;width:auto!important;height:auto!important;background:#fff!important;overflow:visible!important}
-  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .phone-order-detail-panel{width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important;padding:0!important}
-  .ht-order-detail-overlay.phone-order-detail-overlay.ht-phone-mobile-detail .ht-phone-detail-close{display:none!important}
-}
-</style>
-
-
-<style id="homs-phone-order-detail-layout-v3">
-.phone-order-detail-overlay{position:fixed!important;inset:0!important;z-index:10020!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:24px!important;background:rgba(8,20,36,.68)!important}
-.phone-order-detail-overlay .phone-order-detail-panel{width:min(1120px,96vw)!important;height:min(92vh,980px)!important;max-height:92vh!important;margin:0 auto!important;padding:20px!important;overflow:auto!important;border:1px solid #dce5ef!important;border-radius:18px!important;background:#f4f7fb!important;box-shadow:0 24px 80px rgba(5,18,35,.28)!important}
-/* On wide screens keep the selected order beside the list instead of covering it. */
-.phone-order-detail-overlay.ht-phone-inline-detail{position:relative!important;inset:auto!important;display:block!important;width:100%!important;height:auto!important;max-height:none!important;padding:0!important;background:transparent!important;backdrop-filter:none!important}
-.phone-order-detail-overlay.ht-phone-inline-detail .phone-order-detail-panel{width:100%!important;height:auto!important;max-height:none!important;min-height:100%!important;margin:0!important;padding:16px!important;border-radius:14px!important;box-shadow:0 3px 12px rgba(15,35,61,.055)!important}
-.phone-order-detail-overlay.ht-phone-inline-detail .ht-order-detail-top{top:-16px!important;margin:-16px -16px 14px!important;padding:14px 16px!important}
-.phone-order-detail-overlay .ht-order-detail-top{position:sticky!important;top:-20px!important;z-index:8!important;margin:-20px -20px 16px!important;padding:16px 20px!important;border-radius:17px 17px 12px 12px!important;background:#10233d!important;color:#fff!important}
-.phone-order-detail-overlay .ht-phone-detail-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important;margin-bottom:14px!important;align-items:stretch!important}
-.phone-order-detail-overlay .ht-phone-detail-grid.equal{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-.phone-order-detail-overlay .ht-phone-detail-card{min-width:0!important;height:100%;border:1px solid #dfe7f1!important;border-radius:14px!important;background:#fff!important;overflow:hidden!important;box-shadow:0 3px 12px rgba(15,35,61,.055)!important}
-.phone-order-detail-overlay .ht-phone-detail-card-head{min-height:48px;padding:12px 15px!important;background:#edf2fa!important;border-bottom:1px solid #e4eaf2!important;font-size:14px!important;font-weight:850!important}
-.phone-order-detail-overlay .ht-phone-detail-card-body{padding:15px!important}
-.phone-order-detail-overlay .ht-phone-product-feature{display:grid!important;grid-template-columns:minmax(0,1.15fr) minmax(180px,.85fr)!important;gap:18px!important;align-items:center!important}
-.phone-order-detail-overlay .ht-phone-product-visual{display:grid!important;grid-template-columns:58px minmax(0,1fr)!important;gap:10px!important;min-width:0!important;align-items:start!important}
-.phone-order-detail-overlay .ht-phone-product-thumbs{display:grid!important;gap:8px!important}
-.phone-order-detail-overlay .ht-phone-product-thumbs button{width:56px!important;height:58px!important;border:1px solid #dfe7f0!important;border-radius:9px!important;background:#fff!important}
-.phone-order-detail-overlay .ht-phone-product-thumbs img,.phone-order-detail-overlay .ht-phone-product-main-image{width:100%!important;height:100%!important;object-fit:contain!important}
-.phone-order-detail-overlay .ht-phone-product-main-image{min-height:240px!important;height:270px!important;padding:8px!important;border:1px solid #edf1f6!important;border-radius:12px!important;background:#fff!important}
-.phone-order-detail-overlay .ht-phone-product-title{font-size:23px!important;font-weight:900!important;color:#10233d!important}
-.phone-order-detail-overlay .ht-phone-product-tags span{font-size:13px!important;padding:7px 10px!important}
-.phone-order-detail-overlay .ht-phone-product-price{font-size:28px!important}
-.phone-order-detail-overlay .ht-phone-info-line{display:grid!important;grid-template-columns:minmax(120px,.85fr) minmax(0,1.15fr)!important;gap:12px!important;align-items:start!important;font-size:13px!important;line-height:1.5!important}
-.phone-order-detail-overlay .ht-phone-info-line>strong{text-align:right!important;overflow-wrap:anywhere!important}
-.phone-order-detail-overlay .ht-phone-address-card{display:grid!important;gap:14px!important}
-.phone-order-detail-overlay .ht-phone-address-recipient{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid #e4ebf4;border-radius:11px;background:#f8fafc}
-.phone-order-detail-overlay .ht-phone-address-symbol{display:grid;place-items:center;width:38px;height:38px;flex:none;border-radius:10px;background:#eaf1fc;color:#1d4ed8;font-size:19px}
-.phone-order-detail-overlay .ht-phone-address-recipient div,.phone-order-detail-overlay .ht-phone-address-lines>div{display:grid;gap:3px;min-width:0}
-.phone-order-detail-overlay .ht-phone-address-recipient small,.phone-order-detail-overlay .ht-phone-address-lines small{color:#64748b;font-size:11px;font-weight:750}
-.phone-order-detail-overlay .ht-phone-address-recipient strong,.phone-order-detail-overlay .ht-phone-address-lines strong{color:#172b40;font-size:14px;line-height:1.45;overflow-wrap:anywhere}
-.phone-order-detail-overlay .ht-phone-address-lines{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:0!important;width:100%!important}
-.phone-order-detail-overlay .ht-phone-address-lines>div{display:block!important;min-width:0!important;padding:11px 2px!important;border-bottom:1px solid #e8edf4!important}
-.phone-order-detail-overlay .ht-phone-address-lines>div:last-child{border-bottom:0!important}
-.phone-order-detail-overlay .ht-phone-address-lines small{display:block!important;margin:0 0 4px!important;line-height:1.3!important}
-.phone-order-detail-overlay .ht-phone-address-lines strong{display:block!important;margin:0!important;white-space:normal!important;line-height:1.5!important;overflow-wrap:anywhere!important}
-.phone-order-detail-overlay .ht-phone-address-recipient div{display:block!important;min-width:0!important}
-.phone-order-detail-overlay .ht-phone-address-recipient small{display:block!important;margin:0 0 4px!important}
-.phone-order-detail-overlay .ht-phone-address-recipient strong{display:block!important;line-height:1.45!important}
-/* Address labels and values use separate block elements to prevent inline collisions. */
-.phone-order-detail-overlay .ht-phone-address-card{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:12px!important}
-.phone-order-detail-overlay .ht-phone-address-recipient{display:flex!important;align-items:center!important;gap:11px!important;min-width:0!important}
-.phone-order-detail-overlay .ht-phone-address-recipient .ht-phone-address-field{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;min-width:0!important}
-.phone-order-detail-overlay .ht-phone-address-lines{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;width:100%!important;min-width:0!important}
-.phone-order-detail-overlay .ht-phone-address-field{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;width:100%!important;min-width:0!important;padding:10px 2px!important;border-bottom:1px solid #e8edf4!important}
-.phone-order-detail-overlay .ht-phone-address-lines>.ht-phone-address-field:last-child{border-bottom:0!important}
-.phone-order-detail-overlay .ht-phone-address-field-label{display:block!important;width:100%!important;margin:0!important;color:#64748b!important;font-size:11px!important;font-weight:750!important;line-height:1.35!important;text-align:left!important}
-.phone-order-detail-overlay .ht-phone-address-field-value{display:block!important;width:100%!important;margin:0!important;color:#172b40!important;font-size:14px!important;font-weight:700!important;line-height:1.5!important;text-align:left!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important}
-.phone-order-detail-overlay .ht-phone-map-link{align-self:flex-start!important;justify-self:start!important;margin-top:8px!important}
-.phone-order-detail-overlay .ht-phone-shipping-status{display:flex;gap:11px;align-items:center;padding:12px;border:1px solid #dbeafe;border-radius:11px;background:#eff6ff}
-.phone-order-detail-overlay .ht-phone-shipping-status-icon{font-size:23px}
-.phone-order-detail-overlay .ht-phone-shipping-status div{display:grid;gap:3px}
-.phone-order-detail-overlay .ht-phone-shipping-status strong{font-size:13px;color:#1e3a5f}
-.phone-order-detail-overlay .ht-phone-shipping-status small{font-size:11px;line-height:1.45;color:#526b89}
-.phone-order-detail-overlay .ht-phone-shipping-form{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.phone-order-detail-overlay .ht-phone-shipping-form .ht-phone-tracking-url{grid-column:1/-1}
-.phone-order-detail-overlay .ht-phone-shipping-save{justify-self:start}
-@media(max-width:760px){
-.phone-order-detail-overlay{align-items:stretch!important;padding:0!important}
-.phone-order-detail-overlay .phone-order-detail-panel{width:100%!important;height:100dvh!important;max-height:100dvh!important;padding:12px!important;border:0!important;border-radius:0!important}
-.phone-order-detail-overlay .ht-order-detail-top{top:-12px!important;margin:-12px -12px 12px!important;padding:13px 14px!important;border-radius:0 0 13px 13px!important}
-.phone-order-detail-overlay .ht-phone-detail-grid,.phone-order-detail-overlay .ht-phone-detail-grid.equal{grid-template-columns:minmax(0,1fr)!important;gap:11px!important}
-.phone-order-detail-overlay .ht-phone-product-feature{grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
-.phone-order-detail-overlay .ht-phone-product-visual{grid-template-columns:54px minmax(0,1fr)!important}
-.phone-order-detail-overlay .ht-phone-product-main-image{height:230px!important;min-height:210px!important}
-.phone-order-detail-overlay .ht-phone-address-lines{grid-template-columns:1fr!important;gap:10px!important}
-.phone-order-detail-overlay .ht-phone-shipping-form{grid-template-columns:1fr!important}
-.phone-order-detail-overlay .ht-phone-shipping-form .ht-phone-tracking-url{grid-column:auto}
-.phone-order-detail-overlay .ht-phone-detail-grid .ht-phone-info-line{grid-template-columns:minmax(105px,.8fr) minmax(0,1.2fr)!important}
-}
-@media print{
-.phone-order-detail-overlay{position:static!important;display:block!important;padding:0!important;background:#fff!important}
-.phone-order-detail-overlay .phone-order-detail-panel{width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important;box-shadow:none!important;border:0!important}
-}
-
-</style>
-</body></html>`);
+  w.document.write(`<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HOMS TECH · Verzendlabel #${Number(order.id)}</title><style>
+    @page{size:A6 portrait;margin:0}
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;width:105mm;height:148mm;background:#fff;color:#111827;font-family:Arial,Helvetica,sans-serif}
+    .label{width:105mm;height:148mm;padding:7mm;display:flex;flex-direction:column;border:0}
+    .brand-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8mm}
+    .brand{font-size:22pt;font-weight:900;letter-spacing:.7px;color:#0b2942}
+    .brand span{color:#2185d0}
+    .brand-sub{font-size:7.5pt;color:#64748b;margin-top:1mm;letter-spacing:1.2px;text-transform:uppercase}
+    .order-chip{border:1px solid #cbd5e1;border-radius:5px;padding:2mm 3mm;font-size:9pt;font-weight:800;white-space:nowrap}
+    .top-rule{height:2mm;background:#0b2942;margin:5mm 0}
+    .carrier-row{display:flex;align-items:center;justify-content:space-between;font-size:9pt;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#334155}
+    .carrier{border:1px solid #94a3b8;border-radius:4px;padding:2mm 3mm;font-size:10pt;color:#0b2942}
+    .to-label{font-size:8pt;font-weight:800;color:#64748b;letter-spacing:1.3px;text-transform:uppercase;margin:8mm 0 3mm}
+    .recipient{font-size:19pt;font-weight:800;line-height:1.15;overflow-wrap:anywhere;margin-bottom:3mm}
+    .address{font-size:15pt;font-weight:600;line-height:1.35;overflow-wrap:anywhere}
+    .postcode{font-size:18pt;font-weight:900;letter-spacing:.5px;margin-top:2mm}
+    .country{font-size:11pt;font-weight:800;letter-spacing:1px;margin-top:1mm}
+    .spacer{flex:1}
+    .tracking-box{border:1px solid #cbd5e1;border-radius:6px;padding:4mm}
+    .tracking-label{font-size:7.5pt;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:800}
+    .tracking{font-size:12pt;font-weight:900;overflow-wrap:anywhere;margin-top:2mm}
+    .tracking-link{font-size:7.5pt;color:#475569;margin-top:1mm;overflow-wrap:anywhere}
+    .footer{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #cbd5e1;margin-top:4mm;padding-top:3mm;font-size:7pt;color:#64748b}
+    .footer strong{color:#0b2942}
+    @media screen{body{background:#e2e8f0;padding:12px;width:auto;height:auto}.label{margin:0 auto;background:#fff;box-shadow:0 5px 24px rgba(15,23,42,.18)}}
+    @media print{body{padding:0;background:#fff}.label{box-shadow:none}}
+  </style></head><body><main class="label">
+    <header class="brand-row"><div><div class="brand">HOMS <span>TECH</span></div><div class="brand-sub">Phones · Repair · Service</div></div><div class="order-chip">ORDER #${Number(order.id)}</div></header>
+    <div class="top-rule"></div>
+    <div class="carrier-row"><span>Verzendmethode</span><span class="carrier">${escLabel(carrier)}</span></div>
+    <section><div class="to-label">Verzenden naar</div><div class="recipient">${escLabel(recipientName)}</div><div class="address">${escLabel(addressLine)}</div><div class="postcode">${escLabel(postcodeCity)}</div><div class="country">NEDERLAND</div>${order.phone?'<div style="font-size:8pt;color:#64748b;margin-top:3mm">Tel. '+escLabel(order.phone)+'</div>':''}</section>
+    <div class="spacer"></div>
+    ${tracking?'<section class="tracking-box"><div class="tracking-label">Track & Trace</div><div class="tracking">'+escLabel(tracking)+'</div>'+(trackingUrl?'<div class="tracking-link">'+escLabel(trackingUrl)+'</div>':'')+'</section>':'<section class="tracking-box"><div class="tracking-label">Track & Trace</div><div class="tracking" style="font-size:9pt">Trackingnummer wordt toegevoegd na verzending</div></section>'}
+    <footer class="footer"><strong>HOMS TECH</strong><span>Adreslabel · geen officieel vervoerderslabel</span></footer>
+  </main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),300));<\\/script></body></html>`);
   w.document.close();
 }
 
@@ -9327,7 +9179,7 @@ async function showWebshopOrderDetails(id){
 <section class="ht-phone-detail-card" style="margin-bottom:12px">
           <div class="ht-phone-detail-card-head"><span class="icon">◷</span>Bestelstatus (log)</div>
           <div class="ht-phone-timeline">${timelineRows}</div>
-        </section><div class="ht-phone-detail-actions">${hasPermission("webshop_orders.update")?'<button class="btn btn-light" type="button" onclick="focusPhoneOrderNote()">Notitie</button>':""}<button class="btn btn-light" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button><button class="btn btn-light" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
+        </section>${(Array.isArray(order.refunds)&&order.refunds.length)?'<section class="ht-phone-detail-card" style="margin-bottom:12px"><div class="ht-phone-detail-card-head"><span class="icon">↩</span>Terugbetalingen</div><div class="ht-phone-detail-card-body">'+order.refunds.map(refund=>{const stamp=refund.created_at?formatPhoneOrderDateTime(refund.created_at):null;const state=refund.status==="Processed"?"Terugbetaald":(refund.status==="Pending manual"?"Handmatig uit te voeren":(refund.status==="Processing"?"Wordt verwerkt":"Mislukt"));return '<div class="ht-phone-note-entry"><div class="ht-phone-note-meta">'+esc(state)+' · '+esc(refund.method||"")+' · '+esc(stamp?stamp.date+" "+stamp.time:"")+'</div><strong>'+money(refund.amount)+'</strong><p>'+esc(refund.reason||"")+'</p></div>';}).join("")+'</div></section>':""}<div class="ht-phone-detail-actions">${hasPermission("webshop_orders.update")?'<button class="btn btn-light" type="button" onclick="focusPhoneOrderNote()">Notitie</button>':""}<button class="btn btn-light" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button><button class="btn btn-light" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
       </div>`;
 
     const modal=document.createElement("div");
