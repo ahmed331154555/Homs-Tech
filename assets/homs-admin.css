@@ -3495,3 +3495,235 @@ img{max-width:100%}
     transform: none;
   }
 }
+
+
+/* ==========================================================================
+   HOMS TECH ADMIN — refined workspace layer
+   Consistent hierarchy, clearer controls and responsive order management.
+   ========================================================================== */
+:root{
+  --ht-radius-sm:10px;
+  --ht-radius-md:14px;
+  --ht-radius-lg:18px;
+  --ht-shadow-card:0 5px 18px rgba(7,29,45,.055);
+  --ht-shadow-hover:0 12px 28px rgba(7,29,45,.09);
+  --ht-focus:0 0 0 4px rgba(37,99,235,.13);
+}
+body{
+  background:
+    radial-gradient(ellipse at 12% 0%,rgba(37,99,235,.045),transparent 34rem),
+    var(--ht-canvas);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+.topbar{
+  min-height:72px;
+  position:relative;
+  isolation:isolate;
+}
+.topbar:after{
+  content:"";
+  position:absolute;
+  inset:auto 0 0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);
+  pointer-events:none;
+}
+.logo{line-height:1.2}
+.admin-nav{backdrop-filter:blur(14px)}
+.admin-nav-inner{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.24) transparent}
+.nav-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.nav-btn:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+.nav-orders-submenu .nav-sub-btn{transition:background .16s ease,color .16s ease}
+.nav-orders-submenu .nav-sub-btn:hover{background:rgba(255,255,255,.09);color:#fff}
+#dashboard .container{padding-top:24px;padding-bottom:100px}
+#dashboard .section{
+  border-radius:16px;
+  padding:clamp(18px,2vw,28px);
+  box-shadow:var(--ht-shadow-card);
+  transition:box-shadow .18s ease,border-color .18s ease;
+}
+#dashboard .section-head{
+  align-items:center;
+  padding-bottom:18px;
+  margin-bottom:22px;
+}
+#dashboard .section-head h2{
+  font-size:clamp(19px,1.6vw,23px);
+  line-height:1.3;
+  letter-spacing:-.035em;
+}
+#dashboard .section-head p{max-width:760px;line-height:1.65}
+#dashboard .card{
+  border-radius:14px;
+  box-shadow:0 2px 10px rgba(7,29,45,.035);
+  transition:border-color .18s ease,box-shadow .18s ease;
+}
+#dashboard .card:hover{border-color:#d4dfeb;box-shadow:0 5px 16px rgba(7,29,45,.055)}
+#dashboard .field{min-width:0}
+#dashboard .field label,
+#dashboard label{line-height:1.45}
+#dashboard input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+#dashboard select,
+#dashboard textarea{
+  min-height:43px;
+  padding:10px 12px;
+  background-color:#fff;
+  transition:border-color .16s ease,box-shadow .16s ease;
+}
+#dashboard textarea{min-height:108px;line-height:1.55}
+#dashboard input::placeholder,
+#dashboard textarea::placeholder{color:#94a3b8}
+#dashboard input:focus,
+#dashboard select:focus,
+#dashboard textarea:focus{border-color:var(--ht-blue);box-shadow:var(--ht-focus)}
+#dashboard .btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-height:40px;
+  padding:9px 14px;
+  line-height:1.25;
+  white-space:normal;
+}
+#dashboard .btn:disabled,
+#dashboard button:disabled{
+  cursor:not-allowed;
+  opacity:.55;
+  transform:none;
+  box-shadow:none;
+}
+#dashboard .btn-red:hover{background:#b91c1c}
+#dashboard .status{
+  border-radius:10px;
+  line-height:1.5;
+}
+#dashboard .status.info{background:#eff6ff;border:1px solid #dbeafe;padding:10px 12px}
+#dashboard .status.success{background:#f0fdf4;border:1px solid #dcfce7;padding:10px 12px}
+#dashboard .status.error{background:#fef2f2;border:1px solid #fee2e2;padding:10px 12px}
+#dashboard .small{line-height:1.6}
+#dashboard .actions{align-items:center}
+#dashboard .actions .btn{min-width:112px}
+#dashboard .order-summary,
+#dashboard .phone-order-summary{gap:13px}
+#dashboard .order-stat{
+  min-height:88px;
+  padding:16px 18px;
+  border-radius:14px;
+  background:linear-gradient(145deg,#fff,#f8fbff);
+  box-shadow:0 3px 12px rgba(7,29,45,.04);
+}
+#dashboard .order-stat b{color:var(--ht-navy);font-size:25px;letter-spacing:-.04em}
+#dashboard .orders-toolbar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:13px;
+  margin-bottom:14px;
+  border:1px solid var(--ht-line);
+  border-radius:14px;
+  background:rgba(255,255,255,.82);
+}
+#dashboard .orders-search{flex:1 1 300px;min-width:180px}
+#dashboard .orders-search input{min-height:44px;padding-left:42px}
+#dashboard .order-filter{min-height:44px;background:#fff}
+#dashboard .order-filter-btn{
+  min-height:44px;
+  border:1px solid #e1e8f0;
+  transition:background .16s ease,border-color .16s ease;
+}
+#dashboard .order-filter-btn:hover{background:#e2eaf3;border-color:#cbd8e6}
+#dashboard .orders-list{gap:12px}
+#dashboard .order-card{
+  border-radius:15px!important;
+  box-shadow:0 3px 13px rgba(7,29,45,.045)!important;
+  transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+#dashboard .order-card:hover{
+  border-color:#cbd9e8!important;
+  box-shadow:var(--ht-shadow-hover)!important;
+}
+#dashboard .order-card-head{background:linear-gradient(180deg,#fff,#fbfdff)}
+#dashboard .order-info{border:1px solid #edf2f7;background:#f8fafc}
+#dashboard .order-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+#dashboard .order-actions .btn,
+#dashboard .order-actions select{min-height:39px}
+#dashboard .order-count{padding:4px 2px}
+#dashboard .unified-orders-tabs{gap:10px}
+#dashboard .unified-orders-tab{
+  border-radius:13px;
+  transition:background .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+#dashboard .unified-orders-tab:hover{border-color:#bfcee0;box-shadow:0 6px 18px rgba(7,29,45,.07)}
+#dashboard .save-bar{
+  border-radius:15px;
+  background:rgba(255,255,255,.96);
+  backdrop-filter:blur(14px);
+}
+#dashboard .homepage-admin-intro{
+  border-radius:14px;
+  line-height:1.6;
+}
+#dashboard .homepage-accordion{gap:12px}
+#dashboard .buyback-hierarchy{border-radius:16px;box-shadow:0 3px 12px rgba(7,29,45,.035)}
+#dashboard .customer-modal,
+#dashboard .modal{
+  border:1px solid rgba(226,232,240,.9);
+  border-radius:18px;
+  box-shadow:0 28px 80px rgba(7,29,45,.28);
+}
+#dashboard table{width:100%;border-collapse:separate;border-spacing:0}
+#dashboard table th{
+  color:#475569;
+  background:#f7f9fc;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.025em;
+  text-align:left;
+}
+#dashboard table th,
+#dashboard table td{padding:12px 13px;border-bottom:1px solid #e9eef5}
+#dashboard table tr:last-child td{border-bottom:0}
+#dashboard table tbody tr:hover td{background:#f8fbff}
+#dashboard a:not(.btn){text-underline-offset:3px}
+#dashboard :where(.section,.card,.order-card,.customer-modal){overflow-wrap:anywhere}
+@media(max-width:900px){
+  #dashboard .orders-toolbar{align-items:stretch}
+  #dashboard .orders-search{flex-basis:100%}
+  #dashboard .order-filter{flex:1 1 180px}
+  #dashboard .order-filter-btn{flex:1 1 140px}
+  #dashboard .order-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  #dashboard .container{padding-top:14px;padding-bottom:112px}
+  #dashboard .section{padding:16px;border-radius:14px;margin-bottom:14px}
+  #dashboard .section-head{align-items:flex-start;gap:12px;margin-bottom:17px}
+  #dashboard .section-head>div:first-child{width:100%}
+  #dashboard .section-head .actions,
+  #dashboard .section-head>div:last-child{max-width:100%}
+  #dashboard .section-head .btn{min-height:42px}
+  #dashboard .order-summary,
+  #dashboard .phone-order-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #dashboard .order-stat{min-height:76px;padding:12px}
+  #dashboard .order-stat b{font-size:22px}
+  #dashboard .orders-toolbar{padding:10px;gap:8px}
+  #dashboard .orders-search{flex-basis:100%;min-width:0}
+  #dashboard .order-filter,
+  #dashboard .order-filter-btn{width:100%;flex:1 1 100%}
+  #dashboard .actions .btn{flex:1 1 140px}
+  #dashboard .customer-modal{padding:20px 16px}
+  #dashboard table{min-width:620px}
+}
+@media(max-width:420px){
+  #dashboard .order-summary,
+  #dashboard .phone-order-summary{grid-template-columns:1fr 1fr;gap:8px}
+  #dashboard .order-stat{min-height:70px;padding:10px}
+  #dashboard .order-stat b{font-size:20px}
+  #dashboard .section-head .btn{width:100%}
+  #dashboard .actions .btn{flex-basis:100%}
+}
+@media(hover:none){
+  #dashboard .card:hover,
+  #dashboard .order-card:hover{transform:none;box-shadow:inherit}
+}
