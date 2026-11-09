@@ -235,3 +235,13 @@ test("admin document head does not contain excessive blank-line blocks", () => {
   assert.doesNotMatch(head, /\\n[ \\t]*\\n[ \\t]*\\n[ \\t]*\\n/);
   assert.ok(head.includes("assets/homs-admin.css"));
 });
+
+
+test("admin order loaders and actions enforce their matching permissions", () => {
+  const script = readPage("assets/homs-admin.js");
+  assert.match(script, /async function loadWebshopOrders\(\)\{\s*if\(!hasPermission\("webshop_orders\.view"\)\)return;/);
+  assert.match(script, /async function loadBuybackOrders\(\)\{\s*if\(!hasPermission\("buyback_orders\.view"\)\)return;/);
+  assert.match(script, /async function completeWebshopManualRefund\(orderId,refundId\)\{\s*if\(!hasPermission\("webshop_orders\.update"\)\)return;/);
+  assert.match(script, /async function updateBuybackStatus\(id,newStatus\)\{\s*if\(!hasPermission\("buyback_orders\.update"\)\)return;/);
+  assert.match(script, /refund\.status==="Pending manual"&&hasPermission\("webshop_orders\.update"\)/);
+});
