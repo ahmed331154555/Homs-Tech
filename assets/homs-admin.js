@@ -4156,6 +4156,7 @@ async function saveOrderSettings(){
 }
 
 async function loadWebshopOrders(){
+  if(!hasPermission("webshop_orders.view"))return;
   const box=document.getElementById('webshopOrdersList'), status=document.getElementById('webshopOrdersStatus');
   const phoneBox=document.getElementById('phoneOrdersList');
   if(!box||!status){
@@ -4181,6 +4182,7 @@ async function loadWebshopOrders(){
 }
 
 async function completeWebshopManualRefund(orderId,refundId){
+  if(!hasPermission("webshop_orders.update"))return;
   const reference=window.prompt("Voer de bankreferentie of interne bevestiging van de uitgevoerde terugbetaling in:");
   if(reference===null)return;
   if(!reference.trim()){alert("Een referentie is verplicht om de terugbetaling als uitgevoerd te markeren.");return;}
@@ -5409,7 +5411,7 @@ async function showWebshopOrderDetails(id){
 <section class="ht-phone-detail-card" style="margin-bottom:12px">
           <div class="ht-phone-detail-card-head"><span class="icon">◷</span>Bestelstatus (log)</div>
           <div class="ht-phone-timeline">${timelineRows}</div>
-        </section>${(Array.isArray(order.refunds)&&order.refunds.length)?'<section class="ht-phone-detail-card" style="margin-bottom:12px"><div class="ht-phone-detail-card-head"><span class="icon">↩</span>Terugbetalingen</div><div class="ht-phone-detail-card-body">'+order.refunds.map(refund=>{const stamp=refund.created_at?formatPhoneOrderDateTime(refund.created_at):null;const state=refund.status==="Processed"?"Terugbetaald":(refund.status==="Pending manual"?"Handmatig uit te voeren":(refund.status==="Processing"?"Wordt verwerkt":"Mislukt"));return '<div class="ht-phone-note-entry"><div class="ht-phone-note-meta">'+esc(state)+' · '+esc(refund.method||"")+' · '+esc(stamp?stamp.date+" "+stamp.time:"")+'</div><strong>'+money(refund.amount)+'</strong><p>'+esc(refund.reason||"")+'</p>'+(refund.status==="Pending manual"?'<button type="button" class="btn btn-light" style="margin-top:7px" onclick="completeWebshopManualRefund('+Number(order.id)+','+Number(refund.id)+')">Handmatige terugbetaling bevestigen</button>':'')+'</div>';}).join("")+'</div></section>':""}<div class="ht-phone-detail-actions">${hasPermission("webshop_orders.update")?'<button class="btn btn-light" type="button" onclick="focusPhoneOrderNote()">Notitie</button>':""}${hasPermission("webshop_orders.delete")?'<button class="btn btn-red" type="button" onclick="deleteWebshopOrder('+Number(order.id)+')">🗑 Verwijderen</button>':""}<button class="btn btn-light" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button><button class="btn btn-light" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
+        </section>${(Array.isArray(order.refunds)&&order.refunds.length)?'<section class="ht-phone-detail-card" style="margin-bottom:12px"><div class="ht-phone-detail-card-head"><span class="icon">↩</span>Terugbetalingen</div><div class="ht-phone-detail-card-body">'+order.refunds.map(refund=>{const stamp=refund.created_at?formatPhoneOrderDateTime(refund.created_at):null;const state=refund.status==="Processed"?"Terugbetaald":(refund.status==="Pending manual"?"Handmatig uit te voeren":(refund.status==="Processing"?"Wordt verwerkt":"Mislukt"));return '<div class="ht-phone-note-entry"><div class="ht-phone-note-meta">'+esc(state)+' · '+esc(refund.method||"")+' · '+esc(stamp?stamp.date+" "+stamp.time:"")+'</div><strong>'+money(refund.amount)+'</strong><p>'+esc(refund.reason||"")+'</p>'+(refund.status==="Pending manual"&&hasPermission("webshop_orders.update")?'<button type="button" class="btn btn-light" style="margin-top:7px" onclick="completeWebshopManualRefund('+Number(order.id)+','+Number(refund.id)+')">Handmatige terugbetaling bevestigen</button>':'')+'</div>';}).join("")+'</div></section>':""}<div class="ht-phone-detail-actions">${hasPermission("webshop_orders.update")?'<button class="btn btn-light" type="button" onclick="focusPhoneOrderNote()">Notitie</button>':""}${hasPermission("webshop_orders.delete")?'<button class="btn btn-red" type="button" onclick="deleteWebshopOrder('+Number(order.id)+')">🗑 Verwijderen</button>':""}<button class="btn btn-light" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button><button class="btn btn-light" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
       </div>`;
 
     const modal=document.createElement("div");
@@ -5847,6 +5849,7 @@ function buybackStatusClass(status){
   return "";
 }
 async function loadBuybackOrders(){
+  if(!hasPermission("buyback_orders.view"))return;
   const list=document.getElementById("buybackOrdersList");
   const status=document.getElementById("buybackOrdersStatus");
   const detail=document.getElementById("buybackOrdersDetail");
@@ -6193,6 +6196,7 @@ async function sendBuybackPayoutEmail(id){
   }catch(error){alert(error.message);}
 }
 async function updateBuybackStatus(id,newStatus){
+  if(!hasPermission("buyback_orders.update"))return;
   if(!["Nieuw","In behandeling"].includes(newStatus))return;
   try{
     const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id)+"/status",{method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:newStatus})});
