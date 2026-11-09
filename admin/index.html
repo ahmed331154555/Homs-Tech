@@ -9213,24 +9213,76 @@ async function showWebshopOrderDetails(id){
             </div>
           </section>
     ${phoneInspectionMarkup}
-    <section class="ht-phone-detail-card">
-            <div class="ht-phone-detail-card-head"><span class="icon">♧</span>Verzending</div>
-            <div class="ht-phone-detail-card-body ht-phone-info-list">
-              <div class="ht-phone-shipping-status">
-                <span class="ht-phone-shipping-status-icon">🚚</span>
-                <div><strong>${order.tracking_number?"Verzendgegevens geregistreerd":"Verzending nog niet aangemaakt"}</strong><small>${order.tracking_number?"Het pakket heeft een trackingnummer.":"Kies hieronder een vervoerder en vul het trackingnummer in zodra het pakket is aangemeld."}</small></div>
-              </div>
-              <div class="ht-phone-info-line"><span>Gekozen vervoerder</span><strong>${esc(order.shipping_method||"Nog niet gekozen")}</strong></div>
-              <div class="ht-phone-info-line"><span>Trackingnummer</span><strong>${esc(order.tracking_number||"Wordt ingevuld na verzending")}</strong></div>
-              ${order.tracking_url?'<div class="ht-phone-info-line"><span>Trackinglink</span><strong><a href="'+esc(order.tracking_url)+'" target="_blank" rel="noopener noreferrer">Pakket volgen ↗</a></strong></div>':""}
-              <div class="ht-phone-shipping-form">
-                <label class="ht-phone-detail-field">Vervoerder<select id="webshopShippingCarrier"><option value="">Selecteer vervoerder</option><option value="PostNL" ${order.shipping_method==="PostNL"?"selected":""}>PostNL</option><option value="DHL" ${order.shipping_method==="DHL"?"selected":""}>DHL</option></select></label>
-                <label class="ht-phone-detail-field">Trackingnummer<input id="webshopTrackingNumber" type="text" maxlength="160" value="${esc(order.tracking_number||"")}" placeholder="Vul trackingnummer in"></label>
-                <label class="ht-phone-detail-field ht-phone-tracking-url">Trackinglink<input id="webshopTrackingUrl" type="url" maxlength="1000" value="${esc(order.tracking_url||"")}" placeholder="https://..."></label>
-              </div>
-              <button class="btn btn-primary ht-phone-shipping-save" type="button" onclick="saveWebshopOrderShipping(${Number(order.id)})">💾 Verzendgegevens opslaan</button>
-            </div>
-          </section>
+    <section class="ht-phone-detail-card ht-shipping-workspace">
+      <div class="ht-shipping-heading">
+        <div class="ht-shipping-heading-icon" aria-hidden="true">🚚</div>
+        <div class="ht-shipping-heading-copy">
+          <span class="ht-shipping-eyebrow">ORDER FULFILMENT</span>
+          <h3>Verzending</h3>
+          <p>Beheer de vervoerder en volggegevens van deze bestelling.</p>
+        </div>
+        <span class="ht-shipping-state ${order.tracking_number ? "is-complete" : "is-pending"}">
+          <span class="ht-shipping-state-dot"></span>
+          ${order.tracking_number ? "Verzendgegevens compleet" : "Wacht op verzending"}
+        </span>
+      </div>
+
+      <div class="ht-shipping-content">
+        <div class="ht-shipping-status">
+          <div class="ht-shipping-status-icon" aria-hidden="true">${order.tracking_number ? "✓" : "箱"}</div>
+          <div class="ht-shipping-status-copy">
+            <strong>${order.tracking_number ? "Tracking is beschikbaar" : "Verzending nog niet aangemaakt"}</strong>
+            <span>${order.tracking_number ? "De verzendgegevens zijn opgeslagen. Je kunt het pakket volgen via de trackinglink." : "Kies de vervoerder en voeg na het aanmelden van het pakket het trackingnummer toe."}</span>
+          </div>
+        </div>
+
+        <div class="ht-shipping-overview">
+          <div class="ht-shipping-data">
+            <span class="ht-shipping-data-label">VERVOERDER</span>
+            <strong>${esc(order.shipping_method || "Nog niet gekozen")}</strong>
+          </div>
+          <div class="ht-shipping-data">
+            <span class="ht-shipping-data-label">TRACKINGNUMMER</span>
+            <strong class="ht-shipping-tracking-value">${esc(order.tracking_number || "Nog niet beschikbaar")}</strong>
+          </div>
+          ${order.tracking_url ? '<a class="ht-shipping-track-link" href="' + esc(order.tracking_url) + '" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">↗</span> Pakket volgen</a>' : '<div class="ht-shipping-track-placeholder">Trackinglink verschijnt zodra deze is opgeslagen.</div>'}
+        </div>
+
+        <div class="ht-shipping-form-heading">
+          <div>
+            <strong>Verzendgegevens bijwerken</strong>
+            <span>Vul de gegevens in zodra het pakket is aangemeld.</span>
+          </div>
+          <span class="ht-shipping-edit-icon" aria-hidden="true">✎</span>
+        </div>
+
+        <div class="ht-shipping-form">
+          <label class="ht-phone-detail-field">
+            <span>Vervoerder</span>
+            <select id="webshopShippingCarrier">
+              <option value="">Selecteer vervoerder</option>
+              <option value="PostNL" ${order.shipping_method === "PostNL" ? "selected" : ""}>PostNL</option>
+              <option value="DHL" ${order.shipping_method === "DHL" ? "selected" : ""}>DHL</option>
+            </select>
+          </label>
+          <label class="ht-phone-detail-field">
+            <span>Trackingnummer</span>
+            <input id="webshopTrackingNumber" type="text" maxlength="160" value="${esc(order.tracking_number || "")}" placeholder="Bijv. 3SABCD1234567">
+          </label>
+          <label class="ht-phone-detail-field ht-shipping-url-field">
+            <span>Trackinglink <small>(optioneel)</small></span>
+            <input id="webshopTrackingUrl" type="url" maxlength="1000" value="${esc(order.tracking_url || "")}" placeholder="https://...">
+          </label>
+        </div>
+
+        <div class="ht-shipping-footer">
+          <span class="ht-shipping-footer-note"><span aria-hidden="true">🔒</span> Gegevens worden veilig bij deze bestelling opgeslagen.</span>
+          <button class="btn btn-primary ht-phone-shipping-save ht-shipping-save-button" type="button" onclick="saveWebshopOrderShipping(${Number(order.id)})">
+            <span aria-hidden="true">✓</span> Verzendgegevens opslaan
+          </button>
+        </div>
+      </div>
+    </section>
   </div>
   <div class="ht-phone-detail-column ht-phone-detail-column-side">
     <section class="ht-phone-detail-card">
@@ -10630,6 +10682,169 @@ if ("serviceWorker" in navigator) {
 
 
 
+
+
+<style id="homs-shipping-workspace-clean-v1">
+/* HOMS TECH — clean shipping workspace */
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-workspace{
+  width:100%;min-width:0;overflow:hidden;border:1px solid #dce6f2!important;
+  border-radius:16px!important;background:#fff!important;
+  box-shadow:0 8px 26px rgba(16,42,72,.065)!important
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-heading{
+  display:flex;align-items:center;gap:14px;min-width:0;padding:18px 20px;
+  border-bottom:1px solid #e6edf5;background:linear-gradient(110deg,#f7faff,#edf4fd)
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-heading-icon{
+  display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;
+  border-radius:13px;background:#dfeeff;font-size:21px
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-heading-copy{min-width:0;flex:1}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-eyebrow{
+  display:block;margin-bottom:3px;color:#66809e;font-size:9px;font-weight:900;
+  letter-spacing:.13em
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-heading h3{
+  margin:0;color:#102b49;font-size:17px;font-weight:900;line-height:1.25
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-heading-copy p{
+  margin:4px 0 0;color:#71839a;font-size:11px;line-height:1.45
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-state{
+  display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;padding:7px 10px;
+  border:1px solid #dce6f2;border-radius:999px;background:#fff;
+  color:#53677e;font-size:10px;font-weight:850;white-space:nowrap
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-state-dot{
+  width:7px;height:7px;border-radius:50%;background:#e5a33b
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-state.is-complete{
+  border-color:#ccebdc;background:#f0fbf5;color:#167348
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-state.is-complete .ht-shipping-state-dot{background:#21a366}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-content{
+  display:grid;gap:15px;padding:19px 20px 20px
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-status{
+  display:flex;align-items:center;gap:13px;min-width:0;padding:14px 16px;
+  border:1px solid #d7e6f8;border-radius:13px;background:#f3f8ff
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-status-icon{
+  display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;
+  border-radius:11px;background:#e0edff;color:#155eef;font-size:18px;font-weight:900
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-status-copy{display:grid;gap:4px;min-width:0}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-status-copy strong{
+  color:#18395e;font-size:13px;font-weight:900
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-status-copy span{
+  color:#617791;font-size:11px;line-height:1.5
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-overview{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) auto;
+  align-items:stretch;gap:10px
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-data{
+  display:grid;align-content:center;gap:7px;min-width:0;padding:12px 14px;
+  border:1px solid #e5ecf4;border-radius:11px;background:#fbfdff
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-data-label{
+  color:#7a8ba0;font-size:9px;font-weight:900;letter-spacing:.08em
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-data strong{
+  color:#1a3554;font-size:12px;font-weight:850;overflow-wrap:anywhere
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-tracking-value{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-track-link,
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-track-placeholder{
+  display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;padding:10px 13px;
+  border:1px solid #cfe0f8;border-radius:11px;background:#f1f7ff;
+  color:#1559bd;font-size:11px;font-weight:900;text-decoration:none;text-align:center
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-track-link:hover{background:#e6f0ff}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-track-placeholder{
+  border-style:dashed;background:#fafcff;color:#8191a5;font-weight:650
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-form-heading{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding-top:4px
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-form-heading>div{display:grid;gap:3px}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-form-heading strong{
+  color:#183451;font-size:13px;font-weight:900
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-form-heading span{
+  color:#7a8ba0;font-size:10px;line-height:1.45
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-edit-icon{
+  display:grid;place-items:center;width:30px;height:30px;border-radius:9px;
+  background:#f0f5fb;color:#59728e;font-size:14px
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-form{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+  padding:15px;border:1px solid #e2eaf4;border-radius:13px;background:#f8faff
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-form .ht-phone-detail-field{
+  display:grid;gap:7px;min-width:0;color:#344d68;font-size:11px;font-weight:850
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-form .ht-phone-detail-field input,
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-form .ht-phone-detail-field select{
+  width:100%;min-width:0;min-height:44px;padding:10px 12px;border:1px solid #d3deeb;
+  border-radius:9px;background:#fff;color:#183451;font-size:12px;font-weight:650;
+  box-shadow:none;transition:border-color .18s ease,box-shadow .18s ease
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-form .ht-phone-detail-field input:focus,
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-form .ht-phone-detail-field select:focus{
+  outline:0;border-color:#3980ed;box-shadow:0 0 0 3px rgba(21,94,239,.11)
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-url-field{grid-column:1/-1}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-url-field small{
+  color:#8796a8;font-size:10px;font-weight:600
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-footer{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding-top:2px
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-footer-note{
+  color:#7a8ba0;font-size:10px;line-height:1.5
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-save-button{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:44px;padding:11px 17px;border:0;border-radius:10px;
+  background:linear-gradient(100deg,#0756df,#1675f5);color:#fff;
+  box-shadow:0 5px 13px rgba(13,91,232,.18);font-size:11px;font-weight:900;
+  white-space:nowrap;transition:transform .18s ease,box-shadow .18s ease
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-save-button:hover{
+  transform:translateY(-1px);box-shadow:0 8px 17px rgba(13,91,232,.24)
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-save-button:disabled{
+  opacity:.65;cursor:wait;transform:none
+}
+@media(max-width:760px){
+  #orderDetailsModal.phone-order-detail-overlay .ht-shipping-heading{
+    flex-wrap:wrap;padding:15px;gap:11px
+  }
+  #orderDetailsModal.phone-order-detail-overlay .ht-shipping-heading-icon{
+    width:40px;height:40px;flex-basis:40px
+  }
+  #orderDetailsModal.phone-order-detail-overlay .ht-shipping-state{
+    margin-left:51px
+  }
+  #orderDetailsModal.phone-order-detail-overlay .ht-shipping-content{gap:12px;padding:14px}
+  #orderDetailsModal.phone-order-detail-overlay .ht-shipping-overview{
+    grid-template-columns:minmax(0,1fr);gap:8px
+  }
+  #orderDetailsModal.phone-order-detail-overlay .ht-shipping-form{
+    grid-template-columns:minmax(0,1fr);gap:11px;padding:12px
+  }
+  #orderDetailsModal.phone-order-detail-overlay .ht-shipping-url-field{grid-column:1}
+  #orderDetailsModal.phone-order-detail-overlay .ht-shipping-footer{
+    align-items:stretch;flex-direction:column
+  }
+  #orderDetailsModal.phone-order-detail-overlay .ht-shipping-save-button{width:100%}
+}
+</style>
 
 </body>
 </html>
