@@ -106,3 +106,26 @@ test("shop and product SEO head markup contains no escaped newline text", () => 
     assert.ok(!head.includes("\\n<meta"), page + " contains a literal escaped newline in its head");
   }
 });
+
+
+test("customer-facing pages share the standard footer and privacy link", () => {
+  for (const page of ["about.html", "devices.html", "prices.html", "repair.html", "product.html", "shop.html", "contact.html", "privacybeleid.html", "account.html", "cart.html", "checkout.html"]) {
+    const html = readPage(page);
+    assert.match(html, /<footer\b[^>]*class=["']ht-site-footer["']/i, page + " should use the shared footer");
+    assert.match(html, /href=["']privacybeleid\.html["']/i, page + " should link to the privacy policy");
+  }
+});
+
+test("contact page includes shared layout, brand theme and customer chat", () => {
+  const html = readPage("contact.html");
+  assert.match(html, /homs-tech-modern-true-theme\.css/);
+  assert.match(html, /homs-layout-system\.css/);
+  assert.match(html, /homs-ai-chat\.js/);
+});
+
+test("admin order categories preserve their distinct business purposes", () => {
+  const admin = fs.readFileSync(path.join(root, "assets/homs-admin.js"), "utf8");
+  for (const key of ["phone-orders", "webshop-orders", "buyback-orders", "repair-requests"]) {
+    assert.ok(admin.includes('key:"' + key + '"'), "missing order category " + key);
+  }
+});
