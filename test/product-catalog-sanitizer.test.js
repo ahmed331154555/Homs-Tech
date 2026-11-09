@@ -30,6 +30,23 @@ test("public product catalog keeps storefront fields and strips internal costs r
   assert.equal(input.phones[0].supplierCost, 250);
 });
 
+test("public battery options keep admin descriptions and photos on product pages", () => {
+  const result = sanitizeProductCatalogData({
+    phones: [{
+      id: 7,
+      name: "iPhone 13",
+      batteryOptions: [
+        { label: "Standaard", description: "Minimaal 85% capaciteit", image: "battery-standard.webp", priceDelta: 0, active: true, available: true },
+        { label: "Nieuw (100%)", description: "100% capaciteit (+ 1 werkdag extra levertijd)", image: "battery-new.webp", priceDelta: 30, active: true, available: true }
+      ]
+    }]
+  });
+  assert.deepEqual(result.phones[0].batteryOptions, [
+    { label: "Standaard", description: "Minimaal 85% capaciteit", image: "battery-standard.webp", priceDelta: 0, active: true, available: true },
+    { label: "Nieuw (100%)", description: "100% capaciteit (+ 1 werkdag extra levertijd)", image: "battery-new.webp", priceDelta: 30, active: true, available: true }
+  ]);
+});
+
 test("public product sanitizer safely handles invalid catalog shapes", () => {
   assert.deepEqual(sanitizeProductCatalogData(null), {
     phones: [], phone: "", whatsapp: "",
