@@ -3173,6 +3173,105 @@ body.phone-orders-page-active #page-all-orders{padding-bottom:78px}
   }
 }
 </style>
+
+<style id="homs-phone-shipping-workspace-v3">
+/* Shipping panel refinement: full-width layout, readable hierarchy and tidy fields. */
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping{
+  display:block!important;width:100%!important;max-width:none!important;min-width:0!important;
+  margin:0!important;padding:0!important
+}
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping>.ht-phone-dashboard-content-grid{
+  display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important
+}
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-detail-accordion{
+  display:block!important;width:100%!important;max-width:none!important;min-width:0!important;
+  margin:0!important;overflow:hidden!important;border:1px solid #d9e5f2!important;
+  border-radius:16px!important;background:#fff!important;box-shadow:0 9px 28px rgba(16,43,75,.07)!important
+}
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-detail-card-head,
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping summary.ht-phone-detail-card-head{
+  display:flex!important;align-items:center!important;gap:11px!important;width:100%!important;
+  min-height:56px!important;padding:13px 18px!important;border:0!important;
+  border-bottom:1px solid #e5edf7!important;background:linear-gradient(110deg,#f5f9ff,#edf4fc)!important;
+  color:#132f50!important;font-size:14px!important;font-weight:900!important;text-align:left!important
+}
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-detail-card-body{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  align-items:stretch!important;gap:12px!important;width:100%!important;padding:18px!important;
+  background:#fff!important
+}
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-shipping-status{
+  display:grid!important;grid-template-columns:48px minmax(0,1fr)!important;
+  align-items:center!important;column-gap:14px!important;row-gap:5px!important;
+  grid-column:1/-1!important;width:100%!important;min-width:0!important;min-height:86px!important;
+  margin:0!important;padding:16px 18px!important;border:1px solid #cbdff8!important;
+  border-radius:13px!important;background:linear-gradient(110deg,#edf5ff,#f8fbff)!important
+}
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-shipping-status-icon{
+  grid-column:1!important;grid-row:1/3!important;display:grid!important;place-items:center!important;
+  width:46px!important;height:46px!important;margin:0!important;border-radius:12px!important;
+  background:#dceaff!important;font-size:22px!important
+}
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-shipping-status strong{
+  display:block!important;grid-column:2!important;grid-row:1!important;margin:0!important;
+  color:#17385d!important;font-size:15px!important;font-weight:900!important;line-height:1.4!important
+}
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-shipping-status small{
+  display:block!important;grid-column:2!important;grid-row:2!important;margin:0!important;
+  color:#5b718b!important;font-size:12px!important;font-weight:500!important;line-height:1.55!important
+}
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-info-line{
+  display:flex!important;flex-direction:column!important;justify-content:center!important;
+  align-items:flex-start!important;gap:6px!important;min-width:0!important;min-height:68px!important;
+  margin:0!important;padding:11px 14px!important;border:1px solid #e3ebf5!important;
+  border-radius:11px!important;background:#fbfdff!important
+}
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-info-line>span{
+  display:block!important;margin:0!important;color:#718198!important;font-size:11px!important;font-weight:800!important
+}
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-info-line>strong{
+  display:block!important;max-width:100%!important;margin:0!important;color:#17324f!important;
+  font-size:13px!important;font-weight:850!important;line-height:1.45!important;overflow-wrap:anywhere!important
+}
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-shipping-form{
+  display:grid!important;grid-column:1/-1!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:13px!important;width:100%!important;min-width:0!important;margin:3px 0 0!important;
+  padding:16px!important;border:1px solid #e0e9f4!important;border-radius:13px!important;background:#f7faff!important
+}
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-detail-field{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;align-content:start!important;
+  gap:7px!important;min-width:0!important;margin:0!important;color:#304761!important;
+  font-size:12px!important;font-weight:850!important;line-height:1.4!important
+}
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-detail-field input,
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-detail-field select{
+  display:block!important;width:100%!important;max-width:100%!important;height:45px!important;min-height:45px!important;
+  margin:0!important;padding:10px 12px!important;border:1px solid #cfdbeb!important;border-radius:10px!important;
+  background:#fff!important;color:#132d4a!important;font-size:13px!important;font-weight:650!important
+}
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-tracking-url{grid-column:1/-1!important}
+#orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-shipping-save{
+  display:flex!important;grid-column:1/-1!important;align-items:center!important;justify-content:center!important;
+  width:100%!important;min-height:47px!important;margin:0!important;padding:12px 18px!important;
+  border:1px solid #0d5be8!important;border-radius:11px!important;
+  background:linear-gradient(100deg,#0756df,#1675f5)!important;color:#fff!important;
+  box-shadow:0 5px 13px rgba(13,91,232,.18)!important;font-size:13px!important;font-weight:900!important
+}
+@media(max-width:760px){
+  #orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-detail-card-body{
+    grid-template-columns:minmax(0,1fr)!important;gap:10px!important;padding:12px!important
+  }
+  #orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-shipping-status,
+  #orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-shipping-form,
+  #orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-tracking-url,
+  #orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-shipping-save{
+    grid-column:1!important
+  }
+  #orderDetailsModal.phone-order-detail-overlay #ht-phone-panel-shipping .ht-phone-shipping-form{
+    grid-template-columns:minmax(0,1fr)!important;padding:12px!important
+  }
+}
+</style>
 </head>
 
 <body>
