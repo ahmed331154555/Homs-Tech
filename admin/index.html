@@ -1246,6 +1246,8 @@ textarea{
 </style>
 <style id="homs-inkoop-workflow">
 #page-buyback-orders .ht-inkoop-list{display:grid;gap:9px}
+#page-buyback-orders .ht-inkoop-row-wrap{display:grid;grid-template-columns:minmax(0,1fr) 42px;align-items:stretch;gap:8px;min-width:0}
+#page-buyback-orders .ht-inkoop-row-delete{align-self:stretch;min-width:42px;padding:0;border-radius:11px}
 #page-buyback-orders .ht-inkoop-row{display:grid;grid-template-columns:minmax(0,1fr) auto 18px;align-items:center;gap:16px;padding:15px 18px;border:1px solid #e4eaf2;border-radius:13px;background:#fff;color:#17243a;text-align:left;cursor:pointer;width:100%;min-width:0;box-sizing:border-box;font:inherit;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease}
 #page-buyback-orders .ht-inkoop-row:hover{background:#f7faff;border-color:#cbdcf3;box-shadow:0 5px 16px rgba(20,45,80,.06)}
 #page-buyback-orders .ht-inkoop-main{min-width:0;display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
@@ -1901,9 +1903,10 @@ textarea{
 #page-phone-orders .ht-phone-sale-head,
 #page-phone-orders .ht-phone-sale-open{display:grid;grid-template-columns:42px minmax(135px,1.05fr) minmax(180px,1.35fr) minmax(90px,.72fr) minmax(112px,.95fr) minmax(100px,.78fr) 18px;gap:9px;align-items:center}
 #page-phone-orders .ht-phone-sale-head{position:sticky;top:0;z-index:2;min-height:43px;padding:10px 13px;border-radius:10px 10px 0 0;background:#edf2fa;color:#17243a;font-size:12px;font-weight:800;letter-spacing:0;text-transform:none}
-#page-phone-orders .ht-phone-sale-row{border-top:1px solid #edf1f6;background:#fff;transition:background .15s}
+#page-phone-orders .ht-phone-sale-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;border-top:1px solid #edf1f6;background:#fff;transition:background .15s}
 #page-phone-orders .ht-phone-sale-row:first-of-type{border-top:0}
 #page-phone-orders .ht-phone-sale-row:hover{background:#f7faff}
+#page-phone-orders .ht-phone-sale-delete{min-height:36px;margin:0 10px 0 0;padding:7px 10px;white-space:nowrap;font-size:11px}
 #page-phone-orders .ht-phone-sale-row.is-selected{background:#e7f1ff;box-shadow:inset 3px 0 #2563eb}
 #page-phone-orders .ht-phone-sale-open{width:100%;min-height:66px;padding:9px 13px;border:0;background:transparent;color:#172033;text-align:left;cursor:pointer;font:inherit}
 #page-phone-orders .ht-phone-sale-number{color:#1d4ed8;font-size:13px;font-weight:850}
@@ -7520,6 +7523,7 @@ function renderWebshopOrderList(type){
           '<span class="ht-phone-sale-date"><strong>'+esc(date)+'</strong><small>'+esc(time)+'</small></span>'+
           '<span class="ht-phone-sale-chevron" aria-hidden="true">›</span>'+
         '</button>'+
+        (hasPermission("webshop_orders.delete")?'<button type="button" class="btn btn-red ht-phone-sale-delete" title="Bestelling #'+Number(order.id)+' verwijderen" aria-label="Bestelling #'+Number(order.id)+' verwijderen" onclick="deleteWebshopOrder('+Number(order.id)+')">🗑 Verwijderen</button>':"")+
         (mixed?'<div class="unified-order-mixed-note">Combinatiebestelling: telefoon en shopartikelen.</div>':"")+
       '</article>';
     }
@@ -8896,7 +8900,7 @@ async function showWebshopOrderDetails(id){
 <section class="ht-phone-detail-card" style="margin-bottom:12px">
           <div class="ht-phone-detail-card-head"><span class="icon">◷</span>Bestelstatus (log)</div>
           <div class="ht-phone-timeline">${timelineRows}</div>
-        </section>${(Array.isArray(order.refunds)&&order.refunds.length)?'<section class="ht-phone-detail-card" style="margin-bottom:12px"><div class="ht-phone-detail-card-head"><span class="icon">↩</span>Terugbetalingen</div><div class="ht-phone-detail-card-body">'+order.refunds.map(refund=>{const stamp=refund.created_at?formatPhoneOrderDateTime(refund.created_at):null;const state=refund.status==="Processed"?"Terugbetaald":(refund.status==="Pending manual"?"Handmatig uit te voeren":(refund.status==="Processing"?"Wordt verwerkt":"Mislukt"));return '<div class="ht-phone-note-entry"><div class="ht-phone-note-meta">'+esc(state)+' · '+esc(refund.method||"")+' · '+esc(stamp?stamp.date+" "+stamp.time:"")+'</div><strong>'+money(refund.amount)+'</strong><p>'+esc(refund.reason||"")+'</p>'+(refund.status==="Pending manual"?'<button type="button" class="btn btn-light" style="margin-top:7px" onclick="completeWebshopManualRefund('+Number(order.id)+','+Number(refund.id)+')">Handmatige terugbetaling bevestigen</button>':'')+'</div>';}).join("")+'</div></section>':""}<div class="ht-phone-detail-actions">${hasPermission("webshop_orders.update")?'<button class="btn btn-light" type="button" onclick="focusPhoneOrderNote()">Notitie</button>':""}<button class="btn btn-light" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button><button class="btn btn-light" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
+        </section>${(Array.isArray(order.refunds)&&order.refunds.length)?'<section class="ht-phone-detail-card" style="margin-bottom:12px"><div class="ht-phone-detail-card-head"><span class="icon">↩</span>Terugbetalingen</div><div class="ht-phone-detail-card-body">'+order.refunds.map(refund=>{const stamp=refund.created_at?formatPhoneOrderDateTime(refund.created_at):null;const state=refund.status==="Processed"?"Terugbetaald":(refund.status==="Pending manual"?"Handmatig uit te voeren":(refund.status==="Processing"?"Wordt verwerkt":"Mislukt"));return '<div class="ht-phone-note-entry"><div class="ht-phone-note-meta">'+esc(state)+' · '+esc(refund.method||"")+' · '+esc(stamp?stamp.date+" "+stamp.time:"")+'</div><strong>'+money(refund.amount)+'</strong><p>'+esc(refund.reason||"")+'</p>'+(refund.status==="Pending manual"?'<button type="button" class="btn btn-light" style="margin-top:7px" onclick="completeWebshopManualRefund('+Number(order.id)+','+Number(refund.id)+')">Handmatige terugbetaling bevestigen</button>':'')+'</div>';}).join("")+'</div></section>':""}<div class="ht-phone-detail-actions">${hasPermission("webshop_orders.update")?'<button class="btn btn-light" type="button" onclick="focusPhoneOrderNote()">Notitie</button>':""}${hasPermission("webshop_orders.delete")?'<button class="btn btn-red" type="button" onclick="deleteWebshopOrder('+Number(order.id)+')">🗑 Verwijderen</button>':""}<button class="btn btn-light" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button><button class="btn btn-light" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
       </div>`;
 
     const modal=document.createElement("div");
@@ -9303,6 +9307,7 @@ async function deleteWebshopOrder(id){
     });
     const result=await r.json().catch(()=>({}));
     if(!r.ok) throw new Error(result.error||"Bestelling kon niet worden verwijderd.");
+    closeWebshopOrderDetails();
     await loadWebshopOrders();
     if(currentPage==="search") await adminSearch();
   }catch(e){ alert(e.message); }
@@ -9357,14 +9362,17 @@ async function loadBuybackOrders(){
       const id=Number(order.id);
       const price=buybackMoney(order.sale_inspected_value??order.offered_price);
       const statusText=String(order.status||"Nieuw");
-      return '<button type="button" class="ht-inkoop-row" onclick="showBuybackDetails('+id+')">'+
+      return '<div class="ht-inkoop-row-wrap">'+
+        '<button type="button" class="ht-inkoop-row" onclick="showBuybackDetails('+id+')">'+
         '<span class="ht-inkoop-main"><span class="ht-inkoop-main-top">'+
         '<span class="ht-inkoop-number">#'+esc(order.order_no||id)+'</span>'+
         '<strong>'+esc(order.name||"Klant onbekend")+' · '+esc(order.device||"Telefoon")+'</strong></span>'+
         '<small>'+esc(order.email||"Geen e-mail")+' · '+esc(buybackDate(order.created_at))+'</small>'+
         '<span class="ht-inkoop-type '+(order.trade_in?'is-tradein':'is-sale')+'">'+(order.trade_in?'♻ Inruil':'Verkoop')+'</span>'+
         '<span class="ht-inkoop-chip '+buybackStatusClass(statusText)+'">'+esc(statusText)+'</span></span>'+
-        '<strong class="ht-inkoop-price">'+price+'</strong><span aria-hidden="true">›</span></button>';
+        '<strong class="ht-inkoop-price">'+price+'</strong><span aria-hidden="true">›</span></button>'+
+        (!order.trade_in&&hasPermission("buyback_orders.delete")?'<button type="button" class="btn btn-red ht-inkoop-row-delete" title="Aanvraag #'+id+' verwijderen" aria-label="Aanvraag #'+id+' verwijderen" onclick="deleteBuybackOrder('+id+')">🗑</button>':'')+
+        '</div>';
     }).join("")+'</div>';
   }catch(error){
     status.textContent="";
@@ -9685,7 +9693,7 @@ async function updateBuybackStatus(id,newStatus){
 }
 async function deleteBuybackOrder(id){
   if(!hasPermission("buyback_orders.delete"))return;
-  if(!confirm("Deze zelfstandige inkoopaanvraag echt verwijderen?"))return;
+  if(!confirm("Zelfstandige verkoopaanvraag #"+id+" definitief uit het Inkoop-overzicht verwijderen? Deze actie kan niet ongedaan worden gemaakt."))return;
   try{
     const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(id),{method:"DELETE",credentials:"same-origin"});
     const result=await response.json().catch(()=>({}));
