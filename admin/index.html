@@ -3530,7 +3530,7 @@ const ADMIN_PERMISSION_LABELS = {
   "repair_page.view":"Reparatiepagina bekijken","repair_page.update":"Reparatiepagina wijzigen","site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
 };
 
-function hasPermission(p){return currentUser.role==="superadmin"||currentUser.permissions.includes("*")||currentUser.permissions.includes(p);}
+function hasPermission(p){return currentUser.role==="superadmin"||currentUser.permissions.includes("*")||currentUser.permissions.includes(p)||(p.endsWith(".delete")&&currentUser.permissions.includes("site.save"));}
 function canEditSite(){return hasPermission("site.save");}
 function canEditCurrentPage(){
   if(currentPage==="phones") return hasPermission("phones.update") || canEditSite();
