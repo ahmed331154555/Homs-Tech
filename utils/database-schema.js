@@ -215,6 +215,22 @@ async function initializeDatabaseSchema(pool) {
         created_by TEXT NOT NULL DEFAULT 'HOMS TECH Admin',
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+
+      CREATE TABLE IF NOT EXISTS webshop_order_refunds (
+        id BIGSERIAL PRIMARY KEY,
+        order_id INTEGER NOT NULL REFERENCES webshop_orders(id) ON DELETE CASCADE,
+        amount NUMERIC(12,2) NOT NULL CHECK (amount > 0),
+        currency TEXT NOT NULL DEFAULT 'EUR',
+        method TEXT NOT NULL CHECK (method IN ('Mollie','Manual')),
+        status TEXT NOT NULL CHECK (status IN ('Processing','Pending manual','Processed','Failed')),
+        reason TEXT NOT NULL DEFAULT '',
+        provider_refund_id TEXT NOT NULL DEFAULT '',
+        created_by TEXT NOT NULL DEFAULT 'HOMS TECH Admin',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        processed_at TIMESTAMPTZ
+      );
+      CREATE INDEX IF NOT EXISTS webshop_order_refunds_order_idx
+        ON webshop_order_refunds(order_id, created_at DESC);
       CREATE INDEX IF NOT EXISTS webshop_order_notes_order_idx
         ON webshop_order_notes(order_id, created_at DESC);
 
