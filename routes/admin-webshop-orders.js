@@ -5,6 +5,24 @@ const crypto = require("node:crypto");
 const { calculateTradeInAdjustment } = require("../utils/trade-in");
 const { sendPaidWebshopOrderNotifications } = require("../utils/webshop-paid-notifications");
 
+const REQUIRED_PHONE_INSPECTION_CHECKS = Object.freeze([
+  "model_storage_color",
+  "screen_touch",
+  "battery",
+  "face_id_touch_id",
+  "cameras",
+  "speakers_microphone",
+  "charging",
+  "network_wifi_sim",
+  "icloud_activation_lock",
+  "cosmetic_condition",
+  "cleaning",
+  "accessories",
+  "secure_packaging",
+  "shipping_address"
+]);
+
+
 function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory, ensureBuybackOrdersTable, fetchImpl = fetch, getEnv = () => process.env, escapeHtml }) {
   async function notifyPaidTradeInOrder(orderId) {
     try {
@@ -171,6 +189,37 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
     }
   });
 
+  app.put("/api/admin/webshop-orders/:id/inspection", requirePermission("webshop_orders.update"), async (req,res) => {
+    try {
+      const id=Number(req.params.id);
+      if(!Number.isInteger(id)||id<1)return res.status(400).json({error:"Ongeldig order-ID."});
+      const submitted=req.body?.checks;
+      if(!submitted||typeof submitted!=="object"||Array.isArray(submitted)) {
+        return res.status(400).json({error:"De controlelijst ontbreekt of is ongeldig."});
+      }
+      const checks={};
+      for(const key of REQUIRED_PHONE_INSPECTION_CHECKS) checks[key]=submitted[key]===true;
+      const complete=REQUIRED_PHONE_INSPECTION_CHECKS.every(key=>checks[key]===true);
+      const saved=await pool.query(
+        `INSERT INTO webshop_order_inspections (order_id,checks,inspected_by,completed_at,updated_at)
+         SELECT id,$2::jsonb,'HOMS TECH Admin',CASE WHEN $3 THEN NOW() ELSE NULL END,NOW()
+         FROM webshop_orders WHERE id=$1
+         ON CONFLICT (order_id) DO UPDATE SET
+           checks=EXCLUDED.checks,
+           inspected_by=EXCLUDED.inspected_by,
+           completed_at=CASE WHEN $3 THEN COALESCE(webshop_order_inspections.completed_at,NOW()) ELSE NULL END,
+           updated_at=NOW()
+         RETURNING order_id,checks,inspected_by,completed_at,updated_at`,
+        [id,JSON.stringify(checks),complete]
+      );
+      if(!saved.rows.length)return res.status(404).json({error:"Bestelling niet gevonden."});
+      return res.json({success:true,inspection:saved.rows[0],complete,required:REQUIRED_PHONE_INSPECTION_CHECKS.length});
+    } catch(error) {
+      console.error("Save webshop phone inspection error:",error);
+      return res.status(500).json({error:"De telefooncontrole kon niet worden opgeslagen."});
+    }
+  });
+
   app.put("/api/admin/webshop-orders/:id/shipping", requirePermission("webshop_orders.update"), async (req,res) => {
     try{
       const id=Number(req.params.id);
@@ -184,6 +233,16 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       if(carrier&& !["PostNL","DHL"].includes(carrier))return res.status(400).json({error:"Kies alleen PostNL of DHL."});
       if(!["Unpaid","Processing","Paid","Failed"].includes(paymentStatus))return res.status(400).json({error:"Ongeldige betaalstatus."});
       if(trackingUrl&&!/^https:\/\//i.test(trackingUrl))return res.status(400).json({error:"De tracking-URL moet beginnen met https://"});
+      if(carrier||trackingNumber||trackingUrl){
+        const inspection=await pool.query(
+          "SELECT checks FROM webshop_order_inspections WHERE order_id=$1",
+          [id]
+        );
+        const checks=inspection.rows[0]?.checks||{};
+        if(!REQUIRED_PHONE_INSPECTION_CHECKS.every(key=>checks[key]===true)){
+          return res.status(409).json({error:"Verzending geblokkeerd: rond eerst alle verplichte controlepunten van de nieuwe telefoon af en sla de controle op."});
+        }
+      }
       const tradeInCheck=await pool.query(
         "SELECT trade_in_order_id,trade_in_status FROM webshop_orders WHERE id=$1",
         [id]
@@ -230,6 +289,10 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
                 webshop_orders.status, webshop_orders.payment_method, webshop_orders.payment_status,
                 webshop_orders.paypal_order_id, webshop_orders.mollie_payment_id,
                 webshop_orders.inventory_deducted_at, webshop_orders.inventory_error,
+                COALESCE(phone_inspection.checks,'{}'::jsonb) AS inspection_checks,
+                phone_inspection.inspected_by AS inspection_inspected_by,
+                phone_inspection.completed_at AS inspection_completed_at,
+                phone_inspection.updated_at AS inspection_updated_at,
                 webshop_orders.trade_in_order_id, webshop_orders.trade_in_estimated_value,
                 webshop_orders.trade_in_applied_credit, webshop_orders.trade_in_inspected_value,
                 webshop_orders.trade_in_adjustment, webshop_orders.trade_in_status, webshop_orders.trade_in_snapshot,
@@ -256,6 +319,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
                   WHERE notes.order_id = webshop_orders.id
                 ), '[]'::json) AS notes
          FROM webshop_orders
+         LEFT JOIN webshop_order_inspections phone_inspection ON phone_inspection.order_id=webshop_orders.id
          LEFT JOIN buyback_orders ON buyback_orders.id = webshop_orders.trade_in_order_id
          ORDER BY webshop_orders.created_at DESC`
       );
@@ -295,6 +359,15 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       const allowed = ["Nieuw", "In behandeling", "Verzonden", "Voltooid", "Geannuleerd"];
       const status = String(req.body?.status || "").trim();
       if(["Verzonden","Voltooid"].includes(status)){
+        const inspection=await pool.query(
+          "SELECT checks FROM webshop_order_inspections WHERE order_id=$1",
+          [id]
+        );
+        const checks=inspection.rows[0]?.checks||{};
+        if(!REQUIRED_PHONE_INSPECTION_CHECKS.every(key=>checks[key]===true)){
+          return res.status(409).json({error:"Deze bestelling kan pas worden verzonden nadat alle verplichte controlepunten zijn afgevinkt en opgeslagen."});
+        }
+
         const tradeInCheck=await pool.query("SELECT trade_in_order_id,trade_in_status FROM webshop_orders WHERE id=$1",[id]);
         if(!tradeInCheck.rows.length)return res.status(404).json({error:"Webshop bestelling niet gevonden."});
         if(tradeInCheck.rows[0].trade_in_order_id && tradeInCheck.rows[0].trade_in_status!=="Settled"){
