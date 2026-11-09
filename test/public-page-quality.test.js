@@ -182,3 +182,11 @@ test("phone-selling page loads shared theme before interactive page scripts", ()
   assert.match(html.slice(0, headEnd), /assets\/homs-layout-system\.css/i);
 });
 
+test("phone-selling page exposes complete social sharing metadata", () => {
+  const html = readPage("uw-toestel-verkopen.html");
+  for (const property of ["og:type", "og:site_name", "og:title", "og:description", "og:url", "og:image"]) {
+    assert.match(html, new RegExp('property=["\\\\']' + property.replace(/[.*+?^${}()|[\\]\\]/g, "\\\\$&") + '["\\\\']', "i"), "missing " + property);
+  }
+  assert.match(html, /name=["']twitter:card["'][^>]*content=["']summary_large_image["']/i);
+});
+
