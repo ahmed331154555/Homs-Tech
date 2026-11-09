@@ -2539,6 +2539,48 @@ body.phone-orders-page-active #page-all-orders{padding-bottom:78px}
 .ht-phone-inspection-save{width:100%;margin-top:12px;min-height:42px}
 @media(max-width:720px){.ht-phone-inspection-list{grid-template-columns:minmax(0,1fr)}}
 </style>
+
+<style id="homs-phone-order-accordion-v1">
+/* Compact, accessible accordion layout for phone-order details only. */
+.phone-order-detail-overlay .ht-phone-detail-accordion{
+  min-width:0;margin:0 0 9px;overflow:hidden;
+  border:1px solid #e1e8f1;border-radius:11px;
+  background:#fff;box-shadow:0 2px 7px rgba(15,35,61,.035)
+}
+.phone-order-detail-overlay .ht-phone-detail-accordion>.ht-phone-detail-card-head{
+  display:flex;align-items:center;gap:9px;min-height:44px;
+  padding:9px 12px;border:0;background:#f7f9fc;
+  color:#172b40;font-size:12px;font-weight:800;cursor:pointer;
+  list-style:none;user-select:none
+}
+.phone-order-detail-overlay .ht-phone-detail-accordion>.ht-phone-detail-card-head::-webkit-details-marker{display:none}
+.phone-order-detail-overlay .ht-phone-detail-accordion>.ht-phone-detail-card-head::after{
+  content:"⌄";display:grid;place-items:center;width:23px;height:23px;
+  margin-left:auto;border:1px solid #dfe6ef;border-radius:7px;
+  background:#fff;color:#64748b;font-size:16px;line-height:1;
+  transition:transform .18s ease
+}
+.phone-order-detail-overlay .ht-phone-detail-accordion[open]>.ht-phone-detail-card-head{
+  border-bottom:1px solid #e9eef5;background:#f1f5fa
+}
+.phone-order-detail-overlay .ht-phone-detail-accordion[open]>.ht-phone-detail-card-head::after{transform:rotate(180deg)}
+.phone-order-detail-overlay .ht-phone-detail-accordion>.ht-phone-detail-card-body,
+.phone-order-detail-overlay .ht-phone-detail-accordion>.ht-phone-timeline{
+  padding:11px 12px
+}
+.phone-order-detail-overlay .ht-phone-detail-accordion .ht-phone-detail-card-body{gap:8px}
+.phone-order-detail-overlay .ht-phone-detail-accordion .ht-phone-info-line{padding:2px 0;font-size:11px}
+.phone-order-detail-overlay .ht-phone-detail-accordion .ht-phone-detail-field input,
+.phone-order-detail-overlay .ht-phone-detail-accordion .ht-phone-detail-field select{min-height:36px}
+.phone-order-detail-overlay .ht-phone-detail-accordion .btn{min-height:36px;padding:8px 11px;font-size:12px}
+@media(max-width:760px){
+  .phone-order-detail-overlay .ht-phone-detail-accordion{margin-bottom:8px;border-radius:10px}
+  .phone-order-detail-overlay .ht-phone-detail-accordion>.ht-phone-detail-card-head{min-height:42px;padding:8px 10px}
+}
+@media(prefers-reduced-motion:reduce){
+  .phone-order-detail-overlay .ht-phone-detail-accordion>.ht-phone-detail-card-head::after{transition:none}
+}
+</style>
 </head>
 
 <body>
@@ -8653,6 +8695,33 @@ async function showWebshopOrderDetails(id){
     // Phone-order details always use a true full-screen overlay on desktop and mobile.
     const useInlinePhoneDetails=false;
     const useMobilePhoneDetail=isPhoneOnlyOrder;
+    // Turn the phone-order information cards into compact native accordions.
+    // Native <details>/<summary> preserves keyboard access and all existing form actions.
+    if(isPhoneOnlyOrder){
+      const accordionCards=Array.from(modal.querySelectorAll(".ht-phone-detail-card"))
+        .filter(card=>card.querySelector(":scope > .ht-phone-detail-card-head"));
+      accordionCards.forEach((card,index)=>{
+        const heading=card.querySelector(":scope > .ht-phone-detail-card-head");
+        if(!heading)return;
+        const title=heading.textContent.trim();
+        const accordion=document.createElement("details");
+        accordion.className=card.className+" ht-phone-detail-accordion";
+        if(card.id)accordion.id=card.id;
+        if(index===0||/inspectie/i.test(title))accordion.open=true;
+        const summary=document.createElement("summary");
+        summary.className="ht-phone-detail-card-head";
+        while(heading.firstChild)summary.append(heading.firstChild);
+        const body=document.createElement("div");
+        body.className="ht-phone-detail-card-body";
+        while(card.firstChild){
+          const child=card.firstChild;
+          if(child===heading){child.remove();continue;}
+          body.append(child);
+        }
+        accordion.append(summary,body);
+        card.replaceWith(accordion);
+      });
+    }
     const detailHost=document.getElementById("phoneOrderDetailHost");
     if(useInlinePhoneDetails&&detailHost){
       detailHost.replaceChildren(modal);
