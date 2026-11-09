@@ -1,6 +1,6 @@
 "use strict";
 
-const EMAIL_PATTERN = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function validateAdminCustomerInput(input, { requirePassword = false } = {}) {
   const body = input && typeof input === "object" && !Array.isArray(input) ? input : {};
