@@ -655,6 +655,7 @@ function switchProductRecord(record,storage,color){
   if(!record||record.p===currentProduct)return false;
   currentProduct=record.p;
   currentProductId=record.i;
+  updateProductMetadata(record.p);
   const url=new URL(window.location.href);
   url.searchParams.set("id",String(record.i));
   window.history.replaceState({}, "", url.toString());
