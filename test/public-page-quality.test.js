@@ -209,8 +209,8 @@ test("admin stylesheet contains real line breaks between order responsive rules"
   const css = fs.readFileSync(path.join(root, "assets/homs-admin.css"), "utf8");
   assert.equal(css.includes("\\n@media(max-width:560px)"), false, "literal escaped newline must not remain before media query");
   assert.equal(css.includes("\\n#page-all-orders"), false, "literal escaped newline must not remain before order note");
-  assert.match(css, /@media\\s*\\(max-width:\\s*760px\\)/);
-  assert.match(css, /@media\\s*\\(max-width:\\s*420px\\)/);
+  assert.ok(css.includes("@media (max-width: 760px)"));
+  assert.ok(css.includes("@media (max-width: 420px)"));
 });
 
 test("admin order layouts prevent narrow-screen overflow", () => {
