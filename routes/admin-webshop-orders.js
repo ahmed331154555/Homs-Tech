@@ -237,7 +237,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       if(carrier&& !["PostNL","DHL"].includes(carrier))return res.status(400).json({error:"Kies alleen PostNL of DHL."});
       if(!["Unpaid","Processing","Paid","Failed"].includes(paymentStatus))return res.status(400).json({error:"Ongeldige betaalstatus."});
       if(trackingUrl&&!/^https:\/\//i.test(trackingUrl))return res.status(400).json({error:"De tracking-URL moet beginnen met https://"});
-      if(trackingNumber||trackingUrl){
+      if(carrier||trackingNumber||trackingUrl){
         const inspection=await pool.query(
           `SELECT webshop_orders.items,COALESCE(webshop_order_inspections.checks,'{}'::jsonb) AS checks
            FROM webshop_orders
