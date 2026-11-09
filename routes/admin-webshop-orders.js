@@ -22,6 +22,35 @@ const REQUIRED_PHONE_INSPECTION_CHECKS = Object.freeze([
   "shipping_address"
 ]);
 
+function parseOrderItems(items) {
+  if (Array.isArray(items)) return items;
+  if (typeof items === "string") {
+    try {
+      const parsed = JSON.parse(items);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function orderContainsPhone(items) {
+  return parseOrderItems(items).some(item => {
+    const type = String(item?.type || item?.product_type || item?.category || item?.kind || "").trim().toLowerCase();
+    return ["phone", "telefoon", "smartphone", "iphone", "mobile", "device"].includes(type);
+  });
+}
+
+function phoneInspectionIsComplete(checks) {
+  let values = checks;
+  if (typeof values === "string") {
+    try { values = JSON.parse(values); } catch { values = {}; }
+  }
+  if (!values || typeof values !== "object" || Array.isArray(values)) values = {};
+  return REQUIRED_PHONE_INSPECTION_CHECKS.every(key => values[key] === true);
+}
+
 
 function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieRequest, deductPaidOrderInventory, ensureBuybackOrdersTable, fetchImpl = fetch, getEnv = () => process.env, escapeHtml }) {
   async function notifyPaidTradeInOrder(orderId) {
@@ -234,19 +263,28 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
       if(!["Unpaid","Processing","Paid","Failed"].includes(paymentStatus))return res.status(400).json({error:"Ongeldige betaalstatus."});
       if(trackingUrl&&!/^https:\/\//i.test(trackingUrl))return res.status(400).json({error:"De tracking-URL moet beginnen met https://"});
       const tradeInCheck=await pool.query(
-        `SELECT EXISTS(
-           SELECT 1
-           FROM buyback_orders buyback
-           WHERE buyback.id=webshop_orders.trade_in_order_id
-             AND buyback.trade_in_linked_order_id=webshop_orders.id
-               AND COALESCE(webshop_orders.trade_in_applied_credit,0)>0
-         ) AS has_valid_trade_in,
-         webshop_orders.trade_in_status
-         FROM webshop_orders WHERE webshop_orders.id=$1`,
+        `SELECT webshop_orders.items,
+                COALESCE(phone_inspection.checks,'{}'::jsonb) AS checks,
+                EXISTS(
+                  SELECT 1
+                  FROM buyback_orders buyback
+                  WHERE buyback.id=webshop_orders.trade_in_order_id
+                    AND buyback.trade_in_linked_order_id=webshop_orders.id
+                    AND COALESCE(webshop_orders.trade_in_applied_credit,0)>0
+                ) AS has_valid_trade_in,
+                webshop_orders.trade_in_status
+         FROM webshop_orders
+         LEFT JOIN webshop_order_inspections phone_inspection
+           ON phone_inspection.order_id=webshop_orders.id
+         WHERE webshop_orders.id=$1`,
         [id]
       );
       if(!tradeInCheck.rows.length)return res.status(404).json({error:"Bestelling niet gevonden."});
-      if(tradeInCheck.rows[0].has_valid_trade_in && tradeInCheck.rows[0].trade_in_status!=="Settled" && (carrier||trackingNumber||trackingUrl)){
+      const order=tradeInCheck.rows[0];
+      if((carrier||trackingNumber||trackingUrl) && orderContainsPhone(order.items) && !phoneInspectionIsComplete(order.checks)){
+        return res.status(409).json({error:"Verzendgegevens kunnen pas worden opgeslagen nadat alle verplichte telefooncontrolepunten zijn afgerond."});
+      }
+      if(order.has_valid_trade_in && order.trade_in_status!=="Settled" && (carrier||trackingNumber||trackingUrl)){
         return res.status(409).json({error:"Verzending is geblokkeerd totdat het inruiltoestel is gecontroleerd en het prijsverschil is afgehandeld."});
       }
       const result=await pool.query(
@@ -460,19 +498,27 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
       if (!allowed.includes(status)) return res.status(400).json({ error: "Ongeldige status." });
       if(["Verzonden","Voltooid"].includes(status)){
         const orderResult=await pool.query(
-          `SELECT EXISTS(
-             SELECT 1
-             FROM buyback_orders buyback
-             WHERE buyback.id=webshop_orders.trade_in_order_id
-               AND buyback.trade_in_linked_order_id=webshop_orders.id
-               AND COALESCE(webshop_orders.trade_in_applied_credit,0)>0
-           ) AS has_valid_trade_in,
-           webshop_orders.trade_in_status
-           FROM webshop_orders WHERE webshop_orders.id=$1`,
+          `SELECT webshop_orders.items,
+                  COALESCE(phone_inspection.checks,'{}'::jsonb) AS checks,
+                  EXISTS(
+                    SELECT 1
+                    FROM buyback_orders buyback
+                    WHERE buyback.id=webshop_orders.trade_in_order_id
+                      AND buyback.trade_in_linked_order_id=webshop_orders.id
+                      AND COALESCE(webshop_orders.trade_in_applied_credit,0)>0
+                  ) AS has_valid_trade_in,
+                  webshop_orders.trade_in_status
+           FROM webshop_orders
+           LEFT JOIN webshop_order_inspections phone_inspection
+             ON phone_inspection.order_id=webshop_orders.id
+           WHERE webshop_orders.id=$1`,
           [id]
         );
         if(!orderResult.rows.length)return res.status(404).json({error:"Webshop bestelling niet gevonden."});
         const order=orderResult.rows[0];
+        if(orderContainsPhone(order.items) && !phoneInspectionIsComplete(order.checks)){
+          return res.status(409).json({error:"Alle verplichte controlepunten moeten zijn afgerond voordat deze telefoonbestelling kan worden verzonden of voltooid."});
+        }
         if(order.has_valid_trade_in && order.trade_in_status!=="Settled"){
           return res.status(409).json({error:"Deze bestelling kan pas worden verzonden of voltooid nadat de inruilcontrole en eventuele verrekening zijn afgerond."});
         }
@@ -510,7 +556,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
         const existing = await pool.query("SELECT id, payment_status FROM webshop_orders WHERE id = $1", [id]);
         if (!existing.rows.length) return res.status(404).json({ error: "Webshop bestelling niet gevonden." });
         if (existing.rows[0].payment_status === "Paid" && status === "Geannuleerd") {
-          return res.status(409).json({ error: "Registreer eerst de volledige of gedeeltelijke terugbetaling voordat je deze betaalde bestelling annuleert." });
+          return res.status(409).json({ error: "Een betaalde bestelling kan niet rechtstreeks worden geannuleerd. Registreer eerst de volledige of gedeeltelijke terugbetaling." });
         }
         return res.status(409).json({ error: "De bestelstatus kon niet worden gewijzigd." });
       }
