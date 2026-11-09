@@ -4312,6 +4312,7 @@ function closeCustomerModal(){
   document.body.style.overflow="";
 }
 function showCustomerCreateForm(){
+  if(!hasPermission("customers.update"))return;
   ["newCustomerFirstName","newCustomerLastName","newCustomerEmail","newCustomerPostcode","newCustomerHouseNumber","newCustomerStreet","newCustomerCity","newCustomerPhone","newCustomerPassword"].forEach(id=>{document.getElementById(id).value="";});
   openCustomerModal("customerCreatePanel");
   document.getElementById("newCustomerName").focus();
@@ -4355,6 +4356,7 @@ function splitCustomerName(name){
   return {firstName:parts.shift()||"",lastName:parts.join(" ")};
 }
 async function createCustomer(){
+  if(!hasPermission("customers.update"))return;
   const firstName=document.getElementById("newCustomerFirstName").value.trim();
   const lastName=document.getElementById("newCustomerLastName").value.trim();
   const email=document.getElementById("newCustomerEmail").value.trim();
@@ -4382,6 +4384,7 @@ function editCustomer(id){
   document.getElementById("customerEditTitle").textContent="Gegevens van "+(customer.name||"klant");
 }
 async function saveCustomerEdit(){
+  if(!hasPermission("customers.update"))return;
   const id=document.getElementById("editCustomerId").value;
   const firstName=document.getElementById("editCustomerFirstName").value.trim();
   const lastName=document.getElementById("editCustomerLastName").value.trim();
@@ -4392,20 +4395,24 @@ async function saveCustomerEdit(){
   catch(e){setStatus("✕ "+e.message,"error");}
 }
 function editCustomerPassword(id){
+  if(!hasPermission("customers.update"))return;
   document.getElementById("passwordCustomerId").value=id;document.getElementById("adminCustomerPassword").value="";const customer=(window.adminCustomersCache||[]).find(x=>Number(x.id)===Number(id));document.getElementById("customerPasswordTitle").textContent="Wachtwoord wijzigen"+(customer?" voor "+customer.name:"");openCustomerModal("customerPasswordPanel");
 }
 async function saveCustomerPassword(){
+  if(!hasPermission("customers.update"))return;
   const id=document.getElementById("passwordCustomerId").value,password=document.getElementById("adminCustomerPassword").value;
   try{await customerApi("/api/admin/customers/"+encodeURIComponent(id)+"/password","PUT",{password});hideCustomerPasswordForm();await loadCustomers();setStatus("✓ Wachtwoord gewijzigd","success");}
   catch(e){setStatus("✕ "+e.message,"error");}
 }
 async function deleteCustomer(id){
+  if(!hasPermission("customers.delete"))return;
   const customer=(window.adminCustomersCache||[]).find(x=>Number(x.id)===Number(id));
   if(!confirm("Weet je zeker dat je het account van "+(customer?.name||"deze klant")+" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."))return;
   try{await customerApi("/api/admin/customers/"+encodeURIComponent(id),"DELETE");await loadCustomers();setStatus("✓ Klantaccount verwijderd","success");}
   catch(e){setStatus("✕ "+e.message,"error");}
 }
 async function loadCustomers(){
+  if(!hasPermission("customers.view"))return;
   const box=document.getElementById("customersList");
   const status=document.getElementById("customersStatus");
   if(!box) return;
