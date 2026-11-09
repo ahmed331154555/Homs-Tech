@@ -98,6 +98,7 @@ test("product metadata updates dynamically for the selected product", () => {
   assert.match(html, /productCanonical/);
   assert.match(html, /canonical\.searchParams\.set\("id",String\(currentProductId\)\)/);
   assert.match(html, /updateProductMetadata\(product\)/);
+  assert.match(html, /currentProductId=record\.i;\s*updateProductMetadata\(record\.p\)/);
 });
 
 test("shop and product SEO head markup contains no escaped newline text", () => {
