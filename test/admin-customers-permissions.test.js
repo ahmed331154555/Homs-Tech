@@ -31,3 +31,29 @@ test("customer admin actions enforce view, update and delete permissions in the 
   assert.match(script, /async function saveCustomerPassword\(\)\{\s*if\(!hasPermission\("customers\.update"\)\)return;/);
   assert.match(script, /async function deleteCustomer\(id\)\{\s*if\(!hasPermission\("customers\.delete"\)\)return;/);
 });
+
+
+test("admin-created customer welcome email is injected and cannot fail account creation", () => {
+  const server = read("server.js");
+  const routes = read("routes/admin-customers.js");
+  assert.match(server, /registerAdminCustomerRoutes\\(app, \\{[^}]*sendWelcomeEmail/);
+  assert.match(routes, /function registerAdminCustomerRoutes\\(app, \\{[^}]*sendWelcomeEmail/);
+  assert.match(routes, /Promise\\.resolve\\(\\)/);
+  assert.match(routes, /Admin-created customer welcome email failed/);
+});
+
+test("admin stylesheet has balanced blocks and no orphan editor declarations", () => {
+  const css = read("assets/homs-admin.css");
+  const withoutComments = css.replace(/\\/\\*[\\s\\S]*?\\*\\//g, "");
+  let depth = 0;
+  for (const character of withoutComments) {
+    if (character === "{") depth += 1;
+    if (character === "}") depth -= 1;
+    assert.ok(depth >= 0, "CSS closes a block before it opens");
+  }
+  assert.equal(depth, 0, "CSS blocks must be balanced");
+  assert.doesNotMatch(
+    css,
+    /\\n\\s*display\\s*:\\s*grid;\\s*\\n\\s*grid-template-columns:1fr 1\\.35fr;\\s*\\n\\s*gap:18px;\\s*\\n}/
+  );
+});
