@@ -2,7 +2,7 @@
 
 const ADMIN_PERMISSION_KEYS = Object.freeze([
   "general.view", "services.view", "phones.view", "phones.update",
-  "categories.view", "why.view", "customers.view",
+  "categories.view", "why.view", "customers.view", "customers.update", "customers.delete",
   "orders.view", "orders.update", "orders.delete",
   "webshop_orders.view", "webshop_orders.update", "webshop_orders.delete",
   "buyback_orders.view", "buyback_orders.update", "buyback_orders.delete",
