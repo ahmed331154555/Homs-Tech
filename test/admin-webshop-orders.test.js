@@ -331,11 +331,15 @@ test("admin cannot directly cancel a paid webshop order", async () => {
   assert.equal(calls.length, 2);
 });
 
-test("admin can change the fulfillment status of a paid webshop order without changing payment state", async () => {
-  let query = "";
+test("admin can change the fulfillment status of a fully inspected paid phone order", async () => {
+  let updateQuery = "";
   const routes = createHarness({
     async query(sql) {
-      query = sql;
+      if(sql.includes("LEFT JOIN webshop_order_inspections")){
+        assert.match(sql,/webshop_orders.items/);
+        return { rows: [{ items:[{type:"phone",name:"iPhone 13"}], trade_in_order_id:null, trade_in_status:null, checks:{"model_storage_color":true,"screen_touch":true,"battery":true,"face_id_touch_id":true,"cameras":true,"speakers_microphone":true,"charging":true,"network_wifi_sim":true,"icloud_activation_lock":true,"cosmetic_condition":true,"cleaning":true,"accessories":true,"secure_packaging":true,"shipping_address":true} }] };
+      }
+      updateQuery = sql;
       return { rows: [{ id: 12, status: "Verzonden" }] };
     }
   });
@@ -348,7 +352,45 @@ test("admin can change the fulfillment status of a paid webshop order without ch
 
   assert.equal(response.statusCode, 200);
   assert.deepEqual(response.body, { success: true, order: { id: 12, status: "Verzonden" } });
-  assert.match(query, /NOT \(payment_status = 'Paid' AND \$1 = 'Geannuleerd'\)/);
+  assert.match(updateQuery, /NOT \(payment_status = 'Paid' AND \$1 = 'Geannuleerd'\)/);
+});
+
+
+test("admin cannot ship a phone order until every mandatory inspection check is saved", async () => {
+  let statusUpdateCalled = false;
+  const routes = createHarness({
+    async query(sql) {
+      if(sql.includes("LEFT JOIN webshop_order_inspections")){
+        return { rows: [{ items:[{type:"phone",name:"iPhone 13"}], trade_in_order_id:null, trade_in_status:null, checks:{battery:true} }] };
+      }
+      statusUpdateCalled = true;
+      return { rows: [{ id: 12, status: "Verzonden" }] };
+    }
+  });
+  const response = createResponse();
+  await routes.get("PUT /api/admin/webshop-orders/:id/status")({
+    params:{id:"12"},body:{status:"Verzonden"}
+  },response);
+  assert.equal(response.statusCode,409);
+  assert.match(response.body.error,/alle verplichte controlepunten/i);
+  assert.equal(statusUpdateCalled,false);
+});
+
+
+test("shop-only order does not require phone inspection before shipping", async () => {
+  const routes = createHarness({
+    async query(sql) {
+      if(sql.includes("LEFT JOIN webshop_order_inspections")){
+        return { rows: [{ items:[{type:"shop",name:"Case"}], trade_in_order_id:null, trade_in_status:null, checks:{} }] };
+      }
+      return { rows: [{ id: 13, status: "Verzonden" }] };
+    }
+  });
+  const response=createResponse();
+  await routes.get("PUT /api/admin/webshop-orders/:id/status")({
+    params:{id:"13"},body:{status:"Verzonden"}
+  },response);
+  assert.equal(response.statusCode,200);
 });
 
 
