@@ -4,7 +4,7 @@ const ADMIN_PERMISSION_NAMES = {
   "general.view":"Algemeen bekijken","services.view":"Diensten bekijken",
   "phones.view":"Telefoons & prijzen bekijken","phones.update":"Telefoons & prijzen wijzigen","categories.view":"Apparaten & categorieën bekijken",
   "why.view":"Waarom HOMS TECH bekijken",
-  "customers.view":"Klanten bekijken","orders.view":"Reparatieaanvragen bekijken",
+  "customers.view":"Klanten bekijken","customers.update":"Klanten aanmaken en wijzigen","customers.delete":"Klanten verwijderen","orders.view":"Reparatieaanvragen bekijken",
   "orders.update":"Reparatieaanvraag-status wijzigen","orders.delete":"Reparatieaanvragen verwijderen",
   "webshop_orders.view":"Webshop bestellingen bekijken",
   "webshop_orders.update":"Webshop order-status wijzigen","webshop_orders.delete":"Webshop bestellingen verwijderen",
