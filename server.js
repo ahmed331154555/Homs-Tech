@@ -162,6 +162,13 @@ app.get("/shop.html", async (req, res) => {
   }
 });
 
+// Serve the crawler policy explicitly and prevent stale browser/CDN caching.
+// The policy itself stays in robots.txt so it remains easy to review and maintain.
+app.get("/robots.txt", (req, res) => {
+  res.set("Cache-Control", "no-store, max-age=0, must-revalidate");
+  res.type("text/plain").sendFile(path.join(__dirname, "robots.txt"));
+});
+
 app.use(express.static(__dirname, {
   dotfiles: "deny",
   index: "index.html",
