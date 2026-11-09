@@ -39,6 +39,7 @@ test("database schema initializes all core application tables and migrations", a
     "admin_users",
     "service_orders",
     "webshop_orders",
+    "webshop_order_inspections",
     "webshop_order_status_history",
     "webshop_order_notes",
     "order_settings",
