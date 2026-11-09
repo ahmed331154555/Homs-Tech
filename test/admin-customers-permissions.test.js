@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const { ADMIN_PERMISSION_KEYS } = require("../utils/admin-permissions");
+const { validateAdminCustomerInput } = require("../utils/customer-validation");
 
 const read = file => fs.readFileSync(path.join(__dirname, "..", file), "utf8");
 
@@ -52,4 +53,29 @@ test("admin stylesheet has balanced blocks and no orphan editor declarations", (
   }
   assert.equal(depth, 0, "CSS blocks must be balanced");
   assert.ok(!css.includes("\n  display:grid;\n  grid-template-columns:1fr 1.35fr;\n  gap:18px;\n}"));
+});
+
+
+test("admin customer input validation normalizes email and rejects invalid data", () => {
+  const valid = validateAdminCustomerInput({
+    name: "  Test Customer  ",
+    email: "  TEST@example.com ",
+    phone: "+31 6 12345678",
+    address: "Rotterdam",
+    password: "secure-password"
+  }, { requirePassword: true });
+  assert.equal(valid.error, undefined);
+  assert.equal(valid.customer.name, "Test Customer");
+  assert.equal(valid.customer.email, "test@example.com");
+
+  assert.match(validateAdminCustomerInput({ name: "Test", email: "not-an-email" }).error, /e-mailadres/);
+  assert.match(validateAdminCustomerInput({ name: "x".repeat(121), email: "test@example.com" }).error, /120/);
+  assert.match(validateAdminCustomerInput({ name: "Test", email: "test@example.com", password: "short" }, { requirePassword: true }).error, /8 tekens/);
+  assert.match(validateAdminCustomerInput({ name: "Test", email: "test@example.com", phone: "x".repeat(41) }).error, /telefoonnummer/);
+  assert.match(validateAdminCustomerInput({ name: "Test", email: "test@example.com", address: "x".repeat(501) }).error, /adres/);
+});
+
+test("admin customer create and update routes use shared input validation", () => {
+  const routes = read("routes/admin-customers.js");
+  assert.equal((routes.match(/validateAdminCustomerInput\(req\.body/g) || []).length, 2);
 });
