@@ -175,6 +175,14 @@ test("admin marking a webshop order Paid deducts inventory", async () => {
   let updateSql = "";
   const routes = createHarness({
     async query(sql) {
+      if (sql.includes("SELECT checks FROM webshop_order_inspections")) {
+        return { rows: [{ checks: {
+          model_storage_color:true, screen_touch:true, battery:true, face_id_touch_id:true,
+          cameras:true, speakers_microphone:true, charging:true, network_wifi_sim:true,
+          icloud_activation_lock:true, cosmetic_condition:true, cleaning:true,
+          accessories:true, secure_packaging:true, shipping_address:true
+        } }] };
+      }
       if (sql.includes("UPDATE webshop_orders")) updateSql = sql;
       return { rows: [{ id: 12, payment_status: "Paid", shipping_method: "PostNL" }] };
     }
