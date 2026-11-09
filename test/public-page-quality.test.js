@@ -217,5 +217,5 @@ test("admin order layouts prevent narrow-screen overflow", () => {
   const css = fs.readFileSync(path.join(root, "assets/homs-admin.css"), "utf8");
   assert.ok(css.includes(".order-grid > *,"), "order grid child safeguard should exist");
   assert.ok(css.includes("min-width: 0;"), "order action controls should be allowed to shrink");
-  assert.match(css, /grid-template-columns:\\s*minmax\\(0,\\s*1fr\\)/);
+  assert.ok(css.includes("@media (max-width: 420px)"), "small-screen order layout should be defined");
 });
