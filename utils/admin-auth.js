@@ -98,7 +98,8 @@ function createAdminAuth({ jwt, getAdminUsername, getJwtSecret, pool, logError =
     }
   }
 
-  function requirePermission(permission) {
+  function requirePermission(permission, options = {}) {
+    const allowSiteSave = options.allowSiteSave === true;
     return async (req, res, next) => {
       try {
         let user = getAdminFromRequest(req);
@@ -111,7 +112,8 @@ function createAdminAuth({ jwt, getAdminUsername, getJwtSecret, pool, logError =
           user.role === "superadmin" ||
           user.username === String(getAdminUsername() || "") ||
           user.permissions.includes("*") ||
-          user.permissions.includes(permission)
+          user.permissions.includes(permission) ||
+          (allowSiteSave && user.permissions.includes("site.save"))
         ) {
           req.admin = user;
           return next();
