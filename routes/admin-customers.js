@@ -29,7 +29,7 @@ app.get("/api/admin/customers", requirePermission("customers.view"), async (req,
 });
 
 // Admin customer management (protected by customer-management permission)
-app.post("/api/admin/customers", requirePermission("customers.view"), async (req, res) => {
+app.post("/api/admin/customers", requirePermission("customers.update"), async (req, res) => {
   try {
     const name=String(req.body?.name||"").trim();
     const email=String(req.body?.email||"").trim().toLowerCase();
@@ -55,7 +55,7 @@ app.post("/api/admin/customers", requirePermission("customers.view"), async (req
   }
 });
 
-app.put("/api/admin/customers/:id", requirePermission("customers.view"), async (req,res)=>{
+app.put("/api/admin/customers/:id", requirePermission("customers.update"), async (req,res)=>{
   try {
     const id=Number(req.params.id);
     const name=String(req.body?.name||"").trim();
@@ -76,7 +76,7 @@ app.put("/api/admin/customers/:id", requirePermission("customers.view"), async (
   }
 });
 
-app.put("/api/admin/customers/:id/password", requirePermission("customers.view"), async (req,res)=>{
+app.put("/api/admin/customers/:id/password", requirePermission("customers.update"), async (req,res)=>{
   try {
     const id=Number(req.params.id);
     const password=String(req.body?.password||"");
@@ -93,7 +93,7 @@ app.put("/api/admin/customers/:id/password", requirePermission("customers.view")
   }
 });
 
-app.delete("/api/admin/customers/:id", requirePermission("customers.view"), async (req,res)=>{
+app.delete("/api/admin/customers/:id", requirePermission("customers.delete"), async (req,res)=>{
   try {
     const id=Number(req.params.id);
     if(!Number.isInteger(id)||id<1)return res.status(400).json({error:"Ongeldig klantnummer."});
