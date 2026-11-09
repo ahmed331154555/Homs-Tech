@@ -152,3 +152,17 @@ test("all static image elements provide alternative text", () => {
     }
   }
 });
+
+test("shared layout provides accessible focus, reduced-motion and responsive form safeguards", () => {
+  const css = fs.readFileSync(path.join(root, "assets/homs-layout-system.css"), "utf8");
+  assert.match(css, /:focus-visible/);
+  assert.match(css, /prefers-reduced-motion:\s*reduce/);
+  assert.match(css, /max-width:\s*100%/);
+  assert.match(css, /cursor:\s*not-allowed/);
+});
+
+test("global navigation keeps a visible keyboard focus indicator", () => {
+  const css = fs.readFileSync(path.join(root, "assets/homs-global-nav.css"), "utf8");
+  assert.match(css, /\.homs-global-nav-inner a:focus-visible\s*\{[^}]*outline:\s*3px solid/i);
+  assert.doesNotMatch(css, /\.homs-global-nav-inner a:focus-visible[\s\S]{0,180}outline:\s*none/i);
+});
