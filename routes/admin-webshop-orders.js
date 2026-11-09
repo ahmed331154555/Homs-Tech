@@ -24,10 +24,6 @@ const REQUIRED_PHONE_INSPECTION_CHECKS = Object.freeze([
 
 
 function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory, ensureBuybackOrdersTable, fetchImpl = fetch, getEnv = () => process.env, escapeHtml }) {
-  function isPhoneOrderItems(items) {
-    const rows = Array.isArray(items) ? items : [];
-    return rows.some(item => String(item?.type || "phone").toLowerCase() !== "shop");
-  }
   async function notifyPaidTradeInOrder(orderId) {
     try {
       await sendPaidWebshopOrderNotifications({ pool, orderId, fetchImpl, getEnv, escapeHtml });
