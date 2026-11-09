@@ -237,6 +237,11 @@ test("admin document head does not contain excessive blank-line blocks", () => {
 });
 
 
+test("repair order loader enforces its view permission before fetching", () => {
+  const script = readPage("assets/homs-admin.js");
+  assert.match(script, /async function loadOrders\(\)\{\s*if\(!hasPermission\("orders\.view"\)\)return;/);
+});
+
 test("admin order loaders and actions enforce their matching permissions", () => {
   const script = readPage("assets/homs-admin.js");
   assert.match(script, /async function loadWebshopOrders\(\)\{\s*if\(!hasPermission\("webshop_orders\.view"\)\)return;/);
