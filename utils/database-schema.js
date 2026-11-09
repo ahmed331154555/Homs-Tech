@@ -191,6 +191,14 @@ async function initializeDatabaseSchema(pool) {
     `);
 
     await pool.query(`
+      CREATE TABLE IF NOT EXISTS webshop_order_inspections (
+        order_id INTEGER PRIMARY KEY REFERENCES webshop_orders(id) ON DELETE CASCADE,
+        checks JSONB NOT NULL DEFAULT '{}'::jsonb,
+        inspected_by TEXT NOT NULL DEFAULT 'HOMS TECH Admin',
+        completed_at TIMESTAMPTZ,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
       CREATE TABLE IF NOT EXISTS webshop_order_status_history (
         id BIGSERIAL PRIMARY KEY,
         order_id INTEGER NOT NULL REFERENCES webshop_orders(id) ON DELETE CASCADE,
