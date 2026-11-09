@@ -166,3 +166,19 @@ test("global navigation keeps a visible keyboard focus indicator", () => {
   assert.match(css, /\.homs-global-nav-inner a:focus-visible\s*\{[^}]*outline:\s*3px solid/i);
   assert.doesNotMatch(css, /\.homs-global-nav-inner a:focus-visible[\s\S]{0,180}outline:\s*none/i);
 });
+
+test("customer purchase, repair and phone-selling pages share the HOMS TECH theme", () => {
+  for (const page of ["product.html", "repair.html", "uw-toestel-verkopen.html", "shop.html", "contact.html"]) {
+    const html = readPage(page);
+    assert.match(html, /assets\/homs-tech-modern-true-theme\.css/i, page + " should load the shared brand theme");
+  }
+});
+
+test("phone-selling page loads shared theme before interactive page scripts", () => {
+  const html = readPage("uw-toestel-verkopen.html");
+  const themeIndex = html.indexOf("assets/homs-tech-modern-true-theme.css");
+  const headEnd = html.indexOf("</head>");
+  assert.ok(themeIndex >= 0 && themeIndex < headEnd, "shared theme must load inside the document head");
+  assert.match(html.slice(0, headEnd), /assets\/homs-layout-system\.css/i);
+});
+
