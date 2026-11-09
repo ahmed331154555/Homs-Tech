@@ -1,9 +1,12 @@
 const fs = require("node:fs");
+const path = require("node:path");
 
-const html = fs.readFileSync("admin/index.html", "utf8");
+const root = process.cwd();
+const htmlPath = path.join(root, "admin", "index.html");
+const html = fs.readFileSync(htmlPath, "utf8");
 const scripts = [];
-const openingScriptTag = /<script\b[^>]*>/gi;
-const closingScriptTag = /<\/script\s*>/gi;
+const openingScriptTag = /<script\\b[^>]*>/gi;
+const closingScriptTag = /<\\/script\\s*>/gi;
 
 let cursor = 0;
 while (cursor < html.length) {
@@ -14,18 +17,29 @@ while (cursor < html.length) {
   closingScriptTag.lastIndex = openingScriptTag.lastIndex;
   const closing = closingScriptTag.exec(html);
   if (!closing) {
-    console.error("Admin inline script: missing closing </script> tag.");
+    console.error("Admin script: missing closing </script> tag.");
     process.exit(1);
   }
 
   const tag = opening[0];
-  if (!/\bsrc\s*=\s*["'][^"']*["']/i.test(tag)) {
+  const sourceAttribute = tag.match(/\\bsrc\\s*=\\s*["']([^"']+)["']/i);
+  if (sourceAttribute) {
+    const relativeSource = sourceAttribute[1].split(/[?#]/, 1)[0];
+    const sourcePath = path.resolve(path.dirname(htmlPath), relativeSource);
+    if (!sourcePath.startsWith(root + path.sep)) {
+      console.error("Admin script path escapes project root: " + sourceAttribute[1]);
+      process.exit(1);
+    }
+    if (!fs.existsSync(sourcePath) || !fs.statSync(sourcePath).isFile()) {
+      console.error("Admin script asset is missing: " + sourceAttribute[1]);
+      process.exit(1);
+    }
+    scripts.push(fs.readFileSync(sourcePath, "utf8"));
+  } else {
     const source = html.slice(openingScriptTag.lastIndex, closing.index);
     if (source.trim()) scripts.push(source);
   }
 
-  // Skip the complete script body so tag-like text inside JavaScript
-  // template strings is not mistaken for another HTML script element.
   cursor = closingScriptTag.lastIndex;
 }
 
@@ -35,13 +49,13 @@ scripts.forEach((source, index) => {
     new Function(source);
   } catch (error) {
     failed = true;
-    console.error("Admin inline script " + (index + 1) + ": " + error.message);
+    console.error("Admin script " + (index + 1) + ": " + error.message);
   }
 });
 
 const declaredFunctions = new Set();
 for (const source of scripts) {
-  for (const match of source.matchAll(/^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/gm)) {
+  for (const match of source.matchAll(/^\\s*(?:async\\s+)?function\\s+([A-Za-z_$][\\w$]*)\\s*\\(/gm)) {
     declaredFunctions.add(match[1]);
   }
 }
@@ -53,11 +67,12 @@ const allowedGlobals = new Set([
   "Event", "FileReader", "URL", "encodeURIComponent", "decodeURIComponent"
 ]);
 const missingHandlers = new Map();
-const handlerAttributes = /on(?:click|change|input|submit|keydown|keyup|focus|blur)\s*=\s*["']([^"']+)["']/gi;
+const handlerAttributes = /on(?:click|change|input|submit|keydown|keyup|focus|blur)\\s*=\\s*["']([^"']+)["']/gi;
+let handlerCount = 0;
 
 for (const attribute of html.matchAll(handlerAttributes)) {
-  const expression = attribute[1];
-  for (const call of expression.matchAll(/(?:^|[^\w$.])([A-Za-z_$][\w$]*)\s*\(/g)) {
+  handlerCount += 1;
+  for (const call of attribute[1].matchAll(/(?:^|[^\\w$.])([A-Za-z_$][\\w$]*)\\s*\\(/g)) {
     const name = call[1];
     if (declaredFunctions.has(name) || allowedGlobals.has(name)) continue;
     missingHandlers.set(name, (missingHandlers.get(name) || 0) + 1);
@@ -73,5 +88,5 @@ if (missingHandlers.size) {
 }
 
 if (failed) process.exit(1);
-console.log("Checked " + scripts.length + " admin inline script blocks and " +
-  handlerAttributes.lastIndex + " inline handler references.");
+console.log("Checked " + scripts.length + " admin script assets and " +
+  handlerCount + " inline handler references.");
