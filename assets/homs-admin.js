@@ -3804,6 +3804,7 @@ async function sendRepairOffer(id){
  finally{if(button)button.disabled=false;}
 }
 async function loadOrders(){
+  if(!hasPermission("orders.view"))return;
   const status=document.getElementById('repairRequestsStatus');
   if(!document.getElementById('repairRequestsList'))return;
   if(status){status.className='status info';status.textContent='Reparatieaanvragen laden...';}
