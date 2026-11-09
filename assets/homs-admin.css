@@ -3428,3 +3428,74 @@ img{max-width:100%}
     width: 100% !important;
   }
 }
+
+
+/* Admin interface — consistent focus, touch targets and compact mobile spacing */
+.admin-nav .nav-btn:focus-visible,
+.admin-nav a:focus-visible,
+#dashboard .btn:focus-visible,
+#dashboard button:focus-visible,
+#dashboard a:focus-visible,
+#dashboard input:focus-visible,
+#dashboard select:focus-visible,
+#dashboard textarea:focus-visible {
+  outline: 3px solid #60a5fa !important;
+  outline-offset: 2px !important;
+}
+#dashboard .btn,
+.admin-nav .nav-btn {
+  transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+#dashboard .btn:active,
+.admin-nav .nav-btn:active {
+  transform: translateY(1px);
+}
+#dashboard .section,
+#dashboard .card,
+#dashboard .order-card {
+  min-width: 0;
+}
+#dashboard input,
+#dashboard select,
+#dashboard textarea {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+@media (max-width: 760px) {
+  #dashboard .section {
+    padding: 16px;
+    border-radius: 14px;
+  }
+  #dashboard .section-head {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  #dashboard .section-head > :last-child {
+    max-width: 100%;
+  }
+  #dashboard .section-head .btn {
+    min-height: 40px;
+  }
+  .admin-nav {
+    top: 61px;
+  }
+  .admin-nav-inner {
+    padding: 8px 12px;
+    gap: 6px;
+  }
+  .admin-nav .nav-btn {
+    min-height: 40px;
+    padding: 9px 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #dashboard .btn,
+  .admin-nav .nav-btn {
+    transition: none !important;
+  }
+  #dashboard .btn:active,
+  .admin-nav .nav-btn:active {
+    transform: none;
+  }
+}
