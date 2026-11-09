@@ -239,7 +239,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
            FROM buyback_orders buyback
            WHERE buyback.id=webshop_orders.trade_in_order_id
              AND buyback.trade_in_linked_order_id=webshop_orders.id
-               AND webshop_orders.trade_in_snapshot->>'settlement'='after-inspection'
+               AND COALESCE(webshop_orders.trade_in_applied_credit,0)>0
          ) AS has_valid_trade_in,
          webshop_orders.trade_in_status
          FROM webshop_orders WHERE webshop_orders.id=$1`,
@@ -292,6 +292,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
                 phone_inspection.completed_at AS inspection_completed_at,
                 phone_inspection.updated_at AS inspection_updated_at,
                 CASE WHEN buyback_orders.trade_in_linked_order_id=webshop_orders.id
+                       AND COALESCE(webshop_orders.trade_in_applied_credit,0)>0
                      THEN webshop_orders.trade_in_order_id ELSE NULL END AS trade_in_order_id,
                 webshop_orders.trade_in_estimated_value,
                 webshop_orders.trade_in_applied_credit, webshop_orders.trade_in_inspected_value,
@@ -335,7 +336,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
          LEFT JOIN webshop_order_inspections phone_inspection ON phone_inspection.order_id=webshop_orders.id
          LEFT JOIN buyback_orders ON buyback_orders.id = webshop_orders.trade_in_order_id
                                       AND buyback_orders.trade_in_linked_order_id = webshop_orders.id
-                                      AND webshop_orders.trade_in_snapshot->>'settlement'='after-inspection'
+                                      AND COALESCE(webshop_orders.trade_in_applied_credit,0)>0
          ORDER BY webshop_orders.created_at DESC`
       );
       res.json({ orders: result.rows });
@@ -464,7 +465,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
              FROM buyback_orders buyback
              WHERE buyback.id=webshop_orders.trade_in_order_id
                AND buyback.trade_in_linked_order_id=webshop_orders.id
-               AND webshop_orders.trade_in_snapshot->>'settlement'='after-inspection'
+               AND COALESCE(webshop_orders.trade_in_applied_credit,0)>0
            ) AS has_valid_trade_in,
            webshop_orders.trade_in_status
            FROM webshop_orders WHERE webshop_orders.id=$1`,
