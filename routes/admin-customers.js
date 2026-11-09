@@ -84,6 +84,7 @@ app.put("/api/admin/customers/:id/password", requirePermission("customers.update
     const password=String(req.body?.password||"");
     if(!Number.isInteger(id)||id<1)return res.status(400).json({error:"Ongeldig klantnummer."});
     if(password.length<8)return res.status(400).json({error:"Het wachtwoord moet minimaal 8 tekens bevatten."});
+    if(password.length>256)return res.status(400).json({error:"Het wachtwoord is te lang."});
     const hash=await hashPassword(password);
     const result=await pool.query("UPDATE customers SET password_hash=$1 WHERE id=$2 RETURNING id",[hash,id]);
     if(!result.rows.length)return res.status(404).json({error:"Klant niet gevonden."});
