@@ -28,7 +28,7 @@ test("all public page inline stylesheets have balanced CSS blocks", () => {
   let checkedBlocks = 0;
   for (const page of pages) {
     const html = readPage(page);
-    const blocks = [...html.matchAll(/<style\\b[^>]*>([\\s\\S]*?)<\\/style>/gi)];
+    const blocks = [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)];
     for (let index = 0; index < blocks.length; index += 1) {
       checkedBlocks += 1;
       assert.equal(cssBraceBalance(blocks[index][1]), 0, page + " style block " + (index + 1) + " has unbalanced braces");
