@@ -24,33 +24,9 @@ const REQUIRED_PHONE_INSPECTION_CHECKS = Object.freeze([
 
 
 function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory, ensureBuybackOrdersTable, fetchImpl = fetch, getEnv = () => process.env, escapeHtml }) {
-  let phoneInspectionSchemaPromise = null;
-  const requiredPhoneInspectionKeys = [
-    "modelStorageColor", "screenTouch", "battery", "faceId", "cameras",
-    "speakersMicrophone", "charging", "networkWifi", "activationLock",
-    "cosmeticCondition", "cleaning", "accessories", "securePackaging"
-  ];
-  async function ensurePhoneInspectionSchema() {
-    if (!phoneInspectionSchemaPromise) {
-      phoneInspectionSchemaPromise = pool.query(
-        "ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS phone_inspection JSONB NOT NULL DEFAULT '{}'::jsonb"
-      ).catch(error => {
-        phoneInspectionSchemaPromise = null;
-        throw error;
-      });
-    }
-    await phoneInspectionSchemaPromise;
-  }
   function isPhoneOrderItems(items) {
     const rows = Array.isArray(items) ? items : [];
     return rows.some(item => String(item?.type || "phone").toLowerCase() !== "shop");
-  }
-  function getPhoneInspectionProgress(value) {
-    const checks = value && typeof value === "object" && value.checks && typeof value.checks === "object"
-      ? value.checks : {};
-    const completed = requiredPhoneInspectionKeys.filter(key => checks[key] === true);
-    return { complete: completed.length === requiredPhoneInspectionKeys.length, completed: completed.length,
-      total: requiredPhoneInspectionKeys.length, missing: requiredPhoneInspectionKeys.filter(key => checks[key] !== true) };
   }
   async function notifyPaidTradeInOrder(orderId) {
     try {
@@ -261,29 +237,20 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       if(carrier&& !["PostNL","DHL"].includes(carrier))return res.status(400).json({error:"Kies alleen PostNL of DHL."});
       if(!["Unpaid","Processing","Paid","Failed"].includes(paymentStatus))return res.status(400).json({error:"Ongeldige betaalstatus."});
       if(trackingUrl&&!/^https:\/\//i.test(trackingUrl))return res.status(400).json({error:"De tracking-URL moet beginnen met https://"});
-      if(carrier||trackingNumber||trackingUrl){
+      if(trackingNumber||trackingUrl){
         const inspection=await pool.query(
-          "SELECT checks FROM webshop_order_inspections WHERE order_id=$1",
+          `SELECT webshop_orders.items,COALESCE(webshop_order_inspections.checks,'{}'::jsonb) AS checks
+           FROM webshop_orders
+           LEFT JOIN webshop_order_inspections ON webshop_order_inspections.order_id=webshop_orders.id
+           WHERE webshop_orders.id=$1`,
           [id]
         );
-        const checks=inspection.rows[0]?.checks||{};
-        if(!REQUIRED_PHONE_INSPECTION_CHECKS.every(key=>checks[key]===true)){
-          return res.status(409).json({error:"Verzending geblokkeerd: rond eerst alle verplichte controlepunten van de nieuwe telefoon af en sla de controle op."});
-        }
-      }
-      if (trackingNumber || trackingUrl) {
-        await ensurePhoneInspectionSchema();
-        const inspectionResult = await pool.query(
-          "SELECT items,phone_inspection FROM webshop_orders WHERE id=$1",
-          [id]
-        );
-        if (!inspectionResult.rows.length) return res.status(404).json({error:"Bestelling niet gevonden."});
-        if (isPhoneOrderItems(inspectionResult.rows[0].items)) {
-          const progress = getPhoneInspectionProgress(inspectionResult.rows[0].phone_inspection);
-          if (!progress.complete) return res.status(409).json({
-            error:"Verzending is geblokkeerd. Rond eerst de volledige telefooncontrole af.",
-            inspection:progress
-          });
+        if(!inspection.rows.length)return res.status(404).json({error:"Bestelling niet gevonden."});
+        if(isPhoneOrderItems(inspection.rows[0].items)){
+          const checks=inspection.rows[0].checks||{};
+          if(!REQUIRED_PHONE_INSPECTION_CHECKS.every(key=>checks[key]===true)){
+            return res.status(409).json({error:"Verzending geblokkeerd: rond eerst alle verplichte controlepunten van de telefoon af en sla de controle op."});
+          }
         }
       }
       const tradeInCheck=await pool.query(
@@ -324,7 +291,6 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
 
   app.get("/api/admin/webshop-orders", requirePermission("webshop_orders.view"), async (req, res) => {
     try {
-      await ensurePhoneInspectionSchema();
       if (typeof ensureBuybackOrdersTable === "function") await ensureBuybackOrdersTable(pool);
       const result = await pool.query(
         `SELECT webshop_orders.id, webshop_orders.customer_id, webshop_orders.name, webshop_orders.email,
@@ -333,7 +299,6 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
                 webshop_orders.status, webshop_orders.payment_method, webshop_orders.payment_status,
                 webshop_orders.paypal_order_id, webshop_orders.mollie_payment_id,
                 webshop_orders.inventory_deducted_at, webshop_orders.inventory_error,
-                webshop_orders.phone_inspection,
                 COALESCE(phone_inspection.checks,'{}'::jsonb) AS inspection_checks,
                 phone_inspection.inspected_by AS inspection_inspected_by,
                 phone_inspection.completed_at AS inspection_completed_at,
@@ -375,30 +340,6 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
     }
   });
 
-  app.put("/api/admin/webshop-orders/:id/inspection", requirePermission("webshop_orders.update"), async (req,res) => {
-    try {
-      const id=Number(req.params.id);
-      if(!Number.isInteger(id)||id<1)return res.status(400).json({error:"Ongeldig order-ID."});
-      await ensurePhoneInspectionSchema();
-      const input=req.body?.checks;
-      if(!input||typeof input!=="object"||Array.isArray(input))return res.status(400).json({error:"Vul de controlepunten correct in."});
-      const checks={};
-      for(const key of requiredPhoneInspectionKeys)checks[key]=input[key]===true;
-      const existing=await pool.query("SELECT items FROM webshop_orders WHERE id=$1",[id]);
-      if(!existing.rows.length)return res.status(404).json({error:"Bestelling niet gevonden."});
-      if(!isPhoneOrderItems(existing.rows[0].items))return res.status(400).json({error:"Deze bestelling bevat geen telefoon die gecontroleerd moet worden."});
-      const progress=getPhoneInspectionProgress({checks});
-      const saved=await pool.query(
-        "UPDATE webshop_orders SET phone_inspection=$1::jsonb WHERE id=$2 RETURNING id,phone_inspection",
-        [JSON.stringify({checks,updatedAt:new Date().toISOString(),updatedBy:"HOMS TECH Admin"}),id]
-      );
-      return res.json({success:true,order:saved.rows[0],inspection:progress});
-    }catch(error){
-      console.error("Save mandatory phone inspection error:",error);
-      return res.status(500).json({error:"De telefooncontrole kon niet worden opgeslagen."});
-    }
-  });
-
   app.post("/api/admin/webshop-orders/:id/notes", requirePermission("webshop_orders.update"), async (req, res) => {
     try {
       const id = Number(req.params.id);
@@ -429,18 +370,20 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductP
       const status = String(req.body?.status || "").trim();
       if (!allowed.includes(status)) return res.status(400).json({ error: "Ongeldige status." });
       if(["Verzonden","Voltooid"].includes(status)){
-        await ensurePhoneInspectionSchema();
         const inspectionResult=await pool.query(
-          "SELECT items,phone_inspection,trade_in_order_id,trade_in_status FROM webshop_orders WHERE id=$1",
+          `SELECT webshop_orders.items,webshop_orders.trade_in_order_id,webshop_orders.trade_in_status,
+                  COALESCE(webshop_order_inspections.checks,'{}'::jsonb) AS checks
+           FROM webshop_orders
+           LEFT JOIN webshop_order_inspections ON webshop_order_inspections.order_id=webshop_orders.id
+           WHERE webshop_orders.id=$1`,
           [id]
         );
         if(!inspectionResult.rows.length)return res.status(404).json({error:"Webshop bestelling niet gevonden."});
         const order=inspectionResult.rows[0];
-        if(isPhoneOrderItems(order.items)){
-          const progress=getPhoneInspectionProgress(order.phone_inspection);
-          if(!progress.complete)return res.status(409).json({
+        if(isPhoneOrderItems(order.items)&&!REQUIRED_PHONE_INSPECTION_CHECKS.every(key=>order.checks?.[key]===true)){
+          return res.status(409).json({
             error:"Deze telefoonbestelling kan pas worden verzonden nadat alle verplichte controlepunten zijn afgerond.",
-            inspection:progress
+            missing_checks:REQUIRED_PHONE_INSPECTION_CHECKS.filter(key=>order.checks?.[key]!==true)
           });
         }
         if(order.trade_in_order_id && order.trade_in_status!=="Settled"){
