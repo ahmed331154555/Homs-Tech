@@ -169,3 +169,53 @@ test("paid webshop stock deductions are written to the central inventory history
   assert.equal(movement.params[9], "Webshop bestelling #39");
   assert.ok(fake.calls.some(call => call.sql === "COMMIT"));
 });
+
+
+test("paid order rejects fractional custom add-on stock without saving the catalog", async () => {
+  const fake = createFakePool(
+    {
+      id: 41,
+      payment_status: "Paid",
+      items: [{ type: "phone", id: 0, qty: 1, options: { custom: { "optionGroups:0": "Case" } } }]
+    },
+    {
+      phones: [{
+        name: "Phone",
+        stock: 5,
+        optionGroups: [{ options: [{ label: "Case", stock: 1.5 }] }]
+      }]
+    }
+  );
+  const originalError = console.error;
+  console.error = () => {};
+  try {
+    const deduct = createPaidOrderInventoryDeductor({ pool: fake.pool });
+    assert.deepEqual(await deduct(41), { error: true });
+  } finally {
+    console.error = originalError;
+  }
+  assert.ok(fake.calls.some(call => call.sql === "ROLLBACK"));
+  assert.equal(fake.savedCatalog, null);
+  assert.ok(fake.calls.some(call => call.scope === "pool" && call.sql.includes("inventory_error=$1")));
+});
+
+test("paid order accepts whole-number custom add-on stock and deducts exactly once", async () => {
+  const fake = createFakePool(
+    {
+      id: 42,
+      payment_status: "Paid",
+      items: [{ type: "phone", id: 0, qty: 2, options: { custom: { "optionGroups:0": "Case" } } }]
+    },
+    {
+      phones: [{
+        name: "Phone",
+        stock: 5,
+        optionGroups: [{ options: [{ label: "Case", stock: 4 }] }]
+      }]
+    }
+  );
+  const deduct = createPaidOrderInventoryDeductor({ pool: fake.pool });
+  assert.deepEqual(await deduct(42), { deducted: true });
+  assert.equal(fake.savedCatalog.phones[0].optionGroups[0].options[0].stock, 2);
+  assert.ok(fake.calls.some(call => call.sql === "COMMIT"));
+});
