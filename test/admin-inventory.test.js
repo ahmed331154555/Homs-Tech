@@ -287,3 +287,25 @@ test("inventory movement rejects a malformed legacy Shop stock value without cha
   assert.equal(h.getData().shopProducts[0].stock, "voorraad onbekend");
   assert.equal(h.getMovements().length, 0);
 });
+
+
+test("first Shop purchase initializes an untracked product stock balance", async () => {
+  const h = makeHarness({
+    data: { shopProducts: [{ id: "new-cable", name: "New cable", stock: "" }] }
+  });
+  const res = response();
+  await h.routes.get("POST /api/admin/inventory/movements")({
+    body: {
+      itemType: "shop",
+      productId: "new-cable",
+      movementType: "purchase",
+      quantity: 6,
+      note: "Eerste voorraadregistratie"
+    }
+  }, res);
+  assert.equal(res.statusCode, 201);
+  assert.equal(res.body.stock, 6);
+  assert.equal(h.getData().shopProducts[0].stock, "6 stuks");
+  assert.equal(h.getMovements()[0].stock_before, 0);
+  assert.equal(h.getMovements()[0].stock_after, 6);
+});
