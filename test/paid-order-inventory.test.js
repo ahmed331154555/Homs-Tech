@@ -140,3 +140,32 @@ test("legacy second-hand paid orders fail safely without changing the catalog", 
   assert.equal(fake.savedCatalog, null);
   assert.ok(fake.calls.some(call => call.scope === "pool" && call.sql.includes("inventory_error=$1")));
 });
+
+
+test("paid webshop stock deductions are written to the central inventory history", async () => {
+  const fake = createFakePool(
+    {
+      id: 39,
+      payment_status: "Paid",
+      items: [{ type: "phone", id: 0, qty: 2, sku: "HT-PHONE-13", options: { condition: "A", color: "Black", storage: "128GB" } }]
+    },
+    {
+      phones: [{
+        name: "iPhone 13",
+        pricingMode: "variant",
+        variantPrices: [{ condition: "A", color: "Black", storage: "128GB", stock: 5 }]
+      }]
+    }
+  );
+  const deduct = createPaidOrderInventoryDeductor({ pool: fake.pool });
+  assert.deepEqual(await deduct(39), { deducted: true });
+  const movement = fake.calls.find(call => call.sql.includes("INSERT INTO inventory_movements"));
+  assert.ok(movement, "a central inventory movement should be inserted");
+  assert.equal(movement.params[0], "phone");
+  assert.equal(movement.params[3], "iPhone 13");
+  assert.equal(movement.params[6], -2);
+  assert.equal(movement.params[7], 5);
+  assert.equal(movement.params[8], 3);
+  assert.equal(movement.params[9], "Webshop bestelling #39");
+  assert.ok(fake.calls.some(call => call.sql === "COMMIT"));
+});
