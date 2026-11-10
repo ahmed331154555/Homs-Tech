@@ -116,8 +116,9 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
 
   async function sendTradeInCustomerOffer(orderId) {
     const found = await pool.query(
-      `SELECT orders.id,orders.name,orders.email,orders.trade_in_estimated_value,
-              orders.trade_in_inspected_value,orders.trade_in_status,orders.trade_in_snapshot,
+      `SELECT orders.id,orders.name,orders.email,orders.payment_status,
+              orders.trade_in_estimated_value,orders.trade_in_inspected_value,
+              orders.trade_in_status,orders.trade_in_snapshot,
               buyback.model AS trade_in_model,buyback.device AS trade_in_device,
               buyback.storage AS trade_in_storage
        FROM webshop_orders orders
@@ -127,8 +128,17 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
     );
     if (!found.rows.length) return { sent:false, reason:"order-or-trade-in-not-found" };
     const order=found.rows[0];
+    if (order.payment_status !== "Paid") {
+      return { sent:false, reason:"order-not-paid" };
+    }
+    if (order.trade_in_status === "Settled") {
+      return { sent:false, reason:"trade-in-already-settled" };
+    }
     if (order.trade_in_inspected_value===null || order.trade_in_inspected_value===undefined) {
       return { sent:false, reason:"inspection-not-saved" };
+    }
+    if (!String(order.email || "").trim()) {
+      return { sent:false, reason:"customer-email-missing" };
     }
     const env=getEnv();
     const apiKey=String(env.RESEND_API_KEY||"").trim();
