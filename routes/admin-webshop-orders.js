@@ -422,7 +422,9 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
     const reason=String(req.body?.reason||"").trim().slice(0,500);
     const method=String(req.body?.method||"Manual").trim();
     if(!Number.isInteger(id)||id<1)return res.status(400).json({error:"Ongeldig order-ID."});
-    if(!Number.isFinite(amount)||amount<=0||amount>100000)return res.status(400).json({error:"Vul een geldig terug te betalen bedrag in."});
+    const amountCents=Math.round(amount*100);
+    if(!Number.isFinite(amount)||amount<=0||amount>100000||!Number.isSafeInteger(amountCents)||Math.abs(amount*100-amountCents)>1e-7)
+      return res.status(400).json({error:"Vul een geldig terug te betalen bedrag in hele eurocenten in."});
     if(!["Mollie","Manual"].includes(method))return res.status(400).json({error:"Ongeldige terugbetaalmethode."});
     const client=await pool.connect();
     let refund;
@@ -448,7 +450,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
       const inserted=await client.query(
         `INSERT INTO webshop_order_refunds(order_id,amount,method,status,reason)
          VALUES($1,$2,$3,$4,$5) RETURNING id,amount,currency,method,status,reason,created_at`,
-        [id,amount.toFixed(2),method,method==="Mollie"?"Processing":"Pending manual",reason]
+        [id,(amountCents/100).toFixed(2),method,method==="Mollie"?"Processing":"Pending manual",reason]
       );
       refund=inserted.rows[0];
       await client.query("COMMIT");
@@ -464,7 +466,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
       const value=Number(refund.amount).toFixed(2);
       const result=await mollieRequest("/payments/"+encodeURIComponent(order.mollie_payment_id)+"/refunds",{
         method:"POST",
-        headers:{"Idempotency-Key":"homs-tech-order-refund-"+id+"-"+value},
+        headers:{"Idempotency-Key":"homs-tech-order-refund-"+id+"-"+refund.id},
         body:JSON.stringify({amount:{currency:"EUR",value},description:"HOMS TECH bestelling #"+id+" terugbetaling"})
       });
       const providerStatus=String(result.status||"queued").toLowerCase();
