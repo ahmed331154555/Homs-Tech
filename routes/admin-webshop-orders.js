@@ -661,12 +661,16 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
     try{
       await client.query("BEGIN");
       const found=await client.query(
-        "SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot FROM webshop_orders WHERE trade_in_snapshot->>'customerApprovalTokenHash'=$1 FOR UPDATE",
+        "SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot,payment_status FROM webshop_orders WHERE trade_in_snapshot->>'customerApprovalTokenHash'=$1 FOR UPDATE",
         [tokenHash]
       );
       if(!found.rows.length){await client.query("ROLLBACK");return res.status(404).json({error:"Deze bevestigingslink is ongeldig of al gebruikt."});}
       const order=found.rows[0],snapshot=order.trade_in_snapshot||{};
       if(order.trade_in_status!=="AwaitingCustomerApproval"){await client.query("ROLLBACK");return res.status(409).json({error:"Uw keuze is al verwerkt of dit voorstel is niet meer actief."});}
+      if(order.payment_status!=="Paid"){await client.query("ROLLBACK");return res.status(409).json({error:"De bestelling is niet meer betaald. Neem contact met HOMS TECH op."});}
+      if(!Number.isSafeInteger(Number(order.trade_in_order_id))||Number(order.trade_in_order_id)<1){await client.query("ROLLBACK");return res.status(409).json({error:"De gekoppelde inruilaanvraag ontbreekt."});}
+      const linkedBuyback=await client.query("SELECT id FROM buyback_orders WHERE id=$1 FOR UPDATE",[order.trade_in_order_id]);
+      if(!linkedBuyback.rows.length){await client.query("ROLLBACK");return res.status(409).json({error:"De gekoppelde inruilaanvraag ontbreekt."});}
       if(!snapshot.customerApprovalExpiresAt||new Date(snapshot.customerApprovalExpiresAt).getTime()<Date.now()){await client.query("ROLLBACK");return res.status(410).json({error:"Deze bevestigingslink is verlopen. Neem contact met HOMS TECH op."});}
       const nextStatus=decision==="accept"?"CustomerAccepted":"CustomerRejected";
       const updatedSnapshot={...snapshot,customerApprovalDecision:decision,customerApprovalDecisionAt:new Date().toISOString(),customerApprovalTokenHash:null};
@@ -689,11 +693,18 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
     const client=await pool.connect();
     try{
       await client.query("BEGIN");
-      const found=await client.query("SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot FROM webshop_orders WHERE id=$1 FOR UPDATE",[id]);
+      const found=await client.query("SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot,payment_status FROM webshop_orders WHERE id=$1 FOR UPDATE",[id]);
       if(!found.rows.length){await client.query("ROLLBACK");return res.status(404).json({error:"Webshop bestelling niet gevonden."});}
       const order=found.rows[0];
+      if(order.payment_status!=="Paid"){
+        await client.query("ROLLBACK");return res.status(409).json({error:"De webshop bestelling moet betaald zijn voordat de inruil kan worden afgerond."});
+      }
       if(!order.trade_in_order_id||order.trade_in_status!=="CustomerAccepted"){
         await client.query("ROLLBACK");return res.status(409).json({error:"De klant heeft nog niet akkoord gegeven op de definitieve inruilwaarde."});
+      }
+      const linkedBuyback=await client.query("SELECT id FROM buyback_orders WHERE id=$1 FOR UPDATE",[order.trade_in_order_id]);
+      if(!linkedBuyback.rows.length){
+        await client.query("ROLLBACK");return res.status(409).json({error:"De gekoppelde inruilaanvraag ontbreekt."});
       }
       const snapshot={...(order.trade_in_snapshot||{}),settlementNote:note,settledAt:new Date().toISOString()};
       const updated=await client.query(
