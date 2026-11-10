@@ -212,3 +212,15 @@ test("inventory movements have a persistent audit table and automatic payment in
   assert.match(routes, /INSERT INTO inventory_movements/);
   assert.match(routes, /stockAfter < 0/);
 });
+
+
+test("admin save operation remains bound to the page where it started", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("async function save(isAuto=false){");
+  const end = js.indexOf("\\n/* ---------------- SEARCH + ADMIN USERS ---------------- */", start);
+  assert.ok(start >= 0 && end > start, "save function should exist");
+  const save = js.slice(start, end);
+  assert.match(save, /const savePage=currentPage/);
+  assert.match(save, /"X-Homs-Admin-Section":savePage/);
+  assert.match(save, /if\(currentPage===savePage\)\{/);
+});
