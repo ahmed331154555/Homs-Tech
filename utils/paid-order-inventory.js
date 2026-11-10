@@ -8,6 +8,8 @@ function createPaidOrderInventoryDeductor({ pool }) {
   }
 
   async function deductPaidOrderInventory(orderId) {
+    // Reject invalid identifiers before opening a database connection.
+    if (!Number.isSafeInteger(orderId) || orderId < 1) return { error: true };
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
