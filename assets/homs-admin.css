@@ -4305,3 +4305,43 @@ body{
   .ht-inventory-search{grid-column:auto}
   .ht-inventory-adjust,.ht-inventory-main,.ht-inventory-history{padding:13px}
 }
+
+/* HOMS TECH admin polish — additive design-system layer */
+:root{
+  --ht-navy:#071d2d;--ht-blue:#2563eb;--ht-surface:#fff;
+  --ht-surface-soft:#f8fafc;--ht-border:#e2e8f0;--ht-text:#172033;
+  --ht-muted:#64748b;--ht-shadow-card:0 8px 24px rgba(7,29,45,.07);
+  --ht-focus:0 0 0 3px rgba(37,99,235,.18);
+}
+#dashboard{color:var(--ht-text);min-width:0}
+#dashboard .section{border:1px solid rgba(226,232,240,.9);box-shadow:var(--ht-shadow-card)}
+#dashboard .section-head{border-bottom-color:var(--ht-border)}
+#dashboard input:focus,#dashboard textarea:focus,#dashboard select:focus,
+#dashboard button:focus-visible,#dashboard a:focus-visible{
+  outline:0;border-color:var(--ht-blue);box-shadow:var(--ht-focus)
+}
+#dashboard .card,#dashboard .editor-panel,#dashboard .editor-list{border-color:var(--ht-border)}
+#dashboard .nav-btn.active{background:var(--ht-blue)}
+#dashboard .order-card,#dashboard .webshop-order-list-card,#dashboard .webshop-order-card{
+  box-shadow:0 3px 14px rgba(7,29,45,.055)
+}
+#dashboard .orders-toolbar,#dashboard .order-actions,#dashboard .ht-inkoop-toolbar{min-width:0}
+#dashboard img{max-width:100%}
+@media(max-width:760px){
+  #dashboard>.container{padding-left:12px;padding-right:12px}
+  #dashboard .section{border-radius:14px;padding:14px}
+  #dashboard .section-head{align-items:flex-start;flex-wrap:wrap}
+  #dashboard .orders-toolbar>*{min-width:0;max-width:100%}
+  #dashboard .order-actions .btn,#dashboard .ht-inkoop-toolbar .btn{min-height:40px}
+}
+@media(max-width:420px){
+  #dashboard .section{padding:12px}
+  #dashboard .save-bar{bottom:calc(10px + env(safe-area-inset-bottom));padding:12px}
+  #dashboard .save-bar .btn{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  #dashboard *,#dashboard *::before,#dashboard *::after{
+    scroll-behavior:auto!important;animation-duration:.01ms!important;
+    animation-iteration-count:1!important;transition-duration:.01ms!important
+  }
+}
