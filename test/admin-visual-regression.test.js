@@ -87,7 +87,7 @@ test("admin navigation announces the currently selected page", () => {
 test("unified orders workspace is built once and reuses existing order sections", () => {
   const js = read("assets/homs-admin.js");
   const start = js.indexOf("function setupUnifiedOrdersAdmin(){");
-  const end = js.indexOf("\\nfunction setupOrdersSubmenu()", start);
+  const end = js.indexOf("\nfunction setupOrdersSubmenu()", start);
   assert.ok(start >= 0 && end > start, "unified orders setup function should exist");
   const setup = js.slice(start, end);
   assert.match(setup, /if\(document\.getElementById\("page-all-orders"\)\)return/);
@@ -100,7 +100,7 @@ test("unified orders workspace is built once and reuses existing order sections"
 test("order submenu only exposes categories allowed by the current administrator", () => {
   const js = read("assets/homs-admin.js");
   const start = js.indexOf("function setupOrdersSubmenu(){");
-  const end = js.indexOf("\\nfunction toggleOrdersMenu()", start);
+  const end = js.indexOf("\nfunction toggleOrdersMenu()", start);
   assert.ok(start >= 0 && end > start, "order submenu setup function should exist");
   const setup = js.slice(start, end);
   assert.match(setup, /unifiedOrderCategories\.forEach\(item=>\{/);
