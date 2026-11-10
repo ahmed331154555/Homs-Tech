@@ -204,12 +204,15 @@ function registerDeviceRegisterRoutes(app, {
       ) {
         return res.status(400).json({ error: "Controleer de handeling en bedragen." });
       }
-      const device=await pool.query("SELECT device_type FROM device_register WHERE id=$1 AND archived=FALSE",[id]);if(!device.rows.length)return res.status(404).json({error:"Actief toestel niet gevonden."});
       const parts=Array.isArray(b.parts)?b.parts.slice(0,100).map(p=>({name:deviceText(p?.name,160),quantity:Math.max(1,Math.min(999,Math.floor(Number(p?.quantity)||1))),cost:deviceMoney(p?.cost)})): [];
       if(parts.some(p=>!p.name||!Number.isFinite(p.cost)))return res.status(400).json({error:"Controleer de onderdelen en hun kosten."});
-      const allowed=device.rows[0].device_type==="customer_repair"?customerDeviceStatuses:commercialDeviceStatuses;
-      if(status&&(!allowed.has(status)||status==="تم البيع"))return res.status(400).json({error:"Gebruik de aparte verkoopregistratie om een toestel als verkocht te markeren."});
       const client=await pool.connect();try{await client.query("BEGIN");
+        const locked=await client.query("SELECT id,device_type,status FROM device_register WHERE id=$1 AND archived=FALSE FOR UPDATE",[id]);
+        if(!locked.rows.length){await client.query("ROLLBACK");return res.status(404).json({error:"Actief toestel niet gevonden."});}
+        const device=locked.rows[0];
+        if(device.status==="تم البيع"&&operationType!=="note"){await client.query("ROLLBACK");return res.status(409).json({error:"Een verkocht toestel kan geen nieuwe inkoop-, reparatie- of refurbishhandeling krijgen."});}
+        const allowed=device.device_type==="customer_repair"?customerDeviceStatuses:commercialDeviceStatuses;
+        if(status&&(!allowed.has(status)||status==="تم البيع")){await client.query("ROLLBACK");return res.status(400).json({error:"Gebruik de aparte verkoopregistratie om een toestel als verkocht te markeren."});}
         const inserted = await client.query(
           `INSERT INTO device_register_operations(
             device_id, operation_type, status, description, parts, additional_cost, sale_price
