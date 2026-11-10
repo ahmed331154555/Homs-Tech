@@ -44,6 +44,17 @@
     .repair-appointment-column input,.repair-appointment-column select{width:100%;min-height:49px;border:1px solid #d3e0eb;border-radius:11px;background:#fff;color:#172a3a;padding:12px 13px;outline:0}
     .repair-appointment-column input:focus,.repair-appointment-column select:focus{border-color:#2589ce;box-shadow:0 0 0 3px rgba(37,137,206,.13)}
     .repair-availability-message{margin-top:2px;font-size:12px;line-height:1.5;color:#64748b}
+    .repair-home-service-card{position:relative;overflow:hidden;border:1px solid #d6e7f5;border-radius:17px;background:linear-gradient(145deg,#f7fbff 0%,#e8f4fd 58%,#d7ebfa 100%);box-shadow:0 10px 24px rgba(7,29,45,.07)}
+    .repair-home-service-copy{position:relative;z-index:1;padding:17px 17px 9px}
+    .repair-home-service-kicker{display:block;color:#1769aa;font-size:9px;letter-spacing:1.1px;font-weight:900;margin-bottom:7px}
+    .repair-home-service-copy strong{display:block;color:#0b2b42;font-size:18px;line-height:1.25}
+    .repair-home-service-copy p{margin:7px 0 10px;color:#50677b;font-size:11px;line-height:1.55}
+    .repair-home-service-points{display:flex;flex-wrap:wrap;gap:6px}
+    .repair-home-service-points span{padding:5px 8px;border:1px solid #d5e7f5;border-radius:999px;background:rgba(255,255,255,.78);color:#1769aa;font-size:9px;font-weight:800}
+    .repair-home-service-art{display:block;width:100%;height:auto;max-height:185px;object-fit:cover}
+    .repair-home-service-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 13px;background:#0b2b42;color:#fff;font-size:10px;font-weight:800}
+    .repair-home-service-bottom span:first-child{color:#d8edff}
+    @media(max-width:760px){.repair-home-service-art{max-height:200px}.repair-home-service-copy{padding:15px 14px 8px}}
     @media(max-width:760px){.repair-booking-layout{grid-template-columns:1fr;gap:14px}#repairLocationMap{height:230px;min-height:210px}.repair-location-fields,.repair-appointment-column{padding:13px}.repair-appointment-column{gap:14px}}
     @media(max-width:640px){#repairLocationMap{height:205px;min-height:205px}.repair-map-heading{padding:11px}}
     .repair-map-footer{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;color:#64748b;font-size:10px}
@@ -774,6 +785,47 @@
                       <option>18:00 - 19:00</option>
                     </select>
                     <div id="availabilityMessage" class="repair-availability-message"></div>
+                  </div>
+                  <div class="repair-home-service-card">
+                    <div class="repair-home-service-copy">
+                      <span class="repair-home-service-kicker">HOMS TECH · SERVICE AAN HUIS</span>
+                      <strong>Reparatie bij u aan de deur</strong>
+                      <p>Onze mobiele reparatieservice komt naar u toe. Plan eenvoudig uw afspraak en laat uw telefoon professioneel repareren.</p>
+                      <div class="repair-home-service-points">
+                        <span>✓ Snelle service</span>
+                        <span>✓ Professionele reparatie</span>
+                        <span>✓ Kies datum en tijd</span>
+                      </div>
+                    </div>
+                    <svg class="repair-home-service-art" viewBox="0 0 520 250" role="img" aria-label="HOMS TECH mobiele telefoonreparatie aan huis met servicebus en reparatietechnicus">
+                      <defs>
+                        <linearGradient id="htVanBody" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#258fe0"/><stop offset="1" stop-color="#07518b"/></linearGradient>
+                        <linearGradient id="htScene" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dff1ff"/><stop offset="1" stop-color="#b9d9ef"/></linearGradient>
+                      </defs>
+                      <rect x="0" y="0" width="520" height="250" rx="18" fill="url(#htScene)"/>
+                      <circle cx="438" cy="38" r="23" fill="#fff" opacity=".65"/>
+                      <path d="M0 188 Q110 154 210 181 T520 170 V250 H0Z" fill="#b5d5e8"/>
+                      <path d="M20 165h45l15-47h195l24 47h32v48H20z" fill="url(#htVanBody)"/>
+                      <path d="M80 126h75v39H68zM165 126h100l18 39H165z" fill="#d9efff"/>
+                      <path d="M88 132h58v27H78zM173 132h78l12 27h-90z" fill="#8dbbd8"/>
+                      <path d="M36 170h266v28H36z" fill="#073c68" opacity=".55"/>
+                      <text x="164" y="184" font-size="17" font-weight="800" text-anchor="middle" fill="#fff">HOMS TECH</text>
+                      <circle cx="86" cy="211" r="20" fill="#183449"/><circle cx="86" cy="211" r="9" fill="#d8e5ed"/>
+                      <circle cx="260" cy="211" r="20" fill="#183449"/><circle cx="260" cy="211" r="9" fill="#d8e5ed"/>
+                      <path d="M345 164q0-46 43-46t43 46v50h-86z" fill="#0b2b42"/>
+                      <circle cx="388" cy="104" r="25" fill="#c78c68"/>
+                      <path d="M362 101q2-31 31-30 22 1 27 24l-8 3-7-14-39 20z" fill="#071d2d"/>
+                      <path d="M354 158q8-26 34-26 30 0 39 27l-4 38h-73z" fill="#123e5f"/>
+                      <path d="M375 151l-23 35 13 8 25-30M405 151l20 35-13 8-22-30" stroke="#c78c68" stroke-width="10" stroke-linecap="round" fill="none"/>
+                      <rect x="350" y="188" width="112" height="12" rx="6" fill="#0b2b42"/>
+                      <rect x="372" y="176" width="42" height="7" rx="3.5" fill="#43b5ff"/>
+                      <rect x="391" y="166" width="25" height="7" rx="3.5" fill="#fff"/>
+                      <path d="M425 69l9 9 18-22" stroke="#16a765" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                      <rect x="430" y="92" width="62" height="49" rx="12" fill="#fff" opacity=".92"/>
+                      <rect x="446" y="103" width="30" height="26" rx="4" fill="#d9efff" stroke="#1769aa" stroke-width="2"/>
+                      <path d="M453 99v8M469 99v8" stroke="#1769aa" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                    <div class="repair-home-service-bottom"><span>📅 Plan uw afspraak online</span><span>HOMS TECH</span></div>
                   </div>
                 </div>
               </div>
