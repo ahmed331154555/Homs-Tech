@@ -44,6 +44,66 @@
     .repair-appointment-column input,.repair-appointment-column select{width:100%;min-height:49px;border:1px solid #d3e0eb;border-radius:11px;background:#fff;color:#172a3a;padding:12px 13px;outline:0}
     .repair-appointment-column input:focus,.repair-appointment-column select:focus{border-color:#2589ce;box-shadow:0 0 0 3px rgba(37,137,206,.13)}
     .repair-availability-message{margin-top:2px;font-size:12px;line-height:1.5;color:#64748b}
+    /* Premium repair booking layout */
+    .modal{width:min(1160px,100%);border:1px solid #e1eaf3;background:#f7faff}
+    .modal-head{background:#fff}
+    .form-body{padding:22px;background:linear-gradient(145deg,#f8fbff,#edf5fd)}
+    .form-grid{gap:17px}
+    .repair-booking-layout{grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);gap:18px;align-items:stretch}
+    .repair-map-column{gap:13px}
+    .repair-map-card{border:1px solid #dce8f4;border-radius:17px;box-shadow:0 8px 24px rgba(8,40,74,.08)}
+    #repairLocationMap{height:350px;min-height:300px}
+    .repair-map-heading{padding:14px 16px;background:linear-gradient(110deg,#eff7ff,#fff)}
+    .repair-map-heading strong{font-size:15px;color:#092b4b}
+    .repair-map-heading small{font-size:12px}
+    .repair-map-icon{background:#e2f1ff;color:#0877cb}
+    .repair-map-footer{padding:10px 14px;font-size:11px;background:#fff}
+    .repair-location-fields{padding:15px;background:#fff;border-color:#dce8f4;box-shadow:0 5px 16px rgba(8,40,74,.04)}
+    .repair-location-fields>label{font-size:15px;color:#092b4b}
+    .repair-location-autocomplete input{min-height:54px;font-size:14px}
+    #useLocationBtn{min-height:56px!important;border-radius:12px!important;background:linear-gradient(100deg,#0879dc,#0870c8)!important;font-size:15px!important;box-shadow:0 7px 18px rgba(8,112,200,.18)}
+    #coverageMessage{background:#e8faef;border:1px solid #c9efd7;color:#126b3c;font-size:12px;font-weight:650}
+    .repair-problem-card{display:flex;flex-direction:column;gap:9px;padding:15px 16px;border:1px solid #dce8f4;border-radius:16px;background:#fff;box-shadow:0 5px 16px rgba(8,40,74,.04)}
+    .repair-problem-card label{font-size:15px;font-weight:900;color:#092b4b}
+    .repair-problem-card label span{color:#087bd4;font-size:20px;margin-right:6px}
+    .repair-problem-card textarea{width:100%;min-height:115px;resize:vertical;border:1px solid #d7e3ef;border-radius:12px;padding:13px 14px;color:#172a3a;background:#fbfdff;font:inherit;font-size:13px;outline:0}
+    .repair-problem-card textarea:focus{border-color:#1886d5;box-shadow:0 0 0 3px rgba(24,134,213,.12)}
+    .repair-problem-card>small{font-size:11px;color:#71859a}
+    .repair-appointment-column{gap:15px;padding:18px;border-radius:18px;background:linear-gradient(145deg,#fff,#edf6ff);border:1px solid #dce9f5;box-shadow:0 8px 24px rgba(8,40,74,.07)}
+    .repair-appointment-heading{padding:0 0 14px;border-bottom:1px solid #dce8f4}
+    .repair-appointment-heading>span{width:48px;height:48px;border-radius:14px;background:linear-gradient(145deg,#0786ee,#075fc1);color:#fff;font-size:23px;box-shadow:0 6px 14px rgba(7,108,201,.2)}
+    .repair-appointment-heading strong{font-size:20px;color:#071d49}
+    .repair-appointment-heading small{font-size:13px;color:#526b88}
+    .repair-date-time-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .repair-appointment-column .field{gap:8px;min-width:0}
+    .repair-appointment-column .field>label{font-size:13px;color:#102b50}
+    .repair-appointment-column input,.repair-appointment-column select{min-height:54px;padding:12px;border:1px solid #d3e0ed;border-radius:12px;font-size:14px;box-shadow:0 2px 5px rgba(8,40,74,.025)}
+    .repair-home-service-card{flex:1;min-height:390px;display:flex;flex-direction:column;justify-content:space-between;border:0;border-radius:18px;background:radial-gradient(circle at 85% 12%,#145e91 0,#092f55 38%,#061c35 100%);box-shadow:0 12px 28px rgba(4,30,58,.2);color:#fff}
+    .repair-home-service-copy{padding:24px 23px 8px}
+    .repair-home-service-kicker{font-size:11px;letter-spacing:1.5px;color:#58c7ff;margin-bottom:12px}
+    .repair-home-service-copy strong{font-size:28px;line-height:1.12;color:#fff;max-width:350px}
+    .repair-home-service-copy p{font-size:14px;line-height:1.6;color:#e0efff;max-width:360px;margin:12px 0 17px}
+    .repair-home-service-points{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .repair-home-service-points span{display:flex;align-items:center;gap:7px;padding:10px 11px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(255,255,255,.94);color:#092e55;font-size:11px;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.08)}
+    .repair-home-service-art{width:100%;height:220px;max-height:none;object-fit:cover;object-position:center 52%;margin-top:auto}
+    .repair-home-service-bottom{padding:15px 18px;background:linear-gradient(90deg,#087fd4,#064a8b);font-size:13px}
+    .repair-home-service-bottom span:first-child{color:#fff}
+    .repair-form-bottom{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:16px;align-items:center;margin-top:20px;padding:15px;border:1px solid #dce9f5;border-radius:18px;background:#fff;box-shadow:0 8px 24px rgba(8,40,74,.06)}
+    .repair-trust-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+    .repair-trust-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-right:1px solid #dce8f4;min-width:0}
+    .repair-trust-item:last-child{border:0}
+    .repair-trust-item>span{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;border-radius:50%;background:#e8f4ff;color:#0878d0;font-size:23px;font-weight:900}
+    .repair-trust-item strong,.repair-trust-item small{display:block}
+    .repair-trust-item strong{font-size:12px;color:#0a2c4d}
+    .repair-trust-item small{font-size:10px;color:#60778d;margin-top:3px}
+    .repair-submit-area{display:flex;flex-direction:column;gap:8px}
+    .repair-required-note{font-size:10px;color:#6b7f92;text-align:center}
+    .repair-submit-area .submit-btn{width:100%;min-height:58px;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:13px;background:linear-gradient(100deg,#079b42,#0b8d38);color:#fff;font-size:16px;box-shadow:0 8px 18px rgba(10,145,60,.2)}
+    .repair-submit-area .submit-btn b{font-size:21px}
+    .repair-privacy-note{margin:12px 0 0;text-align:center;color:#61778d;font-size:11px}
+    @media(max-width:900px){.repair-booking-layout{grid-template-columns:1fr}.repair-home-service-card{min-height:0}.repair-home-service-art{height:240px}.repair-form-bottom{grid-template-columns:1fr}.repair-trust-strip{order:2}.repair-submit-area{order:1}}
+    @media(max-width:640px){.form-body{padding:13px}.repair-booking-layout{gap:13px}#repairLocationMap{height:235px;min-height:220px}.repair-date-time-grid{grid-template-columns:1fr}.repair-home-service-copy{padding:19px 17px 8px}.repair-home-service-copy strong{font-size:23px}.repair-home-service-points{grid-template-columns:1fr}.repair-home-service-art{height:190px}.repair-form-bottom{padding:12px}.repair-trust-item{padding:6px 5px;gap:6px}.repair-trust-item>span{width:30px;height:30px;flex-basis:30px;font-size:18px}.repair-trust-item strong{font-size:10px}.repair-trust-item small{font-size:9px}}
+
     .repair-home-service-card{position:relative;overflow:hidden;border:1px solid #d6e7f5;border-radius:17px;background:linear-gradient(145deg,#f7fbff 0%,#e8f4fd 58%,#d7ebfa 100%);box-shadow:0 10px 24px rgba(7,29,45,.07)}
     .repair-home-service-copy{position:relative;z-index:1;padding:17px 17px 9px}
     .repair-home-service-kicker{display:block;color:#1769aa;font-size:9px;letter-spacing:1.1px;font-weight:900;margin-bottom:7px}
@@ -762,16 +822,22 @@
                     <button id="useLocationBtn" type="button" class="btn-main">📍 Gebruik mijn huidige locatie</button>
                     <small id="coverageMessage" aria-live="polite"></small>
                   </div>
+                  <div class="repair-problem-card">
+                    <label for="notes"><span aria-hidden="true">✎</span> Probleem / extra informatie</label>
+                    <textarea id="notes" maxlength="500" placeholder="Beschrijf kort wat er met uw toestel aan de hand is..."></textarea>
+                    <small>Vertel ons kort wat er met uw toestel aan de hand is.</small>
+                  </div>
                 </div>
                 <div class="repair-appointment-column" aria-label="Afspraak plannen">
                   <div class="repair-appointment-heading"><span>📅</span><div><strong>Plan uw afspraak</strong><small>Kies een gewenste datum en tijd</small></div></div>
-                  <div class="field" id="dateField">
-                    <label for="date">Gewenste datum</label>
-                    <input id="date" type="date">
-                  </div>
-                  <div class="field" id="timeField">
-                    <label for="time">Gewenste tijd</label>
-                    <select id="time">
+                  <div class="repair-date-time-grid">
+                    <div class="field" id="dateField">
+                      <label for="date">▦ Gewenste datum</label>
+                      <input id="date" type="date">
+                    </div>
+                    <div class="field" id="timeField">
+                      <label for="time">◷ Gewenste tijd</label>
+                      <select id="time">
                       <option value="">Kies een tijdstip</option>
                       <option>09:00 - 10:00</option>
                       <option>10:00 - 11:00</option>
@@ -784,7 +850,8 @@
                       <option>17:00 - 18:00</option>
                       <option>18:00 - 19:00</option>
                     </select>
-                    <div id="availabilityMessage" class="repair-availability-message"></div>
+                      <div id="availabilityMessage" class="repair-availability-message"></div>
+                    </div>
                   </div>
                   <div class="repair-home-service-card">
                     <div class="repair-home-service-copy">
@@ -831,24 +898,22 @@
               </div>
             </div>
             <div class="field" id="cityField" hidden></div>
-
-            <div class="field full">
-              <label for="notes">Probleem / extra informatie</label>
-              <textarea id="notes" placeholder="Beschrijf kort wat er met uw toestel aan de hand is..."></textarea>
-            </div>
           </div>
 
           <div id="formError" class="form-error"></div>
 
-          <div class="form-note">
-            <strong>Uw gegevens zijn veilig bij ons.</strong>
-            <span>Na het versturen van uw aanvraag nemen wij zo snel mogelijk contact met u op.</span>
+          <div class="repair-form-bottom">
+            <div class="repair-trust-strip" aria-label="Onze servicevoordelen">
+              <div class="repair-trust-item"><span>◷</span><div><strong>Snel op locatie</strong><small>Vaak dezelfde dag</small></div></div>
+              <div class="repair-trust-item"><span>✓</span><div><strong>Betrouwbaar</strong><small>Ervaren technici</small></div></div>
+              <div class="repair-trust-item"><span>✧</span><div><strong>Garantie</strong><small>Op alle reparaties</small></div></div>
+            </div>
+            <div class="repair-submit-area">
+              <span class="repair-required-note">* Verplichte velden · Uw gegevens zijn veilig bij ons.</span>
+              <button id="submitBtn" class="submit-btn" type="submit"><span aria-hidden="true">▣</span> Aanvraag versturen <b aria-hidden="true">→</b></button>
+            </div>
           </div>
-
-          <div class="submit-row">
-            <span style="font-size:12px;color:#718096">* verplichte velden</span>
-            <button id="submitBtn" class="submit-btn" type="submit">Aanvraag versturen →</button>
-          </div>
+          <p class="repair-privacy-note">🔒 Uw gegevens worden veilig verwerkt en uitsluitend gebruikt voor uw reparatieaanvraag.</p>
         </form>
       </div>
 
