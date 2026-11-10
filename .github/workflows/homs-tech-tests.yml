@@ -11,14 +11,21 @@ on:
   pull_request:
     branches:
       - HomsTech-Clean
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: homs-tech-tests-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
     name: Node.js test suite
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
