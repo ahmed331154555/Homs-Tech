@@ -49,8 +49,14 @@ test("device register summary returns commercial stock and realized profit KPIs"
   const requirePermission = () => (_req, _res, next) => next();
   registerDeviceRegisterRoutes(app, { pool, requirePermission, deviceText: (v, max=160) => String(v ?? "").trim().slice(0,max), deviceMoney: v => Number(v) });
   let payload;
-  const res = { set() { return this; }, json(value) { payload = value; return this; }, status() { return this; } };
+  let statusCode = 200;
+  const res = {
+    set() { return this; },
+    json(value) { payload = value; return this; },
+    status(code) { statusCode = code; return this; }
+  };
   await routes.get("/api/admin/device-register")({ query: {} }, res);
+  assert.equal(statusCode, 200, JSON.stringify(payload));
   assert.equal(payload.devices.length, 1);
   assert.equal(payload.summary.total, 8);
   assert.equal(payload.summary.realized_profit, "420.00");
