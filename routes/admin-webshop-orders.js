@@ -477,9 +477,15 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
       );
       return res.status(201).json({success:true,refund:saved.rows[0],message:refundStatus==="Processed"?"Mollie bevestigde de terugbetaling.":"Mollie heeft de terugbetaling ontvangen en verwerkt deze verder."});
     }catch(error){
-      await pool.query("UPDATE webshop_order_refunds SET status='Failed' WHERE id=$1",[refund.id]).catch(()=>{});
-      console.error("Mollie refund failed:",error.statusCode||error.message);
-      return res.status(502).json({error:"Mollie kon de terugbetaling niet uitvoeren. De aanvraag staat op mislukt; controleer Mollie voordat je opnieuw probeert."});
+      // A provider/network error can happen after Mollie accepted the refund.
+      // Keep the amount reserved as Processing until the provider status is checked;
+      // marking it Failed here could allow a duplicate refund on the next attempt.
+      await pool.query(
+        "UPDATE webshop_order_refunds SET status='Processing' WHERE id=$1 AND status='Processing'",
+        [refund.id]
+      ).catch(() => {});
+      console.error("Mollie refund result requires reconciliation:",error.statusCode||error.message);
+      return res.status(502).json({error:"Mollie kon de terugbetaling niet bevestigen. De aanvraag blijft in controle; controleer eerst de status in Mollie voordat je een nieuwe terugbetaling uitvoert."});
     }
   });
 
