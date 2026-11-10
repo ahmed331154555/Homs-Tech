@@ -1199,10 +1199,16 @@
   }
   function chooseRepairSuggestion(item){
     if(!repairCityInput||!item)return;
-    const postcode=String(item.postcode||"").toUpperCase().replace(/\s+/g,"");
+    const postcode=String(item.postcode||"").toUpperCase().replace(/\\s+/g,"");
     const town=String(item.woonplaatsnaam||item.gemeentenaam||"").trim();
-    const label=postcode&&town?(postcode.slice(0,4)+" "+postcode.slice(4)+" "+town).trim():String(item.weergavenaam||item.label||"").trim();
-    repairCityInput.value=label||String(item.weergavenaam||"");
+    const street=String(item.straatnaam||"").trim();
+    const house=String(item.huisnummer||"").trim();
+    const houseExtra=String(item.huisletter||"").trim()+String(item.huisnummertoevoeging||"").trim();
+    const fullAddress=street?[street,house+houseExtra].filter(Boolean).join(" "):"";
+    const addressInput=document.getElementById("address");
+    if(addressInput&&fullAddress)addressInput.value=fullAddress;
+    const cityLabel=postcode?(postcode.slice(0,4)+" "+postcode.slice(4)+" "+town).trim():town||String(item.weergavenaam||"").trim();
+    repairCityInput.value=cityLabel;
     closeRepairSuggestions();
     repairCoverageState="unknown";
     checkRepairCoverage();
@@ -1217,12 +1223,10 @@
       button.type="button";
       button.setAttribute("role","option");
       button.style.cssText="display:block;width:100%;border:0;background:#fff;text-align:left;padding:12px 13px;border-radius:8px;color:#1f2937;font:inherit;cursor:pointer";
-      const postcode=String(item.postcode||"").toUpperCase();
-      const town=String(item.woonplaatsnaam||item.gemeentenaam||"").trim();
-      const title=postcode&&town?postcode+" "+town:(item.weergavenaam||item.label||"Locatie");
-      const detail=String(item.straatnaam||item.type||"").trim();
-      const strong=document.createElement("strong");strong.textContent=title;button.appendChild(strong);
-      if(detail&&detail.toLowerCase()!==title.toLowerCase()){const small=document.createElement("small");small.textContent=" · "+detail;small.style.color="#64748b";button.appendChild(small);}
+      const full=String(item.weergavenaam||item.label||"").trim();
+      const fallback=[item.straatnaam,item.huisnummer,item.postcode,item.woonplaatsnaam||item.gemeentenaam].filter(Boolean).join(", ");
+      const title=full||fallback||"Adres";
+      button.textContent=title;
       button.addEventListener("mouseenter",()=>{repairActiveSuggestion=index;});
       button.addEventListener("pointerdown",event=>{event.preventDefault();chooseRepairSuggestion(item);});
       repairSuggestions.appendChild(button);
@@ -1236,17 +1240,18 @@
     if(repairSuggestController)repairSuggestController.abort();
     repairSuggestController=new AbortController();
     try{
-      const url="https://api.pdok.nl/bzk/locatieserver/search/v3_1/suggest?"+new URLSearchParams({q:query,rows:"8",fl:"id,type,weergavenaam,postcode,woonplaatsnaam,gemeentenaam,straatnaam"});
+      const params=new URLSearchParams({q:query,rows:"8",fl:"id,type,weergavenaam,postcode,woonplaatsnaam,gemeentenaam,straatnaam,huisnummer,huisletter,huisnummertoevoeging"});
+      const url="https://api.pdok.nl/bzk/locatieserver/search/v3_1/search?"+params;
       const response=await fetch(url,{signal:repairSuggestController.signal,headers:{Accept:"application/json"}});
-      if(!response.ok)throw new Error("Locatiesuggesties niet beschikbaar");
+      if(!response.ok)throw new Error("Adreszoekfunctie niet beschikbaar");
       const payload=await response.json();
       const docs=payload?.response?.docs||payload?.docs||[];
+      const items=docs.filter(item=>item.type==="adres"||item.postcode||item.straatnaam);
       const seen=new Set();
-      const items=docs.filter(item=>{
-        const key=String(item.postcode||"")+"|"+String(item.woonplaatsnaam||item.gemeentenaam||"")+"|"+String(item.weergavenaam||"");
+      renderRepairSuggestions(items.filter(item=>{
+        const key=String(item.weergavenaam||item.id||"");
         if(seen.has(key))return false;seen.add(key);return true;
-      });
-      renderRepairSuggestions(items);
+      }));
     }catch(error){if(error.name!=="AbortError")closeRepairSuggestions();}
   }
   repairCityInput?.addEventListener("input",()=>{
