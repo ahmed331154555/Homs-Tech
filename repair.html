@@ -1199,7 +1199,7 @@
   }
   function chooseRepairSuggestion(item){
     if(!repairCityInput||!item)return;
-    const postcode=String(item.postcode||"").toUpperCase().replace(/\\s+/g,"");
+    const postcode=String(item.postcode||"").toUpperCase().replace(/\s+/g,"");
     const town=String(item.woonplaatsnaam||item.gemeentenaam||"").trim();
     const label=postcode&&town?(postcode.slice(0,4)+" "+postcode.slice(4)+" "+town).trim():String(item.weergavenaam||item.label||"").trim();
     repairCityInput.value=label||String(item.weergavenaam||"");
