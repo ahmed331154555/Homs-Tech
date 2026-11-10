@@ -948,12 +948,12 @@
     document.getElementById("repairForm").reset();
 
     if(!services.length) renderServices();
-    setMethod(method);
     repairCoverageState="unknown";
     const coverageMessage=document.getElementById("coverageMessage");
     if(coverageMessage){coverageMessage.textContent="";coverageMessage.style.color="#64748b";}
     const homeButton=document.getElementById("methodHome");
     if(homeButton)homeButton.disabled=false;
+    setMethod(method);
 
     if(serviceIndex !== null && services[serviceIndex]){
       document.getElementById("service").value = String(serviceIndex);
@@ -966,14 +966,6 @@
   }
 
   function setMethod(method){
-    if(method==="home" && repairCoverageState!=="covered"){
-      if(repairCoverageState==="outside"){
-        const message=document.getElementById("coverageMessage");
-        if(message)message.textContent="Uw postcode valt buiten ons servicegebied. Kies Toestel opsturen.";
-      }
-      if(repairCoverageState==="unknown")checkRepairCoverage();
-      method="send";
-    }
     currentMethod = method;
     document.getElementById("methodHome").classList.toggle("active",method==="home");
     document.getElementById("methodSend").classList.toggle("active",method==="send");
@@ -989,6 +981,10 @@
 
     document.getElementById("repairTitle").textContent =
       home ? "Afspraak aan huis aanvragen" : "Reparatie aanmelden";
+
+    // Reveal the postcode field before checking coverage; otherwise the
+    // check runs against a hidden, empty field and incorrectly switches to send.
+    if(home && repairCoverageState==="unknown")checkRepairCoverage();
   }
 
   let repairCoverageState = "unknown";
@@ -1026,13 +1022,11 @@
         homeButton.disabled=!result.covered;
         homeButton.title=result.covered?"":"Reparatie aan huis is niet beschikbaar voor deze postcode.";
       }
-      if(!result.covered && currentMethod==="home")setMethod("send");
       return !!result.covered;
     }catch(error){
       repairCoverageState="unknown";
       if(message){message.textContent=error.message+" U kunt uw toestel wel per post aanmelden.";message.style.color="#b45309";}
       if(homeButton)homeButton.disabled=true;
-      if(currentMethod==="home")setMethod("send");
       return false;
     }
   }
