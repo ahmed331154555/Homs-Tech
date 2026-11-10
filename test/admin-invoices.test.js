@@ -58,8 +58,8 @@ test("invoice creation validates input and calculates totals", async () => {
   const createdAt = new Date("2026-03-04T10:00:00Z");
   const pool = { async query(sql, params) {
     calls.push({ sql, params });
-    if (sql.startsWith("INSERT")) return { rows: [{ id: 12, created_at: createdAt, status: "open" }] };
-    return { rows: [{ total: "130.68" }] };
+    if (sql.includes("INSERT INTO manual_invoices")) return { rows: [{ id: 12, invoice_number: "HT-2026-000012", created_at: createdAt, status: "open", total: "130.68" }] };
+    throw new Error("Unexpected invoice query: " + sql);
   } };
   const { routes } = harness({ pool });
   const invalid = response();
@@ -84,8 +84,9 @@ test("invoice creation validates input and calculates totals", async () => {
   assert.equal(res.statusCode, 201);
   assert.equal(res.body.invoice.invoice_number, "HT-2026-000012");
   assert.equal(res.body.invoice.total, "130.68");
-  assert.equal(calls.length, 2);
-  assert.deepEqual(calls[1].params, [12, "HT-2026-000012"]);
+  assert.equal(calls.length, 1, "invoice insert and final number assignment must be atomic");
+  assert.match(calls[0].sql, /WITH inserted AS[\\s\\S]*UPDATE manual_invoices/);
+  assert.match(calls[0].sql, /LPAD\\(inserted\\.id::text,6,'0'\\)/);
   const lines = JSON.parse(calls[0].params[6]);
   assert.equal(lines.length, 2);
   assert.equal(calls[0].params[7], "108.00");
@@ -147,6 +148,7 @@ test("invoice test-send validates configuration and sends the generated PDF", as
   await routes.get("POST /api/admin/invoices/:id/test-send")({ params: { id: "8" } }, res);
   assert.deepEqual(res.body, { success: true, to: "customer@example.com" });
   assert.equal(sentPayload.to[0], "customer@example.com");
+  assert.equal(res.body.statusUpdated, true);
   assert.equal(sentPayload.attachments[0].filename, "HT-2026-000008.pdf");
   assert.equal(Buffer.from(sentPayload.attachments[0].content, "base64").toString(), "PDFDATA");
   assert.match(sentPayload.html, /NL96 REVO 0480 6699 45/);
@@ -169,10 +171,10 @@ test("invoice totals round each line to cents before summing", async () => {
   const calls = [];
   const pool = { async query(sql, params) {
     calls.push({ sql, params });
-    if (sql.startsWith("INSERT")) {
-      return { rows: [{ id: 31, created_at: new Date("2026-11-10T10:00:00Z"), status: "open" }] };
+    if (sql.includes("INSERT INTO manual_invoices")) {
+      return { rows: [{ id: 31, invoice_number: "HT-2026-000031", created_at: new Date("2026-11-10T10:00:00Z"), status: "open", total: "0.36" }] };
     }
-    return { rows: [{ total: "0.36" }] };
+    throw new Error("Unexpected invoice query: " + sql);
   } };
   const { routes } = harness({ pool });
   const res = response();
@@ -187,4 +189,33 @@ test("invoice totals round each line to cents before summing", async () => {
   assert.equal(calls[0].params[7], "0.30");
   assert.equal(calls[0].params[8], "0.06");
   assert.equal(calls[0].params[9], "0.36");
+});
+
+
+test("invoice email marks the invoice as sent only after provider acceptance", async () => {
+  const invoice = { id: 19, invoice_number: "HT-2026-000019", customer_email: "client@example.com" };
+  const queries = [];
+  const { routes } = harness({
+    pool: { async query(sql) { queries.push(sql); return { rows: [invoice] }; } },
+    env: { RESEND_API_KEY: "test-key", RESEND_FROM_EMAIL: "billing@example.com" },
+    fetchImpl: async () => ({ ok: true, status: 200, async json() { return { id: "sent_19" }; } })
+  });
+  const res = response();
+  await routes.get("POST /api/admin/invoices/:id/test-send")({ params: { id: "19" } }, res);
+  assert.equal(res.body.success, true);
+  assert.equal(res.body.statusUpdated, true);
+  assert.match(queries[1], /UPDATE manual_invoices SET status='sent' WHERE id=\$1/);
+});
+
+test("invoice status remains unchanged when the email provider rejects delivery", async () => {
+  let updateCalled = false;
+  const { routes } = harness({
+    pool: { async query() { return { rows: [{ id: 20, invoice_number: "HT-2026-000020", customer_email: "client@example.com" }] }; } },
+    env: { RESEND_API_KEY: "test-key", RESEND_FROM_EMAIL: "billing@example.com" },
+    fetchImpl: async () => ({ ok: false, status: 422, async json() { return { message: "rejected" }; } })
+  });
+  const res = response();
+  await routes.get("POST /api/admin/invoices/:id/test-send")({ params: { id: "20" } }, res);
+  assert.equal(res.statusCode, 502);
+  assert.equal(updateCalled, false);
 });
