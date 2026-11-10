@@ -163,3 +163,28 @@ test("invoice test-send does not call provider when configuration is missing", a
   assert.equal(res.statusCode, 503);
   assert.equal(fetchCount, 0);
 });
+
+
+test("invoice totals round each line to cents before summing", async () => {
+  const calls = [];
+  const pool = { async query(sql, params) {
+    calls.push({ sql, params });
+    if (sql.startsWith("INSERT")) {
+      return { rows: [{ id: 31, created_at: new Date("2026-11-10T10:00:00Z"), status: "open" }] };
+    }
+    return { rows: [{ total: "0.36" }] };
+  } };
+  const { routes } = harness({ pool });
+  const res = response();
+  await routes.get("POST /api/admin/invoices")({
+    body: {
+      customerName: "Rounding test",
+      customerEmail: "rounding@example.com",
+      lines: [{ description: "Test item", quantity: 3, unitPrice: 0.1, vatRate: 21 }]
+    }
+  }, res);
+  assert.equal(res.statusCode, 201);
+  assert.equal(calls[0].params[7], "0.30");
+  assert.equal(calls[0].params[8], "0.06");
+  assert.equal(calls[0].params[9], "0.36");
+});
