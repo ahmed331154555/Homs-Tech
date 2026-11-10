@@ -18,9 +18,14 @@ function createPaidOrderInventoryDeductor({ pool }) {
       const settings = await client.query('SELECT data FROM site_settings WHERE id=1 FOR UPDATE');
       if (!settings.rows.length) throw new Error('Catalog settings row is missing.');
       const data = settings.rows[0].data || {};
-      for (const item of (Array.isArray(order.items) ? order.items : [])) {
-        const type = String(item && item.type || '').toLowerCase();
-        if (type === 'used') throw new Error('Legacy second-hand order item cannot be processed automatically.');
+      if (!Array.isArray(order.items) || order.items.length === 0) {
+        throw new Error('Paid order has no valid item list; inventory requires manual review.');
+      }
+      for (const item of order.items) {
+        const type = String(item && item.type || '').trim().toLowerCase();
+        if (!['phone', 'shop'].includes(type)) {
+          throw new Error('Unsupported paid order item type; inventory requires manual review.');
+        }
         const list = type === 'shop' ? (Array.isArray(data.shopProducts) ? data.shopProducts : []) : (Array.isArray(data.phones) && data.phones.length ? data.phones : (Array.isArray(data.devices) ? data.devices : []));
         const id = type === 'shop'
           ? findShopProductIndex(list, item && item.id)
