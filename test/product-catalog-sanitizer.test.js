@@ -54,3 +54,21 @@ test("public product sanitizer safely handles invalid catalog shapes", () => {
     tagline: "Telefoonreparatie aan huis"
   });
 });
+
+
+test("public product catalog preserves original phone indexes when records are empty", () => {
+  const result = sanitizeProductCatalogData({
+    phones: [
+      null,
+      { id: 2, name: "iPhone 13", price: 299 },
+      undefined,
+      { id: 4, name: "iPhone 14", price: 399 }
+    ]
+  });
+
+  assert.equal(result.phones.length, 4);
+  assert.equal(result.phones[0], null);
+  assert.equal(result.phones[1].id, 2);
+  assert.equal(result.phones[2], null);
+  assert.equal(result.phones[3].id, 4);
+});
