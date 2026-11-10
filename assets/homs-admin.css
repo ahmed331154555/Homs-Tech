@@ -3727,3 +3727,334 @@ body{
   #dashboard .card:hover,
   #dashboard .order-card:hover{transform:none;box-shadow:inherit}
 }
+
+
+/* ==========================================================================
+   HOMS TECH ADMIN — orders & inkoop finishing pass
+   Visual-only refinements. Existing workflows, permissions and data stay intact.
+   ========================================================================== */
+#page-all-orders{
+  min-width:0;
+}
+#page-all-orders>.ht-orders-page-head{
+  padding:0 0 16px;
+  margin-bottom:18px;
+  border-bottom:1px solid var(--ht-line);
+}
+#page-all-orders>.ht-orders-page-head h2{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:clamp(21px,2vw,27px);
+  font-weight:850;
+  letter-spacing:-.04em;
+}
+#ordersSubmenu{
+  margin:5px 0 12px 10px;
+  padding:8px 0 8px 12px;
+  border-left:2px solid rgba(96,165,250,.35);
+}
+#ordersSubmenu .nav-sub-btn{
+  min-height:42px;
+  padding:10px 12px;
+  border:1px solid transparent;
+  border-radius:10px;
+  font-size:12px;
+  font-weight:700;
+}
+#ordersSubmenu .nav-sub-btn:hover,
+#ordersSubmenu .nav-sub-btn.active{
+  border-color:rgba(147,197,253,.18);
+  background:rgba(37,99,235,.2);
+  color:#fff;
+}
+#page-buyback-orders .ht-inkoop-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:9px;
+  min-width:0;
+}
+#page-buyback-orders .ht-inkoop-toolbar select{
+  min-width:190px;
+  min-height:43px;
+  padding:9px 34px 9px 12px;
+  border:1px solid #d7e1ec;
+  border-radius:10px;
+  background:#fff;
+  color:#24384d;
+  font-size:12px;
+  font-weight:700;
+}
+#page-buyback-orders .ht-inkoop-toolbar .btn{min-height:43px}
+#page-buyback-orders .ht-inkoop-list{
+  gap:11px;
+}
+#page-buyback-orders .ht-inkoop-row-wrap{
+  gap:9px;
+}
+#page-buyback-orders .ht-inkoop-row{
+  min-height:78px;
+  border-color:#e1e8f0;
+  border-radius:14px;
+  box-shadow:0 2px 9px rgba(7,29,45,.035);
+}
+#page-buyback-orders .ht-inkoop-row:focus-visible{
+  outline:3px solid rgba(37,99,235,.3);
+  outline-offset:2px;
+}
+#page-buyback-orders .ht-inkoop-row-delete{
+  min-width:44px;
+  border-radius:11px;
+}
+#page-buyback-orders .ht-inkoop-main-top{row-gap:7px}
+#page-buyback-orders .ht-inkoop-number{
+  background:#edf4ff;
+  color:#1d4ed8;
+}
+#page-buyback-orders .ht-inkoop-price{
+  font-size:16px;
+  letter-spacing:-.025em;
+}
+#page-buyback-orders .ht-inkoop-chip{
+  min-height:25px;
+  align-items:center;
+  padding:5px 10px;
+  line-height:1.2;
+}
+#page-buyback-orders .ht-inkoop-detail-host:not([hidden]){
+  scrollbar-width:thin;
+  scrollbar-color:#b8c6d8 transparent;
+}
+#page-buyback-orders .ht-inkoop-detail{
+  border-color:#dce5ef;
+  background:#f4f7fb;
+}
+#page-buyback-orders .ht-inkoop-detail-head{
+  background:linear-gradient(110deg,#071d2d,#123b59);
+}
+#page-buyback-orders .ht-inkoop-detail-head h3{
+  letter-spacing:-.025em;
+}
+#page-buyback-orders .ht-inkoop-detail-head .ht-inkoop-chip{
+  border:1px solid rgba(255,255,255,.18);
+}
+#page-buyback-orders .ht-inkoop-card{
+  border-color:#e1e8f0;
+  border-radius:13px;
+  box-shadow:0 3px 12px rgba(7,29,45,.035);
+}
+#page-buyback-orders .ht-inkoop-card-head{
+  display:flex;
+  align-items:center;
+  min-height:42px;
+  border-bottom:1px solid #e5ecf4;
+  background:#f3f7fc;
+  color:#18344e;
+  letter-spacing:.005em;
+}
+#page-buyback-orders .ht-inkoop-info>div{
+  align-items:flex-start;
+  gap:14px;
+  padding:10px 0;
+}
+#page-buyback-orders .ht-inkoop-info span{
+  flex:0 0 38%;
+  line-height:1.5;
+}
+#page-buyback-orders .ht-inkoop-info strong{
+  flex:1 1 auto;
+  max-width:62%;
+  line-height:1.5;
+}
+#page-buyback-orders .ht-inkoop-notice{
+  padding:13px 14px;
+  border-radius:11px;
+  font-size:12px;
+}
+#page-buyback-orders .ht-inkoop-form{
+  gap:10px;
+  padding:13px;
+  border-radius:12px;
+}
+#page-buyback-orders .ht-inkoop-form input,
+#page-buyback-orders .ht-inkoop-form textarea,
+#page-buyback-orders .ht-postnl-label input{
+  min-height:43px;
+  box-sizing:border-box;
+  border-radius:9px;
+}
+#page-buyback-orders .ht-inkoop-form input:focus,
+#page-buyback-orders .ht-inkoop-form textarea:focus,
+#page-buyback-orders .ht-postnl-label input:focus{
+  outline:0;
+  border-color:#2563eb;
+  box-shadow:0 0 0 3px rgba(37,99,235,.12);
+}
+#page-buyback-orders .ht-inkoop-actions .btn{
+  min-height:42px;
+}
+#page-buyback-orders .ht-inkoop-total{
+  align-items:center;
+  border:1px solid #ccebd8;
+  background:linear-gradient(120deg,#effbf4,#e8f8ef);
+}
+#page-buyback-orders .ht-inkoop-detail-foot{
+  position:sticky;
+  bottom:0;
+  z-index:4;
+  align-items:center;
+  min-height:58px;
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  border-top:1px solid #e1e8f0;
+  background:rgba(255,255,255,.96);
+  box-shadow:0 -5px 16px rgba(7,29,45,.045);
+  backdrop-filter:blur(12px);
+}
+#page-buyback-orders .ht-inkoop-foot-note{
+  font-size:11px;
+  line-height:1.5;
+}
+#page-buyback-orders .ht-inkoop-detail-foot .btn{
+  min-height:40px;
+}
+#page-phone-orders .ht-phone-orders-searchbar{
+  gap:11px;
+  margin-bottom:16px;
+}
+#page-phone-orders .phone-orders-list{
+  border-color:#dfe7f0;
+  border-radius:14px;
+  box-shadow:0 4px 16px rgba(7,29,45,.045);
+}
+#page-phone-orders .ht-phone-sale-head{
+  background:#f0f5fb;
+  color:#344b63;
+  border-bottom:1px solid #e0e8f1;
+  font-size:11px;
+  letter-spacing:.035em;
+}
+#page-phone-orders .ht-phone-sale-row{
+  min-height:76px;
+  border-top-color:#edf1f6;
+}
+#page-phone-orders .ht-phone-sale-open{
+  min-height:76px;
+  transition:background-color .16s ease;
+}
+#page-phone-orders .ht-phone-sale-open:hover{
+  background:#f7faff;
+}
+#page-phone-orders .ht-phone-sale-open:focus-visible{
+  position:relative;
+  z-index:1;
+  outline:3px solid rgba(37,99,235,.28);
+  outline-offset:-3px;
+}
+#page-phone-orders .ht-phone-sale-price{
+  color:#102f4c;
+  font-size:14px;
+  font-weight:850;
+  letter-spacing:-.02em;
+}
+#page-phone-orders .ht-phone-status-chip{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  min-height:26px;
+  padding:5px 9px;
+  border:1px solid #e2e8f0;
+  border-radius:999px;
+  background:#f1f5f9;
+  color:#475569;
+  font-size:10px;
+  font-weight:850;
+  line-height:1.2;
+  white-space:nowrap;
+}
+#page-phone-orders .ht-phone-status-chip.is-new{
+  border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8;
+}
+#page-phone-orders .ht-phone-status-chip.is-accepted,
+#page-phone-orders .ht-phone-status-chip.is-complete{
+  border-color:#bbf7d0;background:#f0fdf4;color:#15803d;
+}
+#page-phone-orders .ht-phone-status-chip.is-processing{
+  border-color:#fde68a;background:#fffbeb;color:#a16207;
+}
+#page-phone-orders .ht-phone-status-chip.is-shipped{
+  border-color:#c7d2fe;background:#eef2ff;color:#4338ca;
+}
+#page-phone-orders .ht-phone-status-chip.is-cancelled{
+  border-color:#fecaca;background:#fef2f2;color:#b91c1c;
+}
+@media(max-width:900px){
+  #page-buyback-orders .ht-inkoop-toolbar{justify-content:flex-start}
+  #page-buyback-orders .ht-inkoop-columns{grid-template-columns:minmax(0,1fr)}
+  #page-phone-orders .ht-phone-orders-workspace.has-selection{
+    grid-template-columns:minmax(0,1fr);
+  }
+  #page-phone-orders .ht-phone-orders-workspace.has-selection .ht-phone-orders-list-pane{
+    display:none;
+  }
+  #page-phone-orders .ht-phone-orders-workspace.has-selection .ht-phone-orders-detail-pane{
+    display:block;
+  }
+}
+@media(max-width:560px){
+  #page-buyback-orders .ht-inkoop-toolbar{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    width:100%;
+  }
+  #page-buyback-orders .ht-inkoop-toolbar select{min-width:0;width:100%}
+  #page-buyback-orders .ht-inkoop-row{
+    grid-template-columns:minmax(0,1fr) auto 12px;
+    min-height:70px;
+    padding:11px;
+  }
+  #page-buyback-orders .ht-inkoop-row-wrap{grid-template-columns:minmax(0,1fr) 40px}
+  #page-buyback-orders .ht-inkoop-price{font-size:13px}
+  #page-buyback-orders .ht-inkoop-detail-head .ht-inkoop-actions{
+    width:100%;
+    justify-content:space-between;
+  }
+  #page-buyback-orders .ht-inkoop-detail-foot{
+    align-items:stretch;
+    flex-direction:column;
+    gap:8px;
+    padding:10px 12px calc(12px + env(safe-area-inset-bottom));
+  }
+  #page-buyback-orders .ht-inkoop-detail-foot .btn{width:100%}
+  #page-phone-orders .ht-phone-sale-head{display:none}
+  #page-phone-orders .ht-phone-sale-row{
+    grid-template-columns:minmax(0,1fr);
+    gap:0;
+    padding:0;
+  }
+  #page-phone-orders .ht-phone-sale-open{
+    grid-template-columns:30px minmax(0,1fr) auto 16px;
+    gap:8px;
+    min-height:0;
+    padding:12px;
+  }
+  #page-phone-orders .ht-phone-sale-number{font-size:11px}
+  #page-phone-orders .ht-phone-sale-customer strong{font-size:12px}
+  #page-phone-orders .ht-phone-sale-device{grid-column:2/4}
+  #page-phone-orders .ht-phone-sale-price{font-size:13px}
+  #page-phone-orders .ht-phone-sale-date{grid-column:2/3}
+  #page-phone-orders .ht-phone-sale-delete{
+    width:calc(100% - 24px);
+    margin:0 12px 10px;
+  }
+}
+@media(max-width:380px){
+  #page-buyback-orders .ht-inkoop-toolbar{grid-template-columns:minmax(0,1fr)}
+  #page-buyback-orders .ht-inkoop-toolbar .btn{width:100%}
+  #page-buyback-orders .ht-inkoop-facts{grid-template-columns:minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:reduce){
+  #page-buyback-orders .ht-inkoop-row,
+  #page-phone-orders .ht-phone-sale-open{transition:none}
+}
