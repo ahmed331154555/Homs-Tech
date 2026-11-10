@@ -45,7 +45,11 @@ test("device register summary returns commercial stock and realized profit KPIs"
       throw new Error("Unexpected query: " + sql);
     }
   };
-  const app = { get(path, ...handlers) { routes.set(path, handlers[handlers.length - 1]); }, post(path, ...handlers) { routes.set(path, handlers[handlers.length - 1]); }, put(path, ...handlers) { routes.set(path, handlers[handlers.length - 1]); } };
+  const app = {
+    get(path, ...handlers) { routes.set("GET " + path, handlers[handlers.length - 1]); },
+    post(path, ...handlers) { routes.set("POST " + path, handlers[handlers.length - 1]); },
+    put(path, ...handlers) { routes.set("PUT " + path, handlers[handlers.length - 1]); }
+  };
   const requirePermission = () => (_req, _res, next) => next();
   registerDeviceRegisterRoutes(app, { pool, requirePermission, deviceText: (v, max=160) => String(v ?? "").trim().slice(0,max), deviceMoney: v => Number(v) });
   let payload;
@@ -55,7 +59,7 @@ test("device register summary returns commercial stock and realized profit KPIs"
     json(value) { payload = value; return this; },
     status(code) { statusCode = code; return this; }
   };
-  await routes.get("/api/admin/device-register")({ query: {} }, res);
+  await routes.get("GET /api/admin/device-register")({ query: {} }, res);
   assert.equal(statusCode, 200, JSON.stringify(payload));
   assert.equal(payload.devices.length, 1);
   assert.equal(payload.summary.total, 8);
