@@ -27,21 +27,66 @@ function createPaidOrderInventoryDeductor({ pool }) {
           : Number(item && item.id);
         const qty = Number(item && item.qty || 1);
         if (!Number.isInteger(id) || id < 0 || !list[id] || !Number.isInteger(qty) || qty < 1) throw new Error('Paid order item could not be matched to catalog.');
-        const product = list[id]; const options = item.options && typeof item.options === 'object' ? item.options : {};
+        const product = list[id];
+        const options = item.options && typeof item.options === 'object' ? item.options : {};
+        let trackedStock = null;
+        let stockOwner = product;
+        let stockVariantId = String(item.variantId || item.sku || '');
+        let variantLabel = String(options.quality || options.condition || '').trim();
         if (type === 'shop') {
-          deductShopVariantInventory(product, item);
+          const deducted = deductShopVariantInventory(product, item);
+          if (deducted.remaining !== null && deducted.remaining !== undefined) {
+            trackedStock = { before: deducted.remaining + qty, after: deducted.remaining };
+          }
+          if (deducted.variant) {
+            stockOwner = deducted.variant;
+            variantLabel = String(deducted.variant.quality || variantLabel || 'Standaard');
+            stockVariantId = String(deducted.variant.id || deducted.variant.sku || stockVariantId);
+          }
         } else if (product.pricingMode === 'variant') {
           const rows = Array.isArray(product.variantPrices) ? product.variantPrices : [];
-          const row = rows.find(x => x && String(x.condition ?? '') === String(options.condition ?? '') && String(x.color ?? '') === String(options.color ?? '') && String(x.storage ?? '') === String(options.storage ?? ''));
+          const row = rows.find(x => x &&
+            String(x.condition ?? '') === String(options.condition ?? '') &&
+            String(x.color ?? '') === String(options.color ?? '') &&
+            String(x.storage ?? '') === String(options.storage ?? ''));
           if (!row) throw new Error('Paid order variant was not found.');
-          if (row.stock !== undefined && row.stock !== null && row.stock !== '') { const stock = Number(row.stock); if (!Number.isFinite(stock) || stock < qty) throw new Error('Insufficient stock for paid variant.'); row.stock = stock - qty; }
+          stockOwner = row;
+          variantLabel = [row.storage, row.color, row.condition].filter(Boolean).join(' · ');
+          stockVariantId = String(row.id || stockVariantId);
+          if (row.stock !== undefined && row.stock !== null && row.stock !== '') {
+            const stock = Number(row.stock);
+            if (!Number.isSafeInteger(stock) || stock < qty) throw new Error('Insufficient stock for paid variant.');
+            row.stock = stock - qty;
+            trackedStock = { before: stock, after: stock - qty };
+          }
         } else {
-          const key = ['stock', 'quantity', 'stockQuantity'].find(k => product[k] !== undefined && product[k] !== null && product[k] !== '');
+          const key = ['stock', 'quantity', 'stockQuantity'].find(k =>
+            product[k] !== undefined && product[k] !== null && product[k] !== ''
+          );
           if (key) {
             const stock = Number(product[key]);
-            if (type === 'shop' && !Number.isFinite(stock)) { /* Text stock labels such as "Op voorraad" are informational only. */ }
-            else { if (!Number.isFinite(stock) || stock < qty) throw new Error('Insufficient stock for paid product.'); product[key] = stock - qty; }
+            if (!Number.isSafeInteger(stock) || stock < qty) throw new Error('Insufficient stock for paid product.');
+            product[key] = stock - qty;
+            trackedStock = { before: stock, after: stock - qty };
           }
+        }
+        if (trackedStock) {
+          await client.query(
+            "INSERT INTO inventory_movements(item_type,product_id,variant_id,product_name,variant_label,sku,movement_type,quantity,stock_before,stock_after,reference,note,created_by) VALUES($1,$2,$3,$4,$5,$6,'webshop_sale',$7,$8,$9,$10,$11,'Systeem')",
+            [
+              type === 'shop' ? 'shop' : 'phone',
+              String(item.id ?? id),
+              stockVariantId,
+              String(product.name || item.name || 'Product').slice(0, 200),
+              variantLabel.slice(0, 160),
+              String(item.sku || stockOwner.sku || product.sku || '').slice(0, 64),
+              -qty,
+              trackedStock.before,
+              trackedStock.after,
+              'Webshop bestelling #' + String(order.id),
+              'Automatische voorraadboeking na bevestigde betaling.'
+            ]
+          );
         }
         const custom = options.custom && typeof options.custom === 'object' ? options.custom : {};
         for (const groupType of ['optionGroups', 'addonGroups']) {
