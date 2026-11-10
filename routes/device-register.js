@@ -78,7 +78,7 @@ function registerDeviceRegisterRoutes(app, {
       if(!Number.isSafeInteger(id)||id<=0)return res.status(400).json({error:"Ongeldig toestel."});
       const status=deviceText(b.status,40),purchaseCost=deviceMoney(b.purchaseCost),salePrice=deviceMoney(b.salePrice);
       const model=deviceText(b.model,120),brand=deviceText(b.brand,60)||"Apple";
-      const existing=await pool.query("SELECT device_type FROM device_register WHERE id=$1 AND archived=FALSE",[id]);
+      const existing=await pool.query("SELECT device_type,status FROM device_register WHERE id=$1 AND archived=FALSE",[id]);
       if(!existing.rows.length)return res.status(404).json({error:"Toestel niet gevonden."});
       const allowed=existing.rows[0].device_type==="commercial"?commercialDeviceStatuses:customerDeviceStatuses;
       if(existing.rows[0].status==="تم البيع")return res.status(409).json({error:"Een verkocht toestel kan niet via de algemene bewerkfunctie worden aangepast."});
