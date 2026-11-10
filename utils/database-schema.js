@@ -333,6 +333,28 @@ async function initializeDatabaseSchema(pool) {
     }
 
     await pool.query(`
+      CREATE TABLE IF NOT EXISTS inventory_movements (
+        id BIGSERIAL PRIMARY KEY,
+        item_type TEXT NOT NULL CHECK (item_type IN ('phone','shop')),
+        product_id TEXT NOT NULL,
+        variant_id TEXT NOT NULL DEFAULT '',
+        product_name TEXT NOT NULL,
+        variant_label TEXT NOT NULL DEFAULT '',
+        sku TEXT NOT NULL DEFAULT '',
+        movement_type TEXT NOT NULL CHECK (movement_type IN ('purchase','sale','return','damage','correction','webshop_sale')),
+        quantity INTEGER NOT NULL CHECK (quantity <> 0),
+        stock_before INTEGER NOT NULL CHECK (stock_before >= 0),
+        stock_after INTEGER NOT NULL CHECK (stock_after >= 0),
+        reference TEXT NOT NULL DEFAULT '',
+        note TEXT NOT NULL DEFAULT '',
+        created_by TEXT NOT NULL DEFAULT 'Admin',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS inventory_movements_created_idx ON inventory_movements(created_at DESC, id DESC);
+      CREATE INDEX IF NOT EXISTS inventory_movements_product_idx ON inventory_movements(item_type, product_id, variant_id, created_at DESC);
+    `);
+    
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS manual_invoices (
         id BIGSERIAL PRIMARY KEY,
         invoice_number TEXT NOT NULL UNIQUE,
