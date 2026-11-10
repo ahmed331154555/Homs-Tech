@@ -6778,14 +6778,16 @@ async function loadInvoices(){
       '<div class="ht-invoice-table-wrap"><table class="ht-invoice-table"><thead><tr><th>Factuurnummer</th><th>Klant</th><th>Datum</th><th>Totaal</th><th>Status</th><th>Acties</th></tr></thead><tbody>'+
       invoices.map(invoice=>{
         const id=Number(invoice.id);
-        const status=String(invoice.status||"Concept");
-        const isSent=status.toLowerCase().includes("sent")||status.toLowerCase().includes("verstuurd");
+        const status=String(invoice.status||"draft").toLowerCase();
+        const statusLabels={sent:"Verstuurd",open:"Concept",draft:"Concept",paid:"Betaald",cancelled:"Geannuleerd"};
+        const statusLabel=statusLabels[status]||status;
+        const statusClass=status==="sent"||status==="paid"?"is-sent":status==="cancelled"?"is-cancelled":"is-draft";
         return '<tr>'+
           '<td><strong class="ht-invoice-number">'+esc(invoice.invoice_number||"—")+'</strong></td>'+
           '<td><strong>'+esc(invoice.customer_name||"—")+'</strong><small>'+esc(invoice.customer_email||"")+'</small></td>'+
           '<td>'+invoiceDate(invoice.created_at)+'</td>'+
           '<td class="ht-invoice-total">'+invoiceEuro(invoice.total)+'</td>'+
-          '<td><span class="ht-invoice-status '+(isSent?"is-sent":"is-draft")+'">'+esc(status==="Concept / test"?"Opgeslagen":status)+'</span></td>'+
+          '<td><span class="ht-invoice-status '+statusClass+'">'+esc(statusLabel)+'</span></td>'+
           '<td><div class="ht-invoice-actions"><button type="button" class="btn btn-light" onclick="previewSavedInvoice('+id+')">PDF bekijken</button><button type="button" class="btn btn-green" onclick="sendInvoiceTest('+id+',this)">E-mail versturen</button></div></td>'+
           '</tr>';
       }).join("")+
@@ -6829,8 +6831,13 @@ async function sendInvoiceTest(id,button){
     });
     const result=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(result.error||"E-mail versturen is mislukt.");
-    invoiceFormMessage("Factuurmail is verzonden naar "+String(result.to||"het klantadres")+".","success");
-    if(typeof setStatus==="function")setStatus("✓ Factuurmail verzonden.","success");
+    if(result.statusUpdated===false){
+      invoiceFormMessage(result.warning||"De e-mail is verzonden, maar de factuurstatus kon niet worden bijgewerkt.","error");
+    }else{
+      invoiceFormMessage("Factuurmail is verzonden naar "+String(result.to||"het klantadres")+".","success");
+    }
+    await loadInvoices();
+    if(typeof setStatus==="function")setStatus(result.statusUpdated===false?"⚠ Factuurmail verzonden; statuscontrole nodig.":"✓ Factuurmail verzonden.","success");
   }catch(error){
     invoiceFormMessage(error.message||"E-mail versturen is mislukt.","error");
   }finally{
