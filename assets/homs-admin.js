@@ -6894,6 +6894,7 @@ document.getElementById("adminEmailComposeForm")?.addEventListener("submit",asyn
 const DEVICE_STATUS_CUSTOMER=["مفتوح","قيد العمل","مكتمل"];
 const DEVICE_STATUS_COMMERCIAL=["تم الشراء","قيد الفحص","قيد التجديد","جاهز للبيع","تم البيع"];
 let deviceRegisterCache=[];
+let deviceRegisterSummary={};
 function deviceEuro(v){return new Intl.NumberFormat("nl-NL",{style:"currency",currency:"EUR"}).format(Number(v)||0)}
 function deviceSetStatus(msg,type="info"){const el=document.getElementById("deviceRegisterStatus");if(el){el.textContent=msg;el.className="status "+type}}
 function deviceUpdateFields(){
@@ -6918,17 +6919,24 @@ function deviceCell(value,field,id,type="text"){
   return '<td><input class="dr-cell" data-field="'+field+'" data-id="'+id+'" type="'+type+'" value="'+esc(value??"")+'" '+(type==="number"?'min="0" step="0.01"':'')+'></td>';
 }
 function deviceTypeLabel(type){return type==="commercial"?"Eigen toestel":"Klantreparatie"}
+function deviceRenderSummary(){
+  const s=deviceRegisterSummary||{};
+  const cards=[["Totaal eigen toestellen",Number(s.total||0)],["Klaar voor verkoop",Number(s.ready||0)],["In behandeling",Number(s.processing||0)],["Verkocht",Number(s.sold||0)],["Voorraad investering",deviceEuro(s.invested)],["Verkoop omzet",deviceEuro(s.revenue)],["Gerealiseerde winst",deviceEuro(s.realized_profit)]];
+  return '<section aria-label="Voorraad samenvatting" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:0 0 16px">' + cards.map((item,index)=>'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:13px 14px;min-width:0"><div style="font-size:12px;color:#64748b;font-weight:600">' + item[0] + '</div><div style="font-size:20px;font-weight:800;color:' + (index===6?"#087443":"#102a43") + ';margin-top:5px;overflow-wrap:anywhere">' + item[1] + '</div></div>').join("") + '</section>';
+}
 function deviceRenderTable(){
   const host=document.getElementById("deviceRegisterTable");if(!host)return;
   const rows=deviceRegisterCache;
+  const summaryHtml=deviceRenderSummary();
+  if(!rows.length){host.innerHTML=summaryHtml+'<p style="padding:18px;color:#64748b;background:#fff;border:1px solid #e2e8f0;border-radius:12px">Geen toestellen gevonden. Voeg een toestel toe of importeer een Excel-bestand.</p>';return}
   const headers=["Type","IMEI / serienummer / HT-code","Merk","Model / naam","Opslag","Kleur","Conditie","Status","Klantnaam","Telefoon","Ordernummer","Inkoop (€)","Verkoop (€)","Acties"];
-  host.innerHTML='<div class="dr-sheet-wrap"><table class="dr-sheet"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
+  host.innerHTML=summaryHtml+'<div class="dr-sheet-wrap"><table class="dr-sheet"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
     rows.map(x=>{const rowId=x.id?String(x.id):"new";return '<tr data-row-id="'+rowId+'">'+
       '<td style="padding:10px 12px;white-space:nowrap;font-weight:700">'+deviceTypeLabel(x.device_type)+'</td>'+
       (x.id?'<td><input class="dr-cell dr-readonly" value="'+esc(x.identifier_value)+'" readonly title="Identificatienummer kan niet inline worden gewijzigd"></td>':deviceCell(x.identifier_value,"identifierValue","new"))+
       deviceCell(x.brand,"brand",rowId)+deviceCell(x.model,"model",rowId)+
       '<td>'+esc(x.storage||"—")+'</td><td>'+esc(x.color||"—")+'</td><td>'+esc(x.device_condition||"—")+'</td>'+
-      '<td><select class="dr-cell" data-field="status" data-id="'+Number(x.id)+'">'+(x.device_type==="commercial"?DEVICE_STATUS_COMMERCIAL:DEVICE_STATUS_CUSTOMER).map(v=>'<option '+(v===x.status?"selected":"")+'>'+esc(v)+'</option>').join('')+'</select></td>'+
+      '<td><select class="dr-cell" data-field="status" data-id="'+Number(x.id)+'">'+(x.device_type==="commercial"?DEVICE_STATUS_COMMERCIAL:DEVICE_STATUS_CUSTOMER).map(v=>'<option '+(v===x.status?"selected":"")+' >'+esc(v)+'</option>').join('')+'</select></td>'+
       deviceCell(x.customer_name,"customerName",rowId)+deviceCell(x.customer_phone,"customerPhone",rowId)+deviceCell(x.repair_order_number,"repairOrderNumber",rowId)+
       deviceCell(x.purchase_cost,"purchaseCost",rowId,"number")+deviceCell(x.sale_price,"salePrice",rowId,"number")+
       '<td class="dr-actions"><button class="btn btn-green" onclick="deviceSaveRow(&quot;'+rowId+'&quot;)">Opslaan</button>'+(x.id?'<button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button class="btn btn-light" onclick="deviceAddOperation('+Number(x.id)+')">＋</button><button class="btn btn-light" onclick="deviceArchive('+Number(x.id)+',true)">Archief</button>':'<span class="small">Nieuwe rij</span>')+'</td></tr>'}).join('')+
@@ -6939,8 +6947,7 @@ async function loadDeviceRegister(){
   try{
     const p=new URLSearchParams(),type=document.getElementById("deviceTypeFilter")?.value||"",q=document.getElementById("deviceSearch")?.value.trim()||"",archived=document.getElementById("deviceArchivedFilter")?.checked||false;
     if(type)p.set("type",type);if(q)p.set("q",q);if(archived)p.set("archived","true");
-    const d=await deviceApi("/api/admin/device-register?"+p.toString());deviceRegisterCache=d.devices||[];
-    if(!deviceRegisterCache.length){host.innerHTML='<p style="padding:18px;color:#64748b">Geen toestellen gevonden. Voeg een toestel toe of importeer een Excel-bestand.</p>';return}
+    const d=await deviceApi("/api/admin/device-register?"+p.toString());deviceRegisterCache=d.devices||[];deviceRegisterSummary=d.summary||{};
     deviceRenderTable();
   }catch(e){host.innerHTML="";deviceSetStatus(e.message,"error")}
 }
