@@ -66,6 +66,9 @@ async function initializeDatabaseSchema(pool) {
         sale_price NUMERIC(12,2) NOT NULL DEFAULT 0,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+      CREATE UNIQUE INDEX IF NOT EXISTS device_register_single_sale_idx
+        ON device_register_operations(device_id)
+        WHERE operation_type='sale';
     `);
     await pool.query(`
       CREATE TABLE IF NOT EXISTS live_chat_conversations (
