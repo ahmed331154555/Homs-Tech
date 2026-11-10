@@ -6929,7 +6929,7 @@ function deviceRenderTable(){
       '<td><select class="dr-cell" data-field="status" data-id="'+Number(x.id)+'">'+(x.device_type==="commercial"?DEVICE_STATUS_COMMERCIAL:DEVICE_STATUS_CUSTOMER).map(v=>'<option '+(v===x.status?"selected":"")+'>'+esc(v)+'</option>').join('')+'</select></td>'+
       deviceCell(x.customer_name,"customerName",rowId)+deviceCell(x.customer_phone,"customerPhone",rowId)+deviceCell(x.repair_order_number,"repairOrderNumber",rowId)+
       deviceCell(x.purchase_cost,"purchaseCost",rowId,"number")+deviceCell(x.sale_price,"salePrice",rowId,"number")+
-      '<td class="dr-actions"><button class="btn btn-green" onclick="deviceSaveRow(\\''+rowId+'\\')">Opslaan</button>'+(x.id?'<button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button class="btn btn-light" onclick="deviceAddOperation('+Number(x.id)+')">＋</button><button class="btn btn-light" onclick="deviceArchive('+Number(x.id)+',true)">Archief</button>':'<span class="small">Nieuwe rij</span>')+'</td></tr>'}).join('')+
+      '<td class="dr-actions"><button class="btn btn-green" onclick="deviceSaveRow(&quot;'+rowId+'&quot;)">Opslaan</button>'+(x.id?'<button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button class="btn btn-light" onclick="deviceAddOperation('+Number(x.id)+')">＋</button><button class="btn btn-light" onclick="deviceArchive('+Number(x.id)+',true)">Archief</button>':'<span class="small">Nieuwe rij</span>')+'</td></tr>'}).join('')+
     '</tbody></table></div><p class="small" style="margin:10px 0 0">Toestellen uit Inkoop worden automatisch gekoppeld met een HT-code zodra de uitbetaling is afgerond.</p>';
 }
 async function loadDeviceRegister(){
