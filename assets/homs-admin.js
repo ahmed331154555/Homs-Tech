@@ -6605,7 +6605,8 @@ async function previewSavedInvoice(id){
     const blob=await response.blob();
     if(blob.type&&blob.type!=="application/pdf")throw new Error("De server heeft geen geldig PDF-bestand teruggestuurd.");
     const url=URL.createObjectURL(blob);
-    const opened=window.open(url,"_blank","noopener");
+    const opened=window.open(url,"_blank");
+    if(opened){opened.opener=null;}
     if(!opened){
       const link=document.createElement("a");
       link.href=url;link.download="HOMS-TECH-factuur-"+Number(id)+".pdf";
