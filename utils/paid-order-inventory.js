@@ -52,7 +52,7 @@ function createPaidOrderInventoryDeductor({ pool }) {
           if (!row) throw new Error('Paid order variant was not found.');
           stockOwner = row;
           variantLabel = [row.storage, row.color, row.condition].filter(Boolean).join(' · ');
-          stockVariantId = String(row.id || stockVariantId);
+          stockVariantId = String(row.id || stockVariantId || [row.storage, row.color, row.condition].map(value => String(value ?? '').trim()).join('::'));
           if (row.stock !== undefined && row.stock !== null && row.stock !== '') {
             const stock = Number(row.stock);
             if (!Number.isSafeInteger(stock) || stock < qty) throw new Error('Insufficient stock for paid variant.');
@@ -75,7 +75,7 @@ function createPaidOrderInventoryDeductor({ pool }) {
             "INSERT INTO inventory_movements(item_type,product_id,variant_id,product_name,variant_label,sku,movement_type,quantity,stock_before,stock_after,reference,note,created_by) VALUES($1,$2,$3,$4,$5,$6,'webshop_sale',$7,$8,$9,$10,$11,'Systeem')",
             [
               type === 'shop' ? 'shop' : 'phone',
-              String(item.id ?? id),
+              String(product.id ?? item.id ?? id),
               stockVariantId,
               String(product.name || item.name || 'Product').slice(0, 200),
               variantLabel.slice(0, 160),
