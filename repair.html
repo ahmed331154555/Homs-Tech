@@ -1237,8 +1237,8 @@
     if(repairSuggestController)repairSuggestController.abort();
     repairSuggestController=new AbortController();
     try{
-      const params=new URLSearchParams({q:query,rows:"8",fl:"id,type,weergavenaam,postcode,woonplaatsnaam,gemeentenaam,straatnaam,huisnummer,huisletter,huisnummertoevoeging"});
-      const url="https://api.pdok.nl/bzk/locatieserver/search/v3_1/search?"+params;
+      const params=new URLSearchParams({q:query,fq:"type:adres",rows:"8",fl:"id,type,weergavenaam,postcode,woonplaatsnaam,gemeentenaam,straatnaam,huisnummer,huisletter,huisnummertoevoeging"});
+      const url="https://api.pdok.nl/bzk/locatieserver/search/v3_1/suggest?"+params;
       const response=await fetch(url,{signal:repairSuggestController.signal,headers:{Accept:"application/json"}});
       if(!response.ok)throw new Error("Adreszoekfunctie niet beschikbaar");
       const payload=await response.json();
