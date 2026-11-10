@@ -238,3 +238,52 @@ test("inventory rejects invalid quantities and movement types", async () => {
     assert.equal(res.statusCode, 400);
   }
 });
+
+
+test("legacy Shop product stock accepts the catalog's 'N stuks' format", async () => {
+  const h = makeHarness({
+    data: {
+      shopProducts: [{
+        id: "cable-1",
+        name: "USB-C cable",
+        stock: "4 stuks",
+        variants: []
+      }]
+    }
+  });
+  const res = response();
+  await h.routes.get("POST /api/admin/inventory/movements")({
+    admin: { username: "warehouse.admin" },
+    body: {
+      itemType: "shop",
+      productId: "cable-1",
+      movementType: "sale",
+      quantity: 1,
+      note: "Verkoop aan klant"
+    }
+  }, res);
+  assert.equal(res.statusCode, 201);
+  assert.equal(res.body.stock, 3);
+  assert.equal(h.getData().shopProducts[0].stock, "3 stuks");
+  assert.equal(h.getMovements()[0].stock_before, 4);
+  assert.equal(h.getMovements()[0].stock_after, 3);
+});
+
+test("inventory movement rejects a malformed legacy Shop stock value without changing it", async () => {
+  const h = makeHarness({
+    data: { shopProducts: [{ id: "cable-2", name: "Cable", stock: "voorraad onbekend" }] }
+  });
+  const res = response();
+  await h.routes.get("POST /api/admin/inventory/movements")({
+    body: {
+      itemType: "shop",
+      productId: "cable-2",
+      movementType: "purchase",
+      quantity: 2,
+      note: "Voorraad aanvullen"
+    }
+  }, res);
+  assert.equal(res.statusCode, 409);
+  assert.equal(h.getData().shopProducts[0].stock, "voorraad onbekend");
+  assert.equal(h.getMovements().length, 0);
+});
