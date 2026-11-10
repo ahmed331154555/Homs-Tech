@@ -435,9 +435,10 @@ test("customer can accept or reject the inspected trade-in offer using a one-tim
     async query(sql, params) {
       statements.push({sql,params});
       if (sql.includes("SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot")) {
-        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_status: "AwaitingCustomerApproval", trade_in_snapshot: { customerApprovalTokenHash: tokenHash, customerApprovalExpiresAt: new Date(Date.now()+60000).toISOString() } }] };
+        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_status: "AwaitingCustomerApproval", payment_status: "Paid", trade_in_snapshot: { customerApprovalTokenHash: tokenHash, customerApprovalExpiresAt: new Date(Date.now()+60000).toISOString() } }] };
       }
-      return { rows: [] };
+      if (sql.includes("SELECT id FROM buyback_orders")) return { rows: [{ id: 77 }] };
+      return { rows: []; }
     },
     release() {}
   };
@@ -474,8 +475,9 @@ test("trade-in payout is marked settled only after customer acceptance and admin
     async query(sql, params) {
       statements.push({ sql, params });
       if (sql.includes("SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot")) {
-        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_status: "CustomerAccepted", trade_in_snapshot: {} }] };
+        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_status: "CustomerAccepted", payment_status: "Paid", trade_in_snapshot: {} }] };
       }
+      if (sql.includes("SELECT id FROM buyback_orders")) return { rows: [{ id: 77 }] };
       if (sql.includes("UPDATE webshop_orders SET trade_in_status='Settled'")) {
         return { rows: [{ id: 31, trade_in_status: "Settled", trade_in_snapshot: { settlementNote: params[0] } }] };
       }
@@ -563,4 +565,45 @@ test("trade-in customer offer requires a customer email before creating an appro
 
   assert.equal(response.statusCode, 409);
   assert.equal(queryCount, 1, "missing email must not create or rotate an approval token");
+});
+
+test("trade-in customer decision rejects an unpaid order before changing the linked buyback", async () => {
+  const crypto = require("node:crypto");
+  const token = "b".repeat(64);
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  const statements = [];
+  const client = {
+    async query(sql) {
+      statements.push(sql);
+      if (sql.includes("SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot")) {
+        return { rows: [{ id: 32, trade_in_order_id: 78, trade_in_status: "AwaitingCustomerApproval", payment_status: "Pending", trade_in_snapshot: { customerApprovalTokenHash: tokenHash, customerApprovalExpiresAt: new Date(Date.now()+60000).toISOString() } }] };
+      }
+      return { rows: [] };
+    },
+    release() {}
+  };
+  const routes = createHarness({ async connect() { return client; } });
+  const response = createResponse();
+  await routes.get("POST /api/trade-in/decision")({ body: { token, decision: "accept" } }, response);
+  assert.equal(response.statusCode, 409);
+  assert.ok(!statements.some(sql => sql.startsWith("UPDATE buyback_orders")));
+  assert.ok(statements.includes("ROLLBACK"));
+});
+
+test("trade-in settlement rejects an unpaid webshop order", async () => {
+  const client = {
+    async query(sql) {
+      if (sql.includes("SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot")) {
+        return { rows: [{ id: 33, trade_in_order_id: 79, trade_in_status: "CustomerAccepted", payment_status: "Pending", trade_in_snapshot: {} }] };
+      }
+      return { rows: [] };
+    },
+    release() {}
+  };
+  const routes = createHarness({ async connect() { return client; } });
+  const response = createResponse();
+  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-settlement")({
+    params: { id: "33" }, body: { settlementNote: "Overgemaakt op 10-11." }
+  }, response);
+  assert.equal(response.statusCode, 409);
 });
