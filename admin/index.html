@@ -10,6 +10,8 @@
 
 <body>
 
+<a class="ht-admin-skip-link" href="#dashboard">Direct naar hoofdinhoud</a>
+
 <div class="topbar">
   <div class="logo">HOMS <span>TECH</span> — Admin</div>
   <button class="btn btn-light" id="logoutBtn" onclick="logout()" style="display:none">
@@ -45,24 +47,24 @@
   <p class="small">Log in om de website te beheren.</p>
 
   <div class="field">
-    <label>Gebruikersnaam</label>
-    <input id="username" type="text" autocomplete="username">
+    <label for="username">Gebruikersnaam</label>
+    <input id="username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false">
   </div>
 
   <div class="field">
-    <label>Wachtwoord</label>
-    <input id="password" type="password" autocomplete="current-password">
+    <label for="password">Wachtwoord</label>
+    <input id="password" name="password" type="password" autocomplete="current-password">
   </div>
 
   <button class="btn btn-green" onclick="login()" style="width:100%">
     Inloggen
   </button>
 
-  <p id="loginStatus" class="status"></p>
+  <p id="loginStatus" class="status" role="status" aria-live="polite"></p>
 </div>
 
 <!-- DASHBOARD -->
-<div id="dashboard" class="dashboard">
+<div id="dashboard" class="dashboard" role="main" tabindex="-1">
 <div class="container">
 
 <!-- HOMEPAGE SETTINGS -->
