@@ -23,7 +23,7 @@ const PAGE_PERMISSIONS = {
   general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",shop:"site.save",categories:"categories.view",
 why:"why.view",customers:"customers.view",orders:"orders.view","repair-requests":"orders.view",
   "webshop-orders":"webshop_orders.view","invoices":"site.save","order-settings":"site.save",search:"search",admins:"admins.manage",
-  buyback:"buyback.view", "buyback-orders":"buyback_orders.view", emails:"site.save"
+  buyback:"buyback.view", "buyback-orders":"buyback_orders.view", inventory:"site.save", emails:"site.save"
 };
 
 const ADMIN_PERMISSION_LABELS = {
@@ -48,7 +48,7 @@ function canEditCurrentPage(){
   return canEditSite();
 }
 function firstAllowedPage(){
-  const pages=["general","services","repair","phones","shop","buyback","buyback-orders","categories","why","customers","orders","repair-requests","webshop-orders","emails","invoices","search","admins"];
+  const pages=["general","services","repair","phones","shop","buyback","buyback-orders","categories","why","customers","orders","repair-requests","webshop-orders","emails","invoices","inventory","search","admins"];
   return pages.find(p=>hasPermission(PAGE_PERMISSIONS[p]))||null;
 }
 function applyPermissionUI(){
@@ -90,6 +90,7 @@ function showPage(page){
     if(page==="customers")loadCustomers();
     if(page==="emails")loadAdminEmails();
     if(page==="invoices"){if(!document.querySelector("#invoiceLines tr"))addInvoiceLine();loadInvoices();}
+    if(page==="inventory")loadInventory();
     if(page==="live-chat"){loadLiveChat();if(liveChatRefreshTimer)clearInterval(liveChatRefreshTimer);liveChatRefreshTimer=setInterval(()=>{if(currentPage==="live-chat")loadLiveChat();},8000);}
     if(page==="all-orders"){const key=unifiedOrdersActiveKey||unifiedOrderCategories.find(item=>hasPermission(item.permission))?.key;if(key)showUnifiedOrderSection(key,true);}
     if(page==="orders"||page==="repair-requests")loadOrders();
@@ -6406,6 +6407,193 @@ function esc(value){
     .replace(/>/g,"&gt;")
     .replace(/"/g,"&quot;")
     .replace(/'/g,"&#039;");
+}
+
+let inventoryData={items:[],movements:[],summary:null};
+const inventoryMovementLabels={
+  purchase:"Inkoop / levering",
+  sale:"Verkoop / afboeking",
+  return:"Retour ontvangen",
+  damage:"Beschadigd / verlies",
+  correction:"Voorraadcorrectie",
+  webshop_sale:"Webshopverkoop"
+};
+function inventoryEuroCount(value){
+  const number=Number(value);
+  return Number.isSafeInteger(number)&&number>=0?number.toLocaleString("nl-NL"):"—";
+}
+function inventoryDate(value){
+  const date=new Date(value);
+  return Number.isNaN(date.getTime())?"—":date.toLocaleString("nl-NL",{dateStyle:"short",timeStyle:"short"});
+}
+function inventorySetStatus(message,type="info"){
+  const status=document.getElementById("inventoryFormStatus");
+  if(status){status.textContent=message;status.className="status "+type;}
+}
+function renderInventorySummary(){
+  const box=document.getElementById("inventorySummary"),summary=inventoryData.summary;
+  if(!box||!summary)return;
+  const cards=[
+    ["Voorraadartikelen",summary.products,"Catalogusartikelen"],
+    ["Totale stuks",summary.totalUnits,"Getelde voorraad"],
+    ["Bijna op",summary.lowStockCount,"Op of onder "+summary.threshold+" stuks"],
+    ["Uitverkocht",summary.outOfStockCount,"Voorraad nul"]
+  ];
+  box.innerHTML=cards.map((card,index)=>
+    '<div class="ht-inventory-stat ht-inventory-stat-'+index+'"><span>'+esc(card[0])+'</span><strong>'+inventoryEuroCount(card[1])+'</strong><small>'+esc(card[2])+'</small></div>'
+  ).join("");
+}
+function renderInventoryItemSelect(){
+  const select=document.getElementById("inventoryItemSelect");
+  if(!select)return;
+  const previous=select.value;
+  select.innerHTML='<option value="">Selecteer een product</option>'+inventoryData.items.map((item,index)=>
+    '<option value="'+index+'">'+esc(item.name)+' · '+esc(item.variantLabel)+' · '+esc(item.sku||"Geen SKU")+'</option>'
+  ).join("");
+  if(previous&&Number(previous)<inventoryData.items.length)select.value=previous;
+  inventorySelectionChanged();
+}
+function renderInventoryItems(){
+  const box=document.getElementById("inventoryItems");
+  if(!box)return;
+  const search=String(document.getElementById("inventorySearch")?.value||"").trim().toLocaleLowerCase();
+  const category=document.getElementById("inventoryCategoryFilter")?.value||"all";
+  const stockFilter=document.getElementById("inventoryStockFilter")?.value||"all";
+  const rows=inventoryData.items.map((item,index)=>({item,index})).filter(({item})=>{
+    const haystack=[item.name,item.variantLabel,item.sku,item.category].join(" ").toLocaleLowerCase();
+    if(search&&!haystack.includes(search))return false;
+    if(category==="phone"&&item.itemType!=="phone")return false;
+    if(category==="shop"&&item.itemType!=="shop")return false;
+    if(stockFilter==="untracked"&&item.stock!==null)return false;
+    if(stockFilter==="zero"&&item.stock!==0)return false;
+    if(stockFilter==="low"&&(item.stock===null||item.stock>inventoryData.summary?.threshold))return false;
+    return true;
+  });
+  if(!rows.length){
+    box.innerHTML='<div class="ht-inventory-empty"><strong>Geen voorraadartikelen gevonden</strong><p>Pas de zoekopdracht of filters aan.</p></div>';
+    return;
+  }
+  box.innerHTML='<table class="ht-inventory-table"><thead><tr><th>Product / uitvoering</th><th>SKU</th><th>Voorraad</th><th>Status</th><th>Actie</th></tr></thead><tbody>'+
+    rows.map(({item,index})=>{
+      const untracked=item.stock===null;
+      const zero=item.stock===0;
+      const low=!untracked&&!zero&&item.stock<=Number(inventoryData.summary?.threshold??2);
+      const status=untracked?"Niet ingesteld":zero?"Uitverkocht":low?"Lage voorraad":item.active?"Op voorraad":"Niet actief";
+      const badge=untracked?"is-untracked":zero?"is-zero":low?"is-low":item.active?"is-available":"is-inactive";
+      return '<tr><td><strong>'+esc(item.name)+'</strong><small>'+esc(item.variantLabel)+' · '+esc(item.category)+'</small></td><td><span class="ht-inventory-sku">'+esc(item.sku||"—")+'</span></td><td><strong class="ht-inventory-quantity">'+(untracked?"Niet ingesteld":inventoryEuroCount(item.stock)+" st.")+'</strong></td><td><span class="ht-inventory-badge '+badge+'">'+status+'</span></td><td><button type="button" class="btn btn-light ht-inventory-row-action" onclick="selectInventoryItem('+index+')">Muteren</button></td></tr>';
+    }).join("")+'</tbody></table>';
+}
+function renderInventoryMovements(){
+  const box=document.getElementById("inventoryMovements");
+  if(!box)return;
+  const rows=Array.isArray(inventoryData.movements)?inventoryData.movements:[];
+  if(!rows.length){
+    box.innerHTML='<div class="ht-inventory-empty"><strong>Nog geen voorraadmutaties</strong><p>Inkoop, verkoop en correcties verschijnen hier automatisch.</p></div>';
+    return;
+  }
+  box.innerHTML='<div class="ht-inventory-history-scroll"><table class="ht-inventory-history-table"><thead><tr><th>Datum</th><th>Product</th><th>Mutatie</th><th>Voorraad</th><th>Referentie / reden</th><th>Door</th></tr></thead><tbody>'+
+    rows.map(row=>{
+      const qty=Number(row.quantity)||0;
+      const positive=qty>0;
+      return '<tr><td>'+inventoryDate(row.created_at)+'</td><td><strong>'+esc(row.product_name||"Product")+'</strong><small>'+esc(row.variant_label||"Standaard")+' · '+esc(row.sku||"")+'</small></td><td><span class="ht-inventory-movement '+(positive?"is-positive":"is-negative")+'">'+(positive?"+":"−")+inventoryEuroCount(Math.abs(qty))+' · '+esc(inventoryMovementLabels[row.movement_type]||row.movement_type)+'</span></td><td><strong>'+inventoryEuroCount(row.stock_before)+' → '+inventoryEuroCount(row.stock_after)+'</strong></td><td>'+esc(row.reference||"—")+'<small>'+esc(row.note||"")+'</small></td><td>'+esc(row.created_by||"Admin")+'</td></tr>';
+    }).join("")+'</tbody></table></div>';
+}
+function inventorySelectionChanged(){
+  const select=document.getElementById("inventoryItemSelect");
+  const info=document.getElementById("inventorySelectedInfo");
+  const item=inventoryData.items[Number(select?.value)];
+  if(!info)return;
+  if(!select?.value||!item){info.textContent="Selecteer een product om de huidige voorraad te bekijken.";return;}
+  info.innerHTML='<span>Geselecteerde voorraad</span><strong>'+(item.stock===null?"Niet ingesteld":inventoryEuroCount(item.stock)+" stuks")+'</strong><small>'+esc(item.name)+' · '+esc(item.variantLabel)+'</small>';
+}
+function selectInventoryItem(index){
+  const select=document.getElementById("inventoryItemSelect");
+  if(!select||!inventoryData.items[index])return;
+  select.value=String(index);
+  inventorySelectionChanged();
+  document.getElementById("inventoryMovementType").value="purchase";
+  inventoryMovementTypeChanged();
+  document.getElementById("inventoryQuantity").focus();
+  document.getElementById("inventoryMovementForm")?.scrollIntoView({behavior:"smooth",block:"center"});
+}
+function inventoryMovementTypeChanged(){
+  const type=document.getElementById("inventoryMovementType")?.value;
+  const quantity=document.getElementById("inventoryQuantity");
+  const note=document.getElementById("inventoryNote");
+  if(!quantity)return;
+  if(type==="correction"){
+    quantity.min="-100000";
+    quantity.placeholder="Bijv. -2 of +3";
+    if(note)note.required=true;
+  }else{
+    quantity.min="1";
+    quantity.placeholder="Bijv. 5";
+  }
+}
+async function loadInventory(){
+  const box=document.getElementById("inventoryItems");
+  if(!box)return;
+  box.innerHTML='<div class="ht-inventory-loading">Voorraad wordt geladen…</div>';
+  try{
+    const response=await fetch("/api/admin/inventory",{credentials:"same-origin",cache:"no-store",headers:{"Accept":"application/json"}});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Voorraad laden is mislukt.");
+    inventoryData={
+      items:Array.isArray(result.items)?result.items:[],
+      movements:Array.isArray(result.movements)?result.movements:[],
+      summary:result.summary||null
+    };
+    renderInventorySummary();
+    renderInventoryItemSelect();
+    renderInventoryItems();
+    renderInventoryMovements();
+  }catch(error){
+    box.innerHTML='<div class="ht-inventory-error" role="alert">'+esc(error.message||"Voorraad laden is mislukt.")+'</div>';
+    inventorySetStatus(error.message||"Voorraad laden is mislukt.","error");
+  }
+}
+async function saveInventoryMovement(event){
+  event?.preventDefault();
+  const button=document.getElementById("inventorySaveButton");
+  if(button?.disabled)return;
+  const select=document.getElementById("inventoryItemSelect");
+  const item=inventoryData.items[Number(select?.value)];
+  const type=document.getElementById("inventoryMovementType")?.value||"";
+  const quantity=Number(document.getElementById("inventoryQuantity")?.value);
+  const note=String(document.getElementById("inventoryNote")?.value||"").trim();
+  const reference=String(document.getElementById("inventoryReference")?.value||"").trim();
+  if(!item){inventorySetStatus("Selecteer eerst een product of uitvoering.","error");return;}
+  if(!Number.isSafeInteger(quantity)||quantity===0||Math.abs(quantity)>100000){
+    inventorySetStatus("Vul een geldig geheel aantal in.","error");return;
+  }
+  if(type!=="correction"&&quantity<1){
+    inventorySetStatus("Gebruik voor deze mutatie een positief aantal.","error");return;
+  }
+  if(!note){inventorySetStatus("Vul de reden van deze voorraadmutatie in.","error");return;}
+  const payload={
+    itemType:item.itemType,productId:item.productId,variantId:item.variantId||"",
+    variantIndex:item.variantIndex,variantKey:item.variantKey||"",
+    movementType:type,quantity,note,reference
+  };
+  if(button){button.disabled=true;button.dataset.originalText=button.textContent;button.textContent="Opslaan…";}
+  inventorySetStatus("Voorraadmutatie wordt veilig opgeslagen…","info");
+  try{
+    const response=await fetch("/api/admin/inventory/movements",{
+      method:"POST",credentials:"same-origin",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify(payload)
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Voorraadmutatie opslaan is mislukt.");
+    document.getElementById("inventoryQuantity").value="";
+    document.getElementById("inventoryNote").value="";
+    inventorySetStatus("Voorraad bijgewerkt. Nieuwe voorraad: "+inventoryEuroCount(result.stock)+" stuks.","success");
+    await loadInventory();
+  }catch(error){
+    inventorySetStatus(error.message||"Voorraadmutatie opslaan is mislukt.","error");
+  }finally{
+    if(button){button.disabled=false;button.textContent=button.dataset.originalText||"Voorraadmutatie opslaan";delete button.dataset.originalText;}
+  }
 }
 
 let invoiceTestRecipient="Appelavcd116@gmail.com";
