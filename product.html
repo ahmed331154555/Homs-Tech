@@ -1228,7 +1228,7 @@ function updateProductMetadata(product){
   set('meta[property="og:url"]',canonical.toString());
   set('link#productCanonical',canonical.toString(),"href");
   const image=String(product?.image||product?.imageUrl||(Array.isArray(product?.images)?product.images[0]:"")||"").trim();
-  if(/^https?:\\/\\//i.test(image))set('meta[property="og:image"]',image);
+  if(/^https?:\/\//i.test(image))set('meta[property="og:image"]',image);
 }
 function render(product,data){
   if(!product){document.getElementById("productArea").innerHTML=`<div class="empty"><h2>Product niet gevonden</h2><p>Dit apparaat bestaat niet of is niet meer beschikbaar.</p></div>`;return;}
