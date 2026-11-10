@@ -45,7 +45,11 @@ function inventoryCatalog(data) {
 
   phones.forEach((product, productIndex) => {
     const productId = String(product?.id ?? productIndex);
-    // Match checkout and paid-order deduction: only variant-priced phones\n    // track stock per variant; legacy products use parent stock.\n    const variants = product?.pricingMode === "variant" && Array.isArray(product?.variantPrices)\n      ? product.variantPrices\n      : [];
+    // Match checkout and paid-order deduction: only variant-priced phones
+    // track stock per variant; legacy products use parent stock.
+    const variants = product?.pricingMode === "variant" && Array.isArray(product?.variantPrices)
+      ? product.variantPrices
+      : [];
     if (variants.length) {
       variants.forEach((variant, variantIndex) => rows.push({
         itemType: "phone",
