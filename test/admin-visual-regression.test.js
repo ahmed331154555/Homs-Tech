@@ -217,7 +217,7 @@ test("inventory movements have a persistent audit table and automatic payment in
 test("admin save operation remains bound to the page where it started", () => {
   const js = read("assets/homs-admin.js");
   const start = js.indexOf("async function save(isAuto=false){");
-  const end = js.indexOf("\\n/* ---------------- SEARCH + ADMIN USERS ---------------- */", start);
+  const end = js.indexOf("\n/* ---------------- SEARCH + ADMIN USERS ---------------- */", start);
   assert.ok(start >= 0 && end > start, "save function should exist");
   const save = js.slice(start, end);
   assert.match(save, /const savePage=currentPage/);
