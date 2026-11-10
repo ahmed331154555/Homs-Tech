@@ -196,3 +196,19 @@ test("inventory UI supports search, low-stock filters and signed corrections", (
   assert.match(js, /type==="correction"/);
   assert.match(js, /movementType:type,quantity,note,reference/);
 });
+
+
+test("inventory movements have a persistent audit table and automatic payment integration", () => {
+  const schema = read("utils/database-schema.js");
+  const paidInventory = read("utils/paid-order-inventory.js");
+  const routes = read("routes/admin-inventory.js");
+  assert.match(schema, /CREATE TABLE IF NOT EXISTS inventory_movements/);
+  assert.match(schema, /movement_type TEXT NOT NULL CHECK/);
+  assert.match(schema, /stock_before INTEGER NOT NULL/);
+  assert.match(schema, /stock_after INTEGER NOT NULL/);
+  assert.match(paidInventory, /INSERT INTO inventory_movements/);
+  assert.match(paidInventory, /'webshop_sale'/);
+  assert.match(routes, /SELECT data FROM site_settings WHERE id=1 FOR UPDATE/);
+  assert.match(routes, /INSERT INTO inventory_movements/);
+  assert.match(routes, /stockAfter < 0/);
+});
