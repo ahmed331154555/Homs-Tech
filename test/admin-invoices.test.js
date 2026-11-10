@@ -136,7 +136,11 @@ test("invoice test-send validates configuration and sends the generated PDF", as
   const invoice = { id: 8, invoice_number: "HT-2026-000008", customer_email: "customer@example.com" };
   let sentPayload;
   const { routes } = harness({
-    pool: { async query() { return { rows: [invoice] }; } },
+    pool: { async query(sql, params) {
+      if (sql.startsWith("SELECT * FROM manual_invoices")) return { rows: [invoice] };
+      if (sql.includes("SET status='sent'")) { assert.deepEqual(params, [8]); return { rows: [] }; }
+      throw new Error("Unexpected invoice query: " + sql);
+    } },
     env: { RESEND_API_KEY: "test-key", RESEND_FROM_EMAIL: "billing@example.com" },
     buildInvoicePdf: () => Buffer.from("PDFDATA"),
     fetchImpl: async (_url, options) => {
@@ -146,7 +150,8 @@ test("invoice test-send validates configuration and sends the generated PDF", as
   });
   const res = response();
   await routes.get("POST /api/admin/invoices/:id/test-send")({ params: { id: "8" } }, res);
-  assert.deepEqual(res.body, { success: true, to: "customer@example.com" });
+  assert.equal(res.body.success, true);
+  assert.equal(res.body.to, "customer@example.com");
   assert.equal(sentPayload.to[0], "customer@example.com");
   assert.equal(res.body.statusUpdated, true);
   assert.equal(sentPayload.attachments[0].filename, "HT-2026-000008.pdf");
@@ -210,7 +215,11 @@ test("invoice email marks the invoice as sent only after provider acceptance", a
 test("invoice status remains unchanged when the email provider rejects delivery", async () => {
   let updateCalled = false;
   const { routes } = harness({
-    pool: { async query() { return { rows: [{ id: 20, invoice_number: "HT-2026-000020", customer_email: "client@example.com" }] }; } },
+    pool: { async query(sql) {
+      if (sql.startsWith("SELECT * FROM manual_invoices")) return { rows: [{ id: 20, invoice_number: "HT-2026-000020", customer_email: "client@example.com" }] };
+      if (sql.includes("SET status='sent'")) updateCalled = true;
+      return { rows: [] };
+    } },
     env: { RESEND_API_KEY: "test-key", RESEND_FROM_EMAIL: "billing@example.com" },
     fetchImpl: async () => ({ ok: false, status: 422, async json() { return { message: "rejected" }; } })
   });
