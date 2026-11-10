@@ -1149,6 +1149,16 @@ function handleRepairImage(section,index,event){
   };
   reader.readAsDataURL(file);
 }
+function addRepairCoverageArea(){
+  if(!Array.isArray(data.repairCoverage))data.repairCoverage=[];
+  data.repairCoverage.push({id:"area-"+Date.now(),name:"",postcodes:[],active:true});
+  renderRepairPageAdmin();markChanged();
+}
+function deleteRepairCoverageArea(index){
+  if(!Array.isArray(data.repairCoverage)||!data.repairCoverage[index])return;
+  if(!confirm("Dit servicegebied verwijderen?"))return;
+  data.repairCoverage.splice(index,1);renderRepairPageAdmin();markChanged();
+}
 function addRepairCheck(){
   data.repairPage.hero.checks.push("Nieuwe belofte");
   renderRepairPageAdmin();markChanged();
@@ -1252,7 +1262,19 @@ function renderRepairPageAdmin(){
         </div>
       </div>
     </details>`).join("");
+  if(!Array.isArray(data.repairCoverage))data.repairCoverage=[];
+  const coverageAreas=data.repairCoverage.map((area,i)=>
+    '<div class="repair-admin-item" style="padding:14px;margin:10px 0"><div class="repair-admin-grid">' +
+    repairField("Naam gebied", '<input value="' + esc(area.name||"") + '" oninput="data.repairCoverage[' + i + '].name=this.value;markChanged()">') +
+    repairField("Postcodes (komma of spatie)", '<textarea rows="3" placeholder="3011 AA, 3012 AB" oninput="data.repairCoverage[' + i + '].postcodes=this.value.toUpperCase().match(/[1-9][0-9]{3}\\s*[A-Z]{2}/g)||[];markChanged()">' + esc((area.postcodes||[]).join(", ")) + '</textarea>') +
+    repairField("Status", '<label><input type="checkbox" ' + (area.active===false?"":"checked") + ' onchange="data.repairCoverage[' + i + '].active=this.checked;markChanged()"> Gebied actief</label>') +
+    '<button class="btn btn-red" type="button" onclick="deleteRepairCoverageArea(' + i + ')">Gebied verwijderen</button></div></div>'
+  ).join("");
   box.innerHTML=`
+    <div class="repair-admin-section">
+      <div class="repair-admin-head"><div><h3>📍 Servicegebieden HOMS TECH-auto</h3><p>Voeg zelf gebieden en Nederlandse postcodes toe. Buiten deze gebieden blijft opsturen per post mogelijk.</p></div><button class="btn btn-green" type="button" onclick="addRepairCoverageArea()">＋ Gebied toevoegen</button></div>
+      <div class="repair-admin-body">${coverageAreas || '<p class="small">Nog geen servicegebieden ingesteld. De reparatieauto is niet beschikbaar totdat u een actief gebied toevoegt.</p>'}</div>
+    </div>
     <div class="repair-admin-note">كل تعديل هون بيأثر مباشرة على صفحة <strong>Reparaties</strong>. الصور والنصوص والخيارات محفوظة ضمن بيانات الموقع، والحفظ النهائي يتم من زر «Wijzigingen opslaan» أسفل لوحة التحكم.</div>
 
     <div class="repair-admin-section">
