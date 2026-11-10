@@ -6409,16 +6409,233 @@ function esc(value){
 }
 
 let invoiceTestRecipient="Appelavcd116@gmail.com";
-function invoiceEuro(n){return new Intl.NumberFormat("nl-NL",{style:"currency",currency:"EUR"}).format(Number(n)||0)}
-function addInvoiceLine(desc="",qty=1,price=0,vat=21){const b=document.getElementById("invoiceLines");if(!b)return;const tr=document.createElement("tr");tr.innerHTML='<td><input class="iv-desc" maxlength="240" placeholder="Product of reparatie" value="'+esc(desc)+'" style="width:100%;padding:8px"></td><td><input class="iv-qty" type="number" min="1" max="999" value="'+qty+'" style="width:75px;padding:8px"></td><td><input class="iv-price" type="number" min="0" step=".01" value="'+price+'" style="width:100px;padding:8px"></td><td><select class="iv-vat" style="padding:8px"><option value="0">0%</option><option value="9">9%</option><option value="21" selected>21%</option></select></td><td><button type="button" class="btn btn-light">✕</button></td>';tr.querySelector(".iv-vat").value=String(vat);tr.querySelectorAll("input,select").forEach(x=>x.addEventListener("input",invoiceTotalsUi));tr.querySelector("button").onclick=()=>{tr.remove();invoiceTotalsUi()};b.appendChild(tr);invoiceTotalsUi()}
-function invoiceReadLines(){return [...document.querySelectorAll("#invoiceLines tr")].map(t=>({description:t.querySelector(".iv-desc").value.trim(),quantity:Number(t.querySelector(".iv-qty").value),unitPrice:Number(t.querySelector(".iv-price").value),vatRate:Number(t.querySelector(".iv-vat").value)}))}
-function invoiceCalc(){const a=invoiceReadLines();let s=0,v=0;a.forEach(x=>{s+=x.quantity*x.unitPrice;v+=x.quantity*x.unitPrice*x.vatRate/100});return {lines:a,subtotal:s,vatTotal:v,total:s+v}}
-function invoiceTotalsUi(){const t=invoiceCalc();document.getElementById("invSubtotal").textContent=invoiceEuro(t.subtotal);document.getElementById("invVatTotal").textContent=invoiceEuro(t.vatTotal);document.getElementById("invGrandTotal").textContent=invoiceEuro(t.total)}
-function previewInvoiceDraft(){const t=invoiceCalc(),w=window.open("","_blank");if(!w){alert("Sta pop-ups toe voor de PDF-preview.");return}w.document.write('<!doctype html><html lang="nl"><meta charset="utf-8"><title>HOMS TECH factuur</title><style>body{font:14px Arial;max-width:800px;margin:35px auto;color:#172033}header{background:#0b2033;color:white;padding:25px}table{width:100%;border-collapse:collapse;margin-top:25px}td,th{padding:10px;border-bottom:1px solid #ddd;text-align:left}.warn{background:#fff7ed;padding:14px;margin-top:20px}</style><header><h1>HOMS TECH</h1>FACTUUR</header><p><b>Factuur aan:</b> '+esc(document.getElementById("invCustomerName").value)+'<br>'+esc(document.getElementById("invCustomerEmail").value)+'<br>'+esc(document.getElementById("invCustomerAddress").value)+'</p><p>KVK: '+esc(document.getElementById("invKvk").value||"Nog in te vullen")+' · BTW-ID: '+esc(document.getElementById("invVatId").value||"Nog in te vullen")+'</p><table><tr><th>Omschrijving</th><th>Aantal</th><th>Prijs</th><th>BTW</th></tr>'+t.lines.map(x=>'<tr><td>'+esc(x.description)+'</td><td>'+x.quantity+'</td><td>'+invoiceEuro(x.unitPrice)+'</td><td>'+x.vatRate+'%</td></tr>').join("")+'</table><p style="text-align:right;line-height:2">Excl. BTW: '+invoiceEuro(t.subtotal)+'<br>BTW: '+invoiceEuro(t.vatTotal)+'<br><b>Totaal: '+invoiceEuro(t.total)+'</b></p><button onclick="window.print()">Afdrukken / Opslaan als PDF</button>');w.document.close()}
-async function saveInvoice(){const s=document.getElementById("invoiceFormStatus"),t=invoiceCalc(),b={customerName:document.getElementById("invCustomerName").value.trim(),customerEmail:document.getElementById("invCustomerEmail").value.trim(),customerAddress:document.getElementById("invCustomerAddress").value.trim(),kvkNumber:document.getElementById("invKvk").value.trim(),vatId:document.getElementById("invVatId").value.trim(),lines:t.lines};if(!b.customerName||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.customerEmail)||!b.lines.length||b.lines.some(x=>!x.description||!Number.isInteger(x.quantity)||x.quantity<1||!Number.isFinite(x.unitPrice)||x.unitPrice<0)){s.textContent="Vul klantnaam, geldig e-mailadres en volledige factuurregels in.";s.className="status error";return}s.textContent="Opslaan...";try{const r=await fetch("/api/admin/invoices",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)}),d=await r.json();if(!r.ok)throw Error(d.error||"Opslaan mislukt");s.textContent="Factuur "+d.invoice.invoice_number+" opgeslagen.";s.className="status success";await loadInvoices()}catch(e){s.textContent=e.message;s.className="status error"}}
-async function loadInvoices(){const b=document.getElementById("invoiceList");if(!b)return;try{const r=await fetch("/api/admin/invoices",{credentials:"same-origin"}),d=await r.json();if(!r.ok)throw Error(d.error||"Facturen laden mislukt");if(!d.invoices.length){b.textContent="Nog geen facturen opgeslagen.";return}b.innerHTML='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><tr><th>Nummer</th><th>Klant</th><th>Datum</th><th>Totaal</th><th>Status</th><th>Actie</th></tr>'+d.invoices.map(x=>'<tr><td>'+esc(x.invoice_number)+'</td><td>'+esc(x.customer_name)+'<br><small>'+esc(x.customer_email)+'</small></td><td>'+new Date(x.created_at).toLocaleDateString("nl-NL")+'</td><td>'+invoiceEuro(x.total)+'</td><td>'+esc(x.status==='Concept / test'?'Opgeslagen':x.status)+'</td><td><button class="btn btn-light" onclick="previewSavedInvoice('+x.id+')">PDF</button> <button class="btn btn-green" onclick="sendInvoiceTest('+x.id+')">E-mail naar klantadres</button></td></tr>').join("")+'</table></div>'}catch(e){b.textContent=e.message}}
-async function previewSavedInvoice(id){try{const r=await fetch("/api/admin/invoices/"+id+"/pdf",{credentials:"same-origin"});if(!r.ok){const d=await r.json();throw Error(d.error||"PDF mislukt")}const u=URL.createObjectURL(await r.blob());window.open(u,"_blank");setTimeout(()=>URL.revokeObjectURL(u),60000)}catch(e){alert(e.message)}}
-async function sendInvoiceTest(id){const row=[...document.querySelectorAll("#invoiceList tr")].find(tr=>tr.textContent.includes(""));if(!confirm("De factuur als e-mail versturen naar het e-mailadres dat bij deze factuur is opgeslagen?"))return;try{const r=await fetch("/api/admin/invoices/"+id+"/test-send",{method:"POST",credentials:"same-origin"}),d=await r.json();if(!r.ok)throw Error(d.error||"E-mail versturen mislukt");alert("E-mail verzonden naar "+d.to)}catch(e){alert(e.message)}}
+function invoiceEuro(value){
+  return new Intl.NumberFormat("nl-NL",{style:"currency",currency:"EUR"}).format(invoiceRoundMoney(value));
+}
+function invoiceRoundMoney(value){
+  const number=Number(value);
+  return Number.isFinite(number)?Math.round((number+Number.EPSILON)*100)/100:0;
+}
+function invoiceReadLines(){
+  return [...document.querySelectorAll("#invoiceLines tr")].map(row=>({
+    description:String(row.querySelector(".iv-desc")?.value||"").trim(),
+    quantity:Number(row.querySelector(".iv-qty")?.value),
+    unitPrice:Number(row.querySelector(".iv-price")?.value),
+    vatRate:Number(row.querySelector(".iv-vat")?.value)
+  }));
+}
+function invoiceValidateLines(lines){
+  if(!Array.isArray(lines)||!lines.length)return "Voeg minimaal één factuurregel toe.";
+  for(let index=0;index<lines.length;index++){
+    const line=lines[index],label="Factuurregel "+(index+1)+": ";
+    if(!line.description)return label+"vul een omschrijving in.";
+    if(!Number.isInteger(line.quantity)||line.quantity<1||line.quantity>999)return label+"aantal moet een heel getal tussen 1 en 999 zijn.";
+    if(!Number.isFinite(line.unitPrice)||line.unitPrice<0||line.unitPrice>1000000)return label+"vul een geldige prijs tussen € 0 en € 1.000.000 in.";
+    if(![0,9,21].includes(line.vatRate))return label+"kies een geldig BTW-tarief.";
+  }
+  return "";
+}
+function invoiceCalc(){
+  const lines=invoiceReadLines();
+  let subtotal=0,vatTotal=0;
+  for(const line of lines){
+    const lineSubtotal=invoiceRoundMoney(line.quantity*line.unitPrice);
+    const lineVat=invoiceRoundMoney(lineSubtotal*line.vatRate/100);
+    subtotal=invoiceRoundMoney(subtotal+lineSubtotal);
+    vatTotal=invoiceRoundMoney(vatTotal+lineVat);
+  }
+  return {lines,subtotal,vatTotal,total:invoiceRoundMoney(subtotal+vatTotal)};
+}
+function invoiceTotalsUi(){
+  const totals=invoiceCalc();
+  const subtotal=document.getElementById("invSubtotal");
+  const vat=document.getElementById("invVatTotal");
+  const grand=document.getElementById("invGrandTotal");
+  if(subtotal)subtotal.textContent=invoiceEuro(totals.subtotal);
+  if(vat)vat.textContent=invoiceEuro(totals.vatTotal);
+  if(grand)grand.textContent=invoiceEuro(totals.total);
+}
+function addInvoiceLine(description="",quantity=1,unitPrice=0,vatRate=21){
+  const body=document.getElementById("invoiceLines");
+  if(!body)return;
+  const row=document.createElement("tr");
+  row.innerHTML=
+    '<td><input class="iv-desc" maxlength="240" placeholder="Product of reparatie" aria-label="Omschrijving factuurregel" value="'+esc(description)+'"></td>'+
+    '<td><input class="iv-qty" type="number" min="1" max="999" step="1" inputmode="numeric" aria-label="Aantal" value="'+esc(quantity)+'"></td>'+
+    '<td><input class="iv-price" type="number" min="0" max="1000000" step="0.01" inputmode="decimal" aria-label="Prijs per stuk in euro" value="'+esc(unitPrice)+'"></td>'+
+    '<td><select class="iv-vat" aria-label="BTW-tarief"><option value="0">0%</option><option value="9">9%</option><option value="21">21%</option></select></td>'+
+    '<td><button type="button" class="btn btn-light iv-remove" aria-label="Factuurregel verwijderen" title="Factuurregel verwijderen">✕</button></td>';
+  row.querySelector(".iv-vat").value=String(vatRate);
+  row.querySelectorAll("input,select").forEach(control=>{
+    control.addEventListener("input",invoiceTotalsUi);
+    control.addEventListener("change",invoiceTotalsUi);
+  });
+  row.querySelector(".iv-remove").addEventListener("click",()=>{
+    row.remove();
+    invoiceTotalsUi();
+  });
+  body.appendChild(row);
+  invoiceTotalsUi();
+}
+function invoiceFormMessage(message,type="info"){
+  const status=document.getElementById("invoiceFormStatus");
+  if(!status)return;
+  status.className="status "+type;
+  status.textContent=message;
+}
+function invoiceDraftPayload(){
+  const totals=invoiceCalc();
+  return {
+    customerName:String(document.getElementById("invCustomerName")?.value||"").trim(),
+    customerEmail:String(document.getElementById("invCustomerEmail")?.value||"").trim(),
+    customerAddress:String(document.getElementById("invCustomerAddress")?.value||"").trim(),
+    kvkNumber:String(document.getElementById("invKvk")?.value||"").trim(),
+    vatId:String(document.getElementById("invVatId")?.value||"").trim(),
+    lines:totals.lines,
+    totals
+  };
+}
+function invoiceValidateDraft(payload){
+  if(!payload.customerName)return "Vul de klantnaam in.";
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.customerEmail))return "Vul een geldig e-mailadres van de klant in.";
+  return invoiceValidateLines(payload.lines);
+}
+function previewInvoiceDraft(){
+  const payload=invoiceDraftPayload();
+  const validation=invoiceValidateDraft(payload);
+  if(validation){invoiceFormMessage(validation,"error");return;}
+  const totals=payload.totals;
+  const preview=window.open("","_blank");
+  if(!preview){invoiceFormMessage("Sta pop-ups toe om het factuurvoorbeeld te openen.","error");return;}
+  const rows=totals.lines.map(line=>
+    "<tr><td>"+esc(line.description)+"</td><td>"+line.quantity+"</td><td>"+invoiceEuro(line.unitPrice)+"</td><td>"+line.vatRate+"%</td><td>"+invoiceEuro(invoiceRoundMoney(line.quantity*line.unitPrice))+"</td></tr>"
+  ).join("");
+  preview.document.write(
+    '<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HOMS TECH factuurvoorbeeld</title>'+
+    '<style>'+
+    '*{box-sizing:border-box}body{font:14px Arial,sans-serif;max-width:900px;margin:32px auto;padding:0 22px;color:#172033}header{background:#071d2d;color:#fff;padding:25px 28px;border-bottom:5px solid #2563eb}header h1{margin:0 0 7px;font-size:26px}header p{margin:0;color:#dbeafe}.meta{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:26px 0}.meta p{line-height:1.7;margin:6px 0}table{width:100%;border-collapse:collapse;margin-top:22px}th{background:#eff4f9;color:#17324d}td,th{padding:11px 9px;border-bottom:1px solid #dce4ed;text-align:left}td:nth-child(n+2),th:nth-child(n+2){text-align:right}.totals{margin:24px 0 24px auto;max-width:330px;line-height:2}.grand{font-size:19px;font-weight:800;border-top:2px solid #071d2d;padding-top:8px}.notice{padding:13px;background:#f1f5f9;border-radius:8px;color:#475569}.toolbar{display:flex;gap:10px;margin:22px 0}.toolbar button{border:0;border-radius:8px;background:#2563eb;color:#fff;padding:11px 17px;font-weight:700;cursor:pointer}.toolbar button:last-child{background:#e2e8f0;color:#172033}@media print{body{margin:0;max-width:none}.toolbar{display:none}}@media(max-width:600px){.meta{grid-template-columns:1fr}body{padding:0 12px}table{font-size:11px}td,th{padding:8px 5px}}'+
+    '</style></head><body>'+
+    '<header><h1>HOMS TECH</h1><p>Smartphone Repair & Refurbished Devices</p><h2>FACTUUR — VOORBEELD</h2></header>'+
+    '<div class="meta"><section><strong>Factuur aan</strong><p>'+esc(payload.customerName)+'<br>'+esc(payload.customerEmail)+'<br>'+esc(payload.customerAddress)+'</p></section><section><strong>Administratieve gegevens</strong><p>KVK: '+esc(payload.kvkNumber||"Nog niet ingevuld")+'<br>BTW-ID: '+esc(payload.vatId||"Nog niet ingevuld")+'<br>Factuurnummer: wordt toegewezen na opslaan</p></section></div>'+
+    '<table><thead><tr><th>Omschrijving</th><th>Aantal</th><th>Prijs</th><th>BTW</th><th>Regeltotaal</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+    '<div class="totals">Excl. BTW: '+invoiceEuro(totals.subtotal)+'<br>BTW: '+invoiceEuro(totals.vatTotal)+'<div class="grand">Totaal: '+invoiceEuro(totals.total)+'</div></div>'+
+    '<p class="notice">Dit is een voorbeeld en nog geen definitieve factuur. Het officiële factuurnummer wordt toegewezen na het opslaan.</p>'+
+    '<div class="toolbar"><button onclick="window.print()">Afdrukken / Opslaan als PDF</button><button onclick="window.close()">Sluiten</button></div>'+
+    '</body></html>'
+  );
+  preview.document.close();
+}
+async function saveInvoice(){
+  const button=document.querySelector('#page-invoices button[onclick="saveInvoice()"]');
+  if(button?.disabled)return;
+  const payload=invoiceDraftPayload();
+  const validation=invoiceValidateDraft(payload);
+  if(validation){invoiceFormMessage(validation,"error");return;}
+  const body={
+    customerName:payload.customerName,
+    customerEmail:payload.customerEmail,
+    customerAddress:payload.customerAddress,
+    kvkNumber:payload.kvkNumber,
+    vatId:payload.vatId,
+    lines:payload.lines
+  };
+  if(button){button.disabled=true;button.dataset.originalText=button.textContent;button.textContent="Opslaan…";}
+  invoiceFormMessage("Factuur wordt veilig opgeslagen…","info");
+  try{
+    const response=await fetch("/api/admin/invoices",{
+      method:"POST",credentials:"same-origin",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify(body)
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Factuur opslaan is mislukt.");
+    invoiceFormMessage("Factuur "+String(result.invoice?.invoice_number||"")+" is opgeslagen.","success");
+    await loadInvoices();
+  }catch(error){
+    invoiceFormMessage(error.message||"Factuur opslaan is mislukt.","error");
+  }finally{
+    if(button){button.disabled=false;button.textContent=button.dataset.originalText||"Factuur opslaan als concept";delete button.dataset.originalText;}
+  }
+}
+function invoiceDate(value){
+  const date=new Date(value);
+  return Number.isNaN(date.getTime())?"—":date.toLocaleDateString("nl-NL");
+}
+async function loadInvoices(){
+  const box=document.getElementById("invoiceList");
+  if(!box)return;
+  box.innerHTML='<div class="ht-invoice-loading" role="status" aria-live="polite">Facturen laden…</div>';
+  try{
+    const response=await fetch("/api/admin/invoices",{credentials:"same-origin",headers:{"Accept":"application/json"}});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Facturen laden is mislukt.");
+    const invoices=Array.isArray(result.invoices)?result.invoices:[];
+    if(!invoices.length){
+      box.innerHTML='<div class="ht-invoice-empty"><strong>Nog geen facturen</strong><p>Opgeslagen facturen verschijnen hier automatisch.</p></div>';
+      return;
+    }
+    box.innerHTML=
+      '<div class="ht-invoice-table-wrap"><table class="ht-invoice-table"><thead><tr><th>Factuurnummer</th><th>Klant</th><th>Datum</th><th>Totaal</th><th>Status</th><th>Acties</th></tr></thead><tbody>'+
+      invoices.map(invoice=>{
+        const id=Number(invoice.id);
+        const status=String(invoice.status||"Concept");
+        const isSent=status.toLowerCase().includes("sent")||status.toLowerCase().includes("verstuurd");
+        return '<tr>'+
+          '<td><strong class="ht-invoice-number">'+esc(invoice.invoice_number||"—")+'</strong></td>'+
+          '<td><strong>'+esc(invoice.customer_name||"—")+'</strong><small>'+esc(invoice.customer_email||"")+'</small></td>'+
+          '<td>'+invoiceDate(invoice.created_at)+'</td>'+
+          '<td class="ht-invoice-total">'+invoiceEuro(invoice.total)+'</td>'+
+          '<td><span class="ht-invoice-status '+(isSent?"is-sent":"is-draft")+'">'+esc(status==="Concept / test"?"Opgeslagen":status)+'</span></td>'+
+          '<td><div class="ht-invoice-actions"><button type="button" class="btn btn-light" onclick="previewSavedInvoice('+id+')">PDF bekijken</button><button type="button" class="btn btn-green" onclick="sendInvoiceTest('+id+',this)">E-mail versturen</button></div></td>'+
+          '</tr>';
+      }).join("")+
+      '</tbody></table></div>';
+  }catch(error){
+    box.innerHTML='<div class="ht-invoice-error" role="alert">'+esc(error.message||"Facturen laden is mislukt.")+'</div>';
+  }
+}
+async function previewSavedInvoice(id){
+  if(!Number.isSafeInteger(Number(id))||Number(id)<1)return;
+  try{
+    const response=await fetch("/api/admin/invoices/"+encodeURIComponent(Number(id))+"/pdf",{credentials:"same-origin"});
+    if(!response.ok){
+      const result=await response.json().catch(()=>({}));
+      throw new Error(result.error||"PDF openen is mislukt.");
+    }
+    const blob=await response.blob();
+    if(blob.type&&blob.type!=="application/pdf")throw new Error("De server heeft geen geldig PDF-bestand teruggestuurd.");
+    const url=URL.createObjectURL(blob);
+    const opened=window.open(url,"_blank","noopener");
+    if(!opened){
+      const link=document.createElement("a");
+      link.href=url;link.download="HOMS-TECH-factuur-"+Number(id)+".pdf";
+      document.body.appendChild(link);link.click();link.remove();
+    }
+    window.setTimeout(()=>URL.revokeObjectURL(url),60000);
+  }catch(error){
+    invoiceFormMessage(error.message||"PDF openen is mislukt.","error");
+  }
+}
+async function sendInvoiceTest(id,button){
+  const invoiceId=Number(id);
+  if(!Number.isSafeInteger(invoiceId)||invoiceId<1)return;
+  if(!confirm("De factuur definitief per e-mail versturen naar het klantadres dat bij deze factuur is opgeslagen?"))return;
+  if(button?.disabled)return;
+  if(button){button.disabled=true;button.dataset.originalText=button.textContent;button.textContent="Versturen…";}
+  try{
+    const response=await fetch("/api/admin/invoices/"+encodeURIComponent(invoiceId)+"/test-send",{
+      method:"POST",credentials:"same-origin",headers:{"Accept":"application/json"}
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"E-mail versturen is mislukt.");
+    invoiceFormMessage("Factuurmail is verzonden naar "+String(result.to||"het klantadres")+".","success");
+    if(typeof setStatus==="function")setStatus("✓ Factuurmail verzonden.","success");
+  }catch(error){
+    invoiceFormMessage(error.message||"E-mail versturen is mislukt.","error");
+  }finally{
+    if(button){button.disabled=false;button.textContent=button.dataset.originalText||"E-mail versturen";delete button.dataset.originalText;}
+  }
+}
 
 let adminEmailCache=[],adminEmailFilter="all",adminEmailSelectedId=null,adminEmailFiles=[],adminEmailReplyToId=null;
 function emailEsc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
