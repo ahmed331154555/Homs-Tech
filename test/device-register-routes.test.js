@@ -58,12 +58,14 @@ test("device register routes are protected by the correct permissions", () => {
     "GET /api/admin/device-register",
     "POST /api/admin/device-register",
     "PUT /api/admin/device-register/:id",
+    "POST /api/admin/device-register/:id/sale",
     "GET /api/admin/device-register/:id/operations",
     "POST /api/admin/device-register/:id/operations",
     "POST /api/admin/device-register/:id/archive"
   ]);
   assert.deepEqual(permissions, [
     "device_register.view",
+    "device_register.update",
     "device_register.update",
     "device_register.update",
     "device_register.view",
@@ -74,11 +76,17 @@ test("device register routes are protected by the correct permissions", () => {
 
 test("device register list returns devices and disables caching", async () => {
   const devices = [{ id: 7, model: "iPhone 13" }];
+  let calls = 0;
   const { routes } = createHarness({
     async query(sql, params) {
-      assert.match(sql, /operation_count/);
-      assert.deepEqual(params, [false, null, ""]);
-      return { rows: devices };
+      calls += 1;
+      if (calls === 1) {
+        assert.match(sql, /operation_count/);
+        assert.deepEqual(params, [false, null, ""]);
+        return { rows: devices };
+      }
+      assert.match(sql, /WITH operation_costs AS/);
+      return { rows: [{ total: 1, ready: 0, processing: 0, sold: 0, invested: "0", revenue: "0", realized_profit: "0" }] };
     }
   });
   const response = createResponse();
@@ -87,7 +95,7 @@ test("device register list returns devices and disables caching", async () => {
     query: {}
   }, response);
 
-  assert.deepEqual(response.body, { devices });
+  assert.deepEqual(response.body, { devices, summary: { total: 1, ready: 0, processing: 0, sold: 0, invested: "0", revenue: "0", realized_profit: "0" } });
   assert.equal(response.headers["Cache-Control"], "no-store");
 });
 
@@ -162,6 +170,70 @@ test("device archive validates ID before database access", async () => {
     body: { archived: true }
   }, response);
 
+  assert.equal(response.statusCode, 400);
+  assert.equal(queryCount, 0);
+});
+
+
+test("device sale records a ready commercial device atomically and only once", async () => {
+  const statements = [];
+  let releaseCalled = false;
+  const client = {
+    async query(sql, params = []) {
+      statements.push({ sql, params });
+      if (sql === "BEGIN" || sql === "COMMIT" || sql === "ROLLBACK") return { rows: [] };
+      if (sql.includes("FOR UPDATE")) return { rows: [{ id: 9, device_type: "commercial", status: "جاهز للبيع", model: "iPhone 13", identifier_value: "HT-9", purchase_cost: "300.00" }] };
+      if (sql.startsWith("SELECT id FROM device_register_operations")) return { rows: [] };
+      if (sql.startsWith("INSERT INTO device_register_operations")) return { rows: [{ id: 33, device_id: 9, operation_type: "sale", sale_price: "499.00" }] };
+      if (sql.startsWith("UPDATE device_register SET status='تم البيع'")) return { rows: [{ id: 9, identifier_value: "HT-9", model: "iPhone 13", status: "تم البيع", purchase_cost: "300.00", sale_price: "499.00" }] };
+      throw new Error("Unexpected query: " + sql);
+    },
+    release() { releaseCalled = true; }
+  };
+  const { routes } = createHarness({ async connect() { return client; } });
+  const response = createResponse();
+  await routes.get("POST /api/admin/device-register/:id/sale")(
+    { params: { id: "9" }, body: { salePrice: "499", reference: "HT-SALE-2026-01", description: "Verkoop aan klant" } },
+    response
+  );
+  assert.equal(response.statusCode, 201);
+  assert.equal(response.body.device.status, "تم البيع");
+  assert.equal(response.body.device.sale_price, "499.00");
+  assert.ok(statements.some(x => x.sql === "BEGIN"));
+  assert.ok(statements.some(x => x.sql === "COMMIT"));
+  assert.ok(statements.some(x => x.sql.startsWith("INSERT INTO device_register_operations")));
+  assert.equal(releaseCalled, true);
+});
+
+test("device sale cannot be registered before it is ready for sale", async () => {
+  let insertAttempted = false;
+  const client = {
+    async query(sql) {
+      if (sql === "BEGIN" || sql === "ROLLBACK") return { rows: [] };
+      if (sql.includes("FOR UPDATE")) return { rows: [{ id: 9, device_type: "commercial", status: "قيد التجديد" }] };
+      if (sql.startsWith("INSERT INTO device_register_operations")) insertAttempted = true;
+      return { rows: [] };
+    },
+    release() {}
+  };
+  const { routes } = createHarness({ async connect() { return client; } });
+  const response = createResponse();
+  await routes.get("POST /api/admin/device-register/:id/sale")(
+    { params: { id: "9" }, body: { salePrice: 499 } },
+    response
+  );
+  assert.equal(response.statusCode, 409);
+  assert.equal(insertAttempted, false);
+});
+
+test("generic device operations cannot bypass the dedicated sale flow", async () => {
+  let queryCount = 0;
+  const { routes } = createHarness({ async query() { queryCount += 1; return { rows: [] }; } });
+  const response = createResponse();
+  await routes.get("POST /api/admin/device-register/:id/operations")(
+    { params: { id: "9" }, body: { operationType: "sale", additionalCost: 0, salePrice: 499 } },
+    response
+  );
   assert.equal(response.statusCode, 400);
   assert.equal(queryCount, 0);
 });
