@@ -250,7 +250,7 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
 
       let currentStockValue = stockOwner[stockField];
       if (itemType === "shop" && stockOwner === product) {
-        const match = String(currentStockValue ?? "").trim().match(/^(\\d+)/);
+        const match = String(currentStockValue ?? "").trim().match(/^(\d+)/);
         if (!match) {
           await client.query("ROLLBACK");
           return res.status(409).json({ error: "Stel eerst een numerieke voorraad in voor dit Shop-product." });
