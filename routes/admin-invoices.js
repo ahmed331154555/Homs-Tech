@@ -1,5 +1,12 @@
 "use strict";
 
+function roundInvoiceMoney(value) {
+  const amount = Number(value);
+  return Number.isFinite(amount)
+    ? Math.round((amount + Number.EPSILON) * 100) / 100
+    : 0;
+}
+
 function registerAdminInvoiceRoutes(app, {
   pool,
   requirePermission,
@@ -63,15 +70,18 @@ function registerAdminInvoiceRoutes(app, {
         });
       }
   
-      const subtotal = lines.reduce(
-        (sum, item) => sum + item.quantity * item.unitPrice,
-        0
-      );
-      const vatTotal = lines.reduce(
-        (sum, item) => sum + item.quantity * item.unitPrice * item.vatRate / 100,
-        0
-      );
-      const total = subtotal + vatTotal;
+      // Round each invoice line to cents before adding it to the document totals.
+      // This avoids floating-point artifacts such as 0.1 * 3 becoming 0.30000000000000004.
+      const totals = lines.reduce((sum, item) => {
+        const lineSubtotal = roundInvoiceMoney(item.quantity * item.unitPrice);
+        const lineVat = roundInvoiceMoney(lineSubtotal * item.vatRate / 100);
+        sum.subtotal = roundInvoiceMoney(sum.subtotal + lineSubtotal);
+        sum.vatTotal = roundInvoiceMoney(sum.vatTotal + lineVat);
+        return sum;
+      }, { subtotal: 0, vatTotal: 0 });
+      const subtotal = totals.subtotal;
+      const vatTotal = totals.vatTotal;
+      const total = roundInvoiceMoney(subtotal + vatTotal);
       const temporaryInvoiceNumber =
         "HT-PENDING-" + Date.now() + "-" + Math.floor(Math.random() * 100000);
   
