@@ -347,7 +347,47 @@
     <div id="webshopOrdersList" class="orders-list"></div>
   </section>
 
-  <section class="section admin-page" id="page-invoices" data-permission="site.save"><div class="section-head"><div><h2>🧾 Facturen</h2><p>Maak een Nederlandstalige factuur als PDF en verstuur deze naar het e-mailadres van de klant.</p></div><button class="btn btn-light" type="button" onclick="loadInvoices()">↻ Vernieuwen</button></div><div class="card" style="padding:16px;margin-bottom:16px"><strong>Factuur en e-mail</strong><p>Je kunt de PDF per e-mail versturen naar het adres dat bij de factuur is ingevuld.</p></div><div class="card" style="padding:18px;margin-bottom:16px"><h3>Nieuwe factuur</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px"><div class="field"><label>Klantnaam</label><input id="invCustomerName" maxlength="160"></div><div class="field"><label>E-mailadres klant</label><input id="invCustomerEmail" type="email" maxlength="254"></div><div class="field"><label>Adres</label><input id="invCustomerAddress" maxlength="300"></div><div class="field"><label>KVK-nummer (later)</label><input id="invKvk" maxlength="30" placeholder="Nog niet ingevuld"></div><div class="field"><label>BTW-ID (later)</label><input id="invVatId" maxlength="40" placeholder="Nog niet ingevuld"></div></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th>Omschrijving</th><th>Aantal</th><th>Prijs (€)</th><th>BTW %</th><th></th></tr></thead><tbody id="invoiceLines"></tbody></table></div><button class="btn btn-light" type="button" onclick="addInvoiceLine()">＋ Regel toevoegen</button><div style="text-align:right;margin-top:14px;line-height:1.9">Excl. BTW: <strong id="invSubtotal">€ 0,00</strong><br>BTW: <strong id="invVatTotal">€ 0,00</strong><br><strong style="font-size:20px">Totaal: <span id="invGrandTotal">€ 0,00</span></strong></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="btn btn-green" onclick="saveInvoice()" type="button">Factuur opslaan als concept</button><button class="btn btn-light" onclick="previewInvoiceDraft()" type="button">PDF-voorbeeld bekijken</button></div><p id="invoiceFormStatus" class="status"></p></div><div class="card" style="padding:18px"><h3>Opgeslagen facturen</h3><div id="invoiceList">Facturen laden...</div></div></section><section class="section admin-page" id="page-order-settings">
+  <section class="section admin-page ht-invoices-page" id="page-invoices" data-permission="site.save">
+  <div class="section-head ht-invoices-head">
+    <div><h2>🧾 Facturen</h2><p>Maak, bekijk en verstuur professionele facturen voor HOMS TECH.</p></div>
+    <button class="btn btn-light" type="button" onclick="loadInvoices()">↻ Vernieuwen</button>
+  </div>
+  <div class="ht-invoice-intro">
+    <span class="ht-invoice-intro-icon" aria-hidden="true">✓</span>
+    <div><strong>Factuurbeheer</strong><p>Controleer klantgegevens en factuurregels zorgvuldig. Het definitieve factuurnummer wordt automatisch toegewezen na het opslaan.</p></div>
+  </div>
+  <div class="card ht-invoice-editor">
+    <div class="ht-invoice-card-head"><div><span class="ht-invoice-eyebrow">NIEUW DOCUMENT</span><h3>Nieuwe factuur</h3><p>Vul de klantgegevens en de geleverde producten of diensten in.</p></div><span class="ht-invoice-draft-tag">Concept</span></div>
+    <div class="ht-invoice-form-grid">
+      <div class="field"><label for="invCustomerName">Naam klant *</label><input id="invCustomerName" maxlength="160" autocomplete="name" required placeholder="Volledige naam"></div>
+      <div class="field"><label for="invCustomerEmail">E-mailadres klant *</label><input id="invCustomerEmail" type="email" maxlength="254" autocomplete="email" required placeholder="klant@voorbeeld.nl"></div>
+      <div class="field ht-invoice-field-wide"><label for="invCustomerAddress">Factuuradres</label><input id="invCustomerAddress" maxlength="300" autocomplete="street-address" placeholder="Straat, huisnummer, postcode en plaats"></div>
+      <div class="field"><label for="invKvk">KVK-nummer leverancier</label><input id="invKvk" maxlength="30" placeholder="Bedrijfsregistratienummer"></div>
+      <div class="field"><label for="invVatId">BTW-ID leverancier</label><input id="invVatId" maxlength="40" placeholder="BTW-identificatienummer"></div>
+    </div>
+    <div class="ht-invoice-lines-head"><div><h4>Factuurregels</h4><p>Bedragen in euro. BTW per regel instelbaar.</p></div><button class="btn btn-light" type="button" onclick="addInvoiceLine()">＋ Regel toevoegen</button></div>
+    <div class="ht-invoice-lines-wrap">
+      <table class="ht-invoice-lines-table">
+        <thead><tr><th>Omschrijving</th><th>Aantal</th><th>Prijs per stuk</th><th>BTW</th><th><span class="ht-sr-only">Verwijderen</span></th></tr></thead>
+        <tbody id="invoiceLines"></tbody>
+      </table>
+    </div>
+    <div class="ht-invoice-total-panel">
+      <div><span>Subtotaal excl. BTW</span><strong id="invSubtotal">€ 0,00</strong></div>
+      <div><span>BTW</span><strong id="invVatTotal">€ 0,00</strong></div>
+      <div class="ht-invoice-grand-total"><span>Totaal incl. BTW</span><strong id="invGrandTotal">€ 0,00</strong></div>
+    </div>
+    <div class="ht-invoice-editor-actions">
+      <button class="btn btn-green" type="button" onclick="saveInvoice()">Factuur opslaan als concept</button>
+      <button class="btn btn-light" type="button" onclick="previewInvoiceDraft()">PDF-voorbeeld bekijken</button>
+    </div>
+    <p id="invoiceFormStatus" class="status" role="status" aria-live="polite"></p>
+  </div>
+  <div class="card ht-invoice-list-card">
+    <div class="ht-invoice-card-head"><div><span class="ht-invoice-eyebrow">ARCHIEF</span><h3>Opgeslagen facturen</h3><p>Bekijk PDF-bestanden of verstuur de factuur naar de klant.</p></div></div>
+    <div id="invoiceList" aria-live="polite"><div class="ht-invoice-loading" role="status">Facturen laden…</div></div>
+  </div>
+</section><section class="section admin-page" id="page-order-settings">
     <div class="section-head">
       <div>
         <h2>📦 Orderinstellingen</h2>
