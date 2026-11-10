@@ -19,21 +19,32 @@
     .repair-map-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:#e0efff;color:#1769aa;font-size:25px;flex:0 0 auto}
     .modal{width:min(1040px,100%)}
     .repair-address-field{grid-column:1/-1}
-    .repair-location-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:18px;align-items:stretch}
+    .repair-booking-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);gap:20px;align-items:stretch}
+    .repair-map-column{min-width:0;display:flex;flex-direction:column;gap:12px}
     .repair-map-card{margin:0;min-width:0;display:flex;flex-direction:column}
-    #repairLocationMap{height:320px;width:100%;background:#e8eef2;z-index:1;flex:1;min-height:260px}
+    #repairLocationMap{height:285px;width:100%;background:#e8eef2;z-index:1;flex:0 0 auto;min-height:250px}
     .repair-map-heading{flex:0 0 auto}
     .repair-map-footer{gap:10px;flex-wrap:wrap}
-    .repair-location-fields{min-width:0;display:flex;flex-direction:column;gap:12px;padding:16px;border:1px solid #e2eaf1;border-radius:16px;background:#f8fbfe}
-    .repair-location-fields>label{font-size:13px;font-weight:900;color:#314457}
+    .repair-location-fields{min-width:0;display:flex;flex-direction:column;gap:11px;padding:15px;border:1px solid #dce7f0;border-radius:15px;background:linear-gradient(145deg,#f7fbff,#eef5fb)}
+    .repair-location-fields>label,.repair-appointment-column .field>label{font-size:13px;font-weight:900;color:#233e54}
     .repair-location-autocomplete{position:relative;width:100%}
-    .repair-location-autocomplete input{width:100%;min-height:48px;border:1px solid #d9e3ea;border-radius:11px;padding:12px 13px;background:#fff;color:#172a3a;outline:0}
-    .repair-location-autocomplete input:focus{border-color:#55aee1;box-shadow:0 0 0 3px #e9f6ff}
+    .repair-location-autocomplete input{width:100%;min-height:48px;border:1px solid #d3e0eb;border-radius:11px;padding:12px 13px;background:#fff;color:#172a3a;outline:0}
+    .repair-location-autocomplete input:focus{border-color:#2589ce;box-shadow:0 0 0 3px rgba(37,137,206,.13)}
     #repairLocationSuggestions:not([hidden]){position:absolute;z-index:100;top:calc(100% + 5px);left:0;right:0;max-height:250px;overflow:auto;background:#fff;border:1px solid #dbe2ea;border-radius:12px;box-shadow:0 12px 30px rgba(15,23,42,.14);padding:5px}
-    #useLocationBtn{width:100%;min-height:48px;margin:0!important;background:#eff6ff!important;color:#1d4ed8!important;border:1px solid #bfdbfe!important;border-radius:11px;padding:11px 14px;font-weight:800}
+    #useLocationBtn{width:100%;min-height:48px;margin:0!important;background:linear-gradient(135deg,#1769aa,#258fe0)!important;color:#fff!important;border:1px solid #1769aa!important;border-radius:11px;padding:11px 14px;font-weight:800;box-shadow:0 5px 14px rgba(23,105,170,.16)}
+    #useLocationBtn:hover{filter:brightness(1.05)}
     #useLocationBtn:disabled{opacity:.65;cursor:wait}
-    #coverageMessage{display:block;margin:0!important;padding:11px 12px;border-radius:10px;background:#fff;color:#64748b;font-size:12px;line-height:1.5}
-    @media(max-width:760px){.repair-location-layout{grid-template-columns:1fr}#repairLocationMap{height:230px;min-height:210px}.repair-location-fields{padding:13px}}
+    #coverageMessage{display:block;margin:0!important;padding:11px 12px;border-radius:10px;background:#fff;color:#64748b;font-size:12px;line-height:1.5;border:1px solid #e4edf4}
+    .repair-appointment-column{min-width:0;display:flex;flex-direction:column;gap:18px;padding:18px;border:1px solid #dce7f0;border-radius:16px;background:linear-gradient(160deg,#f7fbff 0%,#edf5fc 100%);box-shadow:0 8px 22px rgba(7,29,45,.045)}
+    .repair-appointment-heading{display:flex;align-items:center;gap:11px;padding-bottom:13px;border-bottom:1px solid #dce7f0}
+    .repair-appointment-heading>span{width:40px;height:40px;display:grid;place-items:center;border-radius:12px;background:#dceeff;font-size:20px}
+    .repair-appointment-heading strong{display:block;color:#102f47;font-size:15px}
+    .repair-appointment-heading small{display:block;color:#647b8e;font-size:12px;margin-top:3px}
+    .repair-appointment-column .field{gap:8px}
+    .repair-appointment-column input,.repair-appointment-column select{width:100%;min-height:49px;border:1px solid #d3e0eb;border-radius:11px;background:#fff;color:#172a3a;padding:12px 13px;outline:0}
+    .repair-appointment-column input:focus,.repair-appointment-column select:focus{border-color:#2589ce;box-shadow:0 0 0 3px rgba(37,137,206,.13)}
+    .repair-availability-message{margin-top:2px;font-size:12px;line-height:1.5;color:#64748b}
+    @media(max-width:760px){.repair-booking-layout{grid-template-columns:1fr;gap:14px}#repairLocationMap{height:230px;min-height:210px}.repair-location-fields,.repair-appointment-column{padding:13px}.repair-appointment-column{gap:14px}}
     @media(max-width:640px){#repairLocationMap{height:205px;min-height:205px}.repair-map-heading{padding:11px}}
     .repair-map-footer{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;color:#64748b;font-size:10px}
     #repairMapLocateBtn{border:0;background:#eff6ff;color:#1d4ed8;border-radius:9px;padding:7px 10px;font-weight:700;font-size:11px;cursor:pointer}
@@ -717,53 +728,57 @@
             </div>
 
             <div class="field repair-address-field" id="addressField">
-              <div class="repair-location-layout">
-                <div class="repair-map-card" aria-label="Interactieve kaart voor uw reparatieadres">
-                  <div class="repair-map-heading">
-                    <span class="repair-map-icon" aria-hidden="true">⌖</span>
-                    <div><strong>Kies uw locatie op de kaart</strong><small>Verplaats de pin naar de juiste plek</small></div>
+              <div class="repair-booking-layout">
+                <div class="repair-map-column">
+                  <div class="repair-map-card" aria-label="Interactieve kaart voor uw reparatieadres">
+                    <div class="repair-map-heading">
+                      <span class="repair-map-icon" aria-hidden="true">⌖</span>
+                      <div><strong>Kies uw locatie op de kaart</strong><small>Verplaats de pin naar de juiste plek</small></div>
+                    </div>
+                    <div id="repairLocationMap" role="application" aria-label="Kaart waarop u uw reparatieadres kunt kiezen"></div>
+                    <div class="repair-map-footer">
+                      <span>OpenStreetMap · Sleep de pin om uw locatie aan te passen</span>
+                      <button id="repairMapLocateBtn" type="button">Mijn locatie</button>
+                    </div>
                   </div>
-                  <div id="repairLocationMap" role="application" aria-label="Kaart waarop u uw reparatieadres kunt kiezen"></div>
-                  <div class="repair-map-footer">
-                    <span>OpenStreetMap · Sleep de pin om uw locatie aan te passen</span>
-                    <button id="repairMapLocateBtn" type="button">Mijn locatie</button>
+                  <div class="repair-location-fields">
+                    <label for="address">Volledig adres *</label>
+                    <div class="repair-location-autocomplete">
+                      <input id="address" type="text" autocomplete="street-address" placeholder="Zoek postcode of adres, bijv. 2651 GX of Castor 71" aria-autocomplete="list" aria-controls="repairLocationSuggestions" aria-expanded="false" required>
+                      <div id="repairLocationSuggestions" role="listbox" hidden></div>
+                    </div>
+                    <input id="city" type="hidden" autocomplete="postal-code">
+                    <button id="useLocationBtn" type="button" class="btn-main">📍 Gebruik mijn huidige locatie</button>
+                    <small id="coverageMessage" aria-live="polite"></small>
                   </div>
                 </div>
-                <div class="repair-location-fields">
-                  <label for="address">Volledig adres *</label>
-                  <div class="repair-location-autocomplete">
-                    <input id="address" type="text" autocomplete="street-address" placeholder="Zoek postcode of adres, bijv. 2651 GX of Castor 71" aria-autocomplete="list" aria-controls="repairLocationSuggestions" aria-expanded="false" required>
-                    <div id="repairLocationSuggestions" role="listbox" hidden></div>
+                <div class="repair-appointment-column" aria-label="Afspraak plannen">
+                  <div class="repair-appointment-heading"><span>📅</span><div><strong>Plan uw afspraak</strong><small>Kies een gewenste datum en tijd</small></div></div>
+                  <div class="field" id="dateField">
+                    <label for="date">Gewenste datum</label>
+                    <input id="date" type="date">
                   </div>
-                  <input id="city" type="hidden" autocomplete="postal-code">
-                  <button id="useLocationBtn" type="button" class="btn-main">📍 Gebruik mijn huidige locatie</button>
-                  <small id="coverageMessage" aria-live="polite"></small>
+                  <div class="field" id="timeField">
+                    <label for="time">Gewenste tijd</label>
+                    <select id="time">
+                      <option value="">Kies een tijdstip</option>
+                      <option>09:00 - 10:00</option>
+                      <option>10:00 - 11:00</option>
+                      <option>11:00 - 12:00</option>
+                      <option>12:00 - 13:00</option>
+                      <option>13:00 - 14:00</option>
+                      <option>14:00 - 15:00</option>
+                      <option>15:00 - 16:00</option>
+                      <option>16:00 - 17:00</option>
+                      <option>17:00 - 18:00</option>
+                      <option>18:00 - 19:00</option>
+                    </select>
+                    <div id="availabilityMessage" class="repair-availability-message"></div>
+                  </div>
                 </div>
               </div>
             </div>
             <div class="field" id="cityField" hidden></div>
-
-            <div class="field" id="dateField">
-              <label for="date">Gewenste datum</label>
-              <input id="date" type="date">
-            </div>
-            <div class="field" id="timeField">
-              <label for="time">Gewenste tijd</label>
-              <select id="time">
-                <option value="">Kies een tijdstip</option>
-                <option>09:00 - 10:00</option>
-                <option>10:00 - 11:00</option>
-                <option>11:00 - 12:00</option>
-                <option>12:00 - 13:00</option>
-                <option>13:00 - 14:00</option>
-                <option>14:00 - 15:00</option>
-                <option>15:00 - 16:00</option>
-                <option>16:00 - 17:00</option>
-                <option>17:00 - 18:00</option>
-                <option>18:00 - 19:00</option>
-              </select>
-              <div id="availabilityMessage" style="margin-top:8px;font-size:12px;color:#64748b"></div>
-            </div>
 
             <div class="field full">
               <label for="notes">Probleem / extra informatie</label>
