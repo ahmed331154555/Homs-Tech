@@ -352,6 +352,17 @@ app.post("/api/paypal/capture-order", async (req, res) => {
     if (!paidUpdate.rowCount) {
       const latest = await pool.query("SELECT payment_status FROM webshop_orders WHERE id = $1", [localOrderId]);
       if (latest.rows[0]?.payment_status === "Paid") {
+        // Another request/webhook may have marked the order paid before completing inventory.
+        // The deduction is idempotent, so safely retry it before reporting full success.
+        const inventoryResult = await deductPaidOrderInventory(localOrderId);
+        if (inventoryResult?.error) {
+          return res.status(409).json({
+            error: "PayPal heeft de betaling bevestigd, maar de voorraad wacht op handmatige controle.",
+            paid: true,
+            orderId: localOrderId
+          });
+        }
+        await notifyPaidTradeInOrder(localOrderId);
         return res.json({ success: true, paid: true, orderId: localOrderId, paypalOrderId, captureId: capture?.id || null });
       }
       return res.status(409).json({ error: "De bestelling is ondertussen gewijzigd. Neem contact op met HOMS TECH." });
