@@ -235,25 +235,77 @@ function registerAdminBuybackOrderRoutes(app, {
   app.put("/api/admin/buyback-orders/:id/settlement", requirePermission("buyback_orders.update"), async (req, res) => {
     const id = Number(req.params.id);
     const note = String(req.body?.settlementNote || "").trim().slice(0, 1000);
-    if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig aanvraagnummer." });
+    if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig aanvraagnummer." });
     if (note.length < 5) return res.status(400).json({ error: "Vermeld wanneer en hoe het bedrag aan de klant is overgemaakt." });
+    const client = await pool.connect();
+    let inventoryDevice = null;
     try {
-      await ensureBuybackOrdersTable(pool);
-      const updated = await pool.query(
+      await ensureBuybackOrdersTable(client);
+      await client.query("BEGIN");
+      const found = await client.query(
+        "SELECT id,order_no,device,brand,model,storage,condition,sale_inspected_value,status,trade_in FROM buyback_orders WHERE id=$1 FOR UPDATE",
+        [id]
+      );
+      if (!found.rows.length || found.rows[0].trade_in || found.rows[0].status !== "Klant akkoord") {
+        await client.query("ROLLBACK");
+        return res.status(409).json({ error: "De klant heeft nog niet akkoord gegeven of de aanvraag is al afgehandeld." });
+      }
+      const order = found.rows[0];
+      if (order.sale_inspected_value === null || order.sale_inspected_value === undefined) {
+        await client.query("ROLLBACK");
+        return res.status(409).json({ error: "De definitieve inspectiewaarde ontbreekt. Sla eerst de inspectie op." });
+      }
+      const registered = await client.query(
+        `INSERT INTO device_register (
+          device_type,identifier_type,identifier_value,model,brand,status,
+          purchase_cost,sale_price,source_buyback_order_id,storage,color,device_condition
+        ) VALUES ('commercial','barcode',$1,$2,$3,'تم الشراء',$4,0,$5,$6,$7,$8)
+        ON CONFLICT (source_buyback_order_id) WHERE source_buyback_order_id IS NOT NULL DO NOTHING
+        RETURNING id,identifier_value,model,brand,status,purchase_cost`,
+        [
+          "HT-BUYBACK-" + order.id,
+          String(order.model || order.device || "Telefoon").trim().slice(0,120),
+          String(order.brand || "Apple").trim().slice(0,60),
+          Number(order.sale_inspected_value),
+          order.id,
+          String(order.storage || "").trim().slice(0,40),
+          "",
+          String(order.condition || "").trim().slice(0,80)
+        ]
+      );
+      if (registered.rows.length) {
+        inventoryDevice = registered.rows[0];
+        await client.query(
+          "INSERT INTO device_register_operations(device_id,operation_type,status,description,additional_cost) VALUES($1,'purchase','تم الشراء',$2,$3)",
+          [inventoryDevice.id, "Inkoop " + String(order.order_no || ("#" + order.id)), Number(order.sale_inspected_value)]
+        );
+      } else {
+        const existing = await client.query(
+          "SELECT id,identifier_value,model,brand,status,purchase_cost FROM device_register WHERE source_buyback_order_id=$1",
+          [order.id]
+        );
+        if (!existing.rows.length) throw new Error("Het ingekochte toestel kon niet aan het toestelregister worden gekoppeld.");
+        inventoryDevice = existing.rows[0];
+      }
+      const updated = await client.query(
         "UPDATE buyback_orders SET status='Voltooid',sale_settlement_note=$1,sale_settled_at=NOW() WHERE id=$2 AND trade_in=FALSE AND status='Klant akkoord' RETURNING id",
         [note, id]
       );
-      if (!updated.rows.length) return res.status(409).json({ error: "De klant heeft nog niet akkoord gegeven of de aanvraag is al afgehandeld." });
+      if (!updated.rows.length) throw new Error("De inkoopaanvraag kon niet veilig worden afgerond.");
+      await client.query("COMMIT");
       let payoutEmail = { sent: false, reason: "send-failed" };
       try { payoutEmail = await sendPayoutConfirmation(id); }
       catch (emailError) {
         console.error("Buyback payout confirmation email failed:", id, emailError.message || emailError);
         payoutEmail = { sent: false, reason: emailError.code === "EMAIL_NOT_CONFIGURED" ? "email-not-configured" : "send-failed" };
       }
-      return res.json({ success: true, payoutEmail });
+      return res.json({ success: true, payoutEmail, inventoryDevice });
     } catch (error) {
+      try { await client.query("ROLLBACK"); } catch {}
       console.error("Buyback settlement error:", error);
-      return res.status(500).json({ error: "De uitbetaling kon niet worden geregistreerd." });
+      return res.status(500).json({ error: "De uitbetaling en voorraadregistratie konden niet worden afgerond." });
+    } finally {
+      client.release();
     }
   });
 
