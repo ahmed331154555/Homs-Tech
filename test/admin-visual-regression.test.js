@@ -44,7 +44,7 @@ test("orders and inkoop workspace keeps mobile actions accessible", () => {
 test("admin HTML uses matching versioned CSS and JavaScript assets", () => {
   const html = read("admin/index.html");
   assert.match(html, /homs-admin\.css\?v=20261110-admin-polish6/);
-  assert.match(html, /homs-admin\.js\?v=20261110-admin-polish6/);
+  assert.match(html, /homs-admin\.js\?v=20261110-phone-details-fix1/);
 });
 
 
