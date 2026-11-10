@@ -418,6 +418,19 @@ app.post("/api/paypal/cancel-order", async (req, res) => {
 
     const checkoutTokenHash = crypto.createHash("sha256").update(checkoutToken).digest("hex");
     const result = await cancelPaypalOrder({ pool, orderId: localOrderId, checkoutTokenHash });
+    // A cancellation request can race with a successful capture. If the helper
+    // reports Paid, make sure inventory recovery is not skipped on this path.
+    if (result.body?.paid === true) {
+      const inventoryResult = await deductPaidOrderInventory(localOrderId);
+      if (inventoryResult?.error) {
+        return res.status(409).json({
+          error: "PayPal heeft de betaling bevestigd, maar de voorraad wacht op handmatige controle.",
+          paid: true,
+          orderId: localOrderId
+        });
+      }
+      await notifyPaidTradeInOrder(localOrderId);
+    }
     res.status(result.statusCode).json(result.body);
   } catch (error) {
     console.error("PayPal cancel error:", error);
