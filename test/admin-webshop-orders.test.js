@@ -438,7 +438,7 @@ test("customer can accept or reject the inspected trade-in offer using a one-tim
         return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_status: "AwaitingCustomerApproval", payment_status: "Paid", trade_in_snapshot: { customerApprovalTokenHash: tokenHash, customerApprovalExpiresAt: new Date(Date.now()+60000).toISOString() } }] };
       }
       if (sql.includes("SELECT id FROM buyback_orders")) return { rows: [{ id: 77 }] };
-      return { rows: []; }
+      return { rows: [] };
     },
     release() {}
   };
