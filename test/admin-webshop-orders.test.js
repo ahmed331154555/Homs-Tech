@@ -30,6 +30,38 @@ function createResponse() {
   };
 }
 
+test("uncertain Mollie refund failures remain reserved to prevent duplicate refunds", async () => {
+  const statements = [];
+  const client = {
+    async query(sql) {
+      statements.push(sql);
+      if (sql.includes("SELECT id,total,payment_status")) return { rows: [{ id: 17, total: "100.00", payment_status: "Paid", payment_method: "Mollie", mollie_payment_id: "tr_test456" }] };
+      if (sql.includes("SELECT COALESCE(SUM(amount)")) return { rows: [{ total: "0" }] };
+      if (sql.includes("INSERT INTO webshop_order_refunds")) return { rows: [{ id: 502, amount: "30.00" }] };
+      return { rows: [] };
+    },
+    release() {}
+  };
+  const pool = { async connect() { return client; }, async query(sql, params) {
+    statements.push(sql);
+    assert.match(sql,/SET status='Processing'/);
+    assert.deepEqual(params,[502]);
+    return { rows: [] };
+  } };
+  const routes = new Map();
+  const app = { post(path,...handlers) { routes.set("POST "+path,handlers.at(-1)); }, get(){},put(){},delete(){} };
+  const requirePermission = () => (_req,_res,next)=>next();
+  const mollieRequest = async () => { throw new Error("network timeout"); };
+  registerAdminWebshopOrderRoutes(app,{pool,requirePermission,mollieRequest});
+  const response=createResponse();
+  await routes.get("POST /api/admin/webshop-orders/:id/refund")({
+    params:{id:"17"},body:{amount:30,method:"Mollie",reason:"Retour klant"}
+  },response);
+  assert.equal(response.statusCode,502);
+  assert.match(response.body.error,/controleer eerst de status in Mollie/i);
+  assert.ok(statements.some(sql=>sql.includes("SET status='Processing'")));
+});
+
 test("refund amount must be representable in whole euro cents", async () => {
   let connectCalled = false;
   const routes = createHarness({ async connect() { connectCalled = true; throw new Error("Should not connect"); } });
