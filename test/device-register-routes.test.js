@@ -237,3 +237,22 @@ test("generic device operations cannot bypass the dedicated sale flow", async ()
   assert.equal(response.statusCode, 400);
   assert.equal(queryCount, 0);
 });
+
+
+test("general device update cannot mark a device as sold", async () => {
+  let updateAttempted = false;
+  const { routes } = createHarness({
+    async query(sql) {
+      if (sql.startsWith("SELECT device_type FROM device_register")) return { rows: [{ device_type: "commercial", status: "جاهز للبيع" }] };
+      if (sql.startsWith("UPDATE device_register")) updateAttempted = true;
+      return { rows: [] };
+    }
+  });
+  const response = createResponse();
+  await routes.get("PUT /api/admin/device-register/:id")(
+    { params: { id: "9" }, body: { status: "تم البيع", purchaseCost: 300, salePrice: 499 } },
+    response
+  );
+  assert.equal(response.statusCode, 409);
+  assert.equal(updateAttempted, false);
+});
