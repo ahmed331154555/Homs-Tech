@@ -55,3 +55,49 @@ test("device register summary returns commercial stock and realized profit KPIs"
   assert.equal(payload.summary.total, 8);
   assert.equal(payload.summary.realized_profit, "420.00");
 });
+
+test("sold commercial devices cannot receive new repair or refurbishment operations", async () => {
+  const { registerDeviceRegisterRoutes } = require("../routes/device-register");
+  const routes = new Map();
+  const queries = [];
+  let inserted = false;
+  const client = {
+    async query(sql, params) {
+      queries.push({ sql, params });
+      if (sql === "BEGIN" || sql === "ROLLBACK") return { rows: [] };
+      if (sql.includes("FROM device_register WHERE id=$1 AND archived=FALSE FOR UPDATE")) {
+        return { rows: [{ id: 17, device_type: "commercial", status: "تم البيع" }] };
+      }
+      if (sql.includes("INSERT INTO device_register_operations")) {
+        inserted = true;
+        return { rows: [{ id: 1 }] };
+      }
+      return { rows: [] };
+    },
+    release() {}
+  };
+  const app = {
+    get(path, ...handlers) { routes.set("GET " + path, handlers.at(-1)); },
+    post(path, ...handlers) { routes.set("POST " + path, handlers.at(-1)); },
+    put(path, ...handlers) { routes.set("PUT " + path, handlers.at(-1)); }
+  };
+  registerDeviceRegisterRoutes(app, {
+    pool: { async connect() { return client; }, async query() { return { rows: [] }; } },
+    requirePermission: () => (_req, _res, next) => next(),
+    deviceText: (v, max=160) => String(v ?? "").trim().slice(0, max),
+    deviceMoney: v => Number(v)
+  });
+  const response = {
+    statusCode: 200,
+    status(code) { this.statusCode = code; return this; },
+    json(value) { this.body = value; return this; }
+  };
+  await routes.get("POST /api/admin/device-register/:id/operations")(
+    { params: { id: "17" }, body: { operationType: "refurbishment", description: "Nieuwe batterij", additionalCost: 25, salePrice: 0 } },
+    response
+  );
+  assert.equal(response.statusCode, 409);
+  assert.equal(inserted, false);
+  assert.ok(queries.some(item => item.sql.includes("FOR UPDATE")));
+  assert.ok(queries.some(item => item.sql === "ROLLBACK"));
+});
