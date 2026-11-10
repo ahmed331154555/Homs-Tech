@@ -257,3 +257,17 @@ test("paid order rejects missing or empty item lists for manual review", async (
     assert.equal(fake.savedCatalog, null);
   }
 });
+
+
+test("inventory deduction rejects invalid order identifiers before connecting", async () => {
+  const fake = createFakePool(
+    { id: 1, payment_status: "Paid", items: [{ type: "phone", id: 0, qty: 1 }] },
+    { phones: [{ name: "Phone", stock: 2 }] }
+  );
+  const deduct = createPaidOrderInventoryDeductor({ pool: fake.pool });
+  for (const invalidId of [0, -1, 1.5, Number.MAX_SAFE_INTEGER + 1, NaN, "1", null]) {
+    assert.deepEqual(await deduct(invalidId), { error: true });
+  }
+  assert.equal(fake.calls.length, 0, "invalid identifiers must not open or query a database connection");
+  assert.equal(fake.savedCatalog, null);
+});
