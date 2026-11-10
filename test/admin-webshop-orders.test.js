@@ -496,3 +496,71 @@ test("trade-in payout is marked settled only after customer acceptance and admin
   assert.equal(response.body.order.trade_in_status, "Settled");
   assert.ok(statements.some(({ sql }) => sql === "COMMIT"));
 });
+
+
+test("trade-in customer offer cannot reopen an already settled trade-in", async () => {
+  let queryCount = 0;
+  const routes = createHarness({
+    async query() {
+      queryCount += 1;
+      return { rows: [{
+        id: 91, email: "customer@example.com", payment_status: "Paid",
+        trade_in_inspected_value: 150, trade_in_status: "Settled",
+        trade_in_snapshot: {}
+      }] };
+    }
+  });
+  const response = createResponse();
+
+  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-offer")({
+    params: { id: "91" }, body: {}
+  }, response);
+
+  assert.equal(response.statusCode, 409);
+  assert.match(response.body.error, /definitieve inspectiewaarde/i);
+  assert.equal(queryCount, 1, "settled offer must stop before changing the approval token");
+});
+
+test("trade-in customer offer requires a paid order before creating an approval link", async () => {
+  let queryCount = 0;
+  const routes = createHarness({
+    async query() {
+      queryCount += 1;
+      return { rows: [{
+        id: 92, email: "customer@example.com", payment_status: "Pending",
+        trade_in_inspected_value: 150, trade_in_status: "AdjustmentRequired",
+        trade_in_snapshot: {}
+      }] };
+    }
+  });
+  const response = createResponse();
+
+  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-offer")({
+    params: { id: "92" }, body: {}
+  }, response);
+
+  assert.equal(response.statusCode, 409);
+  assert.equal(queryCount, 1, "unpaid order must not receive an approval token");
+});
+
+test("trade-in customer offer requires a customer email before creating an approval link", async () => {
+  let queryCount = 0;
+  const routes = createHarness({
+    async query() {
+      queryCount += 1;
+      return { rows: [{
+        id: 93, email: "", payment_status: "Paid",
+        trade_in_inspected_value: 150, trade_in_status: "AdjustmentRequired",
+        trade_in_snapshot: {}
+      }] };
+    }
+  });
+  const response = createResponse();
+
+  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-offer")({
+    params: { id: "93" }, body: {}
+  }, response);
+
+  assert.equal(response.statusCode, 409);
+  assert.equal(queryCount, 1, "missing email must not create or rotate an approval token");
+});
