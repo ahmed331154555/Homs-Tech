@@ -81,6 +81,8 @@ function registerDeviceRegisterRoutes(app, {
       const existing=await pool.query("SELECT device_type FROM device_register WHERE id=$1 AND archived=FALSE",[id]);
       if(!existing.rows.length)return res.status(404).json({error:"Toestel niet gevonden."});
       const allowed=existing.rows[0].device_type==="commercial"?commercialDeviceStatuses:customerDeviceStatuses;
+      if(existing.rows[0].status==="تم البيع")return res.status(409).json({error:"Een verkocht toestel kan niet via de algemene bewerkfunctie worden aangepast."});
+      if(status==="تم البيع")return res.status(409).json({error:"Gebruik de aparte verkoopregistratie om een toestel als verkocht te markeren."});
       if(!allowed.has(status)||!Number.isFinite(purchaseCost)||!Number.isFinite(salePrice))return res.status(400).json({error:"Controleer status en bedragen."});
       const result = await pool.query(
         `UPDATE device_register
