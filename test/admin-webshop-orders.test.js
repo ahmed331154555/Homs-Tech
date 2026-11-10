@@ -30,6 +30,49 @@ function createResponse() {
   };
 }
 
+test("refund amount must be representable in whole euro cents", async () => {
+  let connectCalled = false;
+  const routes = createHarness({ async connect() { connectCalled = true; throw new Error("Should not connect"); } });
+  const response = createResponse();
+  await routes.get("POST /api/admin/webshop-orders/:id/refund")({
+    params: { id: "15" }, body: { amount: 12.345, method: "Manual" }
+  }, response);
+  assert.equal(response.statusCode, 400);
+  assert.match(response.body.error, /hele eurocenten/i);
+  assert.equal(connectCalled, false);
+});
+
+test("Mollie refund idempotency key is unique per refund record", async () => {
+  const statements = [];
+  const client = {
+    async query(sql, params) {
+      statements.push({sql,params});
+      if (sql.includes("SELECT id,total,payment_status")) return { rows: [{ id: 16, total: "100.00", payment_status: "Paid", payment_method: "Mollie", mollie_payment_id: "tr_test123" }] };
+      if (sql.includes("SELECT COALESCE(SUM(amount)")) return { rows: [{ total: "0" }] };
+      if (sql.includes("INSERT INTO webshop_order_refunds")) return { rows: [{ id: 501, amount: "25.00" }] };
+      return { rows: [] };
+    },
+    release() {}
+  };
+  let providerOptions;
+  const pool = { async connect() { return client; }, async query(sql, params) {
+    statements.push({sql,params});
+    if (sql.includes("UPDATE webshop_order_refunds SET status=$1")) return { rows: [{ id: 501, amount: "25.00", status: "Processing" }] };
+    return { rows: [] };
+  } };
+  const routes = new Map();
+  const app = { post(path,...handlers) { routes.set("POST "+path,handlers.at(-1)); }, get(){},put(){},delete(){} };
+  const requirePermission = () => (_req,_res,next)=>next();
+  const mollieRequest = async (_path, options) => { providerOptions=options; return { id: "re_test501", status: "queued" }; };
+  registerAdminWebshopOrderRoutes(app,{pool,requirePermission,mollieRequest});
+  const response=createResponse();
+  await routes.get("POST /api/admin/webshop-orders/:id/refund")({
+    params:{id:"16"},body:{amount:25,method:"Mollie",reason:"Retour klant"}
+  },response);
+  assert.equal(response.statusCode,201);
+  assert.equal(providerOptions.headers["Idempotency-Key"],"homs-tech-order-refund-16-501");
+});
+
 test("admin webshop order list includes inventory processing diagnostics", async () => {
   const expectedOrders = [{
     id: 12,
