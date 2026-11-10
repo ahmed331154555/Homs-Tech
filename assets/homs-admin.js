@@ -77,6 +77,10 @@ function showPage(page){
   const unifiedOrdersAllowed=page==="all-orders"&&(hasPermission("orders.view")||hasPermission("webshop_orders.view")||hasPermission("buyback_orders.view"));
   if(!unifiedOrdersAllowed&&!hasPermission(PAGE_PERMISSIONS[page]||""))page=firstAllowedPage();
   if(!page)return;
+  if(currentPage==="live-chat"&&page!=="live-chat"&&liveChatRefreshTimer){
+    clearInterval(liveChatRefreshTimer);
+    liveChatRefreshTimer=null;
+  }
   currentPage=page;
   if(page!=="all-orders")document.body.classList.remove("phone-orders-page-active");
   try{localStorage.setItem("homsAdminCurrentPage",page);}catch{}
