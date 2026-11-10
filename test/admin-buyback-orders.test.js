@@ -337,3 +337,36 @@ test("settlement refuses to register a device before customer approval", async (
   assert.equal(response.statusCode, 409);
   assert.equal(insertAttempted, false);
 });
+
+test("completed buyback settlement cannot register or pay for the same device twice", async () => {
+  let registerInsertAttempted = false;
+  let operationInsertAttempted = false;
+  let committed = false;
+  const client = {
+    async query(sql) {
+      if (sql === "BEGIN" || sql === "ROLLBACK") return { rows: [] };
+      if (sql === "COMMIT") { committed = true; return { rows: [] }; }
+      if (sql.startsWith("SELECT id,order_no,device,brand,model,storage,condition")) {
+        return { rows: [{
+          id: 42, order_no: "BT-42", device: "iPhone 14 Pro", brand: "Apple",
+          model: "iPhone 14 Pro", storage: "256GB", condition: "Goed",
+          sale_inspected_value: "310.00", status: "Voltooid", trade_in: false
+        }] };
+      }
+      if (sql.startsWith("INSERT INTO device_register")) registerInsertAttempted = true;
+      if (sql.startsWith("INSERT INTO device_register_operations")) operationInsertAttempted = true;
+      return { rows: [] };
+    },
+    release() {}
+  };
+  const { routes } = createHarness({ pool: { async connect() { return client; } } });
+  const response = createResponse();
+  await routes.get("PUT /api/admin/buyback-orders/:id/settlement")(
+    { params: { id: "42" }, body: { settlementNote: "Overgemaakt via bank op 10 november" } },
+    response
+  );
+  assert.equal(response.statusCode, 409);
+  assert.equal(registerInsertAttempted, false);
+  assert.equal(operationInsertAttempted, false);
+  assert.equal(committed, false);
+});
