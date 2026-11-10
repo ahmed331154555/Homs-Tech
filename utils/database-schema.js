@@ -48,6 +48,13 @@ async function initializeDatabaseSchema(pool) {
         UNIQUE(identifier_type, identifier_value)
       );
       CREATE INDEX IF NOT EXISTS device_register_type_status_idx ON device_register(device_type,status,archived);
+      ALTER TABLE device_register ADD COLUMN IF NOT EXISTS source_buyback_order_id BIGINT;
+      ALTER TABLE device_register ADD COLUMN IF NOT EXISTS storage TEXT NOT NULL DEFAULT '';
+      ALTER TABLE device_register ADD COLUMN IF NOT EXISTS color TEXT NOT NULL DEFAULT '';
+      ALTER TABLE device_register ADD COLUMN IF NOT EXISTS device_condition TEXT NOT NULL DEFAULT '';
+      CREATE UNIQUE INDEX IF NOT EXISTS device_register_source_buyback_unique
+        ON device_register(source_buyback_order_id)
+        WHERE source_buyback_order_id IS NOT NULL;
       CREATE TABLE IF NOT EXISTS device_register_operations (
         id BIGSERIAL PRIMARY KEY,
         device_id BIGINT NOT NULL REFERENCES device_register(id) ON DELETE CASCADE,
