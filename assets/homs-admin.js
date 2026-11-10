@@ -7017,15 +7017,14 @@ async function deviceRegisterSale(id){
 }
 async function deviceAddOperation(id){
   const device=deviceRegisterCache.find(x=>Number(x.id)===id);if(!device)return;
-  const type=prompt("Type handeling: repair, refurbishment, purchase, sale of note","repair");if(type===null)return;
+  const type=prompt("Type handeling: repair, refurbishment, purchase of note","repair");if(type===null)return;
   if(!["repair","refurbishment","purchase","note"].includes(type)){alert("Gebruik repair, refurbishment, purchase of note.");return}
   const description=prompt("Omschrijving van de handeling","");if(description===null)return;
   const status=prompt("Nieuwe status (leeg = status niet wijzigen)",device.status);if(status===null)return;
   const additionalCost=prompt("Extra kosten in euro (0 indien geen)", "0");if(additionalCost===null)return;
   const partsRaw=prompt("Onderdelen als JSON: [{\"name\":\"Scherm\",\"quantity\":1,\"cost\":45}] — leeg indien geen onderdelen","");if(partsRaw===null)return;
   let parts=[];if(partsRaw.trim()){try{parts=JSON.parse(partsRaw);if(!Array.isArray(parts))throw Error()}catch{alert("Onderdelen moeten geldige JSON zijn.");return}}
-  const salePrice=prompt("Verkoopprijs bij verkoop (0 indien niet van toepassing)","0");if(salePrice===null)return;
-  try{await deviceApi("/api/admin/device-register/"+id+"/operations",{method:"POST",body:JSON.stringify({operationType:type,description,status,additionalCost,parts,salePrice})});deviceSetStatus("Handeling en onderdelen opgeslagen in de historie.","success");loadDeviceRegister();deviceShowHistory(id)}catch(e){deviceSetStatus(e.message,"error")}
+  try{await deviceApi("/api/admin/device-register/"+id+"/operations",{method:"POST",body:JSON.stringify({operationType:type,description,status,additionalCost,parts})});deviceSetStatus("Handeling en onderdelen opgeslagen in de historie.","success");await loadDeviceRegister();await deviceShowHistory(id)}catch(e){deviceSetStatus(e.message,"error")}
 }
 async function deviceShowHistory(id){
   const panel=document.getElementById("deviceHistoryPanel");if(!panel)return;panel.innerHTML="Historie laden…";
