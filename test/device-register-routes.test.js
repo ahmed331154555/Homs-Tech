@@ -318,3 +318,57 @@ test("device sale refuses an unpaid or unfinished webshop order", async () => {
   assert.equal(response.statusCode, 409);
   assert.equal(saleInserted, false);
 });
+
+
+test("device sale links only an existing invoice with the exact sale total", async () => {
+  let storedInvoiceId = null;
+  const client = {
+    async query(sql, params = []) {
+      if (sql === "BEGIN" || sql === "COMMIT" || sql === "ROLLBACK") return { rows: [] };
+      if (sql.includes("FROM device_register WHERE id=$1") && sql.includes("FOR UPDATE")) {
+        return { rows: [{ id: 9, device_type: "commercial", status: "جاهز للبيع", model: "iPhone 13", identifier_value: "HT-9", purchase_cost: "300.00" }] };
+      }
+      if (sql.startsWith("SELECT id,total FROM manual_invoices")) return { rows: [{ id: 501, total: "499.00" }] };
+      if (sql.startsWith("SELECT id FROM device_register_operations")) return { rows: [] };
+      if (sql.startsWith("INSERT INTO device_register_operations")) return { rows: [{ id: 33 }] };
+      if (sql.startsWith("UPDATE device_register SET status='تم البيع'")) {
+        storedInvoiceId = params[3];
+        return { rows: [{ id: 9, status: "تم البيع", source_manual_invoice_id: storedInvoiceId }] };
+      }
+      throw new Error("Unexpected query: " + sql);
+    },
+    release() {}
+  };
+  const { routes } = createHarness({ async connect() { return client; } });
+  const response = createResponse();
+  await routes.get("POST /api/admin/device-register/:id/sale")(
+    { params: { id: "9" }, body: { salePrice: 499, invoiceNumber: "HT-2026-000501" } },
+    response
+  );
+  assert.equal(response.statusCode, 201);
+  assert.equal(storedInvoiceId, 501);
+});
+
+test("device sale rejects an invoice whose total differs from the sale price", async () => {
+  let saleInserted = false;
+  const client = {
+    async query(sql) {
+      if (sql === "BEGIN" || sql === "ROLLBACK") return { rows: [] };
+      if (sql.includes("FROM device_register WHERE id=$1") && sql.includes("FOR UPDATE")) {
+        return { rows: [{ id: 9, device_type: "commercial", status: "جاهز للبيع", model: "iPhone 13", identifier_value: "HT-9" }] };
+      }
+      if (sql.startsWith("SELECT id,total FROM manual_invoices")) return { rows: [{ id: 501, total: "599.00" }] };
+      if (sql.startsWith("INSERT INTO device_register_operations")) saleInserted = true;
+      return { rows: [] };
+    },
+    release() {}
+  };
+  const { routes } = createHarness({ async connect() { return client; } });
+  const response = createResponse();
+  await routes.get("POST /api/admin/device-register/:id/sale")(
+    { params: { id: "9" }, body: { salePrice: 499, invoiceNumber: "HT-2026-000501" } },
+    response
+  );
+  assert.equal(response.statusCode, 409);
+  assert.equal(saleInserted, false);
+});
