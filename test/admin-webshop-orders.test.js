@@ -419,7 +419,7 @@ test("admin cannot directly cancel a paid webshop order", async () => {
   }, response);
 
   assert.equal(response.statusCode, 409);
-  assert.match(response.body.error, /betaalde bestelling kan niet rechtstreeks worden geannuleerd/i);
+  assert.match(response.body.error, /volledige terugbetaling als verwerkt is bevestigd/i);
   assert.match(calls[0].sql, /NOT \(payment_status = 'Paid' AND \$1 = 'Geannuleerd'\)/);
   assert.equal(calls[0].params[1], 12);
   assert.equal(calls.length, 2);
@@ -613,7 +613,7 @@ test("trade-in customer offer cannot reopen an already settled trade-in", async 
   }, response);
 
   assert.equal(response.statusCode, 409);
-  assert.match(response.body.error, /definitieve inspectiewaarde/i);
+  assert.match(response.body.error, /inruil is al definitief afgehandeld/i);
   assert.equal(queryCount, 1, "settled offer must stop before changing the approval token");
 });
 
