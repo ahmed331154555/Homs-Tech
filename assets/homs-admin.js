@@ -7006,14 +7006,16 @@ async function deviceRegisterSale(id){
   if(price===null)return;
   const webshopOrderId=prompt("Webshop ordernummer (optioneel). Alleen koppelen als de bestelling betaald én voltooid is.","");
   if(webshopOrderId===null)return;
+  const invoiceNumber=prompt("Factuurnummer uit HOMS TECH (optioneel; factuurtotaal moet gelijk zijn aan de verkoopprijs)","");
+  if(invoiceNumber===null)return;
   const reference=prompt("Extra verkoopreferentie (optioneel)","");
   if(reference===null)return;
   const description=prompt("Opmerking bij de verkoop (optioneel)","");
   if(description===null)return;
-  if(!confirm("Verkoop van "+device.model+" registreren voor € "+price+"?"+(webshopOrderId.trim()?" Koppelen aan webshopbestelling #"+webshopOrderId.trim()+".":"")+" Dit kan niet dubbel worden uitgevoerd."))return;
+  if(!confirm("Verkoop van "+device.model+" registreren voor € "+price+"?"+(webshopOrderId.trim()?" Bestelling #"+webshopOrderId.trim()+".":"")+(invoiceNumber.trim()?" Factuur "+invoiceNumber.trim()+".":"")+" Dit kan niet dubbel worden uitgevoerd."))return;
   try{
-    const result=await deviceApi("/api/admin/device-register/"+id+"/sale",{method:"POST",body:JSON.stringify({salePrice:price,reference,description,webshopOrderId:webshopOrderId.trim()||null})});
-    deviceSetStatus("Verkoop geregistreerd. "+(result.device?.identifier_value||"")+" staat nu op Verkocht."+(result.device?.source_webshop_order_id?" Gekoppeld aan bestelling #"+result.device.source_webshop_order_id:""),"success");
+    const result=await deviceApi("/api/admin/device-register/"+id+"/sale",{method:"POST",body:JSON.stringify({salePrice:price,reference,description,webshopOrderId:webshopOrderId.trim()||null,invoiceNumber:invoiceNumber.trim()||null})});
+    deviceSetStatus("Verkoop geregistreerd. "+(result.device?.identifier_value||"")+" staat nu op Verkocht."+(result.device?.source_webshop_order_id?" Gekoppeld aan bestelling #"+result.device.source_webshop_order_id:"")+(result.device?.source_manual_invoice_id?" · Factuur gekoppeld":"") ,"success");
     await loadDeviceRegister();
     await deviceShowHistory(id);
   }catch(error){deviceSetStatus(error.message,"error");}
