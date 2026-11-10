@@ -23,7 +23,7 @@ const PAGE_PERMISSIONS = {
   general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",shop:"site.save",categories:"categories.view",
 why:"why.view",customers:"customers.view",orders:"orders.view","repair-requests":"orders.view",
   "webshop-orders":"webshop_orders.view","invoices":"site.save","order-settings":"site.save",search:"search",admins:"admins.manage",
-  buyback:"buyback.view", "buyback-orders":"buyback_orders.view", inventory:"site.save", emails:"site.save"
+  buyback:"buyback.view", "buyback-orders":"buyback_orders.view", inventory:"site.save", "device-register":"device_register.view", emails:"site.save"
 };
 
 const ADMIN_PERMISSION_LABELS = {
@@ -45,10 +45,11 @@ function canEditCurrentPage(){
   if(currentPage==="phones") return hasPermission("phones.update") || canEditSite();
   if(currentPage==="shop") return canEditSite();
   if(currentPage==="repair") return hasPermission("repair_page.update") || canEditSite();
+  if(currentPage==="device-register") return hasPermission("device_register.update");
   return canEditSite();
 }
 function firstAllowedPage(){
-  const pages=["general","services","repair","phones","shop","buyback","buyback-orders","categories","why","customers","orders","repair-requests","webshop-orders","emails","invoices","inventory","search","admins"];
+  const pages=["general","services","repair","phones","shop","buyback","buyback-orders","categories","why","customers","orders","repair-requests","webshop-orders","emails","invoices","inventory","device-register","search","admins"];
   return pages.find(p=>hasPermission(PAGE_PERMISSIONS[p]))||null;
 }
 function applyPermissionUI(){
@@ -91,6 +92,7 @@ function showPage(page){
     if(page==="emails")loadAdminEmails();
     if(page==="invoices"){if(!document.querySelector("#invoiceLines tr"))addInvoiceLine();loadInvoices();}
     if(page==="inventory")loadInventory();
+    if(page==="device-register")loadDeviceRegister();
     if(page==="live-chat"){loadLiveChat();if(liveChatRefreshTimer)clearInterval(liveChatRefreshTimer);liveChatRefreshTimer=setInterval(()=>{if(currentPage==="live-chat")loadLiveChat();},8000);}
     if(page==="all-orders"){const key=unifiedOrdersActiveKey||unifiedOrderCategories.find(item=>hasPermission(item.permission))?.key;if(key)showUnifiedOrderSection(key,true);}
     if(page==="orders"||page==="repair-requests")loadOrders();
@@ -6939,7 +6941,7 @@ function deviceRenderTable(){
       '<td><select class="dr-cell" data-field="status" data-id="'+Number(x.id)+'">'+(x.device_type==="commercial"?DEVICE_STATUS_COMMERCIAL:DEVICE_STATUS_CUSTOMER).map(v=>'<option '+(v===x.status?"selected":"")+' >'+esc(v)+'</option>').join('')+'</select></td>'+
       deviceCell(x.customer_name,"customerName",rowId)+deviceCell(x.customer_phone,"customerPhone",rowId)+deviceCell(x.repair_order_number,"repairOrderNumber",rowId)+
       deviceCell(x.purchase_cost,"purchaseCost",rowId,"number")+deviceCell(x.sale_price,"salePrice",rowId,"number")+
-      '<td class="dr-actions"><button class="btn btn-green" onclick="deviceSaveRow(&quot;'+rowId+'&quot;)">Opslaan</button>'+(x.id?'<button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button class="btn btn-light" onclick="deviceAddOperation('+Number(x.id)+')">＋</button><button class="btn btn-light" onclick="deviceArchive('+Number(x.id)+',true)">Archief</button>':'<span class="small">Nieuwe rij</span>')+'</td></tr>'}).join('')+
+      '<td class="dr-actions"><button class="btn btn-green" onclick="deviceSaveRow(&quot;'+rowId+'&quot;)">Opslaan</button>'+(x.id?'<button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button class="btn btn-light" onclick="deviceAddOperation('+Number(x.id)+')">＋ Kosten / notitie</button>'+(x.device_type==="commercial"&&x.status==="جاهز للبيع"?'<button class="btn btn-green" onclick="deviceRegisterSale('+Number(x.id)+')">Verkoop</button>':'')+'<button class="btn btn-light" onclick="deviceArchive('+Number(x.id)+',true)">Archief</button>':'<span class="small">Nieuwe rij</span>')+'</td></tr>'}).join('')+
     '</tbody></table></div><p class="small" style="margin:10px 0 0">Toestellen uit Inkoop worden automatisch gekoppeld met een HT-code zodra de uitbetaling is afgerond.</p>';
 }
 async function loadDeviceRegister(){
@@ -6995,10 +6997,28 @@ async function deviceImportExcel(event){
 }
 
 async function deviceArchive(id,archived){if(!confirm(archived?"Dit toestel naar het archief verplaatsen? Je kunt het later herstellen.":"Dit toestel herstellen uit het archief?"))return;try{await deviceApi("/api/admin/device-register/"+id+"/archive",{method:"POST",body:JSON.stringify({archived})});deviceSetStatus(archived?"Toestel gearchiveerd.":"Toestel hersteld.","success");loadDeviceRegister()}catch(e){deviceSetStatus(e.message,"error")}}
+async function deviceRegisterSale(id){
+  const device=deviceRegisterCache.find(x=>Number(x.id)===Number(id));
+  if(!device)return;
+  if(device.device_type!=="commercial"||device.status!=="جاهز للبيع"){deviceSetStatus("Alleen een eigen toestel met status Klaar voor verkoop kan worden verkocht.","error");return;}
+  const price=prompt("Definitieve verkoopprijs in euro",String(device.sale_price||""));
+  if(price===null)return;
+  const reference=prompt("Verkoopreferentie / ordernummer (optioneel)","");
+  if(reference===null)return;
+  const description=prompt("Opmerking bij de verkoop (optioneel)","");
+  if(description===null)return;
+  if(!confirm("Verkoop van "+device.model+" registreren voor € "+price+"? Dit kan niet dubbel worden uitgevoerd."))return;
+  try{
+    const result=await deviceApi("/api/admin/device-register/"+id+"/sale",{method:"POST",body:JSON.stringify({salePrice:price,reference,description})});
+    deviceSetStatus("Verkoop geregistreerd. "+(result.device?.identifier_value||"")+" staat nu op Verkocht.","success");
+    await loadDeviceRegister();
+    await deviceShowHistory(id);
+  }catch(error){deviceSetStatus(error.message,"error");}
+}
 async function deviceAddOperation(id){
   const device=deviceRegisterCache.find(x=>Number(x.id)===id);if(!device)return;
   const type=prompt("Type handeling: repair, refurbishment, purchase, sale of note","repair");if(type===null)return;
-  if(!["repair","refurbishment","purchase","sale","note"].includes(type)){alert("Gebruik repair, refurbishment, purchase, sale of note.");return}
+  if(!["repair","refurbishment","purchase","note"].includes(type)){alert("Gebruik repair, refurbishment, purchase of note.");return}
   const description=prompt("Omschrijving van de handeling","");if(description===null)return;
   const status=prompt("Nieuwe status (leeg = status niet wijzigen)",device.status);if(status===null)return;
   const additionalCost=prompt("Extra kosten in euro (0 indien geen)", "0");if(additionalCost===null)return;
