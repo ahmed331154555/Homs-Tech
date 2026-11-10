@@ -383,6 +383,25 @@ test("webshop order status validates the order ID before database access", async
   assert.equal(queryCalled, false);
 });
 
+test("paid webshop order cancellation requires a fully processed refund", async () => {
+  let updateSql = "";
+  const routes = createHarness({
+    async query(sql) {
+      if (sql.includes("WITH previous AS")) { updateSql = sql; return { rows: [] }; }
+      return { rows: [{ id: 19, payment_status: "Paid" }] };
+    }
+  });
+  const response = createResponse();
+  await routes.get("PUT /api/admin/webshop-orders/:id/status")({
+    params: { id: "19" }, body: { status: "Geannuleerd" }
+  }, response);
+  assert.equal(response.statusCode, 409);
+  assert.match(updateSql, /SUM\(refund\.amount\)/);
+  assert.match(updateSql, /refund\.status='Processed'/);
+  assert.doesNotMatch(updateSql, /'Processing','Pending manual','Processed'/);
+  assert.match(response.body.error, /volledige terugbetaling als verwerkt/i);
+});
+
 test("admin cannot directly cancel a paid webshop order", async () => {
   const calls = [];
   const routes = createHarness({
