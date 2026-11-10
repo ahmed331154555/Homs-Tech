@@ -277,7 +277,7 @@ test("settlement atomically registers the accepted device once with an internal 
           sale_inspected_value: "310.00", status: "Klant akkoord", trade_in: false
         }] };
       }
-      if (sql.startsWith("INSERT INTO device_register")) {
+      if (sql.startsWith("INSERT INTO device_register (")) {
         registeredDevice = {
           id: 901, identifier_value: params[0], model: params[1], brand: params[2],
           status: "تم الشراء", purchase_cost: params[3]
