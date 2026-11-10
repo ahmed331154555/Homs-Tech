@@ -150,6 +150,7 @@ test("invoice workspace keeps accessible fields, live totals and responsive stru
   assert.match(js, /function invoiceValidateLines\(/);
   assert.match(js, /function invoiceRoundMoney\(/);
   assert.match(js, /async function sendInvoiceTest\(id,button\)/);
+  assert.match(js, /if\(opened\)\{opened\.opener=null;\}/);
 });
 
 test("invoice draft validation rejects unsupported VAT and invalid quantities", () => {
