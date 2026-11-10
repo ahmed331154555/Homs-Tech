@@ -277,7 +277,7 @@ function registerAdminBuybackOrderRoutes(app, {
         inventoryDevice = registered.rows[0];
         await client.query(
           "INSERT INTO device_register_operations(device_id,operation_type,status,description,additional_cost) VALUES($1,'purchase','تم الشراء',$2,$3)",
-          [inventoryDevice.id, "Inkoop " + String(order.order_no || ("#" + order.id)), Number(order.sale_inspected_value)]
+          [inventoryDevice.id, "Inkoop " + String(order.order_no || ("#" + order.id)), 0]
         );
       } else {
         const existing = await client.query(
