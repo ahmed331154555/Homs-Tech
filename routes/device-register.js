@@ -230,16 +230,35 @@ function registerDeviceRegisterRoutes(app, {
     }catch(e){console.error("Device operation create error:",e);res.status(500).json({error:"Handeling kon niet worden opgeslagen."});}
   });
   app.post("/api/admin/device-register/:id/archive",requirePermission("device_register.update"),async(req,res)=>{
-    try{const id=Number(req.params.id),archived=Boolean(req.body?.archived);if(!Number.isSafeInteger(id)||id<=0)return res.status(400).json({error:"Ongeldig toestel."});
-      const result = await pool.query(
-        "UPDATE device_register SET archived=$2, updated_at=NOW() WHERE id=$1 RETURNING id, archived",
-        [id, archived]
+    const id=Number(req.params.id),archived=req.body?.archived===true;
+    if(!Number.isSafeInteger(id)||id<=0)return res.status(400).json({error:"Ongeldig toestel."});
+    let client;
+    try{
+      client=await pool.connect();
+      await client.query("BEGIN");
+      const locked=await client.query(
+        "SELECT id,archived FROM device_register WHERE id=$1 FOR UPDATE",
+        [id]
       );
-      if (!result.rows.length) {
-        return res.status(404).json({ error: "Toestel niet gevonden." });
+      if(!locked.rows.length){
+        await client.query("ROLLBACK");
+        return res.status(404).json({error:"Toestel niet gevonden."});
       }
-      res.json({ success: true, device: result.rows[0] });
-    }catch(e){console.error("Device archive error:",e);res.status(500).json({error:"Archiveren/herstellen is mislukt."});}
+      const result=await client.query(
+        "UPDATE device_register SET archived=$2,updated_at=NOW() WHERE id=$1 RETURNING id,archived",
+        [id,archived]
+      );
+      if(!result.rows.length){
+        await client.query("ROLLBACK");
+        return res.status(404).json({error:"Toestel niet gevonden."});
+      }
+      await client.query("COMMIT");
+      return res.json({success:true,device:result.rows[0]});
+    }catch(e){
+      if(client){try{await client.query("ROLLBACK");}catch{}}
+      console.error("Device archive error:",e);
+      return res.status(500).json({error:"Archiveren/herstellen is mislukt."});
+    }finally{if(client)client.release();}
   });
 }
 
