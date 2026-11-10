@@ -248,7 +248,13 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
         }
       }
 
-      const stockBefore = numericStock(stockOwner[stockField], "De huidige voorraad");
+      let currentStockValue = stockOwner[stockField];
+      if (itemType === "shop" && stockOwner === product) {
+        const match = String(currentStockValue ?? "").trim().match(/^(\\d+)/);
+        if (!match) throw new Error("Stel eerst een numerieke voorraad in voor dit Shop-product.");
+        currentStockValue = match[1];
+      }
+      const stockBefore = numericStock(currentStockValue, "De huidige voorraad");
       const stockAfter = stockBefore + delta;
       if (stockAfter < 0) {
         await client.query("ROLLBACK");
@@ -268,8 +274,10 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
       const productName = String(product.name || "Product").slice(0, 200);
       const actor = String(req.admin?.username || req.admin?.email || "Admin").slice(0, 120);
       await client.query(
-        "UPDATE site_settings SET data=jsonb_set(data,$1::text[],$2::jsonb,true) WHERE id=1",
-        [catalogKey === "shopProducts" ? "{shopProducts}" : "{phones}", JSON.stringify(catalog)]
+        catalogKey === "shopProducts"
+          ? "UPDATE site_settings SET data=jsonb_set(data,'{shopProducts}',$1::jsonb,true) WHERE id=1"
+          : "UPDATE site_settings SET data=jsonb_set(data,'{phones}',$1::jsonb,true) WHERE id=1",
+        [JSON.stringify(catalog)]
       );
       const inserted = await client.query(
         "INSERT INTO inventory_movements(item_type,product_id,variant_id,product_name,variant_label,sku,movement_type,quantity,stock_before,stock_after,reference,note,created_by) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id,item_type,product_id,variant_id,product_name,variant_label,sku,movement_type,quantity,stock_before,stock_after,reference,note,created_by,created_at",
