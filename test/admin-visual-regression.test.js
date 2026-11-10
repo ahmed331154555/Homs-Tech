@@ -28,7 +28,7 @@ test("admin layout has desktop and small-screen responsive safeguards", () => {
 
 test("admin page references the current stylesheet version", () => {
   const html = read("admin/index.html");
-  assert.match(html, /homs-admin\.css\?v=20261109-cleanup3/);
+  assert.match(html, /homs-admin\.css\?v=20261110-admin-polish1/);
 });
 
 
