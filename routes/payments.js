@@ -34,7 +34,13 @@ app.post("/api/mollie/create-payment", async (req, res) => {
     if (!local.rows.length) return res.status(404).json({ error: "Webshop bestelling niet gevonden." });
     const order = local.rows[0];
     if (order.payment_method !== "Mollie") return res.status(409).json({ error: "Deze bestelling is niet aangemaakt met Mollie als betaalmethode." });
-    if (order.payment_status === "Paid") return res.status(409).json({ error: "Deze bestelling is al betaald." });
+    if (order.payment_status === "Paid") {
+      const inventoryResult = await deductPaidOrderInventory(localOrderId);
+      if (inventoryResult?.error) {
+        return res.status(409).json({ error: "Deze bestelling is betaald, maar de voorraad wacht op handmatige controle." });
+      }
+      return res.status(409).json({ error: "Deze bestelling is al betaald." });
+    }
     if (order.mollie_payment_id) {
       try {
         const existing = await mollieRequest("/payments/" + encodeURIComponent(order.mollie_payment_id));
@@ -128,6 +134,10 @@ app.post("/api/mollie/verify-payment", async (req, res) => {
     if (!local.rows.length) return res.status(404).json({ error: "Webshop bestelling niet gevonden." });
     const order = local.rows[0];
     if (order.payment_status === "Paid") {
+      const inventoryResult = await deductPaidOrderInventory(localOrderId);
+      if (inventoryResult?.error) {
+        return res.status(409).json({ error: "De betaling is bevestigd, maar de voorraad wacht op handmatige controle.", paid: true, orderId: localOrderId });
+      }
       await notifyPaidTradeInOrder(localOrderId);
       return res.json({ success: true, paid: true, status: "Paid", orderId: localOrderId });
     }
@@ -276,6 +286,10 @@ app.post("/api/paypal/capture-order", async (req, res) => {
     }
 
     if (order.payment_status === "Paid") {
+      const inventoryResult = await deductPaidOrderInventory(localOrderId);
+      if (inventoryResult?.error) {
+        return res.status(409).json({ error: "PayPal heeft de betaling bevestigd, maar de voorraad wacht op handmatige controle.", paid: true, orderId: localOrderId });
+      }
       await notifyPaidTradeInOrder(localOrderId);
       return res.json({ success: true, paid: true, orderId: localOrderId });
     }
