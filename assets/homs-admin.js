@@ -99,7 +99,7 @@ function showPage(page){
     if(page==="buyback-orders")loadBuybackOrders();
     if(page==="admins")loadAdmins();
     }
-  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+  document.querySelectorAll(".nav-btn").forEach(b=>{const isCurrent=b.dataset.page===page;b.classList.toggle("active",isCurrent);if(isCurrent)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
   applyPermissionUI();
 }
 
