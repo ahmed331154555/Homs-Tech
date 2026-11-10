@@ -17,7 +17,24 @@
     .repair-map-heading strong{display:block;color:#102338;font-size:13px}
     .repair-map-heading small{display:block;color:#64748b;font-size:11px;margin-top:2px}
     .repair-map-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:#e0efff;color:#1769aa;font-size:25px;flex:0 0 auto}
-    #repairLocationMap{height:230px;width:100%;background:#e8eef2;z-index:1}
+    .modal{width:min(1040px,100%)}
+    .repair-address-field{grid-column:1/-1}
+    .repair-location-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:18px;align-items:stretch}
+    .repair-map-card{margin:0;min-width:0;display:flex;flex-direction:column}
+    #repairLocationMap{height:320px;width:100%;background:#e8eef2;z-index:1;flex:1;min-height:260px}
+    .repair-map-heading{flex:0 0 auto}
+    .repair-map-footer{gap:10px;flex-wrap:wrap}
+    .repair-location-fields{min-width:0;display:flex;flex-direction:column;gap:12px;padding:16px;border:1px solid #e2eaf1;border-radius:16px;background:#f8fbfe}
+    .repair-location-fields>label{font-size:13px;font-weight:900;color:#314457}
+    .repair-location-autocomplete{position:relative;width:100%}
+    .repair-location-autocomplete input{width:100%;min-height:48px;border:1px solid #d9e3ea;border-radius:11px;padding:12px 13px;background:#fff;color:#172a3a;outline:0}
+    .repair-location-autocomplete input:focus{border-color:#55aee1;box-shadow:0 0 0 3px #e9f6ff}
+    #repairLocationSuggestions:not([hidden]){position:absolute;z-index:100;top:calc(100% + 5px);left:0;right:0;max-height:250px;overflow:auto;background:#fff;border:1px solid #dbe2ea;border-radius:12px;box-shadow:0 12px 30px rgba(15,23,42,.14);padding:5px}
+    #useLocationBtn{width:100%;min-height:48px;margin:0!important;background:#eff6ff!important;color:#1d4ed8!important;border:1px solid #bfdbfe!important;border-radius:11px;padding:11px 14px;font-weight:800}
+    #useLocationBtn:disabled{opacity:.65;cursor:wait}
+    #coverageMessage{display:block;margin:0!important;padding:11px 12px;border-radius:10px;background:#fff;color:#64748b;font-size:12px;line-height:1.5}
+    @media(max-width:760px){.repair-location-layout{grid-template-columns:1fr}#repairLocationMap{height:230px;min-height:210px}.repair-location-fields{padding:13px}}
+    @media(max-width:640px){#repairLocationMap{height:205px;min-height:205px}.repair-map-heading{padding:11px}}
     .repair-map-footer{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;color:#64748b;font-size:10px}
     #repairMapLocateBtn{border:0;background:#eff6ff;color:#1d4ed8;border-radius:9px;padding:7px 10px;font-weight:700;font-size:11px;cursor:pointer}
     @media(max-width:640px){#repairLocationMap{height:205px}.repair-map-heading{padding:11px}}
@@ -699,26 +716,30 @@
               <input id="imei" type="text" inputmode="numeric" placeholder="15 cijfers">
             </div>
 
-            <div class="field" id="addressField">
-              <label for="address">Volledig adres *</label>
-              <div class="repair-map-card" aria-label="Interactieve kaart voor uw reparatieadres">
-                <div class="repair-map-heading">
-                  <span class="repair-map-icon" aria-hidden="true">⌖</span>
-                  <div><strong>Kies uw locatie op de kaart</strong><small>Zoek uw adres of verplaats de pin naar de juiste plek</small></div>
+            <div class="field repair-address-field" id="addressField">
+              <div class="repair-location-layout">
+                <div class="repair-map-card" aria-label="Interactieve kaart voor uw reparatieadres">
+                  <div class="repair-map-heading">
+                    <span class="repair-map-icon" aria-hidden="true">⌖</span>
+                    <div><strong>Kies uw locatie op de kaart</strong><small>Verplaats de pin naar de juiste plek</small></div>
+                  </div>
+                  <div id="repairLocationMap" role="application" aria-label="Kaart waarop u uw reparatieadres kunt kiezen"></div>
+                  <div class="repair-map-footer">
+                    <span>OpenStreetMap · Sleep de pin om uw locatie aan te passen</span>
+                    <button id="repairMapLocateBtn" type="button">Mijn locatie</button>
+                  </div>
                 </div>
-                <div id="repairLocationMap" role="application" aria-label="Kaart waarop u uw reparatieadres kunt kiezen"></div>
-                <div class="repair-map-footer">
-                  <span>OpenStreetMap · Sleep de pin om uw locatie aan te passen</span>
-                  <button id="repairMapLocateBtn" type="button">Mijn locatie</button>
+                <div class="repair-location-fields">
+                  <label for="address">Volledig adres *</label>
+                  <div class="repair-location-autocomplete">
+                    <input id="address" type="text" autocomplete="street-address" placeholder="Zoek postcode of adres, bijv. 2651 GX of Castor 71" aria-autocomplete="list" aria-controls="repairLocationSuggestions" aria-expanded="false" required>
+                    <div id="repairLocationSuggestions" role="listbox" hidden></div>
+                  </div>
+                  <input id="city" type="hidden" autocomplete="postal-code">
+                  <button id="useLocationBtn" type="button" class="btn-main">📍 Gebruik mijn huidige locatie</button>
+                  <small id="coverageMessage" aria-live="polite"></small>
                 </div>
               </div>
-              <div class="repair-location-autocomplete" style="position:relative">
-                <input id="address" type="text" autocomplete="street-address" placeholder="Zoek postcode of adres, bijv. 2651 GX of Castor 71" aria-autocomplete="list" aria-controls="repairLocationSuggestions" aria-expanded="false" required>
-                <div id="repairLocationSuggestions" role="listbox" hidden style="position:absolute;z-index:30;top:calc(100% + 5px);left:0;right:0;max-height:250px;overflow:auto;background:#fff;border:1px solid #dbe2ea;border-radius:12px;box-shadow:0 12px 30px rgba(15,23,42,.14);padding:5px"></div>
-              </div>
-              <input id="city" type="hidden" autocomplete="postal-code">
-              <button id="useLocationBtn" type="button" class="btn-main" style="margin-top:8px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe">📍 Gebruik mijn huidige locatie</button>
-              <small id="coverageMessage" aria-live="polite" style="display:block;margin-top:7px;color:#64748b"></small>
             </div>
             <div class="field" id="cityField" hidden></div>
 
