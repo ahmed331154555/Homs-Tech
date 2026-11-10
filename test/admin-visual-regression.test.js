@@ -28,7 +28,7 @@ test("admin layout has desktop and small-screen responsive safeguards", () => {
 
 test("admin page references the current stylesheet version", () => {
   const html = read("admin/index.html");
-  assert.match(html, /homs-admin\.css\?v=20261110-admin-polish2/);
+  assert.match(html, /homs-admin\.css\?v=20261110-admin-polish3/);
 });
 
 
@@ -43,8 +43,8 @@ test("orders and inkoop workspace keeps mobile actions accessible", () => {
 
 test("admin HTML uses matching versioned CSS and JavaScript assets", () => {
   const html = read("admin/index.html");
-  assert.match(html, /homs-admin\.css\?v=20261110-admin-polish2/);
-  assert.match(html, /homs-admin\.js\?v=20261110-admin-polish2/);
+  assert.match(html, /homs-admin\.css\?v=20261110-admin-polish3/);
+  assert.match(html, /homs-admin\.js\?v=20261110-admin-polish3/);
 });
 
 
@@ -74,4 +74,11 @@ test("admin stylesheet has balanced rule braces", () => {
     assert.ok(depth >= 0, "unexpected closing brace in stylesheet");
   }
   assert.equal(depth, 0, "unclosed CSS rule");
+});
+
+
+test("admin navigation announces the currently selected page", () => {
+  const js = read("assets/homs-admin.js");
+  assert.match(js, /b\.setAttribute\("aria-current","page"\)/);
+  assert.match(js, /b\.removeAttribute\("aria-current"\)/);
 });
