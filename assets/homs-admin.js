@@ -5465,6 +5465,10 @@ async function showWebshopOrderDetails(id){
       </section>
       <div class="ht-order-detail-footer"><button class="btn btn-light" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button><button class="btn btn-light" type="button" onclick="printWebshopShippingLabel(Number(order.id))">Verzendlabel afdrukken</button><button class="btn btn-dark" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
     </div>`;
+    // Mount the dialog before optional dashboard enhancements run. If a tab or
+    // accordion enhancement fails, the customer order details remain accessible.
+    document.body.appendChild(modal);
+
     // Phone-order details always use a true full-screen overlay on desktop and mobile.
     const useInlinePhoneDetails=false;
     const useMobilePhoneDetail=isPhoneOnlyOrder;
