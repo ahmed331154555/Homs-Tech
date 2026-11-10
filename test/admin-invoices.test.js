@@ -85,7 +85,7 @@ test("invoice creation validates input and calculates totals", async () => {
   assert.equal(res.body.invoice.invoice_number, "HT-2026-000012");
   assert.equal(res.body.invoice.total, "130.68");
   assert.equal(calls.length, 1, "invoice insert and final number assignment must be atomic");
-  assert.match(calls[0].sql, /WITH inserted AS[\\s\\S]*UPDATE manual_invoices/);
+  assert.match(calls[0].sql, /WITH inserted AS[\s\S]*UPDATE manual_invoices/);
   assert.match(calls[0].sql, /LPAD\\(inserted\\.id::text,6,'0'\\)/);
   const lines = JSON.parse(calls[0].params[6]);
   assert.equal(lines.length, 2);
