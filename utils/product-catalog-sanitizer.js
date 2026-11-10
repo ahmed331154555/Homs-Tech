@@ -76,7 +76,7 @@ function sanitizeProduct(product) {
 function sanitizeProductCatalogData(source) {
   const input = source && typeof source === "object" ? source : {};
   return {
-    phones: Array.isArray(input.phones) ? input.phones.map(sanitizeProduct).filter(Boolean) : [],
+    phones: Array.isArray(input.phones) ? input.phones.map(sanitizeProduct) : [],
     phone: typeof input.phone === "string" ? input.phone : "",
     whatsapp: typeof input.whatsapp === "string" ? input.whatsapp : "",
     businessName: String(input.businessName || input.siteName || "HOMS TECH"),
