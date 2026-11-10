@@ -260,3 +260,80 @@ test("PostNL label email includes the PDF attachment and tracking details", asyn
   assert.match(email.html, /3S123/);
   assert.equal(queries.length, 2);
 });
+
+
+test("settlement atomically registers the accepted device once with an internal HT barcode", async () => {
+  const transactionQueries = [];
+  let registeredDevice;
+  let released = false;
+  const client = {
+    async query(sql, params = []) {
+      transactionQueries.push({ sql, params });
+      if (sql === "BEGIN" || sql === "COMMIT" || sql === "ROLLBACK") return { rows: [] };
+      if (sql.startsWith("SELECT id,order_no,device,brand,model,storage,condition")) {
+        return { rows: [{
+          id: 42, order_no: "BT-42", device: "iPhone 14 Pro", brand: "Apple",
+          model: "iPhone 14 Pro", storage: "256GB", condition: "Goed",
+          sale_inspected_value: "310.00", status: "Klant akkoord", trade_in: false
+        }] };
+      }
+      if (sql.startsWith("INSERT INTO device_register")) {
+        registeredDevice = {
+          id: 901, identifier_value: params[0], model: params[1], brand: params[2],
+          status: "تم الشراء", purchase_cost: params[3]
+        };
+        return { rows: [registeredDevice] };
+      }
+      if (sql.startsWith("UPDATE buyback_orders SET status='Voltooid'")) return { rows: [{ id: 42 }] };
+      return { rows: [] };
+    },
+    release() { released = true; }
+  };
+  const pool = {
+    async connect() { return client; },
+    async query(sql) {
+      if (sql.startsWith("SELECT id,order_no,name,email,device,sale_inspected_value")) {
+        return { rows: [{ id: 42, order_no: "BT-42", name: "Sam", email: "sam@example.com", device: "iPhone 14 Pro", sale_inspected_value: "310.00", status: "Voltooid" }] };
+      }
+      return { rows: [] };
+    }
+  };
+  const { routes } = createHarness({ pool });
+  const response = createResponse();
+  await routes.get("PUT /api/admin/buyback-orders/:id/settlement")(
+    { params: { id: "42" }, body: { settlementNote: "Overgemaakt via bank op 10 november" } },
+    response
+  );
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.success, true);
+  assert.equal(response.body.inventoryDevice.identifier_value, "HT-BUYBACK-42");
+  assert.equal(registeredDevice.purchase_cost, "310.00");
+  assert.ok(transactionQueries.some(item => item.sql === "BEGIN"));
+  assert.ok(transactionQueries.some(item => item.sql === "COMMIT"));
+  assert.ok(transactionQueries.some(item => item.sql.includes("INSERT INTO device_register_operations")));
+  assert.equal(released, true);
+});
+
+test("settlement refuses to register a device before customer approval", async () => {
+  let insertAttempted = false;
+  const client = {
+    async query(sql) {
+      if (sql === "BEGIN" || sql === "ROLLBACK") return { rows: [] };
+      if (sql.startsWith("SELECT id,order_no,device,brand,model,storage,condition")) {
+        return { rows: [{ id: 7, status: "Aanbod verzonden", trade_in: false }] };
+      }
+      if (sql.startsWith("INSERT INTO device_register")) insertAttempted = true;
+      return { rows: [] };
+    },
+    release() {}
+  };
+  const pool = { async connect() { return client; } };
+  const { routes } = createHarness({ pool });
+  const response = createResponse();
+  await routes.get("PUT /api/admin/buyback-orders/:id/settlement")(
+    { params: { id: "7" }, body: { settlementNote: "Payment done manually" } },
+    response
+  );
+  assert.equal(response.statusCode, 409);
+  assert.equal(insertAttempted, false);
+});
