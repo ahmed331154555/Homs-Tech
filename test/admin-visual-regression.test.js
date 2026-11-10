@@ -61,7 +61,7 @@ test("admin login and dashboard expose keyboard and assistive-technology labels"
 
 test("admin JavaScript has no duplicate top-level function declarations", () => {
   const js = read("assets/homs-admin.js");
-  const names = [...js.matchAll(/^\\s*(?:async\\s+)?function\\s+([A-Za-z_$][\\w$]*)\\s*\\(/gm)].map(match => match[1]);
+  const names = [...js.matchAll(/^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/gm)].map(match => match[1]);
   assert.equal(new Set(names).size, names.length, "duplicate top-level function declaration detected");
 });
 
