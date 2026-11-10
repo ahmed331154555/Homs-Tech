@@ -132,3 +132,36 @@ test("CI workflow runs syntax, admin asset, local asset and test checks", () => 
   assert.match(workflow, /scripts\/check-local-assets\.js/);
   assert.match(workflow, /npm test/);
 });
+
+
+test("invoice workspace keeps accessible fields, live totals and responsive structure", () => {
+  const html = read("admin/index.html");
+  const css = read("assets/homs-admin.css");
+  const js = read("assets/homs-admin.js");
+  assert.match(html, /id="page-invoices"[^>]*data-permission="site\.save"/);
+  assert.match(html, /for="invCustomerName"/);
+  assert.match(html, /for="invCustomerEmail"/);
+  assert.match(html, /id="invoiceFormStatus"[^>]*aria-live="polite"/);
+  assert.match(html, /class="ht-invoice-lines-table"/);
+  assert.match(html, /id="invoiceList" aria-live="polite"/);
+  assert.match(css, /\.ht-invoice-form-grid/);
+  assert.match(css, /\.ht-invoice-table-wrap/);
+  assert.match(css, /@media\(max-width:480px\)/);
+  assert.match(js, /function invoiceValidateLines\(/);
+  assert.match(js, /function invoiceRoundMoney\(/);
+  assert.match(js, /async function sendInvoiceTest\(id,button\)/);
+});
+
+test("invoice draft validation rejects unsupported VAT and invalid quantities", () => {
+  const js = read("assets/homs-admin.js");
+  assert.match(js, /!\[0,9,21\]\.includes\(line\.vatRate\)/);
+  assert.match(js, /!Number\.isInteger\(line\.quantity\)/);
+  assert.match(js, /line\.quantity<1\|\|line\.quantity>999/);
+  assert.match(js, /line\.unitPrice<0\|\|line\.unitPrice>1000000/);
+});
+
+test("invoice calculations round each line and total to two decimal places", () => {
+  const js = read("assets/homs-admin.js");
+  assert.match(js, /Math\.round\(\(number\+Number\.EPSILON\)\*100\)\/100/);
+  assert.match(js, /lineVat=invoiceRoundMoney\(lineSubtotal\*line\.vatRate\/100\)/);
+});
