@@ -1,7 +1,7 @@
 "use strict";
 function normalizeDutchPostcode(value) {
-  const compact = String(value || "").toUpperCase().replace(/\\s+/g, "");
-  const match = compact.match(/(?:^|\\b)([1-9][0-9]{3})\\s*([A-Z]{2})(?:\\b|$)/);
+  const compact = String(value || "").toUpperCase().replace(/\s+/g, "");
+  const match = compact.match(/(?:^|\b)([1-9][0-9]{3})\s*([A-Z]{2})(?:\b|$)/);
   return match ? match[1] + match[2] : "";
 }
 function normalizeCoverageAreas(input) {
