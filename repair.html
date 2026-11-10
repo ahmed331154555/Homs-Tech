@@ -694,7 +694,10 @@
             </div>
             <div class="field" id="cityField">
               <label for="city">Postcode en plaats *</label>
-              <input id="city" type="text" autocomplete="postal-code" placeholder="Bijv. 3011AA Rotterdam">
+              <div class="repair-location-autocomplete" style="position:relative">
+                <input id="city" type="text" autocomplete="postal-code address-level2" placeholder="Postcode of plaats, bijv. 2651 GX" aria-autocomplete="list" aria-controls="repairLocationSuggestions" aria-expanded="false">
+                <div id="repairLocationSuggestions" role="listbox" hidden style="position:absolute;z-index:30;top:calc(100% + 5px);left:0;right:0;max-height:250px;overflow:auto;background:#fff;border:1px solid #dbe2ea;border-radius:12px;box-shadow:0 12px 30px rgba(15,23,42,.14);padding:5px"></div>
+              </div>
               <button id="useLocationBtn" type="button" class="btn-main" style="margin-top:8px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe">📍 Gebruik mijn huidige locatie</button>
               <small id="coverageMessage" aria-live="polite" style="display:block;margin-top:7px;color:#64748b"></small>
             </div>
@@ -1181,6 +1184,87 @@
     }
   }
 
+  // Dutch postcode/place autocomplete powered by the official free PDOK Locatieserver.
+  const repairCityInput=document.getElementById("city");
+  const repairSuggestions=document.getElementById("repairLocationSuggestions");
+  let repairSuggestTimer=null;
+  let repairSuggestController=null;
+  let repairSuggestionItems=[];
+  let repairActiveSuggestion=-1;
+  function closeRepairSuggestions(){
+    if(!repairSuggestions||!repairCityInput)return;
+    repairSuggestions.hidden=true;
+    repairCityInput.setAttribute("aria-expanded","false");
+    repairActiveSuggestion=-1;
+  }
+  function chooseRepairSuggestion(item){
+    if(!repairCityInput||!item)return;
+    const postcode=String(item.postcode||"").toUpperCase().replace(/\\s+/g,"");
+    const town=String(item.woonplaatsnaam||item.gemeentenaam||"").trim();
+    const label=postcode&&town?(postcode.slice(0,4)+" "+postcode.slice(4)+" "+town).trim():String(item.weergavenaam||item.label||"").trim();
+    repairCityInput.value=label||String(item.weergavenaam||"");
+    closeRepairSuggestions();
+    repairCoverageState="unknown";
+    checkRepairCoverage();
+  }
+  function renderRepairSuggestions(items){
+    if(!repairSuggestions||!repairCityInput)return;
+    repairSuggestionItems=items;
+    repairSuggestions.replaceChildren();
+    if(!items.length){closeRepairSuggestions();return;}
+    items.forEach((item,index)=>{
+      const button=document.createElement("button");
+      button.type="button";
+      button.setAttribute("role","option");
+      button.style.cssText="display:block;width:100%;border:0;background:#fff;text-align:left;padding:12px 13px;border-radius:8px;color:#1f2937;font:inherit;cursor:pointer";
+      const postcode=String(item.postcode||"").toUpperCase();
+      const town=String(item.woonplaatsnaam||item.gemeentenaam||"").trim();
+      const title=postcode&&town?postcode+" "+town:(item.weergavenaam||item.label||"Locatie");
+      const detail=String(item.straatnaam||item.type||"").trim();
+      const strong=document.createElement("strong");strong.textContent=title;button.appendChild(strong);
+      if(detail&&detail.toLowerCase()!==title.toLowerCase()){const small=document.createElement("small");small.textContent=" · "+detail;small.style.color="#64748b";button.appendChild(small);}
+      button.addEventListener("mouseenter",()=>{repairActiveSuggestion=index;});
+      button.addEventListener("pointerdown",event=>{event.preventDefault();chooseRepairSuggestion(item);});
+      repairSuggestions.appendChild(button);
+    });
+    repairSuggestions.hidden=false;
+    repairCityInput.setAttribute("aria-expanded","true");
+  }
+  async function loadRepairLocationSuggestions(value){
+    const query=String(value||"").trim();
+    if(!repairSuggestions||query.length<3){closeRepairSuggestions();return;}
+    if(repairSuggestController)repairSuggestController.abort();
+    repairSuggestController=new AbortController();
+    try{
+      const url="https://api.pdok.nl/bzk/locatieserver/search/v3_1/suggest?"+new URLSearchParams({q:query,rows:"8",fl:"id,type,weergavenaam,postcode,woonplaatsnaam,gemeentenaam,straatnaam"});
+      const response=await fetch(url,{signal:repairSuggestController.signal,headers:{Accept:"application/json"}});
+      if(!response.ok)throw new Error("Locatiesuggesties niet beschikbaar");
+      const payload=await response.json();
+      const docs=payload?.response?.docs||payload?.docs||[];
+      const seen=new Set();
+      const items=docs.filter(item=>{
+        const key=String(item.postcode||"")+"|"+String(item.woonplaatsnaam||item.gemeentenaam||"")+"|"+String(item.weergavenaam||"");
+        if(seen.has(key))return false;seen.add(key);return true;
+      });
+      renderRepairSuggestions(items);
+    }catch(error){if(error.name!=="AbortError")closeRepairSuggestions();}
+  }
+  repairCityInput?.addEventListener("input",()=>{
+    clearTimeout(repairSuggestTimer);
+    repairCoverageState="unknown";
+    repairSuggestTimer=setTimeout(()=>loadRepairLocationSuggestions(repairCityInput.value),260);
+  });
+  repairCityInput?.addEventListener("keydown",event=>{
+    if(repairSuggestions?.hidden||!repairSuggestionItems.length)return;
+    if(event.key==="ArrowDown"||event.key==="ArrowUp"){
+      event.preventDefault();
+      repairActiveSuggestion=(repairActiveSuggestion+(event.key==="ArrowDown"?1:-1)+repairSuggestionItems.length)%repairSuggestionItems.length;
+      [...repairSuggestions.children].forEach((node,index)=>node.style.background=index===repairActiveSuggestion?"#eff6ff":"#fff");
+    }else if(event.key==="Enter"&&repairActiveSuggestion>=0){
+      event.preventDefault();chooseRepairSuggestion(repairSuggestionItems[repairActiveSuggestion]);
+    }else if(event.key==="Escape")closeRepairSuggestions();
+  });
+  repairCityInput?.addEventListener("blur",()=>setTimeout(closeRepairSuggestions,120));
   document.getElementById("city")?.addEventListener("change",checkRepairCoverage);
   document.getElementById("city")?.addEventListener("blur",checkRepairCoverage);
   document.getElementById("useLocationBtn")?.addEventListener("click",useCurrentRepairLocation);
