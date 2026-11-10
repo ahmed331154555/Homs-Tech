@@ -113,6 +113,45 @@ function registerDeviceRegisterRoutes(app, {
       res.json({device:result.rows[0]});
     }catch(e){console.error("Device register update error:",e);res.status(500).json({error:"Toestel kon niet worden bijgewerkt."});}
   });
+  app.post("/api/admin/device-register/:id/sale",requirePermission("device_register.update"),async(req,res)=>{
+    const id=Number(req.params.id);
+    const salePrice=deviceMoney(req.body?.salePrice);
+    const reference=deviceText(req.body?.reference,120);
+    const description=deviceText(req.body?.description,1000);
+    if(!Number.isSafeInteger(id)||id<=0)return res.status(400).json({error:"Ongeldig toestel."});
+    if(!Number.isFinite(salePrice)||salePrice<=0)return res.status(400).json({error:"Vul een geldige verkoopprijs in."});
+    const client=await pool.connect();
+    try{
+      await client.query("BEGIN");
+      const found=await client.query(
+        "SELECT id,device_type,status,model,identifier_value,purchase_cost FROM device_register WHERE id=$1 AND archived=FALSE FOR UPDATE",
+        [id]
+      );
+      if(!found.rows.length){await client.query("ROLLBACK");return res.status(404).json({error:"Actief toestel niet gevonden."});}
+      const device=found.rows[0];
+      if(device.device_type!=="commercial"){await client.query("ROLLBACK");return res.status(409).json({error:"Alleen eigen HOMS TECH-toestellen kunnen hier als verkocht worden geregistreerd."});}
+      if(device.status==="تم البيع"){await client.query("ROLLBACK");return res.status(409).json({error:"Dit toestel is al als verkocht geregistreerd."});}
+      if(device.status!=="جاهز للبيع"){await client.query("ROLLBACK");return res.status(409).json({error:"Zet het toestel eerst op 'جاهز للبيع' nadat de inspectie en voorbereiding zijn afgerond."});}
+      const existingSale=await client.query("SELECT id FROM device_register_operations WHERE device_id=$1 AND operation_type='sale' LIMIT 1",[id]);
+      if(existingSale.rows.length){await client.query("ROLLBACK");return res.status(409).json({error:"Voor dit toestel bestaat al een verkoopregistratie."});}
+      const saleDescription=[description,reference?"Referentie: "+reference:""].filter(Boolean).join(" · ")||"Verkoop geregistreerd in HOMS TECH";
+      const inserted=await client.query(
+        "INSERT INTO device_register_operations(device_id,operation_type,status,description,parts,additional_cost,sale_price) VALUES($1,'sale','تم البيع',$2,'[]'::jsonb,0,$3) RETURNING *",
+        [id,saleDescription,salePrice]
+      );
+      const updated=await client.query(
+        "UPDATE device_register SET status='تم البيع',sale_price=$2,updated_at=NOW() WHERE id=$1 RETURNING id,identifier_value,model,status,purchase_cost,sale_price",
+        [id,salePrice]
+      );
+      await client.query("COMMIT");
+      return res.status(201).json({success:true,device:updated.rows[0],sale:inserted.rows[0]});
+    }catch(error){
+      try{await client.query("ROLLBACK");}catch{}
+      if(error.code==="23505")return res.status(409).json({error:"De verkoop van dit toestel is al geregistreerd."});
+      console.error("Device sale registration error:",error);
+      return res.status(500).json({error:"Verkoop kon niet veilig worden geregistreerd."});
+    }finally{client.release();}
+  });
   app.get("/api/admin/device-register/:id/operations",requirePermission("device_register.view"),async(req,res)=>{
     try{const id=Number(req.params.id);if(!Number.isSafeInteger(id)||id<=0)return res.status(400).json({error:"Ongeldig toestel."});
       const d=await pool.query("SELECT id FROM device_register WHERE id=$1",[id]);if(!d.rows.length)return res.status(404).json({error:"Toestel niet gevonden."});
@@ -126,7 +165,7 @@ function registerDeviceRegisterRoutes(app, {
       if (
         !Number.isSafeInteger(id) ||
         id <= 0 ||
-        !["repair", "refurbishment", "purchase", "sale", "note"].includes(operationType) ||
+        !["repair", "refurbishment", "purchase", "note"].includes(operationType) ||
         !Number.isFinite(additionalCost) ||
         !Number.isFinite(salePrice)
       ) {
@@ -136,7 +175,7 @@ function registerDeviceRegisterRoutes(app, {
       const parts=Array.isArray(b.parts)?b.parts.slice(0,100).map(p=>({name:deviceText(p?.name,160),quantity:Math.max(1,Math.min(999,Math.floor(Number(p?.quantity)||1))),cost:deviceMoney(p?.cost)})): [];
       if(parts.some(p=>!p.name||!Number.isFinite(p.cost)))return res.status(400).json({error:"Controleer de onderdelen en hun kosten."});
       const allowed=device.rows[0].device_type==="customer_repair"?customerDeviceStatuses:commercialDeviceStatuses;
-      if(status&&!allowed.has(status))return res.status(400).json({error:"Ongeldige status."});
+      if(status&&(!allowed.has(status)||status==="تم البيع"))return res.status(400).json({error:"Gebruik de aparte verkoopregistratie om een toestel als verkocht te markeren."});
       const client=await pool.connect();try{await client.query("BEGIN");
         const inserted = await client.query(
           `INSERT INTO device_register_operations(
