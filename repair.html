@@ -695,6 +695,8 @@
             <div class="field" id="cityField">
               <label for="city">Postcode en plaats *</label>
               <input id="city" type="text" autocomplete="postal-code" placeholder="Bijv. 3011AA Rotterdam">
+              <button id="useLocationBtn" type="button" class="btn-main" style="margin-top:8px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe">📍 Gebruik mijn huidige locatie</button>
+              <small id="coverageMessage" aria-live="polite" style="display:block;margin-top:7px;color:#64748b"></small>
             </div>
 
             <div class="field" id="dateField">
@@ -947,6 +949,11 @@
 
     if(!services.length) renderServices();
     setMethod(method);
+    repairCoverageState="unknown";
+    const coverageMessage=document.getElementById("coverageMessage");
+    if(coverageMessage){coverageMessage.textContent="";coverageMessage.style.color="#64748b";}
+    const homeButton=document.getElementById("methodHome");
+    if(homeButton)homeButton.disabled=false;
 
     if(serviceIndex !== null && services[serviceIndex]){
       document.getElementById("service").value = String(serviceIndex);
@@ -959,6 +966,14 @@
   }
 
   function setMethod(method){
+    if(method==="home" && repairCoverageState!=="covered"){
+      if(repairCoverageState==="outside"){
+        const message=document.getElementById("coverageMessage");
+        if(message)message.textContent="Uw postcode valt buiten ons servicegebied. Kies Toestel opsturen.";
+      }
+      if(repairCoverageState==="unknown")checkRepairCoverage();
+      method="send";
+    }
     currentMethod = method;
     document.getElementById("methodHome").classList.toggle("active",method==="home");
     document.getElementById("methodSend").classList.toggle("active",method==="send");
@@ -974,6 +989,78 @@
 
     document.getElementById("repairTitle").textContent =
       home ? "Afspraak aan huis aanvragen" : "Reparatie aanmelden";
+  }
+
+  let repairCoverageState = "unknown";
+  let coverageRequestId = 0;
+
+  function extractDutchPostcode(value){
+    const match=String(value||"").toUpperCase().match(/(?:^|\\b)([1-9][0-9]{3})\\s*([A-Z]{2})(?:\\b|$)/);
+    return match ? match[1]+match[2] : "";
+  }
+
+  async function checkRepairCoverage(){
+    const postcode=extractDutchPostcode(document.getElementById("city").value);
+    const message=document.getElementById("coverageMessage");
+    const homeButton=document.getElementById("methodHome");
+    const requestId=++coverageRequestId;
+    if(!postcode){
+      repairCoverageState="unknown";
+      if(message)message.textContent="Vul een geldige Nederlandse postcode in om de dekking te controleren.";
+      return false;
+    }
+    if(message)message.textContent="Werkgebied controleren...";
+    try{
+      const response=await fetch("/api/repair/coverage?postcode="+encodeURIComponent(postcode),{credentials:"same-origin",cache:"no-store"});
+      const result=await response.json().catch(()=>({}));
+      if(requestId!==coverageRequestId)return false;
+      if(!response.ok)throw new Error(result.error||"Werkgebied kon niet worden gecontroleerd.");
+      repairCoverageState=result.covered?"covered":"outside";
+      if(message){
+        message.textContent=result.covered
+          ?"✓ Uw postcode valt binnen ons servicegebied. U kunt een afspraak met onze reparatieauto maken."
+          :"Deze postcode valt buiten ons servicegebied. U kunt uw toestel eenvoudig per post naar HOMS TECH opsturen.";
+        message.style.color=result.covered?"#15803d":"#b45309";
+      }
+      if(homeButton){
+        homeButton.disabled=!result.covered;
+        homeButton.title=result.covered?"":"Reparatie aan huis is niet beschikbaar voor deze postcode.";
+      }
+      if(!result.covered && currentMethod==="home")setMethod("send");
+      return !!result.covered;
+    }catch(error){
+      repairCoverageState="unknown";
+      if(message){message.textContent=error.message+" U kunt uw toestel wel per post aanmelden.";message.style.color="#b45309";}
+      if(homeButton)homeButton.disabled=true;
+      if(currentMethod==="home")setMethod("send");
+      return false;
+    }
+  }
+
+  async function useCurrentRepairLocation(){
+    const button=document.getElementById("useLocationBtn");
+    if(!navigator.geolocation){
+      showError("Locatiebepaling wordt niet ondersteund. Vul uw postcode handmatig in.");
+      return;
+    }
+    button.disabled=true;button.textContent="Locatie bepalen...";
+    navigator.geolocation.getCurrentPosition(async position=>{
+      try{
+        const response=await fetch("https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&addressdetails=1&lat="+encodeURIComponent(position.coords.latitude)+"&lon="+encodeURIComponent(position.coords.longitude),{headers:{Accept:"application/json"}});
+        if(!response.ok)throw new Error("Adres kon niet automatisch worden gevonden.");
+        const result=await response.json();
+        const address=result.address||{};
+        const postcode=extractDutchPostcode(address.postcode||"");
+        if(!postcode)throw new Error("Geen Nederlandse postcode gevonden. Vul uw postcode handmatig in.");
+        document.getElementById("city").value=[postcode,address.city||address.town||address.village||address.municipality].filter(Boolean).join(" ");
+        if(address.road)document.getElementById("address").value=[address.road,address.house_number||""].filter(Boolean).join(" ");
+        await checkRepairCoverage();
+      }catch(error){showError(error.message||"Locatie kon niet worden omgezet naar een postcode.");}
+      finally{button.disabled=false;button.textContent="📍 Gebruik mijn huidige locatie";}
+    },error=>{
+      const message=error.code===1?"U heeft geen toestemming gegeven voor uw locatie. Vul uw postcode handmatig in.":"Locatie kon niet worden bepaald. Vul uw postcode handmatig in.";
+      showError(message);button.disabled=false;button.textContent="📍 Gebruik mijn huidige locatie";
+    },{enableHighAccuracy:false,timeout:10000,maximumAge:300000});
   }
 
   function showError(message){
@@ -1100,6 +1187,9 @@
     }
   }
 
+  document.getElementById("city")?.addEventListener("change",checkRepairCoverage);
+  document.getElementById("city")?.addEventListener("blur",checkRepairCoverage);
+  document.getElementById("useLocationBtn")?.addEventListener("click",useCurrentRepairLocation);
   dateInput?.addEventListener("change", loadRepairAvailability);
   timeSelect?.addEventListener("change", function(){
     const selected = timeSelect.options[timeSelect.selectedIndex];
@@ -1130,6 +1220,11 @@
     if(currentMethod === "home" && (!address || !city)){
       showError("Vul uw adres en postcode/plaats in voor een afspraak aan huis.");
       return;
+    }
+
+    if(currentMethod === "home") {
+      const covered=await checkRepairCoverage();
+      if(!covered){setMethod("send");showError("Uw postcode valt buiten het servicegebied. Uw aanvraag kan wel via Toestel opsturen worden verstuurd.");return;}
     }
 
     if(currentMethod === "home" && (!date || !selectedTime)){
@@ -1187,6 +1282,7 @@
           phone,
           username:"",
           imei,
+          extraFields:{postcode:extractDutchPostcode(city)},
           notes:details,
           appointmentDate: currentMethod === "home" ? date : "",
           appointmentTime: currentMethod === "home" ? selectedTime : ""
