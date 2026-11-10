@@ -29,6 +29,7 @@
     <button class="nav-btn" data-page="phones" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
     <button class="nav-btn" data-page="shop" data-permission="site.save" onclick="showPage('shop')">🛍️ Shop producten</button>
     <button class="nav-btn" data-page="inventory" data-permission="site.save" onclick="showPage('inventory')">📦 Voorraad & magazijn</button>
+    <button class="nav-btn" data-page="device-register" data-permission="device_register.view" onclick="showPage('device-register')">📱 Toestelregister</button>
     <button class="nav-btn" data-page="buyback" data-permission="buyback.view" onclick="showPage('buyback')">📥 Uw toestel verkopen</button>
     <button class="nav-btn" data-page="why" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
     <button class="nav-btn" data-page="live-chat" data-permission="orders.view" onclick="showPage('live-chat')">💬 Live Chat</button>
@@ -388,7 +389,28 @@
     <div class="ht-invoice-card-head"><div><span class="ht-invoice-eyebrow">ARCHIEF</span><h3>Opgeslagen facturen</h3><p>Bekijk PDF-bestanden of verstuur de factuur naar de klant.</p></div></div>
     <div id="invoiceList" aria-live="polite"><div class="ht-invoice-loading" role="status">Facturen laden…</div></div>
   </div>
-</section><section class="section admin-page ht-inventory-page" id="page-inventory" data-permission="site.save">
+</section><section class="section admin-page" id="page-device-register" data-permission="device_register.view">
+  <div class="section-head">
+    <div><h2>📱 Toestelregister</h2><p>Beheer eigen ingekochte toestellen, inspecties, renovatiekosten en verkoopresultaten.</p></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-light" type="button" onclick="loadDeviceRegister()">↻ Vernieuwen</button>
+      <button class="btn btn-light" type="button" data-permission="device_register.update" onclick="deviceExportExcel()">Export Excel</button>
+      <label class="btn btn-light" data-permission="device_register.update" style="cursor:pointer">Import Excel<input type="file" accept=".xlsx,.xls,.csv" onchange="deviceImportExcel(event)" hidden></label>
+      <button class="btn btn-primary" type="button" data-permission="device_register.update" onclick="deviceAddBlankRow()">＋ Nieuw toestel</button>
+    </div>
+  </div>
+  <div class="card" style="padding:14px;margin-bottom:14px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end">
+      <label>Type toestel<select id="deviceTypeFilter" class="form-control" onchange="loadDeviceRegister()"><option value="commercial">Eigen toestellen</option><option value="customer_repair">Klantreparaties</option><option value="">Alle toestellen</option></select></label>
+      <label>Zoeken<input id="deviceSearch" class="form-control" type="search" placeholder="Model, IMEI, HT-code, klant…" oninput="loadDeviceRegister()"></label>
+      <label style="display:flex;align-items:center;gap:8px;padding:9px 0"><input id="deviceArchivedFilter" type="checkbox" onchange="loadDeviceRegister()"> Toon archief</label>
+    </div>
+  </div>
+  <p id="deviceRegisterStatus" class="status" role="status" aria-live="polite"></p>
+  <div id="deviceRegisterTable" aria-live="polite"><div class="ht-inventory-loading">Toestellen laden…</div></div>
+  <div id="deviceHistoryPanel" style="margin-top:16px"></div>
+</section>
+<section class="section admin-page ht-inventory-page" id="page-inventory" data-permission="site.save">
   <div class="section-head ht-inventory-head">
     <div><h2>📦 Voorraad & magazijn</h2><p>Centraal overzicht van telefoons, onderdelen en accessoires. Elke wijziging wordt geregistreerd.</p></div>
     <button class="btn btn-light" type="button" onclick="loadInventory()">↻ Vernieuwen</button>
