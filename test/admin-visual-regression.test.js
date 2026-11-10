@@ -30,3 +30,19 @@ test("admin page references the current stylesheet version", () => {
   const html = read("admin/index.html");
   assert.match(html, /homs-admin\.css\?v=20261109-cleanup3/);
 });
+
+
+test("orders and inkoop workspace keeps mobile actions accessible", () => {
+  const css = read("assets/homs-admin.css");
+  assert.match(css, /#page-buyback-orders \.ht-inkoop-detail-foot\s*\{[\s\S]*?position:\s*sticky/);
+  assert.match(css, /#page-buyback-orders \.ht-inkoop-toolbar/);
+  assert.match(css, /#page-phone-orders \.ht-phone-status-chip\.is-shipped/);
+  assert.match(css, /@media\s*\(max-width:\s*560px\)[\s\S]*?#page-phone-orders \.ht-phone-sale-head\{display:none\}/);
+  assert.match(css, /env\(safe-area-inset-bottom\)/);
+});
+
+test("admin HTML uses matching versioned CSS and JavaScript assets", () => {
+  const html = read("admin/index.html");
+  assert.match(html, /homs-admin\.css\?v=20261110-admin-polish1/);
+  assert.match(html, /homs-admin\.js\?v=20261110-admin-polish1/);
+});
