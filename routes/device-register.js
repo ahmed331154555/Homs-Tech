@@ -154,8 +154,6 @@ function registerDeviceRegisterRoutes(app, {
           await client.query("ROLLBACK");
           return res.status(409).json({error:"Het model van dit toestel komt niet voor in de gekoppelde webshopbestelling. Controleer het ordernummer en model."});
         }
-        const alreadyLinked=await client.query("SELECT id FROM device_register WHERE source_webshop_order_id=$1 AND id<>$2 AND archived=FALSE LIMIT 1",[webshopOrderId,id]);
-        if(alreadyLinked.rows.length){await client.query("ROLLBACK");return res.status(409).json({error:"Deze webshopbestelling is al aan een ander toestel gekoppeld."});}
       }
       let linkedInvoice=null;
       if(invoiceNumber){
