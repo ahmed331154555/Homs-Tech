@@ -107,3 +107,28 @@ test("order submenu only exposes categories allowed by the current administrator
   assert.match(setup, /if\(!hasPermission\(item\.permission\)\)return/);
   assert.match(setup, /button\.dataset\.orderSubpage=item\.key/);
 });
+
+
+test("every admin navigation destination is backed by a page or a generated workspace", () => {
+  const html = read("admin/index.html");
+  const js = read("assets/homs-admin.js");
+  const destinations = [...html.matchAll(/data-page="([^"]+)"/g)].map(match => match[1]);
+  const pageIds = new Set([...html.matchAll(/id="page-([^"]+)"/g)].map(match => match[1]));
+  const dynamicallyGenerated = new Set(["all-orders"]);
+  const missing = [...new Set(destinations)].filter(page =>
+    !pageIds.has(page) && !dynamicallyGenerated.has(page)
+  );
+  assert.deepEqual(missing, []);
+  assert.match(js, /parent\.id="page-all-orders"/);
+});
+
+test("CI workflow runs syntax, admin asset, local asset and test checks", () => {
+  const workflow = read(".github/workflows/homs-tech-tests.yml");
+  assert.match(workflow, /work\/homs-tech-code-cleanup-professional/);
+  assert.match(workflow, /workflow_dispatch/);
+  assert.match(workflow, /timeout-minutes:\s*15/);
+  assert.match(workflow, /node --check/);
+  assert.match(workflow, /scripts\/check-admin-inline\.js/);
+  assert.match(workflow, /scripts\/check-local-assets\.js/);
+  assert.match(workflow, /npm test/);
+});
