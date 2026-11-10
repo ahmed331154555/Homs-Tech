@@ -25,7 +25,32 @@ function registerDeviceRegisterRoutes(app, {
           AND ($3='' OR d.identifier_value ILIKE '%'||$3||'%' OR d.model ILIKE '%'||$3||'%' OR d.customer_name ILIKE '%'||$3||'%' OR d.repair_order_number ILIKE '%'||$3||'%')
         ORDER BY d.updated_at DESC,d.id DESC LIMIT 500
       `,[archived,type,q]);
-      res.set("Cache-Control","no-store");res.json({devices:result.rows});
+      const summaryResult = await pool.query(`
+        WITH operation_costs AS (
+          SELECT o.device_id,
+            COALESCE(SUM((part.value->>'quantity')::numeric * (part.value->>'cost')::numeric),0)
+              + COALESCE(SUM(o.additional_cost),0) AS recorded_cost
+          FROM device_register_operations o
+          LEFT JOIN LATERAL jsonb_array_elements(COALESCE(o.parts,'[]'::jsonb)) AS part(value) ON TRUE
+          GROUP BY o.device_id
+        ), commercial AS (
+          SELECT d.id,d.status,d.purchase_cost,d.sale_price,
+            COALESCE(c.recorded_cost,0) AS recorded_cost
+          FROM device_register d
+          LEFT JOIN operation_costs c ON c.device_id=d.id
+          WHERE d.device_type='commercial' AND d.archived=FALSE
+        )
+        SELECT
+          COUNT(*)::int AS total,
+          COUNT(*) FILTER (WHERE status='جاهز للبيع')::int AS ready,
+          COUNT(*) FILTER (WHERE status IN ('تم الشراء','قيد الفحص','قيد التجديد'))::int AS processing,
+          COUNT(*) FILTER (WHERE status='تم البيع')::int AS sold,
+          COALESCE(SUM(purchase_cost + recorded_cost) FILTER (WHERE status<>'تم البيع'),0) AS invested,
+          COALESCE(SUM(sale_price) FILTER (WHERE status='تم البيع'),0) AS revenue,
+          COALESCE(SUM(sale_price - purchase_cost - recorded_cost) FILTER (WHERE status='تم البيع'),0) AS realized_profit
+        FROM commercial
+      `);
+      res.set("Cache-Control","no-store");res.json({devices:result.rows,summary:summaryResult.rows[0]||{}});
     }catch(e){console.error("Device register list error:",e);res.status(500).json({error:"Kon toestellen niet laden."});}
   });
   app.post("/api/admin/device-register",requirePermission("device_register.update"),async(req,res)=>{
