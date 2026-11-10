@@ -4751,7 +4751,7 @@ async function compressShopCatalogPhotos(products){
 /* ---------------- SAVE ---------------- */
 
 async function save(isAuto=false){
-  const savePage=savePage;
+  const savePage=currentPage;
   if(!canEditCurrentPage()){setStatus("✕ Je hebt geen toestemming om wijzigingen op te slaan.","error");return false;}
   if(isAuto) autoSaveAgain=false;
   if(loading) return false;
