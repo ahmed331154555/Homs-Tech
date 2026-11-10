@@ -1,7 +1,21 @@
 "use strict";
+const { normalizeDutchPostcode, isPostcodeCovered } = require("../utils/repair-coverage");
 
 function registerRepairOrderRoutes(app, { pool, jwt, escapeHtml, fetchImpl, getEnv }) {
 // ---------------- REPAIR / SERVICE ORDERS ----------------
+
+app.get("/api/repair/coverage", async (req, res) => {
+  try {
+    const postcode = normalizeDutchPostcode(req.query.postcode);
+    if (!postcode) return res.status(400).json({ error: "Vul een geldige Nederlandse postcode in.", covered: false });
+    const result = await pool.query("SELECT data->'repairCoverage' AS areas FROM site_settings WHERE id = 1");
+    res.set("Cache-Control", "no-store");
+    return res.json({ success: true, covered: isPostcodeCovered(postcode, result.rows[0]?.areas) });
+  } catch (error) {
+    console.error("Repair coverage check error:", error);
+    return res.status(503).json({ error: "Werkgebied kon niet worden gecontroleerd.", covered: false });
+  }
+});
 
 app.get("/api/repair/availability", async (req, res) => {
   try {
@@ -75,6 +89,11 @@ app.post("/api/orders", async (req, res) => {
       clean.serviceGroup.toLowerCase() === "aan huis";
 
     if (isHomeRepair) {
+      const postcode = normalizeDutchPostcode(clean.extraFields.postcode || clean.notes);
+      const coverage = await pool.query("SELECT data->'repairCoverage' AS areas FROM site_settings WHERE id = 1");
+      if (!postcode || !isPostcodeCovered(postcode, coverage.rows[0]?.areas)) {
+        return res.status(403).json({ error: "Reparatie aan huis is niet beschikbaar in uw postcodegebied. Kies Toestel opsturen om uw reparatie per post aan te melden." });
+      }
       if (!/^\d{4}-\d{2}-\d{2}$/.test(clean.appointmentDate)) {
         return res.status(400).json({ error: "Kies een datum voor uw afspraak." });
       }
