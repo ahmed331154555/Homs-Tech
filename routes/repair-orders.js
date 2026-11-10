@@ -1,5 +1,5 @@
 "use strict";
-const { normalizeDutchPostcode, isPostcodeCovered } = require("../utils/repair-coverage");
+const { normalizeDutchPostcode, isPostcodeCovered, isLocationCovered } = require("../utils/repair-coverage");
 
 function registerRepairOrderRoutes(app, { pool, jwt, escapeHtml, fetchImpl, getEnv }) {
 // ---------------- REPAIR / SERVICE ORDERS ----------------
@@ -7,10 +7,12 @@ function registerRepairOrderRoutes(app, { pool, jwt, escapeHtml, fetchImpl, getE
 app.get("/api/repair/coverage", async (req, res) => {
   try {
     const postcode = normalizeDutchPostcode(req.query.postcode);
-    if (!postcode) return res.status(400).json({ error: "Vul een geldige Nederlandse postcode in.", covered: false });
+    const location = String(req.query.location || "").trim();
+    if (!postcode && !location) return res.status(400).json({ error: "Vul uw plaats of postcode in.", covered: false });
     const result = await pool.query("SELECT data->'repairCoverage' AS areas FROM site_settings WHERE id = 1");
     res.set("Cache-Control", "no-store");
-    return res.json({ success: true, covered: isPostcodeCovered(postcode, result.rows[0]?.areas) });
+    const areas = result.rows[0]?.areas;
+    return res.json({ success: true, covered: isLocationCovered(location, areas) || isPostcodeCovered(postcode, areas) });
   } catch (error) {
     console.error("Repair coverage check error:", error);
     return res.status(503).json({ error: "Werkgebied kon niet worden gecontroleerd.", covered: false });
@@ -90,8 +92,10 @@ app.post("/api/orders", async (req, res) => {
 
     if (isHomeRepair) {
       const postcode = normalizeDutchPostcode(clean.extraFields.postcode || clean.notes);
+      const location = String(clean.extraFields.location || clean.extraFields.city || clean.notes || "").trim();
       const coverage = await pool.query("SELECT data->'repairCoverage' AS areas FROM site_settings WHERE id = 1");
-      if (!postcode || !isPostcodeCovered(postcode, coverage.rows[0]?.areas)) {
+      const areas = coverage.rows[0]?.areas;
+      if (!isLocationCovered(location, areas) && !isPostcodeCovered(postcode, areas)) {
         return res.status(403).json({ error: "Reparatie aan huis is niet beschikbaar in uw postcodegebied. Kies Toestel opsturen om uw reparatie per post aan te melden." });
       }
       if (!/^\d{4}-\d{2}-\d{2}$/.test(clean.appointmentDate)) {
