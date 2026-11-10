@@ -224,3 +224,15 @@ test("admin save operation remains bound to the page where it started", () => {
   assert.match(save, /"X-Homs-Admin-Section":savePage/);
   assert.match(save, /if\(currentPage===savePage\)\{/);
 });
+
+
+test("live chat polling stops when the administrator leaves the live chat page", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function showPage(page){");
+  const end = js.indexOf("\n/* ---------------- LOGIN ---------------- */", start);
+  assert.ok(start >= 0 && end > start, "showPage function should exist");
+  const showPage = js.slice(start, end);
+  assert.match(showPage, /currentPage==="live-chat"&&page!=="live-chat"&&liveChatRefreshTimer/);
+  assert.match(showPage, /clearInterval\(liveChatRefreshTimer\)/);
+  assert.match(showPage, /liveChatRefreshTimer=null/);
+});
