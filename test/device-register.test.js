@@ -35,13 +35,13 @@ test("device register summary returns commercial stock and realized profit KPIs"
   const routes = new Map();
   const pool = {
     async query(sql) {
-      if (sql.includes("FROM device_register d")) return { rows: [{ id: 5, model: "iPhone 14", status: "Klaar", recorded_cost: "25.00" }] };
       if (sql.includes("WITH operation_costs AS")) {
         assert.match(sql, /status='تم البيع'/);
         assert.match(sql, /SUM\(o\.additional_cost\)/);
         assert.match(sql, /SUM\(parts\.parts_cost\)/);
         return { rows: [{ total: 8, ready: 2, processing: 3, sold: 3, invested: "900.00", revenue: "1500.00", realized_profit: "420.00" }] };
       }
+      if (sql.includes("FROM device_register d")) return { rows: [{ id: 5, model: "iPhone 14", status: "Klaar", recorded_cost: "25.00" }] };
       throw new Error("Unexpected query: " + sql);
     }
   };
