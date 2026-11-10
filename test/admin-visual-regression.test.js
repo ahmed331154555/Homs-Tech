@@ -166,3 +166,33 @@ test("invoice calculations round each line and total to two decimal places", () 
   assert.match(js, /Math\.round\(\(number\+Number\.EPSILON\)\*100\)\/100/);
   assert.match(js, /lineVat=invoiceRoundMoney\(lineSubtotal\*line\.vatRate\/100\)/);
 });
+
+
+test("inventory workspace is permission-gated and wired to the admin navigation", () => {
+  const html = read("admin/index.html");
+  const js = read("assets/homs-admin.js");
+  const css = read("assets/homs-admin.css");
+  assert.match(html, /data-page="inventory" data-permission="site\.save"/);
+  assert.match(html, /id="page-inventory" data-permission="site\.save"/);
+  assert.match(html, /id="inventoryItems"/);
+  assert.match(html, /id="inventoryMovementForm"/);
+  assert.match(html, /id="inventoryMovements"/);
+  assert.match(js, /inventory:"site\.save"/);
+  assert.match(js, /if\(page==="inventory"\)loadInventory\(\)/);
+  assert.match(js, /async function loadInventory\(/);
+  assert.match(js, /async function saveInventoryMovement\(/);
+  assert.match(css, /\.ht-inventory-summary/);
+  assert.match(css, /\.ht-inventory-history-table/);
+  assert.match(css, /@media\(max-width:480px\)/);
+});
+
+test("inventory UI supports search, low-stock filters and signed corrections", () => {
+  const html = read("admin/index.html");
+  const js = read("assets/homs-admin.js");
+  assert.match(html, /id="inventorySearch"/);
+  assert.match(html, /id="inventoryStockFilter"/);
+  assert.match(html, /value="correction"/);
+  assert.match(js, /stockFilter==="low"/);
+  assert.match(js, /type==="correction"/);
+  assert.match(js, /movementType:type,quantity,note,reference/);
+});
