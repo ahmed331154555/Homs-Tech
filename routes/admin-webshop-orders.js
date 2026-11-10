@@ -635,7 +635,16 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
     if(!Number.isInteger(id)||id<1)return res.status(400).json({error:"Ongeldig order-ID."});
     try{
       const result=await sendTradeInCustomerOffer(id);
-      if(!result.sent)return res.status(409).json({error:result.reason==="email-not-configured"?"E-mail is niet ingesteld. Controleer RESEND_API_KEY en RESEND_FROM_EMAIL.":"Sla eerst de definitieve inspectiewaarde op."});
+      if(!result.sent){
+        const messages={
+          "email-not-configured":"E-mail is niet ingesteld. Controleer RESEND_API_KEY en RESEND_FROM_EMAIL.",
+          "inspection-not-saved":"Sla eerst de definitieve inspectiewaarde op.",
+          "order-not-paid":"De nieuwe bestelling moet eerst betaald zijn voordat het inruilvoorstel kan worden verzonden.",
+          "trade-in-already-settled":"Deze inruil is al definitief afgehandeld. Een nieuw voorstel kan niet worden geopend.",
+          "customer-email-missing":"Voeg eerst een geldig e-mailadres van de klant toe."
+        };
+        return res.status(409).json({error:messages[result.reason]||"Het inruilvoorstel kan momenteel niet worden verzonden."});
+      }
       return res.json({success:true,customerEmail:result.email});
     }catch(error){
       console.error("Trade-in customer offer email failed:",id,error.message||error);
