@@ -120,7 +120,10 @@ function registerDeviceRegisterRoutes(app, {
     const salePrice=deviceMoney(req.body?.salePrice);
     const reference=deviceText(req.body?.reference,120);
     const description=deviceText(req.body?.description,1000);
+    const webshopOrderIdRaw=req.body?.webshopOrderId;
+    const webshopOrderId=webshopOrderIdRaw==null||String(webshopOrderIdRaw).trim()===""?null:Number(webshopOrderIdRaw);
     if(!Number.isSafeInteger(id)||id<=0)return res.status(400).json({error:"Ongeldig toestel."});
+    if(webshopOrderId!==null&&(!Number.isSafeInteger(webshopOrderId)||webshopOrderId<=0))return res.status(400).json({error:"Ongeldig webshopordernummer."});
     if(!Number.isFinite(salePrice)||salePrice<=0)return res.status(400).json({error:"Vul een geldige verkoopprijs in."});
     const client=await pool.connect();
     try{
@@ -134,16 +137,34 @@ function registerDeviceRegisterRoutes(app, {
       if(device.device_type!=="commercial"){await client.query("ROLLBACK");return res.status(409).json({error:"Alleen eigen HOMS TECH-toestellen kunnen hier als verkocht worden geregistreerd."});}
       if(device.status==="تم البيع"){await client.query("ROLLBACK");return res.status(409).json({error:"Dit toestel is al als verkocht geregistreerd."});}
       if(device.status!=="جاهز للبيع"){await client.query("ROLLBACK");return res.status(409).json({error:"Zet het toestel eerst op 'جاهز للبيع' nadat de inspectie en voorbereiding zijn afgerond."});}
+      let linkedOrder=null;
+      if(webshopOrderId!==null){
+        const orderResult=await client.query("SELECT id,status,payment_status,items FROM webshop_orders WHERE id=$1 FOR UPDATE",[webshopOrderId]);
+        if(!orderResult.rows.length){await client.query("ROLLBACK");return res.status(404).json({error:"Webshopbestelling niet gevonden."});}
+        linkedOrder=orderResult.rows[0];
+        if(linkedOrder.payment_status!=="Paid"||linkedOrder.status!=="Voltooid"){
+          await client.query("ROLLBACK");
+          return res.status(409).json({error:"Koppel alleen een bestelling die betaald is en de status Voltooid heeft."});
+        }
+        let orderItems=linkedOrder.items;
+        if(typeof orderItems==="string"){try{orderItems=JSON.parse(orderItems)}catch{orderItems=[]}}
+        if(!Array.isArray(orderItems)||!orderItems.some(item=>JSON.stringify(item||{}).toLowerCase().includes(String(device.model||"").toLowerCase()))){
+          await client.query("ROLLBACK");
+          return res.status(409).json({error:"Het model van dit toestel komt niet voor in de gekoppelde webshopbestelling. Controleer het ordernummer en model."});
+        }
+        const alreadyLinked=await client.query("SELECT id FROM device_register WHERE source_webshop_order_id=$1 AND id<>$2 AND archived=FALSE LIMIT 1",[webshopOrderId,id]);
+        if(alreadyLinked.rows.length){await client.query("ROLLBACK");return res.status(409).json({error:"Deze webshopbestelling is al aan een ander toestel gekoppeld."});}
+      }
       const existingSale=await client.query("SELECT id FROM device_register_operations WHERE device_id=$1 AND operation_type='sale' LIMIT 1",[id]);
       if(existingSale.rows.length){await client.query("ROLLBACK");return res.status(409).json({error:"Voor dit toestel bestaat al een verkoopregistratie."});}
-      const saleDescription=[description,reference?"Referentie: "+reference:""].filter(Boolean).join(" · ")||"Verkoop geregistreerd in HOMS TECH";
+      const saleDescription=[description,reference?"Referentie: "+reference:"",linkedOrder?"Webshopbestelling #"+linkedOrder.id:""].filter(Boolean).join(" · ")||"Verkoop geregistreerd in HOMS TECH";
       const inserted=await client.query(
         "INSERT INTO device_register_operations(device_id,operation_type,status,description,parts,additional_cost,sale_price) VALUES($1,'sale','تم البيع',$2,'[]'::jsonb,0,$3) RETURNING *",
         [id,saleDescription,salePrice]
       );
       const updated=await client.query(
-        "UPDATE device_register SET status='تم البيع',sale_price=$2,updated_at=NOW() WHERE id=$1 RETURNING id,identifier_value,model,status,purchase_cost,sale_price",
-        [id,salePrice]
+        "UPDATE device_register SET status='تم البيع',sale_price=$2,source_webshop_order_id=$3,updated_at=NOW() WHERE id=$1 RETURNING id,identifier_value,model,status,purchase_cost,sale_price,source_webshop_order_id",
+        [id,salePrice,webshopOrderId]
       );
       await client.query("COMMIT");
       return res.status(201).json({success:true,device:updated.rows[0],sale:inserted.rows[0]});
