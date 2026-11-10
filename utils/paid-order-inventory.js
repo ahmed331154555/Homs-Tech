@@ -95,7 +95,13 @@ function createPaidOrderInventoryDeductor({ pool }) {
             const label = String(custom[groupType + ':' + i] ?? ''); if (!label) continue;
             const option = (Array.isArray(groups[i]?.options) ? groups[i].options : []).find(x => x && String(x.label) === label);
             if (!option) throw new Error('Paid order option was not found.');
-            if (option.stock !== undefined && option.stock !== null && option.stock !== '') { const stock = Number(option.stock); if (!Number.isFinite(stock) || stock < qty) throw new Error('Insufficient stock for paid option.'); option.stock = stock - qty; }
+            if (option.stock !== undefined && option.stock !== null && option.stock !== '') {
+              const stock = Number(option.stock);
+              if (!Number.isSafeInteger(stock) || stock < 0 || stock < qty) {
+                throw new Error('Insufficient stock or invalid stock value for paid option.');
+              }
+              option.stock = stock - qty;
+            }
           }
         }
         list[id] = product;
