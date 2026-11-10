@@ -149,3 +149,52 @@ test("general device updates lock the row and cannot overwrite a completed sale"
   assert.ok(queries.some(item => item.sql === "ROLLBACK"));
   assert.ok(!queries.some(item => item.sql === "COMMIT"));
 });
+
+
+test("device archiving uses a row lock and commits the archive state safely", async () => {
+  const { registerDeviceRegisterRoutes } = require("../routes/device-register");
+  const routes = new Map();
+  const queries = [];
+  let archivedValue = null;
+  const client = {
+    async query(sql, params) {
+      queries.push({ sql, params });
+      if (sql === "BEGIN" || sql === "COMMIT" || sql === "ROLLBACK") return { rows: [] };
+      if (sql.includes("SELECT id,archived FROM device_register WHERE id=$1 FOR UPDATE")) {
+        return { rows: [{ id: 31, archived: false }] };
+      }
+      if (sql.includes("UPDATE device_register SET archived=$2")) {
+        archivedValue = params[1];
+        return { rows: [{ id: 31, archived: archivedValue }] };
+      }
+      throw new Error("Unexpected query: " + sql);
+    },
+    release() {}
+  };
+  const app = {
+    get(path, ...handlers) { routes.set("GET " + path, handlers.at(-1)); },
+    post(path, ...handlers) { routes.set("POST " + path, handlers.at(-1)); },
+    put(path, ...handlers) { routes.set("PUT " + path, handlers.at(-1)); }
+  };
+  registerDeviceRegisterRoutes(app, {
+    pool: { async connect() { return client; }, async query() { return { rows: [] }; } },
+    requirePermission: () => (_req, _res, next) => next(),
+    deviceText: (v, max=160) => String(v ?? "").trim().slice(0, max),
+    deviceMoney: v => Number(v)
+  });
+  const response = {
+    statusCode: 200,
+    status(code) { this.statusCode = code; return this; },
+    json(value) { this.body = value; return this; }
+  };
+  await routes.get("POST /api/admin/device-register/:id/archive")(
+    { params: { id: "31" }, body: { archived: true } },
+    response
+  );
+  assert.equal(response.statusCode, 200);
+  assert.equal(archivedValue, true);
+  assert.equal(response.body.device.archived, true);
+  assert.ok(queries.some(item => item.sql.includes("FOR UPDATE")));
+  assert.ok(queries.some(item => item.sql === "COMMIT"));
+  assert.equal(queries.some(item => item.sql === "ROLLBACK"), false);
+});
