@@ -307,7 +307,7 @@ test("settlement atomically registers the accepted device once with an internal 
   assert.equal(response.statusCode, 200);
   assert.equal(response.body.success, true);
   assert.equal(response.body.inventoryDevice.identifier_value, "HT-BUYBACK-42");
-  assert.equal(registeredDevice.purchase_cost, "310.00");
+  assert.equal(Number(registeredDevice.purchase_cost), 310);
   assert.ok(transactionQueries.some(item => item.sql === "BEGIN"));
   assert.ok(transactionQueries.some(item => item.sql === "COMMIT"));
   assert.ok(transactionQueries.some(item => item.sql.includes("INSERT INTO device_register_operations")));
