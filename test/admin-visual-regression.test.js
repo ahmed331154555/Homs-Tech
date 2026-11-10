@@ -28,7 +28,7 @@ test("admin layout has desktop and small-screen responsive safeguards", () => {
 
 test("admin page references the current stylesheet version", () => {
   const html = read("admin/index.html");
-  assert.match(html, /homs-admin\.css\?v=20261110-admin-polish1/);
+  assert.match(html, /homs-admin\.css\?v=20261110-admin-polish2/);
 });
 
 
@@ -43,6 +43,35 @@ test("orders and inkoop workspace keeps mobile actions accessible", () => {
 
 test("admin HTML uses matching versioned CSS and JavaScript assets", () => {
   const html = read("admin/index.html");
-  assert.match(html, /homs-admin\.css\?v=20261110-admin-polish1/);
-  assert.match(html, /homs-admin\.js\?v=20261110-admin-polish1/);
+  assert.match(html, /homs-admin\.css\?v=20261110-admin-polish2/);
+  assert.match(html, /homs-admin\.js\?v=20261110-admin-polish2/);
+});
+
+
+test("admin login and dashboard expose keyboard and assistive-technology labels", () => {
+  const html = read("admin/index.html");
+  const css = read("assets/homs-admin.css");
+  assert.match(html, /class="ht-admin-skip-link" href="#dashboard"/);
+  assert.match(html, /id="dashboard"[^>]*role="main"[^>]*tabindex="-1"/);
+  assert.match(html, /<label for="username">/);
+  assert.match(html, /<label for="password">/);
+  assert.match(html, /id="loginStatus"[^>]*role="status"[^>]*aria-live="polite"/);
+  assert.match(css, /\.ht-admin-skip-link:focus/);
+});
+
+test("admin JavaScript has no duplicate top-level function declarations", () => {
+  const js = read("assets/homs-admin.js");
+  const names = [...js.matchAll(/^\\s*(?:async\\s+)?function\\s+([A-Za-z_$][\\w$]*)\\s*\\(/gm)].map(match => match[1]);
+  assert.equal(new Set(names).size, names.length, "duplicate top-level function declaration detected");
+});
+
+test("admin stylesheet has balanced rule braces", () => {
+  const css = read("assets/homs-admin.css");
+  let depth = 0;
+  for (const char of css) {
+    if (char === "{") depth += 1;
+    if (char === "}") depth -= 1;
+    assert.ok(depth >= 0, "unexpected closing brace in stylesheet");
+  }
+  assert.equal(depth, 0, "unclosed CSS rule");
 });
