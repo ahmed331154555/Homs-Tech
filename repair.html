@@ -995,7 +995,7 @@
   let coverageRequestId = 0;
 
   function extractDutchPostcode(value){
-    const match=String(value||"").toUpperCase().match(/(?:^|\\b)([1-9][0-9]{3})\\s*([A-Z]{2})(?:\\b|$)/);
+    const match=String(value||"").toUpperCase().match(/(?:^|\b)([1-9][0-9]{3})\s*([A-Z]{2})(?:\b|$)/);
     return match ? match[1]+match[2] : "";
   }
 
