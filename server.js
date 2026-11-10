@@ -23,6 +23,7 @@ const { registerAdminOrderRoutes } = require("./routes/admin-orders");
 const { registerAdminWebshopOrderRoutes } = require("./routes/admin-webshop-orders");
 const { registerAdminBuybackOrderRoutes } = require("./routes/admin-buyback-orders");
 const { registerAdminInvoiceRoutes } = require("./routes/admin-invoices");
+const { registerAdminInventoryRoutes } = require("./routes/admin-inventory");
 const { registerAdminEmailRoutes } = require("./routes/admin-emails");
 const { registerContactRoutes } = require("./routes/contact");
 const { registerAnnouncementBarRoutes } = require("./routes/announcement-bars");
@@ -527,6 +528,8 @@ registerAdminInvoiceRoutes(app, {
   requirePermission,
   buildInvoicePdf
 });
+
+registerAdminInventoryRoutes(app, { pool, requirePermission });
 
 registerAdminEmailRoutes(app, {
   pool,
