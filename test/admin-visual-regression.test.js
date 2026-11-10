@@ -28,7 +28,7 @@ test("admin layout has desktop and small-screen responsive safeguards", () => {
 
 test("admin page references the current stylesheet version", () => {
   const html = read("admin/index.html");
-  assert.match(html, /homs-admin\.css\?v=20261110-admin-polish3/);
+  assert.match(html, /homs-admin\.css\?v=20261110-admin-polish4/);
 });
 
 
@@ -43,8 +43,8 @@ test("orders and inkoop workspace keeps mobile actions accessible", () => {
 
 test("admin HTML uses matching versioned CSS and JavaScript assets", () => {
   const html = read("admin/index.html");
-  assert.match(html, /homs-admin\.css\?v=20261110-admin-polish3/);
-  assert.match(html, /homs-admin\.js\?v=20261110-admin-polish3/);
+  assert.match(html, /homs-admin\.css\?v=20261110-admin-polish4/);
+  assert.match(html, /homs-admin\.js\?v=20261110-admin-polish4/);
 });
 
 
@@ -81,4 +81,29 @@ test("admin navigation announces the currently selected page", () => {
   const js = read("assets/homs-admin.js");
   assert.match(js, /b\.setAttribute\("aria-current","page"\)/);
   assert.match(js, /b\.removeAttribute\("aria-current"\)/);
+});
+
+
+test("unified orders workspace is built once and reuses existing order sections", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function setupUnifiedOrdersAdmin(){");
+  const end = js.indexOf("\\nfunction setupOrdersSubmenu()", start);
+  assert.ok(start >= 0 && end > start, "unified orders setup function should exist");
+  const setup = js.slice(start, end);
+  assert.match(setup, /if\(document\.getElementById\("page-all-orders"\)\)return/);
+  assert.match(setup, /parent\.id="page-all-orders"/);
+  assert.match(setup, /host\.appendChild\(section\)/);
+  assert.match(setup, /if\(!hasPermission\(item\.permission\)\)/);
+  assert.match(setup, /setupOrdersSubmenu\(\)/);
+});
+
+test("order submenu only exposes categories allowed by the current administrator", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function setupOrdersSubmenu(){");
+  const end = js.indexOf("\\nfunction toggleOrdersMenu()", start);
+  assert.ok(start >= 0 && end > start, "order submenu setup function should exist");
+  const setup = js.slice(start, end);
+  assert.match(setup, /unifiedOrderCategories\.forEach\(item=>\{/);
+  assert.match(setup, /if\(!hasPermission\(item\.permission\)\)return/);
+  assert.match(setup, /button\.dataset\.orderSubpage=item\.key/);
 });
