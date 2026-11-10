@@ -15,12 +15,13 @@ function registerDeviceRegisterRoutes(app, {
       const archived=req.query.archived==="true";
       const q=deviceText(req.query.q,100);
       const result=await pool.query(`
-        SELECT d.*,
+        SELECT d.*, linked_invoice.invoice_number AS linked_invoice_number,
           COALESCE((SELECT COUNT(*) FROM device_register_operations o WHERE o.device_id=d.id),0)::int AS operation_count,
           COALESCE((SELECT SUM((part.value->>'quantity')::numeric*(part.value->>'cost')::numeric)
             FROM device_register_operations o CROSS JOIN LATERAL jsonb_array_elements(o.parts) AS part(value) WHERE o.device_id=d.id),0)
             + COALESCE((SELECT SUM(additional_cost) FROM device_register_operations o WHERE o.device_id=d.id),0) AS recorded_cost
         FROM device_register d
+        LEFT JOIN manual_invoices linked_invoice ON linked_invoice.id=d.source_manual_invoice_id
         WHERE d.archived=$1 AND ($2::text IS NULL OR d.device_type=$2)
           AND ($3='' OR d.identifier_value ILIKE '%'||$3||'%' OR d.model ILIKE '%'||$3||'%' OR d.customer_name ILIKE '%'||$3||'%' OR d.repair_order_number ILIKE '%'||$3||'%')
         ORDER BY d.updated_at DESC,d.id DESC LIMIT 500
@@ -120,6 +121,7 @@ function registerDeviceRegisterRoutes(app, {
     const salePrice=deviceMoney(req.body?.salePrice);
     const reference=deviceText(req.body?.reference,120);
     const description=deviceText(req.body?.description,1000);
+    const invoiceNumber=deviceText(req.body?.invoiceNumber,80);
     const webshopOrderIdRaw=req.body?.webshopOrderId;
     const webshopOrderId=webshopOrderIdRaw==null||String(webshopOrderIdRaw).trim()===""?null:Number(webshopOrderIdRaw);
     if(!Number.isSafeInteger(id)||id<=0)return res.status(400).json({error:"Ongeldig toestel."});
@@ -155,16 +157,26 @@ function registerDeviceRegisterRoutes(app, {
         const alreadyLinked=await client.query("SELECT id FROM device_register WHERE source_webshop_order_id=$1 AND id<>$2 AND archived=FALSE LIMIT 1",[webshopOrderId,id]);
         if(alreadyLinked.rows.length){await client.query("ROLLBACK");return res.status(409).json({error:"Deze webshopbestelling is al aan een ander toestel gekoppeld."});}
       }
+      let linkedInvoice=null;
+      if(invoiceNumber){
+        const invoiceResult=await client.query("SELECT id,total FROM manual_invoices WHERE invoice_number=$1 LIMIT 1",[invoiceNumber]);
+        if(!invoiceResult.rows.length){await client.query("ROLLBACK");return res.status(404).json({error:"Factuur niet gevonden. Controleer het factuurnummer."});}
+        linkedInvoice=invoiceResult.rows[0];
+        if(Math.abs(Number(linkedInvoice.total)-salePrice)>0.01){
+          await client.query("ROLLBACK");
+          return res.status(409).json({error:"Het factuurtotaal komt niet overeen met de verkoopprijs van dit toestel."});
+        }
+      }
       const existingSale=await client.query("SELECT id FROM device_register_operations WHERE device_id=$1 AND operation_type='sale' LIMIT 1",[id]);
       if(existingSale.rows.length){await client.query("ROLLBACK");return res.status(409).json({error:"Voor dit toestel bestaat al een verkoopregistratie."});}
-      const saleDescription=[description,reference?"Referentie: "+reference:"",linkedOrder?"Webshopbestelling #"+linkedOrder.id:""].filter(Boolean).join(" · ")||"Verkoop geregistreerd in HOMS TECH";
+      const saleDescription=[description,reference?"Referentie: "+reference:"",linkedOrder?"Webshopbestelling #"+linkedOrder.id:"",linkedInvoice?"Factuur "+invoiceNumber:""].filter(Boolean).join(" · ")||"Verkoop geregistreerd in HOMS TECH";
       const inserted=await client.query(
         "INSERT INTO device_register_operations(device_id,operation_type,status,description,parts,additional_cost,sale_price) VALUES($1,'sale','تم البيع',$2,'[]'::jsonb,0,$3) RETURNING *",
         [id,saleDescription,salePrice]
       );
       const updated=await client.query(
-        "UPDATE device_register SET status='تم البيع',sale_price=$2,source_webshop_order_id=$3,updated_at=NOW() WHERE id=$1 RETURNING id,identifier_value,model,status,purchase_cost,sale_price,source_webshop_order_id",
-        [id,salePrice,webshopOrderId]
+        "UPDATE device_register SET status='تم البيع',sale_price=$2,source_webshop_order_id=$3,source_manual_invoice_id=$4,updated_at=NOW() WHERE id=$1 RETURNING id,identifier_value,model,status,purchase_cost,sale_price,source_webshop_order_id,source_manual_invoice_id",
+        [id,salePrice,webshopOrderId,linkedInvoice?.id||null]
       );
       await client.query("COMMIT");
       return res.status(201).json({success:true,device:updated.rows[0],sale:inserted.rows[0]});
