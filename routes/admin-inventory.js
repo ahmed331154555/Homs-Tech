@@ -246,7 +246,7 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
             await client.query("ROLLBACK");
             return res.status(409).json({ error: "Deze telefoonuitvoering is niet beschikbaar voor verkoop." });
           }
-        } else if (Number(body.variantIndex) !== -1 || variantKey) {
+        } else if ((body.variantIndex !== undefined && Number(body.variantIndex) !== -1) || variantKey) {
           await client.query("ROLLBACK");
           return res.status(409).json({ error: "Telefoonproduct is gewijzigd. Vernieuw de voorraadpagina." });
         }
