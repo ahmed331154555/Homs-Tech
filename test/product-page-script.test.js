@@ -8,7 +8,7 @@ const vm = require("node:vm");
 
 test("product page inline scripts are valid JavaScript", () => {
   const html = fs.readFileSync(path.join(__dirname, "..", "product.html"), "utf8");
-  const scripts = [...html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)]
+  const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
     .map(match => match[1])
     .filter(source => source.trim());
 
