@@ -81,6 +81,7 @@ test("inventory catalog lists phone and Shop variants without duplicating parent
     phones: [{
       id: "phone-1",
       name: "iPhone 13",
+      pricingMode: "variant",
       variantPrices: [
         { storage: "128GB", color: "Black", condition: "A", stock: 3 },
         { storage: "256GB", color: "Blue", condition: "B", stock: 0 }
@@ -308,4 +309,22 @@ test("first Shop purchase initializes an untracked product stock balance", async
   assert.equal(h.getData().shopProducts[0].stock, "6 stuks");
   assert.equal(h.getMovements()[0].stock_before, 0);
   assert.equal(h.getMovements()[0].stock_after, 6);
+});
+
+
+test("legacy phone products keep parent stock when checkout does not use variant pricing", () => {
+  const rows = inventoryCatalog({
+    phones: [{
+      id: "legacy-phone",
+      name: "Legacy iPhone",
+      stock: 4,
+      variantPrices: [
+        { storage: "128GB", color: "Black", condition: "A", stock: 8 },
+        { storage: "256GB", color: "Blue", condition: "B", stock: 9 }
+      ]
+    }]
+  });
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].stock, 4);
+  assert.equal(rows[0].variantLabel, "Standaard");
 });
