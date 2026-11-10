@@ -256,3 +256,65 @@ test("general device update cannot mark a device as sold", async () => {
   assert.equal(response.statusCode, 409);
   assert.equal(updateAttempted, false);
 });
+
+
+test("device sale links only a paid completed webshop order containing the device model", async () => {
+  const statements = [];
+  const client = {
+    async query(sql, params = []) {
+      statements.push({ sql, params });
+      if (sql === "BEGIN" || sql === "COMMIT" || sql === "ROLLBACK") return { rows: [] };
+      if (sql.includes("FROM device_register WHERE id=$1") && sql.includes("FOR UPDATE")) {
+        return { rows: [{ id: 9, device_type: "commercial", status: "جاهز للبيع", model: "iPhone 13", identifier_value: "HT-9", purchase_cost: "300.00" }] };
+      }
+      if (sql.includes("FROM webshop_orders WHERE id=$1 FOR UPDATE")) {
+        return { rows: [{ id: 77, status: "Voltooid", payment_status: "Paid", items: [{ name: "Apple iPhone 13 128GB" }] }] };
+      }
+      if (sql.startsWith("SELECT id FROM device_register WHERE source_webshop_order_id")) return { rows: [] };
+      if (sql.startsWith("SELECT id FROM device_register_operations")) return { rows: [] };
+      if (sql.startsWith("INSERT INTO device_register_operations")) return { rows: [{ id: 33, device_id: 9, operation_type: "sale", sale_price: "499.00" }] };
+      if (sql.startsWith("UPDATE device_register SET status='تم البيع'")) {
+        assert.equal(params[2], 77);
+        return { rows: [{ id: 9, identifier_value: "HT-9", model: "iPhone 13", status: "تم البيع", purchase_cost: "300.00", sale_price: "499.00", source_webshop_order_id: 77 }] };
+      }
+      throw new Error("Unexpected query: " + sql);
+    },
+    release() {}
+  };
+  const { routes } = createHarness({ async connect() { return client; } });
+  const response = createResponse();
+  await routes.get("POST /api/admin/device-register/:id/sale")(
+    { params: { id: "9" }, body: { salePrice: 499, webshopOrderId: "77" } },
+    response
+  );
+  assert.equal(response.statusCode, 201);
+  assert.equal(response.body.device.source_webshop_order_id, 77);
+  assert.ok(statements.some(x => x.sql.includes("FROM webshop_orders WHERE id=$1 FOR UPDATE")));
+  assert.ok(statements.some(x => x.sql === "COMMIT"));
+});
+
+test("device sale refuses an unpaid or unfinished webshop order", async () => {
+  let saleInserted = false;
+  const client = {
+    async query(sql) {
+      if (sql === "BEGIN" || sql === "ROLLBACK") return { rows: [] };
+      if (sql.includes("FROM device_register WHERE id=$1") && sql.includes("FOR UPDATE")) {
+        return { rows: [{ id: 9, device_type: "commercial", status: "جاهز للبيع", model: "iPhone 13", identifier_value: "HT-9" }] };
+      }
+      if (sql.includes("FROM webshop_orders WHERE id=$1 FOR UPDATE")) {
+        return { rows: [{ id: 77, status: "Verzonden", payment_status: "Paid", items: [{ name: "Apple iPhone 13" }] }] };
+      }
+      if (sql.startsWith("INSERT INTO device_register_operations")) saleInserted = true;
+      return { rows: [] };
+    },
+    release() {}
+  };
+  const { routes } = createHarness({ async connect() { return client; } });
+  const response = createResponse();
+  await routes.get("POST /api/admin/device-register/:id/sale")(
+    { params: { id: "9" }, body: { salePrice: 499, webshopOrderId: 77 } },
+    response
+  );
+  assert.equal(response.statusCode, 409);
+  assert.equal(saleInserted, false);
+});
