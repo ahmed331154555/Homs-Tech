@@ -219,3 +219,41 @@ test("paid order accepts whole-number custom add-on stock and deducts exactly on
   assert.equal(fake.savedCatalog.phones[0].optionGroups[0].options[0].stock, 2);
   assert.ok(fake.calls.some(call => call.sql === "COMMIT"));
 });
+
+
+test("paid order rejects unsupported item types without changing inventory", async () => {
+  const fake = createFakePool(
+    { id: 43, payment_status: "Paid", items: [{ type: "unknown", id: 0, qty: 1 }] },
+    { phones: [{ name: "Phone", stock: 5 }] }
+  );
+  const originalError = console.error;
+  console.error = () => {};
+  try {
+    const deduct = createPaidOrderInventoryDeductor({ pool: fake.pool });
+    assert.deepEqual(await deduct(43), { error: true });
+  } finally {
+    console.error = originalError;
+  }
+  assert.ok(fake.calls.some(call => call.sql === "ROLLBACK"));
+  assert.equal(fake.savedCatalog, null);
+  assert.ok(fake.calls.some(call => call.scope === "pool" && call.sql.includes("inventory_error=$1")));
+});
+
+test("paid order rejects missing or empty item lists for manual review", async () => {
+  for (const items of [null, [], "not-an-array"]) {
+    const fake = createFakePool(
+      { id: 44, payment_status: "Paid", items },
+      { phones: [{ name: "Phone", stock: 5 }] }
+    );
+    const originalError = console.error;
+    console.error = () => {};
+    try {
+      const deduct = createPaidOrderInventoryDeductor({ pool: fake.pool });
+      assert.deepEqual(await deduct(44), { error: true });
+    } finally {
+      console.error = originalError;
+    }
+    assert.ok(fake.calls.some(call => call.sql === "ROLLBACK"));
+    assert.equal(fake.savedCatalog, null);
+  }
+});
