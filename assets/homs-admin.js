@@ -6919,17 +6919,18 @@ function deviceTypeLabel(type){return type==="commercial"?"Eigen toestel":"Klant
 function deviceRenderTable(){
   const host=document.getElementById("deviceRegisterTable");if(!host)return;
   const rows=deviceRegisterCache;
-  const headers=["Type","IMEI / serienummer / HT-code","Merk","Model / naam","Status","Klantnaam","Telefoon","Ordernummer","Inkoop (€)","Verkoop (€)","Acties"];
+  const headers=["Type","IMEI / serienummer / HT-code","Merk","Model / naam","Opslag","Kleur","Conditie","Status","Klantnaam","Telefoon","Ordernummer","Inkoop (€)","Verkoop (€)","Acties"];
   host.innerHTML='<div class="dr-sheet-wrap"><table class="dr-sheet"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
     rows.map(x=>{const rowId=x.id?String(x.id):"new";return '<tr data-row-id="'+rowId+'">'+
       '<td style="padding:10px 12px;white-space:nowrap;font-weight:700">'+deviceTypeLabel(x.device_type)+'</td>'+
       (x.id?'<td><input class="dr-cell dr-readonly" value="'+esc(x.identifier_value)+'" readonly title="Identificatienummer kan niet inline worden gewijzigd"></td>':deviceCell(x.identifier_value,"identifierValue","new"))+
       deviceCell(x.brand,"brand",rowId)+deviceCell(x.model,"model",rowId)+
+      '<td>'+esc(x.storage||"—")+'</td><td>'+esc(x.color||"—")+'</td><td>'+esc(x.device_condition||"—")+'</td>'+
       '<td><select class="dr-cell" data-field="status" data-id="'+Number(x.id)+'">'+(x.device_type==="commercial"?DEVICE_STATUS_COMMERCIAL:DEVICE_STATUS_CUSTOMER).map(v=>'<option '+(v===x.status?"selected":"")+'>'+esc(v)+'</option>').join('')+'</select></td>'+
       deviceCell(x.customer_name,"customerName",rowId)+deviceCell(x.customer_phone,"customerPhone",rowId)+deviceCell(x.repair_order_number,"repairOrderNumber",rowId)+
       deviceCell(x.purchase_cost,"purchaseCost",rowId,"number")+deviceCell(x.sale_price,"salePrice",rowId,"number")+
-      '<td class="dr-actions"><button class="btn btn-green" onclick="deviceSaveRow(\''+rowId+'\')">Opslaan</button>'+(x.id?'<button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button class="btn btn-light" onclick="deviceAddOperation('+Number(x.id)+')">＋</button><button class="btn btn-light" onclick="deviceArchive('+Number(x.id)+',true)">Archief</button>':'<span class="small">Nieuwe rij</span>')+'</td></tr>'}).join('')+
-    '</tbody></table></div><p class="small" style="margin:10px 0 0">Tip: bewerk de cellen direct in de tabel en klik per rij op Opslaan. Scroll horizontaal om alle kolommen te zien.</p>';
+      '<td class="dr-actions"><button class="btn btn-green" onclick="deviceSaveRow(\\''+rowId+'\\')">Opslaan</button>'+(x.id?'<button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button class="btn btn-light" onclick="deviceAddOperation('+Number(x.id)+')">＋</button><button class="btn btn-light" onclick="deviceArchive('+Number(x.id)+',true)">Archief</button>':'<span class="small">Nieuwe rij</span>')+'</td></tr>'}).join('')+
+    '</tbody></table></div><p class="small" style="margin:10px 0 0">Toestellen uit Inkoop worden automatisch gekoppeld met een HT-code zodra de uitbetaling is afgerond.</p>';
 }
 async function loadDeviceRegister(){
   const host=document.getElementById("deviceRegisterTable");if(!host)return;host.innerHTML="Laden…";
