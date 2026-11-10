@@ -4089,3 +4089,135 @@ body{
 @media(prefers-reduced-motion:reduce){
   .ht-admin-skip-link{transition:none}
 }
+
+
+/* ==========================================================================
+   HOMS TECH — invoice workspace
+   Responsive layout, readable totals and safer action states.
+   ========================================================================== */
+.ht-invoices-page{min-width:0}
+.ht-invoices-page .ht-invoices-head{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  margin-bottom:18px;padding-bottom:15px;border-bottom:1px solid var(--ht-line,#e2e8f0)
+}
+.ht-invoices-page .ht-invoices-head h2{margin:0 0 5px;font-size:clamp(21px,2vw,27px);font-weight:850;letter-spacing:-.035em}
+.ht-invoices-page .ht-invoices-head p,.ht-invoice-card-head p,.ht-invoice-lines-head p{
+  margin:4px 0 0;color:#64748b;font-size:12px;line-height:1.55
+}
+.ht-invoice-intro{
+  display:flex;align-items:flex-start;gap:12px;padding:14px 16px;margin-bottom:15px;
+  border:1px solid #bfdbfe;border-radius:13px;background:#eff6ff;color:#173b63
+}
+.ht-invoice-intro-icon{
+  display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;border-radius:50%;
+  background:#dbeafe;color:#1d4ed8;font-weight:900
+}
+.ht-invoice-intro strong{display:block;font-size:13px;font-weight:850}
+.ht-invoice-intro p{margin:4px 0 0;color:#45627e;font-size:12px;line-height:1.55}
+.ht-invoice-editor,.ht-invoice-list-card{
+  min-width:0;padding:clamp(14px,2vw,22px);border:1px solid #e0e7ef;border-radius:15px;
+  background:#fff;box-shadow:0 4px 18px rgba(7,29,45,.045)
+}
+.ht-invoice-card-head{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:19px
+}
+.ht-invoice-card-head h3{margin:3px 0 0;font-size:19px;font-weight:850;letter-spacing:-.025em;color:#102b43}
+.ht-invoice-eyebrow{color:#64748b;font-size:10px;font-weight:850;letter-spacing:.11em}
+.ht-invoice-draft-tag{
+  display:inline-flex;align-items:center;min-height:26px;padding:5px 10px;border-radius:999px;
+  background:#fff7ed;color:#9a3412;font-size:11px;font-weight:800;white-space:nowrap
+}
+.ht-invoice-form-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 15px
+}
+.ht-invoice-form-grid .field{min-width:0;margin:0}
+.ht-invoice-form-grid .field label{display:block;margin-bottom:6px;color:#334b61;font-size:12px;font-weight:800}
+.ht-invoice-form-grid .field input{
+  width:100%;min-width:0;min-height:43px;padding:10px 12px;border:1px solid #d8e1eb;
+  border-radius:9px;background:#fff;color:#152f46;font-size:13px;box-sizing:border-box
+}
+.ht-invoice-form-grid .field input:focus,.ht-invoice-lines-table input:focus,.ht-invoice-lines-table select:focus{
+  outline:0;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)
+}
+.ht-invoice-field-wide{grid-column:1/-1}
+.ht-invoice-lines-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;margin:24px 0 11px
+}
+.ht-invoice-lines-head h4{margin:0;color:#18344e;font-size:14px;font-weight:850}
+.ht-invoice-lines-wrap{width:100%;overflow-x:auto;border:1px solid #e2e8f0;border-radius:11px}
+.ht-invoice-lines-table{width:100%;min-width:620px;border-collapse:separate;border-spacing:0}
+.ht-invoice-lines-table th{
+  padding:11px 10px;background:#f3f7fb;color:#52677b;text-align:left;
+  font-size:10px;font-weight:850;letter-spacing:.045em;white-space:nowrap
+}
+.ht-invoice-lines-table td{padding:9px 8px;border-top:1px solid #edf1f5;vertical-align:middle}
+.ht-invoice-lines-table input,.ht-invoice-lines-table select{
+  width:100%;min-height:39px;padding:8px 9px;border:1px solid #d8e1eb;border-radius:8px;
+  background:#fff;color:#18344e;font:inherit;font-size:12px;box-sizing:border-box
+}
+.ht-invoice-lines-table td:nth-child(2){width:90px}
+.ht-invoice-lines-table td:nth-child(3){width:135px}
+.ht-invoice-lines-table td:nth-child(4){width:90px}
+.ht-invoice-lines-table td:last-child{width:48px;text-align:center}
+.ht-invoice-lines-table .iv-remove{min-width:34px;min-height:34px;padding:5px 8px}
+.ht-invoice-total-panel{
+  display:grid;gap:9px;max-width:390px;margin:18px 0 0 auto;padding:15px;
+  border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc
+}
+.ht-invoice-total-panel>div{display:flex;justify-content:space-between;gap:18px;color:#52677b;font-size:12px}
+.ht-invoice-total-panel strong{color:#17324b;font-variant-numeric:tabular-nums}
+.ht-invoice-total-panel .ht-invoice-grand-total{
+  margin-top:3px;padding-top:11px;border-top:1px solid #d8e1eb;color:#17324b;font-size:14px;font-weight:850
+}
+.ht-invoice-total-panel .ht-invoice-grand-total strong{color:#1d4ed8;font-size:19px}
+.ht-invoice-editor-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:18px}
+.ht-invoice-editor-actions .btn{min-height:43px}
+.ht-invoice-editor-actions .btn:disabled,.ht-invoice-actions .btn:disabled{opacity:.58;cursor:wait}
+.ht-invoices-page #invoiceFormStatus{min-height:20px;margin:12px 0 0;font-size:12px}
+.ht-invoice-list-card{margin-top:16px}
+.ht-invoice-list-card .ht-invoice-card-head{margin-bottom:14px}
+.ht-invoice-table-wrap{width:100%;overflow-x:auto}
+.ht-invoice-table{width:100%;min-width:760px;border-collapse:separate;border-spacing:0}
+.ht-invoice-table th{
+  padding:12px 10px;background:#f3f7fb;color:#52677b;text-align:left;
+  font-size:10px;font-weight:850;letter-spacing:.045em;white-space:nowrap
+}
+.ht-invoice-table td{padding:12px 10px;border-top:1px solid #edf1f5;color:#334b61;font-size:12px;vertical-align:middle}
+.ht-invoice-table tbody tr:hover{background:#f8fbff}
+.ht-invoice-table td small{display:block;margin-top:4px;color:#718096;font-size:11px}
+.ht-invoice-number{color:#1d4ed8;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ht-invoice-total{font-weight:850;color:#102f4c;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ht-invoice-status{display:inline-flex;align-items:center;min-height:25px;padding:5px 9px;border-radius:999px;font-size:10px;font-weight:850;white-space:nowrap}
+.ht-invoice-status.is-draft{background:#fff7ed;color:#9a3412}
+.ht-invoice-status.is-sent{background:#eff6ff;color:#1d4ed8}
+.ht-invoice-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ht-invoice-actions .btn{min-height:34px;padding:7px 10px;font-size:11px;white-space:nowrap}
+.ht-invoice-loading,.ht-invoice-empty,.ht-invoice-error{
+  padding:22px 14px;border:1px dashed #d8e1eb;border-radius:11px;color:#64748b;
+  text-align:center;font-size:12px
+}
+.ht-invoice-empty strong{display:block;color:#18344e;font-size:14px}
+.ht-invoice-empty p{margin:5px 0 0}
+.ht-invoice-error{border-color:#fecaca;background:#fef2f2;color:#b91c1c}
+.ht-sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0,0,0,0);white-space:nowrap;border:0
+}
+@media(max-width:700px){
+  .ht-invoices-page .ht-invoices-head{align-items:flex-start}
+  .ht-invoice-form-grid{grid-template-columns:minmax(0,1fr)}
+  .ht-invoice-field-wide{grid-column:auto}
+  .ht-invoice-total-panel{max-width:none}
+}
+@media(max-width:480px){
+  .ht-invoices-page .ht-invoices-head{flex-direction:column}
+  .ht-invoices-page .ht-invoices-head>.btn{width:100%}
+  .ht-invoice-card-head{gap:8px}
+  .ht-invoice-lines-head{align-items:flex-start;flex-direction:column}
+  .ht-invoice-lines-head .btn{width:100%}
+  .ht-invoice-editor-actions{display:grid;grid-template-columns:minmax(0,1fr)}
+  .ht-invoice-editor-actions .btn{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  .ht-invoice-table tbody tr{transition:none}
+}
