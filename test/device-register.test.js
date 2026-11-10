@@ -45,7 +45,7 @@ test("device register summary returns commercial stock and realized profit KPIs"
       throw new Error("Unexpected query: " + sql);
     }
   };
-  const app = { get(path, ...handlers) { routes.set(path, handlers[handlers.length - 1]); } };
+  const app = { get(path, ...handlers) { routes.set(path, handlers[handlers.length - 1]); }, post(path, ...handlers) { routes.set(path, handlers[handlers.length - 1]); }, put(path, ...handlers) { routes.set(path, handlers[handlers.length - 1]); } };
   const requirePermission = () => (_req, _res, next) => next();
   registerDeviceRegisterRoutes(app, { pool, requirePermission, deviceText: (v, max=160) => String(v ?? "").trim().slice(0,max), deviceMoney: v => Number(v) });
   let payload;
