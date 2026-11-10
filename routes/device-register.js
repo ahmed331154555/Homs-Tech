@@ -28,10 +28,13 @@ function registerDeviceRegisterRoutes(app, {
       const summaryResult = await pool.query(`
         WITH operation_costs AS (
           SELECT o.device_id,
-            COALESCE(SUM((part.value->>'quantity')::numeric * (part.value->>'cost')::numeric),0)
-              + COALESCE(SUM(o.additional_cost),0) AS recorded_cost
+            COALESCE(SUM(o.additional_cost),0)
+              + COALESCE(SUM(parts.parts_cost),0) AS recorded_cost
           FROM device_register_operations o
-          LEFT JOIN LATERAL jsonb_array_elements(COALESCE(o.parts,'[]'::jsonb)) AS part(value) ON TRUE
+          LEFT JOIN LATERAL (
+            SELECT SUM((part.value->>'quantity')::numeric * (part.value->>'cost')::numeric) AS parts_cost
+            FROM jsonb_array_elements(COALESCE(o.parts,'[]'::jsonb)) AS part(value)
+          ) parts ON TRUE
           GROUP BY o.device_id
         ), commercial AS (
           SELECT d.id,d.status,d.purchase_cost,d.sale_price,
