@@ -689,18 +689,16 @@
             </div>
 
             <div class="field" id="addressField">
-              <label for="address">Adres *</label>
-              <input id="address" type="text" autocomplete="street-address" placeholder="Straat + huisnummer">
-            </div>
-            <div class="field" id="cityField">
-              <label for="city">Postcode en plaats *</label>
+              <label for="address">Volledig adres *</label>
               <div class="repair-location-autocomplete" style="position:relative">
-                <input id="city" type="text" autocomplete="postal-code address-level2" placeholder="Postcode of plaats, bijv. 2651 GX" aria-autocomplete="list" aria-controls="repairLocationSuggestions" aria-expanded="false">
+                <input id="address" type="text" autocomplete="street-address" placeholder="Zoek postcode of adres, bijv. 2651 GX of Castor 71" aria-autocomplete="list" aria-controls="repairLocationSuggestions" aria-expanded="false" required>
                 <div id="repairLocationSuggestions" role="listbox" hidden style="position:absolute;z-index:30;top:calc(100% + 5px);left:0;right:0;max-height:250px;overflow:auto;background:#fff;border:1px solid #dbe2ea;border-radius:12px;box-shadow:0 12px 30px rgba(15,23,42,.14);padding:5px"></div>
               </div>
+              <input id="city" type="hidden" autocomplete="postal-code">
               <button id="useLocationBtn" type="button" class="btn-main" style="margin-top:8px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe">📍 Gebruik mijn huidige locatie</button>
               <small id="coverageMessage" aria-live="polite" style="display:block;margin-top:7px;color:#64748b"></small>
             </div>
+            <div class="field" id="cityField" hidden></div>
 
             <div class="field" id="dateField">
               <label for="date">Gewenste datum</label>
@@ -980,7 +978,7 @@
     document.getElementById("timeField").style.display = home ? "flex" : "none";
 
     document.getElementById("address").required = home;
-    document.getElementById("city").required = home;
+    document.getElementById("city").required = false;
 
     document.getElementById("repairTitle").textContent =
       home ? "Afspraak aan huis aanvragen" : "Reparatie aanmelden";
@@ -1050,7 +1048,7 @@
         const postcode=extractDutchPostcode(address.postcode||"");
         if(!postcode)throw new Error("Geen Nederlandse postcode gevonden. Vul uw postcode handmatig in.");
         document.getElementById("city").value=[postcode,address.city||address.town||address.village||address.municipality].filter(Boolean).join(" ");
-        if(address.road)document.getElementById("address").value=[address.road,address.house_number||""].filter(Boolean).join(" ");
+        if(address.road)document.getElementById("address").value=[address.road,address.house_number||"",[postcode,address.city||address.town||address.village||address.municipality].filter(Boolean).join(" ")].filter(Boolean).join(", ");
         await checkRepairCoverage();
       }catch(error){showError(error.message||"Locatie kon niet worden omgezet naar een postcode.");}
       finally{button.disabled=false;button.textContent="📍 Gebruik mijn huidige locatie";}
@@ -1185,7 +1183,7 @@
   }
 
   // Dutch postcode/place autocomplete powered by the official free PDOK Locatieserver.
-  const repairCityInput=document.getElementById("city");
+  const repairCityInput=document.getElementById("address");
   const repairSuggestions=document.getElementById("repairLocationSuggestions");
   let repairSuggestTimer=null;
   let repairSuggestController=null;
@@ -1201,14 +1199,13 @@
     if(!repairCityInput||!item)return;
     const postcode=String(item.postcode||"").toUpperCase().replace(/\\s+/g,"");
     const town=String(item.woonplaatsnaam||item.gemeentenaam||"").trim();
-    const street=String(item.straatnaam||"").trim();
-    const house=String(item.huisnummer||"").trim();
-    const houseExtra=String(item.huisletter||"").trim()+String(item.huisnummertoevoeging||"").trim();
-    const fullAddress=street?[street,house+houseExtra].filter(Boolean).join(" "):"";
-    const addressInput=document.getElementById("address");
-    if(addressInput&&fullAddress)addressInput.value=fullAddress;
-    const cityLabel=postcode?(postcode.slice(0,4)+" "+postcode.slice(4)+" "+town).trim():town||String(item.weergavenaam||"").trim();
-    repairCityInput.value=cityLabel;
+    const full=String(item.weergavenaam||item.label||"").trim();
+    const fallback=[item.straatnaam,item.huisnummer,item.huisletter,item.huisnummertoevoeging,item.postcode,town].filter(Boolean).join(", ");
+    const completeAddress=full||fallback;
+    const postcodeLabel=postcode?(postcode.slice(0,4)+" "+postcode.slice(4)+" "+town).trim():"";
+    if(!postcodeLabel){showError("Kies een volledig adres met postcode uit de suggesties.");return;}
+    repairCityInput.value=completeAddress;
+    document.getElementById("city").value=postcodeLabel;
     closeRepairSuggestions();
     repairCoverageState="unknown";
     checkRepairCoverage();
@@ -1257,7 +1254,7 @@
   repairCityInput?.addEventListener("input",()=>{
     clearTimeout(repairSuggestTimer);
     repairCoverageState="unknown";
-    repairSuggestTimer=setTimeout(()=>loadRepairLocationSuggestions(repairCityInput.value),260);
+    document.getElementById("city").value="";repairCoverageState="unknown";repairSuggestTimer=setTimeout(()=>loadRepairLocationSuggestions(repairCityInput.value),260);
   });
   repairCityInput?.addEventListener("keydown",event=>{
     if(repairSuggestions?.hidden||!repairSuggestionItems.length)return;
@@ -1270,8 +1267,8 @@
     }else if(event.key==="Escape")closeRepairSuggestions();
   });
   repairCityInput?.addEventListener("blur",()=>setTimeout(closeRepairSuggestions,120));
-  document.getElementById("city")?.addEventListener("change",checkRepairCoverage);
-  document.getElementById("city")?.addEventListener("blur",checkRepairCoverage);
+  document.getElementById("address")?.addEventListener("change",()=>{if(!document.getElementById("city").value)checkRepairCoverage();});
+  document.getElementById("address")?.addEventListener("blur",()=>{if(!document.getElementById("city").value)checkRepairCoverage();});
   document.getElementById("useLocationBtn")?.addEventListener("click",useCurrentRepairLocation);
   dateInput?.addEventListener("change", loadRepairAvailability);
   timeSelect?.addEventListener("change", function(){
