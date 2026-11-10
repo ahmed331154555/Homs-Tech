@@ -429,7 +429,6 @@ app.post("/api/paypal/cancel-order", async (req, res) => {
           orderId: localOrderId
         });
       }
-      await notifyPaidTradeInOrder(localOrderId);
     }
     res.status(result.statusCode).json(result.body);
   } catch (error) {
