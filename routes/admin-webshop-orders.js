@@ -551,11 +551,12 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
            WHERE id = $2
              AND (
                NOT (payment_status = 'Paid' AND $1 = 'Geannuleerd')
-               OR EXISTS (
-                 SELECT 1 FROM webshop_order_refunds refund
+               OR COALESCE((
+                 SELECT SUM(refund.amount)
+                 FROM webshop_order_refunds refund
                  WHERE refund.order_id=webshop_orders.id
-                   AND refund.status IN ('Processing','Pending manual','Processed')
-               )
+                   AND refund.status='Processed'
+               ),0) >= GREATEST(COALESCE(webshop_orders.total,0)-0.009,0.01)
              )
            RETURNING id, status
          ),
@@ -574,7 +575,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
         const existing = await pool.query("SELECT id, payment_status FROM webshop_orders WHERE id = $1", [id]);
         if (!existing.rows.length) return res.status(404).json({ error: "Webshop bestelling niet gevonden." });
         if (existing.rows[0].payment_status === "Paid" && status === "Geannuleerd") {
-          return res.status(409).json({ error: "Een betaalde bestelling kan niet rechtstreeks worden geannuleerd. Registreer eerst de volledige of gedeeltelijke terugbetaling." });
+          return res.status(409).json({ error: "Een betaalde bestelling kan pas worden geannuleerd nadat de volledige terugbetaling als verwerkt is bevestigd." });
         }
         return res.status(409).json({ error: "De bestelstatus kon niet worden gewijzigd." });
       }
