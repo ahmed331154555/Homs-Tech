@@ -28,6 +28,7 @@
     <button class="nav-btn" data-page="repair" data-permission="site.save" onclick="showPage('repair')">🛠️ Reparatiepagina</button>
     <button class="nav-btn" data-page="phones" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
     <button class="nav-btn" data-page="shop" data-permission="site.save" onclick="showPage('shop')">🛍️ Shop producten</button>
+    <button class="nav-btn" data-page="inventory" data-permission="site.save" onclick="showPage('inventory')">📦 Voorraad & magazijn</button>
     <button class="nav-btn" data-page="buyback" data-permission="buyback.view" onclick="showPage('buyback')">📥 Uw toestel verkopen</button>
     <button class="nav-btn" data-page="why" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
     <button class="nav-btn" data-page="live-chat" data-permission="orders.view" onclick="showPage('live-chat')">💬 Live Chat</button>
@@ -387,7 +388,47 @@
     <div class="ht-invoice-card-head"><div><span class="ht-invoice-eyebrow">ARCHIEF</span><h3>Opgeslagen facturen</h3><p>Bekijk PDF-bestanden of verstuur de factuur naar de klant.</p></div></div>
     <div id="invoiceList" aria-live="polite"><div class="ht-invoice-loading" role="status">Facturen laden…</div></div>
   </div>
-</section><section class="section admin-page" id="page-order-settings">
+</section><section class="section admin-page ht-inventory-page" id="page-inventory" data-permission="site.save">
+  <div class="section-head ht-inventory-head">
+    <div><h2>📦 Voorraad & magazijn</h2><p>Centraal overzicht van telefoons, onderdelen en accessoires. Elke wijziging wordt geregistreerd.</p></div>
+    <button class="btn btn-light" type="button" onclick="loadInventory()">↻ Vernieuwen</button>
+  </div>
+  <div class="ht-inventory-summary" id="inventorySummary" aria-live="polite">
+    <div class="ht-inventory-stat"><span>Voorraadartikelen</span><strong>—</strong><small>Catalogus</small></div>
+    <div class="ht-inventory-stat"><span>Totale stuks</span><strong>—</strong><small>Getelde voorraad</small></div>
+    <div class="ht-inventory-stat"><span>Bijna op</span><strong>—</strong><small>Op of onder minimum</small></div>
+    <div class="ht-inventory-stat"><span>Uitverkocht</span><strong>—</strong><small>Voorraad nul</small></div>
+  </div>
+  <div class="ht-inventory-layout">
+    <div class="card ht-inventory-main">
+      <div class="ht-inventory-card-head"><div><span class="ht-inventory-eyebrow">MAGAZIJNOVERZICHT</span><h3>Productvoorraad</h3><p>Zoek op product, uitvoering, categorie of SKU.</p></div></div>
+      <div class="ht-inventory-toolbar">
+        <label class="ht-inventory-search"><span aria-hidden="true">⌕</span><input id="inventorySearch" type="search" placeholder="Zoek product of SKU…" oninput="renderInventoryItems()" aria-label="Zoek voorraad"></label>
+        <select id="inventoryCategoryFilter" aria-label="Filter categorie" onchange="renderInventoryItems()"><option value="all">Alle categorieën</option><option value="phone">Telefoons</option><option value="shop">Shop / onderdelen</option></select>
+        <select id="inventoryStockFilter" aria-label="Filter voorraadstatus" onchange="renderInventoryItems()"><option value="all">Alle statussen</option><option value="low">Lage voorraad</option><option value="zero">Uitverkocht</option><option value="untracked">Niet ingesteld</option></select>
+      </div>
+      <div id="inventoryItems" class="ht-inventory-table-wrap" aria-live="polite"><div class="ht-inventory-loading">Voorraad laden…</div></div>
+    </div>
+    <aside class="card ht-inventory-adjust">
+      <div class="ht-inventory-card-head"><div><span class="ht-inventory-eyebrow">VOORRAAD MUTEREN</span><h3>Voorraad wijzigen</h3><p>Kies een artikel en registreer de reden van de wijziging.</p></div></div>
+      <form id="inventoryMovementForm" onsubmit="saveInventoryMovement(event)">
+        <div class="field"><label for="inventoryItemSelect">Product / uitvoering *</label><select id="inventoryItemSelect" required onchange="inventorySelectionChanged()"><option value="">Selecteer een product</option></select></div>
+        <div id="inventorySelectedInfo" class="ht-inventory-selected-info">Selecteer een product om de huidige voorraad te bekijken.</div>
+        <div class="field"><label for="inventoryMovementType">Type mutatie *</label><select id="inventoryMovementType" required onchange="inventoryMovementTypeChanged()"><option value="purchase">Inkoop / levering (+)</option><option value="sale">Verkoop / afboeking (−)</option><option value="return">Retour ontvangen (+)</option><option value="damage">Beschadigd / verlies (−)</option><option value="correction">Voorraadcorrectie (+ / −)</option></select></div>
+        <div class="field"><label for="inventoryQuantity">Aantal stuks *</label><input id="inventoryQuantity" type="number" min="1" max="100000" step="1" required placeholder="Bijv. 5"></div>
+        <div class="field"><label for="inventoryReference">Referentie (optioneel)</label><input id="inventoryReference" maxlength="100" placeholder="Inkoopnummer, ordernummer…"></div>
+        <div class="field"><label for="inventoryNote">Opmerking / reden *</label><textarea id="inventoryNote" rows="3" maxlength="500" placeholder="Bijv. Levering van leverancier" required></textarea></div>
+        <button id="inventorySaveButton" class="btn btn-green" type="submit">Voorraadmutatie opslaan</button>
+        <p id="inventoryFormStatus" class="status" role="status" aria-live="polite"></p>
+      </form>
+    </aside>
+  </div>
+  <div class="card ht-inventory-history">
+    <div class="ht-inventory-card-head"><div><span class="ht-inventory-eyebrow">CONTROLE & AUDIT</span><h3>Voorraadgeschiedenis</h3><p>De laatste 100 voorraadmutaties, inclusief automatische webshopverkopen.</p></div></div>
+    <div id="inventoryMovements" class="ht-inventory-history-wrap" aria-live="polite"><div class="ht-inventory-loading">Geschiedenis laden…</div></div>
+  </div>
+</section>
+<section class="section admin-page" id="page-order-settings">
     <div class="section-head">
       <div>
         <h2>📦 Orderinstellingen</h2>
