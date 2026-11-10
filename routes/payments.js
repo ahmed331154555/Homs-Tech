@@ -242,12 +242,34 @@ app.post("/api/paypal/create-order", async (req, res) => {
       return res.status(502).json({ error: "PayPal kon de betaling niet starten." });
     }
 
-    await pool.query(
+    const linkedOrder = await pool.query(
       `UPDATE webshop_orders
        SET paypal_order_id = $1, payment_method = 'PayPal', payment_status = 'Pending'
-       WHERE id = $2 AND checkout_token = $3`,
+       WHERE id = $2 AND checkout_token = $3
+         AND payment_status NOT IN ('Paid', 'Cancelled', 'Expired', 'Failed')
+       RETURNING id`,
       [String(data.id), localOrderId, checkoutTokenHash]
     );
+
+    if (!linkedOrder.rowCount) {
+      const latest = await pool.query(
+        "SELECT payment_status FROM webshop_orders WHERE id = $1 AND checkout_token = $2",
+        [localOrderId, checkoutTokenHash]
+      );
+      if (latest.rows[0]?.payment_status === "Paid") {
+        const inventoryResult = await deductPaidOrderInventory(localOrderId);
+        if (inventoryResult?.error) {
+          return res.status(409).json({
+            error: "De betaling is bevestigd, maar de voorraad wacht op handmatige controle.",
+            paid: true,
+            orderId: localOrderId
+          });
+        }
+        await notifyPaidTradeInOrder(localOrderId);
+        return res.status(409).json({ error: "Deze bestelling is al betaald.", paid: true, orderId: localOrderId });
+      }
+      return res.status(409).json({ error: "De bestelling is ondertussen gewijzigd. Probeer de betaling opnieuw." });
+    }
 
     res.json({ success: true, id: data.id, orderId: localOrderId });
   } catch (error) {
