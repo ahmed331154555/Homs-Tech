@@ -85,8 +85,25 @@ function registerAdminInvoiceRoutes(app, {
       const temporaryInvoiceNumber =
         "HT-PENDING-" + Date.now() + "-" + Math.floor(Math.random() * 100000);
   
-      const inserted = await pool.query(
-        "INSERT INTO manual_invoices(invoice_number,customer_name,customer_email,customer_address,kvk_number,vat_id,lines,subtotal,vat_total,total) VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10) RETURNING *",
+      // Insert and assign the final invoice number in one atomic database
+      // statement. A failed number assignment can no longer leave a pending
+      // invoice record behind.
+      const saved = await pool.query(
+        `WITH inserted AS (
+          INSERT INTO manual_invoices(
+            invoice_number,customer_name,customer_email,customer_address,
+            kvk_number,vat_id,lines,subtotal,vat_total,total
+          )
+          VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10)
+          RETURNING id,created_at,status,total
+        )
+        UPDATE manual_invoices AS invoice
+        SET invoice_number =
+          'HT-' || EXTRACT(YEAR FROM inserted.created_at)::integer ||
+          '-' || LPAD(inserted.id::text,6,'0')
+        FROM inserted
+        WHERE invoice.id=inserted.id
+        RETURNING invoice.id,invoice.invoice_number,invoice.created_at,invoice.status,invoice.total`,
         [
           temporaryInvoiceNumber,
           customerName,
@@ -100,24 +117,16 @@ function registerAdminInvoiceRoutes(app, {
           total.toFixed(2)
         ]
       );
-  
-      const row = inserted.rows[0];
-      const invoiceNumber =
-        "HT-" + new Date(row.created_at).getFullYear() + "-" +
-        String(row.id).padStart(6, "0");
-  
-      const updated = await pool.query(
-        "UPDATE manual_invoices SET invoice_number=$2 WHERE id=$1 RETURNING *",
-        [row.id, invoiceNumber]
-      );
+      const row = saved.rows[0];
+      if (!row) throw new Error("Factuur is niet opgeslagen.");
   
       res.status(201).json({
         invoice: {
           id: row.id,
-          invoice_number: invoiceNumber,
+          invoice_number: row.invoice_number,
           created_at: row.created_at,
           status: row.status,
-          total: updated.rows[0].total
+          total: row.total
         }
       });
     } catch (error) {
@@ -219,7 +228,25 @@ function registerAdminInvoiceRoutes(app, {
         });
       }
   
-      res.json({ success: true, to: invoice.customer_email });
+      // The provider accepted the email. Update the archive status only
+      // after successful delivery acceptance; do not report a failed send if
+      // this secondary status write has a problem.
+      let statusUpdated = true;
+      try {
+        await pool.query(
+          "UPDATE manual_invoices SET status='sent' WHERE id=$1",
+          [id]
+        );
+      } catch (statusError) {
+        statusUpdated = false;
+        console.error("Invoice sent but status update failed:", statusError);
+      }
+      res.json({
+        success: true,
+        to: invoice.customer_email,
+        statusUpdated,
+        ...(statusUpdated ? {} : { warning: "De e-mail is verzonden, maar de factuurstatus kon niet worden bijgewerkt." })
+      });
     } catch (error) {
       console.error("Invoice test send:", error);
       res.status(500).json({ error: "Testmail versturen is mislukt." });
