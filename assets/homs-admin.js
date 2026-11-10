@@ -7004,14 +7004,16 @@ async function deviceRegisterSale(id){
   if(device.device_type!=="commercial"||device.status!=="جاهز للبيع"){deviceSetStatus("Alleen een eigen toestel met status Klaar voor verkoop kan worden verkocht.","error");return;}
   const price=prompt("Definitieve verkoopprijs in euro",String(device.sale_price||""));
   if(price===null)return;
-  const reference=prompt("Verkoopreferentie / ordernummer (optioneel)","");
+  const webshopOrderId=prompt("Webshop ordernummer (optioneel). Alleen koppelen als de bestelling betaald én voltooid is.","");
+  if(webshopOrderId===null)return;
+  const reference=prompt("Extra verkoopreferentie (optioneel)","");
   if(reference===null)return;
   const description=prompt("Opmerking bij de verkoop (optioneel)","");
   if(description===null)return;
-  if(!confirm("Verkoop van "+device.model+" registreren voor € "+price+"? Dit kan niet dubbel worden uitgevoerd."))return;
+  if(!confirm("Verkoop van "+device.model+" registreren voor € "+price+"?"+(webshopOrderId.trim()?" Koppelen aan webshopbestelling #"+webshopOrderId.trim()+".":"")+" Dit kan niet dubbel worden uitgevoerd."))return;
   try{
-    const result=await deviceApi("/api/admin/device-register/"+id+"/sale",{method:"POST",body:JSON.stringify({salePrice:price,reference,description})});
-    deviceSetStatus("Verkoop geregistreerd. "+(result.device?.identifier_value||"")+" staat nu op Verkocht.","success");
+    const result=await deviceApi("/api/admin/device-register/"+id+"/sale",{method:"POST",body:JSON.stringify({salePrice:price,reference,description,webshopOrderId:webshopOrderId.trim()||null})});
+    deviceSetStatus("Verkoop geregistreerd. "+(result.device?.identifier_value||"")+" staat nu op Verkocht."+(result.device?.source_webshop_order_id?" Gekoppeld aan bestelling #"+result.device.source_webshop_order_id:""),"success");
     await loadDeviceRegister();
     await deviceShowHistory(id);
   }catch(error){deviceSetStatus(error.message,"error");}
