@@ -12,7 +12,7 @@ const MOVEMENT_DIRECTIONS = Object.freeze({
 function numericStock(value, label) {
   if (value === null || value === undefined || String(value).trim() === "") return 0;
   const number = Number(value);
-  if (!Number.isSafeInteger(number) || number < 0) {
+  if (!Number.isSafeInteger(number) || number < 0 || number > 2147483647) {
     throw new Error(label + " heeft geen geldig geheel voorraadgetal.");
   }
   return number;
@@ -251,14 +251,27 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
       let currentStockValue = stockOwner[stockField];
       if (itemType === "shop" && stockOwner === product) {
         const match = String(currentStockValue ?? "").trim().match(/^(\\d+)/);
-        if (!match) throw new Error("Stel eerst een numerieke voorraad in voor dit Shop-product.");
+        if (!match) {
+          await client.query("ROLLBACK");
+          return res.status(409).json({ error: "Stel eerst een numerieke voorraad in voor dit Shop-product." });
+        }
         currentStockValue = match[1];
       }
-      const stockBefore = numericStock(currentStockValue, "De huidige voorraad");
-      const stockAfter = stockBefore + delta;
-      if (stockAfter < 0) {
+      let stockBefore;
+      try {
+        stockBefore = numericStock(currentStockValue, "De huidige voorraad");
+      } catch (stockError) {
         await client.query("ROLLBACK");
-        return res.status(409).json({ error: "Onvoldoende voorraad. Huidige voorraad: " + stockBefore + " stuks." });
+        return res.status(409).json({ error: stockError.message });
+      }
+      const stockAfter = stockBefore + delta;
+      if (stockAfter < 0 || stockAfter > 2147483647) {
+        await client.query("ROLLBACK");
+        return res.status(409).json({
+          error: stockAfter < 0
+            ? "Onvoldoende voorraad. Huidige voorraad: " + stockBefore + " stuks."
+            : "De nieuwe voorraad is groter dan de maximaal toegestane waarde."
+        });
       }
       if (itemType === "shop" && stockOwner !== product) {
         stockOwner.stock = String(stockAfter);
