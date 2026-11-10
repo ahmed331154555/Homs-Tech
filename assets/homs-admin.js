@@ -6918,7 +6918,7 @@ async function deviceApi(url,options={}){
 }
 
 function deviceCell(value,field,id,type="text"){
-  return '<td><input class="dr-cell" data-field="'+field+'" data-id="'+id+'" type="'+type+'" value="'+esc(value??"")+'" '+(type==="number"?'min="0" step="0.01"':'')+'></td>';
+  return '<td><input class="dr-cell" data-field="'+field+'" data-id="'+id+'" type="'+type+'" value="'+esc(value??"")+'" '+(!hasPermission("device_register.update")?'disabled':'')+' '+(type==="number"?'min="0" step="0.01"':'')+'></td>';
 }
 function deviceTypeLabel(type){return type==="commercial"?"Eigen toestel":"Klantreparatie"}
 function deviceRenderSummary(){
@@ -6938,11 +6938,12 @@ function deviceRenderTable(){
       (x.id?'<td><input class="dr-cell dr-readonly" value="'+esc(x.identifier_value)+'" readonly title="Identificatienummer kan niet inline worden gewijzigd"></td>':deviceCell(x.identifier_value,"identifierValue","new"))+
       deviceCell(x.brand,"brand",rowId)+deviceCell(x.model,"model",rowId)+
       '<td>'+esc(x.storage||"—")+'</td><td>'+esc(x.color||"—")+'</td><td>'+esc(x.device_condition||"—")+'</td>'+
-      '<td><select class="dr-cell" data-field="status" data-id="'+Number(x.id)+'">'+(x.device_type==="commercial"?DEVICE_STATUS_COMMERCIAL:DEVICE_STATUS_CUSTOMER).map(v=>'<option '+(v===x.status?"selected":"")+' >'+esc(v)+'</option>').join('')+'</select></td>'+
+      '<td><select class="dr-cell" data-field="status" data-id="'+Number(x.id)+'" '+(!hasPermission("device_register.update")?"disabled":"")+'>'+(x.device_type==="commercial"?DEVICE_STATUS_COMMERCIAL:DEVICE_STATUS_CUSTOMER).map(v=>'<option '+(v===x.status?"selected":"")+' >'+esc(v)+'</option>').join('')+'</select></td>'+
       deviceCell(x.customer_name,"customerName",rowId)+deviceCell(x.customer_phone,"customerPhone",rowId)+deviceCell(x.repair_order_number,"repairOrderNumber",rowId)+
       deviceCell(x.purchase_cost,"purchaseCost",rowId,"number")+deviceCell(x.sale_price,"salePrice",rowId,"number")+
-      '<td class="dr-actions"><button class="btn btn-green" onclick="deviceSaveRow(&quot;'+rowId+'&quot;)">Opslaan</button>'+(x.id?'<button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button class="btn btn-light" onclick="deviceAddOperation('+Number(x.id)+')">＋ Kosten / notitie</button>'+(x.device_type==="commercial"&&x.status==="جاهز للبيع"?'<button class="btn btn-green" onclick="deviceRegisterSale('+Number(x.id)+')">Verkoop</button>':'')+'<button class="btn btn-light" onclick="deviceArchive('+Number(x.id)+',true)">Archief</button>':'<span class="small">Nieuwe rij</span>')+'</td></tr>'}).join('')+
+      '<td class="dr-actions"><button class="btn btn-green" data-permission="device_register.update" onclick="deviceSaveRow(&quot;'+rowId+'&quot;)">Opslaan</button>'+(x.id?'<button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button class="btn btn-light" data-permission="device_register.update" onclick="deviceAddOperation('+Number(x.id)+')">＋ Kosten / notitie</button>'+(x.device_type==="commercial"&&x.status==="جاهز للبيع"?'<button class="btn btn-green" data-permission="device_register.update" onclick="deviceRegisterSale('+Number(x.id)+')">Verkoop</button>':'')+'<button class="btn btn-light" data-permission="device_register.update" onclick="deviceArchive('+Number(x.id)+',true)">Archief</button>':'<span class="small">Nieuwe rij</span>')+'</td></tr>'}).join('')+
     '</tbody></table></div><p class="small" style="margin:10px 0 0">Toestellen uit Inkoop worden automatisch gekoppeld met een HT-code zodra de uitbetaling is afgerond.</p>';
+  applyPermissionUI();
 }
 async function loadDeviceRegister(){
   const host=document.getElementById("deviceRegisterTable");if(!host)return;host.innerHTML="Laden…";
