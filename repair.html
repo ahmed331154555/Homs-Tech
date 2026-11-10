@@ -1007,7 +1007,7 @@
     }
     if(message)message.textContent="Werkgebied controleren...";
     try{
-      const response=await fetch("/api/repair/coverage?postcode="+encodeURIComponent(postcode),{credentials:"same-origin",cache:"no-store"});
+      const response=await fetch("/api/repair/coverage?postcode="+encodeURIComponent(postcode)+"&location="+encodeURIComponent(document.getElementById("city").value),{credentials:"same-origin",cache:"no-store"});
       const result=await response.json().catch(()=>({}));
       if(requestId!==coverageRequestId)return false;
       if(!response.ok)throw new Error(result.error||"Werkgebied kon niet worden gecontroleerd.");
@@ -1276,7 +1276,7 @@
           phone,
           username:"",
           imei,
-          extraFields:{postcode:extractDutchPostcode(city)},
+          extraFields:{postcode:extractDutchPostcode(city),location:city},
           notes:details,
           appointmentDate: currentMethod === "home" ? date : "",
           appointmentTime: currentMethod === "home" ? selectedTime : ""
