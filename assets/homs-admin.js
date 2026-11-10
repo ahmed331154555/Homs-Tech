@@ -6189,8 +6189,10 @@ async function settleBuybackOrder(id){
     const result=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(result.error||"De uitbetaling kon niet worden geregistreerd.");
     await refreshBuybackOrderDetails(id);
-    if(result.payoutEmail?.sent)alert("De uitbetaling is geregistreerd en de bevestigingsmail is verzonden naar de klant.");
-    else alert("De uitbetaling is geregistreerd, maar de e-mail kon niet worden verzonden. Je kunt deze opnieuw versturen vanuit de aanvraag.");
+    const stockCode=String(result.inventoryDevice?.identifier_value||"");
+    const stockMessage=stockCode?"\\nHet toestel is toegevoegd aan het toestelregister met code: "+stockCode:"";
+    if(result.payoutEmail?.sent)alert("De uitbetaling is geregistreerd en de bevestigingsmail is verzonden naar de klant."+stockMessage);
+    else alert("De uitbetaling en voorraadregistratie zijn afgerond, maar de e-mail kon niet worden verzonden. Je kunt deze opnieuw versturen vanuit de aanvraag."+stockMessage);
   }catch(error){alert(error.message);}
 }
 async function sendBuybackPayoutEmail(id){
