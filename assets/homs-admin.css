@@ -4190,6 +4190,7 @@ body{
 .ht-invoice-status{display:inline-flex;align-items:center;min-height:25px;padding:5px 9px;border-radius:999px;font-size:10px;font-weight:850;white-space:nowrap}
 .ht-invoice-status.is-draft{background:#fff7ed;color:#9a3412}
 .ht-invoice-status.is-sent{background:#eff6ff;color:#1d4ed8}
+.ht-invoice-status.is-cancelled{background:#f1f5f9;color:#64748b}
 .ht-invoice-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .ht-invoice-actions .btn{min-height:34px;padding:7px 10px;font-size:11px;white-space:nowrap}
 .ht-invoice-loading,.ht-invoice-empty,.ht-invoice-error{
