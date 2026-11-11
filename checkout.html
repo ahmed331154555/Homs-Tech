@@ -441,7 +441,18 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   text-align:center;
 }
 .payment-trust-strip>div:last-child{border:0}
-.payment-trust-strip span{color:#0875cf;font-size:27px;font-weight:950;line-height:1}
+.payment-trust-strip svg{
+  display:block;
+  width:27px;
+  height:27px;
+  flex:0 0 27px;
+  overflow:visible;
+  fill:none;
+  stroke:#0875cf;
+  stroke-width:1.9;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
 .payment-config-note{
   display:block;
   margin:13px 18px 0!important;
@@ -531,7 +542,11 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   .payment-option-cod .payment-cash-label{min-width:82px;padding:9px 7px;font-size:11px}
   .payment-trust-strip{margin:4px 12px 0;padding:14px 0}
   .payment-trust-strip>div{gap:7px;padding:0 5px;font-size:10px}
-  .payment-trust-strip span{font-size:24px}
+  .payment-trust-strip svg{
+    width:24px;
+    height:24px;
+    flex-basis:24px;
+  }
   .payment-config-note{margin:11px 12px 0!important;padding:11px 12px;font-size:11px}
   .payment-mollie-trust{gap:9px;margin:12px 12px 0;padding:11px}
   .mollie-shield{width:37px;height:37px;flex-basis:37px;font-size:22px}
