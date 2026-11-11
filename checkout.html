@@ -718,46 +718,44 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 
 }
 
-/* HOMS TECH — single source of truth for checkout submit button */
+
+/* Checkout submit action — canonical styles */
 .checkout-submit-wrap{margin-top:16px}
-#submitBtn.checkout-submit-wrap,
-#submitBtn.checkout-submit-wrap .submit{box-sizing:border-box}
 #submitBtn{
-  display:flex!important;
-  flex-direction:row!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:12px!important;
-  width:100%!important;
-  min-height:64px!important;
-  margin:0!important;
-  padding:15px 20px!important;
-  border:0!important;
-  border-radius:16px!important;
-  background:linear-gradient(100deg,#087ce5 0%,#0750bd 100%)!important;
-  color:#fff!important;
-  font-size:18px!important;
-  font-weight:900!important;
-  line-height:1.25!important;
-  box-shadow:0 9px 22px rgba(8,91,190,.2)!important;
-  transition:transform .18s ease,box-shadow .18s ease!important;
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  width:100%;
+  min-height:64px;
+  margin:0;
+  padding:15px 20px;
+  border:0;
+  border-radius:16px;
+  background:linear-gradient(100deg,#087ce5 0%,#0750bd 100%);
+  color:#fff;
+  font-size:18px;
+  font-weight:900;
+  line-height:1.25;
+  box-shadow:0 9px 22px rgba(8,91,190,.2);
+  transition:transform .18s ease,box-shadow .18s ease;
 }
-#submitBtn::before,
-#submitBtn::after{content:none!important;display:none!important}
-#submitBtn>span{display:inline-block!important;order:1;min-width:0}
+#submitBtn::before,#submitBtn::after{content:none;display:none}
+#submitBtn>span{display:inline-block;min-width:0}
 #submitBtn>.checkout-submit-lock{
-  display:block!important;
-  order:2;
-  width:23px!important;
-  height:23px!important;
-  min-width:23px!important;
-  flex:0 0 23px!important;
-  margin:0!important;
-  padding:0!important;
+  display:block;
+  width:23px;
+  height:23px;
+  min-width:23px;
+  flex:0 0 23px;
+  margin:0;
+  padding:0;
   overflow:visible;
-  color:currentColor!important;
-  opacity:1!important;
-  visibility:visible!important;
+  color:currentColor;
+  opacity:1;
+  visibility:visible;
 }
 #submitBtn>.checkout-submit-lock rect,
 #submitBtn>.checkout-submit-lock path{
@@ -767,17 +765,17 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   stroke-linecap:round;
   stroke-linejoin:round;
 }
-#submitBtn>b{display:none!important}
-#submitBtn:hover{transform:translateY(-1px);box-shadow:0 12px 25px rgba(8,91,190,.25)!important}
+#submitBtn:hover{transform:translateY(-1px);box-shadow:0 12px 25px rgba(8,91,190,.25)}
 #submitBtn:focus-visible{outline:3px solid rgba(8,121,229,.28);outline-offset:3px}
-#submitBtn:disabled{opacity:.65!important;cursor:wait;transform:none}
+#submitBtn:disabled{opacity:.65;cursor:wait;transform:none}
 .checkout-submit-wrap>small{display:block;margin-top:10px;color:#7b899a;font-size:11px;text-align:center}
 @media(max-width:600px){
   .checkout-submit-wrap{margin-top:15px}
-  #submitBtn{min-height:60px!important;gap:10px!important;padding:14px 16px!important;font-size:16px!important}
-  #submitBtn>.checkout-submit-lock{width:22px!important;height:22px!important;min-width:22px!important;flex-basis:22px!important}
+  #submitBtn{min-height:60px;gap:10px;padding:14px 16px;font-size:16px}
+  #submitBtn>.checkout-submit-lock{width:22px;height:22px;min-width:22px;flex-basis:22px}
 }
-@media(prefers-reduced-motion:reduce){#submitBtn{transition:none!important}}
+@media(prefers-reduced-motion:reduce){#submitBtn{transition:none}}
+
 </style>
 
 </head>
@@ -1182,6 +1180,14 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
     }).render("#paypal-button-container");
   }
 
+  function setSubmitButtonState(label, disabled){
+    const button = document.getElementById("submitBtn");
+    if(!button) return;
+    const text = button.querySelector("span");
+    if(text) text.textContent = label;
+    button.disabled = Boolean(disabled);
+  }
+
   async function submitOrder(event){
     event.preventDefault();
 
@@ -1189,7 +1195,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
     if(!items.length){ location.href="cart.html"; return; }
 
     const btn = document.getElementById("submitBtn");
-    if(btn){ btn.disabled=true; btn.textContent="Bestelling voorbereiden..."; }
+    setSubmitButtonState("Bestelling voorbereiden...", true);
     showStatus("","");
 
     try{
@@ -1218,7 +1224,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
         return;
       }
       if(selectedMethod === "Mollie"){
-        btn.textContent = "Doorsturen naar Mollie…";
+        setSubmitButtonState("Doorsturen naar Mollie…", true);
         await startMolliePayment();
         return;
       }
@@ -1231,10 +1237,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
       }
     }catch(error){
       showStatus("✕ " + (error.message || "Bestelling kon niet worden aangemaakt."),"error");
-      if(btn){
-        btn.disabled=false;
-        btn.textContent="→ Doorgaan naar betaling";
-      }
+      setSubmitButtonState("Doorgaan naar betaling", false);
     }
   }
 
@@ -1264,8 +1267,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
       if(paymentAvailability.mollie) mollieInput.checked = true;
       else if(paymentAvailability.paypal) paypalInput.checked = true;
       else if(paymentAvailability.cashOnDelivery) cashInput.checked = true;
-      document.getElementById("submitBtn").disabled = false;
-      document.getElementById("submitBtn").textContent = "→ Doorgaan naar betaling";
+      setSubmitButtonState("Doorgaan naar betaling", false);
       if(note){
         note.textContent = paymentAvailability.mollie && paymentAvailability.paypal
           ? "Mollie en PayPal zijn beschikbaar."
@@ -1283,8 +1285,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
       document.getElementById("paymentMollie").disabled = true;
       document.getElementById("paymentPayPal").disabled = true;
       document.getElementById("cashOnDeliveryOption").hidden = true;
-      document.getElementById("submitBtn").disabled = false;
-      document.getElementById("submitBtn").textContent = "→ Doorgaan naar betaling";
+      setSubmitButtonState("Doorgaan naar betaling", false);
     }
   }
 
