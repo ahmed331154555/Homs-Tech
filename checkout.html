@@ -167,10 +167,11 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 .payment-option-cod{grid-template-columns:22px 38px minmax(0,1fr) auto}
 .cod-symbol{width:36px;height:36px;display:grid;place-items:center;border:2px solid #183250;border-radius:8px;color:#183250;font-size:23px}
 .payment-cash-label{padding:10px 13px;border-radius:11px;background:#eaf3ff;color:#0869c9;font-size:13px;font-weight:900;white-space:nowrap}
-.payment-trust-strip{display:grid;grid-template-columns:repeat(3,1fr);margin:4px 20px 0;padding:17px 0;border-top:1px solid #e7eef6;border-bottom:1px solid #e7eef6}
-.payment-trust-strip>div{display:flex;align-items:center;justify-content:center;gap:8px;padding:0 9px;border-right:1px solid #d9e4f0;color:#27415f;font-size:11px;font-weight:800;line-height:1.3}
+.payment-trust-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:5px 20px 0;padding:18px 0;border-top:1px solid #e7eef6;border-bottom:1px solid #e7eef6;background:#fff}
+.payment-trust-strip>div{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:0 8px;border-right:1px solid #d9e4f0;color:#30445e;font-size:11px;font-weight:850;line-height:1.35;text-align:center}
 .payment-trust-strip>div:last-child{border:0}
-.payment-trust-strip span{color:#086bc9;font-size:22px;font-weight:950}
+.payment-trust-strip svg{display:block;width:27px;height:27px;flex:0 0 27px;fill:none;stroke:#0875cf;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.payment-trust-strip b{max-width:120px;font-weight:850}
 .payment-config-note{margin:13px 20px 0!important;padding:10px 12px;border-radius:10px;background:#f4f7fb;color:#64758a;font-size:11px;line-height:1.5}
 .payment-mollie-trust{display:flex;align-items:center;gap:12px;margin:15px 20px 19px;padding:14px;border:1px solid #d8f0e2;border-radius:14px;background:linear-gradient(110deg,#edfff4,#f5fbff)}
 .mollie-shield{width:39px;height:39px;flex:0 0 39px;display:grid;place-items:center;border-radius:50%;background:#0ab35c;color:#fff;font-size:23px;font-weight:950}
@@ -182,7 +183,9 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 .checkout-submit-wrap .submit{display:flex;align-items:center;justify-content:center;gap:11px;width:100%;min-height:61px;margin:0!important;border:0!important;border-radius:14px!important;background:linear-gradient(100deg,#087ce5,#064db8)!important;color:#fff!important;font-size:17px;font-weight:950;box-shadow:0 9px 20px rgba(8,91,190,.22)!important;transition:transform .18s,box-shadow .18s}
 .checkout-submit-wrap .submit:hover{background:linear-gradient(100deg,#066bc9,#053f9b)!important;transform:translateY(-1px);box-shadow:0 12px 24px rgba(8,91,190,.26)!important}
 .checkout-submit-wrap .submit:disabled{opacity:.65;cursor:wait;transform:none}
-.checkout-submit-wrap .submit b{font-size:22px}
+.checkout-submit-wrap .submit .checkout-submit-lock{display:block;width:23px;height:23px;flex:0 0 23px;stroke-width:2.1;opacity:.98}
+.checkout-submit-wrap .submit .checkout-submit-lock rect,.checkout-submit-wrap .submit .checkout-submit-lock path{vector-effect:non-scaling-stroke}
+.checkout-submit-wrap .submit b{display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;margin-left:2px;border:1px solid rgba(255,255,255,.24);border-radius:50%;background:rgba(255,255,255,.1);font-size:19px;line-height:1}
 .checkout-submit-wrap>small{display:block;margin-top:9px;text-align:center;color:#748399;font-size:10px}
 .checkout-layout>.card:last-child{position:sticky;top:110px}
 .checkout-layout>.card:last-child>h2{padding-bottom:14px;border-bottom:1px solid #e7eef6}
@@ -797,10 +800,10 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
       <b class="payment-cash-label">Contant</b>
     </label>
   </div>
-  <div class="payment-trust-strip">
-    <div><span aria-hidden="true">✓</span><b>Veilig betalen</b></div>
-    <div><span aria-hidden="true">ϟ</span><b>Snelle verwerking</b></div>
-    <div><span aria-hidden="true">♙</span><b>Gegevens beschermd</b></div>
+  <div class="payment-trust-strip" aria-label="Voordelen van veilig afrekenen">
+    <div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v5.5c0 5-3.4 8.3-8 9.5-4.6-1.2-8-4.5-8-9.5V6l8-3Z"/><path d="m8.5 12 2.3 2.3 4.8-5"/></svg><b>Veilig betalen</b></div>
+    <div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m13.5 2-9 12h6l-.5 8 9-12h-6l.5-8Z"/></svg><b>Snelle verwerking</b></div>
+    <div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a4 4 0 0 0-4 4v2H6v12h12V9h-2V7a4 4 0 0 0-4-4Z"/><path d="M8 9h8M12 13v4"/></svg><b>Gegevens beschermd</b></div>
   </div>
   <p id="paymentConfigNote" class="payment-config-note" role="status">Betaalmethoden worden gecontroleerd…</p>
 </div>
