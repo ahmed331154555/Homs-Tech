@@ -53,12 +53,6 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 </style>
 
 
-<style id="homs-tech-checkout-final-colors">
-#submitBtn,.btn.blue{background:#2563eb!important;background-color:#2563eb!important;color:#fff!important;border-color:#2563eb!important}
-#submitBtn:hover,.btn.blue:hover{background:#1d4ed8!important;background-color:#1d4ed8!important}
-.btn.gray{background:#fff!important;background-color:#fff!important;color:#2563eb!important;border:1px solid #2563eb!important}
-</style>
-
 <style id="homs-tech-paypal">
 .payment-box{margin-top:22px;padding:20px;border:1px solid #e2e8f0;border-radius:16px;background:#f8fafc}
 .payment-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:16px}
@@ -380,96 +374,361 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
 }
 </style>
 
-<style id="ht-checkout-approved-payment-polish">
-/* Approved HOMS TECH payment layout — scoped to checkout only */
-.payment-option-mollie{
-  grid-template-columns:22px 56px minmax(0,1fr) auto;
+<style id="homs-tech-payment-layout-v2">
+/* HOMS TECH checkout — single responsive payment layout */
+.payment-choice{
+  margin-top:22px;
+  padding:0 0 16px;
+  overflow:hidden;
+  border:1px solid #dce6f1;
+  border-radius:22px;
+  background:#fff;
+  box-shadow:0 8px 26px rgba(20,55,95,.06);
 }
-.payment-option-mollie .ideal-symbol{
+.payment-choice-heading{
   display:flex;
   align-items:center;
+  gap:16px;
+  padding:20px 22px;
+  border-bottom:1px solid #e1eaf4;
+  background:linear-gradient(115deg,#edf5ff 0%,#f8fbff 100%);
+}
+.payment-heading-icon{
+  display:grid;
+  place-items:center;
+  width:58px;
+  height:58px;
+  flex:0 0 58px;
+  border:1px solid #d6e6f7;
+  border-radius:17px;
+  background:linear-gradient(145deg,#e1f0ff,#f8fbff);
+  color:#0875d1;
+  font-size:27px;
+  box-shadow:0 5px 14px rgba(12,100,190,.08);
+}
+.payment-choice-heading h3{margin:0 0 5px;color:#10233f;font-size:25px;font-weight:900;letter-spacing:-.5px}
+.payment-choice-heading p{margin:0;color:#687a91;font-size:14px}
+.payment-options{display:grid;gap:12px;padding:16px 18px 10px}
+.payment-option{
+  display:grid!important;
+  grid-template-columns:22px 48px minmax(0,1fr) 158px;
+  align-items:center;
+  gap:11px;
+  min-width:0;
+  min-height:104px;
+  margin:0!important;
+  padding:13px 14px!important;
+  border:1.5px solid #dce5ef!important;
+  border-radius:18px!important;
+  background:linear-gradient(115deg,#fff,#fbfdff)!important;
+  cursor:pointer;
+  transition:border-color .18s ease,background .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+.payment-option:hover{border-color:#9dc4ec!important;transform:translateY(-1px)}
+.payment-option:has(input:checked){
+  border:2px solid #1680d5!important;
+  padding:12.5px 13.5px!important;
+  background:linear-gradient(115deg,#eff7ff,#fbfdff)!important;
+  box-shadow:0 7px 18px rgba(14,111,199,.10);
+}
+.payment-option>input{
+  width:21px!important;
+  height:21px!important;
+  min-width:21px;
+  margin:0!important;
+  accent-color:#087bd5;
+  cursor:pointer;
+}
+.payment-option>input:disabled{cursor:not-allowed;opacity:.55}
+.payment-option-symbol{
+  display:flex!important;
+  align-items:center;
   justify-content:center;
-  width:56px;
-  height:43px;
-  border:2px solid #14243c;
+  width:46px;
+  height:46px;
+  min-width:0;
+  flex:none!important;
+  border:0;
+  background:transparent;
+}
+.ideal-symbol{
+  width:48px!important;
+  height:44px!important;
+  border:2px solid #14243c!important;
   border-radius:5px 18px 18px 5px;
-  background:linear-gradient(110deg,#fff 0 16%,#d50072 16% 100%);
+  background:linear-gradient(110deg,#fff 0 16%,#d50072 16% 100%)!important;
   color:#fff;
-  font-size:13px;
+  font-size:12px;
   font-weight:950;
   font-style:italic;
   letter-spacing:-.6px;
   text-shadow:0 1px 1px rgba(0,0,0,.18);
 }
-.payment-option-mollie .payment-option-copy{min-width:0}
-.payment-option-mollie .payment-option-brands{min-width:150px}
-.checkout-submit-wrap .checkout-submit-lock{width:22px;height:22px;flex:0 0 22px}
+.paypal-symbol{color:#0878bd;font-size:45px;font-weight:1000;font-style:italic;letter-spacing:-5px;text-shadow:2px 1px 0 #9bdcf6}
+.cod-symbol{border:2px solid #203650;border-radius:8px;color:#203650;font-size:29px;font-weight:700}
+.payment-option-copy{
+  display:flex!important;
+  flex:initial!important;
+  flex-direction:column;
+  gap:5px!important;
+  min-width:0;
+}
+.payment-option-copy strong{color:#172a43;font-size:16px;font-weight:900;line-height:1.25}
+.payment-option-copy small{color:#6b7b90;font-size:12px;font-weight:650;line-height:1.4}
+.payment-option-brands{
+  display:grid!important;
+  grid-template-columns:auto auto;
+  grid-template-rows:auto auto;
+  align-items:center;
+  justify-content:end;
+  justify-items:end;
+  gap:7px 6px;
+  width:158px;
+  min-width:0!important;
+  flex:none!important;
+}
+.payment-recommended{
+  grid-column:1/-1;
+  grid-row:1;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#0caf70;
+  color:#fff!important;
+  font-size:10px!important;
+  font-weight:850;
+  line-height:1.1;
+  white-space:nowrap;
+}
+.payment-brand-row,.payment-card-brands{
+  display:flex!important;
+  align-items:center;
+  justify-content:flex-end;
+  gap:5px;
+  min-width:0;
+}
+.payment-brand-row{grid-column:1;grid-row:2}
+.payment-card-brands{grid-column:2;grid-row:2;gap:6px;color:#174d91;font-size:12px}
+.payment-logo{
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:center;
+  min-width:0;
+  min-height:28px;
+  padding:5px 7px;
+  border:1px solid #e0e7ef;
+  border-radius:8px;
+  background:#fff;
+  box-shadow:0 2px 5px rgba(20,40,70,.06);
+  font-size:10px;
+  font-weight:950;
+  line-height:1;
+  white-space:nowrap;
+}
+.payment-logo.ideal{border-color:#c90069;background:#c90069;color:#fff;font-style:italic}
+.payment-logo.wero{color:#1b1764}
+.payment-mastercard{position:relative;display:inline-block;width:28px;height:19px;flex:0 0 28px}
+.payment-mastercard:before,.payment-mastercard:after{position:absolute;top:1px;width:18px;height:18px;border-radius:50%;content:""}
+.payment-mastercard:before{left:0;background:#eb001b}
+.payment-mastercard:after{right:0;background:#f79e1b;mix-blend-mode:multiply}
+.payment-option-paypal .payment-logo.paypal{
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  width:104px!important;
+  min-width:104px!important;
+  height:46px;
+  padding:7px 9px;
+  border:1px solid #dce5ef;
+  border-radius:11px;
+  color:#003087;
+  font-size:20px;
+  font-style:italic;
+  font-weight:950;
+}
+.payment-logo.paypal em{color:#009cde;font-style:italic}
+.payment-option-cod .payment-cash-label{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  justify-self:end;
+  min-width:100px;
+  padding:11px 13px;
+  border-radius:13px;
+  background:#edf5ff;
+  color:#1768b5;
+  font-size:13px;
+  font-weight:900;
+}
+.payment-trust-strip{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  margin:5px 18px 0;
+  padding:17px 0;
+  border-top:1px solid #e4ebf2;
+  border-bottom:1px solid #e4ebf2;
+}
+.payment-trust-strip>div{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-width:0;
+  padding:0 7px;
+  border-right:1px solid #dce5ef;
+  color:#30445d;
+  font-size:12px;
+  font-weight:850;
+  line-height:1.35;
+  text-align:center;
+}
+.payment-trust-strip>div:last-child{border:0}
+.payment-trust-strip span{color:#0875cf;font-size:27px;font-weight:950;line-height:1}
+.payment-config-note{
+  display:block;
+  margin:13px 18px 0!important;
+  padding:12px 14px;
+  border:1px solid #e6edf5;
+  border-radius:13px;
+  background:#f3f7fc;
+  color:#65758a;
+  font-size:12px;
+  line-height:1.5;
+}
+.payment-mollie-trust{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:14px 18px 0;
+  padding:14px;
+  border:1px solid #d7efdf;
+  border-radius:15px;
+  background:linear-gradient(110deg,#eafff1,#f4fcff);
+}
 .payment-mollie-trust[hidden]{display:none!important}
-.payment-option:focus-within{outline:3px solid rgba(8,121,229,.18);outline-offset:2px}
+.mollie-shield{
+  display:grid;
+  place-items:center;
+  width:42px;
+  height:42px;
+  flex:0 0 42px;
+  border-radius:12px;
+  background:#0bad62;
+  color:#fff;
+  font-size:25px;
+  font-weight:950;
+}
+.payment-mollie-trust>div{display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}
+.payment-mollie-trust strong{color:#173e2c;font-size:13px;font-weight:900}
+.payment-mollie-trust small{color:#5b7667;font-size:11px;line-height:1.4}
+.mollie-wordmark{
+  padding:8px 11px;
+  border:1px solid #dce5ed;
+  border-radius:11px;
+  background:#fff;
+  color:#101828;
+  font-size:21px;
+  font-weight:950;
+  letter-spacing:-1px;
+}
+.checkout-submit-wrap{margin-top:16px}
+.checkout-submit-wrap .submit{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  width:100%;
+  min-height:66px;
+  margin:0!important;
+  padding:15px 20px;
+  border:0!important;
+  border-radius:16px!important;
+  background:linear-gradient(100deg,#087ce5,#0750bd)!important;
+  color:#fff!important;
+  font-size:18px;
+  font-weight:950;
+  box-shadow:0 9px 22px rgba(8,91,190,.20)!important;
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+.checkout-submit-wrap .submit:hover{transform:translateY(-1px);box-shadow:0 12px 25px rgba(8,91,190,.25)!important}
+.checkout-submit-wrap .submit:disabled{opacity:.65;cursor:wait;transform:none}
+.checkout-submit-lock{width:22px;height:22px;flex:0 0 22px}
+.checkout-submit-wrap>small{display:block;margin-top:10px;color:#7b899a;font-size:11px;text-align:center}
+.payment-option:focus-within{outline:3px solid rgba(8,121,229,.15);outline-offset:2px}
 .payment-option>input:focus-visible{outline:3px solid rgba(8,121,229,.25);outline-offset:3px}
 @media(max-width:600px){
-  .checkout-progress{gap:5px}
-  .checkout-progress-step{min-width:0;flex:1}
-  .checkout-progress>i{width:7vw;flex:0 1 7vw}
-  .checkout-progress-step small{font-size:9px;white-space:nowrap}
-  .payment-option-mollie{
-    grid-template-columns:20px 34px minmax(0,1fr)!important;
-    grid-template-rows:auto auto;
-    align-items:center;
-    column-gap:8px!important;
-    row-gap:8px;
-    min-height:0;
-    padding:13px 11px!important;
+  .payment-choice-heading{gap:13px;padding:17px 16px}
+  .payment-heading-icon{width:52px;height:52px;flex-basis:52px}
+  .payment-choice-heading h3{font-size:22px}
+  .payment-choice-heading p{font-size:13px}
+  .payment-options{gap:10px;padding:13px 12px 9px}
+  .payment-option{
+    grid-template-columns:20px 39px minmax(0,1fr) 125px;
+    gap:7px;
+    min-height:94px;
+    padding:11px 9px!important;
+    border-radius:16px!important;
   }
-  .payment-option-mollie:has(input:checked){padding:12px 10px!important}
-  .payment-option-mollie>input{grid-column:1;grid-row:1}
-  .payment-option-mollie>.ideal-symbol{
-    grid-column:2;grid-row:1;
-    width:34px;height:34px;
-    border-radius:4px 13px 13px 4px;
-    font-size:8px;
-  }
-  .payment-option-mollie>.payment-option-copy{grid-column:3;grid-row:1}
-  .payment-option-mollie>.payment-option-brands{
-    grid-column:3;grid-row:2;
-    display:grid!important;
-    grid-template-columns:repeat(4,max-content);
-    grid-template-rows:auto auto;
-    justify-content:end;
-    align-items:center;
-    gap:5px;
-    width:100%;
-    min-width:0!important;
-  }
-  .payment-option-mollie .payment-recommended{
-    grid-column:1/-1;
-    justify-self:end;
-    font-size:8px;
-    padding:5px 8px;
-  }
-  .payment-option-mollie .payment-brand-row,
-  .payment-option-mollie .payment-card-brands{display:contents!important}
-  .payment-option-mollie .payment-logo{
-    min-width:0;
-    min-height:22px;
-    padding:4px 5px;
-    font-size:8px;
-  }
-  .payment-option-mollie .payment-logo.wero{font-size:8px}
-  .payment-option-mollie .payment-card-brands{font-size:10px}
-  .payment-option-mollie .payment-mastercard{width:23px;height:18px}
-  .payment-option-mollie .payment-mastercard:before,
-  .payment-option-mollie .payment-mastercard:after{width:17px;height:17px}
-  .checkout-submit-wrap .submit{gap:9px}
-  .checkout-submit-wrap .checkout-submit-lock{width:20px;height:20px}
+  .payment-option:has(input:checked){padding:10.5px 8.5px!important}
+  .payment-option-symbol{width:37px;height:39px}
+  .ideal-symbol{width:39px!important;height:35px!important;font-size:9px}
+  .payment-option-copy strong{font-size:13px}
+  .payment-option-copy small{font-size:10px}
+  .payment-option-brands{width:125px;grid-template-columns:auto auto;gap:6px 4px}
+  .payment-recommended{padding:5px 8px;font-size:8px!important}
+  .payment-logo{min-height:24px;padding:4px 5px;font-size:8px}
+  .payment-brand-row,.payment-card-brands{gap:4px}
+  .payment-card-brands{font-size:10px}
+  .payment-mastercard{width:23px;height:17px;flex-basis:23px}
+  .payment-mastercard:before,.payment-mastercard:after{width:16px;height:16px}
+  .payment-option-paypal .payment-logo.paypal{width:77px!important;min-width:77px!important;height:37px;font-size:15px}
+  .payment-option-paypal{grid-template-columns:20px 34px minmax(0,1fr) 77px}
+  .paypal-symbol{font-size:38px}
+  .payment-option-cod{grid-template-columns:20px 34px minmax(0,1fr) 83px}
+  .cod-symbol{width:34px;height:38px;font-size:25px}
+  .payment-option-cod .payment-cash-label{min-width:82px;padding:9px 7px;font-size:11px}
+  .payment-trust-strip{margin:4px 12px 0;padding:14px 0}
+  .payment-trust-strip>div{gap:7px;padding:0 5px;font-size:10px}
+  .payment-trust-strip span{font-size:24px}
+  .payment-config-note{margin:11px 12px 0!important;padding:11px 12px;font-size:11px}
+  .payment-mollie-trust{gap:9px;margin:12px 12px 0;padding:11px}
+  .mollie-shield{width:37px;height:37px;flex-basis:37px;font-size:22px}
+  .payment-mollie-trust strong{font-size:11px}
+  .payment-mollie-trust small{font-size:10px}
+  .mollie-wordmark{padding:7px 8px;font-size:18px}
+  .checkout-submit-wrap{margin-top:15px}
+  .checkout-submit-wrap .submit{min-height:60px;font-size:16px;gap:9px}
 }
-@media(max-width:370px){
-  .payment-option-mollie{grid-template-columns:19px 30px minmax(0,1fr)!important;column-gap:6px!important}
-  .payment-option-mollie>.ideal-symbol{width:30px;height:31px;font-size:7px}
-  .payment-option-mollie .payment-recommended{font-size:7px}
-  .payment-option-mollie .payment-logo{font-size:7px;padding:4px}
+@media(max-width:390px){
+  .payment-options{padding-right:9px;padding-left:9px}
+  .payment-option{
+    grid-template-columns:18px 31px minmax(0,1fr) 108px;
+    gap:6px;
+    padding-right:7px!important;
+    padding-left:7px!important;
+  }
+  .payment-option:has(input:checked){padding-right:6.5px!important;padding-left:6.5px!important}
+  .payment-option-symbol{width:31px;height:34px}
+  .ideal-symbol{width:32px!important;height:31px!important;font-size:8px}
+  .payment-option-copy strong{font-size:11px}
+  .payment-option-copy small{font-size:9px}
+  .payment-option-brands{width:108px}
+  .payment-recommended{font-size:7px!important;padding:4px 6px}
+  .payment-logo{font-size:7px;padding:4px}
+  .payment-card-brands{font-size:9px}
+  .payment-option-paypal{grid-template-columns:18px 29px minmax(0,1fr) 66px}
+  .payment-option-paypal .payment-logo.paypal{width:66px!important;min-width:66px!important;height:33px;font-size:13px}
+  .payment-option-cod{grid-template-columns:18px 29px minmax(0,1fr) 70px}
+  .payment-option-cod .payment-cash-label{min-width:70px;font-size:9px;padding:8px 5px}
+}
+@media(prefers-reduced-motion:reduce){
+  .payment-option,.checkout-submit-wrap .submit{transition:none}
 }
 </style>
+
 </head>
 <body>
 <div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div>
@@ -540,10 +799,10 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
     <div><span aria-hidden="true">♙</span><b>Gegevens beschermd</b></div>
   </div>
   <p id="paymentConfigNote" class="payment-config-note" role="status">Betaalmethoden worden gecontroleerd…</p>
-  <div class="payment-mollie-trust"><span class="mollie-shield" aria-hidden="true">✓</span><div><strong>Betrouwbare betaling via Mollie</strong><small>Uw betaling wordt veilig en versleuteld verwerkt.</small></div><b class="mollie-wordmark">mollie</b></div>
 </div>
 <div id="status" class="status"></div>
 <div class="checkout-submit-wrap"><button id="submitBtn" class="btn blue submit" type="submit"><svg class="checkout-submit-lock" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Doorgaan naar betaling</span><b aria-hidden="true">→</b></button><small>U wordt doorgestuurd naar de beveiligde betaalomgeving.</small></div>
+  <div class="payment-mollie-trust"><span class="mollie-shield" aria-hidden="true">✓</span><div><strong>Betrouwbare betaling via Mollie</strong><small>Uw betaling wordt veilig en versleuteld verwerkt.</small></div><b class="mollie-wordmark">mollie</b></div>
 </form>
 
 <div id="paymentBox" class="payment-box hidden">
