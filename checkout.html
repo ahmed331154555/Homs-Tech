@@ -465,7 +465,9 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   text-shadow:0 1px 1px rgba(0,0,0,.18);
 }
 .paypal-symbol{color:#0878bd;font-size:45px;font-weight:1000;font-style:italic;letter-spacing:-5px;text-shadow:2px 1px 0 #9bdcf6}
-.cod-symbol{border:2px solid #203650;border-radius:8px;color:#203650;font-size:29px;font-weight:700}
+.cod-symbol{display:flex!important;align-items:center;justify-content:center;width:46px;height:46px;border:0!important;border-radius:0!important;background:transparent!important;color:#0875cf!important;font-size:0!important;font-weight:700}
+.cod-symbol svg{display:block;width:100%;height:100%;overflow:visible}
+
 .payment-option-copy{
   display:flex!important;
   flex:initial!important;
@@ -688,7 +690,8 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   .payment-option-paypal{grid-template-columns:20px 34px minmax(0,1fr) 77px}
   .paypal-symbol{font-size:38px}
   .payment-option-cod{grid-template-columns:20px 34px minmax(0,1fr) 83px}
-  .cod-symbol{width:34px;height:38px;font-size:25px}
+  .cod-symbol{width:34px;height:38px}
+  .cod-symbol svg{width:100%;height:100%}
   .payment-option-cod .payment-cash-label{min-width:82px;padding:9px 7px;font-size:11px}
   .payment-trust-strip{margin:4px 12px 0;padding:14px 0}
   .payment-trust-strip>div{gap:7px;padding:0 5px;font-size:10px}
@@ -788,7 +791,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
     </label>
     <label class="payment-option payment-option-cod" id="cashOnDeliveryOption" for="paymentCashOnDelivery" hidden>
       <input id="paymentCashOnDelivery" type="radio" name="paymentMethod" value="CashOnDelivery">
-      <span class="payment-option-symbol cod-symbol" aria-hidden="true">□</span>
+      <span class="payment-option-symbol cod-symbol" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><path d="M24 4 43 14.5v19L24 44 5 33.5v-19L24 4Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="m5.5 14.8 18.5 10 18.5-10M24 25v18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg></span>
       <span class="payment-option-copy"><strong>Betalen bij ontvangst</strong><small>Betaal wanneer u de telefoon ontvangt</small></span>
       <b class="payment-cash-label">Contant</b>
     </label>
