@@ -940,6 +940,9 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
       const paypal = await paypalResponse.json().catch(()=>({}));
       const cod = await codResponse.json().catch(()=>({}));
       paymentAvailability = { mollie: !!(mollieResponse.ok && mollie.enabled), paypal: !!(paypalResponse.ok && paypal.enabled && paypal.clientId), cashOnDelivery: !!(codResponse.ok && cod.cashOnDeliveryEnabled) };
+      // Show Mollie trust branding only while the Mollie payment option is actually enabled.
+      const mollieTrust = document.querySelector(".payment-mollie-trust");
+      if(mollieTrust) mollieTrust.hidden = !paymentAvailability.mollie;
       const cashOption = document.getElementById("cashOnDeliveryOption");
       const cashInput = document.getElementById("paymentCashOnDelivery");
       const mollieInput = document.getElementById("paymentMollie");
