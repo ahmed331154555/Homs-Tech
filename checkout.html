@@ -379,6 +379,97 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   .payment-option-paypal,.payment-option-cod{grid-template-columns:20px 27px minmax(0,1fr) 72px!important;gap:6px!important}
 }
 </style>
+
+<style id="ht-checkout-approved-payment-polish">
+/* Approved HOMS TECH payment layout — scoped to checkout only */
+.payment-option-mollie{
+  grid-template-columns:22px 56px minmax(0,1fr) auto;
+}
+.payment-option-mollie .ideal-symbol{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:56px;
+  height:43px;
+  border:2px solid #14243c;
+  border-radius:5px 18px 18px 5px;
+  background:linear-gradient(110deg,#fff 0 16%,#d50072 16% 100%);
+  color:#fff;
+  font-size:13px;
+  font-weight:950;
+  font-style:italic;
+  letter-spacing:-.6px;
+  text-shadow:0 1px 1px rgba(0,0,0,.18);
+}
+.payment-option-mollie .payment-option-copy{min-width:0}
+.payment-option-mollie .payment-option-brands{min-width:150px}
+.checkout-submit-wrap .checkout-submit-lock{width:22px;height:22px;flex:0 0 22px}
+.payment-mollie-trust[hidden]{display:none!important}
+.payment-option:focus-within{outline:3px solid rgba(8,121,229,.18);outline-offset:2px}
+.payment-option>input:focus-visible{outline:3px solid rgba(8,121,229,.25);outline-offset:3px}
+@media(max-width:600px){
+  .checkout-progress{gap:5px}
+  .checkout-progress-step{min-width:0;flex:1}
+  .checkout-progress>i{width:7vw;flex:0 1 7vw}
+  .checkout-progress-step small{font-size:9px;white-space:nowrap}
+  .payment-option-mollie{
+    grid-template-columns:20px 34px minmax(0,1fr)!important;
+    grid-template-rows:auto auto;
+    align-items:center;
+    column-gap:8px!important;
+    row-gap:8px;
+    min-height:0;
+    padding:13px 11px!important;
+  }
+  .payment-option-mollie:has(input:checked){padding:12px 10px!important}
+  .payment-option-mollie>input{grid-column:1;grid-row:1}
+  .payment-option-mollie>.ideal-symbol{
+    grid-column:2;grid-row:1;
+    width:34px;height:34px;
+    border-radius:4px 13px 13px 4px;
+    font-size:8px;
+  }
+  .payment-option-mollie>.payment-option-copy{grid-column:3;grid-row:1}
+  .payment-option-mollie>.payment-option-brands{
+    grid-column:3;grid-row:2;
+    display:grid!important;
+    grid-template-columns:repeat(4,max-content);
+    grid-template-rows:auto auto;
+    justify-content:end;
+    align-items:center;
+    gap:5px;
+    width:100%;
+    min-width:0!important;
+  }
+  .payment-option-mollie .payment-recommended{
+    grid-column:1/-1;
+    justify-self:end;
+    font-size:8px;
+    padding:5px 8px;
+  }
+  .payment-option-mollie .payment-brand-row,
+  .payment-option-mollie .payment-card-brands{display:contents!important}
+  .payment-option-mollie .payment-logo{
+    min-width:0;
+    min-height:22px;
+    padding:4px 5px;
+    font-size:8px;
+  }
+  .payment-option-mollie .payment-logo.wero{font-size:8px}
+  .payment-option-mollie .payment-card-brands{font-size:10px}
+  .payment-option-mollie .payment-mastercard{width:23px;height:18px}
+  .payment-option-mollie .payment-mastercard:before,
+  .payment-option-mollie .payment-mastercard:after{width:17px;height:17px}
+  .checkout-submit-wrap .submit{gap:9px}
+  .checkout-submit-wrap .checkout-submit-lock{width:20px;height:20px}
+}
+@media(max-width:370px){
+  .payment-option-mollie{grid-template-columns:19px 30px minmax(0,1fr)!important;column-gap:6px!important}
+  .payment-option-mollie>.ideal-symbol{width:30px;height:31px;font-size:7px}
+  .payment-option-mollie .payment-recommended{font-size:7px}
+  .payment-option-mollie .payment-logo{font-size:7px;padding:4px}
+}
+</style>
 </head>
 <body>
 <div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div>
@@ -393,9 +484,11 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   <div class="checkout-progress" aria-label="Voortgang van uw bestelling">
     <div class="checkout-progress-step is-done"><span>✓</span><small>Winkelwagen</small></div>
     <i></i>
-    <div class="checkout-progress-step is-active"><span>2</span><small>Gegevens & betaling</small></div>
+    <div class="checkout-progress-step is-done"><span>✓</span><small>Gegevens</small></div>
     <i></i>
-    <div class="checkout-progress-step"><span>3</span><small>Bevestiging</small></div>
+    <div class="checkout-progress-step is-active" aria-current="step"><span>3</span><small>Betaling</small></div>
+    <i></i>
+    <div class="checkout-progress-step"><span>4</span><small>Bevestiging</small></div>
   </div>
 </div>
 <div class="checkout-page-heading">
@@ -420,6 +513,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   <div class="payment-options">
     <label class="payment-option payment-option-mollie" for="paymentMollie">
       <input id="paymentMollie" type="radio" name="paymentMethod" value="Mollie" checked>
+      <span class="payment-option-symbol ideal-symbol" aria-hidden="true">iDEAL</span>
       <span class="payment-option-copy"><strong>iDEAL / Wero / Bankkaart</strong><small>Snel en veilig betalen via Mollie</small></span>
       <span class="payment-option-brands" aria-label="iDEAL, Wero, Mastercard en Visa">
         <b class="payment-recommended">✦ Aanbevolen</b>
@@ -449,7 +543,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
   <div class="payment-mollie-trust"><span class="mollie-shield" aria-hidden="true">✓</span><div><strong>Betrouwbare betaling via Mollie</strong><small>Uw betaling wordt veilig en versleuteld verwerkt.</small></div><b class="mollie-wordmark">mollie</b></div>
 </div>
 <div id="status" class="status"></div>
-<div class="checkout-submit-wrap"><button id="submitBtn" class="btn blue submit" type="submit"><span aria-hidden="true">♙</span> Doorgaan naar betaling <b aria-hidden="true">→</b></button><small>U wordt doorgestuurd naar de beveiligde betaalomgeving.</small></div>
+<div class="checkout-submit-wrap"><button id="submitBtn" class="btn blue submit" type="submit"><svg class="checkout-submit-lock" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Doorgaan naar betaling</span><b aria-hidden="true">→</b></button><small>U wordt doorgestuurd naar de beveiligde betaalomgeving.</small></div>
 </form>
 
 <div id="paymentBox" class="payment-box hidden">
