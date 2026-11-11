@@ -283,6 +283,101 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
  .payment-option .payment-brand-row,.payment-option .payment-card-brands{gap:5px}
 }
 @media(max-width:390px){.payment-option .payment-option-brands{min-width:79px}}
+
+/* MOBILE PAYMENT ROW FIX — keep logos and radio controls compact */
+.payment-option>input[type="radio"]{
+  display:block!important;
+  width:21px!important;
+  min-width:21px!important;
+  max-width:21px!important;
+  height:21px!important;
+  min-height:21px!important;
+  max-height:21px!important;
+  flex:0 0 21px!important;
+  transform:none!important;
+  padding:0!important;
+  border-radius:50%!important;
+  box-sizing:border-box!important;
+}
+.payment-option .payment-brand-row{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  width:auto!important;
+  gap:7px!important;
+}
+.payment-option .payment-brand-row>.payment-logo{
+  display:inline-flex!important;
+  flex:0 0 auto!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:center!important;
+  white-space:nowrap!important;
+}
+.payment-option .payment-card-brands{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  width:auto!important;
+  gap:8px!important;
+}
+.payment-option .payment-logo.paypal{
+  display:inline-flex!important;
+  flex:0 0 96px!important;
+  width:96px!important;
+  min-width:96px!important;
+  max-width:96px!important;
+  min-height:43px!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:center!important;
+  white-space:nowrap!important;
+  word-break:keep-all!important;
+  overflow-wrap:normal!important;
+  font-size:18px!important;
+  line-height:1!important;
+}
+.payment-option .payment-logo.paypal em{
+  display:inline!important;
+  flex:0 0 auto!important;
+  white-space:nowrap!important;
+  font-style:italic!important;
+}
+.payment-option .payment-option-symbol{
+  flex:0 0 38px!important;
+}
+@media(max-width:600px){
+  .payment-option>input[type="radio"]{
+    width:20px!important;min-width:20px!important;max-width:20px!important;
+    height:20px!important;min-height:20px!important;max-height:20px!important;
+    flex-basis:20px!important;
+  }
+  .payment-option .payment-option-brands{min-width:0!important;width:118px!important;flex:0 0 118px!important}
+  .payment-option .payment-brand-row{gap:5px!important}
+  .payment-option .payment-card-brands{gap:6px!important}
+  .payment-option .payment-logo.paypal{
+    width:78px!important;min-width:78px!important;max-width:78px!important;
+    flex-basis:78px!important;min-height:37px!important;font-size:15px!important;
+  }
+  .payment-option-paypal,.payment-option-cod{
+    grid-template-columns:20px 30px minmax(0,1fr) 78px!important;
+    gap:8px!important;
+  }
+  .payment-option-paypal .payment-option-symbol,.payment-option-cod .payment-option-symbol{
+    width:30px!important;flex-basis:30px!important;
+  }
+  .payment-option-paypal .payment-option-copy,.payment-option-cod .payment-option-copy{min-width:0!important}
+}
+@media(max-width:390px){
+  .payment-option .payment-option-brands{width:105px!important;flex-basis:105px!important}
+  .payment-option .payment-logo.paypal{width:72px!important;min-width:72px!important;max-width:72px!important;flex-basis:72px!important;font-size:14px!important}
+  .payment-option-paypal,.payment-option-cod{grid-template-columns:20px 27px minmax(0,1fr) 72px!important;gap:6px!important}
+}
 </style>
 </head>
 <body>
