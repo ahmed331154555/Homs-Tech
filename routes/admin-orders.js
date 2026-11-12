@@ -103,8 +103,13 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
       } catch {
         return res.status(409).json({ error: "De aanvraaggegevens zijn beschadigd en kunnen niet veilig worden bijgewerkt." });
       }
-      if (meta.repairQuote !== true) {
-        return res.status(400).json({ error: "Dit is geen repair request." });
+      // Accept both dedicated repair-quote form submissions and ordinary
+      // repair bookings created from the repair page. The route is scoped to
+      // service_orders, but still verify the category before allowing an offer.
+      const serviceCategory = String(order.service_category || "").trim().toLowerCase();
+      const isRepairOrder = serviceCategory === "reparatie" || serviceCategory === "repair";
+      if (!isRepairOrder) {
+        return res.status(400).json({ error: "Een offerte kan alleen voor een reparatieaanvraag worden verstuurd." });
       }
 
       const formattedPrice = price.toLocaleString("nl-NL", {
