@@ -17,9 +17,11 @@ function createHarness({ order, env = {}, fetchResponse = { ok: true, status: 20
     async query(sql, values = []) {
       queries.push({ sql, values });
       if (sql.startsWith("SELECT id, name, email")) return { rows: order ? [order] : [] };
-      if (sql.startsWith("UPDATE service_orders")) {
-        const extraFields = values.find(value => typeof value === "string" && value.startsWith("{"));
-        return { rows: [{ id: order.id, price: values[0], status: "Wacht op klant", extra_fields: extraFields || order.extra_fields }] };
+      if (sql.includes("SET price =")) {
+        return { rows: [{ id: order.id, price: values[0], status: "Wacht op klant", extra_fields: values[1] }] };
+      }
+      if (sql.includes("SET extra_fields =")) {
+        return { rows: [{ id: order.id, price: "85,50", status: "Wacht op klant", extra_fields: values[0] }] };
       }
       throw new Error("Unexpected SQL in test: " + sql);
     }
