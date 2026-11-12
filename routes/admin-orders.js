@@ -1,6 +1,98 @@
 "use strict";
 
+const crypto = require("crypto");
+
+function offerResponsePage(res, title, message) {
+  const esc = value => String(value || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  res.status(200).type("html").send(
+    '<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' +
+    esc(title) + ' · HOMS TECH</title><style>*{box-sizing:border-box}body{margin:0;padding:22px;background:#f3f6fa;color:#172b3d;font-family:Arial,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center}main{width:100%;max-width:520px;background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:28px;box-shadow:0 12px 36px rgba(15,35,55,.08)}.brand{font-weight:700;color:#1559a6;letter-spacing:.04em;font-size:13px;margin-bottom:18px}h1{font-size:24px;margin:0 0 12px}p{line-height:1.6;color:#526579}.price{font-size:30px;font-weight:800;color:#1559a6;margin:18px 0}.actions{display:grid;gap:12px;margin-top:26px}button{border:0;border-radius:10px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;width:100%}.accept{background:#176b45;color:white}.reject{background:#fff;color:#a12d36;border:1px solid #e4b8bd}small{display:block;color:#718096;margin-top:18px;line-height:1.5}</style></head><body><main><div class="brand">HOMS TECH</div><h1>' +
+    esc(title) + '</h1><p>' + esc(message) + '</p></main></body></html>'
+  );
+}
+
 function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fetchImpl = global.fetch, getEnv = () => process.env }) {
+  // GET only displays the choice page. The customer decision is recorded by POST,
+  // preventing email security scanners from accidentally accepting/rejecting offers.
+  app.get("/repair-offer-response/:id", async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      const token = String(req.query.token || "");
+      if (!Number.isSafeInteger(id) || id < 1 || !/^[a-f0-9]{64}$/i.test(token)) return offerResponsePage(res, "Ongeldige link", "Deze link is niet geldig. Neem contact op met HOMS TECH.");
+      const result = await pool.query("SELECT extra_fields FROM service_orders WHERE id = $1", [id]);
+      if (!result.rows.length) return offerResponsePage(res, "Aanvraag niet gevonden", "We konden deze reparatieaanvraag niet vinden.");
+      let meta = {};
+      try { meta = typeof result.rows[0].extra_fields === "string" ? JSON.parse(result.rows[0].extra_fields || "{}") : (result.rows[0].extra_fields || {}); } catch {}
+      const offer = meta.offer || {};
+      const candidate = crypto.createHash("sha256").update(token).digest("hex");
+      const stored = String(offer.responseTokenHash || "");
+      const valid = /^[a-f0-9]{64}$/i.test(stored) && crypto.timingSafeEqual(Buffer.from(candidate, "hex"), Buffer.from(stored, "hex"));
+      if (!valid || !offer.responseTokenExpiresAt || new Date(offer.responseTokenExpiresAt).getTime() < Date.now()) return offerResponsePage(res, "Link verlopen", "Deze offerte-link is niet meer geldig. Neem contact op met HOMS TECH voor hulp.");
+      if (offer.responseStatus !== "pending") return offerResponsePage(res, "Keuze al ontvangen", "Uw keuze voor deze offerte is al geregistreerd. Bedankt voor uw reactie.");
+      const esc = value => String(value || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+      const device = meta.brand ? meta.brand + " " + (meta.model || "") : "uw reparatie";
+      res.status(200).type("html").send(
+        '<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reparatieofferte · HOMS TECH</title>' +
+        '<style>*{box-sizing:border-box}body{margin:0;padding:22px;background:#f3f6fa;color:#172b3d;font-family:Arial,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center}main{width:100%;max-width:520px;background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:28px;box-shadow:0 12px 36px rgba(15,35,55,.08)}.brand{font-weight:700;color:#1559a6;letter-spacing:.04em;font-size:13px;margin-bottom:18px}h1{font-size:24px;margin:0 0 12px}.price{font-size:30px;font-weight:800;color:#1559a6;margin:18px 0}p{line-height:1.6;color:#526579}.actions{display:grid;gap:12px;margin-top:26px}button{border:0;border-radius:10px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;width:100%}.accept{background:#176b45;color:white}.reject{background:#fff;color:#a12d36;border:1px solid #e4b8bd}small{display:block;color:#718096;margin-top:18px;line-height:1.5}</style></head><body><main><div class="brand">HOMS TECH</div><h1>Uw reparatieofferte</h1><p>U reageert op de offerte voor <strong>' +
+        esc(device) + '</strong>.</p><div class="price">€ ' + esc(offer.price) + '</div><p>Geschatte duur: ' + esc(offer.duration || "In overleg") +
+        '<br>Offerte geldig: ' + esc(offer.validity || "14 dagen") + '</p><p>Kies hieronder of u akkoord gaat met de reparatieofferte.</p>' +
+        '<form method="post" action="/api/repair-offers/respond"><input type="hidden" name="id" value="' + id + '"><input type="hidden" name="token" value="' + esc(token) + '">' +
+        '<div class="actions"><button class="accept" type="submit" name="decision" value="accepted">✓ Ik accepteer de offerte</button><button class="reject" type="submit" name="decision" value="rejected">✕ Ik wijs de offerte af</button></div></form>' +
+        '<small>Uw keuze wordt direct aan HOMS TECH doorgegeven.</small></main></body></html>'
+      );
+    } catch (error) {
+      console.error("[REPAIR OFFER RESPONSE] Page failed:", error);
+      return offerResponsePage(res, "Er ging iets mis", "Probeer het later opnieuw of neem contact op met HOMS TECH.");
+    }
+  });
+
+  app.post("/api/repair-offers/respond", async (req, res) => {
+    try {
+      const id = Number(req.body && req.body.id);
+      const token = String((req.body && req.body.token) || "");
+      const decision = String((req.body && req.body.decision) || "");
+      if (!Number.isSafeInteger(id) || id < 1 || !/^[a-f0-9]{64}$/i.test(token) || !["accepted", "rejected"].includes(decision)) return offerResponsePage(res, "Ongeldige reactie", "Uw reactie kon niet worden verwerkt. Controleer de link en probeer opnieuw.");
+      const result = await pool.query("SELECT id, name, email, service_name, service_category, extra_fields FROM service_orders WHERE id = $1", [id]);
+      if (!result.rows.length) return offerResponsePage(res, "Aanvraag niet gevonden", "We konden deze reparatieaanvraag niet vinden.");
+      const order = result.rows[0];
+      const category = String(order.service_category || "").trim().toLowerCase();
+      if (category !== "reparatie" && category !== "repair") return offerResponsePage(res, "Ongeldige aanvraag", "Deze link hoort niet bij een reparatieaanvraag.");
+      let meta = {};
+      try { meta = typeof order.extra_fields === "string" ? JSON.parse(order.extra_fields || "{}") : (order.extra_fields || {}); } catch {}
+      const offer = meta.offer || {};
+      const candidate = crypto.createHash("sha256").update(token).digest("hex");
+      const stored = String(offer.responseTokenHash || "");
+      const valid = /^[a-f0-9]{64}$/i.test(stored) && crypto.timingSafeEqual(Buffer.from(candidate, "hex"), Buffer.from(stored, "hex"));
+      if (!valid || !offer.responseTokenExpiresAt || new Date(offer.responseTokenExpiresAt).getTime() < Date.now()) return offerResponsePage(res, "Link verlopen", "Deze offerte-link is niet meer geldig. Neem contact op met HOMS TECH.");
+      if (offer.responseStatus !== "pending") return offerResponsePage(res, "Keuze al ontvangen", "Uw keuze is al geregistreerd. Bedankt voor uw reactie.");
+      const accepted = decision === "accepted";
+      const newStatus = accepted ? "Akkoord door klant" : "Afgewezen door klant";
+      offer.responseStatus = decision;
+      offer.respondedAt = new Date().toISOString();
+      meta.offer = offer;
+      const saved = await pool.query("UPDATE service_orders SET status = $1, extra_fields = $2 WHERE id = $3 RETURNING id", [newStatus, JSON.stringify(meta), id]);
+      if (!saved.rows.length) return offerResponsePage(res, "Aanvraag niet gevonden", "We konden uw reactie niet opslaan.");
+      const env = typeof getEnv === "function" ? getEnv() || {} : {};
+      const notifyEmail = String(env.REPAIR_REQUEST_EMAIL || env.ORDER_NOTIFICATION_EMAIL || "").trim();
+      if (env.RESEND_API_KEY && env.RESEND_FROM_EMAIL && notifyEmail && typeof fetchImpl === "function") {
+        try {
+          const safe = typeof escapeHtml === "function" ? escapeHtml : value => String(value || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+          const notifyHtml = '<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;padding:24px;color:#203449;line-height:1.6"><h2>Reactie op reparatieofferte #' + id + '</h2><p>De klant heeft de offerte <strong>' + (accepted ? "geaccepteerd" : "afgewezen") + '</strong>.</p><p><b>Klant:</b> ' + safe(order.name || "-") + '<br><b>E-mail:</b> ' + safe(order.email || "-") + '<br><b>Toestel:</b> ' + safe(order.service_name || "-") + '<br><b>Offerte:</b> € ' + safe(offer.price || "-") + '<br><b>Status:</b> ' + safe(newStatus) + '</p><p>Open de HOMS TECH-admin om de aanvraag verder af te handelen.</p></div>';
+          const mailResponse = await fetchImpl("https://api.resend.com/emails", { method: "POST", headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ from: env.RESEND_FROM_EMAIL, to: [notifyEmail], subject: "HOMS TECH — klant heeft offerte #" + id + (accepted ? " geaccepteerd" : " afgewezen"), html: notifyHtml }) });
+          if (!mailResponse.ok) console.error("[REPAIR OFFER RESPONSE] Admin notification failed:", mailResponse.status, await mailResponse.text().catch(() => ""));
+        } catch (mailError) { console.error("[REPAIR OFFER RESPONSE] Admin notification error:", mailError); }
+      } else {
+        console.error("[REPAIR OFFER RESPONSE] Admin notification skipped: Resend or REPAIR_REQUEST_EMAIL/ORDER_NOTIFICATION_EMAIL is not configured.");
+      }
+      return offerResponsePage(res, accepted ? "Bedankt voor uw akkoord!" : "Uw afwijzing is ontvangen", accepted
+        ? "U heeft de reparatieofferte geaccepteerd. HOMS TECH neemt contact met u op om de reparatie verder af te stemmen."
+        : "U heeft de reparatieofferte afgewezen. HOMS TECH is hiervan op de hoogte.");
+    } catch (error) {
+      console.error("[REPAIR OFFER RESPONSE] Submission failed:", error);
+      return offerResponsePage(res, "Er ging iets mis", "Uw reactie kon niet worden verwerkt. Neem contact op met HOMS TECH.");
+    }
+  });
+
   app.get("/api/admin/orders", requirePermission("orders.view"), async (req, res) => {
     try {
       const result = await pool.query(
@@ -116,6 +208,7 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       });
+      const responseToken = crypto.randomBytes(32).toString("hex");
       const offer = {
         price: formattedPrice,
         rawPrice: price.toFixed(2),
@@ -124,7 +217,10 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
         duration,
         updatedAt: new Date().toISOString(),
         emailSent: false,
-        sentAt: null
+        sentAt: null,
+        responseStatus: "pending",
+        responseTokenHash: crypto.createHash("sha256").update(responseToken).digest("hex"),
+        responseTokenExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       };
       meta.offer = offer;
 
@@ -172,7 +268,13 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
           <p><strong>Offerte geldig:</strong> ${safe(validity)}</p>
         </div>
         <p style="white-space:pre-wrap">${safe(message)}</p>
-        <p>Wilt u akkoord gaan of heeft u vragen? Beantwoord deze e-mail, dan helpen wij u verder.</p>
+        <div style="margin:28px 0;padding:20px;background:#f7f9fc;border:1px solid #e2e8f0;border-radius:12px">
+          <h3 style="margin:0 0 10px;color:#203449">Uw keuze</h3>
+          <p style="margin:0 0 18px">Bent u akkoord met deze reparatieofferte? Open de beveiligde pagina en bevestig daar uw keuze.</p>
+          <a href="${String(env.PUBLIC_SITE_URL || env.APP_URL || "https://homs-tech.nl").replace(/\/$/, "")}/repair-offer-response/${id}?token=${responseToken}" style="display:inline-block;background:#176b45;color:#fff;text-decoration:none;font-weight:bold;padding:14px 20px;border-radius:9px">Offerte bekijken en accepteren / afwijzen</a>
+          <p style="font-size:12px;color:#64748b;margin:14px 0 0">Deze persoonlijke link is 30 dagen geldig. Op de volgende pagina kunt u kiezen voor accepteren of afwijzen.</p>
+        </div>
+        <p>Heeft u vragen? Beantwoord deze e-mail, dan helpen wij u verder.</p>
         <p>Met vriendelijke groet,<br><strong>HOMS TECH</strong></p>
       </div>`;
 
