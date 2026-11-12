@@ -3820,14 +3820,12 @@ async function sendRepairOffer(id){
    order.status=result.order?.status||"Wacht op klant";
    if(result.order?.extra_fields) order.extra_fields=result.order.extra_fields;
   }
-  if(result.warning){
-   status.style.color="#b54708";
-   status.textContent="⚠ "+result.warning;
-  }else{
-   status.style.color="#137547";
-   status.textContent="✓ Offerte verzonden en opgeslagen. De status is nu ‘Wacht op klant’.";
-  }
   renderRepairRequests();
+  const refreshedStatus=document.getElementById("repairOfferStatus-"+id);
+  if(refreshedStatus){
+   refreshedStatus.style.color=result.warning?"#b54708":"#137547";
+   refreshedStatus.textContent=result.warning?"⚠ "+result.warning:"✓ Offerte verzonden en opgeslagen. De status is nu ‘Wacht op klant’.";
+  }
  }catch(e){status.style.color="#b42318";status.textContent="✕ "+e.message;}
  finally{if(button)button.disabled=false;}
 }
