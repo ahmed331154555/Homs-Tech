@@ -512,7 +512,13 @@ registerRepairQuoteRoutes(app, {
 });
 
 // Admin order endpoints are registered from a dedicated router module.
-registerAdminOrderRoutes(app, { pool, requirePermission });
+registerAdminOrderRoutes(app, {
+  pool,
+  requirePermission,
+  escapeHtml,
+  fetchImpl: fetch,
+  getEnv: () => process.env
+});
 registerAdminBuybackOrderRoutes(app, {
   pool,
   requirePermission,
