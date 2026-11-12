@@ -31,13 +31,19 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
       if (offer.responseStatus !== "pending") return offerResponsePage(res, "Keuze al ontvangen", "Uw keuze voor deze offerte is al geregistreerd. Bedankt voor uw reactie.");
       const esc = value => String(value || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
       const device = meta.brand ? meta.brand + " " + (meta.model || "") : "uw reparatie";
+      const requestedDecision = String(req.query.decision || "");
+      const decisionButtons = requestedDecision === "accepted"
+        ? '<button class="accept" type="submit" name="decision" value="accepted">✓ Bevestig acceptatie</button>'
+        : requestedDecision === "rejected"
+          ? '<button class="reject" type="submit" name="decision" value="rejected">✕ Bevestig afwijzing</button>'
+          : '<button class="accept" type="submit" name="decision" value="accepted">✓ Ik accepteer de offerte</button><button class="reject" type="submit" name="decision" value="rejected">✕ Ik wijs de offerte af</button>';
       res.status(200).type("html").send(
         '<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reparatieofferte · HOMS TECH</title>' +
         '<style>*{box-sizing:border-box}body{margin:0;padding:22px;background:#f3f6fa;color:#172b3d;font-family:Arial,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center}main{width:100%;max-width:520px;background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:28px;box-shadow:0 12px 36px rgba(15,35,55,.08)}.brand{font-weight:700;color:#1559a6;letter-spacing:.04em;font-size:13px;margin-bottom:18px}h1{font-size:24px;margin:0 0 12px}.price{font-size:30px;font-weight:800;color:#1559a6;margin:18px 0}p{line-height:1.6;color:#526579}.actions{display:grid;gap:12px;margin-top:26px}button{border:0;border-radius:10px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;width:100%}.accept{background:#176b45;color:white}.reject{background:#fff;color:#a12d36;border:1px solid #e4b8bd}small{display:block;color:#718096;margin-top:18px;line-height:1.5}</style></head><body><main><div class="brand">HOMS TECH</div><h1>Uw reparatieofferte</h1><p>U reageert op de offerte voor <strong>' +
         esc(device) + '</strong>.</p><div class="price">€ ' + esc(offer.price) + '</div><p>Geschatte duur: ' + esc(offer.duration || "In overleg") +
         '<br>Offerte geldig: ' + esc(offer.validity || "14 dagen") + '</p><p>Kies hieronder of u akkoord gaat met de reparatieofferte.</p>' +
         '<form method="post" action="/api/repair-offers/respond"><input type="hidden" name="id" value="' + id + '"><input type="hidden" name="token" value="' + esc(token) + '">' +
-        '<div class="actions"><button class="accept" type="submit" name="decision" value="accepted">✓ Ik accepteer de offerte</button><button class="reject" type="submit" name="decision" value="rejected">✕ Ik wijs de offerte af</button></div></form>' +
+        '<div class="actions">' + decisionButtons + '</div></form>' +
         '<small>Uw keuze wordt direct aan HOMS TECH doorgegeven.</small></main></body></html>'
       );
     } catch (error) {
@@ -271,8 +277,9 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
         <div style="margin:28px 0;padding:20px;background:#f7f9fc;border:1px solid #e2e8f0;border-radius:12px">
           <h3 style="margin:0 0 10px;color:#203449">Uw keuze</h3>
           <p style="margin:0 0 18px">Bent u akkoord met deze reparatieofferte? Open de beveiligde pagina en bevestig daar uw keuze.</p>
-          <a href="${String(env.PUBLIC_SITE_URL || env.APP_URL || "https://homs-tech.nl").replace(/\/$/, "")}/repair-offer-response/${id}?token=${responseToken}" style="display:inline-block;background:#176b45;color:#fff;text-decoration:none;font-weight:bold;padding:14px 20px;border-radius:9px">Offerte bekijken en accepteren / afwijzen</a>
-          <p style="font-size:12px;color:#64748b;margin:14px 0 0">Deze persoonlijke link is 30 dagen geldig. Op de volgende pagina kunt u kiezen voor accepteren of afwijzen.</p>
+          <a href="${String(env.PUBLIC_SITE_URL || env.APP_URL || "https://homs-tech.nl").replace(/\/$/, "")}/repair-offer-response/${id}?token=${responseToken}&amp;decision=accepted" style="display:inline-block;background:#176b45;color:#fff;text-decoration:none;font-weight:bold;padding:14px 20px;border-radius:9px;margin:0 8px 10px 0">✓ Offerte accepteren</a>
+          <a href="${String(env.PUBLIC_SITE_URL || env.APP_URL || "https://homs-tech.nl").replace(/\/$/, "")}/repair-offer-response/${id}?token=${responseToken}&amp;decision=rejected" style="display:inline-block;background:#fff;color:#a12d36;text-decoration:none;font-weight:bold;padding:13px 20px;border:1px solid #e4b8bd;border-radius:9px;margin:0 0 10px">✕ Offerte afwijzen</a>
+          <p style="font-size:12px;color:#64748b;margin:14px 0 0">Na uw keuze vragen wij u deze op de beveiligde pagina nog één keer te bevestigen. Deze persoonlijke link is 30 dagen geldig.</p>
         </div>
         <p>Heeft u vragen? Beantwoord deze e-mail, dan helpen wij u verder.</p>
         <p>Met vriendelijke groet,<br><strong>HOMS TECH</strong></p>
