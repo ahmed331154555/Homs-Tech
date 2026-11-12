@@ -3829,7 +3829,7 @@ async function sendRepairOffer(id){
  }catch(e){status.style.color="#b42318";status.textContent="✕ "+e.message;}
  finally{if(button)button.disabled=false;}
 }
-async async function loadOrders(){
+async function loadOrders(){
   if(!hasPermission("orders.view"))return;
   const status=document.getElementById('repairRequestsStatus');
   if(!document.getElementById('repairRequestsList'))return;
