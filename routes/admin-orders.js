@@ -2,12 +2,19 @@
 
 const crypto = require("crypto");
 
-function offerResponsePage(res, title, message) {
+function offerResponsePage(res, title, message, options = {}) {
   const esc = value => String(value || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const redirectUrl = options.redirectUrl === "https://homs-tech.nl" ? options.redirectUrl : "";
+  const redirectDelay = redirectUrl ? 5 : 0;
+  const redirectNotice = redirectUrl
+    ? '<p style="margin-top:20px;font-size:14px;color:#718096">U wordt over 5 seconden automatisch teruggestuurd naar HOMS TECH…</p><p><a href="https://homs-tech.nl" style="color:#1559a6;font-weight:700">Nu terug naar de website</a></p>'
+    : "";
+  const redirectMeta = redirectUrl ? '<meta http-equiv="refresh" content="5;url=https://homs-tech.nl">' : "";
+  const redirectScript = redirectUrl ? '<script>window.setTimeout(function(){window.location.replace("https://homs-tech.nl");},5000);</script>' : "";
   res.status(200).type("html").send(
-    '<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' +
+    '<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' + redirectMeta + '<title>' +
     esc(title) + ' · HOMS TECH</title><style>*{box-sizing:border-box}body{margin:0;padding:22px;background:#f3f6fa;color:#172b3d;font-family:Arial,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center}main{width:100%;max-width:520px;background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:28px;box-shadow:0 12px 36px rgba(15,35,55,.08)}.brand{font-weight:700;color:#1559a6;letter-spacing:.04em;font-size:13px;margin-bottom:18px}h1{font-size:24px;margin:0 0 12px}p{line-height:1.6;color:#526579}.price{font-size:30px;font-weight:800;color:#1559a6;margin:18px 0}.actions{display:grid;gap:12px;margin-top:26px}button{border:0;border-radius:10px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;width:100%}.accept{background:#176b45;color:white}.reject{background:#fff;color:#a12d36;border:1px solid #e4b8bd}small{display:block;color:#718096;margin-top:18px;line-height:1.5}</style></head><body><main><div class="brand">HOMS TECH</div><h1>' +
-    esc(title) + '</h1><p>' + esc(message) + '</p></main></body></html>'
+    esc(title) + '</h1><p>' + esc(message) + '</p>' + redirectNotice + '</main>' + redirectScript + '</body></html>'
   );
 }
 
@@ -92,7 +99,8 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
       }
       return offerResponsePage(res, accepted ? "Bedankt voor uw akkoord!" : "Uw afwijzing is ontvangen", accepted
         ? "U heeft de reparatieofferte geaccepteerd. HOMS TECH neemt contact met u op om de reparatie verder af te stemmen."
-        : "U heeft de reparatieofferte afgewezen. HOMS TECH is hiervan op de hoogte.");
+        : "U heeft de reparatieofferte afgewezen. HOMS TECH is hiervan op de hoogte.",
+        accepted ? { redirectUrl: "https://homs-tech.nl" } : {});
     } catch (error) {
       console.error("[REPAIR OFFER RESPONSE] Submission failed:", error);
       return offerResponsePage(res, "Er ging iets mis", "Uw reactie kon niet worden verwerkt. Neem contact op met HOMS TECH.");
