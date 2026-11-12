@@ -74,7 +74,7 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
       }
 
       const priceInput = String(req.body?.price ?? "").trim().replace(",", ".");
-      if (!/^\\d+(?:\\.\\d{1,2})?$/.test(priceInput)) {
+      if (!/^\d+(?:\.\d{1,2})?$/.test(priceInput)) {
         return res.status(400).json({ error: "Vul een geldige prijs in (tussen 0 en 100.000)." });
       }
       const price = Number(priceInput);
@@ -141,7 +141,7 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
       }
 
       const customerEmail = String(order.email || "").trim();
-      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(customerEmail)) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
         return res.json({
           success: true,
           emailSent: false,
@@ -159,7 +159,7 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
         <h2>Uw reparatieofferte van HOMS TECH</h2>
         <p>Hallo ${safe(order.name || "klant")},</p>
         <p>Bedankt voor uw reparatieaanvraag voor <strong>${safe(meta.brand || "")} ${safe(meta.model || order.service_name || "uw toestel")}</strong>.</p>
-        <p><strong>Uw omschrijving:</strong><br>${safe(order.notes || "-").replace(/\\r?\\n/g, "<br>")}</p>
+        <p><strong>Uw omschrijving:</strong><br>${safe(order.notes || "-").replace(/\r?\n/g, "<br>")}</p>
         <div style="padding:18px;background:#f1f7ff;border-radius:12px;margin:20px 0">
           <div style="font-size:14px;color:#53677d">Voorgestelde reparatieprijs</div>
           <div style="font-size:30px;font-weight:bold;color:#1459a6">€ ${formattedPrice}</div>
