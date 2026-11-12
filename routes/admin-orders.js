@@ -200,11 +200,24 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
         meta.offer.emailSent = true;
         meta.offer.sentAt = new Date().toISOString();
         meta.offer.emailId = String(emailResult.id || "");
-        const finalSave = await pool.query(
-          "UPDATE service_orders SET extra_fields = $1 WHERE id = $2 RETURNING id, price, status, extra_fields",
-          [JSON.stringify(meta), id]
-        );
-        if (finalSave.rows.length) updatedOrder = finalSave.rows[0];
+        try {
+          const finalSave = await pool.query(
+            "UPDATE service_orders SET extra_fields = $1 WHERE id = $2 RETURNING id, price, status, extra_fields",
+            [JSON.stringify(meta), id]
+          );
+          if (finalSave.rows.length) updatedOrder = finalSave.rows[0];
+        } catch (saveError) {
+          // Resend has already accepted the email. Never report this as an email
+          // failure, otherwise the admin may resend the same offer unintentionally.
+          console.error("[REPAIR OFFER] Email sent, but delivery metadata could not be saved:", saveError);
+          updatedOrder = { ...updatedOrder, extra_fields: JSON.stringify(meta) };
+          return res.json({
+            success: true,
+            emailSent: true,
+            warning: "De e-mail is verzonden, maar de verzendbevestiging kon niet worden opgeslagen. Controleer Resend voordat u opnieuw verzendt.",
+            order: updatedOrder
+          });
+        }
         return res.json({ success: true, emailSent: true, order: updatedOrder });
       } catch (mailError) {
         console.error("[REPAIR OFFER] Email delivery failed:", mailError);
