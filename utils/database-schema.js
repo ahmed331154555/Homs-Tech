@@ -392,6 +392,7 @@ async function initializeDatabaseSchema(pool) {
       ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_type TEXT NOT NULL DEFAULT 'individual';
       ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_company_name TEXT NOT NULL DEFAULT '';
       ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_contact_person TEXT NOT NULL DEFAULT '';
+      ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_phone TEXT NOT NULL DEFAULT '';
       ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_postal_code TEXT NOT NULL DEFAULT '';
       ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_city TEXT NOT NULL DEFAULT '';
       ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_country TEXT NOT NULL DEFAULT 'Nederland';
