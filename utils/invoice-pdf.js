@@ -26,7 +26,7 @@ function buildInvoicePdf(invoice){
  const customerAddress=[invoice.customer_address,invoice.customer_postal_code,invoice.customer_city,invoice.customer_country].filter(Boolean).join(", ");
  const paymentLabels={bank:"Bankoverschrijving",cash:"Contant",pin:"Pin",online:"Online",other:"Anders"};
  const paymentStatusLabels={unpaid:"Niet betaald",paid:"Betaald",partial:"Gedeeltelijk betaald"};
- const perPage=11,pageCount=Math.max(1,Math.ceil(items.length/perPage));
+ const perPage=10,pageCount=Math.max(1,Math.ceil(items.length/perPage));
  for(let p=0;p<pageCount;p++){
   c=[];rect(0,720,W,122,navy);rect(0,716,W,4,green);
   txt(42,791,"HOMS TECH",24,"F2",[1,1,1]);txt(43,770,"PHONE REPAIR  |  REFURBISHED DEVICES",8,"F1",[0.82,0.87,0.92]);
