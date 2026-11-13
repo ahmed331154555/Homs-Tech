@@ -358,14 +358,44 @@
     <span class="ht-invoice-intro-icon" aria-hidden="true">✓</span>
     <div><strong>Factuurbeheer</strong><p>Controleer klantgegevens en factuurregels zorgvuldig. Het definitieve factuurnummer wordt automatisch toegewezen na het opslaan.</p></div>
   </div>
+  <div class="card ht-invoice-editor" style="margin-bottom:14px">
+    <div class="ht-invoice-card-head"><div><span class="ht-invoice-eyebrow">EENMALIG INSTELLEN</span><h3>Gegevens van HOMS TECH</h3><p>Vul deze gegevens later aan zodra de bedrijfsregistratie rond is. Ze worden automatisch op nieuwe facturen geplaatst.</p></div><span class="ht-invoice-draft-tag">Bedrijfsprofiel</span></div>
+    <div class="ht-invoice-form-grid">
+      <div class="field"><label for="invSellerLegalName">Juridische bedrijfsnaam</label><input id="invSellerLegalName" maxlength="180" placeholder="Later invullen na KVK-registratie"></div>
+      <div class="field"><label for="invSellerTradeName">Handelsnaam</label><input id="invSellerTradeName" maxlength="180" value="HOMS TECH"></div>
+      <div class="field ht-invoice-field-wide"><label for="invSellerAddress">Vestigingsadres</label><input id="invSellerAddress" maxlength="300" placeholder="Straat en huisnummer"></div>
+      <div class="field"><label for="invSellerPostalCode">Postcode</label><input id="invSellerPostalCode" maxlength="20" placeholder="Postcode"></div>
+      <div class="field"><label for="invSellerCity">Plaats</label><input id="invSellerCity" maxlength="100" placeholder="Plaats"></div>
+      <div class="field"><label for="invSellerCountry">Land</label><input id="invSellerCountry" maxlength="80" value="Nederland"></div>
+      <div class="field"><label for="invSellerKvk">KVK-nummer</label><input id="invSellerKvk" maxlength="30" placeholder="Na registratie invullen"></div>
+      <div class="field"><label for="invSellerVat">BTW-identificatienummer</label><input id="invSellerVat" maxlength="40" placeholder="Na registratie invullen"></div>
+      <div class="field"><label for="invSellerIban">IBAN</label><input id="invSellerIban" maxlength="50" placeholder="NL…"></div>
+      <div class="field"><label for="invSellerEmail">E-mailadres</label><input id="invSellerEmail" type="email" maxlength="180" placeholder="Factuur e-mailadres"></div>
+      <div class="field"><label for="invSellerPhone">Telefoon</label><input id="invSellerPhone" maxlength="40" placeholder="+31…"></div>
+      <div class="field"><label for="invSellerWebsite">Website</label><input id="invSellerWebsite" maxlength="180" value="https://homs-tech.nl"></div>
+    </div>
+    <div class="ht-invoice-editor-actions"><button class="btn btn-primary" type="button" onclick="saveInvoiceSettings()">Bedrijfsgegevens opslaan</button><span id="invoiceSettingsStatus" class="status" role="status" aria-live="polite"></span></div>
+  </div>
   <div class="card ht-invoice-editor">
     <div class="ht-invoice-card-head"><div><span class="ht-invoice-eyebrow">NIEUW DOCUMENT</span><h3>Nieuwe factuur</h3><p>Vul de klantgegevens en de geleverde producten of diensten in.</p></div><span class="ht-invoice-draft-tag">Concept</span></div>
     <div class="ht-invoice-form-grid">
-      <div class="field"><label for="invCustomerName">Naam klant *</label><input id="invCustomerName" maxlength="160" autocomplete="name" required placeholder="Volledige naam"></div>
-      <div class="field"><label for="invCustomerEmail">E-mailadres klant *</label><input id="invCustomerEmail" type="email" maxlength="254" autocomplete="email" required placeholder="klant@voorbeeld.nl"></div>
-      <div class="field ht-invoice-field-wide"><label for="invCustomerAddress">Factuuradres</label><input id="invCustomerAddress" maxlength="300" autocomplete="street-address" placeholder="Straat, huisnummer, postcode en plaats"></div>
-      <div class="field"><label for="invKvk">KVK-nummer leverancier</label><input id="invKvk" maxlength="30" placeholder="Bedrijfsregistratienummer"></div>
-      <div class="field"><label for="invVatId">BTW-ID leverancier</label><input id="invVatId" maxlength="40" placeholder="BTW-identificatienummer"></div>
+      <div class="field"><label for="invCustomerType">Type klant *</label><select id="invCustomerType" class="form-control" onchange="invoiceToggleCustomerType()"><option value="individual">Particulier</option><option value="business">Zakelijk / bedrijf</option></select></div>
+      <div class="field"><label for="invCustomerEmail">E-mailadres klant</label><input id="invCustomerEmail" type="email" maxlength="254" autocomplete="email" placeholder="klant@voorbeeld.nl"></div>
+      <div class="field" id="invCustomerNameWrap"><label for="invCustomerName">Volledige naam klant *</label><input id="invCustomerName" maxlength="160" autocomplete="name" placeholder="Voor- en achternaam"></div>
+      <div class="field" id="invCustomerCompanyWrap" hidden><label for="invCustomerCompany">Bedrijfsnaam *</label><input id="invCustomerCompany" maxlength="180" placeholder="Naam van het bedrijf"></div>
+      <div class="field" id="invCustomerContactWrap" hidden><label for="invCustomerContact">Contactpersoon</label><input id="invCustomerContact" maxlength="160" placeholder="Naam contactpersoon"></div>
+      <div class="field ht-invoice-field-wide"><label for="invCustomerAddress">Straat en huisnummer</label><input id="invCustomerAddress" maxlength="300" autocomplete="street-address" placeholder="Straat en huisnummer"></div>
+      <div class="field"><label for="invCustomerPostal">Postcode</label><input id="invCustomerPostal" maxlength="20" autocomplete="postal-code" placeholder="Postcode"></div>
+      <div class="field"><label for="invCustomerCity">Plaats</label><input id="invCustomerCity" maxlength="100" autocomplete="address-level2" placeholder="Plaats"></div>
+      <div class="field"><label for="invCustomerCountry">Land</label><input id="invCustomerCountry" maxlength="80" value="Nederland" autocomplete="country-name"></div>
+      <div class="field" id="invCustomerKvkWrap" hidden><label for="invCustomerKvk">KVK-nummer klant</label><input id="invCustomerKvk" maxlength="30" placeholder="KVK-nummer bedrijf"></div>
+      <div class="field" id="invCustomerVatWrap" hidden><label for="invCustomerVat">BTW-ID klant</label><input id="invCustomerVat" maxlength="40" placeholder="BTW-identificatienummer klant"></div>
+      <div class="field"><label for="invPaymentMethod">Betaalmethode</label><select id="invPaymentMethod" class="form-control"><option value="bank">Bankoverschrijving</option><option value="pin">Pin</option><option value="cash">Contant</option><option value="online">Online betaling</option><option value="other">Anders</option></select></div>
+      <div class="field"><label for="invPaymentStatus">Betaalstatus</label><select id="invPaymentStatus" class="form-control"><option value="unpaid">Niet betaald</option><option value="paid">Betaald</option><option value="partial">Gedeeltelijk betaald</option></select></div>
+      <div class="field"><label for="invDueDate">Vervaldatum</label><input id="invDueDate" type="date"></div>
+      <div class="field"><label for="invDeliveryDate">Leverdatum / reparatiedatum</label><input id="invDeliveryDate" type="date"></div>
+      <div class="field ht-invoice-field-wide"><label for="invReference">Referentie / ordernummer</label><input id="invReference" maxlength="120" placeholder="Bijv. reparatieorder of webshopbestelling"></div>
+      <div class="field ht-invoice-field-wide"><label for="invNotes">Opmerkingen</label><input id="invNotes" maxlength="1200" placeholder="Aanvullende informatie voor op de factuur"></div>
     </div>
     <div class="ht-invoice-lines-head"><div><h4>Factuurregels</h4><p>Bedragen in euro. BTW per regel instelbaar.</p></div><button class="btn btn-light" type="button" onclick="addInvoiceLine()">＋ Regel toevoegen</button></div>
     <div class="ht-invoice-lines-wrap">
