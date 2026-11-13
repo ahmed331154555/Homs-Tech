@@ -28,6 +28,7 @@ function response() {
     status(code) { this.statusCode = code; return this; },
     json(value) { this.body = value; return this; },
     setHeader(name, value) { this.headers[name] = value; },
+    set(name, value) { this.headers[name] = value; return this; },
     send(value) { this.body = value; return this; }
   };
 }
@@ -88,9 +89,9 @@ test("invoice creation validates input and calculates totals", async () => {
   assert.equal(res.statusCode, 201);
   assert.equal(res.body.invoice.invoice_number, "HT-2026-000012");
   assert.equal(res.body.invoice.total, "130.68");
-  assert.equal(calls.length, 1, "invoice and its final number are created by one INSERT");
-  assert.match(calls[0].sql, /nextval\(pg_get_serial_sequence\('manual_invoices','id'\)\)/);
-  assert.match(calls[0].sql, /INSERT INTO manual_invoices\([\s\S]*SELECT id,[\s\S]*LPAD\(id::text,6,'0'\)/);
+  assert.equal(calls.length, 2, "load seller settings and create invoice in one insert");
+  assert.match(calls[1].sql, /nextval\(pg_get_serial_sequence\('manual_invoices','id'\)\)/);
+  assert.match(calls[1].sql, /INSERT INTO manual_invoices\([\s\S]*SELECT id,[\s\S]*LPAD\(id::text,6,'0'\)/);
   assert.doesNotMatch(calls[1].sql, /UPDATE manual_invoices AS invoice/);
   const lines = JSON.parse(calls[1].params[5]);
   assert.equal(lines.length, 2);
@@ -182,6 +183,7 @@ test("invoice totals round each line to cents before summing", async () => {
   const calls = [];
   const pool = { async query(sql, params) {
     calls.push({ sql, params });
+    if (sql.includes("SELECT data FROM invoice_settings")) return { rows: [{ data: {} }] };
     if (sql.includes("INSERT INTO manual_invoices")) {
       return { rows: [{ id: 31, invoice_number: "HT-2026-000031", created_at: new Date("2026-11-10T10:00:00Z"), status: "open", total: "0.36" }] };
     }
@@ -197,9 +199,9 @@ test("invoice totals round each line to cents before summing", async () => {
     }
   }, res);
   assert.equal(res.statusCode, 201);
-  assert.equal(calls[0].params[6], "0.30");
-  assert.equal(calls[0].params[7], "0.06");
-  assert.equal(calls[0].params[8], "0.36");
+  assert.equal(calls[1].params[6], "0.30");
+  assert.equal(calls[1].params[7], "0.06");
+  assert.equal(calls[1].params[8], "0.36");
 });
 
 
