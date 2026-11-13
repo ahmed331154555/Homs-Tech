@@ -56,9 +56,10 @@ function registerAdminInvoiceRoutes(app, {
     try {
       const body = req.body || {};
       const customerType = body.customerType === "business" ? "business" : "individual";
-      const customerName = String(body.customerName || "").trim().slice(0, 160);
+      const customerName = String(body.customerName || body.customerCompanyName || "").trim().slice(0, 160);
       const customerCompanyName = String(body.customerCompanyName || "").trim().slice(0, 180);
       const customerContactPerson = String(body.customerContactPerson || "").trim().slice(0, 160);
+      const customerPhone = String(body.customerPhone || "").trim().slice(0, 40);
       const customerEmail = String(body.customerEmail || "").trim().slice(0, 254);
       const customerAddress = String(body.customerAddress || "").trim().slice(0, 300);
       const customerPostalCode = String(body.customerPostalCode || "").trim().slice(0, 20);
@@ -129,20 +130,20 @@ function registerAdminInvoiceRoutes(app, {
         INSERT INTO manual_invoices(
           id,invoice_number,customer_name,customer_email,customer_address,
           kvk_number,vat_id,lines,subtotal,vat_total,total,customer_type,
-          customer_company_name,customer_contact_person,customer_postal_code,
+          customer_company_name,customer_contact_person,customer_phone,customer_postal_code,
           customer_city,customer_country,customer_kvk_number,customer_vat_id,
           payment_method,payment_status,due_date,delivery_date,reference,notes,seller_snapshot
         )
         SELECT id,
           'HT-' || EXTRACT(YEAR FROM CURRENT_TIMESTAMP)::integer || '-' || LPAD(id::text,6,'0'),
-          $1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24::jsonb
+          $1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9, $10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25::jsonb
         FROM next_invoice
         RETURNING id,invoice_number,created_at,status,total`,
         [
           customerName,customerEmail,customerAddress,
           sellerSnapshot.kvkNumber || "",sellerSnapshot.vatId || "",
           JSON.stringify(lines),subtotal.toFixed(2),vatTotal.toFixed(2),total.toFixed(2),
-          customerType,customerCompanyName,customerContactPerson,customerPostalCode,
+          customerType,customerCompanyName,customerContactPerson,customerPhone,customerPostalCode,
           customerCity,customerCountry,customerKvkNumber,customerVatId,
           paymentMethod,paymentStatus,dueDate,deliveryDate,reference,notes,JSON.stringify(sellerSnapshot)
         ]
