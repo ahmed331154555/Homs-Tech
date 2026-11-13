@@ -6750,11 +6750,11 @@ function invoiceFormMessage(message,type="info"){
 function invoiceDraftPayload(){
   const totals=invoiceCalc(),customerType=invoiceFieldValue("invCustomerType")||"individual";
   return {
-    customerType,customerName:invoiceFieldValue("invCustomerName"),customerCompanyName:invoiceFieldValue("invCustomerCompany"),
-    customerContactPerson:invoiceFieldValue("invCustomerContact"),customerPhone:invoiceFieldValue("invCustomerPhone"),customerEmail:invoiceFieldValue("invCustomerEmail"),
+    customerType,customerName:customerType==="business"?"":invoiceFieldValue("invCustomerName"),customerCompanyName:customerType==="business"?invoiceFieldValue("invCustomerCompany"):"",
+    customerContactPerson:customerType==="business"?invoiceFieldValue("invCustomerContact"):"",customerPhone:invoiceFieldValue("invCustomerPhone"),customerEmail:invoiceFieldValue("invCustomerEmail"),
     customerAddress:invoiceFieldValue("invCustomerAddress"),customerPostalCode:invoiceFieldValue("invCustomerPostal"),
     customerCity:invoiceFieldValue("invCustomerCity"),customerCountry:invoiceFieldValue("invCustomerCountry")||"Nederland",
-    customerKvkNumber:invoiceFieldValue("invCustomerKvk"),customerVatId:invoiceFieldValue("invCustomerVat"),
+    customerKvkNumber:customerType==="business"?invoiceFieldValue("invCustomerKvk"):"",customerVatId:customerType==="business"?invoiceFieldValue("invCustomerVat"):"",
     paymentMethod:invoiceFieldValue("invPaymentMethod")||"bank",paymentStatus:invoiceFieldValue("invPaymentStatus")||"unpaid",
     dueDate:invoiceFieldValue("invDueDate"),deliveryDate:invoiceFieldValue("invDeliveryDate"),
     reference:invoiceFieldValue("invReference"),notes:invoiceFieldValue("invNotes"),lines:totals.lines,totals
