@@ -17,6 +17,19 @@
  #homsMenuButton:hover{background:#f1f5f9}
  #homsMenuButton:active{transform:scale(.96)}
  #homsMenuButton span{width:28px;height:3px;background:#071d2d;border-radius:2px;display:block}
+ .homs-account-icon{overflow:visible!important}
+ .homs-account-wave-arm{transform-box:view-box;transform-origin:18.8px 30.1px;animation:homs-account-wave 2.15s ease-in-out 1 both}
+ @keyframes homs-account-wave{
+  0%,10%{transform:rotate(0);opacity:1}
+  20%{transform:rotate(-13deg);opacity:1}
+  30%{transform:rotate(10deg);opacity:1}
+  40%{transform:rotate(-12deg);opacity:1}
+  50%{transform:rotate(9deg);opacity:1}
+  60%{transform:rotate(-7deg);opacity:1}
+  72%{transform:rotate(0);opacity:1}
+  86%,100%{transform:rotate(0);opacity:0}
+ }
+ @media(prefers-reduced-motion:reduce){.homs-account-wave-arm{animation:none!important;opacity:0!important}}
  #homsMenuBackdrop{position:fixed;inset:0;background:#06131e88;z-index:100003;opacity:0;visibility:hidden;transition:.22s}
  #homsMenuBackdrop.open{opacity:1;visibility:visible}
  #homsMenuDrawer{position:fixed;inset:0 auto 0 0;width:min(88vw,370px);background:#fff;z-index:100004;transform:translateX(-105%);transition:transform .25s ease;overflow:auto;box-shadow:15px 0 40px #0002;font-family:Arial,Helvetica,sans-serif}
@@ -188,7 +201,7 @@
    link.setAttribute('aria-label',type==='account'?'Mijn account':'Winkelwagen');
    link.setAttribute('title',type==='account'?'Mijn account':'Winkelwagen');
    link.innerHTML=type==='account'
-    ? '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#071d2d" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.5" r="4" fill="none"></circle><path d="M4 21c.6-4.2 3.5-6.5 8-6.5s7.4 2.3 8 6.5" fill="none"></path></svg>'
+    ? '<svg class="homs-account-icon" viewBox="0 0 48 48" width="30" height="30" fill="none" stroke="#071d2d" stroke-width="2.45" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="29.5" cy="10.5" r="6.1"></circle><path d="M25.5 16.2C20.5 18.1 17.2 23.2 17.2 30.5V38.8c6.5 3.2 17.6 3.2 24 0V31.5c0-8-4.4-13.3-8.4-15"></path><g class="homs-account-wave-arm"><path d="M18.8 30.1C16.8 27.3 14.2 24.5 12.3 21.8C10.6 19.3 8.7 16.1 7.6 13.7C6.4 11.2 7.3 8.9 9.2 8.4C11.2 7.9 12.7 9.2 13.7 11.3C15 14.2 16.5 17.4 18.3 19.2C19.6 20.5 21.3 20.9 23.1 20.1"></path></g></svg>'
     : '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#071d2d" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5" fill="none"></circle><circle cx="19" cy="20" r="1.5" fill="none"></circle><path d="M2 3h2l2.6 12.2a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 1.9-1.4L22 8H6" fill="none"></path></svg>';
    if(type==='cart'&&countText){var badge=document.createElement('span');badge.className='homs-cart-badge';badge.textContent=countText;link.appendChild(badge)}
   }
