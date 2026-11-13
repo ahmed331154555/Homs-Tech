@@ -451,7 +451,26 @@ text-align:center
 }
 
 }
-.product-stock{margin:8px 0 0;font-size:13px;font-weight:800}.product-stock.in-stock{color:#2563eb}.product-stock.sold-out{color:#dc2626}</style>
+.product-stock{margin:8px 0 0;font-size:13px;font-weight:800}.product-stock.in-stock{color:#2563eb}.product-stock.sold-out{color:#dc2626}
+.catalog-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:0 0 18px}
+.catalog-count{color:#64748b;font-size:14px;font-weight:700}
+.catalog-sort{min-height:42px;border:1px solid #dbe2ea;border-radius:10px;background:#fff;padding:0 12px;color:#172330;font-weight:700}
+.catalog-filters{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;margin:0 0 22px;box-shadow:0 5px 18px rgba(15,23,42,.04)}
+.catalog-filters summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;font-weight:800;color:#071d2d}
+.catalog-filters summary::-webkit-details-marker{display:none}
+.catalog-filters summary:after{content:"⌄";color:#2563eb;font-size:20px}
+.catalog-filters[open] summary{margin-bottom:15px}
+.catalog-filter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.catalog-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.catalog-field label{font-size:12px;font-weight:800;color:#475569}
+.catalog-field select,.catalog-field input{width:100%;min-width:0;min-height:42px;border:1px solid #dbe2ea;border-radius:9px;background:#fff;padding:0 10px;color:#172330}
+.catalog-price-row{display:flex;gap:8px}
+.catalog-check{display:flex;align-items:center;gap:8px;min-height:42px;color:#334155;font-size:13px;font-weight:700}
+.catalog-check input{width:17px;height:17px;accent-color:#2563eb}
+.catalog-filter-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:14px}
+.catalog-reset{border:0;background:#eff4fa;color:#334155;padding:10px 14px;border-radius:9px;font-weight:800;cursor:pointer}
+@media(max-width:760px){.catalog-filters{padding:14px}.catalog-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-filters:not([open]){padding:13px 15px}.catalog-toolbar{align-items:stretch}.catalog-sort{flex:1}}
+@media(max-width:420px){.catalog-filter-grid{grid-template-columns:1fr 1fr}.catalog-field label{font-size:11px}.catalog-field select,.catalog-field input{font-size:13px}}</style>
 <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20261109-shared-theme">
 <style>
 /* HOMS TECH FINAL HEADER OVERRIDE — self-contained */
@@ -544,6 +563,28 @@ Bekijk de smartphones die momenteel te koop zijn bij HOMS TECH.
 
 </div>
 
+<div class="catalog-toolbar">
+  <div class="catalog-count" id="devicesCount" aria-live="polite">Producten laden...</div>
+  <select class="catalog-sort" id="devicesSort" aria-label="Sorteer producten">
+    <option value="recommended">Aanbevolen</option>
+    <option value="price-asc">Prijs: laag naar hoog</option>
+    <option value="price-desc">Prijs: hoog naar laag</option>
+    <option value="name">Naam: A–Z</option>
+  </select>
+</div>
+<details class="catalog-filters" id="devicesFilters" open>
+  <summary>Filters <span id="devicesFilterSummary" style="font-size:12px;color:#64748b;font-weight:600">Verfijn uw zoekopdracht</span></summary>
+  <div class="catalog-filter-grid">
+    <div class="catalog-field"><label for="filterBrand">Merk</label><select id="filterBrand"><option value="">Alle merken</option></select></div>
+    <div class="catalog-field"><label for="filterModel">Model / zoekterm</label><input id="filterModel" type="search" placeholder="Bijv. iPhone 15"></div>
+    <div class="catalog-field"><label for="filterStorage">Opslag</label><select id="filterStorage"><option value="">Alle opslag</option></select></div>
+    <div class="catalog-field"><label for="filterColor">Kleur</label><select id="filterColor"><option value="">Alle kleuren</option></select></div>
+    <div class="catalog-field"><label for="filterCondition">Conditie</label><select id="filterCondition"><option value="">Alle condities</option></select></div>
+    <div class="catalog-field"><label>Prijs (€)</label><div class="catalog-price-row"><input id="filterMinPrice" type="number" min="0" inputmode="decimal" placeholder="Min"><input id="filterMaxPrice" type="number" min="0" inputmode="decimal" placeholder="Max"></div></div>
+    <div class="catalog-field"><label>Voorraad</label><label class="catalog-check"><input id="filterInStock" type="checkbox"> Alleen op voorraad</label></div>
+  </div>
+  <div class="catalog-filter-actions"><button class="catalog-reset" id="resetDeviceFilters" type="button">Wis filters</button></div>
+</details>
 <div id="devicesGrid" class="devices-grid"></div>
 
 </section>
@@ -718,6 +759,80 @@ const prices = options.map(x=>{
   return 0;
 }).filter(n=>n>0);
 return prices.length ? Math.min(...prices) : Number(device.price || device.salePrice || 0) || 0;
+}
+
+let allDevices = [];
+let deviceFiltersBound = false;
+
+function devicePrice(device){
+  const value = startingConditionPrice(device);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+function uniqueDeviceValues(values){
+  return [...new Set(values.map(value=>String(value||"").trim()).filter(Boolean))]
+    .sort((a,b)=>a.localeCompare(b,"nl",{numeric:true,sensitivity:"base"}));
+}
+function fillDeviceFilter(id, values, placeholder){
+  const select=document.getElementById(id);
+  if(!select)return;
+  const previous=select.value;
+  select.innerHTML='<option value="">'+escapeHtml(placeholder)+'</option>'+
+    uniqueDeviceValues(values).map(value=>'<option value="'+escapeHtml(value)+'">'+escapeHtml(value)+'</option>').join("");
+  if([...select.options].some(option=>option.value===previous))select.value=previous;
+}
+function setupDeviceFilters(){
+  fillDeviceFilter("filterBrand",allDevices.map(device=>device.brand),"Alle merken");
+  fillDeviceFilter("filterStorage",allDevices.map(device=>device.storage),"Alle opslag");
+  fillDeviceFilter("filterColor",allDevices.map(device=>device.color),"Alle kleuren");
+  fillDeviceFilter("filterCondition",allDevices.flatMap(device=>{
+    const values=[device.condition,device.conditie];
+    (Array.isArray(device.conditionOptions)?device.conditionOptions:[]).forEach(option=>{
+      values.push(option.condition,option.name,option.label,option.title);
+    });
+    return values;
+  }),"Alle condities");
+  if(deviceFiltersBound)return;
+  deviceFiltersBound=true;
+  ["filterBrand","filterStorage","filterColor","filterCondition","filterMinPrice","filterMaxPrice","filterInStock","filterModel","devicesSort"]
+    .forEach(id=>document.getElementById(id)?.addEventListener("input",applyDeviceFilters));
+  document.getElementById("resetDeviceFilters")?.addEventListener("click",()=>{
+    ["filterBrand","filterStorage","filterColor","filterCondition","filterMinPrice","filterMaxPrice","filterModel"].forEach(id=>{
+      const control=document.getElementById(id);if(control)control.value="";
+    });
+    const stock=document.getElementById("filterInStock");if(stock)stock.checked=false;
+    const sort=document.getElementById("devicesSort");if(sort)sort.value="recommended";
+    applyDeviceFilters();
+  });
+}
+function applyDeviceFilters(){
+  const value=id=>String(document.getElementById(id)?.value||"").trim();
+  const brand=value("filterBrand"),storage=value("filterStorage"),color=value("filterColor");
+  const condition=value("filterCondition").toLocaleLowerCase();
+  const model=value("filterModel").toLocaleLowerCase();
+  const minRaw=value("filterMinPrice"),maxRaw=value("filterMaxPrice");
+  const min=minRaw===""?null:Number(minRaw),max=maxRaw===""?null:Number(maxRaw);
+  const inStock=Boolean(document.getElementById("filterInStock")?.checked);
+  const filtered=allDevices.filter(device=>{
+    const price=devicePrice(device);
+    const conditionValues=[device.condition,device.conditie,...(Array.isArray(device.conditionOptions)?device.conditionOptions.flatMap(option=>[option.condition,option.name,option.label,option.title]):[])].map(x=>String(x||"").toLocaleLowerCase());
+    const searchable=[device.name,device.brand,device.storage,device.color,device.condition,device.conditie].map(x=>String(x||"").toLocaleLowerCase()).join(" ");
+    return (!brand||String(device.brand||"")===brand)&&(!storage||String(device.storage||"")===storage)&&
+      (!color||String(device.color||"")===color)&&(!condition||conditionValues.includes(condition))&&
+      (!model||searchable.includes(model))&&(min===null||price>=min)&&(max===null||price<=max)&&
+      (!inStock||Number(device.stock||0)>0);
+  });
+  const sort=value("devicesSort");
+  if(sort==="price-asc")filtered.sort((a,b)=>devicePrice(a)-devicePrice(b));
+  else if(sort==="price-desc")filtered.sort((a,b)=>devicePrice(b)-devicePrice(a));
+  else if(sort==="name")filtered.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"nl",{numeric:true}));
+  const count=document.getElementById("devicesCount");
+  if(count)count.textContent=filtered.length+" van "+allDevices.length+" telefoons";
+  const summary=document.getElementById("devicesFilterSummary");
+  if(summary){
+    const active=[brand,storage,color,condition,model,minRaw,maxRaw,inStock?"stock":""].filter(Boolean).length;
+    summary.textContent=active?active+" filters actief":"Verfijn uw zoekopdracht";
+  }
+  renderDevices(filtered);
 }
 
 function renderDevices(devices){
@@ -916,20 +1031,16 @@ devices = [];
 
 
 const params = new URLSearchParams(window.location.search);
-const searchTerm = String(params.get("search") || "").trim().toLowerCase();
+const searchTerm = String(params.get("search") || "").trim();
 const searchInput = document.querySelector('.ht-search input[name="search"]');
-if(searchInput) searchInput.value = params.get("search") || "";
-
+if(searchInput) searchInput.value = searchTerm;
+allDevices = devices;
+setupDeviceFilters();
 if(searchTerm){
-  devices = devices.filter(device => {
-    const haystack = [
-      device.name, device.brand, device.storage, device.color, device.condition
-    ].map(v => String(v || "").toLowerCase()).join(" ");
-    return haystack.includes(searchTerm);
-  });
+  const modelInput=document.getElementById("filterModel");
+  if(modelInput)modelInput.value=searchTerm;
 }
-
-renderDevices(devices);
+applyDeviceFilters();
 
 }
 
