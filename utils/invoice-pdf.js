@@ -30,7 +30,7 @@ function buildInvoicePdf(invoice){
  for(let p=0;p<pageCount;p++){
   c=[];rect(0,720,W,122,navy);rect(0,716,W,4,green);
   txt(42,791,"HOMS TECH",24,"F2",[1,1,1]);txt(43,770,"PHONE REPAIR  |  REFURBISHED DEVICES",8,"F1",[0.82,0.87,0.92]);
-  txt(42,744,"FACTUUR",17,"F2",[1,1,1]);txt(420,793,"FACTUURNUMMER",7,"F2",[0.70,0.78,0.85]);txt(420,775,String(invoice.invoice_number||"-"),11,"F2",[1,1,1]);txt(420,752,"DATUM  "+date,9,"F1",[0.90,0.93,0.96]);
+  txt(42,744,"FACTUUR",17,"F2",[1,1,1]);txt(420,793,"FACTUURNUMMER",7,"F2",[0.70,0.78,0.85]);txt(420,775,String(invoice.invoice_number||"-"),11,"F2",[1,1,1]);txt(420,752,"DATUM  "+date,9,"F1",[0.90,0.93,0.96]);if(invoice.due_date)txt(420,737,"VERVALDATUM  "+new Date(invoice.due_date).toLocaleDateString("nl-NL"),7,"F1",[0.90,0.93,0.96]);
   txt(42,681,"FACTUUR AAN · "+customerType.toUpperCase(),8,"F2",muted);
   txt(42,658,String(customerLabel).slice(0,48),12,"F2",ink);
   let cy=640;
@@ -46,7 +46,8 @@ function buildInvoicePdf(invoice){
   if(seller.kvkNumber){txt(340,sy,"KVK: "+String(seller.kvkNumber).slice(0,34),8,"F1",muted);sy-=14;}
   if(seller.vatId){txt(340,sy,"BTW-ID: "+String(seller.vatId).slice(0,34),8,"F1",muted);sy-=14;}
   if(seller.email){txt(340,sy,String(seller.email).slice(0,40),8,"F1",muted);sy-=14;}
-  if(seller.phone){txt(340,sy,String(seller.phone).slice(0,40),8,"F1",muted);}
+  if(seller.phone){txt(340,sy,String(seller.phone).slice(0,40),8,"F1",muted);sy-=14;}
+  if(seller.website){txt(340,sy,String(seller.website).slice(0,40),8,"F1",muted);}
   const top=p===0?510:590;rect(42,top-8,511,25,pale);
   txt(51,top,"OMSCHRIJVING",8,"F2",muted);txt(333,top,"AANTAL",8,"F2",muted);txt(392,top,"PRIJS",8,"F2",muted);txt(465,top,"BTW",8,"F2",muted);txt(510,top,"TOTAAL",8,"F2",muted);
   let y=top-29;const pageItems=items.slice(p*perPage,(p+1)*perPage);
