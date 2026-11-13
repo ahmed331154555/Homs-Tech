@@ -42,7 +42,7 @@ test("buildInvoicePdf creates a valid PDF document with invoice details", () => 
   assert.match(source, /TOTAAL/);
 });
 
-test("buildInvoicePdf paginates invoice lines in groups of eleven", () => {
+test("buildInvoicePdf paginates invoice lines in groups of ten to preserve summary space", () => {
   const lines = Array.from({ length: 12 }, (_, index) => ({
     description: "Item " + (index + 1),
     quantity: 1,
@@ -59,6 +59,7 @@ test("buildInvoicePdf paginates invoice lines in groups of eleven", () => {
     lines
   }).toString("latin1");
   assert.equal((pdf.match(/\/Type \/Page /g) || []).length, 2);
+  assert.match(pdf, /Item 10/);
   assert.match(pdf, /Pagina 1 \/ 2/);
   assert.match(pdf, /Pagina 2 \/ 2/);
   assert.match(pdf, /Item 12/);
