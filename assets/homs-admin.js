@@ -94,7 +94,7 @@ function showPage(page){
     }
     if(page==="customers")loadCustomers();
     if(page==="emails")loadAdminEmails();
-    if(page==="invoices"){if(!document.querySelector("#invoiceLines tr"))addInvoiceLine();loadInvoices();}
+    if(page==="invoices"){if(!document.querySelector("#invoiceLines tr"))addInvoiceLine();invoiceToggleCustomerType();loadInvoiceSettings();loadInvoices();}
     if(page==="inventory")loadInventory();
     if(page==="device-register")loadDeviceRegister();
     if(page==="live-chat"){loadLiveChat();if(liveChatRefreshTimer)clearInterval(liveChatRefreshTimer);liveChatRefreshTimer=setInterval(()=>{if(currentPage==="live-chat")loadLiveChat();},8000);}
@@ -6632,6 +6632,47 @@ async function saveInventoryMovement(event){
 }
 
 let invoiceTestRecipient="Appelavcd116@gmail.com";
+let invoiceSellerSettings={};
+function invoiceFieldValue(id){return String(document.getElementById(id)?.value||"").trim();}
+function invoiceSetValue(id,value){const el=document.getElementById(id);if(el)el.value=value||"";}
+function invoiceToggleCustomerType(){
+  const business=invoiceFieldValue("invCustomerType")==="business";
+  for(const id of ["invCustomerCompanyWrap","invCustomerContactWrap","invCustomerKvkWrap","invCustomerVatWrap"]){
+    const el=document.getElementById(id);if(el)el.hidden=!business;
+  }
+  const nameLabel=document.querySelector('label[for="invCustomerName"]');
+  if(nameLabel)nameLabel.textContent=business?"Naam contactpersoon (optioneel)":"Volledige naam klant *";
+}
+async function loadInvoiceSettings(){
+  try{
+    const response=await fetch("/api/admin/invoice-settings",{credentials:"same-origin",headers:{"Accept":"application/json"}});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Factuurinstellingen laden is mislukt.");
+    invoiceSellerSettings=result.settings||{};
+    const map={legalName:"invSellerLegalName",tradeName:"invSellerTradeName",address:"invSellerAddress",postalCode:"invSellerPostalCode",city:"invSellerCity",country:"invSellerCountry",kvkNumber:"invSellerKvk",vatId:"invSellerVat",iban:"invSellerIban",email:"invSellerEmail",phone:"invSellerPhone",website:"invSellerWebsite"};
+    for(const [key,id] of Object.entries(map))invoiceSetValue(id,invoiceSellerSettings[key]);
+  }catch(error){
+    const status=document.getElementById("invoiceSettingsStatus");
+    if(status){status.className="status error";status.textContent=error.message;}
+  }
+}
+async function saveInvoiceSettings(){
+  const button=document.querySelector('#page-invoices button[onclick="saveInvoiceSettings()"]');
+  const map={legalName:"invSellerLegalName",tradeName:"invSellerTradeName",address:"invSellerAddress",postalCode:"invSellerPostalCode",city:"invSellerCity",country:"invSellerCountry",kvkNumber:"invSellerKvk",vatId:"invSellerVat",iban:"invSellerIban",email:"invSellerEmail",phone:"invSellerPhone",website:"invSellerWebsite"};
+  const data={};for(const [key,id] of Object.entries(map))data[key]=invoiceFieldValue(id);
+  if(data.email&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(data.email)){const el=document.getElementById("invoiceSettingsStatus");if(el){el.className="status error";el.textContent="Vul een geldig bedrijfs-e-mailadres in.";}return;}
+  if(button){button.disabled=true;button.dataset.originalText=button.textContent;button.textContent="Opslaan…";}
+  const status=document.getElementById("invoiceSettingsStatus");
+  if(status){status.className="status info";status.textContent="Bedrijfsgegevens worden opgeslagen…";}
+  try{
+    const response=await fetch("/api/admin/invoice-settings",{method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(data)});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Factuurinstellingen opslaan is mislukt.");
+    invoiceSellerSettings=result.settings||data;
+    if(status){status.className="status success";status.textContent="Bedrijfsgegevens veilig opgeslagen. Nieuwe facturen gebruiken deze gegevens.";}
+  }catch(error){if(status){status.className="status error";status.textContent=error.message;}}
+  finally{if(button){button.disabled=false;button.textContent=button.dataset.originalText||"Bedrijfsgegevens opslaan";delete button.dataset.originalText;}}
+}
 function invoiceEuro(value){
   return new Intl.NumberFormat("nl-NL",{style:"currency",currency:"EUR"}).format(invoiceRoundMoney(value));
 }
@@ -6707,20 +6748,22 @@ function invoiceFormMessage(message,type="info"){
   status.textContent=message;
 }
 function invoiceDraftPayload(){
-  const totals=invoiceCalc();
+  const totals=invoiceCalc(),customerType=invoiceFieldValue("invCustomerType")||"individual";
   return {
-    customerName:String(document.getElementById("invCustomerName")?.value||"").trim(),
-    customerEmail:String(document.getElementById("invCustomerEmail")?.value||"").trim(),
-    customerAddress:String(document.getElementById("invCustomerAddress")?.value||"").trim(),
-    kvkNumber:String(document.getElementById("invKvk")?.value||"").trim(),
-    vatId:String(document.getElementById("invVatId")?.value||"").trim(),
-    lines:totals.lines,
-    totals
+    customerType,customerName:invoiceFieldValue("invCustomerName"),customerCompanyName:invoiceFieldValue("invCustomerCompany"),
+    customerContactPerson:invoiceFieldValue("invCustomerContact"),customerEmail:invoiceFieldValue("invCustomerEmail"),
+    customerAddress:invoiceFieldValue("invCustomerAddress"),customerPostalCode:invoiceFieldValue("invCustomerPostal"),
+    customerCity:invoiceFieldValue("invCustomerCity"),customerCountry:invoiceFieldValue("invCustomerCountry")||"Nederland",
+    customerKvkNumber:invoiceFieldValue("invCustomerKvk"),customerVatId:invoiceFieldValue("invCustomerVat"),
+    paymentMethod:invoiceFieldValue("invPaymentMethod")||"bank",paymentStatus:invoiceFieldValue("invPaymentStatus")||"unpaid",
+    dueDate:invoiceFieldValue("invDueDate"),deliveryDate:invoiceFieldValue("invDeliveryDate"),
+    reference:invoiceFieldValue("invReference"),notes:invoiceFieldValue("invNotes"),lines:totals.lines,totals
   };
 }
 function invoiceValidateDraft(payload){
-  if(!payload.customerName)return "Vul de klantnaam in.";
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.customerEmail))return "Vul een geldig e-mailadres van de klant in.";
+  if(payload.customerType==="business"&&!payload.customerCompanyName)return "Vul de bedrijfsnaam van de zakelijke klant in.";
+  if(payload.customerType==="individual"&&!payload.customerName)return "Vul de volledige naam van de klant in.";
+  if(payload.customerEmail&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(payload.customerEmail))return "Controleer het e-mailadres van de klant.";
   return invoiceValidateLines(payload.lines);
 }
 function previewInvoiceDraft(){
@@ -6754,14 +6797,7 @@ async function saveInvoice(){
   const payload=invoiceDraftPayload();
   const validation=invoiceValidateDraft(payload);
   if(validation){invoiceFormMessage(validation,"error");return;}
-  const body={
-    customerName:payload.customerName,
-    customerEmail:payload.customerEmail,
-    customerAddress:payload.customerAddress,
-    kvkNumber:payload.kvkNumber,
-    vatId:payload.vatId,
-    lines:payload.lines
-  };
+  const body={...payload,lines:payload.lines};delete body.totals;
   if(button){button.disabled=true;button.dataset.originalText=button.textContent;button.textContent="Opslaan…";}
   invoiceFormMessage("Factuur wordt veilig opgeslagen…","info");
   try{
