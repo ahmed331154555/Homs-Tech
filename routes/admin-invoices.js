@@ -44,7 +44,7 @@ function registerAdminInvoiceRoutes(app, {
   app.get("/api/admin/invoices", requirePermission("site.save"), async (req, res) => {
     try {
       const result = await pool.query(
-        "SELECT id,invoice_number,customer_name,customer_email,subtotal,vat_total,total,status,created_at FROM manual_invoices ORDER BY id DESC LIMIT 200"
+        "SELECT id,invoice_number,customer_type,customer_name,customer_company_name,customer_email,subtotal,vat_total,total,status,payment_status,created_at FROM manual_invoices ORDER BY id DESC LIMIT 200"
       );
       res.json({ invoices: result.rows });
     } catch (error) {
@@ -222,6 +222,7 @@ function registerAdminInvoiceRoutes(app, {
       }
   
       const invoice = result.rows[0];
+      if (!invoice.customer_email) return res.status(400).json({ error: "Voor deze klant is geen e-mailadres opgeslagen." });
       const pdf = buildInvoicePdf(invoice);
       const response = await fetchImpl("https://api.resend.com/emails", {
         method: "POST",
@@ -236,10 +237,12 @@ function registerAdminInvoiceRoutes(app, {
           reply_to: "mail@inbound.homs-tech.nl",
           html:
             "<p>In de bijlage vindt u de factuur van HOMS TECH.</p>" +
-            "<p><strong>Betalen per bankoverschrijving</strong><br>" +
-            "Naam: Abdullrahman Nawaya<br>" +
-            "IBAN: NL96 REVO 0480 6699 45<br>" +
-            "Omschrijving: " + invoice.invoice_number + "</p>",
+            (invoice.seller_snapshot?.iban
+              ? "<p><strong>Betalen per bankoverschrijving</strong><br>" +
+                "Naam: " + cleanSetting(invoice.seller_snapshot.legalName || invoice.seller_snapshot.tradeName || "HOMS TECH", 180) +
+                "<br>IBAN: " + cleanSetting(invoice.seller_snapshot.iban, 50) +
+                "<br>Omschrijving: " + cleanSetting(invoice.invoice_number, 40) + "</p>"
+              : "<p>De betaalgegevens staan vermeld op de factuur.</p>"),
           attachments: [{
             filename: invoice.invoice_number + ".pdf",
             content: pdf.toString("base64")
