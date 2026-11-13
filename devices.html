@@ -581,6 +581,56 @@ text-align:center
      crossorigin="anonymous"></script>
 
 <link rel="stylesheet" href="assets/homs-layout-system.css?v=20261109-accessibility">
+
+<style id="ht-devices-catalog-width-fix">
+/* The shared layout system intentionally constrains generic .section elements.
+   This catalog is a wide desktop layout, so release only this section from that cap. */
+html body .section.catalog-section{
+  width:100%!important;
+  max-width:1680px!important;
+  margin-inline:auto!important;
+  padding-inline:clamp(22px,2.4vw,38px)!important;
+  box-sizing:border-box!important;
+}
+html body .section.catalog-section .catalog-layout{
+  width:100%!important;
+  max-width:none!important;
+  grid-template-columns:minmax(285px,320px) minmax(0,1fr)!important;
+  gap:clamp(22px,2vw,32px)!important;
+}
+html body .section.catalog-section .catalog-results,
+html body .section.catalog-section .catalog-sidebar{min-width:0!important;width:100%!important}
+html body .section.catalog-section .catalog-results .devices-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:clamp(16px,1.6vw,24px)!important;
+}
+@media(max-width:1180px){
+  html body .section.catalog-section .catalog-layout{
+    grid-template-columns:minmax(250px,285px) minmax(0,1fr)!important;
+  }
+  html body .section.catalog-section .catalog-results .devices-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:760px){
+  html body .section.catalog-section{
+    max-width:100%!important;
+    padding-inline:16px!important;
+  }
+  html body .section.catalog-section .catalog-layout{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:18px!important;
+  }
+  html body .section.catalog-section .catalog-results .devices-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:420px){
+  html body .section.catalog-section .catalog-results .devices-grid{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+}
+</style>
   <script src="assets/homs-analytics-consent.js" defer></script>
 </head>
 
