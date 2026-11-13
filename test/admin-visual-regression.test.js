@@ -28,7 +28,7 @@ test("admin layout has desktop and small-screen responsive safeguards", () => {
 
 test("admin page references the current stylesheet version", () => {
   const html = read("admin/index.html");
-  assert.match(html, /homs-admin\\.css\\?v=[^\"]+/);
+  assert.match(html, /homs-admin\.css\?v=[^"]+/);
 });
 
 
@@ -43,8 +43,8 @@ test("orders and inkoop workspace keeps mobile actions accessible", () => {
 
 test("admin HTML uses matching versioned CSS and JavaScript assets", () => {
   const html = read("admin/index.html");
-  assert.match(html, /homs-admin\\.css\\?v=[^\"]+/);
-  assert.match(html, /homs-admin\\.js\\?v=[^\"]+/);
+  assert.match(html, /homs-admin\.css\?v=[^"]+/);
+  assert.match(html, /homs-admin\.js\?v=[^"]+/);
 });
 
 
