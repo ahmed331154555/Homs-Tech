@@ -8,6 +8,7 @@ function createRouteHarness(pool) {
   const routes = new Map();
   const app = {
     get(path, ...handlers) { routes.set(`GET ${path}`, handlers.at(-1)); },
+    post(path, ...handlers) { routes.set(`POST ${path}`, handlers.at(-1)); },
     put(path, ...handlers) { routes.set(`PUT ${path}`, handlers.at(-1)); },
     delete(path, ...handlers) { routes.set(`DELETE ${path}`, handlers.at(-1)); }
   };
