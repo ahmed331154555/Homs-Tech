@@ -37,6 +37,7 @@ function buildInvoicePdf(invoice){
   if(invoice.customer_type==="business"&&invoice.customer_contact_person){txt(42,cy,"Contact: "+String(invoice.customer_contact_person).slice(0,48),8,"F1",muted);cy-=14;}
   if(customerAddress){txt(42,cy,String(customerAddress).slice(0,64),8,"F1",muted);cy-=14;}
   if(invoice.customer_email){txt(42,cy,String(invoice.customer_email).slice(0,55),8,"F1",muted);cy-=14;}
+  if(invoice.customer_phone){txt(42,cy,"Tel: "+String(invoice.customer_phone).slice(0,48),8,"F1",muted);cy-=14;}
   if(invoice.customer_kvk_number){txt(42,cy,"KVK: "+String(invoice.customer_kvk_number).slice(0,38),8,"F1",muted);cy-=14;}
   if(invoice.customer_vat_id){txt(42,cy,"BTW-ID: "+String(invoice.customer_vat_id).slice(0,38),8,"F1",muted);}
   txt(340,681,"GEGEVENS LEVERANCIER",8,"F2",muted);txt(340,658,String(sellerName).slice(0,38),11,"F2",ink);
