@@ -6640,8 +6640,8 @@ function invoiceToggleCustomerType(){
   for(const id of ["invCustomerCompanyWrap","invCustomerContactWrap","invCustomerKvkWrap","invCustomerVatWrap"]){
     const el=document.getElementById(id);if(el)el.hidden=!business;
   }
-  const nameLabel=document.querySelector('label[for="invCustomerName"]');
-  if(nameLabel)nameLabel.textContent=business?"Naam contactpersoon (optioneel)":"Volledige naam klant *";
+  const personalName=document.getElementById("invCustomerNameWrap");
+  if(personalName)personalName.hidden=business;
 }
 async function loadInvoiceSettings(){
   try{
