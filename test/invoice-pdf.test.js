@@ -37,6 +37,9 @@ test("buildInvoicePdf creates a valid PDF document with invoice details", () => 
   assert.ok(source.startsWith("%PDF-1.4"));
   assert.ok(source.endsWith("%%EOF"));
   assert.match(source, /HT-2026-001/);
+  assert.match(source, /\(HOMS\) Tj/);
+  assert.match(source, /\(TECH\) Tj/);
+  assert.match(source, /PHONE REPAIR/);
   assert.match(source, /Customer Example/);
   assert.match(source, /Screen repair/);
   assert.match(source, /TOTAAL/);
