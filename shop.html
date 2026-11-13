@@ -18,6 +18,26 @@ main{max-width:1200px;margin:auto;padding:26px 20px 70px}.toolbar{display:flex;g
 @media(max-width:480px){.trust-row{grid-template-columns:1fr}.quantity-row{justify-content:space-between}.quantity-control button{width:44px;height:44px}}.video{margin-top:24px}.video iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:12px}.hidden{display:none!important}
 @media(max-width:820px){.products{grid-template-columns:1fr}.product{min-height:210px}.detail-grid{grid-template-columns:1fr}.gallery-main{height:min(80vw,420px)}}
 @media(max-width:480px){.head{padding:12px 15px}.hero{padding:30px 16px}main{padding:18px 12px 50px}.product{grid-template-columns:39% 61%;min-height:210px}.product-image{padding:7px}.product-image img{height:155px}.product-info{padding:13px 10px 12px 0}.product h2{font-size:16px}.price{font-size:25px}.description{font-size:12px}.product-actions .details{padding:10px 8px}.add{min-width:46px;min-height:44px}.detail-view{padding:13px}.thumb{height:68px}}
+
+.catalog-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.catalog-result-count{font-size:13px;color:#64748b;font-weight:800}
+.catalog-sort{min-height:44px;border:1px solid #d7dde5;border-radius:10px;padding:0 12px;background:#fff;color:#172330;font-weight:700}
+.shop-filters{background:#fff;border:1px solid #e1e5ea;border-radius:15px;padding:16px;margin:0 0 18px;box-shadow:0 4px 14px rgba(15,23,42,.035)}
+.shop-filters summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;font-weight:900;color:var(--navy)}
+.shop-filters summary::-webkit-details-marker{display:none}
+.shop-filters summary:after{content:"⌄";font-size:20px;color:var(--blue)}
+.shop-filters[open] summary{margin-bottom:14px}
+.shop-filter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.shop-filter-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.shop-filter-field label{font-size:12px;font-weight:800;color:#475569}
+.shop-filter-field select,.shop-filter-field input{width:100%;min-width:0;min-height:42px;border:1px solid #d7dde5;border-radius:9px;padding:0 10px;background:#fff;color:#172330}
+.shop-price-inputs{display:flex;gap:8px}
+.shop-stock-check{display:flex;align-items:center;gap:8px;min-height:42px;font-size:13px;font-weight:700;color:#334155}
+.shop-stock-check input{width:17px;height:17px;accent-color:var(--blue)}
+.shop-filter-actions{display:flex;justify-content:flex-end;margin-top:12px}
+.shop-filter-reset{border:0;border-radius:9px;background:#eef3f8;color:#334155;padding:10px 14px;font-weight:800;cursor:pointer}
+@media(max-width:760px){.shop-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.shop-filters{padding:13px}.catalog-tools{align-items:stretch}.catalog-sort{flex:1}}
+@media(max-width:420px){.shop-filter-grid{grid-template-columns:1fr 1fr}.shop-filter-field label{font-size:11px}.shop-filter-field select,.shop-filter-field input{font-size:13px}}
 </style>
 
 <link rel="stylesheet" href="assets/homs-layout-system.css?v=20261109-accessibility">
@@ -32,7 +52,27 @@ main{max-width:1200px;margin:auto;padding:26px 20px 70px}.toolbar{display:flex;g
 <section class="hero"><div class="hero-inner"><h1>Shop <span>HOMS TECH</span></h1><p>Onderdelen en accessoires voor jouw telefoon. Bekijk productfoto's, specificaties en eventueel de uitlegvideo.</p></div></section>
 <main>
 <section id="listing">
-<div class="toolbar"><div class="toolbar-left"><input class="search" id="search" type="search" placeholder="Zoek een product..." aria-label="Zoek een product"><select class="filter" id="category"><option value="">Alle categorieën</option></select></div><div class="count" id="count">Producten laden...</div></div>
+<div class="catalog-tools">
+  <div class="catalog-result-count" id="count" aria-live="polite">Producten laden...</div>
+  <select class="catalog-sort" id="shopSort" aria-label="Sorteer producten">
+    <option value="recommended">Aanbevolen</option>
+    <option value="price-asc">Prijs: laag naar hoog</option>
+    <option value="price-desc">Prijs: hoog naar laag</option>
+    <option value="name">Naam: A–Z</option>
+  </select>
+</div>
+<div class="toolbar"><div class="toolbar-left"><input class="search" id="search" type="search" placeholder="Zoek naam, model of SKU..." aria-label="Zoek een product"></div></div>
+<details class="shop-filters" id="shopFilters" open>
+  <summary>Filters <span id="shopFilterSummary" style="font-size:12px;color:#64748b;font-weight:600">Vind snel het juiste product</span></summary>
+  <div class="shop-filter-grid">
+    <div class="shop-filter-field"><label for="category">Categorie</label><select class="filter" id="category"><option value="">Alle categorieën</option></select></div>
+    <div class="shop-filter-field"><label for="shopBrand">Merk</label><select id="shopBrand"><option value="">Alle merken</option></select></div>
+    <div class="shop-filter-field"><label for="shopQuality">Type / kwaliteit</label><select id="shopQuality"><option value="">Alle types</option></select></div>
+    <div class="shop-filter-field"><label>Prijs (€)</label><div class="shop-price-inputs"><input id="shopMinPrice" type="number" min="0" inputmode="decimal" placeholder="Min"><input id="shopMaxPrice" type="number" min="0" inputmode="decimal" placeholder="Max"></div></div>
+    <div class="shop-filter-field"><label>Beschikbaarheid</label><label class="shop-stock-check"><input id="shopInStock" type="checkbox"> Alleen op voorraad</label></div>
+  </div>
+  <div class="shop-filter-actions"><button class="shop-filter-reset" id="resetShopFilters" type="button">Wis filters</button></div>
+</details>
 <div id="products" class="products"><div class="empty">Producten laden...</div></div>
 </section>
 <section id="detail" class="detail-view hidden"></section>
@@ -114,9 +154,41 @@ function addToCart(id){
   if(button){const original=button.textContent;button.textContent='✓ Toegevoegd aan winkelwagen';button.disabled=true;setTimeout(()=>{if(button.isConnected){button.textContent=original;button.disabled=false}},1800)}
  }catch(error){console.error('HOMS TECH shop add-to-cart error:',error);alert('Toevoegen aan winkelwagen is niet gelukt. Probeer opnieuw.');}
 }
-function renderCategories(){const select=$('category'),old=select.value;const cats=[...new Set(visibleProducts().map(p=>String(p.category||'Accessoires').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));select.innerHTML='<option value="">Alle categorieën</option>'+cats.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join('');if(cats.includes(old))select.value=old}
-function renderList(){const q=$('search').value.trim().toLowerCase(),cat=$('category').value;const list=visibleProducts().filter(p=>(!cat||String(p.category||'Accessoires')===cat)&&(!q||[p.name,p.description,p.category,p.brand,p.deviceModel,...variantsFor(p).map(v=>v.sku+' '+v.quality)].some(v=>String(v||'').toLowerCase().includes(q))));$('count').textContent=list.length+' product(en)';if(!list.length){$('products').innerHTML='<div class="empty" style="grid-column:1/-1">Er zijn nog geen producten in deze categorie. Probeer een andere zoekterm.</div>';return}
-$('products').innerHTML=list.map(p=>{const img=imgFor(p);const variants=variantsFor(p);const stock=variants.some(v=>stockForVariant(v)>0)?'Op voorraad':(variants.every(v=>stockForVariant(v)===0)?'Uitverkocht':'Beschikbaarheid controleren');return '<article class="product"><a class="product-image" href="shop.html?product='+encodeURIComponent(p.id)+'" aria-label="'+esc(p.name)+' bekijken">'+(img?'<img src="'+esc(img)+'" alt="'+esc(p.name)+'">':'<span class="no-image">📦</span>')+'</a><div class="product-info"><div class="category">'+esc(p.category||'Accessoires')+'</div><h2><a href="shop.html?product='+encodeURIComponent(p.id)+'">'+esc(p.name)+'</a></h2><p class="description">'+esc(p.description||'')+'</p><div class="price">Vanaf '+money(displayPrice(p))+'</div><div class="vat">Incl. BTW</div><div class="stock">'+esc(stock)+'</div><div class="product-actions"><a class="btn details" href="shop.html?product='+encodeURIComponent(p.id)+'">Bekijk product</a></div></div></article>'}).join('')}
+function fillShopFilter(id,values,placeholder){
+ const select=$(id);if(!select)return;const previous=select.value;
+ const unique=[...new Set(values.map(value=>String(value||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'nl',{numeric:true,sensitivity:'base'}));
+ select.innerHTML='<option value="">'+esc(placeholder)+'</option>'+unique.map(value=>'<option value="'+esc(value)+'">'+esc(value)+'</option>').join('');
+ if(unique.includes(previous))select.value=previous;
+}
+function renderCategories(){
+ const old=$('category').value;
+ fillShopFilter('category',visibleProducts().map(p=>p.category||'Accessoires'),'Alle categorieën');
+ if(old&&[...$('category').options].some(option=>option.value===old))$('category').value=old;
+ fillShopFilter('shopBrand',visibleProducts().map(p=>p.brand),'Alle merken');
+ fillShopFilter('shopQuality',visibleProducts().flatMap(p=>variantsFor(p).map(v=>v.quality||v.sku)),'Alle types');
+}
+function renderList(){
+ const q=$('search').value.trim().toLocaleLowerCase(),cat=$('category').value,brand=$('shopBrand').value,quality=$('shopQuality').value;
+ const minRaw=$('shopMinPrice').value,maxRaw=$('shopMaxPrice').value;
+ const min=minRaw===''?null:Number(minRaw),max=maxRaw===''?null:Number(maxRaw),inStock=$('shopInStock').checked;
+ const list=visibleProducts().filter(p=>{
+  const variants=variantsFor(p),price=displayPrice(p);
+  const searchable=[p.name,p.description,p.category,p.brand,p.deviceModel,...variants.map(v=>v.sku+' '+v.quality)].some(v=>String(v||'').toLocaleLowerCase().includes(q));
+  const hasStock=variants.some(v=>stockForVariant(v)>0);
+  const qualityMatch=!quality||variants.some(v=>String(v.quality||v.sku||'')===quality);
+  return (!cat||String(p.category||'Accessoires')===cat)&&(!brand||String(p.brand||'')===brand)&&
+   qualityMatch&&(!q||searchable)&&(min===null||price>=min)&&(max===null||price<=max)&&(!inStock||hasStock);
+ });
+ const sort=$('shopSort').value;
+ if(sort==='price-asc')list.sort((a,b)=>displayPrice(a)-displayPrice(b));
+ else if(sort==='price-desc')list.sort((a,b)=>displayPrice(b)-displayPrice(a));
+ else if(sort==='name')list.sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'nl',{numeric:true}));
+ $('count').textContent=list.length+' van '+visibleProducts().length+' product(en)';
+ const active=[cat,brand,quality,minRaw,maxRaw,inStock?'stock':'',q].filter(Boolean).length;
+ $('shopFilterSummary').textContent=active?active+' filters actief':'Vind snel het juiste product';
+ if(!list.length){$('products').innerHTML='<div class="empty" style="grid-column:1/-1">Geen producten gevonden. Pas uw filters aan of wis alle filters.</div>';return}
+ $('products').innerHTML=list.map(p=>{const img=imgFor(p);const variants=variantsFor(p);const stock=variants.some(v=>stockForVariant(v)>0)?'Op voorraad':(variants.every(v=>stockForVariant(v)===0)?'Uitverkocht':'Beschikbaarheid controleren');return '<article class="product"><a class="product-image" href="shop.html?product='+encodeURIComponent(p.id)+'" aria-label="'+esc(p.name)+' bekijken">'+(img?'<img src="'+esc(img)+'" alt="'+esc(p.name)+'" loading="lazy" decoding="async">':'<span class="no-image">📦</span>')+'</a><div class="product-info"><div class="category">'+esc(p.category||'Accessoires')+'</div><h2><a href="shop.html?product='+encodeURIComponent(p.id)+'">'+esc(p.name)+'</a></h2><p class="description">'+esc(p.description||'')+'</p><div class="price">Vanaf '+money(displayPrice(p))+'</div><div class="vat">Incl. BTW</div><div class="stock">'+esc(stock)+'</div><div class="product-actions"><a class="btn details" href="shop.html?product='+encodeURIComponent(p.id)+'">Bekijk product</a></div></div></article>'}).join('');
+}
 function videoEmbed(url){try{const u=new URL(url);if(u.hostname==='youtu.be')return 'https://www.youtube-nocookie.com/embed/'+encodeURIComponent(u.pathname.slice(1));if(/youtube\.com$/.test(u.hostname)||/youtube-nocookie\.com$/.test(u.hostname)){const id=u.searchParams.get('v');if(id)return 'https://www.youtube-nocookie.com/embed/'+encodeURIComponent(id);const m=u.pathname.match(/\/embed\/([\w-]+)/);if(m)return 'https://www.youtube-nocookie.com/embed/'+encodeURIComponent(m[1])}}catch{}return ''}
 function renderDetail(p){
  activeProduct=p;photoIndex=0;const variants=variantsFor(p);activeVariant=variants[0]||null;
@@ -151,7 +223,7 @@ document.addEventListener('click',function(event){
   if(button.disabled)return;
   addToCart(button.getAttribute('data-add'));
 });
-async function init(){updateCartCount();try{const r=await fetch('/api/site',{cache:'no-store'});if(!r.ok)throw new Error('Shop kon niet worden geladen');const data=await r.json();products=Array.isArray(data.shopProducts)?data.shopProducts:[];renderCategories();renderList();$('search').addEventListener('input',renderList);$('category').addEventListener('change',renderList);const id=new URLSearchParams(location.search).get('product');if(id){const p=visibleProducts().find(x=>String(x.id)===id);if(p)renderDetail(p)}}catch(e){$('count').textContent='';$('products').innerHTML='<div class="error" style="grid-column:1/-1">De Shop kon niet worden geladen. Probeer het later opnieuw.</div>'}}
+async function init(){updateCartCount();try{const r=await fetch('/api/site',{cache:'no-store'});if(!r.ok)throw new Error('Shop kon niet worden geladen');const data=await r.json();products=Array.isArray(data.shopProducts)?data.shopProducts:[];renderCategories();renderList();['search','category','shopBrand','shopQuality','shopMinPrice','shopMaxPrice','shopInStock','shopSort'].forEach(id=>$(id)?.addEventListener('input',renderList));$('resetShopFilters').addEventListener('click',()=>{['search','category','shopBrand','shopQuality','shopMinPrice','shopMaxPrice'].forEach(id=>$(id).value='');$('shopInStock').checked=false;$('shopSort').value='recommended';renderList()});const id=new URLSearchParams(location.search).get('product');if(id){const p=visibleProducts().find(x=>String(x.id)===id);if(p)renderDetail(p)}}catch(e){console.error('HOMS TECH shop catalog error:',e);$('count').textContent='';$('products').innerHTML='<div class="error" style="grid-column:1/-1">De Shop kon niet worden geladen. Probeer het later opnieuw.</div>'}}
 init();
 })();
 </script>
