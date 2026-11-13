@@ -471,44 +471,76 @@ text-align:center
 .catalog-reset{border:0;background:#eff4fa;color:#334155;padding:10px 14px;border-radius:9px;font-weight:800;cursor:pointer}
 @media(max-width:760px){.catalog-filters{padding:14px}.catalog-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-filters:not([open]){padding:13px 15px}.catalog-toolbar{align-items:stretch}.catalog-sort{flex:1}}
 @media(max-width:420px){.catalog-filter-grid{grid-template-columns:1fr 1fr}.catalog-field label{font-size:11px}.catalog-field select,.catalog-field input{font-size:13px}}
-/* Desktop catalog: filters stay in the left rail, products use the remaining space. */
-.catalog-layout{display:grid;grid-template-columns:minmax(230px,270px) minmax(0,1fr);align-items:start;gap:26px;width:100%}
+/* Full-width catalog: use the former left whitespace for filters and restore generous product cards. */
+.catalog-section{
+  width:100%;
+  max-width:1680px;
+  box-sizing:border-box;
+  margin:0 auto;
+  padding:52px clamp(18px,2.5vw,38px) 70px;
+}
+.catalog-section .section-title{margin-bottom:34px}
+.catalog-layout{
+  display:grid;
+  grid-template-columns:minmax(290px,320px) minmax(0,1fr);
+  align-items:start;
+  gap:30px;
+  width:100%;
+  box-sizing:border-box;
+}
 .catalog-sidebar{min-width:0}
-.catalog-filters{margin:0;position:relative}
-.catalog-filter-grid{grid-template-columns:minmax(0,1fr);gap:13px}
-.catalog-field select,.catalog-field input{box-sizing:border-box}
+.catalog-filters{
+  margin:0;
+  padding:22px;
+  position:relative;
+  border-radius:18px;
+  box-shadow:0 8px 26px rgba(15,23,42,.06);
+}
+.catalog-filters summary{font-size:18px}
+.catalog-filter-grid{grid-template-columns:minmax(0,1fr);gap:15px}
+.catalog-field select,.catalog-field input{box-sizing:border-box;min-height:46px}
+.catalog-price-row{gap:10px}
 .catalog-price-row input{width:50%;min-width:0}
+.catalog-check{min-height:46px}
 .catalog-filter-actions{justify-content:stretch}
-.catalog-reset{width:100%}
-.catalog-results{min-width:0}
-.catalog-results .catalog-toolbar{margin:0 0 16px;min-height:42px}
-.catalog-results .devices-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-.catalog-results .product-image{height:220px}
-.catalog-results .product-info{padding:18px}
-.catalog-results .sales-card h3{font-size:18px}
-.catalog-results .sale-price{font-size:22px}
-@media(max-width:1100px){
- .catalog-layout{grid-template-columns:minmax(210px,240px) minmax(0,1fr);gap:18px}
- .catalog-results .devices-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.catalog-reset{width:100%;min-height:43px}
+.catalog-results{min-width:0;width:100%}
+.catalog-results .catalog-toolbar{margin:0 0 20px;min-height:46px}
+.catalog-results .devices-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:24px;
+}
+.catalog-results .sales-card{min-width:0;border-radius:17px}
+.catalog-results .product-image{height:clamp(220px,20vw,300px)}
+.catalog-results .product-image img{padding:22px}
+.catalog-results .product-info{padding:21px 22px 23px}
+.catalog-results .sales-card h3{font-size:clamp(17px,1.35vw,21px);line-height:1.35}
+.catalog-results .sale-price{font-size:clamp(21px,1.6vw,26px)}
+@media(max-width:1180px){
+ .catalog-section{padding-left:22px;padding-right:22px}
+ .catalog-layout{grid-template-columns:minmax(260px,290px) minmax(0,1fr);gap:22px}
+ .catalog-results .devices-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+ .catalog-results .product-image{height:240px}
 }
 @media(max-width:760px){
- .catalog-layout{grid-template-columns:minmax(0,1fr);gap:16px}
+ .catalog-section{padding:42px 16px 54px}
+ .catalog-layout{grid-template-columns:minmax(0,1fr);gap:18px}
  .catalog-sidebar{width:100%}
- .catalog-filters{padding:14px}
- .catalog-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .catalog-filters{padding:16px}
+ .catalog-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
  .catalog-filter-actions{justify-content:flex-end}
  .catalog-reset{width:auto}
  .catalog-results .catalog-toolbar{align-items:center}
- .catalog-results .devices-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
- .catalog-results .product-image{height:180px}
- .catalog-results .product-info{padding:13px}
+ .catalog-results .devices-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+ .catalog-results .product-image{height:190px}
+ .catalog-results .product-info{padding:14px}
  .catalog-results .sales-card h3{font-size:16px}
  .catalog-results .sale-price{font-size:19px}
 }
 @media(max-width:420px){
  .catalog-filter-grid{grid-template-columns:minmax(0,1fr)}
  .catalog-results .devices-grid{grid-template-columns:minmax(0,1fr)}
- .catalog-results .product-image{height:220px}
+ .catalog-results .product-image{height:230px}
 }
 </style>
 <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20261109-shared-theme">
@@ -589,7 +621,7 @@ Kies een telefoon en bekijk alle details en beschikbare opties.
 </section>
 
 
-<section class="section">
+<section class="section catalog-section">
 
 <div class="section-title">
 
