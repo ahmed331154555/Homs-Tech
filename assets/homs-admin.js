@@ -6650,7 +6650,7 @@ async function loadInvoiceSettings(){
     if(!response.ok)throw new Error(result.error||"Factuurinstellingen laden is mislukt.");
     invoiceSellerSettings=result.settings||{};
     const map={legalName:"invSellerLegalName",tradeName:"invSellerTradeName",address:"invSellerAddress",postalCode:"invSellerPostalCode",city:"invSellerCity",country:"invSellerCountry",kvkNumber:"invSellerKvk",vatId:"invSellerVat",iban:"invSellerIban",email:"invSellerEmail",phone:"invSellerPhone",website:"invSellerWebsite"};
-    for(const [key,id] of Object.entries(map))invoiceSetValue(id,invoiceSellerSettings[key]);
+    for(const [key,id] of Object.entries(map))invoiceSetValue(id,invoiceSellerSettings[key]||(key==="tradeName"?"HOMS TECH":key==="country"?"Nederland":key==="website"?"https://homs-tech.nl":""));
   }catch(error){
     const status=document.getElementById("invoiceSettingsStatus");
     if(status){status.className="status error";status.textContent=error.message;}
@@ -6847,7 +6847,7 @@ async function loadInvoices(){
           '<td>'+invoiceDate(invoice.created_at)+'</td>'+
           '<td class="ht-invoice-total">'+invoiceEuro(invoice.total)+'</td>'+
           '<td><span class="ht-invoice-status '+statusClass+'">'+esc(statusLabel)+'</span></td>'+
-          '<td><div class="ht-invoice-actions"><button type="button" class="btn btn-light" onclick="previewSavedInvoice('+id+')">PDF bekijken</button><button type="button" class="btn btn-green" onclick="sendInvoiceTest('+id+',this)">E-mail versturen</button></div></td>'+
+          '<td><div class="ht-invoice-actions"><button type="button" class="btn btn-light" onclick="previewSavedInvoice('+id+')">PDF bekijken</button>'+(invoice.customer_email?'<button type="button" class="btn btn-green" onclick="sendInvoiceTest('+id+',this)">E-mail versturen</button>':'<span class="small">Geen e-mailadres</span>')+'</div></td>'+
           '</tr>';
       }).join("")+
       '</tbody></table></div>';
