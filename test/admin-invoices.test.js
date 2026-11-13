@@ -84,14 +84,15 @@ test("invoice creation validates input and calculates totals", async () => {
   assert.equal(res.statusCode, 201);
   assert.equal(res.body.invoice.invoice_number, "HT-2026-000012");
   assert.equal(res.body.invoice.total, "130.68");
-  assert.equal(calls.length, 1, "invoice insert and final number assignment must be atomic");
-  assert.match(calls[0].sql, /WITH inserted AS[\s\S]*UPDATE manual_invoices/);
-  assert.match(calls[0].sql, /LPAD\(inserted\.id::text,6,'0'\)/);
-  const lines = JSON.parse(calls[0].params[6]);
+  assert.equal(calls.length, 1, "invoice and its final number are created by one INSERT");
+  assert.match(calls[0].sql, /nextval\(pg_get_serial_sequence\('manual_invoices','id'\)\)/);
+  assert.match(calls[0].sql, /INSERT INTO manual_invoices\([\s\S]*SELECT id,[\s\S]*LPAD\(id::text,6,'0'\)/);
+  assert.doesNotMatch(calls[0].sql, /UPDATE manual_invoices AS invoice/);
+  const lines = JSON.parse(calls[0].params[5]);
   assert.equal(lines.length, 2);
-  assert.equal(calls[0].params[7], "108.00");
-  assert.equal(calls[0].params[8], "22.68");
-  assert.equal(calls[0].params[9], "130.68");
+  assert.equal(calls[0].params[6], "108.00");
+  assert.equal(calls[0].params[7], "22.68");
+  assert.equal(calls[0].params[8], "130.68");
 });
 
 test("invoice creation rejects invalid quantities, prices and VAT rates", async () => {
@@ -191,9 +192,9 @@ test("invoice totals round each line to cents before summing", async () => {
     }
   }, res);
   assert.equal(res.statusCode, 201);
-  assert.equal(calls[0].params[7], "0.30");
-  assert.equal(calls[0].params[8], "0.06");
-  assert.equal(calls[0].params[9], "0.36");
+  assert.equal(calls[0].params[6], "0.30");
+  assert.equal(calls[0].params[7], "0.06");
+  assert.equal(calls[0].params[8], "0.36");
 });
 
 
