@@ -6834,7 +6834,7 @@ async function loadInvoices(){
       return;
     }
     box.innerHTML=
-      '<div class="ht-invoice-table-wrap"><table class="ht-invoice-table"><thead><tr><th>Factuurnummer</th><th>Klant</th><th>Datum</th><th>Totaal</th><th>Status</th><th>Acties</th></tr></thead><tbody>'+
+      '<div class="ht-invoice-table-wrap"><table class="ht-invoice-table"><thead><tr><th>Factuurnummer</th><th>Klant</th><th>Datum</th><th>Totaal</th><th>Factuurstatus</th><th>Betaalstatus</th><th>Acties</th></tr></thead><tbody>'+
       invoices.map(invoice=>{
         const id=Number(invoice.id);
         const status=String(invoice.status||"draft").toLowerCase();
@@ -6847,6 +6847,7 @@ async function loadInvoices(){
           '<td>'+invoiceDate(invoice.created_at)+'</td>'+
           '<td class="ht-invoice-total">'+invoiceEuro(invoice.total)+'</td>'+
           '<td><span class="ht-invoice-status '+statusClass+'">'+esc(statusLabel)+'</span></td>'+
+          '<td><span class="ht-invoice-status '+(invoice.payment_status==="paid"?"is-sent":invoice.payment_status==="partial"?"is-draft":"is-cancelled")+'">'+esc(invoice.payment_status==="paid"?"Betaald":invoice.payment_status==="partial"?"Gedeeltelijk":"Openstaand")+'</span></td>'+
           '<td><div class="ht-invoice-actions"><button type="button" class="btn btn-light" onclick="previewSavedInvoice('+id+')">PDF bekijken</button>'+(invoice.customer_email?'<button type="button" class="btn btn-green" onclick="sendInvoiceTest('+id+',this)">E-mail versturen</button>':'<span class="small">Geen e-mailadres</span>')+'</div></td>'+
           '</tr>';
       }).join("")+
