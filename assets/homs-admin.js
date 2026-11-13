@@ -6660,7 +6660,7 @@ async function saveInvoiceSettings(){
   const button=document.querySelector('#page-invoices button[onclick="saveInvoiceSettings()"]');
   const map={legalName:"invSellerLegalName",tradeName:"invSellerTradeName",address:"invSellerAddress",postalCode:"invSellerPostalCode",city:"invSellerCity",country:"invSellerCountry",kvkNumber:"invSellerKvk",vatId:"invSellerVat",iban:"invSellerIban",email:"invSellerEmail",phone:"invSellerPhone",website:"invSellerWebsite"};
   const data={};for(const [key,id] of Object.entries(map))data[key]=invoiceFieldValue(id);
-  if(data.email&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(data.email)){const el=document.getElementById("invoiceSettingsStatus");if(el){el.className="status error";el.textContent="Vul een geldig bedrijfs-e-mailadres in.";}return;}
+  if(data.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)){const el=document.getElementById("invoiceSettingsStatus");if(el){el.className="status error";el.textContent="Vul een geldig bedrijfs-e-mailadres in.";}return;}
   if(button){button.disabled=true;button.dataset.originalText=button.textContent;button.textContent="Opslaan…";}
   const status=document.getElementById("invoiceSettingsStatus");
   if(status){status.className="status info";status.textContent="Bedrijfsgegevens worden opgeslagen…";}
@@ -6763,7 +6763,7 @@ function invoiceDraftPayload(){
 function invoiceValidateDraft(payload){
   if(payload.customerType==="business"&&!payload.customerCompanyName)return "Vul de bedrijfsnaam van de zakelijke klant in.";
   if(payload.customerType==="individual"&&!payload.customerName)return "Vul de volledige naam van de klant in.";
-  if(payload.customerEmail&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(payload.customerEmail))return "Controleer het e-mailadres van de klant.";
+  if(payload.customerEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.customerEmail))return "Controleer het e-mailadres van de klant.";
   return invoiceValidateLines(payload.lines);
 }
 function previewInvoiceDraft(){
