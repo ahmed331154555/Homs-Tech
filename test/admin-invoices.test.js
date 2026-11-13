@@ -139,7 +139,7 @@ test("invoice PDF validates ID, handles missing invoices and returns PDF", async
 });
 
 test("invoice test-send validates configuration and sends the generated PDF", async () => {
-  const invoice = { id: 8, invoice_number: "HT-2026-000008", customer_email: "customer@example.com" };
+  const invoice = { id: 8, invoice_number: "HT-2026-000008", customer_email: "customer@example.com", payment_method: "bank", seller_snapshot: { legalName: "HOMS TECH Legal", address: "Business Street 1", iban: "NL00COMPANY" } };
   let sentPayload;
   const { routes } = harness({
     pool: { async query(sql, params) {
@@ -162,8 +162,8 @@ test("invoice test-send validates configuration and sends the generated PDF", as
   assert.equal(res.body.statusUpdated, true);
   assert.equal(sentPayload.attachments[0].filename, "HT-2026-000008.pdf");
   assert.equal(Buffer.from(sentPayload.attachments[0].content, "base64").toString(), "PDFDATA");
+  assert.match(sentPayload.html, /NL00COMPANY/);
   assert.doesNotMatch(sentPayload.html, /NL96 REVO 0480 6699 45/);
-  assert.match(sentPayload.html, /betaalgegevens staan vermeld/);
 });
 
 test("invoice test-send does not call provider when configuration is missing", async () => {
@@ -206,7 +206,7 @@ test("invoice totals round each line to cents before summing", async () => {
 
 
 test("invoice email marks the invoice as sent only after provider acceptance", async () => {
-  const invoice = { id: 19, invoice_number: "HT-2026-000019", customer_email: "client@example.com" };
+  const invoice = { id: 19, invoice_number: "HT-2026-000019", customer_email: "client@example.com", payment_method: "bank", seller_snapshot: { legalName: "HOMS TECH Legal", address: "Business Street 1", iban: "NL00COMPANY" } };
   const queries = [];
   const { routes } = harness({
     pool: { async query(sql) { queries.push(sql); return { rows: [invoice] }; } },
@@ -224,7 +224,7 @@ test("invoice status remains unchanged when the email provider rejects delivery"
   let updateCalled = false;
   const { routes } = harness({
     pool: { async query(sql) {
-      if (sql.startsWith("SELECT * FROM manual_invoices")) return { rows: [{ id: 20, invoice_number: "HT-2026-000020", customer_email: "client@example.com" }] };
+      if (sql.startsWith("SELECT * FROM manual_invoices")) return { rows: [{ id: 20, invoice_number: "HT-2026-000020", customer_email: "client@example.com", payment_method: "bank", seller_snapshot: { legalName: "HOMS TECH Legal", address: "Business Street 1", iban: "NL00COMPANY" } }] };
       if (sql.includes("SET status='sent'")) updateCalled = true;
       return { rows: [] };
     } },
