@@ -52,6 +52,9 @@ async function initializeDatabaseSchema(pool) {
       ALTER TABLE device_register ADD COLUMN IF NOT EXISTS storage TEXT NOT NULL DEFAULT '';
       ALTER TABLE device_register ADD COLUMN IF NOT EXISTS color TEXT NOT NULL DEFAULT '';
       ALTER TABLE device_register ADD COLUMN IF NOT EXISTS device_condition TEXT NOT NULL DEFAULT '';
+      ALTER TABLE device_register ADD COLUMN IF NOT EXISTS repair_issue TEXT NOT NULL DEFAULT '';
+      ALTER TABLE device_register ADD COLUMN IF NOT EXISTS repair_value NUMERIC(12,2) NOT NULL DEFAULT 0;
+      ALTER TABLE device_register ADD COLUMN IF NOT EXISTS repair_notes TEXT NOT NULL DEFAULT '';
       ALTER TABLE device_register ADD COLUMN IF NOT EXISTS source_webshop_order_id INTEGER;
       ALTER TABLE device_register ADD COLUMN IF NOT EXISTS source_manual_invoice_id BIGINT;
       CREATE INDEX IF NOT EXISTS device_register_source_manual_invoice_idx ON device_register(source_manual_invoice_id) WHERE source_manual_invoice_id IS NOT NULL;
