@@ -391,7 +391,7 @@
   </div>
 </section><section class="section admin-page" id="page-device-register" data-permission="device_register.view">
   <div class="section-head">
-    <div><h2>📱 Toestelregister</h2><p>Beheer eigen ingekochte toestellen, inspecties, renovatiekosten en verkoopresultaten.</p></div>
+    <div><h2>📱 Toestelregister & Reparaties</h2><p>Beheer HOMS TECH-voorraad en klanttoestellen gescheiden, met eigen statussen, kosten en rapportages.</p></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-light" type="button" onclick="loadDeviceRegister()">↻ Vernieuwen</button>
       <button class="btn btn-light" type="button" data-permission="device_register.update" onclick="deviceExportExcel()">Export Excel</button>
@@ -401,7 +401,7 @@
   </div>
   <div class="card" style="padding:14px;margin-bottom:14px">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end">
-      <label>Type toestel<select id="deviceTypeFilter" class="form-control" onchange="loadDeviceRegister()"><option value="commercial">Eigen toestellen</option><option value="customer_repair">Klantreparaties</option><option value="">Alle toestellen</option></select></label>
+      <div style="min-width:260px"><label style="display:block;margin-bottom:7px">Registratietype</label><div style="display:flex;gap:6px;flex-wrap:wrap" role="group" aria-label="Type registratie"><button type="button" class="btn btn-primary" data-device-filter="commercial" aria-pressed="true" onclick="deviceSetTypeFilter('commercial')">📦 Eigen voorraad</button><button type="button" class="btn btn-light" data-device-filter="customer_repair" aria-pressed="false" onclick="deviceSetTypeFilter('customer_repair')">🔧 Klantreparaties</button><button type="button" class="btn btn-light" data-device-filter="" aria-pressed="false" onclick="deviceSetTypeFilter('')">Alle</button></div><select id="deviceTypeFilter" class="form-control" onchange="loadDeviceRegister()" style="display:none" aria-hidden="true"><option value="commercial">Eigen voorraad</option><option value="customer_repair">Klantreparaties</option><option value="">Alle registraties</option></select></div>
       <label>Zoeken<input id="deviceSearch" class="form-control" type="search" placeholder="Model, IMEI, HT-code, klant…" oninput="loadDeviceRegister()"></label>
       <label style="display:flex;align-items:center;gap:8px;padding:9px 0"><input id="deviceArchivedFilter" type="checkbox" onchange="loadDeviceRegister()"> Toon archief</label>
     </div>
@@ -615,7 +615,7 @@
 </div>
 </div>
 
-<script src="../assets/homs-admin.js?v=20261112-admin-login-syntax-fix2"></script>
+<script src="../assets/homs-admin.js?v=20261113-device-register-pro1"></script>
 
 <script>
 /* Remove the retired HOMS TECH admin PWA from browsers that previously installed it. */
