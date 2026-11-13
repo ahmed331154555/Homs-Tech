@@ -114,7 +114,7 @@ test("buildInvoicePdf prints separate company customer and seller profile detail
     total: 121,
     lines: [{ description: "Screen repair", quantity: 1, unitPrice: 100, vatRate: 21 }]
   }).toString("latin1");
-  for (const value of ["Example BV","Jane Example","NL123456789B01","Example HOMS TECH BV","87654321","NL00TEST","Vervaldatum"]) {
+  for (const value of ["Example BV","Jane Example","NL123456789B01","Example HOMS TECH BV","87654321","NL00TEST","VERVALDATUM"]) {
     assert.ok(pdf.includes(value), "PDF should contain " + value);
   }
 });
