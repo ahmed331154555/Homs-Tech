@@ -82,30 +82,24 @@ function registerAdminInvoiceRoutes(app, {
       const subtotal = totals.subtotal;
       const vatTotal = totals.vatTotal;
       const total = roundInvoiceMoney(subtotal + vatTotal);
-      const temporaryInvoiceNumber =
-        "HT-PENDING-" + Date.now() + "-" + Math.floor(Math.random() * 100000);
-  
-      // Insert and assign the final invoice number in one atomic database
-      // statement. A failed number assignment can no longer leave a pending
-      // invoice record behind.
+      // Reserve the invoice ID from PostgreSQL's BIGSERIAL sequence first,
+      // then create the final invoice number in the same INSERT. Updating the
+      // same table from a data-modifying CTE can return zero rows in PostgreSQL.
       const saved = await pool.query(
-        `WITH inserted AS (
-          INSERT INTO manual_invoices(
-            invoice_number,customer_name,customer_email,customer_address,
-            kvk_number,vat_id,lines,subtotal,vat_total,total
-          )
-          VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10)
-          RETURNING id,created_at,status,total
+        `WITH next_invoice AS (
+          SELECT nextval(pg_get_serial_sequence('manual_invoices','id'))::bigint AS id
         )
-        UPDATE manual_invoices AS invoice
-        SET invoice_number =
-          'HT-' || EXTRACT(YEAR FROM inserted.created_at)::integer ||
-          '-' || LPAD(inserted.id::text,6,'0')
-        FROM inserted
-        WHERE invoice.id=inserted.id
-        RETURNING invoice.id,invoice.invoice_number,invoice.created_at,invoice.status,invoice.total`,
+        INSERT INTO manual_invoices(
+          id,invoice_number,customer_name,customer_email,customer_address,
+          kvk_number,vat_id,lines,subtotal,vat_total,total
+        )
+        SELECT id,
+          'HT-' || EXTRACT(YEAR FROM CURRENT_TIMESTAMP)::integer ||
+          '-' || LPAD(id::text,6,'0'),
+          $1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9
+        FROM next_invoice
+        RETURNING id,invoice_number,created_at,status,total`,
         [
-          temporaryInvoiceNumber,
           customerName,
           customerEmail,
           customerAddress,
@@ -130,7 +124,7 @@ function registerAdminInvoiceRoutes(app, {
         }
       });
     } catch (error) {
-      console.error("Invoice create:", error);
+      console.error("Invoice create:", { message: error.message, code: error.code, detail: error.detail, constraint: error.constraint });
       res.status(500).json({ error: "Factuur opslaan is mislukt." });
     }
   });
