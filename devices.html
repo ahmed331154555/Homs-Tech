@@ -470,7 +470,47 @@ text-align:center
 .catalog-filter-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:14px}
 .catalog-reset{border:0;background:#eff4fa;color:#334155;padding:10px 14px;border-radius:9px;font-weight:800;cursor:pointer}
 @media(max-width:760px){.catalog-filters{padding:14px}.catalog-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-filters:not([open]){padding:13px 15px}.catalog-toolbar{align-items:stretch}.catalog-sort{flex:1}}
-@media(max-width:420px){.catalog-filter-grid{grid-template-columns:1fr 1fr}.catalog-field label{font-size:11px}.catalog-field select,.catalog-field input{font-size:13px}}</style>
+@media(max-width:420px){.catalog-filter-grid{grid-template-columns:1fr 1fr}.catalog-field label{font-size:11px}.catalog-field select,.catalog-field input{font-size:13px}}
+/* Desktop catalog: filters stay in the left rail, products use the remaining space. */
+.catalog-layout{display:grid;grid-template-columns:minmax(230px,270px) minmax(0,1fr);align-items:start;gap:26px;width:100%}
+.catalog-sidebar{min-width:0}
+.catalog-filters{margin:0;position:relative}
+.catalog-filter-grid{grid-template-columns:minmax(0,1fr);gap:13px}
+.catalog-field select,.catalog-field input{box-sizing:border-box}
+.catalog-price-row input{width:50%;min-width:0}
+.catalog-filter-actions{justify-content:stretch}
+.catalog-reset{width:100%}
+.catalog-results{min-width:0}
+.catalog-results .catalog-toolbar{margin:0 0 16px;min-height:42px}
+.catalog-results .devices-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.catalog-results .product-image{height:220px}
+.catalog-results .product-info{padding:18px}
+.catalog-results .sales-card h3{font-size:18px}
+.catalog-results .sale-price{font-size:22px}
+@media(max-width:1100px){
+ .catalog-layout{grid-template-columns:minmax(210px,240px) minmax(0,1fr);gap:18px}
+ .catalog-results .devices-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+ .catalog-layout{grid-template-columns:minmax(0,1fr);gap:16px}
+ .catalog-sidebar{width:100%}
+ .catalog-filters{padding:14px}
+ .catalog-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .catalog-filter-actions{justify-content:flex-end}
+ .catalog-reset{width:auto}
+ .catalog-results .catalog-toolbar{align-items:center}
+ .catalog-results .devices-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .catalog-results .product-image{height:180px}
+ .catalog-results .product-info{padding:13px}
+ .catalog-results .sales-card h3{font-size:16px}
+ .catalog-results .sale-price{font-size:19px}
+}
+@media(max-width:420px){
+ .catalog-filter-grid{grid-template-columns:minmax(0,1fr)}
+ .catalog-results .devices-grid{grid-template-columns:minmax(0,1fr)}
+ .catalog-results .product-image{height:220px}
+}
+</style>
 <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20261109-shared-theme">
 <style>
 /* HOMS TECH FINAL HEADER OVERRIDE — self-contained */
@@ -563,29 +603,35 @@ Bekijk de smartphones die momenteel te koop zijn bij HOMS TECH.
 
 </div>
 
-<div class="catalog-toolbar">
-  <div class="catalog-count" id="devicesCount" aria-live="polite">Producten laden...</div>
-  <select class="catalog-sort" id="devicesSort" aria-label="Sorteer producten">
-    <option value="recommended">Aanbevolen</option>
-    <option value="price-asc">Prijs: laag naar hoog</option>
-    <option value="price-desc">Prijs: hoog naar laag</option>
-    <option value="name">Naam: A–Z</option>
-  </select>
-</div>
-<details class="catalog-filters" id="devicesFilters" open>
-  <summary>Filters <span id="devicesFilterSummary" style="font-size:12px;color:#64748b;font-weight:600">Verfijn uw zoekopdracht</span></summary>
-  <div class="catalog-filter-grid">
-    <div class="catalog-field"><label for="filterBrand">Merk</label><select id="filterBrand"><option value="">Alle merken</option></select></div>
-    <div class="catalog-field"><label for="filterModel">Model / zoekterm</label><input id="filterModel" type="search" placeholder="Bijv. iPhone 15"></div>
-    <div class="catalog-field"><label for="filterStorage">Opslag</label><select id="filterStorage"><option value="">Alle opslag</option></select></div>
-    <div class="catalog-field"><label for="filterColor">Kleur</label><select id="filterColor"><option value="">Alle kleuren</option></select></div>
-    <div class="catalog-field"><label for="filterCondition">Conditie</label><select id="filterCondition"><option value="">Alle condities</option></select></div>
-    <div class="catalog-field"><label>Prijs (€)</label><div class="catalog-price-row"><input id="filterMinPrice" type="number" min="0" inputmode="decimal" placeholder="Min"><input id="filterMaxPrice" type="number" min="0" inputmode="decimal" placeholder="Max"></div></div>
-    <div class="catalog-field"><label>Voorraad</label><label class="catalog-check"><input id="filterInStock" type="checkbox"> Alleen op voorraad</label></div>
+<div class="catalog-layout">
+  <aside class="catalog-sidebar" aria-label="Telefoonfilters">
+    <details class="catalog-filters" id="devicesFilters" open>
+      <summary>Filters <span id="devicesFilterSummary" style="font-size:12px;color:#64748b;font-weight:600">Verfijn uw zoekopdracht</span></summary>
+      <div class="catalog-filter-grid">
+        <div class="catalog-field"><label for="filterBrand">Merk</label><select id="filterBrand"><option value="">Alle merken</option></select></div>
+        <div class="catalog-field"><label for="filterModel">Model / zoekterm</label><input id="filterModel" type="search" placeholder="Bijv. iPhone 15"></div>
+        <div class="catalog-field"><label for="filterStorage">Opslag</label><select id="filterStorage"><option value="">Alle opslag</option></select></div>
+        <div class="catalog-field"><label for="filterColor">Kleur</label><select id="filterColor"><option value="">Alle kleuren</option></select></div>
+        <div class="catalog-field"><label for="filterCondition">Conditie</label><select id="filterCondition"><option value="">Alle condities</option></select></div>
+        <div class="catalog-field"><label>Prijs (€)</label><div class="catalog-price-row"><input id="filterMinPrice" type="number" min="0" inputmode="decimal" placeholder="Min"><input id="filterMaxPrice" type="number" min="0" inputmode="decimal" placeholder="Max"></div></div>
+        <div class="catalog-field"><label>Voorraad</label><label class="catalog-check"><input id="filterInStock" type="checkbox"> Alleen op voorraad</label></div>
+      </div>
+      <div class="catalog-filter-actions"><button class="catalog-reset" id="resetDeviceFilters" type="button">Wis filters</button></div>
+    </details>
+  </aside>
+  <div class="catalog-results">
+    <div class="catalog-toolbar">
+      <div class="catalog-count" id="devicesCount" aria-live="polite">Producten laden...</div>
+      <select class="catalog-sort" id="devicesSort" aria-label="Sorteer producten">
+        <option value="recommended">Aanbevolen</option>
+        <option value="price-asc">Prijs: laag naar hoog</option>
+        <option value="price-desc">Prijs: hoog naar laag</option>
+        <option value="name">Naam: A–Z</option>
+      </select>
+    </div>
+    <div id="devicesGrid" class="devices-grid"></div>
   </div>
-  <div class="catalog-filter-actions"><button class="catalog-reset" id="resetDeviceFilters" type="button">Wis filters</button></div>
-</details>
-<div id="devicesGrid" class="devices-grid"></div>
+</div>
 
 </section>
 
