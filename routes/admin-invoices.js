@@ -14,6 +14,33 @@ function registerAdminInvoiceRoutes(app, {
   getEnv = () => process.env,
   fetchImpl = fetch
 }) {
+  const cleanSetting = (value, max = 220) => String(value || "").trim().slice(0, max);
+  const allowedSellerFields = ["legalName","tradeName","address","postalCode","city","country","kvkNumber","vatId","iban","email","phone","website"];
+  app.get("/api/admin/invoice-settings", requirePermission("site.save"), async (_req, res) => {
+    try {
+      const result = await pool.query("SELECT data FROM invoice_settings WHERE id=1");
+      res.set("Cache-Control", "no-store");
+      res.json({ settings: result.rows[0]?.data || {} });
+    } catch (error) {
+      console.error("Invoice settings load:", error);
+      res.status(500).json({ error: "Factuurinstellingen laden is mislukt." });
+    }
+  });
+  app.put("/api/admin/invoice-settings", requirePermission("site.save"), async (req, res) => {
+    try {
+      const body = req.body || {};
+      const settings = {};
+      for (const field of allowedSellerFields) settings[field] = cleanSetting(body[field], field === "address" ? 300 : 180);
+      await pool.query(
+        "INSERT INTO invoice_settings(id,data,updated_at) VALUES(1,$1::jsonb,NOW()) ON CONFLICT(id) DO UPDATE SET data=EXCLUDED.data,updated_at=NOW()",
+        [JSON.stringify(settings)]
+      );
+      res.json({ success: true, settings });
+    } catch (error) {
+      console.error("Invoice settings save:", error);
+      res.status(500).json({ error: "Factuurinstellingen opslaan is mislukt." });
+    }
+  });
   app.get("/api/admin/invoices", requirePermission("site.save"), async (req, res) => {
     try {
       const result = await pool.query(
@@ -28,21 +55,29 @@ function registerAdminInvoiceRoutes(app, {
   app.post("/api/admin/invoices", requirePermission("site.save"), async (req, res) => {
     try {
       const body = req.body || {};
+      const customerType = body.customerType === "business" ? "business" : "individual";
       const customerName = String(body.customerName || "").trim().slice(0, 160);
+      const customerCompanyName = String(body.customerCompanyName || "").trim().slice(0, 180);
+      const customerContactPerson = String(body.customerContactPerson || "").trim().slice(0, 160);
       const customerEmail = String(body.customerEmail || "").trim().slice(0, 254);
       const customerAddress = String(body.customerAddress || "").trim().slice(0, 300);
-      const kvkNumber = String(body.kvkNumber || "").trim().slice(0, 30);
-      const vatId = String(body.vatId || "").trim().slice(0, 40);
-  
-      if (
-        !customerName ||
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail) ||
-        !Array.isArray(body.lines) ||
-        !body.lines.length ||
-        body.lines.length > 80
-      ) {
+      const customerPostalCode = String(body.customerPostalCode || "").trim().slice(0, 20);
+      const customerCity = String(body.customerCity || "").trim().slice(0, 100);
+      const customerCountry = String(body.customerCountry || "Nederland").trim().slice(0, 80);
+      const customerKvkNumber = String(body.customerKvkNumber || "").trim().slice(0, 30);
+      const customerVatId = String(body.customerVatId || "").trim().slice(0, 40);
+      const paymentMethod = ["bank","cash","pin","online","other"].includes(body.paymentMethod) ? body.paymentMethod : "bank";
+      const paymentStatus = ["unpaid","paid","partial"].includes(body.paymentStatus) ? body.paymentStatus : "unpaid";
+      const dueDate = /^\\d{4}-\\d{2}-\\d{2}$/.test(String(body.dueDate || "")) ? body.dueDate : null;
+      const deliveryDate = /^\\d{4}-\\d{2}-\\d{2}$/.test(String(body.deliveryDate || "")) ? body.deliveryDate : null;
+      const reference = String(body.reference || "").trim().slice(0, 120);
+      const notes = String(body.notes || "").trim().slice(0, 1200);
+
+      if (!customerName || (customerEmail && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(customerEmail)) ||
+        (customerType === "business" && !customerCompanyName) ||
+        !Array.isArray(body.lines) || !body.lines.length || body.lines.length > 80) {
         return res.status(400).json({
-          error: "Vul een klantnaam, geldig e-mailadres en factuurregels in."
+          error: "Controleer de klantgegevens en voeg minimaal één geldige factuurregel toe."
         });
       }
   
@@ -85,30 +120,31 @@ function registerAdminInvoiceRoutes(app, {
       // Reserve the invoice ID from PostgreSQL's BIGSERIAL sequence first,
       // then create the final invoice number in the same INSERT. Updating the
       // same table from a data-modifying CTE can return zero rows in PostgreSQL.
+      const sellerResult = await pool.query("SELECT data FROM invoice_settings WHERE id=1");
+      const sellerSnapshot = sellerResult.rows[0]?.data || {};
       const saved = await pool.query(
         `WITH next_invoice AS (
           SELECT nextval(pg_get_serial_sequence('manual_invoices','id'))::bigint AS id
         )
         INSERT INTO manual_invoices(
           id,invoice_number,customer_name,customer_email,customer_address,
-          kvk_number,vat_id,lines,subtotal,vat_total,total
+          kvk_number,vat_id,lines,subtotal,vat_total,total,customer_type,
+          customer_company_name,customer_contact_person,customer_postal_code,
+          customer_city,customer_country,customer_kvk_number,customer_vat_id,
+          payment_method,payment_status,due_date,delivery_date,reference,notes,seller_snapshot
         )
         SELECT id,
-          'HT-' || EXTRACT(YEAR FROM CURRENT_TIMESTAMP)::integer ||
-          '-' || LPAD(id::text,6,'0'),
-          $1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9
+          'HT-' || EXTRACT(YEAR FROM CURRENT_TIMESTAMP)::integer || '-' || LPAD(id::text,6,'0'),
+          $1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24::jsonb
         FROM next_invoice
         RETURNING id,invoice_number,created_at,status,total`,
         [
-          customerName,
-          customerEmail,
-          customerAddress,
-          kvkNumber,
-          vatId,
-          JSON.stringify(lines),
-          subtotal.toFixed(2),
-          vatTotal.toFixed(2),
-          total.toFixed(2)
+          customerName,customerEmail,customerAddress,
+          sellerSnapshot.kvkNumber || "",sellerSnapshot.vatId || "",
+          JSON.stringify(lines),subtotal.toFixed(2),vatTotal.toFixed(2),total.toFixed(2),
+          customerType,customerCompanyName,customerContactPerson,customerPostalCode,
+          customerCity,customerCountry,customerKvkNumber,customerVatId,
+          paymentMethod,paymentStatus,dueDate,deliveryDate,reference,notes,JSON.stringify(sellerSnapshot)
         ]
       );
       const row = saved.rows[0];
@@ -120,7 +156,8 @@ function registerAdminInvoiceRoutes(app, {
           invoice_number: row.invoice_number,
           created_at: row.created_at,
           status: row.status,
-          total: row.total
+          total: row.total,
+          customer_type: customerType
         }
       });
     } catch (error) {
