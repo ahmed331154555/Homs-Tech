@@ -94,7 +94,7 @@ function showPage(page){
     }
     if(page==="customers")loadCustomers();
     if(page==="emails")loadAdminEmails();
-    if(page==="invoices"){if(!document.querySelector("#invoiceLines tr"))addInvoiceLine();loadInvoices();}
+    if(page==="invoices"){if(!document.querySelector("#invoiceLines tr"))addInvoiceLine();invoiceToggleCustomerType();loadInvoiceSettings();loadInvoices();}
     if(page==="inventory")loadInventory();
     if(page==="device-register")loadDeviceRegister();
     if(page==="live-chat"){loadLiveChat();if(liveChatRefreshTimer)clearInterval(liveChatRefreshTimer);liveChatRefreshTimer=setInterval(()=>{if(currentPage==="live-chat")loadLiveChat();},8000);}
@@ -6632,6 +6632,47 @@ async function saveInventoryMovement(event){
 }
 
 let invoiceTestRecipient="Appelavcd116@gmail.com";
+let invoiceSellerSettings={};
+function invoiceFieldValue(id){return String(document.getElementById(id)?.value||"").trim();}
+function invoiceSetValue(id,value){const el=document.getElementById(id);if(el)el.value=value||"";}
+function invoiceToggleCustomerType(){
+  const business=invoiceFieldValue("invCustomerType")==="business";
+  for(const id of ["invCustomerCompanyWrap","invCustomerContactWrap","invCustomerKvkWrap","invCustomerVatWrap"]){
+    const el=document.getElementById(id);if(el)el.hidden=!business;
+  }
+  const personalName=document.getElementById("invCustomerNameWrap");
+  if(personalName)personalName.hidden=business;
+}
+async function loadInvoiceSettings(){
+  try{
+    const response=await fetch("/api/admin/invoice-settings",{credentials:"same-origin",headers:{"Accept":"application/json"}});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Factuurinstellingen laden is mislukt.");
+    invoiceSellerSettings=result.settings||{};
+    const map={legalName:"invSellerLegalName",tradeName:"invSellerTradeName",address:"invSellerAddress",postalCode:"invSellerPostalCode",city:"invSellerCity",country:"invSellerCountry",kvkNumber:"invSellerKvk",vatId:"invSellerVat",iban:"invSellerIban",email:"invSellerEmail",phone:"invSellerPhone",website:"invSellerWebsite"};
+    for(const [key,id] of Object.entries(map))invoiceSetValue(id,invoiceSellerSettings[key]||(key==="tradeName"?"HOMS TECH":key==="country"?"Nederland":key==="website"?"https://homs-tech.nl":""));
+  }catch(error){
+    const status=document.getElementById("invoiceSettingsStatus");
+    if(status){status.className="status error";status.textContent=error.message;}
+  }
+}
+async function saveInvoiceSettings(){
+  const button=document.querySelector('#page-invoices button[onclick="saveInvoiceSettings()"]');
+  const map={legalName:"invSellerLegalName",tradeName:"invSellerTradeName",address:"invSellerAddress",postalCode:"invSellerPostalCode",city:"invSellerCity",country:"invSellerCountry",kvkNumber:"invSellerKvk",vatId:"invSellerVat",iban:"invSellerIban",email:"invSellerEmail",phone:"invSellerPhone",website:"invSellerWebsite"};
+  const data={};for(const [key,id] of Object.entries(map))data[key]=invoiceFieldValue(id);
+  if(data.email&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(data.email)){const el=document.getElementById("invoiceSettingsStatus");if(el){el.className="status error";el.textContent="Vul een geldig bedrijfs-e-mailadres in.";}return;}
+  if(button){button.disabled=true;button.dataset.originalText=button.textContent;button.textContent="Opslaan…";}
+  const status=document.getElementById("invoiceSettingsStatus");
+  if(status){status.className="status info";status.textContent="Bedrijfsgegevens worden opgeslagen…";}
+  try{
+    const response=await fetch("/api/admin/invoice-settings",{method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(data)});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Factuurinstellingen opslaan is mislukt.");
+    invoiceSellerSettings=result.settings||data;
+    if(status){status.className="status success";status.textContent="Bedrijfsgegevens veilig opgeslagen. Nieuwe facturen gebruiken deze gegevens.";}
+  }catch(error){if(status){status.className="status error";status.textContent=error.message;}}
+  finally{if(button){button.disabled=false;button.textContent=button.dataset.originalText||"Bedrijfsgegevens opslaan";delete button.dataset.originalText;}}
+}
 function invoiceEuro(value){
   return new Intl.NumberFormat("nl-NL",{style:"currency",currency:"EUR"}).format(invoiceRoundMoney(value));
 }
@@ -6707,20 +6748,22 @@ function invoiceFormMessage(message,type="info"){
   status.textContent=message;
 }
 function invoiceDraftPayload(){
-  const totals=invoiceCalc();
+  const totals=invoiceCalc(),customerType=invoiceFieldValue("invCustomerType")||"individual";
   return {
-    customerName:String(document.getElementById("invCustomerName")?.value||"").trim(),
-    customerEmail:String(document.getElementById("invCustomerEmail")?.value||"").trim(),
-    customerAddress:String(document.getElementById("invCustomerAddress")?.value||"").trim(),
-    kvkNumber:String(document.getElementById("invKvk")?.value||"").trim(),
-    vatId:String(document.getElementById("invVatId")?.value||"").trim(),
-    lines:totals.lines,
-    totals
+    customerType,customerName:customerType==="business"?"":invoiceFieldValue("invCustomerName"),customerCompanyName:customerType==="business"?invoiceFieldValue("invCustomerCompany"):"",
+    customerContactPerson:customerType==="business"?invoiceFieldValue("invCustomerContact"):"",customerPhone:invoiceFieldValue("invCustomerPhone"),customerEmail:invoiceFieldValue("invCustomerEmail"),
+    customerAddress:invoiceFieldValue("invCustomerAddress"),customerPostalCode:invoiceFieldValue("invCustomerPostal"),
+    customerCity:invoiceFieldValue("invCustomerCity"),customerCountry:invoiceFieldValue("invCustomerCountry")||"Nederland",
+    customerKvkNumber:customerType==="business"?invoiceFieldValue("invCustomerKvk"):"",customerVatId:customerType==="business"?invoiceFieldValue("invCustomerVat"):"",
+    paymentMethod:invoiceFieldValue("invPaymentMethod")||"bank",paymentStatus:invoiceFieldValue("invPaymentStatus")||"unpaid",
+    dueDate:invoiceFieldValue("invDueDate"),deliveryDate:invoiceFieldValue("invDeliveryDate"),
+    reference:invoiceFieldValue("invReference"),notes:invoiceFieldValue("invNotes"),lines:totals.lines,totals
   };
 }
 function invoiceValidateDraft(payload){
-  if(!payload.customerName)return "Vul de klantnaam in.";
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.customerEmail))return "Vul een geldig e-mailadres van de klant in.";
+  if(payload.customerType==="business"&&!payload.customerCompanyName)return "Vul de bedrijfsnaam van de zakelijke klant in.";
+  if(payload.customerType==="individual"&&!payload.customerName)return "Vul de volledige naam van de klant in.";
+  if(payload.customerEmail&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(payload.customerEmail))return "Controleer het e-mailadres van de klant.";
   return invoiceValidateLines(payload.lines);
 }
 function previewInvoiceDraft(){
@@ -6739,7 +6782,7 @@ function previewInvoiceDraft(){
     '*{box-sizing:border-box}body{font:14px Arial,sans-serif;max-width:900px;margin:32px auto;padding:0 22px;color:#172033}header{background:#071d2d;color:#fff;padding:25px 28px;border-bottom:5px solid #2563eb}header h1{margin:0 0 7px;font-size:26px}header p{margin:0;color:#dbeafe}.meta{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:26px 0}.meta p{line-height:1.7;margin:6px 0}table{width:100%;border-collapse:collapse;margin-top:22px}th{background:#eff4f9;color:#17324d}td,th{padding:11px 9px;border-bottom:1px solid #dce4ed;text-align:left}td:nth-child(n+2),th:nth-child(n+2){text-align:right}.totals{margin:24px 0 24px auto;max-width:330px;line-height:2}.grand{font-size:19px;font-weight:800;border-top:2px solid #071d2d;padding-top:8px}.notice{padding:13px;background:#f1f5f9;border-radius:8px;color:#475569}.toolbar{display:flex;gap:10px;margin:22px 0}.toolbar button{border:0;border-radius:8px;background:#2563eb;color:#fff;padding:11px 17px;font-weight:700;cursor:pointer}.toolbar button:last-child{background:#e2e8f0;color:#172033}@media print{body{margin:0;max-width:none}.toolbar{display:none}}@media(max-width:600px){.meta{grid-template-columns:1fr}body{padding:0 12px}table{font-size:11px}td,th{padding:8px 5px}}'+
     '</style></head><body>'+
     '<header><h1>HOMS TECH</h1><p>Smartphone Repair & Refurbished Devices</p><h2>FACTUUR — VOORBEELD</h2></header>'+
-    '<div class="meta"><section><strong>Factuur aan</strong><p>'+esc(payload.customerName)+'<br>'+esc(payload.customerEmail)+'<br>'+esc(payload.customerAddress)+'</p></section><section><strong>Administratieve gegevens</strong><p>KVK: '+esc(payload.kvkNumber||"Nog niet ingevuld")+'<br>BTW-ID: '+esc(payload.vatId||"Nog niet ingevuld")+'<br>Factuurnummer: wordt toegewezen na opslaan</p></section></div>'+
+    '<div class="meta"><section><strong>Factuur aan · '+(payload.customerType==="business"?"Zakelijk":"Particulier")+'</strong><p><b>'+esc(payload.customerType==="business"?payload.customerCompanyName:payload.customerName)+'</b><br>'+esc(payload.customerContactPerson)+'<br>'+esc(payload.customerAddress)+'<br>'+esc([payload.customerPostalCode,payload.customerCity,payload.customerCountry].filter(Boolean).join(", "))+'<br>'+esc(payload.customerEmail)+'<br>'+esc(payload.customerPhone)+'<br>'+(payload.customerKvkNumber?"KVK: "+esc(payload.customerKvkNumber)+"<br>":"")+(payload.customerVatId?"BTW-ID: "+esc(payload.customerVatId):"")+'</p></section><section><strong>Gegevens HOMS TECH</strong><p><b>'+esc(invoiceSellerSettings.legalName||invoiceSellerSettings.tradeName||"HOMS TECH")+'</b><br>'+esc(invoiceSellerSettings.address)+'<br>'+esc([invoiceSellerSettings.postalCode,invoiceSellerSettings.city,invoiceSellerSettings.country].filter(Boolean).join(", "))+'<br>'+(invoiceSellerSettings.kvkNumber?"KVK: "+esc(invoiceSellerSettings.kvkNumber)+"<br>":"")+(invoiceSellerSettings.vatId?"BTW-ID: "+esc(invoiceSellerSettings.vatId)+"<br>":"")+esc(invoiceSellerSettings.email)+'<br>'+esc(invoiceSellerSettings.phone)+'<br>IBAN: '+esc(invoiceSellerSettings.iban||"Later invullen")+'<br>Factuurnummer: wordt toegewezen na opslaan</p></section></div>'+
     '<table><thead><tr><th>Omschrijving</th><th>Aantal</th><th>Prijs</th><th>BTW</th><th>Regeltotaal</th></tr></thead><tbody>'+rows+'</tbody></table>'+
     '<div class="totals">Excl. BTW: '+invoiceEuro(totals.subtotal)+'<br>BTW: '+invoiceEuro(totals.vatTotal)+'<div class="grand">Totaal: '+invoiceEuro(totals.total)+'</div></div>'+
     '<p class="notice">Dit is een voorbeeld en nog geen definitieve factuur. Het officiële factuurnummer wordt toegewezen na het opslaan.</p>'+
@@ -6754,14 +6797,7 @@ async function saveInvoice(){
   const payload=invoiceDraftPayload();
   const validation=invoiceValidateDraft(payload);
   if(validation){invoiceFormMessage(validation,"error");return;}
-  const body={
-    customerName:payload.customerName,
-    customerEmail:payload.customerEmail,
-    customerAddress:payload.customerAddress,
-    kvkNumber:payload.kvkNumber,
-    vatId:payload.vatId,
-    lines:payload.lines
-  };
+  const body={...payload,lines:payload.lines};delete body.totals;
   if(button){button.disabled=true;button.dataset.originalText=button.textContent;button.textContent="Opslaan…";}
   invoiceFormMessage("Factuur wordt veilig opgeslagen…","info");
   try{
@@ -6798,7 +6834,7 @@ async function loadInvoices(){
       return;
     }
     box.innerHTML=
-      '<div class="ht-invoice-table-wrap"><table class="ht-invoice-table"><thead><tr><th>Factuurnummer</th><th>Klant</th><th>Datum</th><th>Totaal</th><th>Status</th><th>Acties</th></tr></thead><tbody>'+
+      '<div class="ht-invoice-table-wrap"><table class="ht-invoice-table"><thead><tr><th>Factuurnummer</th><th>Klant</th><th>Datum</th><th>Totaal</th><th>Factuurstatus</th><th>Betaalstatus</th><th>Acties</th></tr></thead><tbody>'+
       invoices.map(invoice=>{
         const id=Number(invoice.id);
         const status=String(invoice.status||"draft").toLowerCase();
@@ -6807,11 +6843,12 @@ async function loadInvoices(){
         const statusClass=status==="sent"||status==="paid"?"is-sent":status==="cancelled"?"is-cancelled":"is-draft";
         return '<tr>'+
           '<td><strong class="ht-invoice-number">'+esc(invoice.invoice_number||"—")+'</strong></td>'+
-          '<td><strong>'+esc(invoice.customer_name||"—")+'</strong><small>'+esc(invoice.customer_email||"")+'</small></td>'+
+          '<td><strong>'+esc(invoice.customer_type==="business"?(invoice.customer_company_name||invoice.customer_name||"—"):(invoice.customer_name||"—"))+'</strong><small>'+esc(invoice.customer_email||"")+'</small></td>'+
           '<td>'+invoiceDate(invoice.created_at)+'</td>'+
           '<td class="ht-invoice-total">'+invoiceEuro(invoice.total)+'</td>'+
           '<td><span class="ht-invoice-status '+statusClass+'">'+esc(statusLabel)+'</span></td>'+
-          '<td><div class="ht-invoice-actions"><button type="button" class="btn btn-light" onclick="previewSavedInvoice('+id+')">PDF bekijken</button><button type="button" class="btn btn-green" onclick="sendInvoiceTest('+id+',this)">E-mail versturen</button></div></td>'+
+          '<td><span class="ht-invoice-status '+(invoice.payment_status==="paid"?"is-sent":"is-draft")+'">'+esc(invoice.payment_status==="paid"?"Betaald":invoice.payment_status==="partial"?"Gedeeltelijk":"Openstaand")+'</span></td>'+
+          '<td><div class="ht-invoice-actions"><button type="button" class="btn btn-light" onclick="previewSavedInvoice('+id+')">PDF bekijken</button>'+(invoice.customer_email?'<button type="button" class="btn btn-green" onclick="sendInvoiceTest('+id+',this)">E-mail versturen</button>':'<span class="small">Geen e-mailadres</span>')+'</div></td>'+
           '</tr>';
       }).join("")+
       '</tbody></table></div>';

@@ -9,7 +9,8 @@ function harness({ pool, env = {}, buildInvoicePdf = () => Buffer.from("PDF"), f
   const permissions = [];
   const app = {
     get(path, ...handlers) { routes.set("GET " + path, handlers.at(-1)); },
-    post(path, ...handlers) { routes.set("POST " + path, handlers.at(-1)); }
+    post(path, ...handlers) { routes.set("POST " + path, handlers.at(-1)); },
+    put(path, ...handlers) { routes.set("PUT " + path, handlers.at(-1)); }
   };
   const requirePermission = permission => {
     permissions.push(permission);
@@ -27,6 +28,7 @@ function response() {
     status(code) { this.statusCode = code; return this; },
     json(value) { this.body = value; return this; },
     setHeader(name, value) { this.headers[name] = value; },
+    set(name, value) { this.headers[name] = value; return this; },
     send(value) { this.body = value; return this; }
   };
 }
@@ -34,12 +36,14 @@ function response() {
 test("admin invoice routes register with site.save permission", () => {
   const { routes, permissions } = harness({ pool: { async query() { return { rows: [] }; } } });
   assert.deepEqual([...routes.keys()], [
+    "GET /api/admin/invoice-settings",
+    "PUT /api/admin/invoice-settings",
     "GET /api/admin/invoices",
     "POST /api/admin/invoices",
     "GET /api/admin/invoices/:id/pdf",
     "POST /api/admin/invoices/:id/test-send"
   ]);
-  assert.deepEqual(permissions, ["site.save", "site.save", "site.save", "site.save"]);
+  assert.deepEqual(permissions, ["site.save", "site.save", "site.save", "site.save", "site.save", "site.save"]);
 });
 
 test("invoice list returns latest invoices", async () => {
@@ -58,6 +62,7 @@ test("invoice creation validates input and calculates totals", async () => {
   const createdAt = new Date("2026-03-04T10:00:00Z");
   const pool = { async query(sql, params) {
     calls.push({ sql, params });
+    if (sql.includes("SELECT data FROM invoice_settings")) return { rows: [{ data: { tradeName: "HOMS TECH", iban: "NL00TEST" } }] };
     if (sql.includes("INSERT INTO manual_invoices")) return { rows: [{ id: 12, invoice_number: "HT-2026-000012", created_at: createdAt, status: "open", total: "130.68" }] };
     throw new Error("Unexpected invoice query: " + sql);
   } };
@@ -84,15 +89,15 @@ test("invoice creation validates input and calculates totals", async () => {
   assert.equal(res.statusCode, 201);
   assert.equal(res.body.invoice.invoice_number, "HT-2026-000012");
   assert.equal(res.body.invoice.total, "130.68");
-  assert.equal(calls.length, 1, "invoice and its final number are created by one INSERT");
-  assert.match(calls[0].sql, /nextval\(pg_get_serial_sequence\('manual_invoices','id'\)\)/);
-  assert.match(calls[0].sql, /INSERT INTO manual_invoices\([\s\S]*SELECT id,[\s\S]*LPAD\(id::text,6,'0'\)/);
-  assert.doesNotMatch(calls[0].sql, /UPDATE manual_invoices AS invoice/);
-  const lines = JSON.parse(calls[0].params[5]);
+  assert.equal(calls.length, 2, "load seller settings and create invoice in one insert");
+  assert.match(calls[1].sql, /nextval\(pg_get_serial_sequence\('manual_invoices','id'\)\)/);
+  assert.match(calls[1].sql, /INSERT INTO manual_invoices\([\s\S]*SELECT id,[\s\S]*LPAD\(id::text,6,'0'\)/);
+  assert.doesNotMatch(calls[1].sql, /UPDATE manual_invoices AS invoice/);
+  const lines = JSON.parse(calls[1].params[5]);
   assert.equal(lines.length, 2);
-  assert.equal(calls[0].params[6], "108.00");
-  assert.equal(calls[0].params[7], "22.68");
-  assert.equal(calls[0].params[8], "130.68");
+  assert.equal(calls[1].params[6], "108.00");
+  assert.equal(calls[1].params[7], "22.68");
+  assert.equal(calls[1].params[8], "130.68");
 });
 
 test("invoice creation rejects invalid quantities, prices and VAT rates", async () => {
@@ -157,7 +162,8 @@ test("invoice test-send validates configuration and sends the generated PDF", as
   assert.equal(res.body.statusUpdated, true);
   assert.equal(sentPayload.attachments[0].filename, "HT-2026-000008.pdf");
   assert.equal(Buffer.from(sentPayload.attachments[0].content, "base64").toString(), "PDFDATA");
-  assert.match(sentPayload.html, /NL96 REVO 0480 6699 45/);
+  assert.doesNotMatch(sentPayload.html, /NL96 REVO 0480 6699 45/);
+  assert.match(sentPayload.html, /betaalgegevens staan vermeld/);
 });
 
 test("invoice test-send does not call provider when configuration is missing", async () => {
@@ -177,6 +183,7 @@ test("invoice totals round each line to cents before summing", async () => {
   const calls = [];
   const pool = { async query(sql, params) {
     calls.push({ sql, params });
+    if (sql.includes("SELECT data FROM invoice_settings")) return { rows: [{ data: {} }] };
     if (sql.includes("INSERT INTO manual_invoices")) {
       return { rows: [{ id: 31, invoice_number: "HT-2026-000031", created_at: new Date("2026-11-10T10:00:00Z"), status: "open", total: "0.36" }] };
     }
@@ -192,9 +199,9 @@ test("invoice totals round each line to cents before summing", async () => {
     }
   }, res);
   assert.equal(res.statusCode, 201);
-  assert.equal(calls[0].params[6], "0.30");
-  assert.equal(calls[0].params[7], "0.06");
-  assert.equal(calls[0].params[8], "0.36");
+  assert.equal(calls[1].params[6], "0.30");
+  assert.equal(calls[1].params[7], "0.06");
+  assert.equal(calls[1].params[8], "0.36");
 });
 
 
@@ -228,4 +235,39 @@ test("invoice status remains unchanged when the email provider rejects delivery"
   await routes.get("POST /api/admin/invoices/:id/test-send")({ params: { id: "20" } }, res);
   assert.equal(res.statusCode, 502);
   assert.equal(updateCalled, false);
+});
+
+test("invoice settings are stored and returned separately from customer data", async () => {
+  let stored;
+  const pool={async query(sql,params){
+    if(sql.startsWith("SELECT data FROM invoice_settings"))return {rows:stored?[{data:stored}]:[]};
+    if(sql.includes("INSERT INTO invoice_settings")){stored=JSON.parse(params[0]);return {rows:[]};}
+    throw new Error("Unexpected query "+sql);
+  }};
+  const {routes}=harness({pool});
+  const put=response();
+  await routes.get("PUT /api/admin/invoice-settings")({body:{tradeName:"HOMS TECH",city:"Rotterdam",iban:"NL00TEST",unexpected:"discard"}},put);
+  assert.equal(put.body.success,true);
+  assert.equal(stored.tradeName,"HOMS TECH");
+  assert.equal(stored.unexpected,undefined);
+  const get=response();
+  await routes.get("GET /api/admin/invoice-settings")({},get);
+  assert.equal(get.body.settings.iban,"NL00TEST");
+});
+
+test("business invoice requires a company name but does not require customer email", async () => {
+  let inserts=0;
+  const pool={async query(sql){
+    if(sql.includes("SELECT data FROM invoice_settings"))return {rows:[{data:{tradeName:"HOMS TECH"}}]};
+    if(sql.includes("INSERT INTO manual_invoices")){inserts++;return {rows:[{id:44,invoice_number:"HT-2026-000044",created_at:new Date(),status:"open",total:"12.10"}]};}
+    throw new Error("Unexpected query "+sql);
+  }};
+  const {routes}=harness({pool});
+  const invalid=response();
+  await routes.get("POST /api/admin/invoices")({body:{customerType:"business",customerName:"",customerCompanyName:"",lines:[{description:"Service",quantity:1,unitPrice:10,vatRate:21}]}},invalid);
+  assert.equal(invalid.statusCode,400);
+  const valid=response();
+  await routes.get("POST /api/admin/invoices")({body:{customerType:"business",customerName:"",customerCompanyName:"Example BV",customerEmail:"",lines:[{description:"Service",quantity:1,unitPrice:10,vatRate:21}]}},valid);
+  assert.equal(valid.statusCode,201);
+  assert.equal(inserts,1);
 });

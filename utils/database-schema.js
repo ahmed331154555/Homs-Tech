@@ -388,6 +388,31 @@ async function initializeDatabaseSchema(pool) {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
+    await pool.query(`
+      ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_type TEXT NOT NULL DEFAULT 'individual';
+      ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_company_name TEXT NOT NULL DEFAULT '';
+      ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_contact_person TEXT NOT NULL DEFAULT '';
+      ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_phone TEXT NOT NULL DEFAULT '';
+      ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_postal_code TEXT NOT NULL DEFAULT '';
+      ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_city TEXT NOT NULL DEFAULT '';
+      ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_country TEXT NOT NULL DEFAULT 'Nederland';
+      ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_kvk_number TEXT NOT NULL DEFAULT '';
+      ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_vat_id TEXT NOT NULL DEFAULT '';
+      ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS payment_method TEXT NOT NULL DEFAULT 'bank';
+      ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'unpaid';
+      ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS due_date DATE;
+      ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS delivery_date DATE;
+      ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS reference TEXT NOT NULL DEFAULT '';
+      ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS notes TEXT NOT NULL DEFAULT '';
+      ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS seller_snapshot JSONB NOT NULL DEFAULT '{}'::jsonb;
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS invoice_settings (
+        id SMALLINT PRIMARY KEY CHECK (id=1),
+        data JSONB NOT NULL DEFAULT '{}'::jsonb,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
 }
 
 module.exports = { initializeDatabaseSchema };

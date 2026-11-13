@@ -4132,11 +4132,11 @@ body{
 }
 .ht-invoice-form-grid .field{min-width:0;margin:0}
 .ht-invoice-form-grid .field label{display:block;margin-bottom:6px;color:#334b61;font-size:12px;font-weight:800}
-.ht-invoice-form-grid .field input{
+.ht-invoice-form-grid .field input,.ht-invoice-form-grid .field select{
   width:100%;min-width:0;min-height:43px;padding:10px 12px;border:1px solid #d8e1eb;
   border-radius:9px;background:#fff;color:#152f46;font-size:13px;box-sizing:border-box
 }
-.ht-invoice-form-grid .field input:focus,.ht-invoice-lines-table input:focus,.ht-invoice-lines-table select:focus{
+.ht-invoice-form-grid .field input:focus,.ht-invoice-form-grid .field select:focus,.ht-invoice-lines-table input:focus,.ht-invoice-lines-table select:focus{
   outline:0;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)
 }
 .ht-invoice-field-wide{grid-column:1/-1}
@@ -4346,3 +4346,10 @@ body{
     animation-iteration-count:1!important;transition-duration:.01ms!important
   }
 }
+
+/* Invoice profile and customer type enhancements */
+.ht-invoices-page [hidden]{display:none!important}
+.ht-invoices-page .ht-invoice-editor-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px}
+.ht-invoices-page #invoiceSettingsStatus{margin:0}
+.ht-invoices-page .ht-invoice-form-grid .field select{width:100%;min-width:0;min-height:43px;padding:10px 12px;border:1px solid #d8e1eb;border-radius:9px;background:#fff;color:#152f46;font-size:13px;box-sizing:border-box}
+@media(max-width:620px){.ht-invoice-form-grid{grid-template-columns:minmax(0,1fr)}.ht-invoice-field-wide{grid-column:auto}}
