@@ -261,6 +261,30 @@ test("phone setup wizard image reader releases handlers after upload", () => {
   assert.match(handler, /input\.value=""/);
 });
 
+test("bulk color image upload releases FileReader handlers and file input", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function phoneBulkHandleColorImage(");
+  const end = js.indexOf("\nfunction phoneBulkRemoveColorImage", start);
+  assert.ok(start >= 0 && end > start);
+  const handler = js.slice(start, end);
+  assert.match(handler, /reader\.onload=null/);
+  assert.match(handler, /reader\.onerror=null/);
+  assert.match(handler, /reader\.onabort=null/);
+  assert.match(handler, /input\.value=''/);
+});
+
+test("phone folder image upload releases FileReader handlers and file input", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function handlePhoneFolderImage(");
+  const end = js.indexOf("\nfunction addPhoneInFolder", start);
+  assert.ok(start >= 0 && end > start);
+  const handler = js.slice(start, end);
+  assert.match(handler, /reader\.onload=null/);
+  assert.match(handler, /reader\.onerror=null/);
+  assert.match(handler, /reader\.onabort=null/);
+  assert.match(handler, /input\.value=''/);
+});
+
 test("remaining admin image uploads release FileReader handlers and file inputs", () => {
   const js = read("assets/homs-admin.js");
   const handlers = [
