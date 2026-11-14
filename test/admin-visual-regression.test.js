@@ -457,3 +457,14 @@ test("email attachment FileReader handlers are released after conversion", () =>
   assert.match(helper, /result\.slice\(separator\+1\)/);
   assert.match(helper, /reader\.readAsDataURL\(file\)/);
 });
+
+test("repair request photos are lazy-loaded and decoded asynchronously", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function renderRepairRequests(){");
+  const end = js.indexOf("\\nfunction setRepairQuickReply", start);
+  assert.ok(start >= 0 && end > start, "repair request renderer should exist");
+  const renderer = js.slice(start, end);
+  assert.match(renderer, /loading="lazy"/);
+  assert.match(renderer, /decoding="async"/);
+  assert.match(renderer, /rel="noopener noreferrer"/);
+});
