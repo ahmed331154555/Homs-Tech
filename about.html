@@ -687,7 +687,7 @@
 
     try{
 
-      const response = await fetch("/api/site");
+      const response = await fetch("/api/site?view=about");
 
       if(!response.ok){
         throw new Error("API error");
