@@ -113,6 +113,10 @@ registerResendInboundWebhook(app, {
   fetchImpl: fetch
 });
 
+// Repair quote uploads allow at most 6 MB of decoded photos (about 8 MB Base64).
+// Apply a route-specific cap before the broader admin/catalog JSON parser so
+// oversized public uploads cannot consume the full 50 MB request budget.
+app.use("/api/repair-requests", express.json({ limit: "9mb" }));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: false, limit: "10kb" }));
 app.use((err, req, res, next) => {
