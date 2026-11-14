@@ -100,3 +100,83 @@ test("admin order deletion validates the ID before issuing a query", async () =>
   assert.deepEqual(response.body, { error: "Ongeldig order-ID." });
   assert.equal(queryCalled, false);
 });
+
+
+test("repair photo endpoint caps stored record transfer before parsing", async () => {
+  let querySql = "";
+  let queryParams = [];
+  const pool = {
+    async query(sql, params) {
+      querySql = sql;
+      queryParams = params;
+      return { rows: [{ extra_fields: null, extra_fields_bytes: 10 * 1024 * 1024 }] };
+    }
+  };
+  const routes = createRouteHarness(pool);
+  const response = createResponse();
+
+  await routes.get("GET /api/admin/repair-requests/:id/photos/:index")(
+    { params: { id: "42", index: "0" } },
+    response
+  );
+
+  assert.equal(response.statusCode, 413);
+  assert.match(querySql, /CASE WHEN octet_length\\(extra_fields\\) <= \\$2 THEN extra_fields ELSE NULL END/);
+  assert.match(querySql, /octet_length\\(extra_fields\\) AS extra_fields_bytes/);
+  assert.deepEqual(queryParams, [42, 9 * 1024 * 1024]);
+});
+
+test("repair photo endpoint serves only bounded supported image data", async () => {
+  const payload = Buffer.from("small-image-payload");
+  let querySql = "";
+  const pool = {
+    async query(sql, params) {
+      querySql = sql;
+      assert.deepEqual(params, [42, 9 * 1024 * 1024]);
+      return { rows: [{
+        extra_fields: JSON.stringify({ photos: [{ type: "image/png", dataUrl: "data:image/png;base64," + payload.toString("base64") }] }),
+        extra_fields_bytes: 180
+      }] };
+    }
+  };
+  const routes = createRouteHarness(pool);
+  const response = createResponse();
+
+  await routes.get("GET /api/admin/repair-requests/:id/photos/:index")(
+    { params: { id: "42", index: "0" } },
+    response
+  );
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.headers["Content-Type"], "image/png");
+  assert.equal(response.headers["X-Content-Type-Options"], "nosniff");
+  assert.deepEqual(response.body, payload);
+  assert.match(querySql, /octet_length\\(extra_fields\\)/);
+});
+
+test("repair photo endpoint rejects unsupported MIME types and oversized payloads", async () => {
+  const makePool = dataUrl => ({
+    async query() {
+      return { rows: [{
+        extra_fields: JSON.stringify({ photos: [{ dataUrl }] }),
+        extra_fields_bytes: 100
+      }] };
+    }
+  });
+  const routes = createRouteHarness(makePool("data:text/html;base64,SGVsbG8="));
+  const invalidType = createResponse();
+  await routes.get("GET /api/admin/repair-requests/:id/photos/:index")(
+    { params: { id: "42", index: "0" } },
+    invalidType
+  );
+  assert.equal(invalidType.statusCode, 400);
+
+  const hugeBase64 = "A".repeat(Math.ceil((2 * 1024 * 1024) / 3) * 4 + 4);
+  const hugeRoutes = createRouteHarness(makePool("data:image/jpeg;base64," + hugeBase64));
+  const oversized = createResponse();
+  await hugeRoutes.get("GET /api/admin/repair-requests/:id/photos/:index")(
+    { params: { id: "42", index: "0" } },
+    oversized
+  );
+  assert.equal(oversized.statusCode, 400);
+});
