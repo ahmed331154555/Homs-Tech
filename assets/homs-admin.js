@@ -4705,22 +4705,34 @@ async function compressPhonePhotoData(value){
   if(typeof value!=="string" || !/^data:image\/(?!svg\+xml)[^;]+;base64,/i.test(value) || value.length<180000) return value;
   return new Promise(resolve=>{
     const img=new Image();
+    let canvas=null;
+    const finish=result=>{
+      img.onload=null;
+      img.onerror=null;
+      img.removeAttribute("src");
+      if(canvas){
+        canvas.width=0;
+        canvas.height=0;
+        canvas=null;
+      }
+      resolve(result);
+    };
     img.onload=()=>{
       try{
         const maxSide=1440,scale=Math.min(1,maxSide/Math.max(img.naturalWidth||1,img.naturalHeight||1));
-        const canvas=document.createElement("canvas");
+        canvas=document.createElement("canvas");
         canvas.width=Math.max(1,Math.round((img.naturalWidth||1)*scale));
         canvas.height=Math.max(1,Math.round((img.naturalHeight||1)*scale));
         const ctx=canvas.getContext("2d");
-        if(!ctx){resolve(value);return;}
+        if(!ctx){finish(value);return;}
         ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
         ctx.drawImage(img,0,0,canvas.width,canvas.height);
         let compressed=canvas.toDataURL("image/jpeg",0.78);
         if(compressed.length>=value.length) compressed=canvas.toDataURL("image/jpeg",0.65);
-        resolve(compressed.length<value.length?compressed:value);
-      }catch(e){console.warn("[HOMS TECH] Photo compression skipped:",e);resolve(value);}
+        finish(compressed.length<value.length?compressed:value);
+      }catch(e){console.warn("[HOMS TECH] Photo compression skipped:",e);finish(value);}
     };
-    img.onerror=()=>resolve(value);
+    img.onerror=()=>finish(value);
     img.src=value;
   });
 }
@@ -4744,22 +4756,36 @@ async function compressShopPhotoData(value){
   if(typeof value!=="string"||!/^data:image\/(?!svg\+xml)[^;]+;base64,/i.test(value)||value.length<180000)return value;
   return new Promise(resolve=>{
     const img=new Image();
+    let canvas=null;
+    const finish=result=>{
+      img.onload=null;
+      img.onerror=null;
+      img.removeAttribute("src");
+      if(canvas){
+        canvas.width=0;
+        canvas.height=0;
+        canvas=null;
+      }
+      resolve(result);
+    };
     img.onload=()=>{
       try{
         const maxSide=1600,scale=Math.min(1,maxSide/Math.max(img.naturalWidth||1,img.naturalHeight||1));
-        const canvas=document.createElement("canvas");
+        canvas=document.createElement("canvas");
         canvas.width=Math.max(1,Math.round((img.naturalWidth||1)*scale));
         canvas.height=Math.max(1,Math.round((img.naturalHeight||1)*scale));
-        const ctx=canvas.getContext("2d");if(!ctx){resolve(value);return;}
+        const ctx=canvas.getContext("2d");
+        if(!ctx){finish(value);return;}
         ctx.drawImage(img,0,0,canvas.width,canvas.height);
         // WebP preserves transparency. Never fall back to JPEG here because
         // flattening a transparent product cutout onto white changes the asset.
         let compressed=canvas.toDataURL("image/webp",0.82);
         if(compressed.length>=value.length)compressed=canvas.toDataURL("image/webp",0.68);
-        resolve(compressed.length<value.length?compressed:value);
-      }catch(error){console.warn("[HOMS TECH] Shop photo compression skipped:",error);resolve(value);}
+        finish(compressed.length<value.length?compressed:value);
+      }catch(error){console.warn("[HOMS TECH] Shop photo compression skipped:",error);finish(value);}
     };
-    img.onerror=()=>resolve(value);img.src=value;
+    img.onerror=()=>finish(value);
+    img.src=value;
   });
 }
 async function compressShopCatalogPhotos(products){
