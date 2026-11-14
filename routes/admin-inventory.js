@@ -131,7 +131,39 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
   app.get("/api/admin/inventory", requirePermission("site.save"), async (req, res) => {
     try {
       const [settings, history] = await Promise.all([
-        pool.query("SELECT data->'phones' AS phones, data->'devices' AS devices, data->'shopProducts' AS shop_products FROM site_settings WHERE id=1"),
+        pool.query(
+          `SELECT
+            COALESCE((
+              SELECT jsonb_agg(jsonb_build_object(
+                'id', product->'id', 'name', product->'name', 'sku', product->'sku',
+                'stock', product->'stock', 'stockStatus', product->'stockStatus', 'pricingMode', product->'pricingMode',
+                'variantPrices', COALESCE((
+                  SELECT jsonb_agg(jsonb_build_object(
+                    'storage', variant->'storage', 'color', variant->'color', 'condition', variant->'condition',
+                    'sku', variant->'sku', 'stock', variant->'stock', 'available', variant->'available', 'active', variant->'active'
+                  ))
+                  FROM jsonb_array_elements(CASE WHEN jsonb_typeof(product->'variantPrices') = 'array' THEN product->'variantPrices' ELSE '[]'::jsonb END) AS variant
+                ), '[]'::jsonb)
+              ))
+              FROM jsonb_array_elements(CASE WHEN jsonb_typeof(data->'phones') = 'array' THEN data->'phones' ELSE '[]'::jsonb END) AS product
+            ), '[]'::jsonb) AS phones,
+            COALESCE((
+              SELECT jsonb_agg(jsonb_build_object(
+                'id', product->'id', 'name', product->'name', 'sku', product->'sku',
+                'stock', product->'stock', 'category', product->'category', 'active', product->'active',
+                'variants', COALESCE((
+                  SELECT jsonb_agg(jsonb_build_object(
+                    'id', variant->'id', 'quality', variant->'quality', 'sku', variant->'sku',
+                    'stock', variant->'stock', 'active', variant->'active'
+                  ))
+                  FROM jsonb_array_elements(CASE WHEN jsonb_typeof(product->'variants') = 'array' THEN product->'variants' ELSE '[]'::jsonb END) AS variant
+                ), '[]'::jsonb)
+              ))
+              FROM jsonb_array_elements(CASE WHEN jsonb_typeof(data->'shopProducts') = 'array' THEN data->'shopProducts' ELSE '[]'::jsonb END) AS product
+            ), '[]'::jsonb) AS shop_products
+          FROM site_settings WHERE id=1
+          `
+        ),
         pool.query(
           "SELECT id,item_type,product_id,variant_id,product_name,variant_label,sku,movement_type,quantity,stock_before,stock_after,reference,note,created_by,created_at FROM inventory_movements ORDER BY id DESC LIMIT 100"
         )
