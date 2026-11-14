@@ -264,11 +264,11 @@ test("phone setup wizard image reader releases handlers after upload", () => {
 test("remaining admin image uploads release FileReader handlers and file inputs", () => {
   const js = read("assets/homs-admin.js");
   const handlers = [
-    ["handleGlobalConditionOverviewImage", "function renderGlobalConditionDetails"],
-    ["handleCategoryImage", "function addDeviceCategory"],
-    ["handleRepairImage", "function addRepairCoverageArea"],
-    ["handleBuybackBrandImage", "function handleBuybackImageForModel"],
-    ["handleBuybackImageForModel", "function addBuybackPhone"],
+    ["handleGlobalConditionOverviewImage", "renderGlobalConditionDetails"],
+    ["handleCategoryImage", "addDeviceCategory"],
+    ["handleRepairImage", "addRepairCoverageArea"],
+    ["handleBuybackBrandImage", "handleBuybackImageForModel"],
+    ["handleBuybackImageForModel", "addBuybackPhone"],
     ["handleBuybackImage", "/* ---------------- REPAIR REQUESTS"]
   ];
   for (const [name, nextName] of handlers) {
