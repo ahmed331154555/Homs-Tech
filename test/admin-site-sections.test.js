@@ -66,3 +66,36 @@ test("lightweight admin section saves merge only validated top-level JSONB field
   assert.match(route, /data = data \|\| \$1::jsonb/);
   assert.doesNotMatch(route, /SELECT data FROM site_settings/i);
 });
+
+test("admin login no longer downloads the full site settings JSON document", () => {
+  const js = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "assets", "homs-admin.js"), "utf8");
+  const start = js.indexOf("async function loadData(){");
+  const end = js.indexOf("\\n/* ---------------- GENERAL ---------------- */", start);
+  assert.ok(start >= 0 && end > start, "loadData function should exist");
+  const loadData = js.slice(start, end);
+  assert.doesNotMatch(loadData, /fetch\\(["']\\/api\\/site["']/);
+  assert.match(loadData, /loadAdminSiteSection\\(currentPage\\)/);
+  assert.match(js, /fetch\\(["']\\/api\\/admin\\/site-data\\/["']\\+encodeURIComponent\\(page\\)/);
+});
+
+test("admin navigation lazy-loads a section once and keeps its in-memory edits", () => {
+  const js = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "assets", "homs-admin.js"), "utf8");
+  assert.match(js, /const adminLoadedSections=new Set\\(\\)/);
+  assert.match(js, /if\\(adminLoadedSections\\.has\\(page\\)\\)return true/);
+  assert.match(js, /if\\(ADMIN_SITE_DATA_PAGES\\.has\\(page\\)&&adminLazyLoadingEnabled\\)/);
+  assert.match(js, /adminDirtySections\\.add\\(currentPage\\)/);
+});
+
+test("lightweight admin save payloads contain only the active page data", () => {
+  const js = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "assets", "homs-admin.js"), "utf8");
+  const start = js.indexOf("async function save(isAuto=false){");
+  const end = js.indexOf("\\n/* ---------------- SEARCH + ADMIN USERS ---------------- */", start);
+  assert.ok(start >= 0 && end > start, "save function should exist");
+  const save = js.slice(start, end);
+  assert.match(save, /savePage==="general"[\\s\\S]*?homepage:JSON\\.parse\\(JSON\\.stringify\\(data\\.homepage/);
+  assert.match(save, /savePage==="services"[\\s\\S]*?services:JSON\\.parse\\(JSON\\.stringify\\(data\\.services/);
+  assert.match(save, /savePage==="repair"[\\s\\S]*?repairPage:JSON\\.parse\\(JSON\\.stringify\\(data\\.repairPage/);
+  assert.match(save, /savePage==="categories"[\\s\\S]*?deviceCategories:JSON\\.parse\\(JSON\\.stringify\\(data\\.deviceCategories/);
+  assert.match(save, /savePage==="why"[\\s\\S]*?why:JSON\\.parse\\(JSON\\.stringify\\(data\\.why/);
+  assert.match(save, /"\\/api\\/admin\\/site-data\\/"+encodeURIComponent\\(savePage\\)/);
+});
