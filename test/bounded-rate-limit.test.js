@@ -33,10 +33,10 @@ test("reclaims expired keys and admits a new key after capacity is available", (
   assert.equal(check("ip-b", 200), true);
   assert.equal(check("ip-c", 500), false);
 
-  // The earliest retained entry expires at 1100; pruning then removes both.
+  // The first key expires at 1100; the second expires at 1200.
   assert.equal(check("ip-c", 1100), true);
-  assert.equal(check("ip-d", 1100), true);
-  assert.equal(check("ip-e", 1100), false);
+  assert.equal(check("ip-d", 1200), true);
+  assert.equal(check("ip-e", 1200), false);
 });
 
 test("rechecks capacity only when the earliest active window can have expired", () => {
