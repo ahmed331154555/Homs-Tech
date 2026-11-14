@@ -404,27 +404,35 @@ function normalizeGlobalConditionDetails(){
 }
 
 function handleGlobalConditionOverviewImage(event){
-  const file=event.target.files && event.target.files[0];
-  if(!file) return;
+  const input=event.target,file=input.files && input.files[0];
+  if(!file)return;
   if(!file.type || !file.type.startsWith('image/')){
     alert('Kies een afbeelding.');
-    event.target.value='';
+    input.value='';
     return;
   }
   if(file.size>5*1024*1024){
     alert('De afbeelding mag maximaal 5 MB zijn.');
-    event.target.value='';
+    input.value='';
     return;
   }
   const reader=new FileReader();
-  reader.onload=()=>{
-    data.globalConditionOverviewImage=reader.result;
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;
+    reader.onload=null;reader.onerror=null;reader.onabort=null;
+    input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    data.globalConditionOverviewImage=value;
     renderGlobalConditionDetails();
     markChanged();
   };
-  reader.readAsDataURL(file);
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error('read-failed'));
+  reader.onabort=()=>finish(new Error('read-aborted'));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
 }
-
 function renderGlobalConditionDetails(){
   normalizeGlobalConditionDetails();
   const overview=document.getElementById('globalConditionOverviewBox');
@@ -560,17 +568,27 @@ function toggleDeviceCategory(i){
 }
 
 function handleCategoryImage(event,i){
-  const file=event.target.files && event.target.files[0];
-  if(!file) return;
+  const input=event.target,file=input.files && input.files[0];
+  if(!file)return;
+  if(!file.type || !file.type.startsWith('image/')){alert('Kies een afbeelding.');input.value='';return;}
   const reader=new FileReader();
-  reader.onload=()=>{
-    data.deviceCategories[i].image=reader.result;
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;
+    reader.onload=null;reader.onerror=null;reader.onabort=null;
+    input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    if(!data.deviceCategories[i])return;
+    data.deviceCategories[i].image=value;
     renderDeviceCategories();
     markChanged();
   };
-  reader.readAsDataURL(file);
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error('read-failed'));
+  reader.onabort=()=>finish(new Error('read-aborted'));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
 }
-
 function addDeviceCategory(){
   normalizeDeviceCategories();
   data.deviceCategories.push({
@@ -1147,18 +1165,27 @@ function renderRepairImagePreview(image){
   return image?`<div class="repair-admin-image-preview"><img src="${esc(image)}" alt=""></div>`:'<div class="repair-admin-image-preview">Geen foto</div>';
 }
 function handleRepairImage(section,index,event){
-  const file=event.target.files&&event.target.files[0];
+  const input=event.target,file=input.files&&input.files[0];
   if(!file)return;
-  if(!file.type.startsWith("image/")){alert("Kies een afbeelding.");event.target.value="";return;}
-  if(file.size>5*1024*1024){alert("De afbeelding mag maximaal 5 MB zijn.");event.target.value="";return;}
+  if(!file.type.startsWith("image/")){alert("Kies een afbeelding.");input.value="";return;}
+  if(file.size>5*1024*1024){alert("De afbeelding mag maximaal 5 MB zijn.");input.value="";return;}
   const reader=new FileReader();
-  reader.onload=()=>{
-    if(section==="hero") data.repairPage.hero.image=reader.result;
-    if(section==="option") data.repairPage.options[index].image=reader.result;
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;
+    reader.onload=null;reader.onerror=null;reader.onabort=null;
+    input.value="";
+    if(error){alert("De afbeelding kon niet worden gelezen. Probeer het opnieuw.");return;}
+    if(section==="hero" && data.repairPage?.hero) data.repairPage.hero.image=value;
+    if(section==="option" && data.repairPage?.options?.[index]) data.repairPage.options[index].image=value;
     renderRepairPageAdmin();
     markChanged();
   };
-  reader.readAsDataURL(file);
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error("read-failed"));
+  reader.onabort=()=>finish(new Error("read-aborted"));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
 }
 function addRepairCoverageArea(){
   if(!Array.isArray(data.repairCoverage))data.repairCoverage=[];
@@ -3728,28 +3755,37 @@ function attachBuybackModel(){
 }
 
 function handleBuybackBrandImage(event){
-  const b=getBuybackBrand();
-  const file=event.target.files&&event.target.files[0];
+  const input=event.target,b=getBuybackBrand(),file=input.files&&input.files[0];
   if(!b||!file)return;
-  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');return;}
-  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');input.value='';return;}
+  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');input.value='';return;}
   const r=new FileReader();
-  r.onload=()=>{b.image=r.result;markChanged();renderBuybackPhones();};
-  r.readAsDataURL(file);
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;r.onload=null;r.onerror=null;r.onabort=null;input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    b.image=value;markChanged();renderBuybackPhones();
+  };
+  r.onload=()=>finish(null,r.result);r.onerror=()=>finish(new Error('read-failed'));r.onabort=()=>finish(new Error('read-aborted'));
+  try{r.readAsDataURL(file);}catch(error){finish(error);}
 }
-
 function handleBuybackImageForModel(event){
-  const m=getBuybackModel(),p=m&&getBuybackPhoneById(m.buybackId);
-  const file=event.target.files&&event.target.files[0];
+  const input=event.target,m=getBuybackModel(),p=m&&getBuybackPhoneById(m.buybackId),file=input.files&&input.files[0];
   if(!p||!file)return;
-  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');return;}
-  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');input.value='';return;}
+  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');input.value='';return;}
   const r=new FileReader();
-  r.onload=()=>{p.image=r.result;markChanged();renderBuybackModelEditor();};
-  r.readAsDataURL(file);
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;r.onload=null;r.onerror=null;r.onabort=null;input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    p.image=value;markChanged();renderBuybackModelEditor();
+  };
+  r.onload=()=>finish(null,r.result);r.onerror=()=>finish(new Error('read-failed'));r.onabort=()=>finish(new Error('read-aborted'));
+  try{r.readAsDataURL(file);}catch(error){finish(error);}
 }
-
-/* Compatibility helpers kept for existing data/functions. */
 function addBuybackPhone(){
   if(!data.buybackCatalog.length){
     addBuybackBrand();
@@ -3770,17 +3806,21 @@ function deleteBuybackPhone(i){
   markChanged();renderBuybackPhones();
 }
 function handleBuybackImage(event,i){
-  const phone=data.buybackPhones[i];if(!phone)return;
-  const file=event.target.files&&event.target.files[0];if(!file)return;
-  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');return;}
-  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}
-  const r=new FileReader();r.onload=()=>{phone.image=r.result;markChanged();renderBuybackPhones();};r.readAsDataURL(file);
+  const input=event.target,phone=data.buybackPhones[i],file=input.files&&input.files[0];
+  if(!phone||!file)return;
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');input.value='';return;}
+  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');input.value='';return;}
+  const r=new FileReader();
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;r.onload=null;r.onerror=null;r.onabort=null;input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    phone.image=value;markChanged();renderBuybackPhones();
+  };
+  r.onload=()=>finish(null,r.result);r.onerror=()=>finish(new Error('read-failed'));r.onabort=()=>finish(new Error('read-aborted'));
+  try{r.readAsDataURL(file);}catch(error){finish(error);}
 }
-
-/* ---------------- REPAIR REQUESTS ---------------- */
-let adminRepairOrdersCache=[];
-let adminWebshopOrdersCache=[];
-
 function orderSearchText(o){
   return [o.id,o.name,o.email,o.phone,o.imei,o.username,o.service_name,o.service_group,o.service_category,o.postcode,o.city,o.street,o.house_number].filter(Boolean).join(' ').toLowerCase();
 }
