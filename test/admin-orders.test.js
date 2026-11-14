@@ -178,5 +178,5 @@ test("repair photo endpoint rejects unsupported MIME types and oversized payload
     { params: { id: "42", index: "0" } },
     oversized
   );
-  assert.equal(oversized.statusCode, 400);
+  assert.equal(oversized.statusCode, 413);
 });
