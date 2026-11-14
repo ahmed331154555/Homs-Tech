@@ -123,9 +123,9 @@ test("admin editor and save controls remain disabled until the selected section 
 test("phone section saves include shared folder and condition editor data without a full settings rewrite", () => {
   const js = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "assets", "homs-admin.js"), "utf8");
   const server = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "server.js"), "utf8");
-  assert.ok(js.includes("phoneFolders:JSON.parse(JSON.stringify(data.phoneFolders||[]))"));
-  assert.ok(js.includes("globalConditionDetails:JSON.parse(JSON.stringify(data.globalConditionDetails||[]))"));
-  assert.ok(js.includes("globalConditionOverviewImage:String(data.globalConditionOverviewImage||\"\")"));
+  assert.ok(js.includes("phoneSharedData.phoneFolders=JSON.parse(folders)"));
+  assert.ok(js.includes("phoneSharedData.globalConditionDetails=JSON.parse(conditions)"));
+  assert.ok(js.includes("phoneSharedData.globalConditionOverviewImage=overview"));
   assert.ok(js.includes("sharedData:payload.sharedData"));
   assert.ok(server.includes("const phoneSharedFields = [\"phoneFolders\", \"globalConditionDetails\", \"globalConditionOverviewImage\"]"));
   assert.ok(server.includes("phoneSharedJson"));
