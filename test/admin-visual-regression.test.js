@@ -460,6 +460,7 @@ test("email attachment FileReader handlers are released after conversion", () =>
 
 test("repair request photos are lazy-loaded and decoded asynchronously", () => {
   const js = read("assets/homs-admin.js");
+  const css = read("assets/homs-admin.css");
   const start = js.indexOf("function renderRepairRequests(){");
   const end = js.indexOf("\\nfunction setRepairQuickReply", start);
   assert.ok(start >= 0 && end > start, "repair request renderer should exist");
