@@ -124,6 +124,15 @@ test("contact page includes shared layout, brand theme and customer chat", () =>
   assert.match(html, /homs-ai-chat\.js/);
 });
 
+test("public repair quote uploads use a smaller JSON body limit before the global admin parser", () => {
+  const server = readPage("server.js");
+  const repairParser = server.indexOf('app.use("/api/repair-requests", express.json({ limit: "9mb" }));');
+  const globalParser = server.indexOf('app.use(express.json({ limit: "50mb" }));');
+  assert.ok(repairParser >= 0, "repair quote route should have its own body limit");
+  assert.ok(globalParser > repairParser, "the route-specific parser must run before the global parser");
+  assert.match(server, /Apply a route-specific cap before the broader admin\/catalog JSON parser/);
+});
+
 test("admin order categories preserve their distinct business purposes", () => {
   const admin = fs.readFileSync(path.join(root, "assets/homs-admin.js"), "utf8");
   for (const key of ["phone-orders", "webshop-orders", "buyback-orders", "repair-requests"]) {
