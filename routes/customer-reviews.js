@@ -322,13 +322,13 @@ function registerCustomerReviewRoutes(app, {
 
   async function queueSettledSellInvites() {
     const candidates = await pool.query(
-      `SELECT b.id,b.email,b.name,NULL::integer AS customer_id
+      `SELECT b.id,b.email,b.name,NULL::integer AS customer_id,b.sale_settled_at AS completed_at
        FROM buyback_orders b
        WHERE b.trade_in=FALSE AND b.status='Voltooid' AND b.sale_settled_at IS NOT NULL
          AND NOT EXISTS (SELECT 1 FROM customer_review_invites i WHERE i.order_type='sell' AND i.order_id=b.id)
          AND NOT EXISTS (SELECT 1 FROM customer_reviews r WHERE r.order_type='sell' AND r.order_id=b.id)
        UNION ALL
-       SELECT b.id,b.email,b.name,NULL::integer AS customer_id
+       SELECT b.id,b.email,b.name,NULL::integer AS customer_id,COALESCE((w.trade_in_snapshot->>'settledAt')::timestamptz,NOW()) AS completed_at
        FROM buyback_orders b
        JOIN webshop_orders w ON w.id=b.trade_in_linked_order_id
        WHERE b.trade_in=TRUE AND b.trade_in_adjustment_status='Settled' AND w.trade_in_status='Settled'
@@ -338,7 +338,8 @@ function registerCustomerReviewRoutes(app, {
     );
     for (const order of candidates.rows) {
       const token = crypto.randomBytes(32).toString("hex");
-      const dueAt = new Date(Date.now() + INVITE_DELAY_HOURS * 60 * 60 * 1000);
+      const completedAt = new Date(order.completed_at || Date.now()).getTime();
+      const dueAt = new Date(completedAt + INVITE_DELAY_HOURS * 60 * 60 * 1000);
       const expiresAt = new Date(dueAt.getTime() + TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000);
       await pool.query(
         `INSERT INTO customer_review_invites
