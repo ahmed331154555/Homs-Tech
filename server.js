@@ -768,9 +768,9 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       return res.json({ success: true, phoneIndex, phone: saved.rows[0].phone });
     }
 
-    // The phone editor now sends only the phone catalog, not the entire 18+ MB
-    // settings document (which also contains large repair-page images).
-    // Read and update just this JSON key to reduce request/response memory use.
+    // The phone editor sends the catalog plus its small shared editor fields,
+    // never the entire 18+ MB settings document with unrelated page images.
+    // Read and update only the phone projection and supplied shared JSONB keys.
     const phoneCatalogKeys = Object.keys(req.body || {});
     const isPhoneCatalogPatch = section === "phones" &&
       req.body && Array.isArray(req.body.phones) &&
