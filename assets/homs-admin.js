@@ -1578,25 +1578,30 @@ function addPhoneTreeGroup(){
 }
 
 function handlePhoneFolderImage(event,group,model){
-  const file=event.target.files && event.target.files[0];
-  if(!file) return;
-  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');event.target.value='';return;}
-  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}
-  if(!Array.isArray(data.phoneFolders)) data.phoneFolders=[];
-  let folder=data.phoneFolders.find(x=>String(x.group||'').toLowerCase()===String(group||'').toLowerCase()&&String(x.model||'').toLowerCase()===String(model||'').toLowerCase());
-  if(!folder){
-    folder={group:String(group||'Overige').trim()||'Overige',model:String(model||'').trim(),image:''};
-    data.phoneFolders.push(folder);
-  }
+  const input=event.target,file=input.files && input.files[0];
+  if(!file)return;
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');input.value='';return;}
+  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');input.value='';return;}
   const reader=new FileReader();
-  reader.onload=()=>{
-    folder.image=reader.result;
-    markChanged();
-    renderPhones();
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;reader.onload=null;reader.onerror=null;reader.onabort=null;input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    if(!Array.isArray(data.phoneFolders))data.phoneFolders=[];
+    let folder=data.phoneFolders.find(x=>String(x.group||'').toLowerCase()===String(group||'').toLowerCase()&&String(x.model||'').toLowerCase()===String(model||'').toLowerCase());
+    if(!folder){
+      folder={group:String(group||'Overige').trim()||'Overige',model:String(model||'').trim(),image:''};
+      data.phoneFolders.push(folder);
+    }
+    folder.image=value;
+    markChanged();renderPhones();
   };
-  reader.readAsDataURL(file);
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error('read-failed'));
+  reader.onabort=()=>finish(new Error('read-aborted'));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
 }
-
 function addPhoneInFolder(group,model){
   const cleanGroup=String(group||'Overige').trim()||'Overige';
   const cleanModel=String(model||'Nieuwe telefoon').trim()||'Nieuwe telefoon';
@@ -1871,7 +1876,33 @@ function phoneBulkRemoveStorage(){
  family.forEach(({p})=>{p.variantPrices=p.variantPrices.filter(r=>canonicalPhoneStorageLabel(r?.storage)!==storage);});phoneBulkResetAfterStructureChange();
 }
 function phoneBulkColorGalleryHtml(color){const imgs=phoneBulkGetColorGallery(color);let html='<div style="border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin:12px 0"><strong style="display:block;margin-bottom:10px">'+esc(color)+'</strong><div style="display:grid;grid-template-columns:repeat(4,minmax(100px,1fr));gap:10px">';for(let slot=0;slot<4;slot++){html+='<div style="min-width:0;border:1px solid #e2e8f0;border-radius:8px;padding:8px">';html+=imgs[slot]?'<img src="'+esc(imgs[slot])+'" alt="" style="width:100%;height:105px;object-fit:contain;display:block;background:#f8fafc;border-radius:6px;margin-bottom:7px">':'<div style="height:105px;display:flex;align-items:center;justify-content:center;background:#f8fafc;border-radius:6px;margin-bottom:7px;color:#64748b;font-size:12px">Geen foto</div>';html+='<label class="small" style="display:block;margin-bottom:5px">Foto '+(slot+1)+'</label><input type="file" accept="image/*" onchange="phoneBulkHandleColorImage(event,'+JSON.stringify(color)+','+slot+')" style="width:100%;font-size:11px">';if(imgs[slot])html+='<button type="button" class="btn btn-light" style="margin-top:6px;padding:6px 8px;font-size:11px" onclick="phoneBulkRemoveColorImage('+JSON.stringify(color)+','+slot+')">Verwijderen</button>';html+='</div>';}return html+'</div></div>';}
-function phoneBulkHandleColorImage(event,color,slot){const file=event.target.files&&event.target.files[0];if(!file)return;if(!file.type.startsWith('image/')){alert('Kies een afbeeldingsbestand.');event.target.value='';return;}if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}const reader=new FileReader();reader.onload=()=>{const imgs=phoneBulkGetColorGallery(color);imgs[slot]=String(reader.result||'');const family=(data.phones||[]).filter(p=>phoneBulkFamilyName(p)===phoneBulkPricingModelIndex);family.forEach(p=>{if(!p.colorGalleryImages||typeof p.colorGalleryImages!=='object')p.colorGalleryImages={};p.colorGalleryImages[color]=imgs.slice(0,4);if(!p.colorImages||typeof p.colorImages!=='object')p.colorImages={};if(imgs[0])p.colorImages[color]=imgs[0];else delete p.colorImages[color];});markChanged();renderPhoneBulkPricing();};reader.readAsDataURL(file);}
+function phoneBulkHandleColorImage(event,color,slot){
+  const input=event.target,file=input.files&&input.files[0];
+  if(!file)return;
+  if(!file.type.startsWith('image/')){alert('Kies een afbeeldingsbestand.');input.value='';return;}
+  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');input.value='';return;}
+  const reader=new FileReader();
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;reader.onload=null;reader.onerror=null;reader.onabort=null;input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    const imgs=phoneBulkGetColorGallery(color);
+    imgs[slot]=String(value||'');
+    const family=(data.phones||[]).filter(p=>phoneBulkFamilyName(p)===phoneBulkPricingModelIndex);
+    family.forEach(p=>{
+      if(!p.colorGalleryImages||typeof p.colorGalleryImages!=='object')p.colorGalleryImages={};
+      p.colorGalleryImages[color]=imgs.slice(0,4);
+      if(!p.colorImages||typeof p.colorImages!=='object')p.colorImages={};
+      if(imgs[0])p.colorImages[color]=imgs[0];else delete p.colorImages[color];
+    });
+    markChanged();renderPhoneBulkPricing();
+  };
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error('read-failed'));
+  reader.onabort=()=>finish(new Error('read-aborted'));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
+}
 function phoneBulkRemoveColorImage(color,slot){const imgs=phoneBulkGetColorGallery(color);imgs[slot]='';const family=(data.phones||[]).filter(p=>phoneBulkFamilyName(p)===phoneBulkPricingModelIndex);family.forEach(p=>{if(!p.colorGalleryImages||typeof p.colorGalleryImages!=='object')p.colorGalleryImages={};p.colorGalleryImages[color]=imgs.slice(0,4);if(!p.colorImages||typeof p.colorImages!=='object')p.colorImages={};if(imgs[0])p.colorImages[color]=imgs[0];else delete p.colorImages[color];});markChanged();renderPhoneBulkPricing();}
 function phoneBulkChooseFamily(family){phoneBulkPricingModelIndex=family;phoneBulkSelectedRows.clear();phoneBulkColorGalleryDraft={};phoneBulkFilterColor="";phoneBulkFilterStorage="";phoneBulkFilterCondition="";renderPhoneBulkPricing();}
 function phoneBulkFilterModels(query){
