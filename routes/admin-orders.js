@@ -116,7 +116,7 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
                   THEN regexp_replace(
                     extra_fields,
                     '("dataUrl"[[:space:]]*:[[:space:]]*")[^"]*(")',
-                    '\\1\\2',
+                    chr(92) || '1' || chr(92) || '2',
                     'g'
                   )
                   ELSE extra_fields
