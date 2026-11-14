@@ -237,6 +237,30 @@ test("live chat polling stops when the administrator leaves the live chat page",
   assert.match(showPage, /liveChatRefreshTimer=null/);
 });
 
+test("custom phone option image reader releases handlers after upload", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function handleCustomOptionImage(");
+  const end = js.indexOf("\nfunction handlePhoneImage", start);
+  assert.ok(start >= 0 && end > start);
+  const handler = js.slice(start, end);
+  assert.match(handler, /reader\.onload=null/);
+  assert.match(handler, /reader\.onerror=null/);
+  assert.match(handler, /reader\.onabort=null/);
+  assert.match(handler, /input\.value=''/);
+});
+
+test("phone setup wizard image reader releases handlers after upload", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function phoneWizardUpload(event");
+  const end = js.indexOf("\nfunction phoneWizardSetList", start);
+  assert.ok(start >= 0 && end > start);
+  const handler = js.slice(start, end);
+  assert.match(handler, /reader\.onload=null/);
+  assert.match(handler, /reader\.onerror=null/);
+  assert.match(handler, /reader\.onabort=null/);
+  assert.match(handler, /input\.value=""/);
+});
+
 test("phone image readers release handlers and file references after completion", () => {
   const js = read("assets/homs-admin.js");
   const start = js.indexOf("function handlePhoneImage(event,i,j){");
