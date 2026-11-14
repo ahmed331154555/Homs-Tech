@@ -17,9 +17,16 @@ function createPaidOrderInventoryDeductor({ pool }) {
       if (!result.rows.length || result.rows[0].payment_status !== 'Paid') { await client.query('ROLLBACK'); return { skipped: true }; }
       const order = result.rows[0];
       if (order.inventory_deducted_at) { await client.query('COMMIT'); return { alreadyDeducted: true }; }
-      const settings = await client.query('SELECT data FROM site_settings WHERE id=1 FOR UPDATE');
+      const settings = await client.query(
+        "SELECT data->'phones' AS phones, data->'devices' AS devices, data->'shopProducts' AS shop_products FROM site_settings WHERE id=1 FOR UPDATE"
+      );
       if (!settings.rows.length) throw new Error('Catalog settings row is missing.');
-      const data = settings.rows[0].data || {};
+      const catalog = settings.rows[0];
+      const data = {
+        phones: Array.isArray(catalog.phones) ? catalog.phones : [],
+        devices: Array.isArray(catalog.devices) ? catalog.devices : [],
+        shopProducts: Array.isArray(catalog.shop_products) ? catalog.shop_products : []
+      };
       if (!Array.isArray(order.items) || order.items.length === 0) {
         throw new Error('Paid order has no valid item list; inventory requires manual review.');
       }
@@ -113,7 +120,18 @@ function createPaidOrderInventoryDeductor({ pool }) {
         }
         list[id] = product;
       }
-      await client.query('UPDATE site_settings SET data=$1::jsonb WHERE id=1', [JSON.stringify(data)]);
+      await client.query(
+        `UPDATE site_settings
+         SET data = jsonb_set(
+           jsonb_set(
+             jsonb_set(data, '{phones}', $1::jsonb, TRUE),
+             '{devices}', $2::jsonb, TRUE
+           ),
+           '{shopProducts}', $3::jsonb, TRUE
+         )
+         WHERE id=1`,
+        [JSON.stringify(data.phones), JSON.stringify(data.devices), JSON.stringify(data.shopProducts)]
+      );
       await client.query('UPDATE webshop_orders SET inventory_deducted_at=NOW(), inventory_error=$1 WHERE id=$2 AND inventory_deducted_at IS NULL', ['', orderId]);
       await client.query('COMMIT'); return { deducted: true };
     } catch (error) {
