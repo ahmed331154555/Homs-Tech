@@ -335,10 +335,6 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
                 webshop_orders.status, webshop_orders.payment_method, webshop_orders.payment_status,
                 webshop_orders.paypal_order_id, webshop_orders.mollie_payment_id,
                 webshop_orders.inventory_deducted_at, webshop_orders.inventory_error,
-                COALESCE(phone_inspection.checks,'{}'::jsonb) AS inspection_checks,
-                phone_inspection.inspected_by AS inspection_inspected_by,
-                phone_inspection.completed_at AS inspection_completed_at,
-                phone_inspection.updated_at AS inspection_updated_at,
                 CASE WHEN buyback_orders.trade_in_linked_order_id=webshop_orders.id
                        AND COALESCE(webshop_orders.trade_in_applied_credit,0)>0
                      THEN webshop_orders.trade_in_order_id ELSE NULL END AS trade_in_order_id,
@@ -347,11 +343,8 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
                 webshop_orders.trade_in_adjustment,
                 CASE WHEN buyback_orders.trade_in_linked_order_id=webshop_orders.id
                      THEN webshop_orders.trade_in_status ELSE NULL END AS trade_in_status,
-                webshop_orders.trade_in_snapshot,
                 buyback_orders.device AS trade_in_device, buyback_orders.model AS trade_in_model,
                 buyback_orders.storage AS trade_in_storage, buyback_orders.condition AS trade_in_condition,
-                buyback_orders.battery AS trade_in_battery, buyback_orders.face_id AS trade_in_face_id,
-                buyback_orders.screen AS trade_in_screen, buyback_orders.answers AS trade_in_answers,
                 buyback_orders.status AS trade_in_buyback_status,
                 webshop_orders.created_at
          FROM webshop_orders
