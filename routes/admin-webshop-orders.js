@@ -353,7 +353,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
                 buyback_orders.battery AS trade_in_battery, buyback_orders.face_id AS trade_in_face_id,
                 buyback_orders.screen AS trade_in_screen, buyback_orders.answers AS trade_in_answers,
                 buyback_orders.status AS trade_in_buyback_status,
-                webshop_orders.created_at,
+                webshop_orders.created_at
          FROM webshop_orders
          LEFT JOIN webshop_order_inspections phone_inspection ON phone_inspection.order_id=webshop_orders.id
          LEFT JOIN buyback_orders ON buyback_orders.id = webshop_orders.trade_in_order_id
