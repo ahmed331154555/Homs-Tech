@@ -462,10 +462,11 @@ test("repair request photos are lazy-loaded and decoded asynchronously", () => {
   const js = read("assets/homs-admin.js");
   const css = read("assets/homs-admin.css");
   const start = js.indexOf("function renderRepairRequests(){");
-  const end = js.indexOf("\\nfunction setRepairQuickReply", start);
+  const end = js.indexOf("\nfunction setRepairQuickReply", start);
   assert.ok(start >= 0 && end > start, "repair request renderer should exist");
   const renderer = js.slice(start, end);
   assert.match(renderer, /loading="lazy"/);
   assert.match(renderer, /decoding="async"/);
   assert.match(renderer, /rel="noopener noreferrer"/);
+  assert.match(css, /\.repair-request-details\[hidden\]\{display:none!important\}/);
 });
