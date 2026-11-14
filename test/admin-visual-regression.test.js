@@ -269,7 +269,7 @@ test("remaining admin image uploads release FileReader handlers and file inputs"
     ["handleRepairImage", "addRepairCoverageArea"],
     ["handleBuybackBrandImage", "handleBuybackImageForModel"],
     ["handleBuybackImageForModel", "addBuybackPhone"],
-    ["handleBuybackImage", "/* ---------------- REPAIR REQUESTS"]
+    ["handleBuybackImage", "orderSearchText"]
   ];
   for (const [name, nextName] of handlers) {
     const start = js.indexOf("function " + name + "(");
