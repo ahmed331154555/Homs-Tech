@@ -7076,7 +7076,23 @@ function renderEmailFiles(){
 }
 window.addEventListener("pagehide",releaseEmailPreviewUrls);
 function removeEmailFile(i){adminEmailFiles.splice(i,1);renderEmailFiles();}
-function emailFileToBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(",")[1]||"");reader.onerror=()=>reject(new Error("Bestand lezen mislukt: "+file.name));reader.readAsDataURL(file);});}
+function emailFileToBase64(file){
+ return new Promise((resolve,reject)=>{
+  const reader=new FileReader();
+  const finish=(error,value)=>{
+   reader.onload=null;
+   reader.onerror=null;
+   if(error)reject(error);else resolve(value);
+  };
+  reader.onload=()=>{
+   const result=String(reader.result||"");
+   const separator=result.indexOf(",");
+   finish(null,separator>=0?result.slice(separator+1):"");
+  };
+  reader.onerror=()=>finish(new Error("Bestand lezen mislukt: "+file.name));
+  try{reader.readAsDataURL(file);}catch(error){finish(new Error("Bestand lezen mislukt: "+file.name));}
+ });
+}
 document.getElementById("adminEmailComposeForm")?.addEventListener("submit",async e=>{
  e.preventDefault();const btn=document.getElementById("adminEmailSendBtn"),status=document.getElementById("adminEmailStatus");btn.disabled=true;status.className="ht-mail-status";status.textContent="E-mail en bijlagen worden voorbereid…";
  try{
