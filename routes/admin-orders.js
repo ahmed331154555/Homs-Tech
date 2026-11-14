@@ -179,9 +179,12 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
 
       const maxPhotoBytes = 2 * 1024 * 1024;
       const maxBase64Length = Math.ceil(maxPhotoBytes / 3) * 4;
-      const match = String(photo.dataUrl).match(/^data:(image\\/(?:jpeg|png|webp|heic));base64,([a-z0-9+/]+={0,2})$/i);
-      if (!match || match[2].length > maxBase64Length || match[2].length % 4 === 1) {
+      const match = String(photo.dataUrl).match(/^data:(image\/(?:jpeg|png|webp|heic));base64,([a-z0-9+/]+={0,2})$/i);
+      if (!match || match[2].length % 4 === 1) {
         return res.status(400).send("Fotoformaat ongeldig.");
+      }
+      if (match[2].length > maxBase64Length) {
+        return res.status(413).send("De foto is te groot om veilig te verwerken.");
       }
       const contentType = match[1].toLowerCase();
       const buffer = Buffer.from(match[2], "base64");
