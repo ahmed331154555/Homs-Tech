@@ -221,7 +221,7 @@ test("admin save operation remains bound to the page where it started", () => {
   assert.ok(start >= 0 && end > start, "save function should exist");
   const save = js.slice(start, end);
   assert.match(save, /const savePage=currentPage/);
-  assert.match(save, /"X-Homs-Admin-Section":savePage/);
+  assert.match(save, /saveHeaders\["X-Homs-Admin-Section"\]=savePage/);
   assert.match(save, /if\(currentPage===savePage\)\{/);
 });
 
