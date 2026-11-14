@@ -120,6 +120,15 @@ test("admin webshop order list returns compact rows without per-order history ag
   assert.doesNotMatch(selectSql, /webshop_order_status_history/);
   assert.doesNotMatch(selectSql, /webshop_order_notes/);
   assert.doesNotMatch(selectSql, /webshop_order_refunds/);
+  assert.doesNotMatch(selectSql, /phone_inspection\.checks/);
+  assert.doesNotMatch(selectSql, /phone_inspection\.inspected_by/);
+  assert.doesNotMatch(selectSql, /phone_inspection\.completed_at/);
+  assert.doesNotMatch(selectSql, /phone_inspection\.updated_at/);
+  assert.doesNotMatch(selectSql, /webshop_orders\.trade_in_snapshot/);
+  assert.doesNotMatch(selectSql, /buyback_orders\.answers/);
+  assert.doesNotMatch(selectSql, /buyback_orders\.battery/);
+  assert.doesNotMatch(selectSql, /buyback_orders\.face_id/);
+  assert.doesNotMatch(selectSql, /buyback_orders\.screen/);
 });
 
 test("admin webshop order details load histories, notes and refunds for one order", async () => {
