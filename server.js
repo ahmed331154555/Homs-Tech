@@ -32,6 +32,7 @@ const { registerLiveChatRoutes } = require("./routes/live-chat");
 const { registerWebshopCheckoutRoutes } = require("./routes/webshop-checkout");
 const { registerRepairQuoteRoutes } = require("./routes/repair-quote-requests");
 const { registerRepairOrderRoutes } = require("./routes/repair-orders");
+const { registerCustomerReviewRoutes } = require("./routes/customer-reviews");
 const { registerCustomerAuthRoutes } = require("./routes/customer-auth");
 const { registerPaymentRoutes } = require("./routes/payments");
 const { registerAdminCustomerRoutes } = require("./routes/admin-customers");
@@ -750,6 +751,13 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
 
 registerAdminCustomerRoutes(app, { pool, requirePermission, hashPassword, sendWelcomeEmail });
 
+const customerReviewRoutes = registerCustomerReviewRoutes(app, {
+  pool,
+  requirePermission,
+  getEnv: () => process.env,
+  fetchImpl: fetch
+});
+
 // Admin page — always serve the latest editor UI, never a cached copy.
 app.get("/admin", (req, res) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
@@ -795,8 +803,12 @@ registerAdminUserRoutes(app, {
 });
 
 // Start server
-initializeDatabaseWithRetry(() => initializeDatabaseSchema(pool), wait)
+initializeDatabaseWithRetry(async () => {
+  await initializeDatabaseSchema(pool);
+  await customerReviewRoutes.ensureCustomerReviewSchema(pool);
+}, wait)
   .then(() => {
+    customerReviewRoutes.startWorker();
     app.listen(PORT, () => {
       console.log(
         `HOMS TECH running on port ${PORT}`
