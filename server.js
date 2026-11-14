@@ -819,6 +819,10 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       return res.json({ success: true });
     }
 
+    if (section === "phones") {
+      return res.status(400).json({ error: "Ongeldige gegevens voor het opslaan van telefoons." });
+    }
+
     // Save only the buyback catalog keys, not the full site settings document.
     // Preserve existing images by stable IDs if an editor payload omits them.
     const isBuybackCatalogPatch = section === "buyback" &&
