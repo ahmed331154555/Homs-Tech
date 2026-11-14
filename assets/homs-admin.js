@@ -5247,7 +5247,47 @@ async function showWebshopOrderDetails(id){
     const phoneDigits=phoneDigitsRaw.startsWith("0")?"31"+phoneDigitsRaw.slice(1):phoneDigitsRaw;
     const phoneWhatsapp=phoneDigits?'<a class="btn btn-light" target="_blank" rel="noopener noreferrer" href="https://wa.me/'+esc(phoneDigits)+'?text='+encodeURIComponent("Hoi, over bestelling #"+Number(order.id)+" bij HOMS TECH.")+'">WhatsApp-bericht sturen</a>':"";
     const tradeInReadyToShip=!order.trade_in_order_id||order.trade_in_status==="Settled";
-    const phoneInspectionMarkup="";
+    const phoneInspectionChecks = [
+      ["model_storage_color","Model, opslag en kleur komen overeen"],
+      ["screen_touch","Scherm en touchscreen werken correct"],
+      ["battery","Batterij gecontroleerd"],
+      ["face_id_touch_id","Face ID / Touch ID gecontroleerd"],
+      ["cameras","Voor- en achtercamera gecontroleerd"],
+      ["speakers_microphone","Luidsprekers en microfoon gecontroleerd"],
+      ["charging","Opladen en laadpoort gecontroleerd"],
+      ["network_wifi_sim","Netwerk, wifi en simkaart gecontroleerd"],
+      ["icloud_activation_lock","iCloud en activeringsslot gecontroleerd"],
+      ["cosmetic_condition","Uiterlijke staat gecontroleerd"],
+      ["cleaning","Toestel gereinigd"],
+      ["accessories","Accessoires gecontroleerd"],
+      ["secure_packaging","Veilig verpakt"],
+      ["shipping_address","Verzendadres gecontroleerd"]
+    ];
+    const savedInspectionChecks = order.inspection_checks && typeof order.inspection_checks === "object" ? order.inspection_checks : {};
+    const inspectionDone = phoneInspectionChecks.filter(([key])=>savedInspectionChecks[key]===true).length;
+    const phoneInspectionMarkup = `
+      <section class="ht-phone-detail-card ht-phone-inspection-card">
+        <div class="ht-phone-detail-card-head"><span class="icon">✓</span>Controle & Verpakking</div>
+        <div class="ht-phone-detail-card-body">
+          <div class="ht-phone-inspection-intro">
+            <strong>Controle vóór verzending of afronding</strong>
+            <span>Vink elk controlepunt af nadat je het daadwerkelijk hebt gecontroleerd.</span>
+          </div>
+          <div class="ht-phone-inspection-progress"><span id="phoneInspectionProgressText">${inspectionDone} / ${phoneInspectionChecks.length} afgerond</span><div><i id="phoneInspectionProgressBar" style="width:${Math.round(inspectionDone/phoneInspectionChecks.length*100)}%"></i></div></div>
+          <div class="ht-phone-inspection-list">
+            ${phoneInspectionChecks.map(([key,label])=>`
+              <label class="ht-phone-inspection-item">
+                <input type="checkbox" data-phone-inspection-check="${key}" ${savedInspectionChecks[key]===true?"checked":""}>
+                <span>${label}</span>
+              </label>`).join("")}
+          </div>
+          <div class="ht-phone-inspection-footer">
+            <span class="ht-phone-detail-muted" id="phoneInspectionSaveState">${order.inspection_completed_at?"Controle volledig opgeslagen": "Nog niet volledig gecontroleerd"}</span>
+            <button type="button" class="btn btn-primary" onclick="saveWebshopPhoneInspection(${Number(order.id)})">✓ Controle opslaan</button>
+          </div>
+        </div>
+      </section>`;
+
     const phoneStatusOptions=['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(value=>'<option value="'+esc(value)+'" '+(status===value?'selected':'')+' '+(['Verzonden','Voltooid'].includes(value)&&!tradeInReadyToShip?'disabled':'')+'>'+esc(value)+'</option>').join("");
     const phoneShippingLabel=status==="Verzonden"?"Verzonden":(order.tracking_number?"Verzending geregistreerd":"Nog niet verzonden");
     const phonePaymentReference=order.mollie_payment_id||order.paypal_order_id||"Niet beschikbaar";
@@ -5533,7 +5573,8 @@ async function showWebshopOrderDetails(id){
         const content=document.createElement("div");
         content.className="ht-phone-dashboard-tab-content";
         const tabSpecs=[
-          {id:"overview",label:"Overzicht",icon:"▦",items:[orderSummary,inspection,cart]},
+          {id:"overview",label:"Overzicht",icon:"▦",items:[orderSummary,cart]},
+          {id:"inspection",label:"Fحص الهاتف",icon:"✓",items:[inspection]},
           {id:"customer",label:"Klantgegevens",icon:"♙",items:[customer,address]},
           {id:"payment",label:"Betaling",icon:"▤",items:[payment]},
           {id:"shipping",label:"Verzending",icon:"♧",items:[shipping]},
@@ -5705,6 +5746,35 @@ function focusPhoneOrderNote(){
   const field=document.getElementById("webshopOrderNote");
   card?.scrollIntoView({behavior:"smooth",block:"center"});
   field?.focus();
+}
+
+async function saveWebshopPhoneInspection(id){
+  if(!hasPermission("webshop_orders.update"))return;
+  const card=document.querySelector(".ht-phone-inspection-card");
+  if(!card)return;
+  const checks={};
+  card.querySelectorAll("[data-phone-inspection-check]").forEach(input=>{
+    checks[input.dataset.phoneInspectionCheck]=input.checked;
+  });
+  const button=card.querySelector("button[onclick^='saveWebshopPhoneInspection']");
+  if(button){button.disabled=true;button.textContent="Opslaan...";}
+  try{
+    const response=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/inspection",{
+      method:"PUT",credentials:"same-origin",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({checks})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"De telefooncontrole kon niet worden opgeslagen.");
+    await loadWebshopOrders();
+    await showWebshopOrderDetails(id);
+    setStatus(result.complete
+      ?"✓ Alle 14 controlepunten zijn opgeslagen. De bestelling kan nu worden afgerond."
+      :"✓ Controle opgeslagen. Nog niet alle controlepunten zijn afgerond.","success");
+  }catch(error){
+    alert(error.message);
+    if(button){button.disabled=false;button.textContent="✓ Controle opslaan";}
+  }
 }
 
 async function saveWebshopOrderNote(id){
