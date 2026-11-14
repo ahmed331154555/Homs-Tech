@@ -261,6 +261,29 @@ test("phone setup wizard image reader releases handlers after upload", () => {
   assert.match(handler, /input\.value=""/);
 });
 
+test("remaining admin image uploads release FileReader handlers and file inputs", () => {
+  const js = read("assets/homs-admin.js");
+  const handlers = [
+    ["handleGlobalConditionOverviewImage", "function renderGlobalConditionDetails"],
+    ["handleCategoryImage", "function addDeviceCategory"],
+    ["handleRepairImage", "function addRepairCoverageArea"],
+    ["handleBuybackBrandImage", "function handleBuybackImageForModel"],
+    ["handleBuybackImageForModel", "function addBuybackPhone"],
+    ["handleBuybackImage", "/* ---------------- REPAIR REQUESTS"]
+  ];
+  for (const [name, nextName] of handlers) {
+    const start = js.indexOf("function " + name + "(");
+    const end = js.indexOf(nextName.startsWith("/*") ? nextName : "function " + nextName, start + 1);
+    assert.ok(start >= 0 && end > start, name + " should exist");
+    const handler = js.slice(start, end);
+    assert.match(handler, /\.onload=null/);
+    assert.match(handler, /\.onerror=null/);
+    assert.match(handler, /\.onabort=null/);
+    assert.match(handler, /input\.value=/);
+    assert.match(handler, /readAsDataURL/);
+  }
+});
+
 test("phone image readers release handlers and file references after completion", () => {
   const js = read("assets/homs-admin.js");
   const start = js.indexOf("function handlePhoneImage(event,i,j){");
