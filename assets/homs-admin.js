@@ -5155,16 +5155,12 @@ function closeWebshopOrderDetails(){
 }
 async function showWebshopOrderDetails(id){
   try{
-    // Use the already loaded admin order cache first. Opening a row must not
-    // download the complete order list again.
-    let order=(Array.isArray(adminWebshopOrdersCache)?adminWebshopOrdersCache:[]).find(x=>Number(x.id)===Number(id));
-    if(!order){
-      const r=await fetch("/api/admin/webshop-orders",{credentials:"same-origin"});
-      const result=await r.json().catch(()=>({}));
-      if(!r.ok) throw new Error(result.error||"Bestelling kon niet worden geladen.");
-      adminWebshopOrdersCache=Array.isArray(result.orders)?result.orders:[];
-      order=adminWebshopOrdersCache.find(x=>Number(x.id)===Number(id));
-    }
+    // Load the focused order only; the list endpoint intentionally omits
+    // potentially large histories, notes and refund collections.
+    const r=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(Number(id)),{credentials:"same-origin"});
+    const result=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(result.error||"Bestelling kon niet worden geladen.");
+    const order=result.order;
     if(!order) throw new Error("Bestelling niet gevonden.");
     const existing=document.getElementById("orderDetailsModal");
     if(existing)existing.remove();
