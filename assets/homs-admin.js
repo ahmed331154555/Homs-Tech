@@ -636,12 +636,6 @@ function normalizeWhyData(){
     : ["⭐",String(x||""),""]);
 }
 
-function normalizeData(){
-  if(!data||typeof data!=="object")data={};
-  normalizeBuybackPhones();
-  normalizeBuybackCatalog();
-  normalizeWhyData();
-}
 
 /* Phone editor safety draft: saved locally in IndexedDB while editing.
    This survives refreshes and server/API failures, including product photos. */
