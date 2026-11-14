@@ -99,3 +99,23 @@ test("lightweight admin save payloads contain only the active page data", () => 
   assert.ok(save.includes("why:JSON.parse(JSON.stringify(data.why||[]))"));
   assert.ok(save.includes('"/api/admin/site-data/"+encodeURIComponent(savePage)'));
 });
+
+test("lazy section loading does not renormalize unrelated unsaved Buyback and Why data", () => {
+  const js = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "assets", "homs-admin.js"), "utf8");
+  const start = js.indexOf("async function loadAdminSiteSection(page){");
+  const end = js.indexOf("function renderAdminPageData(page){", start);
+  assert.ok(start >= 0 && end > start, "section loader should exist");
+  const loader = js.slice(start, end);
+  assert.ok(loader.includes('if(page==="buyback"){'));
+  assert.ok(loader.includes("normalizeBuybackPhones()"));
+  assert.ok(loader.includes('else if(page==="why"){'));
+  assert.ok(loader.includes("normalizeWhyData()"));
+  assert.ok(!loader.includes("normalizeData()"));
+});
+
+test("admin editor and save controls remain disabled until the selected section is loaded", () => {
+  const js = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "assets", "homs-admin.js"), "utf8");
+  assert.ok(js.includes("const sectionUnavailable=typeof ADMIN_SITE_DATA_PAGES"));
+  assert.ok(js.includes("saveBtn.disabled=sectionUnavailable"));
+  assert.ok(js.includes("el.disabled=sectionUnavailable||!canEditCurrentPage()"));
+});
