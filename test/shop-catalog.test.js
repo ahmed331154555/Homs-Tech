@@ -28,9 +28,9 @@ test("saveShopCatalog updates only the Shop JSON key without returning the image
   assert.equal(captured[2], 4);
 });
 
-test("saveShopCatalog returns null when another admin changed the catalog first", async () => {
+test("saveShopCatalog reports a conflict when another admin changed the catalog first", async () => {
   const saved = await saveShopCatalog(async () => ({ rows: [] }), [], []);
-  assert.equal(saved, null);
+  assert.equal(saved, false);
 });
 
 
