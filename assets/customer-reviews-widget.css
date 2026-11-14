@@ -1,0 +1,14 @@
+/* Public customer review snippets */
+.ht-review-widget{max-width:1180px;margin:34px auto;padding:22px 18px;background:#fff;border:1px solid #dbe5ef;border-radius:18px}
+.ht-review-widget-head{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.ht-review-widget-head strong{display:block;color:#071d2d;font-size:20px}
+.ht-review-widget-head span,.ht-review-widget-card small{display:block;color:#64748b;font-size:13px;margin-top:4px}
+.ht-review-widget-head a{color:#2563eb;font-weight:750;text-decoration:none}
+.ht-review-widget-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ht-review-widget-card{border:1px solid #e2e8f0;border-radius:13px;padding:15px;min-width:0}
+.ht-review-widget-stars{color:#e3a008;letter-spacing:2px;margin-bottom:8px}
+.ht-review-widget-card strong{color:#172b43}
+.ht-review-widget-card p{color:#526579;line-height:1.55;margin:8px 0;overflow-wrap:anywhere}
+.ht-review-widget-reply{background:#f1f6fc;border-radius:9px;padding:9px;margin-top:10px;color:#526579;font-size:13px}
+.ht-review-widget-empty{color:#64748b}
+@media(max-width:760px){.ht-review-widget-grid{grid-template-columns:1fr}.ht-review-widget{margin:22px 14px}}
