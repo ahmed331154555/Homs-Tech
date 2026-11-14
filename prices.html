@@ -623,7 +623,7 @@ async function loadSite(){
 
 try{
 
-const response = await fetch("/api/site");
+const response = await fetch("/api/site?view=prices");
 
 if(!response.ok){
 throw new Error("API error");
