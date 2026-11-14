@@ -236,3 +236,13 @@ test("live chat polling stops when the administrator leaves the live chat page",
   assert.match(showPage, /clearInterval\(liveChatRefreshTimer\)/);
   assert.match(showPage, /liveChatRefreshTimer=null/);
 });
+
+test("Shop catalog save clones only Shop products instead of the full admin data object", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("async function save(isAuto=false){");
+  const end = js.indexOf("\n/* ---------------- SEARCH + ADMIN USERS ---------------- */", start);
+  assert.ok(start >= 0 && end > start, "save function should exist");
+  const save = js.slice(start, end);
+  assert.match(save, /savePage==="shop"\s*\?\s*\{\s*shopProducts:\s*JSON\.parse\(JSON\.stringify\(data\.shopProducts\|\|\[\]\)\)\s*\}/);
+  assert.match(save, /else if\(savePage==="shop"\)\{[\s\S]*?payload\.shopProducts=await compressShopCatalogPhotos/);
+});
