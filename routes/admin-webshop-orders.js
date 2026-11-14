@@ -348,7 +348,6 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
                 buyback_orders.status AS trade_in_buyback_status,
                 webshop_orders.created_at
          FROM webshop_orders
-         LEFT JOIN webshop_order_inspections phone_inspection ON phone_inspection.order_id=webshop_orders.id
          LEFT JOIN buyback_orders ON buyback_orders.id = webshop_orders.trade_in_order_id
                                       AND buyback_orders.trade_in_linked_order_id = webshop_orders.id
                                       AND COALESCE(webshop_orders.trade_in_applied_credit,0)>0
