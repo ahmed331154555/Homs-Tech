@@ -125,8 +125,9 @@ function registerCustomerReviewRoutes(app, {
   });
 
   app.post("/api/reviews/invite/:token", async (req, res) => {
-    const client = await pool.connect();
+    let client;
     try {
+      client = await pool.connect();
       const token = String(req.params.token || "");
       const rating = Number(req.body && req.body.rating);
       const title = safeText(req.body && req.body.title, 120);
@@ -172,11 +173,13 @@ function registerCustomerReviewRoutes(app, {
           : "Bedankt! Uw beoordeling wordt door HOMS TECH gecontroleerd."
       });
     } catch (error) {
-      try { await client.query("ROLLBACK"); } catch {}
+      if (client) {
+        try { await client.query("ROLLBACK"); } catch {}
+      }
       console.error("[REVIEWS] Submission failed:", error);
       return res.status(500).json({ error: "Uw beoordeling kon niet worden opgeslagen." });
     } finally {
-      client.release();
+      if (client) client.release();
     }
   });
 
@@ -390,8 +393,9 @@ function registerCustomerReviewRoutes(app, {
     const baseUrl = String(env.PUBLIC_SITE_URL || env.APP_URL || "https://homs-tech.nl").replace(/\/+$/, "");
     try { await queueSettledSellInvites(); } catch (error) { console.error("[REVIEWS] Sell invite queue failed:", error); }
     if (!apiKey || !from || typeof fetchImpl !== "function") return;
-    const client = await pool.connect();
+    let client;
     try {
+      client = await pool.connect();
       await client.query("BEGIN");
       const due = await client.query(
         `SELECT id,order_type,order_id,customer_email,customer_name,token_hash
@@ -433,10 +437,12 @@ function registerCustomerReviewRoutes(app, {
         }
       }
     } catch (error) {
-      try { await client.query("ROLLBACK"); } catch {}
+      if (client) {
+        try { await client.query("ROLLBACK"); } catch {}
+      }
       console.error("[REVIEWS] Invite worker failed:", error);
     } finally {
-      client.release();
+      if (client) client.release();
     }
   }
 
