@@ -348,9 +348,12 @@ test("phone save clones only the phone catalog and deep-clones only the edited p
   assert.ok(phoneBranch.length > 0);
   assert.doesNotMatch(phoneBranch, /JSON\.parse\(JSON\.stringify\(data\)\)/);
   assert.match(phoneBranch, /sharedData/);
-  assert.match(phoneBranch, /phoneFolders/);
-  assert.match(phoneBranch, /globalConditionDetails/);
-  assert.match(phoneBranch, /globalConditionOverviewImage/);
+  const saveStart = js.indexOf("async function save(isAuto=false){");
+  const saveEnd = js.indexOf("/* ---------------- SEARCH + ADMIN USERS ---------------- */", saveStart);
+  const save = js.slice(saveStart, saveEnd);
+  assert.match(save, /phoneSharedData\\.phoneFolders/);
+  assert.match(save, /phoneSharedData\\.globalConditionDetails/);
+  assert.match(save, /phoneSharedData\\.globalConditionOverviewImage/);
 });
 
 test("full phone catalog save preserves photos from a compact SQL projection and avoids returning the catalog", () => {
