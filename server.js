@@ -258,6 +258,44 @@ app.get("/api/admin/site-data/:section", async (req, res) => {
   });
 });
 
+// Save only the allowlisted fields for lightweight admin sections.
+app.put("/api/admin/site-data/:section", async (req, res) => {
+  const section = String(req.params.section || "").trim().toLowerCase();
+  const config = getAdminSiteSection(section);
+  if (!config) return res.status(404).json({ error: "Onbekende beheerpagina." });
+
+  return requirePermission(config.permission, { allowSiteSave: true })(req, res, async () => {
+    try {
+      const allowedFields = Array.isArray(config.writeFields) ? config.writeFields : [];
+      const body = req.body;
+      if (!allowedFields.length) {
+        return res.status(405).json({ error: "Deze pagina gebruikt een gespecialiseerde opslagroute." });
+      }
+      if (!body || typeof body !== "object" || Array.isArray(body)) {
+        return res.status(400).json({ error: "Ongeldige beheergegevens." });
+      }
+      const keys = Object.keys(body);
+      if (!keys.length || keys.some(key => !allowedFields.includes(key))) {
+        return res.status(400).json({ error: "De opslag bevat velden die niet bij deze pagina horen." });
+      }
+
+      const result = await queryWithConnectionRetry(
+        "UPDATE site_settings SET data = data || $1::jsonb WHERE id = 1 RETURNING id",
+        [JSON.stringify(body)],
+        4
+      );
+      if (!result.rows.length) {
+        return res.status(404).json({ error: "Website-instellingen niet gevonden." });
+      }
+      res.set("Cache-Control", "no-store");
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("[ADMIN SITE DATA] Save failed:", error);
+      return res.status(500).json({ error: "Beheergegevens konden niet worden opgeslagen." });
+    }
+  });
+});
+
 // Get website settings
 app.get("/api/site", async (req, res) => {
   try {
