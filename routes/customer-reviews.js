@@ -319,12 +319,43 @@ function registerCustomerReviewRoutes(app, {
     }
   });
 
+  async function queueSettledSellInvites() {
+    const candidates = await pool.query(
+      `SELECT b.id,b.email,b.name,NULL::integer AS customer_id
+       FROM buyback_orders b
+       WHERE b.trade_in=FALSE AND b.status='Voltooid' AND b.sale_settled_at IS NOT NULL
+         AND NOT EXISTS (SELECT 1 FROM customer_review_invites i WHERE i.order_type='sell' AND i.order_id=b.id)
+         AND NOT EXISTS (SELECT 1 FROM customer_reviews r WHERE r.order_type='sell' AND r.order_id=b.id)
+       UNION ALL
+       SELECT b.id,b.email,b.name,NULL::integer AS customer_id
+       FROM buyback_orders b
+       JOIN webshop_orders w ON w.id=b.trade_in_linked_order_id
+       WHERE b.trade_in=TRUE AND b.trade_in_adjustment_status='Settled' AND w.trade_in_status='Settled'
+         AND NOT EXISTS (SELECT 1 FROM customer_review_invites i WHERE i.order_type='sell' AND i.order_id=b.id)
+         AND NOT EXISTS (SELECT 1 FROM customer_reviews r WHERE r.order_type='sell' AND r.order_id=b.id)
+       LIMIT 50`
+    );
+    for (const order of candidates.rows) {
+      const token = crypto.randomBytes(32).toString("hex");
+      const dueAt = new Date(Date.now() + INVITE_DELAY_HOURS * 60 * 60 * 1000);
+      const expiresAt = new Date(dueAt.getTime() + TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000);
+      await pool.query(
+        `INSERT INTO customer_review_invites
+          (order_type,order_id,customer_email,customer_name,customer_id,token_hash,due_at,expires_at)
+         VALUES ('sell',$1,$2,$3,$4,$5,$6,$7)
+         ON CONFLICT (order_type,order_id) DO NOTHING`,
+        [order.id, order.email, order.name, order.customer_id, hashToken(token), dueAt, expiresAt]
+      );
+    }
+  }
+
   async function sendDueInvites() {
     const env = getEnv() || {};
     const apiKey = String(env.RESEND_API_KEY || "").trim();
     const from = String(env.RESEND_FROM_EMAIL || "").trim();
     const baseUrl = String(env.PUBLIC_SITE_URL || env.APP_URL || "https://homs-tech.nl").replace(/\/+$/, "");
     if (!apiKey || !from || typeof fetchImpl !== "function") return;
+    try { await queueSettledSellInvites(); } catch (error) { console.error("[REVIEWS] Sell invite queue failed:", error); }
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
