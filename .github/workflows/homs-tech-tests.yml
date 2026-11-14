@@ -42,6 +42,9 @@ jobs:
       - name: Check admin inline scripts
         run: node scripts/check-admin-inline.js
 
+      - name: Test bounded rate limiter
+        run: node --test test/bounded-rate-limit.test.js
+
       - name: Check local HTML assets
         run: node scripts/check-local-assets.js
 
