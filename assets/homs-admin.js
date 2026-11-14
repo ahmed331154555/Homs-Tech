@@ -3859,7 +3859,7 @@ function renderRepairRequests(){
  const q=(document.getElementById('repairRequestSearch')?.value||'').trim().toLowerCase();
  const filter=document.getElementById('repairRequestStatusFilter')?.value||'';
  const filtered=[];
- let requestCount=0,nieuw=0,bezig=0,cancelled=0;
+ let requestCount=0,nieuw=0, bezig=0, cancelled=0;
  for(const order of adminRepairOrdersCache){
   let meta={};
   try{meta=JSON.parse(order.extra_fields||'{}')}catch{}
@@ -3869,9 +3869,9 @@ function renderRepairRequests(){
   if(currentStatus==='Nieuw')nieuw++;
   else if(currentStatus==='In behandeling')bezig++;
   else if(currentStatus==='Geannuleerd')cancelled++;
+ }
   const searchText=(orderSearchText(order)+' '+(meta.brand||'')+' '+(meta.model||'')).toLowerCase();
   if((!q||searchText.includes(q))&&(!filter||order.status===filter))filtered.push({order,meta});
- }
  const summary=document.getElementById('repairRequestSummary');
  if(summary){
   summary.innerHTML='<div class="order-stat stat-total"><div class="stat-icon">☷</div><div><b>'+requestCount+'</b><span>Totaal orders</span></div></div>'+
@@ -3883,7 +3883,58 @@ function renderRepairRequests(){
  if(status){status.className='order-count';status.textContent=filtered.length+' van '+requestCount+' repair request(s) zichtbaar';}
  if(!filtered.length){box.innerHTML='<div class="order-empty">Nog geen repair requests gevonden.</div>';return;}
  box.innerHTML=filtered.map(({order,meta})=>{
-
+  const photos=Array.isArray(meta.photos)?meta.photos:[];
+  const date=order.created_at?new Date(order.created_at).toLocaleString('nl-NL'):'';
+  const offer=meta.offer||{};
+  const rawPrice=offer.rawPrice||(offer.price?String(offer.price).replace(/[^0-9.,]/g,'').replace(',','.'):'');
+  const open=expandedRepairRequestIds.has(String(order.id));
+  const offerHtml='<div class="order-notes repair-request-offer"><strong>💶 Offerte aan klant</strong>'+(offer.sentAt?'<p class="repair-offer-sent">✓ Offerte verstuurd per e-mail op '+esc(new Date(offer.sentAt).toLocaleString('nl-NL'))+' · € '+esc(offer.price||'')+'</p>':(offer.updatedAt?'<p class="repair-offer-pending">⚠ Offerte geregistreerd op '+esc(new Date(offer.updatedAt).toLocaleString('nl-NL'))+' · € '+esc(offer.price||'')+' (e-mail niet verzonden)</p>':''))+'<div class="repair-offer-fields"><label>Prijs (€)<input id="repairOfferPrice-'+Number(order.id)+'" type="number" min="0" max="100000" step="0.01" value="'+esc(rawPrice)+'" placeholder="85.00"></label><label>Geschatte duur<input id="repairOfferDuration-'+Number(order.id)+'" maxlength="120" value="'+esc(offer.duration||'In overleg')+'"></label><label>Geldig<input id="repairOfferValidity-'+Number(order.id)+'" maxlength="80" value="'+esc(offer.validity||'14 dagen')+'"></label></div><label class="repair-offer-message">Bericht aan klant<textarea id="repairOfferMessage-'+Number(order.id)+'" maxlength="3000" rows="4">'+esc(offer.message||'Bedankt voor uw aanvraag. Dit is onze prijsindicatie voor de reparatie. Als u akkoord gaat, kunt u op deze e-mail reageren.')+'</textarea></label><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"><button class="btn btn-light" type="button" onclick="setRepairQuickReply('+Number(order.id)+',\'received\')">📩 Aanvraag ontvangen</button><button class="btn btn-light" type="button" onclick="setRepairQuickReply('+Number(order.id)+',\'photos\')">📷 Extra foto gevraagd</button><button class="btn btn-light" type="button" onclick="setRepairQuickReply('+Number(order.id)+',\'question\')">❓ Extra informatie</button></div><div id="repairOfferStatus-'+Number(order.id)+'" class="repair-offer-status"></div><button id="repairOfferSendButton-'+Number(order.id)+'" class="btn btn-primary" type="button" onclick="sendRepairOffer('+Number(order.id)+')" style="margin-top:10px">✉️ Offerte opslaan & verzenden</button></div>';
+  const photoHtml=photos.length?'<div class="order-notes"><strong>Foto\'s van het toestel ('+photos.length+')</strong><div class="repair-request-photos">'+photos.map((p,i)=>'<a href="'+esc(p.url||p.dataUrl||'')+'" target="_blank" rel="noopener noreferrer" title="Open foto '+(i+1)+'"><img src="'+esc(p.url||p.dataUrl||'')+'" alt="Toestelfoto '+(i+1)+'" loading="lazy" decoding="async"></a>').join('')+'</div></div>':'';
+  const statuses=['Nieuw','In behandeling','Wacht op klant','Wacht op leverancier','Resultaat ontvangen','Mislukt','Voltooid','Geannuleerd'];
+  const options=statuses.map(s=>'<option'+((order.status||'Nieuw')===s?' selected':'')+'>'+s+'</option>').join('');
+  const deleteBtn=hasPermission('orders.delete')?'<button class="btn btn-red order-delete-btn" onclick="deleteRepairRequest('+Number(order.id)+')">🗑️ Verwijderen</button>':'';
+  return '<article class="order-card repair-request-card '+(open?'is-open':'')+'"><div class="repair-request-row"><button type="button" class="repair-request-toggle" aria-expanded="'+(open?'true':'false')+'" aria-controls="repair-request-details-'+Number(order.id)+'" onclick="toggleRepairRequest('+Number(order.id)+')"><span class="repair-request-chevron" aria-hidden="true">'+(open?'▾':'▸')+'</span><span class="repair-request-heading"><strong>#'+esc(order.id)+' · '+esc((meta.brand?meta.brand+' ':'')+(meta.model||order.service_name||'Reparatie'))+'</strong><span>'+esc(order.name||'Onbekende klant')+'</span><span>'+esc(date)+'</span></span></button><div class="repair-request-row-actions"><span class="repair-request-summary-status">'+esc(order.status||'Nieuw')+'</span><button type="button" class="btn btn-light order-detail-btn" onclick="showRepairRequestDetails('+Number(order.id)+')">◉ Details</button><select aria-label="Status aanvraag '+esc(order.id)+'" class="order-status-select" data-order-id="'+esc(order.id)+'" onchange="updateOrderStatus('+Number(order.id)+',this.value)">'+options+'</select>'+deleteBtn+'</div></div><div id="repair-request-details-'+Number(order.id)+'" class="repair-request-details" '+(open?'':'hidden')+'><div class="order-grid repair-request-grid"><div class="order-info"><strong>Klant</strong><span>'+esc(order.name||'-')+'</span></div><div class="order-info"><strong>E-mail</strong><span>'+esc(order.email||'-')+'</span></div><div class="order-info"><strong>Telefoon</strong><span>'+esc(order.phone||'-')+'</span></div><div class="order-info"><strong>Status</strong><span>'+esc(order.status||'Nieuw')+'</span></div><div class="order-info"><strong>Toestel / service</strong><span>'+esc((meta.brand?meta.brand+' ':'')+(meta.model||order.service_name||'-'))+'</span></div><div class="order-info"><strong>Aangemaakt</strong><span>'+esc(date||'-')+'</span></div></div><div class="order-notes"><strong>Probleem / klacht</strong><div class="repair-request-problem">'+esc(order.notes||'-')+'</div></div>'+photoHtml+offerHtml+'</div></article>';
+ }).join('');
+}
+function setRepairQuickReply(id, kind){
+  const field=document.getElementById("repairOfferMessage-"+id);
+  if(!field)return;
+  const replies={
+   received:"Bedankt voor uw bericht. We bekijken uw reparatieaanvraag en nemen zo snel mogelijk contact met u op.",
+   photos:"Kunt u ons alstublieft enkele duidelijke foto's van het toestel en de schade sturen? Dan kunnen we uw aanvraag beter beoordelen.",
+   question:"Om uw reparatieaanvraag goed te kunnen beoordelen, hebben we nog wat aanvullende informatie nodig. Kunt u ons hierover meer details geven?"
+  };
+  if(replies[kind]){field.value=replies[kind];field.focus();}
+}
+async function sendRepairOffer(id){
+ if(!hasPermission("orders.update"))return;
+ const price=document.getElementById("repairOfferPrice-"+id),message=document.getElementById("repairOfferMessage-"+id),duration=document.getElementById("repairOfferDuration-"+id),validity=document.getElementById("repairOfferValidity-"+id),status=document.getElementById("repairOfferStatus-"+id);
+ const button=document.getElementById("repairOfferSendButton-"+id);
+ if(!price||!message||!duration||!validity||!status)return;
+ const cleanPrice=String(price.value||'').trim().replace(',','.');
+ const numPrice=Number(cleanPrice);
+ if(!cleanPrice||!Number.isFinite(numPrice)||numPrice<0||numPrice>100000){status.style.color="#b42318";status.textContent="Vul een geldige prijs in (0 - 100.000).";price.focus();return;}
+ if(!message.value.trim()){status.style.color="#b42318";status.textContent="Vul een bericht aan de klant in.";message.focus();return;}
+ if(!confirm("De offerte van € "+numPrice.toLocaleString("nl-NL",{minimumFractionDigits:2,maximumFractionDigits:2})+" opslaan en verzenden naar de klant?"))return;
+ if(button)button.disabled=true;status.style.color="#52677d";status.textContent="Offerte wordt verwerkt...";
+ try{
+  const r=await fetch("/api/admin/repair-requests/"+encodeURIComponent(id)+"/offer",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({price:cleanPrice,message:message.value,duration:duration.value,validity:validity.value})});
+  const result=await r.json().catch(()=>({}));if(!r.ok)throw new Error(result.error||"Offerte kon niet worden verwerkt.");
+  const order=adminRepairOrdersCache.find(o=>Number(o.id)===Number(id));
+  if(order){
+   order.price=result.order?.price||numPrice.toLocaleString("nl-NL",{minimumFractionDigits:2,maximumFractionDigits:2});
+   order.status=result.order?.status||"Wacht op klant";
+   if(result.order?.extra_fields) order.extra_fields=result.order.extra_fields;
+  }
+  renderRepairRequests();
+  const refreshedStatus=document.getElementById("repairOfferStatus-"+id);
+  if(refreshedStatus){
+   refreshedStatus.style.color=result.warning?"#b54708":"#137547";
+   refreshedStatus.textContent=result.warning?"⚠ "+result.warning:"✓ Offerte verzonden en opgeslagen. De status is nu ‘Wacht op klant’.";
+  }
+ }catch(e){status.style.color="#b42318";status.textContent="✕ "+e.message;}
+ finally{if(button)button.disabled=false;}
+}
 async function loadOrders(){
   if(!hasPermission("orders.view"))return;
   const status=document.getElementById('repairRequestsStatus');
