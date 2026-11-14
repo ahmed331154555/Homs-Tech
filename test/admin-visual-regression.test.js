@@ -274,3 +274,19 @@ test("Shop image upload releases FileReader handlers and selected file after rea
   assert.match(handler, /const imageData=String\(reader\.result\|\|""\)/);
   assert.match(handler, /shopImageUploadsPending=Math\.max\(0,shopImageUploadsPending-1\)/);
 });
+
+test("email attachment preview object URLs are revoked before rerender and on page exit", () => {
+  const js = read("assets/homs-admin.js");
+  assert.match(js, /adminEmailPreviewUrls=\[\]/);
+  const releaseStart = js.indexOf("function releaseEmailPreviewUrls(){");
+  const renderStart = js.indexOf("function renderEmailFiles(){", releaseStart);
+  const renderEnd = js.indexOf("\nfunction removeEmailFile(", renderStart);
+  assert.ok(releaseStart >= 0 && renderStart > releaseStart && renderEnd > renderStart);
+  const release = js.slice(releaseStart, renderStart);
+  const render = js.slice(renderStart, renderEnd);
+  assert.match(release, /URL\.revokeObjectURL\(url\)/);
+  assert.match(release, /adminEmailPreviewUrls=\[\]/);
+  assert.match(render, /releaseEmailPreviewUrls\(\)/);
+  assert.match(render, /adminEmailPreviewUrls\.push\(url\)/);
+  assert.match(js, /window\.addEventListener\("pagehide",releaseEmailPreviewUrls\)/);
+});
