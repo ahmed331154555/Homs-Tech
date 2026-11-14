@@ -60,7 +60,8 @@ function applyPermissionUI(){
     const sectionUnavailable=typeof ADMIN_SITE_DATA_PAGES!=="undefined"&&ADMIN_SITE_DATA_PAGES.has(currentPage)&&(
       typeof adminLoadedSections==="undefined"||
       !adminLoadedSections.has(currentPage)||
-      (typeof adminSectionRequests!=="undefined"&&adminSectionRequests.has(currentPage))
+      (typeof adminSectionRequests!=="undefined"&&adminSectionRequests.has(currentPage))||
+      loading
     );
     saveBtn.disabled=sectionUnavailable;
   }
@@ -70,7 +71,8 @@ function applyPermissionUI(){
     const sectionUnavailable=typeof ADMIN_SITE_DATA_PAGES!=="undefined"&&ADMIN_SITE_DATA_PAGES.has(n)&&(
       typeof adminLoadedSections==="undefined"||
       !adminLoadedSections.has(n)||
-      (typeof adminSectionRequests!=="undefined"&&adminSectionRequests.has(n))
+      (typeof adminSectionRequests!=="undefined"&&adminSectionRequests.has(n))||
+      loading
     );
     page.querySelectorAll("input,textarea,select").forEach(el=>el.disabled=sectionUnavailable||!canEditCurrentPage());
     page.querySelectorAll("button").forEach(btn=>{
@@ -446,7 +448,7 @@ function handleGlobalConditionOverviewImage(event){
     if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
     data.globalConditionOverviewImage=value;
     renderGlobalConditionDetails();
-    markChanged();
+    markChanged("globalConditionOverviewImage");
   };
   reader.onload=()=>finish(null,reader.result);
   reader.onerror=()=>finish(new Error('read-failed'));
@@ -463,7 +465,7 @@ function renderGlobalConditionDetails(){
         <label style="font-weight:800;display:block;margin-bottom:7px">🖼️ Eén afbeelding voor «Wat is dat?»</label>
         <div class="small" style="margin-bottom:10px">Upload hier de afbeelding met de 3 condities. Deze afbeelding wordt centraal gebruikt op alle productpagina's.</div>
         <input type="file" accept="image/*" onchange="handleGlobalConditionOverviewImage(event)">
-        <input value="${esc(img)}" placeholder="Of plak een afbeelding URL" oninput="data.globalConditionOverviewImage=this.value;renderGlobalConditionDetails();markChanged()" style="margin-top:8px">
+        <input value="${esc(img)}" placeholder="Of plak een afbeelding URL" oninput="data.globalConditionOverviewImage=this.value;renderGlobalConditionDetails();markChanged('globalConditionOverviewImage')" style="margin-top:8px">
         ${img?`<img src="${esc(img)}" alt="Productcondities" style="display:block;width:100%;max-width:900px;max-height:420px;object-fit:contain;border-radius:12px;margin-top:10px;background:#f8fafc">`:''}
       </div>`;
   }
@@ -474,11 +476,11 @@ function renderGlobalConditionDetails(){
       <div style="font-weight:800;margin-bottom:8px">${i+1}. ${esc(x.title)}</div>
       <div class="field">
         <label>Naam conditie</label>
-        <input value="${esc(x.title||'')}" oninput="data.globalConditionDetails[${i}].title=this.value;markChanged()">
+        <input value="${esc(x.title||'')}" oninput="data.globalConditionDetails[${i}].title=this.value;markChanged('globalConditionDetails')">
       </div>
       <div class="field" style="margin-top:8px">
         <label>Uitleg voor de klant</label>
-        <textarea rows="3" oninput="data.globalConditionDetails[${i}].text=this.value;markChanged()">${esc(x.text||'')}</textarea>
+        <textarea rows="3" oninput="data.globalConditionDetails[${i}].text=this.value;markChanged('globalConditionDetails')">${esc(x.text||'')}</textarea>
       </div>
     </div>
   `).join('');
@@ -726,7 +728,7 @@ async function loadData(){
   data={};
   adminLoadedSections.clear();
   adminDirtySections.clear();
-  phoneSharedOriginalSnapshot=null;
+  phoneSharedDirtyFields.clear();
   adminSectionRequests.clear();
   adminRenderedDataPage="";
   setStatus("Gegevens laden...","info");
@@ -741,6 +743,7 @@ async function loadData(){
     setStatus("✕ "+e.message,"error");
   }finally{
     loading=false;
+    applyPermissionUI();
   }
 }
 
@@ -768,7 +771,7 @@ function renderGeneral(){
 let selectedServiceIndex=0;
 let selectedPhoneIndex=0;
 let phoneOriginalIdentities=[];
-let phoneSharedOriginalSnapshot=null;
+const phoneSharedDirtyFields=new Set();
 let phoneEditOnly=false;
 let phoneWizardExistingEdit=false;
 let phoneBulkPricingView=false;
@@ -1539,7 +1542,7 @@ function addPhoneTreeGroup(){
   if(exists||alreadyHasPhone){phoneTreeBrand=cleanBrand;renderPhones();alert('Deze map bestaat al.');return;}
   data.phoneFolders.push({group:cleanBrand,model:clean});
   phoneTreeBrand=cleanBrand;
-  markChanged();
+  markChanged("phoneFolders");
   renderPhones();
 }
 
@@ -1561,7 +1564,7 @@ function handlePhoneFolderImage(event,group,model){
       data.phoneFolders.push(folder);
     }
     folder.image=value;
-    markChanged();renderPhones();
+    markChanged("phoneFolders");renderPhones();
   };
   reader.onload=()=>finish(null,reader.result);
   reader.onerror=()=>finish(new Error('read-failed'));
@@ -4946,6 +4949,7 @@ async function save(isAuto=false){
     }
   }
   loading=true;
+  applyPermissionUI();
   setStatus("Opslaan...","info");
   const shopEditor=document.getElementById("shopProductsAdmin");
   const shopEditorControls=savePage==="shop"&&shopEditor
@@ -4978,13 +4982,9 @@ async function save(isAuto=false){
 
     const phoneSharedData={};
     if(savePage==="phones"){
-      const original=phoneSharedOriginalSnapshot||{};
-      const folders=JSON.stringify(data.phoneFolders||[]);
-      const conditions=JSON.stringify(data.globalConditionDetails||[]);
-      const overview=String(data.globalConditionOverviewImage||"");
-      if(folders!==original.phoneFolders)phoneSharedData.phoneFolders=JSON.parse(folders);
-      if(conditions!==original.globalConditionDetails)phoneSharedData.globalConditionDetails=JSON.parse(conditions);
-      if(overview!==original.globalConditionOverviewImage)phoneSharedData.globalConditionOverviewImage=overview;
+      if(phoneSharedDirtyFields.has("phoneFolders"))phoneSharedData.phoneFolders=JSON.parse(JSON.stringify(data.phoneFolders||[]));
+      if(phoneSharedDirtyFields.has("globalConditionDetails"))phoneSharedData.globalConditionDetails=JSON.parse(JSON.stringify(data.globalConditionDetails||[]));
+      if(phoneSharedDirtyFields.has("globalConditionOverviewImage"))phoneSharedData.globalConditionOverviewImage=String(data.globalConditionOverviewImage||"");
     }
     const payload=savePage==="buyback"
       ? {
@@ -5105,11 +5105,7 @@ async function save(isAuto=false){
     // so an old IndexedDB snapshot cannot restore deleted or outdated products.
     if(savePage==="phones"){
       if(payload.sharedData){
-        phoneSharedOriginalSnapshot={
-          phoneFolders:JSON.stringify(data.phoneFolders||[]),
-          globalConditionDetails:JSON.stringify(data.globalConditionDetails||[]),
-          globalConditionOverviewImage:String(data.globalConditionOverviewImage||"")
-        };
+        if(payload.sharedData)Object.keys(payload.sharedData).forEach(field=>phoneSharedDirtyFields.delete(field));
       }
       phoneDraftCommitted=true;
       await clearPhoneDraft();
@@ -5134,6 +5130,7 @@ async function save(isAuto=false){
   }finally{
     shopEditorControls.forEach(({element,wasDisabled})=>{element.disabled=wasDisabled;});
     loading=false;
+    applyPermissionUI();
     autoSaveAgain=false;
   }
 }
@@ -6684,11 +6681,6 @@ async function loadAdminSiteSection(page){
       if(page==="phones"){
         if(!Array.isArray(data.phoneFolders))data.phoneFolders=[];
         normalizeGlobalConditionDetails();
-        phoneSharedOriginalSnapshot={
-          phoneFolders:JSON.stringify(data.phoneFolders||[]),
-          globalConditionDetails:JSON.stringify(data.globalConditionDetails||[]),
-          globalConditionOverviewImage:String(data.globalConditionOverviewImage||"")
-        };
         phoneOriginalIdentities=(Array.isArray(data.phones)?data.phones:[]).map(phone=>({
           id:phone?.id??null,
           name:String(phone?.name||""),
@@ -6752,7 +6744,8 @@ function renderAll(){
   if(ADMIN_SITE_DATA_PAGES.has(currentPage))loadAdminSiteSection(currentPage).catch(()=>{});
 }
 
-function markChanged(){
+function markChanged(sharedField){
+  if(currentPage==="phones"&&["phoneFolders","globalConditionDetails","globalConditionOverviewImage"].includes(sharedField))phoneSharedDirtyFields.add(sharedField);
   if(ADMIN_SITE_DATA_PAGES.has(currentPage))adminDirtySections.add(currentPage);
   schedulePhoneDraftSave();
   setStatus(
