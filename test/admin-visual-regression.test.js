@@ -344,7 +344,9 @@ test("phone save clones only the phone catalog and deep-clones only the edited p
   assert.match(payload, /savePage===\"phones\"/);
   assert.match(payload, /JSON\.parse\(JSON\.stringify\(data\.phones\|\|\[\]\)\)/);
   assert.match(payload, /map\(\(phone,index\)=>index===selectedPhoneIndex\?JSON\.parse\(JSON\.stringify\(phone\)\):phone\)/);
-  assert.doesNotMatch(payload, /JSON\.parse\(JSON\.stringify\(data\)\)/);
+  const phoneBranch = payload.slice(payload.indexOf(': savePage==="phones"'), payload.indexOf(': JSON.parse(JSON.stringify(data))'));
+  assert.ok(phoneBranch.length > 0);
+  assert.doesNotMatch(phoneBranch, /JSON\.parse\(JSON\.stringify\(data\)\)/);
 });
 
 test("full phone catalog save preserves photos from a compact SQL projection and avoids returning the catalog", () => {
