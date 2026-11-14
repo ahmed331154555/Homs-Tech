@@ -916,6 +916,24 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
     s.className = "status " + (type || "");
   }
 
+  function markCheckoutConfirmed(){
+    const steps = document.querySelectorAll(".checkout-progress-step");
+    if(steps.length !== 4) return;
+    steps.forEach((step,index)=>{
+      step.classList.remove("is-active","is-done");
+      step.removeAttribute("aria-current");
+      const marker = step.querySelector("span");
+      if(index < 3){
+        step.classList.add("is-done");
+        if(marker) marker.textContent = "✓";
+      }else{
+        step.classList.add("is-active");
+        step.setAttribute("aria-current","step");
+        if(marker) marker.textContent = "✓";
+      }
+    });
+  }
+
   async function loadPayPalSdk(){
     const configResponse = await fetch("/api/paypal/config",{cache:"no-store"});
     const config = await configResponse.json().catch(()=>({}));
@@ -1020,6 +1038,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
           pendingCheckoutToken = "";
 
           document.getElementById("checkoutContent").classList.add("hidden");
+          markCheckoutConfirmed();
           document.getElementById("success").classList.remove("hidden");
           document.getElementById("orderNumber").textContent = "Bestelnummer #" + pendingOrderId;
         }catch(error){
@@ -1081,7 +1100,8 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
           localStorage.removeItem("homsTechTradeInDetails");
         localStorage.removeItem("homsTechPendingWebshopOrderId");
         document.getElementById("checkoutContent").classList.add("hidden");
-        document.getElementById("success").classList.remove("hidden");
+        markCheckoutConfirmed();
+          document.getElementById("success").classList.remove("hidden");
         document.getElementById("orderNumber").textContent = "Bestelnummer #" + pendingOrderId;
         showStatus("Bestelling ontvangen. U betaalt bij ontvangst; er is geen online betaling uitgevoerd.","success");
         return;
@@ -1190,7 +1210,8 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
         sessionStorage.removeItem("homsTechMollieOrderId");
         sessionStorage.removeItem("homsTechMollieCheckoutToken");
         document.getElementById("checkoutContent").classList.add("hidden");
-        document.getElementById("success").classList.remove("hidden");
+        markCheckoutConfirmed();
+          document.getElementById("success").classList.remove("hidden");
         document.getElementById("orderNumber").textContent = "Bestelnummer #" + orderId;
       }else{
         showStatus("De betaling is nog niet bevestigd (status: " + String(result.status || "in behandeling") + "). Wacht even en vernieuw deze pagina; betaal niet opnieuw zolang de status onduidelijk is.","error");
