@@ -58,9 +58,10 @@ function applyPermissionUI(){
   document.querySelectorAll(".admin-page").forEach(page=>{
     const n=(page.id||"").replace(/^page-/,"");
     if(!["general","services","repair","phones","buyback","categories","why"].includes(n))return;
-    page.querySelectorAll("input,textarea").forEach(el=>el.disabled=!canEditCurrentPage());
+    const sectionLoading=typeof adminSectionRequests!=="undefined"&&adminSectionRequests.has(n);
+    page.querySelectorAll("input,textarea,select").forEach(el=>el.disabled=sectionLoading||!canEditCurrentPage());
     page.querySelectorAll("button").forEach(btn=>{
-      if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=!canEditCurrentPage();
+      if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=sectionLoading||!canEditCurrentPage();
     });
   });
   document.querySelectorAll(".order-status-select").forEach(el=>{const section=el.closest("[data-order-category]");const key=section?.dataset.orderCategory;const category=unifiedOrderCategories.find(item=>item.key===key);const permission=category?.updatePermission||(el.closest("#page-repair-requests")?"orders.update":"webshop_orders.update");el.disabled=!hasPermission(permission);});
@@ -6669,6 +6670,9 @@ async function loadAdminSiteSection(page){
       const sectionData=await response.json().catch(()=>({}));
       if(!response.ok)throw new Error(sectionData.error||"Beheergegevens konden niet worden geladen.");
       data={...data,...sectionData};
+      if(page==="services"&&!Array.isArray(data.services))data.services=[];
+      if(page==="phones"&&!Array.isArray(data.phones))data.phones=[];
+      if(page==="shop"&&!Array.isArray(data.shopProducts))data.shopProducts=[];
       normalizeData();
 
       if(page==="phones"){
@@ -6711,7 +6715,10 @@ async function loadAdminSiteSection(page){
 
   adminSectionRequests.set(page,request);
   try{return await request;}
-  finally{adminSectionRequests.delete(page);}
+  finally{
+    adminSectionRequests.delete(page);
+    if(currentPage===page)applyPermissionUI();
+  }
 }
 
 function renderAdminPageData(page){
