@@ -567,27 +567,42 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 </style>
 
 
-<style id="homs-buyback-heading-single-line">
-/* Keep the buyback headline large and horizontal, never stacked word-by-word. */
-#homeBuybackBanner h2#buybackBannerTitle{
-  display:block!important;
+
+
+
+<style id="homs-buyback-heading-layout">
+/* Buyback title: one strong horizontal line on every screen size. */
+#homeBuybackBanner #buybackBannerTitle{
+  display:flex!important;
+  align-items:baseline!important;
+  flex-wrap:nowrap!important;
+  gap:.22em!important;
   width:100%!important;
   max-width:none!important;
+  margin:0 0 16px!important;
   white-space:nowrap!important;
-  font-size:clamp(27px,5.2vw,48px)!important;
+  font-size:clamp(25px,7vw,46px)!important;
+  font-weight:900!important;
   line-height:1.08!important;
   letter-spacing:-1.35px!important;
-  margin:0 0 16px!important;
   text-align:left!important;
 }
-#homeBuybackBanner h2#buybackBannerTitle span{
+#homeBuybackBanner #buybackBannerTitle .buyback-title-main,
+#homeBuybackBanner #buybackBannerTitle .buyback-title-accent{
   display:inline!important;
+  flex:0 0 auto!important;
   white-space:nowrap!important;
 }
+#homeBuybackBanner #buybackBannerTitle .buyback-title-main{color:#fff!important}
+#homeBuybackBanner #buybackBannerTitle .buyback-title-accent{color:#18a8ff!important}
+@media(min-width:851px){
+  #homeBuybackBanner #buybackBannerTitle{font-size:clamp(34px,3.5vw,46px)!important}
+}
 @media(max-width:380px){
-  #homeBuybackBanner h2#buybackBannerTitle{
-    font-size:clamp(24px,7.1vw,29px)!important;
-    letter-spacing:-1px!important;
+  #homeBuybackBanner #buybackBannerTitle{
+    font-size:clamp(23px,6.8vw,26px)!important;
+    letter-spacing:-1.1px!important;
+    gap:.18em!important;
   }
 }
 </style>
@@ -628,7 +643,7 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
   <div class="promo-card" id="homeBuybackBanner">
    <div class="sell-home-copy">
     <span style="display:inline-block;background:#e1efff;color:#0968f5;border-radius:7px;padding:7px 11px;font-size:11px;font-weight:900;letter-spacing:.04em;margin-bottom:18px">HOMS TECH</span>
-    <h2 id="buybackBannerTitle">Uw toestel <span style="color:var(--blue2)">verkopen?</span></h2>
+    <h2 id="buybackBannerTitle"><span class="buyback-title-main">Uw toestel</span><span class="buyback-title-accent">verkopen?</span></h2>
     <p id="buybackBannerText">Verkoop of ruil je oude iPhone snel, eenvoudig en veilig bij HOMS TECH. Ontvang binnen enkele minuten een eerlijk bod.</p>
     <div class="sell-home-benefits" aria-label="Voordelen van uw toestel verkopen">
      <div class="sell-home-benefit">
