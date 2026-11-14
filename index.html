@@ -447,6 +447,125 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 <link rel="stylesheet" href="assets/homs-layout-system.css?v=20261109-accessibility">
   <link rel="stylesheet" href="assets/homs-homepage-hero.css?v=20261108-4">
   <script src="assets/homs-analytics-consent.js" defer></script>
+
+<style id="homs-buyback-final-wave-layout">
+/* HOMS TECH buyback card — approved mobile order, vivid 3D benefits and animated blue waves */
+#homeBuybackBanner .sell-home-copy>span:first-child{display:none!important}
+#homeBuybackBanner .sell-home-benefits{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:12px!important;
+  margin:24px 0 24px!important;
+  position:relative;z-index:2;
+}
+#homeBuybackBanner .sell-home-benefit{
+  position:relative;isolation:isolate;overflow:hidden;
+  display:flex!important;flex-direction:column;align-items:center!important;justify-content:flex-start;
+  gap:10px!important;min-width:0;min-height:164px;max-width:none!important;
+  padding:14px 10px!important;border:1px solid rgba(145,207,255,.85);
+  border-radius:18px!important;
+  color:#102b48!important;text-align:center;
+  background:linear-gradient(135deg,#eaf5ff 0%,#cfe7ff 42%,#e8f4ff 72%,#b9dcff 100%)!important;
+  box-shadow:0 10px 22px rgba(0,12,40,.24),inset 0 1px 0 rgba(255,255,255,.92);
+}
+#homeBuybackBanner .sell-home-benefit:before,
+#homeBuybackBanner .sell-home-benefit:after{
+  content:"";position:absolute;z-index:-1;pointer-events:none;left:-35%;
+  width:170%;height:70%;border-radius:44%;filter:blur(1px);opacity:.58;
+}
+#homeBuybackBanner .sell-home-benefit:before{
+  top:45%;background:linear-gradient(90deg,rgba(40,151,255,.05),rgba(37,143,245,.4),rgba(255,255,255,.42),rgba(30,129,235,.14));
+  transform:rotate(-7deg);animation:htBuybackWave 7s ease-in-out infinite alternate;
+}
+#homeBuybackBanner .sell-home-benefit:after{
+  top:57%;background:linear-gradient(90deg,rgba(255,255,255,.15),rgba(87,177,255,.4),rgba(255,255,255,.24));
+  transform:rotate(6deg);animation:htBuybackWave2 9s ease-in-out infinite alternate;
+}
+@keyframes htBuybackWave{0%{translate:-5% 0;rotate:-2deg}100%{translate:8% -10%;rotate:3deg}}
+@keyframes htBuybackWave2{0%{translate:7% 5%;rotate:2deg}100%{translate:-7% -8%;rotate:-3deg}}
+#homeBuybackBanner .sell-home-benefit i{
+  display:grid!important;place-items:center;flex:0 0 66px!important;
+  width:66px!important;height:66px!important;margin:0!important;padding:0!important;
+  border:0!important;border-radius:17px!important;
+  background:radial-gradient(circle at 32% 20%,#f8fdff 0%,#c7e6ff 27%,#83bdff 100%)!important;
+  color:#fff!important;box-shadow:inset 0 2px 5px rgba(255,255,255,.95),0 6px 12px rgba(0,70,160,.18)!important;
+}
+#homeBuybackBanner .sell-home-benefit i svg{display:block;width:62px;height:62px;overflow:visible;filter:drop-shadow(0 5px 4px rgba(0,44,110,.22))}
+#homeBuybackBanner .benefit-divider{
+  display:block!important;flex:0 0 1px!important;width:76%!important;height:1px!important;
+  margin:0!important;
+  background:linear-gradient(90deg,transparent 0%,#78aee3 14%,#78aee3 86%,transparent 100%);
+  box-shadow:0 1px 0 rgba(255,255,255,.95);
+}
+#homeBuybackBanner .benefit-copy{
+  display:block!important;min-width:0;width:100%;
+  color:#10243c!important;font-size:12px!important;font-weight:850!important;line-height:1.3!important;
+}
+#homeBuybackBanner .benefit-copy small{
+  display:block!important;margin-top:5px!important;
+  color:#52677d!important;font-size:10.5px!important;font-weight:500!important;line-height:1.4!important;
+}
+#homeBuybackBanner #buybackBannerButton{
+  display:flex!important;align-items:center!important;justify-content:center!important;gap:14px!important;
+  width:min(100%,460px)!important;min-height:62px!important;margin:0 auto!important;padding:0 16px!important;
+  border:1px solid rgba(255,255,255,.98)!important;border-radius:999px!important;
+  color:#0758cb!important;background:linear-gradient(105deg,#fff 0%,#edf5ff 100%)!important;
+  font-size:16px!important;font-weight:850!important;letter-spacing:0!important;
+  box-shadow:0 0 0 4px rgba(255,255,255,.12),0 14px 30px rgba(0,9,30,.3),inset 0 1px 0 #fff!important;
+  text-decoration:none!important;
+}
+#homeBuybackBanner #buybackBannerButton .buyback-swap{
+  display:grid!important;place-items:center!important;flex:0 0 36px!important;
+  width:36px!important;height:36px!important;border-radius:50%!important;
+  background:linear-gradient(145deg,#dff0ff,#c4e0ff)!important;color:#0758cb!important;
+  font-size:24px!important;line-height:1!important;
+}
+#homeBuybackBanner #buybackBannerButton .buyback-label{display:inline!important;background:none!important;color:#0758cb!important;font-size:inherit!important}
+#homeBuybackBanner #buybackBannerButton>b{
+  display:grid!important;place-items:center!important;flex:0 0 38px!important;
+  width:38px!important;height:38px!important;margin:0!important;border-radius:50%!important;
+  background:linear-gradient(145deg,#168cff,#0752cf)!important;color:#fff!important;
+  font-size:22px!important;line-height:1!important;
+}
+@media(max-width:850px){
+  #homeBuybackBanner{
+    display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+    grid-template-areas:"title" "description" "art" "benefits" "cta"!important;
+    gap:0!important;min-height:0!important;padding:25px 20px 20px!important;
+  }
+  #homeBuybackBanner>.sell-home-copy{display:contents!important}
+  #homeBuybackBanner h2{grid-area:title!important;max-width:none!important;margin:0 0 12px!important;text-align:left}
+  #homeBuybackBanner p{grid-area:description!important;max-width:none!important;margin:0 0 10px!important;text-align:left}
+  #homeBuybackBanner .art{
+    grid-area:art!important;position:relative!important;inset:auto!important;
+    width:100%!important;height:230px!important;margin:0 auto 8px!important;
+  }
+  #homeBuybackBanner .sell-home-benefits{
+    grid-area:benefits!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:8px!important;margin:8px 0 20px!important;
+  }
+  #homeBuybackBanner .sell-home-benefit{
+    min-height:154px!important;padding:11px 7px!important;gap:8px!important;border-radius:16px!important;
+  }
+  #homeBuybackBanner .sell-home-benefit i{width:56px!important;height:56px!important;flex-basis:56px!important;border-radius:15px!important}
+  #homeBuybackBanner .sell-home-benefit i svg{width:53px;height:53px}
+  #homeBuybackBanner .benefit-copy{font-size:10.5px!important}
+  #homeBuybackBanner .benefit-copy small{font-size:9px!important}
+  #homeBuybackBanner #buybackBannerButton{grid-area:cta!important;width:100%!important;min-height:57px!important;font-size:14px!important}
+}
+@media(max-width:380px){
+  #homeBuybackBanner{padding:22px 13px 16px!important}
+  #homeBuybackBanner h2{font-size:34px!important}
+  #homeBuybackBanner .sell-home-benefits{gap:6px!important}
+  #homeBuybackBanner .sell-home-benefit{padding:9px 5px!important;min-height:148px!important}
+  #homeBuybackBanner .benefit-copy{font-size:9.5px!important}
+  #homeBuybackBanner .benefit-copy small{font-size:8.4px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #homeBuybackBanner .sell-home-benefit:before,#homeBuybackBanner .sell-home-benefit:after{animation:none!important}
+}
+</style>
+
 </head>
 <body>
 
@@ -485,12 +604,24 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
     <span style="display:inline-block;background:#e1efff;color:#0968f5;border-radius:7px;padding:7px 11px;font-size:11px;font-weight:900;letter-spacing:.04em;margin-bottom:18px">HOMS TECH</span>
     <h2 id="buybackBannerTitle">Uw toestel<br><span style="color:var(--blue2)">verkopen?</span></h2>
     <p id="buybackBannerText">Verkoop of ruil je oude iPhone snel, eenvoudig en veilig bij HOMS TECH. Ontvang binnen enkele minuten een eerlijk bod.</p>
-    <div class="sell-home-benefits">
-     <div class="sell-home-benefit"><i>€</i><span>Eerlijke prijs<br><small style="font-weight:500;color:#60738b">Gebaseerd op de marktwaarde</small></span></div>
-     <div class="sell-home-benefit"><i>ϟ</i><span>Snelle afhandeling<br><small style="font-weight:500;color:#60738b">Snelle beoordeling en betaling</small></span></div>
-     <div class="sell-home-benefit"><i>⬟</i><span>Veilig en betrouwbaar<br><small style="font-weight:500;color:#60738b">Duidelijke beoordeling</small></span></div>
+    <div class="sell-home-benefits" aria-label="Voordelen van uw toestel verkopen">
+     <div class="sell-home-benefit">
+      <i aria-hidden="true"><svg viewBox="0 0 80 80"><defs><linearGradient id="htCoinStack" x2="0" y2="1"><stop stop-color="#8ff1ff"/><stop offset=".48" stop-color="#078bdf"/><stop offset="1" stop-color="#034caa"/></linearGradient></defs><path d="M12 19v33c0 5 8 9 19 9s19-4 19-9V19" fill="url(#htCoinStack)" stroke="#075bb0" stroke-width="2"/><ellipse cx="31" cy="19" rx="19" ry="8" fill="#49cfff" stroke="#d5fbff" stroke-width="2"/><path d="M12 30c0 5 8 8 19 8s19-3 19-8M12 41c0 5 8 8 19 8s19-3 19-8" fill="none" stroke="#a5f4ff" stroke-width="2.5"/><circle cx="56" cy="54" r="17" fill="#0869d4" stroke="#e2f8ff" stroke-width="3"/><text x="56" y="61" text-anchor="middle" font-size="23" font-weight="900" fill="#fff">€</text></svg></i>
+      <span class="benefit-divider" aria-hidden="true"></span>
+      <span class="benefit-copy">Eerlijke prijs<br><small>Gebaseerd op de marktwaarde</small></span>
+     </div>
+     <div class="sell-home-benefit">
+      <i aria-hidden="true"><svg viewBox="0 0 80 80"><defs><linearGradient id="htTimer" x2="1" y2="1"><stop stop-color="#8ef2ff"/><stop offset=".45" stop-color="#0787e9"/><stop offset="1" stop-color="#0646ad"/></linearGradient></defs><path d="M32 7h16l3 10H29zM32 63h16l3 10H29z" fill="#0874d6" stroke="#e3fbff" stroke-width="2"/><circle cx="40" cy="40" r="25" fill="url(#htTimer)" stroke="#e5fbff" stroke-width="3"/><circle cx="40" cy="40" r="18" fill="#eaf8ff" stroke="#0876d1" stroke-width="2"/><path d="M40 27v14l10 5" fill="none" stroke="#0754aa" stroke-width="4" stroke-linecap="round"/><path d="M10 29h10M5 40h13M10 51h10" stroke="#0785e9" stroke-width="4" stroke-linecap="round"/><path d="m56 17 7-6m-2 15 8-2" stroke="#51cfff" stroke-width="3" stroke-linecap="round"/></svg></i>
+      <span class="benefit-divider" aria-hidden="true"></span>
+      <span class="benefit-copy">Snelle afhandeling<br><small>Snelle beoordeling en betaling</small></span>
+     </div>
+     <div class="sell-home-benefit">
+      <i aria-hidden="true"><svg viewBox="0 0 80 80"><defs><linearGradient id="htShield" x2="1" y2="1"><stop stop-color="#69eaff"/><stop offset=".4" stop-color="#087fe7"/><stop offset="1" stop-color="#063d9f"/></linearGradient></defs><path d="M40 7 65 17v19c0 17-10 28-25 37C25 64 15 53 15 36V17z" fill="url(#htShield)" stroke="#e4fbff" stroke-width="3"/><path d="m27 40 9 9 18-20" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></i>
+      <span class="benefit-divider" aria-hidden="true"></span>
+      <span class="benefit-copy">Veilig en betrouwbaar<br><small>Duidelijke beoordeling</small></span>
+     </div>
     </div>
-    <a class="btn btn-blue" id="buybackBannerButton" href="uw-toestel-verkopen.html"><span>⇄</span> Toestel verkopen of inruilen <b aria-hidden="true">→</b></a>
+    <a class="btn btn-blue" id="buybackBannerButton" href="uw-toestel-verkopen.html"><span class="buyback-swap" aria-hidden="true">⇄</span><span class="buyback-label">Toestel verkopen</span><b aria-hidden="true">→</b></a>
    </div>
    <div class="art" id="buybackBannerArt" aria-hidden="true"></div>
   </div>
