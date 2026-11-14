@@ -8,7 +8,7 @@
  var linkGroups=[
   {label:'Start',items:[['','Home','index.html','home'],['','Over HOMS TECH','about.html','about'],['','Contact','contact.html','contact']]},
   {label:'Winkel',items:[['','Telefoons & apparaten','devices.html','devices'],['🛍','Shop & accessoires','shop.html',null],['','Winkelwagen','cart.html','cart']]},
-  {label:'Service',items:[['','Reparatie aanvragen','repair.html','repair'],['','Reparatieprijzen','prices.html','prices'],['','Uw toestel verkopen','uw-toestel-verkopen.html','trade-in']]},
+  {label:'Service',items:[['','Reparatie aanvragen','repair.html','repair'],['','Reparatieprijzen','prices.html','prices'],['','Uw toestel verkopen','uw-toestel-verkopen.html','trade-in'],['⭐','Klantbeoordelingen','reviews.html','reviews']]},
   {label:'Account',items:[['','Mijn account','account.html','account']]}
  ];
  var style=document.createElement('style');
