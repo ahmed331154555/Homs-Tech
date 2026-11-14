@@ -33,9 +33,11 @@ function createResponse() {
   };
 }
 
-test("admin order list replaces repair photo data URLs with on-demand URLs", async () => {
+test("admin order list strips stored photo payloads in SQL and returns on-demand URLs", async () => {
+  let querySql = "";
   const pool = {
-    async query() {
+    async query(sql) {
+      querySql = sql;
       return { rows: [{
         id: 42,
         service_category: "reparatie",
@@ -56,6 +58,9 @@ test("admin order list replaces repair photo data URLs with on-demand URLs", asy
   await routes.get("GET /api/admin/orders")({}, response);
 
   assert.equal(response.statusCode, 200);
+  assert.match(querySql, /regexp_replace\(/);
+  assert.match(querySql, /"dataUrl"/);
+  assert.match(querySql, /CASE[\s\S]*END AS extra_fields/);
   const metadata = JSON.parse(response.body.orders[0].extra_fields);
   assert.deepEqual(metadata.photos, [
     { name: "front.jpg", type: "image/jpeg", url: "/api/admin/repair-requests/42/photos/0" },
