@@ -347,6 +347,10 @@ test("phone save clones only the phone catalog and deep-clones only the edited p
   const phoneBranch = payload.slice(payload.indexOf(': savePage==="phones"'), payload.indexOf(': JSON.parse(JSON.stringify(data))'));
   assert.ok(phoneBranch.length > 0);
   assert.doesNotMatch(phoneBranch, /JSON\.parse\(JSON\.stringify\(data\)\)/);
+  assert.match(phoneBranch, /sharedData/);
+  assert.match(phoneBranch, /phoneFolders/);
+  assert.match(phoneBranch, /globalConditionDetails/);
+  assert.match(phoneBranch, /globalConditionOverviewImage/);
 });
 
 test("full phone catalog save preserves photos from a compact SQL projection and avoids returning the catalog", () => {
@@ -364,6 +368,8 @@ test("full phone catalog save preserves photos from a compact SQL projection and
   assert.doesNotMatch(handler, /RETURNING data->'phones'/);
   assert.match(handler, /return res\.json\(\{ success: true \}\)/);
   assert.doesNotMatch(handler, /return res\.json\(\{ success: true, phones:/);
+  assert.match(handler, /phoneSharedJson/);
+  assert.match(handler, /\|\| \$2::jsonb/);
 });
 
 test("single-phone save reads and returns only the selected phone instead of the full image catalog", () => {
@@ -378,6 +384,8 @@ test("single-phone save reads and returns only the selected phone instead of the
   assert.match(patch, /RETURNING data->'phones'->\(\$2::int\) AS phone/);
   assert.doesNotMatch(patch, /SELECT data->'phones' AS phones/);
   assert.doesNotMatch(patch, /RETURNING data->'phones' AS phones/);
+  assert.match(patch, /phoneSharedJson/);
+  assert.match(patch, /\|\| \$3::jsonb/);
 });
 
 test("Shop catalog save clones only Shop products instead of the full admin data object", () => {
