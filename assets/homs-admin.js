@@ -4985,7 +4985,12 @@ async function save(isAuto=false){
           ? {
               phones: phoneEditOnly
                 ? (data.phones||[]).map((phone,index)=>index===selectedPhoneIndex?JSON.parse(JSON.stringify(phone)):phone)
-                : JSON.parse(JSON.stringify(data.phones||[]))
+                : JSON.parse(JSON.stringify(data.phones||[])),
+              sharedData:{
+                phoneFolders:JSON.parse(JSON.stringify(data.phoneFolders||[])),
+                globalConditionDetails:JSON.parse(JSON.stringify(data.globalConditionDetails||[])),
+                globalConditionOverviewImage:String(data.globalConditionOverviewImage||"")
+              }
             }
           : savePage==="general"
             ? {homepage:JSON.parse(JSON.stringify(data.homepage||{}))}
@@ -5025,8 +5030,8 @@ async function save(isAuto=false){
     // section when editing phones instead of the full site settings document.
     const requestPayload=savePage==="phones"
       ? (phoneEditOnly
-          ? {phoneItem:payload.phones?.[selectedPhoneIndex],phoneIndex:selectedPhoneIndex,phoneIdentity:phoneOriginalIdentities[selectedPhoneIndex]||{}}
-          : {phones:payload.phones||[]})
+          ? {phoneItem:payload.phones?.[selectedPhoneIndex],phoneIndex:selectedPhoneIndex,phoneIdentity:phoneOriginalIdentities[selectedPhoneIndex]||{},sharedData:payload.sharedData}
+          : {phones:payload.phones||[],sharedData:payload.sharedData})
       : savePage==="shop" ? {shopProducts:payload.shopProducts||[],expectedShopProducts:shopCatalogOriginalSnapshot} : savePage==="buyback" ? {buybackCatalog:payload.buybackCatalog||[],buybackPhones:payload.buybackPhones||[]} : payload;
     if(savePage==="phones" && phoneEditOnly && requestPayload.phoneItem){
       if(requestPayload.phoneItem.setupWizard){
