@@ -726,6 +726,7 @@ async function loadData(){
   data={};
   adminLoadedSections.clear();
   adminDirtySections.clear();
+  phoneSharedOriginalSnapshot=null;
   adminSectionRequests.clear();
   adminRenderedDataPage="";
   setStatus("Gegevens laden...","info");
@@ -767,6 +768,7 @@ function renderGeneral(){
 let selectedServiceIndex=0;
 let selectedPhoneIndex=0;
 let phoneOriginalIdentities=[];
+let phoneSharedOriginalSnapshot=null;
 let phoneEditOnly=false;
 let phoneWizardExistingEdit=false;
 let phoneBulkPricingView=false;
@@ -4974,6 +4976,16 @@ async function save(isAuto=false){
       });
     }
 
+    const phoneSharedData={};
+    if(savePage==="phones"){
+      const original=phoneSharedOriginalSnapshot||{};
+      const folders=JSON.stringify(data.phoneFolders||[]);
+      const conditions=JSON.stringify(data.globalConditionDetails||[]);
+      const overview=String(data.globalConditionOverviewImage||"");
+      if(folders!==original.phoneFolders)phoneSharedData.phoneFolders=JSON.parse(folders);
+      if(conditions!==original.globalConditionDetails)phoneSharedData.globalConditionDetails=JSON.parse(conditions);
+      if(overview!==original.globalConditionOverviewImage)phoneSharedData.globalConditionOverviewImage=overview;
+    }
     const payload=savePage==="buyback"
       ? {
           buybackCatalog: JSON.parse(JSON.stringify(data.buybackCatalog||[])),
@@ -4986,11 +4998,7 @@ async function save(isAuto=false){
               phones: phoneEditOnly
                 ? (data.phones||[]).map((phone,index)=>index===selectedPhoneIndex?JSON.parse(JSON.stringify(phone)):phone)
                 : JSON.parse(JSON.stringify(data.phones||[])),
-              sharedData:{
-                phoneFolders:JSON.parse(JSON.stringify(data.phoneFolders||[])),
-                globalConditionDetails:JSON.parse(JSON.stringify(data.globalConditionDetails||[])),
-                globalConditionOverviewImage:String(data.globalConditionOverviewImage||"")
-              }
+              sharedData:Object.keys(phoneSharedData).length?phoneSharedData:undefined
             }
           : savePage==="general"
             ? {homepage:JSON.parse(JSON.stringify(data.homepage||{}))}
@@ -5096,6 +5104,13 @@ async function save(isAuto=false){
     // A successful server save is the source of truth. Clear the local phone draft
     // so an old IndexedDB snapshot cannot restore deleted or outdated products.
     if(savePage==="phones"){
+      if(payload.sharedData){
+        phoneSharedOriginalSnapshot={
+          phoneFolders:JSON.stringify(data.phoneFolders||[]),
+          globalConditionDetails:JSON.stringify(data.globalConditionDetails||[]),
+          globalConditionOverviewImage:String(data.globalConditionOverviewImage||"")
+        };
+      }
       phoneDraftCommitted=true;
       await clearPhoneDraft();
     }
@@ -6667,6 +6682,13 @@ async function loadAdminSiteSection(page){
       }
 
       if(page==="phones"){
+        if(!Array.isArray(data.phoneFolders))data.phoneFolders=[];
+        normalizeGlobalConditionDetails();
+        phoneSharedOriginalSnapshot={
+          phoneFolders:JSON.stringify(data.phoneFolders||[]),
+          globalConditionDetails:JSON.stringify(data.globalConditionDetails||[]),
+          globalConditionOverviewImage:String(data.globalConditionOverviewImage||"")
+        };
         phoneOriginalIdentities=(Array.isArray(data.phones)?data.phones:[]).map(phone=>({
           id:phone?.id??null,
           name:String(phone?.name||""),
