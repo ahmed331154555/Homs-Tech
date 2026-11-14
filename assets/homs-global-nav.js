@@ -6,10 +6,10 @@
   'product.html':'devices.html','client-area.html':'account.html','checkout.html':'cart.html'
  }[current]||current;
  var linkGroups=[
-  {label:'Start',items:[['⌂','Home','index.html'],['♙','Over HOMS TECH','about.html'],['✉','Contact','contact.html']]},
-  {label:'Winkel',items:[['📱','Telefoons & apparaten','devices.html'],['🛍','Shop & accessoires','shop.html'],['🛒','Winkelwagen','cart.html']]},
-  {label:'Service',items:[['🛠','Reparatie aanvragen','repair.html'],['€','Reparatieprijzen','prices.html'],['♻','Uw toestel verkopen','uw-toestel-verkopen.html']]},
-  {label:'Account',items:[['♙','Mijn account','account.html']]}
+  {label:'Start',items:[['','Home','index.html','home'],['','Over HOMS TECH','about.html','about'],['','Contact','contact.html','contact']]},
+  {label:'Winkel',items:[['','Telefoons & apparaten','devices.html','devices'],['🛍','Shop & accessoires','shop.html',null],['','Winkelwagen','cart.html','cart']]},
+  {label:'Service',items:[['','Reparatie aanvragen','repair.html','repair'],['','Reparatieprijzen','prices.html','prices'],['','Uw toestel verkopen','uw-toestel-verkopen.html','trade-in']]},
+  {label:'Account',items:[['','Mijn account','account.html','account']]}
  ];
  var style=document.createElement('style');
  style.textContent=`
@@ -32,12 +32,12 @@
  @media(prefers-reduced-motion:reduce){.homs-account-wave-arm{animation:none!important;opacity:0!important}}
  #homsMenuBackdrop{position:fixed;inset:0;background:#06131e88;z-index:100003;opacity:0;visibility:hidden;transition:.22s}
  #homsMenuBackdrop.open{opacity:1;visibility:visible}
- #homsMenuDrawer{position:fixed;inset:0 auto 0 0;width:min(88vw,370px);background:#fff;z-index:100004;transform:translateX(-105%);transition:transform .25s ease;overflow:auto;box-shadow:15px 0 40px #0002;font-family:Arial,Helvetica,sans-serif}
+ #homsMenuDrawer{position:fixed;inset:0 auto 0 0;width:min(92vw,430px);height:100dvh;max-height:100dvh;background:#fff;z-index:100004;transform:translateX(-105%);transition:transform .25s ease;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;box-shadow:15px 0 40px #0002;font-family:Arial,Helvetica,sans-serif;border-radius:0 22px 22px 0;padding-bottom:env(safe-area-inset-bottom)}
  #homsMenuDrawer.open{transform:translateX(0)}
- #homsMenuDrawer .homs-menu-head{height:70px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5eaf0;font-size:20px;font-weight:900;color:#071d2d}
+ #homsMenuDrawer .homs-menu-head{min-height:92px;padding:15px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5eaf0;background:#fff;font-size:20px;font-weight:900;color:#071d2d}\n #homsMenuDrawer .homs-menu-logo{display:block;width:min(78%,270px);height:auto;max-height:64px;object-fit:contain;object-position:left center}
  #homsMenuDrawer .homs-menu-head span{color:#60a5fa}\n #homsMenuDrawer .homs-menu-group{padding:0 0 7px}\n #homsMenuDrawer .homs-menu-group+.homs-menu-group{border-top:1px solid #edf1f5}\n #homsMenuDrawer .homs-menu-label{padding-top:15px;padding-bottom:7px}
  #homsMenuDrawer .homs-menu-close{border:0;background:transparent;font-size:30px;color:#334155;cursor:pointer}
- #homsMenuDrawer .homs-menu-label{padding:18px 20px 8px;color:#87939e;font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
+ #homsMenuDrawer .homs-menu-label{padding:18px 22px 8px;color:#687d90;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}\n #homsMenuDrawer .homs-menu-group{padding:0 18px 10px}\n #homsMenuDrawer .homs-menu-group+.homs-menu-group{border-top:1px solid #edf1f5}\n #homsMenuDrawer a{min-height:82px;padding:7px 10px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #e8eef4;color:#102a43;text-decoration:none;font-size:16px;font-weight:700}\n #homsMenuDrawer a .homs-menu-icon{width:70px;height:70px;flex:0 0 70px;display:flex;align-items:center;justify-content:center;font-size:28px}\n #homsMenuDrawer a .homs-menu-icon img{width:100%;height:100%;object-fit:contain;display:block}\n #homsMenuDrawer a .homs-menu-title{flex:1;line-height:1.25}\n #homsMenuDrawer a .homs-menu-chevron{font-size:29px;line-height:1;color:#687d90;font-weight:400;padding:0 5px}\n #homsMenuDrawer a.active{background:#f0f6ff;color:#1765c2;border-radius:12px}\n #homsMenuDrawer a.homs-menu-account{min-height:94px;margin-top:8px;background:linear-gradient(100deg,#edf5ff,#dcecff);border:1px solid #cbdff4;border-radius:20px;color:#1765c2}\n #homsMenuDrawer a.homs-menu-account .homs-menu-icon{width:78px;height:78px;flex-basis:78px}\n @media(max-width:560px){#homsMenuDrawer .homs-menu-head{min-height:82px;padding:12px 18px}#homsMenuDrawer .homs-menu-group{padding-left:12px;padding-right:12px}#homsMenuDrawer a{min-height:78px;gap:10px}#homsMenuDrawer a .homs-menu-icon{width:64px;height:64px;flex-basis:64px}#homsMenuDrawer a.homs-menu-account .homs-menu-icon{width:70px;height:70px;flex-basis:70px}}
  #homsMenuDrawer a{min-height:54px;padding:0 20px;display:flex;align-items:center;gap:13px;border-bottom:1px solid #edf0f3;color:#263747;text-decoration:none;font-size:15px;font-weight:700}
  #homsMenuDrawer a .homs-menu-icon{width:25px;text-align:center;font-size:18px}
  #homsMenuDrawer a.active{background:#eaf2ff;color:#2563eb}
@@ -100,15 +100,20 @@
  var button=document.createElement('button');button.id='homsMenuButton';button.type='button';button.setAttribute('aria-label','Menu openen');button.setAttribute('aria-expanded','false');button.setAttribute('aria-controls','homsMenuDrawer');button.innerHTML='<span></span><span></span><span></span>';
  var backdrop=document.createElement('div');backdrop.id='homsMenuBackdrop';
  var drawer=document.createElement('aside');drawer.id='homsMenuDrawer';drawer.setAttribute('role','dialog');drawer.setAttribute('aria-modal','true');drawer.setAttribute('aria-label','Hoofdnavigatie');drawer.setAttribute('aria-hidden','true');
- var head=document.createElement('div');head.className='homs-menu-head';head.innerHTML='HOMS <span>TECH</span>';
+ var head=document.createElement('div');head.className='homs-menu-head';head.innerHTML='<img class="homs-menu-logo" src="/assets/homs-tech-logo.png" alt="HOMS TECH">';
  var close=document.createElement('button');close.className='homs-menu-close';close.type='button';close.setAttribute('aria-label','Menu sluiten');close.textContent='×';head.appendChild(close);drawer.appendChild(head);
  linkGroups.forEach(function(group){
   var section=document.createElement('section');section.className='homs-menu-group';section.setAttribute('aria-label',group.label);
   var label=document.createElement('div');label.className='homs-menu-label';label.textContent=group.label;section.appendChild(label);
   group.items.forEach(function(item){
-   var a=document.createElement('a');a.href=item[2];if(item[2]===active){a.className='active';a.setAttribute('aria-current','page')}
-   var icon=document.createElement('span');icon.className='homs-menu-icon';icon.textContent=item[0];
-   var title=document.createElement('span');title.textContent=item[1];a.appendChild(icon);a.appendChild(title);section.appendChild(a);
+   var a=document.createElement('a');a.href=item[2];if(item[2]===active){a.classList.add('active');a.setAttribute('aria-current','page')}
+   if(item[3]==='account')a.classList.add('homs-menu-account');
+   var icon=document.createElement('span');icon.className='homs-menu-icon';
+   if(item[3]){icon.classList.add('homs-menu-icon--'+item[3]);var image=document.createElement('img');image.src='/assets/images/menu/menu-icons-sprite.jpg';image.alt='';image.loading='eager';icon.appendChild(image)}
+   else{icon.textContent=item[0]}
+   var title=document.createElement('span');title.className='homs-menu-title';title.textContent=item[1];
+   var chevron=document.createElement('span');chevron.className='homs-menu-chevron';chevron.setAttribute('aria-hidden','true');chevron.textContent='›';
+   a.appendChild(icon);a.appendChild(title);a.appendChild(chevron);section.appendChild(a);
   });
   drawer.appendChild(section);
  });
