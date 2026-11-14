@@ -264,7 +264,7 @@ app.put("/api/admin/site-data/:section", async (req, res) => {
   const config = getAdminSiteSection(section);
   if (!config) return res.status(404).json({ error: "Onbekende beheerpagina." });
 
-  return requirePermission(config.permission, { allowSiteSave: true })(req, res, async () => {
+  return requirePermission(config.writePermission || "site.save")(req, res, async () => {
     try {
       const allowedFields = Array.isArray(config.writeFields) ? config.writeFields : [];
       const body = req.body;
