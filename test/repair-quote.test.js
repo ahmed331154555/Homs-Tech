@@ -94,6 +94,18 @@ test("rejects unsupported photo MIME types", () => {
   }), /ongeldig formaat/);
 });
 
+test("rejects malformed Base64 padding without decoding a temporary Buffer", () => {
+  assert.throws(() => validateRepairQuotePayload({
+    brand: "Apple",
+    model: "iPhone 12",
+    issue: "Glas gebarsten",
+    name: "Klaas",
+    email: "klaas@example.com",
+    consent: true,
+    photos: [{ name: "img.jpg", type: "image/jpeg", dataUrl: "data:image/jpeg;base64,AA=" }]
+  }), /ongeldig formaat/);
+});
+
 test("enforces total photo payload budget (max 6 MB combined)", () => {
   // 4 photos of 1.8 MB each: each is under 2 MB, but total is 7.2 MB (> 6 MB)
   const singleBuffer = Buffer.alloc(Math.round(1.8 * 1024 * 1024));
