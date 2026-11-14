@@ -12,6 +12,19 @@
 <main class="wrap">
 <div class="head"><div><h1>Reviews & beoordelingen</h1><p class="muted">Beheer klantbeoordelingen en reageer namens HOMS TECH.</p></div><button class="btn" onclick="loadReviews()">↻ Vernieuwen</button></div>
 <div id="status" class="status" role="status" hidden></div>
+<section class="panel" style="margin:18px 0">
+  <h2 style="margin:0 0 6px">Uitnodiging klaarzetten</h2>
+  <p class="muted" style="margin:0 0 12px">Gebruik dit pas nadat de reparatie daadwerkelijk is meegegeven of de telefoonbestelling is afgeleverd. Voor afgeronde inkoop wordt de uitnodiging automatisch klaargezet na bevestigde uitbetaling.</p>
+  <form id="completionForm" style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
+    <label style="display:grid;gap:6px;font-weight:700">Type
+      <select id="completionType" style="padding:11px;border:1px solid #cbd5e1;border-radius:9px"><option value="repair">Reparatie — meegegeven</option><option value="buy">Telefoon — afgeleverd</option></select>
+    </label>
+    <label style="display:grid;gap:6px;font-weight:700">Ordernummer
+      <input id="completionId" type="number" min="1" step="1" required placeholder="Bijv. 125" style="padding:11px;border:1px solid #cbd5e1;border-radius:9px">
+    </label>
+    <button class="btn" type="submit">Bevestig en plan e-mail</button>
+  </form>
+</section>
 <section class="stats">
 <div class="stat"><span class="muted">Gemiddelde score</span><strong id="average">—</strong><small class="muted">Gepubliceerde reviews</small></div>
 <div class="stat"><span class="muted">Gepubliceerd</span><strong id="published">0</strong><small class="muted">Zichtbaar op website</small></div>
@@ -34,6 +47,16 @@ function render(){const rows=allReviews.filter(x=>activeStatus==="all"||x.status
 async function act(id,action){try{await api("/api/admin/reviews/"+id,{method:"PUT",body:JSON.stringify({action})});message("Beoordeling bijgewerkt.");await loadReviews();}catch(e){message(e.message);}}
 async function reply(event,id){event.preventDefault();const value=event.target.querySelector("input").value;try{await api("/api/admin/reviews/"+id,{method:"PUT",body:JSON.stringify({action:"reply",reply:value})});message("Uw reactie is opgeslagen.");await loadReviews();}catch(e){message(e.message);}}
 $("filters").addEventListener("click",e=>{const b=e.target.closest("button[data-status]");if(!b)return;activeStatus=b.dataset.status;document.querySelectorAll("[data-status]").forEach(x=>x.classList.toggle("active",x===b));render();});
+$("completionForm").addEventListener("submit",async event=>{
+ event.preventDefault();
+ const orderType=$("completionType").value;
+ const orderId=Number($("completionId").value);
+ try{
+  await api("/api/admin/reviews/confirm-completion",{method:"POST",body:JSON.stringify({orderType,orderId})});
+  message("Bevestiging opgeslagen. De uitnodiging wordt over 24 uur per e-mail verzonden.");
+  $("completionId").value="";
+ }catch(e){message(e.message);}
+});
 loadReviews();
 </script>
 </body></html>
