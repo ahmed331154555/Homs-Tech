@@ -3846,7 +3846,6 @@ function renderOrderSummary(id,orders,kind){
     <div class="order-stat stat-cancel"><div class="stat-icon">✓</div><div><b>${cancelled}</b><span>Geannuleerd</span></div></div>`;
 }
 
-function isRepairQuoteOrder(order){let meta={};try{meta=JSON.parse(order.extra_fields||'{}')}catch{}return meta.repairQuote===true||String(order.service_category||'').trim().toLowerCase()==='reparatie';}
 function clearRepairRequestFilters(){const q=document.getElementById('repairRequestSearch'),f=document.getElementById('repairRequestStatusFilter');if(q)q.value='';if(f)f.value='';renderRepairRequests();}
 let expandedRepairRequestIds = new Set();
 function toggleRepairRequest(id){
@@ -3857,15 +3856,37 @@ function toggleRepairRequest(id){
 }
 function renderRepairRequests(){
  const box=document.getElementById('repairRequestsList');if(!box)return;
- const requests=adminRepairOrdersCache.filter(isRepairQuoteOrder);
  const q=(document.getElementById('repairRequestSearch')?.value||'').trim().toLowerCase();
  const filter=document.getElementById('repairRequestStatusFilter')?.value||'';
- const filtered=requests.filter(o=>{let m={};try{m=JSON.parse(o.extra_fields||'{}')}catch{}const text=orderSearchText(o)+' '+(m.brand||'')+' '+(m.model||'');return (!q||text.toLowerCase().includes(q))&&(!filter||o.status===filter)});
- renderOrderSummary('repairRequestSummary',requests,'repair');
- const status=document.getElementById('repairRequestsStatus');if(status){status.className='order-count';status.textContent=filtered.length+' van '+requests.length+' repair request(s) zichtbaar';}
+ const requests=[];
+ let nieuw=0, bezig=0, cancelled=0;
+ for(const order of adminRepairOrdersCache){
+  let meta={};
+  try{meta=JSON.parse(order.extra_fields||'{}')}catch{}
+  if(meta.repairQuote!==true&&String(order.service_category||'').trim().toLowerCase()!=='reparatie')continue;
+  requests.push({order,meta});
+  const currentStatus=order.status||'Nieuw';
+  if(currentStatus==='Nieuw')nieuw++;
+  else if(currentStatus==='In behandeling')bezig++;
+  else if(currentStatus==='Geannuleerd')cancelled++;
+ }
+ const filtered=[];
+ for(const entry of requests){
+  const order=entry.order,meta=entry.meta;
+  const searchText=(orderSearchText(order)+' '+(meta.brand||'')+' '+(meta.model||'')).toLowerCase();
+  if((!q||searchText.includes(q))&&(!filter||order.status===filter))filtered.push(entry);
+ }
+ const summary=document.getElementById('repairRequestSummary');
+ if(summary){
+  summary.innerHTML='<div class="order-stat stat-total"><div class="stat-icon">☷</div><div><b>'+requests.length+'</b><span>Totaal orders</span></div></div>'+
+   '<div class="order-stat stat-new"><div class="stat-icon">✓</div><div><b>'+nieuw+'</b><span>Nieuw</span></div></div>'+
+   '<div class="order-stat stat-progress"><div class="stat-icon">◷</div><div><b>'+bezig+'</b><span>In behandeling</span></div></div>'+
+   '<div class="order-stat stat-cancel"><div class="stat-icon">✓</div><div><b>'+cancelled+'</b><span>Geannuleerd</span></div></div>';
+ }
+ const status=document.getElementById('repairRequestsStatus');
+ if(status){status.className='order-count';status.textContent=filtered.length+' van '+requests.length+' repair request(s) zichtbaar';}
  if(!filtered.length){box.innerHTML='<div class="order-empty">Nog geen repair requests gevonden.</div>';return;}
- box.innerHTML=filtered.map(order=>{
-  let meta={};try{meta=JSON.parse(order.extra_fields||'{}')}catch{}
+ box.innerHTML=filtered.map(({order,meta})=>{
   const photos=Array.isArray(meta.photos)?meta.photos:[];
   const date=order.created_at?new Date(order.created_at).toLocaleString('nl-NL'):'';
   const offer=meta.offer||{};
