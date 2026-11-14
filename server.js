@@ -54,63 +54,8 @@ const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-invento
 const { priceProductFromCatalog } = require("./utils/cart-pricing");
 const { validateCartInventoryQuantities } = require("./utils/cart-inventory-validation");
 const { sanitizeProductCatalogData } = require("./utils/product-catalog-sanitizer");
-require("dotenv").config();
-
-const express = require("express");
-const compression = require("compression");
-const { pool, wait, queryWithConnectionRetry } = require("./config/database");
-const jwt = require("jsonwebtoken");
-const cookieParser = require("cookie-parser");
-const crypto = require("crypto");
-const { hashPassword, verifyPassword } = require("./utils/password");
-const { escapeHtml } = require("./utils/html");
-const { moneyNumber } = require("./utils/money");
-const { deviceText, deviceMoney } = require("./utils/device-register");
-const { buildInvoicePdf } = require("./utils/invoice-pdf");
-const path = require("path");
-const {
-  sanitizeDevicesCatalogData,
-  sanitizeCartStockData
-} = require("./utils/catalog-sanitizers");
-const app = express();
-// Render runs the app behind one trusted reverse proxy; use its client IP for rate limits.
-app.set("trust proxy", 1);
-const { registerAdminOrderRoutes } = require("./routes/admin-orders");
-const { registerAdminWebshopOrderRoutes } = require("./routes/admin-webshop-orders");
-const { registerAdminBuybackOrderRoutes } = require("./routes/admin-buyback-orders");
-const { registerAdminInvoiceRoutes } = require("./routes/admin-invoices");
-const { registerAdminInventoryRoutes } = require("./routes/admin-inventory");
-const { registerAdminEmailRoutes } = require("./routes/admin-emails");
-const { registerContactRoutes } = require("./routes/contact");
-const { registerAnnouncementBarRoutes } = require("./routes/announcement-bars");
-const { registerBuybackRoutes } = require("./routes/buyback");
-const { registerLiveChatRoutes } = require("./routes/live-chat");
-const { registerWebshopCheckoutRoutes } = require("./routes/webshop-checkout");
-const { registerRepairQuoteRoutes } = require("./routes/repair-quote-requests");
-const { registerRepairOrderRoutes } = require("./routes/repair-orders");
-const { registerCustomerReviewRoutes } = require("./routes/customer-reviews");
-const { registerCustomerAuthRoutes } = require("./routes/customer-auth");
-const { registerPaymentRoutes } = require("./routes/payments");
-const { registerAdminCustomerRoutes } = require("./routes/admin-customers");
-const { registerAdminUserRoutes } = require("./routes/admin-users");
-const { registerDeviceRegisterRoutes } = require("./routes/device-register");
-const { registerResendInboundWebhook } = require("./routes/resend-inbound");
-const { validateRepairQuotePayload } = require("./utils/repair-quote");
-const { validateBuybackOfferedPrice } = require("./utils/buyback-order");
-const { sanitizePublicSiteData, sanitizeHomepageSiteData } = require("./utils/site-data-sanitizers");
-const { resolveMolliePaymentStatus, molliePaymentMatchesOrder } = require("./utils/mollie-payment");
-const { encryptPayPalSecret, decryptPayPalSecret, getPayPalBaseUrl } = require("./utils/payment-secrets");
-const { cancelPaypalOrder } = require("./utils/paypal-payment");
-const { allowLiveChat, liveChatFirstReply } = require("./utils/live-chat");
-const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-limit");
-const { checkAuthLoginRateLimit } = require("./utils/auth-login-rate-limit");
-const { startMemoryMonitor } = require("./utils/memory-monitor");
-const { resolveRepairRequestCustomerId } = require("./utils/repair-request-customer");
-const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-inventory");
-const { priceProductFromCatalog } = require("./utils/cart-pricing");
-const { validateCartInventoryQuantities } = require("./utils/cart-inventory-validation");
-const { sanitizeProductCatalogData } = require("./utils/product-catalog-sanitizer");
 const { createAdminAuth } = require("./utils/admin-auth");
+const { buildAdminSiteSectionSelect, getAdminSiteSection } = require("./utils/admin-site-sections");
 const { sanitizeStoredAdminPermissions, normalizeAdminPermissions } = require("./utils/admin-permissions");
 const { createCustomerEmails } = require("./utils/customer-emails");
 const { ensureBuybackOrdersTable } = require("./utils/buyback-schema");
