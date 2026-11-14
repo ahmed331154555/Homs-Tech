@@ -190,10 +190,11 @@ function registerCustomerReviewRoutes(app, {
         (validStatus ? "WHERE status=$1 " : "") + "ORDER BY submitted_at DESC LIMIT 200",
         params
       );
-      const counts = await pool.query(
-        "SELECT status,COUNT(*)::int AS count FROM customer_reviews GROUP BY status"
-      );
-      return res.json({ reviews: result.rows, counts: counts.rows });
+      const [counts, summary] = await Promise.all([
+        pool.query("SELECT status,COUNT(*)::int AS count FROM customer_reviews GROUP BY status"),
+        pool.query("SELECT COUNT(*)::int AS count,COALESCE(ROUND(AVG(rating)::numeric,1),0) AS average FROM customer_reviews WHERE status='published'")
+      ]);
+      return res.json({ reviews: result.rows, counts: counts.rows, summary: summary.rows[0] });
     } catch (error) {
       console.error("[REVIEWS] Admin list failed:", error);
       return res.status(500).json({ error: "Beoordelingen konden niet worden geladen." });
