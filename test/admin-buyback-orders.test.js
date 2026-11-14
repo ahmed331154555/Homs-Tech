@@ -78,6 +78,10 @@ test("admin buyback list returns standalone sales and linked trade-ins", async (
   const pool = { async query(sql) {
     assert.match(sql, /LEFT JOIN webshop_orders/);
     assert.match(sql, /trade_in=TRUE AND w\.id IS NOT NULL/);
+    assert.match(sql, /jsonb_build_object/);
+    assert.match(sql, /payoutConfirmationEmailSentAt/);
+    assert.match(sql, /settlementNote/);
+    assert.doesNotMatch(sql, /w\.trade_in_snapshot AS linked_trade_in_snapshot/);
     return { rows: [{ id: 7, status: "Nieuw", trade_in: false }] };
   } };
   const { routes } = createHarness({ pool, ensureBuybackOrdersTable: async () => { ensured = true; } });
