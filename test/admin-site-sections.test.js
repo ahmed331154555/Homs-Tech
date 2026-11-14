@@ -123,9 +123,9 @@ test("admin editor and save controls remain disabled until the selected section 
 test("phone section saves include shared folder and condition editor data without a full settings rewrite", () => {
   const js = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "assets", "homs-admin.js"), "utf8");
   const server = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "server.js"), "utf8");
-  assert.ok(js.includes('phoneSharedDirtyFields.has("phoneFolders")'));
-  assert.ok(js.includes('phoneSharedDirtyFields.has("globalConditionDetails")'));
-  assert.ok(js.includes('phoneSharedDirtyFields.has("globalConditionOverviewImage")'));
+  assert.ok(js.includes('adminSharedDirtyFields.has("phoneFolders")'));
+  assert.ok(js.includes('adminSharedDirtyFields.has("globalConditionDetails")'));
+  assert.ok(js.includes('adminSharedDirtyFields.has("globalConditionOverviewImage")'));
   assert.ok(js.includes("sharedData:payload.sharedData"));
   assert.ok(js.includes('markChanged("phoneFolders")'));
   assert.ok(js.includes("markChanged('globalConditionDetails')"));
@@ -134,4 +134,12 @@ test("phone section saves include shared folder and condition editor data withou
   assert.ok(server.includes("phoneSharedJson"));
   assert.ok(server.includes("jsonb_set(data, '{phones}', $1::jsonb, true) || $2::jsonb"));
   assert.ok(server.includes("jsonb_set(data, ARRAY['phones', $2::text], $1::jsonb, false) || $3::jsonb"));
+});
+
+test("unsaved shared condition edits survive loading the other shared admin section", () => {
+  const js = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "assets", "homs-admin.js"), "utf8");
+  assert.ok(js.includes('if(adminSharedDirtyFields.has(field))preservedSharedData[field]=data[field]'));
+  assert.ok(js.includes('data={...data,...sectionData,...preservedSharedData}'));
+  assert.ok(js.includes('if(savePage==="categories"){'));
+  assert.ok(js.includes('adminSharedDirtyFields.delete("globalConditionDetails")'));
 });
