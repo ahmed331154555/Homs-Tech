@@ -246,3 +246,18 @@ test("Shop catalog save clones only Shop products instead of the full admin data
   assert.match(save, /savePage==="shop"\s*\?\s*\{\s*shopProducts:\s*JSON\.parse\(JSON\.stringify\(data\.shopProducts\|\|\[\]\)\)\s*\}/);
   assert.match(save, /else if\(savePage==="shop"\)\{[\s\S]*?payload\.shopProducts=await compressShopCatalogPhotos/);
 });
+
+test("phone and Shop image compression release temporary browser image and canvas resources", () => {
+  const js = read("assets/homs-admin.js");
+  for (const name of ["compressPhonePhotoData", "compressShopPhotoData"]) {
+    const start = js.indexOf("function " + name + "(");
+    const end = js.indexOf("\n}", start) + 2;
+    assert.ok(start >= 0 && end > start, name + " should exist");
+    const helper = js.slice(start, end);
+    assert.match(helper, /img\.onload=null/);
+    assert.match(helper, /img\.onerror=null/);
+    assert.match(helper, /img\.removeAttribute\("src"\)/);
+    assert.match(helper, /canvas\.width=0/);
+    assert.match(helper, /canvas\.height=0/);
+  }
+});
