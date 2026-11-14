@@ -8,7 +8,7 @@ const ADMIN_SITE_SECTIONS = Object.freeze({
   shop: Object.freeze({ permission: "site.save", fields: Object.freeze(["shopProducts"]) }),
   buyback: Object.freeze({ permission: "buyback.view", fields: Object.freeze(["buybackCatalog", "buybackPhones"]) }),
   categories: Object.freeze({ permission: "categories.view", fields: Object.freeze(["deviceCategories", "globalConditionDetails", "globalConditionOverviewImage"]), writeFields: Object.freeze(["deviceCategories", "globalConditionDetails", "globalConditionOverviewImage"]) }),
-  why: Object.freeze({ permission: "why.view", fields: Object.freeze(["why"]), writeFields: Object.freeze(["why"]) })
+  why: Object.freeze({ permission: "why.view", fields: Object.freeze(["why", "features"]), writeFields: Object.freeze(["why"]) })
 });
 
 function getAdminSiteSection(section) {
