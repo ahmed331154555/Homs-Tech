@@ -88,9 +88,15 @@ function showPage(page){
   const target=document.getElementById("page-"+page);
   if(target){
     target.classList.add("active");
-    if(adminSiteDataLoaded&&adminRenderedDataPage!==page){
-      renderAdminPageData(page);
-      adminRenderedDataPage=page;
+    if(ADMIN_SITE_DATA_PAGES.has(page)&&adminLazyLoadingEnabled){
+      if(adminLoadedSections.has(page)){
+        if(adminRenderedDataPage!==page){
+          renderAdminPageData(page);
+          adminRenderedDataPage=page;
+        }
+      }else{
+        loadAdminSiteSection(page).catch(()=>{});
+      }
     }
     if(page==="customers")loadCustomers();
     if(page==="emails")loadAdminEmails();
@@ -731,52 +737,27 @@ async function clearPhoneDraft(){
 window.addEventListener("pagehide",()=>{if(currentPage==="phones"&&phoneEditOnly&&!phoneDraftCommitted)writePhoneDraft().catch(()=>{});});
 
 async function loadData(){
-
   loading=true;
-
+  adminLazyLoadingEnabled=true;
+  data={};
+  adminLoadedSections.clear();
+  adminDirtySections.clear();
+  adminSectionRequests.clear();
+  adminSiteDataLoaded=false;
+  adminRenderedDataPage="";
   setStatus("Gegevens laden...","info");
 
   try{
-
-    const r=await fetch("/api/site");
-
-    if(!r.ok){
-      throw new Error("Websitegegevens konden niet worden geladen");
+    setupUnifiedOrdersAdmin();
+    if(ADMIN_SITE_DATA_PAGES.has(currentPage)){
+      await loadAdminSiteSection(currentPage);
     }
-
-    data=await r.json();
-    shopCatalogOriginalSnapshot=JSON.parse(JSON.stringify(Array.isArray(data.shopProducts)?data.shopProducts:[]));
-    phoneOriginalIdentities=(Array.isArray(data.phones)?data.phones:[]).map(p=>({id:p?.id??null,name:String(p?.name||""),brand:String(p?.brand||"")}));
-    buybackCatalogDeleteLock=false;
-
-    normalizeData();
-
-    // The guided setup wizard is a temporary editor state, not product data.
-    // Older saves may have persisted setupWizard=true and reopened the same
-    // existing product editor on every reload. Clear it for server products;
-    // genuinely new unsaved drafts are restored immediately below.
-    if(Array.isArray(data.phones)){
-      data.phones.forEach(phone=>{
-        if(phone && phone.setupWizard){
-          phone.setupWizard=false;
-          delete phone.setupStep;
-          delete phone.setupDone;
-        }
-      });
-    }
-
-    const phoneDraftRestored=await restorePhoneDraft();
-    renderAll();
-
-    setStatus("✓ Gegevens geladen","success");
-
+    setStatus("✓ Gegevens van de geopende pagina geladen","success");
   }catch(e){
-
     setStatus("✕ "+e.message,"error");
-
+  }finally{
+    loading=false;
   }
-
-  loading=false;
 }
 
 /* ---------------- GENERAL ---------------- */
@@ -5023,7 +5004,24 @@ async function save(isAuto=false){
                 ? (data.phones||[]).map((phone,index)=>index===selectedPhoneIndex?JSON.parse(JSON.stringify(phone)):phone)
                 : JSON.parse(JSON.stringify(data.phones||[]))
             }
-          : JSON.parse(JSON.stringify(data));
+          : savePage==="general"
+            ? {homepage:JSON.parse(JSON.stringify(data.homepage||{}))}
+            : savePage==="services"
+              ? {services:JSON.parse(JSON.stringify(data.services||[]))}
+              : savePage==="repair"
+                ? {
+                    repairPage:JSON.parse(JSON.stringify(data.repairPage||{})),
+                    repairCoverage:JSON.parse(JSON.stringify(data.repairCoverage||{}))
+                  }
+                : savePage==="categories"
+                  ? {
+                      deviceCategories:JSON.parse(JSON.stringify(data.deviceCategories||[])),
+                      globalConditionDetails:JSON.parse(JSON.stringify(data.globalConditionDetails||[])),
+                      globalConditionOverviewImage:String(data.globalConditionOverviewImage||"")
+                    }
+                  : savePage==="why"
+                    ? {why:JSON.parse(JSON.stringify(data.why||[]))}
+                    : JSON.parse(JSON.stringify(data));
     if(savePage==="phones"){
       setStatus("Foto's verkleinen en product opslaan...","info");
       if(phoneEditOnly && payload.phones?.[selectedPhoneIndex]) payload.phones[selectedPhoneIndex]=(await compressPhoneCatalogPhotos([payload.phones[selectedPhoneIndex]]))[0];
@@ -5057,9 +5055,15 @@ async function save(isAuto=false){
         delete requestPayload.phoneItem.setupConditions;
       }
     }
-    const r=await fetch("/api/site",{
+    const partialSiteSections=new Set(["general","services","repair","categories","why"]);
+    const saveUrl=partialSiteSections.has(savePage)
+      ? "/api/admin/site-data/"+encodeURIComponent(savePage)
+      : "/api/site";
+    const saveHeaders={"Content-Type":"application/json","Accept":"application/json"};
+    if(saveUrl==="/api/site")saveHeaders["X-Homs-Admin-Section"]=savePage;
+    const r=await fetch(saveUrl,{
       method:"PUT",
-      headers:{"Content-Type":"application/json","Accept":"application/json","X-Homs-Admin-Section":savePage},
+      headers:saveHeaders,
       credentials:"same-origin",
       body:JSON.stringify(requestPayload)
     });
@@ -5097,6 +5101,9 @@ async function save(isAuto=false){
     }else{
       data=result.data || data;
     }
+
+    adminDirtySections.delete(savePage);
+    adminLoadedSections.add(savePage);
 
     // A successful server save is the source of truth. Clear the local phone draft
     // so an old IndexedDB snapshot cannot restore deleted or outdated products.
@@ -6618,9 +6625,97 @@ function showOrderSubpage(key){
 
 let adminSiteDataLoaded=false;
 let adminRenderedDataPage="";
+const ADMIN_SITE_DATA_PAGES=new Set(["general","services","repair","phones","shop","buyback","categories","why"]);
+const adminLoadedSections=new Set();
+const adminDirtySections=new Set();
+const adminSectionRequests=new Map();
+let adminLazyLoadingEnabled=false;
+
+function setAdminSectionMessage(page,message,type="info"){
+  const target=document.getElementById("page-"+page);
+  if(!target)return;
+  let status=target.querySelector(".admin-section-load-status");
+  if(!status){
+    status=document.createElement("p");
+    status.className="status admin-section-load-status";
+    status.setAttribute("role","status");
+    status.setAttribute("aria-live","polite");
+    target.prepend(status);
+  }
+  status.className="status admin-section-load-status "+type;
+  status.textContent=message;
+}
+
+function clearAdminSectionMessage(page){
+  document.querySelector("#page-"+page+" .admin-section-load-status")?.remove();
+}
+
+async function loadAdminSiteSection(page){
+  if(!ADMIN_SITE_DATA_PAGES.has(page))return false;
+  if(adminLoadedSections.has(page))return true;
+  if(adminDirtySections.has(page))return true;
+  if(adminSectionRequests.has(page))return adminSectionRequests.get(page);
+
+  const request=(async()=>{
+    setAdminSectionMessage(page,"Gegevens laden...","info");
+    const target=document.getElementById("page-"+page);
+    target?.querySelectorAll("input,select,textarea,button").forEach(el=>{el.disabled=true;});
+    try{
+      const response=await fetch("/api/admin/site-data/"+encodeURIComponent(page),{
+        credentials:"same-origin",
+        cache:"no-store",
+        headers:{"Accept":"application/json"}
+      });
+      const sectionData=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(sectionData.error||"Beheergegevens konden niet worden geladen.");
+      data={...data,...sectionData};
+      normalizeData();
+
+      if(page==="phones"){
+        phoneOriginalIdentities=(Array.isArray(data.phones)?data.phones:[]).map(phone=>({
+          id:phone?.id??null,
+          name:String(phone?.name||""),
+          brand:String(phone?.brand||"")
+        }));
+        if(Array.isArray(data.phones)){
+          data.phones.forEach(phone=>{
+            if(phone&&phone.setupWizard){
+              phone.setupWizard=false;
+              delete phone.setupStep;
+              delete phone.setupDone;
+            }
+          });
+        }
+        await restorePhoneDraft();
+      }else if(page==="shop"){
+        shopCatalogOriginalSnapshot=JSON.parse(JSON.stringify(Array.isArray(data.shopProducts)?data.shopProducts:[]));
+      }else if(page==="buyback"){
+        buybackCatalogDeleteLock=false;
+      }
+
+      adminLoadedSections.add(page);
+      adminSiteDataLoaded=true;
+      clearAdminSectionMessage(page);
+      applyPermissionUI();
+      if(currentPage===page){
+        renderAdminPageData(page);
+        adminRenderedDataPage=page;
+      }
+      return true;
+    }catch(error){
+      setAdminSectionMessage(page,"✕ "+error.message,"error");
+      if(currentPage===page)setStatus("✕ "+error.message,"error");
+      throw error;
+    }
+  })();
+
+  adminSectionRequests.set(page,request);
+  try{return await request;}
+  finally{adminSectionRequests.delete(page);}
+}
 
 function renderAdminPageData(page){
-  if(!adminSiteDataLoaded)return;
+  if(!adminLoadedSections.has(page))return;
   if(page==="general"){renderGeneral();renderHomepageSettings();return;}
   if(page==="services"){renderServices();return;}
   if(page==="repair"){renderRepairPageAdmin();return;}
@@ -6641,6 +6736,7 @@ function renderAll(){
 }
 
 function markChanged(){
+  if(ADMIN_SITE_DATA_PAGES.has(currentPage))adminDirtySections.add(currentPage);
   schedulePhoneDraftSave();
   setStatus(
     "● Wijziging موجودة — اضغط «Wijzigingen opslaan» للحفظ.",
