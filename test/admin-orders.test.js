@@ -60,6 +60,7 @@ test("admin order list strips stored photo payloads in SQL and returns on-demand
   assert.equal(response.statusCode, 200);
   assert.match(querySql, /regexp_replace\(/);
   assert.match(querySql, /"dataUrl"/);
+  assert.match(querySql, /chr\(92\)/);
   assert.match(querySql, /CASE[\s\S]*END AS extra_fields/);
   const metadata = JSON.parse(response.body.orders[0].extra_fields);
   assert.deepEqual(metadata.photos, [
