@@ -57,16 +57,24 @@ function applyPermissionUI(){
   const saveBtn=document.getElementById("saveBtn");
   if(saveBtn){
     saveBtn.style.display=canEditCurrentPage()?"":"none";
-    const sectionLoading=typeof adminSectionRequests!=="undefined"&&adminSectionRequests.has(currentPage);
-    saveBtn.disabled=sectionLoading;
+    const sectionUnavailable=typeof ADMIN_SITE_DATA_PAGES!=="undefined"&&ADMIN_SITE_DATA_PAGES.has(currentPage)&&(
+      typeof adminLoadedSections==="undefined"||
+      !adminLoadedSections.has(currentPage)||
+      (typeof adminSectionRequests!=="undefined"&&adminSectionRequests.has(currentPage))
+    );
+    saveBtn.disabled=sectionUnavailable;
   }
   document.querySelectorAll(".admin-page").forEach(page=>{
     const n=(page.id||"").replace(/^page-/,"");
     if(!["general","services","repair","phones","buyback","categories","why"].includes(n))return;
-    const sectionLoading=typeof adminSectionRequests!=="undefined"&&adminSectionRequests.has(n);
-    page.querySelectorAll("input,textarea,select").forEach(el=>el.disabled=sectionLoading||!canEditCurrentPage());
+    const sectionUnavailable=typeof ADMIN_SITE_DATA_PAGES!=="undefined"&&ADMIN_SITE_DATA_PAGES.has(n)&&(
+      typeof adminLoadedSections==="undefined"||
+      !adminLoadedSections.has(n)||
+      (typeof adminSectionRequests!=="undefined"&&adminSectionRequests.has(n))
+    );
+    page.querySelectorAll("input,textarea,select").forEach(el=>el.disabled=sectionUnavailable||!canEditCurrentPage());
     page.querySelectorAll("button").forEach(btn=>{
-      if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=sectionLoading||!canEditCurrentPage();
+      if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=sectionUnavailable||!canEditCurrentPage();
     });
   });
   document.querySelectorAll(".order-status-select").forEach(el=>{const section=el.closest("[data-order-category]");const key=section?.dataset.orderCategory;const category=unifiedOrderCategories.find(item=>item.key===key);const permission=category?.updatePermission||(el.closest("#page-repair-requests")?"orders.update":"webshop_orders.update");el.disabled=!hasPermission(permission);});
