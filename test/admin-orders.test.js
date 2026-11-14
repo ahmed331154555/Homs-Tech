@@ -47,7 +47,18 @@ test("admin order list strips stored photo payloads in SQL and returns on-demand
             { name: "front.jpg", type: "image/jpeg", dataUrl: "data:image/jpeg;base64,SECRET" },
             { dataUrl: "data:image/png;base64,SECRET2" }
           ],
-          note: "keep me"
+          note: "not needed in the repair queue",
+          offer: {
+            price: "85,00",
+            rawPrice: "85.00",
+            message: "We can repair this.",
+            validity: "14 dagen",
+            duration: "1 uur",
+            updatedAt: "2026-11-15T10:00:00.000Z",
+            emailSent: false,
+            sentAt: null,
+            responseTokenHash: "must-not-be-returned"
+          }
         })
       }] };
     }
@@ -71,8 +82,19 @@ test("admin order list strips stored photo payloads in SQL and returns on-demand
     { name: "front.jpg", type: "image/jpeg", url: "/api/admin/repair-requests/42/photos/0" },
     { name: "foto-2", type: "image/jpeg", url: "/api/admin/repair-requests/42/photos/1" }
   ]);
-  assert.equal(metadata.note, "keep me");
+  assert.equal(metadata.note, undefined);
+  assert.deepEqual(metadata.offer, {
+    price: "85,00",
+    rawPrice: "85.00",
+    message: "We can repair this.",
+    validity: "14 dagen",
+    duration: "1 uur",
+    updatedAt: "2026-11-15T10:00:00.000Z",
+    emailSent: false,
+    sentAt: null
+  });
   assert.equal(JSON.stringify(response.body).includes("SECRET"), false);
+  assert.equal(JSON.stringify(response.body).includes("must-not-be-returned"), false);
 });
 
 test("admin order status rejects unsupported values without querying the database", async () => {
