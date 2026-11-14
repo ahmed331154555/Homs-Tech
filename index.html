@@ -170,6 +170,108 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 /* Approved hero layout: keep the text readable and the phone artwork crisp on mobile. */
 @media(max-width:850px){.hero{background:radial-gradient(ellipse at 50% 100%,#123e5b 0%,#071d2d 78%)}.hero-inner{grid-template-columns:1fr;text-align:center;padding:28px 0 20px;gap:8px;min-height:0}.hero h1{font-size:clamp(27px,7.2vw,36px);line-height:1.08;letter-spacing:-.7px;margin-bottom:12px}.hero p{margin:0 auto;max-width:560px;font-size:14px;line-height:1.55;padding:0 4px}.actions{justify-content:center;margin-top:16px;gap:9px}.btn{font-size:12px;padding:11px 13px}.hero-device{display:flex;height:150px;margin-top:0;background:transparent!important}.hero-device svg{max-width:340px}}
 @media(max-width:520px){.hero-inner{padding:24px 0 15px}.hero h1{font-size:clamp(26px,7vw,32px)}.hero p{font-size:13px}.actions{gap:8px}.btn{font-size:11px;padding:11px 12px}.hero-device{height:132px}}
+
+/* HOMS TECH buyback banner — refined navy/blue treatment */
+#homeBuybackBanner{
+  position:relative;
+  isolation:isolate;
+  display:grid;
+  grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);
+  align-items:center;
+  gap:clamp(18px,3vw,42px);
+  min-height:390px;
+  padding:clamp(28px,4vw,54px);
+  overflow:hidden;
+  border:1px solid rgba(75,156,255,.38);
+  border-radius:24px;
+  color:#fff;
+  background:
+    radial-gradient(ellipse at 84% 48%,rgba(18,107,255,.72) 0%,rgba(9,58,143,.36) 37%,transparent 66%),
+    linear-gradient(112deg,#061727 0%,#071d2d 48%,#092b58 100%);
+  box-shadow:0 20px 48px rgba(7,29,45,.22),inset 0 1px 0 rgba(255,255,255,.12);
+}
+#homeBuybackBanner:before{
+  content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;
+  background:linear-gradient(120deg,transparent 48%,rgba(20,111,255,.18) 49%,transparent 72%);
+}
+#homeBuybackBanner .sell-home-copy{position:relative;z-index:2;max-width:610px}
+#homeBuybackBanner .sell-home-copy>span:first-child{
+  display:inline-flex!important;align-items:center;gap:8px;
+  margin:0 0 20px!important;padding:8px 12px!important;
+  border:1px solid rgba(78,165,255,.42);border-radius:8px!important;
+  color:#d9ecff!important;background:rgba(25,107,215,.22)!important;
+  font-size:11px!important;letter-spacing:.12em!important;
+}
+#homeBuybackBanner h2{
+  max-width:580px;margin:0 0 16px;
+  color:#fff;font-size:clamp(36px,4.4vw,58px);
+  font-weight:900;line-height:.99;letter-spacing:-1.8px;
+}
+#homeBuybackBanner h2 span{color:#18a8ff!important}
+#homeBuybackBanner p{
+  max-width:540px;margin:0 0 22px;
+  color:#d7e5f5;font-size:clamp(13px,1.2vw,16px);line-height:1.65;
+}
+#homeBuybackBanner .sell-home-benefits{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;margin:0 0 24px;
+}
+#homeBuybackBanner .sell-home-benefit{
+  display:flex;flex-direction:column;align-items:flex-start;gap:8px;
+  max-width:none;color:#fff;font-size:12px;line-height:1.35;font-weight:800;
+}
+#homeBuybackBanner .sell-home-benefit i{
+  width:42px;height:42px;border:1px solid rgba(87,175,255,.45);
+  border-radius:12px;background:linear-gradient(145deg,#0d5fbd,#07336b);
+  color:#55c5ff;font-size:21px;box-shadow:0 6px 16px rgba(0,83,190,.28);
+}
+#homeBuybackBanner .sell-home-benefit small{
+  color:#b8cde2!important;font-size:10px;line-height:1.4;
+}
+#homeBuybackBanner .btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:16px;
+  min-height:54px;padding:0 24px;border:1px solid rgba(105,188,255,.5);
+  border-radius:12px;background:linear-gradient(110deg,#0878f9,#0752df);
+  color:#fff;font-size:14px;font-weight:850;
+  box-shadow:0 10px 26px rgba(0,84,220,.34);
+  transition:transform .2s ease,box-shadow .2s ease;
+}
+#homeBuybackBanner .btn:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(0,102,255,.42)}
+#homeBuybackBanner .art{
+  position:absolute;z-index:1;right:1.5%;top:3%;bottom:3%;
+  width:47%;height:94%;display:block;opacity:1;pointer-events:none;
+}
+#homeBuybackBanner .art:before{
+  content:"";position:absolute;inset:0;
+  background-image:url("/assets/homs-buyback-phones.svg");
+  background-size:contain;background-position:center;background-repeat:no-repeat;
+  filter:drop-shadow(0 18px 22px rgba(0,0,0,.35));
+}
+#homeBuybackBanner .art:after{display:none}
+@media(max-width:850px){
+  #homeBuybackBanner{grid-template-columns:1fr;min-height:0;gap:8px;padding:28px 24px 12px}
+  #homeBuybackBanner .sell-home-copy{max-width:none}
+  #homeBuybackBanner .art{position:relative;right:auto;top:auto;bottom:auto;width:100%;height:260px;margin:0 auto}
+  #homeBuybackBanner .sell-home-benefits{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+  #homeBuybackBanner .sell-home-benefit{font-size:11px}
+}
+@media(max-width:520px){
+  #homeBuybackBanner{padding:23px 18px 8px;border-radius:18px}
+  #homeBuybackBanner .sell-home-copy>span:first-child{margin-bottom:15px!important}
+  #homeBuybackBanner h2{font-size:38px;letter-spacing:-1.1px}
+  #homeBuybackBanner p{font-size:13px;line-height:1.6;margin-bottom:18px}
+  #homeBuybackBanner .sell-home-benefits{grid-template-columns:1fr;gap:11px;margin-bottom:20px}
+  #homeBuybackBanner .sell-home-benefit{display:grid;grid-template-columns:40px 1fr;align-items:center;gap:10px;font-size:12px}
+  #homeBuybackBanner .sell-home-benefit i{width:38px;height:38px}
+  #homeBuybackBanner .sell-home-benefit small{display:inline!important}
+  #homeBuybackBanner .btn{width:100%;justify-content:space-between;min-height:52px}
+  #homeBuybackBanner .art{height:245px;margin-top:4px}
+}
+@media(prefers-reduced-motion:reduce){
+  #homeBuybackBanner .btn{transition:none}
+  #homeBuybackBanner .btn:hover{transform:none}
+}
+
 </style>
 
 
