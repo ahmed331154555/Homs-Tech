@@ -855,7 +855,7 @@ return String(value ?? "")
 
 function whatsappLink(number){
 
-const n = String(number || "").replace(/\D/g,"");
+const n = String(number || "+31684242359").replace(/\D/g,"");
 
 if(!n){
 return "#";
@@ -868,7 +868,7 @@ return "https://wa.me/" + n;
 
 function phoneLink(number){
 
-const n = String(number || "").trim();
+const n = String(number || "+31684242359").trim();
 
 if(!n){
 return "#";
