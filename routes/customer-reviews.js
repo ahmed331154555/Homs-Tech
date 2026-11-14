@@ -250,7 +250,7 @@ function registerCustomerReviewRoutes(app, {
       const order = await loadEligibleOrder(pool, type, id);
       if (!order) return res.status(409).json({ error: "Deze bestelling voldoet nog niet aan de voorwaarden voor een beoordeling." });
       const token = crypto.randomBytes(32).toString("hex");
-      const dueAt = new Date(Date.now() + INVITE_DELAY_HOURS * 60 * 60 * 1000);
+      const dueAt = new Date();
       const expiresAt = new Date(dueAt.getTime() + TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000);
       const inserted = await pool.query(
         `INSERT INTO customer_review_invites
@@ -261,7 +261,17 @@ function registerCustomerReviewRoutes(app, {
         [type, id, order.email, order.name, order.customer_id || null, hashToken(token), dueAt, expiresAt]
       );
       if (!inserted.rows.length) return res.status(409).json({ error: "Er bestaat al een beoordelingsuitnodiging voor deze bestelling." });
-      return res.status(201).json({ success: true, dueAt: inserted.rows[0].due_at, expiresAt: inserted.rows[0].expires_at });
+      await sendDueInvites();
+      const delivery = await pool.query("SELECT sent_at,last_error FROM customer_review_invites WHERE id=$1", [inserted.rows[0].id]);
+      return res.status(201).json({
+        success: true,
+        sent: Boolean(delivery.rows[0] && delivery.rows[0].sent_at),
+        dueAt: inserted.rows[0].due_at,
+        expiresAt: inserted.rows[0].expires_at,
+        message: delivery.rows[0] && delivery.rows[0].sent_at
+          ? "De uitnodiging is direct per e-mail verzonden."
+          : "De uitnodiging is aangemaakt en wordt opnieuw geprobeerd als verzenden tijdelijk niet lukt."
+      });
     } catch (error) {
       console.error("[REVIEWS] Invite creation failed:", error);
       return res.status(500).json({ error: "De beoordelingsuitnodiging kon niet worden aangemaakt." });
@@ -303,7 +313,7 @@ function registerCustomerReviewRoutes(app, {
       if (!result.rows.length) return res.status(409).json({ error: "Bestelling is niet voltooid of de betaling is niet bevestigd." });
       const order = await loadEligibleOrder(pool, type, id);
       const token = crypto.randomBytes(32).toString("hex");
-      const dueAt = new Date(Date.now() + INVITE_DELAY_HOURS * 60 * 60 * 1000);
+      const dueAt = new Date();
       const expiresAt = new Date(dueAt.getTime() + TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000);
       const invite = await pool.query(
         `INSERT INTO customer_review_invites
@@ -313,7 +323,15 @@ function registerCustomerReviewRoutes(app, {
         [type, id, order.email, order.name, order.customer_id || null, hashToken(token), dueAt, expiresAt]
       );
       if (!invite.rows.length) return res.status(409).json({ error: "Voor deze bestelling bestaat al een uitnodiging." });
-      return res.status(201).json({ success: true, message: "De uitnodiging wordt 24 uur na bevestiging verzonden." });
+      await sendDueInvites();
+      const delivery = await pool.query("SELECT sent_at,last_error FROM customer_review_invites WHERE id=$1", [invite.rows[0].id]);
+      return res.status(201).json({
+        success: true,
+        sent: Boolean(delivery.rows[0] && delivery.rows[0].sent_at),
+        message: delivery.rows[0] && delivery.rows[0].sent_at
+          ? "De uitnodiging is direct per e-mail verzonden."
+          : "De uitnodiging is aangemaakt en wordt opnieuw geprobeerd als verzenden tijdelijk niet lukt."
+      });
     } catch (error) {
       console.error("[REVIEWS] Completion confirmation failed:", error);
       return res.status(500).json({ error: "De voltooiing kon niet worden bevestigd." });
