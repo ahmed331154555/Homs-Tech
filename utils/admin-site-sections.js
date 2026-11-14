@@ -1,14 +1,14 @@
 "use strict";
 
 const ADMIN_SITE_SECTIONS = Object.freeze({
-  general: Object.freeze({ permission: "general.view", fields: Object.freeze(["homepage"]) }),
-  services: Object.freeze({ permission: "services.view", fields: Object.freeze(["services"]) }),
-  repair: Object.freeze({ permission: "site.save", fields: Object.freeze(["repairPage", "repairCoverage"]) }),
+  general: Object.freeze({ permission: "general.view", fields: Object.freeze(["homepage"]), writeFields: Object.freeze(["homepage"]) }),
+  services: Object.freeze({ permission: "services.view", fields: Object.freeze(["services"]), writeFields: Object.freeze(["services"]) }),
+  repair: Object.freeze({ permission: "site.save", fields: Object.freeze(["repairPage", "repairCoverage"]), writeFields: Object.freeze(["repairPage", "repairCoverage"]) }),
   phones: Object.freeze({ permission: "phones.view", fields: Object.freeze(["phones", "phoneFolders", "globalConditionDetails", "globalConditionOverviewImage"]) }),
   shop: Object.freeze({ permission: "site.save", fields: Object.freeze(["shopProducts"]) }),
   buyback: Object.freeze({ permission: "buyback.view", fields: Object.freeze(["buybackCatalog", "buybackPhones"]) }),
-  categories: Object.freeze({ permission: "categories.view", fields: Object.freeze(["deviceCategories", "globalConditionDetails", "globalConditionOverviewImage"]) }),
-  why: Object.freeze({ permission: "why.view", fields: Object.freeze(["why"]) })
+  categories: Object.freeze({ permission: "categories.view", fields: Object.freeze(["deviceCategories", "globalConditionDetails", "globalConditionOverviewImage"]), writeFields: Object.freeze(["deviceCategories", "globalConditionDetails", "globalConditionOverviewImage"]) }),
+  why: Object.freeze({ permission: "why.view", fields: Object.freeze(["why"]), writeFields: Object.freeze(["why"]) })
 });
 
 function getAdminSiteSection(section) {
