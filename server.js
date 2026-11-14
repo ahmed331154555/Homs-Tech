@@ -700,21 +700,46 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       Object.keys(req.body).length === 1;
 
     if (isPhoneCatalogPatch) {
-    const current = await queryWithConnectionRetry(
-        "SELECT data->'phones' AS phones FROM site_settings WHERE id = 1",
+      const current = await queryWithConnectionRetry(
+        `SELECT COALESCE(
+          (
+            SELECT jsonb_agg(jsonb_build_object(
+              'id', phone->'id',
+              'name', phone->'name',
+              'model', phone->'model',
+              'images', phone->'images',
+              'colorImages', phone->'colorImages',
+              'colorGalleryImages', phone->'colorGalleryImages',
+              'colorGallery', phone->'colorGallery',
+              'galleryImages', phone->'galleryImages',
+              'variantImages', phone->'variantImages'
+            ))
+            FROM jsonb_array_elements(COALESCE(data->'phones', '[]'::jsonb)) AS items(phone)
+          ),
+          '[]'::jsonb
+        ) AS phones
+        FROM site_settings
+        WHERE id = 1`,
         [],
         4
       );
-      const existing = { phones: current.rows[0]?.phones || [] };
+      if (!current.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
+
+      // Preserve only image fields for matching products. Avoid loading every
+      // product's specifications, descriptions, options and pricing into Node.
+      const existing = { phones: current.rows[0].phones || [] };
       const incoming = preserveExistingCatalogPhotos(existing, { phones: req.body.phones });
 
-      await queryWithConnectionRetry(
-        "UPDATE site_settings SET data = jsonb_set(data, '{phones}', $1::jsonb, true) WHERE id = 1 RETURNING data->'phones' AS phones",
+      const saved = await queryWithConnectionRetry(
+        "UPDATE site_settings SET data = jsonb_set(data, '{phones}', $1::jsonb, true) WHERE id = 1 RETURNING id",
         [JSON.stringify(incoming.phones)],
         4
       );
+      if (!saved.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
 
-      return res.json({ success: true, phones: incoming.phones });
+      // The admin already has the submitted catalog in memory; do not send
+      // the full image-heavy catalog back over HTTP after saving it.
+      return res.json({ success: true });
     }
 
     // Save only the buyback catalog keys, not the full site settings document.
