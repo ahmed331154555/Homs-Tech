@@ -237,6 +237,33 @@ test("live chat polling stops when the administrator leaves the live chat page",
   assert.match(showPage, /liveChatRefreshTimer=null/);
 });
 
+test("phone image readers release handlers and file references after completion", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function handlePhoneImage(event,i,j){");
+  const end = js.indexOf("\nfunction removePhoneImage", start);
+  assert.ok(start >= 0 && end > start, "phone image upload handler should exist");
+  const handler = js.slice(start, end);
+  assert.match(handler, /reader\.onload=null/);
+  assert.match(handler, /reader\.onerror=null/);
+  assert.match(handler, /reader\.onabort=null/);
+  assert.match(handler, /input\.value=''/);
+  assert.match(handler, /try\{reader\.readAsDataURL\(file\);\}catch\(error\)\{finish\(error\);\}/);
+});
+
+test("battery option image readers release handlers even when the option is no longer available", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function handleBatteryOptionImage(event, phoneIndex, optionIndex){");
+  const end = js.indexOf("\nfunction removeBatteryOptionImage", start);
+  assert.ok(start >= 0 && end > start, "battery option image upload handler should exist");
+  const handler = js.slice(start, end);
+  assert.match(handler, /reader\.onload=null/);
+  assert.match(handler, /reader\.onerror=null/);
+  assert.match(handler, /reader\.onabort=null/);
+  assert.match(handler, /input\.value=""/);
+  assert.match(handler, /if\(!option\)return/);
+  assert.match(handler, /try\{reader\.readAsDataURL\(file\);\}catch\(error\)\{finish\(error\);\}/);
+});
+
 test("single-phone save reads and returns only the selected phone instead of the full image catalog", () => {
   const source = read("server.js");
   const start = source.indexOf("const isSinglePhonePatch");
