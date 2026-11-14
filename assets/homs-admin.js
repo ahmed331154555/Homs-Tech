@@ -6141,6 +6141,7 @@ async function loadBuybackOrders(){
   document.body.style.overflow=document.body.dataset.htPreviousOverflow||"";
   delete document.body.dataset.htPreviousOverflow;
   selectedBuybackOrderId=null;
+  selectedBuybackOrderDetails=null;
   try{
     const response=await fetch("/api/admin/buyback-orders",{credentials:"same-origin",headers:{"Accept":"application/json"}});
     const result=await response.json().catch(()=>({}));
