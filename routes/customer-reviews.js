@@ -354,8 +354,8 @@ function registerCustomerReviewRoutes(app, {
     const apiKey = String(env.RESEND_API_KEY || "").trim();
     const from = String(env.RESEND_FROM_EMAIL || "").trim();
     const baseUrl = String(env.PUBLIC_SITE_URL || env.APP_URL || "https://homs-tech.nl").replace(/\/+$/, "");
-    if (!apiKey || !from || typeof fetchImpl !== "function") return;
     try { await queueSettledSellInvites(); } catch (error) { console.error("[REVIEWS] Sell invite queue failed:", error); }
+    if (!apiKey || !from || typeof fetchImpl !== "function") return;
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
