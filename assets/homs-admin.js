@@ -744,7 +744,6 @@ async function loadData(){
   adminLoadedSections.clear();
   adminDirtySections.clear();
   adminSectionRequests.clear();
-  adminSiteDataLoaded=false;
   adminRenderedDataPage="";
   setStatus("Gegevens laden...","info");
 
@@ -6624,7 +6623,6 @@ function showOrderSubpage(key){
   showPage("all-orders");
 }
 
-let adminSiteDataLoaded=false;
 let adminRenderedDataPage="";
 const ADMIN_SITE_DATA_PAGES=new Set(["general","services","repair","phones","shop","buyback","categories","why"]);
 const adminLoadedSections=new Set();
@@ -6698,7 +6696,6 @@ async function loadAdminSiteSection(page){
       }
 
       adminLoadedSections.add(page);
-      adminSiteDataLoaded=true;
       clearAdminSectionMessage(page);
       applyPermissionUI();
       if(currentPage===page){
@@ -6735,11 +6732,9 @@ function renderAdminPageData(page){
 
 function renderAll(){
   setupUnifiedOrdersAdmin();
-  adminSiteDataLoaded=true;
   adminRenderedDataPage="";
-  renderAdminPageData(currentPage);
-  adminRenderedDataPage=currentPage;
   showPage(currentPage);
+  if(ADMIN_SITE_DATA_PAGES.has(currentPage))loadAdminSiteSection(currentPage).catch(()=>{});
 }
 
 function markChanged(){
