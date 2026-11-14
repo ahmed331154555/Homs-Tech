@@ -701,15 +701,30 @@ app.put("/api/admin/shop-visibility", requirePermission("site.save"), async (req
 app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
   try {
     const section = String(req.headers["x-homs-admin-section"] || "").trim().toLowerCase();
+    const phoneSharedFields = ["phoneFolders", "globalConditionDetails", "globalConditionOverviewImage"];
+    const hasPhoneSharedData = Object.prototype.hasOwnProperty.call(req.body || {}, "sharedData");
+    const phoneSharedData = hasPhoneSharedData ? req.body.sharedData : {};
+    const validPhoneSharedData = !hasPhoneSharedData || (
+      phoneSharedData && typeof phoneSharedData === "object" && !Array.isArray(phoneSharedData) &&
+      Object.keys(phoneSharedData).every(key => phoneSharedFields.includes(key)) &&
+      (!Object.prototype.hasOwnProperty.call(phoneSharedData, "phoneFolders") || Array.isArray(phoneSharedData.phoneFolders)) &&
+      (!Object.prototype.hasOwnProperty.call(phoneSharedData, "globalConditionDetails") || Array.isArray(phoneSharedData.globalConditionDetails)) &&
+      (!Object.prototype.hasOwnProperty.call(phoneSharedData, "globalConditionOverviewImage") || typeof phoneSharedData.globalConditionOverviewImage === "string")
+    );
+    if (section === "phones" && hasPhoneSharedData && !validPhoneSharedData) {
+      return res.status(400).json({ error: "Ongeldige gedeelde telefoongegevens." });
+    }
+    const phoneSharedJson = JSON.stringify(validPhoneSharedData ? phoneSharedData : {});
 
-    // A single-product edit updates exactly one array element. It never rewrites
-    // the full phone catalog or unrelated site settings.
+    // A single-product edit updates exactly one array element and its small
+    // shared editor fields. Unrelated catalog entries stay outside Node memory.
+    const singlePhoneKeys = Object.keys(req.body || {});
     const isSinglePhonePatch = section === "phones" &&
       req.body && req.body.phoneItem && typeof req.body.phoneItem === "object" &&
       !Array.isArray(req.body.phoneItem) &&
       Number.isInteger(Number(req.body.phoneIndex)) &&
       req.body.phoneIdentity && typeof req.body.phoneIdentity === "object" &&
-      Object.keys(req.body).length === 3;
+      singlePhoneKeys.every(key => ["phoneItem", "phoneIndex", "phoneIdentity", "sharedData"].includes(key));
 
     if (isSinglePhonePatch) {
       const phoneIndex = Number(req.body.phoneIndex);
@@ -727,8 +742,8 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       let saved;
       if (phoneIndex === phoneCount) {
         saved = await queryWithConnectionRetry(
-          "UPDATE site_settings SET data = jsonb_set(data, '{phones}', COALESCE(data->'phones', '[]'::jsonb) || jsonb_build_array($1::jsonb), true) WHERE id = 1 RETURNING data->'phones'->($2::int) AS phone",
-          [JSON.stringify(incomingPhone), phoneIndex], 4
+          "UPDATE site_settings SET data = (jsonb_set(data, '{phones}', COALESCE(data->'phones', '[]'::jsonb) || jsonb_build_array($1::jsonb), true) || $3::jsonb) WHERE id = 1 RETURNING data->'phones'->($2::int) AS phone",
+          [JSON.stringify(incomingPhone), phoneIndex, phoneSharedJson], 4
         );
       } else {
         const existingPhone = current.rows[0].phone;
@@ -745,8 +760,8 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
         // images never enter the Node.js heap during a single-product save.
         preserveExistingProductPhotos(existingPhone, incomingPhone);
         saved = await queryWithConnectionRetry(
-          "UPDATE site_settings SET data = jsonb_set(data, ARRAY['phones', $2::text], $1::jsonb, false) WHERE id = 1 RETURNING data->'phones'->($2::int) AS phone",
-          [JSON.stringify(incomingPhone), phoneIndex], 4
+          "UPDATE site_settings SET data = (jsonb_set(data, ARRAY['phones', $2::text], $1::jsonb, false) || $3::jsonb) WHERE id = 1 RETURNING data->'phones'->($2::int) AS phone",
+          [JSON.stringify(incomingPhone), phoneIndex, phoneSharedJson], 4
         );
       }
       if (!saved.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
@@ -756,9 +771,10 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
     // The phone editor now sends only the phone catalog, not the entire 18+ MB
     // settings document (which also contains large repair-page images).
     // Read and update just this JSON key to reduce request/response memory use.
+    const phoneCatalogKeys = Object.keys(req.body || {});
     const isPhoneCatalogPatch = section === "phones" &&
       req.body && Array.isArray(req.body.phones) &&
-      Object.keys(req.body).length === 1;
+      phoneCatalogKeys.every(key => ["phones", "sharedData"].includes(key));
 
     if (isPhoneCatalogPatch) {
       const current = await queryWithConnectionRetry(
@@ -792,8 +808,8 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       const incoming = preserveExistingCatalogPhotos(existing, { phones: req.body.phones });
 
       const saved = await queryWithConnectionRetry(
-        "UPDATE site_settings SET data = jsonb_set(data, '{phones}', $1::jsonb, true) WHERE id = 1 RETURNING id",
-        [JSON.stringify(incoming.phones)],
+        "UPDATE site_settings SET data = (jsonb_set(data, '{phones}', $1::jsonb, true) || $2::jsonb) WHERE id = 1 RETURNING id",
+        [JSON.stringify(incoming.phones), phoneSharedJson],
         4
       );
       if (!saved.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
