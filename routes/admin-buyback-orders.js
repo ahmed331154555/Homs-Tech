@@ -132,7 +132,11 @@ function registerAdminBuybackOrderRoutes(app, {
                b.postnl_tracking_number,b.shipping_label_filename,b.shipping_label_uploaded_at,b.shipping_label_email_sent_at,
                w.id AS linked_webshop_order_id,w.id AS linked_webshop_order_no,
                w.status AS linked_webshop_status,w.payment_status AS linked_webshop_payment_status,
-               w.trade_in_status AS linked_trade_in_status,w.trade_in_snapshot AS linked_trade_in_snapshot,
+               w.trade_in_status AS linked_trade_in_status,
+               jsonb_build_object(
+                 'payoutConfirmationEmailSentAt', w.trade_in_snapshot->'payoutConfirmationEmailSentAt',
+                 'settlementNote', w.trade_in_snapshot->'settlementNote'
+               ) AS linked_trade_in_snapshot,
                w.trade_in_estimated_value AS linked_trade_in_estimated_value,
                w.trade_in_inspected_value AS linked_trade_in_inspected_value,
                w.trade_in_adjustment AS linked_trade_in_adjustment,
