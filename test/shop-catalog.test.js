@@ -4,7 +4,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { saveShopCatalog, validateShopCatalogIdentifiers, validateShopCatalogImages } = require("../utils/shop-catalog");
 
-test("saveShopCatalog updates only the Shop JSON key and returns saved products", async () => {
+test("saveShopCatalog updates only the Shop JSON key without returning the image-heavy catalog", async () => {
   const products = [
     { id: "HT-001", name: "iPhone case", price: 12.5, images: ["case.webp"] },
     { id: "HT-002", name: "USB-C cable", price: 8 }
@@ -12,16 +12,18 @@ test("saveShopCatalog updates only the Shop JSON key and returns saved products"
   let captured;
   const queryWithConnectionRetry = async (...args) => {
     captured = args;
-    return { rows: [{ products }] };
+    return { rows: [{ id: 1 }] };
   };
 
   const expected = [{ id: "HT-001", name: "iPhone case", price: 10 }];
   const saved = await saveShopCatalog(queryWithConnectionRetry, products, expected);
 
-  assert.deepEqual(saved, products);
+  assert.equal(saved, true);
   assert.match(captured[0], /jsonb_set\(data, '\{shopProducts\}'/);
   assert.match(captured[0], /COALESCE\(data->'shopProducts', '\[\]'::jsonb\) = \$2::jsonb/);
   assert.match(captured[0], /WHERE id = 1 AND/);
+  assert.match(captured[0], /RETURNING id/);
+  assert.doesNotMatch(captured[0], /RETURNING data->'shopProducts'/);
   assert.deepEqual(captured[1], [JSON.stringify(products), JSON.stringify(expected)]);
   assert.equal(captured[2], 4);
 });
