@@ -8,6 +8,7 @@ on:
       - feature/phone-orders-split-detail
       - chore/homs-tech-code-cleanup
       - work/homs-tech-code-cleanup-professional
+      - feature/memory-optimization
   pull_request:
     branches:
       - HomsTech-Clean
