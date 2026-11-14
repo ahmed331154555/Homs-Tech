@@ -3927,7 +3927,13 @@ async function loadOrders(){
     const r=await fetch('/api/admin/orders',{credentials:'same-origin'});
     const result=await r.json();
     if(!r.ok)throw new Error(result.error||'Reparatieaanvragen konden niet worden geladen');
-    adminRepairOrdersCache=(result.orders||[]).filter(isRepairQuoteOrder);
+    adminRepairOrdersCache=(Array.isArray(result.orders)?result.orders:[]).filter(isRepairQuoteOrder);
+    // Drop expansion state for requests that are no longer in the refreshed queue.
+    // This keeps the UI state bounded to live orders after deletes or data refreshes.
+    const currentRepairOrderIds=new Set(adminRepairOrdersCache.map(order=>String(order.id)));
+    for(const id of expandedRepairRequestIds){
+      if(!currentRepairOrderIds.has(id)) expandedRepairRequestIds.delete(id);
+    }
     renderRepairRequests();
   }catch(e){
     if(status){status.className='status error';status.textContent='✕ '+e.message;}
