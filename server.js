@@ -372,6 +372,18 @@ app.get("/api/site", async (req, res) => {
         tagline: row.tagline
       }));
     }
+    if(view==="shop"){
+      const result=await queryWithConnectionRetry(
+        "SELECT data->'shopProducts' AS shop_products FROM site_settings WHERE id=1",
+        [],
+        4
+      );
+      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
+      res.set("Cache-Control","public, max-age=0, must-revalidate");
+      return res.json(sanitizePublicSiteData({
+        shopProducts:Array.isArray(result.rows[0].shop_products)?result.rows[0].shop_products:[]
+      }));
+    }
     if(view==="cart"){
       const result=await queryWithConnectionRetry("SELECT data->'shopProducts' AS shop_products FROM site_settings WHERE id=1",[],4);
       if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
