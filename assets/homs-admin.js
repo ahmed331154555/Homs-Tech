@@ -54,7 +54,12 @@ function firstAllowedPage(){
 }
 function applyPermissionUI(){
   document.querySelectorAll("[data-permission]").forEach(el=>el.style.display=hasPermission(el.dataset.permission)?"":"none");
-  const saveBtn=document.getElementById("saveBtn"); if(saveBtn) saveBtn.style.display=canEditCurrentPage()?"":"none";
+  const saveBtn=document.getElementById("saveBtn");
+  if(saveBtn){
+    saveBtn.style.display=canEditCurrentPage()?"":"none";
+    const sectionLoading=typeof adminSectionRequests!=="undefined"&&adminSectionRequests.has(currentPage);
+    saveBtn.disabled=sectionLoading;
+  }
   document.querySelectorAll(".admin-page").forEach(page=>{
     const n=(page.id||"").replace(/^page-/,"");
     if(!["general","services","repair","phones","buyback","categories","why"].includes(n))return;
