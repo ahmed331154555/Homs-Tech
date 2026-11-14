@@ -237,6 +237,20 @@ test("live chat polling stops when the administrator leaves the live chat page",
   assert.match(showPage, /liveChatRefreshTimer=null/);
 });
 
+test("single-phone save reads and returns only the selected phone instead of the full image catalog", () => {
+  const source = read("server.js");
+  const start = source.indexOf("const isSinglePhonePatch");
+  const end = source.indexOf("const isPhoneCatalogPatch", start);
+  assert.ok(start >= 0 && end > start, "single-phone patch route should exist");
+  const patch = source.slice(start, end);
+  assert.match(patch, /jsonb_array_length\(COALESCE\(data->'phones'/);
+  assert.match(patch, /data->'phones'->\(\$1::int\) AS phone/);
+  assert.match(patch, /ARRAY\['phones', \$2::text\]/);
+  assert.match(patch, /RETURNING data->'phones'->\(\$2::int\) AS phone/);
+  assert.doesNotMatch(patch, /SELECT data->'phones' AS phones/);
+  assert.doesNotMatch(patch, /RETURNING data->'phones' AS phones/);
+});
+
 test("Shop catalog save clones only Shop products instead of the full admin data object", () => {
   const js = read("assets/homs-admin.js");
   const start = js.indexOf("async function save(isAuto=false){");
