@@ -4861,7 +4861,9 @@ async function save(isAuto=false){
           buybackCatalog: JSON.parse(JSON.stringify(data.buybackCatalog||[])),
           buybackPhones: JSON.parse(JSON.stringify(data.buybackPhones||[]))
         }
-      : JSON.parse(JSON.stringify(data));
+      : savePage==="shop"
+        ? { shopProducts: JSON.parse(JSON.stringify(data.shopProducts||[])) }
+        : JSON.parse(JSON.stringify(data));
     if(savePage==="phones"){
       setStatus("Foto's verkleinen en product opslaan...","info");
       if(phoneEditOnly && payload.phones?.[selectedPhoneIndex]) payload.phones[selectedPhoneIndex]=(await compressPhoneCatalogPhotos([payload.phones[selectedPhoneIndex]]))[0];
