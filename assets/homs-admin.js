@@ -7007,7 +7007,7 @@ async function sendInvoiceTest(id,button){
   }
 }
 
-let adminEmailCache=[],adminEmailFilter="all",adminEmailSelectedId=null,adminEmailFiles=[],adminEmailReplyToId=null;
+let adminEmailCache=[],adminEmailFilter="all",adminEmailSelectedId=null,adminEmailFiles=[],adminEmailPreviewUrls=[],adminEmailReplyToId=null;
 function emailEsc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function emailDate(v){try{return new Date(v).toLocaleString("nl-NL",{dateStyle:"short",timeStyle:"short"});}catch{return "";}}
 function emailBytes(n){if(n<1024)return n+" B";if(n<1048576)return (n/1024).toFixed(0)+" KB";return (n/1048576).toFixed(1)+" MB";}
@@ -7057,7 +7057,24 @@ function handleEmailFiles(files){
  for(const file of Array.from(files||[])){if(!allowed.has(file.type)&&!(/\.(doc|docx|xls|xlsx|txt)$/i.test(file.name))){alert("Dit bestandstype wordt niet ondersteund: "+file.name);continue;}if(file.size>10*1024*1024){alert(file.name+" is groter dan 10 MB.");continue;}if(adminEmailFiles.reduce((n,x)=>n+x.size,0)+file.size>20*1024*1024){alert("De totale grootte van bijlagen mag maximaal 20 MB zijn.");break;}if(adminEmailFiles.some(x=>x.name===file.name&&x.size===file.size)){continue;}adminEmailFiles.push(file);}
  renderEmailFiles();document.getElementById("adminEmailFiles").value="";
 }
-function renderEmailFiles(){const box=document.getElementById("emailAttachmentList");if(!box)return;box.innerHTML=adminEmailFiles.map((f,i)=>'<div class="ht-mail-attachment">'+(f.type.startsWith("image/")?'<img src="'+URL.createObjectURL(f)+'" alt="">':'<span class="ht-mail-attachment-icon">▤</span>')+'<div class="ht-mail-attachment-info"><strong>'+emailEsc(f.name)+'</strong><small>'+emailBytes(f.size)+'</small></div><button type="button" aria-label="Bijlage verwijderen" onclick="removeEmailFile('+i+')">×</button></div>').join("");}
+function releaseEmailPreviewUrls(){
+ adminEmailPreviewUrls.forEach(url=>URL.revokeObjectURL(url));
+ adminEmailPreviewUrls=[];
+}
+function renderEmailFiles(){
+ releaseEmailPreviewUrls();
+ const box=document.getElementById("emailAttachmentList");if(!box)return;
+ box.innerHTML=adminEmailFiles.map((f,i)=>{
+  let preview='<span class="ht-mail-attachment-icon">▤</span>';
+  if(f.type.startsWith("image/")){
+   const url=URL.createObjectURL(f);
+   adminEmailPreviewUrls.push(url);
+   preview='<img src="'+url+'" alt="">';
+  }
+  return '<div class="ht-mail-attachment">'+preview+'<div class="ht-mail-attachment-info"><strong>'+emailEsc(f.name)+'</strong><small>'+emailBytes(f.size)+'</small></div><button type="button" aria-label="Bijlage verwijderen" onclick="removeEmailFile('+i+')">×</button></div>';
+ }).join("");
+}
+window.addEventListener("pagehide",releaseEmailPreviewUrls);
 function removeEmailFile(i){adminEmailFiles.splice(i,1);renderEmailFiles();}
 function emailFileToBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(",")[1]||"");reader.onerror=()=>reject(new Error("Bestand lezen mislukt: "+file.name));reader.readAsDataURL(file);});}
 document.getElementById("adminEmailComposeForm")?.addEventListener("submit",async e=>{
