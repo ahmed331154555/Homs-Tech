@@ -105,15 +105,8 @@ test("Mollie refund idempotency key is unique per refund record", async () => {
   assert.equal(providerOptions.headers["Idempotency-Key"],"homs-tech-order-refund-16-501");
 });
 
-test("admin webshop order list includes inventory processing diagnostics", async () => {
-  const expectedOrders = [{
-    id: 12,
-    name: "Customer",
-    total: "129.00",
-    inventory_error: "Missing variant",
-    status_history: [{ status: "In behandeling", created_at: "2026-11-07T12:00:00Z" }],
-    notes: [{ note: "Klant terugbellen", created_by: "HOMS TECH Admin" }]
-  }];
+test("admin webshop order list returns compact rows without per-order history aggregates", async () => {
+  const expectedOrders = [{ id: 12, name: "Customer", total: "129.00", inventory_error: "Missing variant" }];
   let selectSql = "";
   const routes = createHarness({ async query(sql) { selectSql = sql; return { rows: expectedOrders }; } });
   const response = createResponse();
@@ -124,8 +117,40 @@ test("admin webshop order list includes inventory processing diagnostics", async
   assert.deepEqual(response.body, { orders: expectedOrders });
   assert.match(selectSql, /inventory_deducted_at/);
   assert.match(selectSql, /inventory_error/);
+  assert.doesNotMatch(selectSql, /webshop_order_status_history/);
+  assert.doesNotMatch(selectSql, /webshop_order_notes/);
+  assert.doesNotMatch(selectSql, /webshop_order_refunds/);
+});
+
+test("admin webshop order details load histories, notes and refunds for one order", async () => {
+  let selectSql = "";
+  let params;
+  const detail = { id: 12, status_history: [], notes: [], refunds: [] };
+  const routes = createHarness({ async query(sql, values) { selectSql = sql; params = values; return { rows: [detail] }; } });
+  const response = createResponse();
+
+  await routes.get("GET /api/admin/webshop-orders/:id")({ params: { id: "12" } }, response);
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.body, { order: detail });
+  assert.deepEqual(params, [12]);
   assert.match(selectSql, /webshop_order_status_history/);
   assert.match(selectSql, /webshop_order_notes/);
+  assert.match(selectSql, /webshop_order_refunds/);
+  assert.match(selectSql, /WHERE webshop_orders\.id=\$1/);
+});
+
+test("admin webshop order details reject invalid IDs and return not found", async () => {
+  let queryCalled = false;
+  const routes = createHarness({ async query() { queryCalled = true; return { rows: [] }; } });
+  const invalid = createResponse();
+  await routes.get("GET /api/admin/webshop-orders/:id")({ params: { id: "0" } }, invalid);
+  assert.equal(invalid.statusCode, 400);
+  assert.equal(queryCalled, false);
+
+  const missing = createResponse();
+  await routes.get("GET /api/admin/webshop-orders/:id")({ params: { id: "404" } }, missing);
+  assert.equal(missing.statusCode, 404);
 });
 
 
