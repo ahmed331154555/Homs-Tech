@@ -728,7 +728,7 @@ async function loadData(){
   data={};
   adminLoadedSections.clear();
   adminDirtySections.clear();
-  phoneSharedDirtyFields.clear();
+  adminSharedDirtyFields.clear();
   adminSectionRequests.clear();
   adminRenderedDataPage="";
   setStatus("Gegevens laden...","info");
@@ -771,7 +771,7 @@ function renderGeneral(){
 let selectedServiceIndex=0;
 let selectedPhoneIndex=0;
 let phoneOriginalIdentities=[];
-const phoneSharedDirtyFields=new Set();
+const adminSharedDirtyFields=new Set();
 let phoneEditOnly=false;
 let phoneWizardExistingEdit=false;
 let phoneBulkPricingView=false;
@@ -4982,9 +4982,9 @@ async function save(isAuto=false){
 
     const phoneSharedData={};
     if(savePage==="phones"){
-      if(phoneSharedDirtyFields.has("phoneFolders"))phoneSharedData.phoneFolders=JSON.parse(JSON.stringify(data.phoneFolders||[]));
-      if(phoneSharedDirtyFields.has("globalConditionDetails"))phoneSharedData.globalConditionDetails=JSON.parse(JSON.stringify(data.globalConditionDetails||[]));
-      if(phoneSharedDirtyFields.has("globalConditionOverviewImage"))phoneSharedData.globalConditionOverviewImage=String(data.globalConditionOverviewImage||"");
+      if(adminSharedDirtyFields.has("phoneFolders"))phoneSharedData.phoneFolders=JSON.parse(JSON.stringify(data.phoneFolders||[]));
+      if(adminSharedDirtyFields.has("globalConditionDetails"))phoneSharedData.globalConditionDetails=JSON.parse(JSON.stringify(data.globalConditionDetails||[]));
+      if(adminSharedDirtyFields.has("globalConditionOverviewImage"))phoneSharedData.globalConditionOverviewImage=String(data.globalConditionOverviewImage||"");
     }
     const payload=savePage==="buyback"
       ? {
@@ -5100,12 +5100,16 @@ async function save(isAuto=false){
 
     adminDirtySections.delete(savePage);
     adminLoadedSections.add(savePage);
+    if(savePage==="categories"){
+      adminSharedDirtyFields.delete("globalConditionDetails");
+      adminSharedDirtyFields.delete("globalConditionOverviewImage");
+    }
 
     // A successful server save is the source of truth. Clear the local phone draft
     // so an old IndexedDB snapshot cannot restore deleted or outdated products.
     if(savePage==="phones"){
       if(payload.sharedData){
-        if(payload.sharedData)Object.keys(payload.sharedData).forEach(field=>phoneSharedDirtyFields.delete(field));
+        if(payload.sharedData)Object.keys(payload.sharedData).forEach(field=>adminSharedDirtyFields.delete(field));
       }
       phoneDraftCommitted=true;
       await clearPhoneDraft();
@@ -6667,7 +6671,11 @@ async function loadAdminSiteSection(page){
       });
       const sectionData=await response.json().catch(()=>({}));
       if(!response.ok)throw new Error(sectionData.error||"Beheergegevens konden niet worden geladen.");
-      data={...data,...sectionData};
+      const preservedSharedData={};
+      ["globalConditionDetails","globalConditionOverviewImage"].forEach(field=>{
+        if(adminSharedDirtyFields.has(field))preservedSharedData[field]=data[field];
+      });
+      data={...data,...sectionData,...preservedSharedData};
       if(page==="services"&&!Array.isArray(data.services))data.services=[];
       if(page==="phones"&&!Array.isArray(data.phones))data.phones=[];
       if(page==="shop"&&!Array.isArray(data.shopProducts))data.shopProducts=[];
@@ -6745,7 +6753,7 @@ function renderAll(){
 }
 
 function markChanged(sharedField){
-  if(currentPage==="phones"&&["phoneFolders","globalConditionDetails","globalConditionOverviewImage"].includes(sharedField))phoneSharedDirtyFields.add(sharedField);
+  if(["phoneFolders","globalConditionDetails","globalConditionOverviewImage"].includes(sharedField)&&((sharedField==="phoneFolders"&&currentPage==="phones")||(["globalConditionDetails","globalConditionOverviewImage"].includes(sharedField)&&["phones","categories"].includes(currentPage))))adminSharedDirtyFields.add(sharedField);
   if(ADMIN_SITE_DATA_PAGES.has(currentPage))adminDirtySections.add(currentPage);
   schedulePhoneDraftSave();
   setStatus(
