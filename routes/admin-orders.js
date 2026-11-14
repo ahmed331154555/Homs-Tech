@@ -127,11 +127,13 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
          ORDER BY created_at DESC`
       );
 
-      const sanitizedOrders = result.rows.map(order => {
-        if (!order.extra_fields) return order;
+      // Sanitize rows in place instead of building a second array of order objects.
+      // This lowers peak allocations while the response is being prepared.
+      for (const order of result.rows) {
+        if (!order.extra_fields) continue;
         try {
           const meta = JSON.parse(order.extra_fields);
-          if (!meta || typeof meta !== "object" || Array.isArray(meta)) return order;
+          if (!meta || typeof meta !== "object" || Array.isArray(meta)) continue;
 
           // The repair queue only needs these fields. Keep arbitrary form data and
           // other stored metadata out of the list response and browser-side cache.
@@ -156,12 +158,11 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
             }));
           }
 
-          return { ...order, extra_fields: JSON.stringify(queueMeta) };
+          order.extra_fields = JSON.stringify(queueMeta);
         } catch {}
-        return order;
-      });
+      }
 
-      res.json({ orders: sanitizedOrders });
+      res.json({ orders: result.rows });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Bestellingen konden niet worden geladen." });
