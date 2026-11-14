@@ -335,6 +335,23 @@ test("battery option image readers release handlers even when the option is no l
   assert.match(handler, /try\{reader\.readAsDataURL\(file\);\}catch\(error\)\{finish\(error\);\}/);
 });
 
+test("full phone catalog save preserves photos from a compact SQL projection and avoids returning the catalog", () => {
+  const server = read("server.js");
+  const start = server.indexOf("if (isPhoneCatalogPatch) {");
+  const end = server.indexOf("// Save only the buyback catalog keys", start);
+  assert.ok(start >= 0 && end > start);
+  const handler = server.slice(start, end);
+  assert.match(handler, /jsonb_build_object/);
+  for (const field of ["images", "colorImages", "colorGalleryImages", "colorGallery", "galleryImages", "variantImages"]) {
+    assert.match(handler, new RegExp("'" + field + "'"));
+  }
+  assert.match(handler, /preserveExistingCatalogPhotos/);
+  assert.match(handler, /RETURNING id/);
+  assert.doesNotMatch(handler, /RETURNING data->'phones'/);
+  assert.match(handler, /return res\.json\(\{ success: true \}\)/);
+  assert.doesNotMatch(handler, /return res\.json\(\{ success: true, phones:/);
+});
+
 test("single-phone save reads and returns only the selected phone instead of the full image catalog", () => {
   const source = read("server.js");
   const start = source.indexOf("const isSinglePhonePatch");
