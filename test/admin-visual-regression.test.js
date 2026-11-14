@@ -351,9 +351,9 @@ test("phone save clones only the phone catalog and deep-clones only the edited p
   const saveStart = js.indexOf("async function save(isAuto=false){");
   const saveEnd = js.indexOf("/* ---------------- SEARCH + ADMIN USERS ---------------- */", saveStart);
   const save = js.slice(saveStart, saveEnd);
-  assert.ok(save.includes("phoneSharedData.phoneFolders=JSON.parse(folders)"));
-  assert.ok(save.includes("phoneSharedData.globalConditionDetails=JSON.parse(conditions)"));
-  assert.ok(save.includes("phoneSharedData.globalConditionOverviewImage=overview"));
+  assert.ok(save.includes('phoneSharedDirtyFields.has("phoneFolders")'));
+  assert.ok(save.includes('phoneSharedDirtyFields.has("globalConditionDetails")'));
+  assert.ok(save.includes('phoneSharedDirtyFields.has("globalConditionOverviewImage")'));
 });
 
 test("full phone catalog save preserves photos from a compact SQL projection and avoids returning the catalog", () => {
