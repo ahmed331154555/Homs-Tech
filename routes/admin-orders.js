@@ -160,20 +160,36 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
       if (!Number.isSafeInteger(id) || id < 1 || !Number.isSafeInteger(index) || index < 0) {
         return res.status(400).send("Ongeldig verzoek.");
       }
-      const result = await pool.query("SELECT extra_fields FROM service_orders WHERE id = $1", [id]);
+      const maxStoredPhotoRecordBytes = 9 * 1024 * 1024;
+      const result = await pool.query(
+        "SELECT CASE WHEN octet_length(extra_fields) <= $2 THEN extra_fields ELSE NULL END AS extra_fields, octet_length(extra_fields) AS extra_fields_bytes FROM service_orders WHERE id = $1",
+        [id, maxStoredPhotoRecordBytes]
+      );
       if (!result.rows.length) return res.status(404).send("Aanvraag niet gevonden.");
+      const record = result.rows[0];
+      if (Number(record.extra_fields_bytes) > maxStoredPhotoRecordBytes) {
+        return res.status(413).send("De opgeslagen aanvraag is te groot om veilig te verwerken.");
+      }
 
       let meta = {};
-      try { meta = JSON.parse(result.rows[0].extra_fields || "{}"); } catch {}
+      try { meta = JSON.parse(record.extra_fields || "{}"); } catch {}
       const photos = Array.isArray(meta.photos) ? meta.photos : [];
       const photo = photos[index];
       if (!photo || !photo.dataUrl) return res.status(404).send("Foto niet gevonden.");
 
-      const match = String(photo.dataUrl).match(/^data:([^;]+);base64,(.+)$/);
-      if (!match) return res.status(400).send("Fotoformaat ongeldig.");
-      const contentType = match[1];
+      const maxPhotoBytes = 2 * 1024 * 1024;
+      const maxBase64Length = Math.ceil(maxPhotoBytes / 3) * 4;
+      const match = String(photo.dataUrl).match(/^data:(image\\/(?:jpeg|png|webp|heic));base64,([a-z0-9+/]+={0,2})$/i);
+      if (!match || match[2].length > maxBase64Length || match[2].length % 4 === 1) {
+        return res.status(400).send("Fotoformaat ongeldig.");
+      }
+      const contentType = match[1].toLowerCase();
       const buffer = Buffer.from(match[2], "base64");
+      if (!buffer.length || buffer.length > maxPhotoBytes) {
+        return res.status(413).send("De foto is te groot om veilig te verwerken.");
+      }
       res.set("Content-Type", contentType);
+      res.set("X-Content-Type-Options", "nosniff");
       res.set("Cache-Control", "private, max-age=86400");
       res.send(buffer);
     } catch (err) {
