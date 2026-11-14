@@ -46,56 +46,56 @@ test("admin section SQL selects only the allowlisted JSONB keys", () => {
 test("admin site data routes require section permissions and never select the full settings document", () => {
   const server = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "server.js"), "utf8");
   const routeStart = server.indexOf('app.get("/api/admin/site-data/:section"');
-  const routeEnd = server.indexOf('// Get website settings', routeStart);
+  const routeEnd = server.indexOf("// Get website settings", routeStart);
   assert.ok(routeStart >= 0 && routeEnd > routeStart, "admin section GET route should exist");
   const route = server.slice(routeStart, routeEnd);
-  assert.match(route, /requirePermission\(config\.permission, \{ allowSiteSave: true \}\)/);
-  assert.match(route, /buildAdminSiteSectionSelect\(section\)/);
-  assert.doesNotMatch(route, /SELECT data FROM site_settings/i);
-  assert.doesNotMatch(route, /SELECT \* FROM site_settings/i);
+  assert.ok(route.includes("requirePermission(config.permission, { allowSiteSave: true })"));
+  assert.ok(route.includes("buildAdminSiteSectionSelect(section)"));
+  assert.ok(!route.includes("SELECT data FROM site_settings"));
+  assert.ok(!route.includes("SELECT * FROM site_settings"));
 });
 
 test("lightweight admin section saves merge only validated top-level JSONB fields", () => {
   const server = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "server.js"), "utf8");
   const routeStart = server.indexOf('app.put("/api/admin/site-data/:section"');
-  const routeEnd = server.indexOf('// Get website settings', routeStart);
+  const routeEnd = server.indexOf("// Get website settings", routeStart);
   assert.ok(routeStart >= 0 && routeEnd > routeStart, "admin section PUT route should exist");
   const route = server.slice(routeStart, routeEnd);
-  assert.match(route, /config\.writeFields/);
-  assert.match(route, /keys\.some\(key => !allowedFields\.includes\(key\)\)/);
-  assert.match(route, /data = data \|\| \$1::jsonb/);
-  assert.doesNotMatch(route, /SELECT data FROM site_settings/i);
+  assert.ok(route.includes("config.writeFields"));
+  assert.ok(route.includes("keys.some(key => !allowedFields.includes(key))"));
+  assert.ok(route.includes("data = data || $1::jsonb"));
+  assert.ok(!route.includes("SELECT data FROM site_settings"));
 });
 
 test("admin login no longer downloads the full site settings JSON document", () => {
   const js = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "assets", "homs-admin.js"), "utf8");
   const start = js.indexOf("async function loadData(){");
-  const end = js.indexOf("\\n/* ---------------- GENERAL ---------------- */", start);
+  const end = js.indexOf("/* ---------------- GENERAL ---------------- */", start);
   assert.ok(start >= 0 && end > start, "loadData function should exist");
   const loadData = js.slice(start, end);
-  assert.doesNotMatch(loadData, /fetch\\(["']\\/api\\/site["']/);
-  assert.match(loadData, /loadAdminSiteSection\\(currentPage\\)/);
-  assert.match(js, /fetch\\(["']\\/api\\/admin\\/site-data\\/["']\\+encodeURIComponent\\(page\\)/);
+  assert.ok(!loadData.includes('fetch("/api/site")'));
+  assert.ok(loadData.includes("loadAdminSiteSection(currentPage)"));
+  assert.ok(js.includes('fetch("/api/admin/site-data/"+encodeURIComponent(page)'));
 });
 
 test("admin navigation lazy-loads a section once and keeps its in-memory edits", () => {
   const js = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "assets", "homs-admin.js"), "utf8");
-  assert.match(js, /const adminLoadedSections=new Set\\(\\)/);
-  assert.match(js, /if\\(adminLoadedSections\\.has\\(page\\)\\)return true/);
-  assert.match(js, /if\\(ADMIN_SITE_DATA_PAGES\\.has\\(page\\)&&adminLazyLoadingEnabled\\)/);
-  assert.match(js, /adminDirtySections\\.add\\(currentPage\\)/);
+  assert.ok(js.includes("const adminLoadedSections=new Set()"));
+  assert.ok(js.includes("if(adminLoadedSections.has(page))return true"));
+  assert.ok(js.includes("if(ADMIN_SITE_DATA_PAGES.has(page)&&adminLazyLoadingEnabled)"));
+  assert.ok(js.includes("adminDirtySections.add(currentPage)"));
 });
 
 test("lightweight admin save payloads contain only the active page data", () => {
   const js = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "assets", "homs-admin.js"), "utf8");
   const start = js.indexOf("async function save(isAuto=false){");
-  const end = js.indexOf("\\n/* ---------------- SEARCH + ADMIN USERS ---------------- */", start);
+  const end = js.indexOf("/* ---------------- SEARCH + ADMIN USERS ---------------- */", start);
   assert.ok(start >= 0 && end > start, "save function should exist");
   const save = js.slice(start, end);
-  assert.match(save, /savePage==="general"[\\s\\S]*?homepage:JSON\\.parse\\(JSON\\.stringify\\(data\\.homepage/);
-  assert.match(save, /savePage==="services"[\\s\\S]*?services:JSON\\.parse\\(JSON\\.stringify\\(data\\.services/);
-  assert.match(save, /savePage==="repair"[\\s\\S]*?repairPage:JSON\\.parse\\(JSON\\.stringify\\(data\\.repairPage/);
-  assert.match(save, /savePage==="categories"[\\s\\S]*?deviceCategories:JSON\\.parse\\(JSON\\.stringify\\(data\\.deviceCategories/);
-  assert.match(save, /savePage==="why"[\\s\\S]*?why:JSON\\.parse\\(JSON\\.stringify\\(data\\.why/);
-  assert.match(save, /"\\/api\\/admin\\/site-data\\/"+encodeURIComponent\\(savePage\\)/);
+  assert.ok(save.includes("homepage:JSON.parse(JSON.stringify(data.homepage||{}))"));
+  assert.ok(save.includes("services:JSON.parse(JSON.stringify(data.services||[]))"));
+  assert.ok(save.includes("repairPage:JSON.parse(JSON.stringify(data.repairPage||{}))"));
+  assert.ok(save.includes("deviceCategories:JSON.parse(JSON.stringify(data.deviceCategories||[]))"));
+  assert.ok(save.includes("why:JSON.parse(JSON.stringify(data.why||[]))"));
+  assert.ok(save.includes('"/api/admin/site-data/"+encodeURIComponent(savePage)'));
 });
