@@ -5017,7 +5017,13 @@ async function save(isAuto=false){
         }
       : savePage==="shop"
         ? { shopProducts: JSON.parse(JSON.stringify(data.shopProducts||[])) }
-        : JSON.parse(JSON.stringify(data));
+        : savePage==="phones"
+          ? {
+              phones: phoneEditOnly
+                ? (data.phones||[]).map((phone,index)=>index===selectedPhoneIndex?JSON.parse(JSON.stringify(phone)):phone)
+                : JSON.parse(JSON.stringify(data.phones||[]))
+            }
+          : JSON.parse(JSON.stringify(data));
     if(savePage==="phones"){
       setStatus("Foto's verkleinen en product opslaan...","info");
       if(phoneEditOnly && payload.phones?.[selectedPhoneIndex]) payload.phones[selectedPhoneIndex]=(await compressPhoneCatalogPhotos([payload.phones[selectedPhoneIndex]]))[0];
