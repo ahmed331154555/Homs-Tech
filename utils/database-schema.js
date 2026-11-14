@@ -189,6 +189,14 @@ async function initializeDatabaseSchema(pool) {
         AND status <> 'Geannuleerd'
     `);
 
+    // Keep the repair queue's category filter and newest-first ordering on an
+    // index path, avoiding a full-table sort as service_orders grows.
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS service_orders_repair_created_idx
+      ON service_orders (created_at DESC)
+      WHERE LOWER(service_category) IN ('reparatie', 'repair')
+    `);
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS webshop_orders (
         id SERIAL PRIMARY KEY,
