@@ -379,7 +379,7 @@ function registerCustomerReviewRoutes(app, {
         const token = crypto.randomBytes(32).toString("hex");
         const tokenHash = hashToken(token);
         const rotated = await pool.query(
-          "UPDATE customer_review_invites SET token_hash=$1,send_attempts=send_attempts+1,claimed_at=NULL WHERE id=$2 AND sent_at IS NULL RETURNING id",
+          "UPDATE customer_review_invites SET token_hash=$1,send_attempts=send_attempts+1 WHERE id=$2 AND sent_at IS NULL RETURNING id",
           [tokenHash, invite.id]
         );
         if (!rotated.rows.length) continue;
