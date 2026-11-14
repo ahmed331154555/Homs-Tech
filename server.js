@@ -48,6 +48,7 @@ const { cancelPaypalOrder } = require("./utils/paypal-payment");
 const { allowLiveChat, liveChatFirstReply } = require("./utils/live-chat");
 const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-limit");
 const { checkAuthLoginRateLimit } = require("./utils/auth-login-rate-limit");
+const { startMemoryMonitor } = require("./utils/memory-monitor");
 const { resolveRepairRequestCustomerId } = require("./utils/repair-request-customer");
 const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-inventory");
 const { priceProductFromCatalog } = require("./utils/cart-pricing");
@@ -68,6 +69,9 @@ const {
 } = require("./utils/catalog-photo-preservation");
 const { saveShopCatalog, validateShopCatalogIdentifiers, validateShopCatalogImages } = require("./utils/shop-catalog");
 const PORT = process.env.PORT || 3000;
+
+// Lightweight RSS/heap samples help correlate Render memory spikes with traffic.
+startMemoryMonitor();
 const { getMollieApiKey, getPayPalSettings } = createPaymentSettings({
   pool,
   getEnv: () => process.env,
