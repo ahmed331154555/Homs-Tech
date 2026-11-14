@@ -46,16 +46,9 @@
  #homsMenuDrawer .homs-menu-group+.homs-menu-group{border-top:1px solid #edf1f5}
  #homsMenuDrawer a{min-height:82px;padding:7px 10px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #e8eef4;color:#102a43;text-decoration:none;font-size:16px;font-weight:700}
  #homsMenuDrawer a .homs-menu-icon{width:70px;height:70px;flex:0 0 70px;display:flex;align-items:center;justify-content:center;font-size:28px}
- #homsMenuDrawer .homs-menu-icon--home,#homsMenuDrawer .homs-menu-icon--about,#homsMenuDrawer .homs-menu-icon--contact,#homsMenuDrawer .homs-menu-icon--devices,#homsMenuDrawer .homs-menu-icon--cart,#homsMenuDrawer .homs-menu-icon--repair,#homsMenuDrawer .homs-menu-icon--prices,#homsMenuDrawer .homs-menu-icon--trade-in,#homsMenuDrawer .homs-menu-icon--account{background-image:url('/assets/images/menu/menu-icons-sprite.jpg');background-repeat:no-repeat;background-size:300% 300%;border-radius:10px}
- #homsMenuDrawer .homs-menu-icon--home{background-position:0% 0%}
- #homsMenuDrawer .homs-menu-icon--about{background-position:50% 0%}
- #homsMenuDrawer .homs-menu-icon--contact{background-position:100% 0%}
- #homsMenuDrawer .homs-menu-icon--devices{background-position:0% 50%}
- #homsMenuDrawer .homs-menu-icon--cart{background-position:50% 50%}
- #homsMenuDrawer .homs-menu-icon--repair{background-position:100% 50%}
- #homsMenuDrawer .homs-menu-icon--prices{background-position:0% 100%}
- #homsMenuDrawer .homs-menu-icon--trade-in{background-position:50% 100%}
- #homsMenuDrawer .homs-menu-icon--account{background-position:100% 100%}
+ #homsMenuDrawer a .homs-menu-icon img{display:block;width:100%;height:100%;object-fit:contain;image-rendering:auto;filter:drop-shadow(0 3px 4px rgba(16,42,67,.10))}
+ #homsMenuDrawer a .homs-menu-icon{overflow:visible;background:none;border-radius:0}
+ #homsMenuDrawer a.homs-menu-account .homs-menu-icon img{width:100%;height:100%}
  #homsMenuDrawer a .homs-menu-title{flex:1;line-height:1.25}
  #homsMenuDrawer a .homs-menu-chevron{font-size:29px;line-height:1;color:#687d90;font-weight:400;padding:0 5px}
  #homsMenuDrawer a.active{background:#f0f6ff;color:#1765c2;border-radius:12px}
@@ -134,8 +127,15 @@
    var a=document.createElement('a');a.href=item[2];if(item[2]===active){a.classList.add('active');a.setAttribute('aria-current','page')}
    if(item[3]==='account')a.classList.add('homs-menu-account');
    var icon=document.createElement('span');icon.className='homs-menu-icon';
-   if(item[3]){icon.classList.add('homs-menu-icon--'+item[3])}
-   else{icon.textContent=item[0]}
+   if(item[3]){
+    icon.classList.add('homs-menu-icon--'+item[3]);
+    var image=document.createElement('img');
+    image.src='/assets/images/menu/'+item[3]+'.png';
+    image.alt='';
+    image.decoding='async';
+    image.loading='eager';
+    icon.appendChild(image);
+   }else{icon.textContent=item[0]}
    var title=document.createElement('span');title.className='homs-menu-title';title.textContent=item[1];
    var chevron=document.createElement('span');chevron.className='homs-menu-chevron';chevron.setAttribute('aria-hidden','true');chevron.textContent='›';
    a.appendChild(icon);a.appendChild(title);a.appendChild(chevron);section.appendChild(a);
