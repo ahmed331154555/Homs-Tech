@@ -2086,12 +2086,24 @@ function removeCustomOptionGroup(index,type,groupIndex){
   renderPhones();markChanged();
 }
 function handleCustomOptionImage(event,index,type,groupIndex,optionIndex){
-  const file=event.target.files?.[0];if(!file)return;
-  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');event.target.value='';return;}
-  if(file.size>2*1024*1024){alert('Afbeelding maximaal 2 MB.');event.target.value='';return;}
+  const input=event.target,file=input.files?.[0];if(!file)return;
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');input.value='';return;}
+  if(file.size>2*1024*1024){alert('Afbeelding maximaal 2 MB.');input.value='';return;}
   const reader=new FileReader();
-  reader.onload=()=>{const option=data.phones[index]?.[type]?.[groupIndex]?.options?.[optionIndex];if(option){option.image=reader.result;renderPhones();markChanged();}};
-  reader.readAsDataURL(file);
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;
+    reader.onload=null;reader.onerror=null;reader.onabort=null;
+    input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    const option=data.phones[index]?.[type]?.[groupIndex]?.options?.[optionIndex];
+    if(option){option.image=value;renderPhones();markChanged();}
+  };
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error('read-failed'));
+  reader.onabort=()=>finish(new Error('read-aborted'));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
 }
 
 function handlePhoneImage(event,i,j){
@@ -2188,23 +2200,32 @@ async function phoneWizardUploadMultiple(input,index,kind,color){
  try{const images=await Promise.all(files.map(read));if(kind==="base"){phone.images=Array.isArray(phone.images)?phone.images:["","","",""];while(phone.images.length<4)phone.images.push("");images.forEach((v,i)=>phone.images[i]=v);}else{phone.colorGalleryImages=phone.colorGalleryImages||{};phone.colorGalleryImages[color]=Array.isArray(phone.colorGalleryImages[color])?phone.colorGalleryImages[color]:["","","",""];while(phone.colorGalleryImages[color].length<4)phone.colorGalleryImages[color].push("");images.forEach((v,i)=>phone.colorGalleryImages[color][i]=v);phone.colorImages=phone.colorImages||{};phone.colorImages[color]=phone.colorGalleryImages[color].find(Boolean)||"";}markChanged();renderPhones();setStatus("✓ "+images.length+" foto's toegevoegd. Sla het product op.","success");}catch(e){alert(e.message||"Upload mislukt");}finally{input.value="";}
 }
 function phoneWizardUpload(event,index,kind,slot,color){
-  const phone=data.phones[index],file=event.target.files?.[0];if(!phone||!file)return;
-  if(!file.type.startsWith("image/")){alert("Kies een afbeeldingsbestand.");event.target.value="";return;}
-  if(file.size>2*1024*1024){alert("Elke afbeelding mag maximaal 2 MB zijn.");event.target.value="";return;}
+  const input=event.target,phone=data.phones[index],file=input.files?.[0];if(!phone||!file)return;
+  if(!file.type.startsWith("image/")){alert("Kies een afbeeldingsbestand.");input.value="";return;}
+  if(file.size>2*1024*1024){alert("Elke afbeelding mag maximaal 2 MB zijn.");input.value="";return;}
   const reader=new FileReader();
-  reader.onload=()=>{
-    if(kind==="base")phone.images[slot]=reader.result;
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;
+    reader.onload=null;reader.onerror=null;reader.onabort=null;
+    input.value="";
+    if(error){alert("De afbeelding kon niet worden gelezen. Probeer het opnieuw.");return;}
+    if(kind==="base")phone.images[slot]=value;
     else if(kind==="color"){
       if(!phone.colorGalleryImages||typeof phone.colorGalleryImages!=="object")phone.colorGalleryImages={};
       if(!Array.isArray(phone.colorGalleryImages[color]))phone.colorGalleryImages[color]=["","","",""];
       while(phone.colorGalleryImages[color].length<4)phone.colorGalleryImages[color].push("");
-      phone.colorGalleryImages[color][slot]=reader.result;
+      phone.colorGalleryImages[color][slot]=value;
       phone.colorImages=phone.colorImages||{};
       phone.colorImages[color]=phone.colorGalleryImages[color].find(Boolean)||"";
-    } else {if(!phone.colorImages||typeof phone.colorImages!=="object")phone.colorImages={};phone.colorImages[color]=reader.result;}
+    } else {if(!phone.colorImages||typeof phone.colorImages!=="object")phone.colorImages={};phone.colorImages[color]=value;}
     renderPhones();markChanged();
   };
-  reader.readAsDataURL(file);
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error("read-failed"));
+  reader.onabort=()=>finish(new Error("read-aborted"));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
 }
 function phoneWizardSetList(index,key,value,checked){
   const phone=data.phones[index];if(!phone)return;
