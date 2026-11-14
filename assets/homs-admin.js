@@ -623,48 +623,24 @@ function deleteDeviceCategory(i){
 // Safety: never automatically remove catalog products during normalization.
 function isRemovedLegacyPhone(phone){return false;}
 
-function normalizeData(){
-
-  if(!data || typeof data!=="object"){
-    data={};
-  }
-
-  normalizeBuybackPhones();
-  normalizeBuybackCatalog();
-
-  /* why */
-
+function normalizeWhyData(){
   if(!Array.isArray(data.why)){
-
     if(Array.isArray(data.features)){
-
-      data.why=data.features.map(x=>[
-        "⭐",
-        String(x || ""),
-        ""
-      ]);
-
+      data.why=data.features.map(x=>["⭐",String(x||""),""]);
     }else{
       data.why=[];
     }
   }
+  data.why=data.why.map(x=>Array.isArray(x)
+    ? [x[0]||"⭐",x[1]||"",x[2]||""]
+    : ["⭐",String(x||""),""]);
+}
 
-  data.why=data.why.map(x=>{
-
-    if(Array.isArray(x)){
-      return [
-        x[0] || "⭐",
-        x[1] || "",
-        x[2] || ""
-      ];
-    }
-
-    return [
-      "⭐",
-      String(x || ""),
-      ""
-    ];
-  });
+function normalizeData(){
+  if(!data||typeof data!=="object")data={};
+  normalizeBuybackPhones();
+  normalizeBuybackCatalog();
+  normalizeWhyData();
 }
 
 /* Phone editor safety draft: saved locally in IndexedDB while editing.
@@ -6671,7 +6647,12 @@ async function loadAdminSiteSection(page){
       if(page==="services"&&!Array.isArray(data.services))data.services=[];
       if(page==="phones"&&!Array.isArray(data.phones))data.phones=[];
       if(page==="shop"&&!Array.isArray(data.shopProducts))data.shopProducts=[];
-      normalizeData();
+      if(page==="buyback"){
+        normalizeBuybackPhones();
+        normalizeBuybackCatalog();
+      }else if(page==="why"){
+        normalizeWhyData();
+      }
 
       if(page==="phones"){
         phoneOriginalIdentities=(Array.isArray(data.phones)?data.phones:[]).map(phone=>({
