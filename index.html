@@ -759,12 +759,12 @@ let data={...defaults};
 function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 
 function wa(){
- const n=String(data.whatsapp||"").replace(/\D/g,"");
+ const n=String(data.whatsapp||"+31684242359").replace(/\D/g,"");
  return n?"https://wa.me/"+n+"?text="+encodeURIComponent("Hallo, ik wil graag informeren over HOMS TECH."):"#";
 }
 function common(){
  document.querySelectorAll("[data-wa]").forEach(a=>a.href=wa());
- document.querySelectorAll("[data-phone]").forEach(a=>a.href=data.phone?"tel:"+String(data.phone).replace(/[^\d+]/g,""):"#");
+ document.querySelectorAll("[data-phone]").forEach(a=>a.href="tel:"+String(data.phone||"+31684242359").replace(/[^\d+]/g,""));
 }
 function isUsableHeroText(value, fallback){
  const v=String(value||"").replace(/\\s+/g," ").trim();
