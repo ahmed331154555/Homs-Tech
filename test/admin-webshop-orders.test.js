@@ -148,7 +148,7 @@ test("admin webshop order details load histories, notes and refunds for one orde
   assert.match(selectSql, /webshop_order_notes/);
   assert.match(selectSql, /webshop_order_refunds/);
   assert.match(selectSql, /webshop_order_inspections/);
-  assert.match(selectSql, /webshop_orders\.trade_in_snapshot/);
+  assert.match(selectSql, /SELECT webshop_orders\.\*/);
   assert.match(selectSql, /buyback_orders\.answers/);
   assert.match(selectSql, /WHERE webshop_orders\.id=\$1/);
 });
