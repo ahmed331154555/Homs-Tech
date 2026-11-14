@@ -290,3 +290,16 @@ test("email attachment preview object URLs are revoked before rerender and on pa
   assert.match(render, /adminEmailPreviewUrls\.push\(url\)/);
   assert.match(js, /window\.addEventListener\("pagehide",releaseEmailPreviewUrls\)/);
 });
+
+test("email attachment FileReader handlers are released after conversion", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function emailFileToBase64(file){");
+  const end = js.indexOf("\n}", start) + 2;
+  assert.ok(start >= 0 && end > start, "email FileReader helper should exist");
+  const helper = js.slice(start, end);
+  assert.match(helper, /reader\.onload=null/);
+  assert.match(helper, /reader\.onerror=null/);
+  assert.match(helper, /const result=String\(reader\.result\|\|""\)/);
+  assert.match(helper, /result\.slice\(separator\+1\)/);
+  assert.match(helper, /reader\.readAsDataURL\(file\)/);
+});
