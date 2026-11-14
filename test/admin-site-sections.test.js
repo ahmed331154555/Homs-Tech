@@ -21,6 +21,12 @@ test("admin site section map contains only explicit page data dependencies", () 
     "deviceCategories", "globalConditionDetails", "globalConditionOverviewImage"
   ]);
   assert.deepEqual(ADMIN_SITE_SECTIONS.why.fields, ["why", "features"]);
+  for (const section of ["general", "services", "repair", "categories", "why"]) {
+    assert.equal(ADMIN_SITE_SECTIONS[section].writePermission, "site.save");
+  }
+  assert.equal(ADMIN_SITE_SECTIONS.phones.writePermission, undefined);
+  assert.equal(ADMIN_SITE_SECTIONS.shop.writePermission, undefined);
+  assert.equal(ADMIN_SITE_SECTIONS.buyback.writePermission, undefined);
 });
 
 test("admin site section lookup rejects unknown and malformed section names", () => {
@@ -61,6 +67,7 @@ test("lightweight admin section saves merge only validated top-level JSONB field
   const routeEnd = server.indexOf("// Get website settings", routeStart);
   assert.ok(routeStart >= 0 && routeEnd > routeStart, "admin section PUT route should exist");
   const route = server.slice(routeStart, routeEnd);
+  assert.ok(route.includes("requirePermission(config.writePermission || \"site.save\")"));
   assert.ok(route.includes("config.writeFields"));
   assert.ok(route.includes("keys.some(key => !allowedFields.includes(key))"));
   assert.ok(route.includes("data = data || $1::jsonb"));
