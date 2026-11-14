@@ -208,7 +208,7 @@ test("inventory movements have a persistent audit table and automatic payment in
   assert.match(schema, /stock_after INTEGER NOT NULL/);
   assert.match(paidInventory, /INSERT INTO inventory_movements/);
   assert.match(paidInventory, /'webshop_sale'/);
-  assert.match(routes, /SELECT data FROM site_settings WHERE id=1 FOR UPDATE/);
+  assert.match(routes, /data->'phones' AS phones, data->'shopProducts' AS shop_products FROM site_settings WHERE id=1 FOR UPDATE/);
   assert.match(routes, /INSERT INTO inventory_movements/);
   assert.match(routes, /stockAfter < 0/);
 });
