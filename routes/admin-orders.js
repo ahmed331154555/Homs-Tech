@@ -110,7 +110,7 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
   app.get("/api/admin/orders", requirePermission("orders.view"), async (req, res) => {
     try {
       const result = await pool.query(
-        \`SELECT id, customer_id, service_category, service_name, service_group, price, price_currency, source_price, source_currency, service_instructions, required_fields,
+        `SELECT id, customer_id, service_category, service_name, service_group, price, price_currency, source_price, source_currency, service_instructions, required_fields,
                 CASE
                   WHEN extra_fields LIKE '%"repairQuote":true%' AND extra_fields LIKE '%"dataUrl"%'
                   THEN regexp_replace(
