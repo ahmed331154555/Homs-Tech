@@ -369,7 +369,21 @@ function registerCustomerReviewRoutes(app, {
     }
   }
 
+  // Prevent the interval worker and admin-triggered sends from running the same
+  // delivery batch concurrently inside this Node process.
+  let sendDueInvitesPromise = null;
+
   async function sendDueInvites() {
+    if (sendDueInvitesPromise) return sendDueInvitesPromise;
+    sendDueInvitesPromise = sendDueInvitesInternal();
+    try {
+      return await sendDueInvitesPromise;
+    } finally {
+      sendDueInvitesPromise = null;
+    }
+  }
+
+  async function sendDueInvitesInternal() {
     const env = getEnv() || {};
     const apiKey = String(env.RESEND_API_KEY || "").trim();
     const from = String(env.RESEND_FROM_EMAIL || "").trim();
