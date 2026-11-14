@@ -6113,6 +6113,7 @@ async function deleteWebshopOrder(id){
 // =====================================================
 let buybackOrdersCache = [];
 let selectedBuybackOrderId = null;
+let selectedBuybackOrderDetails = null;
 
 function buybackMoney(value){
   if(value===null||value===undefined||value==="")return "—";
@@ -6145,6 +6146,7 @@ async function loadBuybackOrders(){
     const result=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(result.error||"Inkoopaanvragen konden niet worden geladen.");
     buybackOrdersCache=Array.isArray(result.orders)?result.orders:[];
+    selectedBuybackOrderDetails=null;
     const filter=document.getElementById("buybackTypeFilter")?.value||"all";
     const visibleOrders=buybackOrdersCache.filter(order=>filter==="all"||(filter==="sale"?!order.trade_in:!!order.trade_in));
     status.textContent=visibleOrders.length+" inkoopaanvragen gevonden.";
@@ -6197,14 +6199,30 @@ function buybackAnswerMarkup(answers){
     ?'<section class="ht-inkoop-card ht-inkoop-answers-card"><div class="ht-inkoop-card-head">✓ Antwoorden van de klant</div><div class="ht-inkoop-card-body"><div class="ht-inkoop-answers">'+entries.join("")+'</div></div></section>'
     :"";
 }
-function showBuybackDetails(id){
-  const order=buybackOrdersCache.find(function(item){return Number(item.id)===Number(id);});
+async function showBuybackDetails(id){
+  const summary=buybackOrdersCache.find(function(item){return Number(item.id)===Number(id);});
   const host=document.getElementById("buybackOrdersDetail");
-  if(!order||!host)return;
-  selectedBuybackOrderId=Number(id);
+  const orderId=Number(id);
+  if(!summary||!host||!Number.isSafeInteger(orderId)||orderId<1)return;
+  selectedBuybackOrderId=orderId;
+  selectedBuybackOrderDetails=null;
   host.hidden=false;
+  host.innerHTML='<div style="padding:28px;text-align:center;color:#64748b">Inkoopdetails laden…</div>';
   document.body.dataset.htPreviousOverflow=document.body.style.overflow||"";
   document.body.style.overflow="hidden";
+  try{
+    const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(orderId),{credentials:"same-origin",headers:{"Accept":"application/json"}});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Inkoopdetails konden niet worden geladen.");
+    if(selectedBuybackOrderId!==orderId)return;
+    if(!result.order||Number(result.order.id)!==orderId)throw new Error("De inkoopaanvraag kon niet worden gevonden.");
+    selectedBuybackOrderDetails=result.order;
+  }catch(error){
+    if(selectedBuybackOrderId!==orderId)return;
+    host.innerHTML='<div style="padding:22px;background:#fef2f2;color:#991b1b;border-radius:12px">'+esc(error.message)+' <button type="button" class="btn btn-light" onclick="closeBuybackDetails()">Sluiten</button></div>';
+    return;
+  }
+  const order=selectedBuybackOrderDetails;
   const status=String(order.status||"Nieuw");
   const isTradeIn=!!order.trade_in;
   const inspected=order.sale_inspected_value!==null&&order.sale_inspected_value!==undefined;
@@ -6321,6 +6339,7 @@ function openLinkedTradeInOrder(orderId){
 function closeBuybackDetails(){
   const host=document.getElementById("buybackOrdersDetail");
   if(host){host.hidden=true;host.innerHTML="";}
+  selectedBuybackOrderDetails=null;
   document.body.style.overflow=document.body.dataset.htPreviousOverflow||"";
   delete document.body.dataset.htPreviousOverflow;
   selectedBuybackOrderId=null;
