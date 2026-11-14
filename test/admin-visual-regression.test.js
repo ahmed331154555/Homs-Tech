@@ -335,6 +335,18 @@ test("battery option image readers release handlers even when the option is no l
   assert.match(handler, /try\{reader\.readAsDataURL\(file\);\}catch\(error\)\{finish\(error\);\}/);
 });
 
+test("phone save clones only the phone catalog and deep-clones only the edited product", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("const payload=savePage===\"buyback\"");
+  const end = js.indexOf("if(savePage===\"phones\"){", start);
+  assert.ok(start >= 0 && end > start);
+  const payload = js.slice(start, end);
+  assert.match(payload, /savePage===\"phones\"/);
+  assert.match(payload, /JSON\.parse\(JSON\.stringify\(data\.phones\|\|\[\]\)\)/);
+  assert.match(payload, /map\(\(phone,index\)=>index===selectedPhoneIndex\?JSON\.parse\(JSON\.stringify\(phone\)\):phone\)/);
+  assert.doesNotMatch(payload, /JSON\.parse\(JSON\.stringify\(data\)\)/);
+});
+
 test("full phone catalog save preserves photos from a compact SQL projection and avoids returning the catalog", () => {
   const server = read("server.js");
   const start = server.indexOf("if (isPhoneCatalogPatch) {");
