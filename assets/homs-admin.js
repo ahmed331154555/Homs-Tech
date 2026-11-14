@@ -3869,9 +3869,9 @@ function renderRepairRequests(){
   if(currentStatus==='Nieuw')nieuw++;
   else if(currentStatus==='In behandeling')bezig++;
   else if(currentStatus==='Geannuleerd')cancelled++;
- }
   const searchText=(orderSearchText(order)+' '+(meta.brand||'')+' '+(meta.model||'')).toLowerCase();
   if((!q||searchText.includes(q))&&(!filter||order.status===filter))filtered.push({order,meta});
+ }
  const summary=document.getElementById('repairRequestSummary');
  if(summary){
   summary.innerHTML='<div class="order-stat stat-total"><div class="stat-icon">☷</div><div><b>'+requestCount+'</b><span>Totaal orders</span></div></div>'+
