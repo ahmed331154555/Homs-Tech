@@ -756,17 +756,19 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       if (identifierError) return res.status(400).json({ error: identifierError });
       const imageError = validateShopCatalogImages(req.body.shopProducts);
       if (imageError) return res.status(400).json({ error: imageError });
-      const shopProducts = await saveShopCatalog(
+      const saved = await saveShopCatalog(
         queryWithConnectionRetry,
         req.body.shopProducts,
         req.body.expectedShopProducts
       );
-      if (shopProducts === null) {
+      if (!saved) {
         return res.status(409).json({
           error: "De Shop-catalogus is ondertussen door iemand anders gewijzigd. Vernieuw de pagina en controleer de nieuwste gegevens voordat je opnieuw opslaat."
         });
       }
-      return res.json({ success: true, shopProducts });
+      // The browser already has the submitted catalog; avoid sending all
+      // product photos back in the response after a successful save.
+      return res.json({ success: true });
     }
 
     const current = await queryWithConnectionRetry(
