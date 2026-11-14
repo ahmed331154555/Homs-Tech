@@ -131,17 +131,32 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
         if (!order.extra_fields) return order;
         try {
           const meta = JSON.parse(order.extra_fields);
-          if (meta.repairQuote === true && Array.isArray(meta.photos)) {
-            const sanitizedPhotos = meta.photos.map((p, index) => ({
-              name: p.name || `foto-${index + 1}`,
-              type: p.type || "image/jpeg",
+          if (!meta || typeof meta !== "object" || Array.isArray(meta)) return order;
+
+          // The repair queue only needs these fields. Keep arbitrary form data and
+          // other stored metadata out of the list response and browser-side cache.
+          const queueMeta = {};
+          if (meta.repairQuote === true) queueMeta.repairQuote = true;
+          if (typeof meta.brand === "string") queueMeta.brand = meta.brand;
+          if (typeof meta.model === "string") queueMeta.model = meta.model;
+
+          if (meta.offer && typeof meta.offer === "object" && !Array.isArray(meta.offer)) {
+            const offer = {};
+            for (const key of ["price", "rawPrice", "message", "validity", "duration", "updatedAt", "emailSent", "sentAt"]) {
+              if (meta.offer[key] !== undefined) offer[key] = meta.offer[key];
+            }
+            if (Object.keys(offer).length) queueMeta.offer = offer;
+          }
+
+          if (Array.isArray(meta.photos)) {
+            queueMeta.photos = meta.photos.map((photo, index) => ({
+              name: photo && photo.name ? photo.name : `foto-${index + 1}`,
+              type: photo && photo.type ? photo.type : "image/jpeg",
               url: `/api/admin/repair-requests/${order.id}/photos/${index}`
             }));
-            return {
-              ...order,
-              extra_fields: JSON.stringify({ ...meta, photos: sanitizedPhotos })
-            };
           }
+
+          return { ...order, extra_fields: JSON.stringify(queueMeta) };
         } catch {}
         return order;
       });
