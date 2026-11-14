@@ -22,6 +22,8 @@ function escapeHtml(value) {
 }
 
 async function ensureCustomerReviewSchema(pool) {
+  await pool.query("ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS review_handed_over_at TIMESTAMPTZ");
+  await pool.query("ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS review_delivered_at TIMESTAMPTZ");
   await pool.query(`
     CREATE TABLE IF NOT EXISTS customer_reviews (
       id BIGSERIAL PRIMARY KEY,
@@ -60,6 +62,7 @@ async function ensureCustomerReviewSchema(pool) {
       sent_at TIMESTAMPTZ,
       used_at TIMESTAMPTZ,
       send_attempts INTEGER NOT NULL DEFAULT 0,
+      claimed_at TIMESTAMPTZ,
       last_error TEXT NOT NULL DEFAULT '',
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       UNIQUE(order_type, order_id)
@@ -330,18 +333,21 @@ function registerCustomerReviewRoutes(app, {
          FROM customer_review_invites
          WHERE sent_at IS NULL AND used_at IS NULL AND due_at <= NOW()
            AND expires_at > NOW() AND send_attempts < 5
+           AND (claimed_at IS NULL OR claimed_at < NOW() - INTERVAL '10 minutes')
          ORDER BY due_at ASC
-         FOR UPDATE SKIP LOCKED LIMIT 10`
+         LIMIT 10 FOR UPDATE SKIP LOCKED`
       );
+      if (due.rows.length) {
+        await client.query("UPDATE customer_review_invites SET claimed_at=NOW() WHERE id = ANY($1::bigint[])", [due.rows.map(row => row.id)]);
+      }
       await client.query("COMMIT");
       for (const invite of due.rows) {
-        const tokenResult = await pool.query("SELECT token_hash FROM customer_review_invites WHERE id=$1", [invite.id]);
         // Tokens are stored only as hashes. A one-time plaintext token is created when the invite is queued.
         // If a queued invite has no recoverable token, rotate it before sending.
         const token = crypto.randomBytes(32).toString("hex");
         const tokenHash = hashToken(token);
         const rotated = await pool.query(
-          "UPDATE customer_review_invites SET token_hash=$1,send_attempts=send_attempts+1 WHERE id=$2 AND sent_at IS NULL RETURNING id",
+          "UPDATE customer_review_invites SET token_hash=$1,send_attempts=send_attempts+1,claimed_at=NULL WHERE id=$2 AND sent_at IS NULL RETURNING id",
           [tokenHash, invite.id]
         );
         if (!rotated.rows.length) continue;
@@ -355,9 +361,9 @@ function registerCustomerReviewRoutes(app, {
           });
           const data = await response.json().catch(() => ({}));
           if (!response.ok) throw new Error("Resend " + response.status + ": " + JSON.stringify(data));
-          await pool.query("UPDATE customer_review_invites SET sent_at=NOW(),last_error='' WHERE id=$1 AND sent_at IS NULL", [invite.id]);
+          await pool.query("UPDATE customer_review_invites SET sent_at=NOW(),claimed_at=NULL,last_error='' WHERE id=$1 AND sent_at IS NULL", [invite.id]);
         } catch (error) {
-          await pool.query("UPDATE customer_review_invites SET last_error=$1 WHERE id=$2 AND sent_at IS NULL", [safeText(error.message, 500), invite.id]);
+          await pool.query("UPDATE customer_review_invites SET last_error=$1,claimed_at=NULL WHERE id=$2 AND sent_at IS NULL", [safeText(error.message, 500), invite.id]);
           console.error("[REVIEWS] Invite email failed:", invite.id, error.message || error);
         }
       }
