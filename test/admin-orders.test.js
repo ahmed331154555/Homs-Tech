@@ -62,6 +62,10 @@ test("admin order list strips stored photo payloads in SQL and returns on-demand
   assert.match(querySql, /"dataUrl"/);
   assert.match(querySql, /chr\(92\)/);
   assert.match(querySql, /CASE[\s\S]*END AS extra_fields/);
+  assert.match(querySql, /SELECT id, service_category, service_name, service_group, price/);
+  for (const unusedColumn of ["customer_id", "source_price", "service_instructions", "required_fields", "provider_reference", "execution_note", "result_data", "execution_updated_at"]) {
+    assert.equal(new RegExp("\\b" + unusedColumn + "\\b").test(querySql), false, unusedColumn + " should not be loaded by the repair-order list");
+  }
   const metadata = JSON.parse(response.body.orders[0].extra_fields);
   assert.deepEqual(metadata.photos, [
     { name: "front.jpg", type: "image/jpeg", url: "/api/admin/repair-requests/42/photos/0" },
