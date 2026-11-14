@@ -4670,9 +4670,17 @@ function shopProductImageUpload(event,index,slot){
  const product=data.shopProducts[index];if(!product){input.value="";return;}
  const productId=String(product.id),reader=new FileReader();
  let completed=false;
- const finish=()=>{if(completed)return;completed=true;shopImageUploadsPending=Math.max(0,shopImageUploadsPending-1);};
+ const finish=()=>{
+  if(completed)return;
+  completed=true;
+  reader.onload=null;
+  reader.onerror=null;
+  input.value="";
+  shopImageUploadsPending=Math.max(0,shopImageUploadsPending-1);
+ };
  shopImageUploadsPending++;
  reader.onload=()=>{
+  const imageData=String(reader.result||"");
   finish();
   const currentIndex=data.shopProducts.findIndex(item=>String(item?.id)===productId);
   if(currentIndex<0){setStatus("De foto is niet toegevoegd: het product is intussen verwijderd.","error");return;}
@@ -4680,11 +4688,11 @@ function shopProductImageUpload(event,index,slot){
   if(!Array.isArray(current.images))current.images=["","","",""];
   while(current.images.length<4)current.images.push("");
   if(!Number.isInteger(slot)||slot<0||slot>3)return;
-  current.images[slot]=String(reader.result||"");
+  current.images[slot]=imageData;
   renderShopProductsAdmin();markChanged();
  };
- reader.onerror=()=>{finish();alert("De foto kon niet worden gelezen. Probeer een andere afbeelding.");input.value="";};
- try{reader.readAsDataURL(file);}catch(error){finish();alert("De foto kon niet worden gelezen. Probeer opnieuw.");input.value="";}
+ reader.onerror=()=>{finish();alert("De foto kon niet worden gelezen. Probeer een andere afbeelding.");};
+ try{reader.readAsDataURL(file);}catch(error){finish();alert("De foto kon niet worden gelezen. Probeer opnieuw.");}
 }
 function renderShopProductsAdmin(){
  const box=document.getElementById("shopProductsAdmin");if(!box)return;ensureShopProducts();
