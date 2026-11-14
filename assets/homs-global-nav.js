@@ -34,10 +34,19 @@
  #homsMenuBackdrop.open{opacity:1;visibility:visible}
  #homsMenuDrawer{position:fixed;inset:0 auto 0 0;width:min(92vw,430px);height:100dvh;max-height:100dvh;background:#fff;z-index:100004;transform:translateX(-105%);transition:transform .25s ease;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;box-shadow:15px 0 40px #0002;font-family:Arial,Helvetica,sans-serif;border-radius:0 22px 22px 0;padding-bottom:env(safe-area-inset-bottom)}
  #homsMenuDrawer.open{transform:translateX(0)}
- #homsMenuDrawer .homs-menu-head{min-height:92px;padding:15px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5eaf0;background:#fff;font-size:20px;font-weight:900;color:#071d2d}\n #homsMenuDrawer .homs-menu-logo{display:block;width:min(78%,270px);height:auto;max-height:64px;object-fit:contain;object-position:left center}
- #homsMenuDrawer .homs-menu-head span{color:#60a5fa}\n #homsMenuDrawer .homs-menu-group{padding:0 0 7px}\n #homsMenuDrawer .homs-menu-group+.homs-menu-group{border-top:1px solid #edf1f5}\n #homsMenuDrawer .homs-menu-label{padding-top:15px;padding-bottom:7px}
+ #homsMenuDrawer .homs-menu-head{min-height:92px;padding:15px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5eaf0;background:#fff;font-size:20px;font-weight:900;color:#071d2d}
+ #homsMenuDrawer .homs-menu-logo{display:block;width:min(78%,270px);height:auto;max-height:64px;object-fit:contain;object-position:left center}
+ #homsMenuDrawer .homs-menu-head span{color:#60a5fa}
+ #homsMenuDrawer .homs-menu-group{padding:0 0 7px}
+ #homsMenuDrawer .homs-menu-group+.homs-menu-group{border-top:1px solid #edf1f5}
+ #homsMenuDrawer .homs-menu-label{padding-top:15px;padding-bottom:7px}
  #homsMenuDrawer .homs-menu-close{border:0;background:transparent;font-size:30px;color:#334155;cursor:pointer}
- #homsMenuDrawer .homs-menu-label{padding:18px 22px 8px;color:#687d90;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}\n #homsMenuDrawer .homs-menu-group{padding:0 18px 10px}\n #homsMenuDrawer .homs-menu-group+.homs-menu-group{border-top:1px solid #edf1f5}\n #homsMenuDrawer a{min-height:82px;padding:7px 10px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #e8eef4;color:#102a43;text-decoration:none;font-size:16px;font-weight:700}\n #homsMenuDrawer a .homs-menu-icon{width:70px;height:70px;flex:0 0 70px;display:flex;align-items:center;justify-content:center;font-size:28px}\n #homsMenuDrawer a .homs-menu-icon{background-image:url('/assets/images/menu/menu-icons-sprite.jpg');background-repeat:no-repeat;background-size:300% 300%;border-radius:10px}
+ #homsMenuDrawer .homs-menu-label{padding:18px 22px 8px;color:#687d90;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+ #homsMenuDrawer .homs-menu-group{padding:0 18px 10px}
+ #homsMenuDrawer .homs-menu-group+.homs-menu-group{border-top:1px solid #edf1f5}
+ #homsMenuDrawer a{min-height:82px;padding:7px 10px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #e8eef4;color:#102a43;text-decoration:none;font-size:16px;font-weight:700}
+ #homsMenuDrawer a .homs-menu-icon{width:70px;height:70px;flex:0 0 70px;display:flex;align-items:center;justify-content:center;font-size:28px}
+ #homsMenuDrawer a .homs-menu-icon{background-image:url('/assets/images/menu/menu-icons-sprite.jpg');background-repeat:no-repeat;background-size:300% 300%;border-radius:10px}
  #homsMenuDrawer .homs-menu-icon--home{background-position:0% 0%}
  #homsMenuDrawer .homs-menu-icon--about{background-position:50% 0%}
  #homsMenuDrawer .homs-menu-icon--contact{background-position:100% 0%}
@@ -46,12 +55,19 @@
  #homsMenuDrawer .homs-menu-icon--repair{background-position:100% 50%}
  #homsMenuDrawer .homs-menu-icon--prices{background-position:0% 100%}
  #homsMenuDrawer .homs-menu-icon--trade-in{background-position:50% 100%}
- #homsMenuDrawer .homs-menu-icon--account{background-position:100% 100%}\n #homsMenuDrawer a .homs-menu-title{flex:1;line-height:1.25}\n #homsMenuDrawer a .homs-menu-chevron{font-size:29px;line-height:1;color:#687d90;font-weight:400;padding:0 5px}\n #homsMenuDrawer a.active{background:#f0f6ff;color:#1765c2;border-radius:12px}\n #homsMenuDrawer a.homs-menu-account{min-height:94px;margin-top:8px;background:linear-gradient(100deg,#edf5ff,#dcecff);border:1px solid #cbdff4;border-radius:20px;color:#1765c2}\n #homsMenuDrawer a.homs-menu-account .homs-menu-icon{width:78px;height:78px;flex-basis:78px}\n @media(max-width:560px){#homsMenuDrawer .homs-menu-head{min-height:82px;padding:12px 18px}#homsMenuDrawer .homs-menu-group{padding-left:12px;padding-right:12px}#homsMenuDrawer a{min-height:78px;gap:10px}#homsMenuDrawer a .homs-menu-icon{width:64px;height:64px;flex-basis:64px}#homsMenuDrawer a.homs-menu-account .homs-menu-icon{width:70px;height:70px;flex-basis:70px}}
- #homsMenuDrawer a{min-height:54px;padding:0 20px;display:flex;align-items:center;gap:13px;border-bottom:1px solid #edf0f3;color:#263747;text-decoration:none;font-size:15px;font-weight:700}
- #homsMenuDrawer a .homs-menu-icon{width:25px;text-align:center;font-size:18px}
- #homsMenuDrawer a.active{background:#eaf2ff;color:#2563eb}
+ #homsMenuDrawer .homs-menu-icon--account{background-position:100% 100%}
+ #homsMenuDrawer a .homs-menu-title{flex:1;line-height:1.25}
+ #homsMenuDrawer a .homs-menu-chevron{font-size:29px;line-height:1;color:#687d90;font-weight:400;padding:0 5px}
+ #homsMenuDrawer a.active{background:#f0f6ff;color:#1765c2;border-radius:12px}
+ #homsMenuDrawer a.homs-menu-account{min-height:94px;margin-top:8px;background:linear-gradient(100deg,#edf5ff,#dcecff);border:1px solid #cbdff4;border-radius:20px;color:#1765c2}
+ #homsMenuDrawer a.homs-menu-account .homs-menu-icon{width:78px;height:78px;flex-basis:78px}
+ @media(max-width:560px){#homsMenuDrawer .homs-menu-head{min-height:82px;padding:12px 18px}#homsMenuDrawer .homs-menu-group{padding-left:12px;padding-right:12px}#homsMenuDrawer a{min-height:78px;gap:10px}#homsMenuDrawer a .homs-menu-icon{width:64px;height:64px;flex-basis:64px}#homsMenuDrawer a.homs-menu-account .homs-menu-icon{width:70px;height:70px;flex-basis:70px}}
+
+
+
  body.homs-menu-open{overflow:hidden}
- header:has(#homsMenuButton),.ht-header:has(#homsMenuButton){position:relative!important;top:auto!important}\n @media(min-width:900px){#homsMenuButton{left:18px;right:auto}}
+ header:has(#homsMenuButton),.ht-header:has(#homsMenuButton){position:relative!important;top:auto!important}
+ @media(min-width:900px){#homsMenuButton{left:18px;right:auto}}
  `;
  document.head.appendChild(style);
  var headerFix=document.createElement('style');
