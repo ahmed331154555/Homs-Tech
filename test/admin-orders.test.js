@@ -121,8 +121,8 @@ test("repair photo endpoint caps stored record transfer before parsing", async (
   );
 
   assert.equal(response.statusCode, 413);
-  assert.match(querySql, /CASE WHEN octet_length\\(extra_fields\\) <= \\$2 THEN extra_fields ELSE NULL END/);
-  assert.match(querySql, /octet_length\\(extra_fields\\) AS extra_fields_bytes/);
+  assert.match(querySql, /CASE WHEN octet_length\(extra_fields\) <= \$2 THEN extra_fields ELSE NULL END/);
+  assert.match(querySql, /octet_length\(extra_fields\) AS extra_fields_bytes/);
   assert.deepEqual(queryParams, [42, 9 * 1024 * 1024]);
 });
 
@@ -151,7 +151,7 @@ test("repair photo endpoint serves only bounded supported image data", async () 
   assert.equal(response.headers["Content-Type"], "image/png");
   assert.equal(response.headers["X-Content-Type-Options"], "nosniff");
   assert.deepEqual(response.body, payload);
-  assert.match(querySql, /octet_length\\(extra_fields\\)/);
+  assert.match(querySql, /octet_length\(extra_fields\)/);
 });
 
 test("repair photo endpoint rejects unsupported MIME types and oversized payloads", async () => {
