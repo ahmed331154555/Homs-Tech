@@ -313,6 +313,59 @@ app.get("/api/site", async (req, res) => {
       res.set("Cache-Control","public, max-age=0, must-revalidate");
       return res.json({shopProducts:sanitizeCartStockData(result.rows[0].shop_products)});
     }
+    if(view==="about"){
+      const result=await queryWithConnectionRetry(
+        `SELECT
+          data->>'businessName' AS business_name,
+          data->>'siteName' AS site_name,
+          data->>'tagline' AS tagline,
+          data->>'areas' AS areas,
+          data->'why' AS why,
+          data->'features' AS features,
+          data->>'whatsapp' AS whatsapp,
+          data->>'phone' AS phone
+        FROM site_settings
+        WHERE id=1`,
+        [],
+        4
+      );
+      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
+      const row=result.rows[0];
+      res.set("Cache-Control","public, max-age=0, must-revalidate");
+      return res.json(sanitizePublicSiteData({
+        businessName:row.business_name || row.site_name,
+        tagline:row.tagline,
+        areas:row.areas,
+        why:row.why,
+        features:row.features,
+        whatsapp:row.whatsapp,
+        phone:row.phone
+      }));
+    }
+    if(view==="prices"){
+      const result=await queryWithConnectionRetry(
+        `SELECT
+          data->>'businessName' AS business_name,
+          data->>'siteName' AS site_name,
+          data->>'tagline' AS tagline,
+          data->>'whatsapp' AS whatsapp,
+          data->>'phone' AS phone
+        FROM site_settings
+        WHERE id=1`,
+        [],
+        4
+      );
+      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
+      const row=result.rows[0];
+      res.set("Cache-Control","public, max-age=0, must-revalidate");
+      return res.json(sanitizePublicSiteData({
+        businessName:row.business_name,
+        siteName:row.site_name,
+        tagline:row.tagline,
+        whatsapp:row.whatsapp,
+        phone:row.phone
+      }));
+    }
     const result = await queryWithConnectionRetry(
       "SELECT data FROM site_settings WHERE id = 1",
       [],
