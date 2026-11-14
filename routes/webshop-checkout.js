@@ -38,8 +38,15 @@ app.post("/api/webshop/orders", async (req, res) => {
     } catch {}
 
     if (items.length > 50) return res.status(400).json({ error: "Te veel producten in één bestelling." });
-    const catalogResult = await pool.query("SELECT data FROM site_settings WHERE id = 1");
-    const catalogData = catalogResult.rows[0]?.data || {};
+    const catalogResult = await pool.query(
+      "SELECT data->'phones' AS phones, data->'devices' AS devices, data->'shopProducts' AS shop_products FROM site_settings WHERE id = 1"
+    );
+    const catalogRow = catalogResult.rows[0] || {};
+    const catalogData = {
+      phones: Array.isArray(catalogRow.phones) ? catalogRow.phones : [],
+      devices: Array.isArray(catalogRow.devices) ? catalogRow.devices : [],
+      shopProducts: Array.isArray(catalogRow.shop_products) ? catalogRow.shop_products : []
+    };
     const safeItems = [];
     for (const item of items) {
       const priced = priceProductFromCatalog(catalogData, item);
