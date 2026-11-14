@@ -354,6 +354,41 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
                 buyback_orders.screen AS trade_in_screen, buyback_orders.answers AS trade_in_answers,
                 buyback_orders.status AS trade_in_buyback_status,
                 webshop_orders.created_at,
+         FROM webshop_orders
+         LEFT JOIN webshop_order_inspections phone_inspection ON phone_inspection.order_id=webshop_orders.id
+         LEFT JOIN buyback_orders ON buyback_orders.id = webshop_orders.trade_in_order_id
+                                      AND buyback_orders.trade_in_linked_order_id = webshop_orders.id
+                                      AND COALESCE(webshop_orders.trade_in_applied_credit,0)>0
+         ORDER BY webshop_orders.created_at DESC`
+      );
+      res.json({ orders: result.rows });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Webshop bestellingen konden niet worden geladen." });
+    }
+  });
+
+
+  app.get("/api/admin/webshop-orders/:id", requirePermission("webshop_orders.view"), async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig order-ID." });
+      const result = await pool.query(
+        `SELECT webshop_orders.*,
+                COALESCE(phone_inspection.checks,'{}'::jsonb) AS inspection_checks,
+                phone_inspection.inspected_by AS inspection_inspected_by,
+                phone_inspection.completed_at AS inspection_completed_at,
+                phone_inspection.updated_at AS inspection_updated_at,
+                CASE WHEN buyback_orders.trade_in_linked_order_id=webshop_orders.id
+                       AND COALESCE(webshop_orders.trade_in_applied_credit,0)>0
+                     THEN webshop_orders.trade_in_order_id ELSE NULL END AS trade_in_order_id,
+                CASE WHEN buyback_orders.trade_in_linked_order_id=webshop_orders.id
+                     THEN webshop_orders.trade_in_status ELSE NULL END AS trade_in_status,
+                buyback_orders.device AS trade_in_device, buyback_orders.model AS trade_in_model,
+                buyback_orders.storage AS trade_in_storage, buyback_orders.condition AS trade_in_condition,
+                buyback_orders.battery AS trade_in_battery, buyback_orders.face_id AS trade_in_face_id,
+                buyback_orders.screen AS trade_in_screen, buyback_orders.answers AS trade_in_answers,
+                buyback_orders.status AS trade_in_buyback_status,
                 COALESCE((
                   SELECT json_agg(
                     json_build_object('status', history.status, 'created_at', history.created_at)
@@ -385,14 +420,18 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
          LEFT JOIN buyback_orders ON buyback_orders.id = webshop_orders.trade_in_order_id
                                       AND buyback_orders.trade_in_linked_order_id = webshop_orders.id
                                       AND COALESCE(webshop_orders.trade_in_applied_credit,0)>0
-         ORDER BY webshop_orders.created_at DESC`
+         WHERE webshop_orders.id=$1
+         LIMIT 1`,
+        [id]
       );
-      res.json({ orders: result.rows });
+      if (!result.rows.length) return res.status(404).json({ error: "Webshop bestelling niet gevonden." });
+      return res.json({ order: result.rows[0] });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Webshop bestellingen konden niet worden geladen." });
+      console.error("Load webshop order details error:", error);
+      return res.status(500).json({ error: "Webshop bestelling kon niet worden geladen." });
     }
   });
+
 
   app.post("/api/admin/webshop-orders/:id/notes", requirePermission("webshop_orders.update"), async (req, res) => {
     try {
