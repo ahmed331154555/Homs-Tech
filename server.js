@@ -654,17 +654,23 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       const phoneIndex = Number(req.body.phoneIndex);
       const incomingPhone = req.body.phoneItem;
       const current = await queryWithConnectionRetry(
-        "SELECT data->'phones' AS phones FROM site_settings WHERE id = 1",
-        [], 4
+        "SELECT jsonb_array_length(COALESCE(data->'phones', '[]'::jsonb)) AS phone_count, data->'phones'->($1::int) AS phone FROM site_settings WHERE id = 1",
+        [phoneIndex], 4
       );
-      const phones = Array.isArray(current.rows[0]?.phones) ? current.rows[0].phones.slice() : [];
-      if (phoneIndex < 0 || phoneIndex > phones.length) {
+      if (!current.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
+      const phoneCount = Number(current.rows[0].phone_count || 0);
+      if (phoneIndex < 0 || phoneIndex > phoneCount) {
         return res.status(409).json({ error: "De productlijst is gewijzigd. Vernieuw de pagina en probeer opnieuw." });
       }
-      if (phoneIndex === phones.length) {
-        phones.push(incomingPhone);
+
+      let saved;
+      if (phoneIndex === phoneCount) {
+        saved = await queryWithConnectionRetry(
+          "UPDATE site_settings SET data = jsonb_set(data, '{phones}', COALESCE(data->'phones', '[]'::jsonb) || jsonb_build_array($1::jsonb), true) WHERE id = 1 RETURNING data->'phones'->($2::int) AS phone",
+          [JSON.stringify(incomingPhone), phoneIndex], 4
+        );
       } else {
-        const existingPhone = phones[phoneIndex];
+        const existingPhone = current.rows[0].phone;
         const sameId = incomingPhone.id != null && existingPhone?.id != null &&
           String(incomingPhone.id) === String(existingPhone.id);
         const expected = req.body.phoneIdentity || {};
@@ -674,17 +680,16 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
         if (!sameId && !sameLegacyIdentity) {
           return res.status(409).json({ error: "Dit product is ondertussen gewijzigd of verplaatst. Vernieuw de pagina om overschrijven te voorkomen." });
         }
-        // Match by the already-validated array slot, not by editable name/brand.
-        // This preserves old photos even when the admin changes the product name.
+        // Load and preserve photos for this product only; unrelated product
+        // images never enter the Node.js heap during a single-product save.
         preserveExistingProductPhotos(existingPhone, incomingPhone);
-        phones[phoneIndex] = incomingPhone;
+        saved = await queryWithConnectionRetry(
+          "UPDATE site_settings SET data = jsonb_set(data, ARRAY['phones', $2::text], $1::jsonb, false) WHERE id = 1 RETURNING data->'phones'->($2::int) AS phone",
+          [JSON.stringify(incomingPhone), phoneIndex], 4
+        );
       }
-      const saved = await queryWithConnectionRetry(
-        "UPDATE site_settings SET data = jsonb_set(data, '{phones}', $1::jsonb, true) WHERE id = 1 RETURNING data->'phones' AS phones",
-        [JSON.stringify(phones)], 4
-      );
-      const savedPhones = Array.isArray(saved.rows[0]?.phones) ? saved.rows[0].phones : phones;
-      return res.json({ success: true, phoneIndex, phone: savedPhones[phoneIndex] });
+      if (!saved.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
+      return res.json({ success: true, phoneIndex, phone: saved.rows[0].phone });
     }
 
     // The phone editor now sends only the phone catalog, not the entire 18+ MB
