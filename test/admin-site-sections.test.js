@@ -20,7 +20,7 @@ test("admin site section map contains only explicit page data dependencies", () 
   assert.deepEqual(ADMIN_SITE_SECTIONS.categories.fields, [
     "deviceCategories", "globalConditionDetails", "globalConditionOverviewImage"
   ]);
-  assert.deepEqual(ADMIN_SITE_SECTIONS.why.fields, ["why"]);
+  assert.deepEqual(ADMIN_SITE_SECTIONS.why.fields, ["why", "features"]);
 });
 
 test("admin site section lookup rejects unknown and malformed section names", () => {
