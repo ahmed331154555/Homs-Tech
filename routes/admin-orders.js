@@ -110,7 +110,18 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
   app.get("/api/admin/orders", requirePermission("orders.view"), async (req, res) => {
     try {
       const result = await pool.query(
-        `SELECT id, customer_id, service_category, service_name, service_group, price, price_currency, source_price, source_currency, service_instructions, required_fields, extra_fields, service_source_id, service_source_url, name, email, phone, username, imei, notes, status, provider_reference, execution_note, result_data, execution_updated_at, created_at
+        \`SELECT id, customer_id, service_category, service_name, service_group, price, price_currency, source_price, source_currency, service_instructions, required_fields,
+                CASE
+                  WHEN extra_fields LIKE '%"repairQuote":true%' AND extra_fields LIKE '%"dataUrl"%'
+                  THEN regexp_replace(
+                    extra_fields,
+                    '("dataUrl"[[:space:]]*:[[:space:]]*")[^"]*(")',
+                    E'\\1\\2',
+                    'g'
+                  )
+                  ELSE extra_fields
+                END AS extra_fields,
+                service_source_id, service_source_url, name, email, phone, username, imei, notes, status, provider_reference, execution_note, result_data, execution_updated_at, created_at
          FROM service_orders
          WHERE LOWER(service_category) IN ('reparatie','repair')
          ORDER BY created_at DESC`
