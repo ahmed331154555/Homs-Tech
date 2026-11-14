@@ -3821,6 +3821,7 @@ function handleBuybackImage(event,i){
   r.onload=()=>finish(null,r.result);r.onerror=()=>finish(new Error('read-failed'));r.onabort=()=>finish(new Error('read-aborted'));
   try{r.readAsDataURL(file);}catch(error){finish(error);}
 }
+/* ---------------- REPAIR REQUESTS ---------------- */
 function orderSearchText(o){
   return [o.id,o.name,o.email,o.phone,o.imei,o.username,o.service_name,o.service_group,o.service_category,o.postcode,o.city,o.street,o.house_number].filter(Boolean).join(' ').toLowerCase();
 }
