@@ -261,3 +261,16 @@ test("phone and Shop image compression release temporary browser image and canva
     assert.match(helper, /canvas\.height=0/);
   }
 });
+
+test("Shop image upload releases FileReader handlers and selected file after reading", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function shopProductImageUpload(event,index,slot){");
+  const end = js.indexOf("\nfunction renderShopProductsAdmin(){", start);
+  assert.ok(start >= 0 && end > start, "Shop image upload handler should exist");
+  const handler = js.slice(start, end);
+  assert.match(handler, /reader\.onload=null/);
+  assert.match(handler, /reader\.onerror=null/);
+  assert.match(handler, /input\.value=""/);
+  assert.match(handler, /const imageData=String\(reader\.result\|\|""\)/);
+  assert.match(handler, /shopImageUploadsPending=Math\.max\(0,shopImageUploadsPending-1\)/);
+});
