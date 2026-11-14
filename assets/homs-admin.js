@@ -5574,7 +5574,7 @@ async function showWebshopOrderDetails(id){
         content.className="ht-phone-dashboard-tab-content";
         const tabSpecs=[
           {id:"overview",label:"Overzicht",icon:"▦",items:[orderSummary,cart]},
-          {id:"inspection",label:"Fحص الهاتف",icon:"✓",items:[inspection]},
+          {id:"inspection",label:"Telefooncontrole",icon:"✓",items:[inspection]},
           {id:"customer",label:"Klantgegevens",icon:"♙",items:[customer,address]},
           {id:"payment",label:"Betaling",icon:"▤",items:[payment]},
           {id:"shipping",label:"Verzending",icon:"♧",items:[shipping]},
