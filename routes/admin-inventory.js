@@ -142,10 +142,10 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
                     'storage', variant->'storage', 'color', variant->'color', 'condition', variant->'condition',
                     'sku', variant->'sku', 'stock', variant->'stock', 'available', variant->'available', 'active', variant->'active'
                   ))
-                  FROM jsonb_array_elements(CASE WHEN jsonb_typeof(product->'variantPrices') = 'array' THEN product->'variantPrices' ELSE '[]'::jsonb END) AS variant
+                  FROM jsonb_array_elements(CASE WHEN jsonb_typeof(product->'variantPrices') = 'array' THEN product->'variantPrices' ELSE '[]'::jsonb END) AS variants(variant)
                 ), '[]'::jsonb)
               ))
-              FROM jsonb_array_elements(CASE WHEN jsonb_typeof(data->'phones') = 'array' THEN data->'phones' ELSE '[]'::jsonb END) AS product
+              FROM jsonb_array_elements(CASE WHEN jsonb_typeof(data->'phones') = 'array' THEN data->'phones' ELSE '[]'::jsonb END) AS products(product)
             ), '[]'::jsonb) AS phones,
             COALESCE((
               SELECT jsonb_agg(jsonb_build_object(
@@ -156,10 +156,10 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
                     'id', variant->'id', 'quality', variant->'quality', 'sku', variant->'sku',
                     'stock', variant->'stock', 'active', variant->'active'
                   ))
-                  FROM jsonb_array_elements(CASE WHEN jsonb_typeof(product->'variants') = 'array' THEN product->'variants' ELSE '[]'::jsonb END) AS variant
+                  FROM jsonb_array_elements(CASE WHEN jsonb_typeof(product->'variants') = 'array' THEN product->'variants' ELSE '[]'::jsonb END) AS variants(variant)
                 ), '[]'::jsonb)
               ))
-              FROM jsonb_array_elements(CASE WHEN jsonb_typeof(data->'shopProducts') = 'array' THEN data->'shopProducts' ELSE '[]'::jsonb END) AS product
+              FROM jsonb_array_elements(CASE WHEN jsonb_typeof(data->'shopProducts') = 'array' THEN data->'shopProducts' ELSE '[]'::jsonb END) AS products(product)
             ), '[]'::jsonb) AS shop_products
           FROM site_settings WHERE id=1
           `
