@@ -1122,7 +1122,7 @@
       if(!freshData || typeof freshData !== "object") throw new Error("Invalid repair page data");
       siteData = freshData;
 
-      const rawWhatsApp = String(siteData.whatsapp || "").trim();
+      const rawWhatsApp = String(siteData.whatsapp || "+31684242359").trim();
       let whatsappNumber = rawWhatsApp.replace(/\D/g, "");
       if (whatsappNumber.startsWith("00")) whatsappNumber = whatsappNumber.slice(2);
       if (whatsappNumber.startsWith("31") && whatsappNumber.charAt(2) === "0") {
