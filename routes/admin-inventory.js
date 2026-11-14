@@ -198,9 +198,14 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
-      const locked = await client.query("SELECT data FROM site_settings WHERE id=1 FOR UPDATE");
+      const locked = await client.query(
+        "SELECT data->'phones' AS phones, data->'shopProducts' AS shop_products FROM site_settings WHERE id=1 FOR UPDATE"
+      );
       if (!locked.rows.length) throw new Error("Productcatalogus niet gevonden.");
-      const data = locked.rows[0].data || {};
+      const data = {
+        phones: Array.isArray(locked.rows[0].phones) ? locked.rows[0].phones : [],
+        shopProducts: Array.isArray(locked.rows[0].shop_products) ? locked.rows[0].shop_products : []
+      };
       const catalogKey = itemType === "shop" ? "shopProducts" : "phones";
       const catalog = Array.isArray(data[catalogKey]) ? data[catalogKey] : [];
       const productIndex = itemType === "shop"
