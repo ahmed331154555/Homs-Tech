@@ -116,6 +116,13 @@ test("inventory overview returns counts and recent movement history", async () =
   assert.equal(res.body.summary.totalUnits, 5);
   assert.equal(res.body.summary.lowStockCount, 1);
   assert.equal(res.body.movements[0].id, 7);
+  const catalogQuery = h.queries.find(query => query.sql.includes("FROM site_settings"));
+  assert.ok(catalogQuery);
+  assert.match(catalogQuery.sql, /jsonb_build_object/);
+  assert.match(catalogQuery.sql, /'variantPrices'/);
+  assert.match(catalogQuery.sql, /shop_products/);
+  assert.doesNotMatch(catalogQuery.sql, /SELECT data FROM site_settings/i);
+  assert.doesNotMatch(catalogQuery.sql, /'image'|'images'|'colorGalleryImages'/i);
 });
 
 test("Shop purchase movement updates stock and writes an audit record atomically", async () => {
