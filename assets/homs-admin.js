@@ -233,29 +233,40 @@ async function logout(){
   }
 
 function handleBatteryOptionImage(event, phoneIndex, optionIndex){
-  const file=event.target.files && event.target.files[0];
+  const input=event.target;
+  const file=input.files && input.files[0];
   if(!file)return;
   if(!file.type || !file.type.startsWith("image/")){
     alert("Kies een afbeeldingsbestand.");
-    event.target.value="";
+    input.value="";
     return;
   }
   if(file.size>5*1024*1024){
     alert("De afbeelding mag maximaal 5 MB zijn.");
-    event.target.value="";
+    input.value="";
     return;
   }
   const reader=new FileReader();
-  reader.onload=()=>{
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;
+    reader.onload=null;
+    reader.onerror=null;
+    reader.onabort=null;
+    input.value="";
+    if(error){alert("De afbeelding kon niet worden gelezen. Probeer het opnieuw.");return;}
     const phone=data.phones && data.phones[phoneIndex];
     const option=phone && Array.isArray(phone.batteryOptions) ? phone.batteryOptions[optionIndex] : null;
     if(!option)return;
-    option.image=String(reader.result||"");
+    option.image=String(value||"");
     renderPhones();
     markChanged();
   };
-  reader.onerror=()=>alert("De afbeelding kon niet worden gelezen. Probeer het opnieuw.");
-  reader.readAsDataURL(file);
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error("read-failed"));
+  reader.onabort=()=>finish(new Error("read-aborted"));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
 }
 function removeBatteryOptionImage(phoneIndex, optionIndex){
   const phone=data.phones && data.phones[phoneIndex];
@@ -2084,14 +2095,30 @@ function handleCustomOptionImage(event,index,type,groupIndex,optionIndex){
 }
 
 function handlePhoneImage(event,i,j){
+  const input=event.target;
   const phone=data.phones[i];
-  const file=event.target.files && event.target.files[0];
+  const file=input.files && input.files[0];
   if(!phone || !file) return;
-  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');event.target.value='';return;}
-  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');input.value='';return;}
+  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');input.value='';return;}
   const reader=new FileReader();
-  reader.onload=()=>{phone.images[j]=reader.result;renderPhones();markChanged();};
-  reader.readAsDataURL(file);
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;
+    reader.onload=null;
+    reader.onerror=null;
+    reader.onabort=null;
+    input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    phone.images[j]=value;
+    renderPhones();
+    markChanged();
+  };
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error('read-failed'));
+  reader.onabort=()=>finish(new Error('read-aborted'));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
 }
 
 function removePhoneImage(i,j){
