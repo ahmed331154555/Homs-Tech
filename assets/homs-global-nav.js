@@ -46,7 +46,7 @@
  #homsMenuDrawer .homs-menu-group+.homs-menu-group{border-top:1px solid #edf1f5}
  #homsMenuDrawer a{min-height:82px;padding:7px 10px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #e8eef4;color:#102a43;text-decoration:none;font-size:16px;font-weight:700}
  #homsMenuDrawer a .homs-menu-icon{width:70px;height:70px;flex:0 0 70px;display:flex;align-items:center;justify-content:center;font-size:28px}
- #homsMenuDrawer a .homs-menu-icon{background-image:url('/assets/images/menu/menu-icons-sprite.jpg');background-repeat:no-repeat;background-size:300% 300%;border-radius:10px}
+ #homsMenuDrawer .homs-menu-icon--home,#homsMenuDrawer .homs-menu-icon--about,#homsMenuDrawer .homs-menu-icon--contact,#homsMenuDrawer .homs-menu-icon--devices,#homsMenuDrawer .homs-menu-icon--cart,#homsMenuDrawer .homs-menu-icon--repair,#homsMenuDrawer .homs-menu-icon--prices,#homsMenuDrawer .homs-menu-icon--trade-in,#homsMenuDrawer .homs-menu-icon--account{background-image:url('/assets/images/menu/menu-icons-sprite.jpg');background-repeat:no-repeat;background-size:300% 300%;border-radius:10px}
  #homsMenuDrawer .homs-menu-icon--home{background-position:0% 0%}
  #homsMenuDrawer .homs-menu-icon--about{background-position:50% 0%}
  #homsMenuDrawer .homs-menu-icon--contact{background-position:100% 0%}
