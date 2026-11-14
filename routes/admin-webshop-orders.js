@@ -373,6 +373,7 @@ function registerAdminWebshopOrderRoutes(app, { pool, requirePermission, mollieR
     try {
       const id = Number(req.params.id);
       if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig order-ID." });
+      if (typeof ensureBuybackOrdersTable === "function") await ensureBuybackOrdersTable(pool);
       const result = await pool.query(
         `SELECT webshop_orders.*,
                 COALESCE(phone_inspection.checks,'{}'::jsonb) AS inspection_checks,
