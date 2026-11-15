@@ -240,5 +240,12 @@
  else{document.body.insertBefore(button,document.body.firstChild)}
  document.body.appendChild(backdrop);document.body.appendChild(drawer);
 })();
+// Shared footer renderer: one consistent, functional footer across the site.
+(function(){
+ var script=document.createElement("script");
+ script.src="/assets/homs-site-footer.js?v=20261115";
+ script.defer=true;
+ document.head.appendChild(script);
+})();
 // HOMS TECH configurable announcement bar on every page.
 (function(){var script=document.createElement("script");script.src="/assets/homs-announcement-bars.js?v=20261108-loopfix2";script.onload=function(){var benefits=document.createElement("script");benefits.src="/assets/homs-benefits-strip.js?v=1";document.head.appendChild(benefits)};document.head.appendChild(script)})();
