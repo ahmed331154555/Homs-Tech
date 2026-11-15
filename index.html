@@ -910,6 +910,7 @@ function renderProducts(){
   const groups=new Map();
   rows.forEach(r=>{const storage=String(r.storage||"").trim(),color=String(r.color||"").trim();if(!storage||!color)return;const key=storage.toLocaleLowerCase()+"|"+color.toLocaleLowerCase();if(!groups.has(key))groups.set(key,{storage,color,rows:[]});groups.get(key).rows.push(r);});
   const strip=(name,storage,color)=>{let n=String(name||"Smartphone").trim();[storage,color].forEach(v=>{const suffix=" "+v;if(n.toLocaleLowerCase().endsWith(suffix.toLocaleLowerCase()))n=n.slice(0,-suffix.length).trim();});return n;};
+  if(!groups.size)return [{p,idx}];
   return [...groups.values()].map(g=>{const prices=g.rows.map(r=>Number(String(r.price??"").replace(/€/g,"").replace(",","."))).filter(n=>Number.isFinite(n)&&n>0);const gallery=p.colorGalleryImages&&Array.isArray(p.colorGalleryImages[g.color])?p.colorGalleryImages[g.color].filter(Boolean):[];const image=gallery[0]||(p.colorImages&&p.colorImages[g.color])||(Array.isArray(p.colorOptions)?p.colorOptions.find(o=>String(o.label||"").toLowerCase()===g.color.toLowerCase())?.image:"")||p.image||(Array.isArray(p.images)?p.images.find(Boolean):"");return {p:{...p,name:strip(p.name,g.storage,g.color)+" "+g.storage+" "+g.color,image,images:gallery.length?gallery:p.images,price:prices.length?Math.min(...prices):(p.price||""),_variantStorage:g.storage,_variantColor:g.color},idx};});
  };
  const chosen=selectedPhones.flatMap((p,idx)=>expandPhone(p,Number.isInteger(Number(p?._index))?Number(p._index):idx)).slice(0,cardLimit);
