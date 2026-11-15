@@ -241,5 +241,4 @@
  document.body.appendChild(backdrop);document.body.appendChild(drawer);
 })();
 // HOMS TECH configurable announcement bar on every page.
-(function(){var script=document.createElement("script");script.src="/assets/homs-announcement-bars.js?v=20261108-loopfix2";script.defer=true;document.head.appendChild(script)})();
-(function(){var script=document.createElement("script");script.src="/assets/homs-benefits-strip.js?v=1";script.defer=true;document.head.appendChild(script)})();
+(function(){var script=document.createElement("script");script.src="/assets/homs-announcement-bars.js?v=20261108-loopfix2";script.onload=function(){var benefits=document.createElement("script");benefits.src="/assets/homs-benefits-strip.js?v=1";document.head.appendChild(benefits)};document.head.appendChild(script)})();
