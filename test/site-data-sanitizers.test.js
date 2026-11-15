@@ -134,3 +134,19 @@ test("sanitizePublicSiteData recursively removes private costs and credentials w
   assert.equal(output.homepage.privateNote, undefined);
   assert.equal(input.phones[0].supplierCost, 250);
 });
+
+
+test("sanitizeHomepageSiteData clears stale popular-phone indexes when catalog entries were removed", () => {
+  const phones = Array.from({ length: 4 }, (_, index) => ({
+    name: "Phone " + index,
+    brand: "Brand",
+    price: 100 + index
+  }));
+  const output = sanitizeHomepageSiteData({
+    phones,
+    homepage: { popular: { enabled: true, limit: 3, indexes: [12, 18, 25] } }
+  });
+
+  assert.deepEqual(output.phones.map(phone => phone._index), [1, 2, 3]);
+  assert.deepEqual(output.homepage.popular.indexes, []);
+});
