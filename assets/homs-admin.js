@@ -7504,29 +7504,44 @@ async function deviceSaveRow(id){
   }catch(e){deviceSetStatus(e.message,"error")}
 }
 function deviceAddBlankRow(){
-  const type=document.getElementById("deviceTypeFilter")?.value||"commercial";
-  deviceRegisterCache.push({id:null,device_type:type,identifier_type:"imei",identifier_value:"",brand:"Apple",model:"",status:(type==="customer_repair"?"تم الاستلام":"قيد الفحص"),customer_name:"",customer_phone:"",customer_email:"",repair_order_number:"",repair_issue:"",repair_value:0,repair_notes:"",purchase_cost:0,sale_price:0});
-  deviceRenderTable();const row=document.querySelector('tr[data-row-id="new"]');row?.scrollIntoView({behavior:"smooth",block:"center",inline:"center"});row?.querySelector('[data-field="identifierValue"]')?.focus();deviceSetStatus("Vul de identificatie en modelnaam in en klik op Opslaan.","info");
+  const form=document.querySelector(".dr-entry-form");
+  form?.scrollIntoView({behavior:"smooth",block:"center"});
+  document.getElementById("drFormImei")?.focus();
+  deviceSetStatus("Vul de gegevens in het formulier in en klik op Opslaan.","info");
 }
 async function deviceLoadXlsx(){
   if(window.XLSX)return;
   await new Promise((resolve,reject)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";s.onload=resolve;s.onerror=()=>reject(Error("Excel-module kon niet worden geladen. Controleer de internetverbinding."));document.head.appendChild(s)});
 }
 async function deviceExportExcel(){
-  const rows=deviceRegisterCache;if(!rows.length){alert("Geen gegevens om te exporteren. Laad eerst het gewenste overzicht.");return}
+  const rows=deviceRegisterCache,type=document.getElementById("deviceTypeFilter")?.value||"commercial";
+  if(!rows.length){alert("Geen gegevens om te exporteren. Laad eerst het gewenste overzicht.");return}
   try{
-    await deviceLoadXlsx();const type=document.getElementById("deviceTypeFilter")?.value||"commercial";
-    const reportRows=rows.map(x=>x.device_type==="customer_repair"
-      ? {"Type registratie":"Klantreparatie","IMEI / serienummer":x.identifier_value,"Merk":x.brand,"Model":x.model,"Klant":x.customer_name,"Telefoon":x.customer_phone,"Reparatie / probleem":x.repair_issue,"Status":x.status,"Reparatiewaarde (€)":Number(x.repair_value||0),"Reparatieorder":x.repair_order_number,"Notities":x.repair_notes||""}
-      : {"Type registratie":"Eigen HOMS TECH-toestel","IMEI / serienummer / HT-code":x.identifier_value,"Merk":x.brand,"Model":x.model,"Opslag":x.storage||"","Kleur":x.color||"","Conditie":x.device_condition||"","Status":x.status,"Inkoopprijs (€)":Number(x.purchase_cost||0),"Verkoopprijs (€)":Number(x.sale_price||0),"Totale kosten (€)":Number(x.purchase_cost||0)+Number(x.recorded_cost||0),"Marge (€)":Number(x.sale_price||0)-Number(x.purchase_cost||0)-Number(x.recorded_cost||0)});
-    const ws=XLSX.utils.aoa_to_sheet([["HOMS TECH"],[type==="customer_repair"?"KLANTREPARATIES — SERVICE REGISTER":"EIGEN TOESTELLEN — INVENTORY REGISTER"],["Exportdatum: "+new Date().toLocaleString("nl-NL")],["Website: https://homs-tech.nl"],[]]);
-    XLSX.utils.sheet_add_json(ws,reportRows,{origin:"A6"});
-    ws["!cols"]=Object.keys(reportRows[0]||{}).map(k=>({wch:Math.max(16,Math.min(34,k.length+8))}));
-    ws["!autofilter"]={ref:XLSX.utils.encode_range({s:{r:5,c:0},e:{r:5+reportRows.length,c:Math.max(0,Object.keys(reportRows[0]||{}).length-1)}})};
-    ws["!merges"]=[{s:{r:0,c:0},e:{r:0,c:Math.max(0,Object.keys(reportRows[0]||{}).length-1)}},{s:{r:1,c:0},e:{r:1,c:Math.max(0,Object.keys(reportRows[0]||{}).length-1)}}];
-    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,type==="customer_repair"?"Klantreparaties":"Eigen toestellen");
-    XLSX.writeFile(wb,type==="customer_repair"?"HOMS-TECH-Klantreparaties.xlsx":"HOMS-TECH-Toestelregister.xlsx");
-    deviceSetStatus("HOMS TECH Excel-rapport is geëxporteerd.","success");
+    await deviceLoadXlsx();
+    const repair=type==="customer_repair";
+    const columns=repair
+      ? [["IMEI","identifier_value"],["Merk","brand"],["Model","model"],["Reparatieprijs (€)","repair_value"],["Status","status"]]
+      : [["IMEI","identifier_value"],["Merk","brand"],["Model","model"],["Geheugen","storage"],["Kleur","color"],["Conditie","device_condition"],["Status","status"],["Inkoopprijs (€)","purchase_cost"],["Verkoopprijs (€)","sale_price"]];
+    const data=rows.map(row=>columns.map(([,key])=>{
+      if(key==="purchase_cost"||key==="sale_price"||key==="repair_value")return Number(row[key]||0);
+      return row[key]??"";
+    }));
+    const width=columns.length;
+    const ws=XLSX.utils.aoa_to_sheet([
+      ["HOMS TECH"],
+      [repair?"KLANTREPARATIES — SERVICE REGISTER":"EIGEN TOESTELLEN — INVENTORY REGISTER"],
+      ["Exportdatum: "+new Date().toLocaleString("nl-NL")],
+      ["Website: https://homs-tech.nl"],
+      [],
+      columns.map(([label])=>label),
+      ...data
+    ]);
+    ws["!cols"]=columns.map(([label])=>({wch:Math.max(14,Math.min(28,label.length+7))}));
+    ws["!autofilter"]={ref:XLSX.utils.encode_range({s:{r:5,c:0},e:{r:5+data.length,c:width-1}})};
+    ws["!merges"]=[{s:{r:0,c:0},e:{r:0,c:width-1}},{s:{r:1,c:0},e:{r:1,c:width-1}}];
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,repair?"Reparaties":"Apparaten");
+    XLSX.writeFile(wb,repair?"HOMS-TECH-Reparaties.xlsx":"HOMS-TECH-Apparaten.xlsx");
+    deviceSetStatus("Excel is geëxporteerd met dezelfde kolommen als het overzicht.","success");
   }catch(e){deviceSetStatus(e.message,"error")}
 }
 async function deviceImportExcel(event){
@@ -7534,7 +7549,7 @@ async function deviceImportExcel(event){
   try{
     await deviceLoadXlsx();const data=await file.arrayBuffer();const wb=XLSX.read(data,{type:"array"});const ws=wb.Sheets[wb.SheetNames[0]];const raw=XLSX.utils.sheet_to_json(ws,{defval:"",raw:false});
     const norm=s=>String(s??"").trim().toLowerCase().replace(/[ _/()-]/g,"");
-    const aliases={deviceType:["type","devicetype","toesteltype"],identifierType:["identificatietype","identifiertype","codetype"],identifierValue:["imei","imeicode","serienummer","barcode","htcode","identificatienummer"],brand:["merk","brand"],model:["model","naam","modelnaam","toestel"],status:["status"],customerName:["klantnaam","klant","customername","naamklant"],customerPhone:["telefoon","telefoonklant","customerphone"],customerEmail:["email","e-mail","klantemail"],repairOrderNumber:["ordernummer","reparatieordernummer","repairordernumber"],repairIssue:["reparatieprobleem","probleem","reparatie","klacht","issue"],repairValue:["reparatiewaarde","reparatiebedrag","repairvalue","prijsreparatie"],repairNotes:["reparatienotities","notities","opmerking"],purchaseCost:["inkoopprijs","inkoop","purchasecost"],salePrice:["verkoopprijs","verkoop","saleprice"]};
+    const aliases={deviceType:["type","devicetype","toesteltype"],identifierType:["identificatietype","identifiertype","codetype"],identifierValue:["imei","imeicode","serienummer","barcode","htcode","identificatienummer"],brand:["merk","brand"],model:["model","naam","modelnaam","toestel"],status:["status"],customerName:["klantnaam","klant","customername","naamklant"],customerPhone:["telefoon","telefoonklant","customerphone"],customerEmail:["email","e-mail","klantemail"],repairOrderNumber:["ordernummer","reparatieordernummer","repairordernumber"],repairIssue:["reparatieprobleem","probleem","reparatie","klacht","issue"],repairValue:["reparatiewaarde","reparatiebedrag","repairvalue","prijsreparatie","reparatieprijs"],repairNotes:["reparatienotities","notities","opmerking"],purchaseCost:["inkoopprijs","inkoop","purchasecost"],salePrice:["verkoopprijs","verkoop","saleprice"],storage:["geheugen","opslag","storage"],color:["kleur","color"],deviceCondition:["conditie","staat","devicecondition"]};
     const get=(r,k)=>{const keys=Object.keys(r);const hit=keys.find(h=>aliases[k].includes(norm(h)));return hit===undefined?"":r[hit]};
     let added=0,skipped=0;
     for(const r of raw){
@@ -7542,7 +7557,8 @@ async function deviceImportExcel(event){
       const deviceType=String(get(r,"deviceType")).toLowerCase().includes("commercial")||String(get(r,"deviceType")).toLowerCase().includes("eigen")?"commercial":"customer_repair";
       const identifierType=String(get(r,"identifierType")).toLowerCase().includes("serial")?"serial":String(get(r,"identifierType")).toLowerCase().includes("barcode")?"barcode":"imei";
       const status=String(get(r,"status")).trim()||(deviceType==="commercial"?"قيد الفحص":"مفتوح");
-      const body={deviceType,identifierType,identifierValue,model,brand:String(get(r,"brand")||"Apple"),status,customerName:String(get(r,"customerName")||""),customerPhone:String(get(r,"customerPhone")||""),customerEmail:String(get(r,"customerEmail")||""),repairOrderNumber:String(get(r,"repairOrderNumber")||""),repairIssue:String(get(r,"repairIssue")||""),repairValue:String(get(r,"repairValue")||"0").replace(",","."),purchaseCost:String(get(r,"purchaseCost")||"0").replace(",","."),salePrice:String(get(r,"salePrice")||"0").replace(",",".")};
+      const body={deviceType,identifierType,identifierValue,model,brand:String(get(r,"brand")||"Apple"),status,customerName:String(get(r,"customerName")||""),customerPhone:String(get(r,"customerPhone")||""),customerEmail:String(get(r,"customerEmail")||""),repairOrderNumber:String(get(r,"repairOrderNumber")||""),repairIssue:String(get(r,"repairIssue")||""),repairValue:String(get(r,"repairValue")||"0").replace(",","."),purchaseCost:String(get(r,"purchaseCost")||"0").replace(",","."),salePrice:String(get(r,"salePrice")||"0").replace(",","."),
+        storage:String(get(r,"storage")||""),color:String(get(r,"color")||""),deviceCondition:String(get(r,"deviceCondition")||"")};
       try{await deviceApi("/api/admin/device-register",{method:"POST",body:JSON.stringify(body)});added++}catch(e){skipped++}
     }
     deviceSetStatus("Import klaar: "+added+" toegevoegd, "+skipped+" overgeslagen (lege of dubbele/ongeldige regels).","success");await loadDeviceRegister();
