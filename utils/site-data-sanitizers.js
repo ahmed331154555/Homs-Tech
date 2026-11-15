@@ -47,6 +47,16 @@ function sanitizeHomepageSiteData(input) {
           Number.isInteger(index) && index >= 0 && index < phones.length
         ))]
       : [];
+
+    // The homepage response contains a compact, already-selected phone list.
+    // Clear stale selections when every saved index is outside the current catalog;
+    // otherwise the browser filters this fallback list a second time and shows no phones.
+    if (popular && Array.isArray(popular.indexes)) {
+      data.homepage = {
+        ...data.homepage,
+        popular: { ...popular, indexes: selected }
+      };
+    }
     const configuredLimit = Number(popular?.limit);
     const limit = Number.isFinite(configuredLimit)
       ? Math.max(1, Math.min(50, Math.floor(configuredLimit)))
