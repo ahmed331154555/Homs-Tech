@@ -8,31 +8,45 @@
   style.textContent = `
     #homs-ai-launch {
       position: fixed;
-      right: 20px;
-      bottom: 20px;
+      right: 18px;
+      bottom: 18px;
       z-index: 9998;
-      width: 54px;
-      height: 54px;
+      min-width: 112px;
+      height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 0 17px;
+      border: 1px solid rgba(255,255,255,.72);
+      border-radius: 999px;
+      background: linear-gradient(135deg, #25d366, #16a34a);
+      color: #062b18;
+      box-shadow: 0 7px 22px rgba(7,29,45,.25);
+      font: 700 14px/1 Arial, sans-serif;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #homs-ai-launch .homs-ai-launch-icon {
+      width: 22px;
+      height: 22px;
       display: grid;
       place-items: center;
-      padding: 0;
-      border: 1px solid rgba(255,255,255,.7);
       border-radius: 50%;
-      background: linear-gradient(145deg, #3b82f6, #1d4ed8);
+      background: rgba(255,255,255,.22);
       color: #fff;
-      box-shadow: 0 6px 20px rgba(7,29,45,.28);
-      font: 700 25px/1 Arial, sans-serif;
-      cursor: pointer;
-      transition: transform .18s ease, box-shadow .18s ease;
-      -webkit-tap-highlight-color: transparent;
+      font-size: 16px;
+      line-height: 1;
     }
     #homs-ai-launch:hover {
       transform: translateY(-2px);
-      box-shadow: 0 9px 24px rgba(7,29,45,.32);
+      box-shadow: 0 10px 26px rgba(7,29,45,.3);
+      filter: brightness(1.03);
     }
-    #homs-ai-launch:active { transform: scale(.95); }
+    #homs-ai-launch:active { transform: scale(.97); }
     #homs-ai-launch:focus-visible {
-      outline: 3px solid #93c5fd;
+      outline: 3px solid #86efac;
       outline-offset: 3px;
     }
     #homs-ai-panel {
@@ -154,10 +168,11 @@
     }
     @media (max-width: 480px) {
       #homs-ai-launch {
-        right: 16px;
-        bottom: 16px;
-        width: 50px;
-        height: 50px;
+        right: 14px;
+        bottom: 14px;
+        min-width: 104px;
+        height: 46px;
+        padding: 0 15px;
       }
       #homs-ai-panel {
         right: 8px;
@@ -174,7 +189,7 @@
   const launch = document.createElement("button");
   launch.id = "homs-ai-launch";
   launch.type = "button";
-  launch.textContent = "💬";
+  launch.innerHTML = '<span class="homs-ai-launch-icon" aria-hidden="true">☎</span><span>Chat</span>';
   launch.setAttribute("aria-label", "HOMS TECH Chat openen");
   launch.setAttribute("title", "HOMS TECH Chat");
   launch.setAttribute("aria-expanded", "false");
