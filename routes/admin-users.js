@@ -53,6 +53,8 @@ app.put("/api/admin/users/:id",requirePermission("admins.manage"),async(req,res)
     const permissions=permissionResult.permissions;
     const active=req.body?.active!==false;
     if(!Number.isInteger(id)||id<1) return res.status(400).json({error:"Ongeldig admin-ID."});
+    if(req.admin?.id!=null&&Number(req.admin.id)===id&&!active)
+      return res.status(400).json({error:"U kunt uw eigen admin-account niet uitschakelen."});
     if(!username) return res.status(400).json({error:"Gebruikersnaam is verplicht."});
     if(username.toLowerCase()===String(getAdminUsername() || "").trim().toLowerCase())
       return res.status(400).json({error:"De hoofdadmin wordt beheerd via Render Environment Variables."});
@@ -76,6 +78,9 @@ app.put("/api/admin/users/:id",requirePermission("admins.manage"),async(req,res)
 app.delete("/api/admin/users/:id",requirePermission("admins.manage"),async(req,res)=>{
   try{
     const id=Number(req.params.id);
+    if(!Number.isSafeInteger(id)||id<1) return res.status(400).json({error:"Ongeldig admin-ID."});
+    if(req.admin?.id!=null&&Number(req.admin.id)===id)
+      return res.status(400).json({error:"U kunt uw eigen admin-account niet verwijderen."});
     const q=await pool.query("DELETE FROM admin_users WHERE id=$1 RETURNING id",[id]);
     if(!q.rows.length) return res.status(404).json({error:"Admin niet gevonden."});
     res.json({success:true});
