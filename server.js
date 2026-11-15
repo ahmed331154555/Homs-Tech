@@ -27,6 +27,7 @@ const { registerAdminInventoryRoutes } = require("./routes/admin-inventory");
 const { registerAdminEmailRoutes } = require("./routes/admin-emails");
 const { registerContactRoutes } = require("./routes/contact");
 const { registerAnnouncementBarRoutes } = require("./routes/announcement-bars");
+const { registerBenefitsStripRoutes } = require("./routes/benefits-strip");
 const { registerBuybackRoutes } = require("./routes/buyback");
 const { registerLiveChatRoutes } = require("./routes/live-chat");
 const { registerWebshopCheckoutRoutes } = require("./routes/webshop-checkout");
@@ -236,6 +237,10 @@ app.get("/api/buyback/catalog", async (req, res) => {
 });
 
 registerAnnouncementBarRoutes(app, {
+  requirePermission,
+  queryWithConnectionRetry
+});
+registerBenefitsStripRoutes(app, {
   requirePermission,
   queryWithConnectionRetry
 });
