@@ -1,6 +1,9 @@
 (function () {
   "use strict";
   if (window.__homsBenefitsStripLoaded) return;
+  const currentPath=(location.pathname||"/").toLowerCase();
+  const isHomepage=currentPath==="/"||currentPath.endsWith("/index.html");
+  if(!isHomepage)return;
   window.__homsBenefitsStripLoaded = true;
   const existingBar = document.getElementById("homs-benefits-strip");
   if (existingBar) existingBar.remove();
