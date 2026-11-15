@@ -832,10 +832,10 @@ const HOMEPAGE_DEFAULTS={
   why:{enabled:true,title:"Waarom HOMS TECH?"},
   footer:{
     enabled:true,
-    description:"Refurbished apparaten · Reparatie aan huis · ",
-    area:"Rotterdam en omgeving",
+    description:"Refurbished apparaten · Telefoonreparatie · Service",
+    area:"Rotterdam",
     contact:"WhatsApp · Telefoon · E-mail",
-    email:"", phone:"", whatsapp:"", hours:"", address:"", mapUrl:""
+    email:"mail@inbound.homs-tech.nl", phone:"+31684242359", whatsapp:"+31684242359", hours:"09:00–19:00", address:"", mapUrl:""
   }
 };
 
@@ -1031,8 +1031,8 @@ function renderHomepageSettings(){
       <div class="field"><label>E-mailadres contact</label><input type="email" value="${esc(f.email)}" placeholder="info@homs-tech.nl" oninput="data.homepage.footer.email=this.value;markChanged()"></div>
       <div class="field"><label>Telefoonnummer</label><input value="${esc(f.phone)}" placeholder="+31 ..." oninput="data.homepage.footer.phone=this.value;markChanged()"></div>
       <div class="field"><label>WhatsApp nummer</label><input value="${esc(f.whatsapp)}" placeholder="316..." oninput="data.homepage.footer.whatsapp=this.value;markChanged()"></div>
-      <div class="field"><label>Openingstijden</label><input value="${esc(f.hours)}" placeholder="Ma–Vr 09:00–18:00" oninput="data.homepage.footer.hours=this.value;markChanged()"></div>
-      <div class="field"><label>Adres</label><input value="${esc(f.address)}" placeholder="Straat, postcode en plaats" oninput="data.homepage.footer.address=this.value;markChanged()"></div>
+      <div class="field"><label>Openingstijden</label><input value="${esc(f.hours)}" placeholder="09:00–19:00" oninput="data.homepage.footer.hours=this.value;markChanged()"></div>
+      <div class="field"><label>Adres (optioneel)</label><input value="${esc(f.address)}" placeholder="Laat leeg als u alleen Rotterdam wilt tonen" oninput="data.homepage.footer.address=this.value;markChanged()"></div>
       <div class="field"><label>Google Maps link</label><input type="url" value="${esc(f.mapUrl)}" placeholder="https://maps.google.com/..." oninput="data.homepage.footer.mapUrl=this.value;markChanged()"></div>
     </div>`;
 
