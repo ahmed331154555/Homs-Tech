@@ -17,6 +17,8 @@
   const page = path === "/" || path.endsWith("/index.html")
     ? "home"
     : (pages.find(function (entry) { return path.endsWith(entry[0]); }) || [null,"home"])[1];
+  // The moving announcement strip is reserved for the homepage only.
+  if (page !== "home") return;
 
   const defaults = {
     enabled:true,
