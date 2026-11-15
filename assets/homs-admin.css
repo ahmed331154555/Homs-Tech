@@ -4375,3 +4375,43 @@ body{
  #page-device-register .dr-form-grid{grid-template-columns:1fr 1fr;gap:9px}
  #page-device-register .dr-form-grid input,#page-device-register .dr-form-grid select{font-size:13px;padding:9px}
 }
+
+
+/* Repair register: clearer layout, complaint notes and status */
+#page-device-register .dr-entry-form{max-width:100%;padding:22px;margin:0 0 18px;border:1px solid #dbe4ef;border-radius:16px;background:#fff;box-shadow:0 5px 18px rgba(15,35,60,.045)}
+#page-device-register .dr-entry-head{align-items:center;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid #edf1f6}
+#page-device-register .dr-entry-head h3{font-size:19px;line-height:1.35}
+#page-device-register .dr-entry-head p{max-width:680px;line-height:1.6}
+#page-device-register .dr-form-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+#page-device-register .dr-form-grid label{min-width:0;line-height:1.5}
+#page-device-register .dr-form-grid input,
+#page-device-register .dr-form-grid select,
+#page-device-register .dr-form-grid textarea{box-sizing:border-box;width:100%;min-height:43px;margin-top:7px;padding:11px 12px;border:1px solid #d7e0eb;border-radius:10px;background:#fbfcfe;color:#172b42;font:inherit;font-size:14px;transition:border-color .15s,box-shadow .15s}
+#page-device-register .dr-form-grid textarea{min-height:105px;resize:vertical;line-height:1.6}
+#page-device-register .dr-form-grid input:focus,
+#page-device-register .dr-form-grid select:focus,
+#page-device-register .dr-form-grid textarea:focus{outline:0;border-color:#2563eb;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.11)}
+#page-device-register .dr-form-grid .dr-full{grid-column:1/-1}
+#page-device-register .dr-repair-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+#page-device-register .dr-repair-grid label:nth-child(-n+4){grid-column:span 1}
+#page-device-register .dr-repair-grid #drFormRepairStatus{font-weight:700}
+#page-device-register .dr-form-actions{gap:10px;margin-top:18px;padding-top:15px;border-top:1px solid #edf1f6}
+#page-device-register .dr-form-actions .btn{min-width:120px;min-height:42px}
+#page-device-register .dr-description-cell{min-width:230px;max-width:340px}
+#page-device-register .dr-description-input{box-sizing:border-box;width:100%;min-width:220px;min-height:58px;padding:8px;border:1px solid #d7e0eb;border-radius:8px;resize:vertical;white-space:pre-wrap}
+#page-device-register .dr-sheet-wrap{max-width:100%;overflow:auto;border:1px solid #e1e8f0;border-radius:12px;background:#fff}
+#page-device-register .dr-sheet{width:100%;border-collapse:separate;border-spacing:0}
+#page-device-register .dr-sheet th{position:sticky;top:0;z-index:1;background:#f3f6fa;color:#334155;font-weight:750}
+#page-device-register .dr-sheet td,#page-device-register .dr-sheet th{padding:10px 11px;vertical-align:middle;border-bottom:1px solid #edf1f6}
+#page-device-register .dr-sheet tbody tr:hover{background:#fafcff}
+@media(max-width:900px){
+ #page-device-register .dr-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:640px){
+ #page-device-register .dr-entry-form{padding:14px}
+ #page-device-register .dr-form-grid,#page-device-register .dr-repair-grid{grid-template-columns:1fr}
+ #page-device-register .dr-repair-grid label:nth-child(-n+4){grid-column:1}
+ #page-device-register .dr-form-grid .dr-full{grid-column:1}
+ #page-device-register .dr-form-actions{display:flex}
+ #page-device-register .dr-form-actions .btn{flex:1}
+}
