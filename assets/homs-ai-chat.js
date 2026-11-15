@@ -8,17 +8,32 @@
   style.textContent = `
     #homs-ai-launch {
       position: fixed;
-      right: 22px;
-      bottom: 22px;
+      right: 20px;
+      bottom: 20px;
       z-index: 9998;
-      border: 0;
-      border-radius: 999px;
-      background: #25d366;
-      color: #062313;
-      box-shadow: 0 8px 28px #0003;
-      padding: 14px 19px;
-      font: 700 15px Arial, sans-serif;
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid rgba(255,255,255,.7);
+      border-radius: 50%;
+      background: linear-gradient(145deg, #3b82f6, #1d4ed8);
+      color: #fff;
+      box-shadow: 0 6px 20px rgba(7,29,45,.28);
+      font: 700 25px/1 Arial, sans-serif;
       cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #homs-ai-launch:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 9px 24px rgba(7,29,45,.32);
+    }
+    #homs-ai-launch:active { transform: scale(.95); }
+    #homs-ai-launch:focus-visible {
+      outline: 3px solid #93c5fd;
+      outline-offset: 3px;
     }
     #homs-ai-panel {
       position: fixed;
@@ -139,9 +154,10 @@
     }
     @media (max-width: 480px) {
       #homs-ai-launch {
-        right: 14px;
-        bottom: 14px;
-        padding: 12px 15px;
+        right: 16px;
+        bottom: 16px;
+        width: 50px;
+        height: 50px;
       }
       #homs-ai-panel {
         right: 8px;
@@ -158,7 +174,9 @@
   const launch = document.createElement("button");
   launch.id = "homs-ai-launch";
   launch.type = "button";
-  launch.textContent = "💬 HOMS TECH Chat";
+  launch.textContent = "💬";
+  launch.setAttribute("aria-label", "HOMS TECH Chat openen");
+  launch.setAttribute("title", "HOMS TECH Chat");
   launch.setAttribute("aria-expanded", "false");
 
   const panel = document.createElement("section");
