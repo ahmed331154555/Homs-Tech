@@ -285,3 +285,11 @@ test("shipping label print document closes its inline script correctly", () => {
   assert.ok(!script.includes("<\\\\/script>"), "shipping label output must not contain a literal backslash before its closing script tag");
   assert.match(script, /window\.addEventListener\("load",\(\)=>setTimeout\(\(\)=>window\.print\(\),300\)\);<\\\/script>/);
 });
+
+test("invoice payment details are HTML-escaped before being inserted into email content", () => {
+  const source = readPage("routes/admin-invoices.js");
+  assert.match(source, /const escapeEmailHtml\s*=\s*value\s*=>/);
+  assert.match(source, /"Naam: "\s*\+\s*escapeEmailHtml\(cleanSetting\(/);
+  assert.match(source, /"<br>IBAN: "\s*\+\s*escapeEmailHtml\(cleanSetting\(/);
+  assert.match(source, /"<br>Omschrijving: "\s*\+\s*escapeEmailHtml\(cleanSetting\(/);
+});
