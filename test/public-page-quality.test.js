@@ -259,3 +259,23 @@ test("admin order loaders and actions enforce their matching permissions", () =>
   assert.match(script, /async function updateBuybackStatus\(id,newStatus\)\{\s*if\(!hasPermission\("buyback_orders\.update"\)\)return;/);
   assert.match(script, /refund\.status==="Pending manual"&&hasPermission\("webshop_orders\.update"\)/);
 });
+
+test("cart and checkout contain no visible escaped newline artifacts", () => {
+  for (const page of ["cart.html", "checkout.html"]) {
+    const html = readPage(page);
+    assert.ok(!html.includes("\\n"), page + " contains a literal escaped newline artifact");
+  }
+});
+
+test("cart and checkout have unique IDs and valid inline scripts", () => {
+  for (const page of ["cart.html", "checkout.html"]) {
+    const html = readPage(page);
+    const ids = [...html.matchAll(/\\bid=["']([^"']+)["']/gi)].map(match => match[1]);
+    assert.equal(new Set(ids).size, ids.length, page + " contains duplicate element IDs");
+    const scripts = [...html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)];
+    for (const [index, script] of scripts.entries()) {
+      if (!script[1].trim()) continue;
+      assert.doesNotThrow(() => new Function(script[1]), page + " inline script " + (index + 1) + " has invalid JavaScript");
+    }
+  }
+});
