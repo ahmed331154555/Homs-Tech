@@ -12,7 +12,7 @@
   const list = items => items.map(([label,url]) => '<li><a href="'+url+'"'+(url==="#cookie-settings"?' data-footer-cookie-settings':'')+'>'+label+'</a></li>').join("");
   function render(host, settings, site) {
     const description = clean(settings.description) || "Refurbished apparaten · Telefoonreparatie · Service";
-    const area = clean(settings.area || site.areas);
+    const area = clean(settings.area || site.areas), hours = clean(settings.hours);
     const email = clean(settings.email), phone = clean(settings.phone || site.phone), whatsapp = clean(settings.whatsapp || site.whatsapp);
     const contacts = [];
     if(email) contacts.push('<li><a href="mailto:'+encodeURIComponent(email)+'">'+esc(email)+'</a></li>');
@@ -24,7 +24,7 @@
     host.innerHTML =
       '<div class="ht-footer-grid ht-footer-grid--unified">'+
       '<section class="ht-footer-brand"><a class="ht-footer-logo" href="index.html" aria-label="HOMS TECH – Home">HOMS <span>TECH</span></a>'+
-      '<p>'+esc(description)+'</p>'+(area?'<p class="ht-footer-area"><span aria-hidden="true">⌖</span> '+esc(area)+'</p>':'')+
+      '<p>'+esc(description)+'</p>'+(area?'<p class="ht-footer-area"><span aria-hidden="true">⌖</span> '+esc(area)+'</p>':'')+(hours?'<p class="ht-footer-hours"><span aria-hidden="true">◷</span> '+esc(hours)+'</p>':'')+
       '<a class="ht-footer-cta" href="contact.html">Neem contact op <span aria-hidden="true">→</span></a></section>'+
       '<nav aria-label="Over ons"><h2>Over ons</h2><ul>'+list(groups.about)+'</ul></nav>'+
       '<nav aria-label="Onze diensten"><h2>Onze diensten</h2><ul>'+list(groups.services)+'</ul></nav>'+
