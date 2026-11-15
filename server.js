@@ -478,8 +478,12 @@ app.get("/api/site", async (req, res) => {
     const data = result.rows[0].data;
     // Private/admin responses must never be cached. Public responses can be revalidated
     // so repeat visits avoid transferring the full settings payload when unchanged.
-    res.set("Cache-Control", canViewPrivate ? "no-store" : "public, max-age=0, must-revalidate");
-    if (!canViewPrivate && req.query.view === "home") {
+    // Homepage settings change frequently through the admin panel. Avoid serving a
+    // stale compact catalog from an intermediary cache after products are updated.
+    res.set("Cache-Control", canViewPrivate || view === "home"
+      ? "no-store"
+      : "public, max-age=0, must-revalidate");
+    if (!canViewPrivate && view === "home") {
       return res.json(sanitizeHomepageSiteData(data));
     }
     res.json(canViewPrivate ? data : sanitizePublicSiteData(data));
