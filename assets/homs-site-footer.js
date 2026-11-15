@@ -40,14 +40,40 @@
   async function init() {
     const hosts=[...document.querySelectorAll("footer")].filter(host=>!host.closest("#homs-cookie-banner"));
     if(!hosts.length)return;
-    let site={};
+
+    // Replace legacy markup immediately; never wait for the settings API before
+    // showing the unified footer. This removes the visible old-to-new flash.
+    const originals=hosts.map(host=>({
+      host,
+      html:host.innerHTML,
+      className:host.className,
+      ariaLabel:host.getAttribute("aria-label")
+    }));
+    hosts.forEach(host=>render(host,{},{}));
+
     try {
-      const response=await fetch("/api/site",{headers:{Accept:"application/json"}});
-      if(response.ok){const data=await response.json();site={...data,homepage:data.homepage||{}};}
-    } catch(error) { console.warn("[HOMS TECH] Footer settings unavailable",error); }
-    const settings=site.homepage?.footer||{};
-    if(settings.enabled===false)return;
-    hosts.forEach(host=>render(host,settings,site));
+      const response=await fetch("/api/site",{headers:{Accept:"application/json"},cache:"no-store"});
+      if(!response.ok)throw new Error("HTTP "+response.status);
+      const data=await response.json();
+      const site={...data,homepage:data.homepage||{}};
+      const settings=site.homepage?.footer||{};
+      if(settings.enabled===false){
+        // Respect the administrator's disabled setting without leaving a
+        // temporary generated footer behind.
+        originals.forEach(({host,html,className,ariaLabel})=>{
+          host.innerHTML=html;
+          host.className=className;
+          if(ariaLabel===null)host.removeAttribute("aria-label");
+          else host.setAttribute("aria-label",ariaLabel);
+        });
+        return;
+      }
+      hosts.forEach(host=>render(host,settings,site));
+    } catch(error) {
+      // The immediate, lightweight footer remains usable if the API is slow
+      // or temporarily unavailable.
+      console.warn("[HOMS TECH] Footer settings unavailable; using defaults",error);
+    }
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});
   else init();
