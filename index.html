@@ -1054,31 +1054,35 @@ function renderHomepage(){
 }
 
 async function loadSite(){
- // Paint the page structure and default service content immediately.
- // Product data is refreshed asynchronously without blocking the first view.
+ // Render immediately, then hydrate the homepage with fresh server data.
  renderHomepage();
  try{
-  const r=await fetch("/api/site?view=home",{headers:{Accept:"application/json"}});
-  if(!r.ok) throw new Error("Homepage data could not be loaded");
-  const x=await r.json();
-  if(x&&typeof x==="object"){
-   data={...defaults,...x};
-   // Recover the public phone catalog if the lightweight homepage projection is empty.
-   if(!Array.isArray(data.phones)||data.phones.length===0){
+  const response=await fetch("/api/site?view=home",{headers:{Accept:"application/json"},cache:"no-store"});
+  if(!response.ok) throw new Error("Homepage data could not be loaded");
+  const settings=await response.json();
+  if(!settings||typeof settings!=="object") throw new Error("Invalid homepage response");
+
+  data={...defaults,...settings};
+  if(!Array.isArray(data.phones)||data.phones.length===0){
+   // The full public catalog is the source of truth when the compact homepage
+   // projection has no phones. Try the product view first, then the devices view.
+   for(const view of ["product","devices"]){
     try{
-     const catalogResponse=await fetch("/api/site?view=product",{headers:{Accept:"application/json"}});
-     if(catalogResponse.ok){
-      const catalog=await catalogResponse.json();
-      if(Array.isArray(catalog?.phones)&&catalog.phones.length)data.phones=catalog.phones;
+     const catalogResponse=await fetch("/api/site?view="+view,{headers:{Accept:"application/json"},cache:"no-store"});
+     if(!catalogResponse.ok) continue;
+     const catalog=await catalogResponse.json();
+     if(Array.isArray(catalog?.phones)&&catalog.phones.length){
+      data.phones=catalog.phones;
+      break;
      }
     }catch(catalogError){
-     console.warn("Homepage phone catalog fallback unavailable.",catalogError);
+     console.warn("Homepage "+view+" catalog fallback unavailable.",catalogError);
     }
    }
-   renderHomepage();
   }
- }catch(e){
-  console.warn("Website data unavailable, using defaults.",e);
+  renderHomepage();
+ }catch(error){
+  console.warn("Website data unavailable, using defaults.",error);
  }
 }
 
