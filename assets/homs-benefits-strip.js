@@ -21,7 +21,7 @@
     const track=document.createElement("div");track.style.cssText="display:flex;align-items:center;flex:0 0 auto;width:max-content";
     const group=document.createElement("div");group.style.cssText="display:flex;flex-direction:row;align-items:center;justify-content:space-around;gap:clamp(24px,5vw,64px);padding:12px 24px;white-space:nowrap;flex:0 0 auto;width:max-content";
     s.items.forEach((label,index)=>{const item=document.createElement("span");item.style.cssText="display:inline-flex;align-items:center;gap:9px;white-space:nowrap;font-size:"+s.fontSize+"px;font-weight:"+s.fontWeight+";font-style:"+s.fontStyle;
-      const icon=document.createElement("span");icon.textContent=s.icons[index]||"•";icon.setAttribute("aria-hidden","true");icon.style.cssText="width:36px;height:36px;flex:0 0 36px;display:inline-flex;align-items:center;justify-content:center;border-radius:14px;background:#eaf2ff;color:"+s.accentColor+";font-size:23px;font-weight:800";
+      const icon=document.createElement("span");icon.textContent=s.icons[index]||"•";icon.setAttribute("aria-hidden","true");icon.style.cssText="display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:auto;height:auto;padding:0;margin:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:"+s.accentColor+";font-size:23px;line-height:1;font-weight:800";
       const text=document.createElement("span");text.textContent=label;item.append(icon,text);group.appendChild(item);});
     track.appendChild(group);
     if(s.mode==="scroll"){const clone=group.cloneNode(true);clone.setAttribute("aria-hidden","true");track.appendChild(clone);}
