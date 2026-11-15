@@ -130,7 +130,7 @@
    if(item[3]){
     icon.classList.add('homs-menu-icon--'+item[3]);
     var image=document.createElement('img');
-    image.src='/assets/images/menu/'+item[3]+'.png';
+    image.src='/assets/images/menu/'+(item[3]==='reviews'?'file_00000000c72081f498c2ffdd9a3ebf4a':item[3])+'.png';
     image.alt='';
     image.decoding='async';
     image.loading='eager';
