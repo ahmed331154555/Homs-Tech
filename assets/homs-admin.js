@@ -5347,7 +5347,7 @@ async function printWebshopShippingLabel(id){
     <div class="spacer"></div>
     ${tracking?'<section class="tracking-box"><div class="tracking-label">Track & Trace</div><div class="tracking">'+escLabel(tracking)+'</div>'+(trackingUrl?'<div class="tracking-link">'+escLabel(trackingUrl)+'</div>':'')+'</section>':'<section class="tracking-box"><div class="tracking-label">Track & Trace</div><div class="tracking" style="font-size:9pt">Trackingnummer wordt toegevoegd na verzending</div></section>'}
     <footer class="footer"><strong>HOMS TECH</strong><span>Adreslabel · geen officieel vervoerderslabel</span></footer>
-  </main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),300));<\\/script></body></html>`);
+  </main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),300));<\/script></body></html>`);
   w.document.close();
 }
 
