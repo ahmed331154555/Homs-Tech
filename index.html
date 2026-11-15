@@ -1028,18 +1028,23 @@ function startProductTicker(){
 }
 
 function renderHomepage(){
- mergeHomepageSettings();
- common();
- renderTopBar();
- renderHero();
- renderBanners();
- renderHomepageVisibility();
- renderCategories();
- renderProducts();
- renderServices();
- renderWhy();
+ const runStep=(name,fn)=>{
+  try{fn();}
+  catch(error){console.error("[HOMEPAGE] "+name+" failed; continuing with remaining sections.",error);}
+ };
+ runStep("mergeHomepageSettings",mergeHomepageSettings);
+ runStep("common",common);
+ runStep("renderTopBar",renderTopBar);
+ runStep("renderHero",renderHero);
+ runStep("renderBanners",renderBanners);
+ runStep("renderHomepageVisibility",renderHomepageVisibility);
+ runStep("renderCategories",renderCategories);
+ // The phone catalog is isolated: failures in unrelated homepage sections
+ // must never prevent product cards from being created.
+ runStep("renderProducts",renderProducts);
+ runStep("renderServices",renderServices);
+ runStep("renderWhy",renderWhy);
 }
-
 async function loadSite(){
  // Render immediately, then hydrate the homepage with fresh server data.
  renderHomepage();
