@@ -895,6 +895,11 @@ function renderProducts(){
  box.innerHTML="";
  box.classList.add("auto-moving");
  const sourcePhones=Array.isArray(data.phones)?data.phones:[];
+ const popularSettings=data.homepage?.popular||{};
+ const selectedIndexes=Array.isArray(popularSettings.indexes)?popularSettings.indexes.map(Number).filter(Number.isInteger):[];
+ const selectedPhones=selectedIndexes.length?sourcePhones.filter((phone,index)=>selectedIndexes.includes(Number(phone?._index??index))):sourcePhones;
+ const configuredLimit=Number(popularSettings.limit);
+ const cardLimit=Number.isFinite(configuredLimit)?Math.max(1,Math.min(50,Math.floor(configuredLimit))):12;
  const expandPhone=(p,idx)=>{
   const rows=Array.isArray(p?.variantPrices)?p.variantPrices.filter(r=>r&&r.active!==false):[];
   if(!rows.length)return [{p,idx}];
@@ -903,7 +908,7 @@ function renderProducts(){
   const strip=(name,storage,color)=>{let n=String(name||"Smartphone").trim();[storage,color].forEach(v=>{const suffix=" "+v;if(n.toLocaleLowerCase().endsWith(suffix.toLocaleLowerCase()))n=n.slice(0,-suffix.length).trim();});return n;};
   return [...groups.values()].map(g=>{const prices=g.rows.map(r=>Number(String(r.price??"").replace(/€/g,"").replace(",","."))).filter(n=>Number.isFinite(n)&&n>0);const gallery=p.colorGalleryImages&&Array.isArray(p.colorGalleryImages[g.color])?p.colorGalleryImages[g.color].filter(Boolean):[];const image=gallery[0]||(p.colorImages&&p.colorImages[g.color])||(Array.isArray(p.colorOptions)?p.colorOptions.find(o=>String(o.label||"").toLowerCase()===g.color.toLowerCase())?.image:"")||p.image||(Array.isArray(p.images)?p.images.find(Boolean):"");return {p:{...p,name:strip(p.name,g.storage,g.color)+" "+g.storage+" "+g.color,image,images:gallery.length?gallery:p.images,price:prices.length?Math.min(...prices):(p.price||""),_variantStorage:g.storage,_variantColor:g.color},idx};});
  };
- const chosen=sourcePhones.flatMap((p,idx)=>expandPhone(p,idx)).slice(-15);
+ const chosen=selectedPhones.flatMap((p,idx)=>expandPhone(p,Number.isInteger(Number(p?._index))?Number(p._index):idx)).slice(0,cardLimit);
  if(!chosen.length){
   box.innerHTML="<div style='padding:25px;color:#667784'>Geen apparaten beschikbaar.</div>";
   return;
@@ -1053,6 +1058,18 @@ async function loadSite(){
   const x=await r.json();
   if(x&&typeof x==="object"){
    data={...defaults,...x};
+   // Recover the public phone catalog if the lightweight homepage projection is empty.
+   if(!Array.isArray(data.phones)||data.phones.length===0){
+    try{
+     const catalogResponse=await fetch("/api/site?view=product",{headers:{Accept:"application/json"}});
+     if(catalogResponse.ok){
+      const catalog=await catalogResponse.json();
+      if(Array.isArray(catalog?.phones)&&catalog.phones.length)data.phones=catalog.phones;
+     }
+    }catch(catalogError){
+     console.warn("Homepage phone catalog fallback unavailable.",catalogError);
+    }
+   }
    renderHomepage();
   }
  }catch(e){
