@@ -439,6 +439,16 @@ footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:
 @media(prefers-reduced-motion:reduce){
  #homePopularSection .products.auto-moving .home-motion-track{transform:none!important}
 }
+
+/* Stable continuous phone ticker: cards are rendered first, then animated separately. */
+#homePopularSection .products.auto-moving{display:block!important;position:relative!important;overflow:hidden!important;white-space:nowrap!important;scrollbar-width:none!important;touch-action:pan-y!important}
+#homePopularSection .products.auto-moving .home-motion-track{display:flex!important;flex-flow:row nowrap!important;align-items:stretch!important;width:max-content!important;min-width:max-content!important;gap:0!important;will-change:transform;animation:htPhoneTicker 42s linear infinite!important;transform:translate3d(0,0,0)}
+#homePopularSection .home-motion-group{display:flex!important;flex:0 0 auto!important;flex-flow:row nowrap!important;align-items:stretch!important;gap:13px!important;padding-right:13px!important}
+#homePopularSection .home-motion-group>.product{flex:0 0 205px!important;width:205px!important;min-width:205px!important;max-width:205px!important}
+#homePopularSection .products.auto-moving:hover .home-motion-track{animation-play-state:paused!important}
+@keyframes htPhoneTicker{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+@media(max-width:700px){#homePopularSection .products.auto-moving .home-motion-track{animation-duration:34s!important}}
+@media(prefers-reduced-motion:reduce){#homePopularSection .products.auto-moving{overflow-x:auto!important;scrollbar-width:thin!important}#homePopularSection .products.auto-moving .home-motion-track{animation:none!important;transform:none!important}#homePopularSection .home-motion-group[aria-hidden="true"]{display:none!important}}
 </style>
   <link rel="stylesheet" href="assets/homs-global-nav.css">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5361560605027063"
@@ -959,6 +969,18 @@ function renderProducts(){
   link.href="product.html?"+params.toString();link.textContent="Bekijk apparaat";
   body.appendChild(link);card.appendChild(picture);card.appendChild(body);box.appendChild(card);
  });
+ // Two identical groups create a seamless loop; cards remain intact and clickable.
+ const cards=[...box.querySelectorAll(":scope > .product")];
+ if(cards.length>1){
+  const track=document.createElement("div");track.className="home-motion-track";
+  const firstGroup=document.createElement("div");firstGroup.className="home-motion-group";
+  const secondGroup=document.createElement("div");secondGroup.className="home-motion-group";secondGroup.setAttribute("aria-hidden","true");
+  cards.forEach(card=>firstGroup.appendChild(card));
+  cards.forEach(card=>secondGroup.appendChild(card.cloneNode(true)));
+  track.append(firstGroup,secondGroup);
+  box.replaceChildren(track);
+  box.classList.add("auto-moving");
+ }
 }
 function renderServices(){
  const box=document.getElementById("services");box.innerHTML="";
