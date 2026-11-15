@@ -9,6 +9,7 @@ on:
       - chore/homs-tech-code-cleanup
       - work/homs-tech-code-cleanup-professional
       - feature/memory-optimization
+      - fix/homepage-phone-catalog-recovery
   pull_request:
     branches:
       - HomsTech-Clean
