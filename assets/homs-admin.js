@@ -3846,6 +3846,11 @@ function renderOrderSummary(id,orders,kind){
     <div class="order-stat stat-cancel"><div class="stat-icon">✓</div><div><b>${cancelled}</b><span>Geannuleerd</span></div></div>`;
 }
 
+function isRepairQuoteOrder(order){
+ let meta={};
+ try{meta=JSON.parse(order.extra_fields||'{}')}catch{}
+ return meta.repairQuote===true||String(order.service_category||'').trim().toLowerCase()==='reparatie';
+}
 function clearRepairRequestFilters(){const q=document.getElementById('repairRequestSearch'),f=document.getElementById('repairRequestStatusFilter');if(q)q.value='';if(f)f.value='';renderRepairRequests();}
 let expandedRepairRequestIds = new Set();
 function toggleRepairRequest(id){
