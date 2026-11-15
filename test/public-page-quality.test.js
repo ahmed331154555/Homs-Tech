@@ -101,8 +101,8 @@ test("product metadata updates dynamically for the selected product", () => {
   assert.match(html, /currentProductId=record\.i;\s*updateProductMetadata\(record\.p\)/);
 });
 
-test("shop and product SEO head markup contains no escaped newline text", () => {
-  for (const page of ["shop.html", "product.html"]) {
+test("customer page heads contain no visible escaped newline text", () => {
+  for (const page of ["shop.html", "product.html", "cart.html", "uw-toestel-verkopen.html"]) {
     const head = readPage(page).split("</head>")[0];
     assert.ok(!head.includes("\\n<meta"), page + " contains a literal escaped newline in its head");
   }
