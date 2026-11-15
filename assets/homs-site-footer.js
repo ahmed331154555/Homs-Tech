@@ -4,6 +4,92 @@
   const clean = value => String(value ?? "").trim();
   const esc = value => clean(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const digits = value => clean(value).replace(/\D/g, "");
+  function installFooterStyles() {
+    if (document.getElementById("homs-footer-layout-styles")) return;
+    const style = document.createElement("style");
+    style.id = "homs-footer-layout-styles";
+    style.textContent = `
+      footer.ht-site-footer.ht-site-footer--unified {
+        display:block!important;width:100%!important;max-width:none!important;
+        box-sizing:border-box!important;margin:36px 0 0!important;
+        padding:clamp(30px,4vw,48px) clamp(18px,3vw,36px) 18px!important;
+        background:#071d2d!important;color:#fff!important;overflow:visible!important;
+      }
+      footer.ht-site-footer--unified .ht-footer-grid--unified {
+        display:grid!important;width:100%!important;max-width:1200px!important;
+        margin:0 auto!important;box-sizing:border-box!important;
+        grid-template-columns:minmax(0,1.35fr) minmax(130px,.8fr) minmax(170px,1.05fr) minmax(190px,1.2fr)!important;
+        align-items:start!important;justify-content:stretch!important;
+        gap:clamp(20px,3vw,38px)!important;
+      }
+      footer.ht-site-footer--unified .ht-footer-grid--unified>* {
+        display:block!important;min-width:0!important;width:auto!important;
+        max-width:none!important;float:none!important;box-sizing:border-box!important;
+      }
+      footer.ht-site-footer--unified .ht-footer-grid--unified h2 {
+        margin:0 0 16px!important;color:#fff!important;font-size:17px!important;
+        line-height:1.3!important;font-weight:800!important;
+      }
+      footer.ht-site-footer--unified .ht-footer-grid--unified ul {
+        display:flex!important;flex-direction:column!important;gap:10px!important;
+        margin:0!important;padding:0!important;list-style:none!important;
+      }
+      footer.ht-site-footer--unified .ht-footer-grid--unified li {
+        display:block!important;margin:0!important;padding:0!important;
+        color:#cbd5e1!important;font-size:14px!important;line-height:1.5!important;
+        overflow-wrap:anywhere!important;
+      }
+      footer.ht-site-footer--unified .ht-footer-grid--unified li a {
+        display:inline-flex!important;align-items:center!important;min-height:24px!important;
+        color:#cbd5e1!important;font-size:14px!important;text-decoration:none!important;
+        overflow-wrap:anywhere!important;
+      }
+      footer.ht-site-footer--unified .ht-footer-grid--unified li a:hover {
+        color:#fff!important;text-decoration:underline!important;text-underline-offset:3px!important;
+      }
+      footer.ht-site-footer--unified .ht-footer-brand p {
+        margin:10px 0!important;color:#cbd5e1!important;line-height:1.6!important;
+      }
+      footer.ht-site-footer--unified .ht-footer-logo {
+        display:inline-flex!important;margin:0 0 8px!important;font-size:25px!important;
+        font-weight:900!important;color:#fff!important;text-decoration:none!important;
+      }
+      footer.ht-site-footer--unified .ht-footer-cta {
+        display:inline-flex!important;align-items:center!important;gap:8px!important;
+        margin-top:12px!important;padding:11px 15px!important;border-radius:9px!important;
+        background:#2563eb!important;color:#fff!important;font-weight:700!important;
+        text-decoration:none!important;
+      }
+      footer.ht-site-footer--unified .ht-footer-bottom {
+        display:flex!important;flex-wrap:wrap!important;justify-content:space-between!important;
+        gap:10px 24px!important;width:100%!important;max-width:1200px!important;
+        margin:30px auto 0!important;padding:16px 0 0!important;
+        border-top:1px solid #334155!important;box-sizing:border-box!important;
+        color:#cbd5e1!important;font-size:13px!important;line-height:1.5!important;
+      }
+      @media(max-width:900px) {
+        footer.ht-site-footer--unified .ht-footer-grid--unified {
+          grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:28px 24px!important;
+        }
+        footer.ht-site-footer--unified .ht-footer-brand {grid-column:1/-1!important}
+      }
+      @media(max-width:520px) {
+        footer.ht-site-footer.ht-site-footer--unified {padding:30px 20px 16px!important}
+        footer.ht-site-footer--unified .ht-footer-grid--unified {
+          grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:24px 16px!important;
+        }
+        footer.ht-site-footer--unified .ht-footer-grid--unified h2 {font-size:15px!important;margin-bottom:12px!important}
+        footer.ht-site-footer--unified .ht-footer-grid--unified li,
+        footer.ht-site-footer--unified .ht-footer-grid--unified li a {font-size:12px!important}
+        footer.ht-site-footer--unified .ht-footer-bottom {flex-direction:column!important;gap:5px!important;margin-top:24px!important}
+      }
+      @media(max-width:350px) {
+        footer.ht-site-footer--unified .ht-footer-grid--unified {grid-template-columns:minmax(0,1fr)!important}
+        footer.ht-site-footer--unified .ht-footer-brand {grid-column:auto!important}
+      }
+    `;
+    document.head.appendChild(style);
+  }
   const groups = {
     about: [["Home","index.html"],["Over HOMS TECH","about.html"],["Contact","contact.html"]],
     services: [["Telefoons bekijken","devices.html"],["Telefoon repareren","repair.html"],["Uw toestel verkopen","uw-toestel-verkopen.html"],["Reparatieprijzen","prices.html"],["Klantbeoordelingen","reviews.html"]],
@@ -38,6 +124,7 @@
     });
   }
   async function init() {
+    installFooterStyles();
     const hosts=[...document.querySelectorAll("footer")].filter(host=>!host.closest("#homs-cookie-banner"));
     if(!hosts.length)return;
 
