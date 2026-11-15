@@ -270,9 +270,9 @@ test("cart and checkout contain no visible escaped newline artifacts", () => {
 test("cart and checkout have unique IDs and valid inline scripts", () => {
   for (const page of ["cart.html", "checkout.html"]) {
     const html = readPage(page);
-    const ids = [...html.matchAll(/\\bid=["']([^"']+)["']/gi)].map(match => match[1]);
+    const ids = [...html.matchAll(/\bid=["']([^"']+)["']/gi)].map(match => match[1]);
     assert.equal(new Set(ids).size, ids.length, page + " contains duplicate element IDs");
-    const scripts = [...html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)];
+    const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)];
     for (const [index, script] of scripts.entries()) {
       if (!script[1].trim()) continue;
       assert.doesNotThrow(() => new Function(script[1]), page + " inline script " + (index + 1) + " has invalid JavaScript");
