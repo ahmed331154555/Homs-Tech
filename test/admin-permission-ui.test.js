@@ -4,6 +4,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const { ADMIN_PERMISSION_KEYS } = require("../utils/admin-permissions");
 
 const root = path.resolve(__dirname, "..");
 const adminHtml = fs.readFileSync(path.join(root, "admin/index.html"), "utf8");
@@ -29,5 +30,16 @@ test("view-only admin navigation is gated by its corresponding permission", () =
     ["why", "why.view"]
   ]) {
     assert.match(adminHtml, new RegExp('data-page="' + page + '"[^>]*data-permission="' + permission.replace(".", "\\.") + '"'));
+  }
+});
+
+
+test("admin permission checkboxes only expose assignable permissions", () => {
+  const match = adminJs.match(/const ADMIN_PERMISSION_LABELS = \\{([\\s\\S]*?)\\n\\};/);
+  assert.ok(match, "ADMIN_PERMISSION_LABELS must be defined");
+  const displayedPermissions = [...match[1].matchAll(/^\\s*"([^"]+)"\\s*:/gm)].map(item => item[1]);
+  assert.ok(displayedPermissions.length > 0, "at least one permission must be available");
+  for (const permission of displayedPermissions) {
+    assert.ok(ADMIN_PERMISSION_KEYS.includes(permission), `UI exposes unsupported permission: ${permission}`);
   }
 });
