@@ -43,6 +43,7 @@ test("benefits strip normalizes text, colors, typography and movement safely", (
   assert.deepEqual(settings, {
     enabled: true,
     items: ["Snelle service", "B".repeat(100)],
+    icons: DEFAULT_BENEFIT_ICONS,
     background: "#ffffff",
     textColor: "#123456",
     accentColor: "#abcdef",
