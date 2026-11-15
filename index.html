@@ -1056,34 +1056,44 @@ function renderHomepage(){
 async function loadSite(){
  // Render immediately, then hydrate the homepage with fresh server data.
  renderHomepage();
+
+ // Keep catalog recovery independent from homepage-settings loading. If the
+ // compact homepage request fails, the public product/device endpoints can
+ // still supply the phone cards instead of leaving the homepage empty.
+ let homepageLoaded=false;
  try{
   const response=await fetch("/api/site?view=home",{headers:{Accept:"application/json"},cache:"no-store"});
-  if(!response.ok) throw new Error("Homepage data could not be loaded");
+  if(!response.ok) throw new Error("Homepage data could not be loaded (HTTP "+response.status+")");
   const settings=await response.json();
-  if(!settings||typeof settings!=="object") throw new Error("Invalid homepage response");
-
+  if(!settings||typeof settings!=="object"||Array.isArray(settings)) throw new Error("Invalid homepage response");
   data={...defaults,...settings};
-  if(!Array.isArray(data.phones)||data.phones.length===0){
-   // The full public catalog is the source of truth when the compact homepage
-   // projection has no phones. Try the product view first, then the devices view.
-   for(const view of ["product","devices"]){
-    try{
-     const catalogResponse=await fetch("/api/site?view="+view,{headers:{Accept:"application/json"},cache:"no-store"});
-     if(!catalogResponse.ok) continue;
-     const catalog=await catalogResponse.json();
-     if(Array.isArray(catalog?.phones)&&catalog.phones.length){
-      data.phones=catalog.phones;
-      break;
-     }
-    }catch(catalogError){
-     console.warn("Homepage "+view+" catalog fallback unavailable.",catalogError);
+  homepageLoaded=true;
+ }catch(error){
+  console.warn("Homepage settings unavailable; trying the public phone catalog.",error);
+ }
+
+ if(!Array.isArray(data.phones)||data.phones.length===0){
+  for(const view of ["product","devices"]){
+   try{
+    const catalogResponse=await fetch("/api/site?view="+view,{headers:{Accept:"application/json"},cache:"no-store"});
+    if(!catalogResponse.ok) throw new Error(view+" catalog returned HTTP "+catalogResponse.status);
+    const catalog=await catalogResponse.json();
+    const catalogPhones=Array.isArray(catalog?.phones)
+     ?catalog.phones.filter(phone=>phone&&(typeof phone==="object"||typeof phone==="string"))
+     :[];
+    if(catalogPhones.length){
+     data.phones=catalogPhones;
+     console.info("[HOMEPAGE CATALOG] Recovered "+catalogPhones.length+" phones from "+view+" view.");
+     break;
     }
+   }catch(catalogError){
+    console.warn("Homepage "+view+" catalog fallback unavailable.",catalogError);
    }
   }
-  renderHomepage();
- }catch(error){
-  console.warn("Website data unavailable, using defaults.",error);
  }
+
+ if(!homepageLoaded&&!Array.isArray(data.phones))data.phones=[];
+ renderHomepage();
 }
 
 // Draggable real-photo before/after comparison; supports mouse, touch and keyboard.
