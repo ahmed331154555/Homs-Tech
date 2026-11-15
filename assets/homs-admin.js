@@ -7438,21 +7438,50 @@ function deviceRenderSummary(){
     : [["Eigen toestellen",Number(s.total||0)],["Klaar voor verkoop",Number(s.ready||0)],["In behandeling",Number(s.processing||0)],["Verkocht",Number(s.sold||0)],["Voorraad investering",deviceEuro(s.invested)],["Verkoop omzet",deviceEuro(s.revenue)],["Gerealiseerde winst",deviceEuro(s.realized_profit)]];
   return '<section aria-label="Overzicht" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:0 0 16px">'+cards.map((item,index)=>'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:13px 14px;min-width:0"><div style="font-size:12px;color:#64748b;font-weight:600">'+item[0]+'</div><div style="font-size:20px;font-weight:800;color:'+(type==="customer_repair"&&index===4?"#087443":index===6?"#087443":"#102a43")+';margin-top:5px;overflow-wrap:anywhere">'+item[1]+'</div></div>').join('')+'</section>';
 }
+function deviceRegisterFormHtml(type){
+  const disabled=!hasPermission("device_register.update")?"disabled":"";
+  const repair=type==="customer_repair";
+  const fields=repair
+    ? '<div class="dr-form-grid"><label>IMEI<input id="drFormImei" class="form-control" required maxlength="100" placeholder="IMEI"></label><label>Merk<input id="drFormBrand" class="form-control" required maxlength="60" value="Apple"></label><label>Model<input id="drFormModel" class="form-control" required maxlength="120" placeholder="iPhone 13"></label><label>Reparatieprijs (€)<input id="drFormRepairPrice" class="form-control" type="number" min="0" step="0.01" value="0" required></label></div>'
+    : '<div class="dr-form-grid"><label>IMEI<input id="drFormImei" class="form-control" required maxlength="100" placeholder="IMEI"></label><label>Merk<input id="drFormBrand" class="form-control" required maxlength="60" value="Apple"></label><label>Model<input id="drFormModel" class="form-control" required maxlength="120" placeholder="iPhone 13"></label><label>Geheugen<input id="drFormStorage" class="form-control" maxlength="40" placeholder="128GB"></label><label>Kleur<input id="drFormColor" class="form-control" maxlength="60" placeholder="Zwart"></label><label>Conditie<select id="drFormCondition" class="form-control"><option value="">Selecteer conditie</option><option>Nieuw</option><option>Zo goed als nieuw</option><option>Goed</option><option>Gebruikt</option><option>Defect</option></select></label><label>Inkoopprijs (€)<input id="drFormPurchasePrice" class="form-control" type="number" min="0" step="0.01" value="0" required></label></div>';
+  return '<section class="card dr-entry-form"><div class="dr-entry-head"><div><h3>'+(repair?'🔧 Nieuwe reparatie':'📱 Nieuw apparaat')+'</h3><p>'+(repair?'Registreer een klanttoestel en de afgesproken reparatieprijs.':'Vul de toestelgegevens in en sla ze op in het eigen register.')+'</p></div><span class="dr-entry-type">'+(repair?'KLANTREPARATIE':'EIGEN APPARAAT')+'</span></div><form onsubmit="deviceSaveForm(event)" autocomplete="off">'+fields+'<div class="dr-form-actions"><button class="btn btn-green" type="submit" '+disabled+'>💾 Opslaan</button><button class="btn btn-light" type="button" onclick="deviceClearForm()">↺ Wissen</button></div><p id="deviceFormStatus" class="status" role="status" aria-live="polite"></p></form></section>';
+}
 function deviceRenderTable(){
   const host=document.getElementById("deviceRegisterTable");if(!host)return;
   const rows=deviceRegisterCache,type=document.getElementById("deviceTypeFilter")?.value||"commercial",summaryHtml=deviceRenderSummary();
-  if(!rows.length){host.innerHTML=summaryHtml+'<div style="padding:24px;text-align:center;color:#64748b;background:#fff;border:1px solid #e2e8f0;border-radius:14px"><strong style="display:block;color:#203449;margin-bottom:6px">'+(type==="customer_repair"?"Geen klantreparaties gevonden":"Geen eigen toestellen gevonden")+'</strong>Voeg een registratie toe of importeer een Excel-bestand.</div>';return}
-  const headers=type==="customer_repair"?["IMEI / serienummer","Merk","Model","Klant","Telefoon","Reparatie / probleem","Status","Reparatiewaarde (€)","Acties"]:["IMEI / serienummer / HT-code","Merk","Model / naam","Opslag","Kleur","Conditie","Status","Klant / koppeling","Inkoop (€)","Verkoop (€)","Acties"];
-  host.innerHTML=summaryHtml+'<div class="dr-sheet-wrap"><table class="dr-sheet"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
+  const archived=document.getElementById("deviceArchivedFilter")?.checked||false;
+  const headers=type==="customer_repair"?["IMEI","Merk","Model","Reparatieprijs (€)","Status","Acties"]:["IMEI","Merk","Model","Geheugen","Kleur","Conditie","Status","Inkoopprijs (€)","Verkoopprijs (€)","Acties"];
+  const table=rows.length?'<div class="dr-sheet-wrap"><table class="dr-sheet"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
     rows.map(x=>{
       const rowId=String(x.id||"new"),isRepair=x.device_type==="customer_repair",statusOptions=(isRepair?DEVICE_STATUS_CUSTOMER:DEVICE_STATUS_COMMERCIAL).map(v=>'<option value="'+esc(v)+'" '+(v===x.status?"selected":"")+'>'+esc(v)+'</option>').join('');
       const statusCell='<td><select class="dr-cell" data-field="status" data-id="'+rowId+'" '+(!hasPermission("device_register.update")?"disabled":"")+'>'+statusOptions+'</select></td>';
-      const actions='<td class="dr-actions"><button class="btn btn-green" data-permission="device_register.update" onclick="deviceSaveRow(&quot;'+rowId+'&quot;)">Opslaan</button>'+(x.id?'<button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button class="btn btn-light" data-permission="device_register.update" onclick="deviceAddOperation('+Number(x.id)+')">＋ Handeling</button><button class="btn btn-light" data-permission="device_register.update" onclick="deviceArchive('+Number(x.id)+',true)">Archief</button>':'<span class="small">Nieuwe registratie</span>')+'</td>';
-      if(isRepair)return '<tr data-row-id="'+rowId+'">'+deviceCell(x.identifier_value,"identifierValue",rowId)+deviceCell(x.brand,"brand",rowId)+deviceCell(x.model,"model",rowId)+deviceCell(x.customer_name,"customerName",rowId)+deviceCell(x.customer_phone,"customerPhone",rowId)+deviceCell(x.repair_issue,"repairIssue",rowId)+statusCell+deviceCell(x.repair_value,"repairValue",rowId,"number")+actions+'</tr>';
-      return '<tr data-row-id="'+rowId+'">'+deviceCell(x.identifier_value,"identifierValue",rowId)+deviceCell(x.brand,"brand",rowId)+deviceCell(x.model,"model",rowId)+'<td>'+esc(x.storage||"—")+'</td><td>'+esc(x.color||"—")+'</td><td>'+esc(x.device_condition||"—")+'</td>'+statusCell+'<td style="min-width:150px;padding:8px 10px;font-size:12px">'+(x.source_webshop_order_id?'<strong>Order #'+Number(x.source_webshop_order_id)+'</strong>':'—')+(x.linked_invoice_number?'<div>Factuur '+esc(x.linked_invoice_number)+'</div>':'')+'</td>'+deviceCell(x.purchase_cost,"purchaseCost",rowId,"number")+deviceCell(x.sale_price,"salePrice",rowId,"number")+actions+'</tr>';
-    }).join('')+'</tbody></table></div><p class="small" style="margin:10px 0 0">'+(type==="customer_repair"?"Klanttoestellen zijn geen HOMS TECH-voorraad en tellen niet mee in inkoop, verkoop of voorraadwinst.":"Eigen toestellen worden gekoppeld aan de voorraad, verkoop en gerealiseerde marge.")+'</p>';
+      const actions='<td class="dr-actions"><button class="btn btn-green" data-permission="device_register.update" onclick="deviceSaveRow(&quot;'+rowId+'&quot;)">Opslaan</button>'+(x.id?'<button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button class="btn btn-light" data-permission="device_register.update" onclick="deviceAddOperation('+Number(x.id)+')">＋ Handeling</button><button class="btn btn-red" data-permission="device_register.update" onclick="deviceArchive('+Number(x.id)+','+(archived?'false':'true')+')">'+(archived?'Herstellen':'Verwijderen')+'</button>':'<span class="small">Nieuwe registratie</span>')+'</td>';
+      if(isRepair)return '<tr data-row-id="'+rowId+'">'+deviceCell(x.identifier_value,"identifierValue",rowId)+deviceCell(x.brand,"brand",rowId)+deviceCell(x.model,"model",rowId)+deviceCell(x.repair_value,"repairValue",rowId,"number")+statusCell+actions+'</tr>';
+      return '<tr data-row-id="'+rowId+'">'+deviceCell(x.identifier_value,"identifierValue",rowId)+deviceCell(x.brand,"brand",rowId)+deviceCell(x.model,"model",rowId)+deviceCell(x.storage,"storage",rowId)+deviceCell(x.color,"color",rowId)+deviceCell(x.device_condition,"deviceCondition",rowId)+statusCell+deviceCell(x.purchase_cost,"purchaseCost",rowId,"number")+deviceCell(x.sale_price,"salePrice",rowId,"number")+actions+'</tr>';
+    }).join('')+'</tbody></table></div>':'<div class="dr-empty">لا توجد سجلات في هذا القسم بعد. أضف أول سجل من النموذج أعلاه.</div>';
+  host.innerHTML=summaryHtml+deviceRegisterFormHtml(type)+table+'<p class="small" style="margin:10px 0 0">'+(type==="customer_repair"?"سجلات التصليح منفصلة عن مخزون HOMS TECH.":"الأجهزة المسجلة هنا تدخل في متابعة المخزون وتكاليف الشراء والبيع.")+'</p>';
   applyPermissionUI();
 }
+async function deviceSaveForm(event){
+  event.preventDefault();
+  const type=document.getElementById("deviceTypeFilter")?.value||"commercial";
+  const value=id=>document.getElementById(id)?.value?.trim()||"";
+  const body={deviceType:type,identifierType:"imei",identifierValue:value("drFormImei"),brand:value("drFormBrand")||"Apple",model:value("drFormModel"),status:type==="customer_repair"?"تم الاستلام":"قيد الفحص",customerName:"",customerPhone:"",repairIssue:"",repairValue:type==="customer_repair"?value("drFormRepairPrice"):"0",purchaseCost:type==="commercial"?value("drFormPurchasePrice"):"0",salePrice:"0",storage:type==="commercial"?value("drFormStorage"):"",color:type==="commercial"?value("drFormColor"):"",deviceCondition:type==="commercial"?value("drFormCondition"):""};
+  const status=document.getElementById("deviceFormStatus");
+  try{
+    await deviceApi("/api/admin/device-register",{method:"POST",body:JSON.stringify(body)});
+    deviceSetStatus(type==="customer_repair"?"Reparatie opgeslagen.":"Apparaat opgeslagen.","success");
+    await loadDeviceRegister();
+  }catch(error){if(status)status.textContent=error.message;deviceSetStatus(error.message,"error");}
+}
+function deviceClearForm(){
+  const form=document.querySelector(".dr-entry-form form");if(form)form.reset();
+  const brand=document.getElementById("drFormBrand");if(brand)brand.value="Apple";
+  const price=document.getElementById("drFormPurchasePrice");if(price)price.value="0";
+  const repair=document.getElementById("drFormRepairPrice");if(repair)repair.value="0";
+  const status=document.getElementById("deviceFormStatus");if(status)status.textContent="";
+}
+
 async function loadDeviceRegister(){
   const host=document.getElementById("deviceRegisterTable");if(!host)return;host.innerHTML="Laden…";
   try{
@@ -7467,7 +7496,7 @@ async function deviceSaveRow(id){
   const value=f=>row.querySelector('[data-field="'+f+'"]')?.value??"";
   const current=deviceRegisterCache.find(x=>String(x.id)===String(id));
   const deviceType=current?.device_type||document.getElementById("deviceTypeFilter")?.value||"commercial";
-  const body={deviceType,identifierType:current?.identifier_type||"imei",identifierValue:value("identifierValue"),brand:value("brand"),model:value("model"),status:value("status"),customerName:value("customerName"),customerPhone:value("customerPhone"),customerEmail:current?.customer_email||"",repairOrderNumber:current?.repair_order_number||"",repairIssue:value("repairIssue"),repairValue:value("repairValue")||"0",repairNotes:current?.repair_notes||"",purchaseCost:value("purchaseCost")||"0",salePrice:value("salePrice")||"0"};
+  const body={deviceType,identifierType:current?.identifier_type||"imei",identifierValue:value("identifierValue"),brand:value("brand"),model:value("model"),status:value("status"),customerName:value("customerName"),customerPhone:value("customerPhone"),customerEmail:current?.customer_email||"",repairOrderNumber:current?.repair_order_number||"",repairIssue:value("repairIssue"),repairValue:value("repairValue")||"0",repairNotes:current?.repair_notes||"",purchaseCost:value("purchaseCost")||"0",salePrice:value("salePrice")||"0",storage:value("storage"),color:value("color"),deviceCondition:value("deviceCondition")};
   try{
     if(id==="new"){await deviceApi("/api/admin/device-register",{method:"POST",body:JSON.stringify(body)})}
     else{await deviceApi("/api/admin/device-register/"+id,{method:"PUT",body:JSON.stringify(body)})}
