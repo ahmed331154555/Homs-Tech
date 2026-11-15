@@ -1,10 +1,56 @@
-/* HOMS TECH customer reviews — responsive branded carousel */
-.ht-review-widget{--review-blue:#1683f8;position:relative;isolation:isolate;width:100%;max-width:none;margin:52px 0 0;padding:46px clamp(16px,4vw,48px) 48px;overflow:hidden;color:#fff;text-align:center;background:radial-gradient(ellipse at 50% 42%,rgba(18,94,168,.34),transparent 58%),linear-gradient(135deg,#061827 0%,#09263c 52%,#061a2a 100%);border:0;border-radius:0;box-shadow:none}
-.ht-review-widget *{box-sizing:border-box}.ht-review-widget-head{max-width:1000px;margin:0 auto 28px;display:flex;flex-direction:column;align-items:center;gap:8px}.ht-review-widget-head strong{display:block;color:#fff;font-size:clamp(27px,4vw,42px);font-weight:850;letter-spacing:-.035em;line-height:1.15}.ht-review-widget-head strong .ht-review-blue{color:#258cf7}.ht-review-widget-head span{display:block;color:#c6d5e4;font-size:clamp(14px,2vw,18px);margin-top:3px}.ht-review-widget-head a{display:none}
-.ht-review-widget-stage{position:relative;max-width:1000px;margin:0 auto;overflow:hidden;padding:2px 0 8px}.ht-review-widget-track{display:flex;align-items:stretch;gap:18px;transition:transform .48s cubic-bezier(.22,.75,.25,1);will-change:transform}
-.ht-review-widget-card{display:flex;flex:0 0 84%;flex-direction:column;align-items:flex-start;min-width:0;min-height:310px;padding:clamp(22px,4vw,42px);text-align:left;color:#10243a;background:linear-gradient(145deg,#fff 0%,#f7faff 100%);border:1px solid rgba(219,234,254,.9);border-radius:26px;box-shadow:0 18px 42px rgba(0,0,0,.2);opacity:.72;transform:scale(.965);transition:opacity .35s ease,transform .35s ease}.ht-review-widget-card.is-active{opacity:1;transform:scale(1)}
-.ht-review-widget-stars{color:#f4b323;letter-spacing:5px;font-size:clamp(22px,3vw,30px);line-height:1;margin-bottom:22px}.ht-review-widget-card strong{color:#10243a;font-size:clamp(19px,2.6vw,27px);font-weight:800;line-height:1.25}.ht-review-widget-card p{color:#40536a;font-size:clamp(15px,2vw,19px);line-height:1.65;margin:15px 0 8px;overflow-wrap:anywhere}
-.ht-review-widget-more{padding:0;border:0;background:transparent;color:#1478ed;font:700 15px Arial,sans-serif;cursor:pointer}.ht-review-widget-meta{display:flex;align-items:center;gap:13px;width:100%;margin-top:auto;padding-top:18px;border-top:1px solid #dce7f3}.ht-review-widget-avatar{width:48px;height:48px;display:grid;place-items:center;flex:0 0 48px;border-radius:50%;background:#e7f1ff;color:#1678e8;font-size:22px;font-weight:800}.ht-review-widget-person{color:#142b43;font-size:16px;font-weight:800}.ht-review-widget-date{display:block;color:#738398;font-size:12px;font-weight:500;margin-top:3px}.ht-review-widget-reply{width:100%;margin-top:14px;padding:12px 14px;border-radius:12px;background:#edf5ff;color:#40536a;text-align:left;font-size:13px;line-height:1.55}
-.ht-review-widget-controls{display:flex;align-items:center;justify-content:center;gap:24px;max-width:1000px;margin:20px auto 26px;color:#d3e2f1;font-size:13px}.ht-review-widget-controls button{width:46px;height:46px;display:grid;place-items:center;border:1px solid rgba(147,197,253,.48);border-radius:50%;background:rgba(37,99,235,.18);color:#fff;font-size:26px;line-height:1;cursor:pointer;transition:background .2s ease,transform .2s ease}.ht-review-widget-controls button:hover{background:#1678ed;transform:translateY(-2px)}.ht-review-widget-dots{display:flex;align-items:center;gap:9px}.ht-review-widget-dots button{width:9px;height:9px;padding:0;border:0;border-radius:50%;background:#70859a;cursor:pointer}.ht-review-widget-dots button[aria-current="true"]{width:24px;border-radius:99px;background:#1683f8}
-.ht-review-widget-all{display:flex;align-items:center;justify-content:center;gap:12px;width:min(100%,920px);min-height:62px;margin:0 auto;padding:15px 24px;border-radius:18px;background:linear-gradient(100deg,#1266ef,#168af9);color:#fff;text-decoration:none;font-size:clamp(16px,2.3vw,21px);font-weight:800;box-shadow:0 12px 28px rgba(0,91,220,.24);transition:transform .2s ease,filter .2s ease}.ht-review-widget-all:hover{transform:translateY(-2px);filter:brightness(1.07)}.ht-review-widget-empty{color:#d7e4f1;font-size:15px;padding:30px 12px}
-@media(min-width:900px){.ht-review-widget-card{flex-basis:78%;min-height:330px}}@media(max-width:600px){.ht-review-widget{margin-top:34px;padding:34px 14px 36px}.ht-review-widget-head{margin-bottom:22px}.ht-review-widget-stage{padding:0}.ht-review-widget-track{gap:12px}.ht-review-widget-card{flex-basis:88%;min-height:290px;padding:22px 20px;border-radius:21px}.ht-review-widget-stars{margin-bottom:16px}.ht-review-widget-controls{gap:18px;margin:16px auto 22px}.ht-review-widget-controls button{width:40px;height:40px}.ht-review-widget-all{min-height:56px;border-radius:15px}}@media(prefers-reduced-motion:reduce){.ht-review-widget-track,.ht-review-widget-card,.ht-review-widget-controls button,.ht-review-widget-all{transition:none}}
+/* HOMS TECH customer reviews — compact layout aligned with the main site */
+.ht-review-widget{
+ --review-blue:#1683f8;
+ position:relative;isolation:isolate;
+ width:calc(100% - 36px);max-width:1180px;
+ margin:34px auto 30px;padding:28px clamp(16px,3vw,30px) 26px;
+ overflow:hidden;color:#fff;text-align:center;
+ background:radial-gradient(ellipse at 50% 42%,rgba(18,94,168,.30),transparent 58%),linear-gradient(135deg,#061827 0%,#09263c 52%,#061a2a 100%);
+ border:0;border-radius:16px;box-shadow:0 10px 28px rgba(7,29,45,.12)
+}
+.ht-review-widget *{box-sizing:border-box}
+.ht-review-widget-head{max-width:820px;margin:0 auto 18px;display:flex;flex-direction:column;align-items:center;gap:5px}
+.ht-review-widget-head strong{display:block;color:#fff;font-size:clamp(23px,2.5vw,30px);font-weight:850;letter-spacing:-.035em;line-height:1.15}
+.ht-review-widget-head strong .ht-review-blue{color:#258cf7}
+.ht-review-widget-head span{display:block;color:#c6d5e4;font-size:13px;margin-top:2px}
+.ht-review-widget-head a{display:none}
+.ht-review-widget-stage{position:relative;max-width:850px;margin:0 auto;overflow:hidden;padding:2px 0 7px}
+.ht-review-widget-track{display:flex;align-items:stretch;gap:14px;transition:transform .48s cubic-bezier(.22,.75,.25,1);will-change:transform}
+.ht-review-widget-card{display:flex;flex:0 0 62%;flex-direction:column;align-items:flex-start;min-width:0;min-height:225px;padding:23px 25px;text-align:left;color:#10243a;background:linear-gradient(145deg,#fff 0%,#f7faff 100%);border:1px solid rgba(219,234,254,.9);border-radius:17px;box-shadow:0 10px 25px rgba(0,0,0,.16);opacity:.72;transform:scale(.975);transition:opacity .35s ease,transform .35s ease}
+.ht-review-widget-card.is-active{opacity:1;transform:scale(1)}
+.ht-review-widget-stars{color:#f4b323;letter-spacing:3px;font-size:20px;line-height:1;margin-bottom:14px}
+.ht-review-widget-card strong{color:#10243a;font-size:19px;font-weight:800;line-height:1.25}
+.ht-review-widget-card p{color:#40536a;font-size:14px;line-height:1.55;margin:10px 0 7px;overflow-wrap:anywhere}
+.ht-review-widget-more{padding:0;border:0;background:transparent;color:#1478ed;font:700 13px Arial,sans-serif;cursor:pointer}
+.ht-review-widget-meta{display:flex;align-items:center;gap:10px;width:100%;margin-top:auto;padding-top:13px;border-top:1px solid #dce7f3}
+.ht-review-widget-avatar{width:36px;height:36px;display:grid;place-items:center;flex:0 0 36px;border-radius:50%;background:#e7f1ff;color:#1678e8;font-size:17px;font-weight:800}
+.ht-review-widget-person{color:#142b43;font-size:13px;font-weight:800}
+.ht-review-widget-date{display:block;color:#738398;font-size:11px;font-weight:500;margin-top:2px}
+.ht-review-widget-reply{width:100%;margin-top:10px;padding:10px 12px;border-radius:10px;background:#edf5ff;color:#40536a;text-align:left;font-size:12px;line-height:1.5}
+.ht-review-widget-controls{display:flex;align-items:center;justify-content:center;gap:17px;max-width:850px;margin:13px auto 16px;color:#d3e2f1;font-size:12px}
+.ht-review-widget-controls button{width:34px;height:34px;display:grid;place-items:center;border:1px solid rgba(147,197,253,.48);border-radius:50%;background:rgba(37,99,235,.18);color:#fff;font-size:21px;line-height:1;cursor:pointer;transition:background .2s ease,transform .2s ease}
+.ht-review-widget-controls button:hover{background:#1678ed;transform:translateY(-1px)}
+.ht-review-widget-dots{display:flex;align-items:center;gap:7px}
+.ht-review-widget-dots button{width:7px;height:7px;padding:0;border:0;border-radius:50%;background:#70859a;cursor:pointer}
+.ht-review-widget-dots button[aria-current="true"]{width:18px;border-radius:99px;background:#1683f8}
+.ht-review-widget-all{display:flex;align-items:center;justify-content:center;gap:9px;width:min(100%,420px);min-height:46px;margin:0 auto;padding:11px 18px;border-radius:11px;background:linear-gradient(100deg,#1266ef,#168af9);color:#fff;text-decoration:none;font-size:14px;font-weight:800;box-shadow:0 8px 18px rgba(0,91,220,.2);transition:transform .2s ease,filter .2s ease}
+.ht-review-widget-all:hover{transform:translateY(-1px);filter:brightness(1.07)}
+.ht-review-widget-empty{color:#d7e4f1;font-size:13px;padding:22px 10px}
+@media(max-width:700px){
+ .ht-review-widget{width:calc(100% - 24px);margin:25px auto 22px;padding:23px 12px 21px;border-radius:13px}
+ .ht-review-widget-head{margin-bottom:14px}
+ .ht-review-widget-head strong{font-size:23px}
+ .ht-review-widget-head span{font-size:12px;line-height:1.45}
+ .ht-review-widget-stage{padding:0}
+ .ht-review-widget-track{gap:10px}
+ .ht-review-widget-card{flex-basis:88%;min-height:205px;padding:18px 17px;border-radius:14px}
+ .ht-review-widget-stars{font-size:18px;margin-bottom:12px}
+ .ht-review-widget-card strong{font-size:17px}
+ .ht-review-widget-card p{font-size:13px;line-height:1.5}
+ .ht-review-widget-controls{gap:13px;margin:12px auto 14px}
+ .ht-review-widget-controls button{width:32px;height:32px}
+ .ht-review-widget-all{width:min(100%,340px);min-height:43px;border-radius:10px;font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){
+ .ht-review-widget-track,.ht-review-widget-card,.ht-review-widget-controls button,.ht-review-widget-all{transition:none}
+}
