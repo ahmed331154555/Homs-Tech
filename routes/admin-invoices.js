@@ -15,6 +15,7 @@ function registerAdminInvoiceRoutes(app, {
   fetchImpl = fetch
 }) {
   const cleanSetting = (value, max = 220) => String(value || "").trim().slice(0, max);
+  const escapeEmailHtml = value => String(value ?? "").replace(/[&<>"\']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"' : "&quot;", "\'": "&#39;" }[character]));
   const allowedSellerFields = ["legalName","tradeName","address","postalCode","city","country","kvkNumber","vatId","iban","email","phone","website"];
   app.get("/api/admin/invoice-settings", requirePermission("site.save"), async (_req, res) => {
     try {
@@ -247,9 +248,9 @@ function registerAdminInvoiceRoutes(app, {
             "<p>In de bijlage vindt u de factuur van HOMS TECH.</p>" +
             (invoice.seller_snapshot?.iban
               ? "<p><strong>Betalen per bankoverschrijving</strong><br>" +
-                "Naam: " + cleanSetting(invoice.seller_snapshot.legalName || invoice.seller_snapshot.tradeName || "HOMS TECH", 180) +
-                "<br>IBAN: " + cleanSetting(invoice.seller_snapshot.iban, 50) +
-                "<br>Omschrijving: " + cleanSetting(invoice.invoice_number, 40) + "</p>"
+                "Naam: " + escapeEmailHtml(cleanSetting(invoice.seller_snapshot.legalName || invoice.seller_snapshot.tradeName || "HOMS TECH", 180)) +
+                "<br>IBAN: " + escapeEmailHtml(cleanSetting(invoice.seller_snapshot.iban, 50)) +
+                "<br>Omschrijving: " + escapeEmailHtml(cleanSetting(invoice.invoice_number, 40)) + "</p>"
               : "<p>De betaalgegevens staan vermeld op de factuur.</p>"),
           attachments: [{
             filename: invoice.invoice_number + ".pdf",
