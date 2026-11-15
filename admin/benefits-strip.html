@@ -19,7 +19,7 @@ Betaalbare prijzen</textarea></div></section>
 <div class="field"><label for="mode">Weergave</label><select id="mode"><option value="scroll">Bewegend</option><option value="static">Statisch</option></select></div>
 <div class="field"><label for="direction">Beweegrichting</label><select id="direction"><option value="rtl">Rechts naar links</option><option value="ltr">Links naar rechts</option></select></div>
 <div class="field"><label for="speed">Snelheid: <span id="speedValue">90</span> px/sec</label><input id="speed" type="range" min="20" max="500" step="10" value="90"></div>
-<div class="field"><label for="fontSize">Tekstgrootte: <span id="fontSizeValue">16</span> px</label><input id="fontSize" type="range" min="11" max="24" value="16"></div>
+<div class="field"><label for="fontSize">Tekstgrootte: <span id="fontSizeValue">13</span> px</label><input id="fontSize" type="range" min="11" max="14" value="13"></div>
 <div class="field"><label for="fontWeight">Letterdikte</label><select id="fontWeight"><option value="400">Normaal</option><option value="500">Medium</option><option value="600">Semi-bold</option><option value="700" selected>Vet</option><option value="800">Extra vet</option></select></div>
 <div class="field"><label for="fontStyle">Letterstijl</label><select id="fontStyle"><option value="normal">Recht</option><option value="italic">Schuin</option></select></div>
 <div class="field"><label for="height">Hoogte: <span id="heightValue">84</span> px</label><input id="height" type="range" min="48" max="120" value="84"></div>
@@ -28,7 +28,7 @@ Betaalbare prijzen</textarea></div></section>
 </main>
 <script>
 const $=id=>document.getElementById(id);
-const defaults={enabled:true,items:["Snelle service","Betrouwbaar","Aan huis","Betaalbare prijzen"],background:"#ffffff",textColor:"#334155",accentColor:"#2563eb",speed:90,direction:"rtl",mode:"scroll",fontSize:16,fontWeight:"700",fontStyle:"normal",height:84};
+const defaults={enabled:true,items:["Snelle service","Betrouwbaar","Aan huis","Betaalbare prijzen"],background:"#ffffff",textColor:"#334155",accentColor:"#2563eb",speed:90,direction:"rtl",mode:"scroll",fontSize:13,fontWeight:"700",fontStyle:"normal",height:84};
 let settings={...defaults};
 function status(t,ok=false){$("status").textContent=t;$("status").style.color=ok?"#078451":"#b45309"}
 function current(){return {enabled:$("enabled").checked,items:$("items").value.split("\n").map(x=>x.trim()).filter(Boolean).slice(0,10),background:$("background").value,textColor:$("textColor").value,accentColor:$("accentColor").value,speed:Number($("speed").value),direction:$("direction").value,mode:$("mode").value,fontSize:Number($("fontSize").value),fontWeight:$("fontWeight").value,fontStyle:$("fontStyle").value,height:Number($("height").value)}}
