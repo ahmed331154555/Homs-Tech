@@ -848,6 +848,11 @@ function mergeHomepageDefaults(target,source){
   });
   if(!Array.isArray(out.topBar.items))out.topBar.items=[...source.topBar.items];
   if(!Array.isArray(out.popular.indexes))out.popular.indexes=[];
+  // Restore the approved business contact defaults when older saved settings are blank.
+  const footerDefaults=source.footer||{};
+  ["email","phone","whatsapp","hours","area"].forEach(key=>{
+    if(!String(out.footer[key]||"").trim() && String(footerDefaults[key]||"").trim())out.footer[key]=footerDefaults[key];
+  });
   return out;
 }
 
