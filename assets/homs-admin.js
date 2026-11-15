@@ -35,7 +35,7 @@ const ADMIN_PERMISSION_LABELS = {
   "orders.delete":"Reparatieaanvragen verwijderen",
   "device_register.view":"Toestelregister bekijken","device_register.update":"Toestelregister wijzigen",
   "buyback_orders.view":"Verkoopaanvragen bekijken","buyback_orders.update":"Verkoopaanvraag-status wijzigen","buyback_orders.delete":"Verkoopaanvragen verwijderen",
-  "repair_page.view":"Reparatiepagina bekijken","repair_page.update":"Reparatiepagina wijzigen","site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
+"site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
 };
 
 function hasPermission(p){return currentUser.role==="superadmin"||currentUser.permissions.includes("*")||currentUser.permissions.includes(p)||(["buyback_orders.delete","webshop_orders.delete"].includes(p)&&currentUser.permissions.includes("site.save"));}
