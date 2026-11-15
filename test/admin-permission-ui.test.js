@@ -43,3 +43,20 @@ test("admin permission checkboxes only expose assignable permissions", () => {
     assert.ok(ADMIN_PERMISSION_KEYS.includes(permission), `UI exposes unsupported permission: ${permission}`);
   }
 });
+
+
+test("admin page sections are gated by the same permissions as their pages", () => {
+  for (const [page, permission] of [
+    ["general", "general.view"],
+    ["services", "services.view"],
+    ["repair", "site.save"],
+    ["phones", "phones.view"],
+    ["categories", "categories.view"],
+    ["repair-requests", "orders.view"],
+    ["webshop-orders", "webshop_orders.view"],
+    ["order-settings", "site.save"],
+    ["why", "why.view"]
+  ]) {
+    assert.match(adminHtml, new RegExp('id="page-' + page + '"[^>]*data-permission="' + permission.replace(".", "\\\\.") + '"'));
+  }
+});
