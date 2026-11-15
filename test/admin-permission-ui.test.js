@@ -57,6 +57,6 @@ test("admin page sections are gated by the same permissions as their pages", () 
     ["order-settings", "site.save"],
     ["why", "why.view"]
   ]) {
-    assert.match(adminHtml, new RegExp('id="page-' + page + '"[^>]*data-permission="' + permission.replace(".", "\\\\.") + '"'));
+    assert.match(adminHtml, new RegExp('id="page-' + page + '"[^>]*data-permission="' + permission.replace(".", "\\.") + '"'));
   }
 });
