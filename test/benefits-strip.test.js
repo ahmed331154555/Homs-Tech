@@ -4,6 +4,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const {
   DEFAULT_BENEFITS,
+  DEFAULT_BENEFIT_ICONS,
   normalizeBenefitsStrip,
   registerBenefitsStripRoutes
 } = require("../routes/benefits-strip");
@@ -58,6 +59,7 @@ test("benefits strip normalizes text, colors, typography and movement safely", (
 test("benefits strip defaults match the requested homepage labels", () => {
   const settings = normalizeBenefitsStrip(null);
   assert.deepEqual(settings.items, DEFAULT_BENEFITS);
+  assert.deepEqual(settings.icons, DEFAULT_BENEFIT_ICONS);
   assert.equal(settings.enabled, true);
   assert.equal(settings.mode, "scroll");
 });
@@ -92,4 +94,9 @@ test("admin benefits save stores normalized settings and handles missing site se
   const missingRes = response();
   await missing.routes.get("PUT /api/admin/benefits-strip")({ body: {} }, missingRes);
   assert.equal(missingRes.statusCode, 404);
+});
+
+test("benefits strip preserves custom emoji and symbol choices", () => {
+  const settings = normalizeBenefitsStrip({ items: ["Reparatie", "Verkoop"], icons: ["🔧", "📱"] });
+  assert.deepEqual(settings.icons, ["🔧", "📱"]);
 });
