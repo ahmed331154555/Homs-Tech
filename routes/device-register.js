@@ -73,13 +73,14 @@ function registerDeviceRegisterRoutes(app, {
       const purchaseCost=type==="commercial"?deviceMoney(b.purchaseCost):0,salePrice=type==="commercial"?deviceMoney(b.salePrice):0;
       const repairValue=type==="customer_repair"?deviceMoney(b.repairValue):0;
       const repairIssue=type==="customer_repair"?deviceText(b.repairIssue,1000):"",repairNotes=type==="customer_repair"?deviceText(b.repairNotes,2000):"";
+      const storage=type==="commercial"?deviceText(b.storage,40):"",color=type==="commercial"?deviceText(b.color,60):"",deviceCondition=type==="commercial"?deviceText(b.deviceCondition,60):"";
       if(!["customer_repair","commercial"].includes(type)||!["imei","serial","barcode"].includes(identifierType)||!identifierValue||!model||!Number.isFinite(purchaseCost)||!Number.isFinite(salePrice)||!Number.isFinite(repairValue))
         return res.status(400).json({error:"Controleer het toesteltype, IMEI/identificatienummer, model en reparatiewaarde."});
       const allowed=type==="customer_repair"?customerDeviceStatuses:commercialDeviceStatuses;
       if(!allowed.has(status))return res.status(400).json({error:"Ongeldige status voor dit toesteltype."});
-      const result=await pool.query(`INSERT INTO device_register(device_type,identifier_type,identifier_value,model,brand,status,customer_name,customer_phone,customer_email,repair_order_number,purchase_cost,sale_price,repair_issue,repair_value,repair_notes)
-        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING *`,
-        [type,identifierType,identifierValue,model,brand,status,customerName,customerPhone,customerEmail,repairOrderNumber,purchaseCost,salePrice,repairIssue,repairValue,repairNotes]);
+      const result=await pool.query(`INSERT INTO device_register(device_type,identifier_type,identifier_value,model,brand,status,customer_name,customer_phone,customer_email,repair_order_number,purchase_cost,sale_price,repair_issue,repair_value,repair_notes,storage,color,device_condition)
+        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING *`,
+        [type,identifierType,identifierValue,model,brand,status,customerName,customerPhone,customerEmail,repairOrderNumber,purchaseCost,salePrice,repairIssue,repairValue,repairNotes,storage,color,deviceCondition]);
       res.status(201).json({device:result.rows[0]});
     }catch(e){if(e.code==="23505")return res.status(409).json({error:"Dit identificatienummer bestaat al in het register."});console.error("Device register create error:",e);res.status(500).json({error:"Toestel kon niet worden opgeslagen."});}
   });
@@ -90,6 +91,7 @@ function registerDeviceRegisterRoutes(app, {
     const model=deviceText(b.model,120),brand=deviceText(b.brand,60)||"Apple";
     const purchaseCost=b.deviceType==="commercial"?deviceMoney(b.purchaseCost):0,salePrice=b.deviceType==="commercial"?deviceMoney(b.salePrice):0;
     const repairValue=b.deviceType==="customer_repair"?deviceMoney(b.repairValue):0;
+    const storage=b.deviceType==="commercial"?deviceText(b.storage,40):"",color=b.deviceType==="commercial"?deviceText(b.color,60):"",deviceCondition=b.deviceType==="commercial"?deviceText(b.deviceCondition,60):"";
     if(status==="تم البيع")return res.status(409).json({error:"Gebruik de aparte verkoopregistratie om een toestel als verkocht te markeren."});
     if(!["imei","serial","barcode"].includes(identifierType)||!identifierValue||!Number.isFinite(purchaseCost)||!Number.isFinite(salePrice)||!Number.isFinite(repairValue))return res.status(400).json({error:"Controleer IMEI, status en bedragen."});
     let client;
@@ -118,11 +120,12 @@ function registerDeviceRegisterRoutes(app, {
              repair_order_number=$8,purchase_cost=$9,sale_price=$10,
              repair_issue=$11,repair_value=$12,repair_notes=$13,
              model=CASE WHEN $14='' THEN model ELSE $14 END,
-             brand=CASE WHEN $15='' THEN brand ELSE $15 END,updated_at=NOW()
+             brand=CASE WHEN $15='' THEN brand ELSE $15 END,
+             storage=$16,color=$17,device_condition=$18,updated_at=NOW()
          WHERE id=$1 AND archived=FALSE RETURNING *`,
         [id,status,identifierType,identifierValue,deviceText(b.customerName,160),deviceText(b.customerPhone,60),
           deviceText(b.customerEmail,180),deviceText(b.repairOrderNumber,100),
-          purchaseCost,salePrice,deviceText(b.repairIssue,1000),repairValue,deviceText(b.repairNotes,2000),model,brand]
+          purchaseCost,salePrice,deviceText(b.repairIssue,1000),repairValue,deviceText(b.repairNotes,2000),model,brand,storage,color,deviceCondition]
       );
       if(!result.rows.length){await client.query("ROLLBACK");return res.status(404).json({error:"Toestel niet gevonden."});}
       await client.query("COMMIT");
