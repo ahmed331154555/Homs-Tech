@@ -1,16 +1,19 @@
 "use strict";
 
 const DEFAULT_BENEFITS = ["Snelle service", "Betrouwbaar", "Aan huis", "Betaalbare prijzen"];
+const DEFAULT_BENEFIT_ICONS = ["⚡", "⭐", "🏠", "€"];
 
 function normalizeBenefitsStrip(input) {
   const value = input && typeof input === "object" && !Array.isArray(input) ? input : {};
   const items = Array.isArray(value.items)
     ? value.items.map(item => String(item || "").trim().slice(0, 100)).filter(Boolean).slice(0, 10)
     : DEFAULT_BENEFITS;
+  const icons = Array.isArray(value.icons) ? value.icons.slice(0, 10).map(icon => String(icon || "").trim().slice(0, 8)) : DEFAULT_BENEFIT_ICONS;
   const color = (candidate, fallback) => /^#[0-9a-f]{6}$/i.test(String(candidate || "")) ? String(candidate) : fallback;
   return {
     enabled: value.enabled !== false,
     items: items.length ? items : DEFAULT_BENEFITS,
+    icons,
     background: color(value.background, "#ffffff"),
     textColor: color(value.textColor, "#334155"),
     accentColor: color(value.accentColor, "#2563eb"),
@@ -64,4 +67,4 @@ function registerBenefitsStripRoutes(app, { requirePermission, queryWithConnecti
   });
 }
 
-module.exports = { DEFAULT_BENEFITS, normalizeBenefitsStrip, registerBenefitsStripRoutes };
+module.exports = { DEFAULT_BENEFITS, DEFAULT_BENEFIT_ICONS, normalizeBenefitsStrip, registerBenefitsStripRoutes };
