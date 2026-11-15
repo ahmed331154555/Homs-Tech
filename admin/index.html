@@ -25,17 +25,17 @@
     <a class="nav-btn" data-permission="site.save" href="/admin/announcement-bars.html">📢 Announcement bars</a>
   <a class="nav-btn" data-permission="site.save" href="/admin/benefits-strip.html">✓ Voordelenbalk</a>
     <a class="nav-btn" data-permission="orders.view" href="/admin/reviews.html">⭐ Reviews & beoordelingen</a>
-    <button class="nav-btn active" data-page="general" onclick="showPage('general')">🏠 Homepage</button>
-    <button class="nav-btn" data-page="services" onclick="showPage('services')">🔧 Diensten</button>
+    <button class="nav-btn active" data-page="general" data-permission="general.view" onclick="showPage('general')">🏠 Homepage</button>
+    <button class="nav-btn" data-page="services" data-permission="services.view" onclick="showPage('services')">🔧 Diensten</button>
     <button class="nav-btn" data-page="repair" data-permission="site.save" onclick="showPage('repair')">🛠️ Reparatiepagina</button>
-    <button class="nav-btn" data-page="phones" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
+    <button class="nav-btn" data-page="phones" data-permission="phones.view" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
     <button class="nav-btn" data-page="shop" data-permission="site.save" onclick="showPage('shop')">🛍️ Shop producten</button>
     <button class="nav-btn" data-page="inventory" data-permission="site.save" onclick="showPage('inventory')">📦 Voorraad & magazijn</button>
     <button class="nav-btn" data-page="device-register" data-permission="device_register.view" onclick="showPage('device-register')">📱 Toestelregister</button>
-    <button class="nav-btn" data-page="buyback" data-permission="buyback.view" onclick="showPage('buyback')">📥 Uw toestel verkopen</button>
-    <button class="nav-btn" data-page="why" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
+    <button class="nav-btn" data-page="buyback" data-permission="site.save" onclick="showPage('buyback')">📥 Uw toestel verkopen</button>
+    <button class="nav-btn" data-page="why" data-permission="why.view" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
     <button class="nav-btn" data-page="live-chat" data-permission="orders.view" onclick="showPage('live-chat')">💬 Live Chat</button>
-    <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
+    <button class="nav-btn" data-page="customers" data-permission="customers.view" onclick="showPage('customers')">👥 Klanten</button>
     <button class="nav-btn" data-page="emails" data-permission="site.save" onclick="showPage('emails')">✉️ E-mail inbox</button>
     <button class="nav-btn" data-page="invoices" data-permission="site.save" onclick="showPage('invoices')">🧾 Facturen</button>
     <button class="nav-btn nav-orders-parent" data-page="all-orders" aria-expanded="false" aria-controls="ordersSubmenu" onclick="toggleOrdersMenu()">📋 Alle bestellingen <span class="nav-orders-chevron" aria-hidden="true">⌄</span></button><div id="ordersSubmenu" class="nav-orders-submenu" hidden></div>
@@ -215,7 +215,7 @@
   </section>
 
   <!-- INKOOP / UW TOESTEL VERKOPEN -->
-  <section class="section admin-page" id="page-buyback" data-permission="buyback.view">
+  <section class="section admin-page" id="page-buyback" data-permission="site.save">
     <div class="section-head">
       <div>
         <h2>📥 Uw toestel verkopen</h2>
@@ -268,7 +268,7 @@
   </section>
 
   <!-- KLANTEN -->
-  <section class="section admin-page" id="page-customers">
+  <section class="section admin-page" id="page-customers" data-permission="customers.view">
     <div class="section-head">
       <div>
         <h2>👥 Klanten beheren</h2>
