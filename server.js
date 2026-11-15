@@ -476,6 +476,13 @@ app.get("/api/site", async (req, res) => {
       );
     } catch {}
     const data = result.rows[0].data;
+    if (view === "home" && (!Array.isArray(data?.phones) || data.phones.length === 0)) {
+      console.warn("[HOMEPAGE CATALOG] Stored phone catalog is empty or invalid.", {
+        phonesType: Array.isArray(data?.phones) ? "array" : typeof data?.phones,
+        popularEnabled: data?.homepage?.popular?.enabled !== false,
+        selectedCount: Array.isArray(data?.homepage?.popular?.indexes) ? data.homepage.popular.indexes.length : 0
+      });
+    }
     // Private/admin responses must never be cached. Public responses can be revalidated
     // so repeat visits avoid transferring the full settings payload when unchanged.
     // Homepage settings change frequently through the admin panel. Avoid serving a
