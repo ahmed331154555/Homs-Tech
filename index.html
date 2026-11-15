@@ -897,7 +897,11 @@ function renderProducts(){
  const sourcePhones=Array.isArray(data.phones)?data.phones:[];
  const popularSettings=data.homepage?.popular||{};
  const selectedIndexes=Array.isArray(popularSettings.indexes)?popularSettings.indexes.map(Number).filter(Number.isInteger):[];
- const selectedPhones=selectedIndexes.length?sourcePhones.filter((phone,index)=>selectedIndexes.includes(Number(phone?._index??index))):sourcePhones;
+ const matchedPhones=selectedIndexes.length
+  ?sourcePhones.filter((phone,index)=>selectedIndexes.includes(Number(phone?._index??index)))
+  :sourcePhones;
+ // Never let outdated admin selections hide the entire homepage catalog.
+ const selectedPhones=matchedPhones.length?matchedPhones:sourcePhones;
  const configuredLimit=Number(popularSettings.limit);
  const cardLimit=Number.isFinite(configuredLimit)?Math.max(1,Math.min(50,Math.floor(configuredLimit))):12;
  const expandPhone=(p,idx)=>{
