@@ -279,3 +279,9 @@ test("cart and checkout have unique IDs and valid inline scripts", () => {
     }
   }
 });
+
+test("shipping label print document closes its inline script correctly", () => {
+  const script = readPage("assets/homs-admin.js");
+  assert.ok(!script.includes("<\\\\/script>"), "shipping label output must not contain a literal backslash before its closing script tag");
+  assert.match(script, /window\.addEventListener\("load",\(\)=>setTimeout\(\(\)=>window\.print\(\),300\)\);<\\\/script>/);
+});
