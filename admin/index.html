@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HOMS TECH - Admin</title>
 
-  <link rel="stylesheet" href="../assets/homs-admin.css?v=20261113-invoice-profile3">
+  <link rel="stylesheet" href="../assets/homs-admin.css?v=20261115-compact-register1">
 </head>
 
 <body>
@@ -23,17 +23,19 @@
 <div id="adminNav" class="admin-nav">
   <div class="admin-nav-inner">
     <a class="nav-btn" data-permission="site.save" href="/admin/announcement-bars.html">📢 Announcement bars</a>
-    <button class="nav-btn active" data-page="general" onclick="showPage('general')">🏠 Homepage</button>
-    <button class="nav-btn" data-page="services" onclick="showPage('services')">🔧 Diensten</button>
+  <a class="nav-btn" data-permission="site.save" href="/admin/benefits-strip.html">✓ Voordelenbalk</a>
+    <a class="nav-btn" data-permission="orders.view" href="/admin/reviews.html">⭐ Reviews & beoordelingen</a>
+    <button class="nav-btn active" data-page="general" data-permission="general.view" onclick="showPage('general')">🏠 Homepage</button>
+    <button class="nav-btn" data-page="services" data-permission="services.view" onclick="showPage('services')">🔧 Diensten</button>
     <button class="nav-btn" data-page="repair" data-permission="site.save" onclick="showPage('repair')">🛠️ Reparatiepagina</button>
-    <button class="nav-btn" data-page="phones" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
+    <button class="nav-btn" data-page="phones" data-permission="phones.view" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
     <button class="nav-btn" data-page="shop" data-permission="site.save" onclick="showPage('shop')">🛍️ Shop producten</button>
     <button class="nav-btn" data-page="inventory" data-permission="site.save" onclick="showPage('inventory')">📦 Voorraad & magazijn</button>
     <button class="nav-btn" data-page="device-register" data-permission="device_register.view" onclick="showPage('device-register')">📱 Toestelregister</button>
-    <button class="nav-btn" data-page="buyback" data-permission="buyback.view" onclick="showPage('buyback')">📥 Uw toestel verkopen</button>
-    <button class="nav-btn" data-page="why" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
+    <button class="nav-btn" data-page="buyback" data-permission="site.save" onclick="showPage('buyback')">📥 Uw toestel verkopen</button>
+    <button class="nav-btn" data-page="why" data-permission="why.view" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
     <button class="nav-btn" data-page="live-chat" data-permission="orders.view" onclick="showPage('live-chat')">💬 Live Chat</button>
-    <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
+    <button class="nav-btn" data-page="customers" data-permission="customers.view" onclick="showPage('customers')">👥 Klanten</button>
     <button class="nav-btn" data-page="emails" data-permission="site.save" onclick="showPage('emails')">✉️ E-mail inbox</button>
     <button class="nav-btn" data-page="invoices" data-permission="site.save" onclick="showPage('invoices')">🧾 Facturen</button>
     <button class="nav-btn nav-orders-parent" data-page="all-orders" aria-expanded="false" aria-controls="ordersSubmenu" onclick="toggleOrdersMenu()">📋 Alle bestellingen <span class="nav-orders-chevron" aria-hidden="true">⌄</span></button><div id="ordersSubmenu" class="nav-orders-submenu" hidden></div>
@@ -126,7 +128,7 @@
   
 </section>
 
-<section class="section admin-page active" id="page-general">
+<section class="section admin-page active" id="page-general" data-permission="general.view">
     <div class="section-head">
       <div>
         <h2>🏠 Homepage instellingen</h2>
@@ -143,7 +145,7 @@
   </section>
 
   <!-- SERVICES -->
-  <section class="section admin-page" id="page-services">
+  <section class="section admin-page" id="page-services" data-permission="services.view">
     <div class="section-head">
       <div>
         <h2>🔧 Diensten</h2>
@@ -159,7 +161,7 @@
   </section>
 
   <!-- REPARATIEPAGINA -->
-  <section class="section admin-page" id="page-repair">
+  <section class="section admin-page" id="page-repair" data-permission="site.save">
     <div class="section-head">
       <div>
         <h2>🛠️ Reparatiepagina</h2>
@@ -174,7 +176,7 @@
   </section>
 
   <!-- TELEFOONS EN PRIJZEN -->
-  <section class="section admin-page" id="page-phones">
+  <section class="section admin-page" id="page-phones" data-permission="phones.view">
     <div class="section-head">
       <div>
         <h2>📱 Telefoons te koop</h2>
@@ -213,7 +215,7 @@
   </section>
 
   <!-- INKOOP / UW TOESTEL VERKOPEN -->
-  <section class="section admin-page" id="page-buyback" data-permission="buyback.view">
+  <section class="section admin-page" id="page-buyback" data-permission="site.save">
     <div class="section-head">
       <div>
         <h2>📥 Uw toestel verkopen</h2>
@@ -240,7 +242,7 @@
   </section>
 
   <!-- APPARAATCATEGORIEËN -->
-  <section class="section admin-page" id="page-categories">
+  <section class="section admin-page" id="page-categories" data-permission="categories.view">
     <div class="section-head">
       <div>
         <h2>🖼️ Apparaten & categorieën</h2>
@@ -266,7 +268,7 @@
   </section>
 
   <!-- KLANTEN -->
-  <section class="section admin-page" id="page-customers">
+  <section class="section admin-page" id="page-customers" data-permission="customers.view">
     <div class="section-head">
       <div>
         <h2>👥 Klanten beheren</h2>
@@ -325,7 +327,7 @@
   </div>
 
   <!-- REPAIR REQUESTS — separate from Reparatieaanvragen -->
-  <section class="section admin-page" id="page-repair-requests">
+  <section class="section admin-page" id="page-repair-requests" data-permission="orders.view">
     <div class="section-head"><div><h2>🔧 Repair Requests</h2><p>Prijsaanvragen voor toestelreparaties, apart van Reparatieaanvragen.</p></div><button class="btn btn-light" onclick="loadOrders()">↻ Vernieuwen</button></div>
     <div id="repairRequestSummary" class="order-summary"></div>
     <div class="orders-toolbar"><div class="orders-search"><input id="repairRequestSearch" type="search" placeholder="Zoeken op klant, e-mail, telefoon, toestel..." oninput="renderRepairRequests()"></div><select id="repairRequestStatusFilter" class="order-filter" onchange="renderRepairRequests()"><option value="">Alle statussen</option><option>Nieuw</option><option>In behandeling</option><option>Wacht op klant</option><option>Wacht op leverancier</option><option>Resultaat ontvangen</option><option>Mislukt</option><option>Voltooid</option><option>Geannuleerd</option></select><button class="order-filter-btn" onclick="clearRepairRequestFilters()">↻ Filters wissen</button></div>
@@ -333,7 +335,7 @@
   </section>
 
   <!-- WEBSHOP ORDERS -->
-  <section class="section admin-page" id="page-webshop-orders">
+  <section class="section admin-page" id="page-webshop-orders" data-permission="webshop_orders.view">
     <div class="section-head">
       <div><h2>🛍️ Webshop Bestellingen</h2><p>Bestellingen uit de webshop, met klantgegevens, producten en status.</p></div>
       <button class="btn btn-light" onclick="loadWebshopOrders()">↻ Vernieuwen</button>
@@ -427,7 +429,7 @@
       <button class="btn btn-light" type="button" onclick="loadDeviceRegister()">↻ Vernieuwen</button>
       <button class="btn btn-light" type="button" data-permission="device_register.update" onclick="deviceExportExcel()">Export Excel</button>
       <label class="btn btn-light" data-permission="device_register.update" style="cursor:pointer">Import Excel<input type="file" accept=".xlsx,.xls,.csv" onchange="deviceImportExcel(event)" hidden></label>
-      <button class="btn btn-primary" type="button" data-permission="device_register.update" onclick="deviceAddBlankRow()">＋ Nieuw toestel</button>
+      <button class="btn btn-primary" type="button" data-permission="device_register.update" onclick="deviceAddBlankRow()">＋ Nieuwe registratie</button>
     </div>
   </div>
   <div class="card" style="padding:14px;margin-bottom:14px">
@@ -481,7 +483,7 @@
     <div id="inventoryMovements" class="ht-inventory-history-wrap" aria-live="polite"><div class="ht-inventory-loading">Geschiedenis laden…</div></div>
   </div>
 </section>
-<section class="section admin-page" id="page-order-settings">
+<section class="section admin-page" id="page-order-settings" data-permission="site.save">
     <div class="section-head">
       <div>
         <h2>📦 Orderinstellingen</h2>
@@ -575,7 +577,7 @@
   </section>
 
   <!-- WAAROM HOMS TECH -->
-  <section class="section admin-page" id="page-why">
+  <section class="section admin-page" id="page-why" data-permission="why.view">
     <div class="section-head">
       <div>
         <h2>⭐ Waarom HOMS TECH?</h2>
@@ -646,7 +648,7 @@
 </div>
 </div>
 
-<script src="../assets/homs-admin.js?v=20261113-invoice-profile2"></script>
+<script src="../assets/homs-admin.js?v=20261115-repair-form-status3"></script>
 
 <script>
 /* Remove the retired HOMS TECH admin PWA from browsers that previously installed it. */

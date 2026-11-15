@@ -13,7 +13,7 @@ function makeHarness({ data = {}, history = [], actor = "warehouse.admin" } = {}
     async query(sql, params = []) {
       queries.push({ sql, params });
       if (sql === "BEGIN" || sql === "COMMIT" || sql === "ROLLBACK") return { rows: [] };
-      if (sql.includes("SELECT data FROM site_settings")) return { rows: [{ data: savedData }] };
+      if (sql.includes("FROM site_settings") && sql.includes("FOR UPDATE")) return { rows: [{ phones: savedData.phones || [], shop_products: savedData.shopProducts || [] }] };
       if (sql.includes("UPDATE site_settings")) {
         const key = sql.includes("'{shopProducts}'") ? "shopProducts" : "phones";
         savedData = { ...savedData, [key]: JSON.parse(params[0]) };
@@ -47,7 +47,7 @@ function makeHarness({ data = {}, history = [], actor = "warehouse.admin" } = {}
   const pool = {
     async query(sql) {
       queries.push({ sql, params: [] });
-      if (sql.includes("SELECT data FROM site_settings")) return { rows: [{ data: savedData }] };
+      if (sql.includes("FROM site_settings")) return { rows: [{ phones: savedData.phones || [], devices: savedData.devices || [], shop_products: savedData.shopProducts || [] }] };
       if (sql.includes("FROM inventory_movements")) return { rows: movementRows };
       return { rows: [] };
     },
@@ -116,6 +116,13 @@ test("inventory overview returns counts and recent movement history", async () =
   assert.equal(res.body.summary.totalUnits, 5);
   assert.equal(res.body.summary.lowStockCount, 1);
   assert.equal(res.body.movements[0].id, 7);
+  const catalogQuery = h.queries.find(query => query.sql.includes("FROM site_settings"));
+  assert.ok(catalogQuery);
+  assert.match(catalogQuery.sql, /jsonb_build_object/);
+  assert.match(catalogQuery.sql, /'variantPrices'/);
+  assert.match(catalogQuery.sql, /shop_products/);
+  assert.doesNotMatch(catalogQuery.sql, /SELECT data FROM site_settings/i);
+  assert.doesNotMatch(catalogQuery.sql, /'image'|'images'|'colorGalleryImages'/i);
 });
 
 test("Shop purchase movement updates stock and writes an audit record atomically", async () => {

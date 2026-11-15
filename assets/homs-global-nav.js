@@ -6,10 +6,10 @@
   'product.html':'devices.html','client-area.html':'account.html','checkout.html':'cart.html'
  }[current]||current;
  var linkGroups=[
-  {label:'Start',items:[['⌂','Home','index.html'],['♙','Over HOMS TECH','about.html'],['✉','Contact','contact.html']]},
-  {label:'Winkel',items:[['📱','Telefoons & apparaten','devices.html'],['🛍','Shop & accessoires','shop.html'],['🛒','Winkelwagen','cart.html']]},
-  {label:'Service',items:[['🛠','Reparatie aanvragen','repair.html'],['€','Reparatieprijzen','prices.html'],['♻','Uw toestel verkopen','uw-toestel-verkopen.html']]},
-  {label:'Account',items:[['♙','Mijn account','account.html']]}
+  {label:'Start',items:[['','Home','index.html','home'],['','Over HOMS TECH','about.html','about'],['','Contact','contact.html','contact']]},
+  {label:'Winkel',items:[['','Telefoons & apparaten','devices.html','devices'],['🛍','Shop & accessoires','shop.html',null],['','Winkelwagen','cart.html','cart']]},
+  {label:'Service',items:[['','Reparatie aanvragen','repair.html','repair'],['','Reparatieprijzen','prices.html','prices'],['','Uw toestel verkopen','uw-toestel-verkopen.html','trade-in'],['⭐','Klantbeoordelingen','reviews.html','reviews']]},
+  {label:'Account',items:[['','Mijn account','account.html','account']]}
  ];
  var style=document.createElement('style');
  style.textContent=`
@@ -17,19 +17,50 @@
  #homsMenuButton:hover{background:#f1f5f9}
  #homsMenuButton:active{transform:scale(.96)}
  #homsMenuButton span{width:28px;height:3px;background:#071d2d;border-radius:2px;display:block}
+ .homs-account-icon{overflow:visible!important}
+ .homs-account-wave-arm{transform-box:view-box;transform-origin:18.8px 30.1px;animation:homs-account-wave 2.15s ease-in-out 1 both}
+ @keyframes homs-account-wave{
+  0%,10%{transform:rotate(0);opacity:1}
+  20%{transform:rotate(-13deg);opacity:1}
+  30%{transform:rotate(10deg);opacity:1}
+  40%{transform:rotate(-12deg);opacity:1}
+  50%{transform:rotate(9deg);opacity:1}
+  60%{transform:rotate(-7deg);opacity:1}
+  72%{transform:rotate(0);opacity:1}
+  86%,100%{transform:rotate(0);opacity:0}
+ }
+ @media(prefers-reduced-motion:reduce){.homs-account-wave-arm{animation:none!important;opacity:0!important}}
  #homsMenuBackdrop{position:fixed;inset:0;background:#06131e88;z-index:100003;opacity:0;visibility:hidden;transition:.22s}
  #homsMenuBackdrop.open{opacity:1;visibility:visible}
- #homsMenuDrawer{position:fixed;inset:0 auto 0 0;width:min(88vw,370px);background:#fff;z-index:100004;transform:translateX(-105%);transition:transform .25s ease;overflow:auto;box-shadow:15px 0 40px #0002;font-family:Arial,Helvetica,sans-serif}
+ #homsMenuDrawer{position:fixed;inset:0 auto 0 0;width:min(92vw,430px);height:100dvh;max-height:100dvh;background:#fff;z-index:100004;transform:translateX(-105%);transition:transform .25s ease;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;box-shadow:15px 0 40px #0002;font-family:Arial,Helvetica,sans-serif;border-radius:0 22px 22px 0;padding-bottom:env(safe-area-inset-bottom)}
  #homsMenuDrawer.open{transform:translateX(0)}
- #homsMenuDrawer .homs-menu-head{height:70px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5eaf0;font-size:20px;font-weight:900;color:#071d2d}
- #homsMenuDrawer .homs-menu-head span{color:#60a5fa}\n #homsMenuDrawer .homs-menu-group{padding:0 0 7px}\n #homsMenuDrawer .homs-menu-group+.homs-menu-group{border-top:1px solid #edf1f5}\n #homsMenuDrawer .homs-menu-label{padding-top:15px;padding-bottom:7px}
+ #homsMenuDrawer .homs-menu-head{min-height:92px;padding:15px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5eaf0;background:#fff;font-size:20px;font-weight:900;color:#071d2d}
+ #homsMenuDrawer .homs-menu-logo{display:block;width:min(78%,270px);height:auto;max-height:64px;object-fit:contain;object-position:left center}
+ #homsMenuDrawer .homs-menu-head span{color:#60a5fa}
+ #homsMenuDrawer .homs-menu-group{padding:0 0 7px}
+ #homsMenuDrawer .homs-menu-group+.homs-menu-group{border-top:1px solid #edf1f5}
+ #homsMenuDrawer .homs-menu-label{padding-top:15px;padding-bottom:7px}
  #homsMenuDrawer .homs-menu-close{border:0;background:transparent;font-size:30px;color:#334155;cursor:pointer}
- #homsMenuDrawer .homs-menu-label{padding:18px 20px 8px;color:#87939e;font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
- #homsMenuDrawer a{min-height:54px;padding:0 20px;display:flex;align-items:center;gap:13px;border-bottom:1px solid #edf0f3;color:#263747;text-decoration:none;font-size:15px;font-weight:700}
- #homsMenuDrawer a .homs-menu-icon{width:25px;text-align:center;font-size:18px}
- #homsMenuDrawer a.active{background:#eaf2ff;color:#2563eb}
+ #homsMenuDrawer .homs-menu-label{padding:18px 22px 8px;color:#687d90;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+ #homsMenuDrawer .homs-menu-group{padding:0 18px 10px}
+ #homsMenuDrawer .homs-menu-group+.homs-menu-group{border-top:1px solid #edf1f5}
+ #homsMenuDrawer a{min-height:82px;padding:7px 10px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #e8eef4;color:#102a43;text-decoration:none;font-size:16px;font-weight:700}
+ #homsMenuDrawer a .homs-menu-icon{width:70px;height:70px;flex:0 0 70px;display:flex;align-items:center;justify-content:center;font-size:28px}
+ #homsMenuDrawer a .homs-menu-icon img{display:block;width:100%;height:100%;object-fit:contain;image-rendering:auto;filter:drop-shadow(0 3px 4px rgba(16,42,67,.10))}
+ #homsMenuDrawer a .homs-menu-icon{overflow:visible;background:none;border-radius:0}
+ #homsMenuDrawer a.homs-menu-account .homs-menu-icon img{width:100%;height:100%}
+ #homsMenuDrawer a .homs-menu-title{flex:1;line-height:1.25}
+ #homsMenuDrawer a .homs-menu-chevron{font-size:29px;line-height:1;color:#687d90;font-weight:400;padding:0 5px}
+ #homsMenuDrawer a.active{background:#f0f6ff;color:#1765c2;border-radius:12px}
+ #homsMenuDrawer a.homs-menu-account{min-height:94px;margin-top:8px;background:linear-gradient(100deg,#edf5ff,#dcecff);border:1px solid #cbdff4;border-radius:20px;color:#1765c2}
+ #homsMenuDrawer a.homs-menu-account .homs-menu-icon{width:78px;height:78px;flex-basis:78px}
+ @media(max-width:560px){#homsMenuDrawer .homs-menu-head{min-height:82px;padding:12px 18px}#homsMenuDrawer .homs-menu-group{padding-left:12px;padding-right:12px}#homsMenuDrawer a{min-height:78px;gap:10px}#homsMenuDrawer a .homs-menu-icon{width:64px;height:64px;flex-basis:64px}#homsMenuDrawer a.homs-menu-account .homs-menu-icon{width:70px;height:70px;flex-basis:70px}}
+
+
+
  body.homs-menu-open{overflow:hidden}
- header:has(#homsMenuButton),.ht-header:has(#homsMenuButton){position:relative!important;top:auto!important}\n @media(min-width:900px){#homsMenuButton{left:18px;right:auto}}
+ header:has(#homsMenuButton),.ht-header:has(#homsMenuButton){position:relative!important;top:auto!important}
+ @media(min-width:900px){#homsMenuButton{left:18px;right:auto}}
  `;
  document.head.appendChild(style);
  var headerFix=document.createElement('style');
@@ -87,15 +118,27 @@
  var button=document.createElement('button');button.id='homsMenuButton';button.type='button';button.setAttribute('aria-label','Menu openen');button.setAttribute('aria-expanded','false');button.setAttribute('aria-controls','homsMenuDrawer');button.innerHTML='<span></span><span></span><span></span>';
  var backdrop=document.createElement('div');backdrop.id='homsMenuBackdrop';
  var drawer=document.createElement('aside');drawer.id='homsMenuDrawer';drawer.setAttribute('role','dialog');drawer.setAttribute('aria-modal','true');drawer.setAttribute('aria-label','Hoofdnavigatie');drawer.setAttribute('aria-hidden','true');
- var head=document.createElement('div');head.className='homs-menu-head';head.innerHTML='HOMS <span>TECH</span>';
+ var head=document.createElement('div');head.className='homs-menu-head';head.innerHTML='<img class="homs-menu-logo" src="/assets/homs-tech-logo.png" alt="HOMS TECH">';
  var close=document.createElement('button');close.className='homs-menu-close';close.type='button';close.setAttribute('aria-label','Menu sluiten');close.textContent='×';head.appendChild(close);drawer.appendChild(head);
  linkGroups.forEach(function(group){
   var section=document.createElement('section');section.className='homs-menu-group';section.setAttribute('aria-label',group.label);
   var label=document.createElement('div');label.className='homs-menu-label';label.textContent=group.label;section.appendChild(label);
   group.items.forEach(function(item){
-   var a=document.createElement('a');a.href=item[2];if(item[2]===active){a.className='active';a.setAttribute('aria-current','page')}
-   var icon=document.createElement('span');icon.className='homs-menu-icon';icon.textContent=item[0];
-   var title=document.createElement('span');title.textContent=item[1];a.appendChild(icon);a.appendChild(title);section.appendChild(a);
+   var a=document.createElement('a');a.href=item[2];if(item[2]===active){a.classList.add('active');a.setAttribute('aria-current','page')}
+   if(item[3]==='account')a.classList.add('homs-menu-account');
+   var icon=document.createElement('span');icon.className='homs-menu-icon';
+   if(item[3]){
+    icon.classList.add('homs-menu-icon--'+item[3]);
+    var image=document.createElement('img');
+    image.src='/assets/images/menu/'+(item[3]==='reviews'?'file_00000000c72081f498c2ffdd9a3ebf4a':item[3])+'.png';
+    image.alt='';
+    image.decoding='async';
+    image.loading='eager';
+    icon.appendChild(image);
+   }else{icon.textContent=item[0]}
+   var title=document.createElement('span');title.className='homs-menu-title';title.textContent=item[1];
+   var chevron=document.createElement('span');chevron.className='homs-menu-chevron';chevron.setAttribute('aria-hidden','true');chevron.textContent='›';
+   a.appendChild(icon);a.appendChild(title);a.appendChild(chevron);section.appendChild(a);
   });
   drawer.appendChild(section);
  });
@@ -188,7 +231,7 @@
    link.setAttribute('aria-label',type==='account'?'Mijn account':'Winkelwagen');
    link.setAttribute('title',type==='account'?'Mijn account':'Winkelwagen');
    link.innerHTML=type==='account'
-    ? '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#071d2d" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.5" r="4" fill="none"></circle><path d="M4 21c.6-4.2 3.5-6.5 8-6.5s7.4 2.3 8 6.5" fill="none"></path></svg>'
+    ? '<svg class="homs-account-icon" viewBox="0 0 48 48" width="30" height="30" fill="none" stroke="#071d2d" stroke-width="2.45" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="29.5" cy="10.5" r="6.1"></circle><path d="M25.5 16.2C20.5 18.1 17.2 23.2 17.2 30.5V38.8c6.5 3.2 17.6 3.2 24 0V31.5c0-8-4.4-13.3-8.4-15"></path><g class="homs-account-wave-arm"><path d="M18.8 30.1C16.8 27.3 14.2 24.5 12.3 21.8C10.6 19.3 8.7 16.1 7.6 13.7C6.4 11.2 7.3 8.9 9.2 8.4C11.2 7.9 12.7 9.2 13.7 11.3C15 14.2 16.5 17.4 18.3 19.2C19.6 20.5 21.3 20.9 23.1 20.1"></path></g></svg>'
     : '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#071d2d" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5" fill="none"></circle><circle cx="19" cy="20" r="1.5" fill="none"></circle><path d="M2 3h2l2.6 12.2a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 1.9-1.4L22 8H6" fill="none"></path></svg>';
    if(type==='cart'&&countText){var badge=document.createElement('span');badge.className='homs-cart-badge';badge.textContent=countText;link.appendChild(badge)}
   }
@@ -197,5 +240,12 @@
  else{document.body.insertBefore(button,document.body.firstChild)}
  document.body.appendChild(backdrop);document.body.appendChild(drawer);
 })();
+// Shared footer renderer: one consistent, functional footer across the site.
+(function(){
+ var script=document.createElement("script");
+ script.src="/assets/homs-site-footer.js?v=20261115";
+ script.defer=true;
+ document.head.appendChild(script);
+})();
 // HOMS TECH configurable announcement bar on every page.
-(function(){var script=document.createElement("script");script.src="/assets/homs-announcement-bars.js?v=20261108-loopfix2";script.defer=true;document.head.appendChild(script)})();
+(function(){var script=document.createElement("script");script.src="/assets/homs-announcement-bars.js?v=20261108-loopfix2";script.onload=function(){var benefits=document.createElement("script");benefits.src="/assets/homs-benefits-strip.js?v=1";document.head.appendChild(benefits)};document.head.appendChild(script)})();

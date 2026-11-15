@@ -1,5 +1,7 @@
 "use strict";
 
+const { base64ByteLength } = require("../utils/base64");
+
 function registerAdminEmailRoutes(app, {
   pool,
   requirePermission,
@@ -103,9 +105,11 @@ function registerAdminEmailRoutes(app, {
         const mime=String(file?.content_type||fallbackTypes[ext]||"application/octet-stream").toLowerCase();
         const content=String(file?.content||"");
         if(!filename||!content||!allowedTypes.has(mime)||!/^[A-Za-z0-9+/]+={0,2}$/.test(content))throw new Error("Een bijlage heeft een ongeldig formaat.");
-        const size=Buffer.from(content,"base64").length;attachmentTotal+=size;
+        const size=base64ByteLength(content);
+        if(size===null)throw new Error("Een bijlage heeft een ongeldig formaat.");
+        attachmentTotal+=size;
         if(size>10*1024*1024||attachmentTotal>20*1024*1024)throw new Error("Bijlagen mogen maximaal 10 MB per bestand en 20 MB totaal zijn.");
-        return {filename,content,content_type:mime};
+        return {filename,content,content_type:mime,size};
       });
       const messageHtml=textBody.split(/\r?\n/).map(line=>escapeHtml(line).replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/__(.+?)__/g,"<u>$1</u>").replace(/_(.+?)_/g,"<em>$1</em>")).join("<br>");
       const signatureText="\n\n—\nHOMS TECH | Customer Support\nwww.homs-tech.nl";
@@ -165,7 +169,7 @@ function registerAdminEmailRoutes(app, {
           JSON.stringify(attachments.map(file => ({
             filename: file.filename,
             content_type: file.content_type,
-            size: Buffer.from(file.content, "base64").length
+            size: file.size
           })))
         ]
       );

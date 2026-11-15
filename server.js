@@ -27,11 +27,13 @@ const { registerAdminInventoryRoutes } = require("./routes/admin-inventory");
 const { registerAdminEmailRoutes } = require("./routes/admin-emails");
 const { registerContactRoutes } = require("./routes/contact");
 const { registerAnnouncementBarRoutes } = require("./routes/announcement-bars");
+const { registerBenefitsStripRoutes } = require("./routes/benefits-strip");
 const { registerBuybackRoutes } = require("./routes/buyback");
 const { registerLiveChatRoutes } = require("./routes/live-chat");
 const { registerWebshopCheckoutRoutes } = require("./routes/webshop-checkout");
 const { registerRepairQuoteRoutes } = require("./routes/repair-quote-requests");
 const { registerRepairOrderRoutes } = require("./routes/repair-orders");
+const { registerCustomerReviewRoutes } = require("./routes/customer-reviews");
 const { registerCustomerAuthRoutes } = require("./routes/customer-auth");
 const { registerPaymentRoutes } = require("./routes/payments");
 const { registerAdminCustomerRoutes } = require("./routes/admin-customers");
@@ -47,12 +49,14 @@ const { cancelPaypalOrder } = require("./utils/paypal-payment");
 const { allowLiveChat, liveChatFirstReply } = require("./utils/live-chat");
 const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-limit");
 const { checkAuthLoginRateLimit } = require("./utils/auth-login-rate-limit");
+const { startMemoryMonitor } = require("./utils/memory-monitor");
 const { resolveRepairRequestCustomerId } = require("./utils/repair-request-customer");
 const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-inventory");
 const { priceProductFromCatalog } = require("./utils/cart-pricing");
 const { validateCartInventoryQuantities } = require("./utils/cart-inventory-validation");
 const { sanitizeProductCatalogData } = require("./utils/product-catalog-sanitizer");
 const { createAdminAuth } = require("./utils/admin-auth");
+const { buildAdminSiteSectionSelect, getAdminSiteSection } = require("./utils/admin-site-sections");
 const { sanitizeStoredAdminPermissions, normalizeAdminPermissions } = require("./utils/admin-permissions");
 const { createCustomerEmails } = require("./utils/customer-emails");
 const { ensureBuybackOrdersTable } = require("./utils/buyback-schema");
@@ -67,6 +71,9 @@ const {
 } = require("./utils/catalog-photo-preservation");
 const { saveShopCatalog, validateShopCatalogIdentifiers, validateShopCatalogImages } = require("./utils/shop-catalog");
 const PORT = process.env.PORT || 3000;
+
+// Lightweight RSS/heap samples help correlate Render memory spikes with traffic.
+startMemoryMonitor();
 const { getMollieApiKey, getPayPalSettings } = createPaymentSettings({
   pool,
   getEnv: () => process.env,
@@ -107,6 +114,10 @@ registerResendInboundWebhook(app, {
   fetchImpl: fetch
 });
 
+// Repair quote uploads allow at most 6 MB of decoded photos (about 8 MB Base64).
+// Apply a route-specific cap before the broader admin/catalog JSON parser so
+// oversized public uploads cannot consume the full 50 MB request budget.
+app.use("/api/repair-requests", express.json({ limit: "9mb" }));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: false, limit: "10kb" }));
 app.use((err, req, res, next) => {
@@ -229,6 +240,70 @@ registerAnnouncementBarRoutes(app, {
   requirePermission,
   queryWithConnectionRetry
 });
+registerBenefitsStripRoutes(app, {
+  requirePermission,
+  queryWithConnectionRetry
+});
+
+// Load only the allowlisted JSONB fields needed by the requested admin editor.
+app.get("/api/admin/site-data/:section", async (req, res) => {
+  const section = String(req.params.section || "").trim().toLowerCase();
+  const config = getAdminSiteSection(section);
+  if (!config) return res.status(404).json({ error: "Onbekende beheerpagina." });
+
+  return requirePermission(config.permission, { allowSiteSave: true })(req, res, async () => {
+    try {
+      const sql = buildAdminSiteSectionSelect(section);
+      const result = await queryWithConnectionRetry(sql, [], 4);
+      if (!result.rows.length) {
+        return res.status(404).json({ error: "Website-instellingen niet gevonden." });
+      }
+      res.set("Cache-Control", "no-store");
+      return res.json(result.rows[0]);
+    } catch (error) {
+      console.error("[ADMIN SITE DATA] Load failed:", error);
+      return res.status(500).json({ error: "Beheergegevens konden niet worden geladen." });
+    }
+  });
+});
+
+// Save only the allowlisted fields for lightweight admin sections.
+app.put("/api/admin/site-data/:section", async (req, res) => {
+  const section = String(req.params.section || "").trim().toLowerCase();
+  const config = getAdminSiteSection(section);
+  if (!config) return res.status(404).json({ error: "Onbekende beheerpagina." });
+
+  return requirePermission(config.writePermission || "site.save")(req, res, async () => {
+    try {
+      const allowedFields = Array.isArray(config.writeFields) ? config.writeFields : [];
+      const body = req.body;
+      if (!allowedFields.length) {
+        return res.status(405).json({ error: "Deze pagina gebruikt een gespecialiseerde opslagroute." });
+      }
+      if (!body || typeof body !== "object" || Array.isArray(body)) {
+        return res.status(400).json({ error: "Ongeldige beheergegevens." });
+      }
+      const keys = Object.keys(body);
+      if (!keys.length || keys.some(key => !allowedFields.includes(key))) {
+        return res.status(400).json({ error: "De opslag bevat velden die niet bij deze pagina horen." });
+      }
+
+      const result = await queryWithConnectionRetry(
+        "UPDATE site_settings SET data = data || $1::jsonb WHERE id = 1 RETURNING id",
+        [JSON.stringify(body)],
+        4
+      );
+      if (!result.rows.length) {
+        return res.status(404).json({ error: "Website-instellingen niet gevonden." });
+      }
+      res.set("Cache-Control", "no-store");
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("[ADMIN SITE DATA] Save failed:", error);
+      return res.status(500).json({ error: "Beheergegevens konden niet worden opgeslagen." });
+    }
+  });
+});
 
 // Get website settings
 app.get("/api/site", async (req, res) => {
@@ -306,11 +381,76 @@ app.get("/api/site", async (req, res) => {
         tagline: row.tagline
       }));
     }
+    if(view==="shop"){
+      const result=await queryWithConnectionRetry(
+        "SELECT data->'shopProducts' AS shop_products FROM site_settings WHERE id=1",
+        [],
+        4
+      );
+      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
+      res.set("Cache-Control","public, max-age=0, must-revalidate");
+      return res.json(sanitizePublicSiteData({
+        shopProducts:Array.isArray(result.rows[0].shop_products)?result.rows[0].shop_products:[]
+      }));
+    }
     if(view==="cart"){
       const result=await queryWithConnectionRetry("SELECT data->'shopProducts' AS shop_products FROM site_settings WHERE id=1",[],4);
       if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
       res.set("Cache-Control","public, max-age=0, must-revalidate");
       return res.json({shopProducts:sanitizeCartStockData(result.rows[0].shop_products)});
+    }
+    if(view==="about"){
+      const result=await queryWithConnectionRetry(
+        `SELECT
+          data->>'businessName' AS business_name,
+          data->>'siteName' AS site_name,
+          data->>'tagline' AS tagline,
+          data->>'areas' AS areas,
+          data->'why' AS why,
+          data->'features' AS features,
+          data->>'whatsapp' AS whatsapp,
+          data->>'phone' AS phone
+        FROM site_settings
+        WHERE id=1`,
+        [],
+        4
+      );
+      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
+      const row=result.rows[0];
+      res.set("Cache-Control","public, max-age=0, must-revalidate");
+      return res.json(sanitizePublicSiteData({
+        businessName:row.business_name || row.site_name,
+        tagline:row.tagline,
+        areas:row.areas,
+        why:row.why,
+        features:row.features,
+        whatsapp:row.whatsapp,
+        phone:row.phone
+      }));
+    }
+    if(view==="prices"){
+      const result=await queryWithConnectionRetry(
+        `SELECT
+          data->>'businessName' AS business_name,
+          data->>'siteName' AS site_name,
+          data->>'tagline' AS tagline,
+          data->>'whatsapp' AS whatsapp,
+          data->>'phone' AS phone
+        FROM site_settings
+        WHERE id=1`,
+        [],
+        4
+      );
+      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
+      const row=result.rows[0];
+      res.set("Cache-Control","public, max-age=0, must-revalidate");
+      return res.json(sanitizePublicSiteData({
+        businessName:row.business_name,
+        siteName:row.site_name,
+        tagline:row.tagline,
+        whatsapp:row.whatsapp,
+        phone:row.phone
+      }));
     }
     const result = await queryWithConnectionRetry(
       "SELECT data FROM site_settings WHERE id = 1",
@@ -336,10 +476,21 @@ app.get("/api/site", async (req, res) => {
       );
     } catch {}
     const data = result.rows[0].data;
+    if (view === "home" && (!Array.isArray(data?.phones) || data.phones.length === 0)) {
+      console.warn("[HOMEPAGE CATALOG] Stored phone catalog is empty or invalid.", {
+        phonesType: Array.isArray(data?.phones) ? "array" : typeof data?.phones,
+        popularEnabled: data?.homepage?.popular?.enabled !== false,
+        selectedCount: Array.isArray(data?.homepage?.popular?.indexes) ? data.homepage.popular.indexes.length : 0
+      });
+    }
     // Private/admin responses must never be cached. Public responses can be revalidated
     // so repeat visits avoid transferring the full settings payload when unchanged.
-    res.set("Cache-Control", canViewPrivate ? "no-store" : "public, max-age=0, must-revalidate");
-    if (!canViewPrivate && req.query.view === "home") {
+    // Homepage settings change frequently through the admin panel. Avoid serving a
+    // stale compact catalog from an intermediary cache after products are updated.
+    res.set("Cache-Control", canViewPrivate || view === "home"
+      ? "no-store"
+      : "public, max-age=0, must-revalidate");
+    if (!canViewPrivate && view === "home") {
       return res.json(sanitizeHomepageSiteData(data));
     }
     res.json(canViewPrivate ? data : sanitizePublicSiteData(data));
@@ -582,31 +733,52 @@ app.put("/api/admin/shop-visibility", requirePermission("site.save"), async (req
 app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
   try {
     const section = String(req.headers["x-homs-admin-section"] || "").trim().toLowerCase();
+    const phoneSharedFields = ["phoneFolders", "globalConditionDetails", "globalConditionOverviewImage"];
+    const hasPhoneSharedData = Object.prototype.hasOwnProperty.call(req.body || {}, "sharedData");
+    const phoneSharedData = hasPhoneSharedData ? req.body.sharedData : {};
+    const validPhoneSharedData = !hasPhoneSharedData || (
+      phoneSharedData && typeof phoneSharedData === "object" && !Array.isArray(phoneSharedData) &&
+      Object.keys(phoneSharedData).every(key => phoneSharedFields.includes(key)) &&
+      (!Object.prototype.hasOwnProperty.call(phoneSharedData, "phoneFolders") || Array.isArray(phoneSharedData.phoneFolders)) &&
+      (!Object.prototype.hasOwnProperty.call(phoneSharedData, "globalConditionDetails") || Array.isArray(phoneSharedData.globalConditionDetails)) &&
+      (!Object.prototype.hasOwnProperty.call(phoneSharedData, "globalConditionOverviewImage") || typeof phoneSharedData.globalConditionOverviewImage === "string")
+    );
+    if (section === "phones" && hasPhoneSharedData && !validPhoneSharedData) {
+      return res.status(400).json({ error: "Ongeldige gedeelde telefoongegevens." });
+    }
+    const phoneSharedJson = JSON.stringify(validPhoneSharedData ? phoneSharedData : {});
 
-    // A single-product edit updates exactly one array element. It never rewrites
-    // the full phone catalog or unrelated site settings.
+    // A single-product edit updates exactly one array element and its small
+    // shared editor fields. Unrelated catalog entries stay outside Node memory.
+    const singlePhoneKeys = Object.keys(req.body || {});
     const isSinglePhonePatch = section === "phones" &&
       req.body && req.body.phoneItem && typeof req.body.phoneItem === "object" &&
       !Array.isArray(req.body.phoneItem) &&
       Number.isInteger(Number(req.body.phoneIndex)) &&
       req.body.phoneIdentity && typeof req.body.phoneIdentity === "object" &&
-      Object.keys(req.body).length === 3;
+      singlePhoneKeys.every(key => ["phoneItem", "phoneIndex", "phoneIdentity", "sharedData"].includes(key));
 
     if (isSinglePhonePatch) {
       const phoneIndex = Number(req.body.phoneIndex);
       const incomingPhone = req.body.phoneItem;
       const current = await queryWithConnectionRetry(
-        "SELECT data->'phones' AS phones FROM site_settings WHERE id = 1",
-        [], 4
+        "SELECT jsonb_array_length(COALESCE(data->'phones', '[]'::jsonb)) AS phone_count, data->'phones'->($1::int) AS phone FROM site_settings WHERE id = 1",
+        [phoneIndex], 4
       );
-      const phones = Array.isArray(current.rows[0]?.phones) ? current.rows[0].phones.slice() : [];
-      if (phoneIndex < 0 || phoneIndex > phones.length) {
+      if (!current.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
+      const phoneCount = Number(current.rows[0].phone_count || 0);
+      if (phoneIndex < 0 || phoneIndex > phoneCount) {
         return res.status(409).json({ error: "De productlijst is gewijzigd. Vernieuw de pagina en probeer opnieuw." });
       }
-      if (phoneIndex === phones.length) {
-        phones.push(incomingPhone);
+
+      let saved;
+      if (phoneIndex === phoneCount) {
+        saved = await queryWithConnectionRetry(
+          "UPDATE site_settings SET data = (jsonb_set(data, '{phones}', COALESCE(data->'phones', '[]'::jsonb) || jsonb_build_array($1::jsonb), true) || $3::jsonb) WHERE id = 1 RETURNING data->'phones'->($2::int) AS phone",
+          [JSON.stringify(incomingPhone), phoneIndex, phoneSharedJson], 4
+        );
       } else {
-        const existingPhone = phones[phoneIndex];
+        const existingPhone = current.rows[0].phone;
         const sameId = incomingPhone.id != null && existingPhone?.id != null &&
           String(incomingPhone.id) === String(existingPhone.id);
         const expected = req.body.phoneIdentity || {};
@@ -616,42 +788,71 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
         if (!sameId && !sameLegacyIdentity) {
           return res.status(409).json({ error: "Dit product is ondertussen gewijzigd of verplaatst. Vernieuw de pagina om overschrijven te voorkomen." });
         }
-        // Match by the already-validated array slot, not by editable name/brand.
-        // This preserves old photos even when the admin changes the product name.
+        // Load and preserve photos for this product only; unrelated product
+        // images never enter the Node.js heap during a single-product save.
         preserveExistingProductPhotos(existingPhone, incomingPhone);
-        phones[phoneIndex] = incomingPhone;
+        saved = await queryWithConnectionRetry(
+          "UPDATE site_settings SET data = (jsonb_set(data, ARRAY['phones', $2::text], $1::jsonb, false) || $3::jsonb) WHERE id = 1 RETURNING data->'phones'->($2::int) AS phone",
+          [JSON.stringify(incomingPhone), phoneIndex, phoneSharedJson], 4
+        );
       }
-      const saved = await queryWithConnectionRetry(
-        "UPDATE site_settings SET data = jsonb_set(data, '{phones}', $1::jsonb, true) WHERE id = 1 RETURNING data->'phones' AS phones",
-        [JSON.stringify(phones)], 4
-      );
-      const savedPhones = Array.isArray(saved.rows[0]?.phones) ? saved.rows[0].phones : phones;
-      return res.json({ success: true, phoneIndex, phone: savedPhones[phoneIndex] });
+      if (!saved.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
+      return res.json({ success: true, phoneIndex, phone: saved.rows[0].phone });
     }
 
-    // The phone editor now sends only the phone catalog, not the entire 18+ MB
-    // settings document (which also contains large repair-page images).
-    // Read and update just this JSON key to reduce request/response memory use.
+    // The phone editor sends the catalog plus its small shared editor fields,
+    // never the entire 18+ MB settings document with unrelated page images.
+    // Read and update only the phone projection and supplied shared JSONB keys.
+    const phoneCatalogKeys = Object.keys(req.body || {});
     const isPhoneCatalogPatch = section === "phones" &&
       req.body && Array.isArray(req.body.phones) &&
-      Object.keys(req.body).length === 1;
+      phoneCatalogKeys.every(key => ["phones", "sharedData"].includes(key));
 
     if (isPhoneCatalogPatch) {
-    const current = await queryWithConnectionRetry(
-        "SELECT data->'phones' AS phones FROM site_settings WHERE id = 1",
+      const current = await queryWithConnectionRetry(
+        `SELECT COALESCE(
+          (
+            SELECT jsonb_agg(jsonb_build_object(
+              'id', phone->'id',
+              'name', phone->'name',
+              'model', phone->'model',
+              'images', phone->'images',
+              'colorImages', phone->'colorImages',
+              'colorGalleryImages', phone->'colorGalleryImages',
+              'colorGallery', phone->'colorGallery',
+              'galleryImages', phone->'galleryImages',
+              'variantImages', phone->'variantImages'
+            ))
+            FROM jsonb_array_elements(COALESCE(data->'phones', '[]'::jsonb)) AS items(phone)
+          ),
+          '[]'::jsonb
+        ) AS phones
+        FROM site_settings
+        WHERE id = 1`,
         [],
         4
       );
-      const existing = { phones: current.rows[0]?.phones || [] };
+      if (!current.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
+
+      // Preserve only image fields for matching products. Avoid loading every
+      // product's specifications, descriptions, options and pricing into Node.
+      const existing = { phones: current.rows[0].phones || [] };
       const incoming = preserveExistingCatalogPhotos(existing, { phones: req.body.phones });
 
-      await queryWithConnectionRetry(
-        "UPDATE site_settings SET data = jsonb_set(data, '{phones}', $1::jsonb, true) WHERE id = 1 RETURNING data->'phones' AS phones",
-        [JSON.stringify(incoming.phones)],
+      const saved = await queryWithConnectionRetry(
+        "UPDATE site_settings SET data = (jsonb_set(data, '{phones}', $1::jsonb, true) || $2::jsonb) WHERE id = 1 RETURNING id",
+        [JSON.stringify(incoming.phones), phoneSharedJson],
         4
       );
+      if (!saved.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
 
-      return res.json({ success: true, phones: incoming.phones });
+      // The admin already has the submitted catalog in memory; do not send
+      // the full image-heavy catalog back over HTTP after saving it.
+      return res.json({ success: true });
+    }
+
+    if (section === "phones") {
+      return res.status(400).json({ error: "Ongeldige gegevens voor het opslaan van telefoons." });
     }
 
     // Save only the buyback catalog keys, not the full site settings document.
@@ -698,17 +899,19 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       if (identifierError) return res.status(400).json({ error: identifierError });
       const imageError = validateShopCatalogImages(req.body.shopProducts);
       if (imageError) return res.status(400).json({ error: imageError });
-      const shopProducts = await saveShopCatalog(
+      const saved = await saveShopCatalog(
         queryWithConnectionRetry,
         req.body.shopProducts,
         req.body.expectedShopProducts
       );
-      if (shopProducts === null) {
+      if (!saved) {
         return res.status(409).json({
           error: "De Shop-catalogus is ondertussen door iemand anders gewijzigd. Vernieuw de pagina en controleer de nieuwste gegevens voordat je opnieuw opslaat."
         });
       }
-      return res.json({ success: true, shopProducts });
+      // The browser already has the submitted catalog; avoid sending all
+      // product photos back in the response after a successful save.
+      return res.json({ success: true });
     }
 
     const current = await queryWithConnectionRetry(
@@ -749,6 +952,13 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
 });
 
 registerAdminCustomerRoutes(app, { pool, requirePermission, hashPassword, sendWelcomeEmail });
+
+const customerReviewRoutes = registerCustomerReviewRoutes(app, {
+  pool,
+  requirePermission,
+  getEnv: () => process.env,
+  fetchImpl: fetch
+});
 
 // Admin page — always serve the latest editor UI, never a cached copy.
 app.get("/admin", (req, res) => {
@@ -795,8 +1005,12 @@ registerAdminUserRoutes(app, {
 });
 
 // Start server
-initializeDatabaseWithRetry(() => initializeDatabaseSchema(pool), wait)
+initializeDatabaseWithRetry(async () => {
+  await initializeDatabaseSchema(pool);
+  await customerReviewRoutes.ensureCustomerReviewSchema(pool);
+}, wait)
   .then(() => {
+    customerReviewRoutes.startWorker();
     app.listen(PORT, () => {
       console.log(
         `HOMS TECH running on port ${PORT}`

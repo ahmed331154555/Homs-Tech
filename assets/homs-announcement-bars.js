@@ -17,6 +17,7 @@
   const page = path === "/" || path.endsWith("/index.html")
     ? "home"
     : (pages.find(function (entry) { return path.endsWith(entry[0]); }) || [null,"home"])[1];
+  // The top announcement strip is shared across all public pages.
 
   const defaults = {
     enabled:true,

@@ -23,7 +23,7 @@ const PAGE_PERMISSIONS = {
   general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",shop:"site.save",categories:"categories.view",
 why:"why.view",customers:"customers.view",orders:"orders.view","repair-requests":"orders.view",
   "webshop-orders":"webshop_orders.view","invoices":"site.save","order-settings":"site.save",search:"search",admins:"admins.manage",
-  buyback:"buyback.view", "buyback-orders":"buyback_orders.view", inventory:"site.save", "device-register":"device_register.view", emails:"site.save"
+  buyback:"site.save", "buyback-orders":"buyback_orders.view", inventory:"site.save", "device-register":"device_register.view", emails:"site.save"
 };
 
 const ADMIN_PERMISSION_LABELS = {
@@ -34,9 +34,8 @@ const ADMIN_PERMISSION_LABELS = {
   "webshop_orders.view":"Webshop bestellingen bekijken","webshop_orders.update":"Webshop order-status wijzigen","webshop_orders.delete":"Webshop bestellingen verwijderen",
   "orders.delete":"Reparatieaanvragen verwijderen",
   "device_register.view":"Toestelregister bekijken","device_register.update":"Toestelregister wijzigen",
-  "buyback.view":"Inkooptelefoons bekijken","buyback.update":"Inkooptelefoons wijzigen",
   "buyback_orders.view":"Verkoopaanvragen bekijken","buyback_orders.update":"Verkoopaanvraag-status wijzigen","buyback_orders.delete":"Verkoopaanvragen verwijderen",
-  "repair_page.view":"Reparatiepagina bekijken","repair_page.update":"Reparatiepagina wijzigen","site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
+"site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
 };
 
 function hasPermission(p){return currentUser.role==="superadmin"||currentUser.permissions.includes("*")||currentUser.permissions.includes(p)||(["buyback_orders.delete","webshop_orders.delete"].includes(p)&&currentUser.permissions.includes("site.save"));}
@@ -54,13 +53,29 @@ function firstAllowedPage(){
 }
 function applyPermissionUI(){
   document.querySelectorAll("[data-permission]").forEach(el=>el.style.display=hasPermission(el.dataset.permission)?"":"none");
-  const saveBtn=document.getElementById("saveBtn"); if(saveBtn) saveBtn.style.display=canEditCurrentPage()?"":"none";
+  const saveBtn=document.getElementById("saveBtn");
+  if(saveBtn){
+    saveBtn.style.display=canEditCurrentPage()?"":"none";
+    const sectionUnavailable=typeof ADMIN_SITE_DATA_PAGES!=="undefined"&&ADMIN_SITE_DATA_PAGES.has(currentPage)&&(
+      typeof adminLoadedSections==="undefined"||
+      !adminLoadedSections.has(currentPage)||
+      (typeof adminSectionRequests!=="undefined"&&adminSectionRequests.has(currentPage))||
+      loading
+    );
+    saveBtn.disabled=sectionUnavailable;
+  }
   document.querySelectorAll(".admin-page").forEach(page=>{
     const n=(page.id||"").replace(/^page-/,"");
     if(!["general","services","repair","phones","buyback","categories","why"].includes(n))return;
-    page.querySelectorAll("input,textarea").forEach(el=>el.disabled=!canEditCurrentPage());
+    const sectionUnavailable=typeof ADMIN_SITE_DATA_PAGES!=="undefined"&&ADMIN_SITE_DATA_PAGES.has(n)&&(
+      typeof adminLoadedSections==="undefined"||
+      !adminLoadedSections.has(n)||
+      (typeof adminSectionRequests!=="undefined"&&adminSectionRequests.has(n))||
+      loading
+    );
+    page.querySelectorAll("input,textarea,select").forEach(el=>el.disabled=sectionUnavailable||!canEditCurrentPage());
     page.querySelectorAll("button").forEach(btn=>{
-      if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=!canEditCurrentPage();
+      if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=sectionUnavailable||!canEditCurrentPage();
     });
   });
   document.querySelectorAll(".order-status-select").forEach(el=>{const section=el.closest("[data-order-category]");const key=section?.dataset.orderCategory;const category=unifiedOrderCategories.find(item=>item.key===key);const permission=category?.updatePermission||(el.closest("#page-repair-requests")?"orders.update":"webshop_orders.update");el.disabled=!hasPermission(permission);});
@@ -88,9 +103,15 @@ function showPage(page){
   const target=document.getElementById("page-"+page);
   if(target){
     target.classList.add("active");
-    if(adminSiteDataLoaded&&adminRenderedDataPage!==page){
-      renderAdminPageData(page);
-      adminRenderedDataPage=page;
+    if(ADMIN_SITE_DATA_PAGES.has(page)&&adminLazyLoadingEnabled){
+      if(adminLoadedSections.has(page)){
+        if(adminRenderedDataPage!==page){
+          renderAdminPageData(page);
+          adminRenderedDataPage=page;
+        }
+      }else{
+        loadAdminSiteSection(page).catch(()=>{});
+      }
     }
     if(page==="customers")loadCustomers();
     if(page==="emails")loadAdminEmails();
@@ -233,29 +254,40 @@ async function logout(){
   }
 
 function handleBatteryOptionImage(event, phoneIndex, optionIndex){
-  const file=event.target.files && event.target.files[0];
+  const input=event.target;
+  const file=input.files && input.files[0];
   if(!file)return;
   if(!file.type || !file.type.startsWith("image/")){
     alert("Kies een afbeeldingsbestand.");
-    event.target.value="";
+    input.value="";
     return;
   }
   if(file.size>5*1024*1024){
     alert("De afbeelding mag maximaal 5 MB zijn.");
-    event.target.value="";
+    input.value="";
     return;
   }
   const reader=new FileReader();
-  reader.onload=()=>{
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;
+    reader.onload=null;
+    reader.onerror=null;
+    reader.onabort=null;
+    input.value="";
+    if(error){alert("De afbeelding kon niet worden gelezen. Probeer het opnieuw.");return;}
     const phone=data.phones && data.phones[phoneIndex];
     const option=phone && Array.isArray(phone.batteryOptions) ? phone.batteryOptions[optionIndex] : null;
     if(!option)return;
-    option.image=String(reader.result||"");
+    option.image=String(value||"");
     renderPhones();
     markChanged();
   };
-  reader.onerror=()=>alert("De afbeelding kon niet worden gelezen. Probeer het opnieuw.");
-  reader.readAsDataURL(file);
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error("read-failed"));
+  reader.onabort=()=>finish(new Error("read-aborted"));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
 }
 function removeBatteryOptionImage(phoneIndex, optionIndex){
   const phone=data.phones && data.phones[phoneIndex];
@@ -393,27 +425,35 @@ function normalizeGlobalConditionDetails(){
 }
 
 function handleGlobalConditionOverviewImage(event){
-  const file=event.target.files && event.target.files[0];
-  if(!file) return;
+  const input=event.target,file=input.files && input.files[0];
+  if(!file)return;
   if(!file.type || !file.type.startsWith('image/')){
     alert('Kies een afbeelding.');
-    event.target.value='';
+    input.value='';
     return;
   }
   if(file.size>5*1024*1024){
     alert('De afbeelding mag maximaal 5 MB zijn.');
-    event.target.value='';
+    input.value='';
     return;
   }
   const reader=new FileReader();
-  reader.onload=()=>{
-    data.globalConditionOverviewImage=reader.result;
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;
+    reader.onload=null;reader.onerror=null;reader.onabort=null;
+    input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    data.globalConditionOverviewImage=value;
     renderGlobalConditionDetails();
-    markChanged();
+    markChanged("globalConditionOverviewImage");
   };
-  reader.readAsDataURL(file);
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error('read-failed'));
+  reader.onabort=()=>finish(new Error('read-aborted'));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
 }
-
 function renderGlobalConditionDetails(){
   normalizeGlobalConditionDetails();
   const overview=document.getElementById('globalConditionOverviewBox');
@@ -424,7 +464,7 @@ function renderGlobalConditionDetails(){
         <label style="font-weight:800;display:block;margin-bottom:7px">🖼️ Eén afbeelding voor «Wat is dat?»</label>
         <div class="small" style="margin-bottom:10px">Upload hier de afbeelding met de 3 condities. Deze afbeelding wordt centraal gebruikt op alle productpagina's.</div>
         <input type="file" accept="image/*" onchange="handleGlobalConditionOverviewImage(event)">
-        <input value="${esc(img)}" placeholder="Of plak een afbeelding URL" oninput="data.globalConditionOverviewImage=this.value;renderGlobalConditionDetails();markChanged()" style="margin-top:8px">
+        <input value="${esc(img)}" placeholder="Of plak een afbeelding URL" oninput="data.globalConditionOverviewImage=this.value;renderGlobalConditionDetails();markChanged('globalConditionOverviewImage')" style="margin-top:8px">
         ${img?`<img src="${esc(img)}" alt="Productcondities" style="display:block;width:100%;max-width:900px;max-height:420px;object-fit:contain;border-radius:12px;margin-top:10px;background:#f8fafc">`:''}
       </div>`;
   }
@@ -435,11 +475,11 @@ function renderGlobalConditionDetails(){
       <div style="font-weight:800;margin-bottom:8px">${i+1}. ${esc(x.title)}</div>
       <div class="field">
         <label>Naam conditie</label>
-        <input value="${esc(x.title||'')}" oninput="data.globalConditionDetails[${i}].title=this.value;markChanged()">
+        <input value="${esc(x.title||'')}" oninput="data.globalConditionDetails[${i}].title=this.value;markChanged('globalConditionDetails')">
       </div>
       <div class="field" style="margin-top:8px">
         <label>Uitleg voor de klant</label>
-        <textarea rows="3" oninput="data.globalConditionDetails[${i}].text=this.value;markChanged()">${esc(x.text||'')}</textarea>
+        <textarea rows="3" oninput="data.globalConditionDetails[${i}].text=this.value;markChanged('globalConditionDetails')">${esc(x.text||'')}</textarea>
       </div>
     </div>
   `).join('');
@@ -549,17 +589,27 @@ function toggleDeviceCategory(i){
 }
 
 function handleCategoryImage(event,i){
-  const file=event.target.files && event.target.files[0];
-  if(!file) return;
+  const input=event.target,file=input.files && input.files[0];
+  if(!file)return;
+  if(!file.type || !file.type.startsWith('image/')){alert('Kies een afbeelding.');input.value='';return;}
   const reader=new FileReader();
-  reader.onload=()=>{
-    data.deviceCategories[i].image=reader.result;
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;
+    reader.onload=null;reader.onerror=null;reader.onabort=null;
+    input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    if(!data.deviceCategories[i])return;
+    data.deviceCategories[i].image=value;
     renderDeviceCategories();
     markChanged();
   };
-  reader.readAsDataURL(file);
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error('read-failed'));
+  reader.onabort=()=>finish(new Error('read-aborted'));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
 }
-
 function addDeviceCategory(){
   normalizeDeviceCategories();
   data.deviceCategories.push({
@@ -587,49 +637,19 @@ function deleteDeviceCategory(i){
 // Safety: never automatically remove catalog products during normalization.
 function isRemovedLegacyPhone(phone){return false;}
 
-function normalizeData(){
-
-  if(!data || typeof data!=="object"){
-    data={};
-  }
-
-  normalizeBuybackPhones();
-  normalizeBuybackCatalog();
-
-  /* why */
-
+function normalizeWhyData(){
   if(!Array.isArray(data.why)){
-
     if(Array.isArray(data.features)){
-
-      data.why=data.features.map(x=>[
-        "⭐",
-        String(x || ""),
-        ""
-      ]);
-
+      data.why=data.features.map(x=>["⭐",String(x||""),""]);
     }else{
       data.why=[];
     }
   }
-
-  data.why=data.why.map(x=>{
-
-    if(Array.isArray(x)){
-      return [
-        x[0] || "⭐",
-        x[1] || "",
-        x[2] || ""
-      ];
-    }
-
-    return [
-      "⭐",
-      String(x || ""),
-      ""
-    ];
-  });
+  data.why=data.why.map(x=>Array.isArray(x)
+    ? [x[0]||"⭐",x[1]||"",x[2]||""]
+    : ["⭐",String(x||""),""]);
 }
+
 
 /* Phone editor safety draft: saved locally in IndexedDB while editing.
    This survives refreshes and server/API failures, including product photos. */
@@ -702,52 +722,28 @@ async function clearPhoneDraft(){
 window.addEventListener("pagehide",()=>{if(currentPage==="phones"&&phoneEditOnly&&!phoneDraftCommitted)writePhoneDraft().catch(()=>{});});
 
 async function loadData(){
-
   loading=true;
-
+  adminLazyLoadingEnabled=true;
+  data={};
+  adminLoadedSections.clear();
+  adminDirtySections.clear();
+  adminSharedDirtyFields.clear();
+  adminSectionRequests.clear();
+  adminRenderedDataPage="";
   setStatus("Gegevens laden...","info");
 
   try{
-
-    const r=await fetch("/api/site");
-
-    if(!r.ok){
-      throw new Error("Websitegegevens konden niet worden geladen");
+    setupUnifiedOrdersAdmin();
+    if(ADMIN_SITE_DATA_PAGES.has(currentPage)){
+      await loadAdminSiteSection(currentPage);
     }
-
-    data=await r.json();
-    shopCatalogOriginalSnapshot=JSON.parse(JSON.stringify(Array.isArray(data.shopProducts)?data.shopProducts:[]));
-    phoneOriginalIdentities=(Array.isArray(data.phones)?data.phones:[]).map(p=>({id:p?.id??null,name:String(p?.name||""),brand:String(p?.brand||"")}));
-    buybackCatalogDeleteLock=false;
-
-    normalizeData();
-
-    // The guided setup wizard is a temporary editor state, not product data.
-    // Older saves may have persisted setupWizard=true and reopened the same
-    // existing product editor on every reload. Clear it for server products;
-    // genuinely new unsaved drafts are restored immediately below.
-    if(Array.isArray(data.phones)){
-      data.phones.forEach(phone=>{
-        if(phone && phone.setupWizard){
-          phone.setupWizard=false;
-          delete phone.setupStep;
-          delete phone.setupDone;
-        }
-      });
-    }
-
-    const phoneDraftRestored=await restorePhoneDraft();
-    renderAll();
-
-    setStatus("✓ Gegevens geladen","success");
-
+    setStatus("✓ Gegevens van de geopende pagina geladen","success");
   }catch(e){
-
     setStatus("✕ "+e.message,"error");
-
+  }finally{
+    loading=false;
+    applyPermissionUI();
   }
-
-  loading=false;
 }
 
 /* ---------------- GENERAL ---------------- */
@@ -774,6 +770,7 @@ function renderGeneral(){
 let selectedServiceIndex=0;
 let selectedPhoneIndex=0;
 let phoneOriginalIdentities=[];
+const adminSharedDirtyFields=new Set();
 let phoneEditOnly=false;
 let phoneWizardExistingEdit=false;
 let phoneBulkPricingView=false;
@@ -834,10 +831,10 @@ const HOMEPAGE_DEFAULTS={
   why:{enabled:true,title:"Waarom HOMS TECH?"},
   footer:{
     enabled:true,
-    description:"Refurbished apparaten · Reparatie aan huis · ",
-    area:"Rotterdam en omgeving",
+    description:"Refurbished apparaten · Telefoonreparatie · Service",
+    area:"Rotterdam",
     contact:"WhatsApp · Telefoon · E-mail",
-    email:"", phone:"", whatsapp:"", hours:"", address:"", mapUrl:""
+    email:"mail@inbound.homs-tech.nl", phone:"+31684242359", whatsapp:"+31684242359", hours:"09:00–19:00", address:"", mapUrl:""
   }
 };
 
@@ -850,6 +847,11 @@ function mergeHomepageDefaults(target,source){
   });
   if(!Array.isArray(out.topBar.items))out.topBar.items=[...source.topBar.items];
   if(!Array.isArray(out.popular.indexes))out.popular.indexes=[];
+  // Restore the approved business contact defaults when older saved settings are blank.
+  const footerDefaults=source.footer||{};
+  ["email","phone","whatsapp","hours","area"].forEach(key=>{
+    if(!String(out.footer[key]||"").trim() && String(footerDefaults[key]||"").trim())out.footer[key]=footerDefaults[key];
+  });
   return out;
 }
 
@@ -1033,8 +1035,8 @@ function renderHomepageSettings(){
       <div class="field"><label>E-mailadres contact</label><input type="email" value="${esc(f.email)}" placeholder="info@homs-tech.nl" oninput="data.homepage.footer.email=this.value;markChanged()"></div>
       <div class="field"><label>Telefoonnummer</label><input value="${esc(f.phone)}" placeholder="+31 ..." oninput="data.homepage.footer.phone=this.value;markChanged()"></div>
       <div class="field"><label>WhatsApp nummer</label><input value="${esc(f.whatsapp)}" placeholder="316..." oninput="data.homepage.footer.whatsapp=this.value;markChanged()"></div>
-      <div class="field"><label>Openingstijden</label><input value="${esc(f.hours)}" placeholder="Ma–Vr 09:00–18:00" oninput="data.homepage.footer.hours=this.value;markChanged()"></div>
-      <div class="field"><label>Adres</label><input value="${esc(f.address)}" placeholder="Straat, postcode en plaats" oninput="data.homepage.footer.address=this.value;markChanged()"></div>
+      <div class="field"><label>Openingstijden</label><input value="${esc(f.hours)}" placeholder="09:00–19:00" oninput="data.homepage.footer.hours=this.value;markChanged()"></div>
+      <div class="field"><label>Adres (optioneel)</label><input value="${esc(f.address)}" placeholder="Laat leeg als u alleen Rotterdam wilt tonen" oninput="data.homepage.footer.address=this.value;markChanged()"></div>
       <div class="field"><label>Google Maps link</label><input type="url" value="${esc(f.mapUrl)}" placeholder="https://maps.google.com/..." oninput="data.homepage.footer.mapUrl=this.value;markChanged()"></div>
     </div>`;
 
@@ -1136,18 +1138,27 @@ function renderRepairImagePreview(image){
   return image?`<div class="repair-admin-image-preview"><img src="${esc(image)}" alt=""></div>`:'<div class="repair-admin-image-preview">Geen foto</div>';
 }
 function handleRepairImage(section,index,event){
-  const file=event.target.files&&event.target.files[0];
+  const input=event.target,file=input.files&&input.files[0];
   if(!file)return;
-  if(!file.type.startsWith("image/")){alert("Kies een afbeelding.");event.target.value="";return;}
-  if(file.size>5*1024*1024){alert("De afbeelding mag maximaal 5 MB zijn.");event.target.value="";return;}
+  if(!file.type.startsWith("image/")){alert("Kies een afbeelding.");input.value="";return;}
+  if(file.size>5*1024*1024){alert("De afbeelding mag maximaal 5 MB zijn.");input.value="";return;}
   const reader=new FileReader();
-  reader.onload=()=>{
-    if(section==="hero") data.repairPage.hero.image=reader.result;
-    if(section==="option") data.repairPage.options[index].image=reader.result;
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;
+    reader.onload=null;reader.onerror=null;reader.onabort=null;
+    input.value="";
+    if(error){alert("De afbeelding kon niet worden gelezen. Probeer het opnieuw.");return;}
+    if(section==="hero" && data.repairPage?.hero) data.repairPage.hero.image=value;
+    if(section==="option" && data.repairPage?.options?.[index]) data.repairPage.options[index].image=value;
     renderRepairPageAdmin();
     markChanged();
   };
-  reader.readAsDataURL(file);
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error("read-failed"));
+  reader.onabort=()=>finish(new Error("read-aborted"));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
 }
 function addRepairCoverageArea(){
   if(!Array.isArray(data.repairCoverage))data.repairCoverage=[];
@@ -1535,30 +1546,35 @@ function addPhoneTreeGroup(){
   if(exists||alreadyHasPhone){phoneTreeBrand=cleanBrand;renderPhones();alert('Deze map bestaat al.');return;}
   data.phoneFolders.push({group:cleanBrand,model:clean});
   phoneTreeBrand=cleanBrand;
-  markChanged();
+  markChanged("phoneFolders");
   renderPhones();
 }
 
 function handlePhoneFolderImage(event,group,model){
-  const file=event.target.files && event.target.files[0];
-  if(!file) return;
-  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');event.target.value='';return;}
-  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}
-  if(!Array.isArray(data.phoneFolders)) data.phoneFolders=[];
-  let folder=data.phoneFolders.find(x=>String(x.group||'').toLowerCase()===String(group||'').toLowerCase()&&String(x.model||'').toLowerCase()===String(model||'').toLowerCase());
-  if(!folder){
-    folder={group:String(group||'Overige').trim()||'Overige',model:String(model||'').trim(),image:''};
-    data.phoneFolders.push(folder);
-  }
+  const input=event.target,file=input.files && input.files[0];
+  if(!file)return;
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');input.value='';return;}
+  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');input.value='';return;}
   const reader=new FileReader();
-  reader.onload=()=>{
-    folder.image=reader.result;
-    markChanged();
-    renderPhones();
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;reader.onload=null;reader.onerror=null;reader.onabort=null;input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    if(!Array.isArray(data.phoneFolders))data.phoneFolders=[];
+    let folder=data.phoneFolders.find(x=>String(x.group||'').toLowerCase()===String(group||'').toLowerCase()&&String(x.model||'').toLowerCase()===String(model||'').toLowerCase());
+    if(!folder){
+      folder={group:String(group||'Overige').trim()||'Overige',model:String(model||'').trim(),image:''};
+      data.phoneFolders.push(folder);
+    }
+    folder.image=value;
+    markChanged("phoneFolders");renderPhones();
   };
-  reader.readAsDataURL(file);
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error('read-failed'));
+  reader.onabort=()=>finish(new Error('read-aborted'));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
 }
-
 function addPhoneInFolder(group,model){
   const cleanGroup=String(group||'Overige').trim()||'Overige';
   const cleanModel=String(model||'Nieuwe telefoon').trim()||'Nieuwe telefoon';
@@ -1833,7 +1849,33 @@ function phoneBulkRemoveStorage(){
  family.forEach(({p})=>{p.variantPrices=p.variantPrices.filter(r=>canonicalPhoneStorageLabel(r?.storage)!==storage);});phoneBulkResetAfterStructureChange();
 }
 function phoneBulkColorGalleryHtml(color){const imgs=phoneBulkGetColorGallery(color);let html='<div style="border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin:12px 0"><strong style="display:block;margin-bottom:10px">'+esc(color)+'</strong><div style="display:grid;grid-template-columns:repeat(4,minmax(100px,1fr));gap:10px">';for(let slot=0;slot<4;slot++){html+='<div style="min-width:0;border:1px solid #e2e8f0;border-radius:8px;padding:8px">';html+=imgs[slot]?'<img src="'+esc(imgs[slot])+'" alt="" style="width:100%;height:105px;object-fit:contain;display:block;background:#f8fafc;border-radius:6px;margin-bottom:7px">':'<div style="height:105px;display:flex;align-items:center;justify-content:center;background:#f8fafc;border-radius:6px;margin-bottom:7px;color:#64748b;font-size:12px">Geen foto</div>';html+='<label class="small" style="display:block;margin-bottom:5px">Foto '+(slot+1)+'</label><input type="file" accept="image/*" onchange="phoneBulkHandleColorImage(event,'+JSON.stringify(color)+','+slot+')" style="width:100%;font-size:11px">';if(imgs[slot])html+='<button type="button" class="btn btn-light" style="margin-top:6px;padding:6px 8px;font-size:11px" onclick="phoneBulkRemoveColorImage('+JSON.stringify(color)+','+slot+')">Verwijderen</button>';html+='</div>';}return html+'</div></div>';}
-function phoneBulkHandleColorImage(event,color,slot){const file=event.target.files&&event.target.files[0];if(!file)return;if(!file.type.startsWith('image/')){alert('Kies een afbeeldingsbestand.');event.target.value='';return;}if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}const reader=new FileReader();reader.onload=()=>{const imgs=phoneBulkGetColorGallery(color);imgs[slot]=String(reader.result||'');const family=(data.phones||[]).filter(p=>phoneBulkFamilyName(p)===phoneBulkPricingModelIndex);family.forEach(p=>{if(!p.colorGalleryImages||typeof p.colorGalleryImages!=='object')p.colorGalleryImages={};p.colorGalleryImages[color]=imgs.slice(0,4);if(!p.colorImages||typeof p.colorImages!=='object')p.colorImages={};if(imgs[0])p.colorImages[color]=imgs[0];else delete p.colorImages[color];});markChanged();renderPhoneBulkPricing();};reader.readAsDataURL(file);}
+function phoneBulkHandleColorImage(event,color,slot){
+  const input=event.target,file=input.files&&input.files[0];
+  if(!file)return;
+  if(!file.type.startsWith('image/')){alert('Kies een afbeeldingsbestand.');input.value='';return;}
+  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');input.value='';return;}
+  const reader=new FileReader();
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;reader.onload=null;reader.onerror=null;reader.onabort=null;input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    const imgs=phoneBulkGetColorGallery(color);
+    imgs[slot]=String(value||'');
+    const family=(data.phones||[]).filter(p=>phoneBulkFamilyName(p)===phoneBulkPricingModelIndex);
+    family.forEach(p=>{
+      if(!p.colorGalleryImages||typeof p.colorGalleryImages!=='object')p.colorGalleryImages={};
+      p.colorGalleryImages[color]=imgs.slice(0,4);
+      if(!p.colorImages||typeof p.colorImages!=='object')p.colorImages={};
+      if(imgs[0])p.colorImages[color]=imgs[0];else delete p.colorImages[color];
+    });
+    markChanged();renderPhoneBulkPricing();
+  };
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error('read-failed'));
+  reader.onabort=()=>finish(new Error('read-aborted'));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
+}
 function phoneBulkRemoveColorImage(color,slot){const imgs=phoneBulkGetColorGallery(color);imgs[slot]='';const family=(data.phones||[]).filter(p=>phoneBulkFamilyName(p)===phoneBulkPricingModelIndex);family.forEach(p=>{if(!p.colorGalleryImages||typeof p.colorGalleryImages!=='object')p.colorGalleryImages={};p.colorGalleryImages[color]=imgs.slice(0,4);if(!p.colorImages||typeof p.colorImages!=='object')p.colorImages={};if(imgs[0])p.colorImages[color]=imgs[0];else delete p.colorImages[color];});markChanged();renderPhoneBulkPricing();}
 function phoneBulkChooseFamily(family){phoneBulkPricingModelIndex=family;phoneBulkSelectedRows.clear();phoneBulkColorGalleryDraft={};phoneBulkFilterColor="";phoneBulkFilterStorage="";phoneBulkFilterCondition="";renderPhoneBulkPricing();}
 function phoneBulkFilterModels(query){
@@ -2075,23 +2117,51 @@ function removeCustomOptionGroup(index,type,groupIndex){
   renderPhones();markChanged();
 }
 function handleCustomOptionImage(event,index,type,groupIndex,optionIndex){
-  const file=event.target.files?.[0];if(!file)return;
-  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');event.target.value='';return;}
-  if(file.size>2*1024*1024){alert('Afbeelding maximaal 2 MB.');event.target.value='';return;}
+  const input=event.target,file=input.files?.[0];if(!file)return;
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');input.value='';return;}
+  if(file.size>2*1024*1024){alert('Afbeelding maximaal 2 MB.');input.value='';return;}
   const reader=new FileReader();
-  reader.onload=()=>{const option=data.phones[index]?.[type]?.[groupIndex]?.options?.[optionIndex];if(option){option.image=reader.result;renderPhones();markChanged();}};
-  reader.readAsDataURL(file);
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;
+    reader.onload=null;reader.onerror=null;reader.onabort=null;
+    input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    const option=data.phones[index]?.[type]?.[groupIndex]?.options?.[optionIndex];
+    if(option){option.image=value;renderPhones();markChanged();}
+  };
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error('read-failed'));
+  reader.onabort=()=>finish(new Error('read-aborted'));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
 }
 
 function handlePhoneImage(event,i,j){
+  const input=event.target;
   const phone=data.phones[i];
-  const file=event.target.files && event.target.files[0];
+  const file=input.files && input.files[0];
   if(!phone || !file) return;
-  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');event.target.value='';return;}
-  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');input.value='';return;}
+  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');input.value='';return;}
   const reader=new FileReader();
-  reader.onload=()=>{phone.images[j]=reader.result;renderPhones();markChanged();};
-  reader.readAsDataURL(file);
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;
+    reader.onload=null;
+    reader.onerror=null;
+    reader.onabort=null;
+    input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    phone.images[j]=value;
+    renderPhones();
+    markChanged();
+  };
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error('read-failed'));
+  reader.onabort=()=>finish(new Error('read-aborted'));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
 }
 
 function removePhoneImage(i,j){
@@ -2161,23 +2231,32 @@ async function phoneWizardUploadMultiple(input,index,kind,color){
  try{const images=await Promise.all(files.map(read));if(kind==="base"){phone.images=Array.isArray(phone.images)?phone.images:["","","",""];while(phone.images.length<4)phone.images.push("");images.forEach((v,i)=>phone.images[i]=v);}else{phone.colorGalleryImages=phone.colorGalleryImages||{};phone.colorGalleryImages[color]=Array.isArray(phone.colorGalleryImages[color])?phone.colorGalleryImages[color]:["","","",""];while(phone.colorGalleryImages[color].length<4)phone.colorGalleryImages[color].push("");images.forEach((v,i)=>phone.colorGalleryImages[color][i]=v);phone.colorImages=phone.colorImages||{};phone.colorImages[color]=phone.colorGalleryImages[color].find(Boolean)||"";}markChanged();renderPhones();setStatus("✓ "+images.length+" foto's toegevoegd. Sla het product op.","success");}catch(e){alert(e.message||"Upload mislukt");}finally{input.value="";}
 }
 function phoneWizardUpload(event,index,kind,slot,color){
-  const phone=data.phones[index],file=event.target.files?.[0];if(!phone||!file)return;
-  if(!file.type.startsWith("image/")){alert("Kies een afbeeldingsbestand.");event.target.value="";return;}
-  if(file.size>2*1024*1024){alert("Elke afbeelding mag maximaal 2 MB zijn.");event.target.value="";return;}
+  const input=event.target,phone=data.phones[index],file=input.files?.[0];if(!phone||!file)return;
+  if(!file.type.startsWith("image/")){alert("Kies een afbeeldingsbestand.");input.value="";return;}
+  if(file.size>2*1024*1024){alert("Elke afbeelding mag maximaal 2 MB zijn.");input.value="";return;}
   const reader=new FileReader();
-  reader.onload=()=>{
-    if(kind==="base")phone.images[slot]=reader.result;
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;
+    reader.onload=null;reader.onerror=null;reader.onabort=null;
+    input.value="";
+    if(error){alert("De afbeelding kon niet worden gelezen. Probeer het opnieuw.");return;}
+    if(kind==="base")phone.images[slot]=value;
     else if(kind==="color"){
       if(!phone.colorGalleryImages||typeof phone.colorGalleryImages!=="object")phone.colorGalleryImages={};
       if(!Array.isArray(phone.colorGalleryImages[color]))phone.colorGalleryImages[color]=["","","",""];
       while(phone.colorGalleryImages[color].length<4)phone.colorGalleryImages[color].push("");
-      phone.colorGalleryImages[color][slot]=reader.result;
+      phone.colorGalleryImages[color][slot]=value;
       phone.colorImages=phone.colorImages||{};
       phone.colorImages[color]=phone.colorGalleryImages[color].find(Boolean)||"";
-    } else {if(!phone.colorImages||typeof phone.colorImages!=="object")phone.colorImages={};phone.colorImages[color]=reader.result;}
+    } else {if(!phone.colorImages||typeof phone.colorImages!=="object")phone.colorImages={};phone.colorImages[color]=value;}
     renderPhones();markChanged();
   };
-  reader.readAsDataURL(file);
+  reader.onload=()=>finish(null,reader.result);
+  reader.onerror=()=>finish(new Error("read-failed"));
+  reader.onabort=()=>finish(new Error("read-aborted"));
+  try{reader.readAsDataURL(file);}catch(error){finish(error);}
 }
 function phoneWizardSetList(index,key,value,checked){
   const phone=data.phones[index];if(!phone)return;
@@ -3680,28 +3759,37 @@ function attachBuybackModel(){
 }
 
 function handleBuybackBrandImage(event){
-  const b=getBuybackBrand();
-  const file=event.target.files&&event.target.files[0];
+  const input=event.target,b=getBuybackBrand(),file=input.files&&input.files[0];
   if(!b||!file)return;
-  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');return;}
-  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');input.value='';return;}
+  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');input.value='';return;}
   const r=new FileReader();
-  r.onload=()=>{b.image=r.result;markChanged();renderBuybackPhones();};
-  r.readAsDataURL(file);
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;r.onload=null;r.onerror=null;r.onabort=null;input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    b.image=value;markChanged();renderBuybackPhones();
+  };
+  r.onload=()=>finish(null,r.result);r.onerror=()=>finish(new Error('read-failed'));r.onabort=()=>finish(new Error('read-aborted'));
+  try{r.readAsDataURL(file);}catch(error){finish(error);}
 }
-
 function handleBuybackImageForModel(event){
-  const m=getBuybackModel(),p=m&&getBuybackPhoneById(m.buybackId);
-  const file=event.target.files&&event.target.files[0];
+  const input=event.target,m=getBuybackModel(),p=m&&getBuybackPhoneById(m.buybackId),file=input.files&&input.files[0];
   if(!p||!file)return;
-  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');return;}
-  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');input.value='';return;}
+  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');input.value='';return;}
   const r=new FileReader();
-  r.onload=()=>{p.image=r.result;markChanged();renderBuybackModelEditor();};
-  r.readAsDataURL(file);
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;r.onload=null;r.onerror=null;r.onabort=null;input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    p.image=value;markChanged();renderBuybackModelEditor();
+  };
+  r.onload=()=>finish(null,r.result);r.onerror=()=>finish(new Error('read-failed'));r.onabort=()=>finish(new Error('read-aborted'));
+  try{r.readAsDataURL(file);}catch(error){finish(error);}
 }
-
-/* Compatibility helpers kept for existing data/functions. */
 function addBuybackPhone(){
   if(!data.buybackCatalog.length){
     addBuybackBrand();
@@ -3722,17 +3810,22 @@ function deleteBuybackPhone(i){
   markChanged();renderBuybackPhones();
 }
 function handleBuybackImage(event,i){
-  const phone=data.buybackPhones[i];if(!phone)return;
-  const file=event.target.files&&event.target.files[0];if(!file)return;
-  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');return;}
-  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');event.target.value='';return;}
-  const r=new FileReader();r.onload=()=>{phone.image=r.result;markChanged();renderBuybackPhones();};r.readAsDataURL(file);
+  const input=event.target,phone=data.buybackPhones[i],file=input.files&&input.files[0];
+  if(!phone||!file)return;
+  if(!file.type.startsWith('image/')){alert('Kies een afbeelding.');input.value='';return;}
+  if(file.size>2*1024*1024){alert('De afbeelding mag maximaal 2 MB zijn.');input.value='';return;}
+  const r=new FileReader();
+  let settled=false;
+  const finish=(error,value)=>{
+    if(settled)return;
+    settled=true;r.onload=null;r.onerror=null;r.onabort=null;input.value='';
+    if(error){alert('De afbeelding kon niet worden gelezen. Probeer het opnieuw.');return;}
+    phone.image=value;markChanged();renderBuybackPhones();
+  };
+  r.onload=()=>finish(null,r.result);r.onerror=()=>finish(new Error('read-failed'));r.onabort=()=>finish(new Error('read-aborted'));
+  try{r.readAsDataURL(file);}catch(error){finish(error);}
 }
-
 /* ---------------- REPAIR REQUESTS ---------------- */
-let adminRepairOrdersCache=[];
-let adminWebshopOrdersCache=[];
-
 function orderSearchText(o){
   return [o.id,o.name,o.email,o.phone,o.imei,o.username,o.service_name,o.service_group,o.service_category,o.postcode,o.city,o.street,o.house_number].filter(Boolean).join(' ').toLowerCase();
 }
@@ -3757,7 +3850,11 @@ function renderOrderSummary(id,orders,kind){
     <div class="order-stat stat-cancel"><div class="stat-icon">✓</div><div><b>${cancelled}</b><span>Geannuleerd</span></div></div>`;
 }
 
-function isRepairQuoteOrder(order){let meta={};try{meta=JSON.parse(order.extra_fields||'{}')}catch{}return meta.repairQuote===true||String(order.service_category||'').trim().toLowerCase()==='reparatie';}
+function isRepairQuoteOrder(order){
+ let meta={};
+ try{meta=JSON.parse(order.extra_fields||'{}')}catch{}
+ return meta.repairQuote===true||String(order.service_category||'').trim().toLowerCase()==='reparatie';
+}
 function clearRepairRequestFilters(){const q=document.getElementById('repairRequestSearch'),f=document.getElementById('repairRequestStatusFilter');if(q)q.value='';if(f)f.value='';renderRepairRequests();}
 let expandedRepairRequestIds = new Set();
 function toggleRepairRequest(id){
@@ -3768,22 +3865,40 @@ function toggleRepairRequest(id){
 }
 function renderRepairRequests(){
  const box=document.getElementById('repairRequestsList');if(!box)return;
- const requests=adminRepairOrdersCache.filter(isRepairQuoteOrder);
  const q=(document.getElementById('repairRequestSearch')?.value||'').trim().toLowerCase();
  const filter=document.getElementById('repairRequestStatusFilter')?.value||'';
- const filtered=requests.filter(o=>{let m={};try{m=JSON.parse(o.extra_fields||'{}')}catch{}const text=orderSearchText(o)+' '+(m.brand||'')+' '+(m.model||'');return (!q||text.toLowerCase().includes(q))&&(!filter||o.status===filter)});
- renderOrderSummary('repairRequestSummary',requests,'repair');
- const status=document.getElementById('repairRequestsStatus');if(status){status.className='order-count';status.textContent=filtered.length+' van '+requests.length+' repair request(s) zichtbaar';}
+ const filtered=[];
+ let requestCount=0,nieuw=0, bezig=0, cancelled=0;
+ for(const order of adminRepairOrdersCache){
+  let meta={};
+  try{meta=JSON.parse(order.extra_fields||'{}')}catch{}
+  if(meta.repairQuote!==true&&String(order.service_category||'').trim().toLowerCase()!=='reparatie')continue;
+  requestCount++;
+  const currentStatus=order.status||'Nieuw';
+  if(currentStatus==='Nieuw')nieuw++;
+  else if(currentStatus==='In behandeling')bezig++;
+  else if(currentStatus==='Geannuleerd')cancelled++;
+  const searchText=(orderSearchText(order)+' '+(meta.brand||'')+' '+(meta.model||'')).toLowerCase();
+  if((!q||searchText.includes(q))&&(!filter||order.status===filter))filtered.push({order,meta});
+ }
+ const summary=document.getElementById('repairRequestSummary');
+ if(summary){
+  summary.innerHTML='<div class="order-stat stat-total"><div class="stat-icon">☷</div><div><b>'+requestCount+'</b><span>Totaal orders</span></div></div>'+
+   '<div class="order-stat stat-new"><div class="stat-icon">✓</div><div><b>'+nieuw+'</b><span>Nieuw</span></div></div>'+
+   '<div class="order-stat stat-progress"><div class="stat-icon">◷</div><div><b>'+bezig+'</b><span>In behandeling</span></div></div>'+
+   '<div class="order-stat stat-cancel"><div class="stat-icon">✓</div><div><b>'+cancelled+'</b><span>Geannuleerd</span></div></div>';
+ }
+ const status=document.getElementById('repairRequestsStatus');
+ if(status){status.className='order-count';status.textContent=filtered.length+' van '+requestCount+' repair request(s) zichtbaar';}
  if(!filtered.length){box.innerHTML='<div class="order-empty">Nog geen repair requests gevonden.</div>';return;}
- box.innerHTML=filtered.map(order=>{
-  let meta={};try{meta=JSON.parse(order.extra_fields||'{}')}catch{}
+ box.innerHTML=filtered.map(({order,meta})=>{
   const photos=Array.isArray(meta.photos)?meta.photos:[];
   const date=order.created_at?new Date(order.created_at).toLocaleString('nl-NL'):'';
   const offer=meta.offer||{};
   const rawPrice=offer.rawPrice||(offer.price?String(offer.price).replace(/[^0-9.,]/g,'').replace(',','.'):'');
   const open=expandedRepairRequestIds.has(String(order.id));
   const offerHtml='<div class="order-notes repair-request-offer"><strong>💶 Offerte aan klant</strong>'+(offer.sentAt?'<p class="repair-offer-sent">✓ Offerte verstuurd per e-mail op '+esc(new Date(offer.sentAt).toLocaleString('nl-NL'))+' · € '+esc(offer.price||'')+'</p>':(offer.updatedAt?'<p class="repair-offer-pending">⚠ Offerte geregistreerd op '+esc(new Date(offer.updatedAt).toLocaleString('nl-NL'))+' · € '+esc(offer.price||'')+' (e-mail niet verzonden)</p>':''))+'<div class="repair-offer-fields"><label>Prijs (€)<input id="repairOfferPrice-'+Number(order.id)+'" type="number" min="0" max="100000" step="0.01" value="'+esc(rawPrice)+'" placeholder="85.00"></label><label>Geschatte duur<input id="repairOfferDuration-'+Number(order.id)+'" maxlength="120" value="'+esc(offer.duration||'In overleg')+'"></label><label>Geldig<input id="repairOfferValidity-'+Number(order.id)+'" maxlength="80" value="'+esc(offer.validity||'14 dagen')+'"></label></div><label class="repair-offer-message">Bericht aan klant<textarea id="repairOfferMessage-'+Number(order.id)+'" maxlength="3000" rows="4">'+esc(offer.message||'Bedankt voor uw aanvraag. Dit is onze prijsindicatie voor de reparatie. Als u akkoord gaat, kunt u op deze e-mail reageren.')+'</textarea></label><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"><button class="btn btn-light" type="button" onclick="setRepairQuickReply('+Number(order.id)+',\'received\')">📩 Aanvraag ontvangen</button><button class="btn btn-light" type="button" onclick="setRepairQuickReply('+Number(order.id)+',\'photos\')">📷 Extra foto gevraagd</button><button class="btn btn-light" type="button" onclick="setRepairQuickReply('+Number(order.id)+',\'question\')">❓ Extra informatie</button></div><div id="repairOfferStatus-'+Number(order.id)+'" class="repair-offer-status"></div><button id="repairOfferSendButton-'+Number(order.id)+'" class="btn btn-primary" type="button" onclick="sendRepairOffer('+Number(order.id)+')" style="margin-top:10px">✉️ Offerte opslaan & verzenden</button></div>';
-  const photoHtml=photos.length?'<div class="order-notes"><strong>Foto\'s van het toestel ('+photos.length+')</strong><div class="repair-request-photos">'+photos.map((p,i)=>'<a href="'+esc(p.url||p.dataUrl||'')+'" target="_blank" rel="noopener noreferrer" title="Open foto '+(i+1)+'"><img src="'+esc(p.url||p.dataUrl||'')+'" alt="Toestelfoto '+(i+1)+'"></a>').join('')+'</div></div>':'';
+  const photoHtml=photos.length?'<div class="order-notes"><strong>Foto\'s van het toestel ('+photos.length+')</strong><div class="repair-request-photos">'+photos.map((p,i)=>'<a href="'+esc(p.url||p.dataUrl||'')+'" target="_blank" rel="noopener noreferrer" title="Open foto '+(i+1)+'"><img src="'+esc(p.url||p.dataUrl||'')+'" alt="Toestelfoto '+(i+1)+'" loading="lazy" decoding="async"></a>').join('')+'</div></div>':'';
   const statuses=['Nieuw','In behandeling','Wacht op klant','Wacht op leverancier','Resultaat ontvangen','Mislukt','Voltooid','Geannuleerd'];
   const options=statuses.map(s=>'<option'+((order.status||'Nieuw')===s?' selected':'')+'>'+s+'</option>').join('');
   const deleteBtn=hasPermission('orders.delete')?'<button class="btn btn-red order-delete-btn" onclick="deleteRepairRequest('+Number(order.id)+')">🗑️ Verwijderen</button>':'';
@@ -3838,7 +3953,15 @@ async function loadOrders(){
     const r=await fetch('/api/admin/orders',{credentials:'same-origin'});
     const result=await r.json();
     if(!r.ok)throw new Error(result.error||'Reparatieaanvragen konden niet worden geladen');
-    adminRepairOrdersCache=(result.orders||[]).filter(isRepairQuoteOrder);
+    adminRepairOrdersCache=(Array.isArray(result.orders)?result.orders:[]).filter(isRepairQuoteOrder);
+    // Drop expansion state for requests that no longer exist after refresh.
+    // Check only the usually-small set of expanded rows to avoid allocating
+    // another full-size Set alongside the orders cache.
+    for(const id of expandedRepairRequestIds){
+      if(!adminRepairOrdersCache.some(order=>String(order.id)===id)){
+        expandedRepairRequestIds.delete(id);
+      }
+    }
     renderRepairRequests();
   }catch(e){
     if(status){status.className='status error';status.textContent='✕ '+e.message;}
@@ -4670,9 +4793,17 @@ function shopProductImageUpload(event,index,slot){
  const product=data.shopProducts[index];if(!product){input.value="";return;}
  const productId=String(product.id),reader=new FileReader();
  let completed=false;
- const finish=()=>{if(completed)return;completed=true;shopImageUploadsPending=Math.max(0,shopImageUploadsPending-1);};
+ const finish=()=>{
+  if(completed)return;
+  completed=true;
+  reader.onload=null;
+  reader.onerror=null;
+  input.value="";
+  shopImageUploadsPending=Math.max(0,shopImageUploadsPending-1);
+ };
  shopImageUploadsPending++;
  reader.onload=()=>{
+  const imageData=String(reader.result||"");
   finish();
   const currentIndex=data.shopProducts.findIndex(item=>String(item?.id)===productId);
   if(currentIndex<0){setStatus("De foto is niet toegevoegd: het product is intussen verwijderd.","error");return;}
@@ -4680,11 +4811,11 @@ function shopProductImageUpload(event,index,slot){
   if(!Array.isArray(current.images))current.images=["","","",""];
   while(current.images.length<4)current.images.push("");
   if(!Number.isInteger(slot)||slot<0||slot>3)return;
-  current.images[slot]=String(reader.result||"");
+  current.images[slot]=imageData;
   renderShopProductsAdmin();markChanged();
  };
- reader.onerror=()=>{finish();alert("De foto kon niet worden gelezen. Probeer een andere afbeelding.");input.value="";};
- try{reader.readAsDataURL(file);}catch(error){finish();alert("De foto kon niet worden gelezen. Probeer opnieuw.");input.value="";}
+ reader.onerror=()=>{finish();alert("De foto kon niet worden gelezen. Probeer een andere afbeelding.");};
+ try{reader.readAsDataURL(file);}catch(error){finish();alert("De foto kon niet worden gelezen. Probeer opnieuw.");}
 }
 function renderShopProductsAdmin(){
  const box=document.getElementById("shopProductsAdmin");if(!box)return;ensureShopProducts();
@@ -4705,22 +4836,34 @@ async function compressPhonePhotoData(value){
   if(typeof value!=="string" || !/^data:image\/(?!svg\+xml)[^;]+;base64,/i.test(value) || value.length<180000) return value;
   return new Promise(resolve=>{
     const img=new Image();
+    let canvas=null;
+    const finish=result=>{
+      img.onload=null;
+      img.onerror=null;
+      img.removeAttribute("src");
+      if(canvas){
+        canvas.width=0;
+        canvas.height=0;
+        canvas=null;
+      }
+      resolve(result);
+    };
     img.onload=()=>{
       try{
         const maxSide=1440,scale=Math.min(1,maxSide/Math.max(img.naturalWidth||1,img.naturalHeight||1));
-        const canvas=document.createElement("canvas");
+        canvas=document.createElement("canvas");
         canvas.width=Math.max(1,Math.round((img.naturalWidth||1)*scale));
         canvas.height=Math.max(1,Math.round((img.naturalHeight||1)*scale));
         const ctx=canvas.getContext("2d");
-        if(!ctx){resolve(value);return;}
+        if(!ctx){finish(value);return;}
         ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
         ctx.drawImage(img,0,0,canvas.width,canvas.height);
         let compressed=canvas.toDataURL("image/jpeg",0.78);
         if(compressed.length>=value.length) compressed=canvas.toDataURL("image/jpeg",0.65);
-        resolve(compressed.length<value.length?compressed:value);
-      }catch(e){console.warn("[HOMS TECH] Photo compression skipped:",e);resolve(value);}
+        finish(compressed.length<value.length?compressed:value);
+      }catch(e){console.warn("[HOMS TECH] Photo compression skipped:",e);finish(value);}
     };
-    img.onerror=()=>resolve(value);
+    img.onerror=()=>finish(value);
     img.src=value;
   });
 }
@@ -4744,22 +4887,36 @@ async function compressShopPhotoData(value){
   if(typeof value!=="string"||!/^data:image\/(?!svg\+xml)[^;]+;base64,/i.test(value)||value.length<180000)return value;
   return new Promise(resolve=>{
     const img=new Image();
+    let canvas=null;
+    const finish=result=>{
+      img.onload=null;
+      img.onerror=null;
+      img.removeAttribute("src");
+      if(canvas){
+        canvas.width=0;
+        canvas.height=0;
+        canvas=null;
+      }
+      resolve(result);
+    };
     img.onload=()=>{
       try{
         const maxSide=1600,scale=Math.min(1,maxSide/Math.max(img.naturalWidth||1,img.naturalHeight||1));
-        const canvas=document.createElement("canvas");
+        canvas=document.createElement("canvas");
         canvas.width=Math.max(1,Math.round((img.naturalWidth||1)*scale));
         canvas.height=Math.max(1,Math.round((img.naturalHeight||1)*scale));
-        const ctx=canvas.getContext("2d");if(!ctx){resolve(value);return;}
+        const ctx=canvas.getContext("2d");
+        if(!ctx){finish(value);return;}
         ctx.drawImage(img,0,0,canvas.width,canvas.height);
         // WebP preserves transparency. Never fall back to JPEG here because
         // flattening a transparent product cutout onto white changes the asset.
         let compressed=canvas.toDataURL("image/webp",0.82);
         if(compressed.length>=value.length)compressed=canvas.toDataURL("image/webp",0.68);
-        resolve(compressed.length<value.length?compressed:value);
-      }catch(error){console.warn("[HOMS TECH] Shop photo compression skipped:",error);resolve(value);}
+        finish(compressed.length<value.length?compressed:value);
+      }catch(error){console.warn("[HOMS TECH] Shop photo compression skipped:",error);finish(value);}
     };
-    img.onerror=()=>resolve(value);img.src=value;
+    img.onerror=()=>finish(value);
+    img.src=value;
   });
 }
 async function compressShopCatalogPhotos(products){
@@ -4826,6 +4983,7 @@ async function save(isAuto=false){
     }
   }
   loading=true;
+  applyPermissionUI();
   setStatus("Opslaan...","info");
   const shopEditor=document.getElementById("shopProductsAdmin");
   const shopEditorControls=savePage==="shop"&&shopEditor
@@ -4856,12 +5014,44 @@ async function save(isAuto=false){
       });
     }
 
+    const phoneSharedData={};
+    if(savePage==="phones"){
+      if(adminSharedDirtyFields.has("phoneFolders"))phoneSharedData.phoneFolders=JSON.parse(JSON.stringify(data.phoneFolders||[]));
+      if(adminSharedDirtyFields.has("globalConditionDetails"))phoneSharedData.globalConditionDetails=JSON.parse(JSON.stringify(data.globalConditionDetails||[]));
+      if(adminSharedDirtyFields.has("globalConditionOverviewImage"))phoneSharedData.globalConditionOverviewImage=String(data.globalConditionOverviewImage||"");
+    }
     const payload=savePage==="buyback"
       ? {
           buybackCatalog: JSON.parse(JSON.stringify(data.buybackCatalog||[])),
           buybackPhones: JSON.parse(JSON.stringify(data.buybackPhones||[]))
         }
-      : JSON.parse(JSON.stringify(data));
+      : savePage==="shop"
+        ? { shopProducts: JSON.parse(JSON.stringify(data.shopProducts||[])) }
+        : savePage==="phones"
+          ? {
+              phones: phoneEditOnly
+                ? (data.phones||[]).map((phone,index)=>index===selectedPhoneIndex?JSON.parse(JSON.stringify(phone)):phone)
+                : JSON.parse(JSON.stringify(data.phones||[])),
+              sharedData:Object.keys(phoneSharedData).length?phoneSharedData:undefined
+            }
+          : savePage==="general"
+            ? {homepage:JSON.parse(JSON.stringify(data.homepage||{}))}
+            : savePage==="services"
+              ? {services:JSON.parse(JSON.stringify(data.services||[]))}
+              : savePage==="repair"
+                ? {
+                    repairPage:JSON.parse(JSON.stringify(data.repairPage||{})),
+                    repairCoverage:JSON.parse(JSON.stringify(data.repairCoverage||{}))
+                  }
+                : savePage==="categories"
+                  ? {
+                      deviceCategories:JSON.parse(JSON.stringify(data.deviceCategories||[])),
+                      globalConditionDetails:JSON.parse(JSON.stringify(data.globalConditionDetails||[])),
+                      globalConditionOverviewImage:String(data.globalConditionOverviewImage||"")
+                    }
+                  : savePage==="why"
+                    ? {why:JSON.parse(JSON.stringify(data.why||[]))}
+                    : JSON.parse(JSON.stringify(data));
     if(savePage==="phones"){
       setStatus("Foto's verkleinen en product opslaan...","info");
       if(phoneEditOnly && payload.phones?.[selectedPhoneIndex]) payload.phones[selectedPhoneIndex]=(await compressPhoneCatalogPhotos([payload.phones[selectedPhoneIndex]]))[0];
@@ -4882,8 +5072,8 @@ async function save(isAuto=false){
     // section when editing phones instead of the full site settings document.
     const requestPayload=savePage==="phones"
       ? (phoneEditOnly
-          ? {phoneItem:payload.phones?.[selectedPhoneIndex],phoneIndex:selectedPhoneIndex,phoneIdentity:phoneOriginalIdentities[selectedPhoneIndex]||{}}
-          : {phones:payload.phones||[]})
+          ? {phoneItem:payload.phones?.[selectedPhoneIndex],phoneIndex:selectedPhoneIndex,phoneIdentity:phoneOriginalIdentities[selectedPhoneIndex]||{},sharedData:payload.sharedData}
+          : {phones:payload.phones||[],sharedData:payload.sharedData})
       : savePage==="shop" ? {shopProducts:payload.shopProducts||[],expectedShopProducts:shopCatalogOriginalSnapshot} : savePage==="buyback" ? {buybackCatalog:payload.buybackCatalog||[],buybackPhones:payload.buybackPhones||[]} : payload;
     if(savePage==="phones" && phoneEditOnly && requestPayload.phoneItem){
       if(requestPayload.phoneItem.setupWizard){
@@ -4895,9 +5085,15 @@ async function save(isAuto=false){
         delete requestPayload.phoneItem.setupConditions;
       }
     }
-    const r=await fetch("/api/site",{
+    const partialSiteSections=new Set(["general","services","repair","categories","why"]);
+    const saveUrl=partialSiteSections.has(savePage)
+      ? "/api/admin/site-data/"+encodeURIComponent(savePage)
+      : "/api/site";
+    const saveHeaders={"Content-Type":"application/json","Accept":"application/json"};
+    if(saveUrl==="/api/site")saveHeaders["X-Homs-Admin-Section"]=savePage;
+    const r=await fetch(saveUrl,{
       method:"PUT",
-      headers:{"Content-Type":"application/json","Accept":"application/json","X-Homs-Admin-Section":savePage},
+      headers:saveHeaders,
       credentials:"same-origin",
       body:JSON.stringify(requestPayload)
     });
@@ -4936,9 +5132,19 @@ async function save(isAuto=false){
       data=result.data || data;
     }
 
+    adminDirtySections.delete(savePage);
+    adminLoadedSections.add(savePage);
+    if(savePage==="categories"){
+      adminSharedDirtyFields.delete("globalConditionDetails");
+      adminSharedDirtyFields.delete("globalConditionOverviewImage");
+    }
+
     // A successful server save is the source of truth. Clear the local phone draft
     // so an old IndexedDB snapshot cannot restore deleted or outdated products.
     if(savePage==="phones"){
+      if(payload.sharedData){
+        if(payload.sharedData)Object.keys(payload.sharedData).forEach(field=>adminSharedDirtyFields.delete(field));
+      }
       phoneDraftCommitted=true;
       await clearPhoneDraft();
     }
@@ -4962,6 +5168,7 @@ async function save(isAuto=false){
   }finally{
     shopEditorControls.forEach(({element,wasDisabled})=>{element.disabled=wasDisabled;});
     loading=false;
+    applyPermissionUI();
     autoSaveAgain=false;
   }
 }
@@ -5139,7 +5346,7 @@ async function printWebshopShippingLabel(id){
     <div class="spacer"></div>
     ${tracking?'<section class="tracking-box"><div class="tracking-label">Track & Trace</div><div class="tracking">'+escLabel(tracking)+'</div>'+(trackingUrl?'<div class="tracking-link">'+escLabel(trackingUrl)+'</div>':'')+'</section>':'<section class="tracking-box"><div class="tracking-label">Track & Trace</div><div class="tracking" style="font-size:9pt">Trackingnummer wordt toegevoegd na verzending</div></section>'}
     <footer class="footer"><strong>HOMS TECH</strong><span>Adreslabel · geen officieel vervoerderslabel</span></footer>
-  </main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),300));<\\/script></body></html>`);
+  </main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),300));<\/script></body></html>`);
   w.document.close();
 }
 
@@ -5155,16 +5362,12 @@ function closeWebshopOrderDetails(){
 }
 async function showWebshopOrderDetails(id){
   try{
-    // Use the already loaded admin order cache first. Opening a row must not
-    // download the complete order list again.
-    let order=(Array.isArray(adminWebshopOrdersCache)?adminWebshopOrdersCache:[]).find(x=>Number(x.id)===Number(id));
-    if(!order){
-      const r=await fetch("/api/admin/webshop-orders",{credentials:"same-origin"});
-      const result=await r.json().catch(()=>({}));
-      if(!r.ok) throw new Error(result.error||"Bestelling kon niet worden geladen.");
-      adminWebshopOrdersCache=Array.isArray(result.orders)?result.orders:[];
-      order=adminWebshopOrdersCache.find(x=>Number(x.id)===Number(id));
-    }
+    // Load the focused order only; the list endpoint intentionally omits
+    // potentially large histories, notes and refund collections.
+    const r=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(Number(id)),{credentials:"same-origin"});
+    const result=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(result.error||"Bestelling kon niet worden geladen.");
+    const order=result.order;
     if(!order) throw new Error("Bestelling niet gevonden.");
     const existing=document.getElementById("orderDetailsModal");
     if(existing)existing.remove();
@@ -5247,7 +5450,47 @@ async function showWebshopOrderDetails(id){
     const phoneDigits=phoneDigitsRaw.startsWith("0")?"31"+phoneDigitsRaw.slice(1):phoneDigitsRaw;
     const phoneWhatsapp=phoneDigits?'<a class="btn btn-light" target="_blank" rel="noopener noreferrer" href="https://wa.me/'+esc(phoneDigits)+'?text='+encodeURIComponent("Hoi, over bestelling #"+Number(order.id)+" bij HOMS TECH.")+'">WhatsApp-bericht sturen</a>':"";
     const tradeInReadyToShip=!order.trade_in_order_id||order.trade_in_status==="Settled";
-    const phoneInspectionMarkup="";
+    const phoneInspectionChecks = [
+      ["model_storage_color","Model, opslag en kleur komen overeen"],
+      ["screen_touch","Scherm en touchscreen werken correct"],
+      ["battery","Batterij gecontroleerd"],
+      ["face_id_touch_id","Face ID / Touch ID gecontroleerd"],
+      ["cameras","Voor- en achtercamera gecontroleerd"],
+      ["speakers_microphone","Luidsprekers en microfoon gecontroleerd"],
+      ["charging","Opladen en laadpoort gecontroleerd"],
+      ["network_wifi_sim","Netwerk, wifi en simkaart gecontroleerd"],
+      ["icloud_activation_lock","iCloud en activeringsslot gecontroleerd"],
+      ["cosmetic_condition","Uiterlijke staat gecontroleerd"],
+      ["cleaning","Toestel gereinigd"],
+      ["accessories","Accessoires gecontroleerd"],
+      ["secure_packaging","Veilig verpakt"],
+      ["shipping_address","Verzendadres gecontroleerd"]
+    ];
+    const savedInspectionChecks = order.inspection_checks && typeof order.inspection_checks === "object" ? order.inspection_checks : {};
+    const inspectionDone = phoneInspectionChecks.filter(([key])=>savedInspectionChecks[key]===true).length;
+    const phoneInspectionMarkup = `
+      <section class="ht-phone-detail-card ht-phone-inspection-card">
+        <div class="ht-phone-detail-card-head"><span class="icon">✓</span>Controle & Verpakking</div>
+        <div class="ht-phone-detail-card-body">
+          <div class="ht-phone-inspection-intro">
+            <strong>Controle vóór verzending of afronding</strong>
+            <span>Vink elk controlepunt af nadat je het daadwerkelijk hebt gecontroleerd.</span>
+          </div>
+          <div class="ht-phone-inspection-progress"><span id="phoneInspectionProgressText">${inspectionDone} / ${phoneInspectionChecks.length} afgerond</span><div><i id="phoneInspectionProgressBar" style="width:${Math.round(inspectionDone/phoneInspectionChecks.length*100)}%"></i></div></div>
+          <div class="ht-phone-inspection-list">
+            ${phoneInspectionChecks.map(([key,label])=>`
+              <label class="ht-phone-inspection-item">
+                <input type="checkbox" data-phone-inspection-check="${key}" ${savedInspectionChecks[key]===true?"checked":""}>
+                <span>${label}</span>
+              </label>`).join("")}
+          </div>
+          <div class="ht-phone-inspection-footer">
+            <span class="ht-phone-detail-muted" id="phoneInspectionSaveState">${order.inspection_completed_at?"Controle volledig opgeslagen": "Nog niet volledig gecontroleerd"}</span>
+            <button type="button" class="btn btn-primary" onclick="saveWebshopPhoneInspection(${Number(order.id)})">✓ Controle opslaan</button>
+          </div>
+        </div>
+      </section>`;
+
     const phoneStatusOptions=['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(value=>'<option value="'+esc(value)+'" '+(status===value?'selected':'')+' '+(['Verzonden','Voltooid'].includes(value)&&!tradeInReadyToShip?'disabled':'')+'>'+esc(value)+'</option>').join("");
     const phoneShippingLabel=status==="Verzonden"?"Verzonden":(order.tracking_number?"Verzending geregistreerd":"Nog niet verzonden");
     const phonePaymentReference=order.mollie_payment_id||order.paypal_order_id||"Niet beschikbaar";
@@ -5533,7 +5776,8 @@ async function showWebshopOrderDetails(id){
         const content=document.createElement("div");
         content.className="ht-phone-dashboard-tab-content";
         const tabSpecs=[
-          {id:"overview",label:"Overzicht",icon:"▦",items:[orderSummary,inspection,cart]},
+          {id:"overview",label:"Overzicht",icon:"▦",items:[orderSummary,cart]},
+          {id:"inspection",label:"Telefooncontrole",icon:"✓",items:[inspection]},
           {id:"customer",label:"Klantgegevens",icon:"♙",items:[customer,address]},
           {id:"payment",label:"Betaling",icon:"▤",items:[payment]},
           {id:"shipping",label:"Verzending",icon:"♧",items:[shipping]},
@@ -5707,6 +5951,35 @@ function focusPhoneOrderNote(){
   field?.focus();
 }
 
+async function saveWebshopPhoneInspection(id){
+  if(!hasPermission("webshop_orders.update"))return;
+  const card=document.querySelector(".ht-phone-inspection-card");
+  if(!card)return;
+  const checks={};
+  card.querySelectorAll("[data-phone-inspection-check]").forEach(input=>{
+    checks[input.dataset.phoneInspectionCheck]=input.checked;
+  });
+  const button=card.querySelector("button[onclick^='saveWebshopPhoneInspection']");
+  if(button){button.disabled=true;button.textContent="Opslaan...";}
+  try{
+    const response=await fetch("/api/admin/webshop-orders/"+encodeURIComponent(id)+"/inspection",{
+      method:"PUT",credentials:"same-origin",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({checks})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"De telefooncontrole kon niet worden opgeslagen.");
+    await loadWebshopOrders();
+    await showWebshopOrderDetails(id);
+    setStatus(result.complete
+      ?"✓ Alle 14 controlepunten zijn opgeslagen. De bestelling kan nu worden afgerond."
+      :"✓ Controle opgeslagen. Nog niet alle controlepunten zijn afgerond.","success");
+  }catch(error){
+    alert(error.message);
+    if(button){button.disabled=false;button.textContent="✓ Controle opslaan";}
+  }
+}
+
 async function saveWebshopOrderNote(id){
   if(!hasPermission("webshop_orders.update"))return;
   const field=document.getElementById("webshopOrderNote");
@@ -5874,6 +6147,7 @@ async function deleteWebshopOrder(id){
 // =====================================================
 let buybackOrdersCache = [];
 let selectedBuybackOrderId = null;
+let selectedBuybackOrderDetails = null;
 
 function buybackMoney(value){
   if(value===null||value===undefined||value==="")return "—";
@@ -5901,11 +6175,13 @@ async function loadBuybackOrders(){
   document.body.style.overflow=document.body.dataset.htPreviousOverflow||"";
   delete document.body.dataset.htPreviousOverflow;
   selectedBuybackOrderId=null;
+  selectedBuybackOrderDetails=null;
   try{
     const response=await fetch("/api/admin/buyback-orders",{credentials:"same-origin",headers:{"Accept":"application/json"}});
     const result=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(result.error||"Inkoopaanvragen konden niet worden geladen.");
     buybackOrdersCache=Array.isArray(result.orders)?result.orders:[];
+    selectedBuybackOrderDetails=null;
     const filter=document.getElementById("buybackTypeFilter")?.value||"all";
     const visibleOrders=buybackOrdersCache.filter(order=>filter==="all"||(filter==="sale"?!order.trade_in:!!order.trade_in));
     status.textContent=visibleOrders.length+" inkoopaanvragen gevonden.";
@@ -5958,14 +6234,30 @@ function buybackAnswerMarkup(answers){
     ?'<section class="ht-inkoop-card ht-inkoop-answers-card"><div class="ht-inkoop-card-head">✓ Antwoorden van de klant</div><div class="ht-inkoop-card-body"><div class="ht-inkoop-answers">'+entries.join("")+'</div></div></section>'
     :"";
 }
-function showBuybackDetails(id){
-  const order=buybackOrdersCache.find(function(item){return Number(item.id)===Number(id);});
+async function showBuybackDetails(id){
+  const summary=buybackOrdersCache.find(function(item){return Number(item.id)===Number(id);});
   const host=document.getElementById("buybackOrdersDetail");
-  if(!order||!host)return;
-  selectedBuybackOrderId=Number(id);
+  const orderId=Number(id);
+  if(!summary||!host||!Number.isSafeInteger(orderId)||orderId<1)return;
+  selectedBuybackOrderId=orderId;
+  selectedBuybackOrderDetails=null;
   host.hidden=false;
+  host.innerHTML='<div style="padding:28px;text-align:center;color:#64748b">Inkoopdetails laden…</div>';
   document.body.dataset.htPreviousOverflow=document.body.style.overflow||"";
   document.body.style.overflow="hidden";
+  try{
+    const response=await fetch("/api/admin/buyback-orders/"+encodeURIComponent(orderId),{credentials:"same-origin",headers:{"Accept":"application/json"}});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Inkoopdetails konden niet worden geladen.");
+    if(selectedBuybackOrderId!==orderId)return;
+    if(!result.order||Number(result.order.id)!==orderId)throw new Error("De inkoopaanvraag kon niet worden gevonden.");
+    selectedBuybackOrderDetails=result.order;
+  }catch(error){
+    if(selectedBuybackOrderId!==orderId)return;
+    host.innerHTML='<div style="padding:22px;background:#fef2f2;color:#991b1b;border-radius:12px">'+esc(error.message)+' <button type="button" class="btn btn-light" onclick="closeBuybackDetails()">Sluiten</button></div>';
+    return;
+  }
+  const order=selectedBuybackOrderDetails;
   const status=String(order.status||"Nieuw");
   const isTradeIn=!!order.trade_in;
   const inspected=order.sale_inspected_value!==null&&order.sale_inspected_value!==undefined;
@@ -6082,6 +6374,7 @@ function openLinkedTradeInOrder(orderId){
 function closeBuybackDetails(){
   const host=document.getElementById("buybackOrdersDetail");
   if(host){host.hidden=true;host.innerHTML="";}
+  selectedBuybackOrderDetails=null;
   document.body.style.overflow=document.body.dataset.htPreviousOverflow||"";
   delete document.body.dataset.htPreviousOverflow;
   selectedBuybackOrderId=null;
@@ -6388,11 +6681,114 @@ function showOrderSubpage(key){
   showPage("all-orders");
 }
 
-let adminSiteDataLoaded=false;
 let adminRenderedDataPage="";
+const ADMIN_SITE_DATA_PAGES=new Set(["general","services","repair","phones","shop","buyback","categories","why"]);
+const adminLoadedSections=new Set();
+const adminDirtySections=new Set();
+const adminSectionRequests=new Map();
+let adminLazyLoadingEnabled=false;
+
+function setAdminSectionMessage(page,message,type="info"){
+  const target=document.getElementById("page-"+page);
+  if(!target)return;
+  let status=target.querySelector(".admin-section-load-status");
+  if(!status){
+    status=document.createElement("p");
+    status.className="status admin-section-load-status";
+    status.setAttribute("role","status");
+    status.setAttribute("aria-live","polite");
+    target.prepend(status);
+  }
+  status.className="status admin-section-load-status "+type;
+  status.textContent=message;
+}
+
+function clearAdminSectionMessage(page){
+  document.querySelector("#page-"+page+" .admin-section-load-status")?.remove();
+}
+
+async function loadAdminSiteSection(page){
+  if(!ADMIN_SITE_DATA_PAGES.has(page))return false;
+  if(adminLoadedSections.has(page))return true;
+  if(adminDirtySections.has(page))return true;
+  if(adminSectionRequests.has(page))return adminSectionRequests.get(page);
+
+  const request=(async()=>{
+    setAdminSectionMessage(page,"Gegevens laden...","info");
+    const target=document.getElementById("page-"+page);
+    target?.querySelectorAll("input,select,textarea,button").forEach(el=>{el.disabled=true;});
+    try{
+      const response=await fetch("/api/admin/site-data/"+encodeURIComponent(page),{
+        credentials:"same-origin",
+        cache:"no-store",
+        headers:{"Accept":"application/json"}
+      });
+      const sectionData=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(sectionData.error||"Beheergegevens konden niet worden geladen.");
+      const preservedSharedData={};
+      ["globalConditionDetails","globalConditionOverviewImage"].forEach(field=>{
+        if(adminSharedDirtyFields.has(field))preservedSharedData[field]=data[field];
+      });
+      data={...data,...sectionData,...preservedSharedData};
+      if(page==="services"&&!Array.isArray(data.services))data.services=[];
+      if(page==="phones"&&!Array.isArray(data.phones))data.phones=[];
+      if(page==="shop"&&!Array.isArray(data.shopProducts))data.shopProducts=[];
+      if(page==="buyback"){
+        normalizeBuybackPhones();
+        normalizeBuybackCatalog();
+      }else if(page==="why"){
+        normalizeWhyData();
+      }
+
+      if(page==="phones"){
+        if(!Array.isArray(data.phoneFolders))data.phoneFolders=[];
+        normalizeGlobalConditionDetails();
+        phoneOriginalIdentities=(Array.isArray(data.phones)?data.phones:[]).map(phone=>({
+          id:phone?.id??null,
+          name:String(phone?.name||""),
+          brand:String(phone?.brand||"")
+        }));
+        if(Array.isArray(data.phones)){
+          data.phones.forEach(phone=>{
+            if(phone&&phone.setupWizard){
+              phone.setupWizard=false;
+              delete phone.setupStep;
+              delete phone.setupDone;
+            }
+          });
+        }
+        await restorePhoneDraft();
+      }else if(page==="shop"){
+        shopCatalogOriginalSnapshot=JSON.parse(JSON.stringify(Array.isArray(data.shopProducts)?data.shopProducts:[]));
+      }else if(page==="buyback"){
+        buybackCatalogDeleteLock=false;
+      }
+
+      adminLoadedSections.add(page);
+      clearAdminSectionMessage(page);
+      applyPermissionUI();
+      if(currentPage===page){
+        renderAdminPageData(page);
+        adminRenderedDataPage=page;
+      }
+      return true;
+    }catch(error){
+      setAdminSectionMessage(page,"✕ "+error.message,"error");
+      if(currentPage===page)setStatus("✕ "+error.message,"error");
+      throw error;
+    }
+  })();
+
+  adminSectionRequests.set(page,request);
+  try{return await request;}
+  finally{
+    adminSectionRequests.delete(page);
+    if(currentPage===page)applyPermissionUI();
+  }
+}
 
 function renderAdminPageData(page){
-  if(!adminSiteDataLoaded)return;
+  if(!adminLoadedSections.has(page))return;
   if(page==="general"){renderGeneral();renderHomepageSettings();return;}
   if(page==="services"){renderServices();return;}
   if(page==="repair"){renderRepairPageAdmin();return;}
@@ -6405,14 +6801,14 @@ function renderAdminPageData(page){
 
 function renderAll(){
   setupUnifiedOrdersAdmin();
-  adminSiteDataLoaded=true;
   adminRenderedDataPage="";
-  renderAdminPageData(currentPage);
-  adminRenderedDataPage=currentPage;
   showPage(currentPage);
+  if(ADMIN_SITE_DATA_PAGES.has(currentPage))loadAdminSiteSection(currentPage).catch(()=>{});
 }
 
-function markChanged(){
+function markChanged(sharedField){
+  if(["phoneFolders","globalConditionDetails","globalConditionOverviewImage"].includes(sharedField)&&((sharedField==="phoneFolders"&&currentPage==="phones")||(["globalConditionDetails","globalConditionOverviewImage"].includes(sharedField)&&["phones","categories"].includes(currentPage))))adminSharedDirtyFields.add(sharedField);
+  if(ADMIN_SITE_DATA_PAGES.has(currentPage))adminDirtySections.add(currentPage);
   schedulePhoneDraftSave();
   setStatus(
     "● Wijziging موجودة — اضغط «Wijzigingen opslaan» للحفظ.",
@@ -6660,7 +7056,7 @@ async function saveInvoiceSettings(){
   const button=document.querySelector('#page-invoices button[onclick="saveInvoiceSettings()"]');
   const map={legalName:"invSellerLegalName",tradeName:"invSellerTradeName",address:"invSellerAddress",postalCode:"invSellerPostalCode",city:"invSellerCity",country:"invSellerCountry",kvkNumber:"invSellerKvk",vatId:"invSellerVat",iban:"invSellerIban",email:"invSellerEmail",phone:"invSellerPhone",website:"invSellerWebsite"};
   const data={};for(const [key,id] of Object.entries(map))data[key]=invoiceFieldValue(id);
-  if(data.email&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(data.email)){const el=document.getElementById("invoiceSettingsStatus");if(el){el.className="status error";el.textContent="Vul een geldig bedrijfs-e-mailadres in.";}return;}
+  if(data.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)){const el=document.getElementById("invoiceSettingsStatus");if(el){el.className="status error";el.textContent="Vul een geldig bedrijfs-e-mailadres in.";}return;}
   if(button){button.disabled=true;button.dataset.originalText=button.textContent;button.textContent="Opslaan…";}
   const status=document.getElementById("invoiceSettingsStatus");
   if(status){status.className="status info";status.textContent="Bedrijfsgegevens worden opgeslagen…";}
@@ -6763,7 +7159,7 @@ function invoiceDraftPayload(){
 function invoiceValidateDraft(payload){
   if(payload.customerType==="business"&&!payload.customerCompanyName)return "Vul de bedrijfsnaam van de zakelijke klant in.";
   if(payload.customerType==="individual"&&!payload.customerName)return "Vul de volledige naam van de klant in.";
-  if(payload.customerEmail&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(payload.customerEmail))return "Controleer het e-mailadres van de klant.";
+  if(payload.customerEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.customerEmail))return "Controleer het e-mailadres van de klant.";
   return invoiceValidateLines(payload.lines);
 }
 function previewInvoiceDraft(){
@@ -6905,7 +7301,7 @@ async function sendInvoiceTest(id,button){
   }
 }
 
-let adminEmailCache=[],adminEmailFilter="all",adminEmailSelectedId=null,adminEmailFiles=[],adminEmailReplyToId=null;
+let adminEmailCache=[],adminEmailFilter="all",adminEmailSelectedId=null,adminEmailFiles=[],adminEmailPreviewUrls=[],adminEmailReplyToId=null;
 function emailEsc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function emailDate(v){try{return new Date(v).toLocaleString("nl-NL",{dateStyle:"short",timeStyle:"short"});}catch{return "";}}
 function emailBytes(n){if(n<1024)return n+" B";if(n<1048576)return (n/1024).toFixed(0)+" KB";return (n/1048576).toFixed(1)+" MB";}
@@ -6955,9 +7351,42 @@ function handleEmailFiles(files){
  for(const file of Array.from(files||[])){if(!allowed.has(file.type)&&!(/\.(doc|docx|xls|xlsx|txt)$/i.test(file.name))){alert("Dit bestandstype wordt niet ondersteund: "+file.name);continue;}if(file.size>10*1024*1024){alert(file.name+" is groter dan 10 MB.");continue;}if(adminEmailFiles.reduce((n,x)=>n+x.size,0)+file.size>20*1024*1024){alert("De totale grootte van bijlagen mag maximaal 20 MB zijn.");break;}if(adminEmailFiles.some(x=>x.name===file.name&&x.size===file.size)){continue;}adminEmailFiles.push(file);}
  renderEmailFiles();document.getElementById("adminEmailFiles").value="";
 }
-function renderEmailFiles(){const box=document.getElementById("emailAttachmentList");if(!box)return;box.innerHTML=adminEmailFiles.map((f,i)=>'<div class="ht-mail-attachment">'+(f.type.startsWith("image/")?'<img src="'+URL.createObjectURL(f)+'" alt="">':'<span class="ht-mail-attachment-icon">▤</span>')+'<div class="ht-mail-attachment-info"><strong>'+emailEsc(f.name)+'</strong><small>'+emailBytes(f.size)+'</small></div><button type="button" aria-label="Bijlage verwijderen" onclick="removeEmailFile('+i+')">×</button></div>').join("");}
+function releaseEmailPreviewUrls(){
+ adminEmailPreviewUrls.forEach(url=>URL.revokeObjectURL(url));
+ adminEmailPreviewUrls=[];
+}
+function renderEmailFiles(){
+ releaseEmailPreviewUrls();
+ const box=document.getElementById("emailAttachmentList");if(!box)return;
+ box.innerHTML=adminEmailFiles.map((f,i)=>{
+  let preview='<span class="ht-mail-attachment-icon">▤</span>';
+  if(f.type.startsWith("image/")){
+   const url=URL.createObjectURL(f);
+   adminEmailPreviewUrls.push(url);
+   preview='<img src="'+url+'" alt="">';
+  }
+  return '<div class="ht-mail-attachment">'+preview+'<div class="ht-mail-attachment-info"><strong>'+emailEsc(f.name)+'</strong><small>'+emailBytes(f.size)+'</small></div><button type="button" aria-label="Bijlage verwijderen" onclick="removeEmailFile('+i+')">×</button></div>';
+ }).join("");
+}
+window.addEventListener("pagehide",releaseEmailPreviewUrls);
 function removeEmailFile(i){adminEmailFiles.splice(i,1);renderEmailFiles();}
-function emailFileToBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(",")[1]||"");reader.onerror=()=>reject(new Error("Bestand lezen mislukt: "+file.name));reader.readAsDataURL(file);});}
+function emailFileToBase64(file){
+ return new Promise((resolve,reject)=>{
+  const reader=new FileReader();
+  const finish=(error,value)=>{
+   reader.onload=null;
+   reader.onerror=null;
+   if(error)reject(error);else resolve(value);
+  };
+  reader.onload=()=>{
+   const result=String(reader.result||"");
+   const separator=result.indexOf(",");
+   finish(null,separator>=0?result.slice(separator+1):"");
+  };
+  reader.onerror=()=>finish(new Error("Bestand lezen mislukt: "+file.name));
+  try{reader.readAsDataURL(file);}catch(error){finish(new Error("Bestand lezen mislukt: "+file.name));}
+ });
+}
 document.getElementById("adminEmailComposeForm")?.addEventListener("submit",async e=>{
  e.preventDefault();const btn=document.getElementById("adminEmailSendBtn"),status=document.getElementById("adminEmailStatus");btn.disabled=true;status.className="ht-mail-status";status.textContent="E-mail en bijlagen worden voorbereid…";
  try{
@@ -7008,21 +7437,53 @@ function deviceRenderSummary(){
     : [["Eigen toestellen",Number(s.total||0)],["Klaar voor verkoop",Number(s.ready||0)],["In behandeling",Number(s.processing||0)],["Verkocht",Number(s.sold||0)],["Voorraad investering",deviceEuro(s.invested)],["Verkoop omzet",deviceEuro(s.revenue)],["Gerealiseerde winst",deviceEuro(s.realized_profit)]];
   return '<section aria-label="Overzicht" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:0 0 16px">'+cards.map((item,index)=>'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:13px 14px;min-width:0"><div style="font-size:12px;color:#64748b;font-weight:600">'+item[0]+'</div><div style="font-size:20px;font-weight:800;color:'+(type==="customer_repair"&&index===4?"#087443":index===6?"#087443":"#102a43")+';margin-top:5px;overflow-wrap:anywhere">'+item[1]+'</div></div>').join('')+'</section>';
 }
+function deviceRegisterFormHtml(type){
+  const disabled=!hasPermission("device_register.update")?"disabled":"";
+  const repair=type==="customer_repair";
+  const fields=repair
+    ? '<div class="dr-form-grid dr-repair-grid"><label>IMEI<input id="drFormImei" class="form-control" required maxlength="100" placeholder="IMEI"></label><label>Merk<input id="drFormBrand" class="form-control" required maxlength="60" value="Apple"></label><label>Model<input id="drFormModel" class="form-control" required maxlength="120" placeholder="iPhone 13"></label><label>Reparatieprijs (€)<input id="drFormRepairPrice" class="form-control" type="number" min="0" step="0.01" value="0" required></label><label class="dr-full">Beschrijving van het probleem<textarea id="drFormRepairIssue" class="form-control" rows="4" maxlength="1000" placeholder="Beschrijf welke klacht de klant had en wat er mis was met de telefoon..."></textarea></label><label class="dr-full">Reparatiestatus<select id="drFormRepairStatus" class="form-control"><option value="قيد الإصلاح">Niet klaar — bezig met reparatie</option><option value="جاهز للتسليم">Klaar voor ophalen</option><option value="فيه مشاكل">Andere problemen — extra controle nodig</option></select></label></div>'
+    : '<div class="dr-form-grid"><label>IMEI<input id="drFormImei" class="form-control" required maxlength="100" placeholder="IMEI"></label><label>Merk<input id="drFormBrand" class="form-control" required maxlength="60" value="Apple"></label><label>Model<input id="drFormModel" class="form-control" required maxlength="120" placeholder="iPhone 13"></label><label>Geheugen<input id="drFormStorage" class="form-control" maxlength="40" placeholder="128GB"></label><label>Kleur<input id="drFormColor" class="form-control" maxlength="60" placeholder="Zwart"></label><label>Conditie<select id="drFormCondition" class="form-control"><option value="">Selecteer conditie</option><option>Nieuw</option><option>Zo goed als nieuw</option><option>Goed</option><option>Gebruikt</option><option>Defect</option></select></label><label>Inkoopprijs (€)<input id="drFormPurchasePrice" class="form-control" type="number" min="0" step="0.01" value="0" required></label></div>';
+  return '<section class="card dr-entry-form"><div class="dr-entry-head"><div><h3>'+(repair?'🔧 Nieuwe reparatie':'📱 Nieuw apparaat')+'</h3><p>'+(repair?'Vul de klantklacht, toestelgegevens en de actuele reparatiestatus in.':'Vul de toestelgegevens in en sla ze op in het eigen register.')+'</p></div><span class="dr-entry-type">'+(repair?'KLANTREPARATIE':'EIGEN APPARAAT')+'</span></div><form onsubmit="deviceSaveForm(event)" autocomplete="off">'+fields+'<div class="dr-form-actions"><button class="btn btn-green" type="submit" '+disabled+'>💾 Opslaan</button><button class="btn btn-light" type="button" onclick="deviceClearForm()">↺ Wissen</button></div><p id="deviceFormStatus" class="status" role="status" aria-live="polite"></p></form></section>';
+}
 function deviceRenderTable(){
   const host=document.getElementById("deviceRegisterTable");if(!host)return;
   const rows=deviceRegisterCache,type=document.getElementById("deviceTypeFilter")?.value||"commercial",summaryHtml=deviceRenderSummary();
-  if(!rows.length){host.innerHTML=summaryHtml+'<div style="padding:24px;text-align:center;color:#64748b;background:#fff;border:1px solid #e2e8f0;border-radius:14px"><strong style="display:block;color:#203449;margin-bottom:6px">'+(type==="customer_repair"?"Geen klantreparaties gevonden":"Geen eigen toestellen gevonden")+'</strong>Voeg een registratie toe of importeer een Excel-bestand.</div>';return}
-  const headers=type==="customer_repair"?["IMEI / serienummer","Merk","Model","Klant","Telefoon","Reparatie / probleem","Status","Reparatiewaarde (€)","Acties"]:["IMEI / serienummer / HT-code","Merk","Model / naam","Opslag","Kleur","Conditie","Status","Klant / koppeling","Inkoop (€)","Verkoop (€)","Acties"];
-  host.innerHTML=summaryHtml+'<div class="dr-sheet-wrap"><table class="dr-sheet"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
+  const archived=document.getElementById("deviceArchivedFilter")?.checked||false;
+  const headers=type==="customer_repair"?["IMEI","Merk","Model","Beschrijving probleem","Reparatieprijs (€)","Status","Acties"]:["IMEI","Merk","Model","Geheugen","Kleur","Conditie","Status","Inkoopprijs (€)","Verkoopprijs (€)","Acties"];
+  const table=rows.length?'<div class="dr-sheet-wrap"><table class="dr-sheet"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
     rows.map(x=>{
-      const rowId=String(x.id||"new"),isRepair=x.device_type==="customer_repair",statusOptions=(isRepair?DEVICE_STATUS_CUSTOMER:DEVICE_STATUS_COMMERCIAL).map(v=>'<option value="'+esc(v)+'" '+(v===x.status?"selected":"")+'>'+esc(v)+'</option>').join('');
+      const rowId=String(x.id||"new"),isRepair=x.device_type==="customer_repair";
+      const currentRepairStatus=x.status==="جاهز للتسليم"||x.status==="تم التسليم"?"جاهز للتسليم":x.status==="فيه مشاكل"?"فيه مشاكل":"قيد الإصلاح";
+      const statusOptions=(isRepair?[["قيد الإصلاح","Niet klaar — bezig"],["جاهز للتسليم","Klaar voor ophalen"],["فيه مشاكل","Andere problemen"]]:DEVICE_STATUS_COMMERCIAL.map(v=>[v,v])).map(([v,label])=>'<option value="'+esc(v)+'" '+((isRepair?currentRepairStatus:x.status)===v?"selected":"")+'>'+esc(label)+'</option>').join('');
       const statusCell='<td><select class="dr-cell" data-field="status" data-id="'+rowId+'" '+(!hasPermission("device_register.update")?"disabled":"")+'>'+statusOptions+'</select></td>';
-      const actions='<td class="dr-actions"><button class="btn btn-green" data-permission="device_register.update" onclick="deviceSaveRow(&quot;'+rowId+'&quot;)">Opslaan</button>'+(x.id?'<button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button class="btn btn-light" data-permission="device_register.update" onclick="deviceAddOperation('+Number(x.id)+')">＋ Handeling</button><button class="btn btn-light" data-permission="device_register.update" onclick="deviceArchive('+Number(x.id)+',true)">Archief</button>':'<span class="small">Nieuwe registratie</span>')+'</td>';
-      if(isRepair)return '<tr data-row-id="'+rowId+'">'+deviceCell(x.identifier_value,"identifierValue",rowId)+deviceCell(x.brand,"brand",rowId)+deviceCell(x.model,"model",rowId)+deviceCell(x.customer_name,"customerName",rowId)+deviceCell(x.customer_phone,"customerPhone",rowId)+deviceCell(x.repair_issue,"repairIssue",rowId)+statusCell+deviceCell(x.repair_value,"repairValue",rowId,"number")+actions+'</tr>';
-      return '<tr data-row-id="'+rowId+'">'+deviceCell(x.identifier_value,"identifierValue",rowId)+deviceCell(x.brand,"brand",rowId)+deviceCell(x.model,"model",rowId)+'<td>'+esc(x.storage||"—")+'</td><td>'+esc(x.color||"—")+'</td><td>'+esc(x.device_condition||"—")+'</td>'+statusCell+'<td style="min-width:150px;padding:8px 10px;font-size:12px">'+(x.source_webshop_order_id?'<strong>Order #'+Number(x.source_webshop_order_id)+'</strong>':'—')+(x.linked_invoice_number?'<div>Factuur '+esc(x.linked_invoice_number)+'</div>':'')+'</td>'+deviceCell(x.purchase_cost,"purchaseCost",rowId,"number")+deviceCell(x.sale_price,"salePrice",rowId,"number")+actions+'</tr>';
-    }).join('')+'</tbody></table></div><p class="small" style="margin:10px 0 0">'+(type==="customer_repair"?"Klanttoestellen zijn geen HOMS TECH-voorraad en tellen niet mee in inkoop, verkoop of voorraadwinst.":"Eigen toestellen worden gekoppeld aan de voorraad, verkoop en gerealiseerde marge.")+'</p>';
+      const actions='<td class="dr-actions"><button class="btn btn-green" data-permission="device_register.update" onclick="deviceSaveRow(&quot;'+rowId+'&quot;)">Opslaan</button>'+(x.id?'<button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button class="btn btn-light" data-permission="device_register.update" onclick="deviceAddOperation('+Number(x.id)+')">＋ Handeling</button><button class="btn btn-red" data-permission="device_register.update" onclick="deviceArchive('+Number(x.id)+','+(archived?'false':'true')+')">'+(archived?'Herstellen':'Verwijderen')+'</button>':'<span class="small">Nieuwe registratie</span>')+'</td>';
+      if(isRepair)return '<tr data-row-id="'+rowId+'">'+deviceCell(x.identifier_value,"identifierValue",rowId)+deviceCell(x.brand,"brand",rowId)+deviceCell(x.model,"model",rowId)+'<td class="dr-description-cell"><textarea class="dr-cell dr-description-input" data-field="repairIssue" data-id="'+rowId+'" rows="2" maxlength="1000" '+(!hasPermission("device_register.update")?"disabled":"")+'>'+esc(x.repair_issue||"")+'</textarea></td>'+deviceCell(x.repair_value,"repairValue",rowId,"number")+statusCell+actions+'</tr>';
+      return '<tr data-row-id="'+rowId+'">'+deviceCell(x.identifier_value,"identifierValue",rowId)+deviceCell(x.brand,"brand",rowId)+deviceCell(x.model,"model",rowId)+deviceCell(x.storage,"storage",rowId)+deviceCell(x.color,"color",rowId)+deviceCell(x.device_condition,"deviceCondition",rowId)+statusCell+deviceCell(x.purchase_cost,"purchaseCost",rowId,"number")+deviceCell(x.sale_price,"salePrice",rowId,"number")+actions+'</tr>';
+    }).join('')+'</tbody></table></div>':'<div class="dr-empty">لا توجد سجلات في هذا القسم بعد. أضف أول سجل من النموذج أعلاه.</div>';
+  host.innerHTML=summaryHtml+deviceRegisterFormHtml(type)+table+'<p class="small" style="margin:10px 0 0">'+(type==="customer_repair"?"سجلات التصليح منفصلة عن مخزون HOMS TECH.":"الأجهزة المسجلة هنا تدخل في متابعة المخزون وتكاليف الشراء والبيع.")+'</p>';
   applyPermissionUI();
 }
+async function deviceSaveForm(event){
+  event.preventDefault();
+  const type=document.getElementById("deviceTypeFilter")?.value||"commercial";
+  const value=id=>document.getElementById(id)?.value?.trim()||"";
+  const body={deviceType:type,identifierType:"imei",identifierValue:value("drFormImei"),brand:value("drFormBrand")||"Apple",model:value("drFormModel"),status:type==="customer_repair"?value("drFormRepairStatus"):"قيد الفحص",customerName:"",customerPhone:"",repairIssue:type==="customer_repair"?value("drFormRepairIssue"):"",repairValue:type==="customer_repair"?value("drFormRepairPrice"):"0",purchaseCost:type==="commercial"?value("drFormPurchasePrice"):"0",salePrice:"0",storage:type==="commercial"?value("drFormStorage"):"",color:type==="commercial"?value("drFormColor"):"",deviceCondition:type==="commercial"?value("drFormCondition"):""};
+  const status=document.getElementById("deviceFormStatus");
+  try{
+    await deviceApi("/api/admin/device-register",{method:"POST",body:JSON.stringify(body)});
+    deviceSetStatus(type==="customer_repair"?"Reparatie opgeslagen.":"Apparaat opgeslagen.","success");
+    await loadDeviceRegister();
+  }catch(error){if(status)status.textContent=error.message;deviceSetStatus(error.message,"error");}
+}
+function deviceClearForm(){
+  const form=document.querySelector(".dr-entry-form form");if(form)form.reset();
+  const brand=document.getElementById("drFormBrand");if(brand)brand.value="Apple";
+  const price=document.getElementById("drFormPurchasePrice");if(price)price.value="0";
+  const repair=document.getElementById("drFormRepairPrice");if(repair)repair.value="0";
+  const repairStatus=document.getElementById("drFormRepairStatus");if(repairStatus)repairStatus.value="قيد الإصلاح";
+  const status=document.getElementById("deviceFormStatus");if(status)status.textContent="";
+}
+
 async function loadDeviceRegister(){
   const host=document.getElementById("deviceRegisterTable");if(!host)return;host.innerHTML="Laden…";
   try{
@@ -7037,7 +7498,7 @@ async function deviceSaveRow(id){
   const value=f=>row.querySelector('[data-field="'+f+'"]')?.value??"";
   const current=deviceRegisterCache.find(x=>String(x.id)===String(id));
   const deviceType=current?.device_type||document.getElementById("deviceTypeFilter")?.value||"commercial";
-  const body={deviceType,identifierType:current?.identifier_type||"imei",identifierValue:value("identifierValue"),brand:value("brand"),model:value("model"),status:value("status"),customerName:value("customerName"),customerPhone:value("customerPhone"),customerEmail:current?.customer_email||"",repairOrderNumber:current?.repair_order_number||"",repairIssue:value("repairIssue"),repairValue:value("repairValue")||"0",repairNotes:current?.repair_notes||"",purchaseCost:value("purchaseCost")||"0",salePrice:value("salePrice")||"0"};
+  const body={deviceType,identifierType:current?.identifier_type||"imei",identifierValue:value("identifierValue"),brand:value("brand"),model:value("model"),status:value("status"),customerName:value("customerName"),customerPhone:value("customerPhone"),customerEmail:current?.customer_email||"",repairOrderNumber:current?.repair_order_number||"",repairIssue:value("repairIssue"),repairValue:value("repairValue")||"0",repairNotes:current?.repair_notes||"",purchaseCost:value("purchaseCost")||"0",salePrice:value("salePrice")||"0",storage:value("storage"),color:value("color"),deviceCondition:value("deviceCondition")};
   try{
     if(id==="new"){await deviceApi("/api/admin/device-register",{method:"POST",body:JSON.stringify(body)})}
     else{await deviceApi("/api/admin/device-register/"+id,{method:"PUT",body:JSON.stringify(body)})}
@@ -7045,29 +7506,44 @@ async function deviceSaveRow(id){
   }catch(e){deviceSetStatus(e.message,"error")}
 }
 function deviceAddBlankRow(){
-  const type=document.getElementById("deviceTypeFilter")?.value||"commercial";
-  deviceRegisterCache.push({id:null,device_type:type,identifier_type:"imei",identifier_value:"",brand:"Apple",model:"",status:(type==="customer_repair"?"تم الاستلام":"قيد الفحص"),customer_name:"",customer_phone:"",customer_email:"",repair_order_number:"",repair_issue:"",repair_value:0,repair_notes:"",purchase_cost:0,sale_price:0});
-  deviceRenderTable();const row=document.querySelector('tr[data-row-id="new"]');row?.scrollIntoView({behavior:"smooth",block:"center",inline:"center"});row?.querySelector('[data-field="identifierValue"]')?.focus();deviceSetStatus("Vul de identificatie en modelnaam in en klik op Opslaan.","info");
+  const form=document.querySelector(".dr-entry-form");
+  form?.scrollIntoView({behavior:"smooth",block:"center"});
+  document.getElementById("drFormImei")?.focus();
+  deviceSetStatus("Vul de gegevens in het formulier in en klik op Opslaan.","info");
 }
 async function deviceLoadXlsx(){
   if(window.XLSX)return;
   await new Promise((resolve,reject)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";s.onload=resolve;s.onerror=()=>reject(Error("Excel-module kon niet worden geladen. Controleer de internetverbinding."));document.head.appendChild(s)});
 }
 async function deviceExportExcel(){
-  const rows=deviceRegisterCache;if(!rows.length){alert("Geen gegevens om te exporteren. Laad eerst het gewenste overzicht.");return}
+  const rows=deviceRegisterCache,type=document.getElementById("deviceTypeFilter")?.value||"commercial";
+  if(!rows.length){alert("Geen gegevens om te exporteren. Laad eerst het gewenste overzicht.");return}
   try{
-    await deviceLoadXlsx();const type=document.getElementById("deviceTypeFilter")?.value||"commercial";
-    const reportRows=rows.map(x=>x.device_type==="customer_repair"
-      ? {"Type registratie":"Klantreparatie","IMEI / serienummer":x.identifier_value,"Merk":x.brand,"Model":x.model,"Klant":x.customer_name,"Telefoon":x.customer_phone,"Reparatie / probleem":x.repair_issue,"Status":x.status,"Reparatiewaarde (€)":Number(x.repair_value||0),"Reparatieorder":x.repair_order_number,"Notities":x.repair_notes||""}
-      : {"Type registratie":"Eigen HOMS TECH-toestel","IMEI / serienummer / HT-code":x.identifier_value,"Merk":x.brand,"Model":x.model,"Opslag":x.storage||"","Kleur":x.color||"","Conditie":x.device_condition||"","Status":x.status,"Inkoopprijs (€)":Number(x.purchase_cost||0),"Verkoopprijs (€)":Number(x.sale_price||0),"Totale kosten (€)":Number(x.purchase_cost||0)+Number(x.recorded_cost||0),"Marge (€)":Number(x.sale_price||0)-Number(x.purchase_cost||0)-Number(x.recorded_cost||0)});
-    const ws=XLSX.utils.aoa_to_sheet([["HOMS TECH"],[type==="customer_repair"?"KLANTREPARATIES — SERVICE REGISTER":"EIGEN TOESTELLEN — INVENTORY REGISTER"],["Exportdatum: "+new Date().toLocaleString("nl-NL")],["Website: https://homs-tech.nl"],[]]);
-    XLSX.utils.sheet_add_json(ws,reportRows,{origin:"A6"});
-    ws["!cols"]=Object.keys(reportRows[0]||{}).map(k=>({wch:Math.max(16,Math.min(34,k.length+8))}));
-    ws["!autofilter"]={ref:XLSX.utils.encode_range({s:{r:5,c:0},e:{r:5+reportRows.length,c:Math.max(0,Object.keys(reportRows[0]||{}).length-1)}})};
-    ws["!merges"]=[{s:{r:0,c:0},e:{r:0,c:Math.max(0,Object.keys(reportRows[0]||{}).length-1)}},{s:{r:1,c:0},e:{r:1,c:Math.max(0,Object.keys(reportRows[0]||{}).length-1)}}];
-    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,type==="customer_repair"?"Klantreparaties":"Eigen toestellen");
-    XLSX.writeFile(wb,type==="customer_repair"?"HOMS-TECH-Klantreparaties.xlsx":"HOMS-TECH-Toestelregister.xlsx");
-    deviceSetStatus("HOMS TECH Excel-rapport is geëxporteerd.","success");
+    await deviceLoadXlsx();
+    const repair=type==="customer_repair";
+    const columns=repair
+      ? [["IMEI","identifier_value"],["Merk","brand"],["Model","model"],["Beschrijving probleem","repair_issue"],["Reparatieprijs (€)","repair_value"],["Status","status"]]
+      : [["IMEI","identifier_value"],["Merk","brand"],["Model","model"],["Geheugen","storage"],["Kleur","color"],["Conditie","device_condition"],["Status","status"],["Inkoopprijs (€)","purchase_cost"],["Verkoopprijs (€)","sale_price"]];
+    const data=rows.map(row=>columns.map(([,key])=>{
+      if(key==="purchase_cost"||key==="sale_price"||key==="repair_value")return Number(row[key]||0);
+      return row[key]??"";
+    }));
+    const width=columns.length;
+    const ws=XLSX.utils.aoa_to_sheet([
+      ["HOMS TECH"],
+      [repair?"KLANTREPARATIES — SERVICE REGISTER":"EIGEN TOESTELLEN — INVENTORY REGISTER"],
+      ["Exportdatum: "+new Date().toLocaleString("nl-NL")],
+      ["Website: https://homs-tech.nl"],
+      [],
+      columns.map(([label])=>label),
+      ...data
+    ]);
+    ws["!cols"]=columns.map(([label])=>({wch:Math.max(14,Math.min(28,label.length+7))}));
+    ws["!autofilter"]={ref:XLSX.utils.encode_range({s:{r:5,c:0},e:{r:5+data.length,c:width-1}})};
+    ws["!merges"]=[{s:{r:0,c:0},e:{r:0,c:width-1}},{s:{r:1,c:0},e:{r:1,c:width-1}}];
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,repair?"Reparaties":"Apparaten");
+    XLSX.writeFile(wb,repair?"HOMS-TECH-Reparaties.xlsx":"HOMS-TECH-Apparaten.xlsx");
+    deviceSetStatus("Excel is geëxporteerd met dezelfde kolommen als het overzicht.","success");
   }catch(e){deviceSetStatus(e.message,"error")}
 }
 async function deviceImportExcel(event){
@@ -7075,7 +7551,7 @@ async function deviceImportExcel(event){
   try{
     await deviceLoadXlsx();const data=await file.arrayBuffer();const wb=XLSX.read(data,{type:"array"});const ws=wb.Sheets[wb.SheetNames[0]];const raw=XLSX.utils.sheet_to_json(ws,{defval:"",raw:false});
     const norm=s=>String(s??"").trim().toLowerCase().replace(/[ _/()-]/g,"");
-    const aliases={deviceType:["type","devicetype","toesteltype"],identifierType:["identificatietype","identifiertype","codetype"],identifierValue:["imei","imeicode","serienummer","barcode","htcode","identificatienummer"],brand:["merk","brand"],model:["model","naam","modelnaam","toestel"],status:["status"],customerName:["klantnaam","klant","customername","naamklant"],customerPhone:["telefoon","telefoonklant","customerphone"],customerEmail:["email","e-mail","klantemail"],repairOrderNumber:["ordernummer","reparatieordernummer","repairordernumber"],repairIssue:["reparatieprobleem","probleem","reparatie","klacht","issue"],repairValue:["reparatiewaarde","reparatiebedrag","repairvalue","prijsreparatie"],repairNotes:["reparatienotities","notities","opmerking"],purchaseCost:["inkoopprijs","inkoop","purchasecost"],salePrice:["verkoopprijs","verkoop","saleprice"]};
+    const aliases={deviceType:["type","devicetype","toesteltype"],identifierType:["identificatietype","identifiertype","codetype"],identifierValue:["imei","imeicode","serienummer","barcode","htcode","identificatienummer"],brand:["merk","brand"],model:["model","naam","modelnaam","toestel"],status:["status"],customerName:["klantnaam","klant","customername","naamklant"],customerPhone:["telefoon","telefoonklant","customerphone"],customerEmail:["email","e-mail","klantemail"],repairOrderNumber:["ordernummer","reparatieordernummer","repairordernumber"],repairIssue:["reparatieprobleem","beschrijvingprobleem","probleembeschrijving","probleem","reparatie","klacht","issue"],repairValue:["reparatiewaarde","reparatiebedrag","repairvalue","prijsreparatie","reparatieprijs"],repairNotes:["reparatienotities","notities","opmerking"],purchaseCost:["inkoopprijs","inkoop","purchasecost"],salePrice:["verkoopprijs","verkoop","saleprice"],storage:["geheugen","opslag","storage"],color:["kleur","color"],deviceCondition:["conditie","staat","devicecondition"]};
     const get=(r,k)=>{const keys=Object.keys(r);const hit=keys.find(h=>aliases[k].includes(norm(h)));return hit===undefined?"":r[hit]};
     let added=0,skipped=0;
     for(const r of raw){
@@ -7083,7 +7559,8 @@ async function deviceImportExcel(event){
       const deviceType=String(get(r,"deviceType")).toLowerCase().includes("commercial")||String(get(r,"deviceType")).toLowerCase().includes("eigen")?"commercial":"customer_repair";
       const identifierType=String(get(r,"identifierType")).toLowerCase().includes("serial")?"serial":String(get(r,"identifierType")).toLowerCase().includes("barcode")?"barcode":"imei";
       const status=String(get(r,"status")).trim()||(deviceType==="commercial"?"قيد الفحص":"مفتوح");
-      const body={deviceType,identifierType,identifierValue,model,brand:String(get(r,"brand")||"Apple"),status,customerName:String(get(r,"customerName")||""),customerPhone:String(get(r,"customerPhone")||""),customerEmail:String(get(r,"customerEmail")||""),repairOrderNumber:String(get(r,"repairOrderNumber")||""),repairIssue:String(get(r,"repairIssue")||""),repairValue:String(get(r,"repairValue")||"0").replace(",","."),purchaseCost:String(get(r,"purchaseCost")||"0").replace(",","."),salePrice:String(get(r,"salePrice")||"0").replace(",",".")};
+      const body={deviceType,identifierType,identifierValue,model,brand:String(get(r,"brand")||"Apple"),status,customerName:String(get(r,"customerName")||""),customerPhone:String(get(r,"customerPhone")||""),customerEmail:String(get(r,"customerEmail")||""),repairOrderNumber:String(get(r,"repairOrderNumber")||""),repairIssue:String(get(r,"repairIssue")||""),repairValue:String(get(r,"repairValue")||"0").replace(",","."),purchaseCost:String(get(r,"purchaseCost")||"0").replace(",","."),salePrice:String(get(r,"salePrice")||"0").replace(",","."),
+        storage:String(get(r,"storage")||""),color:String(get(r,"color")||""),deviceCondition:String(get(r,"deviceCondition")||"")};
       try{await deviceApi("/api/admin/device-register",{method:"POST",body:JSON.stringify(body)});added++}catch(e){skipped++}
     }
     deviceSetStatus("Import klaar: "+added+" toegevoegd, "+skipped+" overgeslagen (lege of dubbele/ongeldige regels).","success");await loadDeviceRegister();

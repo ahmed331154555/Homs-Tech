@@ -131,7 +131,39 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
   app.get("/api/admin/inventory", requirePermission("site.save"), async (req, res) => {
     try {
       const [settings, history] = await Promise.all([
-        pool.query("SELECT data FROM site_settings WHERE id=1"),
+        pool.query(
+          `SELECT
+            COALESCE((
+              SELECT jsonb_agg(jsonb_build_object(
+                'id', product->'id', 'name', product->'name', 'sku', product->'sku',
+                'stock', product->'stock', 'stockStatus', product->'stockStatus', 'pricingMode', product->'pricingMode',
+                'variantPrices', COALESCE((
+                  SELECT jsonb_agg(jsonb_build_object(
+                    'storage', variant->'storage', 'color', variant->'color', 'condition', variant->'condition',
+                    'sku', variant->'sku', 'stock', variant->'stock', 'available', variant->'available', 'active', variant->'active'
+                  ))
+                  FROM jsonb_array_elements(CASE WHEN jsonb_typeof(product->'variantPrices') = 'array' THEN product->'variantPrices' ELSE '[]'::jsonb END) AS variants(variant)
+                ), '[]'::jsonb)
+              ))
+              FROM jsonb_array_elements(CASE WHEN jsonb_typeof(data->'phones') = 'array' THEN data->'phones' ELSE '[]'::jsonb END) AS products(product)
+            ), '[]'::jsonb) AS phones,
+            COALESCE((
+              SELECT jsonb_agg(jsonb_build_object(
+                'id', product->'id', 'name', product->'name', 'sku', product->'sku',
+                'stock', product->'stock', 'category', product->'category', 'active', product->'active',
+                'variants', COALESCE((
+                  SELECT jsonb_agg(jsonb_build_object(
+                    'id', variant->'id', 'quality', variant->'quality', 'sku', variant->'sku',
+                    'stock', variant->'stock', 'active', variant->'active'
+                  ))
+                  FROM jsonb_array_elements(CASE WHEN jsonb_typeof(product->'variants') = 'array' THEN product->'variants' ELSE '[]'::jsonb END) AS variants(variant)
+                ), '[]'::jsonb)
+              ))
+              FROM jsonb_array_elements(CASE WHEN jsonb_typeof(data->'shopProducts') = 'array' THEN data->'shopProducts' ELSE '[]'::jsonb END) AS products(product)
+            ), '[]'::jsonb) AS shop_products
+          FROM site_settings WHERE id=1
+          `
+        ),
         pool.query(
           "SELECT id,item_type,product_id,variant_id,product_name,variant_label,sku,movement_type,quantity,stock_before,stock_after,reference,note,created_by,created_at FROM inventory_movements ORDER BY id DESC LIMIT 100"
         )
@@ -139,7 +171,12 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
       if (!settings.rows.length) return res.status(404).json({ error: "Productcatalogus niet gevonden." });
       const thresholdValue = Number(req.query?.threshold ?? 2);
       const threshold = Number.isSafeInteger(thresholdValue) && thresholdValue >= 0 && thresholdValue <= 1000 ? thresholdValue : 2;
-      const items = inventoryCatalog(settings.rows[0].data || {});
+      const catalog = settings.rows[0];
+      const items = inventoryCatalog({
+        phones: Array.isArray(catalog.phones) ? catalog.phones : [],
+        devices: Array.isArray(catalog.devices) ? catalog.devices : [],
+        shopProducts: Array.isArray(catalog.shop_products) ? catalog.shop_products : []
+      });
       const tracked = items.filter(item => item.stock !== null);
       const totalUnits = tracked.reduce((sum, item) => sum + item.stock, 0);
       const lowStock = tracked.filter(item => item.stock <= threshold);
@@ -193,9 +230,14 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
-      const locked = await client.query("SELECT data FROM site_settings WHERE id=1 FOR UPDATE");
+      const locked = await client.query(
+        "SELECT data->'phones' AS phones, data->'shopProducts' AS shop_products FROM site_settings WHERE id=1 FOR UPDATE"
+      );
       if (!locked.rows.length) throw new Error("Productcatalogus niet gevonden.");
-      const data = locked.rows[0].data || {};
+      const data = {
+        phones: Array.isArray(locked.rows[0].phones) ? locked.rows[0].phones : [],
+        shopProducts: Array.isArray(locked.rows[0].shop_products) ? locked.rows[0].shop_products : []
+      };
       const catalogKey = itemType === "shop" ? "shopProducts" : "phones";
       const catalog = Array.isArray(data[catalogKey]) ? data[catalogKey] : [];
       const productIndex = itemType === "shop"

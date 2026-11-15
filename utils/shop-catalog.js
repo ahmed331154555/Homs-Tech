@@ -5,15 +5,14 @@
  */
 async function saveShopCatalog(queryWithConnectionRetry, shopProducts, expectedShopProducts) {
   const result = await queryWithConnectionRetry(
-    "UPDATE site_settings SET data = jsonb_set(data, '{shopProducts}', $1::jsonb, true) WHERE id = 1 AND COALESCE(data->'shopProducts', '[]'::jsonb) = $2::jsonb RETURNING data->'shopProducts' AS products",
+    "UPDATE site_settings SET data = jsonb_set(data, '{shopProducts}', $1::jsonb, true) WHERE id = 1 AND COALESCE(data->'shopProducts', '[]'::jsonb) = $2::jsonb RETURNING id",
     [JSON.stringify(shopProducts), JSON.stringify(expectedShopProducts)],
     4
   );
 
-  if (!result.rows.length) return null;
-  return Array.isArray(result.rows[0]?.products)
-    ? result.rows[0].products
-    : [];
+  // Do not return the full image-heavy catalog from PostgreSQL: the admin
+  // already retains its submitted payload and can continue using that copy.
+  return result.rows.length > 0;
 }
 
 function validateShopCatalogImages(products) {

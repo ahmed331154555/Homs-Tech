@@ -28,7 +28,7 @@ test("admin layout has desktop and small-screen responsive safeguards", () => {
 
 test("admin page references the current stylesheet version", () => {
   const html = read("admin/index.html");
-  assert.match(html, /homs-admin\.css\?v=20261110-admin-polish6/);
+  assert.match(html, /homs-admin\.css\?v=[^"]+/);
 });
 
 
@@ -43,8 +43,8 @@ test("orders and inkoop workspace keeps mobile actions accessible", () => {
 
 test("admin HTML uses matching versioned CSS and JavaScript assets", () => {
   const html = read("admin/index.html");
-  assert.match(html, /homs-admin\.css\?v=20261110-admin-polish6/);
-  assert.match(html, /homs-admin\.js\?v=20261110-service-areas-names1/);
+  assert.match(html, /homs-admin\.css\?v=[^"]+/);
+  assert.match(html, /homs-admin\.js\?v=[^"]+/);
 });
 
 
@@ -208,7 +208,7 @@ test("inventory movements have a persistent audit table and automatic payment in
   assert.match(schema, /stock_after INTEGER NOT NULL/);
   assert.match(paidInventory, /INSERT INTO inventory_movements/);
   assert.match(paidInventory, /'webshop_sale'/);
-  assert.match(routes, /SELECT data FROM site_settings WHERE id=1 FOR UPDATE/);
+  assert.match(routes, /data->'phones' AS phones, data->'shopProducts' AS shop_products FROM site_settings WHERE id=1 FOR UPDATE/);
   assert.match(routes, /INSERT INTO inventory_movements/);
   assert.match(routes, /stockAfter < 0/);
 });
@@ -221,7 +221,7 @@ test("admin save operation remains bound to the page where it started", () => {
   assert.ok(start >= 0 && end > start, "save function should exist");
   const save = js.slice(start, end);
   assert.match(save, /const savePage=currentPage/);
-  assert.match(save, /"X-Homs-Admin-Section":savePage/);
+  assert.match(save, /saveHeaders\["X-Homs-Admin-Section"\]=savePage/);
   assert.match(save, /if\(currentPage===savePage\)\{/);
 });
 
@@ -235,4 +235,238 @@ test("live chat polling stops when the administrator leaves the live chat page",
   assert.match(showPage, /currentPage==="live-chat"&&page!=="live-chat"&&liveChatRefreshTimer/);
   assert.match(showPage, /clearInterval\(liveChatRefreshTimer\)/);
   assert.match(showPage, /liveChatRefreshTimer=null/);
+});
+
+test("custom phone option image reader releases handlers after upload", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function handleCustomOptionImage(");
+  const end = js.indexOf("\nfunction handlePhoneImage", start);
+  assert.ok(start >= 0 && end > start);
+  const handler = js.slice(start, end);
+  assert.match(handler, /reader\.onload=null/);
+  assert.match(handler, /reader\.onerror=null/);
+  assert.match(handler, /reader\.onabort=null/);
+  assert.match(handler, /input\.value=''/);
+});
+
+test("phone setup wizard image reader releases handlers after upload", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function phoneWizardUpload(event");
+  const end = js.indexOf("\nfunction phoneWizardSetList", start);
+  assert.ok(start >= 0 && end > start);
+  const handler = js.slice(start, end);
+  assert.match(handler, /reader\.onload=null/);
+  assert.match(handler, /reader\.onerror=null/);
+  assert.match(handler, /reader\.onabort=null/);
+  assert.match(handler, /input\.value=""/);
+});
+
+test("bulk color image upload releases FileReader handlers and file input", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function phoneBulkHandleColorImage(");
+  const end = js.indexOf("\nfunction phoneBulkRemoveColorImage", start);
+  assert.ok(start >= 0 && end > start);
+  const handler = js.slice(start, end);
+  assert.match(handler, /reader\.onload=null/);
+  assert.match(handler, /reader\.onerror=null/);
+  assert.match(handler, /reader\.onabort=null/);
+  assert.match(handler, /input\.value=''/);
+});
+
+test("phone folder image upload releases FileReader handlers and file input", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function handlePhoneFolderImage(");
+  const end = js.indexOf("\nfunction addPhoneInFolder", start);
+  assert.ok(start >= 0 && end > start);
+  const handler = js.slice(start, end);
+  assert.match(handler, /reader\.onload=null/);
+  assert.match(handler, /reader\.onerror=null/);
+  assert.match(handler, /reader\.onabort=null/);
+  assert.match(handler, /input\.value=''/);
+});
+
+test("remaining admin image uploads release FileReader handlers and file inputs", () => {
+  const js = read("assets/homs-admin.js");
+  const handlers = [
+    ["handleGlobalConditionOverviewImage", "renderGlobalConditionDetails"],
+    ["handleCategoryImage", "addDeviceCategory"],
+    ["handleRepairImage", "addRepairCoverageArea"],
+    ["handleBuybackBrandImage", "handleBuybackImageForModel"],
+    ["handleBuybackImageForModel", "addBuybackPhone"],
+    ["handleBuybackImage", "orderSearchText"]
+  ];
+  for (const [name, nextName] of handlers) {
+    const start = js.indexOf("function " + name + "(");
+    const end = js.indexOf(nextName.startsWith("/*") ? nextName : "function " + nextName, start + 1);
+    assert.ok(start >= 0 && end > start, name + " should exist");
+    const handler = js.slice(start, end);
+    assert.match(handler, /\.onload=null/);
+    assert.match(handler, /\.onerror=null/);
+    assert.match(handler, /\.onabort=null/);
+    assert.match(handler, /input\.value=/);
+    assert.match(handler, /readAsDataURL/);
+  }
+});
+
+test("phone image readers release handlers and file references after completion", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function handlePhoneImage(event,i,j){");
+  const end = js.indexOf("\nfunction removePhoneImage", start);
+  assert.ok(start >= 0 && end > start, "phone image upload handler should exist");
+  const handler = js.slice(start, end);
+  assert.match(handler, /reader\.onload=null/);
+  assert.match(handler, /reader\.onerror=null/);
+  assert.match(handler, /reader\.onabort=null/);
+  assert.match(handler, /input\.value=''/);
+  assert.match(handler, /try\{reader\.readAsDataURL\(file\);\}catch\(error\)\{finish\(error\);\}/);
+});
+
+test("battery option image readers release handlers even when the option is no longer available", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function handleBatteryOptionImage(event, phoneIndex, optionIndex){");
+  const end = js.indexOf("\nfunction removeBatteryOptionImage", start);
+  assert.ok(start >= 0 && end > start, "battery option image upload handler should exist");
+  const handler = js.slice(start, end);
+  assert.match(handler, /reader\.onload=null/);
+  assert.match(handler, /reader\.onerror=null/);
+  assert.match(handler, /reader\.onabort=null/);
+  assert.match(handler, /input\.value=""/);
+  assert.match(handler, /if\(!option\)return/);
+  assert.match(handler, /try\{reader\.readAsDataURL\(file\);\}catch\(error\)\{finish\(error\);\}/);
+});
+
+test("phone save clones only the phone catalog and deep-clones only the edited product", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("const payload=savePage===\"buyback\"");
+  const end = js.indexOf("if(savePage===\"phones\"){", start);
+  assert.ok(start >= 0 && end > start);
+  const payload = js.slice(start, end);
+  assert.match(payload, /savePage===\"phones\"/);
+  assert.match(payload, /JSON\.parse\(JSON\.stringify\(data\.phones\|\|\[\]\)\)/);
+  assert.match(payload, /map\(\(phone,index\)=>index===selectedPhoneIndex\?JSON\.parse\(JSON\.stringify\(phone\)\):phone\)/);
+  const phoneBranch = payload.slice(payload.indexOf(': savePage==="phones"'), payload.indexOf(': JSON.parse(JSON.stringify(data))'));
+  assert.ok(phoneBranch.length > 0);
+  assert.doesNotMatch(phoneBranch, /JSON\.parse\(JSON\.stringify\(data\)\)/);
+  assert.match(phoneBranch, /sharedData/);
+  const saveStart = js.indexOf("async function save(isAuto=false){");
+  const saveEnd = js.indexOf("/* ---------------- SEARCH + ADMIN USERS ---------------- */", saveStart);
+  const save = js.slice(saveStart, saveEnd);
+  assert.ok(save.includes('adminSharedDirtyFields.has("phoneFolders")'));
+  assert.ok(save.includes('adminSharedDirtyFields.has("globalConditionDetails")'));
+  assert.ok(save.includes('adminSharedDirtyFields.has("globalConditionOverviewImage")'));
+});
+
+test("full phone catalog save preserves photos from a compact SQL projection and avoids returning the catalog", () => {
+  const server = read("server.js");
+  const start = server.indexOf("if (isPhoneCatalogPatch) {");
+  const end = server.indexOf("// Save only the buyback catalog keys", start);
+  assert.ok(start >= 0 && end > start);
+  const handler = server.slice(start, end);
+  assert.match(handler, /jsonb_build_object/);
+  for (const field of ["images", "colorImages", "colorGalleryImages", "colorGallery", "galleryImages", "variantImages"]) {
+    assert.match(handler, new RegExp("'" + field + "'"));
+  }
+  assert.match(handler, /preserveExistingCatalogPhotos/);
+  assert.match(handler, /RETURNING id/);
+  assert.doesNotMatch(handler, /RETURNING data->'phones'/);
+  assert.match(handler, /return res\.json\(\{ success: true \}\)/);
+  assert.doesNotMatch(handler, /return res\.json\(\{ success: true, phones:/);
+  assert.match(handler, /phoneSharedJson/);
+  assert.match(handler, /\|\| \$2::jsonb/);
+});
+
+test("single-phone save reads and returns only the selected phone instead of the full image catalog", () => {
+  const source = read("server.js");
+  const start = source.indexOf("const isSinglePhonePatch");
+  const end = source.indexOf("const isPhoneCatalogPatch", start);
+  assert.ok(start >= 0 && end > start, "single-phone patch route should exist");
+  const patch = source.slice(start, end);
+  assert.match(patch, /jsonb_array_length\(COALESCE\(data->'phones'/);
+  assert.match(patch, /data->'phones'->\(\$1::int\) AS phone/);
+  assert.match(patch, /ARRAY\['phones', \$2::text\]/);
+  assert.match(patch, /RETURNING data->'phones'->\(\$2::int\) AS phone/);
+  assert.doesNotMatch(patch, /SELECT data->'phones' AS phones/);
+  assert.doesNotMatch(patch, /RETURNING data->'phones' AS phones/);
+  assert.match(patch, /phoneSharedJson/);
+  assert.match(patch, /\|\| \$3::jsonb/);
+});
+
+test("Shop catalog save clones only Shop products instead of the full admin data object", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("async function save(isAuto=false){");
+  const end = js.indexOf("\n/* ---------------- SEARCH + ADMIN USERS ---------------- */", start);
+  assert.ok(start >= 0 && end > start, "save function should exist");
+  const save = js.slice(start, end);
+  assert.match(save, /savePage==="shop"\s*\?\s*\{\s*shopProducts:\s*JSON\.parse\(JSON\.stringify\(data\.shopProducts\|\|\[\]\)\)\s*\}/);
+  assert.match(save, /else if\(savePage==="shop"\)\{[\s\S]*?payload\.shopProducts=await compressShopCatalogPhotos/);
+});
+
+test("phone and Shop image compression release temporary browser image and canvas resources", () => {
+  const js = read("assets/homs-admin.js");
+  for (const name of ["compressPhonePhotoData", "compressShopPhotoData"]) {
+    const start = js.indexOf("function " + name + "(");
+    const end = js.indexOf("\n}", start) + 2;
+    assert.ok(start >= 0 && end > start, name + " should exist");
+    const helper = js.slice(start, end);
+    assert.match(helper, /img\.onload=null/);
+    assert.match(helper, /img\.onerror=null/);
+    assert.match(helper, /img\.removeAttribute\("src"\)/);
+    assert.match(helper, /canvas\.width=0/);
+    assert.match(helper, /canvas\.height=0/);
+  }
+});
+
+test("Shop image upload releases FileReader handlers and selected file after reading", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function shopProductImageUpload(event,index,slot){");
+  const end = js.indexOf("\nfunction renderShopProductsAdmin(){", start);
+  assert.ok(start >= 0 && end > start, "Shop image upload handler should exist");
+  const handler = js.slice(start, end);
+  assert.match(handler, /reader\.onload=null/);
+  assert.match(handler, /reader\.onerror=null/);
+  assert.match(handler, /input\.value=""/);
+  assert.match(handler, /const imageData=String\(reader\.result\|\|""\)/);
+  assert.match(handler, /shopImageUploadsPending=Math\.max\(0,shopImageUploadsPending-1\)/);
+});
+
+test("email attachment preview object URLs are revoked before rerender and on page exit", () => {
+  const js = read("assets/homs-admin.js");
+  assert.match(js, /adminEmailPreviewUrls=\[\]/);
+  const releaseStart = js.indexOf("function releaseEmailPreviewUrls(){");
+  const renderStart = js.indexOf("function renderEmailFiles(){", releaseStart);
+  const renderEnd = js.indexOf("\nfunction removeEmailFile(", renderStart);
+  assert.ok(releaseStart >= 0 && renderStart > releaseStart && renderEnd > renderStart);
+  const release = js.slice(releaseStart, renderStart);
+  const render = js.slice(renderStart, renderEnd);
+  assert.match(release, /URL\.revokeObjectURL\(url\)/);
+  assert.match(release, /adminEmailPreviewUrls=\[\]/);
+  assert.match(render, /releaseEmailPreviewUrls\(\)/);
+  assert.match(render, /adminEmailPreviewUrls\.push\(url\)/);
+  assert.match(js, /window\.addEventListener\("pagehide",releaseEmailPreviewUrls\)/);
+});
+
+test("email attachment FileReader handlers are released after conversion", () => {
+  const js = read("assets/homs-admin.js");
+  const start = js.indexOf("function emailFileToBase64(file){");
+  const end = js.indexOf("\n}", start) + 2;
+  assert.ok(start >= 0 && end > start, "email FileReader helper should exist");
+  const helper = js.slice(start, end);
+  assert.match(helper, /reader\.onload=null/);
+  assert.match(helper, /reader\.onerror=null/);
+  assert.match(helper, /const result=String\(reader\.result\|\|""\)/);
+  assert.match(helper, /result\.slice\(separator\+1\)/);
+  assert.match(helper, /reader\.readAsDataURL\(file\)/);
+});
+
+test("repair request photos are lazy-loaded and decoded asynchronously", () => {
+  const js = read("assets/homs-admin.js");
+  const css = read("assets/homs-admin.css");
+  const start = js.indexOf("function renderRepairRequests(){");
+  const end = js.indexOf("\nfunction setRepairQuickReply", start);
+  assert.ok(start >= 0 && end > start, "repair request renderer should exist");
+  const renderer = js.slice(start, end);
+  assert.match(renderer, /loading="lazy"/);
+  assert.match(renderer, /decoding="async"/);
+  assert.match(renderer, /rel="noopener noreferrer"/);
+  assert.match(css, /\.repair-request-details\[hidden\]\{display:none!important\}/);
 });

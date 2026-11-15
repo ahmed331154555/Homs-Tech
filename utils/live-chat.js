@@ -1,21 +1,13 @@
 "use strict";
 
-// In-memory throttling for public customer live chat messages.
-const liveChatRateLimits = new Map();
+const { createBoundedRateLimiter } = require("./bounded-rate-limit");
 
-function allowLiveChat(ip) {
-  const now = Date.now(), windowMs = 15 * 60 * 1000;
-  const recent = (liveChatRateLimits.get(ip) || []).filter(t => now - t < windowMs);
-  if (recent.length >= 30) return false;
-  recent.push(now);
-  liveChatRateLimits.set(ip, recent);
-  if (liveChatRateLimits.size > 5000) {
-    for (const [key, timestamps] of liveChatRateLimits.entries()) {
-      if (timestamps.every(timestamp => now - timestamp >= windowMs)) liveChatRateLimits.delete(key);
-    }
-  }
-  return true;
-}
+// Public chat: 30 messages per IP in 15 minutes, with a hard memory ceiling.
+const allowLiveChat = createBoundedRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  maxRequests: 30,
+  maxEntries: 5000
+});
 
 function liveChatFirstReply() {
   return "Bedankt voor uw bericht! 👋 Een medewerker van ons HOMS TECH-team neemt zo snel mogelijk contact met u op via deze chat.";

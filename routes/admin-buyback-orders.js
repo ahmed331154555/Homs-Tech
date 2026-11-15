@@ -124,6 +124,30 @@ function registerAdminBuybackOrderRoutes(app, {
     try {
       await ensureBuybackOrdersTable(pool);
       const result = await pool.query(`
+        SELECT b.id,b.order_no,b.name,b.email,b.device,b.offered_price,
+               b.sale_inspected_value,b.status,b.created_at,b.trade_in
+        FROM buyback_orders b
+        WHERE (b.trade_in=FALSE AND b.status NOT IN ('Wacht op aankoop', 'Wacht op betaling'))
+           OR (b.trade_in=TRUE AND EXISTS (
+             SELECT 1 FROM webshop_orders w WHERE w.trade_in_order_id=b.id
+           ))
+        ORDER BY b.created_at DESC
+      `);
+      res.json({ orders: result.rows });
+    } catch (error) {
+      console.error("BUYBACK LOAD ERROR:", error);
+      res.status(500).json({ error: "Verkoopaanvragen konden niet worden geladen." });
+    }
+  });
+
+  app.get("/api/admin/buyback-orders/:id", requirePermission("buyback_orders.view"), async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isSafeInteger(id) || id < 1) {
+      return res.status(400).json({ error: "Ongeldig aanvraagnummer." });
+    }
+    try {
+      await ensureBuybackOrdersTable(pool);
+      const result = await pool.query(`
         SELECT b.id,b.order_no,b.name,b.email,b.phone,b.address,b.device,b.brand,b.model,b.storage,b.condition,
                b.face_id,b.battery,b.screen,b.offered_price,b.iban,b.account_holder_name,b.payment_method,b.answers,b.trade_in,
                b.trade_in_linked_order_id,b.final_offer,b.final_offer_sent_at,b.status,b.created_at,
@@ -132,21 +156,29 @@ function registerAdminBuybackOrderRoutes(app, {
                b.postnl_tracking_number,b.shipping_label_filename,b.shipping_label_uploaded_at,b.shipping_label_email_sent_at,
                w.id AS linked_webshop_order_id,w.id AS linked_webshop_order_no,
                w.status AS linked_webshop_status,w.payment_status AS linked_webshop_payment_status,
-               w.trade_in_status AS linked_trade_in_status,w.trade_in_snapshot AS linked_trade_in_snapshot,
+               w.trade_in_status AS linked_trade_in_status,
+               jsonb_build_object(
+                 'payoutConfirmationEmailSentAt', w.trade_in_snapshot->'payoutConfirmationEmailSentAt',
+                 'settlementNote', w.trade_in_snapshot->'settlementNote'
+               ) AS linked_trade_in_snapshot,
                w.trade_in_estimated_value AS linked_trade_in_estimated_value,
                w.trade_in_inspected_value AS linked_trade_in_inspected_value,
                w.trade_in_adjustment AS linked_trade_in_adjustment,
                w.trade_in_applied_credit AS linked_trade_in_applied_credit
         FROM buyback_orders b
         LEFT JOIN webshop_orders w ON w.trade_in_order_id=b.id
-        WHERE (b.trade_in=FALSE AND b.status NOT IN ('Wacht op aankoop', 'Wacht op betaling'))
-           OR (b.trade_in=TRUE AND w.id IS NOT NULL)
-        ORDER BY b.created_at DESC
-      `);
-      res.json({ orders: result.rows });
+        WHERE b.id=$1
+          AND (
+            (b.trade_in=FALSE AND b.status NOT IN ('Wacht op aankoop', 'Wacht op betaling'))
+            OR (b.trade_in=TRUE AND w.id IS NOT NULL)
+          )
+        LIMIT 1
+      `, [id]);
+      if (!result.rows.length) return res.status(404).json({ error: "Inkoopaanvraag niet gevonden." });
+      return res.json({ order: result.rows[0] });
     } catch (error) {
-      console.error("BUYBACK LOAD ERROR:", error);
-      res.status(500).json({ error: "Verkoopaanvragen konden niet worden geladen." });
+      console.error("BUYBACK DETAIL ERROR:", id, error);
+      return res.status(500).json({ error: "Inkoopdetails konden niet worden geladen." });
     }
   });
 

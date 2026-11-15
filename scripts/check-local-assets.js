@@ -42,7 +42,10 @@ for (const htmlFile of htmlFiles) {
       continue;
     }
 
-    const target = path.resolve(path.dirname(htmlFile), decodedPath);
+    // A leading slash is site-root-relative, not a filesystem-absolute path.
+    const target = decodedPath.startsWith("/")
+      ? path.resolve(root, "." + decodedPath)
+      : path.resolve(path.dirname(htmlFile), decodedPath);
     if (!target.startsWith(root + path.sep) && target !== root) {
       missing.push(path.relative(root, htmlFile) + ": path escapes project root: " + reference);
       continue;

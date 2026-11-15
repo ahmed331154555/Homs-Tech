@@ -85,8 +85,11 @@ test("device register list returns devices and disables caching", async () => {
         assert.deepEqual(params, [false, null, ""]);
         return { rows: devices };
       }
-      assert.match(sql, /WITH operation_costs AS/);
-      return { rows: [{ total: 1, ready: 0, processing: 0, sold: 0, invested: "0", revenue: "0", realized_profit: "0" }] };
+      if (sql.includes("WITH operation_costs AS")) {
+        return { rows: [{ total: 1, ready: 0, processing: 0, sold: 0, invested: "0", revenue: "0", realized_profit: "0" }] };
+      }
+      assert.match(sql, /FROM device_register WHERE device_type='customer_repair'/);
+      return { rows: [{ total: 0, ready: 0, problems: 0, processing: 0, repair_value_total: "0" }] };
     }
   });
   const response = createResponse();
@@ -95,7 +98,11 @@ test("device register list returns devices and disables caching", async () => {
     query: {}
   }, response);
 
-  assert.deepEqual(response.body, { devices, summary: { total: 1, ready: 0, processing: 0, sold: 0, invested: "0", revenue: "0", realized_profit: "0" } });
+  assert.deepEqual(response.body, {
+    devices,
+    summary: { total: 1, ready: 0, processing: 0, sold: 0, invested: "0", revenue: "0", realized_profit: "0" },
+    repairSummary: { total: 0, ready: 0, problems: 0, processing: 0, repair_value_total: "0" }
+  });
   assert.equal(response.headers["Cache-Control"], "no-store");
 });
 

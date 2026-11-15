@@ -101,8 +101,8 @@ test("product metadata updates dynamically for the selected product", () => {
   assert.match(html, /currentProductId=record\.i;\s*updateProductMetadata\(record\.p\)/);
 });
 
-test("shop and product SEO head markup contains no escaped newline text", () => {
-  for (const page of ["shop.html", "product.html"]) {
+test("customer page heads contain no visible escaped newline text", () => {
+  for (const page of ["shop.html", "product.html", "cart.html", "uw-toestel-verkopen.html"]) {
     const head = readPage(page).split("</head>")[0];
     assert.ok(!head.includes("\\n<meta"), page + " contains a literal escaped newline in its head");
   }
@@ -122,6 +122,15 @@ test("contact page includes shared layout, brand theme and customer chat", () =>
   assert.match(html, /homs-tech-modern-true-theme\.css/);
   assert.match(html, /homs-layout-system\.css/);
   assert.match(html, /homs-ai-chat\.js/);
+});
+
+test("public repair quote uploads use a smaller JSON body limit before the global admin parser", () => {
+  const server = readPage("server.js");
+  const repairParser = server.indexOf('app.use("/api/repair-requests", express.json({ limit: "9mb" }));');
+  const globalParser = server.indexOf('app.use(express.json({ limit: "50mb" }));');
+  assert.ok(repairParser >= 0, "repair quote route should have its own body limit");
+  assert.ok(globalParser > repairParser, "the route-specific parser must run before the global parser");
+  assert.match(server, /Apply a route-specific cap before the broader admin\/catalog JSON parser/);
 });
 
 test("admin order categories preserve their distinct business purposes", () => {
@@ -249,4 +258,38 @@ test("admin order loaders and actions enforce their matching permissions", () =>
   assert.match(script, /async function completeWebshopManualRefund\(orderId,refundId\)\{\s*if\(!hasPermission\("webshop_orders\.update"\)\)return;/);
   assert.match(script, /async function updateBuybackStatus\(id,newStatus\)\{\s*if\(!hasPermission\("buyback_orders\.update"\)\)return;/);
   assert.match(script, /refund\.status==="Pending manual"&&hasPermission\("webshop_orders\.update"\)/);
+});
+
+test("cart and checkout contain no visible escaped newline artifacts", () => {
+  for (const page of ["cart.html", "checkout.html"]) {
+    const html = readPage(page);
+    assert.ok(!html.includes("\\n"), page + " contains a literal escaped newline artifact");
+  }
+});
+
+test("cart and checkout have unique IDs and valid inline scripts", () => {
+  for (const page of ["cart.html", "checkout.html"]) {
+    const html = readPage(page);
+    const ids = [...html.matchAll(/\bid=["']([^"']+)["']/gi)].map(match => match[1]);
+    assert.equal(new Set(ids).size, ids.length, page + " contains duplicate element IDs");
+    const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)];
+    for (const [index, script] of scripts.entries()) {
+      if (!script[1].trim()) continue;
+      assert.doesNotThrow(() => new Function(script[1]), page + " inline script " + (index + 1) + " has invalid JavaScript");
+    }
+  }
+});
+
+test("shipping label print document closes its inline script correctly", () => {
+  const script = readPage("assets/homs-admin.js");
+  assert.ok(!script.includes("<\\\\/script>"), "shipping label output must not contain a literal backslash before its closing script tag");
+  assert.match(script, /window\.addEventListener\("load",\(\)=>setTimeout\(\(\)=>window\.print\(\),300\)\);<\\\/script>/);
+});
+
+test("invoice payment details are HTML-escaped before being inserted into email content", () => {
+  const source = readPage("routes/admin-invoices.js");
+  assert.match(source, /const escapeEmailHtml\s*=\s*value\s*=>/);
+  assert.match(source, /"Naam: "\s*\+\s*escapeEmailHtml\(cleanSetting\(/);
+  assert.match(source, /"<br>IBAN: "\s*\+\s*escapeEmailHtml\(cleanSetting\(/);
+  assert.match(source, /"<br>Omschrijving: "\s*\+\s*escapeEmailHtml\(cleanSetting\(/);
 });

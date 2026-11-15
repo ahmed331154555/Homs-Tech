@@ -155,6 +155,7 @@ test("email send validates and sends attachments, stores outbound copy", async (
   assert.equal(calls.length, 1);
   assert.match(calls[0].sql, /INSERT INTO admin_emails/);
   assert.deepEqual(JSON.parse(calls[0].params[2]), ["customer@example.com", "copy@example.com", "hidden@example.com"]);
+  assert.deepEqual(JSON.parse(calls[0].params[6]), [{ filename: "proof.pdf", content_type: "application/pdf", size: 6 }]);
 });
 
 test("email reply requires an inbound original and adds threading headers", async () => {
@@ -222,6 +223,11 @@ test("email send rejects unsafe attachments and provider failures", async () => 
     body: { to: "customer@example.com", subject: "Hi", text: "Hello", attachments: [{ filename: "bad.exe", content: "YWJj" }] }
   }, invalidAttachment);
   assert.equal(invalidAttachment.statusCode, 500);
+  const malformedBase64 = response();
+  await routes.get("POST /api/admin/emails/send")({
+    body: { to: "customer@example.com", subject: "Hi", text: "Hello", attachments: [{ filename: "broken.pdf", content: "AA=", content_type: "application/pdf" }] }
+  }, malformedBase64);
+  assert.equal(malformedBase64.statusCode, 500);
   const providerFail = response();
   await routes.get("POST /api/admin/emails/send")({
     body: { to: "customer@example.com", subject: "Hi", text: "Hello" }

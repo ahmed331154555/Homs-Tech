@@ -48,6 +48,7 @@ test("admin buyback routes register the standalone-sale workflow with permission
   const { routes, permissions } = createHarness({ pool: { async query() { return { rows: [] }; }, async connect() { throw new Error("unused"); } } });
   assert.deepEqual([...routes.keys()], [
     "GET /api/admin/buyback-orders",
+    "GET /api/admin/buyback-orders/:id",
     "PUT /api/admin/buyback-orders/:id/inspection",
     "PUT /api/admin/buyback-orders/:id/offer",
     "POST /api/buyback/decision",
@@ -60,6 +61,7 @@ test("admin buyback routes register the standalone-sale workflow with permission
     "DELETE /api/admin/buyback-orders/:id"
   ]);
   assert.deepEqual(permissions, [
+    "buyback_orders.view",
     "buyback_orders.view",
     "buyback_orders.update",
     "buyback_orders.update",
@@ -76,8 +78,9 @@ test("admin buyback routes register the standalone-sale workflow with permission
 test("admin buyback list returns standalone sales and linked trade-ins", async () => {
   let ensured = false;
   const pool = { async query(sql) {
-    assert.match(sql, /LEFT JOIN webshop_orders/);
-    assert.match(sql, /trade_in=TRUE AND w\.id IS NOT NULL/);
+    assert.match(sql, /EXISTS\s*\(\s*SELECT 1 FROM webshop_orders w WHERE w\.trade_in_order_id=b\.id\s*\)/);
+    assert.doesNotMatch(sql, /LEFT JOIN webshop_orders/);
+    assert.doesNotMatch(sql, /b\.answers|b\.iban|b\.shipping_label_filename|trade_in_snapshot|jsonb_build_object/);
     return { rows: [{ id: 7, status: "Nieuw", trade_in: false }] };
   } };
   const { routes } = createHarness({ pool, ensureBuybackOrdersTable: async () => { ensured = true; } });
@@ -86,6 +89,36 @@ test("admin buyback list returns standalone sales and linked trade-ins", async (
   assert.equal(ensured, true);
   assert.deepEqual(response.body.orders, [{ id: 7, status: "Nieuw", trade_in: false }]);
   assert.equal(response.statusCode, 200);
+});
+
+test("buyback detail endpoint loads the full order data without the stored PDF binary", async () => {
+  let querySeen = "";
+  let paramsSeen = [];
+  const order = { id: 18, order_no: "BT-18", answers: { battery: "92%" }, iban: "NL00TEST", trade_in: false };
+  const pool = { async query(sql, params) {
+    querySeen = sql;
+    paramsSeen = params;
+    return { rows: [order] };
+  } };
+  const { routes } = createHarness({ pool });
+  const response = createResponse();
+  await routes.get("GET /api/admin/buyback-orders/:id")({ params: { id: "18" } }, response);
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.body.order, order);
+  assert.deepEqual(paramsSeen, [18]);
+  assert.match(querySeen, /b\.answers/);
+  assert.match(querySeen, /b\.iban/);
+  assert.match(querySeen, /LEFT JOIN webshop_orders/);
+  assert.doesNotMatch(querySeen, /shipping_label_pdf/);
+});
+
+test("buyback detail endpoint rejects invalid IDs before querying", async () => {
+  let queryCount = 0;
+  const { routes } = createHarness({ pool: { async query() { queryCount++; return { rows: [] }; } } });
+  const response = createResponse();
+  await routes.get("GET /api/admin/buyback-orders/:id")({ params: { id: "0" } }, response);
+  assert.equal(response.statusCode, 400);
+  assert.equal(queryCount, 0);
 });
 
 test("final buyback offer sends a secure approval link and updates status", async () => {

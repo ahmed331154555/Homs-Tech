@@ -713,6 +713,7 @@
 
 <link rel="stylesheet" href="assets/homs-layout-system.css?v=20261109-accessibility">
   <script src="assets/homs-analytics-consent.js" defer></script>
+<link rel="stylesheet" href="/assets/customer-reviews-widget.css?v=1">
 </head>
 
 <body>
@@ -976,6 +977,8 @@
   </div>
   <div class="ht-footer-bottom"><span>© 2026 HOMS TECH</span><span>Refurbished · Reparatie · Service</span></div>
 <div class="homs-legal-link"><a href="privacybeleid.html">Privacybeleid</a></div>
+  <section class="ht-review-widget" data-review-widget data-type="repair" aria-label="Beoordelingen van reparaties"><p class="ht-review-widget-empty">Klantbeoordelingen laden…</p></section>
+  <script src="/assets/customer-reviews-widget.js?v=2" defer></script>
 </footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -1122,7 +1125,7 @@
       if(!freshData || typeof freshData !== "object") throw new Error("Invalid repair page data");
       siteData = freshData;
 
-      const rawWhatsApp = String(siteData.whatsapp || "").trim();
+      const rawWhatsApp = String(siteData.whatsapp || "+31684242359").trim();
       let whatsappNumber = rawWhatsApp.replace(/\D/g, "");
       if (whatsappNumber.startsWith("00")) whatsappNumber = whatsappNumber.slice(2);
       if (whatsappNumber.startsWith("31") && whatsappNumber.charAt(2) === "0") {
@@ -1668,6 +1671,7 @@
 
   loadSite();
 </script>
+
   <script src="assets/homs-global-nav.js?v=20261108-loopfix2"></script>
   <script src="assets/homs-ai-chat.js" defer></script>
 </body>

@@ -65,7 +65,7 @@ form{padding:22px 24px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:13
   const response=await fetch("/api/site",{headers:{"Accept":"application/json"}});
   if(response.ok){
    const data=await response.json(),f=data.homepage?.footer||{};
-   const email=String(f.email||"").trim(),phone=String(f.phone||data.phone||"").trim(),wa=String(f.whatsapp||data.whatsapp||"").trim();
+   const email=String(f.email||"").trim(),phone=String(f.phone||data.phone||"+31684242359").trim(),wa=String(f.whatsapp||data.whatsapp||"+31684242359").trim();
    if(email){byId("contactEmail").textContent=email;byId("contactEmail").href="mailto:"+email}else byId("emailCard").hidden=true;
    if(phone){byId("contactPhone").textContent=phone;byId("contactPhone").href="tel:"+phone.replace(/[^+0-9]/g,"")}else byId("phoneCard").hidden=true;
    if(cleanDigits(wa)){const link="https://wa.me/"+cleanDigits(wa);byId("contactWa").href=link;byId("bottomWa").href=link}else byId("waCard").hidden=true;

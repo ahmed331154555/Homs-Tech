@@ -50,6 +50,7 @@ test("database schema initializes all core application tables and migrations", a
   assert.match(sql, /inventory_deducted_at TIMESTAMPTZ/);
   assert.match(sql, /payment_status TEXT NOT NULL DEFAULT 'Unpaid'/);
   assert.match(sql, /email_verified BOOLEAN NOT NULL DEFAULT TRUE/);
+  assert.ok(sql.includes("service_orders_repair_created_idx"));
 });
 
 test("database schema inserts the default public settings only when missing", async () => {

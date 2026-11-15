@@ -7,7 +7,7 @@ const path = require("node:path");
 
 test("all API routes are registered before the HTTP server starts", () => {
   const source = fs.readFileSync(path.join(__dirname, "..", "server.js"), "utf8");
-  const startupIndex = source.indexOf("initializeDatabaseWithRetry(() => initializeDatabaseSchema(pool)");
+  const startupIndex = source.indexOf("initializeDatabaseWithRetry(async () => {");
   assert.notEqual(startupIndex, -1, "database-backed server startup should be present");
 
   const routeRegistrations = [

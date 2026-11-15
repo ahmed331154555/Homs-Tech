@@ -1,0 +1,25 @@
+(() => {
+"use strict";
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const dateText=v=>{if(!v)return"";const d=new Date(v);return Number.isNaN(d.getTime())?"":new Intl.DateTimeFormat("nl-NL",{day:"numeric",month:"long",year:"numeric"}).format(d)};
+document.querySelectorAll("[data-review-widget]").forEach(async host=>{
+ const type=String(host.dataset.type||"").trim();
+ try{
+  const response=await fetch("/api/reviews"+(type?"?type="+encodeURIComponent(type):""),{headers:{Accept:"application/json"}});
+  const data=await response.json();if(!response.ok)throw new Error(data.error||"Reviews unavailable");
+  const summary=data.summary||{},reviews=Array.isArray(data.reviews)?data.reviews.slice(0,12):[],count=Number(summary.count||0),average=Number(summary.average||0);
+  host.innerHTML='<div class="ht-review-widget-head"><strong>Klant<span class="ht-review-blue">beoordelingen</span></strong><span>Wat onze klanten over HOMS TECH zeggen · '+(count?average.toFixed(1)+'/5 ★ · '+count+' gepubliceerde beoordelingen':'Ervaringen van onze klanten')+'</span></div>'+
+  (reviews.length?'<div class="ht-review-widget-stage"><div class="ht-review-widget-track">'+reviews.map((r,i)=>{
+   const body=String(r.body||""),rating=Math.max(0,Math.min(5,Number(r.rating)||0)),name=String(r.customer_name||"Klant"),date=dateText(r.created_at||r.published_at||r.createdAt);
+   return '<article class="ht-review-widget-card'+(i===0?' is-active':'')+'" aria-hidden="'+(i===0?'false':'true')+'"><div class="ht-review-widget-stars" aria-label="'+rating+' van 5 sterren">'+"★".repeat(rating)+"☆".repeat(5-rating)+'</div><strong>'+esc(r.title||"Ervaring met HOMS TECH")+'</strong><p>'+esc(body.length>230?body.slice(0,220).trimEnd()+"…":body)+'</p>'+(body.length>230?'<button class="ht-review-widget-more" type="button" data-review-more>Lees meer →</button>':'')+'<div class="ht-review-widget-meta"><span class="ht-review-widget-avatar" aria-hidden="true">'+esc(name.trim().charAt(0).toUpperCase()||"H")+'</span><span class="ht-review-widget-person">'+esc(name)+(date?'<small class="ht-review-widget-date">'+esc(date)+'</small>':'')+'</span></div>'+(r.admin_reply?'<div class="ht-review-widget-reply"><b>Reactie van HOMS TECH</b><br>'+esc(r.admin_reply)+'</div>':'')+'</article>';
+  }).join("")+'</div></div><div class="ht-review-widget-controls"><button type="button" data-review-prev aria-label="Vorige beoordeling">‹</button><div class="ht-review-widget-dots" aria-label="Kies beoordeling">'+reviews.map((_,i)=>'<button type="button" data-review-dot="'+i+'" aria-label="Beoordeling '+(i+1)+'" aria-current="'+(i===0?'true':'false')+'"></button>').join("")+'</div><button type="button" data-review-next aria-label="Volgende beoordeling">›</button></div><a class="ht-review-widget-all" href="/reviews.html">Alle beoordelingen <span aria-hidden="true">→</span></a>':'<p class="ht-review-widget-empty">Er zijn nog geen gepubliceerde beoordelingen.</p>');
+  if(!reviews.length)return;
+  let active=0,timer=null;const track=host.querySelector(".ht-review-widget-track"),cards=[...host.querySelectorAll(".ht-review-widget-card")],dots=[...host.querySelectorAll("[data-review-dot]")];
+  const show=n=>{active=(n+cards.length)%cards.length;const card=cards[active],offset=card.offsetLeft-(track.parentElement.clientWidth-card.clientWidth)/2;track.style.transform="translate3d("+(-Math.max(0,offset))+"px,0,0)";cards.forEach((c,i)=>{c.classList.toggle("is-active",i===active);c.setAttribute("aria-hidden",i===active?"false":"true")});dots.forEach((d,i)=>d.setAttribute("aria-current",i===active?"true":"false"))};
+  const stop=()=>{if(timer){clearInterval(timer);timer=null}},start=()=>{stop();if(cards.length>1&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches)timer=setInterval(()=>show(active+1),6500)};
+  host.querySelector("[data-review-prev]")?.addEventListener("click",()=>{show(active-1);start()});host.querySelector("[data-review-next]")?.addEventListener("click",()=>{show(active+1);start()});dots.forEach(d=>d.addEventListener("click",()=>{show(Number(d.dataset.reviewDot)||0);start()}));
+  host.addEventListener("click",e=>{const b=e.target.closest("[data-review-more]");if(!b)return;const p=b.closest(".ht-review-widget-card")?.querySelector("p"),r=reviews[active];if(p&&r){p.textContent=String(r.body||"");b.remove()}});
+  host.addEventListener("mouseenter",stop);host.addEventListener("mouseleave",start);host.addEventListener("focusin",stop);host.addEventListener("focusout",start);window.addEventListener("resize",()=>show(active),{passive:true});show(0);start();
+ }catch(error){console.warn("[HOMS TECH] Review widget unavailable:",error);host.innerHTML='<p class="ht-review-widget-empty">Klantbeoordelingen zijn tijdelijk niet beschikbaar.</p><a class="ht-review-widget-all" href="/reviews.html">Bekijk alle beoordelingen →</a>'}
+});
+})();

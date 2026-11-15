@@ -35,33 +35,39 @@ function sanitizeHomepageSiteData(input) {
     if (Object.prototype.hasOwnProperty.call(source, field)) data[field] = source[field];
   }
 
-  // The homepage slider renders only the final 15 expanded phone variants.
-  // Send only the source phone records that can contribute to those cards,
-  // preserving original product indices so product links keep pointing correctly.
+  // Keep the homepage catalog small while honoring the exact products selected
+  // in Homepage > Populaire apparaten. Preserve original indices for product links.
   if (Array.isArray(data.phones)) {
     const phones = data.phones;
-    const contributionCounts = phones.map(phone => {
-      const rows = Array.isArray(phone?.variantPrices)
-        ? phone.variantPrices.filter(row => row && row.active !== false)
-        : [];
-      if (!rows.length) return 1;
-      const groups = new Set();
-      for (const row of rows) {
-        const storage = String(row.storage || "").trim();
-        const color = String(row.color || "").trim();
-        if (storage && color) groups.add(storage.toLocaleLowerCase() + "|" + color.toLocaleLowerCase());
-      }
-      return groups.size;
-    });
-    let cutoff = phones.length;
-    let visibleCards = 0;
-    for (let i = phones.length - 1; i >= 0; i--) {
-      cutoff = i;
-      visibleCards += contributionCounts[i];
-      if (visibleCards >= 15) break;
+    const popular = data.homepage && typeof data.homepage === "object"
+      ? data.homepage.popular
+      : null;
+    const selected = Array.isArray(popular?.indexes)
+      ? [...new Set(popular.indexes.map(Number).filter(index =>
+          Number.isInteger(index) && index >= 0 && index < phones.length
+        ))]
+      : [];
+
+    // The homepage response contains a compact, already-selected phone list.
+    // Clear stale selections when every saved index is outside the current catalog;
+    // otherwise the browser filters this fallback list a second time and shows no phones.
+    if (popular && Array.isArray(popular.indexes)) {
+      data.homepage = {
+        ...data.homepage,
+        popular: { ...popular, indexes: selected }
+      };
     }
-    data.phones = phones.slice(cutoff).map((phone, offset) => {
-      const originalIndex = cutoff + offset;
+    const configuredLimit = Number(popular?.limit);
+    const limit = Number.isFinite(configuredLimit)
+      ? Math.max(1, Math.min(50, Math.floor(configuredLimit)))
+      : 12;
+    const selectedIndices = selected.length
+      ? selected.slice(0, limit)
+      : Array.from({ length: Math.min(phones.length, limit) }, (_, offset) =>
+          phones.length - Math.min(phones.length, limit) + offset
+        );
+    data.phones = selectedIndices.map(originalIndex => {
+      const phone = phones[originalIndex];
       if (typeof phone === "string") return { name: phone, _index: originalIndex };
       if (!phone || typeof phone !== "object") return { name: "Apparaat", _index: originalIndex };
 

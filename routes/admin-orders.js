@@ -110,32 +110,59 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
   app.get("/api/admin/orders", requirePermission("orders.view"), async (req, res) => {
     try {
       const result = await pool.query(
-        `SELECT id, customer_id, service_category, service_name, service_group, price, price_currency, source_price, source_currency, service_instructions, required_fields, extra_fields, service_source_id, service_source_url, name, email, phone, username, imei, notes, status, provider_reference, execution_note, result_data, execution_updated_at, created_at
+        `SELECT id, service_category, service_name, service_group, price,
+                CASE
+                  WHEN extra_fields LIKE '%"repairQuote":true%' AND extra_fields LIKE '%"dataUrl"%'
+                  THEN regexp_replace(
+                    extra_fields,
+                    '("dataUrl"[[:space:]]*:[[:space:]]*")[^"]*(")',
+                    chr(92) || '1' || chr(92) || '2',
+                    'g'
+                  )
+                  ELSE extra_fields
+                END AS extra_fields,
+                name, email, phone, username, imei, notes, status, created_at
          FROM service_orders
          WHERE LOWER(service_category) IN ('reparatie','repair')
          ORDER BY created_at DESC`
       );
 
-      const sanitizedOrders = result.rows.map(order => {
-        if (!order.extra_fields) return order;
+      // Sanitize rows in place instead of building a second array of order objects.
+      // This lowers peak allocations while the response is being prepared.
+      for (const order of result.rows) {
+        if (!order.extra_fields) continue;
         try {
           const meta = JSON.parse(order.extra_fields);
-          if (meta.repairQuote === true && Array.isArray(meta.photos)) {
-            const sanitizedPhotos = meta.photos.map((p, index) => ({
-              name: p.name || `foto-${index + 1}`,
-              type: p.type || "image/jpeg",
+          if (!meta || typeof meta !== "object" || Array.isArray(meta)) continue;
+
+          // The repair queue only needs these fields. Keep arbitrary form data and
+          // other stored metadata out of the list response and browser-side cache.
+          const queueMeta = {};
+          if (meta.repairQuote === true) queueMeta.repairQuote = true;
+          if (typeof meta.brand === "string") queueMeta.brand = meta.brand;
+          if (typeof meta.model === "string") queueMeta.model = meta.model;
+
+          if (meta.offer && typeof meta.offer === "object" && !Array.isArray(meta.offer)) {
+            const offer = {};
+            for (const key of ["price", "rawPrice", "message", "validity", "duration", "updatedAt", "emailSent", "sentAt"]) {
+              if (meta.offer[key] !== undefined) offer[key] = meta.offer[key];
+            }
+            if (Object.keys(offer).length) queueMeta.offer = offer;
+          }
+
+          if (Array.isArray(meta.photos)) {
+            queueMeta.photos = meta.photos.map((photo, index) => ({
+              name: photo && photo.name ? photo.name : `foto-${index + 1}`,
+              type: photo && photo.type ? photo.type : "image/jpeg",
               url: `/api/admin/repair-requests/${order.id}/photos/${index}`
             }));
-            return {
-              ...order,
-              extra_fields: JSON.stringify({ ...meta, photos: sanitizedPhotos })
-            };
           }
-        } catch {}
-        return order;
-      });
 
-      res.json({ orders: sanitizedOrders });
+          order.extra_fields = JSON.stringify(queueMeta);
+        } catch {}
+      }
+
+      res.json({ orders: result.rows });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Bestellingen konden niet worden geladen." });
@@ -149,20 +176,39 @@ function registerAdminOrderRoutes(app, { pool, requirePermission, escapeHtml, fe
       if (!Number.isSafeInteger(id) || id < 1 || !Number.isSafeInteger(index) || index < 0) {
         return res.status(400).send("Ongeldig verzoek.");
       }
-      const result = await pool.query("SELECT extra_fields FROM service_orders WHERE id = $1", [id]);
+      const maxStoredPhotoRecordBytes = 9 * 1024 * 1024;
+      const result = await pool.query(
+        "SELECT CASE WHEN octet_length(extra_fields) <= $2 THEN extra_fields ELSE NULL END AS extra_fields, octet_length(extra_fields) AS extra_fields_bytes FROM service_orders WHERE id = $1",
+        [id, maxStoredPhotoRecordBytes]
+      );
       if (!result.rows.length) return res.status(404).send("Aanvraag niet gevonden.");
+      const record = result.rows[0];
+      if (Number(record.extra_fields_bytes) > maxStoredPhotoRecordBytes) {
+        return res.status(413).send("De opgeslagen aanvraag is te groot om veilig te verwerken.");
+      }
 
       let meta = {};
-      try { meta = JSON.parse(result.rows[0].extra_fields || "{}"); } catch {}
+      try { meta = JSON.parse(record.extra_fields || "{}"); } catch {}
       const photos = Array.isArray(meta.photos) ? meta.photos : [];
       const photo = photos[index];
       if (!photo || !photo.dataUrl) return res.status(404).send("Foto niet gevonden.");
 
-      const match = String(photo.dataUrl).match(/^data:([^;]+);base64,(.+)$/);
-      if (!match) return res.status(400).send("Fotoformaat ongeldig.");
-      const contentType = match[1];
+      const maxPhotoBytes = 2 * 1024 * 1024;
+      const maxBase64Length = Math.ceil(maxPhotoBytes / 3) * 4;
+      const match = String(photo.dataUrl).match(/^data:(image\/(?:jpeg|png|webp|heic));base64,([a-z0-9+/]+={0,2})$/i);
+      if (!match || match[2].length % 4 === 1) {
+        return res.status(400).send("Fotoformaat ongeldig.");
+      }
+      if (match[2].length > maxBase64Length) {
+        return res.status(413).send("De foto is te groot om veilig te verwerken.");
+      }
+      const contentType = match[1].toLowerCase();
       const buffer = Buffer.from(match[2], "base64");
+      if (!buffer.length || buffer.length > maxPhotoBytes) {
+        return res.status(413).send("De foto is te groot om veilig te verwerken.");
+      }
       res.set("Content-Type", contentType);
+      res.set("X-Content-Type-Options", "nosniff");
       res.set("Cache-Control", "private, max-age=86400");
       res.send(buffer);
     } catch (err) {

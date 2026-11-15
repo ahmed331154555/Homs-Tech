@@ -63,7 +63,7 @@
       .homs-cookie-actions button,#homs-cookie-settings{min-height:40px;border-radius:8px;padding:9px 14px;font:600 14px Arial,Helvetica,sans-serif;cursor:pointer}
       .homs-cookie-accept{background:#071d2d;color:#fff;border:1px solid #071d2d}
       .homs-cookie-reject{background:#fff;color:#071d2d;border:1px solid #9aa8b5}
-      #homs-cookie-settings{position:fixed;z-index:99998;left:12px;bottom:12px;background:#fff;color:#071d2d;border:1px solid #9aa8b5;box-shadow:0 3px 12px rgba(7,29,45,.14);font-size:12px}
+      #homs-cookie-settings{display:inline;padding:0;min-height:0;margin:0;background:transparent;color:#91a5b2;border:0;border-radius:0;box-shadow:none;font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}#homs-cookie-settings:hover{color:#fff}
       @media(max-width:480px){#homs-cookie-banner{left:10px;right:10px;bottom:10px;padding:15px}.homs-cookie-actions button{flex:1}}
     `;
     document.head.appendChild(style);
@@ -90,7 +90,12 @@
     settings.textContent = "Cookie-instellingen";
     settings.hidden = true;
     settings.addEventListener("click", showBanner);
-    document.body.appendChild(settings);
+    const footerPrivacyLink = document.querySelector('footer a[href*="privacybeleid"]');
+    if (footerPrivacyLink && footerPrivacyLink.parentElement) {
+      const separator = document.createTextNode(" · ");
+      footerPrivacyLink.insertAdjacentElement("afterend", settings);
+      footerPrivacyLink.after(separator);
+    }
 
     banner.addEventListener("click", (event) => {
       const button = event.target.closest("[data-homs-consent]");

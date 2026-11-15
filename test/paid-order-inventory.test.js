@@ -12,9 +12,9 @@ function createFakePool(order, catalog) {
       calls.push({ scope: "client", sql, params });
       if (sql === "BEGIN" || sql === "COMMIT" || sql === "ROLLBACK") return { rows: [] };
       if (sql.includes("SELECT id, items, payment_status")) return { rows: order ? [structuredClone(order)] : [] };
-      if (sql.includes("SELECT data FROM site_settings")) return { rows: catalog === null ? [] : [{ data: structuredClone(catalog) }] };
-      if (sql.includes("UPDATE site_settings SET data=")) {
-        savedCatalog = JSON.parse(params[0]);
+      if (sql.includes("FROM site_settings") && sql.includes("FOR UPDATE")) return { rows: catalog === null ? [] : [{ phones: structuredClone(catalog.phones || []), devices: structuredClone(catalog.devices || []), shop_products: structuredClone(catalog.shopProducts || []) }] };
+      if (sql.includes("UPDATE site_settings")) {
+        savedCatalog = { ...(catalog || {}), phones: JSON.parse(params[0]), devices: JSON.parse(params[1]), shopProducts: JSON.parse(params[2]) };
         return { rows: [] };
       }
       return { rows: [] };

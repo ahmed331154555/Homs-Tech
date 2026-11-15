@@ -50,7 +50,7 @@ test("sanitizeHomepageSiteData keeps the final fifteen phones and original indic
     internalCost: 99,
     images: ["first-" + index, "second-" + index]
   }));
-  const output = sanitizeHomepageSiteData({ phones });
+  const output = sanitizeHomepageSiteData({ phones, homepage: { popular: { limit: 15 } } });
   assert.equal(output.phones.length, 15);
   assert.equal(output.phones[0]._index, 1);
   assert.equal(output.phones[14]._index, 15);
@@ -58,6 +58,21 @@ test("sanitizeHomepageSiteData keeps the final fifteen phones and original indic
   assert.equal(output.phones[0].internalCost, undefined);
   assert.deepEqual(output.phones[0].images, ["first-1"]);
   assert.equal(phones[1].images.length, 2);
+});
+
+test("sanitizeHomepageSiteData includes selected homepage phones and preserves their original indices", () => {
+  const phones = Array.from({ length: 20 }, (_, index) => ({
+    name: "Phone " + index,
+    brand: "Brand",
+    price: 100 + index,
+    images: ["phone-" + index + ".webp"]
+  }));
+  const output = sanitizeHomepageSiteData({
+    phones,
+    homepage: { popular: { enabled: true, limit: 3, indexes: [2, 8, 15, 8, -1, 99] } }
+  });
+  assert.deepEqual(output.phones.map(phone => phone._index), [2, 8, 15]);
+  assert.deepEqual(output.phones.map(phone => phone.name), ["Phone 2", "Phone 8", "Phone 15"]);
 });
 
 test("sanitizeHomepageSiteData compacts variants and drops inactive rows", () => {
@@ -118,4 +133,20 @@ test("sanitizePublicSiteData recursively removes private costs and credentials w
   assert.equal(output.paymentSettings.webhookSecret, undefined);
   assert.equal(output.homepage.privateNote, undefined);
   assert.equal(input.phones[0].supplierCost, 250);
+});
+
+
+test("sanitizeHomepageSiteData clears stale popular-phone indexes when catalog entries were removed", () => {
+  const phones = Array.from({ length: 4 }, (_, index) => ({
+    name: "Phone " + index,
+    brand: "Brand",
+    price: 100 + index
+  }));
+  const output = sanitizeHomepageSiteData({
+    phones,
+    homepage: { popular: { enabled: true, limit: 3, indexes: [12, 18, 25] } }
+  });
+
+  assert.deepEqual(output.phones.map(phone => phone._index), [1, 2, 3]);
+  assert.deepEqual(output.homepage.popular.indexes, []);
 });

@@ -15,6 +15,7 @@ function registerAdminInvoiceRoutes(app, {
   fetchImpl = fetch
 }) {
   const cleanSetting = (value, max = 220) => String(value || "").trim().slice(0, max);
+  const escapeEmailHtml = value => String(value ?? "").replace(/[&<>"\']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"' : "&quot;", "\'": "&#39;" }[character]));
   const allowedSellerFields = ["legalName","tradeName","address","postalCode","city","country","kvkNumber","vatId","iban","email","phone","website"];
   app.get("/api/admin/invoice-settings", requirePermission("site.save"), async (_req, res) => {
     try {
@@ -69,12 +70,12 @@ function registerAdminInvoiceRoutes(app, {
       const customerVatId = String(body.customerVatId || "").trim().slice(0, 40);
       const paymentMethod = ["bank","cash","pin","online","other"].includes(body.paymentMethod) ? body.paymentMethod : "bank";
       const paymentStatus = ["unpaid","paid","partial"].includes(body.paymentStatus) ? body.paymentStatus : "unpaid";
-      const dueDate = /^\\d{4}-\\d{2}-\\d{2}$/.test(String(body.dueDate || "")) ? body.dueDate : null;
-      const deliveryDate = /^\\d{4}-\\d{2}-\\d{2}$/.test(String(body.deliveryDate || "")) ? body.deliveryDate : null;
+      const dueDate = /^\d{4}-\d{2}-\d{2}$/.test(String(body.dueDate || "")) ? body.dueDate : null;
+      const deliveryDate = /^\d{4}-\d{2}-\d{2}$/.test(String(body.deliveryDate || "")) ? body.deliveryDate : null;
       const reference = String(body.reference || "").trim().slice(0, 120);
       const notes = String(body.notes || "").trim().slice(0, 1200);
 
-      if (!customerName || (customerEmail && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(customerEmail)) ||
+      if (!customerName || (customerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) ||
         (customerType === "business" && !customerCompanyName) ||
         !Array.isArray(body.lines) || !body.lines.length || body.lines.length > 80) {
         return res.status(400).json({
@@ -247,9 +248,9 @@ function registerAdminInvoiceRoutes(app, {
             "<p>In de bijlage vindt u de factuur van HOMS TECH.</p>" +
             (invoice.seller_snapshot?.iban
               ? "<p><strong>Betalen per bankoverschrijving</strong><br>" +
-                "Naam: " + cleanSetting(invoice.seller_snapshot.legalName || invoice.seller_snapshot.tradeName || "HOMS TECH", 180) +
-                "<br>IBAN: " + cleanSetting(invoice.seller_snapshot.iban, 50) +
-                "<br>Omschrijving: " + cleanSetting(invoice.invoice_number, 40) + "</p>"
+                "Naam: " + escapeEmailHtml(cleanSetting(invoice.seller_snapshot.legalName || invoice.seller_snapshot.tradeName || "HOMS TECH", 180)) +
+                "<br>IBAN: " + escapeEmailHtml(cleanSetting(invoice.seller_snapshot.iban, 50)) +
+                "<br>Omschrijving: " + escapeEmailHtml(cleanSetting(invoice.invoice_number, 40)) + "</p>"
               : "<p>De betaalgegevens staan vermeld op de factuur.</p>"),
           attachments: [{
             filename: invoice.invoice_number + ".pdf",

@@ -1,35 +1,23 @@
 "use strict";
 
-const attemptsByScopeAndIp = new Map();
+const { createBoundedRateLimiter } = require("./bounded-rate-limit");
+
 const WINDOW_MS = 15 * 60 * 1000;
 const MAX_ATTEMPTS = 10;
+
+// Keep admin/customer scopes separate and cap total retained keys.
+const checkAttempt = createBoundedRateLimiter({
+  windowMs: WINDOW_MS,
+  maxRequests: MAX_ATTEMPTS,
+  maxEntries: 10000
+});
 
 function checkAuthLoginRateLimit(scope, ip, now = Date.now()) {
   const cleanScope = String(scope || "").trim();
   const cleanIp = String(ip || "").trim();
   if (!cleanScope || !cleanIp) return false;
 
-  const key = cleanScope + ":" + cleanIp;
-  const recentAttempts = (attemptsByScopeAndIp.get(key) || [])
-    .filter(timestamp => now - timestamp < WINDOW_MS);
-
-  if (recentAttempts.length >= MAX_ATTEMPTS) {
-    attemptsByScopeAndIp.set(key, recentAttempts);
-    return false;
-  }
-
-  recentAttempts.push(now);
-  attemptsByScopeAndIp.set(key, recentAttempts);
-
-  if (attemptsByScopeAndIp.size > 10000) {
-    for (const [entryKey, timestamps] of attemptsByScopeAndIp.entries()) {
-      if (timestamps.every(timestamp => now - timestamp >= WINDOW_MS)) {
-        attemptsByScopeAndIp.delete(entryKey);
-      }
-    }
-  }
-
-  return true;
+  return checkAttempt(cleanScope + ":" + cleanIp, now);
 }
 
 module.exports = { checkAuthLoginRateLimit };

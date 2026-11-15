@@ -31,15 +31,24 @@ function validateRepairQuotePayload(b = {}) {
   for (const photo of incomingPhotos) {
     const type = String(photo?.type || "").toLowerCase();
     const dataUrl = String(photo?.dataUrl || "");
-    const match = dataUrl.match(/^data:(image\/(?:jpeg|png|webp|heic));base64,([a-z0-9+/=]+)$/i);
+    const match = dataUrl.match(/^data:(image\/(?:jpeg|png|webp|heic));base64,([a-z0-9+/]+={0,2})$/i);
     if (!allowedTypes.has(type) || !match || match[1].toLowerCase() !== type) {
       throw new Error("Een foto heeft een ongeldig formaat. Alleen JPG, PNG, WEBP en HEIC zijn toegestaan.");
     }
-    const bytes = Buffer.from(match[2], "base64");
-    if (!bytes.length || bytes.length > MAX_SINGLE_PHOTO) {
+
+    // Estimate decoded bytes from Base64 length instead of allocating a temporary
+    // Buffer for every uploaded photo. Browser-generated data URLs are padded;
+    // unpadded Base64 remains accepted when its length is valid.
+    const encoded = match[2];
+    const padding = encoded.endsWith("==") ? 2 : encoded.endsWith("=") ? 1 : 0;
+    if ((padding && encoded.length % 4 !== 0) || (!padding && encoded.length % 4 === 1)) {
+      throw new Error("Een foto heeft een ongeldig formaat. Alleen JPG, PNG, WEBP en HEIC zijn toegestaan.");
+    }
+    const photoBytes = Math.floor(encoded.length * 3 / 4) - padding;
+    if (photoBytes <= 0 || photoBytes > MAX_SINGLE_PHOTO) {
       throw new Error("Elke foto mag maximaal 2 MB groot zijn.");
     }
-    totalPhotoBytes += bytes.length;
+    totalPhotoBytes += photoBytes;
     if (totalPhotoBytes > MAX_TOTAL_PHOTOS) {
       throw new Error("De totale grootte van alle foto's mag maximaal 6 MB zijn.");
     }

@@ -8,17 +8,34 @@
   style.textContent = `
     #homs-ai-launch {
       position: fixed;
-      right: 22px;
-      bottom: 22px;
+      right: 18px;
+      bottom: 18px;
       z-index: 9998;
-      border: 0;
-      border-radius: 999px;
-      background: #25d366;
-      color: #062313;
-      box-shadow: 0 8px 28px #0003;
-      padding: 14px 19px;
-      font: 700 15px Arial, sans-serif;
+      width: 64px;
+      height: 64px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 2px solid rgba(255,255,255,.9);
+      border-radius: 50%;
+      background: linear-gradient(145deg, #3b82f6, #1d4ed8);
+      color: #fff;
+      box-shadow: 0 6px 20px rgba(7,29,45,.24);
+      font: 700 15px/1 Arial, sans-serif;
       cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #homs-ai-launch:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 9px 24px rgba(7,29,45,.3);
+      filter: brightness(1.04);
+    }
+    #homs-ai-launch:active { transform: scale(.96); }
+    #homs-ai-launch:focus-visible {
+      outline: 3px solid #93c5fd;
+      outline-offset: 3px;
     }
     #homs-ai-panel {
       position: fixed;
@@ -141,7 +158,9 @@
       #homs-ai-launch {
         right: 14px;
         bottom: 14px;
-        padding: 12px 15px;
+        width: 60px;
+        height: 60px;
+        font-size: 14px;
       }
       #homs-ai-panel {
         right: 8px;
@@ -158,7 +177,9 @@
   const launch = document.createElement("button");
   launch.id = "homs-ai-launch";
   launch.type = "button";
-  launch.textContent = "💬 HOMS TECH Chat";
+  launch.textContent = "Chat";
+  launch.setAttribute("aria-label", "HOMS TECH Chat openen");
+  launch.setAttribute("title", "HOMS TECH Chat");
   launch.setAttribute("aria-expanded", "false");
 
   const panel = document.createElement("section");

@@ -49,7 +49,7 @@ function createHarness({ order, env = {}, fetchResponse = { ok: true, status: 20
 
 test("registers the repair offer endpoint and saves the offer before sending email", async () => {
   const order = {
-    id: 42, name: "Jan", email: "jan@example.nl", service_name: "iPhone 14",
+    id: 42, name: "Jan", email: "jan@example.nl", service_category: "reparatie", service_name: "iPhone 14",
     notes: "Gebarsten scherm", extra_fields: JSON.stringify({ repairQuote: true, brand: "Apple", model: "iPhone 14" })
   };
   const h = createHarness({
@@ -72,7 +72,7 @@ test("registers the repair offer endpoint and saves the offer before sending ema
 });
 
 test("saves the quote and returns a clear warning when Resend is not configured", async () => {
-  const order = { id: 7, name: "Sam", email: "sam@example.nl", service_name: "iPhone", notes: "", extra_fields: JSON.stringify({ repairQuote: true }) };
+  const order = { id: 7, name: "Sam", email: "sam@example.nl", service_category: "repair", service_name: "iPhone", notes: "", extra_fields: JSON.stringify({ repairQuote: true }) };
   const h = createHarness({ order });
 
   await h.handler({ params: { id: "7" }, body: { price: "100", message: "Prijsindicatie" } }, h.response);
@@ -102,6 +102,6 @@ test("refuses to create an offer for an order that is not a repair quote", async
   await h.handler({ params: { id: "10" }, body: { price: "80", message: "Prijsindicatie" } }, h.response);
 
   assert.equal(h.response.statusCode, 400);
-  assert.match(h.response.payload.error, /geen repair request/);
+  assert.match(h.response.payload.error, /reparatieaanvraag/);
   assert.equal(h.queries.length, 1);
 });

@@ -41,6 +41,9 @@ test("device register summary returns commercial stock and realized profit KPIs"
         assert.match(sql, /SUM\(parts\.parts_cost\)/);
         return { rows: [{ total: 8, ready: 2, processing: 3, sold: 3, invested: "900.00", revenue: "1500.00", realized_profit: "420.00" }] };
       }
+      if (sql.includes("FROM device_register WHERE device_type='customer_repair'")) {
+        return { rows: [{ total: 4, ready: 1, problems: 1, processing: 2, repair_value_total: "250.00" }] };
+      }
       if (sql.includes("FROM device_register d")) return { rows: [{ id: 5, model: "iPhone 14", status: "Klaar", recorded_cost: "25.00" }] };
       throw new Error("Unexpected query: " + sql);
     }
@@ -64,6 +67,7 @@ test("device register summary returns commercial stock and realized profit KPIs"
   assert.equal(payload.devices.length, 1);
   assert.equal(payload.summary.total, 8);
   assert.equal(payload.summary.realized_profit, "420.00");
+  assert.deepEqual(payload.repairSummary, { total: 4, ready: 1, problems: 1, processing: 2, repair_value_total: "250.00" });
 });
 
 test("sold commercial devices cannot receive new repair or refurbishment operations", async () => {
@@ -150,7 +154,10 @@ test("general device updates lock the row and cannot overwrite a completed sale"
     json(value) { this.body = value; return this; }
   };
   await routes.get("PUT /api/admin/device-register/:id")(
-    { params: { id: "22" }, body: { status: "جاهز للبيع", purchaseCost: 100, salePrice: 150 } },
+    { params: { id: "22" }, body: {
+      deviceType: "commercial", identifierType: "imei", identifierValue: "356789012345678",
+      model: "iPhone 14", status: "جاهز للبيع", purchaseCost: 100, salePrice: 150
+    } },
     response
   );
   assert.equal(response.statusCode, 409);
