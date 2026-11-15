@@ -23,7 +23,7 @@ const PAGE_PERMISSIONS = {
   general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",shop:"site.save",categories:"categories.view",
 why:"why.view",customers:"customers.view",orders:"orders.view","repair-requests":"orders.view",
   "webshop-orders":"webshop_orders.view","invoices":"site.save","order-settings":"site.save",search:"search",admins:"admins.manage",
-  buyback:"buyback.view", "buyback-orders":"buyback_orders.view", inventory:"site.save", "device-register":"device_register.view", emails:"site.save"
+  buyback:"site.save", "buyback-orders":"buyback_orders.view", inventory:"site.save", "device-register":"device_register.view", emails:"site.save"
 };
 
 const ADMIN_PERMISSION_LABELS = {
@@ -34,7 +34,6 @@ const ADMIN_PERMISSION_LABELS = {
   "webshop_orders.view":"Webshop bestellingen bekijken","webshop_orders.update":"Webshop order-status wijzigen","webshop_orders.delete":"Webshop bestellingen verwijderen",
   "orders.delete":"Reparatieaanvragen verwijderen",
   "device_register.view":"Toestelregister bekijken","device_register.update":"Toestelregister wijzigen",
-  "buyback.view":"Inkooptelefoons bekijken","buyback.update":"Inkooptelefoons wijzigen",
   "buyback_orders.view":"Verkoopaanvragen bekijken","buyback_orders.update":"Verkoopaanvraag-status wijzigen","buyback_orders.delete":"Verkoopaanvragen verwijderen",
   "repair_page.view":"Reparatiepagina bekijken","repair_page.update":"Reparatiepagina wijzigen","site.save":"Websitegegevens opslaan","search":"Admin zoeken","admins.manage":"Admins beheren"
 };
