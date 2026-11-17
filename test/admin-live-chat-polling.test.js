@@ -38,3 +38,11 @@ test("admin chat ignores stale detail responses after switching conversations", 
   assert.match(adminJs, /const requestId=\+\+liveChatOpenRequestId/);
   assert.match(adminJs, /if\(requestId!==liveChatOpenRequestId\)return/);
 });
+
+
+test("admin live chat list markup is rendered by one shared helper", () => {
+  assert.equal((adminJs.match(/function renderLiveChatList\\(list,rows\\)/g) || []).length, 1);
+  assert.match(adminJs, /renderLiveChatList\\(list,rows\\)/);
+  assert.match(adminJs, /renderLiveChatList\\(list,d\\.conversations\\|\\|\\[\\]\\)/);
+  assert.match(adminJs, /liveChatEsc\\(\\(c\\.last_message\\|\\|"Nog geen bericht"\\)\\.slice\\(0,90\\)\\)/);
+});
