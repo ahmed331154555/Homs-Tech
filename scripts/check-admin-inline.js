@@ -58,6 +58,10 @@ for (const source of scripts) {
   for (const match of source.matchAll(/^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/gm)) {
     declaredFunctions.add(match[1]);
   }
+  // Admin modules may intentionally expose handlers from an IIFE via window.*.
+  for (const match of source.matchAll(/\bwindow\.([A-Za-z_$][\w$]*)\s*=\s*(?:async\s+)?function\s*\(/g)) {
+    declaredFunctions.add(match[1]);
+  }
 }
 
 const allowedGlobals = new Set([
