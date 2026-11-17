@@ -2,20 +2,26 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { registerAdminBuybackOrderRoutes } = require("../routes/admin-buyback-orders");
+const {
+  registerAdminBuybackOrderRoutes,
+} = require("../routes/admin-buyback-orders");
 
 function registerDeleteRoute(pool) {
   let handler;
-  const app = new Proxy({}, {
-    get(_target, method) {
-      return (path, ...handlers) => {
-        if (method === "delete" && path === "/api/admin/buyback-orders/:id") handler = handlers.at(-1);
-      };
-    }
-  });
+  const app = new Proxy(
+    {},
+    {
+      get(_target, method) {
+        return (path, ...handlers) => {
+          if (method === "delete" && path === "/api/admin/buyback-orders/:id")
+            handler = handlers.at(-1);
+        };
+      },
+    },
+  );
   registerAdminBuybackOrderRoutes(app, {
     pool,
-    requirePermission: (_permission, _options) => (_req, _res, next) => next()
+    requirePermission: (_permission, _options) => (_req, _res, next) => next(),
   });
   assert.equal(typeof handler, "function", "delete route should be registered");
   return handler;
@@ -25,14 +31,25 @@ function createResponse() {
   return {
     statusCode: 200,
     body: null,
-    status(code) { this.statusCode = code; return this; },
-    json(body) { this.body = body; return this; }
+    status(code) {
+      this.statusCode = code;
+      return this;
+    },
+    json(body) {
+      this.body = body;
+      return this;
+    },
   };
 }
 
 test("buyback deletion rejects invalid IDs before querying the database", async () => {
   let queryCalled = false;
-  const handler = registerDeleteRoute({ async query() { queryCalled = true; return { rows: [] }; } });
+  const handler = registerDeleteRoute({
+    async query() {
+      queryCalled = true;
+      return { rows: [] };
+    },
+  });
   const res = createResponse();
 
   await handler({ params: { id: "not-a-number" } }, res);
@@ -50,7 +67,7 @@ test("buyback deletion only targets standalone sale requests", async () => {
       queryText = sql;
       queryParams = params;
       return { rows: [{ id: 52 }] };
-    }
+    },
   });
   const res = createResponse();
 

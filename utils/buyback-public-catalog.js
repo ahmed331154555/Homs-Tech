@@ -15,28 +15,45 @@ function normalizeBuybackModelName(value) {
 function matchesBuybackModel(buybackPhone, salesPhone) {
   const target = normalizeBuybackModelName(buybackPhone?.name);
   const candidate = normalizeBuybackModelName(salesPhone?.name);
-  return Boolean(target && candidate && (
-    candidate === target ||
-    (candidate.length >= 5 && target.length >= 5 &&
-      (candidate.includes(target) || target.includes(candidate)))
-  ));
+  return Boolean(
+    target &&
+      candidate &&
+      (candidate === target ||
+        (candidate.length >= 5 &&
+          target.length >= 5 &&
+          (candidate.includes(target) || target.includes(candidate)))),
+  );
 }
 
 function replaceEmbeddedBuybackImages(value, phoneId, path = "") {
   if (Array.isArray(value)) {
     return value.map((item, index) =>
-      replaceEmbeddedBuybackImages(item, phoneId, path ? path + "." + index : String(index))
+      replaceEmbeddedBuybackImages(
+        item,
+        phoneId,
+        path ? path + "." + index : String(index),
+      ),
     );
   }
-  if (typeof value === "string" &&
-      /^data:image\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(value)) {
-    return "/api/buyback/image/" + encodeURIComponent(String(phoneId)) +
-      "?path=" + encodeURIComponent(path);
+  if (
+    typeof value === "string" &&
+    /^data:image\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(value)
+  ) {
+    return (
+      "/api/buyback/image/" +
+      encodeURIComponent(String(phoneId)) +
+      "?path=" +
+      encodeURIComponent(path)
+    );
   }
   if (!value || typeof value !== "object") return value;
   const output = {};
   for (const [key, nested] of Object.entries(value)) {
-    output[key] = replaceEmbeddedBuybackImages(nested, phoneId, path ? path + "." + key : key);
+    output[key] = replaceEmbeddedBuybackImages(
+      nested,
+      phoneId,
+      path ? path + "." + key : key,
+    );
   }
   return output;
 }
@@ -55,16 +72,21 @@ function projectBuybackPhone(phone) {
     imageOutside: phone.imageOutside || "",
     active: phone.active,
     buybackProtocol: phone.buybackProtocol,
-    protocol: phone.protocol
+    protocol: phone.protocol,
   };
 
   if (protocol === "1") {
     for (const key of [
-      "storageOptions", "conditionOptions", "batteryOptions",
-      "faceIdOptions", "screenOptions", "variantOptions",
-      "customBuybackQuestions"
+      "storageOptions",
+      "conditionOptions",
+      "batteryOptions",
+      "faceIdOptions",
+      "screenOptions",
+      "variantOptions",
+      "customBuybackQuestions",
     ]) {
-      if (Object.prototype.hasOwnProperty.call(phone, key)) output[key] = phone[key];
+      if (Object.prototype.hasOwnProperty.call(phone, key))
+        output[key] = phone[key];
     }
   } else if (protocol === "2" || protocol === "protocol2") {
     output.protocol2 = phone.protocol2 || {};
@@ -87,25 +109,39 @@ function dataImageBytes(value) {
 }
 
 function sumDataImageBytes(value) {
-  if (Array.isArray(value)) return value.reduce((sum, item) => sum + sumDataImageBytes(item), 0);
+  if (Array.isArray(value))
+    return value.reduce((sum, item) => sum + sumDataImageBytes(item), 0);
   if (!value || typeof value !== "object") return dataImageBytes(value);
-  return Object.values(value).reduce((sum, item) => sum + sumDataImageBytes(item), 0);
+  return Object.values(value).reduce(
+    (sum, item) => sum + sumDataImageBytes(item),
+    0,
+  );
 }
 
 function buildPublicBuybackCatalogPayload(source) {
   const input = source && typeof source === "object" ? source : {};
-  const buybackCatalog = Array.isArray(input.buybackCatalog) ? input.buybackCatalog : [];
-  const buybackPhones = (Array.isArray(input.buybackPhones) ? input.buybackPhones : [])
-    .filter(phone => phone && typeof phone === "object" && phone.active !== false)
+  const buybackCatalog = Array.isArray(input.buybackCatalog)
+    ? input.buybackCatalog
+    : [];
+  const buybackPhones = (
+    Array.isArray(input.buybackPhones) ? input.buybackPhones : []
+  )
+    .filter(
+      (phone) => phone && typeof phone === "object" && phone.active !== false,
+    )
     .map(projectBuybackPhone);
-  const sourceSalesPhones = Array.isArray(input.salesPhones) ? input.salesPhones : [];
+  const sourceSalesPhones = Array.isArray(input.salesPhones)
+    ? input.salesPhones
+    : [];
 
   // The customer page only uses sales-catalog photos and public specifications
   // for models that actually appear in the active buyback catalog.
   const matchedSalesPhones = [];
   const matchedIndexes = new Set();
   for (const buybackPhone of buybackPhones) {
-    const index = sourceSalesPhones.findIndex(phone => matchesBuybackModel(buybackPhone, phone));
+    const index = sourceSalesPhones.findIndex((phone) =>
+      matchesBuybackModel(buybackPhone, phone),
+    );
     if (index < 0 || matchedIndexes.has(index)) continue;
     matchedIndexes.add(index);
     const phone = sourceSalesPhones[index];
@@ -113,22 +149,29 @@ function buildPublicBuybackCatalogPayload(source) {
     matchedSalesPhones.push({
       name: phone.name || "",
       brand: phone.brand || "",
-      image: phone.image || (Array.isArray(phone.images) ? phone.images.find(Boolean) : "") || "",
-      images: Array.isArray(phone.images) ? phone.images.filter(Boolean).slice(0, 1) : [],
+      image:
+        phone.image ||
+        (Array.isArray(phone.images) ? phone.images.find(Boolean) : "") ||
+        "",
+      images: Array.isArray(phone.images)
+        ? phone.images.filter(Boolean).slice(0, 1)
+        : [],
       screenSize: phone.screenSize || "",
       processor: phone.processor || "",
       memory: phone.memory || "",
       gpu: phone.gpu || "",
       releaseYear: phone.releaseYear || "",
       connectivity: phone.connectivity || "",
-      specifications: Array.isArray(phone.specifications) ? phone.specifications : []
+      specifications: Array.isArray(phone.specifications)
+        ? phone.specifications
+        : [],
     });
   }
 
   return sanitizePublicSiteData({
     buybackCatalog,
     buybackPhones,
-    salesPhones: matchedSalesPhones
+    salesPhones: matchedSalesPhones,
   });
 }
 
@@ -138,5 +181,5 @@ module.exports = {
   projectBuybackPhone,
   replaceEmbeddedBuybackImages,
   sumDataImageBytes,
-  buildPublicBuybackCatalogPayload
+  buildPublicBuybackCatalogPayload,
 };

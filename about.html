@@ -1,860 +1,850 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl" dir="ltr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Over HOMS TECH | Telefoonreparatie</title>
-<meta name="description" content="Lees meer over HOMS TECH en onze telefoondiensten. We helpen klanten met reparatie aan huis of via verzending, met duidelijke informatie over de service.">
-<meta name="keywords" content="over HOMS TECH, telefoonreparatie, reparatieservice, smartphone service">
-<link rel="canonical" href="https://homs-tech.nl/about.html">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Over HOMS TECH | Telefoonreparatie</title>
+    <meta
+      name="description"
+      content="Lees meer over HOMS TECH en onze telefoondiensten. We helpen klanten met reparatie aan huis of via verzending, met duidelijke informatie over de service."
+    />
+    <meta
+      name="keywords"
+      content="over HOMS TECH, telefoonreparatie, reparatieservice, smartphone service"
+    />
+    <link rel="canonical" href="https://homs-tech.nl/about.html" />
 
-  <style>
-    *{
-      box-sizing:border-box;
-      margin:0;
-      padding:0;
-    }
-
-    body{
-      font-family:Arial,Helvetica,sans-serif;
-      background:#f5f7fa;
-      color:#111827;
-      line-height:1.6;
-    }
-
-    a{
-      text-decoration:none;
-      color:inherit;
-    }
-
-    header{
-      position:sticky;
-      top:0;
-      z-index:1000;
-      background:#111827;
-      color:white;
-      box-shadow:0 2px 10px rgba(0,0,0,.15);
-    }
-
-    .nav{
-      max-width:1200px;
-      margin:auto;
-      min-height:72px;
-      padding:0 20px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:20px;
-    }
-
-    .logo{
-      width:170px;
-      height:auto;
-      display:block;
-    }
-
-    nav{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      flex-wrap:wrap;
-    }
-
-    nav a{
-      padding:10px 14px;
-      border-radius:10px;
-      color:#fff;
-      font-weight:600;
-      font-size:15px;
-      transition:.2s;
-    }
-
-    nav a:hover,
-    nav a.active{
-      background:#2563eb;
-    }
-
-    .hero{
-      background:
-        radial-gradient(
-          circle at 75% 35%,
-          rgba(37,99,235,.35),
-          transparent 35%
-        ),
-        linear-gradient(135deg,#07101f,#1b2b43);
-      color:white;
-      padding:75px 20px;
-    }
-
-    .hero-inner{
-      max-width:1200px;
-      margin:auto;
-      display:grid;
-      grid-template-columns:1.2fr .8fr;
-      align-items:center;
-      gap:50px;
-    }
-
-    .hero h1{
-      font-size:48px;
-      line-height:1.15;
-      margin-bottom:20px;
-    }
-
-    .hero h1 span{
-      color:#60a5fa;
-    }
-
-    .hero p{
-      color:#dbe4f0;
-      font-size:18px;
-      max-width:680px;
-      margin-bottom:28px;
-    }
-
-    .buttons{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-
-    .btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:13px 22px;
-      border-radius:10px;
-      font-weight:700;
-      border:2px solid transparent;
-      transition:.2s;
-    }
-
-    .green{
-      background:#2563eb;
-      color:white;
-    }
-
-    .green:hover{
-      background:#1d4ed8;
-    }
-
-    .white{
-      background:white;
-      color:#2563eb;
-    }
-
-    .white:hover{
-      background:#eff6ff;
-    }
-
-    .section{
-      max-width:1200px;
-      margin:auto;
-      padding:70px 20px;
-    }
-
-    .section-title{
-      text-align:center;
-      margin-bottom:45px;
-    }
-
-    .section-title h2{
-      font-size:34px;
-      margin-bottom:10px;
-    }
-
-    .section-title p{
-      color:#6b7280;
-      max-width:700px;
-      margin:auto;
-    }
-
-    .line{
-      width:65px;
-      height:4px;
-      background:#2563eb;
-      border-radius:10px;
-      margin:14px auto 0;
-    }
-
-    .about-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:28px;
-    }
-
-    .card{
-      background:white;
-      border-radius:18px;
-      padding:30px;
-      box-shadow:0 8px 25px rgba(15,23,42,.07);
-    }
-
-    .card h3{
-      font-size:24px;
-      margin-bottom:15px;
-    }
-
-    .card p{
-      color:#4b5563;
-      margin-bottom:12px;
-    }
-
-    .icon{
-      width:55px;
-      height:55px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:#eff6ff;
-      border-radius:14px;
-      font-size:27px;
-      margin-bottom:18px;
-    }
-
-    .area-box{
-      margin-top:28px;
-      background:linear-gradient(135deg,#162438,#25364d);
-      color:white;
-      border-radius:22px;
-      padding:35px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:25px;
-    }
-
-    .area-box h3{
-      font-size:25px;
-      margin-bottom:8px;
-    }
-
-    .area-box p{
-      color:#dbe4f0;
-    }
-
-    .why-grid{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:22px;
-    }
-
-    .why-card{
-      background:white;
-      border-radius:18px;
-      padding:25px;
-      box-shadow:0 8px 25px rgba(15,23,42,.07);
-    }
-
-    .why-card .emoji{
-      font-size:34px;
-      margin-bottom:14px;
-    }
-
-    .why-card h3{
-      margin-bottom:8px;
-      font-size:20px;
-    }
-
-    .why-card p{
-      color:#6b7280;
-    }
-
-    .contact{
-      background:#111827;
-      color:white;
-      border-radius:22px;
-      padding:40px;
-      text-align:center;
-    }
-
-    .contact h2{
-      font-size:30px;
-      margin-bottom:10px;
-    }
-
-    .contact p{
-      color:#d1d5db;
-      margin-bottom:22px;
-    }
-
-    footer{
-      background:#0b1422;
-      color:#cbd5e1;
-      padding:35px 20px;
-      margin-top:20px;
-    }
-
-    .footer-inner{
-      max-width:1200px;
-      margin:auto;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:20px;
-      flex-wrap:wrap;
-    }
-
-    .footer-name{
-      color:white;
-      font-size:20px;
-      font-weight:800;
-    }
-
-    .footer-links{
-      display:flex;
-      gap:18px;
-      flex-wrap:wrap;
-    }
-
-    .footer-links a:hover{
-      color:white;
-    }
-
-    @media(max-width:900px){
-      .hero-inner{
-        grid-template-columns:1fr;
+    <style>
+      *{
+        box-sizing:border-box;
+        margin:0;
+        padding:0;
       }
 
-      .hero h1{
-        font-size:40px;
+      body{
+        font-family:Arial,Helvetica,sans-serif;
+        background:#f5f7fa;
+        color:#111827;
+        line-height:1.6;
       }
 
-      .about-grid{
-        grid-template-columns:1fr;
+      a{
+        text-decoration:none;
+        color:inherit;
       }
 
-      .why-grid{
-        grid-template-columns:1fr 1fr;
+      header{
+        position:sticky;
+        top:0;
+        z-index:1000;
+        background:#111827;
+        color:white;
+        box-shadow:0 2px 10px rgba(0,0,0,.15);
       }
 
-      nav a{
-        padding:8px 9px;
-        font-size:14px;
-      }
-    }
-
-    @media(max-width:550px){
       .nav{
-        flex-direction:column;
-        padding:12px 15px;
+        max-width:1200px;
+        margin:auto;
+        min-height:72px;
+        padding:0 20px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:20px;
+      }
+
+      .logo{
+        width:170px;
+        height:auto;
+        display:block;
       }
 
       nav{
-        justify-content:center;
+        display:flex;
+        align-items:center;
+        gap:6px;
+        flex-wrap:wrap;
+      }
+
+      nav a{
+        padding:10px 14px;
+        border-radius:10px;
+        color:#fff;
+        font-weight:600;
+        font-size:15px;
+        transition:.2s;
+      }
+
+      nav a:hover,
+      nav a.active{
+        background:#2563eb;
       }
 
       .hero{
-        padding:55px 18px;
+        background:
+          radial-gradient(
+            circle at 75% 35%,
+            rgba(37,99,235,.35),
+            transparent 35%
+          ),
+          linear-gradient(135deg,#07101f,#1b2b43);
+        color:white;
+        padding:75px 20px;
+      }
+
+      .hero-inner{
+        max-width:1200px;
+        margin:auto;
+        display:grid;
+        grid-template-columns:1.2fr .8fr;
+        align-items:center;
+        gap:50px;
       }
 
       .hero h1{
-        font-size:32px;
+        font-size:48px;
+        line-height:1.15;
+        margin-bottom:20px;
+      }
+
+      .hero h1 span{
+        color:#60a5fa;
       }
 
       .hero p{
-        font-size:16px;
+        color:#dbe4f0;
+        font-size:18px;
+        max-width:680px;
+        margin-bottom:28px;
+      }
+
+      .buttons{
+        display:flex;
+        gap:12px;
+        flex-wrap:wrap;
+      }
+
+      .btn{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        padding:13px 22px;
+        border-radius:10px;
+        font-weight:700;
+        border:2px solid transparent;
+        transition:.2s;
+      }
+
+      .green{
+        background:#2563eb;
+        color:white;
+      }
+
+      .green:hover{
+        background:#1d4ed8;
+      }
+
+      .white{
+        background:white;
+        color:#2563eb;
+      }
+
+      .white:hover{
+        background:#eff6ff;
       }
 
       .section{
-        padding:50px 16px;
+        max-width:1200px;
+        margin:auto;
+        padding:70px 20px;
+      }
+
+      .section-title{
+        text-align:center;
+        margin-bottom:45px;
       }
 
       .section-title h2{
-        font-size:28px;
+        font-size:34px;
+        margin-bottom:10px;
       }
 
-      .why-grid{
-        grid-template-columns:1fr;
+      .section-title p{
+        color:#6b7280;
+        max-width:700px;
+        margin:auto;
+      }
+
+      .line{
+        width:65px;
+        height:4px;
+        background:#2563eb;
+        border-radius:10px;
+        margin:14px auto 0;
+      }
+
+      .about-grid{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:28px;
+      }
+
+      .card{
+        background:white;
+        border-radius:18px;
+        padding:30px;
+        box-shadow:0 8px 25px rgba(15,23,42,.07);
+      }
+
+      .card h3{
+        font-size:24px;
+        margin-bottom:15px;
+      }
+
+      .card p{
+        color:#4b5563;
+        margin-bottom:12px;
+      }
+
+      .icon{
+        width:55px;
+        height:55px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:#eff6ff;
+        border-radius:14px;
+        font-size:27px;
+        margin-bottom:18px;
       }
 
       .area-box{
-        padding:28px 22px;
-        flex-direction:column;
-        align-items:flex-start;
+        margin-top:28px;
+        background:linear-gradient(135deg,#162438,#25364d);
+        color:white;
+        border-radius:22px;
+        padding:35px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:25px;
+      }
+
+      .area-box h3{
+        font-size:25px;
+        margin-bottom:8px;
+      }
+
+      .area-box p{
+        color:#dbe4f0;
+      }
+
+      .why-grid{
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:22px;
+      }
+
+      .why-card{
+        background:white;
+        border-radius:18px;
+        padding:25px;
+        box-shadow:0 8px 25px rgba(15,23,42,.07);
+      }
+
+      .why-card .emoji{
+        font-size:34px;
+        margin-bottom:14px;
+      }
+
+      .why-card h3{
+        margin-bottom:8px;
+        font-size:20px;
+      }
+
+      .why-card p{
+        color:#6b7280;
       }
 
       .contact{
-        padding:30px 20px;
+        background:#111827;
+        color:white;
+        border-radius:22px;
+        padding:40px;
+        text-align:center;
+      }
+
+      .contact h2{
+        font-size:30px;
+        margin-bottom:10px;
+      }
+
+      .contact p{
+        color:#d1d5db;
+        margin-bottom:22px;
+      }
+
+      footer{
+        background:#0b1422;
+        color:#cbd5e1;
+        padding:35px 20px;
+        margin-top:20px;
       }
 
       .footer-inner{
-        flex-direction:column;
-        text-align:center;
+        max-width:1200px;
+        margin:auto;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:20px;
+        flex-wrap:wrap;
       }
-    }
-  </style>
-<link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20261109-shared-theme">
-<style>
-/* HOMS TECH FINAL HEADER OVERRIDE — self-contained */
-/* HOMS TECH TOPBAR FINAL POLISH */
-.ht-topbar{background:#071d2d!important;color:#dbeafe!important;border-bottom:1px solid rgba(255,255,255,.08)!important;font-size:12px!important;}
-.ht-topbar .ht-container{min-height:34px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:18px!important;}
-.ht-topinfo{display:flex!important;align-items:center!important;justify-content:center!important;gap:22px!important;white-space:nowrap!important;}
-.ht-topinfo span{display:inline-flex!important;align-items:center!important;gap:6px!important;line-height:1!important;color:#dbeafe!important;}
-.ht-topinfo span b{font-size:11px!important;color:#60a5fa!important;font-weight:900!important;}
-.ht-rating{display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;color:#fff!important;font-weight:700!important;white-space:nowrap!important;}
-@media(max-width:900px){.ht-topbar .ht-container{padding:0 14px!important}.ht-topinfo{gap:12px!important;overflow:hidden!important}.ht-topinfo span:nth-child(n+3){display:none!important}.ht-rating{font-size:11px!important}}
 
-.ht-header{position:sticky!important;top:0!important;z-index:9999!important;background:#fff!important;color:#172330!important;border-bottom:1px solid #e2e8f0!important;box-shadow:0 4px 18px rgba(7,29,45,.06)!important;}
-.ht-header *{box-sizing:border-box!important;}
-.ht-header .ht-container{max-width:1180px!important;margin:0 auto!important;padding:0 18px!important;}
-.ht-header .ht-header-main{min-height:76px!important;display:flex!important;align-items:center!important;gap:22px!important;background:#fff!important;}
-.ht-header .ht-brand{display:flex!important;align-items:center!important;flex:0 0 auto!important;background:transparent!important;padding:0!important;}
-.ht-header .ht-brand img{width:154px!important;max-width:154px!important;height:auto!important;display:block!important;object-fit:contain!important;}
-.ht-header .ht-search{height:42px!important;display:flex!important;align-items:center!important;flex:1!important;max-width:500px!important;background:#f4f7fa!important;border:1px solid #e1e7ee!important;border-radius:10px!important;overflow:hidden!important;margin-left:10px!important;padding:0!important;}
-.ht-header .ht-search span{font-size:23px!important;color:#64748b!important;padding-left:13px!important;}
-.ht-header .ht-search input{border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;width:100%!important;padding:0 10px!important;color:#172330!important;}
-.ht-header .ht-search button{height:100%!important;border:0!important;background:#2563eb!important;color:#fff!important;font-weight:800!important;padding:0 17px!important;cursor:pointer!important;border-radius:0!important;}
-.ht-header .ht-actions{display:flex!important;align-items:center!important;gap:16px!important;margin-left:auto!important;white-space:nowrap!important;}
-.ht-header .ht-actions a{background:transparent!important;color:#334155!important;text-decoration:none!important;font-size:13px!important;font-weight:750!important;padding:6px 0!important;border-radius:0!important;}
-.ht-header .ht-actions a:hover{background:transparent!important;color:#2563eb!important;}
-.ht-header .ht-nav{display:flex!important;align-items:center!important;gap:5px!important;min-height:46px!important;overflow:auto!important;background:#fff!important;padding:0!important;margin:0!important;}
-.ht-header .ht-nav a{background:transparent!important;color:#334155!important;text-decoration:none!important;font-size:14px!important;font-weight:750!important;padding:9px 13px!important;border-radius:9px!important;white-space:nowrap!important;}
-.ht-header .ht-nav a:hover,.ht-header .ht-nav a.active{background:#edf4ff!important;color:#2563eb!important;}
-@media(max-width:900px){.ht-header .ht-actions a:nth-child(1),.ht-header .ht-actions a:nth-child(2){display:none!important}.ht-header .ht-header-main{flex-wrap:wrap!important;padding:10px 0!important}.ht-header .ht-search{order:3!important;max-width:none!important;flex-basis:100%!important;margin:0 0 4px!important}.ht-header .ht-nav{padding-bottom:7px!important}}
-@media(max-width:560px){.ht-header .ht-container{padding:0 12px!important}.ht-header .ht-brand img{width:138px!important;max-width:138px!important}.ht-header .ht-actions{gap:10px!important}.ht-header .ht-actions a{font-size:12px!important}.ht-header .ht-nav a{font-size:12px!important;padding:8px 10px!important}}
-</style>
+      .footer-name{
+        color:white;
+        font-size:20px;
+        font-weight:800;
+      }
 
+      .footer-links{
+        display:flex;
+        gap:18px;
+        flex-wrap:wrap;
+      }
 
-<link rel="stylesheet" href="assets/homs-global-nav.css">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5361560605027063"
-     crossorigin="anonymous"></script>
+      .footer-links a:hover{
+        color:white;
+      }
 
-<link rel="stylesheet" href="assets/homs-layout-system.css?v=20261109-accessibility">
-  <script src="assets/homs-analytics-consent.js" defer></script>
-</head>
+      @media(max-width:900px){
+        .hero-inner{
+          grid-template-columns:1fr;
+        }
 
-<body>
+        .hero h1{
+          font-size:40px;
+        }
 
-<div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div>
-<header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a class="active" href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a>
-   <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a></nav></div></header>
+        .about-grid{
+          grid-template-columns:1fr;
+        }
 
+        .why-grid{
+          grid-template-columns:1fr 1fr;
+        }
 
-<section class="hero">
+        nav a{
+          padding:8px 9px;
+          font-size:14px;
+        }
+      }
 
-  <div class="hero-inner">
+      @media(max-width:550px){
+        .nav{
+          flex-direction:column;
+          padding:12px 15px;
+        }
 
-    <div>
+        nav{
+          justify-content:center;
+        }
 
-      <h1>
-        Over <span data-name>HOMS TECH</span>
-      </h1>
+        .hero{
+          padding:55px 18px;
+        }
 
-      <p data-tag>
-        Professionele telefoonreparatie aan huis
-      </p>
+        .hero h1{
+          font-size:32px;
+        }
 
-      <p>
-        Wij helpen u snel en professioneel met het repareren
-        van uw telefoon. U hoeft niet naar een winkel te komen —
-        wij komen naar u toe.
-      </p>
+        .hero p{
+          font-size:16px;
+        }
 
-      <div class="buttons">
+        .section{
+          padding:50px 16px;
+        }
 
-        <a
-          class="btn green"
-          data-wa
-          href="#"
-          target="_blank"
-        >
-          💬 WhatsApp
-        </a>
+        .section-title h2{
+          font-size:28px;
+        }
 
-        <a
-          class="btn white"
-          data-phone
-          href="#"
-        >
-          📞 Bel ons
-        </a>
+        .why-grid{
+          grid-template-columns:1fr;
+        }
 
+        .area-box{
+          padding:28px 22px;
+          flex-direction:column;
+          align-items:flex-start;
+        }
+
+        .contact{
+          padding:30px 20px;
+        }
+
+        .footer-inner{
+          flex-direction:column;
+          text-align:center;
+        }
+      }
+    </style>
+    <link
+      rel="stylesheet"
+      href="assets/homs-tech-modern-true-theme.css?v=20261109-shared-theme"
+    />
+    <style>
+      /* HOMS TECH FINAL HEADER OVERRIDE — self-contained */
+      /* HOMS TECH TOPBAR FINAL POLISH */
+      .ht-topbar{background:#071d2d!important;color:#dbeafe!important;border-bottom:1px solid rgba(255,255,255,.08)!important;font-size:12px!important;}
+      .ht-topbar .ht-container{min-height:34px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:18px!important;}
+      .ht-topinfo{display:flex!important;align-items:center!important;justify-content:center!important;gap:22px!important;white-space:nowrap!important;}
+      .ht-topinfo span{display:inline-flex!important;align-items:center!important;gap:6px!important;line-height:1!important;color:#dbeafe!important;}
+      .ht-topinfo span b{font-size:11px!important;color:#60a5fa!important;font-weight:900!important;}
+      .ht-rating{display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;color:#fff!important;font-weight:700!important;white-space:nowrap!important;}
+      @media(max-width:900px){.ht-topbar .ht-container{padding:0 14px!important}.ht-topinfo{gap:12px!important;overflow:hidden!important}.ht-topinfo span:nth-child(n+3){display:none!important}.ht-rating{font-size:11px!important}}
+
+      .ht-header{position:sticky!important;top:0!important;z-index:9999!important;background:#fff!important;color:#172330!important;border-bottom:1px solid #e2e8f0!important;box-shadow:0 4px 18px rgba(7,29,45,.06)!important;}
+      .ht-header *{box-sizing:border-box!important;}
+      .ht-header .ht-container{max-width:1180px!important;margin:0 auto!important;padding:0 18px!important;}
+      .ht-header .ht-header-main{min-height:76px!important;display:flex!important;align-items:center!important;gap:22px!important;background:#fff!important;}
+      .ht-header .ht-brand{display:flex!important;align-items:center!important;flex:0 0 auto!important;background:transparent!important;padding:0!important;}
+      .ht-header .ht-brand img{width:154px!important;max-width:154px!important;height:auto!important;display:block!important;object-fit:contain!important;}
+      .ht-header .ht-search{height:42px!important;display:flex!important;align-items:center!important;flex:1!important;max-width:500px!important;background:#f4f7fa!important;border:1px solid #e1e7ee!important;border-radius:10px!important;overflow:hidden!important;margin-left:10px!important;padding:0!important;}
+      .ht-header .ht-search span{font-size:23px!important;color:#64748b!important;padding-left:13px!important;}
+      .ht-header .ht-search input{border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;width:100%!important;padding:0 10px!important;color:#172330!important;}
+      .ht-header .ht-search button{height:100%!important;border:0!important;background:#2563eb!important;color:#fff!important;font-weight:800!important;padding:0 17px!important;cursor:pointer!important;border-radius:0!important;}
+      .ht-header .ht-actions{display:flex!important;align-items:center!important;gap:16px!important;margin-left:auto!important;white-space:nowrap!important;}
+      .ht-header .ht-actions a{background:transparent!important;color:#334155!important;text-decoration:none!important;font-size:13px!important;font-weight:750!important;padding:6px 0!important;border-radius:0!important;}
+      .ht-header .ht-actions a:hover{background:transparent!important;color:#2563eb!important;}
+      .ht-header .ht-nav{display:flex!important;align-items:center!important;gap:5px!important;min-height:46px!important;overflow:auto!important;background:#fff!important;padding:0!important;margin:0!important;}
+      .ht-header .ht-nav a{background:transparent!important;color:#334155!important;text-decoration:none!important;font-size:14px!important;font-weight:750!important;padding:9px 13px!important;border-radius:9px!important;white-space:nowrap!important;}
+      .ht-header .ht-nav a:hover,.ht-header .ht-nav a.active{background:#edf4ff!important;color:#2563eb!important;}
+      @media(max-width:900px){.ht-header .ht-actions a:nth-child(1),.ht-header .ht-actions a:nth-child(2){display:none!important}.ht-header .ht-header-main{flex-wrap:wrap!important;padding:10px 0!important}.ht-header .ht-search{order:3!important;max-width:none!important;flex-basis:100%!important;margin:0 0 4px!important}.ht-header .ht-nav{padding-bottom:7px!important}}
+      @media(max-width:560px){.ht-header .ht-container{padding:0 12px!important}.ht-header .ht-brand img{width:138px!important;max-width:138px!important}.ht-header .ht-actions{gap:10px!important}.ht-header .ht-actions a{font-size:12px!important}.ht-header .ht-nav a{font-size:12px!important;padding:8px 10px!important}}
+    </style>
+
+    <link rel="stylesheet" href="assets/homs-global-nav.css" />
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5361560605027063"
+      crossorigin="anonymous"
+    ></script>
+
+    <link
+      rel="stylesheet"
+      href="assets/homs-layout-system.css?v=20261109-accessibility"
+    />
+    <script src="assets/homs-analytics-consent.js" defer></script>
+  </head>
+
+  <body>
+    <div class="ht-topbar">
+      <div class="ht-container">
+        <div class="ht-marquee">
+          <span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span
+          ><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span
+          ><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span
+          ><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span>
+        </div>
+      </div>
+    </div>
+    <header class="ht-header">
+      <div class="ht-container">
+        <div class="ht-header-main">
+          <a class="ht-brand" href="index.html"
+            ><img src="assets/homs-tech-logo.png" alt="HOMS TECH"
+          /></a>
+          <form class="ht-search" action="devices.html" method="get">
+            <span>⌕</span
+            ><input
+              name="search"
+              placeholder="Waar ben je naar op zoek?"
+              aria-label="Zoeken"
+            /><button type="submit">Zoek</button>
+          </form>
+          <div class="ht-actions">
+            <a href="account.html">♙ Mijn account</a
+            ><a href="cart.html">🛒 Winkelwagen</a>
+          </div>
+        </div>
+        <nav class="ht-nav">
+          <a href="index.html">Home</a
+          ><a class="active" href="about.html">Over ons</a
+          ><a href="repair.html">Reparaties</a
+          ><a href="devices.html">Apparaten</a
+          ><a href="prices.html">Prijzen</a>
+          <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a
+          ><a href="account.html">Mijn account</a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-inner">
+        <div>
+          <h1>Over <span data-name>HOMS TECH</span></h1>
+
+          <p data-tag>Professionele telefoonreparatie aan huis</p>
+
+          <p>
+            Wij helpen u snel en professioneel met het repareren van uw
+            telefoon. U hoeft niet naar een winkel te komen — wij komen naar u
+            toe.
+          </p>
+
+          <div class="buttons">
+            <a class="btn green" data-wa href="#" target="_blank">
+              💬 WhatsApp
+            </a>
+
+            <a class="btn white" data-phone href="#"> 📞 Bel ons </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Wie zijn wij?</h2>
+
+        <p>Betrouwbare telefoonreparatie met service bij u thuis.</p>
+
+        <div class="line"></div>
       </div>
 
-    </div>
+      <div class="about-grid">
+        <div class="card">
+          <div class="icon">📱</div>
+
+          <h3>HOMS TECH</h3>
+
+          <p>
+            Bij HOMS TECH richten wij ons op snelle en professionele reparaties
+            van smartphones.
+          </p>
+
+          <p>
+            Van een kapot scherm tot problemen met software, batterij, camera of
+            andere onderdelen.
+          </p>
+
+          <p>
+            Ons doel is om u een eenvoudige en betrouwbare reparatieservice te
+            bieden.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="icon">🚗</div>
+
+          <h3>Reparatie aan huis</h3>
+
+          <p>Waarom tijd verliezen met naar een winkel gaan?</p>
+
+          <p>Wij bieden reparatieservice aan huis in Rotterdam en omgeving.</p>
+
+          <p>Neem contact met ons op en bespreek uw reparatie.</p>
+        </div>
+      </div>
+
+      <div class="area-box">
+        <div>
+          <h3>📍 Ons werkgebied</h3>
+
+          <p>
+            Wij zijn actief in:
+            <strong data-area>Rotterdam en omgeving</strong>
+          </p>
+        </div>
+
+        <a class="btn green" data-wa href="#" target="_blank">
+          💬 Neem contact op
+        </a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Waarom HOMS TECH?</h2>
+
+        <p>Service waarop u kunt rekenen.</p>
+
+        <div class="line"></div>
+      </div>
+
+      <div id="whyGrid" class="why-grid"></div>
+    </section>
+
+    <section class="section">
+      <div class="contact">
+        <h2>Heeft u een reparatie nodig?</h2>
+
+        <p>Neem vandaag nog contact met ons op.</p>
+
+        <div class="buttons" style="justify-content:center;">
+          <a class="btn green" data-wa href="#" target="_blank">
+            💬 WhatsApp
+          </a>
+
+          <a class="btn white" data-phone href="#"> 📞 Bel nu </a>
+        </div>
+      </div>
+    </section>
+
+    <footer class="ht-site-footer" aria-label="Footer HOMS TECH">
+      <div class="ht-footer-grid">
+        <div>
+          <div class="ht-footer-logo">HOMS <span>TECH</span></div>
+          <p>Refurbished apparaten · Reparatie aan huis · GSM Services</p>
+        </div>
+        <div>
+          <h2>Snelle links</h2>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="devices.html">Apparaten</a></li>
+            <li><a href="repair.html">Reparaties</a></li>
+            <li><a href="prices.html">Prijzen</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Service</h2>
+          <ul>
+            <li><a href="about.html">Over ons</a></li>
+            <li><a href="uw-toestel-verkopen.html">Uw toestel verkopen</a></li>
+            <li><a href="account.html">Mijn account</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Hulp nodig?</h2>
+          <p>Bekijk onze reparaties of neem contact op via WhatsApp.</p>
+          <a class="ht-footer-cta" href="repair.html">Reparatie aanvragen →</a>
+        </div>
+      </div>
+      <div class="ht-footer-bottom">
+        <span>© 2026 HOMS TECH</span
+        ><span>Refurbished · Reparatie · Service</span>
+      </div>
+      <div class="homs-legal-link">
+        <a href="privacybeleid.html">Privacybeleid</a>
+      </div>
+    </footer>
+
+    <script>
+
+      const defaultWhy = [
+        ["⚡","Snel","Snelle service zonder onnodig wachten."],
+        ["🏠","Aan huis","Wij komen naar u toe voor reparatie."],
+        ["🛠️","Professioneel","Zorgvuldige reparatie met aandacht voor kwaliteit."]
+      ];
+
+
+      function escapeHtml(value){
+
+        return String(value ?? "")
+          .replace(/&/g,"&amp;")
+          .replace(/</g,"&lt;")
+          .replace(/>/g,"&gt;")
+          .replace(/"/g,"&quot;")
+          .replace(/'/g,"&#039;");
 
-  </div>
-
-</section>
-
-
-<section class="section">
-
-  <div class="section-title">
-
-    <h2>Wie zijn wij?</h2>
-
-    <p>
-      Betrouwbare telefoonreparatie met service bij u thuis.
-    </p>
-
-    <div class="line"></div>
-
-  </div>
-
-
-  <div class="about-grid">
-
-    <div class="card">
-
-      <div class="icon">📱</div>
-
-      <h3>HOMS TECH</h3>
-
-      <p>
-        Bij HOMS TECH richten wij ons op snelle en professionele
-        reparaties van smartphones.
-      </p>
-
-      <p>
-        Van een kapot scherm tot problemen met software,
-        batterij, camera of andere onderdelen.
-      </p>
-
-      <p>
-        Ons doel is om u een eenvoudige en betrouwbare
-        reparatieservice te bieden.
-      </p>
-
-    </div>
-
-
-    <div class="card">
-
-      <div class="icon">🚗</div>
-
-      <h3>Reparatie aan huis</h3>
-
-      <p>
-        Waarom tijd verliezen met naar een winkel gaan?
-      </p>
-
-      <p>
-        Wij bieden reparatieservice aan huis in
-        Rotterdam en omgeving.
-      </p>
-
-      <p>
-        Neem contact met ons op en bespreek uw reparatie.
-      </p>
-
-    </div>
-
-  </div>
-
-
-  <div class="area-box">
-
-    <div>
-
-      <h3>📍 Ons werkgebied</h3>
-
-      <p>
-        Wij zijn actief in:
-        <strong data-area>Rotterdam en omgeving</strong>
-      </p>
-
-    </div>
-
-    <a
-      class="btn green"
-      data-wa
-      href="#"
-      target="_blank"
-    >
-      💬 Neem contact op
-    </a>
-
-  </div>
-
-</section>
-
-
-<section class="section">
-
-  <div class="section-title">
-
-    <h2>Waarom HOMS TECH?</h2>
-
-    <p>
-      Service waarop u kunt rekenen.
-    </p>
-
-    <div class="line"></div>
-
-  </div>
-
-
-  <div id="whyGrid" class="why-grid"></div>
-
-</section>
-
-
-<section class="section">
-
-  <div class="contact">
-
-    <h2>Heeft u een reparatie nodig?</h2>
-
-    <p>
-      Neem vandaag nog contact met ons op.
-    </p>
-
-    <div class="buttons" style="justify-content:center;">
-
-      <a
-        class="btn green"
-        data-wa
-        href="#"
-        target="_blank"
-      >
-        💬 WhatsApp
-      </a>
-
-      <a
-        class="btn white"
-        data-phone
-        href="#"
-      >
-        📞 Bel nu
-      </a>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<footer class="ht-site-footer" aria-label="Footer HOMS TECH">
-  <div class="ht-footer-grid">
-    <div><div class="ht-footer-logo">HOMS <span>TECH</span></div><p>Refurbished apparaten · Reparatie aan huis · GSM Services</p></div>
-    <div><h2>Snelle links</h2><ul><li><a href="index.html">Home</a></li><li><a href="devices.html">Apparaten</a></li><li><a href="repair.html">Reparaties</a></li><li><a href="prices.html">Prijzen</a></li></ul></div>
-    <div><h2>Service</h2><ul><li><a href="about.html">Over ons</a></li><li><a href="uw-toestel-verkopen.html">Uw toestel verkopen</a></li><li><a href="account.html">Mijn account</a></li></ul></div>
-    <div><h2>Hulp nodig?</h2><p>Bekijk onze reparaties of neem contact op via WhatsApp.</p><a class="ht-footer-cta" href="repair.html">Reparatie aanvragen →</a></div>
-  </div>
-  <div class="ht-footer-bottom"><span>© 2026 HOMS TECH</span><span>Refurbished · Reparatie · Service</span></div>
-<div class="homs-legal-link"><a href="privacybeleid.html">Privacybeleid</a></div>
-</footer>
-
-
-<script>
-
-  const defaultWhy = [
-    ["⚡","Snel","Snelle service zonder onnodig wachten."],
-    ["🏠","Aan huis","Wij komen naar u toe voor reparatie."],
-    ["🛠️","Professioneel","Zorgvuldige reparatie met aandacht voor kwaliteit."]
-  ];
-
-
-  function escapeHtml(value){
-
-    return String(value ?? "")
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;")
-      .replace(/'/g,"&#039;");
-
-  }
-
-
-  function whatsappLink(number){
-
-    let n = String(number || "+31684242359").replace(/\D/g,"");
-
-    if(!n) return "#";
-
-    return "https://wa.me/" + n;
-
-  }
-
-
-  function phoneLink(number){
-
-    let n = String(number || "+31684242359").trim();
-
-    if(!n) return "#";
-
-    return "tel:" + n.replace(/[^\d+]/g,"");
-
-  }
-
-
-  async function loadSite(){
-
-    try{
-
-      const response = await fetch("/api/site?view=about");
-
-      if(!response.ok){
-        throw new Error("API error");
       }
 
-      const data = await response.json();
+
+      function whatsappLink(number){
+
+        let n = String(number || "+31684242359").replace(/\D/g,"");
+
+        if(!n) return "#";
+
+        return "https://wa.me/" + n;
+
+      }
 
 
-      /*
-        Algemene gegevens
-      */
+      function phoneLink(number){
 
-      document.querySelectorAll("[data-name]").forEach(el=>{
-        el.textContent = data.businessName || "HOMS TECH";
-      });
+        let n = String(number || "+31684242359").trim();
 
+        if(!n) return "#";
 
-      document.querySelectorAll("[data-tag]").forEach(el=>{
-        el.textContent =
-          data.tagline ||
-          "Telefoonreparatie aan huis";
-      });
+        return "tel:" + n.replace(/[^\d+]/g,"");
+
+      }
 
 
-      /*
-        Werkgebied
-      */
+      async function loadSite(){
 
-      document.querySelectorAll("[data-area]").forEach(el=>{
-        el.textContent =
-          data.areas ||
-          "Rotterdam en omgeving";
-      });
+        try{
 
+          const response = await fetch("/api/site?view=about");
 
-      /*
-        WhatsApp
-      */
-
-      document.querySelectorAll("[data-wa]").forEach(el=>{
-
-        el.href = whatsappLink(data.whatsapp);
-
-      });
-
-
-      /*
-        Telefoon
-      */
-
-      document.querySelectorAll("[data-phone]").forEach(el=>{
-
-        el.href = phoneLink(data.phone);
-
-      });
-
-
-      /*
-        Waarom HOMS TECH
-      */
-
-      let why = Array.isArray(data.why)
-        ? data.why
-        : [];
-
-
-      /*
-        Oude gegevens ondersteunen
-      */
-
-      if(!why.length && Array.isArray(data.features)){
-
-        why = data.features.map(item=>{
-
-          if(Array.isArray(item)){
-            return item;
+          if(!response.ok){
+            throw new Error("API error");
           }
 
-          return ["⭐",String(item),""];
-        });
+          const data = await response.json();
+
+
+          /*
+            Algemene gegevens
+          */
+
+          document.querySelectorAll("[data-name]").forEach(el=>{
+            el.textContent = data.businessName || "HOMS TECH";
+          });
+
+
+          document.querySelectorAll("[data-tag]").forEach(el=>{
+            el.textContent =
+              data.tagline ||
+              "Telefoonreparatie aan huis";
+          });
+
+
+          /*
+            Werkgebied
+          */
+
+          document.querySelectorAll("[data-area]").forEach(el=>{
+            el.textContent =
+              data.areas ||
+              "Rotterdam en omgeving";
+          });
+
+
+          /*
+            WhatsApp
+          */
+
+          document.querySelectorAll("[data-wa]").forEach(el=>{
+
+            el.href = whatsappLink(data.whatsapp);
+
+          });
+
+
+          /*
+            Telefoon
+          */
+
+          document.querySelectorAll("[data-phone]").forEach(el=>{
+
+            el.href = phoneLink(data.phone);
+
+          });
+
+
+          /*
+            Waarom HOMS TECH
+          */
+
+          let why = Array.isArray(data.why)
+            ? data.why
+            : [];
+
+
+          /*
+            Oude gegevens ondersteunen
+          */
+
+          if(!why.length && Array.isArray(data.features)){
+
+            why = data.features.map(item=>{
+
+              if(Array.isArray(item)){
+                return item;
+              }
+
+              return ["⭐",String(item),""];
+            });
+
+          }
+
+
+          if(!why.length){
+            why = defaultWhy;
+          }
+
+
+          const grid = document.getElementById("whyGrid");
+
+          grid.innerHTML = why.map(item=>{
+
+            const emoji =
+              Array.isArray(item) ? item[0] : "⭐";
+
+            const title =
+              Array.isArray(item)
+                ? item[1]
+                : String(item);
+
+            const description =
+              Array.isArray(item)
+                ? item[2]
+                : "";
+
+            return `
+              <div class="why-card">
+
+                <div class="emoji">
+                  ${escapeHtml(emoji)}
+                </div>
+
+                <h3>
+                  ${escapeHtml(title)}
+                </h3>
+
+                <p>
+                  ${escapeHtml(description)}
+                </p>
+
+              </div>
+            `;
+
+          }).join("");
+
+
+        }catch(error){
+
+          console.error("HOMS TECH:",error);
+
+          /*
+            إذا تعذر الاتصال بالـAPI،
+            تبقى الصفحة قابلة للعرض.
+          */
+
+          document.querySelectorAll("[data-name]").forEach(el=>{
+            el.textContent="HOMS TECH";
+          });
+
+          document.querySelectorAll("[data-tag]").forEach(el=>{
+            el.textContent="Telefoonreparatie aan huis";
+          });
+
+          document.querySelectorAll("[data-area]").forEach(el=>{
+            el.textContent="Rotterdam en omgeving";
+          });
+
+          document.getElementById("whyGrid").innerHTML =
+            defaultWhy.map(item=>`
+              <div class="why-card">
+                <div class="emoji">${item[0]}</div>
+                <h3>${item[1]}</h3>
+                <p>${item[2]}</p>
+              </div>
+            `).join("");
+
+        }
 
       }
 
 
-      if(!why.length){
-        why = defaultWhy;
-      }
+      loadSite();
+    </script>
 
-
-      const grid = document.getElementById("whyGrid");
-
-      grid.innerHTML = why.map(item=>{
-
-        const emoji =
-          Array.isArray(item) ? item[0] : "⭐";
-
-        const title =
-          Array.isArray(item)
-            ? item[1]
-            : String(item);
-
-        const description =
-          Array.isArray(item)
-            ? item[2]
-            : "";
-
-        return `
-          <div class="why-card">
-
-            <div class="emoji">
-              ${escapeHtml(emoji)}
-            </div>
-
-            <h3>
-              ${escapeHtml(title)}
-            </h3>
-
-            <p>
-              ${escapeHtml(description)}
-            </p>
-
-          </div>
-        `;
-
-      }).join("");
-
-
-    }catch(error){
-
-      console.error("HOMS TECH:",error);
-
-      /*
-        إذا تعذر الاتصال بالـAPI،
-        تبقى الصفحة قابلة للعرض.
-      */
-
-      document.querySelectorAll("[data-name]").forEach(el=>{
-        el.textContent="HOMS TECH";
-      });
-
-      document.querySelectorAll("[data-tag]").forEach(el=>{
-        el.textContent="Telefoonreparatie aan huis";
-      });
-
-      document.querySelectorAll("[data-area]").forEach(el=>{
-        el.textContent="Rotterdam en omgeving";
-      });
-
-      document.getElementById("whyGrid").innerHTML =
-        defaultWhy.map(item=>`
-          <div class="why-card">
-            <div class="emoji">${item[0]}</div>
-            <h3>${item[1]}</h3>
-            <p>${item[2]}</p>
-          </div>
-        `).join("");
-
-    }
-
-  }
-
-
-  loadSite();
-
-</script>
-
-  <script src="assets/homs-global-nav.js?v=20261108-loopfix2"></script>
-  <script src="assets/homs-ai-chat.js" defer></script>
-</body>
+    <script src="assets/homs-global-nav.js?v=20261108-loopfix2"></script>
+    <script src="assets/homs-ai-chat.js" defer></script>
+  </body>
 </html>

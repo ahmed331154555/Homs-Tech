@@ -20,7 +20,8 @@ function fromCents(cents) {
 function calculateTradeInCheckout(productTotal, estimatedTradeInValue) {
   const productTotalCents = toCents(productTotal, "Producttotaal");
   const estimatedValueCents = toCents(estimatedTradeInValue, "Inruilwaarde");
-  if (productTotalCents <= 0) throw new RangeError("Het producttotaal moet hoger zijn dan nul.");
+  if (productTotalCents <= 0)
+    throw new RangeError("Het producttotaal moet hoger zijn dan nul.");
 
   // Trade-in value is a discount only. HOMS TECH never pays out a surplus
   // during checkout; any excess value must be handled as a separately approved credit.
@@ -31,13 +32,22 @@ function calculateTradeInCheckout(productTotal, estimatedTradeInValue) {
     appliedCredit: fromCents(appliedCreditCents),
     payableTotal: fromCents(productTotalCents - appliedCreditCents),
     unappliedCredit: fromCents(estimatedValueCents - appliedCreditCents),
-    zeroPayable: productTotalCents === appliedCreditCents
+    zeroPayable: productTotalCents === appliedCreditCents,
   });
 }
 
-function calculateTradeInAdjustment(estimatedTradeInValue, inspectedTradeInValue) {
-  const estimatedCents = toCents(estimatedTradeInValue, "Geschatte inruilwaarde");
-  const inspectedCents = toCents(inspectedTradeInValue, "Definitieve inruilwaarde");
+function calculateTradeInAdjustment(
+  estimatedTradeInValue,
+  inspectedTradeInValue,
+) {
+  const estimatedCents = toCents(
+    estimatedTradeInValue,
+    "Geschatte inruilwaarde",
+  );
+  const inspectedCents = toCents(
+    inspectedTradeInValue,
+    "Definitieve inruilwaarde",
+  );
   const differenceCents = inspectedCents - estimatedCents;
   return Object.freeze({
     estimatedValue: fromCents(estimatedCents),
@@ -45,14 +55,28 @@ function calculateTradeInAdjustment(estimatedTradeInValue, inspectedTradeInValue
     difference: fromCents(Math.abs(differenceCents)),
     // positive means HOMS TECH owes the customer; negative means the customer
     // must pay the shortfall before the order can be shipped.
-    direction: differenceCents > 0 ? "customer_credit" : differenceCents < 0 ? "customer_due" : "no_change",
+    direction:
+      differenceCents > 0
+        ? "customer_credit"
+        : differenceCents < 0
+          ? "customer_due"
+          : "no_change",
     customerDue: fromCents(Math.max(0, -differenceCents)),
-    customerCredit: fromCents(Math.max(0, differenceCents))
+    customerCredit: fromCents(Math.max(0, differenceCents)),
   });
 }
 
 function validateTradeInInspectionStatus(status) {
-  const allowed = new Set(["AwaitingDevice", "Received", "Inspecting", "Approved", "AdjustmentRequired", "Settled", "Rejected", "Returned"]);
+  const allowed = new Set([
+    "AwaitingDevice",
+    "Received",
+    "Inspecting",
+    "Approved",
+    "AdjustmentRequired",
+    "Settled",
+    "Rejected",
+    "Returned",
+  ]);
   const value = String(status || "").trim();
   if (!allowed.has(value)) throw new Error("Ongeldige inruilstatus.");
   return value;
@@ -63,5 +87,5 @@ module.exports = {
   fromCents,
   calculateTradeInCheckout,
   calculateTradeInAdjustment,
-  validateTradeInInspectionStatus
+  validateTradeInInspectionStatus,
 };

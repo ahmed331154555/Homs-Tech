@@ -7,7 +7,8 @@ const path = require("node:path");
 const { ADMIN_PERMISSION_KEYS } = require("../utils/admin-permissions");
 const { validateAdminCustomerInput } = require("../utils/customer-validation");
 
-const read = file => fs.readFileSync(path.join(__dirname, "..", file), "utf8");
+const read = (file) =>
+  fs.readFileSync(path.join(__dirname, "..", file), "utf8");
 
 test("customer management permissions are separate from customer viewing", () => {
   assert.ok(ADMIN_PERMISSION_KEYS.includes("customers.view"));
@@ -17,28 +18,65 @@ test("customer management permissions are separate from customer viewing", () =>
 
 test("customer API protects each mutation with its dedicated permission", () => {
   const routes = read("routes/admin-customers.js");
-  assert.match(routes, /app\.get\("\/api\/admin\/customers", requirePermission\("customers\.view"\)/);
-  assert.match(routes, /app\.post\("\/api\/admin\/customers", requirePermission\("customers\.update"\)/);
-  assert.match(routes, /app\.put\("\/api\/admin\/customers\/:id", requirePermission\("customers\.update"\)/);
-  assert.match(routes, /app\.put\("\/api\/admin\/customers\/:id\/password", requirePermission\("customers\.update"\)/);
-  assert.match(routes, /app\.delete\("\/api\/admin\/customers\/:id", requirePermission\("customers\.delete"\)/);
+  assert.match(
+    routes,
+    /app\.get\("\/api\/admin\/customers", requirePermission\("customers\.view"\)/,
+  );
+  assert.match(
+    routes,
+    /app\.post\("\/api\/admin\/customers", requirePermission\("customers\.update"\)/,
+  );
+  assert.match(
+    routes,
+    /app\.put\("\/api\/admin\/customers\/:id", requirePermission\("customers\.update"\)/,
+  );
+  assert.match(
+    routes,
+    /app\.put\("\/api\/admin\/customers\/:id\/password", requirePermission\("customers\.update"\)/,
+  );
+  assert.match(
+    routes,
+    /app\.delete\("\/api\/admin\/customers\/:id", requirePermission\("customers\.delete"\)/,
+  );
 });
 
 test("customer admin actions enforce view, update and delete permissions in the browser", () => {
   const script = read("assets/homs-admin.js");
-  assert.match(script, /async function loadCustomers\(\)\{\s*if\(!hasPermission\("customers\.view"\)\)return;/);
-  assert.match(script, /async function createCustomer\(\)\{\s*if\(!hasPermission\("customers\.update"\)\)return;/);
-  assert.match(script, /async function saveCustomerEdit\(\)\{\s*if\(!hasPermission\("customers\.update"\)\)return;/);
-  assert.match(script, /async function saveCustomerPassword\(\)\{\s*if\(!hasPermission\("customers\.update"\)\)return;/);
-  assert.match(script, /async function deleteCustomer\(id\)\{\s*if\(!hasPermission\("customers\.delete"\)\)return;/);
+  assert.match(
+    script,
+    /async function loadCustomers\(\)\{\s*if\(!hasPermission\("customers\.view"\)\)return;/,
+  );
+  assert.match(
+    script,
+    /async function createCustomer\(\)\{\s*if\(!hasPermission\("customers\.update"\)\)return;/,
+  );
+  assert.match(
+    script,
+    /async function saveCustomerEdit\(\)\{\s*if\(!hasPermission\("customers\.update"\)\)return;/,
+  );
+  assert.match(
+    script,
+    /async function saveCustomerPassword\(\)\{\s*if\(!hasPermission\("customers\.update"\)\)return;/,
+  );
+  assert.match(
+    script,
+    /async function deleteCustomer\(id\)\{\s*if\(!hasPermission\("customers\.delete"\)\)return;/,
+  );
 });
-
 
 test("admin-created customer welcome email is injected and cannot fail account creation", () => {
   const server = read("server.js");
   const routes = read("routes/admin-customers.js");
-  assert.ok(server.includes("registerAdminCustomerRoutes(app, { pool, requirePermission, hashPassword, sendWelcomeEmail });"));
-  assert.ok(routes.includes("function registerAdminCustomerRoutes(app, { pool, requirePermission, hashPassword, sendWelcomeEmail })"));
+  assert.ok(
+    server.includes(
+      "registerAdminCustomerRoutes(app, { pool, requirePermission, hashPassword, sendWelcomeEmail });",
+    ),
+  );
+  assert.ok(
+    routes.includes(
+      "function registerAdminCustomerRoutes(app, { pool, requirePermission, hashPassword, sendWelcomeEmail })",
+    ),
+  );
   assert.ok(routes.includes("Promise.resolve()"));
   assert.ok(routes.includes("Admin-created customer welcome email failed"));
 });
@@ -52,34 +90,71 @@ test("admin stylesheet has balanced blocks and no orphan editor declarations", (
     assert.ok(depth >= 0, "CSS closes a block before it opens");
   }
   assert.equal(depth, 0, "CSS blocks must be balanced");
-  assert.ok(!css.includes("\n  display:grid;\n  grid-template-columns:1fr 1.35fr;\n  gap:18px;\n}"));
+  assert.ok(
+    !css.includes(
+      "\n  display:grid;\n  grid-template-columns:1fr 1.35fr;\n  gap:18px;\n}",
+    ),
+  );
 });
 
-
 test("admin customer input validation normalizes email and rejects invalid data", () => {
-  const valid = validateAdminCustomerInput({
-    name: "  Test Customer  ",
-    email: "  TEST@example.com ",
-    phone: "+31 6 12345678",
-    address: "Rotterdam",
-    password: "secure-password"
-  }, { requirePassword: true });
+  const valid = validateAdminCustomerInput(
+    {
+      name: "  Test Customer  ",
+      email: "  TEST@example.com ",
+      phone: "+31 6 12345678",
+      address: "Rotterdam",
+      password: "secure-password",
+    },
+    { requirePassword: true },
+  );
   assert.equal(valid.error, undefined);
   assert.equal(valid.customer.name, "Test Customer");
   assert.equal(valid.customer.email, "test@example.com");
 
-  assert.match(validateAdminCustomerInput({ name: "Test", email: "not-an-email" }).error, /e-mailadres/);
-  assert.match(validateAdminCustomerInput({ name: "x".repeat(121), email: "test@example.com" }).error, /120/);
-  assert.match(validateAdminCustomerInput({ name: "Test", email: "test@example.com", password: "short" }, { requirePassword: true }).error, /8 tekens/);
-  assert.match(validateAdminCustomerInput({ name: "Test", email: "test@example.com", phone: "x".repeat(41) }).error, /telefoonnummer/);
-  assert.match(validateAdminCustomerInput({ name: "Test", email: "test@example.com", address: "x".repeat(501) }).error, /adres/);
+  assert.match(
+    validateAdminCustomerInput({ name: "Test", email: "not-an-email" }).error,
+    /e-mailadres/,
+  );
+  assert.match(
+    validateAdminCustomerInput({
+      name: "x".repeat(121),
+      email: "test@example.com",
+    }).error,
+    /120/,
+  );
+  assert.match(
+    validateAdminCustomerInput(
+      { name: "Test", email: "test@example.com", password: "short" },
+      { requirePassword: true },
+    ).error,
+    /8 tekens/,
+  );
+  assert.match(
+    validateAdminCustomerInput({
+      name: "Test",
+      email: "test@example.com",
+      phone: "x".repeat(41),
+    }).error,
+    /telefoonnummer/,
+  );
+  assert.match(
+    validateAdminCustomerInput({
+      name: "Test",
+      email: "test@example.com",
+      address: "x".repeat(501),
+    }).error,
+    /adres/,
+  );
 });
 
 test("admin customer create and update routes use shared input validation", () => {
   const routes = read("routes/admin-customers.js");
-  assert.equal((routes.match(/validateAdminCustomerInput\(req\.body/g) || []).length, 2);
+  assert.equal(
+    (routes.match(/validateAdminCustomerInput\(req\.body/g) || []).length,
+    2,
+  );
 });
-
 
 test("admin password reset rejects excessively long passwords", () => {
   const routes = read("routes/admin-customers.js");

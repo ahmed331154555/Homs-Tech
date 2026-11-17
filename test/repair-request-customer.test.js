@@ -2,7 +2,9 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { resolveRepairRequestCustomerId } = require("../utils/repair-request-customer");
+const {
+  resolveRepairRequestCustomerId,
+} = require("../utils/repair-request-customer");
 
 test("links a repair request only to the verified account in its valid customer session", async () => {
   let lookup;
@@ -18,7 +20,7 @@ test("links a repair request only to the verified account in its valid customer 
       lookup = { customerId, email };
       return { id: 42 };
     },
-    email: " CUSTOMER@example.com "
+    email: " CUSTOMER@example.com ",
   });
 
   assert.equal(id, 42);
@@ -35,7 +37,7 @@ test("does not link a public request by email when no customer session exists", 
       lookedUp = true;
       return { id: 42 };
     },
-    email: "customer@example.com"
+    email: "customer@example.com",
   });
 
   assert.equal(id, null);
@@ -52,7 +54,7 @@ test("does not accept a customer token when JWT_SECRET is missing", async () => 
       return { customerId: 42 };
     },
     findVerifiedCustomer: async () => ({ id: 42 }),
-    email: "customer@example.com"
+    email: "customer@example.com",
   });
 
   assert.equal(id, null);
@@ -69,7 +71,7 @@ test("does not link an invalid or expired customer session", async () => {
     findVerifiedCustomer: async () => {
       assert.fail("Customer lookup must not run for an invalid session");
     },
-    email: "customer@example.com"
+    email: "customer@example.com",
   });
 
   assert.equal(id, null);
@@ -85,7 +87,7 @@ test("does not link a session whose account email does not match the submitted e
       assert.equal(email, "someone-else@example.com");
       return null;
     },
-    email: "someone-else@example.com"
+    email: "someone-else@example.com",
   });
 
   assert.equal(id, null);

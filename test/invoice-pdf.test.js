@@ -19,7 +19,6 @@ test("invoicePdfEscape safely converts nullish and numeric values", () => {
   assert.equal(invoicePdfEscape(123), "123");
 });
 
-
 test("buildInvoicePdf creates a valid PDF document with invoice details", () => {
   const pdf = buildInvoicePdf({
     invoice_number: "HT-2026-001",
@@ -30,7 +29,14 @@ test("buildInvoicePdf creates a valid PDF document with invoice details", () => 
     subtotal: 100,
     vat_total: 21,
     total: 121,
-    lines: [{ description: "Screen repair", quantity: 1, unitPrice: 100, vatRate: 21 }]
+    lines: [
+      {
+        description: "Screen repair",
+        quantity: 1,
+        unitPrice: 100,
+        vatRate: 21,
+      },
+    ],
   });
   const source = pdf.toString("latin1");
   assert.ok(Buffer.isBuffer(pdf));
@@ -50,7 +56,7 @@ test("buildInvoicePdf paginates invoice lines in groups of ten to preserve summa
     description: "Item " + (index + 1),
     quantity: 1,
     unitPrice: 10,
-    vatRate: 21
+    vatRate: 21,
   }));
   const pdf = buildInvoicePdf({
     invoice_number: "HT-MULTI",
@@ -59,7 +65,7 @@ test("buildInvoicePdf paginates invoice lines in groups of ten to preserve summa
     subtotal: 120,
     vat_total: 25.2,
     total: 145.2,
-    lines
+    lines,
   }).toString("latin1");
   assert.equal((pdf.match(/\/Type \/Page /g) || []).length, 2);
   assert.match(pdf, /Item 10/);
@@ -76,7 +82,7 @@ test("buildInvoicePdf escapes customer-controlled PDF text", () => {
     subtotal: 1,
     vat_total: 0,
     total: 1,
-    lines: []
+    lines: [],
   }).toString("latin1");
   assert.ok(pdf.includes("HT-\\(A\\)\\\\B"));
   assert.ok(pdf.includes("Test \\(Customer\\)\\\\Name"));
@@ -108,7 +114,7 @@ test("buildInvoicePdf prints separate company customer and seller profile detail
       kvkNumber: "87654321",
       vatId: "NL987654321B01",
       iban: "NL00TEST",
-      website: "https://homs-tech.nl"
+      website: "https://homs-tech.nl",
     },
     payment_method: "bank",
     payment_status: "unpaid",
@@ -116,9 +122,24 @@ test("buildInvoicePdf prints separate company customer and seller profile detail
     subtotal: 100,
     vat_total: 21,
     total: 121,
-    lines: [{ description: "Screen repair", quantity: 1, unitPrice: 100, vatRate: 21 }]
+    lines: [
+      {
+        description: "Screen repair",
+        quantity: 1,
+        unitPrice: 100,
+        vatRate: 21,
+      },
+    ],
   }).toString("latin1");
-  for (const value of ["Example BV","Jane Example","NL123456789B01","Example HOMS TECH BV","87654321","NL00TEST","VERVALDATUM"]) {
+  for (const value of [
+    "Example BV",
+    "Jane Example",
+    "NL123456789B01",
+    "Example HOMS TECH BV",
+    "87654321",
+    "NL00TEST",
+    "VERVALDATUM",
+  ]) {
     assert.ok(pdf.includes(value), "PDF should contain " + value);
   }
 });

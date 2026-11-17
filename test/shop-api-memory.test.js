@@ -15,7 +15,10 @@ test("Shop catalog API selects only shopProducts from site settings", () => {
   assert.notEqual(start, -1, "dedicated Shop API view must exist");
   assert.notEqual(end, -1, "Shop API view must end before the cart view");
   const route = serverSource.slice(start, end);
-  assert.match(route, /SELECT data->'shopProducts' AS shop_products FROM site_settings WHERE id=1/);
+  assert.match(
+    route,
+    /SELECT data->'shopProducts' AS shop_products FROM site_settings WHERE id=1/,
+  );
   assert.match(route, /sanitizePublicSiteData\(\{\s*shopProducts:/);
   assert.doesNotMatch(route, /SELECT\s+data\s+FROM\s+site_settings/i);
   assert.doesNotMatch(route, /SELECT\s+\*\s+FROM\s+site_settings/i);

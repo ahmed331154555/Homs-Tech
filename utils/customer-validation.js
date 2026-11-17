@@ -3,13 +3,16 @@
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function validateAdminCustomerInput(input, { requirePassword = false } = {}) {
-  const body = input && typeof input === "object" && !Array.isArray(input) ? input : {};
+  const body =
+    input && typeof input === "object" && !Array.isArray(input) ? input : {};
   const customer = {
     name: String(body.name || "").trim(),
-    email: String(body.email || "").trim().toLowerCase(),
+    email: String(body.email || "")
+      .trim()
+      .toLowerCase(),
     phone: String(body.phone || "").trim(),
     address: String(body.address || "").trim(),
-    password: String(body.password || "")
+    password: String(body.password || ""),
   };
 
   if (!customer.name || !customer.email) {

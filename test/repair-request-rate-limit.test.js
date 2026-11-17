@@ -2,7 +2,9 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { checkRepairRequestRateLimit } = require("../utils/repair-request-rate-limit");
+const {
+  checkRepairRequestRateLimit,
+} = require("../utils/repair-request-rate-limit");
 
 test("repair quote rate limit allows five requests per IP in the window", () => {
   const originalNow = Date.now;

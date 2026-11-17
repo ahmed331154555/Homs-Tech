@@ -2,15 +2,28 @@
 
 const { sanitizeStoredAdminPermissions } = require("./admin-permissions");
 
-function createAdminAuth({ jwt, getAdminUsername, getJwtSecret, pool, logError = console.error }) {
+function createAdminAuth({
+  jwt,
+  getAdminUsername,
+  getJwtSecret,
+  pool,
+  logError = console.error,
+}) {
   if (!jwt || typeof jwt.verify !== "function") {
     throw new TypeError("A JWT verifier is required.");
   }
-  if (typeof getAdminUsername !== "function" || typeof getJwtSecret !== "function") {
-    throw new TypeError("Admin username and JWT secret providers are required.");
+  if (
+    typeof getAdminUsername !== "function" ||
+    typeof getJwtSecret !== "function"
+  ) {
+    throw new TypeError(
+      "Admin username and JWT secret providers are required.",
+    );
   }
   if (!pool || typeof pool.query !== "function") {
-    throw new TypeError("A database pool is required for admin permission refresh.");
+    throw new TypeError(
+      "A database pool is required for admin permission refresh.",
+    );
   }
 
   function getSuperAdminUser(username) {
@@ -28,7 +41,7 @@ function createAdminAuth({ jwt, getAdminUsername, getJwtSecret, pool, logError =
       id: user.id || null,
       username: user.username,
       role: user.role || "admin",
-      permissions: Array.isArray(user.permissions) ? user.permissions : []
+      permissions: Array.isArray(user.permissions) ? user.permissions : [],
     };
   }
 
@@ -48,12 +61,13 @@ function createAdminAuth({ jwt, getAdminUsername, getJwtSecret, pool, logError =
     if (
       user.role === "superadmin" ||
       user.username === String(getAdminUsername() || "")
-    ) return user;
+    )
+      return user;
 
     try {
       const result = await pool.query(
         "SELECT id,username,role,permissions,active FROM admin_users WHERE id=$1 OR LOWER(username)=LOWER($2) LIMIT 1",
-        [user.id || 0, user.username || ""]
+        [user.id || 0, user.username || ""],
       );
       if (!result.rows.length || !result.rows[0].active) return null;
       const admin = result.rows[0];
@@ -61,7 +75,7 @@ function createAdminAuth({ jwt, getAdminUsername, getJwtSecret, pool, logError =
         id: admin.id,
         username: admin.username,
         role: admin.role || "admin",
-        permissions: sanitizeStoredAdminPermissions(admin.permissions)
+        permissions: sanitizeStoredAdminPermissions(admin.permissions),
       };
     } catch (error) {
       // Fail closed: a database error must never preserve stale permissions.
@@ -76,7 +90,9 @@ function createAdminAuth({ jwt, getAdminUsername, getJwtSecret, pool, logError =
       if (!user) return res.status(401).json({ error: "Not authenticated" });
       user = await refreshAdminUserFromDb(user);
       if (!user) {
-        return res.status(401).json({ error: "Admin account is inactive or no longer exists." });
+        return res
+          .status(401)
+          .json({ error: "Admin account is inactive or no longer exists." });
       }
       if (
         user.role === "superadmin" ||
@@ -87,12 +103,16 @@ function createAdminAuth({ jwt, getAdminUsername, getJwtSecret, pool, logError =
         req.admin = user;
         return next();
       }
-      const section = String(req.headers["x-homs-admin-section"] || "").trim().toLowerCase();
+      const section = String(req.headers["x-homs-admin-section"] || "")
+        .trim()
+        .toLowerCase();
       if (section === "phones" && user.permissions.includes("phones.update")) {
         req.admin = user;
         return next();
       }
-      return res.status(403).json({ error: "Geen toestemming voor deze wijziging." });
+      return res
+        .status(403)
+        .json({ error: "Geen toestemming voor deze wijziging." });
     } catch (error) {
       return res.status(401).json({ error: "Not authenticated" });
     }
@@ -106,7 +126,9 @@ function createAdminAuth({ jwt, getAdminUsername, getJwtSecret, pool, logError =
         if (!user) return res.status(401).json({ error: "Not authenticated" });
         user = await refreshAdminUserFromDb(user);
         if (!user) {
-          return res.status(401).json({ error: "Admin account is inactive or no longer exists." });
+          return res
+            .status(401)
+            .json({ error: "Admin account is inactive or no longer exists." });
         }
         if (
           user.role === "superadmin" ||
@@ -118,7 +140,9 @@ function createAdminAuth({ jwt, getAdminUsername, getJwtSecret, pool, logError =
           req.admin = user;
           return next();
         }
-        return res.status(403).json({ error: "Geen toestemming voor deze actie." });
+        return res
+          .status(403)
+          .json({ error: "Geen toestemming voor deze actie." });
       } catch (error) {
         return res.status(401).json({ error: "Not authenticated" });
       }
@@ -131,7 +155,7 @@ function createAdminAuth({ jwt, getAdminUsername, getJwtSecret, pool, logError =
     requireAuth,
     requirePermission,
     refreshAdminUserFromDb,
-    requireSiteOrPhoneUpdate
+    requireSiteOrPhoneUpdate,
   };
 }
 

@@ -6,7 +6,7 @@ function sanitizeDevicesCatalogData(source) {
     phone: input.phone || "",
     whatsapp: input.whatsapp || "",
     businessName: input.businessName || input.siteName || "HOMS TECH",
-    tagline: input.tagline || "Telefoonreparatie aan huis"
+    tagline: input.tagline || "Telefoonreparatie aan huis",
   };
 
   if (Array.isArray(input.phones)) {
@@ -15,10 +15,26 @@ function sanitizeDevicesCatalogData(source) {
 
       const compact = {};
       const allowedFields = [
-        "id", "name", "brand", "active", "warranty", "garantie",
-        "description", "price", "salePrice", "sellPrice", "verkoopprijs",
-        "storage", "geheugen", "color", "kleur", "condition", "conditie",
-        "stock", "image", "imageUrl"
+        "id",
+        "name",
+        "brand",
+        "active",
+        "warranty",
+        "garantie",
+        "description",
+        "price",
+        "salePrice",
+        "sellPrice",
+        "verkoopprijs",
+        "storage",
+        "geheugen",
+        "color",
+        "kleur",
+        "condition",
+        "conditie",
+        "stock",
+        "image",
+        "imageUrl",
       ];
 
       for (const key of allowedFields) {
@@ -28,17 +44,22 @@ function sanitizeDevicesCatalogData(source) {
       }
 
       if (Array.isArray(phone.images)) {
-        compact.images = phone.images.filter(image => typeof image === "string" && image).slice(0, 1);
+        compact.images = phone.images
+          .filter((image) => typeof image === "string" && image)
+          .slice(0, 1);
       }
 
       if (Array.isArray(phone.conditionOptions)) {
         compact.conditionOptions = phone.conditionOptions
-          .filter((option) => option && option.active !== false && option.available !== false)
+          .filter(
+            (option) =>
+              option && option.active !== false && option.available !== false,
+          )
           .map((option) => ({
             active: option.active,
             available: option.available,
             basePrice: option.basePrice,
-            conditionBasePrice: option.conditionBasePrice
+            conditionBasePrice: option.conditionBasePrice,
           }));
       }
 
@@ -50,21 +71,32 @@ function sanitizeDevicesCatalogData(source) {
             color: row.color,
             price: row.price,
             stock: row.stock,
-            active: row.active
+            active: row.active,
           }));
       }
 
-      if (phone.colorGalleryImages && typeof phone.colorGalleryImages === "object") {
+      if (
+        phone.colorGalleryImages &&
+        typeof phone.colorGalleryImages === "object"
+      ) {
         compact.colorGalleryImages = {};
-        for (const [color, gallery] of Object.entries(phone.colorGalleryImages)) {
+        for (const [color, gallery] of Object.entries(
+          phone.colorGalleryImages,
+        )) {
           if (Array.isArray(gallery)) {
-            const firstImage = gallery.find(image => typeof image === "string" && image);
+            const firstImage = gallery.find(
+              (image) => typeof image === "string" && image,
+            );
             if (firstImage) compact.colorGalleryImages[color] = [firstImage];
           }
         }
       }
 
-      if (phone.colorImages && typeof phone.colorImages === "object" && !Array.isArray(phone.colorImages)) {
+      if (
+        phone.colorImages &&
+        typeof phone.colorImages === "object" &&
+        !Array.isArray(phone.colorImages)
+      ) {
         compact.colorImages = {};
         for (const [color, image] of Object.entries(phone.colorImages)) {
           if (typeof image === "string") compact.colorImages[color] = image;
@@ -74,7 +106,7 @@ function sanitizeDevicesCatalogData(source) {
       if (Array.isArray(phone.colorOptions)) {
         compact.colorOptions = phone.colorOptions.map((option) => ({
           label: option?.label,
-          image: option?.image
+          image: option?.image,
         }));
       }
 
@@ -86,7 +118,7 @@ function sanitizeDevicesCatalogData(source) {
     output.devices = input.devices.map((device) => ({
       name: device?.name,
       brand: device?.brand,
-      price: device?.price
+      price: device?.price,
     }));
   }
 
@@ -105,14 +137,14 @@ function sanitizeCartStockData(products) {
             id: variant?.id,
             sku: variant?.sku,
             quality: variant?.quality,
-            stock: variant?.stock
+            stock: variant?.stock,
           }))
-        : []
+        : [],
     };
   });
 }
 
 module.exports = {
   sanitizeDevicesCatalogData,
-  sanitizeCartStockData
+  sanitizeCartStockData,
 };

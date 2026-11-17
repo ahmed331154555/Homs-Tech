@@ -6,7 +6,7 @@ const {
   paypalEncryptionKey,
   encryptPayPalSecret,
   decryptPayPalSecret,
-  getPayPalBaseUrl
+  getPayPalBaseUrl,
 } = require("../utils/payment-secrets");
 
 test("PayPal encryption key is a stable 32-byte digest of JWT_SECRET", () => {

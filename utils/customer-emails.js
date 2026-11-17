@@ -4,9 +4,13 @@ function createCustomerEmails({
   getEnv = () => process.env,
   fetchImpl = global.fetch,
   escapeHtml,
-  logInfo = console.log
+  logInfo = console.log,
 }) {
-  if (typeof getEnv !== "function" || typeof fetchImpl !== "function" || typeof escapeHtml !== "function") {
+  if (
+    typeof getEnv !== "function" ||
+    typeof fetchImpl !== "function" ||
+    typeof escapeHtml !== "function"
+  ) {
     throw new TypeError("Customer email dependencies are required.");
   }
 
@@ -19,8 +23,8 @@ function createCustomerEmails({
     const response = await fetchImpl("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         from,
@@ -36,13 +40,15 @@ function createCustomerEmails({
             <p><strong>Team HOMS TECH</strong></p>
             <p style="font-size:12px;color:#64748b">https://homs-tech.nl</p>
           </div>
-        `
-      })
+        `,
+      }),
     });
 
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(`Resend verification email error ${response.status}: ${JSON.stringify(data)}`);
+      throw new Error(
+        `Resend verification email error ${response.status}: ${JSON.stringify(data)}`,
+      );
     }
     logInfo("Customer verification email sent:", data.id || "ok");
   }
@@ -59,8 +65,8 @@ function createCustomerEmails({
     const response = await fetchImpl("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         from,
@@ -78,13 +84,15 @@ function createCustomerEmails({
             <hr style="border:0;border-top:1px solid #e5e7eb;margin:24px 0">
             <p style="font-size:12px;color:#64748b">Website: <a href="https://homs-tech.nl" style="color:#2563eb">https://homs-tech.nl</a></p>
           </div>
-        `
-      })
+        `,
+      }),
     });
 
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(`Resend error ${response.status}: ${JSON.stringify(data)}`);
+      throw new Error(
+        `Resend error ${response.status}: ${JSON.stringify(data)}`,
+      );
     }
     logInfo("Welcome email sent:", data.id || "ok");
   }

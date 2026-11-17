@@ -6,7 +6,7 @@ const { createBoundedRateLimiter } = require("./bounded-rate-limit");
 const allowLiveChat = createBoundedRateLimiter({
   windowMs: 15 * 60 * 1000,
   maxRequests: 30,
-  maxEntries: 5000
+  maxEntries: 5000,
 });
 
 function liveChatFirstReply() {

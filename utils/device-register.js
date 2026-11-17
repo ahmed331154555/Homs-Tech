@@ -1,7 +1,9 @@
 "use strict";
 
 function deviceText(value, max = 240) {
-  return String(value ?? "").trim().slice(0, max);
+  return String(value ?? "")
+    .trim()
+    .slice(0, max);
 }
 
 function deviceMoney(value) {

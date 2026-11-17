@@ -9,7 +9,7 @@ const MAX_ATTEMPTS = 10;
 const checkAttempt = createBoundedRateLimiter({
   windowMs: WINDOW_MS,
   maxRequests: MAX_ATTEMPTS,
-  maxEntries: 10000
+  maxEntries: 10000,
 });
 
 function checkAuthLoginRateLimit(scope, ip, now = Date.now()) {

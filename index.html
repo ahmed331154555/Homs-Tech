@@ -1,1162 +1,1476 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl" dir="ltr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Telefoonreparatie in Nederland | HOMS TECH</title>
-<meta name="description" content="HOMS TECH helpt met telefoonreparatie aan huis of via verzending. Bekijk reparaties, prijzen en toestellen. Betrouwbare service in heel Nederland.">
-<meta name="keywords" content="telefoon reparatie, telefoon reparatie aan huis, iPhone reparatie, smartphone reparatie, telefoon reparatie Nederland">
-<link rel="canonical" href="https://homs-tech.nl/">
-<style>
-:root{
- --navy:#071d2d;--navy2:#102d42;--blue:#2563eb;--blue2:#60a5fa;
- --bg:#f7f7f4;--text:#172330;--muted:#667784;--white:#fff;--line:#e5e9ed
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
-a{text-decoration:none;color:inherit}
-.container{max-width:1120px;margin:auto;padding:0 18px}
-button,input{font:inherit}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Telefoonreparatie in Nederland | HOMS TECH</title>
+    <meta
+      name="description"
+      content="HOMS TECH helpt met telefoonreparatie aan huis of via verzending. Bekijk reparaties, prijzen en toestellen. Betrouwbare service in heel Nederland."
+    />
+    <meta
+      name="keywords"
+      content="telefoon reparatie, telefoon reparatie aan huis, iPhone reparatie, smartphone reparatie, telefoon reparatie Nederland"
+    />
+    <link rel="canonical" href="https://homs-tech.nl/" />
+    <style>
+      :root{
+       --navy:#071d2d;--navy2:#102d42;--blue:#2563eb;--blue2:#60a5fa;
+       --bg:#f7f7f4;--text:#172330;--muted:#667784;--white:#fff;--line:#e5e9ed
+      }
+      *{box-sizing:border-box}
+      html{scroll-behavior:smooth}
+      body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+      a{text-decoration:none;color:inherit}
+      .container{max-width:1120px;margin:auto;padding:0 18px}
+      button,input{font:inherit}
 
-/* TOP BAR */
-.topbar{height:31px;background:#06131e;color:#fff;font-size:10px}
-.topbar .container{height:100%;display:flex;align-items:center;justify-content:center;gap:22px}
-.top-info{display:flex;gap:22px}.top-info span:before{content:"✓";color:var(--blue2);margin-right:5px}
-.top-rating{color:#dce9f5}
+      /* TOP BAR */
+      .topbar{height:31px;background:#06131e;color:#fff;font-size:10px}
+      .topbar .container{height:100%;display:flex;align-items:center;justify-content:center;gap:22px}
+      .top-info{display:flex;gap:22px}.top-info span:before{content:"✓";color:var(--blue2);margin-right:5px}
+      .top-rating{color:#dce9f5}
 
-/* HEADER */
-header{background:#fff;border-bottom:1px solid var(--line)}
-.header-main{height:76px;display:flex;align-items:center;gap:25px}
-.brand img{width:158px;height:auto;display:block}
-.search{width:275px;height:37px;border:1px solid #d9e0e5;background:#fafafa;display:flex;align-items:center;padding:0 12px;color:#7b8790}
-.search input{border:0;outline:0;background:transparent;width:100%;font-size:12px;min-width:0}
-.search button{border:0;background:var(--blue);color:#fff;font-size:11px;font-weight:800;padding:7px 12px;border-radius:5px;cursor:pointer}
-.header-actions{margin-left:auto;display:flex;gap:20px;align-items:center;font-size:12px;font-weight:700}
-.header-actions a{color:var(--text);white-space:nowrap}
-.header-actions a:hover{color:var(--blue)}
-.nav{height:45px;display:flex;align-items:center;gap:27px;font-size:12px;font-weight:700;overflow-x:auto;white-space:nowrap}
-.nav a:hover,.nav .active{color:var(--blue)}
-.nav .active{background:#edf4ff;padding:8px 11px;border-radius:5px}
+      /* HEADER */
+      header{background:#fff;border-bottom:1px solid var(--line)}
+      .header-main{height:76px;display:flex;align-items:center;gap:25px}
+      .brand img{width:158px;height:auto;display:block}
+      .search{width:275px;height:37px;border:1px solid #d9e0e5;background:#fafafa;display:flex;align-items:center;padding:0 12px;color:#7b8790}
+      .search input{border:0;outline:0;background:transparent;width:100%;font-size:12px;min-width:0}
+      .search button{border:0;background:var(--blue);color:#fff;font-size:11px;font-weight:800;padding:7px 12px;border-radius:5px;cursor:pointer}
+      .header-actions{margin-left:auto;display:flex;gap:20px;align-items:center;font-size:12px;font-weight:700}
+      .header-actions a{color:var(--text);white-space:nowrap}
+      .header-actions a:hover{color:var(--blue)}
+      .nav{height:45px;display:flex;align-items:center;gap:27px;font-size:12px;font-weight:700;overflow-x:auto;white-space:nowrap}
+      .nav a:hover,.nav .active{color:var(--blue)}
+      .nav .active{background:#edf4ff;padding:8px 11px;border-radius:5px}
 
-/* HERO */
-.hero{background:radial-gradient(ellipse at 76% 50%,#075db4 0%,#07345c 34%,#071d2d 75%);color:#fff}
-.hero-inner{min-height:285px;display:grid;grid-template-columns:1.45fr .85fr;align-items:center;gap:18px}
-.hero h1{letter-spacing:-1.2px}
-.hero h1{font-size:clamp(32px,3.8vw,44px);line-height:1.04;margin:0 0 14px;font-weight:900}
-.hero h1 span{color:#0787ff}
-#heroTop{color:#f8fbff}
-#heroBottom{color:#0787ff}
-.hero p{max-width:610px;color:#d6e3eb;font-size:15px;line-height:1.65}
-.actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:20px}
-.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 20px;border-radius:11px;border:0;font-weight:800;font-size:14px;cursor:pointer}
-.btn-blue{background:#005fcc;color:#fff}.btn-light{background:#fff;color:#102d42}
-.hero-device{height:275px;display:flex;align-items:center;justify-content:center;min-width:0;background:transparent!important;overflow:visible}
-.hero-device svg{width:100%;height:100%;display:block;overflow:visible}
+      /* HERO */
+      .hero{background:radial-gradient(ellipse at 76% 50%,#075db4 0%,#07345c 34%,#071d2d 75%);color:#fff}
+      .hero-inner{min-height:285px;display:grid;grid-template-columns:1.45fr .85fr;align-items:center;gap:18px}
+      .hero h1{letter-spacing:-1.2px}
+      .hero h1{font-size:clamp(32px,3.8vw,44px);line-height:1.04;margin:0 0 14px;font-weight:900}
+      .hero h1 span{color:#0787ff}
+      #heroTop{color:#f8fbff}
+      #heroBottom{color:#0787ff}
+      .hero p{max-width:610px;color:#d6e3eb;font-size:15px;line-height:1.65}
+      .actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:20px}
+      .btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 20px;border-radius:11px;border:0;font-weight:800;font-size:14px;cursor:pointer}
+      .btn-blue{background:#005fcc;color:#fff}.btn-light{background:#fff;color:#102d42}
+      .hero-device{height:275px;display:flex;align-items:center;justify-content:center;min-width:0;background:transparent!important;overflow:visible}
+      .hero-device svg{width:100%;height:100%;display:block;overflow:visible}
 
-/* TRUST */
-.trust{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:#fff;padding:13px 0;border-bottom:1px solid var(--line)}
-.trust-item{text-align:center;color:#566672;font-size:11px}.trust-item b{display:block;color:var(--blue);font-size:20px;margin-bottom:2px}
+      /* TRUST */
+      .trust{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:#fff;padding:13px 0;border-bottom:1px solid var(--line)}
+      .trust-item{text-align:center;color:#566672;font-size:11px}.trust-item b{display:block;color:var(--blue);font-size:20px;margin-bottom:2px}
 
-/* BANNERS */
-.promo{padding:28px 0 12px}
-.promo-grid{display:block}
-.promo-card{min-height:0;border-radius:22px;background:linear-gradient(110deg,#f8fbff 0%,#eef5ff 55%,#dcecff 100%);color:var(--navy);position:relative;overflow:hidden;padding:0;border:1px solid #dce8f6;box-shadow:0 14px 38px rgba(7,29,45,.09)}
-#homeBuybackBanner{display:grid;grid-template-columns:1.1fr .9fr;align-items:center;min-height:270px;padding:clamp(20px,2.5vw,32px);isolation:isolate}
-#homeBuybackBanner:before{content:"";position:absolute;z-index:-1;width:44%;height:120%;right:-5%;top:-10%;border-radius:50%;background:radial-gradient(ellipse,rgba(83,164,255,.25),rgba(206,228,255,.45) 55%,transparent 72%)}
-#homeBuybackBanner h2{font-size:clamp(30px,3.2vw,42px);line-height:1.02;letter-spacing:-1.2px;margin:0 0 12px;text-transform:none;font-weight:900;color:var(--navy);max-width:520px}
-#homeBuybackBanner h2 span{color:#1672ed!important}
-#homeBuybackBanner p{font-size:13px;line-height:1.55;color:#52657d;max-width:470px;margin:0 0 16px}
-#homeBuybackBanner .btn{display:inline-flex;align-items:center;gap:12px;min-height:52px;margin-top:0;padding:0 22px;border-radius:11px;background:#005fcc;color:#fff;font-size:13px;box-shadow:0 8px 20px #0968f52b}
-#homeBuybackBanner .art{position:absolute;right:2%;top:4%;bottom:4%;width:40%;height:92%;display:flex;align-items:center;justify-content:center;font-size:0;opacity:1}
-#homeBuybackBanner .art:before{content:"";position:absolute;inset:0;background-image:url("/assets/homs-buyback-phones.svg");background-size:contain;background-position:center;background-repeat:no-repeat;transform:none;filter:drop-shadow(0 16px 16px rgba(15,35,70,.16))}
-#homeBuybackBanner .art:after{content:"";display:none}
-#homeRefurbishedBanner{display:none}
-#homeBuybackBanner .sell-home-benefits{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 17px}
-#homeBuybackBanner .sell-home-benefit{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;color:#26374c;max-width:165px}
-#homeBuybackBanner .sell-home-benefit i{font-style:normal;display:grid;place-items:center;width:32px;height:32px;flex:none;border-radius:11px;background:#e1efff;color:#0874f9;font-size:19px}
-@media(max-width:850px){.promo{padding:18px 0 8px}#homeBuybackBanner{grid-template-columns:1fr;min-height:0;padding:26px 22px 0}#homeBuybackBanner .art{position:relative;right:auto;top:auto;bottom:auto;width:100%;height:220px;margin-top:4px}#homeBuybackBanner .art:before{inset:0}#homeBuybackBanner .art:after{right:5%;top:2%;font-size:72px}#homeBuybackBanner .sell-home-benefits{gap:10px}#homeBuybackBanner .sell-home-benefit{max-width:48%}}
-@media(max-width:520px){#homeBuybackBanner{padding:22px 17px 0;border-radius:17px}#homeBuybackBanner h2{font-size:36px;letter-spacing:-1px}#homeBuybackBanner p{font-size:13px}#homeBuybackBanner .sell-home-benefits{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:18px}#homeBuybackBanner .sell-home-benefit{max-width:none}#homeBuybackBanner .art{height:260px}#homeBuybackBanner .btn{width:100%;justify-content:space-between}}
+      /* BANNERS */
+      .promo{padding:28px 0 12px}
+      .promo-grid{display:block}
+      .promo-card{min-height:0;border-radius:22px;background:linear-gradient(110deg,#f8fbff 0%,#eef5ff 55%,#dcecff 100%);color:var(--navy);position:relative;overflow:hidden;padding:0;border:1px solid #dce8f6;box-shadow:0 14px 38px rgba(7,29,45,.09)}
+      #homeBuybackBanner{display:grid;grid-template-columns:1.1fr .9fr;align-items:center;min-height:270px;padding:clamp(20px,2.5vw,32px);isolation:isolate}
+      #homeBuybackBanner:before{content:"";position:absolute;z-index:-1;width:44%;height:120%;right:-5%;top:-10%;border-radius:50%;background:radial-gradient(ellipse,rgba(83,164,255,.25),rgba(206,228,255,.45) 55%,transparent 72%)}
+      #homeBuybackBanner h2{font-size:clamp(30px,3.2vw,42px);line-height:1.02;letter-spacing:-1.2px;margin:0 0 12px;text-transform:none;font-weight:900;color:var(--navy);max-width:520px}
+      #homeBuybackBanner h2 span{color:#1672ed!important}
+      #homeBuybackBanner p{font-size:13px;line-height:1.55;color:#52657d;max-width:470px;margin:0 0 16px}
+      #homeBuybackBanner .btn{display:inline-flex;align-items:center;gap:12px;min-height:52px;margin-top:0;padding:0 22px;border-radius:11px;background:#005fcc;color:#fff;font-size:13px;box-shadow:0 8px 20px #0968f52b}
+      #homeBuybackBanner .art{position:absolute;right:2%;top:4%;bottom:4%;width:40%;height:92%;display:flex;align-items:center;justify-content:center;font-size:0;opacity:1}
+      #homeBuybackBanner .art:before{content:"";position:absolute;inset:0;background-image:url("/assets/homs-buyback-phones.svg");background-size:contain;background-position:center;background-repeat:no-repeat;transform:none;filter:drop-shadow(0 16px 16px rgba(15,35,70,.16))}
+      #homeBuybackBanner .art:after{content:"";display:none}
+      #homeRefurbishedBanner{display:none}
+      #homeBuybackBanner .sell-home-benefits{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 17px}
+      #homeBuybackBanner .sell-home-benefit{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;color:#26374c;max-width:165px}
+      #homeBuybackBanner .sell-home-benefit i{font-style:normal;display:grid;place-items:center;width:32px;height:32px;flex:none;border-radius:11px;background:#e1efff;color:#0874f9;font-size:19px}
+      @media(max-width:850px){.promo{padding:18px 0 8px}#homeBuybackBanner{grid-template-columns:1fr;min-height:0;padding:26px 22px 0}#homeBuybackBanner .art{position:relative;right:auto;top:auto;bottom:auto;width:100%;height:220px;margin-top:4px}#homeBuybackBanner .art:before{inset:0}#homeBuybackBanner .art:after{right:5%;top:2%;font-size:72px}#homeBuybackBanner .sell-home-benefits{gap:10px}#homeBuybackBanner .sell-home-benefit{max-width:48%}}
+      @media(max-width:520px){#homeBuybackBanner{padding:22px 17px 0;border-radius:17px}#homeBuybackBanner h2{font-size:36px;letter-spacing:-1px}#homeBuybackBanner p{font-size:13px}#homeBuybackBanner .sell-home-benefits{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:18px}#homeBuybackBanner .sell-home-benefit{max-width:none}#homeBuybackBanner .art{height:260px}#homeBuybackBanner .btn{width:100%;justify-content:space-between}}
 
-/* TITLES */
-.section{padding:25px 0}
-.section-title{text-align:center;font-size:25px;margin:7px 0 5px;font-weight:900}
-.section-title:after{content:"";display:block;width:36px;height:3px;background:var(--blue);margin:8px auto 17px;border-radius:4px}
+      /* TITLES */
+      .section{padding:25px 0}
+      .section-title{text-align:center;font-size:25px;margin:7px 0 5px;font-weight:900}
+      .section-title:after{content:"";display:block;width:36px;height:3px;background:var(--blue);margin:8px auto 17px;border-radius:4px}
 
-/* CATEGORIES */
-.category-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
-.category-card{height:125px;border-radius:10px;overflow:hidden;position:relative;background:linear-gradient(120deg,#081a28,#274861);display:block;color:#fff}
-.category-card:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#061522dc,#06152215)}
-.category-card img{position:absolute;right:0;bottom:0;width:55%;height:100%;object-fit:cover}
-.category-content{position:absolute;z-index:2;left:17px;top:17px}
-.category-content h3{font-size:17px;line-height:1.05;margin:0 0 12px;text-transform:uppercase}
-.category-content span{background:var(--blue);padding:6px 11px;border-radius:5px;font-size:10px;font-weight:800}
-.category-card.no-image{padding:17px}
+      /* CATEGORIES */
+      .category-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+      .category-card{height:125px;border-radius:10px;overflow:hidden;position:relative;background:linear-gradient(120deg,#081a28,#274861);display:block;color:#fff}
+      .category-card:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#061522dc,#06152215)}
+      .category-card img{position:absolute;right:0;bottom:0;width:55%;height:100%;object-fit:cover}
+      .category-content{position:absolute;z-index:2;left:17px;top:17px}
+      .category-content h3{font-size:17px;line-height:1.05;margin:0 0 12px;text-transform:uppercase}
+      .category-content span{background:var(--blue);padding:6px 11px;border-radius:5px;font-size:10px;font-weight:800}
+      .category-card.no-image{padding:17px}
 
-/* SINGLE FEATURED IPHONE CARD */
-.iphone-feature{display:grid;grid-template-columns:1.02fr .98fr;min-height:410px;overflow:hidden;border-radius:24px;background:linear-gradient(115deg,#fff 0%,#f7f9ff 42%,#e6edff 72%,#f1eaff 100%);border:1px solid #e1e8f5;box-shadow:0 20px 55px rgba(7,29,45,.11);color:var(--navy);text-decoration:none;transition:transform .2s ease,box-shadow .2s ease;position:relative}
-.iphone-feature:hover{transform:translateY(-2px);box-shadow:0 20px 48px rgba(7,29,45,.14)}
-.iphone-feature-copy{padding:clamp(24px,4vw,48px);align-self:center;position:relative;z-index:2}
-.iphone-feature-kicker{display:inline-block;background:#e8f1ff;color:#1265d8;border-radius:999px;padding:8px 13px;font-size:11px;font-weight:900;letter-spacing:.06em}
-.iphone-feature-copy h3{font-size:clamp(30px,4vw,48px);line-height:1.03;letter-spacing:-.04em;margin:22px 0 14px;font-weight:900}
-.iphone-feature-copy h3 span{color:#1672ed}
-.iphone-feature-copy p{max-width:460px;font-size:15px;line-height:1.65;color:#5c6b80;margin:0 0 20px}
-.iphone-feature-copy ul{list-style:none;padding:0;margin:0 0 25px;display:grid;gap:10px;color:#26374c;font-size:13px;font-weight:650}
-.iphone-feature-copy li{display:flex;align-items:center;gap:10px}
-.iphone-feature-copy li span{display:inline-grid;place-items:center;width:21px;height:21px;border-radius:50%;background:#e1efff;color:#0874f9;font-weight:900}
-.iphone-feature-cta{display:inline-flex;align-items:center;gap:24px;background:#0968f5;color:#fff;border-radius:999px;padding:14px 22px;font-weight:850;font-size:14px;box-shadow:0 8px 18px #0968f533}
-.iphone-feature-cta b{font-size:22px;line-height:12px}
-.iphone-feature-visual{min-height:410px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at 48% 58%,rgba(119,174,255,.48) 0%,rgba(211,224,255,.55) 38%,rgba(237,231,255,.2) 64%,transparent 74%)}.iphone-feature-visual:before{content:"";position:absolute;width:74%;height:26%;bottom:7%;left:13%;border-radius:50%;background:linear-gradient(100deg,rgba(89,190,255,.48),rgba(255,255,255,.9),rgba(164,115,255,.48));border:2px solid rgba(255,255,255,.88);box-shadow:0 14px 32px rgba(58,111,222,.2),inset 0 0 16px rgba(255,255,255,.95);transform:perspective(350px) rotateX(58deg)}
-.iphone-feature-real-image{display:block;width:100%;height:100%;min-height:410px;max-height:500px;object-fit:contain;padding:18px 14px 28px;position:relative;z-index:1;filter:drop-shadow(0 18px 18px rgba(15,35,70,.12))}
-@media(max-width:720px){.iphone-feature-real-image{min-height:300px;max-height:360px;padding:10px 10px 22px}}
-@media(max-width:720px){.iphone-feature{grid-template-columns:1fr;min-height:0}.iphone-feature-copy{padding:25px 22px 10px}.iphone-feature-copy h3{font-size:34px;margin-top:17px}.iphone-feature-copy p{font-size:14px}.iphone-feature-visual{min-height:300px}.iphone-feature-visual:before{width:78%;left:11%;bottom:5%}.iphone-feature-phone{width:155px;height:270px}.iphone-tag-before{left:3%;top:36%}.iphone-tag-after{right:3%;top:56%}.iphone-feature-cta{width:100%;justify-content:space-between}}
-/* PRODUCTS */
-.products{display:flex;gap:13px;overflow-x:auto;scroll-snap-type:x mandatory;padding:3px 2px 15px;scrollbar-width:thin;scroll-behavior:auto}
-.products.auto-moving{scroll-behavior:auto;overflow-x:hidden;cursor:default;scrollbar-width:none}.products.auto-moving::-webkit-scrollbar{display:none}
-.products.auto-moving .product{flex:0 0 205px}
-.products::-webkit-scrollbar{height:6px}.products::-webkit-scrollbar-thumb{background:#b9c7d2;border-radius:20px}
-.product{flex:0 0 205px;scroll-snap-align:start;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:0 4px 15px #071d2d0b}
-.product-img{height:160px;background:#f0f3f5;display:flex;align-items:center;justify-content:center}
-.product-img img{width:100%;height:100%;object-fit:contain}
-.phone-placeholder{width:61px;height:112px;border:4px solid #172631;border-radius:14px;background:linear-gradient(145deg,#6eb5e5,#173f5d);position:relative}
-.phone-placeholder:before{content:"";position:absolute;top:4px;left:18px;width:18px;height:4px;border-radius:4px;background:#111}
-.product-body{padding:12px}.product h3{margin:0 0 3px;font-size:14px}.meta{font-size:10px;color:var(--muted)}
-.price{font-size:16px;font-weight:900;margin:8px 0}.buy{width:100%;border:0;background:var(--blue);color:#fff;padding:9px;border-radius:5px;font-size:11px;font-weight:800;cursor:pointer}
-.product-nav{display:flex;justify-content:flex-end;gap:5px;margin-bottom:6px}.product-nav button{width:28px;height:26px;border:0;background:var(--navy);color:#fff;border-radius:4px}
+      /* SINGLE FEATURED IPHONE CARD */
+      .iphone-feature{display:grid;grid-template-columns:1.02fr .98fr;min-height:410px;overflow:hidden;border-radius:24px;background:linear-gradient(115deg,#fff 0%,#f7f9ff 42%,#e6edff 72%,#f1eaff 100%);border:1px solid #e1e8f5;box-shadow:0 20px 55px rgba(7,29,45,.11);color:var(--navy);text-decoration:none;transition:transform .2s ease,box-shadow .2s ease;position:relative}
+      .iphone-feature:hover{transform:translateY(-2px);box-shadow:0 20px 48px rgba(7,29,45,.14)}
+      .iphone-feature-copy{padding:clamp(24px,4vw,48px);align-self:center;position:relative;z-index:2}
+      .iphone-feature-kicker{display:inline-block;background:#e8f1ff;color:#1265d8;border-radius:999px;padding:8px 13px;font-size:11px;font-weight:900;letter-spacing:.06em}
+      .iphone-feature-copy h3{font-size:clamp(30px,4vw,48px);line-height:1.03;letter-spacing:-.04em;margin:22px 0 14px;font-weight:900}
+      .iphone-feature-copy h3 span{color:#1672ed}
+      .iphone-feature-copy p{max-width:460px;font-size:15px;line-height:1.65;color:#5c6b80;margin:0 0 20px}
+      .iphone-feature-copy ul{list-style:none;padding:0;margin:0 0 25px;display:grid;gap:10px;color:#26374c;font-size:13px;font-weight:650}
+      .iphone-feature-copy li{display:flex;align-items:center;gap:10px}
+      .iphone-feature-copy li span{display:inline-grid;place-items:center;width:21px;height:21px;border-radius:50%;background:#e1efff;color:#0874f9;font-weight:900}
+      .iphone-feature-cta{display:inline-flex;align-items:center;gap:24px;background:#0968f5;color:#fff;border-radius:999px;padding:14px 22px;font-weight:850;font-size:14px;box-shadow:0 8px 18px #0968f533}
+      .iphone-feature-cta b{font-size:22px;line-height:12px}
+      .iphone-feature-visual{min-height:410px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at 48% 58%,rgba(119,174,255,.48) 0%,rgba(211,224,255,.55) 38%,rgba(237,231,255,.2) 64%,transparent 74%)}.iphone-feature-visual:before{content:"";position:absolute;width:74%;height:26%;bottom:7%;left:13%;border-radius:50%;background:linear-gradient(100deg,rgba(89,190,255,.48),rgba(255,255,255,.9),rgba(164,115,255,.48));border:2px solid rgba(255,255,255,.88);box-shadow:0 14px 32px rgba(58,111,222,.2),inset 0 0 16px rgba(255,255,255,.95);transform:perspective(350px) rotateX(58deg)}
+      .iphone-feature-real-image{display:block;width:100%;height:100%;min-height:410px;max-height:500px;object-fit:contain;padding:18px 14px 28px;position:relative;z-index:1;filter:drop-shadow(0 18px 18px rgba(15,35,70,.12))}
+      @media(max-width:720px){.iphone-feature-real-image{min-height:300px;max-height:360px;padding:10px 10px 22px}}
+      @media(max-width:720px){.iphone-feature{grid-template-columns:1fr;min-height:0}.iphone-feature-copy{padding:25px 22px 10px}.iphone-feature-copy h3{font-size:34px;margin-top:17px}.iphone-feature-copy p{font-size:14px}.iphone-feature-visual{min-height:300px}.iphone-feature-visual:before{width:78%;left:11%;bottom:5%}.iphone-feature-phone{width:155px;height:270px}.iphone-tag-before{left:3%;top:36%}.iphone-tag-after{right:3%;top:56%}.iphone-feature-cta{width:100%;justify-content:space-between}}
+      /* PRODUCTS */
+      .products{display:flex;gap:13px;overflow-x:auto;scroll-snap-type:x mandatory;padding:3px 2px 15px;scrollbar-width:thin;scroll-behavior:auto}
+      .products.auto-moving{scroll-behavior:auto;overflow-x:hidden;cursor:default;scrollbar-width:none}.products.auto-moving::-webkit-scrollbar{display:none}
+      .products.auto-moving .product{flex:0 0 205px}
+      .products::-webkit-scrollbar{height:6px}.products::-webkit-scrollbar-thumb{background:#b9c7d2;border-radius:20px}
+      .product{flex:0 0 205px;scroll-snap-align:start;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:0 4px 15px #071d2d0b}
+      .product-img{height:160px;background:#f0f3f5;display:flex;align-items:center;justify-content:center}
+      .product-img img{width:100%;height:100%;object-fit:contain}
+      .phone-placeholder{width:61px;height:112px;border:4px solid #172631;border-radius:14px;background:linear-gradient(145deg,#6eb5e5,#173f5d);position:relative}
+      .phone-placeholder:before{content:"";position:absolute;top:4px;left:18px;width:18px;height:4px;border-radius:4px;background:#111}
+      .product-body{padding:12px}.product h3{margin:0 0 3px;font-size:14px}.meta{font-size:10px;color:var(--muted)}
+      .price{font-size:16px;font-weight:900;margin:8px 0}.buy{width:100%;border:0;background:var(--blue);color:#fff;padding:9px;border-radius:5px;font-size:11px;font-weight:800;cursor:pointer}
+      .product-nav{display:flex;justify-content:flex-end;gap:5px;margin-bottom:6px}.product-nav button{width:28px;height:26px;border:0;background:var(--navy);color:#fff;border-radius:4px}
 
-/* HOME SERVICE */
-.home-banner{margin:18px 0;background:var(--navy);color:#fff;border-radius:10px;padding:22px 27px;display:flex;align-items:center;justify-content:space-between}
-.home-banner h2{font-size:20px;margin:0 0 3px}.home-banner p{font-size:11px;color:#cbd9e2;margin:0}
+      /* HOME SERVICE */
+      .home-banner{margin:18px 0;background:var(--navy);color:#fff;border-radius:10px;padding:22px 27px;display:flex;align-items:center;justify-content:space-between}
+      .home-banner h2{font-size:20px;margin:0 0 3px}.home-banner p{font-size:11px;color:#cbd9e2;margin:0}
 
-/* SERVICES */
-.services{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.service{background:#fff;border:1px solid var(--line);border-radius:9px;text-align:center;padding:19px}
-.service-icon{font-size:26px;margin-bottom:7px}.service strong{font-size:12px}
-.service{min-width:0;padding:14px 12px;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;overflow:hidden}
-.service-photo{display:block;width:100%;height:125px;object-fit:contain;object-position:center;background:#f7f9fb;border-radius:7px;margin:0 0 10px;padding:2px;box-sizing:border-box}
-.service strong{display:block;min-height:30px;line-height:1.35;font-size:12px;overflow-wrap:anywhere}
+      /* SERVICES */
+      .services{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+      .service{background:#fff;border:1px solid var(--line);border-radius:9px;text-align:center;padding:19px}
+      .service-icon{font-size:26px;margin-bottom:7px}.service strong{font-size:12px}
+      .service{min-width:0;padding:14px 12px;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;overflow:hidden}
+      .service-photo{display:block;width:100%;height:125px;object-fit:contain;object-position:center;background:#f7f9fb;border-radius:7px;margin:0 0 10px;padding:2px;box-sizing:border-box}
+      .service strong{display:block;min-height:30px;line-height:1.35;font-size:12px;overflow-wrap:anywhere}
 
-/* WHY */
-.why{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.why-card{background:#fff;border:1px solid var(--line);border-radius:9px;padding:18px;text-align:center}.why-card b{font-size:23px;color:var(--blue);display:block}.why-card strong{display:block;font-size:12px;margin:5px}.why-card small{color:var(--muted);font-size:10px}
+      /* WHY */
+      .why{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.why-card{background:#fff;border:1px solid var(--line);border-radius:9px;padding:18px;text-align:center}.why-card b{font-size:23px;color:var(--blue);display:block}.why-card strong{display:block;font-size:12px;margin:5px}.why-card small{color:var(--muted);font-size:10px}
 
-/* FOOTER */
-footer{margin-top:25px;background:var(--navy);color:#fff;padding:35px 0 18px}
-.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:25px}.footer-logo{font-size:22px;font-weight:900}.footer-logo span{color:var(--blue2)}
-footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:#b9c8d2;line-height:1.8}footer ul{list-style:none;padding:0;margin:0}
-.copyright{border-top:1px solid #ffffff1c;margin-top:22px;padding-top:12px;color:#91a5b2;font-size:9px;display:flex;justify-content:space-between}
+      /* FOOTER */
+      footer{margin-top:25px;background:var(--navy);color:#fff;padding:35px 0 18px}
+      .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:25px}.footer-logo{font-size:22px;font-weight:900}.footer-logo span{color:var(--blue2)}
+      footer h3{font-size:12px;margin:0 0 9px}footer p,footer li{font-size:10px;color:#b9c8d2;line-height:1.8}footer ul{list-style:none;padding:0;margin:0}
+      .copyright{border-top:1px solid #ffffff1c;margin-top:22px;padding-top:12px;color:#91a5b2;font-size:9px;display:flex;justify-content:space-between}
 
-/* MOBILE */
-@media(max-width:850px){
- .top-info span:nth-child(n+3){display:none}.header-main{height:auto;padding:12px 0;flex-wrap:wrap}.search{order:3;width:100%}.header-actions{margin-left:auto}
- .hero-inner{grid-template-columns:1fr;text-align:center;padding:30px 0 24px;gap:8px}.hero h1{font-size:clamp(27px,7.2vw,36px);line-height:1.08;letter-spacing:-.7px;margin-bottom:12px}.hero p{margin:0 auto;max-width:560px;font-size:14px;line-height:1.55;padding:0 4px}.actions{justify-content:center;margin-top:16px}.hero-device{display:flex;height:155px;margin-top:2px;background:transparent!important}.phone{width:78px;height:142px;border-width:4px;border-radius:19px;transform:rotate(8deg);box-shadow:12px 16px 28px #0007}.phone:before{top:4px;width:32px;height:9px}
- .promo-grid{grid-template-columns:1fr}.promo-card{min-height:210px}
- .category-grid{grid-template-columns:1fr 1fr}.services,.why{grid-template-columns:1fr 1fr}.footer-grid{grid-template-columns:1fr 1fr}
-}
-@media(max-width:520px){
- .top-rating{display:none}.category-grid{grid-template-columns:1fr}.services,.why{grid-template-columns:1fr 1fr}
- .home-banner{display:block;text-align:center}.home-banner .btn{margin-top:12px}
- .footer-grid{grid-template-columns:1fr}.copyright{display:block}.copyright span{display:block;margin-top:5px}
-}
+      /* MOBILE */
+      @media(max-width:850px){
+       .top-info span:nth-child(n+3){display:none}.header-main{height:auto;padding:12px 0;flex-wrap:wrap}.search{order:3;width:100%}.header-actions{margin-left:auto}
+       .hero-inner{grid-template-columns:1fr;text-align:center;padding:30px 0 24px;gap:8px}.hero h1{font-size:clamp(27px,7.2vw,36px);line-height:1.08;letter-spacing:-.7px;margin-bottom:12px}.hero p{margin:0 auto;max-width:560px;font-size:14px;line-height:1.55;padding:0 4px}.actions{justify-content:center;margin-top:16px}.hero-device{display:flex;height:155px;margin-top:2px;background:transparent!important}.phone{width:78px;height:142px;border-width:4px;border-radius:19px;transform:rotate(8deg);box-shadow:12px 16px 28px #0007}.phone:before{top:4px;width:32px;height:9px}
+       .promo-grid{grid-template-columns:1fr}.promo-card{min-height:210px}
+       .category-grid{grid-template-columns:1fr 1fr}.services,.why{grid-template-columns:1fr 1fr}.footer-grid{grid-template-columns:1fr 1fr}
+      }
+      @media(max-width:520px){
+       .top-rating{display:none}.category-grid{grid-template-columns:1fr}.services,.why{grid-template-columns:1fr 1fr}
+       .home-banner{display:block;text-align:center}.home-banner .btn{margin-top:12px}
+       .footer-grid{grid-template-columns:1fr}.copyright{display:block}.copyright span{display:block;margin-top:5px}
+      }
 
-/* HOMS TECH — clean, wide before/after comparison */
-.screen-before-after{width:100%;max-width:1120px;margin:22px auto 30px;padding:0;background:transparent;border:0;border-radius:0;box-shadow:none;text-align:center}
-.screen-ba-stage{position:relative;width:100%;max-width:none;aspect-ratio:16/7.8;height:auto;margin:0 auto;border-radius:clamp(16px,2.5vw,28px);overflow:hidden;background:#fff;box-shadow:0 12px 34px rgba(7,29,45,.08);cursor:ew-resize;touch-action:pan-y;user-select:none;-webkit-user-select:none}
-.screen-ba-photo{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;object-position:center;background:transparent;pointer-events:none}
-.screen-ba-after{clip-path:inset(0 0 0 50%)}
-.screen-ba-divider{position:absolute;z-index:6;top:0;bottom:0;left:50%;width:3px;background:rgba(255,255,255,.96);box-shadow:0 0 18px rgba(37,99,235,.5);transform:translateX(-50%);display:flex;align-items:center;justify-content:center;pointer-events:none}
-.screen-ba-knob{width:58px;height:58px;border:3px solid #fff;border-radius:50%;background:linear-gradient(145deg,#fff 0%,#eaf2ff 100%);color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:25px;font-weight:900;box-shadow:0 7px 24px rgba(0,0,0,.28)}
-.screen-ba-stage:focus-visible{outline:3px solid #2563eb;outline-offset:5px}
-@media(max-width:600px){.screen-before-after{margin:18px auto 24px}.screen-ba-stage{aspect-ratio:1.35/1;border-radius:18px}.screen-ba-knob{width:48px;height:48px;font-size:21px}}
-/* Approved hero layout: keep the text readable and the phone artwork crisp on mobile. */
-@media(max-width:850px){.hero{background:radial-gradient(ellipse at 50% 100%,#123e5b 0%,#071d2d 78%)}.hero-inner{grid-template-columns:1fr;text-align:center;padding:28px 0 20px;gap:8px;min-height:0}.hero h1{font-size:clamp(27px,7.2vw,36px);line-height:1.08;letter-spacing:-.7px;margin-bottom:12px}.hero p{margin:0 auto;max-width:560px;font-size:14px;line-height:1.55;padding:0 4px}.actions{justify-content:center;margin-top:16px;gap:9px}.btn{font-size:12px;padding:11px 13px}.hero-device{display:flex;height:150px;margin-top:0;background:transparent!important}.hero-device svg{max-width:340px}}
-@media(max-width:520px){.hero-inner{padding:24px 0 15px}.hero h1{font-size:clamp(26px,7vw,32px)}.hero p{font-size:13px}.actions{gap:8px}.btn{font-size:11px;padding:11px 12px}.hero-device{height:132px}}
+      /* HOMS TECH — clean, wide before/after comparison */
+      .screen-before-after{width:100%;max-width:1120px;margin:22px auto 30px;padding:0;background:transparent;border:0;border-radius:0;box-shadow:none;text-align:center}
+      .screen-ba-stage{position:relative;width:100%;max-width:none;aspect-ratio:16/7.8;height:auto;margin:0 auto;border-radius:clamp(16px,2.5vw,28px);overflow:hidden;background:#fff;box-shadow:0 12px 34px rgba(7,29,45,.08);cursor:ew-resize;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+      .screen-ba-photo{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;object-position:center;background:transparent;pointer-events:none}
+      .screen-ba-after{clip-path:inset(0 0 0 50%)}
+      .screen-ba-divider{position:absolute;z-index:6;top:0;bottom:0;left:50%;width:3px;background:rgba(255,255,255,.96);box-shadow:0 0 18px rgba(37,99,235,.5);transform:translateX(-50%);display:flex;align-items:center;justify-content:center;pointer-events:none}
+      .screen-ba-knob{width:58px;height:58px;border:3px solid #fff;border-radius:50%;background:linear-gradient(145deg,#fff 0%,#eaf2ff 100%);color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:25px;font-weight:900;box-shadow:0 7px 24px rgba(0,0,0,.28)}
+      .screen-ba-stage:focus-visible{outline:3px solid #2563eb;outline-offset:5px}
+      @media(max-width:600px){.screen-before-after{margin:18px auto 24px}.screen-ba-stage{aspect-ratio:1.35/1;border-radius:18px}.screen-ba-knob{width:48px;height:48px;font-size:21px}}
+      /* Approved hero layout: keep the text readable and the phone artwork crisp on mobile. */
+      @media(max-width:850px){.hero{background:radial-gradient(ellipse at 50% 100%,#123e5b 0%,#071d2d 78%)}.hero-inner{grid-template-columns:1fr;text-align:center;padding:28px 0 20px;gap:8px;min-height:0}.hero h1{font-size:clamp(27px,7.2vw,36px);line-height:1.08;letter-spacing:-.7px;margin-bottom:12px}.hero p{margin:0 auto;max-width:560px;font-size:14px;line-height:1.55;padding:0 4px}.actions{justify-content:center;margin-top:16px;gap:9px}.btn{font-size:12px;padding:11px 13px}.hero-device{display:flex;height:150px;margin-top:0;background:transparent!important}.hero-device svg{max-width:340px}}
+      @media(max-width:520px){.hero-inner{padding:24px 0 15px}.hero h1{font-size:clamp(26px,7vw,32px)}.hero p{font-size:13px}.actions{gap:8px}.btn{font-size:11px;padding:11px 12px}.hero-device{height:132px}}
 
-/* HOMS TECH buyback banner — refined navy/blue treatment */
-#homeBuybackBanner{
-  position:relative;
-  isolation:isolate;
-  display:grid;
-  grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);
-  align-items:center;
-  gap:clamp(18px,3vw,42px);
-  min-height:390px;
-  padding:clamp(28px,4vw,54px);
-  overflow:hidden;
-  border:1px solid rgba(75,156,255,.38);
-  border-radius:24px;
-  color:#fff;
-  background:
-    radial-gradient(ellipse at 84% 48%,rgba(18,107,255,.72) 0%,rgba(9,58,143,.36) 37%,transparent 66%),
-    linear-gradient(112deg,#061727 0%,#071d2d 48%,#092b58 100%);
-  box-shadow:0 20px 48px rgba(7,29,45,.22),inset 0 1px 0 rgba(255,255,255,.12);
-}
-#homeBuybackBanner:before{
-  content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;
-  background:linear-gradient(120deg,transparent 48%,rgba(20,111,255,.18) 49%,transparent 72%);
-}
-#homeBuybackBanner .sell-home-copy{position:relative;z-index:2;max-width:610px}
-#homeBuybackBanner .sell-home-copy>span:first-child{
-  display:inline-flex!important;align-items:center;gap:8px;
-  margin:0 0 20px!important;padding:8px 12px!important;
-  border:1px solid rgba(78,165,255,.42);border-radius:8px!important;
-  color:#d9ecff!important;background:rgba(25,107,215,.22)!important;
-  font-size:11px!important;letter-spacing:.12em!important;
-}
-#homeBuybackBanner h2{
-  max-width:580px;margin:0 0 16px;
-  color:#fff;font-size:clamp(36px,4.4vw,58px);
-  font-weight:900;line-height:.99;letter-spacing:-1.8px;
-}
-#homeBuybackBanner h2 span{color:#18a8ff!important}
-#homeBuybackBanner p{
-  max-width:540px;margin:0 0 22px;
-  color:#d7e5f5;font-size:clamp(13px,1.2vw,16px);line-height:1.65;
-}
-#homeBuybackBanner .sell-home-benefits{
-  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:12px;margin:0 0 24px;
-}
-#homeBuybackBanner .sell-home-benefit{
-  display:flex;flex-direction:column;align-items:flex-start;gap:8px;
-  max-width:none;color:#fff;font-size:12px;line-height:1.35;font-weight:800;
-}
-#homeBuybackBanner .sell-home-benefit i{
-  width:42px;height:42px;border:1px solid rgba(87,175,255,.45);
-  border-radius:12px;background:linear-gradient(145deg,#0d5fbd,#07336b);
-  color:#55c5ff;font-size:21px;box-shadow:0 6px 16px rgba(0,83,190,.28);
-}
-#homeBuybackBanner .sell-home-benefit small{
-  color:#b8cde2!important;font-size:10px;line-height:1.4;
-}
-#homeBuybackBanner .btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:16px;
-  min-height:54px;padding:0 24px;border:1px solid rgba(105,188,255,.5);
-  border-radius:12px;background:linear-gradient(110deg,#0878f9,#0752df);
-  color:#fff;font-size:14px;font-weight:850;
-  box-shadow:0 10px 26px rgba(0,84,220,.34);
-  transition:transform .2s ease,box-shadow .2s ease;
-}
-#homeBuybackBanner .btn:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(0,102,255,.42)}
-#homeBuybackBanner .art{
-  position:absolute;z-index:1;right:1.5%;top:3%;bottom:3%;
-  width:47%;height:94%;display:block;opacity:1;pointer-events:none;
-}
-#homeBuybackBanner .art:before{
-  content:"";position:absolute;inset:0;
-  background-image:url("/assets/homs-buyback-phones.svg");
-  background-size:contain;background-position:center;background-repeat:no-repeat;
-  filter:drop-shadow(0 18px 22px rgba(0,0,0,.35));
-}
-#homeBuybackBanner .art:after{display:none}
-@media(max-width:850px){
-  #homeBuybackBanner{grid-template-columns:1fr;min-height:0;gap:8px;padding:28px 24px 12px}
-  #homeBuybackBanner .sell-home-copy{max-width:none}
-  #homeBuybackBanner .art{position:relative;right:auto;top:auto;bottom:auto;width:100%;height:260px;margin:0 auto}
-  #homeBuybackBanner .sell-home-benefits{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
-  #homeBuybackBanner .sell-home-benefit{font-size:11px}
-}
-@media(max-width:520px){
-  #homeBuybackBanner{padding:23px 18px 8px;border-radius:18px}
-  #homeBuybackBanner .sell-home-copy>span:first-child{margin-bottom:15px!important}
-  #homeBuybackBanner h2{font-size:38px;letter-spacing:-1.1px}
-  #homeBuybackBanner p{font-size:13px;line-height:1.6;margin-bottom:18px}
-  #homeBuybackBanner .sell-home-benefits{grid-template-columns:1fr;gap:11px;margin-bottom:20px}
-  #homeBuybackBanner .sell-home-benefit{display:grid;grid-template-columns:40px 1fr;align-items:center;gap:10px;font-size:12px}
-  #homeBuybackBanner .sell-home-benefit i{width:38px;height:38px}
-  #homeBuybackBanner .sell-home-benefit small{display:inline!important}
-  #homeBuybackBanner .btn{width:100%;justify-content:space-between;min-height:52px}
-  #homeBuybackBanner .art{height:245px;margin-top:4px}
-}
-@media(prefers-reduced-motion:reduce){
-  #homeBuybackBanner .btn{transition:none}
-  #homeBuybackBanner .btn:hover{transform:none}
-}
-
-
-/* Buyback artwork: use the newly uploaded transparent phone cutout */
-#homeBuybackBanner .art{
-  position:absolute;z-index:1;right:1.5%;top:2%;bottom:2%;
-  width:49%;height:96%;display:block;opacity:1;pointer-events:none;
-}
-#homeBuybackBanner .art:before{
-  content:"";position:absolute;inset:0;
-  background-image:url("/assets/images/menu/file_0000000033a48243a393208fc0e7fc72.png");
-  background-size:contain;background-position:center;background-repeat:no-repeat;
-  filter:drop-shadow(0 18px 22px rgba(0,0,0,.32));
-}
-#homeBuybackBanner .art:after{display:none}
-@media(max-width:850px){
-  #homeBuybackBanner .art{position:relative;right:auto;top:auto;bottom:auto;width:100%;height:270px;margin:0 auto}
-}
-@media(max-width:520px){
-  #homeBuybackBanner .art{height:245px;margin-top:4px}
-}
+      /* HOMS TECH buyback banner — refined navy/blue treatment */
+      #homeBuybackBanner{
+        position:relative;
+        isolation:isolate;
+        display:grid;
+        grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);
+        align-items:center;
+        gap:clamp(18px,3vw,42px);
+        min-height:390px;
+        padding:clamp(28px,4vw,54px);
+        overflow:hidden;
+        border:1px solid rgba(75,156,255,.38);
+        border-radius:24px;
+        color:#fff;
+        background:
+          radial-gradient(ellipse at 84% 48%,rgba(18,107,255,.72) 0%,rgba(9,58,143,.36) 37%,transparent 66%),
+          linear-gradient(112deg,#061727 0%,#071d2d 48%,#092b58 100%);
+        box-shadow:0 20px 48px rgba(7,29,45,.22),inset 0 1px 0 rgba(255,255,255,.12);
+      }
+      #homeBuybackBanner:before{
+        content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;
+        background:linear-gradient(120deg,transparent 48%,rgba(20,111,255,.18) 49%,transparent 72%);
+      }
+      #homeBuybackBanner .sell-home-copy{position:relative;z-index:2;max-width:610px}
+      #homeBuybackBanner .sell-home-copy>span:first-child{
+        display:inline-flex!important;align-items:center;gap:8px;
+        margin:0 0 20px!important;padding:8px 12px!important;
+        border:1px solid rgba(78,165,255,.42);border-radius:8px!important;
+        color:#d9ecff!important;background:rgba(25,107,215,.22)!important;
+        font-size:11px!important;letter-spacing:.12em!important;
+      }
+      #homeBuybackBanner h2{
+        max-width:580px;margin:0 0 16px;
+        color:#fff;font-size:clamp(36px,4.4vw,58px);
+        font-weight:900;line-height:.99;letter-spacing:-1.8px;
+      }
+      #homeBuybackBanner h2 span{color:#18a8ff!important}
+      #homeBuybackBanner p{
+        max-width:540px;margin:0 0 22px;
+        color:#d7e5f5;font-size:clamp(13px,1.2vw,16px);line-height:1.65;
+      }
+      #homeBuybackBanner .sell-home-benefits{
+        display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+        gap:12px;margin:0 0 24px;
+      }
+      #homeBuybackBanner .sell-home-benefit{
+        display:flex;flex-direction:column;align-items:flex-start;gap:8px;
+        max-width:none;color:#fff;font-size:12px;line-height:1.35;font-weight:800;
+      }
+      #homeBuybackBanner .sell-home-benefit i{
+        width:42px;height:42px;border:1px solid rgba(87,175,255,.45);
+        border-radius:12px;background:linear-gradient(145deg,#0d5fbd,#07336b);
+        color:#55c5ff;font-size:21px;box-shadow:0 6px 16px rgba(0,83,190,.28);
+      }
+      #homeBuybackBanner .sell-home-benefit small{
+        color:#b8cde2!important;font-size:10px;line-height:1.4;
+      }
+      #homeBuybackBanner .btn{
+        display:inline-flex;align-items:center;justify-content:center;gap:16px;
+        min-height:54px;padding:0 24px;border:1px solid rgba(105,188,255,.5);
+        border-radius:12px;background:linear-gradient(110deg,#0878f9,#0752df);
+        color:#fff;font-size:14px;font-weight:850;
+        box-shadow:0 10px 26px rgba(0,84,220,.34);
+        transition:transform .2s ease,box-shadow .2s ease;
+      }
+      #homeBuybackBanner .btn:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(0,102,255,.42)}
+      #homeBuybackBanner .art{
+        position:absolute;z-index:1;right:1.5%;top:3%;bottom:3%;
+        width:47%;height:94%;display:block;opacity:1;pointer-events:none;
+      }
+      #homeBuybackBanner .art:before{
+        content:"";position:absolute;inset:0;
+        background-image:url("/assets/homs-buyback-phones.svg");
+        background-size:contain;background-position:center;background-repeat:no-repeat;
+        filter:drop-shadow(0 18px 22px rgba(0,0,0,.35));
+      }
+      #homeBuybackBanner .art:after{display:none}
+      @media(max-width:850px){
+        #homeBuybackBanner{grid-template-columns:1fr;min-height:0;gap:8px;padding:28px 24px 12px}
+        #homeBuybackBanner .sell-home-copy{max-width:none}
+        #homeBuybackBanner .art{position:relative;right:auto;top:auto;bottom:auto;width:100%;height:260px;margin:0 auto}
+        #homeBuybackBanner .sell-home-benefits{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+        #homeBuybackBanner .sell-home-benefit{font-size:11px}
+      }
+      @media(max-width:520px){
+        #homeBuybackBanner{padding:23px 18px 8px;border-radius:18px}
+        #homeBuybackBanner .sell-home-copy>span:first-child{margin-bottom:15px!important}
+        #homeBuybackBanner h2{font-size:38px;letter-spacing:-1.1px}
+        #homeBuybackBanner p{font-size:13px;line-height:1.6;margin-bottom:18px}
+        #homeBuybackBanner .sell-home-benefits{grid-template-columns:1fr;gap:11px;margin-bottom:20px}
+        #homeBuybackBanner .sell-home-benefit{display:grid;grid-template-columns:40px 1fr;align-items:center;gap:10px;font-size:12px}
+        #homeBuybackBanner .sell-home-benefit i{width:38px;height:38px}
+        #homeBuybackBanner .sell-home-benefit small{display:inline!important}
+        #homeBuybackBanner .btn{width:100%;justify-content:space-between;min-height:52px}
+        #homeBuybackBanner .art{height:245px;margin-top:4px}
+      }
+      @media(prefers-reduced-motion:reduce){
+        #homeBuybackBanner .btn{transition:none}
+        #homeBuybackBanner .btn:hover{transform:none}
+      }
 
 
-/* Final typography and CTA polish for the homepage buyback card */
-#homeBuybackBanner .sell-home-copy{max-width:620px}
-#homeBuybackBanner .sell-home-copy>span:first-child{
-  text-transform:uppercase;font-weight:800;letter-spacing:.14em;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
-}
-#homeBuybackBanner h2{
-  font-size:clamp(39px,4.1vw,55px);
-  line-height:1.04;letter-spacing:-1.45px;
-  text-wrap:balance;margin-bottom:17px;
-}
-#homeBuybackBanner p{
-  max-width:510px;font-size:clamp(14px,1.15vw,15.5px);
-  line-height:1.72;letter-spacing:.005em;color:#dce9f7;
-}
-#homeBuybackBanner .sell-home-benefits{
-  gap:clamp(10px,1.5vw,18px);margin-top:24px;margin-bottom:27px;
-}
-#homeBuybackBanner .sell-home-benefit{
-  min-width:0;gap:10px;font-size:12px;font-weight:800;
-  line-height:1.45;letter-spacing:.005em;
-}
-#homeBuybackBanner .sell-home-benefit i{
-  display:grid;place-items:center;flex:0 0 42px;
-  width:42px;height:42px;font-style:normal;font-weight:900;
-  border:1px solid rgba(94,190,255,.48);
-  border-radius:13px;
-  background:linear-gradient(145deg,rgba(20,129,255,.45),rgba(5,54,112,.9));
-  color:#e5f5ff;text-shadow:0 1px 8px rgba(0,174,255,.55);
-  box-shadow:0 7px 18px rgba(0,84,190,.25),inset 0 1px 0 rgba(255,255,255,.16);
-}
-#homeBuybackBanner .sell-home-benefit small{
-  display:inline-block;margin-top:4px;
-  color:#b8cde2!important;font-size:10.5px;
-  font-weight:500;line-height:1.5;letter-spacing:0;
-}
-#homeBuybackBanner .btn{
-  position:relative;isolation:isolate;
-  min-height:56px;padding:0 22px;
-  gap:11px;border:1px solid rgba(122,198,255,.58);
-  border-radius:13px;
-  background:linear-gradient(105deg,#087bf9 0%,#075de8 55%,#064bc7 100%);
-  color:#fff!important;font-size:14px;font-weight:850;
-  letter-spacing:.005em;text-decoration:none;
-  box-shadow:0 11px 25px rgba(0,86,220,.3),inset 0 1px 0 rgba(255,255,255,.22);
-}
-#homeBuybackBanner .btn>span{
-  display:inline-grid;place-items:center;width:27px;height:27px;
-  border-radius:8px;background:rgba(255,255,255,.15);
-  color:#fff;font-size:18px;line-height:1;
-}
-#homeBuybackBanner .btn>b{
-  margin-left:4px;font-size:19px;line-height:1;
-  transition:transform .18s ease;
-}
-#homeBuybackBanner .btn:hover>b{transform:translateX(4px)}
-#homeBuybackBanner .btn:focus-visible{
-  outline:3px solid #fff;outline-offset:4px;
-  box-shadow:0 0 0 6px rgba(37,99,235,.55);
-}
-@media(max-width:850px){
-  #homeBuybackBanner h2{font-size:clamp(36px,6vw,46px)}
-  #homeBuybackBanner p{font-size:14px}
-}
-@media(max-width:520px){
-  #homeBuybackBanner h2{font-size:37px;line-height:1.05}
-  #homeBuybackBanner p{font-size:13.5px;line-height:1.65}
-  #homeBuybackBanner .sell-home-benefits{gap:12px;margin:18px 0 22px}
-  #homeBuybackBanner .sell-home-benefit{grid-template-columns:40px minmax(0,1fr);font-size:12px}
-  #homeBuybackBanner .sell-home-benefit i{width:38px;height:38px;flex-basis:38px}
-  #homeBuybackBanner .sell-home-benefit small{font-size:10px}
-  #homeBuybackBanner .btn{width:100%;min-height:54px;padding:0 15px;font-size:13px}
-}
-@media(prefers-reduced-motion:reduce){
-  #homeBuybackBanner .btn>b{transition:none}
-}
-
-</style>
+      /* Buyback artwork: use the newly uploaded transparent phone cutout */
+      #homeBuybackBanner .art{
+        position:absolute;z-index:1;right:1.5%;top:2%;bottom:2%;
+        width:49%;height:96%;display:block;opacity:1;pointer-events:none;
+      }
+      #homeBuybackBanner .art:before{
+        content:"";position:absolute;inset:0;
+        background-image:url("/assets/images/menu/file_0000000033a48243a393208fc0e7fc72.png");
+        background-size:contain;background-position:center;background-repeat:no-repeat;
+        filter:drop-shadow(0 18px 22px rgba(0,0,0,.32));
+      }
+      #homeBuybackBanner .art:after{display:none}
+      @media(max-width:850px){
+        #homeBuybackBanner .art{position:relative;right:auto;top:auto;bottom:auto;width:100%;height:270px;margin:0 auto}
+      }
+      @media(max-width:520px){
+        #homeBuybackBanner .art{height:245px;margin-top:4px}
+      }
 
 
-<style id="homs-topbar-marquee-final">
-/* HOMS TECH TOPBAR — exactly four messages, one pass, left-to-right order */
-.ht-topbar,.topbar{height:42px!important;background:#071d2d!important;color:#eaf4ff!important;overflow:hidden!important;width:100%!important;}
-.ht-topbar .ht-container,.topbar .container,.topbar .wrap{height:100%!important;max-width:1180px!important;margin:0 auto!important;overflow:hidden!important;}
-.ht-marquee,.top-info{height:100%!important;width:max-content!important;display:flex!important;align-items:center!important;gap:44px!important;white-space:nowrap!important;animation:htMarqueeOneWay 15s linear infinite!important;will-change:transform!important;}
-.ht-marquee-track{display:flex!important;align-items:center!important;gap:44px!important;white-space:nowrap!important;}
-.ht-marquee-item,.top-info span{font-size:14px!important;font-weight:800!important;letter-spacing:.1px!important;white-space:nowrap!important;color:#eaf4ff!important;}
-.ht-marquee-item b,.top-info span:before{color:#60a5fa!important;margin-right:7px!important;font-weight:900!important;}
-@keyframes htMarqueeOneWay{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
-@media(max-width:700px){.ht-topbar,.topbar{height:38px!important}.ht-marquee,.top-info{gap:28px!important;animation-duration:13s!important}.ht-marquee-track{gap:28px!important}.ht-marquee-item,.top-info span{font-size:13px!important}}
-@media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
-</style><style id="homepage-gpu-motion">
-#homePopularSection .products.auto-moving{
- overflow:hidden!important;
- display:block!important;
- position:relative!important;
- white-space:nowrap!important;
- scroll-behavior:auto!important;
- scrollbar-width:none;
- padding:3px 0 15px;
-}
-#homePopularSection .products.auto-moving::-webkit-scrollbar{display:none}
-#homePopularSection .products.auto-moving .home-motion-track{
- display:flex!important;
- flex-flow:row nowrap!important;
- align-items:stretch!important;
- gap:13px!important;
- width:max-content!important;
- min-width:max-content!important;
- height:auto!important;
- white-space:nowrap!important;
- will-change:transform;
- transform:translate3d(0,0,0);
-}
-#homePopularSection .products.auto-moving .home-motion-track>.product{
- flex:0 0 205px!important;
- width:205px!important;
- min-width:205px!important;
- max-width:205px!important;
- display:flex!important;
- flex-direction:column!important;
- box-sizing:border-box!important;
-}
-#homePopularSection .products.auto-moving .home-motion-track>.product .product-img{
- flex:0 0 170px!important;
- width:100%!important;
- height:170px!important;
- min-height:170px!important;
- display:flex!important;
- align-items:center!important;
- justify-content:center!important;
- overflow:hidden!important;
-}
-#homePopularSection .products.auto-moving .home-motion-track>.product .product-img img{
- display:block!important;
- visibility:visible!important;
- opacity:1!important;
- max-width:100%!important;
- height:auto!important;
- max-height:160px!important;
- width:auto!important;
- object-fit:contain!important;
-}
-@media(prefers-reduced-motion:reduce){
- #homePopularSection .products.auto-moving .home-motion-track{transform:none!important}
-}
+      /* Final typography and CTA polish for the homepage buyback card */
+      #homeBuybackBanner .sell-home-copy{max-width:620px}
+      #homeBuybackBanner .sell-home-copy>span:first-child{
+        text-transform:uppercase;font-weight:800;letter-spacing:.14em;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+      }
+      #homeBuybackBanner h2{
+        font-size:clamp(39px,4.1vw,55px);
+        line-height:1.04;letter-spacing:-1.45px;
+        text-wrap:balance;margin-bottom:17px;
+      }
+      #homeBuybackBanner p{
+        max-width:510px;font-size:clamp(14px,1.15vw,15.5px);
+        line-height:1.72;letter-spacing:.005em;color:#dce9f7;
+      }
+      #homeBuybackBanner .sell-home-benefits{
+        gap:clamp(10px,1.5vw,18px);margin-top:24px;margin-bottom:27px;
+      }
+      #homeBuybackBanner .sell-home-benefit{
+        min-width:0;gap:10px;font-size:12px;font-weight:800;
+        line-height:1.45;letter-spacing:.005em;
+      }
+      #homeBuybackBanner .sell-home-benefit i{
+        display:grid;place-items:center;flex:0 0 42px;
+        width:42px;height:42px;font-style:normal;font-weight:900;
+        border:1px solid rgba(94,190,255,.48);
+        border-radius:13px;
+        background:linear-gradient(145deg,rgba(20,129,255,.45),rgba(5,54,112,.9));
+        color:#e5f5ff;text-shadow:0 1px 8px rgba(0,174,255,.55);
+        box-shadow:0 7px 18px rgba(0,84,190,.25),inset 0 1px 0 rgba(255,255,255,.16);
+      }
+      #homeBuybackBanner .sell-home-benefit small{
+        display:inline-block;margin-top:4px;
+        color:#b8cde2!important;font-size:10.5px;
+        font-weight:500;line-height:1.5;letter-spacing:0;
+      }
+      #homeBuybackBanner .btn{
+        position:relative;isolation:isolate;
+        min-height:56px;padding:0 22px;
+        gap:11px;border:1px solid rgba(122,198,255,.58);
+        border-radius:13px;
+        background:linear-gradient(105deg,#087bf9 0%,#075de8 55%,#064bc7 100%);
+        color:#fff!important;font-size:14px;font-weight:850;
+        letter-spacing:.005em;text-decoration:none;
+        box-shadow:0 11px 25px rgba(0,86,220,.3),inset 0 1px 0 rgba(255,255,255,.22);
+      }
+      #homeBuybackBanner .btn>span{
+        display:inline-grid;place-items:center;width:27px;height:27px;
+        border-radius:8px;background:rgba(255,255,255,.15);
+        color:#fff;font-size:18px;line-height:1;
+      }
+      #homeBuybackBanner .btn>b{
+        margin-left:4px;font-size:19px;line-height:1;
+        transition:transform .18s ease;
+      }
+      #homeBuybackBanner .btn:hover>b{transform:translateX(4px)}
+      #homeBuybackBanner .btn:focus-visible{
+        outline:3px solid #fff;outline-offset:4px;
+        box-shadow:0 0 0 6px rgba(37,99,235,.55);
+      }
+      @media(max-width:850px){
+        #homeBuybackBanner h2{font-size:clamp(36px,6vw,46px)}
+        #homeBuybackBanner p{font-size:14px}
+      }
+      @media(max-width:520px){
+        #homeBuybackBanner h2{font-size:37px;line-height:1.05}
+        #homeBuybackBanner p{font-size:13.5px;line-height:1.65}
+        #homeBuybackBanner .sell-home-benefits{gap:12px;margin:18px 0 22px}
+        #homeBuybackBanner .sell-home-benefit{grid-template-columns:40px minmax(0,1fr);font-size:12px}
+        #homeBuybackBanner .sell-home-benefit i{width:38px;height:38px;flex-basis:38px}
+        #homeBuybackBanner .sell-home-benefit small{font-size:10px}
+        #homeBuybackBanner .btn{width:100%;min-height:54px;padding:0 15px;font-size:13px}
+      }
+      @media(prefers-reduced-motion:reduce){
+        #homeBuybackBanner .btn>b{transition:none}
+      }
+    </style>
 
-/* Stable continuous phone ticker: cards are rendered first, then animated separately. */
-#homePopularSection .products.auto-moving{display:block!important;position:relative!important;overflow:hidden!important;white-space:nowrap!important;scrollbar-width:none!important;touch-action:pan-y!important}
-#homePopularSection .products.auto-moving .home-motion-track{display:flex!important;flex-flow:row nowrap!important;align-items:stretch!important;width:max-content!important;min-width:max-content!important;gap:0!important;will-change:transform;animation:htPhoneTicker 42s linear infinite!important;transform:translate3d(0,0,0)}
-#homePopularSection .home-motion-group{display:flex!important;flex:0 0 auto!important;flex-flow:row nowrap!important;align-items:stretch!important;gap:13px!important;padding-right:13px!important}
-#homePopularSection .home-motion-group>.product{flex:0 0 205px!important;width:205px!important;min-width:205px!important;max-width:205px!important}
-#homePopularSection .products.auto-moving:hover .home-motion-track{animation-play-state:paused!important}
-@keyframes htPhoneTicker{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
-@media(max-width:700px){#homePopularSection .products.auto-moving .home-motion-track{animation-duration:34s!important}}
-@media(prefers-reduced-motion:reduce){#homePopularSection .products.auto-moving{overflow-x:auto!important;scrollbar-width:thin!important}#homePopularSection .products.auto-moving .home-motion-track{animation:none!important;transform:none!important}#homePopularSection .home-motion-group[aria-hidden="true"]{display:none!important}}
-</style>
-  <link rel="stylesheet" href="assets/homs-global-nav.css">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5361560605027063"
-     crossorigin="anonymous"></script>
+    <style id="homs-topbar-marquee-final">
+      /* HOMS TECH TOPBAR — exactly four messages, one pass, left-to-right order */
+      .ht-topbar,.topbar{height:42px!important;background:#071d2d!important;color:#eaf4ff!important;overflow:hidden!important;width:100%!important;}
+      .ht-topbar .ht-container,.topbar .container,.topbar .wrap{height:100%!important;max-width:1180px!important;margin:0 auto!important;overflow:hidden!important;}
+      .ht-marquee,.top-info{height:100%!important;width:max-content!important;display:flex!important;align-items:center!important;gap:44px!important;white-space:nowrap!important;animation:htMarqueeOneWay 15s linear infinite!important;will-change:transform!important;}
+      .ht-marquee-track{display:flex!important;align-items:center!important;gap:44px!important;white-space:nowrap!important;}
+      .ht-marquee-item,.top-info span{font-size:14px!important;font-weight:800!important;letter-spacing:.1px!important;white-space:nowrap!important;color:#eaf4ff!important;}
+      .ht-marquee-item b,.top-info span:before{color:#60a5fa!important;margin-right:7px!important;font-weight:900!important;}
+      @keyframes htMarqueeOneWay{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
+      @media(max-width:700px){.ht-topbar,.topbar{height:38px!important}.ht-marquee,.top-info{gap:28px!important;animation-duration:13s!important}.ht-marquee-track{gap:28px!important}.ht-marquee-item,.top-info span{font-size:13px!important}}
+      @media(prefers-reduced-motion:reduce){.ht-marquee,.top-info{animation:none!important;transform:none!important;margin:0 auto!important;justify-content:center!important;width:100%!important}}
+    </style>
+    <style id="homepage-gpu-motion">
+      #homePopularSection .products.auto-moving{
+       overflow:hidden!important;
+       display:block!important;
+       position:relative!important;
+       white-space:nowrap!important;
+       scroll-behavior:auto!important;
+       scrollbar-width:none;
+       padding:3px 0 15px;
+      }
+      #homePopularSection .products.auto-moving::-webkit-scrollbar{display:none}
+      #homePopularSection .products.auto-moving .home-motion-track{
+       display:flex!important;
+       flex-flow:row nowrap!important;
+       align-items:stretch!important;
+       gap:13px!important;
+       width:max-content!important;
+       min-width:max-content!important;
+       height:auto!important;
+       white-space:nowrap!important;
+       will-change:transform;
+       transform:translate3d(0,0,0);
+      }
+      #homePopularSection .products.auto-moving .home-motion-track>.product{
+       flex:0 0 205px!important;
+       width:205px!important;
+       min-width:205px!important;
+       max-width:205px!important;
+       display:flex!important;
+       flex-direction:column!important;
+       box-sizing:border-box!important;
+      }
+      #homePopularSection .products.auto-moving .home-motion-track>.product .product-img{
+       flex:0 0 170px!important;
+       width:100%!important;
+       height:170px!important;
+       min-height:170px!important;
+       display:flex!important;
+       align-items:center!important;
+       justify-content:center!important;
+       overflow:hidden!important;
+      }
+      #homePopularSection .products.auto-moving .home-motion-track>.product .product-img img{
+       display:block!important;
+       visibility:visible!important;
+       opacity:1!important;
+       max-width:100%!important;
+       height:auto!important;
+       max-height:160px!important;
+       width:auto!important;
+       object-fit:contain!important;
+      }
+      @media(prefers-reduced-motion:reduce){
+       #homePopularSection .products.auto-moving .home-motion-track{transform:none!important}
+      }
 
-<link rel="stylesheet" href="assets/homs-layout-system.css?v=20261109-accessibility">
-  <link rel="stylesheet" href="assets/homs-homepage-hero.css?v=20261108-4">
-  <script src="assets/homs-analytics-consent.js" defer></script>
+      /* Stable continuous phone ticker: cards are rendered first, then animated separately. */
+      #homePopularSection .products.auto-moving{display:block!important;position:relative!important;overflow:hidden!important;white-space:nowrap!important;scrollbar-width:none!important;touch-action:pan-y!important}
+      #homePopularSection .products.auto-moving .home-motion-track{display:flex!important;flex-flow:row nowrap!important;align-items:stretch!important;width:max-content!important;min-width:max-content!important;gap:0!important;will-change:transform;animation:htPhoneTicker 42s linear infinite!important;transform:translate3d(0,0,0)}
+      #homePopularSection .home-motion-group{display:flex!important;flex:0 0 auto!important;flex-flow:row nowrap!important;align-items:stretch!important;gap:13px!important;padding-right:13px!important}
+      #homePopularSection .home-motion-group>.product{flex:0 0 205px!important;width:205px!important;min-width:205px!important;max-width:205px!important}
+      #homePopularSection .products.auto-moving:hover .home-motion-track{animation-play-state:paused!important}
+      @keyframes htPhoneTicker{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+      @media(max-width:700px){#homePopularSection .products.auto-moving .home-motion-track{animation-duration:34s!important}}
+      @media(prefers-reduced-motion:reduce){#homePopularSection .products.auto-moving{overflow-x:auto!important;scrollbar-width:thin!important}#homePopularSection .products.auto-moving .home-motion-track{animation:none!important;transform:none!important}#homePopularSection .home-motion-group[aria-hidden="true"]{display:none!important}}
+    </style>
+    <link rel="stylesheet" href="assets/homs-global-nav.css" />
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5361560605027063"
+      crossorigin="anonymous"
+    ></script>
 
-<style id="homs-buyback-final-wave-layout">
-/* HOMS TECH buyback card — approved mobile order, vivid 3D benefits and animated blue waves */
-#homeBuybackBanner .sell-home-copy>span:first-child{display:none!important}
-#homeBuybackBanner .sell-home-benefits{
-  display:grid!important;
-  grid-template-columns:repeat(3,minmax(0,1fr))!important;
-  gap:12px!important;
-  margin:24px 0 24px!important;
-  position:relative;z-index:2;
-}
-#homeBuybackBanner .sell-home-benefit{
-  position:relative;isolation:isolate;overflow:hidden;
-  display:flex!important;flex-direction:column;align-items:center!important;justify-content:flex-start;
-  gap:10px!important;min-width:0;min-height:164px;max-width:none!important;
-  padding:14px 10px!important;border:1px solid rgba(145,207,255,.85);
-  border-radius:18px!important;
-  color:#102b48!important;text-align:center;
-  background:linear-gradient(135deg,#eaf5ff 0%,#cfe7ff 42%,#e8f4ff 72%,#b9dcff 100%)!important;
-  box-shadow:0 10px 22px rgba(0,12,40,.24),inset 0 1px 0 rgba(255,255,255,.92);
-}
-#homeBuybackBanner .sell-home-benefit:before,
-#homeBuybackBanner .sell-home-benefit:after{
-  content:"";position:absolute;z-index:-1;pointer-events:none;left:-35%;
-  width:170%;height:70%;border-radius:44%;filter:blur(1px);opacity:.58;
-}
-#homeBuybackBanner .sell-home-benefit:before{
-  top:45%;background:linear-gradient(90deg,rgba(40,151,255,.05),rgba(37,143,245,.4),rgba(255,255,255,.42),rgba(30,129,235,.14));
-  transform:rotate(-7deg);animation:htBuybackWave 7s ease-in-out infinite alternate;
-}
-#homeBuybackBanner .sell-home-benefit:after{
-  top:57%;background:linear-gradient(90deg,rgba(255,255,255,.15),rgba(87,177,255,.4),rgba(255,255,255,.24));
-  transform:rotate(6deg);animation:htBuybackWave2 9s ease-in-out infinite alternate;
-}
-@keyframes htBuybackWave{0%{translate:-5% 0;rotate:-2deg}100%{translate:8% -10%;rotate:3deg}}
-@keyframes htBuybackWave2{0%{translate:7% 5%;rotate:2deg}100%{translate:-7% -8%;rotate:-3deg}}
-#homeBuybackBanner .sell-home-benefit i{
-  display:grid!important;place-items:center;flex:0 0 66px!important;
-  width:66px!important;height:66px!important;margin:0!important;padding:0!important;
-  border:0!important;border-radius:17px!important;
-  background:radial-gradient(circle at 32% 20%,#f8fdff 0%,#c7e6ff 27%,#83bdff 100%)!important;
-  color:#fff!important;box-shadow:inset 0 2px 5px rgba(255,255,255,.95),0 6px 12px rgba(0,70,160,.18)!important;
-}
-#homeBuybackBanner .sell-home-benefit i svg{display:block;width:62px;height:62px;overflow:visible;filter:drop-shadow(0 5px 4px rgba(0,44,110,.22))}
-#homeBuybackBanner .benefit-divider{
-  display:block!important;flex:0 0 1px!important;width:76%!important;height:1px!important;
-  margin:0!important;
-  background:linear-gradient(90deg,transparent 0%,#78aee3 14%,#78aee3 86%,transparent 100%);
-  box-shadow:0 1px 0 rgba(255,255,255,.95);
-}
-#homeBuybackBanner .benefit-copy{
-  display:block!important;min-width:0;width:100%;
-  color:#10243c!important;font-size:12px!important;font-weight:850!important;line-height:1.3!important;
-}
-#homeBuybackBanner .benefit-copy small{
-  display:block!important;margin-top:5px!important;
-  color:#52677d!important;font-size:10.5px!important;font-weight:500!important;line-height:1.4!important;
-}
-#homeBuybackBanner #buybackBannerButton{
-  display:flex!important;align-items:center!important;justify-content:center!important;gap:14px!important;
-  width:min(100%,460px)!important;min-height:62px!important;margin:0 auto!important;padding:0 16px!important;
-  border:1px solid rgba(255,255,255,.98)!important;border-radius:999px!important;
-  color:#0758cb!important;background:linear-gradient(105deg,#fff 0%,#edf5ff 100%)!important;
-  font-size:16px!important;font-weight:850!important;letter-spacing:0!important;
-  box-shadow:0 0 0 4px rgba(255,255,255,.12),0 14px 30px rgba(0,9,30,.3),inset 0 1px 0 #fff!important;
-  text-decoration:none!important;
-}
-#homeBuybackBanner #buybackBannerButton .buyback-swap{
-  display:grid!important;place-items:center!important;flex:0 0 36px!important;
-  width:36px!important;height:36px!important;border-radius:50%!important;
-  background:linear-gradient(145deg,#dff0ff,#c4e0ff)!important;color:#0758cb!important;
-  font-size:24px!important;line-height:1!important;
-}
-#homeBuybackBanner #buybackBannerButton .buyback-label{display:inline!important;background:none!important;color:#0758cb!important;font-size:inherit!important}
-#homeBuybackBanner #buybackBannerButton>b{
-  display:grid!important;place-items:center!important;flex:0 0 38px!important;
-  width:38px!important;height:38px!important;margin:0!important;border-radius:50%!important;
-  background:linear-gradient(145deg,#168cff,#0752cf)!important;color:#fff!important;
-  font-size:22px!important;line-height:1!important;
-}
-@media(max-width:850px){
-  #homeBuybackBanner{
-    display:grid!important;grid-template-columns:minmax(0,1fr)!important;
-    grid-template-areas:"title" "description" "art" "benefits" "cta"!important;
-    gap:0!important;min-height:0!important;padding:25px 20px 20px!important;
-  }
-  #homeBuybackBanner>.sell-home-copy{display:contents!important}
-  #homeBuybackBanner h2{grid-area:title!important;max-width:none!important;margin:0 0 12px!important;text-align:left}
-  #homeBuybackBanner p{grid-area:description!important;max-width:none!important;margin:0 0 10px!important;text-align:left}
-  #homeBuybackBanner .art{
-    grid-area:art!important;position:relative!important;inset:auto!important;
-    width:100%!important;height:230px!important;margin:0 auto 8px!important;
-  }
-  #homeBuybackBanner .sell-home-benefits{
-    grid-area:benefits!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
-    gap:8px!important;margin:8px 0 20px!important;
-  }
-  #homeBuybackBanner .sell-home-benefit{
-    min-height:154px!important;padding:11px 7px!important;gap:8px!important;border-radius:16px!important;
-  }
-  #homeBuybackBanner .sell-home-benefit i{width:56px!important;height:56px!important;flex-basis:56px!important;border-radius:15px!important}
-  #homeBuybackBanner .sell-home-benefit i svg{width:53px;height:53px}
-  #homeBuybackBanner .benefit-copy{font-size:10.5px!important}
-  #homeBuybackBanner .benefit-copy small{font-size:9px!important}
-  #homeBuybackBanner #buybackBannerButton{grid-area:cta!important;width:100%!important;min-height:57px!important;font-size:14px!important}
-}
-@media(max-width:380px){
-  #homeBuybackBanner{padding:22px 13px 16px!important}
-  #homeBuybackBanner h2{font-size:34px!important}
-  #homeBuybackBanner .sell-home-benefits{gap:6px!important}
-  #homeBuybackBanner .sell-home-benefit{padding:9px 5px!important;min-height:148px!important}
-  #homeBuybackBanner .benefit-copy{font-size:9.5px!important}
-  #homeBuybackBanner .benefit-copy small{font-size:8.4px!important}
-}
-@media(prefers-reduced-motion:reduce){
-  #homeBuybackBanner .sell-home-benefit:before,#homeBuybackBanner .sell-home-benefit:after{animation:none!important}
-}
-</style>
+    <link
+      rel="stylesheet"
+      href="assets/homs-layout-system.css?v=20261109-accessibility"
+    />
+    <link rel="stylesheet" href="assets/homs-homepage-hero.css?v=20261108-4" />
+    <script src="assets/homs-analytics-consent.js" defer></script>
 
+    <style id="homs-buyback-final-wave-layout">
+      /* HOMS TECH buyback card — approved mobile order, vivid 3D benefits and animated blue waves */
+      #homeBuybackBanner .sell-home-copy>span:first-child{display:none!important}
+      #homeBuybackBanner .sell-home-benefits{
+        display:grid!important;
+        grid-template-columns:repeat(3,minmax(0,1fr))!important;
+        gap:12px!important;
+        margin:24px 0 24px!important;
+        position:relative;z-index:2;
+      }
+      #homeBuybackBanner .sell-home-benefit{
+        position:relative;isolation:isolate;overflow:hidden;
+        display:flex!important;flex-direction:column;align-items:center!important;justify-content:flex-start;
+        gap:10px!important;min-width:0;min-height:164px;max-width:none!important;
+        padding:14px 10px!important;border:1px solid rgba(145,207,255,.85);
+        border-radius:18px!important;
+        color:#102b48!important;text-align:center;
+        background:linear-gradient(135deg,#eaf5ff 0%,#cfe7ff 42%,#e8f4ff 72%,#b9dcff 100%)!important;
+        box-shadow:0 10px 22px rgba(0,12,40,.24),inset 0 1px 0 rgba(255,255,255,.92);
+      }
+      #homeBuybackBanner .sell-home-benefit:before,
+      #homeBuybackBanner .sell-home-benefit:after{
+        content:"";position:absolute;z-index:-1;pointer-events:none;left:-35%;
+        width:170%;height:70%;border-radius:44%;filter:blur(1px);opacity:.58;
+      }
+      #homeBuybackBanner .sell-home-benefit:before{
+        top:45%;background:linear-gradient(90deg,rgba(40,151,255,.05),rgba(37,143,245,.4),rgba(255,255,255,.42),rgba(30,129,235,.14));
+        transform:rotate(-7deg);animation:htBuybackWave 7s ease-in-out infinite alternate;
+      }
+      #homeBuybackBanner .sell-home-benefit:after{
+        top:57%;background:linear-gradient(90deg,rgba(255,255,255,.15),rgba(87,177,255,.4),rgba(255,255,255,.24));
+        transform:rotate(6deg);animation:htBuybackWave2 9s ease-in-out infinite alternate;
+      }
+      @keyframes htBuybackWave{0%{translate:-5% 0;rotate:-2deg}100%{translate:8% -10%;rotate:3deg}}
+      @keyframes htBuybackWave2{0%{translate:7% 5%;rotate:2deg}100%{translate:-7% -8%;rotate:-3deg}}
+      #homeBuybackBanner .sell-home-benefit i{
+        display:grid!important;place-items:center;flex:0 0 66px!important;
+        width:66px!important;height:66px!important;margin:0!important;padding:0!important;
+        border:0!important;border-radius:17px!important;
+        background:radial-gradient(circle at 32% 20%,#f8fdff 0%,#c7e6ff 27%,#83bdff 100%)!important;
+        color:#fff!important;box-shadow:inset 0 2px 5px rgba(255,255,255,.95),0 6px 12px rgba(0,70,160,.18)!important;
+      }
+      #homeBuybackBanner .sell-home-benefit i svg{display:block;width:62px;height:62px;overflow:visible;filter:drop-shadow(0 5px 4px rgba(0,44,110,.22))}
+      #homeBuybackBanner .benefit-divider{
+        display:block!important;flex:0 0 1px!important;width:76%!important;height:1px!important;
+        margin:0!important;
+        background:linear-gradient(90deg,transparent 0%,#78aee3 14%,#78aee3 86%,transparent 100%);
+        box-shadow:0 1px 0 rgba(255,255,255,.95);
+      }
+      #homeBuybackBanner .benefit-copy{
+        display:block!important;min-width:0;width:100%;
+        color:#10243c!important;font-size:12px!important;font-weight:850!important;line-height:1.3!important;
+      }
+      #homeBuybackBanner .benefit-copy small{
+        display:block!important;margin-top:5px!important;
+        color:#52677d!important;font-size:10.5px!important;font-weight:500!important;line-height:1.4!important;
+      }
+      #homeBuybackBanner #buybackBannerButton{
+        display:flex!important;align-items:center!important;justify-content:center!important;gap:14px!important;
+        width:min(100%,460px)!important;min-height:62px!important;margin:0 auto!important;padding:0 16px!important;
+        border:1px solid rgba(255,255,255,.98)!important;border-radius:999px!important;
+        color:#0758cb!important;background:linear-gradient(105deg,#fff 0%,#edf5ff 100%)!important;
+        font-size:16px!important;font-weight:850!important;letter-spacing:0!important;
+        box-shadow:0 0 0 4px rgba(255,255,255,.12),0 14px 30px rgba(0,9,30,.3),inset 0 1px 0 #fff!important;
+        text-decoration:none!important;
+      }
+      #homeBuybackBanner #buybackBannerButton .buyback-swap{
+        display:grid!important;place-items:center!important;flex:0 0 36px!important;
+        width:36px!important;height:36px!important;border-radius:50%!important;
+        background:linear-gradient(145deg,#dff0ff,#c4e0ff)!important;color:#0758cb!important;
+        font-size:24px!important;line-height:1!important;
+      }
+      #homeBuybackBanner #buybackBannerButton .buyback-label{display:inline!important;background:none!important;color:#0758cb!important;font-size:inherit!important}
+      #homeBuybackBanner #buybackBannerButton>b{
+        display:grid!important;place-items:center!important;flex:0 0 38px!important;
+        width:38px!important;height:38px!important;margin:0!important;border-radius:50%!important;
+        background:linear-gradient(145deg,#168cff,#0752cf)!important;color:#fff!important;
+        font-size:22px!important;line-height:1!important;
+      }
+      @media(max-width:850px){
+        #homeBuybackBanner{
+          display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+          grid-template-areas:"title" "description" "art" "benefits" "cta"!important;
+          gap:0!important;min-height:0!important;padding:25px 20px 20px!important;
+        }
+        #homeBuybackBanner>.sell-home-copy{display:contents!important}
+        #homeBuybackBanner h2{grid-area:title!important;max-width:none!important;margin:0 0 12px!important;text-align:left}
+        #homeBuybackBanner p{grid-area:description!important;max-width:none!important;margin:0 0 10px!important;text-align:left}
+        #homeBuybackBanner .art{
+          grid-area:art!important;position:relative!important;inset:auto!important;
+          width:100%!important;height:230px!important;margin:0 auto 8px!important;
+        }
+        #homeBuybackBanner .sell-home-benefits{
+          grid-area:benefits!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+          gap:8px!important;margin:8px 0 20px!important;
+        }
+        #homeBuybackBanner .sell-home-benefit{
+          min-height:154px!important;padding:11px 7px!important;gap:8px!important;border-radius:16px!important;
+        }
+        #homeBuybackBanner .sell-home-benefit i{width:56px!important;height:56px!important;flex-basis:56px!important;border-radius:15px!important}
+        #homeBuybackBanner .sell-home-benefit i svg{width:53px;height:53px}
+        #homeBuybackBanner .benefit-copy{font-size:10.5px!important}
+        #homeBuybackBanner .benefit-copy small{font-size:9px!important}
+        #homeBuybackBanner #buybackBannerButton{grid-area:cta!important;width:100%!important;min-height:57px!important;font-size:14px!important}
+      }
+      @media(max-width:380px){
+        #homeBuybackBanner{padding:22px 13px 16px!important}
+        #homeBuybackBanner h2{font-size:34px!important}
+        #homeBuybackBanner .sell-home-benefits{gap:6px!important}
+        #homeBuybackBanner .sell-home-benefit{padding:9px 5px!important;min-height:148px!important}
+        #homeBuybackBanner .benefit-copy{font-size:9.5px!important}
+        #homeBuybackBanner .benefit-copy small{font-size:8.4px!important}
+      }
+      @media(prefers-reduced-motion:reduce){
+        #homeBuybackBanner .sell-home-benefit:before,#homeBuybackBanner .sell-home-benefit:after{animation:none!important}
+      }
+    </style>
 
+    <style id="homs-buyback-heading-layout">
+      /* Buyback title: one strong horizontal line on every screen size. */
+      #homeBuybackBanner #buybackBannerTitle{
+        display:flex!important;
+        align-items:baseline!important;
+        flex-wrap:nowrap!important;
+        gap:.22em!important;
+        width:100%!important;
+        max-width:none!important;
+        margin:0 0 16px!important;
+        white-space:nowrap!important;
+        font-size:clamp(25px,7vw,46px)!important;
+        font-weight:900!important;
+        line-height:1.08!important;
+        letter-spacing:-1.35px!important;
+        text-align:left!important;
+      }
+      #homeBuybackBanner #buybackBannerTitle .buyback-title-main,
+      #homeBuybackBanner #buybackBannerTitle .buyback-title-accent{
+        display:inline!important;
+        flex:0 0 auto!important;
+        white-space:nowrap!important;
+      }
+      #homeBuybackBanner #buybackBannerTitle .buyback-title-main{color:#fff!important}
+      #homeBuybackBanner #buybackBannerTitle .buyback-title-accent{color:#18a8ff!important}
+      @media(min-width:851px){
+        #homeBuybackBanner #buybackBannerTitle{font-size:clamp(34px,3.5vw,46px)!important}
+      }
+      @media(max-width:380px){
+        #homeBuybackBanner #buybackBannerTitle{
+          font-size:clamp(23px,6.8vw,26px)!important;
+          letter-spacing:-1.1px!important;
+          gap:.18em!important;
+        }
+      }
+    </style>
 
-
-
-<style id="homs-buyback-heading-layout">
-/* Buyback title: one strong horizontal line on every screen size. */
-#homeBuybackBanner #buybackBannerTitle{
-  display:flex!important;
-  align-items:baseline!important;
-  flex-wrap:nowrap!important;
-  gap:.22em!important;
-  width:100%!important;
-  max-width:none!important;
-  margin:0 0 16px!important;
-  white-space:nowrap!important;
-  font-size:clamp(25px,7vw,46px)!important;
-  font-weight:900!important;
-  line-height:1.08!important;
-  letter-spacing:-1.35px!important;
-  text-align:left!important;
-}
-#homeBuybackBanner #buybackBannerTitle .buyback-title-main,
-#homeBuybackBanner #buybackBannerTitle .buyback-title-accent{
-  display:inline!important;
-  flex:0 0 auto!important;
-  white-space:nowrap!important;
-}
-#homeBuybackBanner #buybackBannerTitle .buyback-title-main{color:#fff!important}
-#homeBuybackBanner #buybackBannerTitle .buyback-title-accent{color:#18a8ff!important}
-@media(min-width:851px){
-  #homeBuybackBanner #buybackBannerTitle{font-size:clamp(34px,3.5vw,46px)!important}
-}
-@media(max-width:380px){
-  #homeBuybackBanner #buybackBannerTitle{
-    font-size:clamp(23px,6.8vw,26px)!important;
-    letter-spacing:-1.1px!important;
-    gap:.18em!important;
-  }
-}
-</style>
-
-<link rel="stylesheet" href="/assets/customer-reviews-widget.css?v=2">
-</head>
-<body>
-
-<div class="topbar" id="homeTopBar"><div class="container"><div class="top-info" id="homeTopInfo"></div></div></div>
-
-<header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div><nav class="ht-nav"><a class="active" href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a>
-   <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a></nav></div></header>
-
-<section class="hero">
- <div class="container hero-inner" id="homeHero">
-  <div class="hero-copy">
-    <h1><span id="heroTop">Reparatie, refurbished</span><br><span id="heroBottom">en verkoop van telefoons</span></h1>
-   <p id="heroText">Professionele telefoonreparatie, refurbished iPhones, oude telefoons verkopen en eenvoudig je toestel naar ons opsturen.</p>
-   <div class="actions">
-    <a class="btn btn-blue" id="heroButton1" href="devices.html">Bekijk onze apparaten →</a>
-    <a class="btn btn-light" id="heroButton2" href="repair.html">Reparatie aanvragen →</a>
-   </div>
-  </div>
-  <div class="hero-device" id="heroDevice"><img src="/assets/file_00000000010081f4a52ee2e0477a4af0.png" alt="Zeven kleurrijke iPhones met een blauwe laserlichtcirkel, transparante achtergrond" width="400" height="203" fetchpriority="high" decoding="async"></div>
- </div>
-</section>
-
-<!-- Voordelen worden beheerd via de aparte Voordelenbalk-instellingen. -->
-
-<main class="container">
-
-<section class="promo" id="homeBanners">
- <div class="promo-grid">
-  <div class="promo-card" id="homeBuybackBanner">
-   <div class="sell-home-copy">
-    <span style="display:inline-block;background:#e1efff;color:#0968f5;border-radius:7px;padding:7px 11px;font-size:11px;font-weight:900;letter-spacing:.04em;margin-bottom:18px">HOMS TECH</span>
-    <h2 id="buybackBannerTitle"><span class="buyback-title-main">Uw toestel</span><span class="buyback-title-accent">verkopen?</span></h2>
-    <p id="buybackBannerText">Verkoop of ruil je oude iPhone snel, eenvoudig en veilig bij HOMS TECH. Ontvang binnen enkele minuten een eerlijk bod.</p>
-    <div class="sell-home-benefits" aria-label="Voordelen van uw toestel verkopen">
-     <div class="sell-home-benefit">
-      <i aria-hidden="true"><svg viewBox="0 0 80 80"><defs><linearGradient id="htCoinStack" x2="0" y2="1"><stop stop-color="#8ff1ff"/><stop offset=".48" stop-color="#078bdf"/><stop offset="1" stop-color="#034caa"/></linearGradient></defs><path d="M12 19v33c0 5 8 9 19 9s19-4 19-9V19" fill="url(#htCoinStack)" stroke="#075bb0" stroke-width="2"/><ellipse cx="31" cy="19" rx="19" ry="8" fill="#49cfff" stroke="#d5fbff" stroke-width="2"/><path d="M12 30c0 5 8 8 19 8s19-3 19-8M12 41c0 5 8 8 19 8s19-3 19-8" fill="none" stroke="#a5f4ff" stroke-width="2.5"/><circle cx="56" cy="54" r="17" fill="#0869d4" stroke="#e2f8ff" stroke-width="3"/><text x="56" y="61" text-anchor="middle" font-size="23" font-weight="900" fill="#fff">€</text></svg></i>
-      <span class="benefit-divider" aria-hidden="true"></span>
-      <span class="benefit-copy">Eerlijke prijs<br><small>Gebaseerd op de marktwaarde</small></span>
-     </div>
-     <div class="sell-home-benefit">
-      <i aria-hidden="true"><svg viewBox="0 0 80 80"><defs><linearGradient id="htTimer" x2="1" y2="1"><stop stop-color="#8ef2ff"/><stop offset=".45" stop-color="#0787e9"/><stop offset="1" stop-color="#0646ad"/></linearGradient></defs><path d="M32 7h16l3 10H29zM32 63h16l3 10H29z" fill="#0874d6" stroke="#e3fbff" stroke-width="2"/><circle cx="40" cy="40" r="25" fill="url(#htTimer)" stroke="#e5fbff" stroke-width="3"/><circle cx="40" cy="40" r="18" fill="#eaf8ff" stroke="#0876d1" stroke-width="2"/><path d="M40 27v14l10 5" fill="none" stroke="#0754aa" stroke-width="4" stroke-linecap="round"/><path d="M10 29h10M5 40h13M10 51h10" stroke="#0785e9" stroke-width="4" stroke-linecap="round"/><path d="m56 17 7-6m-2 15 8-2" stroke="#51cfff" stroke-width="3" stroke-linecap="round"/></svg></i>
-      <span class="benefit-divider" aria-hidden="true"></span>
-      <span class="benefit-copy">Snelle afhandeling<br><small>Snelle beoordeling en betaling</small></span>
-     </div>
-     <div class="sell-home-benefit">
-      <i aria-hidden="true"><svg viewBox="0 0 80 80"><defs><linearGradient id="htShield" x2="1" y2="1"><stop stop-color="#69eaff"/><stop offset=".4" stop-color="#087fe7"/><stop offset="1" stop-color="#063d9f"/></linearGradient></defs><path d="M40 7 65 17v19c0 17-10 28-25 37C25 64 15 53 15 36V17z" fill="url(#htShield)" stroke="#e4fbff" stroke-width="3"/><path d="m27 40 9 9 18-20" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></i>
-      <span class="benefit-divider" aria-hidden="true"></span>
-      <span class="benefit-copy">Veilig en betrouwbaar<br><small>Duidelijke beoordeling</small></span>
-     </div>
+    <link rel="stylesheet" href="/assets/customer-reviews-widget.css?v=2" />
+  </head>
+  <body>
+    <div class="topbar" id="homeTopBar">
+      <div class="container"><div class="top-info" id="homeTopInfo"></div></div>
     </div>
-    <a class="btn btn-blue" id="buybackBannerButton" href="uw-toestel-verkopen.html"><span class="buyback-swap" aria-hidden="true">⇄</span><span class="buyback-label">Toestel verkopen</span><b aria-hidden="true">→</b></a>
-   </div>
-   <div class="art" id="buybackBannerArt" aria-hidden="true"></div>
-  </div>
-  <div class="promo-card" id="homeRefurbishedBanner">
-   <h2 id="refurbishedBannerTitle"><span style="color:var(--blue2)">Refurbished</span><br>apparaten</h2>
-   <p id="refurbishedBannerText">Geteste apparaten met duidelijke informatie en garantie.</p>
-   <a class="btn btn-blue" id="refurbishedBannerButton" href="devices.html">Bekijk apparaten →</a>
-   <div class="art" id="refurbishedBannerArt">📱</div>
-  </div>
- </div>
-</section>
 
-<section class="section" id="homeCategoriesSection">
- <h2 class="section-title" id="categoriesTitle">Refurbished iPhones</h2>
- <a class="iphone-feature" href="devices.html" aria-label="Bekijk refurbished iPhones">
-  <div class="iphone-feature-copy">
-   <span class="iphone-feature-kicker">HOMS TECH · REFURBISHED</span>
-   <h3>Van gebarsten<br><span>naar als nieuw</span></h3>
-   <p>Betrouwbare refurbished iPhones, professioneel gecontroleerd en klaar voor een tweede leven.</p>
-   <ul><li><span>✓</span> Professioneel gecontroleerd</li><li><span>✓</span> Duidelijke informatie en garantie</li><li><span>✓</span> Eerlijke prijzen</li></ul>
-   <span class="iphone-feature-cta">Bekijk onze iPhones <b aria-hidden="true">→</b></span>
-  </div>
-  <div class="iphone-feature-visual">
-   <img class="iphone-feature-real-image" src="https://cellphoneworldct.com/assets/iphone-17-promax-before-after-9Zf2_CVd.png" alt="Echte voor-en-na vergelijking van een iPhone-schermreparatie" width="600" height="500" loading="lazy" decoding="async">
-  </div>
- </a>
-</section>
+    <header class="ht-header">
+      <div class="ht-container">
+        <div class="ht-header-main">
+          <a class="ht-brand" href="index.html"
+            ><img src="assets/homs-tech-logo.png" alt="HOMS TECH"
+          /></a>
+          <form class="ht-search" action="devices.html" method="get">
+            <span>⌕</span
+            ><input
+              name="search"
+              placeholder="Waar ben je naar op zoek?"
+              aria-label="Zoeken"
+            /><button type="submit">Zoek</button>
+          </form>
+          <div class="ht-actions">
+            <a href="account.html">♙ Mijn account</a
+            ><a href="cart.html">🛒 Winkelwagen</a>
+          </div>
+        </div>
+        <nav class="ht-nav">
+          <a class="active" href="index.html">Home</a
+          ><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a
+          ><a href="devices.html">Apparaten</a
+          ><a href="prices.html">Prijzen</a>
+          <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a
+          ><a href="account.html">Mijn account</a>
+        </nav>
+      </div>
+    </header>
 
-<section class="screen-before-after" id="screenBeforeAfter" aria-label="Interactieve afbeelding van telefoonreparatie">
- <div class="screen-ba-stage" id="screenBaStage" tabindex="0" role="slider" aria-label="Vergelijk de reparatie door de schuifregelaar te bewegen" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
-  <img class="screen-ba-photo" src="/assets/file_00000000900c82109e4bb7f6f1ff10e7.png" alt="Telefoon met beschadigd glas vóór reparatie" width="640" height="336" loading="lazy" decoding="async">
-  <img class="screen-ba-photo screen-ba-after" id="screenBaClean" src="/assets/file_000000000c688211802e3eb9a5355e89.png" alt="Telefoon na reparatie" width="640" height="336" loading="lazy" decoding="async">
-  <div class="screen-ba-divider" id="screenBaDivider" aria-hidden="true"><div class="screen-ba-knob">↔</div></div>
- </div>
-</section>
+    <section class="hero">
+      <div class="container hero-inner" id="homeHero">
+        <div class="hero-copy">
+          <h1>
+            <span id="heroTop">Reparatie, refurbished</span><br /><span
+              id="heroBottom"
+              >en verkoop van telefoons</span
+            >
+          </h1>
+          <p id="heroText">
+            Professionele telefoonreparatie, refurbished iPhones, oude telefoons
+            verkopen en eenvoudig je toestel naar ons opsturen.
+          </p>
+          <div class="actions">
+            <a class="btn btn-blue" id="heroButton1" href="devices.html"
+              >Bekijk onze apparaten →</a
+            >
+            <a class="btn btn-light" id="heroButton2" href="repair.html"
+              >Reparatie aanvragen →</a
+            >
+          </div>
+        </div>
+        <div class="hero-device" id="heroDevice">
+          <img
+            src="/assets/file_00000000010081f4a52ee2e0477a4af0.png"
+            alt="Zeven kleurrijke iPhones met een blauwe laserlichtcirkel, transparante achtergrond"
+            width="400"
+            height="203"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </div>
+      </div>
+    </section>
 
-<section class="section" id="homePopularSection">
- <h2 class="section-title" id="popularTitle">Populaire apparaten</h2>
- <div class="product-nav" id="popularNav" style="display:none"></div>
- <div id="products" class="products"></div>
-</section>
+    <!-- Voordelen worden beheerd via de aparte Voordelenbalk-instellingen. -->
 
-<div class="home-banner" id="homeVisitBanner">
- <div><h2 id="homeVisitTitle">📍 Wij komen bij u thuis!</h2><p id="areas">Rotterdam en omgeving · Professionele reparatie aan huis</p></div>
- <a class="btn btn-blue" id="homeVisitButton" data-wa>💬 WhatsApp</a>
-</div>
+    <main class="container">
+      <section class="promo" id="homeBanners">
+        <div class="promo-grid">
+          <div class="promo-card" id="homeBuybackBanner">
+            <div class="sell-home-copy">
+              <span
+                style="display:inline-block;background:#e1efff;color:#0968f5;border-radius:7px;padding:7px 11px;font-size:11px;font-weight:900;letter-spacing:.04em;margin-bottom:18px"
+                >HOMS TECH</span
+              >
+              <h2 id="buybackBannerTitle">
+                <span class="buyback-title-main">Uw toestel</span
+                ><span class="buyback-title-accent">verkopen?</span>
+              </h2>
+              <p id="buybackBannerText">
+                Verkoop of ruil je oude iPhone snel, eenvoudig en veilig bij
+                HOMS TECH. Ontvang binnen enkele minuten een eerlijk bod.
+              </p>
+              <div
+                class="sell-home-benefits"
+                aria-label="Voordelen van uw toestel verkopen"
+              >
+                <div class="sell-home-benefit">
+                  <i aria-hidden="true"
+                    ><svg viewBox="0 0 80 80">
+                      <defs>
+                        <linearGradient id="htCoinStack" x2="0" y2="1">
+                          <stop stop-color="#8ff1ff" />
+                          <stop offset=".48" stop-color="#078bdf" />
+                          <stop offset="1" stop-color="#034caa" />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        d="M12 19v33c0 5 8 9 19 9s19-4 19-9V19"
+                        fill="url(#htCoinStack)"
+                        stroke="#075bb0"
+                        stroke-width="2"
+                      />
+                      <ellipse
+                        cx="31"
+                        cy="19"
+                        rx="19"
+                        ry="8"
+                        fill="#49cfff"
+                        stroke="#d5fbff"
+                        stroke-width="2"
+                      />
+                      <path
+                        d="M12 30c0 5 8 8 19 8s19-3 19-8M12 41c0 5 8 8 19 8s19-3 19-8"
+                        fill="none"
+                        stroke="#a5f4ff"
+                        stroke-width="2.5"
+                      />
+                      <circle
+                        cx="56"
+                        cy="54"
+                        r="17"
+                        fill="#0869d4"
+                        stroke="#e2f8ff"
+                        stroke-width="3"
+                      />
+                      <text
+                        x="56"
+                        y="61"
+                        text-anchor="middle"
+                        font-size="23"
+                        font-weight="900"
+                        fill="#fff"
+                      >
+                        €
+                      </text>
+                    </svg></i
+                  >
+                  <span class="benefit-divider" aria-hidden="true"></span>
+                  <span class="benefit-copy"
+                    >Eerlijke prijs<br /><small
+                      >Gebaseerd op de marktwaarde</small
+                    ></span
+                  >
+                </div>
+                <div class="sell-home-benefit">
+                  <i aria-hidden="true"
+                    ><svg viewBox="0 0 80 80">
+                      <defs>
+                        <linearGradient id="htTimer" x2="1" y2="1">
+                          <stop stop-color="#8ef2ff" />
+                          <stop offset=".45" stop-color="#0787e9" />
+                          <stop offset="1" stop-color="#0646ad" />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        d="M32 7h16l3 10H29zM32 63h16l3 10H29z"
+                        fill="#0874d6"
+                        stroke="#e3fbff"
+                        stroke-width="2"
+                      />
+                      <circle
+                        cx="40"
+                        cy="40"
+                        r="25"
+                        fill="url(#htTimer)"
+                        stroke="#e5fbff"
+                        stroke-width="3"
+                      />
+                      <circle
+                        cx="40"
+                        cy="40"
+                        r="18"
+                        fill="#eaf8ff"
+                        stroke="#0876d1"
+                        stroke-width="2"
+                      />
+                      <path
+                        d="M40 27v14l10 5"
+                        fill="none"
+                        stroke="#0754aa"
+                        stroke-width="4"
+                        stroke-linecap="round"
+                      />
+                      <path
+                        d="M10 29h10M5 40h13M10 51h10"
+                        stroke="#0785e9"
+                        stroke-width="4"
+                        stroke-linecap="round"
+                      />
+                      <path
+                        d="m56 17 7-6m-2 15 8-2"
+                        stroke="#51cfff"
+                        stroke-width="3"
+                        stroke-linecap="round"
+                      /></svg
+                  ></i>
+                  <span class="benefit-divider" aria-hidden="true"></span>
+                  <span class="benefit-copy"
+                    >Snelle afhandeling<br /><small
+                      >Snelle beoordeling en betaling</small
+                    ></span
+                  >
+                </div>
+                <div class="sell-home-benefit">
+                  <i aria-hidden="true"
+                    ><svg viewBox="0 0 80 80">
+                      <defs>
+                        <linearGradient id="htShield" x2="1" y2="1">
+                          <stop stop-color="#69eaff" />
+                          <stop offset=".4" stop-color="#087fe7" />
+                          <stop offset="1" stop-color="#063d9f" />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        d="M40 7 65 17v19c0 17-10 28-25 37C25 64 15 53 15 36V17z"
+                        fill="url(#htShield)"
+                        stroke="#e4fbff"
+                        stroke-width="3"
+                      />
+                      <path
+                        d="m27 40 9 9 18-20"
+                        fill="none"
+                        stroke="#fff"
+                        stroke-width="6"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      /></svg
+                  ></i>
+                  <span class="benefit-divider" aria-hidden="true"></span>
+                  <span class="benefit-copy"
+                    >Veilig en betrouwbaar<br /><small
+                      >Duidelijke beoordeling</small
+                    ></span
+                  >
+                </div>
+              </div>
+              <a
+                class="btn btn-blue"
+                id="buybackBannerButton"
+                href="uw-toestel-verkopen.html"
+                ><span class="buyback-swap" aria-hidden="true">⇄</span
+                ><span class="buyback-label">Toestel verkopen</span
+                ><b aria-hidden="true">→</b></a
+              >
+            </div>
+            <div class="art" id="buybackBannerArt" aria-hidden="true"></div>
+          </div>
+          <div class="promo-card" id="homeRefurbishedBanner">
+            <h2 id="refurbishedBannerTitle">
+              <span style="color:var(--blue2)">Refurbished</span><br />apparaten
+            </h2>
+            <p id="refurbishedBannerText">
+              Geteste apparaten met duidelijke informatie en garantie.
+            </p>
+            <a
+              class="btn btn-blue"
+              id="refurbishedBannerButton"
+              href="devices.html"
+              >Bekijk apparaten →</a
+            >
+            <div class="art" id="refurbishedBannerArt">📱</div>
+          </div>
+        </div>
+      </section>
 
-<section class="section" id="homeServicesSection">
- <h2 class="section-title" id="servicesTitle">Onze reparatie diensten</h2>
- <div id="services" class="services"></div>
-</section>
+      <section class="section" id="homeCategoriesSection">
+        <h2 class="section-title" id="categoriesTitle">Refurbished iPhones</h2>
+        <a
+          class="iphone-feature"
+          href="devices.html"
+          aria-label="Bekijk refurbished iPhones"
+        >
+          <div class="iphone-feature-copy">
+            <span class="iphone-feature-kicker">HOMS TECH · REFURBISHED</span>
+            <h3>Van gebarsten<br /><span>naar als nieuw</span></h3>
+            <p>
+              Betrouwbare refurbished iPhones, professioneel gecontroleerd en
+              klaar voor een tweede leven.
+            </p>
+            <ul>
+              <li><span>✓</span> Professioneel gecontroleerd</li>
+              <li><span>✓</span> Duidelijke informatie en garantie</li>
+              <li><span>✓</span> Eerlijke prijzen</li>
+            </ul>
+            <span class="iphone-feature-cta"
+              >Bekijk onze iPhones <b aria-hidden="true">→</b></span
+            >
+          </div>
+          <div class="iphone-feature-visual">
+            <img
+              class="iphone-feature-real-image"
+              src="https://cellphoneworldct.com/assets/iphone-17-promax-before-after-9Zf2_CVd.png"
+              alt="Echte voor-en-na vergelijking van een iPhone-schermreparatie"
+              width="600"
+              height="500"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+        </a>
+      </section>
 
-<section class="section" id="homeWhySection">
- <h2 class="section-title" id="whyTitle">Waarom HOMS TECH?</h2>
- <div id="why" class="why"></div>
-</section>
+      <section
+        class="screen-before-after"
+        id="screenBeforeAfter"
+        aria-label="Interactieve afbeelding van telefoonreparatie"
+      >
+        <div
+          class="screen-ba-stage"
+          id="screenBaStage"
+          tabindex="0"
+          role="slider"
+          aria-label="Vergelijk de reparatie door de schuifregelaar te bewegen"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="50"
+        >
+          <img
+            class="screen-ba-photo"
+            src="/assets/file_00000000900c82109e4bb7f6f1ff10e7.png"
+            alt="Telefoon met beschadigd glas vóór reparatie"
+            width="640"
+            height="336"
+            loading="lazy"
+            decoding="async"
+          />
+          <img
+            class="screen-ba-photo screen-ba-after"
+            id="screenBaClean"
+            src="/assets/file_000000000c688211802e3eb9a5355e89.png"
+            alt="Telefoon na reparatie"
+            width="640"
+            height="336"
+            loading="lazy"
+            decoding="async"
+          />
+          <div
+            class="screen-ba-divider"
+            id="screenBaDivider"
+            aria-hidden="true"
+          >
+            <div class="screen-ba-knob">↔</div>
+          </div>
+        </div>
+      </section>
 
-</main>
+      <section class="section" id="homePopularSection">
+        <h2 class="section-title" id="popularTitle">Populaire apparaten</h2>
+        <div class="product-nav" id="popularNav" style="display:none"></div>
+        <div id="products" class="products"></div>
+      </section>
 
+      <div class="home-banner" id="homeVisitBanner">
+        <div>
+          <h2 id="homeVisitTitle">📍 Wij komen bij u thuis!</h2>
+          <p id="areas">
+            Rotterdam en omgeving · Professionele reparatie aan huis
+          </p>
+        </div>
+        <a class="btn btn-blue" id="homeVisitButton" data-wa>💬 WhatsApp</a>
+      </div>
 
-<section class="ht-review-widget" data-review-widget aria-label="Klantbeoordelingen"><p class="ht-review-widget-empty">Klantbeoordelingen laden…</p></section>
-<script src="/assets/customer-reviews-widget.js?v=3" defer></script>
+      <section class="section" id="homeServicesSection">
+        <h2 class="section-title" id="servicesTitle">
+          Onze reparatie diensten
+        </h2>
+        <div id="services" class="services"></div>
+      </section>
 
-<footer id="homeFooter">
- <div class="container">
-  <div class="footer-grid">
-   <div><div class="footer-logo">HOMS <span>TECH</span></div><p id="footerDescription">Refurbished apparaten · Reparatie aan huis</p></div>
-   <div><h3>Snelle links</h3><ul><li><a href="index.html">Home</a></li><li><a href="devices.html">Apparaten</a></li><li><a href="repair.html">Reparaties</a></li><li><a href="prices.html">Prijzen</a></li></ul></div>
-   <div><h3>Service</h3><ul><li><a href="about.html">Garantie</a></li><li><a href="about.html">Voorwaarden</a></li></ul></div>
-   <div><h3>Contact</h3><p id="footerArea">Rotterdam en omgeving</p><p id="footerContact">WhatsApp · Telefoon · E-mail</p></div>
-  </div>
-  <div class="copyright"><span>© 2026 HOMS TECH</span><span>Refurbished · Reparatie · Service · <a href="privacybeleid.html">Privacybeleid</a></span></div>
- </div>
-</footer>
+      <section class="section" id="homeWhySection">
+        <h2 class="section-title" id="whyTitle">Waarom HOMS TECH?</h2>
+        <div id="why" class="why"></div>
+      </section>
+    </main>
 
-<script>
-const defaults={
- businessName:"HOMS TECH",
- tagline:"Telefoonreparatie aan huis",
- heroTitle:"Is uw telefoon kapot? Wij komen naar u toe!",
- heroText:"Reparatie van alle soorten telefoons bij u thuis — snelle service, professioneel werk en betaalbare prijzen.",
- whatsapp:"",phone:"",areas:"Rotterdam en omgeving",
- services:[],why:[],phones:[],deviceCategories:[],
- homepage:{
-  topBar:{enabled:true,items:["1 jaar garantie","Snel geleverd","Betrouwbare service","Betaalbare prijzen"]},
-  hero:{enabled:true,titleTop:"Reparatie, refurbished",titleBottom:"en verkoop van telefoons",text:"Professionele telefoonreparatie, refurbished iPhones, oude telefoons verkopen en eenvoudig je toestel naar ons opsturen.",button1Text:"Bekijk onze diensten →",button1Link:"repair.html",button2Text:"Stuur je toestel op",button2Link:"repair.html",showDevice:true},
-  banners:{enabled:true,buybackTitle:"Uw toestel verkopen?",buybackText:"Verkoop je oude iPhone eenvoudig, snel en veilig bij HOMS TECH. Ontvang binnen enkele minuten een eerlijk bod.",buybackButton:"Toestel verkopen →",buybackLink:"uw-toestel-verkopen.html",buybackArt:"",refurbishedTitle:"Refurbished apparaten",refurbishedText:"Geteste apparaten met duidelijke informatie en garantie.",refurbishedButton:"Bekijk apparaten →",refurbishedLink:"devices.html",refurbishedArt:"📱"},
-  categories:{enabled:true,title:"Refurbished apparaten"},
-  popular:{enabled:true,title:"Populaire apparaten",limit:12,indexes:[]},
-  homeVisit:{enabled:true,title:"📍 Wij komen bij u thuis!",text:"Rotterdam en omgeving · Professionele reparatie aan huis",buttonText:"💬 WhatsApp"},
-  services:{enabled:true,title:"Onze reparatie diensten"},
-  why:{enabled:true,title:"Waarom HOMS TECH?"},
-  footer:{enabled:true,description:"Refurbished apparaten · Reparatie aan huis",area:"Rotterdam en omgeving",contact:"WhatsApp · Telefoon · E-mail"}
- }
-};
-let data={...defaults};
+    <section
+      class="ht-review-widget"
+      data-review-widget
+      aria-label="Klantbeoordelingen"
+    >
+      <p class="ht-review-widget-empty">Klantbeoordelingen laden…</p>
+    </section>
+    <script src="/assets/customer-reviews-widget.js?v=3" defer></script>
 
-function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+    <footer id="homeFooter">
+      <div class="container">
+        <div class="footer-grid">
+          <div>
+            <div class="footer-logo">HOMS <span>TECH</span></div>
+            <p id="footerDescription">
+              Refurbished apparaten · Reparatie aan huis
+            </p>
+          </div>
+          <div>
+            <h3>Snelle links</h3>
+            <ul>
+              <li><a href="index.html">Home</a></li>
+              <li><a href="devices.html">Apparaten</a></li>
+              <li><a href="repair.html">Reparaties</a></li>
+              <li><a href="prices.html">Prijzen</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3>Service</h3>
+            <ul>
+              <li><a href="about.html">Garantie</a></li>
+              <li><a href="about.html">Voorwaarden</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3>Contact</h3>
+            <p id="footerArea">Rotterdam en omgeving</p>
+            <p id="footerContact">WhatsApp · Telefoon · E-mail</p>
+          </div>
+        </div>
+        <div class="copyright">
+          <span>© 2026 HOMS TECH</span
+          ><span
+            >Refurbished · Reparatie · Service ·
+            <a href="privacybeleid.html">Privacybeleid</a></span
+          >
+        </div>
+      </div>
+    </footer>
 
-function wa(){
- const n=String(data.whatsapp||"+31684242359").replace(/\D/g,"");
- return n?"https://wa.me/"+n+"?text="+encodeURIComponent("Hallo, ik wil graag informeren over HOMS TECH."):"#";
-}
-function common(){
- document.querySelectorAll("[data-wa]").forEach(a=>a.href=wa());
- document.querySelectorAll("[data-phone]").forEach(a=>a.href="tel:"+String(data.phone||"+31684242359").replace(/[^\d+]/g,""));
-}
-function isUsableHeroText(value, fallback){
- const v=String(value||"").replace(/\\s+/g," ").trim();
- if(!v) return fallback;
- // Ignore accidental/test/gibberish text saved from the admin panel.
- const letters=(v.match(/[A-Za-zÀ-ÿ]/g)||[]).length;
- const vowels=(v.match(/[AEIOUaeiouÀ-ÿ]/g)||[]).length;
- const repeated=/^(?:([A-Za-z])\\1{2,}|[A-Za-z]{2,4})+$/.test(v.replace(/[^A-Za-z]/g,""));
- if(v.length>140 || letters<5 || repeated || (letters>=8 && vowels/letters<0.16)) return fallback;
- return v;
-}
-function mergeHomepageSettings(){
- const d=defaults.homepage;
- const h=(data.homepage&&typeof data.homepage==="object")?data.homepage:{};
- data.homepage={
-  ...d,...h,
-  topBar:{...d.topBar,...(h.topBar||{})},
-  hero:{...d.hero,...(h.hero||{})},
-  banners:{...d.banners,...(h.banners||{})},
-  categories:{...d.categories,...(h.categories||{})},
-  popular:{...d.popular,...(h.popular||{})},
-  homeVisit:{...d.homeVisit,...(h.homeVisit||{})},
-  services:{...d.services,...(h.services||{})},
-  why:{...d.why,...(h.why||{})},
-  footer:{...d.footer,...(h.footer||{})}
- };
-}
-function renderTopBar(){
- // The page-specific announcement bar manager owns the top bar.
- // Remove the legacy homepage bar to prevent duplicate or static announcement bars.
- const legacyBar=document.getElementById("homeTopBar");
- if(legacyBar)legacyBar.remove();
-}
-function renderHero(){
- const h=data.homepage.hero;
- const hero=document.getElementById("homeHero");
- if(!hero)return;
- hero.style.display=h.enabled?"":"none";
- // Keep the approved homepage hero copy in sync even if older hero text is stored in site settings.
- document.getElementById("heroTop").textContent="Reparatie, refurbished";
- document.getElementById("heroBottom").textContent="en verkoop van telefoons";
- document.getElementById("heroText").textContent="Professionele telefoonreparatie, refurbished iPhones, oude telefoons verkopen en eenvoudig je toestel naar ons opsturen.";
- const b1=document.getElementById("heroButton1"),b2=document.getElementById("heroButton2");
- b1.textContent="Bekijk onze apparaten →";
- b1.href="devices.html";
- b2.textContent="Reparatie aanvragen →";
- b2.href="repair.html";
- document.getElementById("heroDevice").style.display=h.showDevice===false?"none":"";
-}
-function renderBanners(){
- const b=data.homepage.banners,wrap=document.getElementById("homeBanners");
- if(!wrap)return;
- wrap.style.display=b.enabled?"":"none";
- const buy=document.getElementById("homeBuybackBanner"),ref=document.getElementById("homeRefurbishedBanner");
- if(buy){
-  document.getElementById("buybackBannerTitle").innerHTML="Uw toestel<br><span>verkopen?</span>";
-  document.getElementById("buybackBannerText").textContent="Verkoop je oude iPhone eenvoudig, snel en veilig bij HOMS TECH. Ontvang binnen enkele minuten een eerlijk bod.";
-  document.getElementById("buybackBannerButton").textContent="Toestel verkopen →";
-  document.getElementById("buybackBannerButton").href="uw-toestel-verkopen.html";
-  document.getElementById("buybackBannerArt").textContent="";
- }
- if(ref){
-  document.getElementById("refurbishedBannerTitle").textContent=b.refurbishedTitle||"";
-  document.getElementById("refurbishedBannerText").textContent=b.refurbishedText||"";
-  document.getElementById("refurbishedBannerButton").textContent=b.refurbishedButton||"";
-  document.getElementById("refurbishedBannerButton").href=b.refurbishedLink||"devices.html";
-  document.getElementById("refurbishedBannerArt").textContent=b.refurbishedArt||"";
- }
-}
-function startPopularTicker(box){
- const old=box.querySelector(".home-motion-track");
- const track=old||(()=>{const t=document.createElement("div");t.className="home-motion-track";while(box.firstChild)t.appendChild(box.firstChild);box.appendChild(t);return t;})();
- if(track.children.length<2)return;
- let paused=false,start=null,half=0;
- box.onmouseenter=()=>paused=true;box.onmouseleave=()=>paused=false;
- const measure=()=>{half=track.scrollWidth/2;};
- requestAnimationFrame(measure);
- const speed=38;
- function frame(now){
-  if(document.hidden || window.matchMedia("(prefers-reduced-motion: reduce)").matches){start=now;requestAnimationFrame(frame);return;}
-  if(!start)start=now;
-  if(!paused&&half>0){
-   const x=((now-start)*speed/1000)%half;
-   track.style.transform="translate3d("+(-x)+"px,0,0)";
-  }
-  requestAnimationFrame(frame);
- }
- requestAnimationFrame(frame);
-}
+    <script>
+      const defaults={
+       businessName:"HOMS TECH",
+       tagline:"Telefoonreparatie aan huis",
+       heroTitle:"Is uw telefoon kapot? Wij komen naar u toe!",
+       heroText:"Reparatie van alle soorten telefoons bij u thuis — snelle service, professioneel werk en betaalbare prijzen.",
+       whatsapp:"",phone:"",areas:"Rotterdam en omgeving",
+       services:[],why:[],phones:[],deviceCategories:[],
+       homepage:{
+        topBar:{enabled:true,items:["1 jaar garantie","Snel geleverd","Betrouwbare service","Betaalbare prijzen"]},
+        hero:{enabled:true,titleTop:"Reparatie, refurbished",titleBottom:"en verkoop van telefoons",text:"Professionele telefoonreparatie, refurbished iPhones, oude telefoons verkopen en eenvoudig je toestel naar ons opsturen.",button1Text:"Bekijk onze diensten →",button1Link:"repair.html",button2Text:"Stuur je toestel op",button2Link:"repair.html",showDevice:true},
+        banners:{enabled:true,buybackTitle:"Uw toestel verkopen?",buybackText:"Verkoop je oude iPhone eenvoudig, snel en veilig bij HOMS TECH. Ontvang binnen enkele minuten een eerlijk bod.",buybackButton:"Toestel verkopen →",buybackLink:"uw-toestel-verkopen.html",buybackArt:"",refurbishedTitle:"Refurbished apparaten",refurbishedText:"Geteste apparaten met duidelijke informatie en garantie.",refurbishedButton:"Bekijk apparaten →",refurbishedLink:"devices.html",refurbishedArt:"📱"},
+        categories:{enabled:true,title:"Refurbished apparaten"},
+        popular:{enabled:true,title:"Populaire apparaten",limit:12,indexes:[]},
+        homeVisit:{enabled:true,title:"📍 Wij komen bij u thuis!",text:"Rotterdam en omgeving · Professionele reparatie aan huis",buttonText:"💬 WhatsApp"},
+        services:{enabled:true,title:"Onze reparatie diensten"},
+        why:{enabled:true,title:"Waarom HOMS TECH?"},
+        footer:{enabled:true,description:"Refurbished apparaten · Reparatie aan huis",area:"Rotterdam en omgeving",contact:"WhatsApp · Telefoon · E-mail"}
+       }
+      };
+      let data={...defaults};
 
-function renderHomepageVisibility(){
- const c=data.homepage.categories,p=data.homepage.popular,v=data.homepage.homeVisit,s=data.homepage.services,w=data.homepage.why,f=data.homepage.footer;
- const set=(id,on)=>{const el=document.getElementById(id);if(el)el.style.display=on?"":"none";};
- set("homeCategoriesSection",c.enabled);document.getElementById("categoriesTitle").textContent=c.title||"Refurbished apparaten";
- set("homePopularSection",p.enabled);document.getElementById("popularTitle").textContent=p.title||"Populaire apparaten";
- set("homeVisitBanner",v.enabled);document.getElementById("homeVisitTitle").textContent=v.title||"";
- document.getElementById("homeVisitButton").textContent=v.buttonText||"";
- document.getElementById("homeVisitButton").href=wa();
- document.getElementById("areas").textContent=isUsableHeroText(v.text,defaults.homepage.homeVisit.text);
- set("homeServicesSection",s.enabled);document.getElementById("servicesTitle").textContent=s.title||"Onze reparatie diensten";
- set("homeWhySection",w.enabled);document.getElementById("whyTitle").textContent=w.title||"Waarom HOMS TECH";
- set("homeFooter",f.enabled);
- document.getElementById("footerDescription").textContent=f.description||"";
- document.getElementById("footerArea").textContent=f.area||"";
- document.getElementById("footerContact").textContent=f.contact||"";
-}
+      function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 
-function renderCategories(){
- const box=document.getElementById("categories");
- if(!box)return;
- box.innerHTML="";
- let cats=Array.isArray(data.deviceCategories)?data.deviceCategories.filter(x=>x&&x.active!==false):[];
- if(!cats.length)cats=[
-  {title:"Refurbished iPhones",link:"devices.html"},{title:"Refurbished iPads",link:"devices.html"},
-  {title:"Refurbished Mac",link:"devices.html"},{title:"Refurbished Watches",link:"devices.html"},
-  {title:"Refurbished Samsungs",link:"devices.html"},{title:"Onze accessoires",link:"devices.html"}
- ];
- cats.slice(0,6).forEach(c=>{
-  const a=document.createElement("a");a.className="category-card"+(c.image?"":" no-image");a.href=c.link||"devices.html";
-  if(c.image){const img=document.createElement("img");img.src=c.image;img.alt=c.title||"";img.loading="lazy";img.decoding="async";a.appendChild(img)}
-  const d=document.createElement("div");d.className="category-content";
-  d.innerHTML="<h3>"+esc(c.title||"Apparaat")+"</h3><span>"+esc(c.buttonText||"Bekijk")+" →</span>";
-  a.appendChild(d);box.appendChild(a);
- });
-}
-function renderProducts(){
- const box=document.getElementById("products");
- if(!box)return;
- box.innerHTML="";
- // Keep the catalog visible and scrollable while the moving ticker is disabled.
- box.classList.remove("auto-moving");
- box.style.display="flex";
- box.style.visibility="visible";
- box.style.overflowX="auto";
- box.style.minHeight="240px";
- const sourcePhones=Array.isArray(data.phones)?data.phones:[];
- const popularSettings=data.homepage?.popular||{};
- const selectedIndexes=Array.isArray(popularSettings.indexes)?popularSettings.indexes.map(Number).filter(Number.isInteger):[];
- const matchedPhones=selectedIndexes.length?sourcePhones.filter((phone,index)=>selectedIndexes.includes(Number(phone?._index??index))):sourcePhones;
- const selectedPhones=matchedPhones.length?matchedPhones:sourcePhones;
- const configuredLimit=Number(popularSettings.limit);
- const cardLimit=Number.isFinite(configuredLimit)?Math.max(1,Math.min(50,Math.floor(configuredLimit))):12;
- const firstImage=value=>{
-  if(typeof value==="string"&&value.trim())return value.trim();
-  if(Array.isArray(value))return value.find(item=>typeof item==="string"&&item.trim())||"";
-  if(value&&typeof value==="object")return Object.values(value).flatMap(item=>Array.isArray(item)?item:[item]).find(item=>typeof item==="string"&&item.trim())||"";
-  return "";
- };
- const expandPhone=(phone,index)=>{
-  const p=phone&&typeof phone==="object"?phone:{name:String(phone||"Apparaat")};
-  const rows=Array.isArray(p.variantPrices)?p.variantPrices.filter(row=>row&&row.active!==false):[];
-  if(!rows.length)return [{p,idx:index}];
-  const groups=new Map();
-  rows.forEach(row=>{
-   const storage=String(row.storage||"").trim(),color=String(row.color||"").trim();
-   if(!storage||!color)return;
-   const key=storage.toLocaleLowerCase()+"|"+color.toLocaleLowerCase();
-   if(!groups.has(key))groups.set(key,{storage,color,rows:[]});
-   groups.get(key).rows.push(row);
-  });
-  if(!groups.size)return [{p,idx:index}];
-  return [...groups.values()].map(group=>{
-   const gallery=firstImage(p.colorGalleryImages?.[group.color]);
-   const colorImage=firstImage(p.colorImages?.[group.color]);
-   const optionImage=Array.isArray(p.colorOptions)?firstImage(p.colorOptions.find(option=>String(option?.label||"").toLowerCase()===group.color.toLowerCase())?.image):"";
-   const prices=group.rows.map(row=>Number(String(row.price??"").replace(/€/g,"").replace(",","."))).filter(value=>Number.isFinite(value)&&value>0);
-   return {p:{...p,name:String(p.name||"Smartphone")+" "+group.storage+" "+group.color,image:gallery||colorImage||optionImage||p.image||p.imageUrl||p.photo||firstImage(p.images),price:prices.length?Math.min(...prices):(p.price||"")},idx:index};
-  });
- };
- const chosen=selectedPhones.flatMap((phone,index)=>expandPhone(phone,Number.isInteger(Number(phone?._index))?Number(phone._index):index)).slice(0,cardLimit);
- if(!chosen.length){
-  if(homepageCatalogLoading){box.innerHTML="";return;}
-  box.innerHTML="<div style='padding:25px;color:#667784'>Geen apparaten beschikbaar.</div>";return;
- }
- chosen.forEach(({p,idx},productPosition)=>{
-  const image=p.image||p.imageUrl||p.photo||firstImage(p.images)||firstImage(p.colorImages)||firstImage(Array.isArray(p.colorOptions)?p.colorOptions.map(option=>option?.image):[]);
-  const card=document.createElement("article");
-  card.className="product";
-  card.style.cssText="flex:0 0 205px;width:205px;min-width:205px;max-width:205px;display:flex;flex-direction:column;box-sizing:border-box;";
-  const picture=document.createElement("div");
-  picture.className="product-img";
-  picture.style.cssText="height:170px;min-height:170px;display:flex;align-items:center;justify-content:center;overflow:hidden;";
-  if(image){
-   const img=document.createElement("img");img.src=image;img.alt=p.name||"";img.loading=productPosition<4?"eager":"lazy";img.fetchPriority=productPosition<4?"high":"auto";img.decoding="async";
-   img.style.cssText="display:block;width:160px;height:160px;max-width:100%;object-fit:contain;";
-   picture.appendChild(img);
-  }else picture.innerHTML='<div class="phone-placeholder"></div>';
-  const body=document.createElement("div");body.className="product-body";
-  const price=p.price||p.salePrice||p.sellPrice||p.verkoopprijs||"";
-  body.innerHTML="<h3>"+esc(p.name||"Apparaat")+"</h3><div class='meta'>"+esc(p.brand||"Refurbished")+"</div>"+(price?"<div class='price'>€ "+esc(String(price).replace(/^€\\s*/,""))+"</div>":"");
-  const link=document.createElement("a");link.className="buy";
-  const params=new URLSearchParams({type:"phone",id:String(p._index??idx)});
-  if(p._variantStorage)params.set("storage",p._variantStorage);
-  if(p._variantColor)params.set("color",p._variantColor);
-  link.href="product.html?"+params.toString();link.textContent="Bekijk apparaat";
-  body.appendChild(link);card.appendChild(picture);card.appendChild(body);box.appendChild(card);
- });
- // Two identical groups create a seamless loop; cards remain intact and clickable.
- const cards=[...box.querySelectorAll(":scope > .product")];
- if(cards.length>1){
-  const track=document.createElement("div");track.className="home-motion-track";
-  const firstGroup=document.createElement("div");firstGroup.className="home-motion-group";
-  const secondGroup=document.createElement("div");secondGroup.className="home-motion-group";secondGroup.setAttribute("aria-hidden","true");
-  cards.forEach(card=>firstGroup.appendChild(card));
-  cards.forEach(card=>secondGroup.appendChild(card.cloneNode(true)));
-  track.append(firstGroup,secondGroup);
-  box.replaceChildren(track);
-  box.classList.add("auto-moving");
- }
-}
-function renderServices(){
- const box=document.getElementById("services");box.innerHTML="";
- let arr=Array.isArray(data.services)?data.services:[];if(!arr.length)arr=[
-  ["📱","Scherm reparatie"],["🔋","Batterij vervangen"],["🔌","Laadpoort reparatie"],["📷","Camera reparatie"]
- ];
- arr.slice(0,8).forEach(x=>{
-  if(typeof x==="string")x=["🔧",x];
-  const d=document.createElement("div");d.className="service";
-  if(typeof x[3]==="string"&&x[3].startsWith("data:image/"))d.innerHTML="<img class='service-photo' src='"+esc(x[3])+"' alt='"+esc(x[1]||"Reparatieservice")+"' width='400' height='300' loading='lazy' decoding='async'><strong>"+esc(x[1]||"Service")+"</strong>";
-  else d.innerHTML="<div class='service-icon'>"+esc(x[0]||"🔧")+"</div><strong>"+esc(x[1]||"Service")+"</strong>";
-  box.appendChild(d);
- });
-}
-function renderWhy(){
- const box=document.getElementById("why");box.innerHTML="";
- let arr=Array.isArray(data.why)?data.why:[];if(!arr.length)arr=[
-  ["✓","Betrouwbaar","Kwaliteit en duidelijke service"],["⌁","Aan huis","Wij komen naar u toe"],
-  ["⚡","Snelle service","Snel geholpen waar mogelijk"],["€","Transparante prijzen","Geen verrassingen"]
- ];
- arr.slice(0,8).forEach(x=>{
-  if(typeof x==="string")x=["✓",x,""];
-  const d=document.createElement("div");d.className="why-card";d.innerHTML="<b>"+esc(x[0]||"✓")+"</b><strong>"+esc(x[1]||"")+"</strong><small>"+esc(x[2]||"")+"</small>";box.appendChild(d);
- });
-}
-function moveProducts(dir){document.getElementById("products").scrollBy({left:dir*220,behavior:"smooth"})}
-function startProductTicker(){
- const box=document.getElementById("products");
- if(!box || box.children.length===0) return;
+      function wa(){
+       const n=String(data.whatsapp||"+31684242359").replace(/\D/g,"");
+       return n?"https://wa.me/"+n+"?text="+encodeURIComponent("Hallo, ik wil graag informeren over HOMS TECH."):"#";
+      }
+      function common(){
+       document.querySelectorAll("[data-wa]").forEach(a=>a.href=wa());
+       document.querySelectorAll("[data-phone]").forEach(a=>a.href="tel:"+String(data.phone||"+31684242359").replace(/[^\d+]/g,""));
+      }
+      function isUsableHeroText(value, fallback){
+       const v=String(value||"").replace(/\\s+/g," ").trim();
+       if(!v) return fallback;
+       // Ignore accidental/test/gibberish text saved from the admin panel.
+       const letters=(v.match(/[A-Za-zÀ-ÿ]/g)||[]).length;
+       const vowels=(v.match(/[AEIOUaeiouÀ-ÿ]/g)||[]).length;
+       const repeated=/^(?:([A-Za-z])\\1{2,}|[A-Za-z]{2,4})+$/.test(v.replace(/[^A-Za-z]/g,""));
+       if(v.length>140 || letters<5 || repeated || (letters>=8 && vowels/letters<0.16)) return fallback;
+       return v;
+      }
+      function mergeHomepageSettings(){
+       const d=defaults.homepage;
+       const h=(data.homepage&&typeof data.homepage==="object")?data.homepage:{};
+       data.homepage={
+        ...d,...h,
+        topBar:{...d.topBar,...(h.topBar||{})},
+        hero:{...d.hero,...(h.hero||{})},
+        banners:{...d.banners,...(h.banners||{})},
+        categories:{...d.categories,...(h.categories||{})},
+        popular:{...d.popular,...(h.popular||{})},
+        homeVisit:{...d.homeVisit,...(h.homeVisit||{})},
+        services:{...d.services,...(h.services||{})},
+        why:{...d.why,...(h.why||{})},
+        footer:{...d.footer,...(h.footer||{})}
+       };
+      }
+      function renderTopBar(){
+       // The page-specific announcement bar manager owns the top bar.
+       // Remove the legacy homepage bar to prevent duplicate or static announcement bars.
+       const legacyBar=document.getElementById("homeTopBar");
+       if(legacyBar)legacyBar.remove();
+      }
+      function renderHero(){
+       const h=data.homepage.hero;
+       const hero=document.getElementById("homeHero");
+       if(!hero)return;
+       hero.style.display=h.enabled?"":"none";
+       // Keep the approved homepage hero copy in sync even if older hero text is stored in site settings.
+       document.getElementById("heroTop").textContent="Reparatie, refurbished";
+       document.getElementById("heroBottom").textContent="en verkoop van telefoons";
+       document.getElementById("heroText").textContent="Professionele telefoonreparatie, refurbished iPhones, oude telefoons verkopen en eenvoudig je toestel naar ons opsturen.";
+       const b1=document.getElementById("heroButton1"),b2=document.getElementById("heroButton2");
+       b1.textContent="Bekijk onze apparaten →";
+       b1.href="devices.html";
+       b2.textContent="Reparatie aanvragen →";
+       b2.href="repair.html";
+       document.getElementById("heroDevice").style.display=h.showDevice===false?"none":"";
+      }
+      function renderBanners(){
+       const b=data.homepage.banners,wrap=document.getElementById("homeBanners");
+       if(!wrap)return;
+       wrap.style.display=b.enabled?"":"none";
+       const buy=document.getElementById("homeBuybackBanner"),ref=document.getElementById("homeRefurbishedBanner");
+       if(buy){
+        document.getElementById("buybackBannerTitle").innerHTML="Uw toestel<br><span>verkopen?</span>";
+        document.getElementById("buybackBannerText").textContent="Verkoop je oude iPhone eenvoudig, snel en veilig bij HOMS TECH. Ontvang binnen enkele minuten een eerlijk bod.";
+        document.getElementById("buybackBannerButton").textContent="Toestel verkopen →";
+        document.getElementById("buybackBannerButton").href="uw-toestel-verkopen.html";
+        document.getElementById("buybackBannerArt").textContent="";
+       }
+       if(ref){
+        document.getElementById("refurbishedBannerTitle").textContent=b.refurbishedTitle||"";
+        document.getElementById("refurbishedBannerText").textContent=b.refurbishedText||"";
+        document.getElementById("refurbishedBannerButton").textContent=b.refurbishedButton||"";
+        document.getElementById("refurbishedBannerButton").href=b.refurbishedLink||"devices.html";
+        document.getElementById("refurbishedBannerArt").textContent=b.refurbishedArt||"";
+       }
+      }
+      function startPopularTicker(box){
+       const old=box.querySelector(".home-motion-track");
+       const track=old||(()=>{const t=document.createElement("div");t.className="home-motion-track";while(box.firstChild)t.appendChild(box.firstChild);box.appendChild(t);return t;})();
+       if(track.children.length<2)return;
+       let paused=false,start=null,half=0;
+       box.onmouseenter=()=>paused=true;box.onmouseleave=()=>paused=false;
+       const measure=()=>{half=track.scrollWidth/2;};
+       requestAnimationFrame(measure);
+       const speed=38;
+       function frame(now){
+        if(document.hidden || window.matchMedia("(prefers-reduced-motion: reduce)").matches){start=now;requestAnimationFrame(frame);return;}
+        if(!start)start=now;
+        if(!paused&&half>0){
+         const x=((now-start)*speed/1000)%half;
+         track.style.transform="translate3d("+(-x)+"px,0,0)";
+        }
+        requestAnimationFrame(frame);
+       }
+       requestAnimationFrame(frame);
+      }
 
- // Duplicate the products so there is ALWAYS enough content to scroll.
- if(!box.dataset.duplicated){
-   const originals=[...box.children];
-   originals.forEach(card=>box.appendChild(card.cloneNode(true)));
-   box.dataset.duplicated="1";
- }
+      function renderHomepageVisibility(){
+       const c=data.homepage.categories,p=data.homepage.popular,v=data.homepage.homeVisit,s=data.homepage.services,w=data.homepage.why,f=data.homepage.footer;
+       const set=(id,on)=>{const el=document.getElementById(id);if(el)el.style.display=on?"":"none";};
+       set("homeCategoriesSection",c.enabled);document.getElementById("categoriesTitle").textContent=c.title||"Refurbished apparaten";
+       set("homePopularSection",p.enabled);document.getElementById("popularTitle").textContent=p.title||"Populaire apparaten";
+       set("homeVisitBanner",v.enabled);document.getElementById("homeVisitTitle").textContent=v.title||"";
+       document.getElementById("homeVisitButton").textContent=v.buttonText||"";
+       document.getElementById("homeVisitButton").href=wa();
+       document.getElementById("areas").textContent=isUsableHeroText(v.text,defaults.homepage.homeVisit.text);
+       set("homeServicesSection",s.enabled);document.getElementById("servicesTitle").textContent=s.title||"Onze reparatie diensten";
+       set("homeWhySection",w.enabled);document.getElementById("whyTitle").textContent=w.title||"Waarom HOMS TECH";
+       set("homeFooter",f.enabled);
+       document.getElementById("footerDescription").textContent=f.description||"";
+       document.getElementById("footerArea").textContent=f.area||"";
+       document.getElementById("footerContact").textContent=f.contact||"";
+      }
 
- box.classList.add("auto-moving");
- box.style.overflowX="hidden";
+      function renderCategories(){
+       const box=document.getElementById("categories");
+       if(!box)return;
+       box.innerHTML="";
+       let cats=Array.isArray(data.deviceCategories)?data.deviceCategories.filter(x=>x&&x.active!==false):[];
+       if(!cats.length)cats=[
+        {title:"Refurbished iPhones",link:"devices.html"},{title:"Refurbished iPads",link:"devices.html"},
+        {title:"Refurbished Mac",link:"devices.html"},{title:"Refurbished Watches",link:"devices.html"},
+        {title:"Refurbished Samsungs",link:"devices.html"},{title:"Onze accessoires",link:"devices.html"}
+       ];
+       cats.slice(0,6).forEach(c=>{
+        const a=document.createElement("a");a.className="category-card"+(c.image?"":" no-image");a.href=c.link||"devices.html";
+        if(c.image){const img=document.createElement("img");img.src=c.image;img.alt=c.title||"";img.loading="lazy";img.decoding="async";a.appendChild(img)}
+        const d=document.createElement("div");d.className="category-content";
+        d.innerHTML="<h3>"+esc(c.title||"Apparaat")+"</h3><span>"+esc(c.buttonText||"Bekijk")+" →</span>";
+        a.appendChild(d);box.appendChild(a);
+       });
+      }
+      function renderProducts(){
+       const box=document.getElementById("products");
+       if(!box)return;
+       box.innerHTML="";
+       // Keep the catalog visible and scrollable while the moving ticker is disabled.
+       box.classList.remove("auto-moving");
+       box.style.display="flex";
+       box.style.visibility="visible";
+       box.style.overflowX="auto";
+       box.style.minHeight="240px";
+       const sourcePhones=Array.isArray(data.phones)?data.phones:[];
+       const popularSettings=data.homepage?.popular||{};
+       const selectedIndexes=Array.isArray(popularSettings.indexes)?popularSettings.indexes.map(Number).filter(Number.isInteger):[];
+       const matchedPhones=selectedIndexes.length?sourcePhones.filter((phone,index)=>selectedIndexes.includes(Number(phone?._index??index))):sourcePhones;
+       const selectedPhones=matchedPhones.length?matchedPhones:sourcePhones;
+       const configuredLimit=Number(popularSettings.limit);
+       const cardLimit=Number.isFinite(configuredLimit)?Math.max(1,Math.min(50,Math.floor(configuredLimit))):12;
+       const firstImage=value=>{
+        if(typeof value==="string"&&value.trim())return value.trim();
+        if(Array.isArray(value))return value.find(item=>typeof item==="string"&&item.trim())||"";
+        if(value&&typeof value==="object")return Object.values(value).flatMap(item=>Array.isArray(item)?item:[item]).find(item=>typeof item==="string"&&item.trim())||"";
+        return "";
+       };
+       const expandPhone=(phone,index)=>{
+        const p=phone&&typeof phone==="object"?phone:{name:String(phone||"Apparaat")};
+        const rows=Array.isArray(p.variantPrices)?p.variantPrices.filter(row=>row&&row.active!==false):[];
+        if(!rows.length)return [{p,idx:index}];
+        const groups=new Map();
+        rows.forEach(row=>{
+         const storage=String(row.storage||"").trim(),color=String(row.color||"").trim();
+         if(!storage||!color)return;
+         const key=storage.toLocaleLowerCase()+"|"+color.toLocaleLowerCase();
+         if(!groups.has(key))groups.set(key,{storage,color,rows:[]});
+         groups.get(key).rows.push(row);
+        });
+        if(!groups.size)return [{p,idx:index}];
+        return [...groups.values()].map(group=>{
+         const gallery=firstImage(p.colorGalleryImages?.[group.color]);
+         const colorImage=firstImage(p.colorImages?.[group.color]);
+         const optionImage=Array.isArray(p.colorOptions)?firstImage(p.colorOptions.find(option=>String(option?.label||"").toLowerCase()===group.color.toLowerCase())?.image):"";
+         const prices=group.rows.map(row=>Number(String(row.price??"").replace(/€/g,"").replace(",","."))).filter(value=>Number.isFinite(value)&&value>0);
+         return {p:{...p,name:String(p.name||"Smartphone")+" "+group.storage+" "+group.color,image:gallery||colorImage||optionImage||p.image||p.imageUrl||p.photo||firstImage(p.images),price:prices.length?Math.min(...prices):(p.price||"")},idx:index};
+        });
+       };
+       const chosen=selectedPhones.flatMap((phone,index)=>expandPhone(phone,Number.isInteger(Number(phone?._index))?Number(phone._index):index)).slice(0,cardLimit);
+       if(!chosen.length){
+        if(homepageCatalogLoading){box.innerHTML="";return;}
+        box.innerHTML="<div style='padding:25px;color:#667784'>Geen apparaten beschikbaar.</div>";return;
+       }
+       chosen.forEach(({p,idx},productPosition)=>{
+        const image=p.image||p.imageUrl||p.photo||firstImage(p.images)||firstImage(p.colorImages)||firstImage(Array.isArray(p.colorOptions)?p.colorOptions.map(option=>option?.image):[]);
+        const card=document.createElement("article");
+        card.className="product";
+        card.style.cssText="flex:0 0 205px;width:205px;min-width:205px;max-width:205px;display:flex;flex-direction:column;box-sizing:border-box;";
+        const picture=document.createElement("div");
+        picture.className="product-img";
+        picture.style.cssText="height:170px;min-height:170px;display:flex;align-items:center;justify-content:center;overflow:hidden;";
+        if(image){
+         const img=document.createElement("img");img.src=image;img.alt=p.name||"";img.loading=productPosition<4?"eager":"lazy";img.fetchPriority=productPosition<4?"high":"auto";img.decoding="async";
+         img.style.cssText="display:block;width:160px;height:160px;max-width:100%;object-fit:contain;";
+         picture.appendChild(img);
+        }else picture.innerHTML='<div class="phone-placeholder"></div>';
+        const body=document.createElement("div");body.className="product-body";
+        const price=p.price||p.salePrice||p.sellPrice||p.verkoopprijs||"";
+        body.innerHTML="<h3>"+esc(p.name||"Apparaat")+"</h3><div class='meta'>"+esc(p.brand||"Refurbished")+"</div>"+(price?"<div class='price'>€ "+esc(String(price).replace(/^€\\s*/,""))+"</div>":"");
+        const link=document.createElement("a");link.className="buy";
+        const params=new URLSearchParams({type:"phone",id:String(p._index??idx)});
+        if(p._variantStorage)params.set("storage",p._variantStorage);
+        if(p._variantColor)params.set("color",p._variantColor);
+        link.href="product.html?"+params.toString();link.textContent="Bekijk apparaat";
+        body.appendChild(link);card.appendChild(picture);card.appendChild(body);box.appendChild(card);
+       });
+       // Two identical groups create a seamless loop; cards remain intact and clickable.
+       const cards=[...box.querySelectorAll(":scope > .product")];
+       if(cards.length>1){
+        const track=document.createElement("div");track.className="home-motion-track";
+        const firstGroup=document.createElement("div");firstGroup.className="home-motion-group";
+        const secondGroup=document.createElement("div");secondGroup.className="home-motion-group";secondGroup.setAttribute("aria-hidden","true");
+        cards.forEach(card=>firstGroup.appendChild(card));
+        cards.forEach(card=>secondGroup.appendChild(card.cloneNode(true)));
+        track.append(firstGroup,secondGroup);
+        box.replaceChildren(track);
+        box.classList.add("auto-moving");
+       }
+      }
+      function renderServices(){
+       const box=document.getElementById("services");box.innerHTML="";
+       let arr=Array.isArray(data.services)?data.services:[];if(!arr.length)arr=[
+        ["📱","Scherm reparatie"],["🔋","Batterij vervangen"],["🔌","Laadpoort reparatie"],["📷","Camera reparatie"]
+       ];
+       arr.slice(0,8).forEach(x=>{
+        if(typeof x==="string")x=["🔧",x];
+        const d=document.createElement("div");d.className="service";
+        if(typeof x[3]==="string"&&x[3].startsWith("data:image/"))d.innerHTML="<img class='service-photo' src='"+esc(x[3])+"' alt='"+esc(x[1]||"Reparatieservice")+"' width='400' height='300' loading='lazy' decoding='async'><strong>"+esc(x[1]||"Service")+"</strong>";
+        else d.innerHTML="<div class='service-icon'>"+esc(x[0]||"🔧")+"</div><strong>"+esc(x[1]||"Service")+"</strong>";
+        box.appendChild(d);
+       });
+      }
+      function renderWhy(){
+       const box=document.getElementById("why");box.innerHTML="";
+       let arr=Array.isArray(data.why)?data.why:[];if(!arr.length)arr=[
+        ["✓","Betrouwbaar","Kwaliteit en duidelijke service"],["⌁","Aan huis","Wij komen naar u toe"],
+        ["⚡","Snelle service","Snel geholpen waar mogelijk"],["€","Transparante prijzen","Geen verrassingen"]
+       ];
+       arr.slice(0,8).forEach(x=>{
+        if(typeof x==="string")x=["✓",x,""];
+        const d=document.createElement("div");d.className="why-card";d.innerHTML="<b>"+esc(x[0]||"✓")+"</b><strong>"+esc(x[1]||"")+"</strong><small>"+esc(x[2]||"")+"</small>";box.appendChild(d);
+       });
+      }
+      function moveProducts(dir){document.getElementById("products").scrollBy({left:dir*220,behavior:"smooth"})}
+      function startProductTicker(){
+       const box=document.getElementById("products");
+       if(!box || box.children.length===0) return;
 
- let paused=false;
- let last=performance.now();
- let position=box.scrollLeft;
- const speed=0.055; // pixels per millisecond
+       // Duplicate the products so there is ALWAYS enough content to scroll.
+       if(!box.dataset.duplicated){
+         const originals=[...box.children];
+         originals.forEach(card=>box.appendChild(card.cloneNode(true)));
+         box.dataset.duplicated="1";
+       }
 
- box.addEventListener("mouseenter",()=>paused=true);
- box.addEventListener("mouseleave",()=>paused=false);
- box.addEventListener("touchstart",()=>paused=true,{passive:true});
- box.addEventListener("touchend",()=>setTimeout(()=>paused=false,1000),{passive:true});
+       box.classList.add("auto-moving");
+       box.style.overflowX="hidden";
 
- function tick(now){
-   if(document.hidden || window.matchMedia("(prefers-reduced-motion: reduce)").matches){last=now;requestAnimationFrame(tick);return;}
-   const dt=Math.min(50,now-last);
-   last=now;
+       let paused=false;
+       let last=performance.now();
+       let position=box.scrollLeft;
+       const speed=0.055; // pixels per millisecond
 
-   if(!paused){
-     position += dt*speed;
-     const half=box.scrollWidth/2;
-     if(half>box.clientWidth && position>=half){
-       position -= half;
-     }
-     box.scrollLeft=position;
-   }
-   requestAnimationFrame(tick);
- }
- requestAnimationFrame(tick);
-}
+       box.addEventListener("mouseenter",()=>paused=true);
+       box.addEventListener("mouseleave",()=>paused=false);
+       box.addEventListener("touchstart",()=>paused=true,{passive:true});
+       box.addEventListener("touchend",()=>setTimeout(()=>paused=false,1000),{passive:true});
 
-function renderHomepage(){
- const runStep=(name,fn)=>{
-  try{fn();}
-  catch(error){console.error("[HOMEPAGE] "+name+" failed; continuing with remaining sections.",error);}
- };
- runStep("mergeHomepageSettings",mergeHomepageSettings);
- runStep("common",common);
- runStep("renderTopBar",renderTopBar);
- runStep("renderHero",renderHero);
- runStep("renderBanners",renderBanners);
- runStep("renderHomepageVisibility",renderHomepageVisibility);
- runStep("renderCategories",renderCategories);
- // The phone catalog is isolated: failures in unrelated homepage sections
- // must never prevent product cards from being created.
- runStep("renderProducts",renderProducts);
- runStep("renderServices",renderServices);
- runStep("renderWhy",renderWhy);
-}
-let homepageCatalogLoading=true;
-async function loadSite(){
- // Render immediately, then hydrate the homepage with fresh server data.
- renderHomepage();
+       function tick(now){
+         if(document.hidden || window.matchMedia("(prefers-reduced-motion: reduce)").matches){last=now;requestAnimationFrame(tick);return;}
+         const dt=Math.min(50,now-last);
+         last=now;
 
- // Keep catalog recovery independent from homepage-settings loading. If the
- // compact homepage request fails, the public product/device endpoints can
- // still supply the phone cards instead of leaving the homepage empty.
- let homepageLoaded=false;
- try{
-  const response=await fetch("/api/site?view=home",{headers:{Accept:"application/json"},cache:"no-store"});
-  if(!response.ok) throw new Error("Homepage data could not be loaded (HTTP "+response.status+")");
-  const settings=await response.json();
-  if(!settings||typeof settings!=="object"||Array.isArray(settings)) throw new Error("Invalid homepage response");
-  data={...defaults,...settings};
-  homepageLoaded=true;
- }catch(error){
-  console.warn("Homepage settings unavailable; trying the public phone catalog.",error);
- }
+         if(!paused){
+           position += dt*speed;
+           const half=box.scrollWidth/2;
+           if(half>box.clientWidth && position>=half){
+             position -= half;
+           }
+           box.scrollLeft=position;
+         }
+         requestAnimationFrame(tick);
+       }
+       requestAnimationFrame(tick);
+      }
 
- if(!Array.isArray(data.phones)||data.phones.length===0){
-  for(const view of ["product","devices"]){
-   try{
-    const catalogResponse=await fetch("/api/site?view="+view,{headers:{Accept:"application/json"},cache:"no-store"});
-    if(!catalogResponse.ok) throw new Error(view+" catalog returned HTTP "+catalogResponse.status);
-    const catalog=await catalogResponse.json();
-    const catalogPhones=Array.isArray(catalog?.phones)
-     ?catalog.phones.filter(phone=>phone&&(typeof phone==="object"||typeof phone==="string"))
-     :[];
-    if(catalogPhones.length){
-     data.phones=catalogPhones;
-     console.info("[HOMEPAGE CATALOG] Recovered "+catalogPhones.length+" phones from "+view+" view.");
-     break;
-    }
-   }catch(catalogError){
-    console.warn("Homepage "+view+" catalog fallback unavailable.",catalogError);
-   }
-  }
- }
+      function renderHomepage(){
+       const runStep=(name,fn)=>{
+        try{fn();}
+        catch(error){console.error("[HOMEPAGE] "+name+" failed; continuing with remaining sections.",error);}
+       };
+       runStep("mergeHomepageSettings",mergeHomepageSettings);
+       runStep("common",common);
+       runStep("renderTopBar",renderTopBar);
+       runStep("renderHero",renderHero);
+       runStep("renderBanners",renderBanners);
+       runStep("renderHomepageVisibility",renderHomepageVisibility);
+       runStep("renderCategories",renderCategories);
+       // The phone catalog is isolated: failures in unrelated homepage sections
+       // must never prevent product cards from being created.
+       runStep("renderProducts",renderProducts);
+       runStep("renderServices",renderServices);
+       runStep("renderWhy",renderWhy);
+      }
+      let homepageCatalogLoading=true;
+      async function loadSite(){
+       // Render immediately, then hydrate the homepage with fresh server data.
+       renderHomepage();
 
- if(!homepageLoaded&&!Array.isArray(data.phones))data.phones=[];
- homepageCatalogLoading=false;
- renderHomepage();
-}
+       // Keep catalog recovery independent from homepage-settings loading. If the
+       // compact homepage request fails, the public product/device endpoints can
+       // still supply the phone cards instead of leaving the homepage empty.
+       let homepageLoaded=false;
+       try{
+        const response=await fetch("/api/site?view=home",{headers:{Accept:"application/json"},cache:"no-store"});
+        if(!response.ok) throw new Error("Homepage data could not be loaded (HTTP "+response.status+")");
+        const settings=await response.json();
+        if(!settings||typeof settings!=="object"||Array.isArray(settings)) throw new Error("Invalid homepage response");
+        data={...defaults,...settings};
+        homepageLoaded=true;
+       }catch(error){
+        console.warn("Homepage settings unavailable; trying the public phone catalog.",error);
+       }
 
-// Draggable real-photo before/after comparison; supports mouse, touch and keyboard.
-(function initScreenBeforeAfter(){
- const stage=document.getElementById("screenBaStage");
- const clean=document.getElementById("screenBaClean");
- const divider=document.getElementById("screenBaDivider");
- if(!stage||!clean||!divider)return;
- let dragging=false;
- function setPosition(value){
-  const v=Math.max(0,Math.min(100,value));
-  clean.style.clipPath="inset(0 0 0 "+v+"%)";
-  divider.style.left=v+"%";
-  stage.setAttribute("aria-valuenow",String(Math.round(v)));
- }
- function move(e){
-  const rect=stage.getBoundingClientRect();
-  if(!rect.width)return;
-  setPosition(((e.clientX-rect.left)/rect.width)*100);
- }
- stage.addEventListener("pointerdown",e=>{
-  if(e.pointerType==="mouse"&&e.button!==0)return;
-  dragging=true;
-  if(stage.setPointerCapture)stage.setPointerCapture(e.pointerId);
-  move(e);e.preventDefault();
- });
- stage.addEventListener("pointermove",e=>{if(dragging)move(e);});
- const stop=()=>{dragging=false;};
- stage.addEventListener("pointerup",stop);
- stage.addEventListener("pointercancel",stop);
- stage.addEventListener("keydown",e=>{
-  const now=parseFloat(stage.getAttribute("aria-valuenow"))||50;
-  if(e.key==="ArrowLeft"){setPosition(now-2);e.preventDefault();}
-  else if(e.key==="ArrowRight"){setPosition(now+2);e.preventDefault();}
-  else if(e.key==="Home"){setPosition(0);e.preventDefault();}
-  else if(e.key==="End"){setPosition(100);e.preventDefault();}
- });
- setPosition(50);
-})();
+       if(!Array.isArray(data.phones)||data.phones.length===0){
+        for(const view of ["product","devices"]){
+         try{
+          const catalogResponse=await fetch("/api/site?view="+view,{headers:{Accept:"application/json"},cache:"no-store"});
+          if(!catalogResponse.ok) throw new Error(view+" catalog returned HTTP "+catalogResponse.status);
+          const catalog=await catalogResponse.json();
+          const catalogPhones=Array.isArray(catalog?.phones)
+           ?catalog.phones.filter(phone=>phone&&(typeof phone==="object"||typeof phone==="string"))
+           :[];
+          if(catalogPhones.length){
+           data.phones=catalogPhones;
+           console.info("[HOMEPAGE CATALOG] Recovered "+catalogPhones.length+" phones from "+view+" view.");
+           break;
+          }
+         }catch(catalogError){
+          console.warn("Homepage "+view+" catalog fallback unavailable.",catalogError);
+         }
+        }
+       }
 
-loadSite();
-</script>
+       if(!homepageLoaded&&!Array.isArray(data.phones))data.phones=[];
+       homepageCatalogLoading=false;
+       renderHomepage();
+      }
 
-  <script src="assets/homs-global-nav.js?v=20261108-loopfix2" defer></script>
-  <script src="assets/homs-ai-chat.js" defer></script>
-</body>
+      // Draggable real-photo before/after comparison; supports mouse, touch and keyboard.
+      (function initScreenBeforeAfter(){
+       const stage=document.getElementById("screenBaStage");
+       const clean=document.getElementById("screenBaClean");
+       const divider=document.getElementById("screenBaDivider");
+       if(!stage||!clean||!divider)return;
+       let dragging=false;
+       function setPosition(value){
+        const v=Math.max(0,Math.min(100,value));
+        clean.style.clipPath="inset(0 0 0 "+v+"%)";
+        divider.style.left=v+"%";
+        stage.setAttribute("aria-valuenow",String(Math.round(v)));
+       }
+       function move(e){
+        const rect=stage.getBoundingClientRect();
+        if(!rect.width)return;
+        setPosition(((e.clientX-rect.left)/rect.width)*100);
+       }
+       stage.addEventListener("pointerdown",e=>{
+        if(e.pointerType==="mouse"&&e.button!==0)return;
+        dragging=true;
+        if(stage.setPointerCapture)stage.setPointerCapture(e.pointerId);
+        move(e);e.preventDefault();
+       });
+       stage.addEventListener("pointermove",e=>{if(dragging)move(e);});
+       const stop=()=>{dragging=false;};
+       stage.addEventListener("pointerup",stop);
+       stage.addEventListener("pointercancel",stop);
+       stage.addEventListener("keydown",e=>{
+        const now=parseFloat(stage.getAttribute("aria-valuenow"))||50;
+        if(e.key==="ArrowLeft"){setPosition(now-2);e.preventDefault();}
+        else if(e.key==="ArrowRight"){setPosition(now+2);e.preventDefault();}
+        else if(e.key==="Home"){setPosition(0);e.preventDefault();}
+        else if(e.key==="End"){setPosition(100);e.preventDefault();}
+       });
+       setPosition(50);
+      })();
+
+      loadSite();
+    </script>
+
+    <script src="assets/homs-global-nav.js?v=20261108-loopfix2" defer></script>
+    <script src="assets/homs-ai-chat.js" defer></script>
+  </body>
 </html>

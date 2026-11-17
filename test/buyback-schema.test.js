@@ -6,7 +6,12 @@ const { ensureBuybackOrdersTable } = require("../utils/buyback-schema");
 
 test("buyback schema creates the table and applies compatibility migrations in order", async () => {
   const queries = [];
-  const pool = { async query(sql) { queries.push(sql); return { rows: [] }; } };
+  const pool = {
+    async query(sql) {
+      queries.push(sql);
+      return { rows: [] };
+    },
+  };
   await ensureBuybackOrdersTable(pool);
   assert.equal(queries.length, 33);
   assert.match(queries[0], /CREATE TABLE IF NOT EXISTS buyback_orders/);
@@ -14,10 +19,18 @@ test("buyback schema creates the table and applies compatibility migrations in o
   assert.ok(queries[1].includes("ADD COLUMN IF NOT EXISTS order_no TEXT"));
   assert.ok(queries[2].includes("ADD COLUMN IF NOT EXISTS model TEXT"));
   assert.ok(queries[3].includes("ADD COLUMN IF NOT EXISTS iban TEXT"));
-  assert.ok(queries[4].includes("ADD COLUMN IF NOT EXISTS payment_method TEXT"));
+  assert.ok(
+    queries[4].includes("ADD COLUMN IF NOT EXISTS payment_method TEXT"),
+  );
   assert.ok(queries[5].includes("ADD COLUMN IF NOT EXISTS answers JSONB"));
-  assert.ok(queries[6].includes("ADD COLUMN IF NOT EXISTS final_offer NUMERIC"));
-  assert.ok(queries[7].includes("ADD COLUMN IF NOT EXISTS final_offer_sent_at TIMESTAMPTZ"));
+  assert.ok(
+    queries[6].includes("ADD COLUMN IF NOT EXISTS final_offer NUMERIC"),
+  );
+  assert.ok(
+    queries[7].includes(
+      "ADD COLUMN IF NOT EXISTS final_offer_sent_at TIMESTAMPTZ",
+    ),
+  );
   assert.ok(queries[8].includes("BT-LEGACY-"));
   assert.ok(queries[9].includes("ALTER COLUMN order_no SET NOT NULL"));
   assert.ok(queries[10].includes("ADD COLUMN IF NOT EXISTS trade_in BOOLEAN"));
@@ -27,7 +40,9 @@ test("buyback schema creates the table and applies compatibility migrations in o
   assert.ok(queries[14].includes("trade_in_inspected_value"));
   assert.ok(queries[15].includes("trade_in_adjustment_reason"));
   assert.ok(queries[16].includes("trade_in_adjustment_status"));
-  assert.ok(queries[17].includes("buyback_orders_trade_in_linked_order_unique"));
+  assert.ok(
+    queries[17].includes("buyback_orders_trade_in_linked_order_unique"),
+  );
   assert.ok(queries[18].includes("sale_inspected_value"));
   assert.ok(queries[19].includes("sale_inspection_reason"));
   assert.ok(queries[20].includes("sale_approval_token_hash"));
@@ -43,7 +58,9 @@ test("buyback schema creates the table and applies compatibility migrations in o
   assert.ok(queries[30].includes("shipping_label_email_sent_at"));
   assert.ok(queries[31].includes("DELETE FROM buyback_orders"));
   assert.ok(queries[31].includes("trade_in_quote_expires_at <= NOW()"));
-  assert.ok(queries[32].includes("ADD COLUMN IF NOT EXISTS account_holder_name TEXT"));
+  assert.ok(
+    queries[32].includes("ADD COLUMN IF NOT EXISTS account_holder_name TEXT"),
+  );
 });
 
 test("buyback schema stops and propagates an error from a failed migration", async () => {
@@ -54,12 +71,18 @@ test("buyback schema stops and propagates an error from a failed migration", asy
       queries.push(sql);
       if (queries.length === 4) throw failure;
       return { rows: [] };
-    }
+    },
   };
-  await assert.rejects(ensureBuybackOrdersTable(pool), error => error === failure);
+  await assert.rejects(
+    ensureBuybackOrdersTable(pool),
+    (error) => error === failure,
+  );
   assert.equal(queries.length, 4);
 });
 
 test("buyback schema requires a query-capable database pool", async () => {
-  await assert.rejects(ensureBuybackOrdersTable(null), /database pool is required/);
+  await assert.rejects(
+    ensureBuybackOrdersTable(null),
+    /database pool is required/,
+  );
 });

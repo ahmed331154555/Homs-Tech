@@ -10,15 +10,21 @@ async function resolveRepairRequestCustomerId({
   jwtSecret,
   verifyToken,
   findVerifiedCustomer,
-  email
+  email,
 }) {
   const sessionToken = String(token || "").trim();
   const secret = String(jwtSecret || "").trim();
-  const cleanEmail = String(email || "").trim().toLowerCase();
+  const cleanEmail = String(email || "")
+    .trim()
+    .toLowerCase();
 
-  if (!sessionToken || !secret || !cleanEmail ||
-      typeof verifyToken !== "function" ||
-      typeof findVerifiedCustomer !== "function") {
+  if (
+    !sessionToken ||
+    !secret ||
+    !cleanEmail ||
+    typeof verifyToken !== "function" ||
+    typeof findVerifiedCustomer !== "function"
+  ) {
     return null;
   }
 

@@ -14,7 +14,7 @@ function formatMemoryLog(memory) {
     `heapUsed=${toMiB(memory.heapUsed)}MiB`,
     `heapTotal=${toMiB(memory.heapTotal)}MiB`,
     `external=${toMiB(memory.external)}MiB`,
-    `arrayBuffers=${toMiB(memory.arrayBuffers || 0)}MiB`
+    `arrayBuffers=${toMiB(memory.arrayBuffers || 0)}MiB`,
   ].join(" ");
 }
 
@@ -24,15 +24,19 @@ function startMemoryMonitor(options = {}) {
     throw new TypeError("Memory monitor interval must be at least 1000ms");
   }
 
-  const getMemoryUsage = options.getMemoryUsage || (() => process.memoryUsage());
-  const log = options.log || (message => console.info(message));
+  const getMemoryUsage =
+    options.getMemoryUsage || (() => process.memoryUsage());
+  const log = options.log || ((message) => console.info(message));
   const setIntervalImpl = options.setIntervalImpl || setInterval;
 
   const report = () => {
     try {
       log(formatMemoryLog(getMemoryUsage()));
     } catch (error) {
-      console.error("[MEMORY] Unable to collect memory usage:", error?.message || error);
+      console.error(
+        "[MEMORY] Unable to collect memory usage:",
+        error?.message || error,
+      );
     }
   };
 

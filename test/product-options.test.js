@@ -2,11 +2,20 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { serverOptionDelta, serverOptionDefaults } = require("../utils/product-options");
+const {
+  serverOptionDelta,
+  serverOptionDefaults,
+} = require("../utils/product-options");
 
 test("serverOptionDelta preserves fixed battery and VAT adjustments", () => {
-  assert.equal(serverOptionDelta({ label: "Nieuw (100%)", priceDelta: 99 }, "battery"), 30);
-  assert.equal(serverOptionDelta({ label: "Met BTW", priceDelta: 99 }, "vat"), 10);
+  assert.equal(
+    serverOptionDelta({ label: "Nieuw (100%)", priceDelta: 99 }, "battery"),
+    30,
+  );
+  assert.equal(
+    serverOptionDelta({ label: "Met BTW", priceDelta: 99 }, "vat"),
+    10,
+  );
   assert.equal(serverOptionDelta({ label: "Standaard" }, "battery"), 0);
 });
 
@@ -30,8 +39,20 @@ test("serverOptionDelta returns zero for missing or unusable values", () => {
 
 test("serverOptionDefaults returns the existing active option shapes", () => {
   assert.deepEqual(serverOptionDefaults("battery"), [
-    { label: "Standaard", active: true, enabled: true, available: true, priceDelta: 0 },
-    { label: "Nieuw (100%)", active: true, enabled: true, available: true, priceDelta: 0 }
+    {
+      label: "Standaard",
+      active: true,
+      enabled: true,
+      available: true,
+      priceDelta: 0,
+    },
+    {
+      label: "Nieuw (100%)",
+      active: true,
+      enabled: true,
+      available: true,
+      priceDelta: 0,
+    },
   ]);
   assert.deepEqual(serverOptionDefaults("unknown"), []);
 });

@@ -9,9 +9,14 @@
  * room for a new address.
  */
 function createBoundedRateLimiter({ windowMs, maxRequests, maxEntries }) {
-  if (!Number.isFinite(windowMs) || windowMs <= 0 ||
-      !Number.isInteger(maxRequests) || maxRequests <= 0 ||
-      !Number.isInteger(maxEntries) || maxEntries <= 0) {
+  if (
+    !Number.isFinite(windowMs) ||
+    windowMs <= 0 ||
+    !Number.isInteger(maxRequests) ||
+    maxRequests <= 0 ||
+    !Number.isInteger(maxEntries) ||
+    maxEntries <= 0
+  ) {
     throw new TypeError("Invalid bounded rate limiter configuration");
   }
 
@@ -22,7 +27,9 @@ function createBoundedRateLimiter({ windowMs, maxRequests, maxEntries }) {
     let earliestExpiry = Infinity;
 
     for (const [key, timestamps] of entries) {
-      const recent = timestamps.filter(timestamp => now - timestamp < windowMs);
+      const recent = timestamps.filter(
+        (timestamp) => now - timestamp < windowMs,
+      );
       if (recent.length === 0) {
         entries.delete(key);
         continue;
@@ -35,13 +42,15 @@ function createBoundedRateLimiter({ windowMs, maxRequests, maxEntries }) {
       }
     }
 
-    nextCapacityCheckAt = Number.isFinite(earliestExpiry) ? earliestExpiry : now;
+    nextCapacityCheckAt = Number.isFinite(earliestExpiry)
+      ? earliestExpiry
+      : now;
   }
 
   function check(key, now = Date.now()) {
     const hasKey = entries.has(key);
     const recent = hasKey
-      ? entries.get(key).filter(timestamp => now - timestamp < windowMs)
+      ? entries.get(key).filter((timestamp) => now - timestamp < windowMs)
       : [];
 
     if (recent.length >= maxRequests) {

@@ -25,20 +25,26 @@ for (const htmlFile of htmlFiles) {
   const source = fs.readFileSync(htmlFile, "utf8");
   const references = [
     ...source.matchAll(/<script\b[^>]*?\bsrc\s*=\s*["']([^"'<>]+)["'][^>]*>/gi),
-    ...source.matchAll(/<link\b[^>]*?\bhref\s*=\s*["']([^"'<>]+)["'][^>]*>/gi)
+    ...source.matchAll(/<link\b[^>]*?\bhref\s*=\s*["']([^"'<>]+)["'][^>]*>/gi),
   ];
 
   for (const match of references) {
     const reference = match[1].trim();
-    if (!reference || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(reference)) continue;
+    if (!reference || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(reference))
+      continue;
     const pathname = reference.split(/[?#]/, 1)[0];
-    if (!pathname || pathname.includes("{{") || pathname.includes("$" + "{")) continue;
+    if (!pathname || pathname.includes("{{") || pathname.includes("$" + "{"))
+      continue;
 
     let decodedPath;
     try {
       decodedPath = decodeURIComponent(pathname);
     } catch {
-      missing.push(path.relative(root, htmlFile) + ": invalid URL encoding in " + reference);
+      missing.push(
+        path.relative(root, htmlFile) +
+          ": invalid URL encoding in " +
+          reference,
+      );
       continue;
     }
 
@@ -47,7 +53,11 @@ for (const htmlFile of htmlFiles) {
       ? path.resolve(root, "." + decodedPath)
       : path.resolve(path.dirname(htmlFile), decodedPath);
     if (!target.startsWith(root + path.sep) && target !== root) {
-      missing.push(path.relative(root, htmlFile) + ": path escapes project root: " + reference);
+      missing.push(
+        path.relative(root, htmlFile) +
+          ": path escapes project root: " +
+          reference,
+      );
       continue;
     }
 
@@ -64,4 +74,10 @@ if (missing.length) {
   process.exit(1);
 }
 
-console.log("Checked " + checked + " local script and stylesheet references across " + htmlFiles.length + " HTML files.");
+console.log(
+  "Checked " +
+    checked +
+    " local script and stylesheet references across " +
+    htmlFiles.length +
+    " HTML files.",
+);

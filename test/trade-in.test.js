@@ -7,7 +7,7 @@ const {
   fromCents,
   calculateTradeInCheckout,
   calculateTradeInAdjustment,
-  validateTradeInInspectionStatus
+  validateTradeInInspectionStatus,
 } = require("../utils/trade-in");
 
 test("trade-in checkout subtracts the estimate using integer cents", () => {
@@ -17,7 +17,7 @@ test("trade-in checkout subtracts the estimate using integer cents", () => {
     appliedCredit: 90,
     payableTotal: 189,
     unappliedCredit: 0,
-    zeroPayable: false
+    zeroPayable: false,
   });
 });
 
@@ -28,7 +28,7 @@ test("trade-in credit cannot create a cash payout at checkout", () => {
     appliedCredit: 80,
     payableTotal: 0,
     unappliedCredit: 20,
-    zeroPayable: true
+    zeroPayable: true,
   });
 });
 
@@ -39,7 +39,7 @@ test("inspection shortfall is marked as customer due", () => {
     difference: 35,
     direction: "customer_due",
     customerDue: 35,
-    customerCredit: 0
+    customerCredit: 0,
   });
 });
 
@@ -50,7 +50,7 @@ test("higher inspected value is a customer credit, not a negative charge", () =>
     difference: 20,
     direction: "customer_credit",
     customerDue: 0,
-    customerCredit: 20
+    customerCredit: 20,
   });
 });
 

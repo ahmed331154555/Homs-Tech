@@ -5,7 +5,7 @@ async function initializeDatabaseSchema(pool) {
     throw new TypeError("A database pool is required.");
   }
 
-    await pool.query(`
+  await pool.query(`
       CREATE TABLE IF NOT EXISTS admin_emails (
         id BIGSERIAL PRIMARY KEY,
         resend_email_id TEXT UNIQUE,
@@ -23,11 +23,17 @@ async function initializeDatabaseSchema(pool) {
       CREATE INDEX IF NOT EXISTS admin_emails_created_idx ON admin_emails(created_at DESC);
       CREATE INDEX IF NOT EXISTS admin_emails_inbox_idx ON admin_emails(direction,is_read,created_at DESC);
     `);
-    await pool.query(`ALTER TABLE admin_emails ADD COLUMN IF NOT EXISTS attachments JSONB NOT NULL DEFAULT '[]'::jsonb`);
-    await pool.query(`ALTER TABLE admin_emails ADD COLUMN IF NOT EXISTS message_id TEXT NOT NULL DEFAULT ''`);
-    await pool.query(`ALTER TABLE admin_emails ADD COLUMN IF NOT EXISTS references_header TEXT NOT NULL DEFAULT ''`);
+  await pool.query(
+    `ALTER TABLE admin_emails ADD COLUMN IF NOT EXISTS attachments JSONB NOT NULL DEFAULT '[]'::jsonb`,
+  );
+  await pool.query(
+    `ALTER TABLE admin_emails ADD COLUMN IF NOT EXISTS message_id TEXT NOT NULL DEFAULT ''`,
+  );
+  await pool.query(
+    `ALTER TABLE admin_emails ADD COLUMN IF NOT EXISTS references_header TEXT NOT NULL DEFAULT ''`,
+  );
 
-    await pool.query(`
+  await pool.query(`
       CREATE TABLE IF NOT EXISTS device_register (
         id BIGSERIAL PRIMARY KEY,
         device_type TEXT NOT NULL CHECK (device_type IN ('customer_repair','commercial')),
@@ -77,7 +83,7 @@ async function initializeDatabaseSchema(pool) {
         ON device_register_operations(device_id)
         WHERE operation_type='sale';
     `);
-    await pool.query(`
+  await pool.query(`
       CREATE TABLE IF NOT EXISTS live_chat_conversations (
         id BIGSERIAL PRIMARY KEY,
         public_token TEXT NOT NULL UNIQUE,
@@ -96,14 +102,14 @@ async function initializeDatabaseSchema(pool) {
       );
       CREATE INDEX IF NOT EXISTS live_chat_messages_conversation_idx ON live_chat_messages(conversation_id,id);
     `);
-    await pool.query(`
+  await pool.query(`
       CREATE TABLE IF NOT EXISTS site_settings (
         id INTEGER PRIMARY KEY,
         data JSONB NOT NULL
       )
     `);
 
-    await pool.query(`
+  await pool.query(`
       CREATE TABLE IF NOT EXISTS customers (
         id SERIAL PRIMARY KEY,
         name TEXT NOT NULL,
@@ -115,13 +121,21 @@ async function initializeDatabaseSchema(pool) {
       )
     `);
 
-    // Existing accounts stay active. Public signups explicitly start unverified.
-    await pool.query("ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT TRUE");
-    await pool.query("ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verification_code_hash TEXT");
-    await pool.query("ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verification_expires_at TIMESTAMPTZ");
-    await pool.query("ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verification_attempts INTEGER NOT NULL DEFAULT 0");
+  // Existing accounts stay active. Public signups explicitly start unverified.
+  await pool.query(
+    "ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT TRUE",
+  );
+  await pool.query(
+    "ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verification_code_hash TEXT",
+  );
+  await pool.query(
+    "ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verification_expires_at TIMESTAMPTZ",
+  );
+  await pool.query(
+    "ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verification_attempts INTEGER NOT NULL DEFAULT 0",
+  );
 
-    await pool.query(`
+  await pool.query(`
       CREATE TABLE IF NOT EXISTS customer_password_resets (
         id BIGSERIAL PRIMARY KEY,
         customer_id INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
@@ -131,9 +145,11 @@ async function initializeDatabaseSchema(pool) {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
-    await pool.query("CREATE INDEX IF NOT EXISTS customer_password_resets_customer_idx ON customer_password_resets (customer_id, created_at DESC)");
+  await pool.query(
+    "CREATE INDEX IF NOT EXISTS customer_password_resets_customer_idx ON customer_password_resets (customer_id, created_at DESC)",
+  );
 
-    await pool.query(`
+  await pool.query(`
       CREATE TABLE IF NOT EXISTS admin_users (
         id SERIAL PRIMARY KEY,
         username TEXT NOT NULL UNIQUE,
@@ -145,7 +161,7 @@ async function initializeDatabaseSchema(pool) {
       )
     `);
 
-    await pool.query(`
+  await pool.query(`
       CREATE TABLE IF NOT EXISTS service_orders (
         id SERIAL PRIMARY KEY,
         customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
@@ -164,22 +180,52 @@ async function initializeDatabaseSchema(pool) {
       )
     `);
 
-    await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS username TEXT DEFAULT ''`);
-    await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS provider_reference TEXT DEFAULT ''`);
-    await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS execution_note TEXT DEFAULT ''`);
-    await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS result_data TEXT DEFAULT ''`);
-    await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS execution_updated_at TIMESTAMPTZ`);
-    await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS appointment_date DATE`);
-    await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS appointment_time TEXT`);
-    await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS service_source_id TEXT DEFAULT ''`);
-    await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS service_source_url TEXT DEFAULT ''`);
-    await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS price_currency TEXT DEFAULT 'EUR'`);
-    await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS service_instructions TEXT DEFAULT ''`);
-    await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS required_fields TEXT DEFAULT '[]'`);
-    await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS source_price TEXT DEFAULT ''`);
-    await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS source_currency TEXT DEFAULT 'USD'`);
-    await pool.query(`ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS extra_fields TEXT DEFAULT '{}'`);
-    await pool.query(`
+  await pool.query(
+    `ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS username TEXT DEFAULT ''`,
+  );
+  await pool.query(
+    `ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS provider_reference TEXT DEFAULT ''`,
+  );
+  await pool.query(
+    `ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS execution_note TEXT DEFAULT ''`,
+  );
+  await pool.query(
+    `ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS result_data TEXT DEFAULT ''`,
+  );
+  await pool.query(
+    `ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS execution_updated_at TIMESTAMPTZ`,
+  );
+  await pool.query(
+    `ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS appointment_date DATE`,
+  );
+  await pool.query(
+    `ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS appointment_time TEXT`,
+  );
+  await pool.query(
+    `ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS service_source_id TEXT DEFAULT ''`,
+  );
+  await pool.query(
+    `ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS service_source_url TEXT DEFAULT ''`,
+  );
+  await pool.query(
+    `ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS price_currency TEXT DEFAULT 'EUR'`,
+  );
+  await pool.query(
+    `ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS service_instructions TEXT DEFAULT ''`,
+  );
+  await pool.query(
+    `ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS required_fields TEXT DEFAULT '[]'`,
+  );
+  await pool.query(
+    `ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS source_price TEXT DEFAULT ''`,
+  );
+  await pool.query(
+    `ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS source_currency TEXT DEFAULT 'USD'`,
+  );
+  await pool.query(
+    `ALTER TABLE service_orders ADD COLUMN IF NOT EXISTS extra_fields TEXT DEFAULT '{}'`,
+  );
+  await pool.query(`
       CREATE UNIQUE INDEX IF NOT EXISTS service_orders_repair_appointment_unique
       ON service_orders (appointment_date, appointment_time)
       WHERE service_category = 'Reparatie'
@@ -189,15 +235,15 @@ async function initializeDatabaseSchema(pool) {
         AND status <> 'Geannuleerd'
     `);
 
-    // Keep the repair queue's category filter and newest-first ordering on an
-    // index path, avoiding a full-table sort as service_orders grows.
-    await pool.query(`
+  // Keep the repair queue's category filter and newest-first ordering on an
+  // index path, avoiding a full-table sort as service_orders grows.
+  await pool.query(`
       CREATE INDEX IF NOT EXISTS service_orders_repair_created_idx
       ON service_orders (created_at DESC)
       WHERE LOWER(service_category) IN ('reparatie', 'repair')
     `);
 
-    await pool.query(`
+  await pool.query(`
       CREATE TABLE IF NOT EXISTS webshop_orders (
         id SERIAL PRIMARY KEY,
         customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
@@ -215,7 +261,7 @@ async function initializeDatabaseSchema(pool) {
       )
     `);
 
-    await pool.query(`
+  await pool.query(`
       CREATE TABLE IF NOT EXISTS webshop_order_inspections (
         order_id INTEGER PRIMARY KEY REFERENCES webshop_orders(id) ON DELETE CASCADE,
         checks JSONB NOT NULL DEFAULT '{}'::jsonb,
@@ -266,98 +312,140 @@ async function initializeDatabaseSchema(pool) {
       )
     `);
 
-    // Payment fields for webshop checkout / PayPal.
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS checkout_token TEXT NOT NULL DEFAULT ''`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT ''`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'Unpaid'`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS paypal_order_id TEXT DEFAULT ''`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS mollie_payment_id TEXT DEFAULT ''`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS shipping_method TEXT DEFAULT ''`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS tracking_number TEXT DEFAULT ''`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS tracking_url TEXT DEFAULT ''`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS inventory_deducted_at TIMESTAMPTZ`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS inventory_error TEXT NOT NULL DEFAULT ''`);
-    // Trade-in accounting snapshot: keep the estimate and inspection result separate.
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_order_id INTEGER`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_estimated_value NUMERIC(12,2)`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_applied_credit NUMERIC(12,2)`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_inspected_value NUMERIC(12,2)`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_adjustment NUMERIC(12,2) NOT NULL DEFAULT 0`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_status TEXT NOT NULL DEFAULT ''`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_snapshot JSONB NOT NULL DEFAULT '{}'::jsonb`);
-    // Idempotent email delivery after successful payment for orders containing a trade-in.
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS customer_order_email_claimed_at TIMESTAMPTZ`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS customer_order_email_sent_at TIMESTAMPTZ`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS customer_tradein_email_claimed_at TIMESTAMPTZ`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS customer_tradein_email_sent_at TIMESTAMPTZ`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS owner_order_email_claimed_at TIMESTAMPTZ`);
-    await pool.query(`ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS owner_order_email_sent_at TIMESTAMPTZ`);
-    await pool.query(`
+  // Payment fields for webshop checkout / PayPal.
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS checkout_token TEXT NOT NULL DEFAULT ''`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT ''`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'Unpaid'`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS paypal_order_id TEXT DEFAULT ''`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS mollie_payment_id TEXT DEFAULT ''`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS shipping_method TEXT DEFAULT ''`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS tracking_number TEXT DEFAULT ''`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS tracking_url TEXT DEFAULT ''`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS inventory_deducted_at TIMESTAMPTZ`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS inventory_error TEXT NOT NULL DEFAULT ''`,
+  );
+  // Trade-in accounting snapshot: keep the estimate and inspection result separate.
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_order_id INTEGER`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_estimated_value NUMERIC(12,2)`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_applied_credit NUMERIC(12,2)`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_inspected_value NUMERIC(12,2)`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_adjustment NUMERIC(12,2) NOT NULL DEFAULT 0`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_status TEXT NOT NULL DEFAULT ''`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS trade_in_snapshot JSONB NOT NULL DEFAULT '{}'::jsonb`,
+  );
+  // Idempotent email delivery after successful payment for orders containing a trade-in.
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS customer_order_email_claimed_at TIMESTAMPTZ`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS customer_order_email_sent_at TIMESTAMPTZ`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS customer_tradein_email_claimed_at TIMESTAMPTZ`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS customer_tradein_email_sent_at TIMESTAMPTZ`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS owner_order_email_claimed_at TIMESTAMPTZ`,
+  );
+  await pool.query(
+    `ALTER TABLE webshop_orders ADD COLUMN IF NOT EXISTS owner_order_email_sent_at TIMESTAMPTZ`,
+  );
+  await pool.query(`
       CREATE UNIQUE INDEX IF NOT EXISTS webshop_orders_trade_in_order_unique
       ON webshop_orders(trade_in_order_id)
       WHERE trade_in_order_id IS NOT NULL
     `);
 
+  const result = await pool.query("SELECT id FROM site_settings WHERE id = 1");
 
-    const result = await pool.query(
-      "SELECT id FROM site_settings WHERE id = 1"
-    );
+  if (result.rows.length === 0) {
+    const defaultData = {
+      siteName: "HOMS TECH",
+      tagline: "Phone repair at your doorstep",
+      phone: "",
+      whatsapp: "",
+      email: "",
+      services: [
+        "Screen Replacement",
+        "Battery Replacement",
+        "Charging Port Repair",
+        "Camera Repair",
+        "Software Repair",
+      ],
+      features: [
+        "We come to your home",
+        "Fast service",
+        "Professional repair",
+        "Warranty on repairs",
+      ],
+      devices: [
+        {
+          name: "iPhone 12",
+          price: "",
+        },
+        {
+          name: "iPhone 13",
+          price: "",
+        },
+        {
+          name: "iPhone 14",
+          price: "",
+        },
+        {
+          name: "iPhone 15",
+          price: "",
+        },
+        {
+          name: "iPhone 16",
+          price: "",
+        },
+        {
+          name: "iPhone 17",
+          price: "",
+        },
+      ],
+    };
 
-    if (result.rows.length === 0) {
-      const defaultData = {
-        siteName: "HOMS TECH",
-        tagline: "Phone repair at your doorstep",
-        phone: "",
-        whatsapp: "",
-        email: "",
-        services: [
-          "Screen Replacement",
-          "Battery Replacement",
-          "Charging Port Repair",
-          "Camera Repair",
-          "Software Repair"
-        ],
-        features: [
-          "We come to your home",
-          "Fast service",
-          "Professional repair",
-          "Warranty on repairs"
-        ],
-        devices: [
-          {
-            name: "iPhone 12",
-            price: ""
-          },
-          {
-            name: "iPhone 13",
-            price: ""
-          },
-          {
-            name: "iPhone 14",
-            price: ""
-          },
-          {
-            name: "iPhone 15",
-            price: ""
-          },
-          {
-            name: "iPhone 16",
-            price: ""
-          },
-          {
-            name: "iPhone 17",
-            price: ""
-          }
-        ]
-      };
+    await pool.query("INSERT INTO site_settings (id, data) VALUES (1, $1)", [
+      JSON.stringify(defaultData),
+    ]);
+  }
 
-      await pool.query(
-        "INSERT INTO site_settings (id, data) VALUES (1, $1)",
-        [JSON.stringify(defaultData)]
-      );
-    }
-
-    await pool.query(`
+  await pool.query(`
       CREATE TABLE IF NOT EXISTS inventory_movements (
         id BIGSERIAL PRIMARY KEY,
         item_type TEXT NOT NULL CHECK (item_type IN ('phone','shop')),
@@ -378,8 +466,8 @@ async function initializeDatabaseSchema(pool) {
       CREATE INDEX IF NOT EXISTS inventory_movements_created_idx ON inventory_movements(created_at DESC, id DESC);
       CREATE INDEX IF NOT EXISTS inventory_movements_product_idx ON inventory_movements(item_type, product_id, variant_id, created_at DESC);
     `);
-    
-    await pool.query(`
+
+  await pool.query(`
       CREATE TABLE IF NOT EXISTS manual_invoices (
         id BIGSERIAL PRIMARY KEY,
         invoice_number TEXT NOT NULL UNIQUE,
@@ -396,7 +484,7 @@ async function initializeDatabaseSchema(pool) {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
-    await pool.query(`
+  await pool.query(`
       ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_type TEXT NOT NULL DEFAULT 'individual';
       ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_company_name TEXT NOT NULL DEFAULT '';
       ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS customer_contact_person TEXT NOT NULL DEFAULT '';
@@ -414,14 +502,14 @@ async function initializeDatabaseSchema(pool) {
       ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS notes TEXT NOT NULL DEFAULT '';
       ALTER TABLE manual_invoices ADD COLUMN IF NOT EXISTS seller_snapshot JSONB NOT NULL DEFAULT '{}'::jsonb;
     `);
-    await pool.query(`
+  await pool.query(`
       CREATE TABLE IF NOT EXISTS invoice_settings (
         id SMALLINT PRIMARY KEY CHECK (id=1),
         data JSONB NOT NULL DEFAULT '{}'::jsonb,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
-    await pool.query(`
+  await pool.query(`
       CREATE TABLE IF NOT EXISTS api_partners (
         id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL DEFAULT '',
         token_hash TEXT NOT NULL UNIQUE, active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -448,7 +536,6 @@ async function initializeDatabaseSchema(pool) {
       );
       CREATE INDEX IF NOT EXISTS api_partner_orders_partner_created_idx ON api_partner_orders(partner_id, created_at DESC);
     `);
-
 }
 
 module.exports = { initializeDatabaseSchema };

@@ -4,7 +4,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const {
   sanitizePublicSiteData,
-  sanitizeHomepageSiteData
+  sanitizeHomepageSiteData,
 } = require("../utils/site-data-sanitizers");
 
 test("sanitizePublicSiteData removes retired importer data without mutating input", () => {
@@ -12,12 +12,12 @@ test("sanitizePublicSiteData removes retired importer data without mutating inpu
     phone: "123",
     gsmImport: { secret: true },
     gsmServices: [{ name: "retired" }],
-    homepage: { title: "Home", gsm: { private: true } }
+    homepage: { title: "Home", gsm: { private: true } },
   };
   const output = sanitizePublicSiteData(input);
   assert.deepEqual(output, {
     phone: "123",
-    homepage: { title: "Home" }
+    homepage: { title: "Home" },
   });
   assert.equal(input.gsmImport.secret, true);
   assert.equal(input.homepage.gsm.private, true);
@@ -34,10 +34,16 @@ test("sanitizeHomepageSiteData keeps only approved top-level fields", () => {
     services: [],
     why: [],
     buybackCatalog: [{ private: true }],
-    adminSettings: { private: true }
+    adminSettings: { private: true },
   });
   assert.deepEqual(Object.keys(output).sort(), [
-    "deviceCategories", "homepage", "phone", "phones", "services", "whatsapp", "why"
+    "deviceCategories",
+    "homepage",
+    "phone",
+    "phones",
+    "services",
+    "whatsapp",
+    "why",
   ]);
   assert.equal(output.buybackCatalog, undefined);
   assert.equal(output.adminSettings, undefined);
@@ -48,9 +54,12 @@ test("sanitizeHomepageSiteData keeps the final fifteen phones and original indic
     name: "Phone " + index,
     brand: "Brand",
     internalCost: 99,
-    images: ["first-" + index, "second-" + index]
+    images: ["first-" + index, "second-" + index],
   }));
-  const output = sanitizeHomepageSiteData({ phones, homepage: { popular: { limit: 15 } } });
+  const output = sanitizeHomepageSiteData({
+    phones,
+    homepage: { popular: { limit: 15 } },
+  });
   assert.equal(output.phones.length, 15);
   assert.equal(output.phones[0]._index, 1);
   assert.equal(output.phones[14]._index, 15);
@@ -65,58 +74,92 @@ test("sanitizeHomepageSiteData includes selected homepage phones and preserves t
     name: "Phone " + index,
     brand: "Brand",
     price: 100 + index,
-    images: ["phone-" + index + ".webp"]
+    images: ["phone-" + index + ".webp"],
   }));
   const output = sanitizeHomepageSiteData({
     phones,
-    homepage: { popular: { enabled: true, limit: 3, indexes: [2, 8, 15, 8, -1, 99] } }
+    homepage: {
+      popular: { enabled: true, limit: 3, indexes: [2, 8, 15, 8, -1, 99] },
+    },
   });
-  assert.deepEqual(output.phones.map(phone => phone._index), [2, 8, 15]);
-  assert.deepEqual(output.phones.map(phone => phone.name), ["Phone 2", "Phone 8", "Phone 15"]);
+  assert.deepEqual(
+    output.phones.map((phone) => phone._index),
+    [2, 8, 15],
+  );
+  assert.deepEqual(
+    output.phones.map((phone) => phone.name),
+    ["Phone 2", "Phone 8", "Phone 15"],
+  );
 });
 
 test("sanitizeHomepageSiteData compacts variants and drops inactive rows", () => {
   const output = sanitizeHomepageSiteData({
-    phones: [{
-      name: "iPhone",
-      variantPrices: [
-        { storage: "128GB", color: "Black", price: 100, active: true, internalCost: 50 },
-        { storage: "256GB", color: "Blue", price: 120, active: false, internalCost: 60 }
-      ],
-      colorOptions: [{ label: "Black", image: "black.webp", cost: 10 }],
-      colorGalleryImages: { Black: ["one.webp", "two.webp"], Blue: [] }
-    }]
+    phones: [
+      {
+        name: "iPhone",
+        variantPrices: [
+          {
+            storage: "128GB",
+            color: "Black",
+            price: 100,
+            active: true,
+            internalCost: 50,
+          },
+          {
+            storage: "256GB",
+            color: "Blue",
+            price: 120,
+            active: false,
+            internalCost: 60,
+          },
+        ],
+        colorOptions: [{ label: "Black", image: "black.webp", cost: 10 }],
+        colorGalleryImages: { Black: ["one.webp", "two.webp"], Blue: [] },
+      },
+    ],
   });
   assert.deepEqual(output.phones[0].variantPrices, [
-    { storage: "128GB", color: "Black", price: 100, active: true }
+    { storage: "128GB", color: "Black", price: 100, active: true },
   ]);
-  assert.deepEqual(output.phones[0].colorOptions, [{ label: "Black", image: "black.webp" }]);
-  assert.deepEqual(output.phones[0].colorGalleryImages, { Black: ["one.webp"] });
+  assert.deepEqual(output.phones[0].colorOptions, [
+    { label: "Black", image: "black.webp" },
+  ]);
+  assert.deepEqual(output.phones[0].colorGalleryImages, {
+    Black: ["one.webp"],
+  });
 });
 
 test("sanitizeHomepageSiteData replaces embedded phone and service photos with separate URLs", () => {
   const image = "data:image/webp;base64,QUJD";
   const input = {
-    phones: [{
-      name: "iPhone",
-      image,
-      images: [image, "unused.webp"],
-      colorImages: { Black: image },
-      colorGalleryImages: { Black: [image] },
-      colorOptions: [{ label: "Black", image }]
-    }],
-    services: [["🔧", "Scherm reparatie", "Beschrijving", image]]
+    phones: [
+      {
+        name: "iPhone",
+        image,
+        images: [image, "unused.webp"],
+        colorImages: { Black: image },
+        colorGalleryImages: { Black: [image] },
+        colorOptions: [{ label: "Black", image }],
+      },
+    ],
+    services: [["🔧", "Scherm reparatie", "Beschrijving", image]],
   };
 
   const output = sanitizeHomepageSiteData(input);
   const phone = output.phones[0];
   assert.equal(phone.image, "/api/homepage/phone-image/0?path=image");
   assert.deepEqual(phone.images, ["/api/homepage/phone-image/0?path=images.0"]);
-  assert.equal(phone.colorImages.Black, "/api/homepage/phone-image/0?path=colorImages.Black");
+  assert.equal(
+    phone.colorImages.Black,
+    "/api/homepage/phone-image/0?path=colorImages.Black",
+  );
   assert.deepEqual(phone.colorGalleryImages.Black, [
-    "/api/homepage/phone-image/0?path=colorGalleryImages.Black.0"
+    "/api/homepage/phone-image/0?path=colorGalleryImages.Black.0",
   ]);
-  assert.equal(phone.colorOptions[0].image, "/api/homepage/phone-image/0?path=colorOptions.0.image");
+  assert.equal(
+    phone.colorOptions[0].image,
+    "/api/homepage/phone-image/0?path=colorOptions.0.image",
+  );
   assert.equal(output.services[0][3], "/api/homepage/service-image/0");
   assert.equal(input.phones[0].image, image);
   assert.equal(input.services[0][3], image);
@@ -124,28 +167,32 @@ test("sanitizeHomepageSiteData replaces embedded phone and service photos with s
 
 test("sanitizePublicSiteData recursively removes private costs and credentials while keeping sale prices", () => {
   const input = {
-    phones: [{
-      name: "iPhone 15",
-      price: 499,
-      supplierCost: 250,
-      purchasePrice: 220,
-      internalCost: 200,
-      margin: 279,
-      profit: 99,
-      variantPrices: [{ color: "Black", price: 499, supplierCost: 210 }]
-    }],
-    buybackCatalog: [{
-      name: "iPhone 12",
-      buyPrice: 100,
-      inkoopprijs: 70,
-      publicOffer: 120
-    }],
+    phones: [
+      {
+        name: "iPhone 15",
+        price: 499,
+        supplierCost: 250,
+        purchasePrice: 220,
+        internalCost: 200,
+        margin: 279,
+        profit: 99,
+        variantPrices: [{ color: "Black", price: 499, supplierCost: 210 }],
+      },
+    ],
+    buybackCatalog: [
+      {
+        name: "iPhone 12",
+        buyPrice: 100,
+        inkoopprijs: 70,
+        publicOffer: 120,
+      },
+    ],
     paymentSettings: {
       mollieApiKey: "private-key",
       paypalClientSecret: "private-secret",
-      webhookSecret: "private-webhook"
+      webhookSecret: "private-webhook",
     },
-    homepage: { title: "Home", privateNote: "internal" }
+    homepage: { title: "Home", privateNote: "internal" },
   };
   const output = sanitizePublicSiteData(input);
   assert.equal(output.phones[0].price, 499);
@@ -163,19 +210,21 @@ test("sanitizePublicSiteData recursively removes private costs and credentials w
   assert.equal(input.phones[0].supplierCost, 250);
 });
 
-
 test("sanitizeHomepageSiteData clears stale popular-phone indexes when catalog entries were removed", () => {
   const phones = Array.from({ length: 4 }, (_, index) => ({
     name: "Phone " + index,
     brand: "Brand",
-    price: 100 + index
+    price: 100 + index,
   }));
   const output = sanitizeHomepageSiteData({
     phones,
-    homepage: { popular: { enabled: true, limit: 3, indexes: [12, 18, 25] } }
+    homepage: { popular: { enabled: true, limit: 3, indexes: [12, 18, 25] } },
   });
 
-  assert.deepEqual(output.phones.map(phone => phone._index), [1, 2, 3]);
+  assert.deepEqual(
+    output.phones.map((phone) => phone._index),
+    [1, 2, 3],
+  );
   assert.deepEqual(output.homepage.popular.indexes, []);
 });
 
@@ -185,11 +234,17 @@ test("sanitizeHomepageSiteData preserves original indexes on SQL-preselected pho
     phones: [
       { _index: 4, name: "Phone 4", price: 104 },
       { _index: 9, name: "Phone 9", price: 109 },
-      { _index: 15, name: "Phone 15", price: 115 }
-    ]
+      { _index: 15, name: "Phone 15", price: 115 },
+    ],
   });
 
-  assert.deepEqual(output.phones.map(phone => phone._index), [4, 9, 15]);
-  assert.deepEqual(output.phones.map(phone => phone.name), ["Phone 4", "Phone 9", "Phone 15"]);
+  assert.deepEqual(
+    output.phones.map((phone) => phone._index),
+    [4, 9, 15],
+  );
+  assert.deepEqual(
+    output.phones.map((phone) => phone.name),
+    ["Phone 4", "Phone 9", "Phone 15"],
+  );
   assert.deepEqual(output.homepage.popular.indexes, []);
 });

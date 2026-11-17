@@ -9,13 +9,19 @@
     window.__homsGoogleAnalyticsLoaded = true;
 
     window.dataLayer = window.dataLayer || [];
-    window.gtag = window.gtag || function(){ window.dataLayer.push(arguments); };
+    window.gtag =
+      window.gtag ||
+      function () {
+        window.dataLayer.push(arguments);
+      };
     window.gtag("js", new Date());
     window.gtag("config", MEASUREMENT_ID);
 
     const script = document.createElement("script");
     script.async = true;
-    script.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(MEASUREMENT_ID);
+    script.src =
+      "https://www.googletagmanager.com/gtag/js?id=" +
+      encodeURIComponent(MEASUREMENT_ID);
     document.head.appendChild(script);
   }
 
@@ -42,7 +48,13 @@
     if (banner) banner.hidden = true;
     const notice = document.getElementById("homs-cookie-settings");
     if (notice) notice.hidden = false;
-    if (notice) notice.setAttribute("aria-label", value === "accepted" ? "Cookie-instellingen: analytics toegestaan" : "Cookie-instellingen: analytics geweigerd");
+    if (notice)
+      notice.setAttribute(
+        "aria-label",
+        value === "accepted"
+          ? "Cookie-instellingen: analytics toegestaan"
+          : "Cookie-instellingen: analytics geweigerd",
+      );
   }
 
   function showBanner() {
@@ -90,7 +102,9 @@
     settings.textContent = "Cookie-instellingen";
     settings.hidden = true;
     settings.addEventListener("click", showBanner);
-    const footerPrivacyLink = document.querySelector('footer a[href*="privacybeleid"]');
+    const footerPrivacyLink = document.querySelector(
+      'footer a[href*="privacybeleid"]',
+    );
     if (footerPrivacyLink && footerPrivacyLink.parentElement) {
       const separator = document.createTextNode(" · ");
       footerPrivacyLink.insertAdjacentElement("afterend", settings);

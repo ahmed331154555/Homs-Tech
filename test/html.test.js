@@ -5,10 +5,7 @@ const assert = require("node:assert/strict");
 const { escapeHtml } = require("../utils/html");
 
 test("escapeHtml escapes HTML-sensitive characters", () => {
-  assert.equal(
-    escapeHtml(`<&>"'`),
-    "&lt;&amp;&gt;&quot;&#039;"
-  );
+  assert.equal(escapeHtml(`<&>"'`), "&lt;&amp;&gt;&quot;&#039;");
 });
 
 test("escapeHtml escapes ampersands before adding entities", () => {

@@ -10,7 +10,8 @@ function fakePool({ failAt = 0, siteSettingsExists = false } = {}) {
   const pool = {
     async query(sql, params = []) {
       calls.push({ sql, params });
-      if (failAt && calls.length === failAt) throw new Error("schema query failed");
+      if (failAt && calls.length === failAt)
+        throw new Error("schema query failed");
       if (sql.includes("SELECT id FROM site_settings WHERE id = 1")) {
         return { rows: siteSettingsExists ? [{ id: 1 }] : [] };
       }
@@ -18,15 +19,21 @@ function fakePool({ failAt = 0, siteSettingsExists = false } = {}) {
         insertedDefaults = JSON.parse(params[0]);
       }
       return { rows: [] };
-    }
+    },
   };
-  return { pool, calls, get insertedDefaults() { return insertedDefaults; } };
+  return {
+    pool,
+    calls,
+    get insertedDefaults() {
+      return insertedDefaults;
+    },
+  };
 }
 
 test("database schema initializes all core application tables and migrations", async () => {
   const fake = fakePool();
   await initializeDatabaseSchema(fake.pool);
-  const sql = fake.calls.map(call => call.sql).join("\n");
+  const sql = fake.calls.map((call) => call.sql).join("\n");
   for (const table of [
     "admin_emails",
     "device_register",
@@ -43,7 +50,7 @@ test("database schema initializes all core application tables and migrations", a
     "webshop_order_status_history",
     "webshop_order_notes",
     "order_settings",
-    "manual_invoices"
+    "manual_invoices",
   ]) {
     assert.match(sql, new RegExp("CREATE TABLE IF NOT EXISTS " + table));
   }
@@ -64,15 +71,25 @@ test("database schema inserts the default public settings only when missing", as
   const existing = fakePool({ siteSettingsExists: true });
   await initializeDatabaseSchema(existing.pool);
   assert.equal(existing.insertedDefaults, null);
-  assert.ok(existing.calls.some(call => call.sql.includes("SELECT id FROM site_settings")));
+  assert.ok(
+    existing.calls.some((call) =>
+      call.sql.includes("SELECT id FROM site_settings"),
+    ),
+  );
 });
 
 test("database schema stops and propagates a failed migration", async () => {
   const fake = fakePool({ failAt: 5 });
-  await assert.rejects(initializeDatabaseSchema(fake.pool), /schema query failed/);
+  await assert.rejects(
+    initializeDatabaseSchema(fake.pool),
+    /schema query failed/,
+  );
   assert.equal(fake.calls.length, 5);
 });
 
 test("database schema requires a query-capable pool", async () => {
-  await assert.rejects(initializeDatabaseSchema(null), /database pool is required/);
+  await assert.rejects(
+    initializeDatabaseSchema(null),
+    /database pool is required/,
+  );
 });

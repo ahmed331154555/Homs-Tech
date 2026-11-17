@@ -41,12 +41,12 @@ The drawer must keep keyboard support, Escape-to-close, focus restoration, a vis
 
 ### Unified admin order categories
 
-| Category | Source | Purpose |
-| --- | --- | --- |
-| Telefoonbestellingen | Webshop orders | Customer purchases of phones |
-| Shop | Webshop orders | Accessories and other shop products |
-| Inkoop | Buyback orders | Devices customers sell to HOMS TECH |
-| Repair | Repair requests | Repair and price requests |
+| Category             | Source          | Purpose                             |
+| -------------------- | --------------- | ----------------------------------- |
+| Telefoonbestellingen | Webshop orders  | Customer purchases of phones        |
+| Shop                 | Webshop orders  | Accessories and other shop products |
+| Inkoop               | Buyback orders  | Devices customers sell to HOMS TECH |
+| Repair               | Repair requests | Repair and price requests           |
 
 Keep the category permissions and each category's existing loader/update permission intact. Do not merge the underlying order records or change their APIs as part of a visual-only cleanup.
 

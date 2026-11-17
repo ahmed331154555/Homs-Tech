@@ -27,7 +27,9 @@ while (cursor < html.length) {
     const relativeSource = sourceAttribute[1].split(/[?#]/, 1)[0];
     const sourcePath = path.resolve(path.dirname(htmlPath), relativeSource);
     if (!sourcePath.startsWith(root + path.sep)) {
-      console.error("Admin script path escapes project root: " + sourceAttribute[1]);
+      console.error(
+        "Admin script path escapes project root: " + sourceAttribute[1],
+      );
       process.exit(1);
     }
     if (!fs.existsSync(sourcePath) || !fs.statSync(sourcePath).isFile()) {
@@ -55,28 +57,54 @@ scripts.forEach((source, index) => {
 
 const declaredFunctions = new Set();
 for (const source of scripts) {
-  for (const match of source.matchAll(/^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/gm)) {
+  for (const match of source.matchAll(
+    /^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/gm,
+  )) {
     declaredFunctions.add(match[1]);
   }
   // Admin modules may intentionally expose handlers from an IIFE via window.*.
-  for (const match of source.matchAll(/\bwindow\.([A-Za-z_$][\w$]*)\s*=\s*(?:async\s+)?function\s*\(/g)) {
+  for (const match of source.matchAll(
+    /\bwindow\.([A-Za-z_$][\w$]*)\s*=\s*(?:async\s+)?function\s*\(/g,
+  )) {
     declaredFunctions.add(match[1]);
   }
 }
 
 const allowedGlobals = new Set([
-  "if", "alert", "confirm", "prompt", "setTimeout", "setInterval",
-  "clearTimeout", "clearInterval", "parseInt", "parseFloat", "Number",
-  "String", "Boolean", "Array", "Object", "Math", "Date", "JSON",
-  "Event", "FileReader", "URL", "encodeURIComponent", "decodeURIComponent"
+  "if",
+  "alert",
+  "confirm",
+  "prompt",
+  "setTimeout",
+  "setInterval",
+  "clearTimeout",
+  "clearInterval",
+  "parseInt",
+  "parseFloat",
+  "Number",
+  "String",
+  "Boolean",
+  "Array",
+  "Object",
+  "Math",
+  "Date",
+  "JSON",
+  "Event",
+  "FileReader",
+  "URL",
+  "encodeURIComponent",
+  "decodeURIComponent",
 ]);
 const missingHandlers = new Map();
-const handlerAttributes = /on(?:click|change|input|submit|keydown|keyup|focus|blur)\s*=\s*["']([^"']+)["']/gi;
+const handlerAttributes =
+  /on(?:click|change|input|submit|keydown|keyup|focus|blur)\s*=\s*["']([^"']+)["']/gi;
 let handlerCount = 0;
 
 for (const attribute of html.matchAll(handlerAttributes)) {
   handlerCount += 1;
-  for (const call of attribute[1].matchAll(/(?:^|[^\w$.])([A-Za-z_$][\w$]*)\s*\(/g)) {
+  for (const call of attribute[1].matchAll(
+    /(?:^|[^\w$.])([A-Za-z_$][\w$]*)\s*\(/g,
+  )) {
     const name = call[1];
     if (declaredFunctions.has(name) || allowedGlobals.has(name)) continue;
     missingHandlers.set(name, (missingHandlers.get(name) || 0) + 1);
@@ -92,5 +120,10 @@ if (missingHandlers.size) {
 }
 
 if (failed) process.exit(1);
-console.log("Checked " + scripts.length + " admin script assets and " +
-  handlerCount + " inline handler references.");
+console.log(
+  "Checked " +
+    scripts.length +
+    " admin script assets and " +
+    handlerCount +
+    " inline handler references.",
+);

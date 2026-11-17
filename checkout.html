@@ -1,1255 +1,1546 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Veilig afrekenen | HOMS TECH</title>
-<meta name="description" content="Rond uw bestelling bij HOMS TECH af en controleer uw gegevens en betaalmethode.">
-<meta name="robots" content="noindex,nofollow">
-<style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f7fa;color:#111827}a{text-decoration:none;color:inherit}
-header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{max-width:1200px;margin:auto;min-height:72px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:20px}.logo{width:170px}.navlinks{display:flex;gap:8px;flex-wrap:wrap}.navlinks a{padding:10px 14px;border-radius:10px;font-weight:700}.navlinks a:hover{background:#243044}.cart{background:#dc2626}
-.wrap{max-width:1100px;margin:auto;padding:45px 20px 70px}.title{font-size:36px;margin:0 0 8px}.subtitle{color:#64748b;margin:0 0 28px}.layout{display:grid;grid-template-columns:1.35fr .85fr;gap:22px}.card{background:#fff;border-radius:18px;padding:24px;box-shadow:0 6px 25px rgba(15,23,42,.07)}h2{margin:0 0 20px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{display:flex;flex-direction:column;gap:7px}.field.full{grid-column:1/-1}label{font-weight:700;font-size:14px}input{width:100%;padding:13px 14px;border:1px solid #dbe3ec;border-radius:10px;font-size:15px;outline:none}input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}.account-note{background:#f1f5f9;padding:12px 14px;border-radius:10px;color:#475569;margin-bottom:18px;font-size:14px}.item{display:grid;grid-template-columns:68px 1fr auto;gap:12px;padding:13px 0;border-bottom:1px solid #e5e7eb}.item:last-child{border-bottom:0}.item img{width:68px;height:68px;object-fit:contain;background:#f8fafc;border-radius:10px}.item-title{font-weight:800}.item-meta{font-size:13px;color:#64748b;margin-top:4px}.item-price{font-weight:900;white-space:nowrap}.total{margin-top:18px;padding-top:18px;border-top:2px solid #e5e7eb;display:flex;justify-content:space-between;font-size:24px;font-weight:900}.btn{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:11px;padding:14px 20px;font-weight:800;cursor:pointer;font-size:15px}.red{background:#dc2626;color:#fff}.gray{background:#fff;color:#2563eb;border:1px solid #2563eb}.blue{background:#2563eb;color:#fff;border:1px solid #2563eb;box-shadow:0 5px 14px rgba(37,99,235,.18)}.submit{width:100%;margin-top:18px}.status{margin-top:14px;padding:12px 14px;border-radius:10px;display:none}.status.error{display:block;background:#fee2e2;color:#991b1b}.status.success{display:block;background:#dcfce7;color:#166534}.success-box{text-align:center;padding:35px 15px}.success-box .check{font-size:54px}.success-box h2{margin:10px 0}.order-number{font-weight:900;font-size:22px;margin:10px 0 20px}.hidden{display:none!important}
-@media(max-width:800px){.layout{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.nav{flex-direction:column;padding:12px 15px}.wrap{padding:30px 15px}.title{font-size:30px}}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Veilig afrekenen | HOMS TECH</title>
+    <meta
+      name="description"
+      content="Rond uw bestelling bij HOMS TECH af en controleer uw gegevens en betaalmethode."
+    />
+    <meta name="robots" content="noindex,nofollow" />
+    <style>
+      *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f7fa;color:#111827}a{text-decoration:none;color:inherit}
+      header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{max-width:1200px;margin:auto;min-height:72px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:20px}.logo{width:170px}.navlinks{display:flex;gap:8px;flex-wrap:wrap}.navlinks a{padding:10px 14px;border-radius:10px;font-weight:700}.navlinks a:hover{background:#243044}.cart{background:#dc2626}
+      .wrap{max-width:1100px;margin:auto;padding:45px 20px 70px}.title{font-size:36px;margin:0 0 8px}.subtitle{color:#64748b;margin:0 0 28px}.layout{display:grid;grid-template-columns:1.35fr .85fr;gap:22px}.card{background:#fff;border-radius:18px;padding:24px;box-shadow:0 6px 25px rgba(15,23,42,.07)}h2{margin:0 0 20px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{display:flex;flex-direction:column;gap:7px}.field.full{grid-column:1/-1}label{font-weight:700;font-size:14px}input{width:100%;padding:13px 14px;border:1px solid #dbe3ec;border-radius:10px;font-size:15px;outline:none}input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}.account-note{background:#f1f5f9;padding:12px 14px;border-radius:10px;color:#475569;margin-bottom:18px;font-size:14px}.item{display:grid;grid-template-columns:68px 1fr auto;gap:12px;padding:13px 0;border-bottom:1px solid #e5e7eb}.item:last-child{border-bottom:0}.item img{width:68px;height:68px;object-fit:contain;background:#f8fafc;border-radius:10px}.item-title{font-weight:800}.item-meta{font-size:13px;color:#64748b;margin-top:4px}.item-price{font-weight:900;white-space:nowrap}.total{margin-top:18px;padding-top:18px;border-top:2px solid #e5e7eb;display:flex;justify-content:space-between;font-size:24px;font-weight:900}.btn{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:11px;padding:14px 20px;font-weight:800;cursor:pointer;font-size:15px}.red{background:#dc2626;color:#fff}.gray{background:#fff;color:#2563eb;border:1px solid #2563eb}.blue{background:#2563eb;color:#fff;border:1px solid #2563eb;box-shadow:0 5px 14px rgba(37,99,235,.18)}.submit{width:100%;margin-top:18px}.status{margin-top:14px;padding:12px 14px;border-radius:10px;display:none}.status.error{display:block;background:#fee2e2;color:#991b1b}.status.success{display:block;background:#dcfce7;color:#166534}.success-box{text-align:center;padding:35px 15px}.success-box .check{font-size:54px}.success-box h2{margin:10px 0}.order-number{font-weight:900;font-size:22px;margin:10px 0 20px}.hidden{display:none!important}
+      @media(max-width:800px){.layout{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.nav{flex-direction:column;padding:12px 15px}.wrap{padding:30px 15px}.title{font-size:30px}}
 
-.ht-site-footer{background:#071d2d;color:#fff;margin-top:36px;padding:38px 20px 18px;font-size:14px}
-.ht-footer-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr;gap:28px}
-.ht-footer-logo{font-size:24px;font-weight:900;letter-spacing:.3px;margin-bottom:10px}.ht-footer-logo span{color:#60a5fa}
-.ht-site-footer p{color:#cbd5e1;line-height:1.7;margin:8px 0 12px}.ht-site-footer h2{font-size:15px;margin:0 0 12px;color:#fff}
-.ht-site-footer ul{list-style:none;padding:0;margin:0}.ht-site-footer li{margin:0 0 8px}.ht-site-footer a{color:#e2e8f0;text-decoration:none}.ht-site-footer a:hover{color:#93c5fd;text-decoration:underline}
-.ht-site-footer .ht-footer-cta{display:inline-flex;background:#2563eb;color:#fff;border-radius:8px;padding:10px 13px;font-weight:700;margin-top:4px}
-.ht-footer-bottom{max-width:1200px;margin:26px auto 0;padding-top:14px;border-top:1px solid #334155;display:flex;justify-content:space-between;gap:12px;color:#cbd5e1;font-size:12px}
-@media(max-width:760px){.ht-footer-grid{grid-template-columns:1fr 1fr;gap:22px}.ht-footer-bottom{flex-direction:column}}
-@media(max-width:460px){.ht-footer-grid{grid-template-columns:1fr}}
+      .ht-site-footer{background:#071d2d;color:#fff;margin-top:36px;padding:38px 20px 18px;font-size:14px}
+      .ht-footer-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr;gap:28px}
+      .ht-footer-logo{font-size:24px;font-weight:900;letter-spacing:.3px;margin-bottom:10px}.ht-footer-logo span{color:#60a5fa}
+      .ht-site-footer p{color:#cbd5e1;line-height:1.7;margin:8px 0 12px}.ht-site-footer h2{font-size:15px;margin:0 0 12px;color:#fff}
+      .ht-site-footer ul{list-style:none;padding:0;margin:0}.ht-site-footer li{margin:0 0 8px}.ht-site-footer a{color:#e2e8f0;text-decoration:none}.ht-site-footer a:hover{color:#93c5fd;text-decoration:underline}
+      .ht-site-footer .ht-footer-cta{display:inline-flex;background:#2563eb;color:#fff;border-radius:8px;padding:10px 13px;font-weight:700;margin-top:4px}
+      .ht-footer-bottom{max-width:1200px;margin:26px auto 0;padding-top:14px;border-top:1px solid #334155;display:flex;justify-content:space-between;gap:12px;color:#cbd5e1;font-size:12px}
+      @media(max-width:760px){.ht-footer-grid{grid-template-columns:1fr 1fr;gap:22px}.ht-footer-bottom{flex-direction:column}}
+      @media(max-width:460px){.ht-footer-grid{grid-template-columns:1fr}}
+    </style>
+    <link
+      rel="stylesheet"
+      href="assets/homs-tech-modern-true-theme.css?v=20261109-shared-theme"
+    />
+    <style>
+      /* HOMS TECH FINAL HEADER OVERRIDE — self-contained */
+      /* HOMS TECH TOPBAR FINAL POLISH */
+      .ht-topbar{background:#071d2d!important;color:#dbeafe!important;border-bottom:1px solid rgba(255,255,255,.08)!important;font-size:12px!important;}
+      .ht-topbar .ht-container{min-height:34px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:18px!important;}
+      .ht-topinfo{display:flex!important;align-items:center!important;justify-content:center!important;gap:22px!important;white-space:nowrap!important;}
+      .ht-topinfo span{display:inline-flex!important;align-items:center!important;gap:6px!important;line-height:1!important;color:#dbeafe!important;}
+      .ht-topinfo span b{font-size:11px!important;color:#60a5fa!important;font-weight:900!important;}
+      .ht-rating{display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;color:#fff!important;font-weight:700!important;white-space:nowrap!important;}
+      @media(max-width:900px){.ht-topbar .ht-container{padding:0 14px!important}.ht-topinfo{gap:12px!important;overflow:hidden!important}.ht-topinfo span:nth-child(n+3){display:none!important}.ht-rating{font-size:11px!important}}
 
-</style>
-<link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20261109-shared-theme">
-<style>
-/* HOMS TECH FINAL HEADER OVERRIDE — self-contained */
-/* HOMS TECH TOPBAR FINAL POLISH */
-.ht-topbar{background:#071d2d!important;color:#dbeafe!important;border-bottom:1px solid rgba(255,255,255,.08)!important;font-size:12px!important;}
-.ht-topbar .ht-container{min-height:34px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:18px!important;}
-.ht-topinfo{display:flex!important;align-items:center!important;justify-content:center!important;gap:22px!important;white-space:nowrap!important;}
-.ht-topinfo span{display:inline-flex!important;align-items:center!important;gap:6px!important;line-height:1!important;color:#dbeafe!important;}
-.ht-topinfo span b{font-size:11px!important;color:#60a5fa!important;font-weight:900!important;}
-.ht-rating{display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;color:#fff!important;font-weight:700!important;white-space:nowrap!important;}
-@media(max-width:900px){.ht-topbar .ht-container{padding:0 14px!important}.ht-topinfo{gap:12px!important;overflow:hidden!important}.ht-topinfo span:nth-child(n+3){display:none!important}.ht-rating{font-size:11px!important}}
+      .ht-header{position:sticky!important;top:0!important;z-index:9999!important;background:#fff!important;color:#172330!important;border-bottom:1px solid #e2e8f0!important;box-shadow:0 4px 18px rgba(7,29,45,.06)!important;}
+      .ht-header *{box-sizing:border-box!important;}
+      .ht-header .ht-container{max-width:1180px!important;margin:0 auto!important;padding:0 18px!important;}
+      .ht-header .ht-header-main{min-height:76px!important;display:flex!important;align-items:center!important;gap:22px!important;background:#fff!important;}
+      .ht-header .ht-brand{display:flex!important;align-items:center!important;flex:0 0 auto!important;background:transparent!important;padding:0!important;}
+      .ht-header .ht-brand img{width:154px!important;max-width:154px!important;height:auto!important;display:block!important;object-fit:contain!important;}
+      .ht-header .ht-search{height:42px!important;display:flex!important;align-items:center!important;flex:1!important;max-width:500px!important;background:#f4f7fa!important;border:1px solid #e1e7ee!important;border-radius:10px!important;overflow:hidden!important;margin-left:10px!important;padding:0!important;}
+      .ht-header .ht-search span{font-size:23px!important;color:#64748b!important;padding-left:13px!important;}
+      .ht-header .ht-search input{border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;width:100%!important;padding:0 10px!important;color:#172330!important;}
+      .ht-header .ht-search button{height:100%!important;border:0!important;background:#2563eb!important;color:#fff!important;font-weight:800!important;padding:0 17px!important;cursor:pointer!important;border-radius:0!important;}
+      .ht-header .ht-actions{display:flex!important;align-items:center!important;gap:16px!important;margin-left:auto!important;white-space:nowrap!important;}
+      .ht-header .ht-actions a{background:transparent!important;color:#334155!important;text-decoration:none!important;font-size:13px!important;font-weight:750!important;padding:6px 0!important;border-radius:0!important;}
+      .ht-header .ht-actions a:hover{background:transparent!important;color:#2563eb!important;}
+      .ht-header .ht-nav{display:flex!important;align-items:center!important;gap:5px!important;min-height:46px!important;overflow:auto!important;background:#fff!important;padding:0!important;margin:0!important;}
+      .ht-header .ht-nav a{background:transparent!important;color:#334155!important;text-decoration:none!important;font-size:14px!important;font-weight:750!important;padding:9px 13px!important;border-radius:9px!important;white-space:nowrap!important;}
+      .ht-header .ht-nav a:hover,.ht-header .ht-nav a.active{background:#edf4ff!important;color:#2563eb!important;}
+      @media(max-width:900px){.ht-header .ht-actions a:nth-child(1),.ht-header .ht-actions a:nth-child(2){display:none!important}.ht-header .ht-header-main{flex-wrap:wrap!important;padding:10px 0!important}.ht-header .ht-search{order:3!important;max-width:none!important;flex-basis:100%!important;margin:0 0 4px!important}.ht-header .ht-nav{padding-bottom:7px!important}}
+      @media(max-width:560px){.ht-header .ht-container{padding:0 12px!important}.ht-header .ht-brand img{width:138px!important;max-width:138px!important}.ht-header .ht-actions{gap:10px!important}.ht-header .ht-actions a{font-size:12px!important}.ht-header .ht-nav a{font-size:12px!important;padding:8px 10px!important}}
+    </style>
 
-.ht-header{position:sticky!important;top:0!important;z-index:9999!important;background:#fff!important;color:#172330!important;border-bottom:1px solid #e2e8f0!important;box-shadow:0 4px 18px rgba(7,29,45,.06)!important;}
-.ht-header *{box-sizing:border-box!important;}
-.ht-header .ht-container{max-width:1180px!important;margin:0 auto!important;padding:0 18px!important;}
-.ht-header .ht-header-main{min-height:76px!important;display:flex!important;align-items:center!important;gap:22px!important;background:#fff!important;}
-.ht-header .ht-brand{display:flex!important;align-items:center!important;flex:0 0 auto!important;background:transparent!important;padding:0!important;}
-.ht-header .ht-brand img{width:154px!important;max-width:154px!important;height:auto!important;display:block!important;object-fit:contain!important;}
-.ht-header .ht-search{height:42px!important;display:flex!important;align-items:center!important;flex:1!important;max-width:500px!important;background:#f4f7fa!important;border:1px solid #e1e7ee!important;border-radius:10px!important;overflow:hidden!important;margin-left:10px!important;padding:0!important;}
-.ht-header .ht-search span{font-size:23px!important;color:#64748b!important;padding-left:13px!important;}
-.ht-header .ht-search input{border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;width:100%!important;padding:0 10px!important;color:#172330!important;}
-.ht-header .ht-search button{height:100%!important;border:0!important;background:#2563eb!important;color:#fff!important;font-weight:800!important;padding:0 17px!important;cursor:pointer!important;border-radius:0!important;}
-.ht-header .ht-actions{display:flex!important;align-items:center!important;gap:16px!important;margin-left:auto!important;white-space:nowrap!important;}
-.ht-header .ht-actions a{background:transparent!important;color:#334155!important;text-decoration:none!important;font-size:13px!important;font-weight:750!important;padding:6px 0!important;border-radius:0!important;}
-.ht-header .ht-actions a:hover{background:transparent!important;color:#2563eb!important;}
-.ht-header .ht-nav{display:flex!important;align-items:center!important;gap:5px!important;min-height:46px!important;overflow:auto!important;background:#fff!important;padding:0!important;margin:0!important;}
-.ht-header .ht-nav a{background:transparent!important;color:#334155!important;text-decoration:none!important;font-size:14px!important;font-weight:750!important;padding:9px 13px!important;border-radius:9px!important;white-space:nowrap!important;}
-.ht-header .ht-nav a:hover,.ht-header .ht-nav a.active{background:#edf4ff!important;color:#2563eb!important;}
-@media(max-width:900px){.ht-header .ht-actions a:nth-child(1),.ht-header .ht-actions a:nth-child(2){display:none!important}.ht-header .ht-header-main{flex-wrap:wrap!important;padding:10px 0!important}.ht-header .ht-search{order:3!important;max-width:none!important;flex-basis:100%!important;margin:0 0 4px!important}.ht-header .ht-nav{padding-bottom:7px!important}}
-@media(max-width:560px){.ht-header .ht-container{padding:0 12px!important}.ht-header .ht-brand img{width:138px!important;max-width:138px!important}.ht-header .ht-actions{gap:10px!important}.ht-header .ht-actions a{font-size:12px!important}.ht-header .ht-nav a{font-size:12px!important;padding:8px 10px!important}}
-</style>
+    <style id="homs-tech-paypal">
+      .payment-box{margin-top:22px;padding:20px;border:1px solid #e2e8f0;border-radius:16px;background:#f8fafc}
+      .payment-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:16px}
+      .payment-head h3{margin:0 0 6px;font-size:20px}
+      .payment-head p{margin:0;color:#64748b;font-size:14px;line-height:1.5}
+      .payment-order{font-weight:900;color:#2563eb;white-space:nowrap}
+      #paypal-button-container{max-width:520px}
+      .payment-choice{margin-top:22px;border:1px solid #e2e8f0;border-radius:14px;padding:16px;background:#fff}
+      .payment-choice h3{margin:0 0 12px;font-size:18px}
+      .payment-option{display:flex;align-items:center;gap:12px;padding:13px;border:1px solid #dbe3ec;border-radius:11px;margin-top:9px;cursor:pointer}
+      .payment-option[hidden]{display:none!important}
+      .payment-option:has(input:checked){border-color:#2563eb;background:#eff6ff}
+      .payment-option input{width:18px;height:18px;flex:0 0 auto}
+      .payment-option span{display:flex;flex:1;flex-direction:column;gap:4px}
+      .payment-option strong{font-size:14px}.payment-option small,.payment-config-note{font-size:12px;color:#64748b;line-height:1.5}
+      .payment-option b{font-size:12px;color:#2563eb}
+      .payment-option input:disabled{cursor:not-allowed}
+      .payment-brand{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex:0 0 auto;min-width:88px}
+      .payment-logo{display:inline-flex;align-items:center;justify-content:center;min-height:27px;padding:4px 7px;border-radius:5px;font-size:12px;font-weight:900;letter-spacing:-.3px;white-space:nowrap;line-height:1}
+      .payment-logo.ideal{background:#cc0066;color:#fff;font-style:italic}
+      .payment-logo.wero{background:#fff;color:#1b1764;border:1px solid #d7d5ef;font-size:13px}
+      .payment-logo.paypal{background:#fff;color:#003087;border:1px solid #dbe3ec;font-size:13px;font-style:italic}
+      .payment-logo.paypal em{color:#009cde;font-style:italic}
+      .payment-logo.mollie{background:#fff;color:#2563eb;border:1px solid #dbe3ec}
+      .payment-config-note{margin:12px 0 0}
+      @media(max-width:560px){.payment-head{flex-direction:column}.payment-order{white-space:normal}}
+    </style>
+    <link rel="stylesheet" href="assets/homs-global-nav.css" />
 
+    <link
+      rel="stylesheet"
+      href="assets/homs-layout-system.css?v=20261109-accessibility"
+    />
+    <style id="ht-checkout-tradein-card">
+      .ht-cart-tradein{display:flex;align-items:flex-start;gap:12px;margin:16px 0;padding:15px;border:1px solid #bfdbfe;border-radius:14px;background:#eff6ff;color:#18324a}
+      .ht-cart-tradein-main{display:flex;align-items:flex-start;gap:11px;min-width:0}
+      .ht-cart-tradein-icon{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border-radius:11px;background:#dbeafe;color:#1d4ed8;font-size:19px}
+      .ht-cart-tradein-copy{min-width:0}
+      .ht-cart-tradein strong{display:block;color:#16324a;font-size:14px;font-weight:850}
+      .ht-cart-tradein small{display:block;margin-top:5px;color:#31516d;font-size:12px;line-height:1.45}
+      .ht-cart-tradein p{margin:7px 0 0;color:#64748b;font-size:12px;line-height:1.55}
+    </style>
+    <style id="ht-checkout-tradein-total">
+      .total #total{display:block;text-align:right}.ht-checkout-total-lines{display:grid;gap:7px;min-width:210px}.ht-checkout-total-lines>span{display:flex;justify-content:space-between;gap:18px;align-items:center}.ht-checkout-total-lines small{font-size:12px;color:#64748b}.ht-checkout-total-lines b{font-size:14px;color:#1e293b}.ht-checkout-total-lines .discount b{color:#15803d}.ht-checkout-total-lines .payable{padding-top:8px;border-top:1px solid #e2e8f0}.ht-checkout-total-lines .payable b{font-size:20px;color:#075fc4}
+    </style>
+    <style id="ht-checkout-option-format">
+      .ht-option-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;min-width:0}
+      .ht-option-chip{display:inline-flex;align-items:baseline;gap:4px;max-width:100%;padding:5px 8px;border:1px solid #e2e8f0;border-radius:7px;background:#f8fafc;color:#475569;font-size:11px;line-height:1.35;overflow-wrap:anywhere}
+      .ht-option-chip b{color:#334155;font-weight:750;white-space:nowrap}
+      .ht-option-chip span{min-width:0}
+      .item-meta .ht-option-list{margin:0 0 5px}
+      @media(max-width:560px){.ht-option-list{gap:5px}.ht-option-chip{font-size:10px;padding:5px 7px}}
+    </style>
 
-<style id="homs-tech-paypal">
-.payment-box{margin-top:22px;padding:20px;border:1px solid #e2e8f0;border-radius:16px;background:#f8fafc}
-.payment-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:16px}
-.payment-head h3{margin:0 0 6px;font-size:20px}
-.payment-head p{margin:0;color:#64748b;font-size:14px;line-height:1.5}
-.payment-order{font-weight:900;color:#2563eb;white-space:nowrap}
-#paypal-button-container{max-width:520px}
-.payment-choice{margin-top:22px;border:1px solid #e2e8f0;border-radius:14px;padding:16px;background:#fff}
-.payment-choice h3{margin:0 0 12px;font-size:18px}
-.payment-option{display:flex;align-items:center;gap:12px;padding:13px;border:1px solid #dbe3ec;border-radius:11px;margin-top:9px;cursor:pointer}
-.payment-option[hidden]{display:none!important}
-.payment-option:has(input:checked){border-color:#2563eb;background:#eff6ff}
-.payment-option input{width:18px;height:18px;flex:0 0 auto}
-.payment-option span{display:flex;flex:1;flex-direction:column;gap:4px}
-.payment-option strong{font-size:14px}.payment-option small,.payment-config-note{font-size:12px;color:#64748b;line-height:1.5}
-.payment-option b{font-size:12px;color:#2563eb}
-.payment-option input:disabled{cursor:not-allowed}
-.payment-brand{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex:0 0 auto;min-width:88px}
-.payment-logo{display:inline-flex;align-items:center;justify-content:center;min-height:27px;padding:4px 7px;border-radius:5px;font-size:12px;font-weight:900;letter-spacing:-.3px;white-space:nowrap;line-height:1}
-.payment-logo.ideal{background:#cc0066;color:#fff;font-style:italic}
-.payment-logo.wero{background:#fff;color:#1b1764;border:1px solid #d7d5ef;font-size:13px}
-.payment-logo.paypal{background:#fff;color:#003087;border:1px solid #dbe3ec;font-size:13px;font-style:italic}
-.payment-logo.paypal em{color:#009cde;font-style:italic}
-.payment-logo.mollie{background:#fff;color:#2563eb;border:1px solid #dbe3ec}
-.payment-config-note{margin:12px 0 0}
-@media(max-width:560px){.payment-head{flex-direction:column}.payment-order{white-space:normal}}
-</style>
-  <link rel="stylesheet" href="assets/homs-global-nav.css">
+    <style id="homs-tech-premium-checkout-v2">
+      :root{--ht-navy:#071d2d;--ht-blue:#086bd5;--ht-blue-deep:#0649a9;--ht-ink:#10233f;--ht-muted:#65758b;--ht-line:#dce6f2}
+      .checkout-wrap{max-width:1180px!important;padding-top:28px!important}
+      .checkout-hero{overflow:hidden;border-radius:20px;background:linear-gradient(115deg,#06172f 0%,#092c55 58%,#07539a 100%);color:#fff;box-shadow:0 12px 30px rgba(7,29,45,.16);margin-bottom:25px}
+      .checkout-brandline{min-height:78px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:16px 25px;border-bottom:1px solid rgba(255,255,255,.12)}
+      .checkout-brandmark{font-size:27px;line-height:1;font-weight:950;letter-spacing:.3px;color:#fff}
+      .checkout-brandmark b{color:#28a8f4}
+      .checkout-brandmark small{display:block;margin-top:7px;font-size:11px;font-weight:600;letter-spacing:.2px;color:#d4e7fb}
+      .checkout-secure{display:inline-flex;align-items:center;gap:9px;padding:11px 17px;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:rgba(255,255,255,.09);font-size:13px;font-weight:800;white-space:nowrap}
+      .checkout-secure span{font-size:19px;color:#bfe4ff}
+      .checkout-progress{display:flex;align-items:center;justify-content:center;gap:13px;padding:17px 20px 20px}
+      .checkout-progress-step{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:104px;color:#b6c9df}
+      .checkout-progress-step>span{width:36px;height:36px;display:grid;place-items:center;border:2px solid #7187a5;border-radius:50%;font-size:15px;font-weight:900;background:rgba(255,255,255,.06)}
+      .checkout-progress-step small{font-size:11px;font-weight:750;text-align:center}
+      .checkout-progress-step.is-done>span,.checkout-progress-step.is-active>span{border-color:#28a8f4;background:#0875dc;color:#fff;box-shadow:0 0 0 4px rgba(40,168,244,.13)}
+      .checkout-progress-step.is-done>span{background:#0d9b63;border-color:#0d9b63}
+      .checkout-progress-step.is-active{color:#fff}
+      .checkout-progress>i{width:min(14vw,110px);height:2px;background:linear-gradient(90deg,#1488e5,#55718f);margin-top:-18px}
+      .checkout-page-heading{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:0 0 20px}
+      .checkout-eyebrow{font-size:10px;letter-spacing:1.4px;font-weight:900;color:#1475c8}
+      .checkout-page-heading .title{margin:5px 0 5px;color:#10233f;font-size:30px;font-weight:900;letter-spacing:-.6px}
+      .checkout-page-heading .subtitle{margin:0;color:#65758b;font-size:14px}
+      .checkout-heading-lock{width:48px;height:48px;display:grid;place-items:center;border-radius:15px;background:#e8f3ff;color:#0874d5;font-size:24px}
+      .checkout-layout{grid-template-columns:minmax(0,1.35fr) minmax(300px,.8fr)!important;gap:22px!important;align-items:start}
+      .checkout-layout>.card{border:1px solid #e1e9f2;border-radius:20px;padding:25px;background:#fff;box-shadow:0 10px 30px rgba(11,39,70,.065)}
+      .checkout-layout>.card>h2{color:#10233f;font-size:20px;font-weight:900;margin:0 0 19px}
+      .checkout-layout .account-note{border:1px solid #d8eaff;background:#f0f7ff;color:#28516f}
+      .checkout-layout .grid{gap:15px}
+      .checkout-layout .field label{color:#253d59;font-size:13px;font-weight:800}
+      .checkout-layout .field input{min-height:48px;border:1px solid #d7e1ec;border-radius:11px;background:#fbfdff;color:#172a40;font-size:14px;padding:12px 14px;transition:border-color .18s,box-shadow .18s}
+      .checkout-layout .field input:focus{border-color:#1681df;box-shadow:0 0 0 3px rgba(22,129,223,.12);background:#fff}
 
-<link rel="stylesheet" href="assets/homs-layout-system.css?v=20261109-accessibility">
-<style id="ht-checkout-tradein-card">
-.ht-cart-tradein{display:flex;align-items:flex-start;gap:12px;margin:16px 0;padding:15px;border:1px solid #bfdbfe;border-radius:14px;background:#eff6ff;color:#18324a}
-.ht-cart-tradein-main{display:flex;align-items:flex-start;gap:11px;min-width:0}
-.ht-cart-tradein-icon{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border-radius:11px;background:#dbeafe;color:#1d4ed8;font-size:19px}
-.ht-cart-tradein-copy{min-width:0}
-.ht-cart-tradein strong{display:block;color:#16324a;font-size:14px;font-weight:850}
-.ht-cart-tradein small{display:block;margin-top:5px;color:#31516d;font-size:12px;line-height:1.45}
-.ht-cart-tradein p{margin:7px 0 0;color:#64748b;font-size:12px;line-height:1.55}
-</style>
-<style id="ht-checkout-tradein-total">.total #total{display:block;text-align:right}.ht-checkout-total-lines{display:grid;gap:7px;min-width:210px}.ht-checkout-total-lines>span{display:flex;justify-content:space-between;gap:18px;align-items:center}.ht-checkout-total-lines small{font-size:12px;color:#64748b}.ht-checkout-total-lines b{font-size:14px;color:#1e293b}.ht-checkout-total-lines .discount b{color:#15803d}.ht-checkout-total-lines .payable{padding-top:8px;border-top:1px solid #e2e8f0}.ht-checkout-total-lines .payable b{font-size:20px;color:#075fc4}</style>
-<style id="ht-checkout-option-format">
-.ht-option-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;min-width:0}
-.ht-option-chip{display:inline-flex;align-items:baseline;gap:4px;max-width:100%;padding:5px 8px;border:1px solid #e2e8f0;border-radius:7px;background:#f8fafc;color:#475569;font-size:11px;line-height:1.35;overflow-wrap:anywhere}
-.ht-option-chip b{color:#334155;font-weight:750;white-space:nowrap}
-.ht-option-chip span{min-width:0}
-.item-meta .ht-option-list{margin:0 0 5px}
-@media(max-width:560px){.ht-option-list{gap:5px}.ht-option-chip{font-size:10px;padding:5px 7px}}
-</style>
-
-<style id="homs-tech-premium-checkout-v2">
-:root{--ht-navy:#071d2d;--ht-blue:#086bd5;--ht-blue-deep:#0649a9;--ht-ink:#10233f;--ht-muted:#65758b;--ht-line:#dce6f2}
-.checkout-wrap{max-width:1180px!important;padding-top:28px!important}
-.checkout-hero{overflow:hidden;border-radius:20px;background:linear-gradient(115deg,#06172f 0%,#092c55 58%,#07539a 100%);color:#fff;box-shadow:0 12px 30px rgba(7,29,45,.16);margin-bottom:25px}
-.checkout-brandline{min-height:78px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:16px 25px;border-bottom:1px solid rgba(255,255,255,.12)}
-.checkout-brandmark{font-size:27px;line-height:1;font-weight:950;letter-spacing:.3px;color:#fff}
-.checkout-brandmark b{color:#28a8f4}
-.checkout-brandmark small{display:block;margin-top:7px;font-size:11px;font-weight:600;letter-spacing:.2px;color:#d4e7fb}
-.checkout-secure{display:inline-flex;align-items:center;gap:9px;padding:11px 17px;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:rgba(255,255,255,.09);font-size:13px;font-weight:800;white-space:nowrap}
-.checkout-secure span{font-size:19px;color:#bfe4ff}
-.checkout-progress{display:flex;align-items:center;justify-content:center;gap:13px;padding:17px 20px 20px}
-.checkout-progress-step{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:104px;color:#b6c9df}
-.checkout-progress-step>span{width:36px;height:36px;display:grid;place-items:center;border:2px solid #7187a5;border-radius:50%;font-size:15px;font-weight:900;background:rgba(255,255,255,.06)}
-.checkout-progress-step small{font-size:11px;font-weight:750;text-align:center}
-.checkout-progress-step.is-done>span,.checkout-progress-step.is-active>span{border-color:#28a8f4;background:#0875dc;color:#fff;box-shadow:0 0 0 4px rgba(40,168,244,.13)}
-.checkout-progress-step.is-done>span{background:#0d9b63;border-color:#0d9b63}
-.checkout-progress-step.is-active{color:#fff}
-.checkout-progress>i{width:min(14vw,110px);height:2px;background:linear-gradient(90deg,#1488e5,#55718f);margin-top:-18px}
-.checkout-page-heading{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:0 0 20px}
-.checkout-eyebrow{font-size:10px;letter-spacing:1.4px;font-weight:900;color:#1475c8}
-.checkout-page-heading .title{margin:5px 0 5px;color:#10233f;font-size:30px;font-weight:900;letter-spacing:-.6px}
-.checkout-page-heading .subtitle{margin:0;color:#65758b;font-size:14px}
-.checkout-heading-lock{width:48px;height:48px;display:grid;place-items:center;border-radius:15px;background:#e8f3ff;color:#0874d5;font-size:24px}
-.checkout-layout{grid-template-columns:minmax(0,1.35fr) minmax(300px,.8fr)!important;gap:22px!important;align-items:start}
-.checkout-layout>.card{border:1px solid #e1e9f2;border-radius:20px;padding:25px;background:#fff;box-shadow:0 10px 30px rgba(11,39,70,.065)}
-.checkout-layout>.card>h2{color:#10233f;font-size:20px;font-weight:900;margin:0 0 19px}
-.checkout-layout .account-note{border:1px solid #d8eaff;background:#f0f7ff;color:#28516f}
-.checkout-layout .grid{gap:15px}
-.checkout-layout .field label{color:#253d59;font-size:13px;font-weight:800}
-.checkout-layout .field input{min-height:48px;border:1px solid #d7e1ec;border-radius:11px;background:#fbfdff;color:#172a40;font-size:14px;padding:12px 14px;transition:border-color .18s,box-shadow .18s}
-.checkout-layout .field input:focus{border-color:#1681df;box-shadow:0 0 0 3px rgba(22,129,223,.12);background:#fff}
-
-.checkout-layout>.card:last-child{position:sticky;top:110px}
-.checkout-layout>.card:last-child>h2{padding-bottom:14px;border-bottom:1px solid #e7eef6}
-.checkout-layout .item{grid-template-columns:64px minmax(0,1fr) auto;gap:11px}
-.checkout-layout .item img{width:64px;height:64px;border:1px solid #edf1f6;background:#f7faff}
-.checkout-layout .item-title{color:#1b3049;font-size:13px}
-.checkout-layout .item-price{color:#122d4e;font-size:13px}
-.checkout-layout .total{align-items:center;color:#10233f;border-top:2px solid #e4edf6;font-size:21px}
-.checkout-layout>.card:last-child .btn.gray{width:100%;min-height:47px;border-radius:11px;background:#fff!important;border-color:#c9d9eb!important;color:#1c5c9c!important}
-.checkout-layout>.card:last-child .btn.gray:hover{background:#f1f7ff!important}
-#status.status.error{background:#fff1f1;color:#a11d2b;border:1px solid #f4c9cd}
-#status.status.success{background:#edfff4;color:#146c3b;border:1px solid #c5efd6}
-#paymentBox{border-radius:16px;border:1px solid #dce7f3;background:#f8fbff}
-@media(max-width:900px){.checkout-layout{grid-template-columns:1fr!important}.checkout-layout>.card:last-child{position:static;top:auto}}
-@media(max-width:600px){
- .checkout-wrap{padding:17px 12px 42px!important}
- .checkout-hero{border-radius:15px;margin-bottom:19px}
- .checkout-brandline{min-height:67px;padding:13px 15px}
- .checkout-brandmark{font-size:23px}
- .checkout-brandmark small{font-size:9px}
- .checkout-secure{padding:9px 11px;font-size:10px}
- .checkout-progress{gap:7px;padding:14px 8px 16px}
- .checkout-progress-step{min-width:0;flex:1;gap:5px}
- .checkout-progress-step>span{width:30px;height:30px;font-size:13px}
- .checkout-progress-step small{font-size:9px}
- .checkout-progress>i{width:10vw;margin-top:-15px}
- .checkout-page-heading{margin-bottom:15px}
- .checkout-page-heading .title{font-size:24px}
- .checkout-page-heading .subtitle{font-size:12px}
- .checkout-heading-lock{width:41px;height:41px;font-size:20px}
- .checkout-layout{gap:14px!important}
- .checkout-layout>.card{padding:16px;border-radius:16px}
- .checkout-layout>.card>h2{font-size:17px;margin-bottom:15px}
- .checkout-layout .grid{gap:12px}
- .checkout-layout .field input{min-height:46px}
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
-
- .checkout-layout .item{grid-template-columns:54px minmax(0,1fr) auto;gap:8px}
- .checkout-layout .item img{width:54px;height:54px}
-}
-@media(max-width:390px){
- 
- 
- 
- 
- 
- 
- 
- 
- 
-}
-
-/* Specificity fixes for the shared checkout styles */
-
-@media(max-width:390px){}
-
-/* MOBILE PAYMENT ROW FIX — keep logos and radio controls compact */
-
-@media(max-width:390px){
-  
-  
-  
-}
-</style>
-
-<style id="homs-tech-payment-layout-v2">
-/* HOMS TECH checkout — single responsive payment layout */
-.payment-choice{
-  margin-top:22px;
-  padding:0 0 16px;
-  overflow:hidden;
-  border:1px solid #dce6f1;
-  border-radius:22px;
-  background:#fff;
-  box-shadow:0 8px 26px rgba(20,55,95,.06);
-}
-.payment-choice-heading{
-  display:flex;
-  align-items:center;
-  gap:16px;
-  padding:20px 22px;
-  border-bottom:1px solid #e1eaf4;
-  background:linear-gradient(115deg,#edf5ff 0%,#f8fbff 100%);
-}
-.payment-heading-icon{
-  display:grid;
-  place-items:center;
-  width:58px;
-  height:58px;
-  flex:0 0 58px;
-  border:1px solid #d6e6f7;
-  border-radius:17px;
-  background:linear-gradient(145deg,#e1f0ff,#f8fbff);
-  color:#0875d1;
-  font-size:27px;
-  box-shadow:0 5px 14px rgba(12,100,190,.08);
-}
-.payment-choice-heading h3{margin:0 0 5px;color:#10233f;font-size:25px;font-weight:900;letter-spacing:-.5px}
-.payment-choice-heading p{margin:0;color:#687a91;font-size:14px}
-.payment-options{display:grid;gap:12px;padding:16px 18px 10px}
-.payment-option{
-  display:grid!important;
-  grid-template-columns:22px 48px minmax(0,1fr) 158px;
-  align-items:center;
-  gap:11px;
-  min-width:0;
-  min-height:104px;
-  margin:0!important;
-  padding:13px 14px!important;
-  border:1.5px solid #dce5ef!important;
-  border-radius:18px!important;
-  background:linear-gradient(115deg,#fff,#fbfdff)!important;
-  cursor:pointer;
-  transition:border-color .18s ease,background .18s ease,box-shadow .18s ease,transform .18s ease;
-}
-.payment-option:hover{border-color:#9dc4ec!important;transform:translateY(-1px)}
-.payment-option:has(input:checked){
-  border:2px solid #1680d5!important;
-  padding:12.5px 13.5px!important;
-  background:linear-gradient(115deg,#eff7ff,#fbfdff)!important;
-  box-shadow:0 7px 18px rgba(14,111,199,.10);
-}
-.payment-option>input{
-  width:21px!important;
-  height:21px!important;
-  min-width:21px;
-  margin:0!important;
-  accent-color:#087bd5;
-  cursor:pointer;
-}
-.payment-option>input:disabled{cursor:not-allowed;opacity:.55}
-.payment-option-symbol{
-  display:flex!important;
-  align-items:center;
-  justify-content:center;
-  width:46px;
-  height:46px;
-  min-width:0;
-  flex:none!important;
-  border:0;
-  background:transparent;
-}
-.ideal-symbol{
-  width:48px!important;
-  height:44px!important;
-  border:2px solid #14243c!important;
-  border-radius:5px 18px 18px 5px;
-  background:linear-gradient(110deg,#fff 0 16%,#d50072 16% 100%)!important;
-  color:#fff;
-  font-size:12px;
-  font-weight:950;
-  font-style:italic;
-  letter-spacing:-.6px;
-  text-shadow:0 1px 1px rgba(0,0,0,.18);
-}
-.paypal-symbol{color:#0878bd;font-size:45px;font-weight:1000;font-style:italic;letter-spacing:-5px;text-shadow:2px 1px 0 #9bdcf6}
-.cod-symbol{display:flex!important;align-items:center;justify-content:center;width:46px;height:46px;border:0!important;border-radius:0!important;background:transparent!important;color:#0875cf!important;font-size:0!important;font-weight:700}
-.cod-symbol svg{display:block;width:100%;height:100%;overflow:visible}
-
-.payment-option-copy{
-  display:flex!important;
-  flex:initial!important;
-  flex-direction:column;
-  gap:5px!important;
-  min-width:0;
-}
-.payment-option-copy strong{color:#172a43;font-size:16px;font-weight:900;line-height:1.25}
-.payment-option-copy small{color:#6b7b90;font-size:12px;font-weight:650;line-height:1.4}
-.payment-option-brands{
-  display:grid!important;
-  grid-template-columns:auto auto;
-  grid-template-rows:auto auto;
-  align-items:center;
-  justify-content:end;
-  justify-items:end;
-  gap:7px 6px;
-  width:158px;
-  min-width:0!important;
-  flex:none!important;
-}
-.payment-recommended{
-  grid-column:1/-1;
-  grid-row:1;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:6px 10px;
-  border-radius:999px;
-  background:#0caf70;
-  color:#fff!important;
-  font-size:10px!important;
-  font-weight:850;
-  line-height:1.1;
-  white-space:nowrap;
-}
-.payment-brand-row,.payment-card-brands{
-  display:flex!important;
-  align-items:center;
-  justify-content:flex-end;
-  gap:5px;
-  min-width:0;
-}
-.payment-brand-row{grid-column:1;grid-row:2}
-.payment-card-brands{grid-column:2;grid-row:2;gap:6px;color:#174d91;font-size:12px}
-.payment-logo{
-  display:inline-flex!important;
-  align-items:center;
-  justify-content:center;
-  min-width:0;
-  min-height:28px;
-  padding:5px 7px;
-  border:1px solid #e0e7ef;
-  border-radius:8px;
-  background:#fff;
-  box-shadow:0 2px 5px rgba(20,40,70,.06);
-  font-size:10px;
-  font-weight:950;
-  line-height:1;
-  white-space:nowrap;
-}
-.payment-logo.ideal{border-color:#c90069;background:#c90069;color:#fff;font-style:italic}
-.payment-logo.wero{color:#1b1764}
-.payment-mastercard{position:relative;display:inline-block;width:28px;height:19px;flex:0 0 28px}
-.payment-mastercard:before,.payment-mastercard:after{position:absolute;top:1px;width:18px;height:18px;border-radius:50%;content:""}
-.payment-mastercard:before{left:0;background:#eb001b}
-.payment-mastercard:after{right:0;background:#f79e1b;mix-blend-mode:multiply}
-.payment-option-paypal .payment-logo.paypal{
-  display:flex!important;
-  align-items:center;
-  justify-content:center;
-  width:104px!important;
-  min-width:104px!important;
-  height:46px;
-  padding:7px 9px;
-  border:1px solid #dce5ef;
-  border-radius:11px;
-  color:#003087;
-  font-size:20px;
-  font-style:italic;
-  font-weight:950;
-}
-.payment-logo.paypal em{color:#009cde;font-style:italic}
-.payment-option-cod .payment-cash-label{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  justify-self:end;
-  min-width:100px;
-  padding:11px 13px;
-  border-radius:13px;
-  background:#edf5ff;
-  color:#1768b5;
-  font-size:13px;
-  font-weight:900;
-}
-.payment-trust-strip{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  margin:5px 18px 0;
-  padding:17px 0;
-  border-top:1px solid #e4ebf2;
-  border-bottom:1px solid #e4ebf2;
-}
-.payment-trust-strip>div{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  min-width:0;
-  padding:0 7px;
-  border-right:1px solid #dce5ef;
-  color:#30445d;
-  font-size:12px;
-  font-weight:850;
-  line-height:1.35;
-  text-align:center;
-}
-.payment-trust-strip>div:last-child{border:0}
-.payment-trust-strip svg{
-  display:block;
-  width:27px;
-  height:27px;
-  flex:0 0 27px;
-  overflow:visible;
-  fill:none;
-  stroke:#0875cf;
-  stroke-width:1.9;
-  stroke-linecap:round;
-  stroke-linejoin:round;
-}
-.payment-config-note{
-  display:block;
-  margin:13px 18px 0!important;
-  padding:12px 14px;
-  border:1px solid #e6edf5;
-  border-radius:13px;
-  background:#f3f7fc;
-  color:#65758a;
-  font-size:12px;
-  line-height:1.5;
-}
-.payment-mollie-trust{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin:14px 18px 0;
-  padding:14px;
-  border:1px solid #d7efdf;
-  border-radius:15px;
-  background:linear-gradient(110deg,#eafff1,#f4fcff);
-}
-.payment-mollie-trust[hidden]{display:none!important}
-.mollie-shield{
-  display:grid;
-  place-items:center;
-  width:42px;
-  height:42px;
-  flex:0 0 42px;
-  border-radius:12px;
-  background:#0bad62;
-  color:#fff;
-  font-size:25px;
-  font-weight:950;
-}
-.payment-mollie-trust>div{display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}
-.payment-mollie-trust strong{color:#173e2c;font-size:13px;font-weight:900}
-.payment-mollie-trust small{color:#5b7667;font-size:11px;line-height:1.4}
-.mollie-wordmark{
-  padding:8px 11px;
-  border:1px solid #dce5ed;
-  border-radius:11px;
-  background:#fff;
-  color:#101828;
-  font-size:21px;
-  font-weight:950;
-  letter-spacing:-1px;
-}
+      .checkout-layout>.card:last-child{position:sticky;top:110px}
+      .checkout-layout>.card:last-child>h2{padding-bottom:14px;border-bottom:1px solid #e7eef6}
+      .checkout-layout .item{grid-template-columns:64px minmax(0,1fr) auto;gap:11px}
+      .checkout-layout .item img{width:64px;height:64px;border:1px solid #edf1f6;background:#f7faff}
+      .checkout-layout .item-title{color:#1b3049;font-size:13px}
+      .checkout-layout .item-price{color:#122d4e;font-size:13px}
+      .checkout-layout .total{align-items:center;color:#10233f;border-top:2px solid #e4edf6;font-size:21px}
+      .checkout-layout>.card:last-child .btn.gray{width:100%;min-height:47px;border-radius:11px;background:#fff!important;border-color:#c9d9eb!important;color:#1c5c9c!important}
+      .checkout-layout>.card:last-child .btn.gray:hover{background:#f1f7ff!important}
+      #status.status.error{background:#fff1f1;color:#a11d2b;border:1px solid #f4c9cd}
+      #status.status.success{background:#edfff4;color:#146c3b;border:1px solid #c5efd6}
+      #paymentBox{border-radius:16px;border:1px solid #dce7f3;background:#f8fbff}
+      @media(max-width:900px){.checkout-layout{grid-template-columns:1fr!important}.checkout-layout>.card:last-child{position:static;top:auto}}
+      @media(max-width:600px){
+       .checkout-wrap{padding:17px 12px 42px!important}
+       .checkout-hero{border-radius:15px;margin-bottom:19px}
+       .checkout-brandline{min-height:67px;padding:13px 15px}
+       .checkout-brandmark{font-size:23px}
+       .checkout-brandmark small{font-size:9px}
+       .checkout-secure{padding:9px 11px;font-size:10px}
+       .checkout-progress{gap:7px;padding:14px 8px 16px}
+       .checkout-progress-step{min-width:0;flex:1;gap:5px}
+       .checkout-progress-step>span{width:30px;height:30px;font-size:13px}
+       .checkout-progress-step small{font-size:9px}
+       .checkout-progress>i{width:10vw;margin-top:-15px}
+       .checkout-page-heading{margin-bottom:15px}
+       .checkout-page-heading .title{font-size:24px}
+       .checkout-page-heading .subtitle{font-size:12px}
+       .checkout-heading-lock{width:41px;height:41px;font-size:20px}
+       .checkout-layout{gap:14px!important}
+       .checkout-layout>.card{padding:16px;border-radius:16px}
+       .checkout-layout>.card>h2{font-size:17px;margin-bottom:15px}
+       .checkout-layout .grid{gap:12px}
+       .checkout-layout .field input{min-height:46px}
 
 
 
 
 
 
-.payment-option:focus-within{outline:3px solid rgba(8,121,229,.15);outline-offset:2px}
-.payment-option>input:focus-visible{outline:3px solid rgba(8,121,229,.25);outline-offset:3px}
-@media(max-width:600px){
-  .payment-choice-heading{gap:13px;padding:17px 16px}
-  .payment-heading-icon{width:52px;height:52px;flex-basis:52px}
-  .payment-choice-heading h3{font-size:22px}
-  .payment-choice-heading p{font-size:13px}
-  .payment-options{gap:10px;padding:13px 12px 9px}
-  .payment-option{
-    grid-template-columns:20px 39px minmax(0,1fr) 125px;
-    gap:7px;
-    min-height:94px;
-    padding:11px 9px!important;
-    border-radius:16px!important;
-  }
-  .payment-option:has(input:checked){padding:10.5px 8.5px!important}
-  .payment-option-symbol{width:37px;height:39px}
-  .ideal-symbol{width:39px!important;height:35px!important;font-size:9px}
-  .payment-option-copy strong{font-size:13px}
-  .payment-option-copy small{font-size:10px}
-  .payment-option-brands{width:125px;grid-template-columns:auto auto;gap:6px 4px}
-  .payment-recommended{padding:5px 8px;font-size:8px!important}
-  .payment-logo{min-height:24px;padding:4px 5px;font-size:8px}
-  .payment-brand-row,.payment-card-brands{gap:4px}
-  .payment-card-brands{font-size:10px}
-  .payment-mastercard{width:23px;height:17px;flex-basis:23px}
-  .payment-mastercard:before,.payment-mastercard:after{width:16px;height:16px}
-  .payment-option-paypal .payment-logo.paypal{width:77px!important;min-width:77px!important;height:37px;font-size:15px}
-  .payment-option-paypal{grid-template-columns:20px 34px minmax(0,1fr) 77px}
-  .paypal-symbol{font-size:38px}
-  .payment-option-cod{grid-template-columns:20px 34px minmax(0,1fr) 83px}
-  .cod-symbol{width:34px;height:38px}
-  .cod-symbol svg{width:100%;height:100%}
-  .payment-option-cod .payment-cash-label{min-width:82px;padding:9px 7px;font-size:11px}
-  .payment-trust-strip{margin:4px 12px 0;padding:14px 0}
-  .payment-trust-strip>div{gap:7px;padding:0 5px;font-size:10px}
-  .payment-trust-strip svg{
-    width:24px;
-    height:24px;
-    flex-basis:24px;
-  }
-  .payment-config-note{margin:11px 12px 0!important;padding:11px 12px;font-size:11px}
-  .payment-mollie-trust{gap:9px;margin:12px 12px 0;padding:11px}
-  .mollie-shield{width:37px;height:37px;flex-basis:37px;font-size:22px}
-  .payment-mollie-trust strong{font-size:11px}
-  .payment-mollie-trust small{font-size:10px}
-  .mollie-wordmark{padding:7px 8px;font-size:18px}
 
 
-}
-@media(max-width:390px){
-  .payment-options{padding-right:9px;padding-left:9px}
-  .payment-option{
-    grid-template-columns:18px 31px minmax(0,1fr) 108px;
-    gap:6px;
-    padding-right:7px!important;
-    padding-left:7px!important;
-  }
-  .payment-option:has(input:checked){padding-right:6.5px!important;padding-left:6.5px!important}
-  .payment-option-symbol{width:31px;height:34px}
-  .ideal-symbol{width:32px!important;height:31px!important;font-size:8px}
-  .payment-option-copy strong{font-size:11px}
-  .payment-option-copy small{font-size:9px}
-  .payment-option-brands{width:108px}
-  .payment-recommended{font-size:7px!important;padding:4px 6px}
-  .payment-logo{font-size:7px;padding:4px}
-  .payment-card-brands{font-size:9px}
-  .payment-option-paypal{grid-template-columns:18px 29px minmax(0,1fr) 66px}
-  .payment-option-paypal .payment-logo.paypal{width:66px!important;min-width:66px!important;height:33px;font-size:13px}
-  .payment-option-cod{grid-template-columns:18px 29px minmax(0,1fr) 70px}
-  .payment-option-cod .payment-cash-label{min-width:70px;font-size:9px;padding:8px 5px}
-}
-@media(prefers-reduced-motion:reduce){
-
-}
 
 
-/* Checkout submit action — canonical styles */
-.checkout-submit-wrap{margin-top:16px}
-#submitBtn{
-  box-sizing:border-box;
-  display:flex;
-  flex-direction:row;
-  align-items:center;
-  justify-content:center;
-  gap:12px;
-  width:100%;
-  min-height:64px;
-  margin:0;
-  padding:15px 20px;
-  border:0;
-  border-radius:16px;
-  background:linear-gradient(100deg,#087ce5 0%,#0750bd 100%);
-  color:#fff;
-  font-size:18px;
-  font-weight:900;
-  line-height:1.25;
-  box-shadow:0 9px 22px rgba(8,91,190,.2);
-  transition:transform .18s ease,box-shadow .18s ease;
-}
-#submitBtn::before,#submitBtn::after{content:none;display:none}
-#submitBtn>span{display:inline-block;min-width:0}
-#submitBtn>.checkout-submit-lock{
-  display:block;
-  width:23px;
-  height:23px;
-  min-width:23px;
-  flex:0 0 23px;
-  margin:0;
-  padding:0;
-  overflow:visible;
-  color:currentColor;
-  opacity:1;
-  visibility:visible;
-}
-#submitBtn>.checkout-submit-lock rect,
-#submitBtn>.checkout-submit-lock path{
-  fill:none;
-  stroke:currentColor;
-  stroke-width:2;
-  stroke-linecap:round;
-  stroke-linejoin:round;
-}
-#submitBtn:hover{transform:translateY(-1px);box-shadow:0 12px 25px rgba(8,91,190,.25)}
-#submitBtn:focus-visible{outline:3px solid rgba(8,121,229,.28);outline-offset:3px}
-#submitBtn:disabled{opacity:.65;cursor:wait;transform:none}
-.checkout-submit-wrap>small{display:block;margin-top:10px;color:#7b899a;font-size:11px;text-align:center}
-@media(max-width:600px){
-  .checkout-submit-wrap{margin-top:15px}
-  #submitBtn{min-height:60px;gap:10px;padding:14px 16px;font-size:16px}
-  #submitBtn>.checkout-submit-lock{width:22px;height:22px;min-width:22px;flex-basis:22px}
-}
-@media(prefers-reduced-motion:reduce){#submitBtn{transition:none}}
 
-</style>
 
-</head>
-<body>
-<div class="ht-topbar"><div class="ht-container"><div class="ht-marquee"><span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span></div></div></div>
-<header class="ht-header"><div class="ht-container"><div class="ht-header-main"><a class="ht-brand" href="index.html"><img src="assets/homs-tech-logo.png" alt="HOMS TECH"></a><form class="ht-search" action="devices.html" method="get"><span>⌕</span><input name="search" placeholder="Waar ben je naar op zoek?" aria-label="Zoeken"><button type="submit">Zoek</button></form><div class="ht-actions"><a href="account.html">♙ Mijn account</a><a href="cart.html">🛒 Winkelwagen</a></div></div><nav class="ht-nav"><a href="index.html">Home</a><a href="about.html">Over ons</a><a href="repair.html">Reparaties</a><a href="devices.html">Apparaten</a><a href="prices.html">Prijzen</a>
-   <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a><a href="account.html">Mijn account</a></nav></div></header>
-<main class="wrap checkout-wrap">
-<div class="checkout-hero">
-  <div class="checkout-brandline">
-    <div class="checkout-brandmark"><span>HOMS</span> <b>TECH</b><small>Mobiele Reparatie & Telefoonshop</small></div>
-    <div class="checkout-secure"><span aria-hidden="true">♙</span> Veilige Checkout</div>
-  </div>
-  <div class="checkout-progress" aria-label="Voortgang van uw bestelling">
-    <div class="checkout-progress-step is-done"><span>✓</span><small>Winkelwagen</small></div>
-    <i></i>
-    <div class="checkout-progress-step is-done"><span>✓</span><small>Gegevens</small></div>
-    <i></i>
-    <div class="checkout-progress-step is-active" aria-current="step"><span>3</span><small>Betaling</small></div>
-    <i></i>
-    <div class="checkout-progress-step"><span>4</span><small>Bevestiging</small></div>
-  </div>
-</div>
-<div class="checkout-page-heading">
-  <div><span class="checkout-eyebrow">VEILIG EN EENVOUDIG AFREKENEN</span><h1 class="title">Uw bestelling afronden</h1><p class="subtitle">Controleer uw gegevens en kies uw gewenste betaalmethode.</p></div>
-  <div class="checkout-heading-lock" aria-hidden="true">♙</div>
-</div>
-<div id="checkoutContent" class="layout checkout-layout">
-<section class="card"><h2>📦 Uw gegevens</h2><div id="accountNote" class="account-note hidden"></div><form id="checkoutForm"><div class="grid">
-<div class="field"><label for="name">Naam *</label><input id="name" required></div>
-<div class="field"><label for="email">E-mail *</label><input id="email" type="email" required></div>
-<div class="field"><label for="phone">Telefoonnummer *</label><input id="phone" type="tel" required></div>
-<div class="field"><label for="postcode">Postcode *</label><input id="postcode" required></div>
-<div class="field"><label for="street">Straat *</label><input id="street" required></div>
-<div class="field"><label for="houseNumber">Huisnummer *</label><input id="houseNumber" required></div>
-<div class="field full"><label for="city">Plaats *</label><input id="city" required></div>
-</div>
-<div class="payment-choice" aria-label="Betaalmethode">
-  <div class="payment-choice-heading">
-    <span class="payment-heading-icon" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><rect x="5" y="9" width="38" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="2.8"/><path d="M6 18h36M12 27h10M12 33h6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg></span>
-    <div><h3>Betaalmethode</h3><p>Kies uw gewenste betaalmethode</p></div>
-  </div>
-  <div class="payment-options">
-    <label class="payment-option payment-option-mollie" for="paymentMollie">
-      <input id="paymentMollie" type="radio" name="paymentMethod" value="Mollie" checked>
-      <span class="payment-option-symbol ideal-symbol" aria-hidden="true">iDEAL</span>
-      <span class="payment-option-copy"><strong>iDEAL / Wero / Bankkaart</strong><small>Snel en veilig betalen via Mollie</small></span>
-      <span class="payment-option-brands" aria-label="iDEAL, Wero, Mastercard en Visa">
-        <b class="payment-recommended">✦ Aanbevolen</b>
-        <span class="payment-brand-row"><span class="payment-logo ideal">iDEAL</span><span class="payment-logo wero">wero</span></span>
-        <span class="payment-card-brands"><i class="payment-mastercard" aria-label="Mastercard"></i><b>VISA</b></span>
-      </span>
-    </label>
-    <label class="payment-option payment-option-paypal" for="paymentPayPal">
-      <input id="paymentPayPal" type="radio" name="paymentMethod" value="PayPal">
-      <span class="payment-option-symbol paypal-symbol" aria-hidden="true">P</span>
-      <span class="payment-option-copy"><strong>PayPal</strong><small>Betaal met uw PayPal-account</small></span>
-      <span class="payment-logo paypal">Pay<em>Pal</em></span>
-    </label>
-    <label class="payment-option payment-option-cod" id="cashOnDeliveryOption" for="paymentCashOnDelivery" hidden>
-      <input id="paymentCashOnDelivery" type="radio" name="paymentMethod" value="CashOnDelivery">
-      <span class="payment-option-symbol cod-symbol" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><path d="M24 4 43 14.5v19L24 44 5 33.5v-19L24 4Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="m5.5 14.8 18.5 10 18.5-10M24 25v18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg></span>
-      <span class="payment-option-copy"><strong>Betalen bij ontvangst</strong><small>Betaal wanneer u de telefoon ontvangt</small></span>
-      <b class="payment-cash-label">Contant</b>
-    </label>
-  </div>
-  <div class="payment-trust-strip" aria-label="Voordelen van veilig afrekenen">
-    <div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v5.5c0 5-3.4 8.3-8 9.5-4.6-1.2-8-4.5-8-9.5V6l8-3Z"/><path d="m8.5 12 2.3 2.3 4.8-5"/></svg><b>Veilig betalen</b></div>
-    <div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m13.5 2-9 12h6l-.5 8 9-12h-6l.5-8Z"/></svg><b>Snelle verwerking</b></div>
-    <div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a4 4 0 0 0-4 4v2H6v12h12V9h-2V7a4 4 0 0 0-4-4Z"/><path d="M8 9h8M12 13v4"/></svg><b>Gegevens beschermd</b></div>
-  </div>
-  <p id="paymentConfigNote" class="payment-config-note" role="status">Betaalmethoden worden gecontroleerd…</p>
-</div>
-<div id="status" class="status"></div>
-<div class="checkout-submit-wrap"><button id="submitBtn" class="btn blue submit" type="submit"><span>Doorgaan naar betaling</span><svg class="checkout-submit-lock" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><small>U wordt doorgestuurd naar de beveiligde betaalomgeving.</small></div>
-  <div class="payment-mollie-trust"><span class="mollie-shield" aria-hidden="true">✓</span><div><strong>Betrouwbare betaling via Mollie</strong><small>Uw betaling wordt veilig en versleuteld verwerkt.</small></div><b class="mollie-wordmark">mollie</b></div>
-</form>
 
-<div id="paymentBox" class="payment-box hidden">
-  <div class="payment-head">
-    <div>
-      <h3>💳 Betaling</h3>
-      <p>Voltooi uw betaling veilig bij de gekozen betaalprovider.</p>
-    </div>
-    <div id="paymentOrderLabel" class="payment-order"></div>
-  </div>
-  <div id="paypal-button-container"></div>
-  <div id="paymentStatus" class="status"></div>
-</div>
-</section>
-<section class="card"><h2>🛒 Uw bestelling</h2><div id="items"></div><div class="total"><span>Totaal</span><span id="total">€0</span></div><a class="btn gray submit" href="cart.html">← Terug naar winkelwagen</a></section>
-</div>
-<div id="success" class="card success-box hidden"><div class="check">✅</div><h2>Bedankt voor uw bestelling!</h2><p>Uw bestelling is succesvol ontvangen door HOMS TECH.</p><div id="orderNumber" class="order-number"></div><a class="btn blue" href="index.html">Terug naar Home</a></div>
-</main>
-<script>
-(function(){
-  "use strict";
 
-  const CART_KEY = "homsTechCart";
-  let pendingOrderId = null;
-  let pendingCheckoutToken = "";
-  let paypalRendered = false;
-  let paymentAvailability = { mollie: false, paypal: false, cashOnDelivery: false };
 
-  function readCart(){
-    try{
-      const raw = localStorage.getItem(CART_KEY);
-      const data = raw ? JSON.parse(raw) : [];
-      return Array.isArray(data) ? data : [];
-    }catch(e){ return []; }
-  }
 
-  function money(n){
-    return "€" + Number(n || 0).toFixed(2).replace(".00","").replace(".",",");
-  }
 
-  function esc(v){
-    return String(v ?? "")
-      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
-  }
 
-  function optionDisplayValue(value){
-    if(value===null||value===undefined)return "";
-    if(Array.isArray(value))return value.map(optionDisplayValue).filter(Boolean).join(", ");
-    if(typeof value==="object"){
-      const readable=value.label??value.name??value.value??value.title;
-      return readable===undefined?"":optionDisplayValue(readable);
-    }
-    if(typeof value==="boolean")return value?"Ja":"Nee";
-    return String(value).trim();
-  }
 
-  function optionsText(options){
-    if(!options||typeof options!=="object"||Array.isArray(options))return "";
-    const labels={
-      storage:"Geheugen",color:"Kleur",condition:"Conditie",battery:"Batterij",
-      vat:"BTW",tradeIn:"Inruil",category:"Categorie",quality:"Kwaliteit",sku:"Artikelnummer"
-    };
-    const entries=[];
-    Object.keys(labels).forEach(key=>{
-      const value=optionDisplayValue(options[key]);
-      if(value)entries.push([labels[key],value]);
-    });
-    const custom=options.custom&&typeof options.custom==="object"&&!Array.isArray(options.custom)?options.custom:{};
-    Object.entries(custom).forEach(([key,rawValue])=>{
-      const value=optionDisplayValue(rawValue);
-      if(!value)return;
-      const optionGroup=key.match(/^optionGroups:(\\d+)$/);
-      const addonGroup=key.match(/^addonGroups:(\\d+)$/);
-      if(optionGroup)entries.push(["Extra "+(Number(optionGroup[1])+1),value]);
-      else if(addonGroup)entries.push(["Accessoire "+(Number(addonGroup[1])+1),value]);
-    });
-    if(!entries.length)return "";
-    return '<div class="ht-option-list">'+entries.map(([label,value])=>
-      '<span class="ht-option-chip"><b>'+esc(label)+'</b><span>'+esc(value)+'</span></span>'
-    ).join("")+'</div>';
-  }
 
-  async function renderItems(){
-    let items = readCart();
-    // Refresh Shop stock from the server and correct quantities left over from earlier cart attempts.
-    try{
-      const response = await fetch("/api/site?view=cart",{cache:"no-store"});
-      if(response.ok){
-        const catalog = await response.json();
-        const shopProducts = Array.isArray(catalog.shopProducts) ? catalog.shopProducts : [];
-        let changed = false;
-        items = items.map(item => {
-          if(String(item.type || "").toLowerCase() !== "shop") return item;
-          const rawId = String(item.id ?? "");
-          const stableIndex = shopProducts.findIndex(p => String(p?.id ?? "") === rawId);
-          const legacyIndex = /^\d+$/.test(rawId) ? Number(rawId) : -1;
-          const product = stableIndex >= 0
-            ? shopProducts[stableIndex]
-            : (Number.isInteger(legacyIndex) ? shopProducts[legacyIndex] : null);
-          if(!product) return item;
-          const variants = Array.isArray(product.variants) ? product.variants : [];
-          const variant = variants.find(v => String(v.id || v.sku || v.quality || "") === String(item.variantId || item.sku || ""));
-          const stockText = String(variant ? variant.stock : (product.stock ?? "")).trim();
-          const stockMatch = stockText.match(/^(\d+)/);
-          if(!stockMatch) return item;
-          const stock = Math.max(0, Number(stockMatch[1]));
-          const currentQty = Math.max(1, Number(item.qty || 1));
-          if(stock === 0){
-            changed = true;
-            return {...item, qty:0, unavailable:true};
-          }
-          if(currentQty > stock){
-            changed = true;
-            return {...item, qty:stock};
-          }
-          return item;
-        }).filter(item => !(item.unavailable && Number(item.qty) === 0));
-        if(changed){
-          localStorage.setItem(CART_KEY,JSON.stringify(items));
-          showStatus("We hebben de aantallen aangepast aan de actuele voorraad. Controleer uw bestelling voordat u verdergaat.","error");
+
+
+
+
+
+
+
+
+
+
+
+
+       .checkout-layout .item{grid-template-columns:54px minmax(0,1fr) auto;gap:8px}
+       .checkout-layout .item img{width:54px;height:54px}
+      }
+      @media(max-width:390px){
+
+
+
+
+
+
+
+
+
+      }
+
+      /* Specificity fixes for the shared checkout styles */
+
+      @media(max-width:390px){}
+
+      /* MOBILE PAYMENT ROW FIX — keep logos and radio controls compact */
+
+      @media(max-width:390px){
+
+
+
+      }
+    </style>
+
+    <style id="homs-tech-payment-layout-v2">
+      /* HOMS TECH checkout — single responsive payment layout */
+      .payment-choice{
+        margin-top:22px;
+        padding:0 0 16px;
+        overflow:hidden;
+        border:1px solid #dce6f1;
+        border-radius:22px;
+        background:#fff;
+        box-shadow:0 8px 26px rgba(20,55,95,.06);
+      }
+      .payment-choice-heading{
+        display:flex;
+        align-items:center;
+        gap:16px;
+        padding:20px 22px;
+        border-bottom:1px solid #e1eaf4;
+        background:linear-gradient(115deg,#edf5ff 0%,#f8fbff 100%);
+      }
+      .payment-heading-icon{
+        display:grid;
+        place-items:center;
+        width:58px;
+        height:58px;
+        flex:0 0 58px;
+        border:1px solid #d6e6f7;
+        border-radius:17px;
+        background:linear-gradient(145deg,#e1f0ff,#f8fbff);
+        color:#0875d1;
+        font-size:27px;
+        box-shadow:0 5px 14px rgba(12,100,190,.08);
+      }
+      .payment-choice-heading h3{margin:0 0 5px;color:#10233f;font-size:25px;font-weight:900;letter-spacing:-.5px}
+      .payment-choice-heading p{margin:0;color:#687a91;font-size:14px}
+      .payment-options{display:grid;gap:12px;padding:16px 18px 10px}
+      .payment-option{
+        display:grid!important;
+        grid-template-columns:22px 48px minmax(0,1fr) 158px;
+        align-items:center;
+        gap:11px;
+        min-width:0;
+        min-height:104px;
+        margin:0!important;
+        padding:13px 14px!important;
+        border:1.5px solid #dce5ef!important;
+        border-radius:18px!important;
+        background:linear-gradient(115deg,#fff,#fbfdff)!important;
+        cursor:pointer;
+        transition:border-color .18s ease,background .18s ease,box-shadow .18s ease,transform .18s ease;
+      }
+      .payment-option:hover{border-color:#9dc4ec!important;transform:translateY(-1px)}
+      .payment-option:has(input:checked){
+        border:2px solid #1680d5!important;
+        padding:12.5px 13.5px!important;
+        background:linear-gradient(115deg,#eff7ff,#fbfdff)!important;
+        box-shadow:0 7px 18px rgba(14,111,199,.10);
+      }
+      .payment-option>input{
+        width:21px!important;
+        height:21px!important;
+        min-width:21px;
+        margin:0!important;
+        accent-color:#087bd5;
+        cursor:pointer;
+      }
+      .payment-option>input:disabled{cursor:not-allowed;opacity:.55}
+      .payment-option-symbol{
+        display:flex!important;
+        align-items:center;
+        justify-content:center;
+        width:46px;
+        height:46px;
+        min-width:0;
+        flex:none!important;
+        border:0;
+        background:transparent;
+      }
+      .ideal-symbol{
+        width:48px!important;
+        height:44px!important;
+        border:2px solid #14243c!important;
+        border-radius:5px 18px 18px 5px;
+        background:linear-gradient(110deg,#fff 0 16%,#d50072 16% 100%)!important;
+        color:#fff;
+        font-size:12px;
+        font-weight:950;
+        font-style:italic;
+        letter-spacing:-.6px;
+        text-shadow:0 1px 1px rgba(0,0,0,.18);
+      }
+      .paypal-symbol{color:#0878bd;font-size:45px;font-weight:1000;font-style:italic;letter-spacing:-5px;text-shadow:2px 1px 0 #9bdcf6}
+      .cod-symbol{display:flex!important;align-items:center;justify-content:center;width:46px;height:46px;border:0!important;border-radius:0!important;background:transparent!important;color:#0875cf!important;font-size:0!important;font-weight:700}
+      .cod-symbol svg{display:block;width:100%;height:100%;overflow:visible}
+
+      .payment-option-copy{
+        display:flex!important;
+        flex:initial!important;
+        flex-direction:column;
+        gap:5px!important;
+        min-width:0;
+      }
+      .payment-option-copy strong{color:#172a43;font-size:16px;font-weight:900;line-height:1.25}
+      .payment-option-copy small{color:#6b7b90;font-size:12px;font-weight:650;line-height:1.4}
+      .payment-option-brands{
+        display:grid!important;
+        grid-template-columns:auto auto;
+        grid-template-rows:auto auto;
+        align-items:center;
+        justify-content:end;
+        justify-items:end;
+        gap:7px 6px;
+        width:158px;
+        min-width:0!important;
+        flex:none!important;
+      }
+      .payment-recommended{
+        grid-column:1/-1;
+        grid-row:1;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        padding:6px 10px;
+        border-radius:999px;
+        background:#0caf70;
+        color:#fff!important;
+        font-size:10px!important;
+        font-weight:850;
+        line-height:1.1;
+        white-space:nowrap;
+      }
+      .payment-brand-row,.payment-card-brands{
+        display:flex!important;
+        align-items:center;
+        justify-content:flex-end;
+        gap:5px;
+        min-width:0;
+      }
+      .payment-brand-row{grid-column:1;grid-row:2}
+      .payment-card-brands{grid-column:2;grid-row:2;gap:6px;color:#174d91;font-size:12px}
+      .payment-logo{
+        display:inline-flex!important;
+        align-items:center;
+        justify-content:center;
+        min-width:0;
+        min-height:28px;
+        padding:5px 7px;
+        border:1px solid #e0e7ef;
+        border-radius:8px;
+        background:#fff;
+        box-shadow:0 2px 5px rgba(20,40,70,.06);
+        font-size:10px;
+        font-weight:950;
+        line-height:1;
+        white-space:nowrap;
+      }
+      .payment-logo.ideal{border-color:#c90069;background:#c90069;color:#fff;font-style:italic}
+      .payment-logo.wero{color:#1b1764}
+      .payment-mastercard{position:relative;display:inline-block;width:28px;height:19px;flex:0 0 28px}
+      .payment-mastercard:before,.payment-mastercard:after{position:absolute;top:1px;width:18px;height:18px;border-radius:50%;content:""}
+      .payment-mastercard:before{left:0;background:#eb001b}
+      .payment-mastercard:after{right:0;background:#f79e1b;mix-blend-mode:multiply}
+      .payment-option-paypal .payment-logo.paypal{
+        display:flex!important;
+        align-items:center;
+        justify-content:center;
+        width:104px!important;
+        min-width:104px!important;
+        height:46px;
+        padding:7px 9px;
+        border:1px solid #dce5ef;
+        border-radius:11px;
+        color:#003087;
+        font-size:20px;
+        font-style:italic;
+        font-weight:950;
+      }
+      .payment-logo.paypal em{color:#009cde;font-style:italic}
+      .payment-option-cod .payment-cash-label{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        justify-self:end;
+        min-width:100px;
+        padding:11px 13px;
+        border-radius:13px;
+        background:#edf5ff;
+        color:#1768b5;
+        font-size:13px;
+        font-weight:900;
+      }
+      .payment-trust-strip{
+        display:grid;
+        grid-template-columns:repeat(3,minmax(0,1fr));
+        margin:5px 18px 0;
+        padding:17px 0;
+        border-top:1px solid #e4ebf2;
+        border-bottom:1px solid #e4ebf2;
+      }
+      .payment-trust-strip>div{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:8px;
+        min-width:0;
+        padding:0 7px;
+        border-right:1px solid #dce5ef;
+        color:#30445d;
+        font-size:12px;
+        font-weight:850;
+        line-height:1.35;
+        text-align:center;
+      }
+      .payment-trust-strip>div:last-child{border:0}
+      .payment-trust-strip svg{
+        display:block;
+        width:27px;
+        height:27px;
+        flex:0 0 27px;
+        overflow:visible;
+        fill:none;
+        stroke:#0875cf;
+        stroke-width:1.9;
+        stroke-linecap:round;
+        stroke-linejoin:round;
+      }
+      .payment-config-note{
+        display:block;
+        margin:13px 18px 0!important;
+        padding:12px 14px;
+        border:1px solid #e6edf5;
+        border-radius:13px;
+        background:#f3f7fc;
+        color:#65758a;
+        font-size:12px;
+        line-height:1.5;
+      }
+      .payment-mollie-trust{
+        display:flex;
+        align-items:center;
+        gap:12px;
+        margin:14px 18px 0;
+        padding:14px;
+        border:1px solid #d7efdf;
+        border-radius:15px;
+        background:linear-gradient(110deg,#eafff1,#f4fcff);
+      }
+      .payment-mollie-trust[hidden]{display:none!important}
+      .mollie-shield{
+        display:grid;
+        place-items:center;
+        width:42px;
+        height:42px;
+        flex:0 0 42px;
+        border-radius:12px;
+        background:#0bad62;
+        color:#fff;
+        font-size:25px;
+        font-weight:950;
+      }
+      .payment-mollie-trust>div{display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}
+      .payment-mollie-trust strong{color:#173e2c;font-size:13px;font-weight:900}
+      .payment-mollie-trust small{color:#5b7667;font-size:11px;line-height:1.4}
+      .mollie-wordmark{
+        padding:8px 11px;
+        border:1px solid #dce5ed;
+        border-radius:11px;
+        background:#fff;
+        color:#101828;
+        font-size:21px;
+        font-weight:950;
+        letter-spacing:-1px;
+      }
+
+
+
+
+
+
+      .payment-option:focus-within{outline:3px solid rgba(8,121,229,.15);outline-offset:2px}
+      .payment-option>input:focus-visible{outline:3px solid rgba(8,121,229,.25);outline-offset:3px}
+      @media(max-width:600px){
+        .payment-choice-heading{gap:13px;padding:17px 16px}
+        .payment-heading-icon{width:52px;height:52px;flex-basis:52px}
+        .payment-choice-heading h3{font-size:22px}
+        .payment-choice-heading p{font-size:13px}
+        .payment-options{gap:10px;padding:13px 12px 9px}
+        .payment-option{
+          grid-template-columns:20px 39px minmax(0,1fr) 125px;
+          gap:7px;
+          min-height:94px;
+          padding:11px 9px!important;
+          border-radius:16px!important;
         }
+        .payment-option:has(input:checked){padding:10.5px 8.5px!important}
+        .payment-option-symbol{width:37px;height:39px}
+        .ideal-symbol{width:39px!important;height:35px!important;font-size:9px}
+        .payment-option-copy strong{font-size:13px}
+        .payment-option-copy small{font-size:10px}
+        .payment-option-brands{width:125px;grid-template-columns:auto auto;gap:6px 4px}
+        .payment-recommended{padding:5px 8px;font-size:8px!important}
+        .payment-logo{min-height:24px;padding:4px 5px;font-size:8px}
+        .payment-brand-row,.payment-card-brands{gap:4px}
+        .payment-card-brands{font-size:10px}
+        .payment-mastercard{width:23px;height:17px;flex-basis:23px}
+        .payment-mastercard:before,.payment-mastercard:after{width:16px;height:16px}
+        .payment-option-paypal .payment-logo.paypal{width:77px!important;min-width:77px!important;height:37px;font-size:15px}
+        .payment-option-paypal{grid-template-columns:20px 34px minmax(0,1fr) 77px}
+        .paypal-symbol{font-size:38px}
+        .payment-option-cod{grid-template-columns:20px 34px minmax(0,1fr) 83px}
+        .cod-symbol{width:34px;height:38px}
+        .cod-symbol svg{width:100%;height:100%}
+        .payment-option-cod .payment-cash-label{min-width:82px;padding:9px 7px;font-size:11px}
+        .payment-trust-strip{margin:4px 12px 0;padding:14px 0}
+        .payment-trust-strip>div{gap:7px;padding:0 5px;font-size:10px}
+        .payment-trust-strip svg{
+          width:24px;
+          height:24px;
+          flex-basis:24px;
+        }
+        .payment-config-note{margin:11px 12px 0!important;padding:11px 12px;font-size:11px}
+        .payment-mollie-trust{gap:9px;margin:12px 12px 0;padding:11px}
+        .mollie-shield{width:37px;height:37px;flex-basis:37px;font-size:22px}
+        .payment-mollie-trust strong{font-size:11px}
+        .payment-mollie-trust small{font-size:10px}
+        .mollie-wordmark{padding:7px 8px;font-size:18px}
+
+
       }
-    }catch(error){console.warn("Voorraadcontrole in winkelwagen kon niet worden geladen:",error);}
-    const box = document.getElementById("items");
-    const totalEl = document.getElementById("total");
-    if(!box || !totalEl) return;
-
-    if(!items.length){
-      box.innerHTML = '<div style="padding:20px;background:#f8fafc;border-radius:12px">Je winkelwagen is leeg. <a href="devices.html" style="color:#2563eb;font-weight:800">Bekijk telefoons</a></div>';
-      totalEl.textContent = "€0";
-      return;
-    }
-
-    let total = 0;
-    box.innerHTML = items.map(item => {
-      const qty = Math.max(1, Number(item.qty || 1));
-      const price = Number(item.unitPrice ?? item.price ?? 0);
-      const line = qty * price;
-      total += line;
-
-      const image = item.image
-        ? '<img src="' + esc(item.image) + '" alt="" style="width:68px;height:68px;object-fit:contain;border-radius:10px" loading="lazy" decoding="async">'
-        : '<div style="width:68px;height:68px;border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-size:28px">📱</div>';
-
-      return '<div class="item">' + image +
-        '<div><div class="item-title">' + esc(item.name || "Smartphone") + '</div>' +
-        '<div class="item-meta">' + optionsText(item.options) + '<br>Aantal: ' + qty + '</div></div>' +
-        '<div class="item-price">' + money(line) + '</div></div>';
-    }).join("");
-
-    const tradeInToken=localStorage.getItem("homsTechTradeInToken")||"";
-    const tradeInCredit=Number(localStorage.getItem("homsTechTradeInCredit")||0);
-    const tradeInDevice=localStorage.getItem("homsTechTradeInDevice")||"Uw oude toestel";
-    if(tradeInToken){
-      box.insertAdjacentHTML("beforeend",
-        '<div class="ht-cart-tradein" style="margin-top:16px"><div class="ht-cart-tradein-main"><span class="ht-cart-tradein-icon" aria-hidden="true">♻</span><div class="ht-cart-tradein-copy"><strong>Uw inruil bij deze aankoop</strong><small>'+esc(tradeInDevice)+' · Geschatte inruilwaarde '+money(tradeInCredit)+'</small><p>U betaalt nu de volledige prijs van uw nieuwe telefoon. Na succesvolle betaling bevestigen we uw inruilaanvraag. De definitieve waarde volgt na ontvangst en inspectie.</p></div></div></div>'
-      );
-    }
-    totalEl.textContent=money(total);
-  }
-
-  async function prefill(){
-    const tradeInEmail=localStorage.getItem("homsTechTradeInEmail")||"";
-    const emailInput=document.getElementById("email");
-    if(emailInput && tradeInEmail && !emailInput.value) emailInput.value=tradeInEmail;
-    try{
-      const r = await fetch("/api/customer/me",{cache:"no-store",credentials:"same-origin"});
-      if(!r.ok) return;
-      const d = await r.json();
-      if(!d.authenticated || !d.customer) return;
-
-      const c = d.customer;
-      document.getElementById("name").value = c.name || "";
-      document.getElementById("email").value = localStorage.getItem("homsTechTradeInEmail") || c.email || "";
-      document.getElementById("phone").value = c.phone || "";
-      if(c.address) document.getElementById("street").value = c.address || "";
-
-      const note = document.getElementById("accountNote");
-      if(note){
-        note.textContent = "Je bent ingelogd. We hebben je bekende gegevens alvast ingevuld.";
-        note.classList.remove("hidden");
+      @media(max-width:390px){
+        .payment-options{padding-right:9px;padding-left:9px}
+        .payment-option{
+          grid-template-columns:18px 31px minmax(0,1fr) 108px;
+          gap:6px;
+          padding-right:7px!important;
+          padding-left:7px!important;
+        }
+        .payment-option:has(input:checked){padding-right:6.5px!important;padding-left:6.5px!important}
+        .payment-option-symbol{width:31px;height:34px}
+        .ideal-symbol{width:32px!important;height:31px!important;font-size:8px}
+        .payment-option-copy strong{font-size:11px}
+        .payment-option-copy small{font-size:9px}
+        .payment-option-brands{width:108px}
+        .payment-recommended{font-size:7px!important;padding:4px 6px}
+        .payment-logo{font-size:7px;padding:4px}
+        .payment-card-brands{font-size:9px}
+        .payment-option-paypal{grid-template-columns:18px 29px minmax(0,1fr) 66px}
+        .payment-option-paypal .payment-logo.paypal{width:66px!important;min-width:66px!important;height:33px;font-size:13px}
+        .payment-option-cod{grid-template-columns:18px 29px minmax(0,1fr) 70px}
+        .payment-option-cod .payment-cash-label{min-width:70px;font-size:9px;padding:8px 5px}
       }
-    }catch(e){}
-  }
+      @media(prefers-reduced-motion:reduce){
 
-  function showStatus(msg,type){
-    const s = document.getElementById("status");
-    if(!s) return;
-    s.textContent = msg;
-    s.className = "status " + (type || "");
-  }
-
-  function showPaymentStatus(msg,type){
-    const s = document.getElementById("paymentStatus");
-    if(!s) return;
-    s.textContent = msg;
-    s.className = "status " + (type || "");
-  }
-
-  function markCheckoutConfirmed(){
-    const steps = document.querySelectorAll(".checkout-progress-step");
-    if(steps.length !== 4) return;
-    steps.forEach((step,index)=>{
-      step.classList.remove("is-active","is-done");
-      step.removeAttribute("aria-current");
-      const marker = step.querySelector("span");
-      if(index < 3){
-        step.classList.add("is-done");
-        if(marker) marker.textContent = "✓";
-      }else{
-        step.classList.add("is-active");
-        step.setAttribute("aria-current","step");
-        if(marker) marker.textContent = "✓";
       }
-    });
-  }
 
-  async function loadPayPalSdk(){
-    const configResponse = await fetch("/api/paypal/config",{cache:"no-store"});
-    const config = await configResponse.json().catch(()=>({}));
-    if(!configResponse.ok || !config.enabled || !config.clientId){
-      throw new Error(config.error || "PayPal is nog niet geconfigureerd.");
-    }
 
-    if(window.paypal) return;
+      /* Checkout submit action — canonical styles */
+      .checkout-submit-wrap{margin-top:16px}
+      #submitBtn{
+        box-sizing:border-box;
+        display:flex;
+        flex-direction:row;
+        align-items:center;
+        justify-content:center;
+        gap:12px;
+        width:100%;
+        min-height:64px;
+        margin:0;
+        padding:15px 20px;
+        border:0;
+        border-radius:16px;
+        background:linear-gradient(100deg,#087ce5 0%,#0750bd 100%);
+        color:#fff;
+        font-size:18px;
+        font-weight:900;
+        line-height:1.25;
+        box-shadow:0 9px 22px rgba(8,91,190,.2);
+        transition:transform .18s ease,box-shadow .18s ease;
+      }
+      #submitBtn::before,#submitBtn::after{content:none;display:none}
+      #submitBtn>span{display:inline-block;min-width:0}
+      #submitBtn>.checkout-submit-lock{
+        display:block;
+        width:23px;
+        height:23px;
+        min-width:23px;
+        flex:0 0 23px;
+        margin:0;
+        padding:0;
+        overflow:visible;
+        color:currentColor;
+        opacity:1;
+        visibility:visible;
+      }
+      #submitBtn>.checkout-submit-lock rect,
+      #submitBtn>.checkout-submit-lock path{
+        fill:none;
+        stroke:currentColor;
+        stroke-width:2;
+        stroke-linecap:round;
+        stroke-linejoin:round;
+      }
+      #submitBtn:hover{transform:translateY(-1px);box-shadow:0 12px 25px rgba(8,91,190,.25)}
+      #submitBtn:focus-visible{outline:3px solid rgba(8,121,229,.28);outline-offset:3px}
+      #submitBtn:disabled{opacity:.65;cursor:wait;transform:none}
+      .checkout-submit-wrap>small{display:block;margin-top:10px;color:#7b899a;font-size:11px;text-align:center}
+      @media(max-width:600px){
+        .checkout-submit-wrap{margin-top:15px}
+        #submitBtn{min-height:60px;gap:10px;padding:14px 16px;font-size:16px}
+        #submitBtn>.checkout-submit-lock{width:22px;height:22px;min-width:22px;flex-basis:22px}
+      }
+      @media(prefers-reduced-motion:reduce){#submitBtn{transition:none}}
+    </style>
+  </head>
+  <body>
+    <div class="ht-topbar">
+      <div class="ht-container">
+        <div class="ht-marquee">
+          <span class="ht-marquee-item"><b>✓</b>1 jaar garantie</span
+          ><span class="ht-marquee-item"><b>✓</b>Snel geleverd</span
+          ><span class="ht-marquee-item"><b>✓</b>Betrouwbare service</span
+          ><span class="ht-marquee-item"><b>✓</b>Betaalbare prijzen</span>
+        </div>
+      </div>
+    </div>
+    <header class="ht-header">
+      <div class="ht-container">
+        <div class="ht-header-main">
+          <a class="ht-brand" href="index.html"
+            ><img src="assets/homs-tech-logo.png" alt="HOMS TECH"
+          /></a>
+          <form class="ht-search" action="devices.html" method="get">
+            <span>⌕</span
+            ><input
+              name="search"
+              placeholder="Waar ben je naar op zoek?"
+              aria-label="Zoeken"
+            /><button type="submit">Zoek</button>
+          </form>
+          <div class="ht-actions">
+            <a href="account.html">♙ Mijn account</a
+            ><a href="cart.html">🛒 Winkelwagen</a>
+          </div>
+        </div>
+        <nav class="ht-nav">
+          <a href="index.html">Home</a><a href="about.html">Over ons</a
+          ><a href="repair.html">Reparaties</a
+          ><a href="devices.html">Apparaten</a
+          ><a href="prices.html">Prijzen</a>
+          <a href="uw-toestel-verkopen.html">Uw toestel verkopen</a
+          ><a href="account.html">Mijn account</a>
+        </nav>
+      </div>
+    </header>
+    <main class="wrap checkout-wrap">
+      <div class="checkout-hero">
+        <div class="checkout-brandline">
+          <div class="checkout-brandmark">
+            <span>HOMS</span> <b>TECH</b
+            ><small>Mobiele Reparatie & Telefoonshop</small>
+          </div>
+          <div class="checkout-secure">
+            <span aria-hidden="true">♙</span> Veilige Checkout
+          </div>
+        </div>
+        <div class="checkout-progress" aria-label="Voortgang van uw bestelling">
+          <div class="checkout-progress-step is-done">
+            <span>✓</span><small>Winkelwagen</small>
+          </div>
+          <i></i>
+          <div class="checkout-progress-step is-done">
+            <span>✓</span><small>Gegevens</small>
+          </div>
+          <i></i>
+          <div class="checkout-progress-step is-active" aria-current="step">
+            <span>3</span><small>Betaling</small>
+          </div>
+          <i></i>
+          <div class="checkout-progress-step">
+            <span>4</span><small>Bevestiging</small>
+          </div>
+        </div>
+      </div>
+      <div class="checkout-page-heading">
+        <div>
+          <span class="checkout-eyebrow">VEILIG EN EENVOUDIG AFREKENEN</span>
+          <h1 class="title">Uw bestelling afronden</h1>
+          <p class="subtitle">
+            Controleer uw gegevens en kies uw gewenste betaalmethode.
+          </p>
+        </div>
+        <div class="checkout-heading-lock" aria-hidden="true">♙</div>
+      </div>
+      <div id="checkoutContent" class="layout checkout-layout">
+        <section class="card">
+          <h2>📦 Uw gegevens</h2>
+          <div id="accountNote" class="account-note hidden"></div>
+          <form id="checkoutForm">
+            <div class="grid">
+              <div class="field">
+                <label for="name">Naam *</label><input id="name" required />
+              </div>
+              <div class="field">
+                <label for="email">E-mail *</label
+                ><input id="email" type="email" required />
+              </div>
+              <div class="field">
+                <label for="phone">Telefoonnummer *</label
+                ><input id="phone" type="tel" required />
+              </div>
+              <div class="field">
+                <label for="postcode">Postcode *</label
+                ><input id="postcode" required />
+              </div>
+              <div class="field">
+                <label for="street">Straat *</label
+                ><input id="street" required />
+              </div>
+              <div class="field">
+                <label for="houseNumber">Huisnummer *</label
+                ><input id="houseNumber" required />
+              </div>
+              <div class="field full">
+                <label for="city">Plaats *</label><input id="city" required />
+              </div>
+            </div>
+            <div class="payment-choice" aria-label="Betaalmethode">
+              <div class="payment-choice-heading">
+                <span class="payment-heading-icon" aria-hidden="true"
+                  ><svg viewBox="0 0 48 48" focusable="false">
+                    <rect
+                      x="5"
+                      y="9"
+                      width="38"
+                      height="30"
+                      rx="4"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.8"
+                    />
+                    <path
+                      d="M6 18h36M12 27h10M12 33h6"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.8"
+                      stroke-linecap="round"
+                    /></svg
+                ></span>
+                <div>
+                  <h3>Betaalmethode</h3>
+                  <p>Kies uw gewenste betaalmethode</p>
+                </div>
+              </div>
+              <div class="payment-options">
+                <label
+                  class="payment-option payment-option-mollie"
+                  for="paymentMollie"
+                >
+                  <input
+                    id="paymentMollie"
+                    type="radio"
+                    name="paymentMethod"
+                    value="Mollie"
+                    checked
+                  />
+                  <span
+                    class="payment-option-symbol ideal-symbol"
+                    aria-hidden="true"
+                    >iDEAL</span
+                  >
+                  <span class="payment-option-copy"
+                    ><strong>iDEAL / Wero / Bankkaart</strong
+                    ><small>Snel en veilig betalen via Mollie</small></span
+                  >
+                  <span
+                    class="payment-option-brands"
+                    aria-label="iDEAL, Wero, Mastercard en Visa"
+                  >
+                    <b class="payment-recommended">✦ Aanbevolen</b>
+                    <span class="payment-brand-row"
+                      ><span class="payment-logo ideal">iDEAL</span
+                      ><span class="payment-logo wero">wero</span></span
+                    >
+                    <span class="payment-card-brands"
+                      ><i class="payment-mastercard" aria-label="Mastercard"></i
+                      ><b>VISA</b></span
+                    >
+                  </span>
+                </label>
+                <label
+                  class="payment-option payment-option-paypal"
+                  for="paymentPayPal"
+                >
+                  <input
+                    id="paymentPayPal"
+                    type="radio"
+                    name="paymentMethod"
+                    value="PayPal"
+                  />
+                  <span
+                    class="payment-option-symbol paypal-symbol"
+                    aria-hidden="true"
+                    >P</span
+                  >
+                  <span class="payment-option-copy"
+                    ><strong>PayPal</strong
+                    ><small>Betaal met uw PayPal-account</small></span
+                  >
+                  <span class="payment-logo paypal">Pay<em>Pal</em></span>
+                </label>
+                <label
+                  class="payment-option payment-option-cod"
+                  id="cashOnDeliveryOption"
+                  for="paymentCashOnDelivery"
+                  hidden
+                >
+                  <input
+                    id="paymentCashOnDelivery"
+                    type="radio"
+                    name="paymentMethod"
+                    value="CashOnDelivery"
+                  />
+                  <span
+                    class="payment-option-symbol cod-symbol"
+                    aria-hidden="true"
+                    ><svg viewBox="0 0 48 48" focusable="false">
+                      <path
+                        d="M24 4 43 14.5v19L24 44 5 33.5v-19L24 4Z"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="m5.5 14.8 18.5 10 18.5-10M24 25v18"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linejoin="round"
+                      /></svg
+                  ></span>
+                  <span class="payment-option-copy"
+                    ><strong>Betalen bij ontvangst</strong
+                    ><small>Betaal wanneer u de telefoon ontvangt</small></span
+                  >
+                  <b class="payment-cash-label">Contant</b>
+                </label>
+              </div>
+              <div
+                class="payment-trust-strip"
+                aria-label="Voordelen van veilig afrekenen"
+              >
+                <div>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M12 3 20 6v5.5c0 5-3.4 8.3-8 9.5-4.6-1.2-8-4.5-8-9.5V6l8-3Z"
+                    />
+                    <path d="m8.5 12 2.3 2.3 4.8-5" /></svg
+                  ><b>Veilig betalen</b>
+                </div>
+                <div>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m13.5 2-9 12h6l-.5 8 9-12h-6l.5-8Z" /></svg
+                  ><b>Snelle verwerking</b>
+                </div>
+                <div>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M12 3a4 4 0 0 0-4 4v2H6v12h12V9h-2V7a4 4 0 0 0-4-4Z"
+                    />
+                    <path d="M8 9h8M12 13v4" /></svg
+                  ><b>Gegevens beschermd</b>
+                </div>
+              </div>
+              <p
+                id="paymentConfigNote"
+                class="payment-config-note"
+                role="status"
+              >
+                Betaalmethoden worden gecontroleerd…
+              </p>
+            </div>
+            <div id="status" class="status"></div>
+            <div class="checkout-submit-wrap">
+              <button id="submitBtn" class="btn blue submit" type="submit">
+                <span>Doorgaan naar betaling</span
+                ><svg
+                  class="checkout-submit-lock"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <rect
+                    x="4"
+                    y="10"
+                    width="16"
+                    height="11"
+                    rx="2"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                  <path
+                    d="M8 10V7a4 4 0 0 1 8 0v3"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                </svg></button
+              ><small
+                >U wordt doorgestuurd naar de beveiligde betaalomgeving.</small
+              >
+            </div>
+            <div class="payment-mollie-trust">
+              <span class="mollie-shield" aria-hidden="true">✓</span>
+              <div>
+                <strong>Betrouwbare betaling via Mollie</strong
+                ><small
+                  >Uw betaling wordt veilig en versleuteld verwerkt.</small
+                >
+              </div>
+              <b class="mollie-wordmark">mollie</b>
+            </div>
+          </form>
 
-    await new Promise((resolve,reject)=>{
-      const script = document.createElement("script");
-      const host = config.mode === "live" ? "https://www.paypal.com" : "https://www.sandbox.paypal.com";
-      script.src = host + "/sdk/js?client-id=" + encodeURIComponent(config.clientId) +
-        "&currency=EUR&intent=capture&components=buttons";
-      script.onload = resolve;
-      script.onerror = () => reject(new Error("PayPal kon niet worden geladen."));
-      document.head.appendChild(script);
-    });
-  }
+          <div id="paymentBox" class="payment-box hidden">
+            <div class="payment-head">
+              <div>
+                <h3>💳 Betaling</h3>
+                <p>Voltooi uw betaling veilig bij de gekozen betaalprovider.</p>
+              </div>
+              <div id="paymentOrderLabel" class="payment-order"></div>
+            </div>
+            <div id="paypal-button-container"></div>
+            <div id="paymentStatus" class="status"></div>
+          </div>
+        </section>
+        <section class="card">
+          <h2>🛒 Uw bestelling</h2>
+          <div id="items"></div>
+          <div class="total"><span>Totaal</span><span id="total">€0</span></div>
+          <a class="btn gray submit" href="cart.html"
+            >← Terug naar winkelwagen</a
+          >
+        </section>
+      </div>
+      <div id="success" class="card success-box hidden">
+        <div class="check">✅</div>
+        <h2>Bedankt voor uw bestelling!</h2>
+        <p>Uw bestelling is succesvol ontvangen door HOMS TECH.</p>
+        <div id="orderNumber" class="order-number"></div>
+        <a class="btn blue" href="index.html">Terug naar Home</a>
+      </div>
+    </main>
+    <script>
+      (function(){
+        "use strict";
 
-  async function createLocalOrder(){
-    const items = readCart();
-    if(!items.length){
-      location.href = "cart.html";
-      return null;
-    }
+        const CART_KEY = "homsTechCart";
+        let pendingOrderId = null;
+        let pendingCheckoutToken = "";
+        let paypalRendered = false;
+        let paymentAvailability = { mollie: false, paypal: false, cashOnDelivery: false };
 
-    const payload = {
-      name: document.getElementById("name").value.trim(),
-      email: document.getElementById("email").value.trim(),
-      phone: document.getElementById("phone").value.trim(),
-      street: document.getElementById("street").value.trim(),
-      houseNumber: document.getElementById("houseNumber").value.trim(),
-      postcode: document.getElementById("postcode").value.trim(),
-      city: document.getElementById("city").value.trim(),
-      items,
-      tradeInToken: localStorage.getItem("homsTechTradeInToken") || "",
-      paymentMethod: document.querySelector('input[name="paymentMethod"]:checked')?.value || "Mollie"
-    };
+        function readCart(){
+          try{
+            const raw = localStorage.getItem(CART_KEY);
+            const data = raw ? JSON.parse(raw) : [];
+            return Array.isArray(data) ? data : [];
+          }catch(e){ return []; }
+        }
 
-    const r = await fetch("/api/webshop/orders",{
-      method:"POST",
-      headers:{"Content-Type":"application/json","Accept":"application/json"},
-      credentials:"same-origin",
-      body:JSON.stringify(payload)
-    });
+        function money(n){
+          return "€" + Number(n || 0).toFixed(2).replace(".00","").replace(".",",");
+        }
 
-    const result = await r.json().catch(()=>({}));
-    if(!r.ok) throw new Error(result.error || "Bestelling kon niet worden aangemaakt.");
-    return result.order;
-  }
+        function esc(v){
+          return String(v ?? "")
+            .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+            .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+        }
 
-  async function startMolliePayment(){
-    sessionStorage.setItem("homsTechMollieOrderId",String(pendingOrderId));
-    sessionStorage.setItem("homsTechMollieCheckoutToken",pendingCheckoutToken);
-    sessionStorage.setItem("homsTechPaymentMethod","Mollie");
-    location.assign("payment.html");
-  }
+        function optionDisplayValue(value){
+          if(value===null||value===undefined)return "";
+          if(Array.isArray(value))return value.map(optionDisplayValue).filter(Boolean).join(", ");
+          if(typeof value==="object"){
+            const readable=value.label??value.name??value.value??value.title;
+            return readable===undefined?"":optionDisplayValue(readable);
+          }
+          if(typeof value==="boolean")return value?"Ja":"Nee";
+          return String(value).trim();
+        }
 
-  async function renderPayPalButton(){
-    if(paypalRendered || !pendingOrderId) return;
-    await loadPayPalSdk();
+        function optionsText(options){
+          if(!options||typeof options!=="object"||Array.isArray(options))return "";
+          const labels={
+            storage:"Geheugen",color:"Kleur",condition:"Conditie",battery:"Batterij",
+            vat:"BTW",tradeIn:"Inruil",category:"Categorie",quality:"Kwaliteit",sku:"Artikelnummer"
+          };
+          const entries=[];
+          Object.keys(labels).forEach(key=>{
+            const value=optionDisplayValue(options[key]);
+            if(value)entries.push([labels[key],value]);
+          });
+          const custom=options.custom&&typeof options.custom==="object"&&!Array.isArray(options.custom)?options.custom:{};
+          Object.entries(custom).forEach(([key,rawValue])=>{
+            const value=optionDisplayValue(rawValue);
+            if(!value)return;
+            const optionGroup=key.match(/^optionGroups:(\\d+)$/);
+            const addonGroup=key.match(/^addonGroups:(\\d+)$/);
+            if(optionGroup)entries.push(["Extra "+(Number(optionGroup[1])+1),value]);
+            else if(addonGroup)entries.push(["Accessoire "+(Number(addonGroup[1])+1),value]);
+          });
+          if(!entries.length)return "";
+          return '<div class="ht-option-list">'+entries.map(([label,value])=>
+            '<span class="ht-option-chip"><b>'+esc(label)+'</b><span>'+esc(value)+'</span></span>'
+          ).join("")+'</div>';
+        }
 
-    if(!window.paypal || !window.paypal.Buttons){
-      throw new Error("PayPal knop kon niet worden geïnitialiseerd.");
-    }
+        async function renderItems(){
+          let items = readCart();
+          // Refresh Shop stock from the server and correct quantities left over from earlier cart attempts.
+          try{
+            const response = await fetch("/api/site?view=cart",{cache:"no-store"});
+            if(response.ok){
+              const catalog = await response.json();
+              const shopProducts = Array.isArray(catalog.shopProducts) ? catalog.shopProducts : [];
+              let changed = false;
+              items = items.map(item => {
+                if(String(item.type || "").toLowerCase() !== "shop") return item;
+                const rawId = String(item.id ?? "");
+                const stableIndex = shopProducts.findIndex(p => String(p?.id ?? "") === rawId);
+                const legacyIndex = /^\d+$/.test(rawId) ? Number(rawId) : -1;
+                const product = stableIndex >= 0
+                  ? shopProducts[stableIndex]
+                  : (Number.isInteger(legacyIndex) ? shopProducts[legacyIndex] : null);
+                if(!product) return item;
+                const variants = Array.isArray(product.variants) ? product.variants : [];
+                const variant = variants.find(v => String(v.id || v.sku || v.quality || "") === String(item.variantId || item.sku || ""));
+                const stockText = String(variant ? variant.stock : (product.stock ?? "")).trim();
+                const stockMatch = stockText.match(/^(\d+)/);
+                if(!stockMatch) return item;
+                const stock = Math.max(0, Number(stockMatch[1]));
+                const currentQty = Math.max(1, Number(item.qty || 1));
+                if(stock === 0){
+                  changed = true;
+                  return {...item, qty:0, unavailable:true};
+                }
+                if(currentQty > stock){
+                  changed = true;
+                  return {...item, qty:stock};
+                }
+                return item;
+              }).filter(item => !(item.unavailable && Number(item.qty) === 0));
+              if(changed){
+                localStorage.setItem(CART_KEY,JSON.stringify(items));
+                showStatus("We hebben de aantallen aangepast aan de actuele voorraad. Controleer uw bestelling voordat u verdergaat.","error");
+              }
+            }
+          }catch(error){console.warn("Voorraadcontrole in winkelwagen kon niet worden geladen:",error);}
+          const box = document.getElementById("items");
+          const totalEl = document.getElementById("total");
+          if(!box || !totalEl) return;
 
-    paypalRendered = true;
+          if(!items.length){
+            box.innerHTML = '<div style="padding:20px;background:#f8fafc;border-radius:12px">Je winkelwagen is leeg. <a href="devices.html" style="color:#2563eb;font-weight:800">Bekijk telefoons</a></div>';
+            totalEl.textContent = "€0";
+            return;
+          }
 
-    window.paypal.Buttons({
-      style:{layout:"vertical",shape:"rect",label:"paypal"},
-      createOrder: async function(){
-        const r = await fetch("/api/paypal/create-order",{
-          method:"POST",
-          headers:{"Content-Type":"application/json","Accept":"application/json"},
-          credentials:"same-origin",
-          body:JSON.stringify({orderId:pendingOrderId,checkoutToken:pendingCheckoutToken})
-        });
-        const result = await r.json().catch(()=>({}));
-        if(!r.ok || !result.id) throw new Error(result.error || "PayPal betaling kon niet worden gestart.");
-        return result.id;
-      },
-      onApprove: async function(data){
-        showPaymentStatus("Betaling wordt bevestigd...","success");
-        try{
-          const r = await fetch("/api/paypal/capture-order",{
+          let total = 0;
+          box.innerHTML = items.map(item => {
+            const qty = Math.max(1, Number(item.qty || 1));
+            const price = Number(item.unitPrice ?? item.price ?? 0);
+            const line = qty * price;
+            total += line;
+
+            const image = item.image
+              ? '<img src="' + esc(item.image) + '" alt="" style="width:68px;height:68px;object-fit:contain;border-radius:10px" loading="lazy" decoding="async">'
+              : '<div style="width:68px;height:68px;border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-size:28px">📱</div>';
+
+            return '<div class="item">' + image +
+              '<div><div class="item-title">' + esc(item.name || "Smartphone") + '</div>' +
+              '<div class="item-meta">' + optionsText(item.options) + '<br>Aantal: ' + qty + '</div></div>' +
+              '<div class="item-price">' + money(line) + '</div></div>';
+          }).join("");
+
+          const tradeInToken=localStorage.getItem("homsTechTradeInToken")||"";
+          const tradeInCredit=Number(localStorage.getItem("homsTechTradeInCredit")||0);
+          const tradeInDevice=localStorage.getItem("homsTechTradeInDevice")||"Uw oude toestel";
+          if(tradeInToken){
+            box.insertAdjacentHTML("beforeend",
+              '<div class="ht-cart-tradein" style="margin-top:16px"><div class="ht-cart-tradein-main"><span class="ht-cart-tradein-icon" aria-hidden="true">♻</span><div class="ht-cart-tradein-copy"><strong>Uw inruil bij deze aankoop</strong><small>'+esc(tradeInDevice)+' · Geschatte inruilwaarde '+money(tradeInCredit)+'</small><p>U betaalt nu de volledige prijs van uw nieuwe telefoon. Na succesvolle betaling bevestigen we uw inruilaanvraag. De definitieve waarde volgt na ontvangst en inspectie.</p></div></div></div>'
+            );
+          }
+          totalEl.textContent=money(total);
+        }
+
+        async function prefill(){
+          const tradeInEmail=localStorage.getItem("homsTechTradeInEmail")||"";
+          const emailInput=document.getElementById("email");
+          if(emailInput && tradeInEmail && !emailInput.value) emailInput.value=tradeInEmail;
+          try{
+            const r = await fetch("/api/customer/me",{cache:"no-store",credentials:"same-origin"});
+            if(!r.ok) return;
+            const d = await r.json();
+            if(!d.authenticated || !d.customer) return;
+
+            const c = d.customer;
+            document.getElementById("name").value = c.name || "";
+            document.getElementById("email").value = localStorage.getItem("homsTechTradeInEmail") || c.email || "";
+            document.getElementById("phone").value = c.phone || "";
+            if(c.address) document.getElementById("street").value = c.address || "";
+
+            const note = document.getElementById("accountNote");
+            if(note){
+              note.textContent = "Je bent ingelogd. We hebben je bekende gegevens alvast ingevuld.";
+              note.classList.remove("hidden");
+            }
+          }catch(e){}
+        }
+
+        function showStatus(msg,type){
+          const s = document.getElementById("status");
+          if(!s) return;
+          s.textContent = msg;
+          s.className = "status " + (type || "");
+        }
+
+        function showPaymentStatus(msg,type){
+          const s = document.getElementById("paymentStatus");
+          if(!s) return;
+          s.textContent = msg;
+          s.className = "status " + (type || "");
+        }
+
+        function markCheckoutConfirmed(){
+          const steps = document.querySelectorAll(".checkout-progress-step");
+          if(steps.length !== 4) return;
+          steps.forEach((step,index)=>{
+            step.classList.remove("is-active","is-done");
+            step.removeAttribute("aria-current");
+            const marker = step.querySelector("span");
+            if(index < 3){
+              step.classList.add("is-done");
+              if(marker) marker.textContent = "✓";
+            }else{
+              step.classList.add("is-active");
+              step.setAttribute("aria-current","step");
+              if(marker) marker.textContent = "✓";
+            }
+          });
+        }
+
+        async function loadPayPalSdk(){
+          const configResponse = await fetch("/api/paypal/config",{cache:"no-store"});
+          const config = await configResponse.json().catch(()=>({}));
+          if(!configResponse.ok || !config.enabled || !config.clientId){
+            throw new Error(config.error || "PayPal is nog niet geconfigureerd.");
+          }
+
+          if(window.paypal) return;
+
+          await new Promise((resolve,reject)=>{
+            const script = document.createElement("script");
+            const host = config.mode === "live" ? "https://www.paypal.com" : "https://www.sandbox.paypal.com";
+            script.src = host + "/sdk/js?client-id=" + encodeURIComponent(config.clientId) +
+              "&currency=EUR&intent=capture&components=buttons";
+            script.onload = resolve;
+            script.onerror = () => reject(new Error("PayPal kon niet worden geladen."));
+            document.head.appendChild(script);
+          });
+        }
+
+        async function createLocalOrder(){
+          const items = readCart();
+          if(!items.length){
+            location.href = "cart.html";
+            return null;
+          }
+
+          const payload = {
+            name: document.getElementById("name").value.trim(),
+            email: document.getElementById("email").value.trim(),
+            phone: document.getElementById("phone").value.trim(),
+            street: document.getElementById("street").value.trim(),
+            houseNumber: document.getElementById("houseNumber").value.trim(),
+            postcode: document.getElementById("postcode").value.trim(),
+            city: document.getElementById("city").value.trim(),
+            items,
+            tradeInToken: localStorage.getItem("homsTechTradeInToken") || "",
+            paymentMethod: document.querySelector('input[name="paymentMethod"]:checked')?.value || "Mollie"
+          };
+
+          const r = await fetch("/api/webshop/orders",{
             method:"POST",
             headers:{"Content-Type":"application/json","Accept":"application/json"},
             credentials:"same-origin",
-            body:JSON.stringify({orderId:pendingOrderId,paypalOrderId:data.orderID,checkoutToken:pendingCheckoutToken})
+            body:JSON.stringify(payload)
           });
+
           const result = await r.json().catch(()=>({}));
-          if(!r.ok || !result.paid) throw new Error(result.error || "PayPal betaling kon niet worden bevestigd.");
-
-          localStorage.removeItem(CART_KEY);
-          localStorage.removeItem("homsTechTradeInToken");
-          localStorage.removeItem("homsTechTradeInCredit");
-          localStorage.removeItem("homsTechTradeInDevice");
-        localStorage.removeItem("homsTechTradeInEmail");
-        localStorage.removeItem("homsTechTradeInDetails");
-          localStorage.removeItem("homsTechPendingWebshopOrderId");
-          pendingCheckoutToken = "";
-
-          document.getElementById("checkoutContent").classList.add("hidden");
-          markCheckoutConfirmed();
-          document.getElementById("success").classList.remove("hidden");
-          document.getElementById("orderNumber").textContent = "Bestelnummer #" + pendingOrderId;
-        }catch(error){
-          showPaymentStatus("✕ " + (error.message || "Betaling kon niet worden bevestigd."),"error");
+          if(!r.ok) throw new Error(result.error || "Bestelling kon niet worden aangemaakt.");
+          return result.order;
         }
-      },
-      onCancel: async function(){
-        showPaymentStatus("De PayPal betaling is geannuleerd. Je bestelling is nog niet betaald.","error");
-        try{
-          await fetch("/api/paypal/cancel-order",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            credentials:"same-origin",
-            body:JSON.stringify({orderId:pendingOrderId,checkoutToken:pendingCheckoutToken})
-          });
-        }catch(e){}
-      },
-      onError: function(error){
-        console.error("PayPal error:",error);
-        showPaymentStatus("✕ PayPal kon de betaling niet voltooien. Probeer opnieuw.","error");
-      }
-    }).render("#paypal-button-container");
-  }
 
-  function setSubmitButtonState(label, disabled){
-    const button = document.getElementById("submitBtn");
-    if(!button) return;
-    const text = button.querySelector("span");
-    if(text) text.textContent = label;
-    button.disabled = Boolean(disabled);
-  }
+        async function startMolliePayment(){
+          sessionStorage.setItem("homsTechMollieOrderId",String(pendingOrderId));
+          sessionStorage.setItem("homsTechMollieCheckoutToken",pendingCheckoutToken);
+          sessionStorage.setItem("homsTechPaymentMethod","Mollie");
+          location.assign("payment.html");
+        }
 
-  async function submitOrder(event){
-    event.preventDefault();
+        async function renderPayPalButton(){
+          if(paypalRendered || !pendingOrderId) return;
+          await loadPayPalSdk();
 
-    const items = readCart();
-    if(!items.length){ location.href="cart.html"; return; }
+          if(!window.paypal || !window.paypal.Buttons){
+            throw new Error("PayPal knop kon niet worden geïnitialiseerd.");
+          }
 
-    setSubmitButtonState("Bestelling voorbereiden...", true);
-    showStatus("","");
+          paypalRendered = true;
 
-    try{
-      const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || "Mollie";
-      if(selectedMethod === "Mollie" && !paymentAvailability.mollie) throw new Error("Mollie is nog niet actief. De eigenaar moet de Mollie API-sleutel instellen op de server.");
-      if(selectedMethod === "PayPal" && !paymentAvailability.paypal) throw new Error("PayPal is nog niet geconfigureerd.");
-      if(selectedMethod === "CashOnDelivery" && !paymentAvailability.cashOnDelivery) throw new Error("Betalen bij ontvangst is momenteel niet beschikbaar.");
+          window.paypal.Buttons({
+            style:{layout:"vertical",shape:"rect",label:"paypal"},
+            createOrder: async function(){
+              const r = await fetch("/api/paypal/create-order",{
+                method:"POST",
+                headers:{"Content-Type":"application/json","Accept":"application/json"},
+                credentials:"same-origin",
+                body:JSON.stringify({orderId:pendingOrderId,checkoutToken:pendingCheckoutToken})
+              });
+              const result = await r.json().catch(()=>({}));
+              if(!r.ok || !result.id) throw new Error(result.error || "PayPal betaling kon niet worden gestart.");
+              return result.id;
+            },
+            onApprove: async function(data){
+              showPaymentStatus("Betaling wordt bevestigd...","success");
+              try{
+                const r = await fetch("/api/paypal/capture-order",{
+                  method:"POST",
+                  headers:{"Content-Type":"application/json","Accept":"application/json"},
+                  credentials:"same-origin",
+                  body:JSON.stringify({orderId:pendingOrderId,paypalOrderId:data.orderID,checkoutToken:pendingCheckoutToken})
+                });
+                const result = await r.json().catch(()=>({}));
+                if(!r.ok || !result.paid) throw new Error(result.error || "PayPal betaling kon niet worden bevestigd.");
 
-      const order = await createLocalOrder();
-      pendingOrderId = Number(order?.id || 0);
-      pendingCheckoutToken = String(order?.checkout_token || "");
-      if(!pendingOrderId || !/^[a-f0-9]{64}$/.test(pendingCheckoutToken)) throw new Error("De bestelling kon niet veilig worden bevestigd. Probeer opnieuw.");
+                localStorage.removeItem(CART_KEY);
+                localStorage.removeItem("homsTechTradeInToken");
+                localStorage.removeItem("homsTechTradeInCredit");
+                localStorage.removeItem("homsTechTradeInDevice");
+              localStorage.removeItem("homsTechTradeInEmail");
+              localStorage.removeItem("homsTechTradeInDetails");
+                localStorage.removeItem("homsTechPendingWebshopOrderId");
+                pendingCheckoutToken = "";
 
-      if(selectedMethod === "CashOnDelivery"){
-        localStorage.removeItem(CART_KEY);
-        localStorage.removeItem("homsTechTradeInToken");
-        localStorage.removeItem("homsTechTradeInCredit");
-        localStorage.removeItem("homsTechTradeInDevice");
-          localStorage.removeItem("homsTechTradeInEmail");
-          localStorage.removeItem("homsTechTradeInDetails");
-        localStorage.removeItem("homsTechPendingWebshopOrderId");
-        document.getElementById("checkoutContent").classList.add("hidden");
-        markCheckoutConfirmed();
-          document.getElementById("success").classList.remove("hidden");
-        document.getElementById("orderNumber").textContent = "Bestelnummer #" + pendingOrderId;
-        showStatus("Bestelling ontvangen. U betaalt bij ontvangst; er is geen online betaling uitgevoerd.","success");
-        return;
-      }
-      if(selectedMethod === "Mollie"){
-        setSubmitButtonState("Doorsturen naar Mollie…", true);
-        await startMolliePayment();
-        return;
-      }
-      if(selectedMethod === "PayPal"){
-        if(!paymentAvailability.paypal) throw new Error("PayPal is nog niet geconfigureerd.");
-        sessionStorage.setItem("homsTechMollieOrderId",String(pendingOrderId));
-        sessionStorage.setItem("homsTechMollieCheckoutToken",pendingCheckoutToken);
-        sessionStorage.setItem("homsTechPaymentMethod","PayPal");
-        location.assign("payment.html");
-      }
-    }catch(error){
-      showStatus("✕ " + (error.message || "Bestelling kon niet worden aangemaakt."),"error");
-      setSubmitButtonState("Doorgaan naar betaling", false);
-    }
-  }
+                document.getElementById("checkoutContent").classList.add("hidden");
+                markCheckoutConfirmed();
+                document.getElementById("success").classList.remove("hidden");
+                document.getElementById("orderNumber").textContent = "Bestelnummer #" + pendingOrderId;
+              }catch(error){
+                showPaymentStatus("✕ " + (error.message || "Betaling kon niet worden bevestigd."),"error");
+              }
+            },
+            onCancel: async function(){
+              showPaymentStatus("De PayPal betaling is geannuleerd. Je bestelling is nog niet betaald.","error");
+              try{
+                await fetch("/api/paypal/cancel-order",{
+                  method:"POST",
+                  headers:{"Content-Type":"application/json"},
+                  credentials:"same-origin",
+                  body:JSON.stringify({orderId:pendingOrderId,checkoutToken:pendingCheckoutToken})
+                });
+              }catch(e){}
+            },
+            onError: function(error){
+              console.error("PayPal error:",error);
+              showPaymentStatus("✕ PayPal kon de betaling niet voltooien. Probeer opnieuw.","error");
+            }
+          }).render("#paypal-button-container");
+        }
 
-  async function loadPaymentAvailability(){
-    const note = document.getElementById("paymentConfigNote");
-    try {
-      const [mollieResponse, paypalResponse, codResponse] = await Promise.all([
-        fetch("/api/mollie/config",{cache:"no-store"}),
-        fetch("/api/paypal/config",{cache:"no-store"}),
-        fetch("/api/payment-methods/config",{cache:"no-store"})
-      ]);
-      const mollie = await mollieResponse.json().catch(()=>({}));
-      const paypal = await paypalResponse.json().catch(()=>({}));
-      const cod = await codResponse.json().catch(()=>({}));
-      paymentAvailability = {
-        mollie: Boolean(mollieResponse.ok && mollie.enabled),
-        paypal: Boolean(paypalResponse.ok && paypal.enabled && paypal.clientId),
-        cashOnDelivery: Boolean(codResponse.ok && cod.cashOnDeliveryEnabled)
-      };
-      // Show Mollie trust branding only while the Mollie payment option is actually enabled.
-      const mollieTrust = document.querySelector(".payment-mollie-trust");
-      if(mollieTrust) mollieTrust.hidden = !paymentAvailability.mollie;
-      const cashOption = document.getElementById("cashOnDeliveryOption");
-      const cashInput = document.getElementById("paymentCashOnDelivery");
-      const mollieInput = document.getElementById("paymentMollie");
-      const paypalInput = document.getElementById("paymentPayPal");
-      // Cash on delivery is controlled centrally by the administrator and is also valid for trade-in orders.
-      cashOption.hidden = !paymentAvailability.cashOnDelivery;
-      mollieInput.disabled = !paymentAvailability.mollie;
-      paypalInput.disabled = !paymentAvailability.paypal;
-      if(paymentAvailability.mollie) mollieInput.checked = true;
-      else if(paymentAvailability.paypal) paypalInput.checked = true;
-      else if(paymentAvailability.cashOnDelivery) cashInput.checked = true;
-      setSubmitButtonState("Doorgaan naar betaling", false);
-      if(note){
-        note.textContent = paymentAvailability.mollie && paymentAvailability.paypal
-          ? "Mollie en PayPal zijn beschikbaar."
-          : paymentAvailability.mollie
-            ? "Mollie is beschikbaar. Kies iDEAL / Wero of een andere methode op de Mollie-betaalpagina."
-            : paymentAvailability.paypal
-              ? "Mollie is nog niet ingesteld; PayPal is beschikbaar."
-              : paymentAvailability.cashOnDelivery
-                ? "Betalen bij ontvangst is beschikbaar. U betaalt wanneer uw bestelling wordt geleverd."
-                : "Online betalen is nog niet geconfigureerd. De beheerder moet eerst een betaalmethode inschakelen.";
-      }
-    } catch(error) {
-      paymentAvailability = { mollie:false, paypal:false, cashOnDelivery:false };
-      if(note) note.textContent = "Betaalmethoden konden niet worden gecontroleerd. Vernieuw de pagina of probeer later opnieuw.";
-      document.getElementById("paymentMollie").disabled = true;
-      document.getElementById("paymentPayPal").disabled = true;
-      document.getElementById("cashOnDeliveryOption").hidden = true;
-      setSubmitButtonState("Doorgaan naar betaling", false);
-    }
-  }
+        function setSubmitButtonState(label, disabled){
+          const button = document.getElementById("submitBtn");
+          if(!button) return;
+          const text = button.querySelector("span");
+          if(text) text.textContent = label;
+          button.disabled = Boolean(disabled);
+        }
 
-  async function verifyMollieReturn(){
-    const params = new URLSearchParams(location.search);
-    const state = params.get("mollie");
-    if(!state) return;
-    const orderId = Number(params.get("orderId") || sessionStorage.getItem("homsTechMollieOrderId"));
-    const token = sessionStorage.getItem("homsTechMollieCheckoutToken") || "";
-    if(state === "cancel"){
-      showStatus("De betaling is geannuleerd. Uw bestelling is nog niet als betaald gemarkeerd.","error");
-      return;
-    }
-    if(state !== "return") return;
-    if(!Number.isInteger(orderId) || orderId < 1 || !/^[a-f0-9]{64}$/.test(token)){
-      showStatus("We konden de betaling niet aan uw bestelling koppelen. Neem contact op met HOMS TECH voordat u opnieuw betaalt.","error");
-      return;
-    }
-    showStatus("We controleren uw betaling bij Mollie…","success");
-    try{
-      const r = await fetch("/api/mollie/verify-payment",{
-        method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},credentials:"same-origin",
-        body:JSON.stringify({orderId,checkoutToken:token})
-      });
-      const result = await r.json().catch(()=>({}));
-      if(!r.ok) throw new Error(result.error || "De betaalstatus kon niet worden gecontroleerd.");
-      if(result.paid){
-        localStorage.removeItem(CART_KEY);
-        localStorage.removeItem("homsTechTradeInToken");
-        localStorage.removeItem("homsTechTradeInCredit");
-        localStorage.removeItem("homsTechTradeInDevice");
-          localStorage.removeItem("homsTechTradeInEmail");
-          localStorage.removeItem("homsTechTradeInDetails");
-        localStorage.removeItem("homsTechPendingWebshopOrderId");
-        sessionStorage.removeItem("homsTechMollieOrderId");
-        sessionStorage.removeItem("homsTechMollieCheckoutToken");
-        document.getElementById("checkoutContent").classList.add("hidden");
-        markCheckoutConfirmed();
-          document.getElementById("success").classList.remove("hidden");
-        document.getElementById("orderNumber").textContent = "Bestelnummer #" + orderId;
-      }else{
-        showStatus("De betaling is nog niet bevestigd (status: " + String(result.status || "in behandeling") + "). Wacht even en vernieuw deze pagina; betaal niet opnieuw zolang de status onduidelijk is.","error");
-      }
-    }catch(error){
-      showStatus("✕ " + (error.message || "De betaalstatus kon niet worden gecontroleerd."),"error");
-    }
-  }
+        async function submitOrder(event){
+          event.preventDefault();
 
-  function start(){
-    const form=document.getElementById("checkoutForm");
-    if(form) form.addEventListener("submit",submitOrder);
-    renderItems();
-    prefill();
-    loadPaymentAvailability();
-    verifyMollieReturn();
-  }
+          const items = readCart();
+          if(!items.length){ location.href="cart.html"; return; }
 
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",start);
-  else start();
-})();
-</script>
+          setSubmitButtonState("Bestelling voorbereiden...", true);
+          showStatus("","");
 
-<footer class="ht-site-footer" aria-label="Footer HOMS TECH">
-  <div class="ht-footer-grid">
-    <div><div class="ht-footer-logo">HOMS <span>TECH</span></div><p>Refurbished apparaten · Reparatie aan huis · GSM Services</p></div>
-    <div><h2>Snelle links</h2><ul><li><a href="index.html">Home</a></li><li><a href="devices.html">Apparaten</a></li><li><a href="repair.html">Reparaties</a></li><li><a href="prices.html">Prijzen</a></li></ul></div>
-    <div><h2>Service</h2><ul><li><a href="about.html">Over ons</a></li><li><a href="uw-toestel-verkopen.html">Uw toestel verkopen</a></li><li><a href="account.html">Mijn account</a></li></ul></div>
-    <div><h2>Hulp nodig?</h2><p>Bekijk onze reparaties of neem contact op via WhatsApp.</p><a class="ht-footer-cta" href="repair.html">Reparatie aanvragen →</a></div>
-  </div>
-  <div class="ht-footer-bottom"><span>© 2026 HOMS TECH</span><span>Refurbished · Reparatie · Service</span></div>
-<div class="homs-legal-link" style="text-align:center;padding:12px 16px;font-size:13px;background:#f7f7f4"><a href="privacybeleid.html" style="color:#2563eb;text-decoration:underline">Privacybeleid</a></div>
-</footer>
+          try{
+            const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || "Mollie";
+            if(selectedMethod === "Mollie" && !paymentAvailability.mollie) throw new Error("Mollie is nog niet actief. De eigenaar moet de Mollie API-sleutel instellen op de server.");
+            if(selectedMethod === "PayPal" && !paymentAvailability.paypal) throw new Error("PayPal is nog niet geconfigureerd.");
+            if(selectedMethod === "CashOnDelivery" && !paymentAvailability.cashOnDelivery) throw new Error("Betalen bij ontvangst is momenteel niet beschikbaar.");
 
-  <script src="assets/homs-global-nav.js?v=20261108-loopfix2"></script>
-  <script src="assets/homs-ai-chat.js" defer></script>
-</body>
+            const order = await createLocalOrder();
+            pendingOrderId = Number(order?.id || 0);
+            pendingCheckoutToken = String(order?.checkout_token || "");
+            if(!pendingOrderId || !/^[a-f0-9]{64}$/.test(pendingCheckoutToken)) throw new Error("De bestelling kon niet veilig worden bevestigd. Probeer opnieuw.");
+
+            if(selectedMethod === "CashOnDelivery"){
+              localStorage.removeItem(CART_KEY);
+              localStorage.removeItem("homsTechTradeInToken");
+              localStorage.removeItem("homsTechTradeInCredit");
+              localStorage.removeItem("homsTechTradeInDevice");
+                localStorage.removeItem("homsTechTradeInEmail");
+                localStorage.removeItem("homsTechTradeInDetails");
+              localStorage.removeItem("homsTechPendingWebshopOrderId");
+              document.getElementById("checkoutContent").classList.add("hidden");
+              markCheckoutConfirmed();
+                document.getElementById("success").classList.remove("hidden");
+              document.getElementById("orderNumber").textContent = "Bestelnummer #" + pendingOrderId;
+              showStatus("Bestelling ontvangen. U betaalt bij ontvangst; er is geen online betaling uitgevoerd.","success");
+              return;
+            }
+            if(selectedMethod === "Mollie"){
+              setSubmitButtonState("Doorsturen naar Mollie…", true);
+              await startMolliePayment();
+              return;
+            }
+            if(selectedMethod === "PayPal"){
+              if(!paymentAvailability.paypal) throw new Error("PayPal is nog niet geconfigureerd.");
+              sessionStorage.setItem("homsTechMollieOrderId",String(pendingOrderId));
+              sessionStorage.setItem("homsTechMollieCheckoutToken",pendingCheckoutToken);
+              sessionStorage.setItem("homsTechPaymentMethod","PayPal");
+              location.assign("payment.html");
+            }
+          }catch(error){
+            showStatus("✕ " + (error.message || "Bestelling kon niet worden aangemaakt."),"error");
+            setSubmitButtonState("Doorgaan naar betaling", false);
+          }
+        }
+
+        async function loadPaymentAvailability(){
+          const note = document.getElementById("paymentConfigNote");
+          try {
+            const [mollieResponse, paypalResponse, codResponse] = await Promise.all([
+              fetch("/api/mollie/config",{cache:"no-store"}),
+              fetch("/api/paypal/config",{cache:"no-store"}),
+              fetch("/api/payment-methods/config",{cache:"no-store"})
+            ]);
+            const mollie = await mollieResponse.json().catch(()=>({}));
+            const paypal = await paypalResponse.json().catch(()=>({}));
+            const cod = await codResponse.json().catch(()=>({}));
+            paymentAvailability = {
+              mollie: Boolean(mollieResponse.ok && mollie.enabled),
+              paypal: Boolean(paypalResponse.ok && paypal.enabled && paypal.clientId),
+              cashOnDelivery: Boolean(codResponse.ok && cod.cashOnDeliveryEnabled)
+            };
+            // Show Mollie trust branding only while the Mollie payment option is actually enabled.
+            const mollieTrust = document.querySelector(".payment-mollie-trust");
+            if(mollieTrust) mollieTrust.hidden = !paymentAvailability.mollie;
+            const cashOption = document.getElementById("cashOnDeliveryOption");
+            const cashInput = document.getElementById("paymentCashOnDelivery");
+            const mollieInput = document.getElementById("paymentMollie");
+            const paypalInput = document.getElementById("paymentPayPal");
+            // Cash on delivery is controlled centrally by the administrator and is also valid for trade-in orders.
+            cashOption.hidden = !paymentAvailability.cashOnDelivery;
+            mollieInput.disabled = !paymentAvailability.mollie;
+            paypalInput.disabled = !paymentAvailability.paypal;
+            if(paymentAvailability.mollie) mollieInput.checked = true;
+            else if(paymentAvailability.paypal) paypalInput.checked = true;
+            else if(paymentAvailability.cashOnDelivery) cashInput.checked = true;
+            setSubmitButtonState("Doorgaan naar betaling", false);
+            if(note){
+              note.textContent = paymentAvailability.mollie && paymentAvailability.paypal
+                ? "Mollie en PayPal zijn beschikbaar."
+                : paymentAvailability.mollie
+                  ? "Mollie is beschikbaar. Kies iDEAL / Wero of een andere methode op de Mollie-betaalpagina."
+                  : paymentAvailability.paypal
+                    ? "Mollie is nog niet ingesteld; PayPal is beschikbaar."
+                    : paymentAvailability.cashOnDelivery
+                      ? "Betalen bij ontvangst is beschikbaar. U betaalt wanneer uw bestelling wordt geleverd."
+                      : "Online betalen is nog niet geconfigureerd. De beheerder moet eerst een betaalmethode inschakelen.";
+            }
+          } catch(error) {
+            paymentAvailability = { mollie:false, paypal:false, cashOnDelivery:false };
+            if(note) note.textContent = "Betaalmethoden konden niet worden gecontroleerd. Vernieuw de pagina of probeer later opnieuw.";
+            document.getElementById("paymentMollie").disabled = true;
+            document.getElementById("paymentPayPal").disabled = true;
+            document.getElementById("cashOnDeliveryOption").hidden = true;
+            setSubmitButtonState("Doorgaan naar betaling", false);
+          }
+        }
+
+        async function verifyMollieReturn(){
+          const params = new URLSearchParams(location.search);
+          const state = params.get("mollie");
+          if(!state) return;
+          const orderId = Number(params.get("orderId") || sessionStorage.getItem("homsTechMollieOrderId"));
+          const token = sessionStorage.getItem("homsTechMollieCheckoutToken") || "";
+          if(state === "cancel"){
+            showStatus("De betaling is geannuleerd. Uw bestelling is nog niet als betaald gemarkeerd.","error");
+            return;
+          }
+          if(state !== "return") return;
+          if(!Number.isInteger(orderId) || orderId < 1 || !/^[a-f0-9]{64}$/.test(token)){
+            showStatus("We konden de betaling niet aan uw bestelling koppelen. Neem contact op met HOMS TECH voordat u opnieuw betaalt.","error");
+            return;
+          }
+          showStatus("We controleren uw betaling bij Mollie…","success");
+          try{
+            const r = await fetch("/api/mollie/verify-payment",{
+              method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},credentials:"same-origin",
+              body:JSON.stringify({orderId,checkoutToken:token})
+            });
+            const result = await r.json().catch(()=>({}));
+            if(!r.ok) throw new Error(result.error || "De betaalstatus kon niet worden gecontroleerd.");
+            if(result.paid){
+              localStorage.removeItem(CART_KEY);
+              localStorage.removeItem("homsTechTradeInToken");
+              localStorage.removeItem("homsTechTradeInCredit");
+              localStorage.removeItem("homsTechTradeInDevice");
+                localStorage.removeItem("homsTechTradeInEmail");
+                localStorage.removeItem("homsTechTradeInDetails");
+              localStorage.removeItem("homsTechPendingWebshopOrderId");
+              sessionStorage.removeItem("homsTechMollieOrderId");
+              sessionStorage.removeItem("homsTechMollieCheckoutToken");
+              document.getElementById("checkoutContent").classList.add("hidden");
+              markCheckoutConfirmed();
+                document.getElementById("success").classList.remove("hidden");
+              document.getElementById("orderNumber").textContent = "Bestelnummer #" + orderId;
+            }else{
+              showStatus("De betaling is nog niet bevestigd (status: " + String(result.status || "in behandeling") + "). Wacht even en vernieuw deze pagina; betaal niet opnieuw zolang de status onduidelijk is.","error");
+            }
+          }catch(error){
+            showStatus("✕ " + (error.message || "De betaalstatus kon niet worden gecontroleerd."),"error");
+          }
+        }
+
+        function start(){
+          const form=document.getElementById("checkoutForm");
+          if(form) form.addEventListener("submit",submitOrder);
+          renderItems();
+          prefill();
+          loadPaymentAvailability();
+          verifyMollieReturn();
+        }
+
+        if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",start);
+        else start();
+      })();
+    </script>
+
+    <footer class="ht-site-footer" aria-label="Footer HOMS TECH">
+      <div class="ht-footer-grid">
+        <div>
+          <div class="ht-footer-logo">HOMS <span>TECH</span></div>
+          <p>Refurbished apparaten · Reparatie aan huis · GSM Services</p>
+        </div>
+        <div>
+          <h2>Snelle links</h2>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="devices.html">Apparaten</a></li>
+            <li><a href="repair.html">Reparaties</a></li>
+            <li><a href="prices.html">Prijzen</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Service</h2>
+          <ul>
+            <li><a href="about.html">Over ons</a></li>
+            <li><a href="uw-toestel-verkopen.html">Uw toestel verkopen</a></li>
+            <li><a href="account.html">Mijn account</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Hulp nodig?</h2>
+          <p>Bekijk onze reparaties of neem contact op via WhatsApp.</p>
+          <a class="ht-footer-cta" href="repair.html">Reparatie aanvragen →</a>
+        </div>
+      </div>
+      <div class="ht-footer-bottom">
+        <span>© 2026 HOMS TECH</span
+        ><span>Refurbished · Reparatie · Service</span>
+      </div>
+      <div
+        class="homs-legal-link"
+        style="text-align:center;padding:12px 16px;font-size:13px;background:#f7f7f4"
+      >
+        <a
+          href="privacybeleid.html"
+          style="color:#2563eb;text-decoration:underline"
+          >Privacybeleid</a
+        >
+      </div>
+    </footer>
+
+    <script src="assets/homs-global-nav.js?v=20261108-loopfix2"></script>
+    <script src="assets/homs-ai-chat.js" defer></script>
+  </body>
 </html>

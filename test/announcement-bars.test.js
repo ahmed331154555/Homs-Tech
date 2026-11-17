@@ -4,7 +4,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const {
   normalizeAnnouncementBarSettings,
-  registerAnnouncementBarRoutes
+  registerAnnouncementBarRoutes,
 } = require("../routes/announcement-bars");
 
 function createHarness(queryWithConnectionRetry = async () => ({ rows: [] })) {
@@ -16,16 +16,16 @@ function createHarness(queryWithConnectionRetry = async () => ({ rows: [] })) {
     },
     put(path, ...handlers) {
       routes.set("PUT " + path, handlers.at(-1));
-    }
+    },
   };
-  const requirePermission = permission => {
+  const requirePermission = (permission) => {
     permissions.push(permission);
     return (_req, _res, next) => next();
   };
 
   registerAnnouncementBarRoutes(app, {
     requirePermission,
-    queryWithConnectionRetry
+    queryWithConnectionRetry,
   });
   return { routes, permissions };
 }
@@ -46,7 +46,7 @@ function createResponse() {
     json(value) {
       this.body = value;
       return this;
-    }
+    },
   };
 }
 
@@ -59,7 +59,7 @@ test("announcement settings apply safe defaults and clamp display values", () =>
     height: 2,
     fontSize: 40,
     direction: "unexpected",
-    mode: "unexpected"
+    mode: "unexpected",
   });
 
   assert.deepEqual(settings, {
@@ -72,7 +72,7 @@ test("announcement settings apply safe defaults and clamp display values", () =>
     direction: "rtl",
     mode: "scroll",
     height: 30,
-    fontSize: 22
+    fontSize: 22,
   });
 });
 
@@ -82,7 +82,7 @@ test("announcement settings use defaults for empty or invalid input", () => {
     "1 jaar garantie",
     "Snel geleverd",
     "Betrouwbare service",
-    "Betaalbare prijzen"
+    "Betaalbare prijzen",
   ]);
   assert.equal(settings.enabled, true);
   assert.equal(settings.speed, 140);
@@ -124,10 +124,13 @@ test("admin announcement save validates page before database access", async () =
   });
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/announcement-bars/:page")({
-    params: { page: "invalid" },
-    body: {}
-  }, response);
+  await routes.get("PUT /api/admin/announcement-bars/:page")(
+    {
+      params: { page: "invalid" },
+      body: {},
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 400);
   assert.equal(queryCount, 0);
@@ -141,19 +144,24 @@ test("admin announcement save stores normalized settings", async () => {
   });
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/announcement-bars/:page")({
-    params: { page: "shop" },
-    body: { enabled: false, messages: ["Saved"] }
-  }, response);
+  await routes.get("PUT /api/admin/announcement-bars/:page")(
+    {
+      params: { page: "shop" },
+      body: { enabled: false, messages: ["Saved"] },
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 200);
   assert.equal(response.body.success, true);
   assert.deepEqual(queryArgs[1], [
     "shop",
-    JSON.stringify(normalizeAnnouncementBarSettings({
-      enabled: false,
-      messages: ["Saved"]
-    }))
+    JSON.stringify(
+      normalizeAnnouncementBarSettings({
+        enabled: false,
+        messages: ["Saved"],
+      }),
+    ),
   ]);
   assert.equal(queryArgs[2], 4);
 });
@@ -162,10 +170,13 @@ test("admin announcement save returns 404 when site settings do not exist", asyn
   const { routes } = createHarness(async () => ({ rows: [] }));
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/announcement-bars/:page")({
-    params: { page: "home" },
-    body: {}
-  }, response);
+  await routes.get("PUT /api/admin/announcement-bars/:page")(
+    {
+      params: { page: "home" },
+      body: {},
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 404);
 });

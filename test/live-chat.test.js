@@ -12,8 +12,14 @@ test("live chat first reply thanks the customer and promises a team member follo
 });
 
 test("live chat first reply is fixed and does not depend on the customer's message", () => {
-  assert.equal(liveChatFirstReply("Hoi"), liveChatFirstReply("Ik wil een iPhone kopen"));
-  assert.equal(liveChatFirstReply("Hallo"), liveChatFirstReply("Mijn scherm is kapot"));
+  assert.equal(
+    liveChatFirstReply("Hoi"),
+    liveChatFirstReply("Ik wil een iPhone kopen"),
+  );
+  assert.equal(
+    liveChatFirstReply("Hallo"),
+    liveChatFirstReply("Mijn scherm is kapot"),
+  );
 });
 
 test("live chat rate limit allows thirty messages and blocks the thirty-first", () => {
@@ -22,9 +28,12 @@ test("live chat rate limit allows thirty messages and blocks the thirty-first", 
   Date.now = () => now;
   const ip = "live-chat-thirty-" + now;
   try {
-    for (let request = 0; request < 30; request += 1) assert.equal(allowLiveChat(ip), true);
+    for (let request = 0; request < 30; request += 1)
+      assert.equal(allowLiveChat(ip), true);
     assert.equal(allowLiveChat(ip), false);
-  } finally { Date.now = originalNow; }
+  } finally {
+    Date.now = originalNow;
+  }
 });
 
 test("live chat rate limit is independent per IP and expires after fifteen minutes", () => {
@@ -34,10 +43,13 @@ test("live chat rate limit is independent per IP and expires after fifteen minut
   const firstIp = "live-chat-first-" + now;
   const secondIp = "live-chat-second-" + now;
   try {
-    for (let request = 0; request < 30; request += 1) assert.equal(allowLiveChat(firstIp), true);
+    for (let request = 0; request < 30; request += 1)
+      assert.equal(allowLiveChat(firstIp), true);
     assert.equal(allowLiveChat(firstIp), false);
     assert.equal(allowLiveChat(secondIp), true);
     now += 15 * 60 * 1000;
     assert.equal(allowLiveChat(firstIp), true);
-  } finally { Date.now = originalNow; }
+  } finally {
+    Date.now = originalNow;
+  }
 });

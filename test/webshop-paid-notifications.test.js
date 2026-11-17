@@ -2,7 +2,9 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { sendPaidWebshopOrderNotifications } = require("../utils/webshop-paid-notifications");
+const {
+  sendPaidWebshopOrderNotifications,
+} = require("../utils/webshop-paid-notifications");
 
 function createPool(order) {
   const sent = new Set();
@@ -13,14 +15,18 @@ function createPool(order) {
     updates,
     async query(sql, params = []) {
       if (/^\s*SELECT/i.test(sql)) return { rows: [order] };
-      if (/UPDATE buyback_orders/i.test(sql) || /SET trade_in_status/i.test(sql)) {
+      if (
+        /UPDATE buyback_orders/i.test(sql) ||
+        /SET trade_in_status/i.test(sql)
+      ) {
         updates.push(sql);
         return { rows: [] };
       }
       const claim = sql.match(/SET (\w+_claimed_at) = NOW\(\)/);
       if (claim) {
         const sentColumn = claim[1].replace("_claimed_at", "_sent_at");
-        if (sent.has(sentColumn) || claimed.has(sentColumn)) return { rows: [] };
+        if (sent.has(sentColumn) || claimed.has(sentColumn))
+          return { rows: [] };
         claimed.add(sentColumn);
         return { rows: [{ id: order.id }] };
       }
@@ -36,7 +42,7 @@ function createPool(order) {
         return { rows: [] };
       }
       return { rows: [] };
-    }
+    },
   };
 }
 
@@ -61,7 +67,7 @@ const paidOrder = {
   trade_in_condition: "Licht gebruikt",
   trade_in_battery: "Ja",
   trade_in_screen: "Goed",
-  trade_in_answers: {}
+  trade_in_answers: {},
 };
 
 test("trade-in confirmation emails are not sent before the new phone is paid", async () => {
@@ -70,16 +76,27 @@ test("trade-in confirmation emails are not sent before the new phone is paid", a
   const result = await sendPaidWebshopOrderNotifications({
     pool,
     orderId: 42,
-    fetchImpl: async () => { emailCalls++; return { ok: true, json: async () => ({ id: "mail" }) }; },
-    getEnv: () => ({ RESEND_API_KEY: "test", RESEND_FROM_EMAIL: "shop@example.test", ORDER_NOTIFICATION_EMAIL: "owner@example.test" }),
-    escapeHtml: value => String(value)
+    fetchImpl: async () => {
+      emailCalls++;
+      return { ok: true, json: async () => ({ id: "mail" }) };
+    },
+    getEnv: () => ({
+      RESEND_API_KEY: "test",
+      RESEND_FROM_EMAIL: "shop@example.test",
+      ORDER_NOTIFICATION_EMAIL: "owner@example.test",
+    }),
+    escapeHtml: (value) => String(value),
   });
   assert.equal(result.reason, "not-an-eligible-trade-in-order");
   assert.equal(emailCalls, 0);
 });
 
 test("cash-on-delivery trade-in order sends unpaid purchase, trade-in and owner notifications", async () => {
-  const pool = createPool({ ...paidOrder, payment_method: "CashOnDelivery", payment_status: "Unpaid" });
+  const pool = createPool({
+    ...paidOrder,
+    payment_method: "CashOnDelivery",
+    payment_status: "Unpaid",
+  });
   const messages = [];
   const result = await sendPaidWebshopOrderNotifications({
     pool,
@@ -87,10 +104,17 @@ test("cash-on-delivery trade-in order sends unpaid purchase, trade-in and owner 
     allowCashOnDelivery: true,
     fetchImpl: async (_url, request) => {
       messages.push(JSON.parse(request.body));
-      return { ok: true, json: async () => ({ id: "mail-" + messages.length }) };
+      return {
+        ok: true,
+        json: async () => ({ id: "mail-" + messages.length }),
+      };
     },
-    getEnv: () => ({ RESEND_API_KEY: "test", RESEND_FROM_EMAIL: "shop@example.test", ORDER_NOTIFICATION_EMAIL: "owner@example.test" }),
-    escapeHtml: value => String(value)
+    getEnv: () => ({
+      RESEND_API_KEY: "test",
+      RESEND_FROM_EMAIL: "shop@example.test",
+      ORDER_NOTIFICATION_EMAIL: "owner@example.test",
+    }),
+    escapeHtml: (value) => String(value),
   });
   assert.equal(result.sent, true);
   assert.equal(result.cashOnDelivery, true);
@@ -113,10 +137,17 @@ test("paid trade-in order sends purchase, trade-in and owner notifications once"
     orderId: 42,
     fetchImpl: async (_url, request) => {
       messages.push(JSON.parse(request.body));
-      return { ok: true, json: async () => ({ id: "mail-" + messages.length }) };
+      return {
+        ok: true,
+        json: async () => ({ id: "mail-" + messages.length }),
+      };
     },
-    getEnv: () => ({ RESEND_API_KEY: "test", RESEND_FROM_EMAIL: "shop@example.test", ORDER_NOTIFICATION_EMAIL: "owner@example.test" }),
-    escapeHtml: value => String(value)
+    getEnv: () => ({
+      RESEND_API_KEY: "test",
+      RESEND_FROM_EMAIL: "shop@example.test",
+      ORDER_NOTIFICATION_EMAIL: "owner@example.test",
+    }),
+    escapeHtml: (value) => String(value),
   };
   const first = await sendPaidWebshopOrderNotifications(options);
   const second = await sendPaidWebshopOrderNotifications(options);

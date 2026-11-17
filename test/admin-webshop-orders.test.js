@@ -2,21 +2,41 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { registerAdminWebshopOrderRoutes } = require("../routes/admin-webshop-orders");
+const {
+  registerAdminWebshopOrderRoutes,
+} = require("../routes/admin-webshop-orders");
 
-function createHarness(pool, deductPaidOrderInventory = async () => ({ deducted: true })) {
+function createHarness(
+  pool,
+  deductPaidOrderInventory = async () => ({ deducted: true }),
+) {
   const routes = new Map();
   const app = {
-    get(path, ...handlers) { routes.set(`GET ${path}`, handlers.at(-1)); },
-    put(path, ...handlers) { routes.set(`PUT ${path}`, handlers.at(-1)); },
-    post(path, ...handlers) { routes.set(`POST ${path}`, handlers.at(-1)); },
-    delete(path, ...handlers) { routes.set(`DELETE ${path}`, handlers.at(-1)); }
+    get(path, ...handlers) {
+      routes.set(`GET ${path}`, handlers.at(-1));
+    },
+    put(path, ...handlers) {
+      routes.set(`PUT ${path}`, handlers.at(-1));
+    },
+    post(path, ...handlers) {
+      routes.set(`POST ${path}`, handlers.at(-1));
+    },
+    delete(path, ...handlers) {
+      routes.set(`DELETE ${path}`, handlers.at(-1));
+    },
   };
   const requirePermission = (permission) => {
-    assert.ok(permission.startsWith("webshop_orders.") || permission.startsWith("buyback_orders."));
+    assert.ok(
+      permission.startsWith("webshop_orders.") ||
+        permission.startsWith("buyback_orders."),
+    );
     return (_req, _res, next) => next();
   };
-  registerAdminWebshopOrderRoutes(app, { pool, requirePermission, deductPaidOrderInventory });
+  registerAdminWebshopOrderRoutes(app, {
+    pool,
+    requirePermission,
+    deductPaidOrderInventory,
+  });
   return routes;
 }
 
@@ -24,9 +44,18 @@ function createResponse() {
   return {
     statusCode: 200,
     body: undefined,
-    status(code) { this.statusCode = code; return this; },
-    json(value) { this.body = value; return this; },
-    send(value) { this.body = value; return this; }
+    status(code) {
+      this.statusCode = code;
+      return this;
+    },
+    json(value) {
+      this.body = value;
+      return this;
+    },
+    send(value) {
+      this.body = value;
+      return this;
+    },
   };
 }
 
@@ -35,40 +64,84 @@ test("uncertain Mollie refund failures remain reserved to prevent duplicate refu
   const client = {
     async query(sql) {
       statements.push(sql);
-      if (sql.includes("SELECT id,total,payment_status")) return { rows: [{ id: 17, total: "100.00", payment_status: "Paid", payment_method: "Mollie", mollie_payment_id: "tr_test456" }] };
-      if (sql.includes("SELECT COALESCE(SUM(amount)")) return { rows: [{ total: "0" }] };
-      if (sql.includes("INSERT INTO webshop_order_refunds")) return { rows: [{ id: 502, amount: "30.00" }] };
+      if (sql.includes("SELECT id,total,payment_status"))
+        return {
+          rows: [
+            {
+              id: 17,
+              total: "100.00",
+              payment_status: "Paid",
+              payment_method: "Mollie",
+              mollie_payment_id: "tr_test456",
+            },
+          ],
+        };
+      if (sql.includes("SELECT COALESCE(SUM(amount)"))
+        return { rows: [{ total: "0" }] };
+      if (sql.includes("INSERT INTO webshop_order_refunds"))
+        return { rows: [{ id: 502, amount: "30.00" }] };
       return { rows: [] };
     },
-    release() {}
+    release() {},
   };
-  const pool = { async connect() { return client; }, async query(sql, params) {
-    statements.push(sql);
-    assert.match(sql,/SET status='Processing'/);
-    assert.deepEqual(params,[502]);
-    return { rows: [] };
-  } };
+  const pool = {
+    async connect() {
+      return client;
+    },
+    async query(sql, params) {
+      statements.push(sql);
+      assert.match(sql, /SET status='Processing'/);
+      assert.deepEqual(params, [502]);
+      return { rows: [] };
+    },
+  };
   const routes = new Map();
-  const app = { post(path,...handlers) { routes.set("POST "+path,handlers.at(-1)); }, get(){},put(){},delete(){} };
-  const requirePermission = () => (_req,_res,next)=>next();
-  const mollieRequest = async () => { throw new Error("network timeout"); };
-  registerAdminWebshopOrderRoutes(app,{pool,requirePermission,mollieRequest});
-  const response=createResponse();
-  await routes.get("POST /api/admin/webshop-orders/:id/refund")({
-    params:{id:"17"},body:{amount:30,method:"Mollie",reason:"Retour klant"}
-  },response);
-  assert.equal(response.statusCode,502);
-  assert.match(response.body.error,/controleer eerst de status in Mollie/i);
-  assert.ok(statements.some(sql=>sql.includes("SET status='Processing'")));
+  const app = {
+    post(path, ...handlers) {
+      routes.set("POST " + path, handlers.at(-1));
+    },
+    get() {},
+    put() {},
+    delete() {},
+  };
+  const requirePermission = () => (_req, _res, next) => next();
+  const mollieRequest = async () => {
+    throw new Error("network timeout");
+  };
+  registerAdminWebshopOrderRoutes(app, {
+    pool,
+    requirePermission,
+    mollieRequest,
+  });
+  const response = createResponse();
+  await routes.get("POST /api/admin/webshop-orders/:id/refund")(
+    {
+      params: { id: "17" },
+      body: { amount: 30, method: "Mollie", reason: "Retour klant" },
+    },
+    response,
+  );
+  assert.equal(response.statusCode, 502);
+  assert.match(response.body.error, /controleer eerst de status in Mollie/i);
+  assert.ok(statements.some((sql) => sql.includes("SET status='Processing'")));
 });
 
 test("refund amount must be representable in whole euro cents", async () => {
   let connectCalled = false;
-  const routes = createHarness({ async connect() { connectCalled = true; throw new Error("Should not connect"); } });
+  const routes = createHarness({
+    async connect() {
+      connectCalled = true;
+      throw new Error("Should not connect");
+    },
+  });
   const response = createResponse();
-  await routes.get("POST /api/admin/webshop-orders/:id/refund")({
-    params: { id: "15" }, body: { amount: 12.345, method: "Manual" }
-  }, response);
+  await routes.get("POST /api/admin/webshop-orders/:id/refund")(
+    {
+      params: { id: "15" },
+      body: { amount: 12.345, method: "Manual" },
+    },
+    response,
+  );
   assert.equal(response.statusCode, 400);
   assert.match(response.body.error, /hele eurocenten/i);
   assert.equal(connectCalled, false);
@@ -78,37 +151,89 @@ test("Mollie refund idempotency key is unique per refund record", async () => {
   const statements = [];
   const client = {
     async query(sql, params) {
-      statements.push({sql,params});
-      if (sql.includes("SELECT id,total,payment_status")) return { rows: [{ id: 16, total: "100.00", payment_status: "Paid", payment_method: "Mollie", mollie_payment_id: "tr_test123" }] };
-      if (sql.includes("SELECT COALESCE(SUM(amount)")) return { rows: [{ total: "0" }] };
-      if (sql.includes("INSERT INTO webshop_order_refunds")) return { rows: [{ id: 501, amount: "25.00" }] };
+      statements.push({ sql, params });
+      if (sql.includes("SELECT id,total,payment_status"))
+        return {
+          rows: [
+            {
+              id: 16,
+              total: "100.00",
+              payment_status: "Paid",
+              payment_method: "Mollie",
+              mollie_payment_id: "tr_test123",
+            },
+          ],
+        };
+      if (sql.includes("SELECT COALESCE(SUM(amount)"))
+        return { rows: [{ total: "0" }] };
+      if (sql.includes("INSERT INTO webshop_order_refunds"))
+        return { rows: [{ id: 501, amount: "25.00" }] };
       return { rows: [] };
     },
-    release() {}
+    release() {},
   };
   let providerOptions;
-  const pool = { async connect() { return client; }, async query(sql, params) {
-    statements.push({sql,params});
-    if (sql.includes("UPDATE webshop_order_refunds SET status=$1")) return { rows: [{ id: 501, amount: "25.00", status: "Processing" }] };
-    return { rows: [] };
-  } };
+  const pool = {
+    async connect() {
+      return client;
+    },
+    async query(sql, params) {
+      statements.push({ sql, params });
+      if (sql.includes("UPDATE webshop_order_refunds SET status=$1"))
+        return { rows: [{ id: 501, amount: "25.00", status: "Processing" }] };
+      return { rows: [] };
+    },
+  };
   const routes = new Map();
-  const app = { post(path,...handlers) { routes.set("POST "+path,handlers.at(-1)); }, get(){},put(){},delete(){} };
-  const requirePermission = () => (_req,_res,next)=>next();
-  const mollieRequest = async (_path, options) => { providerOptions=options; return { id: "re_test501", status: "queued" }; };
-  registerAdminWebshopOrderRoutes(app,{pool,requirePermission,mollieRequest});
-  const response=createResponse();
-  await routes.get("POST /api/admin/webshop-orders/:id/refund")({
-    params:{id:"16"},body:{amount:25,method:"Mollie",reason:"Retour klant"}
-  },response);
-  assert.equal(response.statusCode,201);
-  assert.equal(providerOptions.headers["Idempotency-Key"],"homs-tech-order-refund-16-501");
+  const app = {
+    post(path, ...handlers) {
+      routes.set("POST " + path, handlers.at(-1));
+    },
+    get() {},
+    put() {},
+    delete() {},
+  };
+  const requirePermission = () => (_req, _res, next) => next();
+  const mollieRequest = async (_path, options) => {
+    providerOptions = options;
+    return { id: "re_test501", status: "queued" };
+  };
+  registerAdminWebshopOrderRoutes(app, {
+    pool,
+    requirePermission,
+    mollieRequest,
+  });
+  const response = createResponse();
+  await routes.get("POST /api/admin/webshop-orders/:id/refund")(
+    {
+      params: { id: "16" },
+      body: { amount: 25, method: "Mollie", reason: "Retour klant" },
+    },
+    response,
+  );
+  assert.equal(response.statusCode, 201);
+  assert.equal(
+    providerOptions.headers["Idempotency-Key"],
+    "homs-tech-order-refund-16-501",
+  );
 });
 
 test("admin webshop order list returns compact rows without per-order history aggregates", async () => {
-  const expectedOrders = [{ id: 12, name: "Customer", total: "129.00", inventory_error: "Missing variant" }];
+  const expectedOrders = [
+    {
+      id: 12,
+      name: "Customer",
+      total: "129.00",
+      inventory_error: "Missing variant",
+    },
+  ];
   let selectSql = "";
-  const routes = createHarness({ async query(sql) { selectSql = sql; return { rows: expectedOrders }; } });
+  const routes = createHarness({
+    async query(sql) {
+      selectSql = sql;
+      return { rows: expectedOrders };
+    },
+  });
   const response = createResponse();
 
   await routes.get("GET /api/admin/webshop-orders")({}, response);
@@ -136,10 +261,19 @@ test("admin webshop order details load histories, notes and refunds for one orde
   let selectSql = "";
   let params;
   const detail = { id: 12, status_history: [], notes: [], refunds: [] };
-  const routes = createHarness({ async query(sql, values) { selectSql = sql; params = values; return { rows: [detail] }; } });
+  const routes = createHarness({
+    async query(sql, values) {
+      selectSql = sql;
+      params = values;
+      return { rows: [detail] };
+    },
+  });
   const response = createResponse();
 
-  await routes.get("GET /api/admin/webshop-orders/:id")({ params: { id: "12" } }, response);
+  await routes.get("GET /api/admin/webshop-orders/:id")(
+    { params: { id: "12" } },
+    response,
+  );
 
   assert.equal(response.statusCode, 200);
   assert.deepEqual(response.body, { order: detail });
@@ -155,63 +289,125 @@ test("admin webshop order details load histories, notes and refunds for one orde
 
 test("admin webshop order details reject invalid IDs and return not found", async () => {
   let queryCalled = false;
-  const routes = createHarness({ async query() { queryCalled = true; return { rows: [] }; } });
+  const routes = createHarness({
+    async query() {
+      queryCalled = true;
+      return { rows: [] };
+    },
+  });
   const invalid = createResponse();
-  await routes.get("GET /api/admin/webshop-orders/:id")({ params: { id: "0" } }, invalid);
+  await routes.get("GET /api/admin/webshop-orders/:id")(
+    { params: { id: "0" } },
+    invalid,
+  );
   assert.equal(invalid.statusCode, 400);
   assert.equal(queryCalled, false);
 
   const missing = createResponse();
-  await routes.get("GET /api/admin/webshop-orders/:id")({ params: { id: "404" } }, missing);
+  await routes.get("GET /api/admin/webshop-orders/:id")(
+    { params: { id: "404" } },
+    missing,
+  );
   assert.equal(missing.statusCode, 404);
 });
-
 
 test("admin can set payment status to Paid when the stored payment status is NULL", async () => {
   let updateSql = "";
   let deductedId = null;
-  const routes = createHarness({
-    async query(sql, params) {
-      if (sql.startsWith("UPDATE webshop_orders")) {
-        updateSql = sql;
-        assert.equal(params[0], "Paid");
-        return { rows: [{ id: 21, payment_status: "Paid", inventory_deducted_at: null }] };
-      }
-      if (sql.includes("SELECT id,payment_status,inventory_deducted_at,inventory_error")) {
-        return { rows: [{ id: 21, payment_status: "Paid", inventory_deducted_at: "2026-11-07T12:00:00Z", inventory_error: "" }] };
-      }
-      throw new Error("Unexpected query: " + sql);
-    }
-  }, async (id) => { deductedId = id; return { deducted: true }; });
+  const routes = createHarness(
+    {
+      async query(sql, params) {
+        if (sql.startsWith("UPDATE webshop_orders")) {
+          updateSql = sql;
+          assert.equal(params[0], "Paid");
+          return {
+            rows: [
+              { id: 21, payment_status: "Paid", inventory_deducted_at: null },
+            ],
+          };
+        }
+        if (
+          sql.includes(
+            "SELECT id,payment_status,inventory_deducted_at,inventory_error",
+          )
+        ) {
+          return {
+            rows: [
+              {
+                id: 21,
+                payment_status: "Paid",
+                inventory_deducted_at: "2026-11-07T12:00:00Z",
+                inventory_error: "",
+              },
+            ],
+          };
+        }
+        throw new Error("Unexpected query: " + sql);
+      },
+    },
+    async (id) => {
+      deductedId = id;
+      return { deducted: true };
+    },
+  );
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/webshop-orders/:id/payment")({
-    params: { id: "21" }, body: { payment_status: "Paid" }
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/payment")(
+    {
+      params: { id: "21" },
+      body: { payment_status: "Paid" },
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 200);
   assert.equal(deductedId, 21);
-  assert.match(updateSql, /COALESCE\(payment_status,'Unpaid'\) <> 'Paid' OR \$1 = 'Paid'/);
+  assert.match(
+    updateSql,
+    /COALESCE\(payment_status,'Unpaid'\) <> 'Paid' OR \$1 = 'Paid'/,
+  );
   assert.equal(response.body.order.payment_status, "Paid");
   assert.equal(response.body.inventory_warning, null);
 });
 
 test("payment status remains visibly Paid and reports stock warning when inventory deduction fails", async () => {
-  const routes = createHarness({
-    async query(sql) {
-      if (sql.startsWith("UPDATE webshop_orders")) return { rows: [{ id: 22, payment_status: "Paid" }] };
-      if (sql.includes("SELECT inventory_error")) return { rows: [{ inventory_error: "Variant not found" }] };
-      if (sql.includes("SELECT id,payment_status,inventory_deducted_at,inventory_error")) {
-        return { rows: [{ id: 22, payment_status: "Paid", inventory_deducted_at: null, inventory_error: "Variant not found" }] };
-      }
-      throw new Error("Unexpected query: " + sql);
-    }
-  }, async () => ({ error: true }));
+  const routes = createHarness(
+    {
+      async query(sql) {
+        if (sql.startsWith("UPDATE webshop_orders"))
+          return { rows: [{ id: 22, payment_status: "Paid" }] };
+        if (sql.includes("SELECT inventory_error"))
+          return { rows: [{ inventory_error: "Variant not found" }] };
+        if (
+          sql.includes(
+            "SELECT id,payment_status,inventory_deducted_at,inventory_error",
+          )
+        ) {
+          return {
+            rows: [
+              {
+                id: 22,
+                payment_status: "Paid",
+                inventory_deducted_at: null,
+                inventory_error: "Variant not found",
+              },
+            ],
+          };
+        }
+        throw new Error("Unexpected query: " + sql);
+      },
+    },
+    async () => ({ error: true }),
+  );
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/webshop-orders/:id/payment")({
-    params: { id: "22" }, body: { payment_status: "Paid" }
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/payment")(
+    {
+      params: { id: "22" },
+      body: { payment_status: "Paid" },
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 200);
   assert.equal(response.body.order.payment_status, "Paid");
@@ -223,15 +419,20 @@ test("admin can save an internal note on a webshop order", async () => {
   const routes = createHarness({
     async query(sql, params) {
       insertSql = sql;
-      return { rows: [{ id: 8, note: params[1], created_by: "HOMS TECH Admin" }] };
-    }
+      return {
+        rows: [{ id: 8, note: params[1], created_by: "HOMS TECH Admin" }],
+      };
+    },
   });
   const response = createResponse();
 
-  await routes.get("POST /api/admin/webshop-orders/:id/notes")({
-    params: { id: "12" },
-    body: { note: "Klant terugbellen" }
-  }, response);
+  await routes.get("POST /api/admin/webshop-orders/:id/notes")(
+    {
+      params: { id: "12" },
+      body: { note: "Klant terugbellen" },
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 201);
   assert.equal(response.body.note.note, "Klant terugbellen");
@@ -240,13 +441,21 @@ test("admin can save an internal note on a webshop order", async () => {
 
 test("webshop order notes reject empty or oversized text", async () => {
   let queryCalled = false;
-  const routes = createHarness({ async query() { queryCalled = true; return { rows: [] }; } });
+  const routes = createHarness({
+    async query() {
+      queryCalled = true;
+      return { rows: [] };
+    },
+  });
   const response = createResponse();
 
-  await routes.get("POST /api/admin/webshop-orders/:id/notes")({
-    params: { id: "12" },
-    body: { note: "   " }
-  }, response);
+  await routes.get("POST /api/admin/webshop-orders/:id/notes")(
+    {
+      params: { id: "12" },
+      body: { note: "   " },
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 400);
   assert.equal(queryCalled, false);
@@ -254,13 +463,21 @@ test("webshop order notes reject empty or oversized text", async () => {
 
 test("webshop shipping rejects unsupported carriers before database update", async () => {
   let queryCalled = false;
-  const routes = createHarness({ async query() { queryCalled = true; return { rows: [] }; } });
+  const routes = createHarness({
+    async query() {
+      queryCalled = true;
+      return { rows: [] };
+    },
+  });
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/webshop-orders/:id/shipping")({
-    params: { id: "12" },
-    body: { shipping_method: "Unknown", payment_status: "Unpaid" }
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/shipping")(
+    {
+      params: { id: "12" },
+      body: { shipping_method: "Unknown", payment_status: "Unpaid" },
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 400);
   assert.deepEqual(response.body, { error: "Kies alleen PostNL of DHL." });
@@ -269,68 +486,109 @@ test("webshop shipping rejects unsupported carriers before database update", asy
 
 test("webshop order status rejects values outside the allowed list", async () => {
   let queryCalled = false;
-  const routes = createHarness({ async query() { queryCalled = true; return { rows: [] }; } });
+  const routes = createHarness({
+    async query() {
+      queryCalled = true;
+      return { rows: [] };
+    },
+  });
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/webshop-orders/:id/status")({
-    params: { id: "12" },
-    body: { status: "Paid" }
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/status")(
+    {
+      params: { id: "12" },
+      body: { status: "Paid" },
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 400);
   assert.deepEqual(response.body, { error: "Ongeldige status." });
   assert.equal(queryCalled, false);
 });
 
-
 test("admin marking a webshop order Paid deducts inventory", async () => {
   let deductionOrderId = null;
   let updateSql = "";
-  const routes = createHarness({
-    async query(sql) {
-      if (sql.includes("LEFT JOIN webshop_order_inspections")) {
-        return { rows: [{ items:[{type:"phone",name:"iPhone"}], checks: {
-          model_storage_color:true, screen_touch:true, battery:true, face_id_touch_id:true,
-          cameras:true, speakers_microphone:true, charging:true, network_wifi_sim:true,
-          icloud_activation_lock:true, cosmetic_condition:true, cleaning:true,
-          accessories:true, secure_packaging:true, shipping_address:true
-        } }] };
-      }
-      if (sql.includes("UPDATE webshop_orders")) updateSql = sql;
-      return { rows: [{ id: 12, payment_status: "Paid", shipping_method: "PostNL" }] };
-    }
-  }, async (id) => {
-    deductionOrderId = id;
-    return { deducted: true };
-  });
+  const routes = createHarness(
+    {
+      async query(sql) {
+        if (sql.includes("LEFT JOIN webshop_order_inspections")) {
+          return {
+            rows: [
+              {
+                items: [{ type: "phone", name: "iPhone" }],
+                checks: {
+                  model_storage_color: true,
+                  screen_touch: true,
+                  battery: true,
+                  face_id_touch_id: true,
+                  cameras: true,
+                  speakers_microphone: true,
+                  charging: true,
+                  network_wifi_sim: true,
+                  icloud_activation_lock: true,
+                  cosmetic_condition: true,
+                  cleaning: true,
+                  accessories: true,
+                  secure_packaging: true,
+                  shipping_address: true,
+                },
+              },
+            ],
+          };
+        }
+        if (sql.includes("UPDATE webshop_orders")) updateSql = sql;
+        return {
+          rows: [{ id: 12, payment_status: "Paid", shipping_method: "PostNL" }],
+        };
+      },
+    },
+    async (id) => {
+      deductionOrderId = id;
+      return { deducted: true };
+    },
+  );
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/webshop-orders/:id/shipping")({
-    params: { id: "12" },
-    body: { shipping_method: "PostNL", payment_status: "Paid" }
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/shipping")(
+    {
+      params: { id: "12" },
+      body: { shipping_method: "PostNL", payment_status: "Paid" },
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 200);
   assert.equal(deductionOrderId, 12);
-  assert.match(updateSql, /COALESCE\(payment_status,'Unpaid'\) <> 'Paid' OR \$2 = 'Paid'/);
+  assert.match(
+    updateSql,
+    /COALESCE\(payment_status,'Unpaid'\) <> 'Paid' OR \$2 = 'Paid'/,
+  );
   assert.deepEqual(response.body, {
     success: true,
-    order: { id: 12, payment_status: "Paid", shipping_method: "PostNL" }
+    order: { id: 12, payment_status: "Paid", shipping_method: "PostNL" },
   });
 });
 
 test("admin Paid update reports a stock deduction failure without hiding it", async () => {
-  const routes = createHarness({
-    async query() {
-      return { rows: [{ id: 12, payment_status: "Paid" }] };
-    }
-  }, async () => ({ error: true }));
+  const routes = createHarness(
+    {
+      async query() {
+        return { rows: [{ id: 12, payment_status: "Paid" }] };
+      },
+    },
+    async () => ({ error: true }),
+  );
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/webshop-orders/:id/shipping")({
-    params: { id: "12" },
-    body: { payment_status: "Paid" }
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/shipping")(
+    {
+      params: { id: "12" },
+      body: { payment_status: "Paid" },
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 409);
   assert.match(response.body.error, /voorraad kon niet worden bijgewerkt/i);
@@ -338,27 +596,42 @@ test("admin Paid update reports a stock deduction failure without hiding it", as
 
 test("admin cannot revert a paid webshop order to Unpaid", async () => {
   let calls = 0;
-  const routes = createHarness({
-    async query(sql) {
-      calls += 1;
-      if (sql.startsWith("UPDATE")) return { rows: [] };
-      return { rows: [{ id: 12, payment_status: "Paid", inventory_deducted_at: "2026-11-05T12:00:00Z" }] };
-    }
-  }, async () => {
-    throw new Error("Inventory must not be deducted for a rejected downgrade.");
-  });
+  const routes = createHarness(
+    {
+      async query(sql) {
+        calls += 1;
+        if (sql.startsWith("UPDATE")) return { rows: [] };
+        return {
+          rows: [
+            {
+              id: 12,
+              payment_status: "Paid",
+              inventory_deducted_at: "2026-11-05T12:00:00Z",
+            },
+          ],
+        };
+      },
+    },
+    async () => {
+      throw new Error(
+        "Inventory must not be deducted for a rejected downgrade.",
+      );
+    },
+  );
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/webshop-orders/:id/shipping")({
-    params: { id: "12" },
-    body: { payment_status: "Unpaid" }
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/shipping")(
+    {
+      params: { id: "12" },
+      body: { payment_status: "Unpaid" },
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 409);
   assert.equal(calls, 3);
   assert.match(response.body.error, /kan niet worden teruggezet/i);
 });
-
 
 test("admin cannot delete a paid or payment-linked webshop order", async () => {
   let deleteSql = "";
@@ -368,14 +641,25 @@ test("admin cannot delete a paid or payment-linked webshop order", async () => {
         deleteSql = sql;
         return { rows: [] };
       }
-      return { rows: [{ id: 12, payment_status: "Paid", inventory_deducted_at: "2026-11-05T12:00:00Z" }] };
-    }
+      return {
+        rows: [
+          {
+            id: 12,
+            payment_status: "Paid",
+            inventory_deducted_at: "2026-11-05T12:00:00Z",
+          },
+        ],
+      };
+    },
   });
   const response = createResponse();
 
-  await routes.get("DELETE /api/admin/webshop-orders/:id")({
-    params: { id: "12" }
-  }, response);
+  await routes.get("DELETE /api/admin/webshop-orders/:id")(
+    {
+      params: { id: "12" },
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 409);
   assert.match(deleteSql, /payment_status <> 'Paid'/);
@@ -392,29 +676,39 @@ test("admin can delete an unpaid webshop order with no payment provider referenc
     async query(sql) {
       assert.match(sql, /^DELETE FROM webshop_orders/);
       return { rows: [{ id: 13 }] };
-    }
+    },
   });
   const response = createResponse();
 
-  await routes.get("DELETE /api/admin/webshop-orders/:id")({
-    params: { id: "13" }
-  }, response);
+  await routes.get("DELETE /api/admin/webshop-orders/:id")(
+    {
+      params: { id: "13" },
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 200);
   assert.deepEqual(response.body, { success: true });
   assert.equal(lookupCalled, false);
 });
 
-
 test("webshop order status validates the order ID before database access", async () => {
   let queryCalled = false;
-  const routes = createHarness({ async query() { queryCalled = true; return { rows: [] }; } });
+  const routes = createHarness({
+    async query() {
+      queryCalled = true;
+      return { rows: [] };
+    },
+  });
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/webshop-orders/:id/status")({
-    params: { id: "0" },
-    body: { status: "Geannuleerd" }
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/status")(
+    {
+      params: { id: "0" },
+      body: { status: "Geannuleerd" },
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 400);
   assert.deepEqual(response.body, { error: "Ongeldig order-ID." });
@@ -425,14 +719,21 @@ test("paid webshop order cancellation requires a fully processed refund", async 
   let updateSql = "";
   const routes = createHarness({
     async query(sql) {
-      if (sql.includes("WITH previous AS")) { updateSql = sql; return { rows: [] }; }
+      if (sql.includes("WITH previous AS")) {
+        updateSql = sql;
+        return { rows: [] };
+      }
       return { rows: [{ id: 19, payment_status: "Paid" }] };
-    }
+    },
   });
   const response = createResponse();
-  await routes.get("PUT /api/admin/webshop-orders/:id/status")({
-    params: { id: "19" }, body: { status: "Geannuleerd" }
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/status")(
+    {
+      params: { id: "19" },
+      body: { status: "Geannuleerd" },
+    },
+    response,
+  );
   assert.equal(response.statusCode, 409);
   assert.match(updateSql, /SUM\(refund\.amount\)/);
   assert.match(updateSql, /refund\.status='Processed'/);
@@ -447,18 +748,27 @@ test("admin cannot directly cancel a paid webshop order", async () => {
       calls.push({ sql, params });
       if (sql.includes("WITH previous AS")) return { rows: [] };
       return { rows: [{ id: 12, payment_status: "Paid" }] };
-    }
+    },
   });
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/webshop-orders/:id/status")({
-    params: { id: "12" },
-    body: { status: "Geannuleerd" }
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/status")(
+    {
+      params: { id: "12" },
+      body: { status: "Geannuleerd" },
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 409);
-  assert.match(response.body.error, /volledige terugbetaling als verwerkt is bevestigd/i);
-  assert.match(calls[0].sql, /NOT \(payment_status = 'Paid' AND \$1 = 'Geannuleerd'\)/);
+  assert.match(
+    response.body.error,
+    /volledige terugbetaling als verwerkt is bevestigd/i,
+  );
+  assert.match(
+    calls[0].sql,
+    /NOT \(payment_status = 'Paid' AND \$1 = 'Geannuleerd'\)/,
+  );
   assert.equal(calls[0].params[1], 12);
   assert.equal(calls.length, 2);
 });
@@ -467,94 +777,192 @@ test("admin can change the fulfillment status of a fully inspected paid phone or
   let updateQuery = "";
   const routes = createHarness({
     async query(sql) {
-      if(sql.includes("LEFT JOIN webshop_order_inspections")){
-        assert.match(sql,/webshop_orders.items/);
-        return { rows: [{ items:[{type:"phone",name:"iPhone 13"}], trade_in_order_id:null, trade_in_status:null, checks:{"model_storage_color":true,"screen_touch":true,"battery":true,"face_id_touch_id":true,"cameras":true,"speakers_microphone":true,"charging":true,"network_wifi_sim":true,"icloud_activation_lock":true,"cosmetic_condition":true,"cleaning":true,"accessories":true,"secure_packaging":true,"shipping_address":true} }] };
+      if (sql.includes("LEFT JOIN webshop_order_inspections")) {
+        assert.match(sql, /webshop_orders.items/);
+        return {
+          rows: [
+            {
+              items: [{ type: "phone", name: "iPhone 13" }],
+              trade_in_order_id: null,
+              trade_in_status: null,
+              checks: {
+                model_storage_color: true,
+                screen_touch: true,
+                battery: true,
+                face_id_touch_id: true,
+                cameras: true,
+                speakers_microphone: true,
+                charging: true,
+                network_wifi_sim: true,
+                icloud_activation_lock: true,
+                cosmetic_condition: true,
+                cleaning: true,
+                accessories: true,
+                secure_packaging: true,
+                shipping_address: true,
+              },
+            },
+          ],
+        };
       }
       updateQuery = sql;
       return { rows: [{ id: 12, status: "Verzonden" }] };
-    }
+    },
   });
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/webshop-orders/:id/status")({
-    params: { id: "12" },
-    body: { status: "Verzonden" }
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/status")(
+    {
+      params: { id: "12" },
+      body: { status: "Verzonden" },
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 200);
-  assert.deepEqual(response.body, { success: true, order: { id: 12, status: "Verzonden" } });
-  assert.match(updateQuery, /NOT \(payment_status = 'Paid' AND \$1 = 'Geannuleerd'\)/);
+  assert.deepEqual(response.body, {
+    success: true,
+    order: { id: 12, status: "Verzonden" },
+  });
+  assert.match(
+    updateQuery,
+    /NOT \(payment_status = 'Paid' AND \$1 = 'Geannuleerd'\)/,
+  );
 });
-
 
 test("admin cannot ship a phone order until every mandatory inspection check is saved", async () => {
   let statusUpdateCalled = false;
   const routes = createHarness({
     async query(sql) {
-      if(sql.includes("LEFT JOIN webshop_order_inspections")){
-        return { rows: [{ items:[{type:"phone",name:"iPhone 13"}], trade_in_order_id:null, trade_in_status:null, checks:{battery:true} }] };
+      if (sql.includes("LEFT JOIN webshop_order_inspections")) {
+        return {
+          rows: [
+            {
+              items: [{ type: "phone", name: "iPhone 13" }],
+              trade_in_order_id: null,
+              trade_in_status: null,
+              checks: { battery: true },
+            },
+          ],
+        };
       }
       statusUpdateCalled = true;
       return { rows: [{ id: 12, status: "Verzonden" }] };
-    }
+    },
   });
   const response = createResponse();
-  await routes.get("PUT /api/admin/webshop-orders/:id/status")({
-    params:{id:"12"},body:{status:"Verzonden"}
-  },response);
-  assert.equal(response.statusCode,409);
-  assert.match(response.body.error,/alle verplichte controlepunten/i);
-  assert.equal(statusUpdateCalled,false);
+  await routes.get("PUT /api/admin/webshop-orders/:id/status")(
+    {
+      params: { id: "12" },
+      body: { status: "Verzonden" },
+    },
+    response,
+  );
+  assert.equal(response.statusCode, 409);
+  assert.match(response.body.error, /alle verplichte controlepunten/i);
+  assert.equal(statusUpdateCalled, false);
 });
-
 
 test("shop-only order does not require phone inspection before shipping", async () => {
   const routes = createHarness({
     async query(sql) {
-      if(sql.includes("LEFT JOIN webshop_order_inspections")){
-        return { rows: [{ items:[{type:"shop",name:"Case"}], trade_in_order_id:null, trade_in_status:null, checks:{} }] };
+      if (sql.includes("LEFT JOIN webshop_order_inspections")) {
+        return {
+          rows: [
+            {
+              items: [{ type: "shop", name: "Case" }],
+              trade_in_order_id: null,
+              trade_in_status: null,
+              checks: {},
+            },
+          ],
+        };
       }
       return { rows: [{ id: 13, status: "Verzonden" }] };
-    }
+    },
   });
-  const response=createResponse();
-  await routes.get("PUT /api/admin/webshop-orders/:id/status")({
-    params:{id:"13"},body:{status:"Verzonden"}
-  },response);
-  assert.equal(response.statusCode,200);
+  const response = createResponse();
+  await routes.get("PUT /api/admin/webshop-orders/:id/status")(
+    {
+      params: { id: "13" },
+      body: { status: "Verzonden" },
+    },
+    response,
+  );
+  assert.equal(response.statusCode, 200);
 });
-
 
 test("trade-in inspection requires explicit payout confirmation even when inspected value matches estimate", async () => {
   const statements = [];
   const client = {
     async query(sql, params) {
       statements.push({ sql, params });
-      if (sql.includes("SELECT id,trade_in_order_id,trade_in_estimated_value,trade_in_status")) {
-        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_estimated_value: "165.00", trade_in_status: "AwaitingDevice", payment_status: "Paid" }] };
+      if (
+        sql.includes(
+          "SELECT id,trade_in_order_id,trade_in_estimated_value,trade_in_status",
+        )
+      ) {
+        return {
+          rows: [
+            {
+              id: 31,
+              trade_in_order_id: 77,
+              trade_in_estimated_value: "165.00",
+              trade_in_status: "AwaitingDevice",
+              payment_status: "Paid",
+            },
+          ],
+        };
       }
-      if (sql.includes("SELECT id,offered_price FROM buyback_orders")) return { rows: [{ id: 77, offered_price: "165.00" }] };
+      if (sql.includes("SELECT id,offered_price FROM buyback_orders"))
+        return { rows: [{ id: 77, offered_price: "165.00" }] };
       if (sql.includes("UPDATE webshop_orders")) {
-        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_estimated_value: "165.00", trade_in_inspected_value: 165, trade_in_adjustment: 0, trade_in_status: "AdjustmentRequired" }] };
+        return {
+          rows: [
+            {
+              id: 31,
+              trade_in_order_id: 77,
+              trade_in_estimated_value: "165.00",
+              trade_in_inspected_value: 165,
+              trade_in_adjustment: 0,
+              trade_in_status: "AdjustmentRequired",
+            },
+          ],
+        };
       }
       if (sql.includes("UPDATE buyback_orders")) return { rows: [] };
       return { rows: [] };
     },
-    release() {}
+    release() {},
   };
-  const pool = { async connect() { return client; } };
+  const pool = {
+    async connect() {
+      return client;
+    },
+  };
   const routes = createHarness(pool);
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-inspection")({
-    params: { id: "31" },
-    body: { inspectedValue: 165, reason: "Toestel gecontroleerd, waarde bevestigd." }
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-inspection")(
+    {
+      params: { id: "31" },
+      body: {
+        inspectedValue: 165,
+        reason: "Toestel gecontroleerd, waarde bevestigd.",
+      },
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 200);
   assert.equal(response.body.order.trade_in_status, "AdjustmentRequired");
-  assert.ok(statements.some(({ sql, params }) => sql.includes("UPDATE webshop_orders") && params[2] === "AdjustmentRequired"));
+  assert.ok(
+    statements.some(
+      ({ sql, params }) =>
+        sql.includes("UPDATE webshop_orders") &&
+        params[2] === "AdjustmentRequired",
+    ),
+  );
   assert.ok(statements.some(({ sql }) => sql === "COMMIT"));
 });
 
@@ -565,39 +973,93 @@ test("customer can accept or reject the inspected trade-in offer using a one-tim
   const statements = [];
   const client = {
     async query(sql, params) {
-      statements.push({sql,params});
-      if (sql.includes("SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot")) {
-        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_status: "AwaitingCustomerApproval", payment_status: "Paid", trade_in_snapshot: { customerApprovalTokenHash: tokenHash, customerApprovalExpiresAt: new Date(Date.now()+60000).toISOString() } }] };
+      statements.push({ sql, params });
+      if (
+        sql.includes(
+          "SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot",
+        )
+      ) {
+        return {
+          rows: [
+            {
+              id: 31,
+              trade_in_order_id: 77,
+              trade_in_status: "AwaitingCustomerApproval",
+              payment_status: "Paid",
+              trade_in_snapshot: {
+                customerApprovalTokenHash: tokenHash,
+                customerApprovalExpiresAt: new Date(
+                  Date.now() + 60000,
+                ).toISOString(),
+              },
+            },
+          ],
+        };
       }
-      if (sql.includes("SELECT id FROM buyback_orders")) return { rows: [{ id: 77 }] };
+      if (sql.includes("SELECT id FROM buyback_orders"))
+        return { rows: [{ id: 77 }] };
       return { rows: [] };
     },
-    release() {}
+    release() {},
   };
-  const routes = createHarness({ async connect() { return client; } });
+  const routes = createHarness({
+    async connect() {
+      return client;
+    },
+  });
   const response = createResponse();
-  await routes.get("POST /api/trade-in/decision")({ body: { token, decision: "accept" } }, response);
+  await routes.get("POST /api/trade-in/decision")(
+    { body: { token, decision: "accept" } },
+    response,
+  );
   assert.equal(response.statusCode, 200);
   assert.equal(response.body.status, "CustomerAccepted");
-  assert.ok(statements.some(({sql,params}) => sql.includes("UPDATE webshop_orders") && params[0] === "CustomerAccepted"));
-  assert.ok(statements.some(({sql}) => sql === "COMMIT"));
+  assert.ok(
+    statements.some(
+      ({ sql, params }) =>
+        sql.includes("UPDATE webshop_orders") &&
+        params[0] === "CustomerAccepted",
+    ),
+  );
+  assert.ok(statements.some(({ sql }) => sql === "COMMIT"));
 });
 
 test("trade-in settlement cannot be completed before customer acceptance", async () => {
   const client = {
     async query(sql) {
-      if (sql.includes("SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot")) {
-        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_status: "AwaitingCustomerApproval", trade_in_snapshot: {} }] };
+      if (
+        sql.includes(
+          "SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot",
+        )
+      ) {
+        return {
+          rows: [
+            {
+              id: 31,
+              trade_in_order_id: 77,
+              trade_in_status: "AwaitingCustomerApproval",
+              trade_in_snapshot: {},
+            },
+          ],
+        };
       }
       return { rows: [] };
     },
-    release() {}
+    release() {},
   };
-  const routes = createHarness({ async connect() { return client; } });
+  const routes = createHarness({
+    async connect() {
+      return client;
+    },
+  });
   const response = createResponse();
-  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-settlement")({
-    params: { id: "31" }, body: { settlementNote: "Overgemaakt naar klant op 08-11." }
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-settlement")(
+    {
+      params: { id: "31" },
+      body: { settlementNote: "Overgemaakt naar klant op 08-11." },
+    },
+    response,
+  );
   assert.equal(response.statusCode, 409);
 });
 
@@ -606,53 +1068,99 @@ test("trade-in payout is marked settled only after customer acceptance and admin
   const client = {
     async query(sql, params) {
       statements.push({ sql, params });
-      if (sql.includes("SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot")) {
-        return { rows: [{ id: 31, trade_in_order_id: 77, trade_in_status: "CustomerAccepted", payment_status: "Paid", trade_in_snapshot: {} }] };
+      if (
+        sql.includes(
+          "SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot",
+        )
+      ) {
+        return {
+          rows: [
+            {
+              id: 31,
+              trade_in_order_id: 77,
+              trade_in_status: "CustomerAccepted",
+              payment_status: "Paid",
+              trade_in_snapshot: {},
+            },
+          ],
+        };
       }
-      if (sql.includes("SELECT id FROM buyback_orders")) return { rows: [{ id: 77 }] };
+      if (sql.includes("SELECT id FROM buyback_orders"))
+        return { rows: [{ id: 77 }] };
       if (sql.includes("UPDATE webshop_orders SET trade_in_status='Settled'")) {
-        return { rows: [{ id: 31, trade_in_status: "Settled", trade_in_snapshot: { settlementNote: params[0] } }] };
+        return {
+          rows: [
+            {
+              id: 31,
+              trade_in_status: "Settled",
+              trade_in_snapshot: { settlementNote: params[0] },
+            },
+          ],
+        };
       }
       if (sql.includes("UPDATE buyback_orders")) return { rows: [] };
       return { rows: [] };
     },
-    release() {}
+    release() {},
   };
-  const routes = createHarness({ async connect() { return client; } });
+  const routes = createHarness({
+    async connect() {
+      return client;
+    },
+  });
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-settlement")({
-    params: { id: "31" },
-    body: { settlementNote: "Overgemaakt op 08-11-2026, bankreferentie 12345." }
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-settlement")(
+    {
+      params: { id: "31" },
+      body: {
+        settlementNote: "Overgemaakt op 08-11-2026, bankreferentie 12345.",
+      },
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 200);
   assert.equal(response.body.order.trade_in_status, "Settled");
   assert.ok(statements.some(({ sql }) => sql === "COMMIT"));
 });
 
-
 test("trade-in customer offer cannot reopen an already settled trade-in", async () => {
   let queryCount = 0;
   const routes = createHarness({
     async query() {
       queryCount += 1;
-      return { rows: [{
-        id: 91, email: "customer@example.com", payment_status: "Paid",
-        trade_in_inspected_value: 150, trade_in_status: "Settled",
-        trade_in_snapshot: {}
-      }] };
-    }
+      return {
+        rows: [
+          {
+            id: 91,
+            email: "customer@example.com",
+            payment_status: "Paid",
+            trade_in_inspected_value: 150,
+            trade_in_status: "Settled",
+            trade_in_snapshot: {},
+          },
+        ],
+      };
+    },
   });
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-offer")({
-    params: { id: "91" }, body: {}
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-offer")(
+    {
+      params: { id: "91" },
+      body: {},
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 409);
   assert.match(response.body.error, /inruil is al definitief afgehandeld/i);
-  assert.equal(queryCount, 1, "settled offer must stop before changing the approval token");
+  assert.equal(
+    queryCount,
+    1,
+    "settled offer must stop before changing the approval token",
+  );
 });
 
 test("trade-in customer offer requires a paid order before creating an approval link", async () => {
@@ -660,21 +1168,36 @@ test("trade-in customer offer requires a paid order before creating an approval 
   const routes = createHarness({
     async query() {
       queryCount += 1;
-      return { rows: [{
-        id: 92, email: "customer@example.com", payment_status: "Pending",
-        trade_in_inspected_value: 150, trade_in_status: "AdjustmentRequired",
-        trade_in_snapshot: {}
-      }] };
-    }
+      return {
+        rows: [
+          {
+            id: 92,
+            email: "customer@example.com",
+            payment_status: "Pending",
+            trade_in_inspected_value: 150,
+            trade_in_status: "AdjustmentRequired",
+            trade_in_snapshot: {},
+          },
+        ],
+      };
+    },
   });
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-offer")({
-    params: { id: "92" }, body: {}
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-offer")(
+    {
+      params: { id: "92" },
+      body: {},
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 409);
-  assert.equal(queryCount, 1, "unpaid order must not receive an approval token");
+  assert.equal(
+    queryCount,
+    1,
+    "unpaid order must not receive an approval token",
+  );
 });
 
 test("trade-in customer offer requires a customer email before creating an approval link", async () => {
@@ -682,21 +1205,36 @@ test("trade-in customer offer requires a customer email before creating an appro
   const routes = createHarness({
     async query() {
       queryCount += 1;
-      return { rows: [{
-        id: 93, email: "", payment_status: "Paid",
-        trade_in_inspected_value: 150, trade_in_status: "AdjustmentRequired",
-        trade_in_snapshot: {}
-      }] };
-    }
+      return {
+        rows: [
+          {
+            id: 93,
+            email: "",
+            payment_status: "Paid",
+            trade_in_inspected_value: 150,
+            trade_in_status: "AdjustmentRequired",
+            trade_in_snapshot: {},
+          },
+        ],
+      };
+    },
   });
   const response = createResponse();
 
-  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-offer")({
-    params: { id: "93" }, body: {}
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-offer")(
+    {
+      params: { id: "93" },
+      body: {},
+    },
+    response,
+  );
 
   assert.equal(response.statusCode, 409);
-  assert.equal(queryCount, 1, "missing email must not create or rotate an approval token");
+  assert.equal(
+    queryCount,
+    1,
+    "missing email must not create or rotate an approval token",
+  );
 });
 
 test("trade-in customer decision rejects an unpaid order before changing the linked buyback", async () => {
@@ -707,35 +1245,83 @@ test("trade-in customer decision rejects an unpaid order before changing the lin
   const client = {
     async query(sql) {
       statements.push(sql);
-      if (sql.includes("SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot")) {
-        return { rows: [{ id: 32, trade_in_order_id: 78, trade_in_status: "AwaitingCustomerApproval", payment_status: "Pending", trade_in_snapshot: { customerApprovalTokenHash: tokenHash, customerApprovalExpiresAt: new Date(Date.now()+60000).toISOString() } }] };
+      if (
+        sql.includes(
+          "SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot",
+        )
+      ) {
+        return {
+          rows: [
+            {
+              id: 32,
+              trade_in_order_id: 78,
+              trade_in_status: "AwaitingCustomerApproval",
+              payment_status: "Pending",
+              trade_in_snapshot: {
+                customerApprovalTokenHash: tokenHash,
+                customerApprovalExpiresAt: new Date(
+                  Date.now() + 60000,
+                ).toISOString(),
+              },
+            },
+          ],
+        };
       }
       return { rows: [] };
     },
-    release() {}
+    release() {},
   };
-  const routes = createHarness({ async connect() { return client; } });
+  const routes = createHarness({
+    async connect() {
+      return client;
+    },
+  });
   const response = createResponse();
-  await routes.get("POST /api/trade-in/decision")({ body: { token, decision: "accept" } }, response);
+  await routes.get("POST /api/trade-in/decision")(
+    { body: { token, decision: "accept" } },
+    response,
+  );
   assert.equal(response.statusCode, 409);
-  assert.ok(!statements.some(sql => sql.startsWith("UPDATE buyback_orders")));
+  assert.ok(!statements.some((sql) => sql.startsWith("UPDATE buyback_orders")));
   assert.ok(statements.includes("ROLLBACK"));
 });
 
 test("trade-in settlement rejects an unpaid webshop order", async () => {
   const client = {
     async query(sql) {
-      if (sql.includes("SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot")) {
-        return { rows: [{ id: 33, trade_in_order_id: 79, trade_in_status: "CustomerAccepted", payment_status: "Pending", trade_in_snapshot: {} }] };
+      if (
+        sql.includes(
+          "SELECT id,trade_in_order_id,trade_in_status,trade_in_snapshot",
+        )
+      ) {
+        return {
+          rows: [
+            {
+              id: 33,
+              trade_in_order_id: 79,
+              trade_in_status: "CustomerAccepted",
+              payment_status: "Pending",
+              trade_in_snapshot: {},
+            },
+          ],
+        };
       }
       return { rows: [] };
     },
-    release() {}
+    release() {},
   };
-  const routes = createHarness({ async connect() { return client; } });
+  const routes = createHarness({
+    async connect() {
+      return client;
+    },
+  });
   const response = createResponse();
-  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-settlement")({
-    params: { id: "33" }, body: { settlementNote: "Overgemaakt op 10-11." }
-  }, response);
+  await routes.get("PUT /api/admin/webshop-orders/:id/trade-in-settlement")(
+    {
+      params: { id: "33" },
+      body: { settlementNote: "Overgemaakt op 10-11." },
+    },
+    response,
+  );
   assert.equal(response.statusCode, 409);
 });

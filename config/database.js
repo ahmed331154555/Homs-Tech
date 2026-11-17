@@ -19,7 +19,7 @@ pool.on("error", (error) => {
   console.error("Unexpected idle PostgreSQL client error:", error.message);
 });
 
-const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function queryWithConnectionRetry(sql, params, attempts = 4) {
   let lastError;
@@ -28,13 +28,26 @@ async function queryWithConnectionRetry(sql, params, attempts = 4) {
       return await pool.query(sql, params);
     } catch (error) {
       lastError = error;
-      const retryable = [
-        "ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "EPIPE",
-        "57P01", "57P02", "57P03", "08000", "08003", "08006"
-      ].includes(error?.code) ||
-        /connection terminated unexpectedly|connection closed|connection timeout|socket disconnected before secure TLS/i.test(String(error?.message || ""));
+      const retryable =
+        [
+          "ECONNRESET",
+          "ECONNREFUSED",
+          "ETIMEDOUT",
+          "EPIPE",
+          "57P01",
+          "57P02",
+          "57P03",
+          "08000",
+          "08003",
+          "08006",
+        ].includes(error?.code) ||
+        /connection terminated unexpectedly|connection closed|connection timeout|socket disconnected before secure TLS/i.test(
+          String(error?.message || ""),
+        );
       if (!retryable || attempt === attempts) throw error;
-      console.warn(`PostgreSQL connection failed during query (attempt ${attempt}/${attempts}); retrying after transient connection error.`);
+      console.warn(
+        `PostgreSQL connection failed during query (attempt ${attempt}/${attempts}); retrying after transient connection error.`,
+      );
       await wait(Math.min(1000 * attempt, 5000));
     }
   }

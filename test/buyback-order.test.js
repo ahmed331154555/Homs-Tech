@@ -19,6 +19,6 @@ test("buyback price validation applies an optional maximum", () => {
   assert.equal(validateBuybackOfferedPrice(1000000, { max: 1000000 }), 1000000);
   assert.throws(
     () => validateBuybackOfferedPrice(1000000.01, { max: 1000000 }),
-    /Ongeldige prijs/
+    /Ongeldige prijs/,
   );
 });

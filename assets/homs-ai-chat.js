@@ -224,8 +224,8 @@
     if (id) seen.add(id);
 
     const element = document.createElement("div");
-    element.className = "homs-ai-msg " +
-      (message.sender === "customer" ? "user" : "bot");
+    element.className =
+      "homs-ai-msg " + (message.sender === "customer" ? "user" : "bot");
     if (id) element.dataset.messageId = id;
     element.textContent = message.message;
     messages.appendChild(element);
@@ -246,7 +246,7 @@
     try {
       const response = await fetch(
         "/api/chat/conversations/" + encodeURIComponent(token) + "/messages",
-        { credentials: "same-origin", cache: "no-store" }
+        { credentials: "same-origin", cache: "no-store" },
       );
 
       if (!response.ok) {
@@ -266,7 +266,8 @@
         input.disabled = true;
         form.querySelector("button").disabled = true;
       }
-    } catch {} finally {
+    } catch {
+    } finally {
       refreshing = false;
     }
   }
@@ -327,7 +328,7 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "same-origin",
-          body: JSON.stringify({ message })
+          body: JSON.stringify({ message }),
         });
 
         const data = await response.json();
@@ -351,8 +352,8 @@
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "same-origin",
-            body: JSON.stringify({ message })
-          }
+            body: JSON.stringify({ message }),
+          },
         );
 
         const data = await response.json().catch(() => ({}));
@@ -365,7 +366,7 @@
     } catch (error) {
       add({
         sender: "admin",
-        message: error.message || "Bericht versturen is mislukt."
+        message: error.message || "Bericht versturen is mislukt.",
       });
     } finally {
       button.disabled = false;
@@ -373,5 +374,4 @@
       input.focus();
     }
   });
-
 })();

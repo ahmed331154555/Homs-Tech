@@ -5,7 +5,8 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const read = file => fs.readFileSync(path.join(__dirname, "..", file), "utf8");
+const read = (file) =>
+  fs.readFileSync(path.join(__dirname, "..", file), "utf8");
 
 test("admin visual system keeps its brand tokens and consistent focus treatment", () => {
   const css = read("assets/homs-admin.css");
@@ -13,7 +14,10 @@ test("admin visual system keeps its brand tokens and consistent focus treatment"
   assert.match(css, /--ht-blue:\s*#2563eb/i);
   assert.match(css, /--ht-shadow-card:/);
   assert.match(css, /--ht-focus:/);
-  assert.match(css, /#dashboard input:focus[\s\S]*?box-shadow:var\(--ht-focus\)/);
+  assert.match(
+    css,
+    /#dashboard input:focus[\s\S]*?box-shadow:var\(--ht-focus\)/,
+  );
 });
 
 test("admin layout has desktop and small-screen responsive safeguards", () => {
@@ -31,13 +35,18 @@ test("admin page references the current stylesheet version", () => {
   assert.match(html, /homs-admin\.css\?v=[^"]+/);
 });
 
-
 test("orders and inkoop workspace keeps mobile actions accessible", () => {
   const css = read("assets/homs-admin.css");
-  assert.match(css, /#page-buyback-orders \.ht-inkoop-detail-foot\s*\{[\s\S]*?position:\s*sticky/);
+  assert.match(
+    css,
+    /#page-buyback-orders \.ht-inkoop-detail-foot\s*\{[\s\S]*?position:\s*sticky/,
+  );
   assert.match(css, /#page-buyback-orders \.ht-inkoop-toolbar/);
   assert.match(css, /#page-phone-orders \.ht-phone-status-chip\.is-shipped/);
-  assert.match(css, /@media\s*\(max-width:\s*560px\)[\s\S]*?#page-phone-orders \.ht-phone-sale-head\{display:none\}/);
+  assert.match(
+    css,
+    /@media\s*\(max-width:\s*560px\)[\s\S]*?#page-phone-orders \.ht-phone-sale-head\{display:none\}/,
+  );
   assert.match(css, /env\(safe-area-inset-bottom\)/);
 });
 
@@ -47,7 +56,6 @@ test("admin HTML uses matching versioned CSS and JavaScript assets", () => {
   assert.match(html, /homs-admin\.js\?v=[^"]+/);
 });
 
-
 test("admin login and dashboard expose keyboard and assistive-technology labels", () => {
   const html = read("admin/index.html");
   const css = read("assets/homs-admin.css");
@@ -55,14 +63,23 @@ test("admin login and dashboard expose keyboard and assistive-technology labels"
   assert.match(html, /id="dashboard"[^>]*role="main"[^>]*tabindex="-1"/);
   assert.match(html, /<label for="username">/);
   assert.match(html, /<label for="password">/);
-  assert.match(html, /id="loginStatus"[^>]*role="status"[^>]*aria-live="polite"/);
+  assert.match(
+    html,
+    /id="loginStatus"[^>]*role="status"[^>]*aria-live="polite"/,
+  );
   assert.match(css, /\.ht-admin-skip-link:focus/);
 });
 
 test("admin JavaScript has no duplicate top-level function declarations", () => {
   const js = read("assets/homs-admin.js");
-  const names = [...js.matchAll(/^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/gm)].map(match => match[1]);
-  assert.equal(new Set(names).size, names.length, "duplicate top-level function declaration detected");
+  const names = [
+    ...js.matchAll(/^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/gm),
+  ].map((match) => match[1]);
+  assert.equal(
+    new Set(names).size,
+    names.length,
+    "duplicate top-level function declaration detected",
+  );
 });
 
 test("admin stylesheet has balanced rule braces", () => {
@@ -76,21 +93,25 @@ test("admin stylesheet has balanced rule braces", () => {
   assert.equal(depth, 0, "unclosed CSS rule");
 });
 
-
 test("admin navigation announces the currently selected page", () => {
   const js = read("assets/homs-admin.js");
   assert.match(js, /b\.setAttribute\("aria-current","page"\)/);
   assert.match(js, /b\.removeAttribute\("aria-current"\)/);
 });
 
-
 test("unified orders workspace is built once and reuses existing order sections", () => {
   const js = read("assets/homs-admin.js");
   const start = js.indexOf("function setupUnifiedOrdersAdmin(){");
   const end = js.indexOf("\nfunction setupOrdersSubmenu()", start);
-  assert.ok(start >= 0 && end > start, "unified orders setup function should exist");
+  assert.ok(
+    start >= 0 && end > start,
+    "unified orders setup function should exist",
+  );
   const setup = js.slice(start, end);
-  assert.match(setup, /if\(document\.getElementById\("page-all-orders"\)\)return/);
+  assert.match(
+    setup,
+    /if\(document\.getElementById\("page-all-orders"\)\)return/,
+  );
   assert.match(setup, /parent\.id="page-all-orders"/);
   assert.match(setup, /host\.appendChild\(section\)/);
   assert.match(setup, /if\(!hasPermission\(item\.permission\)\)/);
@@ -101,22 +122,28 @@ test("order submenu only exposes categories allowed by the current administrator
   const js = read("assets/homs-admin.js");
   const start = js.indexOf("function setupOrdersSubmenu(){");
   const end = js.indexOf("\nfunction toggleOrdersMenu()", start);
-  assert.ok(start >= 0 && end > start, "order submenu setup function should exist");
+  assert.ok(
+    start >= 0 && end > start,
+    "order submenu setup function should exist",
+  );
   const setup = js.slice(start, end);
   assert.match(setup, /unifiedOrderCategories\.forEach\(item=>\{/);
   assert.match(setup, /if\(!hasPermission\(item\.permission\)\)return/);
   assert.match(setup, /button\.dataset\.orderSubpage=item\.key/);
 });
 
-
 test("every admin navigation destination is backed by a page or a generated workspace", () => {
   const html = read("admin/index.html");
   const js = read("assets/homs-admin.js");
-  const destinations = [...html.matchAll(/data-page="([^"]+)"/g)].map(match => match[1]);
-  const pageIds = new Set([...html.matchAll(/id="page-([^"]+)"/g)].map(match => match[1]));
+  const destinations = [...html.matchAll(/data-page="([^"]+)"/g)].map(
+    (match) => match[1],
+  );
+  const pageIds = new Set(
+    [...html.matchAll(/id="page-([^"]+)"/g)].map((match) => match[1]),
+  );
   const dynamicallyGenerated = new Set(["all-orders"]);
-  const missing = [...new Set(destinations)].filter(page =>
-    !pageIds.has(page) && !dynamicallyGenerated.has(page)
+  const missing = [...new Set(destinations)].filter(
+    (page) => !pageIds.has(page) && !dynamicallyGenerated.has(page),
   );
   assert.deepEqual(missing, []);
   assert.match(js, /parent\.id="page-all-orders"/);
@@ -132,7 +159,6 @@ test("CI workflow runs syntax, admin asset, local asset and test checks", () => 
   assert.match(workflow, /scripts\/check-local-assets\.js/);
   assert.match(workflow, /npm test/);
 });
-
 
 test("invoice workspace keeps accessible fields, live totals and responsive structure", () => {
   const html = read("admin/index.html");
@@ -164,9 +190,11 @@ test("invoice draft validation rejects unsupported VAT and invalid quantities", 
 test("invoice calculations round each line and total to two decimal places", () => {
   const js = read("assets/homs-admin.js");
   assert.match(js, /Math\.round\(\(number\+Number\.EPSILON\)\*100\)\/100/);
-  assert.match(js, /lineVat=invoiceRoundMoney\(lineSubtotal\*line\.vatRate\/100\)/);
+  assert.match(
+    js,
+    /lineVat=invoiceRoundMoney\(lineSubtotal\*line\.vatRate\/100\)/,
+  );
 });
-
 
 test("inventory workspace is permission-gated and wired to the admin navigation", () => {
   const html = read("admin/index.html");
@@ -197,7 +225,6 @@ test("inventory UI supports search, low-stock filters and signed corrections", (
   assert.match(js, /movementType:type,quantity,note,reference/);
 });
 
-
 test("inventory movements have a persistent audit table and automatic payment integration", () => {
   const schema = read("utils/database-schema.js");
   const paidInventory = read("utils/paid-order-inventory.js");
@@ -208,16 +235,21 @@ test("inventory movements have a persistent audit table and automatic payment in
   assert.match(schema, /stock_after INTEGER NOT NULL/);
   assert.match(paidInventory, /INSERT INTO inventory_movements/);
   assert.match(paidInventory, /'webshop_sale'/);
-  assert.match(routes, /data->'phones' AS phones, data->'shopProducts' AS shop_products FROM site_settings WHERE id=1 FOR UPDATE/);
+  assert.match(
+    routes,
+    /data->'phones' AS phones, data->'shopProducts' AS shop_products FROM site_settings WHERE id=1 FOR UPDATE/,
+  );
   assert.match(routes, /INSERT INTO inventory_movements/);
   assert.match(routes, /stockAfter < 0/);
 });
 
-
 test("admin save operation remains bound to the page where it started", () => {
   const js = read("assets/homs-admin.js");
   const start = js.indexOf("async function save(isAuto=false){");
-  const end = js.indexOf("\n/* ---------------- SEARCH + ADMIN USERS ---------------- */", start);
+  const end = js.indexOf(
+    "\n/* ---------------- SEARCH + ADMIN USERS ---------------- */",
+    start,
+  );
   assert.ok(start >= 0 && end > start, "save function should exist");
   const save = js.slice(start, end);
   assert.match(save, /const savePage=currentPage/);
@@ -225,15 +257,23 @@ test("admin save operation remains bound to the page where it started", () => {
   assert.match(save, /if\(currentPage===savePage\)\{/);
 });
 
-
 test("live chat polling stops when the administrator leaves the live chat page", () => {
   const js = read("assets/homs-admin.js");
   const start = js.indexOf("function showPage(page){");
-  const end = js.indexOf("\n/* ---------------- LOGIN ---------------- */", start);
+  const end = js.indexOf(
+    "\n/* ---------------- LOGIN ---------------- */",
+    start,
+  );
   assert.ok(start >= 0 && end > start, "showPage function should exist");
   const showPage = js.slice(start, end);
-  assert.match(showPage, /currentPage==="live-chat"&&page!=="live-chat"\)stopLiveChatPolling\(\)/);
-  const stopPolling = js.slice(js.indexOf("function stopLiveChatPolling()"), js.indexOf("function startLiveChatPolling()"));
+  assert.match(
+    showPage,
+    /currentPage==="live-chat"&&page!=="live-chat"\)stopLiveChatPolling\(\)/,
+  );
+  const stopPolling = js.slice(
+    js.indexOf("function stopLiveChatPolling()"),
+    js.indexOf("function startLiveChatPolling()"),
+  );
   assert.match(stopPolling, /clearInterval\(liveChatRefreshTimer\)/);
   assert.match(stopPolling, /liveChatRefreshTimer=null/);
 });
@@ -294,11 +334,14 @@ test("remaining admin image uploads release FileReader handlers and file inputs"
     ["handleRepairImage", "addRepairCoverageArea"],
     ["handleBuybackBrandImage", "handleBuybackImageForModel"],
     ["handleBuybackImageForModel", "addBuybackPhone"],
-    ["handleBuybackImage", "orderSearchText"]
+    ["handleBuybackImage", "orderSearchText"],
   ];
   for (const [name, nextName] of handlers) {
     const start = js.indexOf("function " + name + "(");
-    const end = js.indexOf(nextName.startsWith("/*") ? nextName : "function " + nextName, start + 1);
+    const end = js.indexOf(
+      nextName.startsWith("/*") ? nextName : "function " + nextName,
+      start + 1,
+    );
     assert.ok(start >= 0 && end > start, name + " should exist");
     const handler = js.slice(start, end);
     assert.match(handler, /\.onload=null/);
@@ -313,48 +356,78 @@ test("phone image readers release handlers and file references after completion"
   const js = read("assets/homs-admin.js");
   const start = js.indexOf("function handlePhoneImage(event,i,j){");
   const end = js.indexOf("\nfunction removePhoneImage", start);
-  assert.ok(start >= 0 && end > start, "phone image upload handler should exist");
+  assert.ok(
+    start >= 0 && end > start,
+    "phone image upload handler should exist",
+  );
   const handler = js.slice(start, end);
   assert.match(handler, /reader\.onload=null/);
   assert.match(handler, /reader\.onerror=null/);
   assert.match(handler, /reader\.onabort=null/);
   assert.match(handler, /input\.value=''/);
-  assert.match(handler, /try\{reader\.readAsDataURL\(file\);\}catch\(error\)\{finish\(error\);\}/);
+  assert.match(
+    handler,
+    /try\{reader\.readAsDataURL\(file\);\}catch\(error\)\{finish\(error\);\}/,
+  );
 });
 
 test("battery option image readers release handlers even when the option is no longer available", () => {
   const js = read("assets/homs-admin.js");
-  const start = js.indexOf("function handleBatteryOptionImage(event, phoneIndex, optionIndex){");
+  const start = js.indexOf(
+    "function handleBatteryOptionImage(event, phoneIndex, optionIndex){",
+  );
   const end = js.indexOf("\nfunction removeBatteryOptionImage", start);
-  assert.ok(start >= 0 && end > start, "battery option image upload handler should exist");
+  assert.ok(
+    start >= 0 && end > start,
+    "battery option image upload handler should exist",
+  );
   const handler = js.slice(start, end);
   assert.match(handler, /reader\.onload=null/);
   assert.match(handler, /reader\.onerror=null/);
   assert.match(handler, /reader\.onabort=null/);
   assert.match(handler, /input\.value=""/);
   assert.match(handler, /if\(!option\)return/);
-  assert.match(handler, /try\{reader\.readAsDataURL\(file\);\}catch\(error\)\{finish\(error\);\}/);
+  assert.match(
+    handler,
+    /try\{reader\.readAsDataURL\(file\);\}catch\(error\)\{finish\(error\);\}/,
+  );
 });
 
 test("phone save clones only the phone catalog and deep-clones only the edited product", () => {
   const js = read("assets/homs-admin.js");
-  const start = js.indexOf("const payload=savePage===\"buyback\"");
-  const end = js.indexOf("if(savePage===\"phones\"){", start);
+  const start = js.indexOf('const payload=savePage==="buyback"');
+  const end = js.indexOf('if(savePage==="phones"){', start);
   assert.ok(start >= 0 && end > start);
   const payload = js.slice(start, end);
   assert.match(payload, /savePage===\"phones\"/);
-  assert.match(payload, /JSON\.parse\(JSON\.stringify\(data\.phones\|\|\[\]\)\)/);
-  assert.match(payload, /map\(\(phone,index\)=>index===selectedPhoneIndex\?JSON\.parse\(JSON\.stringify\(phone\)\):phone\)/);
-  const phoneBranch = payload.slice(payload.indexOf(': savePage==="phones"'), payload.indexOf(': JSON.parse(JSON.stringify(data))'));
+  assert.match(
+    payload,
+    /JSON\.parse\(JSON\.stringify\(data\.phones\|\|\[\]\)\)/,
+  );
+  assert.match(
+    payload,
+    /map\(\(phone,index\)=>index===selectedPhoneIndex\?JSON\.parse\(JSON\.stringify\(phone\)\):phone\)/,
+  );
+  const phoneBranch = payload.slice(
+    payload.indexOf(': savePage==="phones"'),
+    payload.indexOf(": JSON.parse(JSON.stringify(data))"),
+  );
   assert.ok(phoneBranch.length > 0);
   assert.doesNotMatch(phoneBranch, /JSON\.parse\(JSON\.stringify\(data\)\)/);
   assert.match(phoneBranch, /sharedData/);
   const saveStart = js.indexOf("async function save(isAuto=false){");
-  const saveEnd = js.indexOf("/* ---------------- SEARCH + ADMIN USERS ---------------- */", saveStart);
+  const saveEnd = js.indexOf(
+    "/* ---------------- SEARCH + ADMIN USERS ---------------- */",
+    saveStart,
+  );
   const save = js.slice(saveStart, saveEnd);
   assert.ok(save.includes('adminSharedDirtyFields.has("phoneFolders")'));
-  assert.ok(save.includes('adminSharedDirtyFields.has("globalConditionDetails")'));
-  assert.ok(save.includes('adminSharedDirtyFields.has("globalConditionOverviewImage")'));
+  assert.ok(
+    save.includes('adminSharedDirtyFields.has("globalConditionDetails")'),
+  );
+  assert.ok(
+    save.includes('adminSharedDirtyFields.has("globalConditionOverviewImage")'),
+  );
 });
 
 test("full phone catalog save preserves photos from a compact SQL projection and avoids returning the catalog", () => {
@@ -364,7 +437,14 @@ test("full phone catalog save preserves photos from a compact SQL projection and
   assert.ok(start >= 0 && end > start);
   const handler = server.slice(start, end);
   assert.match(handler, /jsonb_build_object/);
-  for (const field of ["images", "colorImages", "colorGalleryImages", "colorGallery", "galleryImages", "variantImages"]) {
+  for (const field of [
+    "images",
+    "colorImages",
+    "colorGalleryImages",
+    "colorGallery",
+    "galleryImages",
+    "variantImages",
+  ]) {
     assert.match(handler, new RegExp("'" + field + "'"));
   }
   assert.match(handler, /preserveExistingCatalogPhotos/);
@@ -395,11 +475,20 @@ test("single-phone save reads and returns only the selected phone instead of the
 test("Shop catalog save clones only Shop products instead of the full admin data object", () => {
   const js = read("assets/homs-admin.js");
   const start = js.indexOf("async function save(isAuto=false){");
-  const end = js.indexOf("\n/* ---------------- SEARCH + ADMIN USERS ---------------- */", start);
+  const end = js.indexOf(
+    "\n/* ---------------- SEARCH + ADMIN USERS ---------------- */",
+    start,
+  );
   assert.ok(start >= 0 && end > start, "save function should exist");
   const save = js.slice(start, end);
-  assert.match(save, /savePage==="shop"\s*\?\s*\{\s*shopProducts:\s*JSON\.parse\(JSON\.stringify\(data\.shopProducts\|\|\[\]\)\)\s*\}/);
-  assert.match(save, /else if\(savePage==="shop"\)\{[\s\S]*?payload\.shopProducts=await compressShopCatalogPhotos/);
+  assert.match(
+    save,
+    /savePage==="shop"\s*\?\s*\{\s*shopProducts:\s*JSON\.parse\(JSON\.stringify\(data\.shopProducts\|\|\[\]\)\)\s*\}/,
+  );
+  assert.match(
+    save,
+    /else if\(savePage==="shop"\)\{[\s\S]*?payload\.shopProducts=await compressShopCatalogPhotos/,
+  );
 });
 
 test("phone and Shop image compression release temporary browser image and canvas resources", () => {
@@ -419,15 +508,23 @@ test("phone and Shop image compression release temporary browser image and canva
 
 test("Shop image upload releases FileReader handlers and selected file after reading", () => {
   const js = read("assets/homs-admin.js");
-  const start = js.indexOf("function shopProductImageUpload(event,index,slot){");
+  const start = js.indexOf(
+    "function shopProductImageUpload(event,index,slot){",
+  );
   const end = js.indexOf("\nfunction renderShopProductsAdmin(){", start);
-  assert.ok(start >= 0 && end > start, "Shop image upload handler should exist");
+  assert.ok(
+    start >= 0 && end > start,
+    "Shop image upload handler should exist",
+  );
   const handler = js.slice(start, end);
   assert.match(handler, /reader\.onload=null/);
   assert.match(handler, /reader\.onerror=null/);
   assert.match(handler, /input\.value=""/);
   assert.match(handler, /const imageData=String\(reader\.result\|\|""\)/);
-  assert.match(handler, /shopImageUploadsPending=Math\.max\(0,shopImageUploadsPending-1\)/);
+  assert.match(
+    handler,
+    /shopImageUploadsPending=Math\.max\(0,shopImageUploadsPending-1\)/,
+  );
 });
 
 test("email attachment preview object URLs are revoked before rerender and on page exit", () => {
@@ -436,14 +533,19 @@ test("email attachment preview object URLs are revoked before rerender and on pa
   const releaseStart = js.indexOf("function releaseEmailPreviewUrls(){");
   const renderStart = js.indexOf("function renderEmailFiles(){", releaseStart);
   const renderEnd = js.indexOf("\nfunction removeEmailFile(", renderStart);
-  assert.ok(releaseStart >= 0 && renderStart > releaseStart && renderEnd > renderStart);
+  assert.ok(
+    releaseStart >= 0 && renderStart > releaseStart && renderEnd > renderStart,
+  );
   const release = js.slice(releaseStart, renderStart);
   const render = js.slice(renderStart, renderEnd);
   assert.match(release, /URL\.revokeObjectURL\(url\)/);
   assert.match(release, /adminEmailPreviewUrls=\[\]/);
   assert.match(render, /releaseEmailPreviewUrls\(\)/);
   assert.match(render, /adminEmailPreviewUrls\.push\(url\)/);
-  assert.match(js, /window\.addEventListener\("pagehide",releaseEmailPreviewUrls\)/);
+  assert.match(
+    js,
+    /window\.addEventListener\("pagehide",releaseEmailPreviewUrls\)/,
+  );
 });
 
 test("email attachment FileReader handlers are released after conversion", () => {
@@ -469,5 +571,8 @@ test("repair request photos are lazy-loaded and decoded asynchronously", () => {
   assert.match(renderer, /loading="lazy"/);
   assert.match(renderer, /decoding="async"/);
   assert.match(renderer, /rel="noopener noreferrer"/);
-  assert.match(css, /\.repair-request-details\[hidden\]\{display:none!important\}/);
+  assert.match(
+    css,
+    /\.repair-request-details\[hidden\]\{display:none!important\}/,
+  );
 });

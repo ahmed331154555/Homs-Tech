@@ -5,7 +5,11 @@ const assert = require("node:assert/strict");
 const { createBoundedRateLimiter } = require("../utils/bounded-rate-limit");
 
 test("preserves the rolling-window request limit per key", () => {
-  const check = createBoundedRateLimiter({ windowMs: 1000, maxRequests: 2, maxEntries: 10 });
+  const check = createBoundedRateLimiter({
+    windowMs: 1000,
+    maxRequests: 2,
+    maxEntries: 10,
+  });
 
   assert.equal(check("ip-a", 100), true);
   assert.equal(check("ip-a", 200), true);
@@ -15,7 +19,11 @@ test("preserves the rolling-window request limit per key", () => {
 });
 
 test("does not evict active keys when the key capacity is reached", () => {
-  const check = createBoundedRateLimiter({ windowMs: 1000, maxRequests: 2, maxEntries: 2 });
+  const check = createBoundedRateLimiter({
+    windowMs: 1000,
+    maxRequests: 2,
+    maxEntries: 2,
+  });
 
   assert.equal(check("ip-a", 100), true);
   assert.equal(check("ip-b", 100), true);
@@ -27,7 +35,11 @@ test("does not evict active keys when the key capacity is reached", () => {
 });
 
 test("reclaims expired keys and admits a new key after capacity is available", () => {
-  const check = createBoundedRateLimiter({ windowMs: 1000, maxRequests: 2, maxEntries: 2 });
+  const check = createBoundedRateLimiter({
+    windowMs: 1000,
+    maxRequests: 2,
+    maxEntries: 2,
+  });
 
   assert.equal(check("ip-a", 100), true);
   assert.equal(check("ip-b", 200), true);
@@ -40,7 +52,11 @@ test("reclaims expired keys and admits a new key after capacity is available", (
 });
 
 test("rechecks capacity only when the earliest active window can have expired", () => {
-  const check = createBoundedRateLimiter({ windowMs: 1000, maxRequests: 1, maxEntries: 1 });
+  const check = createBoundedRateLimiter({
+    windowMs: 1000,
+    maxRequests: 1,
+    maxEntries: 1,
+  });
 
   assert.equal(check("ip-a", 100), true);
   assert.equal(check("ip-b", 200), false);

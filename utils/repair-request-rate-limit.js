@@ -6,7 +6,7 @@ const { createBoundedRateLimiter } = require("./bounded-rate-limit");
 const checkRepairRequestRateLimit = createBoundedRateLimiter({
   windowMs: 15 * 60 * 1000,
   maxRequests: 5,
-  maxEntries: 5000
+  maxEntries: 5000,
 });
 
 module.exports = { checkRepairRequestRateLimit };
