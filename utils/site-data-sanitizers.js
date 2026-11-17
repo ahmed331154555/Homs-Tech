@@ -26,6 +26,25 @@ function sanitizePublicSiteData(input) {
   return data;
 }
 
+function replaceEmbeddedHomepageImages(value, phoneIndex, path = "") {
+  if (Array.isArray(value)) {
+    return value.map((item, index) =>
+      replaceEmbeddedHomepageImages(item, phoneIndex, path ? path + "." + index : String(index))
+    );
+  }
+  if (typeof value === "string" &&
+      /^data:image\\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(value)) {
+    return "/api/homepage/phone-image/" + encodeURIComponent(String(phoneIndex)) +
+      "?path=" + encodeURIComponent(path);
+  }
+  if (!value || typeof value !== "object") return value;
+  const output = {};
+  for (const [key, nested] of Object.entries(value)) {
+    output[key] = replaceEmbeddedHomepageImages(nested, phoneIndex, path ? path + "." + key : key);
+  }
+  return output;
+}
+
 // The homepage only needs these public fields; omit page-specific settings.
 function sanitizeHomepageSiteData(input) {
   const source = input && typeof input === "object" ? input : {};
@@ -103,6 +122,20 @@ function sanitizeHomepageSiteData(input) {
           image: option?.image
         }));
       }
+      // Replace embedded Base64 photos with small URLs while preserving the
+      // original catalog index and nested color/gallery paths for the image route.
+      return replaceEmbeddedHomepageImages(compact, originalIndex);
+    });
+  }
+
+  if (Array.isArray(data.services)) {
+    data.services = data.services.map((service, index) => {
+      if (!Array.isArray(service) || typeof service[3] !== "string" ||
+          !/^data:image\\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(service[3])) {
+        return service;
+      }
+      const compact = service.slice();
+      compact[3] = "/api/homepage/service-image/" + index;
       return compact;
     });
   }
