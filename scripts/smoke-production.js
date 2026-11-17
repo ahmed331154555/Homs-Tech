@@ -111,6 +111,26 @@ async function main() {
     `CATALOG devices=${devices.phones.length} shop=${shop.shopProducts.length} repairServices=${repair.services.length}`,
   );
 
+  for (const view of ["home", "about", "prices", "cart"]) {
+    const payload = await requestJson(`/api/site?view=${view}`);
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+      throw new Error(`${view} API: expected a JSON object`);
+    }
+    if (view === "cart" && !Array.isArray(payload.shopProducts)) {
+      throw new Error("cart API: shopProducts must be an array");
+    }
+  }
+
+  const productIndex = devices.phones.findIndex(
+    (item) => item && item.active !== false,
+  );
+  if (productIndex >= 0) {
+    const productPayload = await requestJson(`/api/product/${productIndex}`);
+    if (!productPayload || !productPayload.product) {
+      throw new Error("public product API: missing product payload");
+    }
+  }
+
   const phone = devices.phones.find((item) => item && item.id != null);
   if (phone) {
     const candidates = [
