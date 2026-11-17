@@ -1421,6 +1421,22 @@ function phoneTreeMatches(phone,info){
   return hay.includes(q);
 }
 
+function phoneVariantStockTotal(phone){
+  const rows=Array.isArray(phone?.variantPrices)?phone.variantPrices:[];
+  if(!rows.length)return null;
+  return rows.reduce((total,row)=>{
+    if(!row||row.active===false)return total;
+    const raw=row.stock;
+    const quantity=raw===undefined||raw===null||String(raw).trim()===""?0:Number(raw);
+    return total+(Number.isFinite(quantity)&&quantity>0?Math.floor(quantity):0);
+  },0);
+}
+function syncPhoneVariantStock(phone){
+  const total=phoneVariantStockTotal(phone);
+  if(total!==null)phone.stock=total;
+  return total;
+}
+
 function renderPhoneFolderTree(){
   const products=data.phones.map((phone,index)=>({phone,index,info:phoneFolderInfo(phone)}))
     .filter(({phone,info})=>phoneTreeMatches(phone,info))
@@ -1443,7 +1459,9 @@ function renderPhoneFolderTree(){
     const color=String(info.color||'').trim();
     const label=[model,storage&&storage!=='Algemeen'?storage:'',color&&color!=='Algemeen'?color:''].filter(Boolean).join(' ');
     const price=Number(phone.price||phone.salePrice||phone.sellPrice||0);
-    const stock=phone.stock===undefined||phone.stock===null||phone.stock===''?'':String(phone.stock);
+    const variantStock=phoneVariantStockTotal(phone);
+    const displayedStock=variantStock===null?phone.stock:variantStock;
+    const stock=displayedStock===undefined||displayedStock===null||displayedStock===''?'':String(displayedStock);
     const isSelected=index===selectedPhoneIndex&&phoneEditOnly;
     return `<div class="phone-variant-row" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid #e5e7eb;background:${isSelected?'#eff6ff':'#fff'}">
       <div class="phone-variant-main" style="min-width:0;flex:1;display:flex;flex-direction:column;gap:4px">
@@ -4925,6 +4943,14 @@ async function save(isAuto=false){
       });
     }
 
+    if(savePage==="phones" && Array.isArray(data.phones)){
+      if(phoneEditOnly){
+        const editedPhone=data.phones[selectedPhoneIndex];
+        if(editedPhone)syncPhoneVariantStock(editedPhone);
+      }else if(phoneBulkPricingView){
+        data.phones.forEach(phone=>{if(phone&&Array.isArray(phone.variantPrices)&&phone.variantPrices.length)syncPhoneVariantStock(phone);});
+      }
+    }
     const phoneSharedData={};
     if(savePage==="phones"){
       if(adminSharedDirtyFields.has("phoneFolders"))phoneSharedData.phoneFolders=JSON.parse(JSON.stringify(data.phoneFolders||[]));
