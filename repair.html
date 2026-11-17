@@ -1088,7 +1088,7 @@
     document.getElementById("repairOptionsList").innerHTML=p.options.map((o,i)=>{
       const sendClass=o.method==="send"?" send":"";
       const fallback=i%2===0?'<div class="phone"></div>':'<div class="box"></div>';
-      const media=o.image?`<img class="custom-option-image" src="${esc(o.image)}" alt="" loading="lazy" decoding="async">`:fallback;
+      const media=o.image?`<img class="custom-option-image" src="${esc(o.image)}" alt="" loading="eager" fetchpriority="high" decoding="async">`:fallback;
       return `<article class="option-card${sendClass}">
         <div>
           <div class="option-icon">${esc(o.icon)}</div>
