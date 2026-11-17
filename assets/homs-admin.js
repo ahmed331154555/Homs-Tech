@@ -23,7 +23,7 @@ const PAGE_PERMISSIONS = {
   general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",shop:"site.save",categories:"categories.view",
 why:"why.view",customers:"customers.view",orders:"orders.view","repair-requests":"orders.view",
   "webshop-orders":"webshop_orders.view","invoices":"site.save","order-settings":"site.save",search:"search",admins:"admins.manage",
-  buyback:"site.save", "buyback-orders":"buyback_orders.view", inventory:"site.save", "device-register":"device_register.view", emails:"site.save"
+  buyback:"site.save", "buyback-orders":"buyback_orders.view", inventory:"site.save", partners:"site.save", "device-register":"device_register.view", emails:"site.save"
 };
 
 const ADMIN_PERMISSION_LABELS = {
@@ -48,7 +48,7 @@ function canEditCurrentPage(){
   return canEditSite();
 }
 function firstAllowedPage(){
-  const pages=["general","services","repair","phones","shop","buyback","buyback-orders","categories","why","customers","orders","repair-requests","webshop-orders","emails","invoices","inventory","device-register","search","admins"];
+  const pages=["general","services","repair","phones","shop","buyback","buyback-orders","categories","why","customers","orders","repair-requests","webshop-orders","emails","invoices","inventory","partners","device-register","search","admins"];
   return pages.find(p=>hasPermission(PAGE_PERMISSIONS[p]))||null;
 }
 function applyPermissionUI(){
@@ -126,6 +126,7 @@ function showPage(page){
     if(page==="shop")loadShopVisibility();
     if(page==="buyback-orders")loadBuybackOrders();
     if(page==="admins")loadAdmins();
+    if(page==="partners"&&typeof loadPartnersAdmin==="function")loadPartnersAdmin();
     }
   document.querySelectorAll(".nav-btn").forEach(b=>{const isCurrent=b.dataset.page===page;b.classList.toggle("active",isCurrent);if(isCurrent)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
   applyPermissionUI();
