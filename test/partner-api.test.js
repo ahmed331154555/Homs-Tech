@@ -26,7 +26,7 @@ function makeRouteHarness({ phones = [], prices = [], partner = { id: 7, name: "
   const app = {
     get(path, ...handlers) { routes.set("GET " + path, handlers); },
     post(path, ...handlers) { routes.set("POST " + path, handlers); },
-    patch(path, ...handlers) { routes.set("PATCH " + path, handlers); },\n    delete(path, ...handlers) { routes.set("DELETE " + path, handlers); },
+    patch(path, ...handlers) { routes.set("PATCH " + path, handlers); },\n    delete(path, ...handlers) { routes.set("DELETE " + path, handlers); },\n    delete(path, ...handlers) { routes.set("DELETE " + path, handlers); },
     put(path, ...handlers) { routes.set("PUT " + path, handlers); }
   };
   const pool = {
