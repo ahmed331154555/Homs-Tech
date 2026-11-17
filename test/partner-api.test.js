@@ -33,11 +33,12 @@ function makeRouteHarness({ phones = [], prices = [], partner = { id: 7, name: "
     async query(sql, params = []) {
       queries.push({ sql, params });
       if (sql.includes("FROM api_partners WHERE token_hash")) {
-        return { rows: params[0] === hashToken("htp_" + "a".repeat(64)) ? [partner] : [] };
+        return { rows: params[0] === hashToken("htp_" + "a".repeat(64)) && partner.active !== false ? [partner] : [] };
       }
       if (sql.includes("FROM api_partners WHERE id=$1")) return { rows: [partner] };
       if (sql.includes("data->'phones'")) return { rows: [{ phones }] };
       if (sql.includes("FROM api_partner_prices")) return { rows: prices };
+      if (sql.includes("UPDATE api_partner_orders")) return { rows: [{ id: params[2], status: params[0], admin_note: params[1], updated_at: "2026-11-17T10:00:00.000Z" }] };
       if (sql.includes("INSERT INTO api_partner_orders")) {
         return { rows: [{ id: 99, status: "Nieuw", wholesale_total: params[6], created_at: "2026-11-17T10:00:00.000Z" }] };
       }
@@ -111,6 +112,10 @@ test("partner product feed requires an active matching API key and only returns 
   const denied = await h.invoke("GET", "/api/partner/v1/products", { authorization: "Bearer htp_" + "b".repeat(64) });
   assert.equal(denied.statusCode, 401);
 
+  const disabled = makeRouteHarness({ partner: { id: 7, name: "Disabled Partner", active: false } });
+  const disabledResponse = await disabled.invoke("GET", "/api/partner/v1/products", { authorization: "Bearer " + key });
+  assert.equal(disabledResponse.statusCode, 401);
+
   const allowed = await h.invoke("GET", "/api/partner/v1/products", { authorization: "Bearer " + key });
   assert.equal(allowed.statusCode, 200);
   assert.equal(allowed.body.count, 1);
@@ -168,4 +173,39 @@ test("admin price catalog joins active phone variants with the partner's saved w
   assert.equal(res.body.items.length, 1);
   assert.equal(res.body.items[0].wholesalePrice, 25);
   assert.equal(res.body.items[0].variantKey, "128GB|Black|A");
+});
+
+test("admin price replacement validates product variants and saves only the submitted wholesale list", async () => {
+  const h = makeRouteHarness({ phones: samplePhones });
+  const res = await h.invoke("PUT", "/api/admin/partners/:id/prices", {
+    params: { id: "7" },
+    body: { prices: [{ productId: "iphone-13", variantKey: "128GB|Black|A", wholesalePrice: 42.5 }] }
+  });
+  assert.equal(res.statusCode, 200);
+  assert.ok(h.queries.some(q => q.sql.includes("DELETE FROM api_partner_prices")));
+  const insert = h.queries.find(q => q.sql.includes("INSERT INTO api_partner_prices"));
+  assert.deepEqual(insert.params, [7, "iphone-13", "128GB|Black|A", "42.50"]);
+});
+
+test("admin price replacement rejects unknown variants before changing saved prices", async () => {
+  const h = makeRouteHarness({ phones: samplePhones });
+  const res = await h.invoke("PUT", "/api/admin/partners/:id/prices", {
+    params: { id: "7" },
+    body: { prices: [{ productId: "iphone-13", variantKey: "1TB|Pink|A", wholesalePrice: 42.5 }] }
+  });
+  assert.equal(res.statusCode, 400);
+  assert.equal(h.queries.some(q => q.sql.includes("DELETE FROM api_partner_prices")), false);
+});
+
+test("admin partner order status updates accept only the defined statuses", async () => {
+  const h = makeRouteHarness();
+  const valid = await h.invoke("PATCH", "/api/admin/partner-orders/:id", {
+    params: { id: "99" }, body: { status: "Goedgekeurd", adminNote: "Voorraad gecontroleerd" }
+  });
+  assert.equal(valid.statusCode, 200);
+  assert.equal(valid.body.order.status, "Goedgekeurd");
+  const invalid = await h.invoke("PATCH", "/api/admin/partner-orders/:id", {
+    params: { id: "99" }, body: { status: "Paid" }
+  });
+  assert.equal(invalid.statusCode, 400);
 });
