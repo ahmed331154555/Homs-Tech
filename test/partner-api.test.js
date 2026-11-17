@@ -127,6 +127,8 @@ test("partner product feed requires an active matching API key and only returns 
   const feedCatalogQuery = h.queries.find(q => q.sql.includes("data->'phones'"));
   assert.match(feedCatalogQuery.sql, /jsonb_agg/);
   assert.match(feedCatalogQuery.sql, /'images'/);
+  assert.match(feedCatalogQuery.sql, /'colorGalleryImages'/);
+  assert.match(feedCatalogQuery.sql, /'colorImages'/);
 });
 
 test("partner order uses database wholesale price and does not trust a submitted price", async () => {
@@ -262,6 +264,17 @@ test("legacy product identifier is not generated for an empty draft phone", () =
 
 test("variant pricing mode with no configured rows does not fall back to a legacy product", () => {
   assert.equal(hasVariantPricing({ pricingMode: "variant", variantPrices: [] }), true);
+});
+
+test("partner images prefer the selected color gallery and fall back safely", () => {
+  const phone = {
+    colorGalleryImages: { Black: ["data:image/webp;base64,QkxBQ0s="], Red: ["data:image/webp;base64,UkVE="] },
+    colorImages: { Black: "https://cdn.example.com/black.webp" },
+    images: ["https://cdn.example.com/base.webp"]
+  };
+  assert.deepEqual(partnerImages(phone, "red"), ["data:image/webp;base64,UkVE="]);
+  assert.deepEqual(partnerImages(phone, "BLACK"), ["data:image/webp;base64,QkxBQ0s="]);
+  assert.deepEqual(partnerImages({ images: ["https://cdn.example.com/base.webp"] }, "Blue"), ["https://cdn.example.com/base.webp"]);
 });
 
 test("partner image sanitizer includes small safe inline WebP and excludes oversized or unsafe data URLs", () => {
