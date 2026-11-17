@@ -89,7 +89,7 @@
     const prices=[];
     const discountInput=$("partnerDiscountPercent");
     const discountPercent=Number(discountInput?.value);
-    if(!Number.isFinite(discountPercent)||discountPercent<0||discountPercent>100){status("partnerPriceStatus","Voer een kortingspercentage tussen 0 en 100 in.","error");return;}
+    if(discountInput?.value===""||!Number.isFinite(discountPercent)||discountPercent<0||discountPercent>100){status("partnerPriceStatus","Voer een kortingspercentage tussen 0 en 100 in.","error");return;}
     try{
       for(const row of document.querySelectorAll("[data-partner-price-row]")){
         const item=priceItems[Number(row.dataset.index)];
