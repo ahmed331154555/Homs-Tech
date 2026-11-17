@@ -42,6 +42,46 @@ function hasVariantPricing(phone) {
   return phone?.pricingMode === "variant";
 }
 
+function partnerCatalogQuery({ includeImages = false } = {}) {
+  const imageFields = includeImages ? ", 'images', phone->'images', 'image', phone->'image'" : "";
+  const sql = `
+    SELECT COALESCE((
+      SELECT jsonb_agg(jsonb_build_object(
+        'id', phone->'id',
+        'name', phone->'name',
+        'title', phone->'title',
+        'brand', phone->'brand',
+        'sku', phone->'sku',
+        'stock', phone->'stock',
+        'active', phone->'active',
+        'available', phone->'available',
+        'pricingMode', phone->'pricingMode',
+        'variantPrices', COALESCE((
+          SELECT jsonb_agg(jsonb_build_object(
+            'storage', variant->'storage',
+            'color', variant->'color',
+            'condition', variant->'condition',
+            'sku', variant->'sku',
+            'stock', variant->'stock',
+            'active', variant->'active',
+            'available', variant->'available'
+          ) ORDER BY variant_ordinality)
+          FROM jsonb_array_elements(
+            CASE WHEN jsonb_typeof(phone->'variantPrices') = 'array'
+              THEN phone->'variantPrices' ELSE '[]'::jsonb END
+          ) WITH ORDINALITY AS variant_rows(variant, variant_ordinality)
+        ), '[]'::jsonb)__IMAGE_FIELDS__
+      ) ORDER BY phone_ordinality)
+      FROM jsonb_array_elements(
+        CASE WHEN jsonb_typeof(data->'phones') = 'array'
+          THEN data->'phones' ELSE '[]'::jsonb END
+      ) WITH ORDINALITY AS phone_rows(phone, phone_ordinality)
+    ), '[]'::jsonb) AS phones
+    FROM site_settings WHERE id=1
+  `;
+  return sql.replace("__IMAGE_FIELDS__", imageFields);
+}
+
 function partnerImages(phone) {
   const candidates = Array.isArray(phone?.images) && phone.images.some(Boolean) ? phone.images : [phone?.image];
   return candidates.filter(value => {
@@ -113,7 +153,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
     try {
       const [partner, catalog, saved] = await Promise.all([
         pool.query("SELECT id FROM api_partners WHERE id=$1", [partnerId]),
-        pool.query("SELECT data->'phones' AS phones FROM site_settings WHERE id=1"),
+        pool.query(partnerCatalogQuery()),
         pool.query("SELECT product_id,variant_key,wholesale_price FROM api_partner_prices WHERE partner_id=$1", [partnerId])
       ]);
       if (!partner.rows.length) return res.status(404).json({ error: "Partner niet gevonden." });
@@ -170,7 +210,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
     }
     let phones = [];
     try {
-      const catalog = await pool.query("SELECT data->'phones' AS phones FROM site_settings WHERE id=1");
+      const catalog = await pool.query(partnerCatalogQuery());
       phones = Array.isArray(catalog.rows[0]?.phones) ? catalog.rows[0].phones : [];
     } catch (error) {
       console.error("[PARTNER API] Validate catalog prices failed:", error);
@@ -238,7 +278,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
   app.get("/api/partner/v1/products", authenticatePartner, async (req, res) => {
     try {
       const [catalog, prices] = await Promise.all([
-        pool.query("SELECT data->'phones' AS phones FROM site_settings WHERE id=1"),
+        pool.query(partnerCatalogQuery({ includeImages: true })),
         pool.query(
           "SELECT product_id,variant_key,wholesale_price FROM api_partner_prices WHERE partner_id=$1",
           [req.partner.id]
@@ -308,7 +348,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
     }
     try {
       const [catalog, prices] = await Promise.all([
-        pool.query("SELECT data->'phones' AS phones FROM site_settings WHERE id=1"),
+        pool.query(partnerCatalogQuery()),
         pool.query("SELECT product_id,variant_key,wholesale_price FROM api_partner_prices WHERE partner_id=$1", [req.partner.id])
       ]);
       const phones = Array.isArray(catalog.rows[0]?.phones) ? catalog.rows[0].phones : [];
