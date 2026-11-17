@@ -1,6 +1,8 @@
 "use strict";
 
 const crypto = require("crypto");
+const { serverOptionDelta } = require("../utils/product-options");
+const { moneyNumber } = require("../utils/money");
 
 function hashToken(value) {
   return crypto.createHash("sha256").update(String(value)).digest("hex");
@@ -38,6 +40,47 @@ function hasVariantPricing(phone) {
   return phone?.pricingMode === "variant";
 }
 
+function partnerVariantRows(phone) {
+  if (hasVariantPricing(phone)) {
+    return (Array.isArray(phone.variantPrices) ? phone.variantPrices : []).filter(v => v && typeof v === "object").map(variant => ({
+      variant,
+      storage: safeText(variant.storage, 40),
+      color: safeText(variant.color, 80),
+      condition: safeText(variant.condition, 80),
+      retailPrice: moneyNumber(variant.price)
+    }));
+  }
+  const activeOptions = key => (Array.isArray(phone[key]) ? phone[key] : []).filter(option =>
+    option && typeof option === "object" && option.active !== false && option.enabled !== false && option.available !== false
+  );
+  const conditions = activeOptions("conditionOptions");
+  const storages = activeOptions("storageOptions");
+  const colors = activeOptions("colorOptions");
+  const conditionRows = conditions.length ? conditions : [{ label: safeText(phone.condition, 80), basePrice: phone.price ?? phone.salePrice ?? phone.sellPrice }];
+  const storageRows = storages.length ? storages : [{ label: Array.isArray(phone.storage) ? phone.storage[0] : (phone.storage || phone.geheugen || ""), priceDelta: 0 }];
+  const colorRows = colors.length ? colors : [{ label: phone.color || phone.kleur || "", priceDelta: 0 }];
+  const rows = [];
+  for (const condition of conditionRows) for (const storage of storageRows) for (const color of colorRows) {
+    const base = moneyNumber(condition.basePrice ?? condition.conditionBasePrice ?? condition.price ?? phone.price ?? phone.salePrice ?? phone.sellPrice);
+    const retailPrice = base + serverOptionDelta(storage, "storage") + serverOptionDelta(color, "color");
+    rows.push({
+      variant: null,
+      storage: safeText(storage.label, 40),
+      color: safeText(color.label, 80),
+      condition: safeText(condition.label, 80),
+      retailPrice
+    });
+  }
+  return rows;
+}
+
+function calculateWholesalePrice(retailPrice, discountPercent) {
+  const retail = moneyNumber(retailPrice);
+  const discount = Number(discountPercent);
+  if (!Number.isFinite(retail) || retail <= 0 || !Number.isFinite(discount) || discount < 0 || discount > 100) return null;
+  return Math.round((retail * (1 - discount / 100) + Number.EPSILON) * 100) / 100;
+}
+
 function partnerCatalogQuery({ includeImages = false } = {}) {
   const imageFields = includeImages ? ", 'images', phone->'images', 'image', phone->'image'" : "";
   const sql = `
@@ -54,6 +97,12 @@ function partnerCatalogQuery({ includeImages = false } = {}) {
         'condition', phone->'condition',
         'stockStatus', phone->'stockStatus',
         'stock', phone->'stock',
+        'price', phone->'price',
+        'salePrice', phone->'salePrice',
+        'sellPrice', phone->'sellPrice',
+        'conditionOptions', COALESCE(phone->'conditionOptions', '[]'::jsonb),
+        'storageOptions', COALESCE(phone->'storageOptions', '[]'::jsonb),
+        'colorOptions', COALESCE(phone->'colorOptions', '[]'::jsonb),
         'active', phone->'active',
         'available', phone->'available',
         'pricingMode', phone->'pricingMode',
@@ -65,7 +114,8 @@ function partnerCatalogQuery({ includeImages = false } = {}) {
             'sku', variant->'sku',
             'stock', variant->'stock',
             'active', variant->'active',
-            'available', variant->'available'
+            'available', variant->'available',
+            'price', variant->'price'
           ) ORDER BY variant_ordinality)
           FROM jsonb_array_elements(
             CASE WHEN jsonb_typeof(phone->'variantPrices') = 'array'
@@ -153,11 +203,12 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
     if (!Number.isSafeInteger(partnerId) || partnerId < 1) return res.status(400).json({ error: "Ongeldig partner-ID." });
     try {
       const [partner, catalog, saved] = await Promise.all([
-        pool.query("SELECT id FROM api_partners WHERE id=$1", [partnerId]),
+        pool.query("SELECT id,default_discount_percent FROM api_partners WHERE id=$1", [partnerId]),
         pool.query(partnerCatalogQuery()),
         pool.query("SELECT product_id,variant_key,wholesale_price FROM api_partner_prices WHERE partner_id=$1", [partnerId])
       ]);
       if (!partner.rows.length) return res.status(404).json({ error: "Partner niet gevonden." });
+      const discountPercent = Number(partner.rows[0].default_discount_percent ?? 10);
       const phones = Array.isArray(catalog.rows[0]?.phones) ? catalog.rows[0].phones : [];
       const savedMap = new Map(saved.rows.map(row => [row.product_id + "::" + row.variant_key, Number(row.wholesale_price)]));
       const items = [];
@@ -165,24 +216,28 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
         if (!phone || typeof phone !== "object") continue;
         const productId = getPartnerProductId(phone, phoneIndex, phones);
         if (!productId) continue;
-        const variants = hasVariantPricing(phone) ? (Array.isArray(phone.variantPrices) ? phone.variantPrices.filter(v => v && typeof v === "object") : []) : [null];
-        for (const variant of variants) {
-          const variantKey = variant ? [variant.storage, variant.color, variant.condition].map(v => safeText(v, 80)).join("|") : "";
+        for (const row of partnerVariantRows(phone)) {
+          const variant = row.variant;
+          const variantKey = [row.storage, row.color, row.condition].join("|");
           const key = productId + "::" + variantKey;
+          const calculatedPrice = calculateWholesalePrice(row.retailPrice, discountPercent);
+          const savedPrice = savedMap.get(key);
+          const isSaved = savedMap.has(key);
           items.push({
             productId, variantKey, name: safeText(phone.name || phone.title, 180),
             sku: safeText(variant?.sku || phone.sku, 100),
-            storage: safeText(variant?.storage || phone.storage, 40),
-            color: safeText(variant?.color || phone.color, 80),
-            condition: safeText(variant?.condition || phone.condition, 80),
+            storage: row.storage, color: row.color, condition: row.condition,
             stock: parseStock(variant ? variant.stock : phone.stock),
             active: phone.active !== false && phone.available !== false && String(phone.stockStatus || "").toLowerCase() !== "sold" && (!variant || (variant.active !== false && variant.available !== false)),
-            wholesalePrice: savedMap.has(key) ? savedMap.get(key) : null
+            retailPrice: Number.isFinite(row.retailPrice) ? Math.round(row.retailPrice * 100) / 100 : null,
+            discountPercent,
+            wholesalePrice: isSaved ? savedPrice : calculatedPrice,
+            assigned: isSaved || (calculatedPrice !== null && phone.active !== false && phone.available !== false)
           });
         }
       }
       res.set("Cache-Control", "no-store");
-      return res.json({ items });
+      return res.json({ items, discountPercent });
     } catch (error) {
       console.error("[PARTNER API] Load wholesale prices failed:", error);
       return res.status(500).json({ error: "Groothandelsprijzen konden niet worden geladen." });
@@ -192,7 +247,8 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
   app.put("/api/admin/partners/:id/prices", admin, async (req, res) => {
     const partnerId = Number(req.params.id);
     const prices = req.body?.prices;
-    if (!Number.isSafeInteger(partnerId) || partnerId < 1 || !Array.isArray(prices) || prices.length > 1000) {
+    const discountPercent = Number(req.body?.discountPercent ?? 10);
+    if (!Number.isSafeInteger(partnerId) || partnerId < 1 || !Array.isArray(prices) || prices.length > 1000 || !Number.isFinite(discountPercent) || discountPercent < 0 || discountPercent > 100) {
       return res.status(400).json({ error: "Ongeldige partner of prijslijst." });
     }
     const normalized = [];
@@ -236,6 +292,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
         await client.query("ROLLBACK");
         return res.status(404).json({ error: "Partner niet gevonden." });
       }
+      await client.query("UPDATE api_partners SET default_discount_percent=$1,updated_at=NOW() WHERE id=$2", [discountPercent, partnerId]);
       // PUT replaces the complete price list so removed assignments cannot remain active.
       await client.query("DELETE FROM api_partner_prices WHERE partner_id=$1", [partnerId]);
       for (const item of normalized) {
@@ -248,7 +305,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
         );
       }
       await client.query("COMMIT");
-      return res.json({ success: true, updated: normalized.length });
+      return res.json({ success: true, updated: normalized.length, discountPercent });
     } catch (error) {
       try { await client.query("ROLLBACK"); } catch {}
       console.error("[PARTNER API] Save wholesale prices failed:", error);
@@ -444,4 +501,4 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
 
 }
 
-module.exports = { registerPartnerApiRoutes, hashToken, parseStock, getPartnerProductId, hasVariantPricing, partnerImages };
+module.exports = { registerPartnerApiRoutes, hashToken, parseStock, getPartnerProductId, hasVariantPricing, partnerImages, partnerVariantRows, calculateWholesalePrice, partnerCatalogQuery };
