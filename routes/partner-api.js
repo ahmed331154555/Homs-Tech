@@ -16,6 +16,29 @@ function parseStock(value) {
   return match ? Number(match[0]) : null;
 }
 
+function getPartnerProductId(phone, index, phones = []) {
+  const explicitId = safeText(phone?.id, 120);
+  if (explicitId) return explicitId;
+  const identity = [
+    safeText(phone?.brand || "Apple", 80).toLocaleLowerCase(),
+    safeText(phone?.name || phone?.title, 180).toLocaleLowerCase(),
+    safeText(phone?.sku, 100).toLocaleLowerCase()
+  ].join("|");
+  const occurrence = phones.slice(0, Math.max(0, index)).filter(item => {
+    const other = [
+      safeText(item?.brand || "Apple", 80).toLocaleLowerCase(),
+      safeText(item?.name || item?.title, 180).toLocaleLowerCase(),
+      safeText(item?.sku, 100).toLocaleLowerCase()
+    ].join("|");
+    return other === identity;
+  }).length;
+  return "legacy-" + crypto.createHash("sha256").update(identity + "|" + occurrence).digest("hex").slice(0, 24);
+}
+
+function hasVariantPricing(phone) {
+  return phone?.pricingMode === "variant" && Array.isArray(phone.variantPrices) && phone.variantPrices.length > 0;
+}
+
 function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermission }) {
   const admin = requirePermission("site.save");
 
@@ -85,11 +108,11 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
       const phones = Array.isArray(catalog.rows[0]?.phones) ? catalog.rows[0].phones : [];
       const savedMap = new Map(saved.rows.map(row => [row.product_id + "::" + row.variant_key, Number(row.wholesale_price)]));
       const items = [];
-      for (const phone of phones) {
+      for (const [phoneIndex, phone] of phones.entries()) {
         if (!phone || typeof phone !== "object" || phone.active === false || phone.available === false) continue;
-        const productId = safeText(phone.id, 120);
+        const productId = getPartnerProductId(phone, phoneIndex, phones);
         if (!productId) continue;
-        const variants = Array.isArray(phone.variantPrices) && phone.variantPrices.length ? phone.variantPrices.filter(v => v && v.active !== false && v.available !== false) : [null];
+        const variants = hasVariantPricing(phone) ? phone.variantPrices.filter(v => v && v.active !== false && v.available !== false) : [null];
         for (const variant of variants) {
           const variantKey = variant ? [variant.storage, variant.color, variant.condition].map(v => safeText(v, 80)).join("|") : "";
           const key = productId + "::" + variantKey;
@@ -141,9 +164,10 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
       return res.status(503).json({ error: "Productcatalogus kon niet worden gecontroleerd." });
     }
     for (const item of normalized) {
-      const phone = phones.find(p => p && String(p.id) === item.productId && p.active !== false && p.available !== false);
+      const phoneIndex = phones.findIndex((p, index) => p && getPartnerProductId(p, index, phones) === item.productId && p.active !== false && p.available !== false);
+      const phone = phoneIndex >= 0 ? phones[phoneIndex] : null;
       if (!phone) return res.status(400).json({ error: "Een product in de prijslijst bestaat niet of is niet actief." });
-      const variants = Array.isArray(phone.variantPrices) && phone.variantPrices.length ? phone.variantPrices : [null];
+      const variants = hasVariantPricing(phone) ? phone.variantPrices : [null];
       const validVariant = variants.some(v => {
         const key = v ? [v.storage, v.color, v.condition].map(x => safeText(x, 80)).join("|") : "";
         return key === item.variantKey && (!v || (v.active !== false && v.available !== false));
@@ -210,11 +234,11 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
       const phones = Array.isArray(catalog.rows[0]?.phones) ? catalog.rows[0].phones : [];
       const priceMap = new Map(prices.rows.map(row => [row.product_id + "::" + row.variant_key, Number(row.wholesale_price)]));
       const products = [];
-      for (const phone of phones) {
+      for (const [phoneIndex, phone] of phones.entries()) {
         if (!phone || typeof phone !== "object" || phone.active === false || phone.available === false) continue;
-        const productId = safeText(phone.id, 120);
+        const productId = getPartnerProductId(phone, phoneIndex, phones);
         if (!productId) continue;
-        const variants = Array.isArray(phone.variantPrices) && phone.variantPrices.length
+        const variants = hasVariantPricing(phone)
           ? phone.variantPrices.filter(v => v && v.active !== false && v.available !== false)
           : [null];
         for (const variant of variants) {
@@ -285,12 +309,13 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
         if (!productId || !Number.isInteger(quantity) || quantity < 1 || quantity > 20) {
           return res.status(400).json({ error: "Ongeldige productregel of hoeveelheid." });
         }
-        const phone = phones.find(p => p && String(p.id) === productId && p.active !== false && p.available !== false);
+        const phoneIndex = phones.findIndex((p, index) => p && getPartnerProductId(p, index, phones) === productId && p.active !== false && p.available !== false);
+        const phone = phoneIndex >= 0 ? phones[phoneIndex] : null;
         if (!phone) return res.status(409).json({ error: "Een geselecteerd product is niet meer beschikbaar." });
-        const variant = Array.isArray(phone.variantPrices) && phone.variantPrices.length
+        const variant = hasVariantPricing(phone)
           ? phone.variantPrices.find(v => v && [v.storage, v.color, v.condition].map(x => safeText(x, 80)).join("|") === variantKey && v.active !== false && v.available !== false)
           : null;
-        if (Array.isArray(phone.variantPrices) && phone.variantPrices.length && !variant) {
+        if (hasVariantPricing(phone) && !variant) {
           return res.status(409).json({ error: "Een geselecteerde telefoonuitvoering is niet meer beschikbaar." });
         }
         const key = productId + "::" + variantKey;
@@ -365,4 +390,4 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
 
 }
 
-module.exports = { registerPartnerApiRoutes, hashToken, parseStock };
+module.exports = { registerPartnerApiRoutes, hashToken, parseStock, getPartnerProductId, hasVariantPricing };
