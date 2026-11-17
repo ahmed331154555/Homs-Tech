@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { registerPartnerApiRoutes, hashToken, parseStock } = require("../routes/partner-api");
+const { registerPartnerApiRoutes, hashToken, parseStock, getPartnerProductId, hasVariantPricing } = require("../routes/partner-api");
 
 test("partner API keys are stored as deterministic SHA-256 hashes, not plaintext", () => {
   const token = "htp_" + "a".repeat(64);
@@ -94,7 +94,7 @@ function response() {
 
 const samplePhones = [
   {
-    id: "iphone-13", name: "iPhone 13", active: true, available: true,
+    id: "iphone-13", name: "iPhone 13", pricingMode: "variant", active: true, available: true,
     variantPrices: [
       { storage: "128GB", color: "Black", condition: "A", stock: 3, active: true, available: true },
       { storage: "256GB", color: "Blue", condition: "A", stock: 0, active: true, available: true }
@@ -208,4 +208,18 @@ test("admin partner order status updates accept only the defined statuses", asyn
     params: { id: "99" }, body: { status: "Paid" }
   });
   assert.equal(invalid.statusCode, 400);
+});
+
+test("legacy phone partner IDs remain stable when unrelated catalog entries are inserted", () => {
+  const phone = { name: "iPhone SE", brand: "Apple", sku: "HT-SE-001" };
+  const before = getPartnerProductId(phone, 0, [phone]);
+  const afterCatalog = [{ name: "Different phone", brand: "Apple" }, phone];
+  const after = getPartnerProductId(phone, 1, afterCatalog);
+  assert.match(before, /^legacy-[a-f0-9]{24}$/);
+  assert.equal(after, before);
+});
+
+test("legacy pricing mode does not expose leftover variant rows as separate partner variants", () => {
+  const phone = { pricingMode: "legacy", variantPrices: [{ storage: "128GB", color: "Black", condition: "A" }] };
+  assert.equal(hasVariantPricing(phone), false);
 });
