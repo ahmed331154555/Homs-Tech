@@ -1933,7 +1933,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
 function active(a){return Array.isArray(a)?a.filter(x=>x&&x.active!==false):[]}
 function imageFor(d){
   const src=d?.imageOutside||d?.image||'';
-  return src?`<img src="${esc(src)}" alt="${esc(d.name||'')}">`:`<div class="phone-icon"></div>`;
+  return src?`<img src="${esc(src)}" alt="${esc(d.name||'')}" loading="lazy" decoding="async">`:`<div class="phone-icon"></div>`;
 }
 let selectedBrand='',selectedType='';
 
@@ -2295,7 +2295,7 @@ let selectedFamily='';
 function renderFamilyCard(family, arr){
   const sample=arr[0]||{};
   const brandSrc=sample.brandImage||'';
-  const visual=brandSrc?`<img src="${esc(brandSrc)}" alt="${esc(family)}" class="brand-card-image">`:`<div class="brand-card-placeholder">${esc(family)}</div>`;
+  const visual=brandSrc?`<img src="${esc(brandSrc)}" alt="${esc(family)}" class="brand-card-image" loading="lazy" decoding="async">`:`<div class="brand-card-placeholder">${esc(family)}</div>`;
   return `<button type="button" class="family-card" data-family="${esc(family)}">
     <div class="device-img brand-img-wrap">${visual}</div>
     <div class="device-name">${esc(family)}</div>
