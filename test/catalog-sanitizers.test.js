@@ -70,9 +70,7 @@ test("sanitizeDevicesCatalogData keeps public fields and omits private catalog d
   assert.deepEqual(result.phones[0].colorGalleryImages, {
     Black: ["black-1.webp"],
   });
-  assert.deepEqual(result.phones[0].colorOptions, [
-    { label: "Black", image: "black.webp" },
-  ]);
+  assert.equal("colorOptions" in result.phones[0], false);
 });
 
 test("sanitizeDevicesCatalogData handles invalid input and compact device records", () => {
@@ -121,8 +119,13 @@ test("device sanitizer keeps only image strings in nested color image maps", () 
         images: ["front.webp", { url: "private", supplierCost: 2 }],
         colorImages: {
           Black: "black.webp",
-          Blue: { url: "blue.webp", internalCost: 5 },
+          Blue: "blue.webp",
         },
+        colorOptions: [
+          { label: "Black", image: "black.webp" },
+          { label: "Blue", image: "blue.webp" },
+          { label: "Green", image: "green.webp" },
+        ],
         colorGalleryImages: {
           Black: ["black-front.webp", { url: "private.webp" }],
         },
@@ -130,8 +133,40 @@ test("device sanitizer keeps only image strings in nested color image maps", () 
     ],
   });
   assert.deepEqual(output.phones[0].images, ["front.webp"]);
-  assert.deepEqual(output.phones[0].colorImages, { Black: "black.webp" });
+  assert.deepEqual(output.phones[0].colorImages, { Blue: "blue.webp" });
+  assert.deepEqual(output.phones[0].colorOptions, [{ label: "Green", image: "green.webp" }]);
   assert.deepEqual(output.phones[0].colorGalleryImages, {
     Black: ["black-front.webp"],
   });
+});
+
+
+test("device catalog avoids duplicate color images and preserves condition labels", () => {
+  const output = sanitizeDevicesCatalogData({
+    phones: [
+      {
+        name: "iPhone",
+        image: "front.webp",
+        images: ["front.webp", "back.webp"],
+        conditionOptions: [
+          { label: "Zo goed als nieuw", condition: "excellent", basePrice: 400 },
+        ],
+        colorGalleryImages: { Black: ["black.webp", "black-back.webp"] },
+        colorImages: { Black: "black.webp", Blue: "blue.webp" },
+        colorOptions: [
+          { label: "Black", image: "black.webp" },
+          { label: "Blue", image: "blue.webp" },
+          { label: "Green", image: "green.webp" },
+        ],
+      },
+    ],
+  });
+
+  const phone = output.phones[0];
+  assert.equal("images" in phone, false);
+  assert.deepEqual(phone.colorGalleryImages, { Black: ["black.webp"] });
+  assert.deepEqual(phone.colorImages, { Blue: "blue.webp" });
+  assert.deepEqual(phone.colorOptions, [{ label: "Green", image: "green.webp" }]);
+  assert.equal(phone.conditionOptions[0].label, "Zo goed als nieuw");
+  assert.equal(phone.conditionOptions[0].condition, "excellent");
 });

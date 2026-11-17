@@ -15,52 +15,40 @@ function sanitizeDevicesCatalogData(source) {
 
       const compact = {};
       const allowedFields = [
-        "id",
-        "name",
-        "brand",
-        "active",
-        "warranty",
-        "garantie",
-        "description",
-        "price",
-        "salePrice",
-        "sellPrice",
-        "verkoopprijs",
-        "storage",
-        "geheugen",
-        "color",
-        "kleur",
-        "condition",
-        "conditie",
+        "id", "name", "brand", "active", "warranty", "garantie",
+        "description", "price", "salePrice", "sellPrice", "verkoopprijs",
+        "storage", "geheugen", "color", "kleur", "condition", "conditie",
         "stock",
-        "image",
-        "imageUrl",
       ];
-
       for (const key of allowedFields) {
-        if (Object.prototype.hasOwnProperty.call(phone, key)) {
-          compact[key] = phone[key];
-        }
+        if (Object.prototype.hasOwnProperty.call(phone, key)) compact[key] = phone[key];
       }
 
-      if (Array.isArray(phone.images)) {
-        compact.images = phone.images
-          .filter((image) => typeof image === "string" && image)
-          .slice(0, 1);
+      const primaryImage =
+        (typeof phone.image === "string" && phone.image) ||
+        (typeof phone.imageUrl === "string" && phone.imageUrl) ||
+        "";
+      if (primaryImage) compact.image = primaryImage;
+      else if (Array.isArray(phone.images)) {
+        const firstImage = phone.images.find((image) => typeof image === "string" && image);
+        if (firstImage) compact.images = [firstImage];
       }
 
       if (Array.isArray(phone.conditionOptions)) {
         compact.conditionOptions = phone.conditionOptions
-          .filter(
-            (option) =>
-              option && option.active !== false && option.available !== false,
-          )
-          .map((option) => ({
-            active: option.active,
-            available: option.available,
-            basePrice: option.basePrice,
-            conditionBasePrice: option.conditionBasePrice,
-          }));
+          .filter((option) => option && option.active !== false && option.available !== false)
+          .map((option) => {
+            const safe = {
+              active: option.active,
+              available: option.available,
+              basePrice: option.basePrice,
+              conditionBasePrice: option.conditionBasePrice,
+            };
+            for (const key of ["condition", "name", "label", "title"]) {
+              if (Object.prototype.hasOwnProperty.call(option, key)) safe[key] = option[key];
+            }
+            return safe;
+          });
       }
 
       if (Array.isArray(phone.variantPrices)) {
@@ -75,39 +63,40 @@ function sanitizeDevicesCatalogData(source) {
           }));
       }
 
-      if (
-        phone.colorGalleryImages &&
-        typeof phone.colorGalleryImages === "object"
-      ) {
-        compact.colorGalleryImages = {};
-        for (const [color, gallery] of Object.entries(
-          phone.colorGalleryImages,
-        )) {
-          if (Array.isArray(gallery)) {
-            const firstImage = gallery.find(
-              (image) => typeof image === "string" && image,
-            );
-            if (firstImage) compact.colorGalleryImages[color] = [firstImage];
+      const galleryImages = {};
+      if (phone.colorGalleryImages && typeof phone.colorGalleryImages === "object" && !Array.isArray(phone.colorGalleryImages)) {
+        for (const [color, gallery] of Object.entries(phone.colorGalleryImages)) {
+          const firstImage = Array.isArray(gallery)
+            ? gallery.find((image) => typeof image === "string" && image)
+            : "";
+          if (firstImage) galleryImages[color] = [firstImage];
+        }
+      }
+      const galleryColors = new Set(Object.keys(galleryImages));
+      if (galleryColors.size) compact.colorGalleryImages = galleryImages;
+
+      const colorImages = {};
+      if (phone.colorImages && typeof phone.colorImages === "object" && !Array.isArray(phone.colorImages)) {
+        for (const [color, image] of Object.entries(phone.colorImages)) {
+          if (typeof image === "string" && image && !galleryColors.has(color)) {
+            colorImages[color] = image;
           }
         }
       }
-
-      if (
-        phone.colorImages &&
-        typeof phone.colorImages === "object" &&
-        !Array.isArray(phone.colorImages)
-      ) {
-        compact.colorImages = {};
-        for (const [color, image] of Object.entries(phone.colorImages)) {
-          if (typeof image === "string") compact.colorImages[color] = image;
-        }
-      }
+      const imageColors = new Set([...galleryColors, ...Object.keys(colorImages)]);
+      if (Object.keys(colorImages).length) compact.colorImages = colorImages;
 
       if (Array.isArray(phone.colorOptions)) {
-        compact.colorOptions = phone.colorOptions.map((option) => ({
-          label: option?.label,
-          image: option?.image,
-        }));
+        const colorOptions = phone.colorOptions
+          .filter((option) =>
+            option &&
+            typeof option.label === "string" &&
+            typeof option.image === "string" &&
+            option.image &&
+            !imageColors.has(option.label)
+          )
+          .map((option) => ({ label: option.label, image: option.image }));
+        if (colorOptions.length) compact.colorOptions = colorOptions;
       }
 
       return compact;
