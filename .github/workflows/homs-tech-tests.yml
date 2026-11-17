@@ -64,6 +64,9 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
+      - name: Audit production dependencies
+        run: npm audit --omit=dev
+
       - name: Run full test suite
         run: npm test
 
@@ -72,6 +75,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -u
+          if [ -f package-lock.json ]; then git add package-lock.json; fi
           if git diff --cached --quiet; then
             echo "No formatting changes were needed."
           else
