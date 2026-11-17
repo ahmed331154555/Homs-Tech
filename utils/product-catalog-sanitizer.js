@@ -85,21 +85,34 @@ function sanitizeProductCatalogData(source) {
   };
 }
 
-function sanitizeSingleProductData(source) {
+function sanitizeProductFamilyData(source) {
   const input = source && typeof source === "object" ? source : {};
+  const records = Array.isArray(input.phones) ? input.phones : [];
   const catalog = sanitizeProductCatalogData({
-    phones: [input.product],
+    phones: records.map(record => record && typeof record === "object" ? record.product : null),
     businessName: input.businessName,
     siteName: input.siteName,
     tagline: input.tagline
   });
 
+  const phones = catalog.phones.map((product, index) => {
+    if (!product) return null;
+    const originalIndex = Number(records[index]?.index);
+    return {
+      ...product,
+      _catalogIndex: Number.isSafeInteger(originalIndex) && originalIndex >= 0 ? originalIndex : index
+    };
+  });
+  const productIndex = Number(input.productIndex);
+  const product = phones.find(item => item && item._catalogIndex === productIndex) || null;
+
   return {
-    product: catalog.phones[0] || null,
+    product,
+    phones,
     businessName: catalog.businessName,
     siteName: catalog.siteName,
     tagline: catalog.tagline
   };
 }
 
-module.exports = { sanitizeProductCatalogData, sanitizeSingleProductData };
+module.exports = { sanitizeProductCatalogData, sanitizeProductFamilyData };
