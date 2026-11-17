@@ -71,6 +71,7 @@ const {
 } = require("./utils/catalog-photo-preservation");
 const { saveShopCatalog, validateShopCatalogIdentifiers, validateShopCatalogImages } = require("./utils/shop-catalog");
 const PORT = process.env.PORT || 3000;
+const SHOP_ENABLED_SQL = SHOP_ENABLED_SQL;
 
 // Lightweight RSS/heap samples help correlate Render memory spikes with traffic.
 startMemoryMonitor();
@@ -145,7 +146,7 @@ app.use((req, res, next) => {
 app.get("/api/shop/status", async (req, res) => {
   try {
     const result = await queryWithConnectionRetry(
-      "SELECT COALESCE((data->>'shopPageEnabled')::boolean, TRUE) AS enabled FROM site_settings WHERE id = 1",
+      SHOP_ENABLED_SQL,
       [], 4
     );
     if (!result.rows.length) return res.status(404).json({ enabled: true });
@@ -161,7 +162,7 @@ app.get("/api/shop/status", async (req, res) => {
 app.get("/shop.html", async (req, res) => {
   try {
     const result = await queryWithConnectionRetry(
-      "SELECT COALESCE((data->>'shopPageEnabled')::boolean, TRUE) AS enabled FROM site_settings WHERE id = 1",
+      SHOP_ENABLED_SQL,
       [], 4
     );
     if (!result.rows.length || result.rows[0].enabled === false) {
@@ -726,7 +727,7 @@ registerAdminEmailRoutes(app, {
 app.get("/api/admin/shop-visibility", requirePermission("site.save"), async (req, res) => {
   try {
     const result = await queryWithConnectionRetry(
-      "SELECT COALESCE((data->>'shopPageEnabled')::boolean, TRUE) AS enabled FROM site_settings WHERE id = 1",
+      SHOP_ENABLED_SQL,
       [], 4
     );
     if (!result.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
