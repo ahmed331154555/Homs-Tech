@@ -255,7 +255,7 @@ app.get("/api/buyback/image/:id", async (req, res) => {
     const result = await queryWithConnectionRetry(
       `SELECT phone
        FROM site_settings,
-       LATERAL jsonb_array_elements(COALESCE(data->'buybackPhones', '[]'::jsonb)) AS phone
+       LATERAL jsonb_array_elements(COALESCE(data->'buybackPhones', '[]'::jsonb)) AS buyback(phone)
        WHERE phone->>'id' = $1
          AND COALESCE(phone->>'active', 'true') <> 'false'
        LIMIT 1`,
