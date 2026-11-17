@@ -1,5 +1,5 @@
 name: HOMS TECH tests
-# Professional cleanup branch: validate extracted admin assets, visual layer and order-inspection safeguards.
+# Format the maintained source tree, then validate the formatted working tree before committing it.
 
 on:
   push:
@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: homs-tech-tests-${{ github.ref }}
@@ -28,20 +28,30 @@ concurrency:
 
 jobs:
   test:
-    name: Node.js test suite
+    name: Format, validate and test
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
 
+      - name: Format maintained source files
+        run: |
+          npx --yes prettier@3.6.2 --write "**/*.{js,cjs,mjs,json,css,html,yml,yaml,md}"
+
+      - name: Check formatting
+        run: |
+          npx --yes prettier@3.6.2 --check "**/*.{js,cjs,mjs,json,css,html,yml,yaml,md}"
+
       - name: Check JavaScript syntax
-        run: find server.js config routes utils test assets -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+        run: find server.js config routes utils test assets scripts -type f -name '*.js' -print0 | xargs -0 -n1 node --check
 
       - name: Check admin inline scripts
         run: node scripts/check-admin-inline.js
@@ -53,7 +63,19 @@ jobs:
         run: node scripts/check-local-assets.js
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --no-audit --no-fund
 
-      - name: Run tests
+      - name: Run full test suite
         run: npm test
+
+      - name: Commit verified formatting
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          if git diff --cached --quiet; then
+            echo "No formatting changes were needed."
+          else
+            git commit -m "style: format and clean HOMS TECH source"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
