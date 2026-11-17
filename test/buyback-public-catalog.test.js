@@ -9,7 +9,7 @@ const {
 } = require("../utils/buyback-public-catalog");
 
 test("buyback model matching normalizes Apple and storage naming differences", () => {
-  assert.equal(normalizeBuybackModelName("Apple iPhone 16 Pro Max 256GB"), "pro max");
+  assert.equal(normalizeBuybackModelName("Apple iPhone 16 Pro Max 256GB"), "16 pro max");
   assert.equal(matchesBuybackModel(
     { name: "16 Pro Max" },
     { name: "Apple iPhone 16 Pro Max 256GB" }
