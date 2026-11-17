@@ -214,7 +214,6 @@
   } catch {}
 
   const seen = new Set();
-  const renderedMessageIds = [];
   const MAX_RENDERED_MESSAGES = 300;
   let timer = null;
   let refreshing = false;
@@ -230,12 +229,15 @@
     const element = document.createElement("div");
     element.className = "homs-ai-msg " +
       (message.sender === "customer" ? "user" : "bot");
+    if (id) element.dataset.messageId = id;
     element.textContent = message.message;
     messages.appendChild(element);
     while (messages.children.length > MAX_RENDERED_MESSAGES) {
-      messages.firstElementChild?.remove();
-      const oldestId = renderedMessageIds.shift();
+      const oldest = messages.firstElementChild;
+      if (!oldest) break;
+      const oldestId = oldest.dataset.messageId;
       if (oldestId) seen.delete(oldestId);
+      oldest.remove();
     }
     messages.scrollTop = messages.scrollHeight;
   }
@@ -261,7 +263,7 @@
       }
 
       const data = await response.json();
-      data.messages.forEach(add);
+      if (Array.isArray(data.messages)) data.messages.forEach(add);
 
       if (data.status === "closed") {
         input.disabled = true;
@@ -340,7 +342,7 @@
         try {
           localStorage.setItem(tokenKey, token);
         } catch {}
-        data.messages.forEach(add);
+        if (Array.isArray(data.messages)) data.messages.forEach(add);
       } else {
         // The server response is the source of truth. Do not add an optimistic
         // copy here, otherwise refresh() will append the same message again
