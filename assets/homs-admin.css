@@ -1246,8 +1246,8 @@ textarea{
 #page-buyback .buyback-phone-title{display:flex!important;justify-content:space-between!important;align-items:flex-start!important;gap:15px!important;flex-wrap:wrap!important}
 #page-buyback .buyback-option-card{width:100%!important;box-sizing:border-box!important}
 #page-buyback .buyback-option-row{display:grid!important;grid-template-columns:minmax(0,1fr) 120px 90px!important;gap:10px!important;align-items:center!important;margin-bottom:9px!important}
-#page-buyback .buyback-option-card .card-title{font-size:16px!important;font-weight:800!important;margin-bottom:6px!important}
-@media(max-width:700px){#page-buyback .buyback-option-row{grid-template-columns:1fr!important}#page-buyback .buyback-option-row label{margin-top:0!important}}
+
+
 
 
 /* ---- Preserved admin style section ---- */
