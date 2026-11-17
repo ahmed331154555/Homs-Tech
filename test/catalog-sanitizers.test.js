@@ -177,3 +177,34 @@ test("device catalog avoids duplicate color images and preserves condition label
   assert.equal(phone.conditionOptions[0].label, "Zo goed als nieuw");
   assert.equal(phone.conditionOptions[0].condition, "excellent");
 });
+
+
+test("device catalog image data is replaced by lazy same-origin image URLs", () => {
+  const image = "data:image/webp;base64,QUJD";
+  const output = sanitizeDevicesCatalogData({
+    phones: [
+      {
+        id: "phone-1",
+        image,
+        colorGalleryImages: { Black: [image, "back.webp"] },
+        colorImages: { Blue: image },
+        colorOptions: [{ label: "Green", image }],
+      },
+    ],
+  });
+
+  const phone = output.phones[0];
+  assert.equal(phone.image, "/api/devices/image/phone-1");
+  assert.deepEqual(phone.colorGalleryImages, {
+    Black: ["/api/devices/image/phone-1?color=Black"],
+  });
+  assert.deepEqual(phone.colorImages, {
+    Blue: "/api/devices/image/phone-1?color=Blue",
+  });
+  assert.deepEqual(phone.colorOptions, [
+    {
+      label: "Green",
+      image: "/api/devices/image/phone-1?color=Green",
+    },
+  ]);
+});

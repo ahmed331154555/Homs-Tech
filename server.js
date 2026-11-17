@@ -644,6 +644,101 @@ app.get("/api/product/:id", async (req, res) => {
 // Load full Shop details only for the product the visitor opens.
 // The listing endpoint intentionally returns one preview image per product.
 // Serve Shop preview images separately so catalog JSON stays small.
+// Serve device catalog previews separately; only images entering the viewport are fetched.
+app.get("/api/devices/image/:id", async (req, res) => {
+  const phoneId = String(req.params.id || "").trim();
+  const color = String(req.query.color || "").trim();
+  if (!phoneId || phoneId.length > 160 || color.length > 120) {
+    return res.status(400).end();
+  }
+
+  try {
+    const result = await queryWithConnectionRetry(
+      `SELECT item.phone
+       FROM site_settings AS settings
+       CROSS JOIN LATERAL jsonb_array_elements(
+         CASE
+           WHEN jsonb_typeof(settings.data->'phones') = 'array'
+             THEN settings.data->'phones'
+           ELSE '[]'::jsonb
+         END
+       ) AS item(phone)
+       WHERE settings.id = 1
+         AND item.phone->>'id' = $1
+         AND item.phone->>'active' IS DISTINCT FROM 'false'
+       LIMIT 1`,
+      [phoneId],
+      4
+    );
+
+    const phone = result.rows[0]?.phone;
+    if (!phone || phone.active === false) return res.status(404).end();
+
+    let imageValue = "";
+    if (color) {
+      const gallery = phone.colorGalleryImages;
+      if (
+        gallery &&
+        typeof gallery === "object" &&
+        Object.prototype.hasOwnProperty.call(gallery, color) &&
+        Array.isArray(gallery[color])
+      ) {
+        imageValue = gallery[color].find(
+          (image) => typeof image === "string" && image,
+        ) || "";
+      }
+
+      if (!imageValue && phone.colorImages && typeof phone.colorImages === "object") {
+        if (Object.prototype.hasOwnProperty.call(phone.colorImages, color)) {
+          imageValue = phone.colorImages[color];
+        }
+      }
+
+      if (!imageValue && Array.isArray(phone.colorOptions)) {
+        const option = phone.colorOptions.find(
+          (item) =>
+            item &&
+            String(item.label || "").toLowerCase() === color.toLowerCase(),
+        );
+        imageValue = option?.image || "";
+      }
+    }
+
+    if (!imageValue) {
+      const images = Array.isArray(phone.images) ? phone.images : [];
+      imageValue =
+        (typeof phone.image === "string" && phone.image) ||
+        (typeof phone.imageUrl === "string" && phone.imageUrl) ||
+        images.find((image) => typeof image === "string" && image) ||
+        "";
+    }
+
+    const match =
+      typeof imageValue === "string"
+        ? imageValue.match(
+            /^data:image\/(jpeg|png|webp|gif);base64,([a-z0-9+/]+={0,2})$/i
+          )
+        : null;
+    if (!match) return res.status(404).end();
+
+    const imageBuffer = Buffer.from(match[2], "base64");
+    if (!imageBuffer.length || imageBuffer.length > 5 * 1024 * 1024) {
+      return res.status(413).end();
+    }
+
+    res.set({
+      "Content-Type": "image/" + match[1].toLowerCase(),
+      "Content-Length": String(imageBuffer.length),
+      "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+      "X-Content-Type-Options": "nosniff",
+    });
+    return res.send(imageBuffer);
+  } catch (error) {
+    console.error("[PUBLIC DEVICE IMAGE] Load failed:", error);
+    return res.status(500).end();
+  }
+});
+
 app.get("/api/shop/image/:id", async (req, res) => {
   const productId = String(req.params.id || "").trim();
   if (!productId || productId.length > 160) return res.status(400).end();

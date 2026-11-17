@@ -1,5 +1,21 @@
 "use strict";
 
+function publicDeviceImageUrl(value, phoneId, color) {
+  if (
+    typeof value !== "string" ||
+    !/^data:image\/(?:png|jpe?g|webp|gif);base64,/i.test(value) ||
+    phoneId === undefined ||
+    phoneId === null
+  ) {
+    return value;
+  }
+
+  const base = `/api/devices/image/${encodeURIComponent(String(phoneId))}`;
+  return color
+    ? `${base}?color=${encodeURIComponent(String(color))}`
+    : base;
+}
+
 function sanitizeDevicesCatalogData(source) {
   const input = source && typeof source === "object" ? source : {};
   const output = {
@@ -43,7 +59,7 @@ function sanitizeDevicesCatalogData(source) {
         (typeof phone.image === "string" && phone.image) ||
         (typeof phone.imageUrl === "string" && phone.imageUrl) ||
         "";
-      if (primaryImage) compact.image = primaryImage;
+      if (primaryImage) compact.image = publicDeviceImageUrl(primaryImage, phone.id);
       else if (Array.isArray(phone.images)) {
         const firstImage = phone.images.find(
           (image) => typeof image === "string" && image,
@@ -96,7 +112,7 @@ function sanitizeDevicesCatalogData(source) {
           const firstImage = Array.isArray(gallery)
             ? gallery.find((image) => typeof image === "string" && image)
             : "";
-          if (firstImage) galleryImages[color] = [firstImage];
+          if (firstImage) galleryImages[color] = [publicDeviceImageUrl(firstImage, phone.id, color)];
         }
       }
       const galleryColors = new Set(Object.keys(galleryImages));
@@ -110,7 +126,7 @@ function sanitizeDevicesCatalogData(source) {
       ) {
         for (const [color, image] of Object.entries(phone.colorImages)) {
           if (typeof image === "string" && image && !galleryColors.has(color)) {
-            colorImages[color] = image;
+            colorImages[color] = publicDeviceImageUrl(image, phone.id, color);
           }
         }
       }
@@ -130,7 +146,10 @@ function sanitizeDevicesCatalogData(source) {
               option.image &&
               !imageColors.has(option.label),
           )
-          .map((option) => ({ label: option.label, image: option.image }));
+          .map((option) => ({
+            label: option.label,
+            image: publicDeviceImageUrl(option.image, phone.id, option.label),
+          }));
         if (colorOptions.length) compact.colorOptions = colorOptions;
       }
 
