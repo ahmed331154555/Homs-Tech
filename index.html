@@ -945,7 +945,10 @@ function renderProducts(){
   });
  };
  const chosen=selectedPhones.flatMap((phone,index)=>expandPhone(phone,Number.isInteger(Number(phone?._index))?Number(phone._index):index)).slice(0,cardLimit);
- if(!chosen.length){box.innerHTML="<div style='padding:25px;color:#667784'>Geen apparaten beschikbaar.</div>";return;}
+ if(!chosen.length){
+  if(homepageCatalogLoading){box.innerHTML="";return;}
+  box.innerHTML="<div style='padding:25px;color:#667784'>Geen apparaten beschikbaar.</div>";return;
+ }
  chosen.forEach(({p,idx},productPosition)=>{
   const image=p.image||p.imageUrl||p.photo||firstImage(p.images)||firstImage(p.colorImages)||firstImage(Array.isArray(p.colorOptions)?p.colorOptions.map(option=>option?.image):[]);
   const card=document.createElement("article");
@@ -1067,6 +1070,7 @@ function renderHomepage(){
  runStep("renderServices",renderServices);
  runStep("renderWhy",renderWhy);
 }
+let homepageCatalogLoading=true;
 async function loadSite(){
  // Render immediately, then hydrate the homepage with fresh server data.
  renderHomepage();
@@ -1107,6 +1111,7 @@ async function loadSite(){
  }
 
  if(!homepageLoaded&&!Array.isArray(data.phones))data.phones=[];
+ homepageCatalogLoading=false;
  renderHomepage();
 }
 
