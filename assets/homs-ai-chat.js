@@ -215,6 +215,7 @@
 
   const seen = new Set();
   let timer = null;
+  let refreshing = false;
 
   function add(message) {
     const id = message.id == null ? null : String(message.id);
@@ -230,9 +231,8 @@
   }
 
   async function refresh() {
-    if (!token) {
-      return;
-    }
+    if (!token || refreshing) return;
+    refreshing = true;
 
     try {
       const response = await fetch(
@@ -257,7 +257,9 @@
         input.disabled = true;
         form.querySelector("button").disabled = true;
       }
-    } catch {}
+    } catch {} finally {
+      refreshing = false;
+    }
   }
 
   function stopPolling() {
