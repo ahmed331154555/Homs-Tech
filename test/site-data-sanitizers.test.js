@@ -178,3 +178,18 @@ test("sanitizeHomepageSiteData clears stale popular-phone indexes when catalog e
   assert.deepEqual(output.phones.map(phone => phone._index), [1, 2, 3]);
   assert.deepEqual(output.homepage.popular.indexes, []);
 });
+
+test("sanitizeHomepageSiteData preserves original indexes on SQL-preselected phone rows", () => {
+  const output = sanitizeHomepageSiteData({
+    homepage: { popular: { enabled: true, limit: 3, indexes: [] } },
+    phones: [
+      { _index: 4, name: "Phone 4", price: 104 },
+      { _index: 9, name: "Phone 9", price: 109 },
+      { _index: 15, name: "Phone 15", price: 115 }
+    ]
+  });
+
+  assert.deepEqual(output.phones.map(phone => phone._index), [4, 9, 15]);
+  assert.deepEqual(output.phones.map(phone => phone.name), ["Phone 4", "Phone 9", "Phone 15"]);
+  assert.deepEqual(output.homepage.popular.indexes, []);
+});
