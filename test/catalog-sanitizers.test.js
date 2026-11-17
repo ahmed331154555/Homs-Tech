@@ -206,4 +206,11 @@ test("device catalog image data is replaced by lazy same-origin image URLs", () 
       image: "/api/devices/image/phone-1?color=Green",
     },
   ]);
+
+  const imageFallback = sanitizeDevicesCatalogData({
+    phones: [{ id: "phone-2", images: [image, "back.webp"] }],
+  });
+  assert.deepEqual(imageFallback.phones[0].images, [
+    "/api/devices/image/phone-2",
+  ]);
 });
