@@ -232,9 +232,10 @@ test("live chat polling stops when the administrator leaves the live chat page",
   const end = js.indexOf("\n/* ---------------- LOGIN ---------------- */", start);
   assert.ok(start >= 0 && end > start, "showPage function should exist");
   const showPage = js.slice(start, end);
-  assert.match(showPage, /currentPage==="live-chat"&&page!=="live-chat"&&liveChatRefreshTimer/);
-  assert.match(showPage, /clearInterval\(liveChatRefreshTimer\)/);
-  assert.match(showPage, /liveChatRefreshTimer=null/);
+  assert.match(showPage, /currentPage==="live-chat"&&page!=="live-chat"\)stopLiveChatPolling\(\)/);
+  const stopPolling = js.slice(js.indexOf("function stopLiveChatPolling()"), js.indexOf("function startLiveChatPolling()"));
+  assert.match(stopPolling, /clearInterval\(liveChatRefreshTimer\)/);
+  assert.match(stopPolling, /liveChatRefreshTimer=null/);
 });
 
 test("custom phone option image reader releases handlers after upload", () => {
