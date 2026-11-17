@@ -58,3 +58,31 @@
 
 .ht-partner-actions{display:flex;align-items:center;gap:5px;flex-wrap:wrap}.ht-partner-delete{color:#b91c1c;border-color:#fecaca}.ht-partner-delete:hover{background:#fef2f2}
 @media(max-width:560px){.ht-partner-actions{justify-content:flex-end}.ht-partner-actions .ht-partner-toggle{font-size:10px;padding:6px 7px}}
+
+/* Compact API partner handover guide */
+.ht-partner-api-guide{margin:0 0 16px;border:1px solid #cbd5e1;border-radius:13px;background:#fff;overflow:hidden}
+.ht-partner-api-guide>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;cursor:pointer;list-style:none;background:#f8fafc}
+.ht-partner-api-guide>summary::-webkit-details-marker{display:none}
+.ht-partner-api-guide>summary>span:first-child{display:grid;gap:3px;min-width:0}
+.ht-partner-api-guide>summary strong{color:#102a43;font-size:14px}
+.ht-partner-api-guide>summary small{color:#64748b;font-size:12px}
+.ht-partner-guide-toggle{flex:none;color:#1d4ed8;font-size:12px;font-weight:800}
+.ht-partner-api-guide[open]>summary{border-bottom:1px solid #e2e8f0}
+.ht-partner-api-guide[open] .ht-partner-guide-toggle{color:#475569}
+.ht-partner-guide-body{padding:15px;display:grid;gap:13px}
+.ht-partner-guide-intro{display:grid;gap:4px;padding:11px 13px;border-radius:10px;background:#eff6ff;color:#1e3a8a;font-size:12px;line-height:1.5}
+.ht-partner-guide-intro span{color:#334e68}
+.ht-partner-guide-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ht-partner-guide-grid article,.ht-partner-guide-endpoints>div{min-width:0;padding:12px;border:1px solid #e2e8f0;border-radius:10px;background:#fff}
+.ht-partner-guide-step{color:#2563eb;font-size:10px;font-weight:900;letter-spacing:.08em}
+.ht-partner-guide-grid h4{margin:5px 0;color:#102a43;font-size:13px}
+.ht-partner-guide-grid p{margin:0;color:#475569;font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+.ht-partner-guide-grid p b{display:block;margin-top:8px;color:#334155}
+.ht-partner-guide-grid code,.ht-partner-guide-endpoints code,.ht-partner-guide-doc code{display:block;margin-top:4px;padding:7px 8px;border-radius:7px;background:#f1f5f9;color:#0f172a;font-size:11px;overflow-wrap:anywhere;user-select:all}
+.ht-partner-guide-endpoints{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ht-partner-guide-endpoints strong{display:block;margin-bottom:5px;color:#102a43;font-size:12px}
+.ht-partner-guide-endpoints small{display:block;margin-top:6px;color:#64748b;font-size:11px;line-height:1.55}
+.ht-partner-guide-endpoints small code{display:inline;padding:2px 4px}
+.ht-partner-guide-security{display:grid;gap:4px;padding:11px 13px;border:1px solid #fde68a;border-radius:10px;background:#fffbeb;color:#78350f;font-size:12px;line-height:1.55}
+.ht-partner-guide-doc{margin:0;color:#64748b;font-size:11px}
+@media(max-width:650px){.ht-partner-api-guide>summary{align-items:flex-start}.ht-partner-guide-toggle{white-space:nowrap}.ht-partner-guide-grid,.ht-partner-guide-endpoints{grid-template-columns:1fr}.ht-partner-guide-body{padding:11px}}
