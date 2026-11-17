@@ -45,3 +45,9 @@ test("footer renderer initialization is guarded against duplicate script executi
     /if \(window\.__homsSiteFooterLoaded\) return;\s*window\.__homsSiteFooterLoaded = true;/
   );
 });
+
+
+test("off-canvas navigation icon images use lazy loading", () => {
+  assert.match(navigation, /image\.loading='lazy';/);
+  assert.doesNotMatch(navigation, /image\.loading='eager';/);
+});
