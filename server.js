@@ -57,6 +57,7 @@ const { priceProductFromCatalog } = require("./utils/cart-pricing");
 const { validateCartInventoryQuantities } = require("./utils/cart-inventory-validation");
 const { sanitizeProductCatalogData, sanitizeProductFamilyData } = require("./utils/product-catalog-sanitizer");
 const { getProductFamilyRecords } = require("./utils/product-family");
+const { buildPublicBuybackCatalogPayload } = require("./utils/buyback-public-catalog");
 const { createAdminAuth } = require("./utils/admin-auth");
 const { buildAdminSiteSectionSelect, getAdminSiteSection } = require("./utils/admin-site-sections");
 const { sanitizeStoredAdminPermissions, normalizeAdminPermissions } = require("./utils/admin-permissions");
@@ -198,41 +199,48 @@ app.use(express.static(__dirname, {
 }));
 
 // Create database tables and default settings
-// Lightweight public catalog for the customer buyback page.
-// Avoid downloading the full site settings document (which can contain large
-// repair/product images) just to render the buyback model selector.
+// Keep the compact public buyback catalog warm in memory so the first
+// customer request does not wait for a database read.
+let publicBuybackCatalogCache = null;
+let publicBuybackCatalogLoadPromise = null;
+
+async function loadPublicBuybackCatalog() {
+  const startedAt = Date.now();
+  const result = await queryWithConnectionRetry(
+    "SELECT data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones, data->'phones' AS sales_phones FROM site_settings WHERE id = 1",
+    [],
+    4
+  );
+  if (!result.rows.length) throw new Error("Buyback catalog not found");
+
+  const row = result.rows[0];
+  const payload = buildPublicBuybackCatalogPayload({
+    buybackCatalog: Array.isArray(row.catalog) ? row.catalog : [],
+    buybackPhones: Array.isArray(row.phones) ? row.phones : [],
+    salesPhones: Array.isArray(row.sales_phones) ? row.sales_phones : []
+  });
+  const payloadBytes = Buffer.byteLength(JSON.stringify(payload));
+  publicBuybackCatalogCache = payload;
+  console.info(
+    `[BUYBACK CATALOG] Warmed in ${Date.now() - startedAt}ms; ${payload.buybackPhones.length} active buyback phones, ${payload.salesPhones.length} matching sales records, ${payloadBytes} response bytes.`
+  );
+  return payload;
+}
+
+function getPublicBuybackCatalog() {
+  if (publicBuybackCatalogCache) return Promise.resolve(publicBuybackCatalogCache);
+  if (!publicBuybackCatalogLoadPromise) {
+    publicBuybackCatalogLoadPromise = loadPublicBuybackCatalog()
+      .finally(() => { publicBuybackCatalogLoadPromise = null; });
+  }
+  return publicBuybackCatalogLoadPromise;
+}
+
 app.get("/api/buyback/catalog", async (req, res) => {
   try {
-    const result = await queryWithConnectionRetry(
-      "SELECT data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones, data->'phones' AS sales_phones FROM site_settings WHERE id = 1",
-      [],
-      4
-    );
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Buyback catalog not found" });
-    }
+    const payload = await getPublicBuybackCatalog();
     res.set("Cache-Control", "public, max-age=10, stale-while-revalidate=30");
-    return res.json(sanitizePublicSiteData({
-      buybackCatalog: Array.isArray(result.rows[0].catalog) ? result.rows[0].catalog : [],
-      buybackPhones: Array.isArray(result.rows[0].phones) ? result.rows[0].phones : [],
-      // Only public model identity, display images and customer-facing specs are exposed.
-      salesPhones: (Array.isArray(result.rows[0].sales_phones) ? result.rows[0].sales_phones : []).map(phone => {
-        if (!phone || typeof phone !== "object") return null;
-        return {
-          name: phone.name || "",
-          brand: phone.brand || "",
-          image: phone.image || (Array.isArray(phone.images) ? phone.images.find(Boolean) : "") || "",
-          images: Array.isArray(phone.images) ? phone.images.filter(Boolean).slice(0, 4) : [],
-          screenSize: phone.screenSize || "",
-          processor: phone.processor || "",
-          memory: phone.memory || "",
-          gpu: phone.gpu || "",
-          releaseYear: phone.releaseYear || "",
-          connectivity: phone.connectivity || "",
-          specifications: Array.isArray(phone.specifications) ? phone.specifications : []
-        };
-      }).filter(Boolean)
-    }));
+    return res.json(payload);
   } catch (error) {
     console.error("[BUYBACK CATALOG] Load failed:", error);
     return res.status(500).json({ error: "Buyback catalog could not be loaded" });
@@ -963,6 +971,8 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       4
     );
     if (!savedBuyback.rows.length) throw new Error("Site settings record is missing.");
+    publicBuybackCatalogCache = null;
+    getPublicBuybackCatalog().catch(error => console.warn("[BUYBACK CATALOG] Refresh after admin save failed:", error.message));
     return res.json({
       success: true,
       buybackCatalog: savedBuyback.rows[0].catalog || [],
@@ -1089,6 +1099,11 @@ registerAdminUserRoutes(app, {
 initializeDatabaseWithRetry(async () => {
   await initializeDatabaseSchema(pool);
   await customerReviewRoutes.ensureCustomerReviewSchema(pool);
+  try {
+    await getPublicBuybackCatalog();
+  } catch (error) {
+    console.warn("[BUYBACK CATALOG] Startup warm-up skipped:", error.message);
+  }
 }, wait)
   .then(() => {
     customerReviewRoutes.startWorker();
