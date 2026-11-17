@@ -20,7 +20,7 @@ test("public buyback payload includes only active buyback phones and matching sa
   const payload = buildPublicBuybackCatalogPayload({
     buybackCatalog: [{ name: "Apple", types: [] }],
     buybackPhones: [
-      { id: 1, name: "iPhone 16 Pro", active: true, image: "buyback.webp", supplierCost: 100 },
+      { id: 1, name: "iPhone 16 Pro", brand: "Apple", deviceType: "Telefoon", active: true, image: "buyback.webp", supplierCost: 100, adminNotes: "not public", unusedGallery: ["huge-image-data"] },
       { id: 2, name: "iPhone 15 Pro", active: false }
     ],
     salesPhones: [
@@ -37,6 +37,9 @@ test("public buyback payload includes only active buyback phones and matching sa
   assert.equal(payload.salesPhones[0].processor, "A18");
   assert.equal(payload.salesPhones[0].supplierCost, undefined);
   assert.equal(payload.buybackPhones[0].supplierCost, undefined);
+  assert.equal(payload.buybackPhones[0].adminNotes, undefined);
+  assert.equal(payload.buybackPhones[0].unusedGallery, undefined);
+  assert.equal(payload.buybackPhones[0].deviceType, "Telefoon");
 });
 
 test("public buyback payload safely handles missing catalogs", () => {
