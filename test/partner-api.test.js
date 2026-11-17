@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { registerPartnerApiRoutes, hashToken, parseStock, getPartnerProductId, hasVariantPricing, partnerImages } = require("../routes/partner-api");
+const { registerPartnerApiRoutes, hashToken, parseStock, getPartnerProductId, hasVariantPricing, partnerImages, partnerVariantRows, calculateWholesalePrice, partnerVariantKey } = require("../routes/partner-api");
 
 test("partner API keys are stored as deterministic SHA-256 hashes, not plaintext", () => {
   const token = "htp_" + "a".repeat(64);
@@ -96,8 +96,8 @@ const samplePhones = [
   {
     id: "iphone-13", name: "iPhone 13", pricingMode: "variant", active: true, available: true,
     variantPrices: [
-      { storage: "128GB", color: "Black", condition: "A", stock: 3, active: true, available: true },
-      { storage: "256GB", color: "Blue", condition: "A", stock: 0, active: true, available: true }
+      { storage: "128GB", color: "Black", condition: "A", stock: 3, price: 399, active: true, available: true },
+      { storage: "256GB", color: "Blue", condition: "A", stock: 0, price: 449, active: true, available: true }
     ]
   },
   { id: "inactive", name: "Inactive phone", active: false, stock: 4 }
@@ -313,4 +313,32 @@ test("partner feed and order reject products marked sold", async () => {
     }
   });
   assert.equal(order.statusCode, 409);
+});
+
+test("partner wholesale price is calculated from current retail price and configurable discount", () => {
+  assert.equal(calculateWholesalePrice(100, 10), 90);
+  assert.equal(calculateWholesalePrice(399, 10), 359.1);
+  assert.equal(calculateWholesalePrice(100, 0), 100);
+  assert.equal(calculateWholesalePrice(100, 100), 0);
+  assert.equal(calculateWholesalePrice(null, 10), null);
+});
+
+test("standard catalog pricing uses condition base price plus storage and color adjustments", () => {
+  const rows = partnerVariantRows({
+    pricingMode: "options",
+    price: 300,
+    conditionOptions: [{ label: "A", basePrice: 320, active: true }],
+    storageOptions: [{ label: "256GB", priceDelta: 25, active: true }],
+    colorOptions: [{ label: "Blue", priceDelta: 5, active: true }]
+  });
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].retailPrice, 350);
+  assert.equal(partnerVariantKey(rows[0]), "256GB|Blue|A");
+});
+
+test("simple legacy catalog phones retain an empty variant key and their original sale price", () => {
+  const rows = partnerVariantRows({ name: "Basic phone", price: 180 });
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].retailPrice, 180);
+  assert.equal(partnerVariantKey(rows[0]), "");
 });
