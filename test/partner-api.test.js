@@ -260,7 +260,8 @@ test("partner image sanitizer includes small safe inline WebP and excludes overs
 test("partner feed and order support legacy phones without explicit catalog IDs", async () => {
   const key = "htp_" + "a".repeat(64);
   const phone = {
-    name: "iPhone SE", brand: "Apple", sku: "HT-SE-001",
+    name: "iPhone SE", brand: "Apple", sku: "HT-SE-001", description: "Compact phone",
+    storage: "128GB", color: "Black", condition: "A",
     pricingMode: "legacy", stock: 2,
     images: ["data:image/webp;base64,QUJD"]
   };
@@ -273,6 +274,8 @@ test("partner feed and order support legacy phones without explicit catalog IDs"
   assert.equal(feed.statusCode, 200);
   assert.equal(feed.body.products[0].id, productId);
   assert.equal(feed.body.products[0].images[0], "data:image/webp;base64,QUJD");
+  assert.equal(feed.body.products[0].description, "Compact phone");
+  assert.equal(feed.body.products[0].storage, "128GB");
 
   const order = await h.invoke("POST", "/api/partner/v1/orders", {
     authorization: "Bearer " + key,
@@ -291,4 +294,23 @@ test("legacy product ID prefers SKU so product renames do not break partner mapp
     getPartnerProductId(original, 0, [original]),
     getPartnerProductId(renamed, 0, [renamed])
   );
+});
+
+test("partner feed and order reject products marked sold", async () => {
+  const key = "htp_" + "a".repeat(64);
+  const phone = { id: "sold-phone", name: "Sold phone", brand: "Apple", stockStatus: "sold", stock: 0 };
+  const h = makeRouteHarness({
+    phones: [phone],
+    prices: [{ product_id: "sold-phone", variant_key: "", wholesale_price: "10.00" }]
+  });
+  const feed = await h.invoke("GET", "/api/partner/v1/products", { authorization: "Bearer " + key });
+  assert.equal(feed.body.count, 0);
+  const order = await h.invoke("POST", "/api/partner/v1/orders", {
+    authorization: "Bearer " + key,
+    body: {
+      customer: { name: "Customer", email: "customer@example.com", phone: "+31612345678", street: "Main Street", houseNumber: "1", postcode: "3011AA", city: "Rotterdam" },
+      items: [{ productId: "sold-phone", variantKey: "", quantity: 1 }]
+    }
+  });
+  assert.equal(order.statusCode, 409);
 });
