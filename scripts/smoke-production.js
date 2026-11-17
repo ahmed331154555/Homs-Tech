@@ -6,26 +6,55 @@ const BASE_URL = (process.env.HOMS_BASE_URL || "https://homs-tech.nl").replace(
 );
 const TIMEOUT_MS = 20000;
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 async function request(path, expectedType) {
   const started = Date.now();
-  const response = await fetch(new URL(path, BASE_URL), {
-    redirect: "follow",
-    signal: AbortSignal.timeout(TIMEOUT_MS),
-    headers: { "user-agent": "HOMS-TECH-production-smoke/1.0" },
-  });
-  const elapsedMs = Date.now() - started;
-  const contentType = response.headers.get("content-type") || "";
-  if (!response.ok) {
-    throw new Error(`${path}: HTTP ${response.status}`);
+  const maxAttempts = 9;
+  let lastError;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const response = await fetch(new URL(path, BASE_URL), {
+        redirect: "follow",
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+        headers: { "user-agent": "HOMS-TECH-production-smoke/1.0" },
+      });
+      const elapsedMs = Date.now() - started;
+      const contentType = response.headers.get("content-type") || "";
+      const retryableStatus =
+        [502, 503, 504].includes(response.status) ||
+        (expectedType === "image/" && response.status === 404);
+
+      if (retryableStatus && attempt < maxAttempts) {
+        console.warn(
+          `RETRY ${response.status} ${path} attempt ${attempt}/${maxAttempts}`,
+        );
+        await delay(4000);
+        continue;
+      }
+      if (!response.ok) {
+        throw new Error(`${path}: HTTP ${response.status}`);
+      }
+      if (expectedType && !contentType.toLowerCase().includes(expectedType)) {
+        throw new Error(`${path}: unexpected content-type ${contentType}`);
+      }
+      const body = await response.text();
+      if (!body.trim()) throw new Error(`${path}: empty response body`);
+      console.log(`PASS ${response.status} ${path} ${elapsedMs}ms`);
+      if (elapsedMs > 5000) console.warn(`SLOW ${path}: ${elapsedMs}ms`);
+      return { response, body, elapsedMs };
+    } catch (error) {
+      lastError = error;
+      if (attempt === maxAttempts) break;
+      console.warn(
+        `RETRY ${path} attempt ${attempt}/${maxAttempts}: ${error.message}`,
+      );
+      await delay(4000);
+    }
   }
-  if (expectedType && !contentType.toLowerCase().includes(expectedType)) {
-    throw new Error(`${path}: unexpected content-type ${contentType}`);
-  }
-  const body = await response.text();
-  if (!body.trim()) throw new Error(`${path}: empty response body`);
-  console.log(`PASS ${response.status} ${path} ${elapsedMs}ms`);
-  if (elapsedMs > 5000) console.warn(`SLOW ${path}: ${elapsedMs}ms`);
-  return { response, body, elapsedMs };
+
+  throw lastError || new Error(`${path}: request failed`);
 }
 
 async function requestJson(path) {
