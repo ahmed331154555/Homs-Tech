@@ -16,18 +16,18 @@ const adminJs = fs.readFileSync(
 test("admin navigation and pages use permissions that can be assigned", () => {
   assert.match(adminJs, /buyback:"site\.save"/);
   assert.doesNotMatch(adminJs, /buyback:"buyback\.view"/);
-  assert.match(adminHtml, /data-page="buyback" data-permission="site\.save"/);
-  assert.match(adminHtml, /id="page-buyback" data-permission="site\.save"/);
+  assert.match(adminHtml, /data-page="buyback"\s+data-permission="site\.save"/);
+  assert.match(adminHtml, /id="page-buyback"\s+data-permission="site\.save"/);
 });
 
 test("customer management is hidden unless the administrator can view customers", () => {
   assert.match(
     adminHtml,
-    /data-page="customers" data-permission="customers\.view"/,
+    /data-page="customers"\s+data-permission="customers\.view"/,
   );
   assert.match(
     adminHtml,
-    /id="page-customers" data-permission="customers\.view"/,
+    /id="page-customers"\s+data-permission="customers\.view"/,
   );
 });
 

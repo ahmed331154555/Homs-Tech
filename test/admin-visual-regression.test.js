@@ -200,8 +200,8 @@ test("inventory workspace is permission-gated and wired to the admin navigation"
   const html = read("admin/index.html");
   const js = read("assets/homs-admin.js");
   const css = read("assets/homs-admin.css");
-  assert.match(html, /data-page="inventory" data-permission="site\.save"/);
-  assert.match(html, /id="page-inventory" data-permission="site\.save"/);
+  assert.match(html, /data-page="inventory"\s+data-permission="site\.save"/);
+  assert.match(html, /id="page-inventory"\s+data-permission="site\.save"/);
   assert.match(html, /id="inventoryItems"/);
   assert.match(html, /id="inventoryMovementForm"/);
   assert.match(html, /id="inventoryMovements"/);

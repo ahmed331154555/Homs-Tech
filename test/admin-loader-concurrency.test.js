@@ -65,16 +65,17 @@ const adminHtml = fs.readFileSync(
 );
 
 test("admin bundles are deferred and retain dependency order", () => {
-  const mainScript = adminHtml.indexOf(
-    '<script src="../assets/homs-admin.js?v=20261117-partners1" defer></script>',
+  const mainScript = adminHtml.match(
+    /<script\b(?=[^>]*src=["']\.\.\/assets\/homs-admin\.js\?v=20261117-partners1["'])(?=[^>]*\bdefer(?:\s|>|=))[^>]*>/i,
   );
-  const partnerScript = adminHtml.indexOf(
-    '<script src="../assets/partner-admin.js?v=20261117-partners6" defer></script>',
+  const partnerScript = adminHtml.match(
+    /<script\b(?=[^>]*src=["']\.\.\/assets\/partner-admin\.js\?v=20261117-partners6["'])(?=[^>]*\bdefer(?:\s|>|=))[^>]*>/i,
   );
 
-  assert.ok(mainScript >= 0, "main admin bundle should use defer");
+  assert.ok(mainScript, "main admin bundle should use defer");
+  assert.ok(partnerScript, "partner bundle should use defer");
   assert.ok(
-    partnerScript > mainScript,
+    adminHtml.indexOf(partnerScript[0]) > adminHtml.indexOf(mainScript[0]),
     "partner bundle should defer after the main admin bundle",
   );
 });
