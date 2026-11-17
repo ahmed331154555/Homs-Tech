@@ -277,6 +277,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
       const phones = Array.isArray(catalog.rows[0]?.phones) ? catalog.rows[0].phones : [];
       const priceMap = new Map(prices.rows.map(row => [row.product_id + "::" + row.variant_key, Number(row.wholesale_price)]));
       const orderItems = [];
+      const requestedQuantities = new Map();
       for (const requested of items) {
         const productId = safeText(requested?.productId, 120);
         const variantKey = safeText(requested?.variantKey || "", 180);
@@ -295,7 +296,9 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
         const key = productId + "::" + variantKey;
         if (!priceMap.has(key)) return res.status(403).json({ error: "Voor een product ontbreekt de afgesproken groothandelsprijs." });
         const stock = parseStock(variant ? variant.stock : phone.stock);
-        if (stock != null && stock < quantity) return res.status(409).json({ error: "Onvoldoende voorraad voor " + safeText(phone.name, 120) + "." });
+        const requestedTotal = (requestedQuantities.get(key) || 0) + quantity;
+        if (stock != null && stock < requestedTotal) return res.status(409).json({ error: "Onvoldoende voorraad voor " + safeText(phone.name, 120) + "." });
+        requestedQuantities.set(key, requestedTotal);
         const unitPrice = priceMap.get(key);
         orderItems.push({
           productId,
