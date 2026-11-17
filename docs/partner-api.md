@@ -6,9 +6,12 @@ This API allows approved HOMS TECH resale partners to read assigned phone varian
 
 ## Pricing model
 
-- HOMS TECH sets the wholesale price for each partner and phone variant.
+- HOMS TECH keeps its existing customer-facing retail prices as the source of truth.
+- Each partner has a configurable default discount percentage (initially 10%). The wholesale price is calculated automatically as `retailPrice × (1 - discountPercent / 100)` and rounded to cents.
+- For variant-priced phones, the source is the exact `variantPrices[].price`. For standard phones, the source is the selected condition base price (or the phone sale price), plus the existing storage and color price adjustments.
+- The administrator can change the partner discount percentage at any time; saving the price list recalculates every selected variant.
 - The partner independently chooses the final retail price shown to its own customer and keeps the difference.
-- The API's `wholesalePrice` is confidential partner pricing. Never show it as a public HOMS TECH retail price.
+- The API's `wholesalePrice` is confidential partner pricing. Never show it as a public HOMS TECH retail price. The partner discount is applied only to the HOMS TECH retail price; it does not modify public store prices.
 - Submitting an order creates a review request. It does **not** reserve or deduct inventory automatically. HOMS TECH must review and approve the request.
 
 ## Authentication
