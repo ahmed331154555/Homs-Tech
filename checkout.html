@@ -806,7 +806,7 @@ header{background:#111827;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}.nav{
     let items = readCart();
     // Refresh Shop stock from the server and correct quantities left over from earlier cart attempts.
     try{
-      const response = await fetch("/api/site",{cache:"no-store"});
+      const response = await fetch("/api/site?view=cart",{cache:"no-store"});
       if(response.ok){
         const catalog = await response.json();
         const shopProducts = Array.isArray(catalog.shopProducts) ? catalog.shopProducts : [];
