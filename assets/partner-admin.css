@@ -47,3 +47,5 @@
 .ht-partners-page .status{font-size:12px}
 @media(max-width:900px){.ht-partner-grid{grid-template-columns:1fr}.ht-partner-order-edit{grid-template-columns:1fr 1fr}.ht-partner-order-edit button{grid-column:1/-1}}
 @media(max-width:560px){.ht-partner-notice{display:grid;gap:5px}.ht-partner-customer{grid-template-columns:1fr}.ht-partner-save-row{align-items:stretch;flex-direction:column}.ht-partner-order-edit{grid-template-columns:1fr}.ht-partner-order-head{align-items:flex-start}.ht-partner-table th,.ht-partner-table td{padding:8px 6px}.ht-partner-price-input input{width:88px}}
+
+.ht-partner-assignment em{font-size:10px;font-style:normal;color:#b45309;font-weight:700}
