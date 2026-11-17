@@ -42,3 +42,17 @@ test("live chat polling pauses in hidden tabs and avoids overlapping refreshes",
   assert.match(chat, /if \(!panel\.classList\.contains\("open"\) \|\| document\.hidden \|\| timer\) return;/);
   assert.match(chat, /if \(!token \|\| refreshing\) return;/);
 });
+
+test("non-critical storefront images use native lazy loading", () => {
+  const pages = ["product.html", "shop.html", "uw-toestel-verkopen.html", "cart.html", "checkout.html"];
+  for (const page of pages) {
+    const html = fs.readFileSync(path.join(root, page), "utf8");
+    for (const match of html.matchAll(/<img\\b[^>]*>/gi)) {
+      const tag = match[0];
+      if (/homs-tech-logo\\.png/i.test(tag) || /id=["'](?:mainImage|mainPhoto)["']/i.test(tag)) continue;
+      assert.match(tag, /loading=["']lazy["']/i, page + " has a non-critical image without lazy loading: " + tag.slice(0, 100));
+    }
+  }
+  const repair = fs.readFileSync(path.join(root, "repair.html"), "utf8");
+  assert.match(repair, /id=["']repairHeroImage["'][^>]*loading=["']eager["']/i);
+});
