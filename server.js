@@ -210,7 +210,7 @@ app.get("/api/buyback/catalog", async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Buyback catalog not found" });
     }
-    res.set("Cache-Control", "no-store");
+    res.set("Cache-Control", "public, max-age=10, stale-while-revalidate=30");
     return res.json(sanitizePublicSiteData({
       buybackCatalog: Array.isArray(result.rows[0].catalog) ? result.rows[0].catalog : [],
       buybackPhones: Array.isArray(result.rows[0].phones) ? result.rows[0].phones : [],
