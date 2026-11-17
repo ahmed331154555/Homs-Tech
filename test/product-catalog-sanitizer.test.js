@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { sanitizeProductCatalogData } = require("../utils/product-catalog-sanitizer");
+const { sanitizeProductCatalogData, sanitizeSingleProductData } = require("../utils/product-catalog-sanitizer");
 
 test("public product catalog keeps storefront fields and strips internal costs recursively", () => {
   const input = {
@@ -71,4 +71,32 @@ test("public product catalog preserves original phone indexes when records are e
   assert.equal(result.phones[1].id, 2);
   assert.equal(result.phones[2], null);
   assert.equal(result.phones[3].id, 4);
+});
+
+test("single product sanitizer returns one public product without serializing the full catalog", () => {
+  const result = sanitizeSingleProductData({
+    product: {
+      id: 12,
+      name: "iPhone 15 Pro",
+      price: 899,
+      image: "iphone-15-pro.webp",
+      images: ["front.webp", "back.webp"],
+      supplierCost: 500
+    },
+    businessName: "HOMS TECH",
+    siteName: "HOMS TECH",
+    tagline: "Refurbished telefoons"
+  });
+
+  assert.equal(result.product.id, 12);
+  assert.equal(result.product.name, "iPhone 15 Pro");
+  assert.deepEqual(result.product.images, ["front.webp", "back.webp"]);
+  assert.equal(result.product.supplierCost, undefined);
+  assert.equal(result.businessName, "HOMS TECH");
+  assert.equal(result.tagline, "Refurbished telefoons");
+  assert.equal("phones" in result, false);
+});
+
+test("single product sanitizer returns null for a missing product", () => {
+  assert.equal(sanitizeSingleProductData({ product: null }).product, null);
 });
