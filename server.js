@@ -309,7 +309,7 @@ app.get("/api/homepage/phone-image/:index", async (req, res) => {
 
   try {
     const result = await queryWithConnectionRetry(
-      "SELECT (data->'phones')->$1 AS phone FROM site_settings WHERE id = 1",
+      "SELECT (data->'phones')->$1::int AS phone FROM site_settings WHERE id = 1",
       [phoneIndex],
       4
     );
@@ -354,7 +354,7 @@ app.get("/api/homepage/service-image/:index", async (req, res) => {
 
   try {
     const result = await queryWithConnectionRetry(
-      "SELECT (data->'services')->$1->>3 AS image FROM site_settings WHERE id = 1",
+      "SELECT (data->'services')->$1::int->>3 AS image FROM site_settings WHERE id = 1",
       [serviceIndex],
       4
     );
