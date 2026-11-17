@@ -43,7 +43,7 @@ function hasVariantPricing(phone) {
 }
 
 function partnerImages(phone) {
-  const candidates = Array.isArray(phone?.images) ? phone.images : [phone?.image];
+  const candidates = Array.isArray(phone?.images) && phone.images.some(Boolean) ? phone.images : [phone?.image];
   return candidates.filter(value => {
     if (typeof value !== "string" || !value) return false;
     if (/^https:\/\//i.test(value) || (value.startsWith("/") && !value.startsWith("//"))) return true;
