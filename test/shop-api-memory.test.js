@@ -29,12 +29,14 @@ test("Public Shop page requests the dedicated Shop catalog view", () => {
   assert.doesNotMatch(shopSource, /fetch\(['"]\/api\/site['"]/);
 });
 
-
 test("Shop product details are fetched separately by stable product ID", () => {
   const start = serverSource.indexOf('app.get("/api/shop/product/:id"');
   const end = serverSource.indexOf('app.get("/api/site"', start);
   assert.ok(start >= 0, "single-product Shop endpoint must exist");
-  assert.ok(end > start, "single-product endpoint must be registered before site settings");
+  assert.ok(
+    end > start,
+    "single-product endpoint must be registered before site settings",
+  );
   const route = serverSource.slice(start, end);
   assert.match(route, /jsonb_array_elements/);
   assert.match(route, /item\.product->>'id'\s*=\s*\$1/);
@@ -44,5 +46,8 @@ test("Shop product details are fetched separately by stable product ID", () => {
 });
 
 test("Shop listing payload contains only a preview image and compact variants", () => {
-  assert.match(serverSource, /buildShopCatalogList\(result\.rows\[0\]\.shop_products\)/);
+  assert.match(
+    serverSource,
+    /buildShopCatalogList\(result\.rows\[0\]\.shop_products\)/,
+  );
 });

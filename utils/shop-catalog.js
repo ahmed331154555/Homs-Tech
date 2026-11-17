@@ -19,7 +19,6 @@ async function saveShopCatalog(
   return result.rows.length > 0;
 }
 
-
 function buildShopCatalogList(products) {
   if (!Array.isArray(products)) return [];
 

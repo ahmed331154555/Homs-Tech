@@ -390,7 +390,6 @@ test("stable Shop cart identity still prices and deducts the same product after 
   assert.equal(products[0].variants[0].stock, "10");
 });
 
-
 test("buildShopCatalogList keeps only preview data for active products", () => {
   const products = [
     {
