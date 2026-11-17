@@ -55,3 +55,6 @@
 .ht-partner-table th:nth-child(3),.ht-partner-table td:nth-child(3),.ht-partner-table th:nth-child(4),.ht-partner-table td:nth-child(4){white-space:nowrap}
 .ht-partner-table td:nth-child(4) strong{color:#047857;font-size:13px}
 @media(max-width:650px){.ht-partner-price-toolbar{align-items:stretch;flex-wrap:wrap}.ht-partner-price-toolbar .ht-partner-discount{flex:1;min-width:130px}.ht-partner-price-toolbar>span{align-self:center}}
+
+.ht-partner-actions{display:flex;align-items:center;gap:5px;flex-wrap:wrap}.ht-partner-delete{color:#b91c1c;border-color:#fecaca}.ht-partner-delete:hover{background:#fef2f2}
+@media(max-width:560px){.ht-partner-actions{justify-content:flex-end}.ht-partner-actions .ht-partner-toggle{font-size:10px;padding:6px 7px}}
