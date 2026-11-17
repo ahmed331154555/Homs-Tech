@@ -25,3 +25,12 @@ test("footer API selects only footer and contact fields", () => {
   }
   assert.doesNotMatch(route, /SELECT\s+data\s+FROM\s+site_settings/i);
 });
+
+test("contact and checkout pages request compact settings and stock payloads", () => {
+  const contact = fs.readFileSync(path.join(root, "contact.html"), "utf8");
+  const checkout = fs.readFileSync(path.join(root, "checkout.html"), "utf8");
+  assert.match(contact, /fetch\(["']\/api\/site\?view=footer["']/);
+  assert.doesNotMatch(contact, /fetch\(["']\/api\/site["']/);
+  assert.match(checkout, /fetch\(["']\/api\/site\?view=cart["']/);
+  assert.doesNotMatch(checkout, /fetch\(["']\/api\/site["']/);
+});
