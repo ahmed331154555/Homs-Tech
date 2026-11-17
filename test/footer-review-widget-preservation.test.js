@@ -32,3 +32,16 @@ test("devices and repair pages keep their review widgets inside the footer", () 
     assert.match(footer, /data-review-widget/, page + " review widget should remain in the footer");
   }
 });
+
+
+test("announcement bar disables continuous motion for reduced-motion preferences", () => {
+  const script = read("assets/homs-announcement-bars.js");
+  assert.match(script, /const reduceMotion = window\.matchMedia\("\(prefers-reduced-motion: reduce\)"\)\.matches/);
+  assert.match(script, /settings\.mode === "scroll" && !reduceMotion/);
+});
+
+test("review read-more button expands the review belonging to the clicked card", () => {
+  const script = read("assets/customer-reviews-widget.js");
+  assert.match(script, /data-review-more data-review-index=/);
+  assert.match(script, /index=Number\(b\.dataset\.reviewIndex\),review=reviews\[index\]/);
+});
