@@ -3969,8 +3969,10 @@ async function sendRepairOffer(id){
  }catch(e){status.style.color="#b42318";status.textContent="✕ "+e.message;}
  finally{if(button)button.disabled=false;}
 }
+let repairOrdersLoading=false;
 async function loadOrders(){
-  if(!hasPermission("orders.view"))return;
+  if(!hasPermission("orders.view")||repairOrdersLoading)return;
+  repairOrdersLoading=true;
   const status=document.getElementById('repairRequestsStatus');
   if(!document.getElementById('repairRequestsList'))return;
   if(status){status.className='status info';status.textContent='Reparatieaanvragen laden...';}
@@ -3990,7 +3992,7 @@ async function loadOrders(){
     renderRepairRequests();
   }catch(e){
     if(status){status.className='status error';status.textContent='✕ '+e.message;}
-  }
+  }finally{repairOrdersLoading=false;}
 }
 async function updateOrderStatus(id,statusValue){
   if(!hasPermission("orders.update"))return;
@@ -4330,8 +4332,10 @@ async function saveOrderSettings(){
   }catch(error){orderSettingsStatus(error.message,true);}
 }
 
+let webshopOrdersLoading=false;
 async function loadWebshopOrders(){
-  if(!hasPermission("webshop_orders.view"))return;
+  if(!hasPermission("webshop_orders.view")||webshopOrdersLoading)return;
+  webshopOrdersLoading=true;
   const box=document.getElementById('webshopOrdersList'), status=document.getElementById('webshopOrdersStatus');
   const phoneBox=document.getElementById('phoneOrdersList');
   if(!box||!status){
@@ -4353,7 +4357,7 @@ async function loadWebshopOrders(){
     status.className='status error'; status.textContent='✕ '+e.message;
     if(phoneBox)phoneBox.innerHTML='<div class="order-empty">Bestellingen konden niet worden geladen: '+esc(e.message)+'</div>';
     console.error('[HOMS TECH] Webshop orders load failed:',e);
-  }
+  }finally{webshopOrdersLoading=false;}
 }
 
 async function completeWebshopManualRefund(orderId,refundId){
