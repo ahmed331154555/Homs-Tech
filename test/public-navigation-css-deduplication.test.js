@@ -25,3 +25,11 @@ test("navigation drawer base CSS rules are not duplicated", () => {
     );
   }
 });
+
+
+test("global navigation initialization is guarded against duplicate script execution", () => {
+  assert.match(
+    navigation,
+    /if\(window\.__homsGlobalNavigationLoaded\)return;\s*window\.__homsGlobalNavigationLoaded=true;/
+  );
+});
