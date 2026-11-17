@@ -49,3 +49,9 @@
 @media(max-width:560px){.ht-partner-notice{display:grid;gap:5px}.ht-partner-customer{grid-template-columns:1fr}.ht-partner-save-row{align-items:stretch;flex-direction:column}.ht-partner-order-edit{grid-template-columns:1fr}.ht-partner-order-head{align-items:flex-start}.ht-partner-table th,.ht-partner-table td{padding:8px 6px}.ht-partner-price-input input{width:88px}}
 
 .ht-partner-assignment em{font-size:10px;font-style:normal;color:#b45309;font-weight:700}
+
+.ht-partner-price-toolbar .ht-partner-discount{min-width:170px;max-width:220px}
+.ht-partner-price-toolbar .ht-partner-discount input{font-weight:800;color:#1d4ed8}
+.ht-partner-table th:nth-child(3),.ht-partner-table td:nth-child(3),.ht-partner-table th:nth-child(4),.ht-partner-table td:nth-child(4){white-space:nowrap}
+.ht-partner-table td:nth-child(4) strong{color:#047857;font-size:13px}
+@media(max-width:650px){.ht-partner-price-toolbar{align-items:stretch;flex-wrap:wrap}.ht-partner-price-toolbar .ht-partner-discount{flex:1;min-width:130px}.ht-partner-price-toolbar>span{align-self:center}}
