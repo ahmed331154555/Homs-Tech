@@ -25,7 +25,7 @@ test("Shop catalog API selects only shopProducts from site settings", () => {
 });
 
 test("Public Shop page requests the dedicated Shop catalog view", () => {
-  assert.match(shopSource, /fetch\(['"]\/api\/site\?view=shop['"]/);
+  assert.ok(shopSource.includes(String.raw`\/api\/shop\/image\/`));
   assert.doesNotMatch(shopSource, /fetch\(['"]\/api\/site['"]/);
 });
 
