@@ -10,18 +10,18 @@ const navigation = fs.readFileSync(
   "utf8"
 );
 
-test("navigation drawer shared group selectors are defined once", () => {
-  const selectors = [
-    "#homsMenuDrawer .homs-menu-label{",
-    "#homsMenuDrawer .homs-menu-group{",
-    "#homsMenuDrawer .homs-menu-group+.homs-menu-group{"
+test("navigation drawer base CSS rules are not duplicated", () => {
+  const rules = [
+    "#homsMenuDrawer .homs-menu-label{padding:18px 22px 8px;color:#687d90;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}",
+    "#homsMenuDrawer .homs-menu-group{padding:0 18px 10px}",
+    "#homsMenuDrawer .homs-menu-group+.homs-menu-group{border-top:1px solid #edf1f5}"
   ];
 
-  for (const selector of selectors) {
+  for (const rule of rules) {
     assert.equal(
-      navigation.split(selector).length - 1,
+      navigation.split(rule).length - 1,
       1,
-      selector + " should have one rule"
+      rule + " should be defined once"
     );
   }
 });
