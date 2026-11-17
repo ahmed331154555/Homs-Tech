@@ -104,7 +104,10 @@ test("lightweight admin section saves merge only validated top-level JSONB field
     /requirePermission\(\s*config\.writePermission\s*\|\|\s*"site\.save"\s*\)/,
   );
   assert.ok(route.includes("config.writeFields"));
-  assert.match(route, /keys\.some\(\s*\(?key\)?\s*=>\s*!allowedFields\.includes\(key\)\s*\)/);
+  assert.match(
+    route,
+    /keys\.some\(\s*\(?key\)?\s*=>\s*!allowedFields\.includes\(key\)\s*\)/,
+  );
   assert.ok(route.includes("data = data || $1::jsonb"));
   assert.ok(!route.includes("SELECT data FROM site_settings"));
 });

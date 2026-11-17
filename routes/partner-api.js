@@ -9,12 +9,17 @@ function hashToken(value) {
 }
 
 function safeText(value, max = 180) {
-  return String(value == null ? "" : value).trim().slice(0, max);
+  return String(value == null ? "" : value)
+    .trim()
+    .slice(0, max);
 }
 
 function parseStock(value) {
-  if (typeof value === "number" && Number.isFinite(value)) return Math.max(0, Math.floor(value));
-  const match = String(value == null ? "" : value).trim().match(/^\d+/);
+  if (typeof value === "number" && Number.isFinite(value))
+    return Math.max(0, Math.floor(value));
+  const match = String(value == null ? "" : value)
+    .trim()
+    .match(/^\d+/);
   return match ? Number(match[0]) : null;
 }
 
@@ -26,14 +31,26 @@ function getPartnerProductId(phone, index, phones = []) {
   if (!name && !sku) return "";
   const brand = safeText(phone?.brand || "Apple", 80).toLocaleLowerCase();
   const identity = sku ? "sku:" + sku : "legacy:" + brand + "|" + name;
-  const occurrence = phones.slice(0, Math.max(0, index)).filter(item => {
+  const occurrence = phones.slice(0, Math.max(0, index)).filter((item) => {
     const otherSku = safeText(item?.sku, 100).toLocaleLowerCase();
-    const otherName = safeText(item?.name || item?.title, 180).toLocaleLowerCase();
+    const otherName = safeText(
+      item?.name || item?.title,
+      180,
+    ).toLocaleLowerCase();
     const otherBrand = safeText(item?.brand || "Apple", 80).toLocaleLowerCase();
-    const other = otherSku ? "sku:" + otherSku : "legacy:" + otherBrand + "|" + otherName;
+    const other = otherSku
+      ? "sku:" + otherSku
+      : "legacy:" + otherBrand + "|" + otherName;
     return other === identity;
   }).length;
-  return "legacy-" + crypto.createHash("sha256").update(identity + "|" + occurrence).digest("hex").slice(0, 24);
+  return (
+    "legacy-" +
+    crypto
+      .createHash("sha256")
+      .update(identity + "|" + occurrence)
+      .digest("hex")
+      .slice(0, 24)
+  );
 }
 
 function hasVariantPricing(phone) {
@@ -42,45 +59,94 @@ function hasVariantPricing(phone) {
 
 function partnerVariantRows(phone) {
   if (hasVariantPricing(phone)) {
-    return (Array.isArray(phone.variantPrices) ? phone.variantPrices : []).filter(v => v && typeof v === "object").map(variant => ({
-      variant,
-      storage: safeText(variant.storage, 40),
-      color: safeText(variant.color, 80),
-      condition: safeText(variant.condition, 80),
-      retailPrice: moneyNumber(variant.price)
-    }));
+    return (Array.isArray(phone.variantPrices) ? phone.variantPrices : [])
+      .filter((v) => v && typeof v === "object")
+      .map((variant) => ({
+        variant,
+        storage: safeText(variant.storage, 40),
+        color: safeText(variant.color, 80),
+        condition: safeText(variant.condition, 80),
+        retailPrice: moneyNumber(variant.price),
+      }));
   }
-  const activeOptions = key => (Array.isArray(phone[key]) ? phone[key] : []).map(option =>
-    typeof option === "string" ? { label: option, priceDelta: 0 } : option
-  ).filter(option =>
-    option && typeof option === "object" && option.active !== false && option.enabled !== false && option.available !== false
-  );
+  const activeOptions = (key) =>
+    (Array.isArray(phone[key]) ? phone[key] : [])
+      .map((option) =>
+        typeof option === "string" ? { label: option, priceDelta: 0 } : option,
+      )
+      .filter(
+        (option) =>
+          option &&
+          typeof option === "object" &&
+          option.active !== false &&
+          option.enabled !== false &&
+          option.available !== false,
+      );
   const conditions = activeOptions("conditionOptions");
   const storages = activeOptions("storageOptions");
   const colors = activeOptions("colorOptions");
-  const conditionRows = conditions.length ? conditions : [{ label: safeText(phone.condition, 80), basePrice: phone.price ?? phone.salePrice ?? phone.sellPrice }];
-  const storageRows = storages.length ? storages : [{ label: Array.isArray(phone.storage) ? phone.storage[0] : (phone.storage || phone.geheugen || ""), priceDelta: 0 }];
-  const colorRows = colors.length ? colors : [{ label: phone.color || phone.kleur || "", priceDelta: 0 }];
+  const conditionRows = conditions.length
+    ? conditions
+    : [
+        {
+          label: safeText(phone.condition, 80),
+          basePrice: phone.price ?? phone.salePrice ?? phone.sellPrice,
+        },
+      ];
+  const storageRows = storages.length
+    ? storages
+    : [
+        {
+          label: Array.isArray(phone.storage)
+            ? phone.storage[0]
+            : phone.storage || phone.geheugen || "",
+          priceDelta: 0,
+        },
+      ];
+  const colorRows = colors.length
+    ? colors
+    : [{ label: phone.color || phone.kleur || "", priceDelta: 0 }];
   const rows = [];
-  for (const condition of conditionRows) for (const storage of storageRows) for (const color of colorRows) {
-    const base = moneyNumber(condition.basePrice ?? condition.conditionBasePrice ?? condition.price ?? phone.price ?? phone.salePrice ?? phone.sellPrice);
-    const retailPrice = base + serverOptionDelta(storage, "storage") + serverOptionDelta(color, "color");
-    rows.push({
-      variant: null,
-      storage: safeText(storage.label, 40),
-      color: safeText(color.label, 80),
-      condition: safeText(condition.label, 80),
-      retailPrice
-    });
-  }
+  for (const condition of conditionRows)
+    for (const storage of storageRows)
+      for (const color of colorRows) {
+        const base = moneyNumber(
+          condition.basePrice ??
+            condition.conditionBasePrice ??
+            condition.price ??
+            phone.price ??
+            phone.salePrice ??
+            phone.sellPrice,
+        );
+        const retailPrice =
+          base +
+          serverOptionDelta(storage, "storage") +
+          serverOptionDelta(color, "color");
+        rows.push({
+          variant: null,
+          storage: safeText(storage.label, 40),
+          color: safeText(color.label, 80),
+          condition: safeText(condition.label, 80),
+          retailPrice,
+        });
+      }
   return rows;
 }
 
 function calculateWholesalePrice(retailPrice, discountPercent) {
   const retail = moneyNumber(retailPrice);
   const discount = Number(discountPercent);
-  if (!Number.isFinite(retail) || retail <= 0 || !Number.isFinite(discount) || discount < 0 || discount > 100) return null;
-  return Math.round((retail * (1 - discount / 100) + Number.EPSILON) * 100) / 100;
+  if (
+    !Number.isFinite(retail) ||
+    retail <= 0 ||
+    !Number.isFinite(discount) ||
+    discount < 0 ||
+    discount > 100
+  )
+    return null;
+  return (
+    Math.round((retail * (1 - discount / 100) + Number.EPSILON) * 100) / 100
+  );
 }
 
 function partnerVariantKey(row) {
@@ -146,27 +212,43 @@ function partnerCatalogQuery({ includeImages = false } = {}) {
   const variantImageFields = includeImages
     ? ", 'images', variant->'images', 'image', variant->'image', 'imageUrl', variant->'imageUrl', 'photo', variant->'photo'"
     : "";
-  return sql.replace("__IMAGE_FIELDS__", imageFields).replace("__VARIANT_IMAGE_FIELDS__", variantImageFields);
+  return sql
+    .replace("__IMAGE_FIELDS__", imageFields)
+    .replace("__VARIANT_IMAGE_FIELDS__", variantImageFields);
 }
 
 function partnerImages(phone, color = "", variant = null) {
-  const findColorValue = source => {
-    if (!source || typeof source !== "object" || Array.isArray(source)) return undefined;
-    const wanted = String(color || "").trim().toLocaleLowerCase();
+  const findColorValue = (source) => {
+    if (!source || typeof source !== "object" || Array.isArray(source))
+      return undefined;
+    const wanted = String(color || "")
+      .trim()
+      .toLocaleLowerCase();
     if (!wanted) return undefined;
-    const key = Object.keys(source).find(item => String(item).trim().toLocaleLowerCase() === wanted);
+    const key = Object.keys(source).find(
+      (item) => String(item).trim().toLocaleLowerCase() === wanted,
+    );
     return key === undefined ? undefined : source[key];
   };
-  const toList = value => {
+  const toList = (value) => {
     if (Array.isArray(value)) return value;
     return value == null || value === "" ? [] : [value];
   };
   const colorGallery = findColorValue(phone?.colorGalleryImages);
   const colorImage = findColorValue(phone?.colorImages);
-  const isSafeImage = value => {
+  const isSafeImage = (value) => {
     if (typeof value !== "string" || !value) return false;
-    if (/^https:\/\//i.test(value) || (value.startsWith("/") && !value.startsWith("//"))) return true;
-    return value.length <= 300000 && /^data:image\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(value);
+    if (
+      /^https:\/\//i.test(value) ||
+      (value.startsWith("/") && !value.startsWith("//"))
+    )
+      return true;
+    return (
+      value.length <= 300000 &&
+      /^data:image\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(
+        value,
+      )
+    );
   };
   const selectedColorGallery = toList(colorGallery).filter(isSafeImage);
   const colorSpecific = selectedColorGallery.length
@@ -176,7 +258,7 @@ function partnerImages(phone, color = "", variant = null) {
         ...toList(variant?.images),
         variant?.image,
         variant?.imageUrl,
-        variant?.photo
+        variant?.photo,
       ].filter(isSafeImage);
   // Prefer a configured gallery as a complete set; never mix other colors or base photos into it.
   const candidates = colorSpecific.length
@@ -186,39 +268,57 @@ function partnerImages(phone, color = "", variant = null) {
 }
 
 function partnerBatteryOptions(phone) {
-  const options = Array.isArray(phone?.batteryOptions) ? phone.batteryOptions : [];
+  const options = Array.isArray(phone?.batteryOptions)
+    ? phone.batteryOptions
+    : [];
   return options
-    .filter(option => option && typeof option === "object" &&
-      option.active !== false && option.enabled !== false && option.available !== false)
-    .map(option => {
+    .filter(
+      (option) =>
+        option &&
+        typeof option === "object" &&
+        option.active !== false &&
+        option.enabled !== false &&
+        option.available !== false,
+    )
+    .map((option) => {
       const rawImage = typeof option.image === "string" ? option.image : "";
-      const image = (/^https:\/\//i.test(rawImage) ||
+      const image =
+        /^https:\/\//i.test(rawImage) ||
         (rawImage.startsWith("/") && !rawImage.startsWith("//")) ||
-        (rawImage.length <= 300000 && /^data:image\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(rawImage)))
-        ? rawImage : "";
+        (rawImage.length <= 300000 &&
+          /^data:image\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(
+            rawImage,
+          ))
+          ? rawImage
+          : "";
       return {
         label: safeText(option.label, 100),
         description: safeText(option.description, 500),
         priceDelta: moneyNumber(option.priceDelta),
-        image
+        image,
       };
     })
-    .filter(option => option.label);
+    .filter((option) => option.label);
 }
 
-function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermission }) {
+function registerPartnerApiRoutes(
+  app,
+  { pool, cryptoImpl = crypto, requirePermission },
+) {
   const admin = requirePermission("site.save");
 
   app.get("/api/admin/partners", admin, async (req, res) => {
     try {
       const result = await pool.query(
-        "SELECT id,name,email,active,created_at,updated_at FROM api_partners WHERE deleted_at IS NULL ORDER BY created_at DESC"
+        "SELECT id,name,email,active,created_at,updated_at FROM api_partners WHERE deleted_at IS NULL ORDER BY created_at DESC",
       );
       res.set("Cache-Control", "no-store");
       return res.json({ partners: result.rows });
     } catch (error) {
       console.error("[PARTNER API] List partners failed:", error);
-      return res.status(500).json({ error: "Partners konden niet worden geladen." });
+      return res
+        .status(500)
+        .json({ error: "Partners konden niet worden geladen." });
     }
   });
 
@@ -226,81 +326,120 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
     try {
       const name = safeText(req.body?.name, 120);
       const email = safeText(req.body?.email, 180).toLowerCase();
-      if (!name) return res.status(400).json({ error: "Partnernaam is verplicht." });
+      if (!name)
+        return res.status(400).json({ error: "Partnernaam is verplicht." });
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        return res.status(400).json({ error: "Vul een geldig e-mailadres in." });
+        return res
+          .status(400)
+          .json({ error: "Vul een geldig e-mailadres in." });
       }
       const token = "htp_" + cryptoImpl.randomBytes(32).toString("hex");
       const result = await pool.query(
         "INSERT INTO api_partners(name,email,token_hash) VALUES($1,$2,$3) RETURNING id,name,email,active,created_at",
-        [name, email, hashToken(token)]
+        [name, email, hashToken(token)],
       );
       res.set("Cache-Control", "no-store");
-      return res.status(201).json({ success: true, partner: result.rows[0], apiKey: token });
+      return res
+        .status(201)
+        .json({ success: true, partner: result.rows[0], apiKey: token });
     } catch (error) {
-      if (error?.code === "23505") return res.status(409).json({ error: "Deze partner bestaat al." });
+      if (error?.code === "23505")
+        return res.status(409).json({ error: "Deze partner bestaat al." });
       console.error("[PARTNER API] Create partner failed:", error);
-      return res.status(500).json({ error: "Partner kon niet worden aangemaakt." });
+      return res
+        .status(500)
+        .json({ error: "Partner kon niet worden aangemaakt." });
     }
   });
 
   app.patch("/api/admin/partners/:id", admin, async (req, res) => {
     const id = Number(req.params.id);
-    if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig partner-ID." });
+    if (!Number.isSafeInteger(id) || id < 1)
+      return res.status(400).json({ error: "Ongeldig partner-ID." });
     try {
       const updates = [];
       const values = [];
       if (Object.prototype.hasOwnProperty.call(req.body || {}, "name")) {
         const name = safeText(req.body.name, 120);
-        if (!name) return res.status(400).json({ error: "Partnernaam is verplicht." });
-        values.push(name); updates.push("name=$" + values.length);
+        if (!name)
+          return res.status(400).json({ error: "Partnernaam is verplicht." });
+        values.push(name);
+        updates.push("name=$" + values.length);
       }
       if (Object.prototype.hasOwnProperty.call(req.body || {}, "email")) {
         const email = safeText(req.body.email, 180).toLowerCase();
-        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: "Vul een geldig e-mailadres in." });
-        values.push(email); updates.push("email=$" + values.length);
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+          return res
+            .status(400)
+            .json({ error: "Vul een geldig e-mailadres in." });
+        values.push(email);
+        updates.push("email=$" + values.length);
       }
       if (Object.prototype.hasOwnProperty.call(req.body || {}, "active")) {
-        if (typeof req.body.active !== "boolean") return res.status(400).json({ error: "Geef active als true of false op." });
-        values.push(req.body.active); updates.push("active=$" + values.length);
+        if (typeof req.body.active !== "boolean")
+          return res
+            .status(400)
+            .json({ error: "Geef active als true of false op." });
+        values.push(req.body.active);
+        updates.push("active=$" + values.length);
       }
-      if (!updates.length) return res.status(400).json({ error: "Geen geldige partnergegevens opgegeven." });
+      if (!updates.length)
+        return res
+          .status(400)
+          .json({ error: "Geen geldige partnergegevens opgegeven." });
       values.push(id);
       const result = await pool.query(
-        "UPDATE api_partners SET " + updates.join(",") + ",updated_at=NOW() WHERE id=$" + values.length + " AND deleted_at IS NULL RETURNING id,name,email,active,created_at,updated_at",
-        values
+        "UPDATE api_partners SET " +
+          updates.join(",") +
+          ",updated_at=NOW() WHERE id=$" +
+          values.length +
+          " AND deleted_at IS NULL RETURNING id,name,email,active,created_at,updated_at",
+        values,
       );
-      if (!result.rows.length) return res.status(404).json({ error: "Partner niet gevonden." });
+      if (!result.rows.length)
+        return res.status(404).json({ error: "Partner niet gevonden." });
       return res.json({ success: true, partner: result.rows[0] });
     } catch (error) {
-      if (error?.code === "23505") return res.status(409).json({ error: "Dit e-mailadres is al in gebruik." });
+      if (error?.code === "23505")
+        return res
+          .status(409)
+          .json({ error: "Dit e-mailadres is al in gebruik." });
       console.error("[PARTNER API] Update partner failed:", error);
-      return res.status(500).json({ error: "Partner kon niet worden bijgewerkt." });
+      return res
+        .status(500)
+        .json({ error: "Partner kon niet worden bijgewerkt." });
     }
   });
 
   // Keep historical orders while revoking the partner's access.
   app.delete("/api/admin/partners/:id", admin, async (req, res) => {
     const id = Number(req.params.id);
-    if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig partner-ID." });
+    if (!Number.isSafeInteger(id) || id < 1)
+      return res.status(400).json({ error: "Ongeldig partner-ID." });
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
       const result = await client.query(
         "UPDATE api_partners SET active=FALSE,deleted_at=NOW(),updated_at=NOW() WHERE id=$1 AND deleted_at IS NULL RETURNING id",
-        [id]
+        [id],
       );
       if (!result.rows.length) {
         await client.query("ROLLBACK");
         return res.status(404).json({ error: "Partner niet gevonden." });
       }
-      await client.query("DELETE FROM api_partner_prices WHERE partner_id=$1", [id]);
+      await client.query("DELETE FROM api_partner_prices WHERE partner_id=$1", [
+        id,
+      ]);
       await client.query("COMMIT");
       return res.json({ success: true, deleted: true });
     } catch (error) {
-      try { await client.query("ROLLBACK"); } catch {}
+      try {
+        await client.query("ROLLBACK");
+      } catch {}
       console.error("[PARTNER API] Delete partner failed:", error);
-      return res.status(500).json({ error: "Partner kon niet worden verwijderd." });
+      return res
+        .status(500)
+        .json({ error: "Partner kon niet worden verwijderd." });
     } finally {
       client.release();
     }
@@ -308,17 +447,34 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
 
   app.get("/api/admin/partners/:id/prices", admin, async (req, res) => {
     const partnerId = Number(req.params.id);
-    if (!Number.isSafeInteger(partnerId) || partnerId < 1) return res.status(400).json({ error: "Ongeldig partner-ID." });
+    if (!Number.isSafeInteger(partnerId) || partnerId < 1)
+      return res.status(400).json({ error: "Ongeldig partner-ID." });
     try {
       const [partner, catalog, saved] = await Promise.all([
-        pool.query("SELECT id,default_discount_percent FROM api_partners WHERE id=$1", [partnerId]),
+        pool.query(
+          "SELECT id,default_discount_percent FROM api_partners WHERE id=$1",
+          [partnerId],
+        ),
         pool.query(partnerCatalogQuery()),
-        pool.query("SELECT product_id,variant_key,wholesale_price FROM api_partner_prices WHERE partner_id=$1", [partnerId])
+        pool.query(
+          "SELECT product_id,variant_key,wholesale_price FROM api_partner_prices WHERE partner_id=$1",
+          [partnerId],
+        ),
       ]);
-      if (!partner.rows.length) return res.status(404).json({ error: "Partner niet gevonden." });
-      const discountPercent = Number(partner.rows[0].default_discount_percent ?? 10);
-      const phones = Array.isArray(catalog.rows[0]?.phones) ? catalog.rows[0].phones : [];
-      const savedMap = new Map(saved.rows.map(row => [row.product_id + "::" + row.variant_key, Number(row.wholesale_price)]));
+      if (!partner.rows.length)
+        return res.status(404).json({ error: "Partner niet gevonden." });
+      const discountPercent = Number(
+        partner.rows[0].default_discount_percent ?? 10,
+      );
+      const phones = Array.isArray(catalog.rows[0]?.phones)
+        ? catalog.rows[0].phones
+        : [];
+      const savedMap = new Map(
+        saved.rows.map((row) => [
+          row.product_id + "::" + row.variant_key,
+          Number(row.wholesale_price),
+        ]),
+      );
       const items = [];
       for (const [phoneIndex, phone] of phones.entries()) {
         if (!phone || typeof phone !== "object") continue;
@@ -328,19 +484,40 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
           const variant = row.variant;
           const variantKey = [row.storage, row.color, row.condition].join("|");
           const key = productId + "::" + variantKey;
-          const calculatedPrice = calculateWholesalePrice(row.retailPrice, discountPercent);
+          const calculatedPrice = calculateWholesalePrice(
+            row.retailPrice,
+            discountPercent,
+          );
           const savedPrice = savedMap.get(key);
           const isSaved = savedMap.has(key);
           items.push({
-            productId, variantKey, name: safeText(phone.name || phone.title, 180),
+            productId,
+            variantKey,
+            name: safeText(phone.name || phone.title, 180),
             sku: safeText(variant?.sku || phone.sku, 100),
-            storage: row.storage, color: row.color, condition: row.condition,
+            storage: row.storage,
+            color: row.color,
+            condition: row.condition,
             stock: parseStock(variant ? variant.stock : phone.stock),
-            active: phone.active !== false && phone.available !== false && String(phone.stockStatus || "").toLowerCase() !== "sold" && (!variant || (variant.active !== false && variant.available !== false)),
-            retailPrice: Number.isFinite(row.retailPrice) ? Math.round(row.retailPrice * 100) / 100 : null,
+            active:
+              phone.active !== false &&
+              phone.available !== false &&
+              String(phone.stockStatus || "").toLowerCase() !== "sold" &&
+              (!variant ||
+                (variant.active !== false && variant.available !== false)),
+            retailPrice: Number.isFinite(row.retailPrice)
+              ? Math.round(row.retailPrice * 100) / 100
+              : null,
             discountPercent,
             wholesalePrice: isSaved ? savedPrice : calculatedPrice,
-            assigned: isSaved || (calculatedPrice !== null && phone.active !== false && phone.available !== false && String(phone.stockStatus || "").toLowerCase() !== "sold" && (!variant || (variant.active !== false && variant.available !== false)))
+            assigned:
+              isSaved ||
+              (calculatedPrice !== null &&
+                phone.active !== false &&
+                phone.available !== false &&
+                String(phone.stockStatus || "").toLowerCase() !== "sold" &&
+                (!variant ||
+                  (variant.active !== false && variant.available !== false))),
           });
         }
       }
@@ -348,7 +525,9 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
       return res.json({ items, discountPercent });
     } catch (error) {
       console.error("[PARTNER API] Load wholesale prices failed:", error);
-      return res.status(500).json({ error: "Groothandelsprijzen konden niet worden geladen." });
+      return res
+        .status(500)
+        .json({ error: "Groothandelsprijzen konden niet worden geladen." });
     }
   });
 
@@ -356,8 +535,18 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
     const partnerId = Number(req.params.id);
     const prices = req.body?.prices;
     const discountPercent = Number(req.body?.discountPercent ?? 10);
-    if (!Number.isSafeInteger(partnerId) || partnerId < 1 || !Array.isArray(prices) || prices.length > 1000 || !Number.isFinite(discountPercent) || discountPercent < 0 || discountPercent > 100) {
-      return res.status(400).json({ error: "Ongeldige partner of prijslijst." });
+    if (
+      !Number.isSafeInteger(partnerId) ||
+      partnerId < 1 ||
+      !Array.isArray(prices) ||
+      prices.length > 1000 ||
+      !Number.isFinite(discountPercent) ||
+      discountPercent < 0 ||
+      discountPercent > 100
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Ongeldige partner of prijslijst." });
     }
     const normalized = [];
     const seen = new Set();
@@ -365,55 +554,110 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
       const productId = safeText(item?.productId, 120);
       const variantKey = safeText(item?.variantKey || "", 180);
       const wholesalePrice = Number(item?.wholesalePrice);
-      if (!productId || !Number.isFinite(wholesalePrice) || wholesalePrice < 0 || wholesalePrice > 100000) {
-        return res.status(400).json({ error: "Elke prijsregel vereist een product-ID en geldige groothandelsprijs." });
+      if (
+        !productId ||
+        !Number.isFinite(wholesalePrice) ||
+        wholesalePrice < 0 ||
+        wholesalePrice > 100000
+      ) {
+        return res
+          .status(400)
+          .json({
+            error:
+              "Elke prijsregel vereist een product-ID en geldige groothandelsprijs.",
+          });
       }
       const key = productId + "::" + variantKey;
-      if (seen.has(key)) return res.status(400).json({ error: "Dubbele productuitvoering in de prijslijst." });
+      if (seen.has(key))
+        return res
+          .status(400)
+          .json({ error: "Dubbele productuitvoering in de prijslijst." });
       seen.add(key);
-      normalized.push({ productId, variantKey, wholesalePrice: wholesalePrice.toFixed(2) });
+      normalized.push({
+        productId,
+        variantKey,
+        wholesalePrice: wholesalePrice.toFixed(2),
+      });
     }
     let phones = [];
     try {
       const catalog = await pool.query(partnerCatalogQuery());
-      phones = Array.isArray(catalog.rows[0]?.phones) ? catalog.rows[0].phones : [];
+      phones = Array.isArray(catalog.rows[0]?.phones)
+        ? catalog.rows[0].phones
+        : [];
     } catch (error) {
       console.error("[PARTNER API] Validate catalog prices failed:", error);
-      return res.status(503).json({ error: "Productcatalogus kon niet worden gecontroleerd." });
+      return res
+        .status(503)
+        .json({ error: "Productcatalogus kon niet worden gecontroleerd." });
     }
     for (const item of normalized) {
-      const phoneIndex = phones.findIndex((p, index) => p && getPartnerProductId(p, index, phones) === item.productId);
+      const phoneIndex = phones.findIndex(
+        (p, index) =>
+          p && getPartnerProductId(p, index, phones) === item.productId,
+      );
       const phone = phoneIndex >= 0 ? phones[phoneIndex] : null;
-      if (!phone) return res.status(400).json({ error: "Een product in de prijslijst bestaat niet of is niet actief." });
-      const validVariant = partnerVariantRows(phone).some(row => [row.storage, row.color, row.condition].join("|") === item.variantKey);
-      if (!validVariant) return res.status(400).json({ error: "Een productuitvoering in de prijslijst bestaat niet of is niet actief." });
+      if (!phone)
+        return res
+          .status(400)
+          .json({
+            error:
+              "Een product in de prijslijst bestaat niet of is niet actief.",
+          });
+      const validVariant = partnerVariantRows(phone).some(
+        (row) =>
+          [row.storage, row.color, row.condition].join("|") === item.variantKey,
+      );
+      if (!validVariant)
+        return res
+          .status(400)
+          .json({
+            error:
+              "Een productuitvoering in de prijslijst bestaat niet of is niet actief.",
+          });
     }
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
-      const partner = await client.query("SELECT id FROM api_partners WHERE id=$1 FOR UPDATE", [partnerId]);
+      const partner = await client.query(
+        "SELECT id FROM api_partners WHERE id=$1 FOR UPDATE",
+        [partnerId],
+      );
       if (!partner.rows.length) {
         await client.query("ROLLBACK");
         return res.status(404).json({ error: "Partner niet gevonden." });
       }
-      await client.query("UPDATE api_partners SET default_discount_percent=$1,updated_at=NOW() WHERE id=$2", [discountPercent, partnerId]);
+      await client.query(
+        "UPDATE api_partners SET default_discount_percent=$1,updated_at=NOW() WHERE id=$2",
+        [discountPercent, partnerId],
+      );
       // PUT replaces the complete price list so removed assignments cannot remain active.
-      await client.query("DELETE FROM api_partner_prices WHERE partner_id=$1", [partnerId]);
+      await client.query("DELETE FROM api_partner_prices WHERE partner_id=$1", [
+        partnerId,
+      ]);
       for (const item of normalized) {
         await client.query(
           `INSERT INTO api_partner_prices(partner_id,product_id,variant_key,wholesale_price)
            VALUES($1,$2,$3,$4)
            ON CONFLICT(partner_id,product_id,variant_key)
            DO UPDATE SET wholesale_price=EXCLUDED.wholesale_price,updated_at=NOW()`,
-          [partnerId, item.productId, item.variantKey, item.wholesalePrice]
+          [partnerId, item.productId, item.variantKey, item.wholesalePrice],
         );
       }
       await client.query("COMMIT");
-      return res.json({ success: true, updated: normalized.length, discountPercent });
+      return res.json({
+        success: true,
+        updated: normalized.length,
+        discountPercent,
+      });
     } catch (error) {
-      try { await client.query("ROLLBACK"); } catch {}
+      try {
+        await client.query("ROLLBACK");
+      } catch {}
       console.error("[PARTNER API] Save wholesale prices failed:", error);
-      return res.status(500).json({ error: "Groothandelsprijzen konden niet worden opgeslagen." });
+      return res
+        .status(500)
+        .json({ error: "Groothandelsprijzen konden niet worden opgeslagen." });
     } finally {
       client.release();
     }
@@ -422,18 +666,24 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
   async function authenticatePartner(req, res, next) {
     const header = String(req.get("authorization") || "");
     const match = header.match(/^Bearer\s+(htp_[a-f0-9]{64})$/i);
-    if (!match) return res.status(401).json({ error: "Ongeldige API-sleutel." });
+    if (!match)
+      return res.status(401).json({ error: "Ongeldige API-sleutel." });
     try {
       const result = await pool.query(
         "SELECT id,name FROM api_partners WHERE token_hash=$1 AND active=TRUE AND deleted_at IS NULL",
-        [hashToken(match[1])]
+        [hashToken(match[1])],
       );
-      if (!result.rows.length) return res.status(401).json({ error: "API-sleutel ongeldig of uitgeschakeld." });
+      if (!result.rows.length)
+        return res
+          .status(401)
+          .json({ error: "API-sleutel ongeldig of uitgeschakeld." });
       req.partner = result.rows[0];
       return next();
     } catch (error) {
       console.error("[PARTNER API] Authentication failed:", error);
-      return res.status(503).json({ error: "Partner-API tijdelijk niet beschikbaar." });
+      return res
+        .status(503)
+        .json({ error: "Partner-API tijdelijk niet beschikbaar." });
     }
   }
 
@@ -443,19 +693,37 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
         pool.query(partnerCatalogQuery({ includeImages: true })),
         pool.query(
           "SELECT product_id,variant_key,wholesale_price FROM api_partner_prices WHERE partner_id=$1",
-          [req.partner.id]
-        )
+          [req.partner.id],
+        ),
       ]);
-      const phones = Array.isArray(catalog.rows[0]?.phones) ? catalog.rows[0].phones : [];
-      const priceMap = new Map(prices.rows.map(row => [row.product_id + "::" + row.variant_key, Number(row.wholesale_price)]));
+      const phones = Array.isArray(catalog.rows[0]?.phones)
+        ? catalog.rows[0].phones
+        : [];
+      const priceMap = new Map(
+        prices.rows.map((row) => [
+          row.product_id + "::" + row.variant_key,
+          Number(row.wholesale_price),
+        ]),
+      );
       const products = [];
       for (const [phoneIndex, phone] of phones.entries()) {
-        if (!phone || typeof phone !== "object" || phone.active === false || phone.available === false || String(phone.stockStatus || "").toLowerCase() === "sold") continue;
+        if (
+          !phone ||
+          typeof phone !== "object" ||
+          phone.active === false ||
+          phone.available === false ||
+          String(phone.stockStatus || "").toLowerCase() === "sold"
+        )
+          continue;
         const productId = getPartnerProductId(phone, phoneIndex, phones);
         if (!productId) continue;
         for (const row of partnerVariantRows(phone)) {
           const variant = row.variant;
-          if (variant && (variant.active === false || variant.available === false)) continue;
+          if (
+            variant &&
+            (variant.active === false || variant.available === false)
+          )
+            continue;
           const variantKey = [row.storage, row.color, row.condition].join("|");
           const key = productId + "::" + variantKey;
           if (!priceMap.has(key)) continue;
@@ -474,7 +742,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
             currency: "EUR",
             stock: stock == null ? null : stock,
             images: partnerImages(phone, row.color, variant),
-            batteryOptions: partnerBatteryOptions(phone)
+            batteryOptions: partnerBatteryOptions(phone),
           });
         }
       }
@@ -482,16 +750,25 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
       return res.json({ products, count: products.length });
     } catch (error) {
       console.error("[PARTNER API] Product feed failed:", error);
-      return res.status(500).json({ error: "Productfeed kon niet worden geladen." });
+      return res
+        .status(500)
+        .json({ error: "Productfeed kon niet worden geladen." });
     }
   });
 
   app.post("/api/partner/v1/orders", authenticatePartner, async (req, res) => {
     const items = req.body?.items;
     if (!Array.isArray(items) || !items.length || items.length > 50) {
-      return res.status(400).json({ error: "Een bestelling moet 1 tot 50 productregels bevatten." });
+      return res
+        .status(400)
+        .json({
+          error: "Een bestelling moet 1 tot 50 productregels bevatten.",
+        });
     }
-    const customer = req.body?.customer && typeof req.body.customer === "object" ? req.body.customer : {};
+    const customer =
+      req.body?.customer && typeof req.body.customer === "object"
+        ? req.body.customer
+        : {};
     const customerName = safeText(customer.name, 160);
     const customerEmail = safeText(customer.email, 180).toLowerCase();
     const customerPhone = safeText(customer.phone, 60);
@@ -500,41 +777,102 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
       houseNumber: safeText(customer.houseNumber, 30),
       postcode: safeText(customer.postcode, 30),
       city: safeText(customer.city, 100),
-      country: safeText(customer.country || "Nederland", 80)
+      country: safeText(customer.country || "Nederland", 80),
     };
-    if (!customerName || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail) || !customerPhone ||
-        !shippingAddress.street || !shippingAddress.houseNumber || !shippingAddress.postcode || !shippingAddress.city) {
-      return res.status(400).json({ error: "Vul de volledige klant- en verzendgegevens in." });
+    if (
+      !customerName ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail) ||
+      !customerPhone ||
+      !shippingAddress.street ||
+      !shippingAddress.houseNumber ||
+      !shippingAddress.postcode ||
+      !shippingAddress.city
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Vul de volledige klant- en verzendgegevens in." });
     }
     try {
       const [catalog, prices] = await Promise.all([
         pool.query(partnerCatalogQuery()),
-        pool.query("SELECT product_id,variant_key,wholesale_price FROM api_partner_prices WHERE partner_id=$1", [req.partner.id])
+        pool.query(
+          "SELECT product_id,variant_key,wholesale_price FROM api_partner_prices WHERE partner_id=$1",
+          [req.partner.id],
+        ),
       ]);
-      const phones = Array.isArray(catalog.rows[0]?.phones) ? catalog.rows[0].phones : [];
-      const priceMap = new Map(prices.rows.map(row => [row.product_id + "::" + row.variant_key, Number(row.wholesale_price)]));
+      const phones = Array.isArray(catalog.rows[0]?.phones)
+        ? catalog.rows[0].phones
+        : [];
+      const priceMap = new Map(
+        prices.rows.map((row) => [
+          row.product_id + "::" + row.variant_key,
+          Number(row.wholesale_price),
+        ]),
+      );
       const orderItems = [];
       const requestedQuantities = new Map();
       for (const requested of items) {
         const productId = safeText(requested?.productId, 120);
         const variantKey = safeText(requested?.variantKey || "", 180);
         const quantity = Number(requested?.quantity);
-        if (!productId || !Number.isInteger(quantity) || quantity < 1 || quantity > 20) {
-          return res.status(400).json({ error: "Ongeldige productregel of hoeveelheid." });
+        if (
+          !productId ||
+          !Number.isInteger(quantity) ||
+          quantity < 1 ||
+          quantity > 20
+        ) {
+          return res
+            .status(400)
+            .json({ error: "Ongeldige productregel of hoeveelheid." });
         }
-        const phoneIndex = phones.findIndex((p, index) => p && getPartnerProductId(p, index, phones) === productId && p.active !== false && p.available !== false && String(p.stockStatus || "").toLowerCase() !== "sold");
+        const phoneIndex = phones.findIndex(
+          (p, index) =>
+            p &&
+            getPartnerProductId(p, index, phones) === productId &&
+            p.active !== false &&
+            p.available !== false &&
+            String(p.stockStatus || "").toLowerCase() !== "sold",
+        );
         const phone = phoneIndex >= 0 ? phones[phoneIndex] : null;
-        if (!phone) return res.status(409).json({ error: "Een geselecteerd product is niet meer beschikbaar." });
-        const catalogVariant = partnerVariantRows(phone).find(row => [row.storage, row.color, row.condition].join("|") === variantKey);
+        if (!phone)
+          return res
+            .status(409)
+            .json({
+              error: "Een geselecteerd product is niet meer beschikbaar.",
+            });
+        const catalogVariant = partnerVariantRows(phone).find(
+          (row) =>
+            [row.storage, row.color, row.condition].join("|") === variantKey,
+        );
         const variant = catalogVariant?.variant || null;
-        if (!catalogVariant || (variant && (variant.active === false || variant.available === false))) {
-          return res.status(409).json({ error: "Een geselecteerde telefoonuitvoering is niet meer beschikbaar." });
+        if (
+          !catalogVariant ||
+          (variant && (variant.active === false || variant.available === false))
+        ) {
+          return res
+            .status(409)
+            .json({
+              error:
+                "Een geselecteerde telefoonuitvoering is niet meer beschikbaar.",
+            });
         }
         const key = productId + "::" + variantKey;
-        if (!priceMap.has(key)) return res.status(403).json({ error: "Voor een product ontbreekt de afgesproken groothandelsprijs." });
+        if (!priceMap.has(key))
+          return res
+            .status(403)
+            .json({
+              error:
+                "Voor een product ontbreekt de afgesproken groothandelsprijs.",
+            });
         const stock = parseStock(variant ? variant.stock : phone.stock);
         const requestedTotal = (requestedQuantities.get(key) || 0) + quantity;
-        if (stock != null && stock < requestedTotal) return res.status(409).json({ error: "Onvoldoende voorraad voor " + safeText(phone.name, 120) + "." });
+        if (stock != null && stock < requestedTotal)
+          return res
+            .status(409)
+            .json({
+              error:
+                "Onvoldoende voorraad voor " + safeText(phone.name, 120) + ".",
+            });
         requestedQuantities.set(key, requestedTotal);
         const unitPrice = priceMap.get(key);
         orderItems.push({
@@ -547,20 +885,32 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
           condition: catalogVariant.condition,
           quantity,
           wholesaleUnitPrice: unitPrice,
-          lineTotal: Number((unitPrice * quantity).toFixed(2))
+          lineTotal: Number((unitPrice * quantity).toFixed(2)),
         });
       }
-      const total = Number(orderItems.reduce((sum, item) => sum + item.lineTotal, 0).toFixed(2));
+      const total = Number(
+        orderItems.reduce((sum, item) => sum + item.lineTotal, 0).toFixed(2),
+      );
       const result = await pool.query(
         `INSERT INTO api_partner_orders(partner_id,customer_name,customer_email,customer_phone,shipping_address,items,wholesale_total)
          VALUES($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7)
          RETURNING id,status,wholesale_total,created_at`,
-        [req.partner.id, customerName, customerEmail, customerPhone, JSON.stringify(shippingAddress), JSON.stringify(orderItems), total]
+        [
+          req.partner.id,
+          customerName,
+          customerEmail,
+          customerPhone,
+          JSON.stringify(shippingAddress),
+          JSON.stringify(orderItems),
+          total,
+        ],
       );
       return res.status(201).json({ success: true, order: result.rows[0] });
     } catch (error) {
       console.error("[PARTNER API] Create order failed:", error);
-      return res.status(500).json({ error: "Partnerbestelling kon niet worden aangemaakt." });
+      return res
+        .status(500)
+        .json({ error: "Partnerbestelling kon niet worden aangemaakt." });
     }
   });
   app.get("/api/admin/partner-orders", admin, async (req, res) => {
@@ -569,37 +919,63 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
         `SELECT o.id,o.partner_id,p.name AS partner_name,o.customer_name,o.customer_email,
           o.customer_phone,o.shipping_address,o.items,o.wholesale_total,o.status,o.admin_note,o.created_at,o.updated_at
          FROM api_partner_orders o JOIN api_partners p ON p.id=o.partner_id
-         ORDER BY o.created_at DESC LIMIT 250`
+         ORDER BY o.created_at DESC LIMIT 250`,
       );
       res.set("Cache-Control", "no-store");
       return res.json({ orders: result.rows });
     } catch (error) {
       console.error("[PARTNER API] List partner orders failed:", error);
-      return res.status(500).json({ error: "Partnerbestellingen konden niet worden geladen." });
+      return res
+        .status(500)
+        .json({ error: "Partnerbestellingen konden niet worden geladen." });
     }
   });
 
   app.patch("/api/admin/partner-orders/:id", admin, async (req, res) => {
     const id = Number(req.params.id);
     const status = safeText(req.body?.status, 40);
-    const allowed = new Set(["Nieuw", "In behandeling", "Goedgekeurd", "Afgewezen", "Verzonden", "Afgerond"]);
+    const allowed = new Set([
+      "Nieuw",
+      "In behandeling",
+      "Goedgekeurd",
+      "Afgewezen",
+      "Verzonden",
+      "Afgerond",
+    ]);
     if (!Number.isSafeInteger(id) || id < 1 || !allowed.has(status)) {
-      return res.status(400).json({ error: "Ongeldig order-ID of ongeldige status." });
+      return res
+        .status(400)
+        .json({ error: "Ongeldig order-ID of ongeldige status." });
     }
     try {
       const note = safeText(req.body?.adminNote, 1000);
       const result = await pool.query(
         "UPDATE api_partner_orders SET status=$1,admin_note=$2,updated_at=NOW() WHERE id=$3 RETURNING id,status,admin_note,updated_at",
-        [status, note, id]
+        [status, note, id],
       );
-      if (!result.rows.length) return res.status(404).json({ error: "Partnerbestelling niet gevonden." });
+      if (!result.rows.length)
+        return res
+          .status(404)
+          .json({ error: "Partnerbestelling niet gevonden." });
       return res.json({ success: true, order: result.rows[0] });
     } catch (error) {
       console.error("[PARTNER API] Update partner order failed:", error);
-      return res.status(500).json({ error: "Partnerbestelling kon niet worden bijgewerkt." });
+      return res
+        .status(500)
+        .json({ error: "Partnerbestelling kon niet worden bijgewerkt." });
     }
   });
-
 }
 
-module.exports = { registerPartnerApiRoutes, hashToken, parseStock, getPartnerProductId, hasVariantPricing, partnerImages, partnerVariantRows, calculateWholesalePrice, partnerVariantKey, partnerCatalogQuery };
+module.exports = {
+  registerPartnerApiRoutes,
+  hashToken,
+  parseStock,
+  getPartnerProductId,
+  hasVariantPricing,
+  partnerImages,
+  partnerVariantRows,
+  calculateWholesalePrice,
+  partnerVariantKey,
+  partnerCatalogQuery,
+};

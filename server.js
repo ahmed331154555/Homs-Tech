@@ -14,14 +14,18 @@ const { buildInvoicePdf } = require("./utils/invoice-pdf");
 const path = require("path");
 const {
   sanitizeDevicesCatalogData,
-  sanitizeCartStockData
+  sanitizeCartStockData,
 } = require("./utils/catalog-sanitizers");
 const app = express();
 // Render runs the app behind one trusted reverse proxy; use its client IP for rate limits.
 app.set("trust proxy", 1);
 const { registerAdminOrderRoutes } = require("./routes/admin-orders");
-const { registerAdminWebshopOrderRoutes } = require("./routes/admin-webshop-orders");
-const { registerAdminBuybackOrderRoutes } = require("./routes/admin-buyback-orders");
+const {
+  registerAdminWebshopOrderRoutes,
+} = require("./routes/admin-webshop-orders");
+const {
+  registerAdminBuybackOrderRoutes,
+} = require("./routes/admin-buyback-orders");
 const { registerAdminInvoiceRoutes } = require("./routes/admin-invoices");
 const { registerAdminInventoryRoutes } = require("./routes/admin-inventory");
 const { registerAdminEmailRoutes } = require("./routes/admin-emails");
@@ -43,51 +47,89 @@ const { registerDeviceRegisterRoutes } = require("./routes/device-register");
 const { registerResendInboundWebhook } = require("./routes/resend-inbound");
 const { validateRepairQuotePayload } = require("./utils/repair-quote");
 const { validateBuybackOfferedPrice } = require("./utils/buyback-order");
-const { sanitizePublicSiteData, sanitizeHomepageSiteData } = require("./utils/site-data-sanitizers");
-const { resolveMolliePaymentStatus, molliePaymentMatchesOrder } = require("./utils/mollie-payment");
-const { encryptPayPalSecret, decryptPayPalSecret, getPayPalBaseUrl } = require("./utils/payment-secrets");
+const {
+  sanitizePublicSiteData,
+  sanitizeHomepageSiteData,
+} = require("./utils/site-data-sanitizers");
+const {
+  resolveMolliePaymentStatus,
+  molliePaymentMatchesOrder,
+} = require("./utils/mollie-payment");
+const {
+  encryptPayPalSecret,
+  decryptPayPalSecret,
+  getPayPalBaseUrl,
+} = require("./utils/payment-secrets");
 const { cancelPaypalOrder } = require("./utils/paypal-payment");
 const { allowLiveChat, liveChatFirstReply } = require("./utils/live-chat");
-const { checkRepairRequestRateLimit } = require("./utils/repair-request-rate-limit");
+const {
+  checkRepairRequestRateLimit,
+} = require("./utils/repair-request-rate-limit");
 const { checkAuthLoginRateLimit } = require("./utils/auth-login-rate-limit");
 const { startMemoryMonitor } = require("./utils/memory-monitor");
-const { resolveRepairRequestCustomerId } = require("./utils/repair-request-customer");
-const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-inventory");
+const {
+  resolveRepairRequestCustomerId,
+} = require("./utils/repair-request-customer");
+const {
+  createPaidOrderInventoryDeductor,
+} = require("./utils/paid-order-inventory");
 const { priceProductFromCatalog } = require("./utils/cart-pricing");
-const { validateCartInventoryQuantities } = require("./utils/cart-inventory-validation");
-const { sanitizeProductCatalogData, sanitizeProductFamilyData } = require("./utils/product-catalog-sanitizer");
+const {
+  validateCartInventoryQuantities,
+} = require("./utils/cart-inventory-validation");
+const {
+  sanitizeProductCatalogData,
+  sanitizeProductFamilyData,
+} = require("./utils/product-catalog-sanitizer");
 const { getProductFamilyRecords } = require("./utils/product-family");
-const { buildPublicBuybackCatalogPayload, sumDataImageBytes } = require("./utils/buyback-public-catalog");
+const {
+  buildPublicBuybackCatalogPayload,
+  sumDataImageBytes,
+} = require("./utils/buyback-public-catalog");
 const { createAdminAuth } = require("./utils/admin-auth");
-const { buildAdminSiteSectionSelect, getAdminSiteSection } = require("./utils/admin-site-sections");
-const { sanitizeStoredAdminPermissions, normalizeAdminPermissions } = require("./utils/admin-permissions");
+const {
+  buildAdminSiteSectionSelect,
+  getAdminSiteSection,
+} = require("./utils/admin-site-sections");
+const {
+  sanitizeStoredAdminPermissions,
+  normalizeAdminPermissions,
+} = require("./utils/admin-permissions");
 const { createCustomerEmails } = require("./utils/customer-emails");
 const { ensureBuybackOrdersTable } = require("./utils/buyback-schema");
-const { initializeDatabaseWithRetry } = require("./utils/database-initialization");
+const {
+  initializeDatabaseWithRetry,
+} = require("./utils/database-initialization");
 const { initializeDatabaseSchema } = require("./utils/database-schema");
 const { createPaymentSettings } = require("./utils/payment-settings");
 const { createPaymentGatewayClients } = require("./utils/payment-gateways");
 const {
   preserveExistingProductPhotos,
   preserveExistingCatalogPhotos,
-  preserveExistingBuybackPhotos
+  preserveExistingBuybackPhotos,
 } = require("./utils/catalog-photo-preservation");
-const { saveShopCatalog, buildShopCatalogList, validateShopCatalogIdentifiers, validateShopCatalogImages } = require("./utils/shop-catalog");
+const {
+  saveShopCatalog,
+  buildShopCatalogList,
+  validateShopCatalogIdentifiers,
+  validateShopCatalogImages,
+} = require("./utils/shop-catalog");
 const PORT = process.env.PORT || 3000;
-const SHOP_ENABLED_SQL = "SELECT COALESCE((data->>'shopPageEnabled')::boolean, TRUE) AS enabled FROM site_settings WHERE id = 1";
+const SHOP_ENABLED_SQL =
+  "SELECT COALESCE((data->>'shopPageEnabled')::boolean, TRUE) AS enabled FROM site_settings WHERE id = 1";
 
 // Lightweight RSS/heap samples help correlate Render memory spikes with traffic.
 startMemoryMonitor();
 const { getMollieApiKey, getPayPalSettings } = createPaymentSettings({
   pool,
   getEnv: () => process.env,
-  decryptSecret: decryptPayPalSecret
+  decryptSecret: decryptPayPalSecret,
 });
 const { mollieRequest, getPayPalAccessToken } = createPaymentGatewayClients({
   getMollieApiKey,
   getPayPalSettings,
   getPayPalBaseUrl,
-  fetchImpl: fetch
+  fetchImpl: fetch,
 });
 const deductPaidOrderInventory = createPaidOrderInventoryDeductor({ pool });
 const {
@@ -95,19 +137,19 @@ const {
   getAdminFromRequest,
   refreshAdminUserFromDb,
   requirePermission,
-  requireSiteOrPhoneUpdate
+  requireSiteOrPhoneUpdate,
 } = createAdminAuth({
   jwt,
   pool,
   getAdminUsername: () => String(process.env.ADMIN_USERNAME || ""),
-  getJwtSecret: () => process.env.JWT_SECRET
+  getJwtSecret: () => process.env.JWT_SECRET,
 });
-const { sendCustomerVerificationEmail, sendWelcomeEmail } = createCustomerEmails({
-  getEnv: () => process.env,
-  fetchImpl: fetch,
-  escapeHtml
-});
-
+const { sendCustomerVerificationEmail, sendWelcomeEmail } =
+  createCustomerEmails({
+    getEnv: () => process.env,
+    fetchImpl: fetch,
+    escapeHtml,
+  });
 
 app.use(compression({ threshold: 1024 }));
 registerResendInboundWebhook(app, {
@@ -115,7 +157,7 @@ registerResendInboundWebhook(app, {
   pool,
   cryptoImpl: crypto,
   getEnv: () => process.env,
-  fetchImpl: fetch
+  fetchImpl: fetch,
 });
 
 // Repair quote uploads allow at most 6 MB of decoded photos (about 8 MB Base64).
@@ -126,7 +168,12 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: false, limit: "10kb" }));
 app.use((err, req, res, next) => {
   if (err?.type === "entity.too.large" || err?.status === 413) {
-    return res.status(413).json({ error: "Het geüploade bestand is te groot. Verklein de foto's en probeer opnieuw." });
+    return res
+      .status(413)
+      .json({
+        error:
+          "Het geüploade bestand is te groot. Verklein de foto's en probeer opnieuw.",
+      });
   }
   next(err);
 });
@@ -135,39 +182,53 @@ app.use(cookieParser());
 // Never expose server code, deployment metadata, backups, or dotfiles through static hosting.
 app.use((req, res, next) => {
   let pathname = String(req.path || "/");
-  try { pathname = decodeURIComponent(pathname); } catch { return res.sendStatus(400); }
-  const segments = pathname.replace(/\\/g, "/").split("/").filter(Boolean).map(x => x.toLowerCase());
-  const blocked = new Set(["server.js", "package.json", "package-lock.json", "render.yaml", "admin-index.html"]);
-  if (segments.some(segment =>
-    segment.startsWith(".") ||
-    blocked.has(segment) ||
-    /\.(?:zip|sql|bak|backup|log|db|sqlite|env)$/i.test(segment)
-  )) return res.sendStatus(404);
+  try {
+    pathname = decodeURIComponent(pathname);
+  } catch {
+    return res.sendStatus(400);
+  }
+  const segments = pathname
+    .replace(/\\/g, "/")
+    .split("/")
+    .filter(Boolean)
+    .map((x) => x.toLowerCase());
+  const blocked = new Set([
+    "server.js",
+    "package.json",
+    "package-lock.json",
+    "render.yaml",
+    "admin-index.html",
+  ]);
+  if (
+    segments.some(
+      (segment) =>
+        segment.startsWith(".") ||
+        blocked.has(segment) ||
+        /\.(?:zip|sql|bak|backup|log|db|sqlite|env)$/i.test(segment),
+    )
+  )
+    return res.sendStatus(404);
   next();
 });
 // Public shop availability switch. Missing setting keeps the existing Shop visible by default.
 app.get("/api/shop/status", async (req, res) => {
   try {
-    const result = await queryWithConnectionRetry(
-      SHOP_ENABLED_SQL,
-      [], 4
-    );
+    const result = await queryWithConnectionRetry(SHOP_ENABLED_SQL, [], 4);
     if (!result.rows.length) return res.status(404).json({ enabled: true });
     res.set("Cache-Control", "no-store");
     return res.json({ enabled: result.rows[0].enabled !== false });
   } catch (error) {
     console.error("[SHOP STATUS] Load failed:", error);
-    return res.status(503).json({ error: "Shopstatus kon niet worden gecontroleerd." });
+    return res
+      .status(503)
+      .json({ error: "Shopstatus kon niet worden gecontroleerd." });
   }
 });
 
 // Serve Shop only while enabled. Redirect direct product links home when temporarily hidden.
 app.get("/shop.html", async (req, res) => {
   try {
-    const result = await queryWithConnectionRetry(
-      SHOP_ENABLED_SQL,
-      [], 4
-    );
+    const result = await queryWithConnectionRetry(SHOP_ENABLED_SQL, [], 4);
     if (!result.rows.length || result.rows[0].enabled === false) {
       return res.redirect(302, "/");
     }
@@ -185,18 +246,23 @@ app.get("/robots.txt", (req, res) => {
   res.type("text/plain").sendFile(path.join(__dirname, "robots.txt"));
 });
 
-app.use(express.static(__dirname, {
-  dotfiles: "deny",
-  index: "index.html",
-  etag: true,
-  lastModified: true,
-  setHeaders(res, filePath) {
-    // Cache versionless static assets briefly; HTML remains revalidated.
-    if (/\\.(?:css|js|png|jpe?g|webp|svg|gif|ico|woff2?)$/i.test(filePath)) {
-      res.setHeader("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
-    }
-  }
-}));
+app.use(
+  express.static(__dirname, {
+    dotfiles: "deny",
+    index: "index.html",
+    etag: true,
+    lastModified: true,
+    setHeaders(res, filePath) {
+      // Cache versionless static assets briefly; HTML remains revalidated.
+      if (/\\.(?:css|js|png|jpe?g|webp|svg|gif|ico|woff2?)$/i.test(filePath)) {
+        res.setHeader(
+          "Cache-Control",
+          "public, max-age=3600, stale-while-revalidate=86400",
+        );
+      }
+    },
+  }),
+);
 
 // Create database tables and default settings
 // Keep the compact public buyback catalog warm in memory so the first
@@ -209,7 +275,7 @@ async function loadPublicBuybackCatalog() {
   const result = await queryWithConnectionRetry(
     "SELECT data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones, data->'phones' AS sales_phones FROM site_settings WHERE id = 1",
     [],
-    4
+    4,
   );
   if (!result.rows.length) throw new Error("Buyback catalog not found");
 
@@ -217,26 +283,28 @@ async function loadPublicBuybackCatalog() {
   const payload = buildPublicBuybackCatalogPayload({
     buybackCatalog: Array.isArray(row.catalog) ? row.catalog : [],
     buybackPhones: Array.isArray(row.phones) ? row.phones : [],
-    salesPhones: Array.isArray(row.sales_phones) ? row.sales_phones : []
+    salesPhones: Array.isArray(row.sales_phones) ? row.sales_phones : [],
   });
   const payloadBytes = Buffer.byteLength(JSON.stringify(payload));
   publicBuybackCatalogCache = payload;
   const imageBytes = {
     catalog: sumDataImageBytes(payload.buybackCatalog),
     buybackPhones: sumDataImageBytes(payload.buybackPhones),
-    salesPhones: sumDataImageBytes(payload.salesPhones)
+    salesPhones: sumDataImageBytes(payload.salesPhones),
   };
   console.info(
-    `[BUYBACK CATALOG] Warmed in ${Date.now() - startedAt}ms; ${payload.buybackPhones.length} active buyback phones, ${payload.salesPhones.length} matching sales records, ${payloadBytes} response bytes; embedded image bytes: ${JSON.stringify(imageBytes)}.`
+    `[BUYBACK CATALOG] Warmed in ${Date.now() - startedAt}ms; ${payload.buybackPhones.length} active buyback phones, ${payload.salesPhones.length} matching sales records, ${payloadBytes} response bytes; embedded image bytes: ${JSON.stringify(imageBytes)}.`,
   );
   return payload;
 }
 
 function getPublicBuybackCatalog() {
-  if (publicBuybackCatalogCache) return Promise.resolve(publicBuybackCatalogCache);
+  if (publicBuybackCatalogCache)
+    return Promise.resolve(publicBuybackCatalogCache);
   if (!publicBuybackCatalogLoadPromise) {
-    publicBuybackCatalogLoadPromise = loadPublicBuybackCatalog()
-      .finally(() => { publicBuybackCatalogLoadPromise = null; });
+    publicBuybackCatalogLoadPromise = loadPublicBuybackCatalog().finally(() => {
+      publicBuybackCatalogLoadPromise = null;
+    });
   }
   return publicBuybackCatalogLoadPromise;
 }
@@ -246,8 +314,15 @@ app.get("/api/buyback/image/:id", async (req, res) => {
   const phoneId = String(req.params.id || "");
   const imagePath = String(req.query.path || "");
   const segments = imagePath.split(".");
-  if (!phoneId || !imagePath || imagePath.length > 240 ||
-      segments.some(segment => !segment || ["__proto__", "prototype", "constructor"].includes(segment))) {
+  if (
+    !phoneId ||
+    !imagePath ||
+    imagePath.length > 240 ||
+    segments.some(
+      (segment) =>
+        !segment || ["__proto__", "prototype", "constructor"].includes(segment),
+    )
+  ) {
     return res.status(400).end();
   }
 
@@ -260,23 +335,29 @@ app.get("/api/buyback/image/:id", async (req, res) => {
          AND COALESCE(phone->>'active', 'true') <> 'false'
        LIMIT 1`,
       [phoneId],
-      4
+      4,
     );
     if (!result.rows.length) return res.status(404).end();
 
     let imageValue = result.rows[0].phone;
     for (const segment of segments) {
       const key = /^\d+$/.test(segment) ? Number(segment) : segment;
-      if (!imageValue || typeof imageValue !== "object" ||
-          !Object.prototype.hasOwnProperty.call(imageValue, key)) {
+      if (
+        !imageValue ||
+        typeof imageValue !== "object" ||
+        !Object.prototype.hasOwnProperty.call(imageValue, key)
+      ) {
         return res.status(404).end();
       }
       imageValue = imageValue[key];
     }
 
-    const match = typeof imageValue === "string"
-      ? imageValue.match(/^data:image\/(jpeg|png|webp|gif);base64,([a-z0-9+/]+={0,2})$/i)
-      : null;
+    const match =
+      typeof imageValue === "string"
+        ? imageValue.match(
+            /^data:image\/(jpeg|png|webp|gif);base64,([a-z0-9+/]+={0,2})$/i,
+          )
+        : null;
     if (!match) return res.status(404).end();
 
     const imageBuffer = Buffer.from(match[2], "base64");
@@ -287,7 +368,7 @@ app.get("/api/buyback/image/:id", async (req, res) => {
       "Content-Type": "image/" + match[1].toLowerCase(),
       "Content-Length": String(imageBuffer.length),
       "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
-      "X-Content-Type-Options": "nosniff"
+      "X-Content-Type-Options": "nosniff",
     });
     return res.send(imageBuffer);
   } catch (error) {
@@ -301,9 +382,17 @@ app.get("/api/homepage/phone-image/:index", async (req, res) => {
   const phoneIndex = String(req.params.index || "");
   const imagePath = String(req.query.path || "");
   const segments = imagePath.split(".");
-  const allowedImagePath = /^(?:image|images\.0|colorGalleryImages\.[^.]+\.0|colorImages\.[^.]+(?:\.0)?|colorOptions\.\d{1,3}\.image)$/;
-  if (!/^\d{1,5}$/.test(phoneIndex) || !allowedImagePath.test(imagePath) || imagePath.length > 240 ||
-      segments.some(segment => !segment || ["__proto__", "prototype", "constructor"].includes(segment))) {
+  const allowedImagePath =
+    /^(?:image|images\.0|colorGalleryImages\.[^.]+\.0|colorImages\.[^.]+(?:\.0)?|colorOptions\.\d{1,3}\.image)$/;
+  if (
+    !/^\d{1,5}$/.test(phoneIndex) ||
+    !allowedImagePath.test(imagePath) ||
+    imagePath.length > 240 ||
+    segments.some(
+      (segment) =>
+        !segment || ["__proto__", "prototype", "constructor"].includes(segment),
+    )
+  ) {
     return res.status(400).end();
   }
 
@@ -311,23 +400,30 @@ app.get("/api/homepage/phone-image/:index", async (req, res) => {
     const result = await queryWithConnectionRetry(
       "SELECT (data->'phones')->$1::int AS phone FROM site_settings WHERE id = 1",
       [phoneIndex],
-      4
+      4,
     );
-    if (!result.rows.length || !result.rows[0].phone) return res.status(404).end();
+    if (!result.rows.length || !result.rows[0].phone)
+      return res.status(404).end();
 
     let imageValue = result.rows[0].phone;
     for (const segment of segments) {
       const key = /^\d+$/.test(segment) ? Number(segment) : segment;
-      if (!imageValue || typeof imageValue !== "object" ||
-          !Object.prototype.hasOwnProperty.call(imageValue, key)) {
+      if (
+        !imageValue ||
+        typeof imageValue !== "object" ||
+        !Object.prototype.hasOwnProperty.call(imageValue, key)
+      ) {
         return res.status(404).end();
       }
       imageValue = imageValue[key];
     }
 
-    const match = typeof imageValue === "string"
-      ? imageValue.match(/^data:image\/(jpeg|png|webp|gif);base64,([a-z0-9+/]+={0,2})$/i)
-      : null;
+    const match =
+      typeof imageValue === "string"
+        ? imageValue.match(
+            /^data:image\/(jpeg|png|webp|gif);base64,([a-z0-9+/]+={0,2})$/i,
+          )
+        : null;
     if (!match) return res.status(404).end();
 
     const imageBuffer = Buffer.from(match[2], "base64");
@@ -338,7 +434,7 @@ app.get("/api/homepage/phone-image/:index", async (req, res) => {
       "Content-Type": "image/" + match[1].toLowerCase(),
       "Content-Length": String(imageBuffer.length),
       "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
-      "X-Content-Type-Options": "nosniff"
+      "X-Content-Type-Options": "nosniff",
     });
     return res.send(imageBuffer);
   } catch (error) {
@@ -356,21 +452,25 @@ app.get("/api/homepage/service-image/:index", async (req, res) => {
     const result = await queryWithConnectionRetry(
       "SELECT (data->'services')->$1::int->>3 AS image FROM site_settings WHERE id = 1",
       [serviceIndex],
-      4
+      4,
     );
     const image = result.rows[0]?.image;
-    const match = typeof image === "string"
-      ? image.match(/^data:image\/(jpeg|png|webp|gif);base64,([a-z0-9+/]+={0,2})$/i)
-      : null;
+    const match =
+      typeof image === "string"
+        ? image.match(
+            /^data:image\/(jpeg|png|webp|gif);base64,([a-z0-9+/]+={0,2})$/i,
+          )
+        : null;
     if (!match) return res.status(404).end();
 
     const imageBuffer = Buffer.from(match[2], "base64");
-    if (!imageBuffer.length || imageBuffer.length > 5 * 1024 * 1024) return res.status(413).end();
+    if (!imageBuffer.length || imageBuffer.length > 5 * 1024 * 1024)
+      return res.status(413).end();
     res.set({
       "Content-Type": "image/" + match[1].toLowerCase(),
       "Content-Length": String(imageBuffer.length),
       "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
-      "X-Content-Type-Options": "nosniff"
+      "X-Content-Type-Options": "nosniff",
     });
     return res.send(imageBuffer);
   } catch (error) {
@@ -386,77 +486,111 @@ app.get("/api/buyback/catalog", async (req, res) => {
     return res.json(payload);
   } catch (error) {
     console.error("[BUYBACK CATALOG] Load failed:", error);
-    return res.status(500).json({ error: "Buyback catalog could not be loaded" });
+    return res
+      .status(500)
+      .json({ error: "Buyback catalog could not be loaded" });
   }
 });
 
 registerAnnouncementBarRoutes(app, {
   requirePermission,
-  queryWithConnectionRetry
+  queryWithConnectionRetry,
 });
 registerBenefitsStripRoutes(app, {
   requirePermission,
-  queryWithConnectionRetry
+  queryWithConnectionRetry,
 });
 
 // Load only the allowlisted JSONB fields needed by the requested admin editor.
 app.get("/api/admin/site-data/:section", async (req, res) => {
-  const section = String(req.params.section || "").trim().toLowerCase();
+  const section = String(req.params.section || "")
+    .trim()
+    .toLowerCase();
   const config = getAdminSiteSection(section);
-  if (!config) return res.status(404).json({ error: "Onbekende beheerpagina." });
+  if (!config)
+    return res.status(404).json({ error: "Onbekende beheerpagina." });
 
-  return requirePermission(config.permission, { allowSiteSave: true })(req, res, async () => {
-    try {
-      const sql = buildAdminSiteSectionSelect(section);
-      const result = await queryWithConnectionRetry(sql, [], 4);
-      if (!result.rows.length) {
-        return res.status(404).json({ error: "Website-instellingen niet gevonden." });
+  return requirePermission(config.permission, { allowSiteSave: true })(
+    req,
+    res,
+    async () => {
+      try {
+        const sql = buildAdminSiteSectionSelect(section);
+        const result = await queryWithConnectionRetry(sql, [], 4);
+        if (!result.rows.length) {
+          return res
+            .status(404)
+            .json({ error: "Website-instellingen niet gevonden." });
+        }
+        res.set("Cache-Control", "no-store");
+        return res.json(result.rows[0]);
+      } catch (error) {
+        console.error("[ADMIN SITE DATA] Load failed:", error);
+        return res
+          .status(500)
+          .json({ error: "Beheergegevens konden niet worden geladen." });
       }
-      res.set("Cache-Control", "no-store");
-      return res.json(result.rows[0]);
-    } catch (error) {
-      console.error("[ADMIN SITE DATA] Load failed:", error);
-      return res.status(500).json({ error: "Beheergegevens konden niet worden geladen." });
-    }
-  });
+    },
+  );
 });
 
 // Save only the allowlisted fields for lightweight admin sections.
 app.put("/api/admin/site-data/:section", async (req, res) => {
-  const section = String(req.params.section || "").trim().toLowerCase();
+  const section = String(req.params.section || "")
+    .trim()
+    .toLowerCase();
   const config = getAdminSiteSection(section);
-  if (!config) return res.status(404).json({ error: "Onbekende beheerpagina." });
+  if (!config)
+    return res.status(404).json({ error: "Onbekende beheerpagina." });
 
-  return requirePermission(config.writePermission || "site.save")(req, res, async () => {
-    try {
-      const allowedFields = Array.isArray(config.writeFields) ? config.writeFields : [];
-      const body = req.body;
-      if (!allowedFields.length) {
-        return res.status(405).json({ error: "Deze pagina gebruikt een gespecialiseerde opslagroute." });
-      }
-      if (!body || typeof body !== "object" || Array.isArray(body)) {
-        return res.status(400).json({ error: "Ongeldige beheergegevens." });
-      }
-      const keys = Object.keys(body);
-      if (!keys.length || keys.some(key => !allowedFields.includes(key))) {
-        return res.status(400).json({ error: "De opslag bevat velden die niet bij deze pagina horen." });
-      }
+  return requirePermission(config.writePermission || "site.save")(
+    req,
+    res,
+    async () => {
+      try {
+        const allowedFields = Array.isArray(config.writeFields)
+          ? config.writeFields
+          : [];
+        const body = req.body;
+        if (!allowedFields.length) {
+          return res
+            .status(405)
+            .json({
+              error: "Deze pagina gebruikt een gespecialiseerde opslagroute.",
+            });
+        }
+        if (!body || typeof body !== "object" || Array.isArray(body)) {
+          return res.status(400).json({ error: "Ongeldige beheergegevens." });
+        }
+        const keys = Object.keys(body);
+        if (!keys.length || keys.some((key) => !allowedFields.includes(key))) {
+          return res
+            .status(400)
+            .json({
+              error: "De opslag bevat velden die niet bij deze pagina horen.",
+            });
+        }
 
-      const result = await queryWithConnectionRetry(
-        "UPDATE site_settings SET data = data || $1::jsonb WHERE id = 1 RETURNING id",
-        [JSON.stringify(body)],
-        4
-      );
-      if (!result.rows.length) {
-        return res.status(404).json({ error: "Website-instellingen niet gevonden." });
+        const result = await queryWithConnectionRetry(
+          "UPDATE site_settings SET data = data || $1::jsonb WHERE id = 1 RETURNING id",
+          [JSON.stringify(body)],
+          4,
+        );
+        if (!result.rows.length) {
+          return res
+            .status(404)
+            .json({ error: "Website-instellingen niet gevonden." });
+        }
+        res.set("Cache-Control", "no-store");
+        return res.json({ success: true });
+      } catch (error) {
+        console.error("[ADMIN SITE DATA] Save failed:", error);
+        return res
+          .status(500)
+          .json({ error: "Beheergegevens konden niet worden opgeslagen." });
       }
-      res.set("Cache-Control", "no-store");
-      return res.json({ success: true });
-    } catch (error) {
-      console.error("[ADMIN SITE DATA] Save failed:", error);
-      return res.status(500).json({ error: "Beheergegevens konden niet worden opgeslagen." });
-    }
-  });
+    },
+  );
 });
 
 // Return only the selected product family, not the entire phone catalog.
@@ -476,7 +610,7 @@ app.get("/api/product/:id", async (req, res) => {
       FROM site_settings
       WHERE id = 1`,
       [],
-      4
+      4,
     );
 
     if (!result.rows.length) {
@@ -486,17 +620,17 @@ app.get("/api/product/:id", async (req, res) => {
     const row = result.rows[0];
     const familyRecords = getProductFamilyRecords(
       Array.isArray(row.phones) ? row.phones : [],
-      productIndex
+      productIndex,
     );
     const payload = sanitizeProductFamilyData({
-      phones: familyRecords.map(record => ({
+      phones: familyRecords.map((record) => ({
         index: record.index,
-        product: record.phone
+        product: record.phone,
       })),
       productIndex,
       businessName: row.business_name,
       siteName: row.site_name,
-      tagline: row.tagline
+      tagline: row.tagline,
     });
 
     if (!payload.product) {
@@ -507,7 +641,9 @@ app.get("/api/product/:id", async (req, res) => {
     return res.json(payload);
   } catch (error) {
     console.error("[PUBLIC PRODUCT] Load failed:", error);
-    return res.status(500).json({ error: "Productgegevens konden niet worden geladen." });
+    return res
+      .status(500)
+      .json({ error: "Productgegevens konden niet worden geladen." });
   }
 });
 
@@ -535,7 +671,7 @@ app.get("/api/shop/product/:id", async (req, res) => {
          AND item.product->>'id' = $1
        LIMIT 1`,
       [productId],
-      4
+      4,
     );
 
     const product = result.rows[0]?.product;
@@ -554,8 +690,10 @@ app.get("/api/shop/product/:id", async (req, res) => {
 // Get website settings
 app.get("/api/site", async (req, res) => {
   try {
-    const view=String(req.query.view||"").trim().toLowerCase();
-    if(view==="footer"){
+    const view = String(req.query.view || "")
+      .trim()
+      .toLowerCase();
+    if (view === "footer") {
       // The shared footer needs only contact details and its own settings.
       // Do not serialize the full site document/catalog for every public page.
       const result = await queryWithConnectionRetry(
@@ -567,19 +705,25 @@ app.get("/api/site", async (req, res) => {
         FROM site_settings
         WHERE id = 1`,
         [],
-        4
+        4,
       );
-      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
-      const row=result.rows[0];
-      res.set("Cache-Control","public, max-age=0, must-revalidate");
-      return res.json(sanitizePublicSiteData({
-        homepage:{footer:row.footer && typeof row.footer === "object" ? row.footer : {}},
-        areas:row.areas,
-        phone:row.phone,
-        whatsapp:row.whatsapp
-      }));
+      if (!result.rows.length)
+        return res.status(404).json({ error: "Settings not found" });
+      const row = result.rows[0];
+      res.set("Cache-Control", "public, max-age=0, must-revalidate");
+      return res.json(
+        sanitizePublicSiteData({
+          homepage: {
+            footer:
+              row.footer && typeof row.footer === "object" ? row.footer : {},
+          },
+          areas: row.areas,
+          phone: row.phone,
+          whatsapp: row.whatsapp,
+        }),
+      );
     }
-    if(view==="repair"){
+    if (view === "repair") {
       const result = await queryWithConnectionRetry(
         `SELECT
           data->'repairPage' AS repair_page,
@@ -591,22 +735,28 @@ app.get("/api/site", async (req, res) => {
         FROM site_settings
         WHERE id = 1`,
         [],
-        4
+        4,
       );
-      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
-      const row=result.rows[0];
+      if (!result.rows.length)
+        return res.status(404).json({ error: "Settings not found" });
+      const row = result.rows[0];
       // Repair-page settings are public and change infrequently; short caching avoids a database round-trip on every visit.
-      res.set("Cache-Control","public, max-age=60, stale-while-revalidate=300");
-      return res.json(sanitizePublicSiteData({
-        repairPage:row.repair_page,
-        services:Array.isArray(row.services)?row.services:[],
-        businessName:row.business_name,
-        siteName:row.site_name,
-        tagline:row.tagline,
-        whatsapp:row.whatsapp
-      }));
+      res.set(
+        "Cache-Control",
+        "public, max-age=60, stale-while-revalidate=300",
+      );
+      return res.json(
+        sanitizePublicSiteData({
+          repairPage: row.repair_page,
+          services: Array.isArray(row.services) ? row.services : [],
+          businessName: row.business_name,
+          siteName: row.site_name,
+          tagline: row.tagline,
+          whatsapp: row.whatsapp,
+        }),
+      );
     }
-    if(view==="devices"){
+    if (view === "devices") {
       const result = await queryWithConnectionRetry(
         `SELECT
           data->'phones' AS phones,
@@ -619,15 +769,26 @@ app.get("/api/site", async (req, res) => {
         FROM site_settings
         WHERE id = 1`,
         [],
-        4
+        4,
       );
-      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
-      const row=result.rows[0];
-      res.set("Cache-Control","public, max-age=10, stale-while-revalidate=30");
-      return res.json(sanitizeDevicesCatalogData({phones:row.phones,devices:row.devices,phone:row.phone,whatsapp:row.whatsapp,businessName:row.business_name,siteName:row.site_name,tagline:row.tagline}));
+      if (!result.rows.length)
+        return res.status(404).json({ error: "Settings not found" });
+      const row = result.rows[0];
+      res.set("Cache-Control", "public, max-age=10, stale-while-revalidate=30");
+      return res.json(
+        sanitizeDevicesCatalogData({
+          phones: row.phones,
+          devices: row.devices,
+          phone: row.phone,
+          whatsapp: row.whatsapp,
+          businessName: row.business_name,
+          siteName: row.site_name,
+          tagline: row.tagline,
+        }),
+      );
     }
-    if(view==="product"){
-      const result=await queryWithConnectionRetry(
+    if (view === "product") {
+      const result = await queryWithConnectionRetry(
         `SELECT
           data->'phones' AS phones,
           data->'phone' AS phone,
@@ -638,40 +799,53 @@ app.get("/api/site", async (req, res) => {
         FROM site_settings
         WHERE id = 1`,
         [],
-        4
+        4,
       );
-      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
-      const row=result.rows[0];
-      res.set("Cache-Control","public, max-age=0, must-revalidate");
-      return res.json(sanitizeProductCatalogData({
-        phones: row.phones,
-        phone: row.phone,
-        whatsapp: row.whatsapp,
-        businessName: row.business_name,
-        siteName: row.site_name,
-        tagline: row.tagline
-      }));
+      if (!result.rows.length)
+        return res.status(404).json({ error: "Settings not found" });
+      const row = result.rows[0];
+      res.set("Cache-Control", "public, max-age=0, must-revalidate");
+      return res.json(
+        sanitizeProductCatalogData({
+          phones: row.phones,
+          phone: row.phone,
+          whatsapp: row.whatsapp,
+          businessName: row.business_name,
+          siteName: row.site_name,
+          tagline: row.tagline,
+        }),
+      );
     }
-    if(view==="shop"){
-      const result=await queryWithConnectionRetry(
+    if (view === "shop") {
+      const result = await queryWithConnectionRetry(
         "SELECT data->'shopProducts' AS shop_products FROM site_settings WHERE id=1",
         [],
-        4
+        4,
       );
-      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
-      res.set("Cache-Control","public, max-age=0, must-revalidate");
-      return res.json(sanitizePublicSiteData({
-        shopProducts:buildShopCatalogList(result.rows[0].shop_products)
-      }));
+      if (!result.rows.length)
+        return res.status(404).json({ error: "Settings not found" });
+      res.set("Cache-Control", "public, max-age=0, must-revalidate");
+      return res.json(
+        sanitizePublicSiteData({
+          shopProducts: buildShopCatalogList(result.rows[0].shop_products),
+        }),
+      );
     }
-    if(view==="cart"){
-      const result=await queryWithConnectionRetry("SELECT data->'shopProducts' AS shop_products FROM site_settings WHERE id=1",[],4);
-      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
-      res.set("Cache-Control","public, max-age=0, must-revalidate");
-      return res.json({shopProducts:sanitizeCartStockData(result.rows[0].shop_products)});
+    if (view === "cart") {
+      const result = await queryWithConnectionRetry(
+        "SELECT data->'shopProducts' AS shop_products FROM site_settings WHERE id=1",
+        [],
+        4,
+      );
+      if (!result.rows.length)
+        return res.status(404).json({ error: "Settings not found" });
+      res.set("Cache-Control", "public, max-age=0, must-revalidate");
+      return res.json({
+        shopProducts: sanitizeCartStockData(result.rows[0].shop_products),
+      });
     }
-    if(view==="about"){
-      const result=await queryWithConnectionRetry(
+    if (view === "about") {
+      const result = await queryWithConnectionRetry(
         `SELECT
           data->>'businessName' AS business_name,
           data->>'siteName' AS site_name,
@@ -684,23 +858,26 @@ app.get("/api/site", async (req, res) => {
         FROM site_settings
         WHERE id=1`,
         [],
-        4
+        4,
       );
-      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
-      const row=result.rows[0];
-      res.set("Cache-Control","public, max-age=0, must-revalidate");
-      return res.json(sanitizePublicSiteData({
-        businessName:row.business_name || row.site_name,
-        tagline:row.tagline,
-        areas:row.areas,
-        why:row.why,
-        features:row.features,
-        whatsapp:row.whatsapp,
-        phone:row.phone
-      }));
+      if (!result.rows.length)
+        return res.status(404).json({ error: "Settings not found" });
+      const row = result.rows[0];
+      res.set("Cache-Control", "public, max-age=0, must-revalidate");
+      return res.json(
+        sanitizePublicSiteData({
+          businessName: row.business_name || row.site_name,
+          tagline: row.tagline,
+          areas: row.areas,
+          why: row.why,
+          features: row.features,
+          whatsapp: row.whatsapp,
+          phone: row.phone,
+        }),
+      );
     }
-    if(view==="prices"){
-      const result=await queryWithConnectionRetry(
+    if (view === "prices") {
+      const result = await queryWithConnectionRetry(
         `SELECT
           data->>'businessName' AS business_name,
           data->>'siteName' AS site_name,
@@ -710,25 +887,29 @@ app.get("/api/site", async (req, res) => {
         FROM site_settings
         WHERE id=1`,
         [],
-        4
+        4,
       );
-      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
-      const row=result.rows[0];
-      res.set("Cache-Control","public, max-age=0, must-revalidate");
-      return res.json(sanitizePublicSiteData({
-        businessName:row.business_name,
-        siteName:row.site_name,
-        tagline:row.tagline,
-        whatsapp:row.whatsapp,
-        phone:row.phone
-      }));
+      if (!result.rows.length)
+        return res.status(404).json({ error: "Settings not found" });
+      const row = result.rows[0];
+      res.set("Cache-Control", "public, max-age=0, must-revalidate");
+      return res.json(
+        sanitizePublicSiteData({
+          businessName: row.business_name,
+          siteName: row.site_name,
+          tagline: row.tagline,
+          whatsapp: row.whatsapp,
+          phone: row.phone,
+        }),
+      );
     }
     // Public homepage requests must not load the entire site_settings JSONB
     // document. Select only homepage fields and the exact phone rows needed by
     // the popular-products strip; large unrelated catalogs never enter Node.js.
-    const homepageResult = view === "home"
-      ? await queryWithConnectionRetry(
-          `WITH settings AS (
+    const homepageResult =
+      view === "home"
+        ? await queryWithConnectionRetry(
+            `WITH settings AS (
              SELECT
                data,
                CASE
@@ -795,18 +976,18 @@ app.get("/api/site", async (req, res) => {
                '[]'::jsonb
              ) AS phones
            FROM settings s`,
-          [],
-          4
-        )
-      : await queryWithConnectionRetry(
-          "SELECT data FROM site_settings WHERE id = 1",
-          [],
-          4
-        );
+            [],
+            4,
+          )
+        : await queryWithConnectionRetry(
+            "SELECT data FROM site_settings WHERE id = 1",
+            [],
+            4,
+          );
 
     if (homepageResult.rows.length === 0) {
       return res.status(404).json({
-        error: "Settings not found"
+        error: "Settings not found",
       });
     }
 
@@ -814,45 +995,67 @@ app.get("/api/site", async (req, res) => {
     try {
       const tokenUser = getAdminFromRequest(req);
       const user = await refreshAdminUserFromDb(tokenUser);
-      canViewPrivate = !!user && (
-        user.role === "superadmin" ||
-        user.username === String(process.env.ADMIN_USERNAME || "") ||
-        user.permissions?.includes("*") ||
-        user.permissions?.includes("site.save")
-      );
+      canViewPrivate =
+        !!user &&
+        (user.role === "superadmin" ||
+          user.username === String(process.env.ADMIN_USERNAME || "") ||
+          user.permissions?.includes("*") ||
+          user.permissions?.includes("site.save"));
     } catch {}
-    const data = view === "home"
-      ? {
-          homepage: homepageResult.rows[0].homepage && typeof homepageResult.rows[0].homepage === "object"
-            ? {
-                ...homepageResult.rows[0].homepage,
-                ...(homepageResult.rows[0].homepage.popular && typeof homepageResult.rows[0].homepage.popular === "object"
-                  ? { popular: { ...homepageResult.rows[0].homepage.popular, indexes: [] } }
-                  : {})
-              }
-            : {},
-          deviceCategories: homepageResult.rows[0].device_categories,
-          services: Array.isArray(homepageResult.rows[0].services) ? homepageResult.rows[0].services : [],
-          why: homepageResult.rows[0].why,
-          phone: homepageResult.rows[0].phone,
-          whatsapp: homepageResult.rows[0].whatsapp,
-          phones: Array.isArray(homepageResult.rows[0].phones) ? homepageResult.rows[0].phones : []
-        }
-      : homepageResult.rows[0].data;
+    const data =
+      view === "home"
+        ? {
+            homepage:
+              homepageResult.rows[0].homepage &&
+              typeof homepageResult.rows[0].homepage === "object"
+                ? {
+                    ...homepageResult.rows[0].homepage,
+                    ...(homepageResult.rows[0].homepage.popular &&
+                    typeof homepageResult.rows[0].homepage.popular === "object"
+                      ? {
+                          popular: {
+                            ...homepageResult.rows[0].homepage.popular,
+                            indexes: [],
+                          },
+                        }
+                      : {}),
+                  }
+                : {},
+            deviceCategories: homepageResult.rows[0].device_categories,
+            services: Array.isArray(homepageResult.rows[0].services)
+              ? homepageResult.rows[0].services
+              : [],
+            why: homepageResult.rows[0].why,
+            phone: homepageResult.rows[0].phone,
+            whatsapp: homepageResult.rows[0].whatsapp,
+            phones: Array.isArray(homepageResult.rows[0].phones)
+              ? homepageResult.rows[0].phones
+              : [],
+          }
+        : homepageResult.rows[0].data;
     if (view === "home" && data.phones.length === 0) {
-      console.warn("[HOMEPAGE CATALOG] No valid popular phones were selected from the stored catalog.", {
-        popularEnabled: data.homepage?.popular?.enabled !== false,
-        selectedCount: Array.isArray(homepageResult.rows[0].homepage?.popular?.indexes)
-          ? homepageResult.rows[0].homepage.popular.indexes.length : 0
-      });
+      console.warn(
+        "[HOMEPAGE CATALOG] No valid popular phones were selected from the stored catalog.",
+        {
+          popularEnabled: data.homepage?.popular?.enabled !== false,
+          selectedCount: Array.isArray(
+            homepageResult.rows[0].homepage?.popular?.indexes,
+          )
+            ? homepageResult.rows[0].homepage.popular.indexes.length
+            : 0,
+        },
+      );
     }
     // Private/admin responses must never be cached. Public responses can be revalidated
     // so repeat visits avoid transferring the full settings payload when unchanged.
     // Homepage settings change frequently through the admin panel. Avoid serving a
     // stale compact catalog from an intermediary cache after products are updated.
-    res.set("Cache-Control", canViewPrivate || view === "home"
-      ? "no-store"
-      : "public, max-age=0, must-revalidate");
+    res.set(
+      "Cache-Control",
+      canViewPrivate || view === "home"
+        ? "no-store"
+        : "public, max-age=0, must-revalidate",
+    );
     if (!canViewPrivate && view === "home") {
       return res.json(sanitizeHomepageSiteData(data));
     }
@@ -861,90 +1064,150 @@ app.get("/api/site", async (req, res) => {
     console.error(error);
 
     res.status(500).json({
-      error: "Server error"
+      error: "Server error",
     });
   }
 });
 
-registerContactRoutes(app, { pool, escapeHtml, cryptoImpl: crypto, getEnv: () => process.env, fetchImpl: fetch });
+registerContactRoutes(app, {
+  pool,
+  escapeHtml,
+  cryptoImpl: crypto,
+  getEnv: () => process.env,
+  fetchImpl: fetch,
+});
 
 // Admin login + permissions
 
-
-app.post("/api/login", async (req,res)=>{
-  try{
+app.post("/api/login", async (req, res) => {
+  try {
     const loginIp = String(req.ip || req.socket.remoteAddress || "").trim();
     if (!checkAuthLoginRateLimit("admin", loginIp)) {
-      return res.status(429).json({ error: "Te veel inlogpogingen. Wacht 15 minuten en probeer het opnieuw." });
+      return res
+        .status(429)
+        .json({
+          error:
+            "Te veel inlogpogingen. Wacht 15 minuten en probeer het opnieuw.",
+        });
     }
-    const username=String(req.body?.username||"").trim();
-    const password=String(req.body?.password||"");
+    const username = String(req.body?.username || "").trim();
+    const password = String(req.body?.password || "");
 
-    if(username===String(process.env.ADMIN_USERNAME||"") && password===String(process.env.ADMIN_PASSWORD||"")){
-      const user=getSuperAdminUser(username);
-      const token=jwt.sign(user,process.env.JWT_SECRET,{expiresIn:"7d"});
-      res.cookie("token",token,{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",maxAge:7*24*60*60*1000});
-      return res.json({success:true,user});
+    if (
+      username === String(process.env.ADMIN_USERNAME || "") &&
+      password === String(process.env.ADMIN_PASSWORD || "")
+    ) {
+      const user = getSuperAdminUser(username);
+      const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "7d" });
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+      return res.json({ success: true, user });
     }
 
-    const q=await pool.query(`SELECT id,username,password_hash,role,permissions,active
-      FROM admin_users WHERE LOWER(username)=LOWER($1) LIMIT 1`,[username]);
-    if(!q.rows.length || !q.rows[0].active) return res.status(401).json({error:"Invalid username or password"});
+    const q = await pool.query(
+      `SELECT id,username,password_hash,role,permissions,active
+      FROM admin_users WHERE LOWER(username)=LOWER($1) LIMIT 1`,
+      [username],
+    );
+    if (!q.rows.length || !q.rows[0].active)
+      return res.status(401).json({ error: "Invalid username or password" });
 
-    const a=q.rows[0];
-    if(!await verifyPassword(password,a.password_hash))
-      return res.status(401).json({error:"Invalid username or password"});
+    const a = q.rows[0];
+    if (!(await verifyPassword(password, a.password_hash)))
+      return res.status(401).json({ error: "Invalid username or password" });
 
-    const user={id:a.id,username:a.username,role:a.role||"admin",permissions:sanitizeStoredAdminPermissions(a.permissions)};
-    const token=jwt.sign(user,process.env.JWT_SECRET,{expiresIn:"7d"});
-    res.cookie("token",token,{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",maxAge:7*24*60*60*1000});
-    res.json({success:true,user});
-  }catch(e){
-    console.error("Admin login error:",e);
-    res.status(500).json({error:"Login mislukt"});
+    const user = {
+      id: a.id,
+      username: a.username,
+      role: a.role || "admin",
+      permissions: sanitizeStoredAdminPermissions(a.permissions),
+    };
+    const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "7d" });
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    res.json({ success: true, user });
+  } catch (e) {
+    console.error("Admin login error:", e);
+    res.status(500).json({ error: "Login mislukt" });
   }
 });
 
-app.get("/api/me",async (req,res)=>{
-  try{
-    const token=req.cookies?.token;
-    if(!token){
+app.get("/api/me", async (req, res) => {
+  try {
+    const token = req.cookies?.token;
+    if (!token) {
       console.warn("Admin session check: token cookie missing");
-      return res.status(401).json({authenticated:false,reason:"cookie_missing"});
+      return res
+        .status(401)
+        .json({ authenticated: false, reason: "cookie_missing" });
     }
     let user;
-    try{user=jwt.verify(token,process.env.JWT_SECRET);}
-    catch(e){
-      console.warn("Admin session check: token verification failed ("+String(e?.name||"Error")+")");
-      return res.status(401).json({authenticated:false,reason:"token_invalid"});
+    try {
+      user = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (e) {
+      console.warn(
+        "Admin session check: token verification failed (" +
+          String(e?.name || "Error") +
+          ")",
+      );
+      return res
+        .status(401)
+        .json({ authenticated: false, reason: "token_invalid" });
     }
-    if(user.username===String(process.env.ADMIN_USERNAME||"")){
-      return res.json({authenticated:true,...getSuperAdminUser(user.username)});
+    if (user.username === String(process.env.ADMIN_USERNAME || "")) {
+      return res.json({
+        authenticated: true,
+        ...getSuperAdminUser(user.username),
+      });
     }
-    const q=await pool.query(`SELECT id,username,role,permissions,active FROM admin_users WHERE id=$1 OR LOWER(username)=LOWER($2) LIMIT 1`,[user.id||0,user.username||""]);
-    if(!q.rows.length || !q.rows[0].active){
+    const q = await pool.query(
+      `SELECT id,username,role,permissions,active FROM admin_users WHERE id=$1 OR LOWER(username)=LOWER($2) LIMIT 1`,
+      [user.id || 0, user.username || ""],
+    );
+    if (!q.rows.length || !q.rows[0].active) {
       console.warn("Admin session check: admin account missing or inactive");
-      return res.status(401).json({authenticated:false,reason:"admin_inactive"});
+      return res
+        .status(401)
+        .json({ authenticated: false, reason: "admin_inactive" });
     }
-    const a=q.rows[0];
-    const normalized={id:a.id,username:a.username,role:a.role||"admin",permissions:sanitizeStoredAdminPermissions(a.permissions)};
-    res.json({authenticated:true,...normalized});
-  }catch(e){
-    console.error("Admin session check failed:",String(e?.name||"Error"),String(e?.code||""));
-    res.status(500).json({authenticated:false,reason:"session_check_error"});
+    const a = q.rows[0];
+    const normalized = {
+      id: a.id,
+      username: a.username,
+      role: a.role || "admin",
+      permissions: sanitizeStoredAdminPermissions(a.permissions),
+    };
+    res.json({ authenticated: true, ...normalized });
+  } catch (e) {
+    console.error(
+      "Admin session check failed:",
+      String(e?.name || "Error"),
+      String(e?.code || ""),
+    );
+    res
+      .status(500)
+      .json({ authenticated: false, reason: "session_check_error" });
   }
 });
 
-app.post("/api/logout",(req,res)=>{
+app.post("/api/logout", (req, res) => {
   res.clearCookie("token");
-  res.json({success:true});
+  res.json({ success: true });
 });
 
 registerDeviceRegisterRoutes(app, {
   pool,
   requirePermission,
   deviceText,
-  deviceMoney
+  deviceMoney,
 });
 
 registerCustomerAuthRoutes(app, {
@@ -957,7 +1220,7 @@ registerCustomerAuthRoutes(app, {
   sendWelcomeEmail,
   escapeHtml,
   fetchImpl: fetch,
-  getEnv: () => process.env
+  getEnv: () => process.env,
 });
 
 registerRepairOrderRoutes(app, {
@@ -965,7 +1228,7 @@ registerRepairOrderRoutes(app, {
   jwt,
   escapeHtml,
   fetchImpl: fetch,
-  getEnv: () => process.env
+  getEnv: () => process.env,
 });
 
 // Inventory deduction is handled by the isolated transaction module.
@@ -982,7 +1245,7 @@ registerWebshopCheckoutRoutes(app, {
   fetchImpl: fetch,
   getEnv: () => process.env,
   priceProductFromCatalog,
-  validateCartInventoryQuantities
+  validateCartInventoryQuantities,
 });
 
 registerPaymentRoutes(app, {
@@ -1001,7 +1264,7 @@ registerPaymentRoutes(app, {
   deductPaidOrderInventory,
   fetchImpl: fetch,
   getEnv: () => process.env,
-  escapeHtml
+  escapeHtml,
 });
 
 // Admin webshop order endpoints live in their own route module.
@@ -1013,7 +1276,7 @@ registerAdminWebshopOrderRoutes(app, {
   ensureBuybackOrdersTable,
   fetchImpl: fetch,
   getEnv: () => process.env,
-  escapeHtml
+  escapeHtml,
 });
 
 registerRepairQuoteRoutes(app, {
@@ -1024,7 +1287,7 @@ registerRepairQuoteRoutes(app, {
   jwt,
   escapeHtml,
   fetchImpl: fetch,
-  getEnv: () => process.env
+  getEnv: () => process.env,
 });
 
 // Admin order endpoints are registered from a dedicated router module.
@@ -1033,7 +1296,7 @@ registerAdminOrderRoutes(app, {
   requirePermission,
   escapeHtml,
   fetchImpl: fetch,
-  getEnv: () => process.env
+  getEnv: () => process.env,
 });
 registerAdminBuybackOrderRoutes(app, {
   pool,
@@ -1042,13 +1305,13 @@ registerAdminBuybackOrderRoutes(app, {
   escapeHtml,
   crypto,
   fetchImpl: fetch,
-  getEnv: () => process.env
+  getEnv: () => process.env,
 });
 
 registerAdminInvoiceRoutes(app, {
   pool,
   requirePermission,
-  buildInvoicePdf
+  buildInvoicePdf,
 });
 
 registerAdminInventoryRoutes(app, { pool, requirePermission });
@@ -1057,121 +1320,205 @@ registerAdminEmailRoutes(app, {
   pool,
   requirePermission,
   escapeHtml,
-  crypto
+  crypto,
 });
 // Dedicated photo endpoint to serve images on-demand with caching
 // Authentication middleware
 // Update website settings
 
 // Admin-only toggle for temporarily hiding the public Shop without deleting products.
-app.get("/api/admin/shop-visibility", requirePermission("site.save"), async (req, res) => {
-  try {
-    const result = await queryWithConnectionRetry(
-      SHOP_ENABLED_SQL,
-      [], 4
-    );
-    if (!result.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
-    return res.json({ enabled: result.rows[0].enabled !== false });
-  } catch (error) {
-    console.error("[ADMIN SHOP VISIBILITY] Load failed:", error);
-    return res.status(500).json({ error: "Shopinstelling laden is mislukt." });
-  }
-});
-
-app.put("/api/admin/shop-visibility", requirePermission("site.save"), async (req, res) => {
-  try {
-    if (typeof req.body?.enabled !== "boolean") {
-      return res.status(400).json({ error: "Ongeldige Shop-instelling." });
+app.get(
+  "/api/admin/shop-visibility",
+  requirePermission("site.save"),
+  async (req, res) => {
+    try {
+      const result = await queryWithConnectionRetry(SHOP_ENABLED_SQL, [], 4);
+      if (!result.rows.length)
+        return res
+          .status(404)
+          .json({ error: "Website-instellingen niet gevonden." });
+      return res.json({ enabled: result.rows[0].enabled !== false });
+    } catch (error) {
+      console.error("[ADMIN SHOP VISIBILITY] Load failed:", error);
+      return res
+        .status(500)
+        .json({ error: "Shopinstelling laden is mislukt." });
     }
-    const result = await queryWithConnectionRetry(
-      "UPDATE site_settings SET data = jsonb_set(data, '{shopPageEnabled}', to_jsonb($1::boolean), TRUE) WHERE id = 1 RETURNING (data->>'shopPageEnabled')::boolean AS enabled",
-      [req.body.enabled], 4
-    );
-    if (!result.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
-    return res.json({ success: true, enabled: result.rows[0].enabled });
-  } catch (error) {
-    console.error("[ADMIN SHOP VISIBILITY] Save failed:", error);
-    return res.status(500).json({ error: "Shopinstelling opslaan is mislukt." });
-  }
-});
+  },
+);
+
+app.put(
+  "/api/admin/shop-visibility",
+  requirePermission("site.save"),
+  async (req, res) => {
+    try {
+      if (typeof req.body?.enabled !== "boolean") {
+        return res.status(400).json({ error: "Ongeldige Shop-instelling." });
+      }
+      const result = await queryWithConnectionRetry(
+        "UPDATE site_settings SET data = jsonb_set(data, '{shopPageEnabled}', to_jsonb($1::boolean), TRUE) WHERE id = 1 RETURNING (data->>'shopPageEnabled')::boolean AS enabled",
+        [req.body.enabled],
+        4,
+      );
+      if (!result.rows.length)
+        return res
+          .status(404)
+          .json({ error: "Website-instellingen niet gevonden." });
+      return res.json({ success: true, enabled: result.rows[0].enabled });
+    } catch (error) {
+      console.error("[ADMIN SHOP VISIBILITY] Save failed:", error);
+      return res
+        .status(500)
+        .json({ error: "Shopinstelling opslaan is mislukt." });
+    }
+  },
+);
 
 app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
   try {
-    const section = String(req.headers["x-homs-admin-section"] || "").trim().toLowerCase();
-    const phoneSharedFields = ["phoneFolders", "globalConditionDetails", "globalConditionOverviewImage"];
-    const hasPhoneSharedData = Object.prototype.hasOwnProperty.call(req.body || {}, "sharedData");
-    const phoneSharedData = hasPhoneSharedData ? req.body.sharedData : {};
-    const validPhoneSharedData = !hasPhoneSharedData || (
-      phoneSharedData && typeof phoneSharedData === "object" && !Array.isArray(phoneSharedData) &&
-      Object.keys(phoneSharedData).every(key => phoneSharedFields.includes(key)) &&
-      (!Object.prototype.hasOwnProperty.call(phoneSharedData, "phoneFolders") || Array.isArray(phoneSharedData.phoneFolders)) &&
-      (!Object.prototype.hasOwnProperty.call(phoneSharedData, "globalConditionDetails") || Array.isArray(phoneSharedData.globalConditionDetails)) &&
-      (!Object.prototype.hasOwnProperty.call(phoneSharedData, "globalConditionOverviewImage") || typeof phoneSharedData.globalConditionOverviewImage === "string")
+    const section = String(req.headers["x-homs-admin-section"] || "")
+      .trim()
+      .toLowerCase();
+    const phoneSharedFields = [
+      "phoneFolders",
+      "globalConditionDetails",
+      "globalConditionOverviewImage",
+    ];
+    const hasPhoneSharedData = Object.prototype.hasOwnProperty.call(
+      req.body || {},
+      "sharedData",
     );
+    const phoneSharedData = hasPhoneSharedData ? req.body.sharedData : {};
+    const validPhoneSharedData =
+      !hasPhoneSharedData ||
+      (phoneSharedData &&
+        typeof phoneSharedData === "object" &&
+        !Array.isArray(phoneSharedData) &&
+        Object.keys(phoneSharedData).every((key) =>
+          phoneSharedFields.includes(key),
+        ) &&
+        (!Object.prototype.hasOwnProperty.call(
+          phoneSharedData,
+          "phoneFolders",
+        ) ||
+          Array.isArray(phoneSharedData.phoneFolders)) &&
+        (!Object.prototype.hasOwnProperty.call(
+          phoneSharedData,
+          "globalConditionDetails",
+        ) ||
+          Array.isArray(phoneSharedData.globalConditionDetails)) &&
+        (!Object.prototype.hasOwnProperty.call(
+          phoneSharedData,
+          "globalConditionOverviewImage",
+        ) ||
+          typeof phoneSharedData.globalConditionOverviewImage === "string"));
     if (section === "phones" && hasPhoneSharedData && !validPhoneSharedData) {
-      return res.status(400).json({ error: "Ongeldige gedeelde telefoongegevens." });
+      return res
+        .status(400)
+        .json({ error: "Ongeldige gedeelde telefoongegevens." });
     }
-    const phoneSharedJson = JSON.stringify(validPhoneSharedData ? phoneSharedData : {});
+    const phoneSharedJson = JSON.stringify(
+      validPhoneSharedData ? phoneSharedData : {},
+    );
 
     // A single-product edit updates exactly one array element and its small
     // shared editor fields. Unrelated catalog entries stay outside Node memory.
     const singlePhoneKeys = Object.keys(req.body || {});
-    const isSinglePhonePatch = section === "phones" &&
-      req.body && req.body.phoneItem && typeof req.body.phoneItem === "object" &&
+    const isSinglePhonePatch =
+      section === "phones" &&
+      req.body &&
+      req.body.phoneItem &&
+      typeof req.body.phoneItem === "object" &&
       !Array.isArray(req.body.phoneItem) &&
       Number.isInteger(Number(req.body.phoneIndex)) &&
-      req.body.phoneIdentity && typeof req.body.phoneIdentity === "object" &&
-      singlePhoneKeys.every(key => ["phoneItem", "phoneIndex", "phoneIdentity", "sharedData"].includes(key));
+      req.body.phoneIdentity &&
+      typeof req.body.phoneIdentity === "object" &&
+      singlePhoneKeys.every((key) =>
+        ["phoneItem", "phoneIndex", "phoneIdentity", "sharedData"].includes(
+          key,
+        ),
+      );
 
     if (isSinglePhonePatch) {
       const phoneIndex = Number(req.body.phoneIndex);
       const incomingPhone = req.body.phoneItem;
       const current = await queryWithConnectionRetry(
         "SELECT jsonb_array_length(COALESCE(data->'phones', '[]'::jsonb)) AS phone_count, data->'phones'->($1::int) AS phone FROM site_settings WHERE id = 1",
-        [phoneIndex], 4
+        [phoneIndex],
+        4,
       );
-      if (!current.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
+      if (!current.rows.length)
+        return res
+          .status(404)
+          .json({ error: "Website-instellingen niet gevonden." });
       const phoneCount = Number(current.rows[0].phone_count || 0);
       if (phoneIndex < 0 || phoneIndex > phoneCount) {
-        return res.status(409).json({ error: "De productlijst is gewijzigd. Vernieuw de pagina en probeer opnieuw." });
+        return res
+          .status(409)
+          .json({
+            error:
+              "De productlijst is gewijzigd. Vernieuw de pagina en probeer opnieuw.",
+          });
       }
 
       let saved;
       if (phoneIndex === phoneCount) {
         saved = await queryWithConnectionRetry(
           "UPDATE site_settings SET data = (jsonb_set(data, '{phones}', COALESCE(data->'phones', '[]'::jsonb) || jsonb_build_array($1::jsonb), true) || $3::jsonb) WHERE id = 1 RETURNING data->'phones'->($2::int) AS phone",
-          [JSON.stringify(incomingPhone), phoneIndex, phoneSharedJson], 4
+          [JSON.stringify(incomingPhone), phoneIndex, phoneSharedJson],
+          4,
         );
       } else {
         const existingPhone = current.rows[0].phone;
-        const sameId = incomingPhone.id != null && existingPhone?.id != null &&
+        const sameId =
+          incomingPhone.id != null &&
+          existingPhone?.id != null &&
           String(incomingPhone.id) === String(existingPhone.id);
         const expected = req.body.phoneIdentity || {};
-        const sameLegacyIdentity = incomingPhone.id == null && existingPhone?.id == null &&
-          String(expected.name || "").trim() === String(existingPhone?.name || "").trim() &&
-          String(expected.brand || "").trim() === String(existingPhone?.brand || "").trim();
+        const sameLegacyIdentity =
+          incomingPhone.id == null &&
+          existingPhone?.id == null &&
+          String(expected.name || "").trim() ===
+            String(existingPhone?.name || "").trim() &&
+          String(expected.brand || "").trim() ===
+            String(existingPhone?.brand || "").trim();
         if (!sameId && !sameLegacyIdentity) {
-          return res.status(409).json({ error: "Dit product is ondertussen gewijzigd of verplaatst. Vernieuw de pagina om overschrijven te voorkomen." });
+          return res
+            .status(409)
+            .json({
+              error:
+                "Dit product is ondertussen gewijzigd of verplaatst. Vernieuw de pagina om overschrijven te voorkomen.",
+            });
         }
         // Load and preserve photos for this product only; unrelated product
         // images never enter the Node.js heap during a single-product save.
         preserveExistingProductPhotos(existingPhone, incomingPhone);
         saved = await queryWithConnectionRetry(
           "UPDATE site_settings SET data = (jsonb_set(data, ARRAY['phones', $2::text], $1::jsonb, false) || $3::jsonb) WHERE id = 1 RETURNING data->'phones'->($2::int) AS phone",
-          [JSON.stringify(incomingPhone), phoneIndex, phoneSharedJson], 4
+          [JSON.stringify(incomingPhone), phoneIndex, phoneSharedJson],
+          4,
         );
       }
-      if (!saved.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
-      return res.json({ success: true, phoneIndex, phone: saved.rows[0].phone });
+      if (!saved.rows.length)
+        return res
+          .status(404)
+          .json({ error: "Website-instellingen niet gevonden." });
+      return res.json({
+        success: true,
+        phoneIndex,
+        phone: saved.rows[0].phone,
+      });
     }
 
     // The phone editor sends the catalog plus its small shared editor fields,
     // never the entire 18+ MB settings document with unrelated page images.
     // Read and update only the phone projection and supplied shared JSONB keys.
     const phoneCatalogKeys = Object.keys(req.body || {});
-    const isPhoneCatalogPatch = section === "phones" &&
-      req.body && Array.isArray(req.body.phones) &&
-      phoneCatalogKeys.every(key => ["phones", "sharedData"].includes(key));
+    const isPhoneCatalogPatch =
+      section === "phones" &&
+      req.body &&
+      Array.isArray(req.body.phones) &&
+      phoneCatalogKeys.every((key) => ["phones", "sharedData"].includes(key));
 
     if (isPhoneCatalogPatch) {
       const current = await queryWithConnectionRetry(
@@ -1195,21 +1542,29 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
         FROM site_settings
         WHERE id = 1`,
         [],
-        4
+        4,
       );
-      if (!current.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
+      if (!current.rows.length)
+        return res
+          .status(404)
+          .json({ error: "Website-instellingen niet gevonden." });
 
       // Preserve only image fields for matching products. Avoid loading every
       // product's specifications, descriptions, options and pricing into Node.
       const existing = { phones: current.rows[0].phones || [] };
-      const incoming = preserveExistingCatalogPhotos(existing, { phones: req.body.phones });
+      const incoming = preserveExistingCatalogPhotos(existing, {
+        phones: req.body.phones,
+      });
 
       const saved = await queryWithConnectionRetry(
         "UPDATE site_settings SET data = (jsonb_set(data, '{phones}', $1::jsonb, true) || $2::jsonb) WHERE id = 1 RETURNING id",
         [JSON.stringify(incoming.phones), phoneSharedJson],
-        4
+        4,
       );
-      if (!saved.rows.length) return res.status(404).json({ error: "Website-instellingen niet gevonden." });
+      if (!saved.rows.length)
+        return res
+          .status(404)
+          .json({ error: "Website-instellingen niet gevonden." });
 
       // The admin already has the submitted catalog in memory; do not send
       // the full image-heavy catalog back over HTTP after saving it.
@@ -1217,63 +1572,85 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
     }
 
     if (section === "phones") {
-      return res.status(400).json({ error: "Ongeldige gegevens voor het opslaan van telefoons." });
+      return res
+        .status(400)
+        .json({ error: "Ongeldige gegevens voor het opslaan van telefoons." });
     }
 
     // Save only the buyback catalog keys, not the full site settings document.
     // Preserve existing images by stable IDs if an editor payload omits them.
-    const isBuybackCatalogPatch = section === "buyback" &&
-    req.body && Array.isArray(req.body.buybackCatalog) &&
-    Array.isArray(req.body.buybackPhones) &&
-    Object.keys(req.body).length === 2;
+    const isBuybackCatalogPatch =
+      section === "buyback" &&
+      req.body &&
+      Array.isArray(req.body.buybackCatalog) &&
+      Array.isArray(req.body.buybackPhones) &&
+      Object.keys(req.body).length === 2;
 
     if (isBuybackCatalogPatch) {
-    const currentBuyback = await queryWithConnectionRetry(
-      "SELECT data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones FROM site_settings WHERE id = 1",
-      [],
-      4
-    );
-    const incomingBuyback = preserveExistingBuybackPhotos({
-      buybackCatalog: currentBuyback.rows[0]?.catalog || [],
-      buybackPhones: currentBuyback.rows[0]?.phones || []
-    }, {
-      buybackCatalog: req.body.buybackCatalog,
-      buybackPhones: req.body.buybackPhones
-    });
+      const currentBuyback = await queryWithConnectionRetry(
+        "SELECT data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones FROM site_settings WHERE id = 1",
+        [],
+        4,
+      );
+      const incomingBuyback = preserveExistingBuybackPhotos(
+        {
+          buybackCatalog: currentBuyback.rows[0]?.catalog || [],
+          buybackPhones: currentBuyback.rows[0]?.phones || [],
+        },
+        {
+          buybackCatalog: req.body.buybackCatalog,
+          buybackPhones: req.body.buybackPhones,
+        },
+      );
 
-    const savedBuyback = await queryWithConnectionRetry(
-      "UPDATE site_settings SET data = jsonb_set(jsonb_set(data, '{buybackCatalog}', $1::jsonb, true), '{buybackPhones}', $2::jsonb, true) WHERE id = 1 RETURNING data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones",
-      [JSON.stringify(incomingBuyback.buybackCatalog), JSON.stringify(incomingBuyback.buybackPhones)],
-      4
-    );
-    if (!savedBuyback.rows.length) throw new Error("Site settings record is missing.");
-    publicBuybackCatalogCache = null;
-    getPublicBuybackCatalog().catch(error => console.warn("[BUYBACK CATALOG] Refresh after admin save failed:", error.message));
-    return res.json({
-      success: true,
-      buybackCatalog: savedBuyback.rows[0].catalog || [],
-      buybackPhones: savedBuyback.rows[0].phones || []
-    });
+      const savedBuyback = await queryWithConnectionRetry(
+        "UPDATE site_settings SET data = jsonb_set(jsonb_set(data, '{buybackCatalog}', $1::jsonb, true), '{buybackPhones}', $2::jsonb, true) WHERE id = 1 RETURNING data->'buybackCatalog' AS catalog, data->'buybackPhones' AS phones",
+        [
+          JSON.stringify(incomingBuyback.buybackCatalog),
+          JSON.stringify(incomingBuyback.buybackPhones),
+        ],
+        4,
+      );
+      if (!savedBuyback.rows.length)
+        throw new Error("Site settings record is missing.");
+      publicBuybackCatalogCache = null;
+      getPublicBuybackCatalog().catch((error) =>
+        console.warn(
+          "[BUYBACK CATALOG] Refresh after admin save failed:",
+          error.message,
+        ),
+      );
+      return res.json({
+        success: true,
+        buybackCatalog: savedBuyback.rows[0].catalog || [],
+        buybackPhones: savedBuyback.rows[0].phones || [],
+      });
     }
 
-    const isShopCatalogPatch = section === "shop" &&
-      req.body && Array.isArray(req.body.shopProducts) &&
+    const isShopCatalogPatch =
+      section === "shop" &&
+      req.body &&
+      Array.isArray(req.body.shopProducts) &&
       Array.isArray(req.body.expectedShopProducts) &&
       Object.keys(req.body).length === 2;
 
     if (isShopCatalogPatch) {
-      const identifierError = validateShopCatalogIdentifiers(req.body.shopProducts);
-      if (identifierError) return res.status(400).json({ error: identifierError });
+      const identifierError = validateShopCatalogIdentifiers(
+        req.body.shopProducts,
+      );
+      if (identifierError)
+        return res.status(400).json({ error: identifierError });
       const imageError = validateShopCatalogImages(req.body.shopProducts);
       if (imageError) return res.status(400).json({ error: imageError });
       const saved = await saveShopCatalog(
         queryWithConnectionRetry,
         req.body.shopProducts,
-        req.body.expectedShopProducts
+        req.body.expectedShopProducts,
       );
       if (!saved) {
         return res.status(409).json({
-          error: "De Shop-catalogus is ondertussen door iemand anders gewijzigd. Vernieuw de pagina en controleer de nieuwste gegevens voordat je opnieuw opslaat."
+          error:
+            "De Shop-catalogus is ondertussen door iemand anders gewijzigd. Vernieuw de pagina en controleer de nieuwste gegevens voordat je opnieuw opslaat.",
         });
       }
       // The browser already has the submitted catalog; avoid sending all
@@ -1284,21 +1661,31 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
     const current = await queryWithConnectionRetry(
       "SELECT data FROM site_settings WHERE id = 1",
       [],
-      4
+      4,
     );
     const existing = current.rows[0]?.data || {};
     const incoming = preserveExistingCatalogPhotos(existing, req.body || {});
 
-    if (section === "phones" && req.admin.permissions &&
-        req.admin.permissions.includes("phones.update") &&
-        !req.admin.permissions.includes("site.save") &&
-        req.admin.role !== "superadmin" &&
-        !req.admin.permissions.includes("*")) {
-      const keys = new Set([...Object.keys(existing), ...Object.keys(incoming)]);
+    if (
+      section === "phones" &&
+      req.admin.permissions &&
+      req.admin.permissions.includes("phones.update") &&
+      !req.admin.permissions.includes("site.save") &&
+      req.admin.role !== "superadmin" &&
+      !req.admin.permissions.includes("*")
+    ) {
+      const keys = new Set([
+        ...Object.keys(existing),
+        ...Object.keys(incoming),
+      ]);
       for (const key of keys) {
         if (key === "phones") continue;
         if (JSON.stringify(existing[key]) !== JSON.stringify(incoming[key])) {
-          return res.status(403).json({ error: "Deze admin mag alleen Telefoons & prijzen wijzigen." });
+          return res
+            .status(403)
+            .json({
+              error: "Deze admin mag alleen Telefoons & prijzen wijzigen.",
+            });
         }
       }
     }
@@ -1306,7 +1693,7 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
     await queryWithConnectionRetry(
       "UPDATE site_settings SET data = $1 WHERE id = 1",
       [JSON.stringify(incoming)],
-      4
+      4,
     );
 
     res.json({ success: true, data: incoming });
@@ -1318,32 +1705,39 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
   }
 });
 
-registerAdminCustomerRoutes(app, { pool, requirePermission, hashPassword, sendWelcomeEmail });
+registerAdminCustomerRoutes(app, {
+  pool,
+  requirePermission,
+  hashPassword,
+  sendWelcomeEmail,
+});
 
 const customerReviewRoutes = registerCustomerReviewRoutes(app, {
   pool,
   requirePermission,
   getEnv: () => process.env,
-  fetchImpl: fetch
+  fetchImpl: fetch,
 });
 
 // Admin page — always serve the latest editor UI, never a cached copy.
 app.get("/admin", (req, res) => {
-  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.set(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate",
+  );
   res.set("Pragma", "no-cache");
   res.set("Expires", "0");
-  res.sendFile(
-    path.join(__dirname, "admin", "index.html")
-  );
+  res.sendFile(path.join(__dirname, "admin", "index.html"));
 });
 
 app.get("/admin/", (req, res) => {
-  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.set(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate",
+  );
   res.set("Pragma", "no-cache");
   res.set("Expires", "0");
-  res.sendFile(
-    path.join(__dirname, "admin", "index.html")
-  );
+  res.sendFile(path.join(__dirname, "admin", "index.html"));
 });
 
 registerBuybackRoutes(app, {
@@ -1352,7 +1746,7 @@ registerBuybackRoutes(app, {
   escapeHtml,
   fetchImpl: fetch,
   ensureBuybackOrdersTable,
-  validateBuybackOfferedPrice
+  validateBuybackOfferedPrice,
 });
 
 registerLiveChatRoutes(app, {
@@ -1360,7 +1754,7 @@ registerLiveChatRoutes(app, {
   crypto,
   requirePermission,
   allowLiveChat,
-  liveChatFirstReply
+  liveChatFirstReply,
 });
 
 registerAdminUserRoutes(app, {
@@ -1368,7 +1762,7 @@ registerAdminUserRoutes(app, {
   requirePermission,
   normalizeAdminPermissions,
   hashPassword,
-  getAdminUsername: () => String(process.env.ADMIN_USERNAME || "")
+  getAdminUsername: () => String(process.env.ADMIN_USERNAME || ""),
 });
 
 // Start server
@@ -1384,15 +1778,10 @@ initializeDatabaseWithRetry(async () => {
   .then(() => {
     customerReviewRoutes.startWorker();
     app.listen(PORT, () => {
-      console.log(
-        `HOMS TECH running on port ${PORT}`
-      );
+      console.log(`HOMS TECH running on port ${PORT}`);
     });
   })
   .catch((error) => {
-    console.error(
-      "Database initialization failed after retries:",
-      error
-    );
+    console.error("Database initialization failed after retries:", error);
     process.exit(1);
   });

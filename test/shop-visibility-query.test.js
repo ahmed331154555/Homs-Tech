@@ -18,5 +18,8 @@ test("shop visibility routes share one valid SQL definition", () => {
   assert.equal(definition[2], shopVisibilitySql);
   assert.equal((server.match(/\bSHOP_ENABLED_SQL\b/g) || []).length - 1, 3);
   assert.equal(server.split(shopVisibilitySql).length - 1, 1);
-  assert.doesNotMatch(server, /const SHOP_ENABLED_SQL\s*=\s*SHOP_ENABLED_SQL\s*;/);
+  assert.doesNotMatch(
+    server,
+    /const SHOP_ENABLED_SQL\s*=\s*SHOP_ENABLED_SQL\s*;/,
+  );
 });
