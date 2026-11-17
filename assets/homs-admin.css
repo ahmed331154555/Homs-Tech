@@ -444,32 +444,17 @@ textarea{
 }
 
 @media(max-width:750px){
-  .grid{
-    grid-template-columns:1fr;
-  }
+  
 
-  .images-grid{
-    grid-template-columns:repeat(4,minmax(0,1fr));
-    gap:5px;
-  }
+  
 
-  .image-box{
-    padding:4px;
-  }
+  
 
-  .image-preview,
-  .empty-preview{
-    height:55px;
-  }
+  
 
-  .image-box input[type="file"]{
-    font-size:7px;
-  }
+  
 
-  .image-box .btn{
-    font-size:7px;
-    padding:5px 2px;
-  }
+  
 
   .topbar{
     padding:15px;
@@ -672,7 +657,7 @@ textarea{
 .phone-product-row-wrap{display:flex;align-items:stretch;gap:4px;width:100%}.phone-product-row-wrap .phone-product-row{flex:1;min-width:0}.phone-product-delete{width:36px;flex:0 0 36px;border:1px solid #fecaca;background:#fff1f2;color:#dc2626;border-radius:9px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}.phone-product-delete:hover{background:#fee2e2;border-color:#fca5a5}.phone-product-delete:focus-visible{outline:2px solid #ef4444;outline-offset:1px}
 .phone-folder{border:1px solid #e5eaf1;border-radius:12px;background:#fff;overflow:hidden}
 .phone-folder>summary{list-style:none;cursor:pointer;padding:11px 12px;font-weight:800;color:#172033;display:flex;align-items:center;gap:8px;background:#f8fafc}
-.phone-folder>summary::-webkit-details-marker{display:none}
+
 .phone-folder>summary:before{content:'▸';font-size:12px;color:#64748b;transition:.15s ease}
 .phone-folder[open]>summary:before{transform:rotate(90deg)}
 .phone-folder>summary:hover{background:#eef7f1}
@@ -685,7 +670,7 @@ textarea{
 .phone-folder-products .editor-list-item:last-child{margin-bottom:0}
 .phone-folder-products .editor-list-item.active{background:#25d366;color:#fff}
 .phone-folder-products .editor-list-item small{font-size:11px}
-@media(max-width:750px){.editor-layout{grid-template-columns:1fr}.editor-list{min-height:0}}
+@media(max-width:750px){.editor-list{min-height:0}}
 
 /* HOMS TECH — PHONE CATALOG DESIGN 3: VISUAL CARD GRID */
 .phone-catalog-sidebar{
@@ -1297,7 +1282,7 @@ textarea{
 }
 #page-buyback-orders .ht-inkoop-answer span{color:#64748b}
 #page-buyback-orders .ht-inkoop-answer strong{text-align:right;color:#25364a;overflow-wrap:anywhere}
-@media(max-width:560px){#page-buyback-orders .ht-inkoop-answer strong{text-align:left}}
+@media(max-width:560px){}
 #page-buyback-orders .ht-inkoop-info{display:grid;gap:0}
 #page-buyback-orders .ht-inkoop-info>div{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #edf1f5;font-size:11px}
 #page-buyback-orders .ht-inkoop-info>div:last-child{border-bottom:0}
@@ -3003,7 +2988,7 @@ body.phone-orders-page-active #page-all-orders{padding-bottom:78px}
 #orderDetailsModal.phone-order-detail-overlay .ht-phone-info-line{
   padding:10px 0!important;border-bottom:1px solid #edf2f8!important
 }
-#orderDetailsModal.phone-order-detail-overlay .ht-phone-info-line:last-child{border-bottom:0!important}
+
 #orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-field input,
 #orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-field select,
 #orderDetailsModal.phone-order-detail-overlay .ht-phone-shipping-form input,
@@ -4015,7 +4000,7 @@ body{
     padding:11px;
   }
   #page-buyback-orders .ht-inkoop-row-wrap{grid-template-columns:minmax(0,1fr) 40px}
-  #page-buyback-orders .ht-inkoop-price{font-size:13px}
+  
   #page-buyback-orders .ht-inkoop-detail-head .ht-inkoop-actions{
     width:100%;
     justify-content:space-between;
