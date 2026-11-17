@@ -87,12 +87,16 @@ function sanitizeHomepageSiteData(input) {
         );
     data.phones = selectedIndices.map(originalIndex => {
       const phone = phones[originalIndex];
-      if (typeof phone === "string") return { name: phone, _index: originalIndex };
-      if (!phone || typeof phone !== "object") return { name: "Apparaat", _index: originalIndex };
+      const preservedIndex = phone && typeof phone === "object" &&
+        Number.isInteger(phone._index) && phone._index >= 0
+        ? phone._index
+        : originalIndex;
+      if (typeof phone === "string") return { name: phone, _index: preservedIndex };
+      if (!phone || typeof phone !== "object") return { name: "Apparaat", _index: preservedIndex };
 
-      // Keep only fields the homepage product cards actually render.
-      // The stored catalog and full API response remain untouched.
-      const compact = { _index: originalIndex };
+      // Keep the database-selected original catalog index so product links remain stable.
+      // The homepage SQL query may already have reduced the catalog to selected rows.
+      const compact = { _index: preservedIndex };
       for (const key of ["name", "brand", "image", "price", "salePrice", "sellPrice", "verkoopprijs"]) {
         if (Object.prototype.hasOwnProperty.call(phone, key)) compact[key] = phone[key];
       }
