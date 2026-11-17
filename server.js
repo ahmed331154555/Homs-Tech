@@ -759,7 +759,6 @@ app.get("/api/shop/image/:id", async (req, res) => {
          END
        ) AS item(product)
        WHERE settings.id = 1
-         AND COALESCE((settings.data->>'shopPageEnabled')::boolean, TRUE) = TRUE
          AND item.product->>'id' = $1
        LIMIT 1`,
       [productId],
@@ -818,7 +817,6 @@ app.get("/api/shop/product/:id", async (req, res) => {
          END
        ) AS item(product)
        WHERE settings.id = 1
-         AND COALESCE((settings.data->>'shopPageEnabled')::boolean, TRUE) = TRUE
          AND item.product->>'id' = $1
        LIMIT 1`,
       [productId],
