@@ -31,3 +31,11 @@ test("webshop order refreshes do not overlap", () => {
   assert.match(adminJs, /if\(!hasPermission\("webshop_orders.view"\)\|\|webshopOrdersLoading\)return;\s*webshopOrdersLoading=true;/);
   assert.match(adminJs, /finally\{webshopOrdersLoading=false;\}/);
 });
+
+
+test("admin email detail ignores stale responses after a newer selection", () => {
+  assert.match(adminJs, /let adminEmailOpenRequestId=0;/);
+  assert.match(adminJs, /const requestId=\+\+adminEmailOpenRequestId;/);
+  assert.match(adminJs, /requestId!==adminEmailOpenRequestId\|\|adminEmailSelectedId!==Number\(id\)/);
+  assert.match(adminJs, /if\(requestId===adminEmailOpenRequestId&&adminEmailSelectedId===Number\(id\)\)box\.textContent=e\.message/);
+});
