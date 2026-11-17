@@ -55,7 +55,7 @@ const { resolveRepairRequestCustomerId } = require("./utils/repair-request-custo
 const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-inventory");
 const { priceProductFromCatalog } = require("./utils/cart-pricing");
 const { validateCartInventoryQuantities } = require("./utils/cart-inventory-validation");
-const { sanitizeProductCatalogData } = require("./utils/product-catalog-sanitizer");
+const { sanitizeProductCatalogData, sanitizeSingleProductData } = require("./utils/product-catalog-sanitizer");
 const { createAdminAuth } = require("./utils/admin-auth");
 const { buildAdminSiteSectionSelect, getAdminSiteSection } = require("./utils/admin-site-sections");
 const { sanitizeStoredAdminPermissions, normalizeAdminPermissions } = require("./utils/admin-permissions");
@@ -305,6 +305,50 @@ app.put("/api/admin/site-data/:section", async (req, res) => {
       return res.status(500).json({ error: "Beheergegevens konden niet worden opgeslagen." });
     }
   });
+});
+
+// Load only the requested public product instead of the complete phone catalog.
+app.get("/api/product/:id", async (req, res) => {
+  const productIndex = Number(req.params.id);
+  if (!Number.isSafeInteger(productIndex) || productIndex < 0) {
+    return res.status(400).json({ error: "Ongeldig productnummer." });
+  }
+
+  try {
+    const result = await queryWithConnectionRetry(
+      `SELECT
+        data->'phones'->($1::int) AS product,
+        data->>'businessName' AS business_name,
+        data->>'siteName' AS site_name,
+        data->>'tagline' AS tagline
+      FROM site_settings
+      WHERE id = 1`,
+      [productIndex],
+      4
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({ error: "Product niet gevonden." });
+    }
+
+    const row = result.rows[0];
+    const payload = sanitizeSingleProductData({
+      product: row.product,
+      businessName: row.business_name,
+      siteName: row.site_name,
+      tagline: row.tagline
+    });
+
+    if (!payload.product) {
+      return res.status(404).json({ error: "Product niet gevonden." });
+    }
+
+    res.set("Cache-Control", "public, max-age=0, must-revalidate");
+    return res.json(payload);
+  } catch (error) {
+    console.error("[PUBLIC PRODUCT] Load failed:", error);
+    return res.status(500).json({ error: "Productgegevens konden niet worden geladen." });
+  }
 });
 
 // Get website settings
