@@ -156,7 +156,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
   app.get("/api/admin/partners", admin, async (req, res) => {
     try {
       const result = await pool.query(
-        "SELECT id,name,email,active,created_at,updated_at FROM api_partners ORDER BY created_at DESC"
+        "SELECT id,name,email,active,created_at,updated_at FROM api_partners WHERE deleted_at IS NULL ORDER BY created_at DESC"
       );
       res.set("Cache-Control", "no-store");
       return res.json({ partners: result.rows });
@@ -192,17 +192,61 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
     const id = Number(req.params.id);
     if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig partner-ID." });
     try {
-      const active = req.body?.active;
-      if (typeof active !== "boolean") return res.status(400).json({ error: "Geef active als true of false op." });
+      const updates = [];
+      const values = [];
+      if (Object.prototype.hasOwnProperty.call(req.body || {}, "name")) {
+        const name = safeText(req.body.name, 120);
+        if (!name) return res.status(400).json({ error: "Partnernaam is verplicht." });
+        values.push(name); updates.push("name=$" + values.length);
+      }
+      if (Object.prototype.hasOwnProperty.call(req.body || {}, "email")) {
+        const email = safeText(req.body.email, 180).toLowerCase();
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: "Vul een geldig e-mailadres in." });
+        values.push(email); updates.push("email=$" + values.length);
+      }
+      if (Object.prototype.hasOwnProperty.call(req.body || {}, "active")) {
+        if (typeof req.body.active !== "boolean") return res.status(400).json({ error: "Geef active als true of false op." });
+        values.push(req.body.active); updates.push("active=$" + values.length);
+      }
+      if (!updates.length) return res.status(400).json({ error: "Geen geldige partnergegevens opgegeven." });
+      values.push(id);
       const result = await pool.query(
-        "UPDATE api_partners SET active=$1,updated_at=NOW() WHERE id=$2 RETURNING id,name,email,active,created_at,updated_at",
-        [active, id]
+        "UPDATE api_partners SET " + updates.join(",") + ",updated_at=NOW() WHERE id=$" + values.length + " AND deleted_at IS NULL RETURNING id,name,email,active,created_at,updated_at",
+        values
       );
       if (!result.rows.length) return res.status(404).json({ error: "Partner niet gevonden." });
       return res.json({ success: true, partner: result.rows[0] });
     } catch (error) {
+      if (error?.code === "23505") return res.status(409).json({ error: "Dit e-mailadres is al in gebruik." });
       console.error("[PARTNER API] Update partner failed:", error);
       return res.status(500).json({ error: "Partner kon niet worden bijgewerkt." });
+    }
+  });
+
+  // Keep historical orders while revoking the partner's access.
+  app.delete("/api/admin/partners/:id", admin, async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ error: "Ongeldig partner-ID." });
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const result = await client.query(
+        "UPDATE api_partners SET active=FALSE,deleted_at=NOW(),updated_at=NOW() WHERE id=$1 AND deleted_at IS NULL RETURNING id",
+        [id]
+      );
+      if (!result.rows.length) {
+        await client.query("ROLLBACK");
+        return res.status(404).json({ error: "Partner niet gevonden." });
+      }
+      await client.query("DELETE FROM api_partner_prices WHERE partner_id=$1", [id]);
+      await client.query("COMMIT");
+      return res.json({ success: true, deleted: true });
+    } catch (error) {
+      try { await client.query("ROLLBACK"); } catch {}
+      console.error("[PARTNER API] Delete partner failed:", error);
+      return res.status(500).json({ error: "Partner kon niet worden verwijderd." });
+    } finally {
+      client.release();
     }
   });
 
@@ -325,7 +369,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
     if (!match) return res.status(401).json({ error: "Ongeldige API-sleutel." });
     try {
       const result = await pool.query(
-        "SELECT id,name FROM api_partners WHERE token_hash=$1 AND active=TRUE",
+        "SELECT id,name FROM api_partners WHERE token_hash=$1 AND active=TRUE AND deleted_at IS NULL",
         [hashToken(match[1])]
       );
       if (!result.rows.length) return res.status(401).json({ error: "API-sleutel ongeldig of uitgeschakeld." });
