@@ -10,6 +10,7 @@ on:
       - work/homs-tech-code-cleanup-professional
       - feature/memory-optimization
       - fix/homepage-phone-catalog-recovery
+      - feature/repair-booking-v2-clean
   pull_request:
     branches:
       - HomsTech-Clean
