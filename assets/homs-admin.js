@@ -80,9 +80,37 @@ function applyPermissionUI(){
   });
   document.querySelectorAll(".order-status-select").forEach(el=>{const section=el.closest("[data-order-category]");const key=section?.dataset.orderCategory;const category=unifiedOrderCategories.find(item=>item.key===key);const permission=category?.updatePermission||(el.closest("#page-repair-requests")?"orders.update":"webshop_orders.update");el.disabled=!hasPermission(permission);});
 }
-let liveChatCurrentId=null,liveChatRefreshTimer=null;
+let liveChatCurrentId=null,liveChatRefreshTimer=null,liveChatRefreshInFlight=false;
 function liveChatEsc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/\'/g,"&#39;");}
-async function loadLiveChat(){const list=document.getElementById("liveChatList");if(!list)return;try{const r=await fetch("/api/admin/live-chat",{credentials:"same-origin",cache:"no-store"}),d=await r.json();if(!r.ok)throw Error(d.error||"Gesprekken laden mislukt");const rows=d.conversations||[];list.innerHTML=rows.length?rows.map(c=>'<button type="button" onclick="openLiveChat('+Number(c.id)+')" style="display:block;width:100%;text-align:left;padding:11px;margin-bottom:7px;border:1px solid #e2e8f0;border-radius:10px;background:'+(Number(c.id)===liveChatCurrentId?"#eff6ff":"white")+';cursor:pointer"><strong>Gesprek #'+Number(c.id)+(Number(c.unread)>0?" · 🔵 "+Number(c.unread):"")+'</strong><div style="font-size:12px;color:#64748b;margin-top:4px">'+liveChatEsc((c.last_message||"Nog geen bericht").slice(0,90))+'</div><small>'+liveChatEsc(new Date(c.updated_at).toLocaleString("nl-NL"))+" · "+(c.status==="closed"?"Gesloten":"Open")+'</small></button>').join(""):'<p style="color:#64748b;padding:12px">Nog geen chatgesprekken.</p>';if(liveChatCurrentId)await openLiveChat(liveChatCurrentId,true);}catch(e){list.textContent=e.message;}}
+async function loadLiveChat(){
+  const list=document.getElementById("liveChatList");
+  if(!list||currentPage!=="live-chat"||document.hidden||liveChatRefreshInFlight)return;
+  liveChatRefreshInFlight=true;
+  try{
+    const r=await fetch("/api/admin/live-chat",{credentials:"same-origin",cache:"no-store"});
+    const d=await r.json();
+    if(!r.ok)throw Error(d.error||"Gesprekken laden mislukt");
+    const rows=d.conversations||[];
+    list.innerHTML=rows.length?rows.map(c=>'<button type="button" onclick="openLiveChat('+Number(c.id)+')" style="display:block;width:100%;text-align:left;padding:11px;margin-bottom:7px;border:1px solid #e2e8f0;border-radius:10px;background:'+(Number(c.id)===liveChatCurrentId?"#eff6ff":"white")+';cursor:pointer"><strong>Gesprek #'+Number(c.id)+(Number(c.unread)>0?" · 🔵 "+Number(c.unread):"")+'</strong><div style="font-size:12px;color:#64748b;margin-top:4px">'+liveChatEsc((c.last_message||"Nog geen bericht").slice(0,90))+'</div><small>'+liveChatEsc(new Date(c.updated_at).toLocaleString("nl-NL"))+" · "+(c.status==="closed"?"Gesloten":"Open")+'</small></button>').join(""):'<p style="color:#64748b;padding:12px">Nog geen chatgesprekken.</p>';
+    if(liveChatCurrentId)await openLiveChat(liveChatCurrentId,true);
+  }catch(e){list.textContent=e.message;}
+  finally{liveChatRefreshInFlight=false;}
+}
+function stopLiveChatPolling(){
+  if(liveChatRefreshTimer){clearInterval(liveChatRefreshTimer);liveChatRefreshTimer=null;}
+}
+function startLiveChatPolling(){
+  stopLiveChatPolling();
+  if(currentPage!=="live-chat"||document.hidden)return;
+  loadLiveChat();
+  liveChatRefreshTimer=setInterval(()=>{
+    if(currentPage==="live-chat"&&!document.hidden)loadLiveChat();
+  },8000);
+}
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden)stopLiveChatPolling();
+  else if(currentPage==="live-chat")startLiveChatPolling();
+});
 async function openLiveChat(id,silent){liveChatCurrentId=Number(id);try{const r=await fetch("/api/admin/live-chat/"+id+"/messages",{credentials:"same-origin",cache:"no-store"}),d=await r.json();if(!r.ok)throw Error(d.error||"Gesprek laden mislukt");document.getElementById("liveChatTitle").textContent="Gesprek #"+id+" · "+(d.conversation.status==="closed"?"Gesloten":"Open");document.getElementById("liveChatMessages").innerHTML=(d.messages||[]).map(m=>'<div style="align-self:'+(m.sender==="admin"?"flex-end":"flex-start")+' ;max-width:88%;background:'+(m.sender==="admin"?"#dcfce7":"#f1f5f9")+ ';padding:10px 12px;border-radius:12px;white-space:pre-wrap;overflow-wrap:anywhere"><div>'+liveChatEsc(m.message)+'</div><small style="display:block;color:#64748b;margin-top:5px">'+(m.sender==="admin"?"Jij":"Klant")+" · "+liveChatEsc(new Date(m.created_at).toLocaleString("nl-NL"))+'</small></div>').join("");const closed=d.conversation.status==="closed";document.getElementById("liveChatReply").disabled=closed;document.querySelector("#liveChatReplyForm button").disabled=closed;const b=document.getElementById("liveChatCloseBtn");b.disabled=false;b.textContent=closed?"Gesprek heropenen":"Gesprek sluiten";b.dataset.status=closed?"open":"closed";const box=document.getElementById("liveChatMessages");box.scrollTop=box.scrollHeight;if(!silent)await refreshLiveChatListOnly();}catch(e){document.getElementById("liveChatMessages").textContent=e.message;}}
 async function refreshLiveChatListOnly(){try{const r=await fetch("/api/admin/live-chat",{credentials:"same-origin",cache:"no-store"}),d=await r.json();const list=document.getElementById("liveChatList");if(r.ok)list.innerHTML=(d.conversations||[]).map(c=>'<button type="button" onclick="openLiveChat('+Number(c.id)+')" style="display:block;width:100%;text-align:left;padding:11px;margin-bottom:7px;border:1px solid #e2e8f0;border-radius:10px;background:'+(Number(c.id)===liveChatCurrentId?"#eff6ff":"white")+' ;cursor:pointer"><strong>Gesprek #'+Number(c.id)+(Number(c.unread)>0?" · 🔵 "+Number(c.unread):"")+'</strong><div style="font-size:12px;color:#64748b;margin-top:4px">'+liveChatEsc((c.last_message||"Nog geen bericht").slice(0,90))+'</div><small>'+liveChatEsc(new Date(c.updated_at).toLocaleString("nl-NL"))+" · "+(c.status==="closed"?"Gesloten":"Open")+'</small></button>').join("")||'<p style="color:#64748b;padding:12px">Nog geen chatgesprekken.</p>';}catch{}}
 document.getElementById("liveChatReplyForm")?.addEventListener("submit",async e=>{e.preventDefault();if(!liveChatCurrentId)return;const input=document.getElementById("liveChatReply"),message=input.value.trim();if(!message)return;const btn=e.currentTarget.querySelector("button");btn.disabled=true;try{const r=await fetch("/api/admin/live-chat/"+liveChatCurrentId+"/messages",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({message})}),d=await r.json();if(!r.ok)throw Error(d.error||"Antwoord versturen mislukt");input.value="";await openLiveChat(liveChatCurrentId,true);await refreshLiveChatListOnly();}catch(err){alert(err.message)}finally{btn.disabled=false;}});
@@ -92,10 +120,7 @@ function showPage(page){
   const unifiedOrdersAllowed=page==="all-orders"&&(hasPermission("orders.view")||hasPermission("webshop_orders.view")||hasPermission("buyback_orders.view"));
   if(!unifiedOrdersAllowed&&!hasPermission(PAGE_PERMISSIONS[page]||""))page=firstAllowedPage();
   if(!page)return;
-  if(currentPage==="live-chat"&&page!=="live-chat"&&liveChatRefreshTimer){
-    clearInterval(liveChatRefreshTimer);
-    liveChatRefreshTimer=null;
-  }
+  if(currentPage==="live-chat"&&page!=="live-chat")stopLiveChatPolling();
   currentPage=page;
   if(page!=="all-orders")document.body.classList.remove("phone-orders-page-active");
   try{localStorage.setItem("homsAdminCurrentPage",page);}catch{}
@@ -118,7 +143,7 @@ function showPage(page){
     if(page==="invoices"){if(!document.querySelector("#invoiceLines tr"))addInvoiceLine();invoiceToggleCustomerType();loadInvoiceSettings();loadInvoices();}
     if(page==="inventory")loadInventory();
     if(page==="device-register")loadDeviceRegister();
-    if(page==="live-chat"){loadLiveChat();if(liveChatRefreshTimer)clearInterval(liveChatRefreshTimer);liveChatRefreshTimer=setInterval(()=>{if(currentPage==="live-chat")loadLiveChat();},8000);}
+    if(page==="live-chat")startLiveChatPolling();
     if(page==="all-orders"){const key=unifiedOrdersActiveKey||unifiedOrderCategories.find(item=>hasPermission(item.permission))?.key;if(key)showUnifiedOrderSection(key,true);}
     if(page==="orders"||page==="repair-requests")loadOrders();
     if(page==="webshop-orders")loadWebshopOrders();
