@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - HomsTech-Clean
+      - feature/repair-booking-v2-clean
   pull_request:
     branches:
       - main
