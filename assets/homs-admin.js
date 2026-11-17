@@ -6986,9 +6986,11 @@ function inventoryMovementTypeChanged(){
     quantity.placeholder="Bijv. 5";
   }
 }
+let inventoryLoading=false;
 async function loadInventory(){
   const box=document.getElementById("inventoryItems");
-  if(!box)return;
+  if(!box||inventoryLoading)return;
+  inventoryLoading=true;
   box.innerHTML='<div class="ht-inventory-loading">Voorraad wordt geladen…</div>';
   try{
     const response=await fetch("/api/admin/inventory",{credentials:"same-origin",cache:"no-store",headers:{"Accept":"application/json"}});
@@ -7006,7 +7008,7 @@ async function loadInventory(){
   }catch(error){
     box.innerHTML='<div class="ht-inventory-error" role="alert">'+esc(error.message||"Voorraad laden is mislukt.")+'</div>';
     inventorySetStatus(error.message||"Voorraad laden is mislukt.","error");
-  }
+  }finally{inventoryLoading=false;}
 }
 async function saveInventoryMovement(event){
   event?.preventDefault();
@@ -7339,8 +7341,9 @@ function renderAdminEmailList(){
  if(!rows.length){list.innerHTML='<div class="ht-mail-empty" style="min-height:180px"><span>⌕</span><strong>Geen berichten gevonden</strong><p>Pas je zoekopdracht of filter aan.</p></div>';return;}
  list.innerHTML=rows.map(m=>'<button type="button" class="ht-mail-row '+(Number(m.id)===Number(adminEmailSelectedId)?"active":"")+'" onclick="openAdminEmail('+Number(m.id)+')"><div class="ht-mail-row-top"><span class="ht-mail-avatar">'+emailEsc(emailInitial(m.direction==="inbound"?m.from_address:(m.to_addresses||[])[0]))+'</span><div><strong>'+emailEsc(m.direction==="inbound"?m.from_address:"Aan: "+(m.to_addresses||[]).join(", "))+'</strong><small>'+emailDate(m.created_at)+'</small></div></div><div class="ht-mail-row-subject">'+emailEsc(m.subject||"(geen onderwerp)")+'</div><div class="ht-mail-row-preview">'+emailEsc(emailPreview(m.preview||m.text_body||m.subject))+'</div><div class="ht-mail-row-badges"><span class="ht-mail-pill '+(m.direction==="outbound"?"sent":"")+'">'+(m.direction==="inbound"?"Inbox":"Verzonden")+'</span>'+(m.direction==="inbound"&&!m.is_read?'<span class="ht-mail-pill">Nieuw</span>':"")+(Array.isArray(m.attachments)&&m.attachments.length?'<span class="ht-mail-pill">📎 '+m.attachments.length+'</span>':"")+'</div></button>').join("");
 }
+let adminEmailsLoading=false;
 async function loadAdminEmails(){
- const list=document.getElementById("emailInboxList"),count=document.getElementById("emailInboxCount");if(!list)return;list.innerHTML='<div class="small">E-mails laden…</div>';
+ const list=document.getElementById("emailInboxList"),count=document.getElementById("emailInboxCount");if(!list||adminEmailsLoading)return;adminEmailsLoading=true;list.innerHTML='<div class="small">E-mails laden…</div>';
  try{
   const r=await fetch("/api/admin/emails",{credentials:"same-origin"}),d=await r.json();if(!r.ok)throw Error(d.error||"E-mails laden mislukt.");
   adminEmailCache=d.emails||[];const unread=adminEmailCache.filter(x=>x.direction==="inbound"&&!x.is_read).length;
@@ -7350,6 +7353,7 @@ async function loadAdminEmails(){
   if(adminEmailSelectedId&&adminEmailCache.some(x=>Number(x.id)===Number(adminEmailSelectedId)))return;
   if(adminEmailCache.length)await openAdminEmail(adminEmailCache[0].id);
  }catch(e){list.innerHTML='<div class="status error">'+emailEsc(e.message)+'</div>';}
+ finally{adminEmailsLoading=false;}
 }
 async function openAdminEmail(id){
  const box=document.getElementById("adminEmailDetail");if(!box)return;adminEmailSelectedId=Number(id);renderAdminEmailList();box.innerHTML='<div class="ht-mail-empty"><strong>Bericht laden…</strong></div>';
