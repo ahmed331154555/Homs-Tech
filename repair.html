@@ -9,7 +9,7 @@
 <link rel="canonical" href="https://homs-tech.nl/repair.html">
 
   <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20261109-shared-theme">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <!-- Leaflet assets are loaded only when the repair booking map is opened. -->
 
   <style>
     .repair-map-card{margin:12px 0 8px;border:1px solid #dce6ef;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 8px 24px rgba(7,29,45,.07)}
@@ -981,7 +981,7 @@
   <script src="/assets/customer-reviews-widget.js?v=2" defer></script>
 </footer>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
 <script>
   let siteData = {};
   let services = [];
@@ -1412,10 +1412,49 @@
   let repairMapMarker=null;
   let repairMapReady=false;
   let repairMapReverseTimer=null;
+  let repairMapLibraryPromise=null;
   const defaultRepairMapCenter=[52.0116,4.5337];
+
+  function ensureRepairMapLibrary(){
+    if(window.L)return Promise.resolve();
+    if(repairMapLibraryPromise)return repairMapLibraryPromise;
+
+    repairMapLibraryPromise=new Promise((resolve,reject)=>{
+      if(!document.querySelector('link[data-repair-leaflet-css]')){
+        const stylesheet=document.createElement("link");
+        stylesheet.rel="stylesheet";
+        stylesheet.href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+        stylesheet.integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
+        stylesheet.crossOrigin="";
+        stylesheet.dataset.repairLeafletCss="true";
+        document.head.appendChild(stylesheet);
+      }
+
+      const script=document.createElement("script");
+      script.src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+      script.integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=";
+      script.crossOrigin="";
+      script.async=true;
+      script.onload=()=>resolve();
+      script.onerror=()=>{
+        repairMapLibraryPromise=null;
+        reject(new Error("De reparatiekaart kon niet worden geladen."));
+      };
+      document.head.appendChild(script);
+    });
+
+    return repairMapLibraryPromise;
+  }
+
   function initRepairMap(){
     const mapElement=document.getElementById("repairLocationMap");
-    if(!mapElement||repairMapReady||!window.L)return;
+    if(!mapElement||repairMapReady)return;
+    if(!window.L){
+      ensureRepairMapLibrary()
+        .then(()=>initRepairMap())
+        .catch(error=>console.warn("HOMS TECH repair map:",error.message));
+      return;
+    }
     repairMap=L.map(mapElement,{scrollWheelZoom:false,zoomControl:true}).setView(defaultRepairMapCenter,10);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(repairMap);
     repairMap.on("click",event=>setRepairMapPoint(event.latlng.lat,event.latlng.lng,true));
