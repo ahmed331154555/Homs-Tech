@@ -85,4 +85,21 @@ function sanitizeProductCatalogData(source) {
   };
 }
 
-module.exports = { sanitizeProductCatalogData };
+function sanitizeSingleProductData(source) {
+  const input = source && typeof source === "object" ? source : {};
+  const catalog = sanitizeProductCatalogData({
+    phones: [input.product],
+    businessName: input.businessName,
+    siteName: input.siteName,
+    tagline: input.tagline
+  });
+
+  return {
+    product: catalog.phones[0] || null,
+    businessName: catalog.businessName,
+    siteName: catalog.siteName,
+    tagline: catalog.tagline
+  };
+}
+
+module.exports = { sanitizeProductCatalogData, sanitizeSingleProductData };
