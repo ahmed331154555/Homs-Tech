@@ -225,7 +225,7 @@ test("phone section saves include shared folder and condition editor data withou
   assert.ok(js.includes("markChanged('globalConditionOverviewImage')"));
   assert.match(
     server,
-    /const phoneSharedFields\s*=\s*\[\s*"phoneFolders"\s*,\s*"globalConditionDetails"\s*,\s*"globalConditionOverviewImage"\s*\]/,
+    /const phoneSharedFields\s*=\s*\[\s*"phoneFolders"\s*,\s*"globalConditionDetails"\s*,\s*"globalConditionOverviewImage"\s*,?\s*\]/,
   );
   assert.ok(server.includes("phoneSharedJson"));
   assert.ok(

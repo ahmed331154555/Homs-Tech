@@ -67,17 +67,13 @@ test("customer admin actions enforce view, update and delete permissions in the 
 test("admin-created customer welcome email is injected and cannot fail account creation", () => {
   const server = read("server.js");
   const routes = read("routes/admin-customers.js");
-  assert.ok(
-    assert.match(
+  assert.match(
     server,
     /registerAdminCustomerRoutes\(app,\s*\{[\s\S]*?pool,[\s\S]*?requirePermission,[\s\S]*?hashPassword,[\s\S]*?sendWelcomeEmail,[\s\S]*?\}\)/,
-  ),
   );
-  assert.ok(
-    assert.match(
+  assert.match(
     routes,
     /function registerAdminCustomerRoutes\(\s*app,\s*\{[\s\S]*?pool,[\s\S]*?requirePermission,[\s\S]*?hashPassword,[\s\S]*?sendWelcomeEmail,[\s\S]*?\}\s*\)/,
-  ),
   );
   assert.ok(routes.includes("Promise.resolve()"));
   assert.ok(routes.includes("Admin-created customer welcome email failed"));
