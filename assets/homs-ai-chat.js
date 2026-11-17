@@ -221,10 +221,7 @@
   function add(message) {
     const id = message.id == null ? null : String(message.id);
     if (id && seen.has(id)) return;
-    if (id) {
-      seen.add(id);
-      renderedMessageIds.push(id);
-    }
+    if (id) seen.add(id);
 
     const element = document.createElement("div");
     element.className = "homs-ai-msg " +
