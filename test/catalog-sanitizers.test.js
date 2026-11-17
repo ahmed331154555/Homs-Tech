@@ -134,12 +134,13 @@ test("device sanitizer keeps only image strings in nested color image maps", () 
   });
   assert.deepEqual(output.phones[0].images, ["front.webp"]);
   assert.deepEqual(output.phones[0].colorImages, { Blue: "blue.webp" });
-  assert.deepEqual(output.phones[0].colorOptions, [{ label: "Green", image: "green.webp" }]);
+  assert.deepEqual(output.phones[0].colorOptions, [
+    { label: "Green", image: "green.webp" },
+  ]);
   assert.deepEqual(output.phones[0].colorGalleryImages, {
     Black: ["black-front.webp"],
   });
 });
-
 
 test("device catalog avoids duplicate color images and preserves condition labels", () => {
   const output = sanitizeDevicesCatalogData({
@@ -149,7 +150,11 @@ test("device catalog avoids duplicate color images and preserves condition label
         image: "front.webp",
         images: ["front.webp", "back.webp"],
         conditionOptions: [
-          { label: "Zo goed als nieuw", condition: "excellent", basePrice: 400 },
+          {
+            label: "Zo goed als nieuw",
+            condition: "excellent",
+            basePrice: 400,
+          },
         ],
         colorGalleryImages: { Black: ["black.webp", "black-back.webp"] },
         colorImages: { Black: "black.webp", Blue: "blue.webp" },
@@ -166,7 +171,9 @@ test("device catalog avoids duplicate color images and preserves condition label
   assert.equal("images" in phone, false);
   assert.deepEqual(phone.colorGalleryImages, { Black: ["black.webp"] });
   assert.deepEqual(phone.colorImages, { Blue: "blue.webp" });
-  assert.deepEqual(phone.colorOptions, [{ label: "Green", image: "green.webp" }]);
+  assert.deepEqual(phone.colorOptions, [
+    { label: "Green", image: "green.webp" },
+  ]);
   assert.equal(phone.conditionOptions[0].label, "Zo goed als nieuw");
   assert.equal(phone.conditionOptions[0].condition, "excellent");
 });
