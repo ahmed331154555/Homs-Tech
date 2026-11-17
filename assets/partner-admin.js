@@ -61,14 +61,16 @@
   window.savePartnerPrices=async function(){
     if(!selectedPartnerId)return;
     const prices=[];
-    document.querySelectorAll("[data-partner-price-row]").forEach(row=>{
-      const item=priceItems[Number(row.dataset.index)];
-      if(!item||!row.querySelector("[data-assigned]")?.checked)return;
-      const raw=row.querySelector("[data-wholesale-price]")?.value;
-      const value=Number(raw);
-      if(raw===""||!Number.isFinite(value)||value<0){throw new Error("Vul voor iedere aangevinkte uitvoering een geldige groothandelsprijs in.");}
-      prices.push({productId:item.productId,variantKey:item.variantKey,wholesalePrice:value});
-    });
+    try{
+      for(const row of document.querySelectorAll("[data-partner-price-row]")){
+        const item=priceItems[Number(row.dataset.index)];
+        if(!item||!row.querySelector("[data-assigned]")?.checked)continue;
+        const raw=row.querySelector("[data-wholesale-price]")?.value;
+        const value=Number(raw);
+        if(raw===""||!Number.isFinite(value)||value<0)throw new Error("Vul voor iedere aangevinkte uitvoering een geldige groothandelsprijs in.");
+        prices.push({productId:item.productId,variantKey:item.variantKey,wholesalePrice:value});
+      }
+    }catch(error){status("partnerPriceStatus",error.message,"error");return;}
     const button=document.querySelector("#partnerPricePanel .ht-partner-save-row button");
     try{
       if(button){button.disabled=true;button.textContent="Opslaan…";}
