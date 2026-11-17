@@ -33,7 +33,7 @@ function replaceEmbeddedHomepageImages(value, phoneIndex, path = "") {
     );
   }
   if (typeof value === "string" &&
-      /^data:image\\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(value)) {
+      /^data:image\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(value)) {
     return "/api/homepage/phone-image/" + encodeURIComponent(String(phoneIndex)) +
       "?path=" + encodeURIComponent(path);
   }
@@ -131,7 +131,7 @@ function sanitizeHomepageSiteData(input) {
   if (Array.isArray(data.services)) {
     data.services = data.services.map((service, index) => {
       if (!Array.isArray(service) || typeof service[3] !== "string" ||
-          !/^data:image\\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(service[3])) {
+          !/^data:image\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(service[3])) {
         return service;
       }
       const compact = service.slice();
