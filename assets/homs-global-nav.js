@@ -37,10 +37,7 @@
  #homsMenuDrawer .homs-menu-head{min-height:92px;padding:15px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5eaf0;background:#fff;font-size:20px;font-weight:900;color:#071d2d}
  #homsMenuDrawer .homs-menu-logo{display:block;width:min(78%,270px);height:auto;max-height:64px;object-fit:contain;object-position:left center}
  #homsMenuDrawer .homs-menu-head span{color:#60a5fa}
- #homsMenuDrawer .homs-menu-group{padding:0 0 7px}
- #homsMenuDrawer .homs-menu-group+.homs-menu-group{border-top:1px solid #edf1f5}
- #homsMenuDrawer .homs-menu-label{padding-top:15px;padding-bottom:7px}
- #homsMenuDrawer .homs-menu-close{border:0;background:transparent;font-size:30px;color:#334155;cursor:pointer}
+    #homsMenuDrawer .homs-menu-close{border:0;background:transparent;font-size:30px;color:#334155;cursor:pointer}
  #homsMenuDrawer .homs-menu-label{padding:18px 22px 8px;color:#687d90;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
  #homsMenuDrawer .homs-menu-group{padding:0 18px 10px}
  #homsMenuDrawer .homs-menu-group+.homs-menu-group{border-top:1px solid #edf1f5}
