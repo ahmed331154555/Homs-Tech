@@ -11,6 +11,7 @@ on:
       - feature/memory-optimization
       - fix/homepage-phone-catalog-recovery
       - feature/repair-booking-v2-clean
+      - fix/preserve-footer-review-widgets
   pull_request:
     branches:
       - HomsTech-Clean
