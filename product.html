@@ -1259,7 +1259,7 @@ function renderBasicProductFallback(product){
 async function load(){
 let data;
 try{
-  const response=await fetch("/api/site?view=product",{headers:{Accept:"application/json"}});
+  const response=await fetch("/api/product/"+encodeURIComponent(String(id)),{headers:{Accept:"application/json"}});
   if(!response.ok) throw new Error("API returned HTTP "+response.status);
   data=await response.json();
 }catch(e){
@@ -1272,9 +1272,7 @@ const footerName=document.getElementById("footerName");
 if(footerName) footerName.textContent=data.businessName||data.siteName||"HOMS TECH";
 const footerTag=document.getElementById("footerTag");
 if(footerTag) footerTag.textContent=data.tagline||"Telefoonreparatie aan huis";
-let list=[];
-list=Array.isArray(data.phones)?data.phones:[];
-const product=Number.isInteger(id)&&id>=0?list[id]:null;
+const product=data.product||null;
 if(!product){
   document.getElementById("productArea").innerHTML=
     `<div class="empty"><h2>Product niet gevonden</h2><p>Dit apparaat staat niet meer in het aanbod.</p><a class="btn blue" href="devices.html">Terug naar Apparaten</a></div>`;
