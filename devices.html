@@ -630,6 +630,11 @@ html body .section.catalog-section .catalog-results .devices-grid{
     grid-template-columns:minmax(0,1fr)!important;
   }
 }
+
+.catalog-pagination{display:flex;justify-content:center;padding:22px 0 8px}
+.catalog-load-more{min-height:44px;padding:11px 24px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#071d2d;font-weight:700;cursor:pointer}
+.catalog-load-more:hover{background:#f1f5f9}
+.catalog-load-more:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
 </style>
   <script src="assets/homs-analytics-consent.js" defer></script>
 <link rel="stylesheet" href="/assets/customer-reviews-widget.css?v=1">
@@ -713,6 +718,7 @@ Bekijk de smartphones die momenteel te koop zijn bij HOMS TECH.
       </select>
     </div>
     <div id="devicesGrid" class="devices-grid"></div>
+    <div class="catalog-pagination"><button id="loadMoreDevices" type="button" class="catalog-load-more" hidden>Toon meer telefoons</button></div>
   </div>
 </div>
 
@@ -893,6 +899,9 @@ return prices.length ? Math.min(...prices) : Number(device.price || device.saleP
 }
 
 let allDevices = [];
+let filteredDeviceResults = [];
+let visibleDeviceCount = 24;
+const DEVICE_PAGE_SIZE = 24;
 let deviceFiltersBound = false;
 
 function devicePrice(device){
@@ -926,6 +935,10 @@ function setupDeviceFilters(){
   deviceFiltersBound=true;
   ["filterBrand","filterStorage","filterColor","filterCondition","filterMinPrice","filterMaxPrice","filterInStock","filterModel","devicesSort"]
     .forEach(id=>document.getElementById(id)?.addEventListener("input",applyDeviceFilters));
+  document.getElementById("loadMoreDevices")?.addEventListener("click",()=>{
+    visibleDeviceCount+=DEVICE_PAGE_SIZE;
+    renderDevices(filteredDeviceResults);
+  });
   document.getElementById("resetDeviceFilters")?.addEventListener("click",()=>{
     ["filterBrand","filterStorage","filterColor","filterCondition","filterMinPrice","filterMaxPrice","filterModel"].forEach(id=>{
       const control=document.getElementById(id);if(control)control.value="";
@@ -956,8 +969,8 @@ function applyDeviceFilters(){
   if(sort==="price-asc")filtered.sort((a,b)=>devicePrice(a)-devicePrice(b));
   else if(sort==="price-desc")filtered.sort((a,b)=>devicePrice(b)-devicePrice(a));
   else if(sort==="name")filtered.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"nl",{numeric:true}));
-  const count=document.getElementById("devicesCount");
-  if(count)count.textContent=filtered.length+" van "+allDevices.length+" telefoons";
+  filteredDeviceResults=filtered;
+  visibleDeviceCount=DEVICE_PAGE_SIZE;
   const summary=document.getElementById("devicesFilterSummary");
   if(summary){
     const active=[brand,storage,color,condition,model,minRaw,maxRaw,inStock?"stock":""].filter(Boolean).length;
@@ -967,8 +980,16 @@ function applyDeviceFilters(){
 }
 
 function renderDevices(devices){
-
 const grid = document.getElementById("devicesGrid");
+const count = document.getElementById("devicesCount");
+const loadMore = document.getElementById("loadMoreDevices");
+const visibleDevices = devices.slice(0, visibleDeviceCount);
+if(count)count.textContent=visibleDevices.length+" van "+devices.length+" telefoons";
+if(loadMore){
+  const remaining=Math.max(0,devices.length-visibleDevices.length);
+  loadMore.hidden=remaining===0;
+  loadMore.textContent=remaining>0?"Toon nog "+Math.min(DEVICE_PAGE_SIZE,remaining)+" telefoons":"";
+}
 
 if(!devices.length){
 
@@ -982,7 +1003,7 @@ grid.innerHTML = `
 return;
 }
 
-grid.innerHTML = devices.map(device => {
+grid.innerHTML = visibleDevices.map(device => {
 
 const image =
 device.image ||
