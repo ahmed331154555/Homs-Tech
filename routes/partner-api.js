@@ -83,7 +83,7 @@ function calculateWholesalePrice(retailPrice, discountPercent) {
 
 function partnerVariantKey(row) {
   return row.storage || row.color || row.condition
-    ? partnerVariantKey(row)
+    ? [row.storage, row.color, row.condition].join("|")
     : "";
 }
 
