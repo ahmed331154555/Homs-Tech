@@ -31,3 +31,10 @@ test("admin chat does not rebuild unchanged message history", () => {
   assert.match(adminJs, /if\(signature!==liveChatMessagesSignature\)\{/);
   assert.match(adminJs, /liveChatMessagesSignature=signature;/);
 });
+
+
+test("admin chat ignores stale detail responses after switching conversations", () => {
+  assert.match(adminJs, /liveChatOpenRequestId=0/);
+  assert.match(adminJs, /const requestId=\+\+liveChatOpenRequestId/);
+  assert.match(adminJs, /if\(requestId!==liveChatOpenRequestId\)return/);
+});
