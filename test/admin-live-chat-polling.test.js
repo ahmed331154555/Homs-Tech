@@ -23,3 +23,11 @@ test("leaving the live chat page stops its polling timer", () => {
   assert.match(adminJs, /if\(currentPage==="live-chat"&&page!=="live-chat"\)stopLiveChatPolling\(\)/);
   assert.match(adminJs, /if\(page==="live-chat"\)startLiveChatPolling\(\)/);
 });
+
+
+test("admin chat does not rebuild unchanged message history", () => {
+  assert.match(adminJs, /liveChatMessagesSignature=""/);
+  assert.match(adminJs, /const signature=chatMessages\.map\(m=>m\.id\)\.join\(","\)/);
+  assert.match(adminJs, /if\(signature!==liveChatMessagesSignature\)\{/);
+  assert.match(adminJs, /liveChatMessagesSignature=signature;/);
+});
