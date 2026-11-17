@@ -163,22 +163,24 @@ function partnerImages(phone, color = "", variant = null) {
   };
   const colorGallery = findColorValue(phone?.colorGalleryImages);
   const colorImage = findColorValue(phone?.colorImages);
-  const candidates = [
+  const isSafeImage = value => {
+    if (typeof value !== "string" || !value) return false;
+    if (/^https:\/\//i.test(value) || (value.startsWith("/") && !value.startsWith("//"))) return true;
+    return value.length <= 300000 && /^data:image\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(value);
+  };
+  const colorSpecific = [
     ...toList(colorGallery),
     ...toList(colorImage),
     ...toList(variant?.images),
     variant?.image,
     variant?.imageUrl,
-    variant?.photo,
-    ...(Array.isArray(phone?.images) ? phone.images : []),
-    phone?.image
-  ];
-  const safe = candidates.filter(value => {
-    if (typeof value !== "string" || !value) return false;
-    if (/^https:\/\//i.test(value) || (value.startsWith("/") && !value.startsWith("//"))) return true;
-    return value.length <= 300000 && /^data:image\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(value);
-  });
-  return [...new Set(safe)].slice(0, 4);
+    variant?.photo
+  ].filter(isSafeImage);
+  // Do not mix a generic/base phone photo into a selected color gallery.
+  const candidates = colorSpecific.length
+    ? colorSpecific
+    : [...(Array.isArray(phone?.images) ? phone.images : []), phone?.image];
+  return [...new Set(candidates.filter(isSafeImage))].slice(0, 4);
 }
 
 function partnerBatteryOptions(phone) {
