@@ -139,7 +139,7 @@
     hosts.forEach(host=>render(host,{},{}));
 
     try {
-      const response=await fetch("/api/site",{headers:{Accept:"application/json"},cache:"no-store"});
+      const response=await fetch("/api/site?view=footer",{headers:{Accept:"application/json"},cache:"no-store"});
       if(!response.ok)throw new Error("HTTP "+response.status);
       const data=await response.json();
       const site={...data,homepage:data.homepage||{}};
