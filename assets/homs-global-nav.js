@@ -1,6 +1,8 @@
 /* HOMS TECH persistent left-side navigation drawer */
 (function(){
  'use strict';
+ if(window.__homsGlobalNavigationLoaded)return;
+ window.__homsGlobalNavigationLoaded=true;
  var current=(location.pathname.split('/').pop()||'index.html').toLowerCase();
  var active={
   'product.html':'devices.html','client-area.html':'account.html','checkout.html':'cart.html'
