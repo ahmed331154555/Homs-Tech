@@ -472,7 +472,8 @@ app.get("/api/site", async (req, res) => {
       );
       if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
       const row=result.rows[0];
-      res.set("Cache-Control","no-store");
+      // Repair-page settings are public and change infrequently; short caching avoids a database round-trip on every visit.
+      res.set("Cache-Control","public, max-age=60, stale-while-revalidate=300");
       return res.json(sanitizePublicSiteData({
         repairPage:row.repair_page,
         services:Array.isArray(row.services)?row.services:[],
