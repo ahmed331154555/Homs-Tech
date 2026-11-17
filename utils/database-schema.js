@@ -437,7 +437,7 @@ async function initializeDatabaseSchema(pool) {
         UNIQUE(partner_id, product_id, variant_key)
       );
       CREATE INDEX IF NOT EXISTS api_partner_prices_partner_idx ON api_partner_prices(partner_id);
-      ALTER TABLE api_partners ADD COLUMN IF NOT EXISTS default_discount_percent NUMERIC(5,2) NOT NULL DEFAULT 10 CHECK (default_discount_percent >= 0 AND default_discount_percent <= 100);
+      ALTER TABLE api_partners ADD COLUMN IF NOT EXISTS default_discount_percent NUMERIC(5,2) NOT NULL DEFAULT 10 CHECK (default_discount_percent >= 0 AND default_discount_percent <= 100);\n      ALTER TABLE api_partners ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
       CREATE TABLE IF NOT EXISTS api_partner_orders (
         id BIGSERIAL PRIMARY KEY, partner_id BIGINT NOT NULL REFERENCES api_partners(id),
         customer_name TEXT NOT NULL, customer_email TEXT NOT NULL, customer_phone TEXT NOT NULL DEFAULT '',
