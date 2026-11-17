@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { registerPartnerApiRoutes, hashToken, parseStock, getPartnerProductId, hasVariantPricing } = require("../routes/partner-api");
+const { registerPartnerApiRoutes, hashToken, parseStock, getPartnerProductId, hasVariantPricing, partnerImages } = require("../routes/partner-api");
 
 test("partner API keys are stored as deterministic SHA-256 hashes, not plaintext", () => {
   const token = "htp_" + "a".repeat(64);
@@ -230,4 +230,22 @@ test("legacy product identifier is not generated for an empty draft phone", () =
 
 test("variant pricing mode with no configured rows does not fall back to a legacy product", () => {
   assert.equal(hasVariantPricing({ pricingMode: "variant", variantPrices: [] }), true);
+});
+
+test("partner image sanitizer includes small safe inline WebP and excludes oversized or unsafe data URLs", () => {
+  const oversized = "data:image/webp;base64," + "A".repeat(300001);
+  const images = partnerImages({
+    images: [
+      "data:image/webp;base64,QUJD",
+      "javascript:alert(1)",
+      oversized,
+      "/assets/phone.webp",
+      "https://cdn.example.com/phone.webp"
+    ]
+  });
+  assert.deepEqual(images, [
+    "data:image/webp;base64,QUJD",
+    "/assets/phone.webp",
+    "https://cdn.example.com/phone.webp"
+  ]);
 });
