@@ -41,8 +41,8 @@ test("admin chat ignores stale detail responses after switching conversations", 
 
 
 test("admin live chat list markup is rendered by one shared helper", () => {
-  assert.equal((adminJs.match(/function renderLiveChatList\\(list,rows\\)/g) || []).length, 1);
-  assert.match(adminJs, /renderLiveChatList\\(list,rows\\)/);
-  assert.match(adminJs, /renderLiveChatList\\(list,d\\.conversations\\|\\|\\[\\]\\)/);
-  assert.match(adminJs, /liveChatEsc\\(\\(c\\.last_message\\|\\|"Nog geen bericht"\\)\\.slice\\(0,90\\)\\)/);
+  assert.equal(adminJs.split("function renderLiveChatList(list,rows)").length - 1, 1);
+  assert.ok(adminJs.includes("renderLiveChatList(list,rows);"));
+  assert.ok(adminJs.includes("renderLiveChatList(list,d.conversations||[]);"));
+  assert.ok(adminJs.includes('liveChatEsc((c.last_message||"Nog geen bericht").slice(0,90))'));
 });
