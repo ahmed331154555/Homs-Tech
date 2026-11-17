@@ -44,7 +44,10 @@ jobs:
 
       - name: Format maintained source files
         run: |
-          npx --yes prettier@3.6.2 --check --embedded-language-formatting off "**/*.{js,cjs,mjs,json,css,html,yml,yaml,md}" "!assets/homs-admin.js" "!assets/homs-admin.css" "!assets/homs-global-nav.js" "!assets/homs-site-footer.js" "!assets/homs-announcement-bars.js" "!assets/customer-reviews-widget.js" "!devices.html" "!shop.html" "!.github/workflows/homs-tech-tests.yml"
+          npx --yes prettier@3.6.2 --write --embedded-language-formatting off "**/*.{js,cjs,mjs,json,css,html,yml,yaml,md}" "!assets/homs-admin.js" "!assets/homs-admin.css" "!assets/homs-global-nav.js" "!assets/homs-site-footer.js" "!assets/homs-announcement-bars.js" "!assets/customer-reviews-widget.js" "!devices.html" "!shop.html" "!.github/workflows/homs-tech-tests.yml"
+
+      - name: Inspect formatted smoke test script
+        run: git diff -- scripts/smoke-production.js
 
       - name: Check whitespace errors
         run: git diff --check
