@@ -94,6 +94,34 @@ test("sanitizeHomepageSiteData compacts variants and drops inactive rows", () =>
   assert.deepEqual(output.phones[0].colorGalleryImages, { Black: ["one.webp"] });
 });
 
+test("sanitizeHomepageSiteData replaces embedded phone and service photos with separate URLs", () => {
+  const image = "data:image/webp;base64,QUJD";
+  const input = {
+    phones: [{
+      name: "iPhone",
+      image,
+      images: [image, "unused.webp"],
+      colorImages: { Black: image },
+      colorGalleryImages: { Black: [image] },
+      colorOptions: [{ label: "Black", image }]
+    }],
+    services: [["🔧", "Scherm reparatie", "Beschrijving", image]]
+  };
+
+  const output = sanitizeHomepageSiteData(input);
+  const phone = output.phones[0];
+  assert.equal(phone.image, "/api/homepage/phone-image/0?path=image");
+  assert.deepEqual(phone.images, ["/api/homepage/phone-image/0?path=images.0"]);
+  assert.equal(phone.colorImages.Black, "/api/homepage/phone-image/0?path=colorImages.Black");
+  assert.deepEqual(phone.colorGalleryImages.Black, [
+    "/api/homepage/phone-image/0?path=colorGalleryImages.Black.0"
+  ]);
+  assert.equal(phone.colorOptions[0].image, "/api/homepage/phone-image/0?path=colorOptions.0.image");
+  assert.equal(output.services[0][3], "/api/homepage/service-image/0");
+  assert.equal(input.phones[0].image, image);
+  assert.equal(input.services[0][3], image);
+});
+
 test("sanitizePublicSiteData recursively removes private costs and credentials while keeping sale prices", () => {
   const input = {
     phones: [{
