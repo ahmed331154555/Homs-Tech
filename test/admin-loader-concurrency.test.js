@@ -18,3 +18,16 @@ test("email inbox refreshes do not overlap", () => {
   assert.match(adminJs, /if\(!list\|\|adminEmailsLoading\)return;adminEmailsLoading=true;/);
   assert.match(adminJs, /finally\{adminEmailsLoading=false;\}/);
 });
+
+
+test("repair request refreshes do not overlap", () => {
+  assert.match(adminJs, /let repairOrdersLoading=false;/);
+  assert.match(adminJs, /if\(!hasPermission\("orders.view"\)\|\|repairOrdersLoading\)return;\s*repairOrdersLoading=true;/);
+  assert.match(adminJs, /finally\{repairOrdersLoading=false;\}/);
+});
+
+test("webshop order refreshes do not overlap", () => {
+  assert.match(adminJs, /let webshopOrdersLoading=false;/);
+  assert.match(adminJs, /if\(!hasPermission\("webshop_orders.view"\)\|\|webshopOrdersLoading\)return;\s*webshopOrdersLoading=true;/);
+  assert.match(adminJs, /finally\{webshopOrdersLoading=false;\}/);
+});
