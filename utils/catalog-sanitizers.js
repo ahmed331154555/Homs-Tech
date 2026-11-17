@@ -63,7 +63,9 @@ function sanitizeDevicesCatalogData(source) {
         const firstImage = phone.images.find(
           (image) => typeof image === "string" && image,
         );
-        if (firstImage) compact.images = [firstImage];
+        if (firstImage) {
+          compact.images = [publicDeviceImageUrl(firstImage, phone.id)];
+        }
       }
 
       if (Array.isArray(phone.conditionOptions)) {
