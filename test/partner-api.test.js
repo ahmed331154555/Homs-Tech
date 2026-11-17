@@ -271,7 +271,7 @@ test("partner feed and order support legacy phones without explicit catalog IDs"
   const productId = getPartnerProductId(phone, 0, [phone]);
   const h = makeRouteHarness({
     phones: [phone],
-    prices: [{ product_id: productId, variant_key: "", wholesale_price: "100.00" }]
+    prices: [{ product_id: productId, variant_key: "128GB|Black|A", wholesale_price: "100.00" }]
   });
   const feed = await h.invoke("GET", "/api/partner/v1/products", { authorization: "Bearer " + key });
   assert.equal(feed.statusCode, 200);
@@ -284,7 +284,7 @@ test("partner feed and order support legacy phones without explicit catalog IDs"
     authorization: "Bearer " + key,
     body: {
       customer: { name: "Customer", email: "customer@example.com", phone: "+31612345678", street: "Main Street", houseNumber: "1", postcode: "3011AA", city: "Rotterdam" },
-      items: [{ productId, variantKey: "", quantity: 1 }]
+      items: [{ productId, variantKey: "128GB|Black|A", quantity: 1 }]
     }
   });
   assert.equal(order.statusCode, 201);
