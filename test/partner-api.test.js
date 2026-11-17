@@ -26,7 +26,8 @@ function makeRouteHarness({ phones = [], prices = [], partner = { id: 7, name: "
   const app = {
     get(path, ...handlers) { routes.set("GET " + path, handlers); },
     post(path, ...handlers) { routes.set("POST " + path, handlers); },
-    patch(path, ...handlers) { routes.set("PATCH " + path, handlers); },\n    delete(path, ...handlers) { routes.set("DELETE " + path, handlers); },\n    delete(path, ...handlers) { routes.set("DELETE " + path, handlers); },
+    patch(path, ...handlers) { routes.set("PATCH " + path, handlers); },
+    delete(path, ...handlers) { routes.set("DELETE " + path, handlers); },
     put(path, ...handlers) { routes.set("PUT " + path, handlers); }
   };
   const pool = {
@@ -35,7 +36,8 @@ function makeRouteHarness({ phones = [], prices = [], partner = { id: 7, name: "
       if (sql.includes("FROM api_partners WHERE token_hash")) {
         return { rows: params[0] === hashToken("htp_" + "a".repeat(64)) && partner.active !== false ? [partner] : [] };
       }
-      if (sql.includes("FROM api_partners WHERE id=$1")) return { rows: [partner] };\n      if (sql.includes("UPDATE api_partners SET") && sql.includes("RETURNING id,name,email")) return { rows: [{ ...partner, name: params[0], email: params[1] }] };
+      if (sql.includes("FROM api_partners WHERE id=$1")) return { rows: [partner] };
+      if (sql.includes("UPDATE api_partners SET") && sql.includes("RETURNING id,name,email")) return { rows: [{ ...partner, name: params[0], email: params[1] }] };
       if (sql.includes("data->'phones'")) return { rows: [{ phones }] };
       if (sql.includes("FROM api_partner_prices")) return { rows: prices };
       if (sql.includes("UPDATE api_partner_orders")) return { rows: [{ id: params[2], status: params[0], admin_note: params[1], updated_at: "2026-11-17T10:00:00.000Z" }] };
@@ -48,7 +50,8 @@ function makeRouteHarness({ phones = [], prices = [], partner = { id: 7, name: "
       return {
         async query(sql, params = []) {
           queries.push({ sql, params });
-          if (sql.includes("SELECT id FROM api_partners")) return { rows: [partner] };\n          if (sql.includes("UPDATE api_partners SET active=FALSE")) return { rows: [{ id: partner.id }] };
+          if (sql.includes("SELECT id FROM api_partners")) return { rows: [partner] };
+          if (sql.includes("UPDATE api_partners SET active=FALSE")) return { rows: [{ id: partner.id }] };
           return { rows: [] };
         },
         release() {}
