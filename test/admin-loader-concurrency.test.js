@@ -58,3 +58,20 @@ test("admin email detail ignores stale responses after a newer selection", () =>
     /if\(requestId===adminEmailOpenRequestId&&adminEmailSelectedId===Number\(id\)\)box\.textContent=e\.message/,
   );
 });
+
+const adminHtml = fs.readFileSync(
+  path.resolve(__dirname, "../admin/index.html"),
+  "utf8",
+);
+
+test("admin bundles are deferred and retain dependency order", () => {
+  const mainScript = adminHtml.indexOf(
+    '<script src="../assets/homs-admin.js?v=20261117-partners1" defer></script>',
+  );
+  const partnerScript = adminHtml.indexOf(
+    '<script src="../assets/partner-admin.js?v=20261117-partners6" defer></script>',
+  );
+
+  assert.ok(mainScript >= 0, "main admin bundle should use defer");
+  assert.ok(partnerScript > mainScript, "partner bundle should defer after the main admin bundle");
+});
