@@ -649,6 +649,64 @@ app.get("/api/product/:id", async (req, res) => {
 
 // Load full Shop details only for the product the visitor opens.
 // The listing endpoint intentionally returns one preview image per product.
+// Serve Shop preview images separately so catalog JSON stays small.
+app.get("/api/shop/image/:id", async (req, res) => {
+  const productId = String(req.params.id || "").trim();
+  if (!productId || productId.length > 160) return res.status(400).end();
+
+  try {
+    const result = await queryWithConnectionRetry(
+      `SELECT item.product
+       FROM site_settings AS settings
+       CROSS JOIN LATERAL jsonb_array_elements(
+         CASE
+           WHEN jsonb_typeof(settings.data->'shopProducts') = 'array'
+             THEN settings.data->'shopProducts'
+           ELSE '[]'::jsonb
+         END
+       ) AS item(product)
+       WHERE settings.id = 1
+         AND COALESCE((settings.data->>'shopPageEnabled')::boolean, TRUE) = TRUE
+         AND item.product->>'id' = $1
+       LIMIT 1`,
+      [productId],
+      4
+    );
+
+    const product = result.rows[0]?.product;
+    if (!product || product.active === false) return res.status(404).end();
+
+    const images = Array.isArray(product.images) ? product.images : [];
+    const imageValue =
+      images.find((image) => typeof image === "string" && image) ||
+      (typeof product.image === "string" ? product.image : "") ||
+      (typeof product.imageUrl === "string" ? product.imageUrl : "");
+    const match =
+      typeof imageValue === "string"
+        ? imageValue.match(
+            /^data:image\/(jpeg|png|webp|gif);base64,([a-z0-9+/]+={0,2})$/i
+          )
+        : null;
+    if (!match) return res.status(404).end();
+
+    const imageBuffer = Buffer.from(match[2], "base64");
+    if (!imageBuffer.length || imageBuffer.length > 5 * 1024 * 1024) {
+      return res.status(413).end();
+    }
+
+    res.set({
+      "Content-Type": "image/" + match[1].toLowerCase(),
+      "Content-Length": String(imageBuffer.length),
+      "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+      "X-Content-Type-Options": "nosniff",
+    });
+    return res.send(imageBuffer);
+  } catch (error) {
+    console.error("[PUBLIC SHOP IMAGE] Load failed:", error);
+    return res.status(500).end();
+  }
+});
+
 app.get("/api/shop/product/:id", async (req, res) => {
   try {
     const productId = String(req.params.id || "").trim();

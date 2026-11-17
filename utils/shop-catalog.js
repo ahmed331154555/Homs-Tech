@@ -55,7 +55,13 @@ function buildShopCatalogList(products) {
         images[0] ||
         (typeof product.image === "string" ? product.image : "") ||
         (typeof product.imageUrl === "string" ? product.imageUrl : "");
-      output.images = previewImage ? [previewImage] : [];
+      const previewSource =
+        /^data:image\/(?:png|jpe?g|webp|gif);base64,/i.test(previewImage) &&
+        product.id !== undefined &&
+        product.id !== null
+          ? `/api/shop/image/${encodeURIComponent(String(product.id))}`
+          : previewImage;
+      output.images = previewSource ? [previewSource] : [];
 
       if (Array.isArray(product.variants)) {
         output.variants = product.variants

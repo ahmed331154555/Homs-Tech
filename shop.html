@@ -91,6 +91,7 @@ function visibleProducts(){return products.filter(p=>p&&p.active!==false&&String
 function safeImageSrc(value){
  const src=String(value??'').trim();
  if(/^https?:\/\/[^\s"'<>]+$/i.test(src))return src;
+ if(/^\/api\/shop\/image\/[a-z0-9._~%-]{1,240}$/i.test(src))return src;
  if(/^data:image\/(?:png|jpe?g|webp|gif);base64,[a-z0-9+/]+=*$/i.test(src))return src;
  return '';
 }
