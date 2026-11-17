@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+      - feature/repair-booking-v2-clean
 
 jobs:
   partner-api-tests:
