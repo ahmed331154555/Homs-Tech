@@ -42,6 +42,15 @@ function hasVariantPricing(phone) {
   return phone?.pricingMode === "variant";
 }
 
+function partnerImages(phone) {
+  const candidates = Array.isArray(phone?.images) ? phone.images : [phone?.image];
+  return candidates.filter(value => {
+    if (typeof value !== "string" || !value) return false;
+    if (/^https:\/\//i.test(value) || (value.startsWith("/") && !value.startsWith("//"))) return true;
+    return value.length <= 300000 && /^data:image\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(value);
+  }).slice(0, 4);
+}
+
 function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermission }) {
   const admin = requirePermission("site.save");
 
@@ -264,7 +273,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
             wholesalePrice: priceMap.get(key),
             currency: "EUR",
             stock: stock == null ? null : stock,
-            images: (Array.isArray(phone.images) ? phone.images : [phone.image]).filter(v => typeof v === "string" && (/^https:\/\//i.test(v) || (v.startsWith("/") && !v.startsWith("//")))).slice(0, 8)
+            images: partnerImages(phone)
           });
         }
       }
@@ -393,4 +402,4 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
 
 }
 
-module.exports = { registerPartnerApiRoutes, hashToken, parseStock, getPartnerProductId, hasVariantPricing };
+module.exports = { registerPartnerApiRoutes, hashToken, parseStock, getPartnerProductId, hasVariantPricing, partnerImages };
