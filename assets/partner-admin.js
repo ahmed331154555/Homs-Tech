@@ -31,7 +31,7 @@
   function renderPartners(){
     const list=$("partnerList");if(!list)return;
     if(!partners.length){list.innerHTML='<p class="ht-partner-empty">Nog geen partners aangemaakt.</p>';return;}
-    list.innerHTML=partners.map(p=>'<article class="ht-partner-row '+(Number(p.id)===Number(selectedPartnerId)?"is-selected":"")+'"><button class="ht-partner-select" type="button" onclick="selectPartner('+Number(p.id)+')"><strong>'+esc(p.name)+'</strong><span>'+esc(p.email||"Geen e-mailadres")+'</span><small>Partner #'+Number(p.id)+' · '+(p.active?"Actief":"Uitgeschakeld")+'</small></button><button class="btn btn-light ht-partner-toggle" type="button" onclick="togglePartner('+Number(p.id)+')">'+(p.active?"Uitschakelen":"Activeren")+'</button></article>').join("");
+    list.innerHTML=partners.map(p=>'<article class="ht-partner-row '+(Number(p.id)===Number(selectedPartnerId)?"is-selected":"")+'"><button class="ht-partner-select" type="button" onclick="selectPartner('+Number(p.id)+')"><strong>'+esc(p.name)+'</strong><span>'+esc(p.email||"Geen e-mailadres")+'</span><small>Partner #'+Number(p.id)+' · '+(p.active?"Actief":"Uitgeschakeld")+'</small></button><div class="ht-partner-actions"><button class="btn btn-light ht-partner-toggle" type="button" onclick="editPartner('+Number(p.id)+')">Bewerken</button><button class="btn btn-light ht-partner-toggle" type="button" onclick="togglePartner('+Number(p.id)+')">'+(p.active?"Uitschakelen":"Activeren")+'</button><button class="btn btn-light ht-partner-delete" type="button" onclick="deletePartner('+Number(p.id)+')">Verwijderen</button></div></article>').join("");
   }
   window.selectPartner=async function(id,silent=false){
     const partner=partners.find(p=>Number(p.id)===Number(id));if(!partner)return;
@@ -108,6 +108,30 @@
       status("partnerPriceStatus","✓ "+prices.length+" groothandelsprijzen opgeslagen met "+discountPercent+"% korting.","success");
     }catch(error){status("partnerPriceStatus",error.message,"error");}
     finally{if(button){button.disabled=false;button.textContent="💾 Prijzen opslaan";}}
+  };
+  window.editPartner=async function(id){
+    const partner=partners.find(p=>Number(p.id)===Number(id));if(!partner)return;
+    const name=window.prompt("Naam van de partner:",partner.name);if(name===null)return;
+    const email=window.prompt("E-mailadres van de partner:",partner.email||"");if(email===null)return;
+    try{
+      const data=await request("/api/admin/partners/"+id,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:name.trim(),email:email.trim()})});
+      partners=partners.map(p=>Number(p.id)===Number(id)?data.partner:p);renderPartners();
+      if(Number(selectedPartnerId)===Number(id))$("partnerPriceTitle").textContent=data.partner.name+" · Groothandelsprijzen";
+      status("partnerCreateStatus","Partnergegevens bijgewerkt.","success");
+    }catch(error){status("partnerCreateStatus",error.message,"error");}
+  };
+  window.deletePartner=async function(id){
+    const partner=partners.find(p=>Number(p.id)===Number(id));if(!partner)return;
+    if(!window.confirm("Partner "+partner.name+" verwijderen? API-toegang wordt ingetrokken, prijzen worden verwijderd en historische bestellingen blijven bewaard."))return;
+    try{
+      await request("/api/admin/partners/"+id,{method:"DELETE"});
+      partners=partners.filter(p=>Number(p.id)!==Number(id));
+      if(Number(selectedPartnerId)===Number(id))selectedPartnerId=null;
+      renderPartners();
+      status("partnerCreateStatus","Partner verwijderd; historische bestellingen zijn behouden.","success");
+      if(partners.length)await selectPartner(partners[0].id,true);
+      else{$("partnerPriceTitle").textContent="Selecteer een partner";$("partnerPricePanel").textContent="Maak eerst een partner aan.";}
+    }catch(error){status("partnerCreateStatus",error.message,"error");}
   };
   window.togglePartner=async function(id){
     const partner=partners.find(p=>Number(p.id)===Number(id));if(!partner)return;
