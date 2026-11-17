@@ -339,19 +339,19 @@ nav{justify-content:center}
     <p class="condition-help-intro">Voorbeelden om het verschil tussen de productcondities duidelijk te maken. De foto's zijn voorbeelden; het exacte uiterlijk kan per toestel verschillen.</p>
     <div class="condition-help-grid">
       <article class="condition-help-item">
-        <img src="assets/condition-info/zo-goed-als-nieuw.svg" alt="Voorbeeld Zo goed als nieuw">
+        <img src="assets/condition-info/zo-goed-als-nieuw.svg" alt="Voorbeeld Zo goed als nieuw" loading="lazy" decoding="async">
         <div class="condition-help-item-body"><h3>Zo goed als nieuw</h3><p>Minimale gebruikerssporen en een zeer nette staat.</p></div>
       </article>
       <article class="condition-help-item">
-        <img src="assets/condition-info/licht-gebruikt.svg" alt="Voorbeeld Licht gebruikt">
+        <img src="assets/condition-info/licht-gebruikt.svg" alt="Voorbeeld Licht gebruikt" loading="lazy" decoding="async">
         <div class="condition-help-item-body"><h3>Licht gebruikt</h3><p>Kleine zichtbare gebruikerssporen, zoals lichte krasjes.</p></div>
       </article>
       <article class="condition-help-item">
-        <img src="assets/condition-info/zichtbaar-gebruikt.svg" alt="Voorbeeld Zichtbaar gebruikt">
+        <img src="assets/condition-info/zichtbaar-gebruikt.svg" alt="Voorbeeld Zichtbaar gebruikt" loading="lazy" decoding="async">
         <div class="condition-help-item-body"><h3>Zichtbaar gebruikt</h3><p>Duidelijkere cosmetische gebruikerssporen of beschadigingen.</p></div>
       </article>
       <article class="condition-help-item">
-        <img src="assets/condition-info/face-id-touch-id.svg" alt="Voorbeeld Face ID / Touch ID probleem">
+        <img src="assets/condition-info/face-id-touch-id.svg" alt="Voorbeeld Face ID / Touch ID probleem" loading="lazy" decoding="async">
         <div class="condition-help-item-body"><h3>Face ID / Touch ID</h3><p>Voorbeeld van een toestel waarbij biometrische herkenning niet werkt.</p></div>
       </article>
     </div>
@@ -931,7 +931,7 @@ function renderCustomChoiceGroups(product,type,titlePrefix){
     return '<div class="option-section"><div class="option-title">'+esc(group.name||titlePrefix)+'</div><div class="option-grid">'+options.map(option=>{
       const active=customSelectedOptions[key]===option.label;
       const disabled=option.available===false;
-      const image=option.image?'<img src="'+esc(option.image)+'" alt="" style="width:38px;height:38px;object-fit:cover;border-radius:7px;display:block;margin:0 auto 5px">':"";
+      const image=option.image?'<img src="'+esc(option.image)+'" alt="" style="width:38px;height:38px;object-fit:cover;border-radius:7px;display:block;margin:0 auto 5px" loading="lazy" decoding="async">':"";
       const delta=optionDelta(option);
       return '<button type="button" class="option-btn '+(active?'active':'')+(disabled?' unavailable':'')+'" '+(disabled?'disabled':'onclick="selectCustomProductOption(\''+esc(type)+'\','+i+',\''+esc(option.label)+'\')"')+'>'+image+esc(option.label)+(delta?'<small>'+(delta>0?'+':'')+money(delta)+'</small>':"")+'</button>';
     }).join("")+'</div></div>';
@@ -1249,7 +1249,7 @@ function renderBasicProductFallback(product){
   const price=product?.price||product?.salePrice||product?.sellPrice||"";
   const description=esc(product?.description||product?.beschrijving||"");
   area.innerHTML=`<div class="product">
-    <div class="gallery">${image?`<img class="main-image" src="${esc(image)}" alt="${name}">`:`<div class="main-image" style="display:flex;align-items:center;justify-content:center;font-size:80px">📱</div>`}</div>
+    <div class="gallery">${image?`<img class="main-image" src="${esc(image)}" alt="${name}" loading="lazy" decoding="async">`:`<div class="main-image" style="display:flex;align-items:center;justify-content:center;font-size:80px">📱</div>`}</div>
     <div class="info"><div class="brand">${brand}</div><h1>${name}</h1>
     ${price!==""?`<div class="price">${esc(String(price).includes("€")?String(price):"€"+price)}</div>`:""}
     ${description?`<div class="description">${description}</div>`:""}
