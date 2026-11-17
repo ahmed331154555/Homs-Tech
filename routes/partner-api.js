@@ -50,7 +50,9 @@ function partnerVariantRows(phone) {
       retailPrice: moneyNumber(variant.price)
     }));
   }
-  const activeOptions = key => (Array.isArray(phone[key]) ? phone[key] : []).filter(option =>
+  const activeOptions = key => (Array.isArray(phone[key]) ? phone[key] : []).map(option =>
+    typeof option === "string" ? { label: option, priceDelta: 0 } : option
+  ).filter(option =>
     option && typeof option === "object" && option.active !== false && option.enabled !== false && option.available !== false
   );
   const conditions = activeOptions("conditionOptions");
