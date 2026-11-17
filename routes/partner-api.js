@@ -90,7 +90,12 @@ function partnerVariantKey(row) {
 }
 
 function partnerCatalogQuery({ includeImages = false } = {}) {
-  const imageFields = includeImages ? ", 'images', phone->'images', 'image', phone->'image'" : "";
+  const imageFields = includeImages
+    ? `, 'images', phone->'images', 'image', phone->'image',
+        'colorGalleryImages', phone->'colorGalleryImages',
+        'colorImages', phone->'colorImages'`
+    : "";
+
   const sql = `
     SELECT COALESCE((
       SELECT jsonb_agg(jsonb_build_object(
@@ -123,7 +128,7 @@ function partnerCatalogQuery({ includeImages = false } = {}) {
             'stock', variant->'stock',
             'active', variant->'active',
             'available', variant->'available',
-            'price', variant->'price'
+            'price', variant->'price'__VARIANT_IMAGE_FIELDS__
           ) ORDER BY variant_ordinality)
           FROM jsonb_array_elements(
             CASE WHEN jsonb_typeof(phone->'variantPrices') = 'array'
@@ -138,16 +143,42 @@ function partnerCatalogQuery({ includeImages = false } = {}) {
     ), '[]'::jsonb) AS phones
     FROM site_settings WHERE id=1
   `;
-  return sql.replace("__IMAGE_FIELDS__", imageFields);
+  const variantImageFields = includeImages
+    ? ", 'images', variant->'images', 'image', variant->'image', 'imageUrl', variant->'imageUrl', 'photo', variant->'photo'"
+    : "";
+  return sql.replace("__IMAGE_FIELDS__", imageFields).replace("__VARIANT_IMAGE_FIELDS__", variantImageFields);
 }
 
-function partnerImages(phone) {
-  const candidates = Array.isArray(phone?.images) && phone.images.some(Boolean) ? phone.images : [phone?.image];
-  return candidates.filter(value => {
+function partnerImages(phone, color = "", variant = null) {
+  const findColorValue = source => {
+    if (!source || typeof source !== "object" || Array.isArray(source)) return undefined;
+    const wanted = String(color || "").trim().toLocaleLowerCase();
+    if (!wanted) return undefined;
+    const key = Object.keys(source).find(item => String(item).trim().toLocaleLowerCase() === wanted);
+    return key === undefined ? undefined : source[key];
+  };
+  const toList = value => {
+    if (Array.isArray(value)) return value;
+    return value == null || value === "" ? [] : [value];
+  };
+  const colorGallery = findColorValue(phone?.colorGalleryImages);
+  const colorImage = findColorValue(phone?.colorImages);
+  const candidates = [
+    ...toList(colorGallery),
+    ...toList(colorImage),
+    ...toList(variant?.images),
+    variant?.image,
+    variant?.imageUrl,
+    variant?.photo,
+    ...(Array.isArray(phone?.images) ? phone.images : []),
+    phone?.image
+  ];
+  const safe = candidates.filter(value => {
     if (typeof value !== "string" || !value) return false;
     if (/^https:\/\//i.test(value) || (value.startsWith("/") && !value.startsWith("//"))) return true;
     return value.length <= 300000 && /^data:image\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(value);
-  }).slice(0, 4);
+  });
+  return [...new Set(safe)].slice(0, 4);
 }
 
 function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermission }) {
@@ -417,7 +448,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
             wholesalePrice: priceMap.get(key),
             currency: "EUR",
             stock: stock == null ? null : stock,
-            images: partnerImages(phone)
+            images: partnerImages(phone, row.color, variant)
           });
         }
       }
