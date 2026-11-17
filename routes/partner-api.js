@@ -181,6 +181,27 @@ function partnerImages(phone, color = "", variant = null) {
   return [...new Set(safe)].slice(0, 4);
 }
 
+function partnerBatteryOptions(phone) {
+  const options = Array.isArray(phone?.batteryOptions) ? phone.batteryOptions : [];
+  return options
+    .filter(option => option && typeof option === "object" &&
+      option.active !== false && option.enabled !== false && option.available !== false)
+    .map(option => {
+      const rawImage = typeof option.image === "string" ? option.image : "";
+      const image = (/^https:\/\//i.test(rawImage) ||
+        (rawImage.startsWith("/") && !rawImage.startsWith("//")) ||
+        (rawImage.length <= 300000 && /^data:image\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(rawImage)))
+        ? rawImage : "";
+      return {
+        label: safeText(option.label, 100),
+        description: safeText(option.description, 500),
+        priceDelta: moneyNumber(option.priceDelta),
+        image
+      };
+    })
+    .filter(option => option.label);
+}
+
 function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermission }) {
   const admin = requirePermission("site.save");
 
@@ -448,7 +469,8 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
             wholesalePrice: priceMap.get(key),
             currency: "EUR",
             stock: stock == null ? null : stock,
-            images: partnerImages(phone, row.color, variant)
+            images: partnerImages(phone, row.color, variant),
+            batteryOptions: partnerBatteryOptions(phone)
           });
         }
       }
