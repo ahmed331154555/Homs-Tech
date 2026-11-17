@@ -55,7 +55,8 @@ const { resolveRepairRequestCustomerId } = require("./utils/repair-request-custo
 const { createPaidOrderInventoryDeductor } = require("./utils/paid-order-inventory");
 const { priceProductFromCatalog } = require("./utils/cart-pricing");
 const { validateCartInventoryQuantities } = require("./utils/cart-inventory-validation");
-const { sanitizeProductCatalogData, sanitizeSingleProductData } = require("./utils/product-catalog-sanitizer");
+const { sanitizeProductCatalogData, sanitizeProductFamilyData } = require("./utils/product-catalog-sanitizer");
+const { getProductFamilyRecords } = require("./utils/product-family");
 const { createAdminAuth } = require("./utils/admin-auth");
 const { buildAdminSiteSectionSelect, getAdminSiteSection } = require("./utils/admin-site-sections");
 const { sanitizeStoredAdminPermissions, normalizeAdminPermissions } = require("./utils/admin-permissions");
@@ -307,7 +308,7 @@ app.put("/api/admin/site-data/:section", async (req, res) => {
   });
 });
 
-// Load only the requested public product instead of the complete phone catalog.
+// Return only the selected product family, not the entire phone catalog.
 app.get("/api/product/:id", async (req, res) => {
   const productIndex = Number(req.params.id);
   if (!Number.isSafeInteger(productIndex) || productIndex < 0) {
@@ -317,13 +318,13 @@ app.get("/api/product/:id", async (req, res) => {
   try {
     const result = await queryWithConnectionRetry(
       `SELECT
-        data->'phones'->($1::int) AS product,
+        data->'phones' AS phones,
         data->>'businessName' AS business_name,
         data->>'siteName' AS site_name,
         data->>'tagline' AS tagline
       FROM site_settings
       WHERE id = 1`,
-      [productIndex],
+      [],
       4
     );
 
@@ -332,8 +333,16 @@ app.get("/api/product/:id", async (req, res) => {
     }
 
     const row = result.rows[0];
-    const payload = sanitizeSingleProductData({
-      product: row.product,
+    const familyRecords = getProductFamilyRecords(
+      Array.isArray(row.phones) ? row.phones : [],
+      productIndex
+    );
+    const payload = sanitizeProductFamilyData({
+      phones: familyRecords.map(record => ({
+        index: record.index,
+        product: record.phone
+      })),
+      productIndex,
       businessName: row.business_name,
       siteName: row.site_name,
       tagline: row.tagline
