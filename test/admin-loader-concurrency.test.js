@@ -73,5 +73,8 @@ test("admin bundles are deferred and retain dependency order", () => {
   );
 
   assert.ok(mainScript >= 0, "main admin bundle should use defer");
-  assert.ok(partnerScript > mainScript, "partner bundle should defer after the main admin bundle");
+  assert.ok(
+    partnerScript > mainScript,
+    "partner bundle should defer after the main admin bundle",
+  );
 });
