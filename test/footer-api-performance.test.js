@@ -18,8 +18,8 @@ test("shared footer requests its compact settings view instead of the full site 
 });
 
 test("footer API selects only footer and contact fields", () => {
-  const start = server.indexOf('if(view==="footer"){');
-  const end = server.indexOf('if(view==="repair"){', start);
+  const start = server.search(/if\s*\(\s*view\s*===\s*"footer"\s*\)\s*\{/);
+  const end = server.search(/if\s*\(\s*view\s*===\s*"repair"\s*\)\s*\{/);
   assert.notEqual(start, -1, "compact footer view must exist");
   assert.ok(end > start, "footer view must be placed before other site views");
   const route = server.slice(start, end);

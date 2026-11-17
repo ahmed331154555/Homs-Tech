@@ -521,7 +521,7 @@ test("shipping label print document closes its inline script correctly", () => {
 
 test("invoice payment details are HTML-escaped before being inserted into email content", () => {
   const source = readPage("routes/admin-invoices.js");
-  assert.match(source, /const escapeEmailHtml\s*=\s*value\s*=>/);
+  assert.match(source, /const escapeEmailHtml\s*=\s*\(?value\)?\s*=>/);
   assert.match(source, /"Naam: "\s*\+\s*escapeEmailHtml\(cleanSetting\(/);
   assert.match(source, /"<br>IBAN: "\s*\+\s*escapeEmailHtml\(cleanSetting\(/);
   assert.match(

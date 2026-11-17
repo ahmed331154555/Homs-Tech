@@ -20,23 +20,23 @@ test("customer API protects each mutation with its dedicated permission", () => 
   const routes = read("routes/admin-customers.js");
   assert.match(
     routes,
-    /app\.get\("\/api\/admin\/customers", requirePermission\("customers\.view"\)/,
+    /app\.get\(\s*"\/api\/admin\/customers"\s*,\s*requirePermission\(\s*"customers\.view"\s*\)/,
   );
   assert.match(
     routes,
-    /app\.post\("\/api\/admin\/customers", requirePermission\("customers\.update"\)/,
+    /app\.post\(\s*"\/api\/admin\/customers"\s*,\s*requirePermission\(\s*"customers\.update"\s*\)/,
   );
   assert.match(
     routes,
-    /app\.put\("\/api\/admin\/customers\/:id", requirePermission\("customers\.update"\)/,
+    /app\.put\(\s*"\/api\/admin\/customers\/:id"\s*,\s*requirePermission\(\s*"customers\.update"\s*\)/,
   );
   assert.match(
     routes,
-    /app\.put\("\/api\/admin\/customers\/:id\/password", requirePermission\("customers\.update"\)/,
+    /app\.put\(\s*"\/api\/admin\/customers\/:id\/password"\s*,\s*requirePermission\(\s*"customers\.update"\s*\)/,
   );
   assert.match(
     routes,
-    /app\.delete\("\/api\/admin\/customers\/:id", requirePermission\("customers\.delete"\)/,
+    /app\.delete\(\s*"\/api\/admin\/customers\/:id"\s*,\s*requirePermission\(\s*"customers\.delete"\s*\)/,
   );
 });
 
@@ -68,14 +68,16 @@ test("admin-created customer welcome email is injected and cannot fail account c
   const server = read("server.js");
   const routes = read("routes/admin-customers.js");
   assert.ok(
-    server.includes(
-      "registerAdminCustomerRoutes(app, { pool, requirePermission, hashPassword, sendWelcomeEmail });",
-    ),
+    assert.match(
+    server,
+    /registerAdminCustomerRoutes\(app,\s*\{[\s\S]*?pool,[\s\S]*?requirePermission,[\s\S]*?hashPassword,[\s\S]*?sendWelcomeEmail,[\s\S]*?\}\)/,
+  ),
   );
   assert.ok(
-    routes.includes(
-      "function registerAdminCustomerRoutes(app, { pool, requirePermission, hashPassword, sendWelcomeEmail })",
-    ),
+    assert.match(
+    routes,
+    /function registerAdminCustomerRoutes\(\s*app,\s*\{[\s\S]*?pool,[\s\S]*?requirePermission,[\s\S]*?hashPassword,[\s\S]*?sendWelcomeEmail,[\s\S]*?\}\s*\)/,
+  ),
   );
   assert.ok(routes.includes("Promise.resolve()"));
   assert.ok(routes.includes("Admin-created customer welcome email failed"));
@@ -158,5 +160,5 @@ test("admin customer create and update routes use shared input validation", () =
 
 test("admin password reset rejects excessively long passwords", () => {
   const routes = read("routes/admin-customers.js");
-  assert.match(routes, /password\.length>256/);
+  assert.match(routes, /password\.length\s*>\s*256/);
 });

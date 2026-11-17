@@ -78,10 +78,9 @@ test("admin site data routes require section permissions and never select the fu
     "admin section GET route should exist",
   );
   const route = server.slice(routeStart, routeEnd);
-  assert.ok(
-    route.includes(
-      "requirePermission(config.permission, { allowSiteSave: true })",
-    ),
+  assert.match(
+    route,
+    /requirePermission\(\s*config\.permission\s*,\s*\{\s*allowSiteSave:\s*true\s*\}\s*\)/,
   );
   assert.ok(route.includes("buildAdminSiteSectionSelect(section)"));
   assert.ok(!route.includes("SELECT data FROM site_settings"));
@@ -100,11 +99,12 @@ test("lightweight admin section saves merge only validated top-level JSONB field
     "admin section PUT route should exist",
   );
   const route = server.slice(routeStart, routeEnd);
-  assert.ok(
-    route.includes('requirePermission(config.writePermission || "site.save")'),
+  assert.match(
+    route,
+    /requirePermission\(\s*config\.writePermission\s*\|\|\s*"site\.save"\s*\)/,
   );
   assert.ok(route.includes("config.writeFields"));
-  assert.ok(route.includes("keys.some(key => !allowedFields.includes(key))"));
+  assert.match(route, /keys\.some\(\s*\(?key\)?\s*=>\s*!allowedFields\.includes\(key\)\s*\)/);
   assert.ok(route.includes("data = data || $1::jsonb"));
   assert.ok(!route.includes("SELECT data FROM site_settings"));
 });
@@ -223,10 +223,9 @@ test("phone section saves include shared folder and condition editor data withou
   assert.ok(js.includes('markChanged("phoneFolders")'));
   assert.ok(js.includes("markChanged('globalConditionDetails')"));
   assert.ok(js.includes("markChanged('globalConditionOverviewImage')"));
-  assert.ok(
-    server.includes(
-      'const phoneSharedFields = ["phoneFolders", "globalConditionDetails", "globalConditionOverviewImage"]',
-    ),
+  assert.match(
+    server,
+    /const phoneSharedFields\s*=\s*\[\s*"phoneFolders"\s*,\s*"globalConditionDetails"\s*,\s*"globalConditionOverviewImage"\s*\]/,
   );
   assert.ok(server.includes("phoneSharedJson"));
   assert.ok(

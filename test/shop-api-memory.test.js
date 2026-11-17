@@ -10,8 +10,8 @@ const serverSource = fs.readFileSync(path.join(root, "server.js"), "utf8");
 const shopSource = fs.readFileSync(path.join(root, "shop.html"), "utf8");
 
 test("Shop catalog API selects only shopProducts from site settings", () => {
-  const start = serverSource.indexOf('if(view==="shop"){');
-  const end = serverSource.indexOf('if(view==="cart"){', start);
+  const start = serverSource.search(/if\s*\(\s*view\s*===\s*"shop"\s*\)\s*\{/);
+  const end = serverSource.search(/if\s*\(\s*view\s*===\s*"cart"\s*\)\s*\{/);
   assert.notEqual(start, -1, "dedicated Shop API view must exist");
   assert.notEqual(end, -1, "Shop API view must end before the cart view");
   const route = serverSource.slice(start, end);
