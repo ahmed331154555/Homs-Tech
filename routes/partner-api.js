@@ -121,10 +121,10 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
       const savedMap = new Map(saved.rows.map(row => [row.product_id + "::" + row.variant_key, Number(row.wholesale_price)]));
       const items = [];
       for (const [phoneIndex, phone] of phones.entries()) {
-        if (!phone || typeof phone !== "object" || phone.active === false || phone.available === false) continue;
+        if (!phone || typeof phone !== "object") continue;
         const productId = getPartnerProductId(phone, phoneIndex, phones);
         if (!productId) continue;
-        const variants = hasVariantPricing(phone) ? (Array.isArray(phone.variantPrices) ? phone.variantPrices.filter(v => v && v.active !== false && v.available !== false) : []) : [null];
+        const variants = hasVariantPricing(phone) ? (Array.isArray(phone.variantPrices) ? phone.variantPrices.filter(v => v && typeof v === "object") : []) : [null];
         for (const variant of variants) {
           const variantKey = variant ? [variant.storage, variant.color, variant.condition].map(v => safeText(v, 80)).join("|") : "";
           const key = productId + "::" + variantKey;
@@ -135,6 +135,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
             color: safeText(variant?.color || phone.color, 80),
             condition: safeText(variant?.condition || phone.condition, 80),
             stock: parseStock(variant ? variant.stock : phone.stock),
+            active: phone.active !== false && phone.available !== false && (!variant || (variant.active !== false && variant.available !== false)),
             wholesalePrice: savedMap.has(key) ? savedMap.get(key) : null
           });
         }
@@ -176,13 +177,13 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
       return res.status(503).json({ error: "Productcatalogus kon niet worden gecontroleerd." });
     }
     for (const item of normalized) {
-      const phoneIndex = phones.findIndex((p, index) => p && getPartnerProductId(p, index, phones) === item.productId && p.active !== false && p.available !== false);
+      const phoneIndex = phones.findIndex((p, index) => p && getPartnerProductId(p, index, phones) === item.productId);
       const phone = phoneIndex >= 0 ? phones[phoneIndex] : null;
       if (!phone) return res.status(400).json({ error: "Een product in de prijslijst bestaat niet of is niet actief." });
       const variants = hasVariantPricing(phone) ? (Array.isArray(phone.variantPrices) ? phone.variantPrices : []) : [null];
       const validVariant = variants.some(v => {
         const key = v ? [v.storage, v.color, v.condition].map(x => safeText(x, 80)).join("|") : "";
-        return key === item.variantKey && (!v || (v.active !== false && v.available !== false));
+        return key === item.variantKey;
       });
       if (!validVariant) return res.status(400).json({ error: "Een productuitvoering in de prijslijst bestaat niet of is niet actief." });
     }
