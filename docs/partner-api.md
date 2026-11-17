@@ -51,7 +51,7 @@ Example response:
 }
 ```
 
-The `id` field is the partner API `productId`; use it exactly as returned and do not replace it with a catalog row number. The `images` field includes HTTPS/relative image paths and small inline JPEG, PNG, WebP or GIF data URLs (up to 300 KB each); oversized inline images are omitted, so keep product photos optimized. Products with an explicit catalog ID keep that ID. Legacy phone records without one receive a deterministic ID derived from their brand, name and SKU (duplicate identical records are distinguished by occurrence). Keep the returned ID with the partner product mapping. The exact variant key is also required when creating an order. Build `variantKey` as:
+The `id` field is the partner API `productId`; use it exactly as returned and do not replace it with a catalog row number. The `images` field includes HTTPS/relative image paths and small inline JPEG, PNG, WebP or GIF data URLs (up to 300 KB each); oversized inline images are omitted, so keep product photos optimized. Products with an explicit catalog ID keep that ID. Legacy phone records without one receive a deterministic ID derived from their SKU when available, otherwise from brand and name (duplicate identities are distinguished by occurrence). Keep the returned ID with the partner product mapping. If a legacy phone has no SKU and its brand/name changes, its derived ID changes and its wholesale price must be assigned again. The exact variant key is also required when creating an order. Build `variantKey` as:
 
 `storage|color|condition`
 
