@@ -131,6 +131,29 @@ async function main() {
     }
   }
 
+  const shopProduct = shop.shopProducts.find(
+    (item) => item && item.id != null,
+  );
+  if (shopProduct) {
+    const detail = await requestJson(
+      `/api/shop/product/${encodeURIComponent(String(shopProduct.id))}`,
+    );
+    if (!detail || !detail.product) {
+      throw new Error("Shop product detail API: missing product payload");
+    }
+  }
+
+  for (const endpoint of [
+    "/api/paypal/config",
+    "/api/mollie/config",
+    "/api/payment-methods/config",
+    "/api/buyback/catalog",
+    "/api/reviews",
+  ]) {
+    const payload = await requestJson(endpoint);
+    if (payload == null) throw new Error(`${endpoint}: empty JSON payload`);
+  }
+
   const phone = devices.phones.find((item) => item && item.id != null);
   if (phone) {
     const candidates = [
