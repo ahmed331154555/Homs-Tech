@@ -22,11 +22,60 @@ function matchesBuybackModel(buybackPhone, salesPhone) {
   ));
 }
 
+function projectBuybackPhone(phone) {
+  const protocol = String(phone.buybackProtocol || phone.protocol || "1");
+  const output = {
+    id: phone.id,
+    name: phone.name || "",
+    price: phone.price,
+    scrapPrice: phone.scrapPrice,
+    image: phone.image || "",
+    imageOutside: phone.imageOutside || "",
+    active: phone.active,
+    buybackProtocol: phone.buybackProtocol,
+    protocol: phone.protocol
+  };
+
+  if (protocol === "1") {
+    for (const key of [
+      "storageOptions", "conditionOptions", "batteryOptions",
+      "faceIdOptions", "screenOptions", "variantOptions",
+      "customBuybackQuestions"
+    ]) {
+      if (Object.prototype.hasOwnProperty.call(phone, key)) output[key] = phone[key];
+    }
+  } else if (protocol === "2" || protocol === "protocol2") {
+    output.protocol2 = phone.protocol2 || {};
+  } else if (/^protocol[3-8]$/.test(protocol)) {
+    output[protocol] = phone[protocol] || {};
+  }
+
+  const settingsKey = protocol === "1" ? "1" : "2";
+  const settings = phone.buybackProtocolSettings;
+  if (settings && typeof settings === "object" && settings[settingsKey]) {
+    output.buybackProtocolSettings = { [settingsKey]: settings[settingsKey] };
+  }
+
+  return output;
+}
+
+function dataImageBytes(value) {
+  if (typeof value !== "string" || !value.startsWith("data:image/")) return 0;
+  return Buffer.byteLength(value);
+}
+
+function sumDataImageBytes(value) {
+  if (Array.isArray(value)) return value.reduce((sum, item) => sum + sumDataImageBytes(item), 0);
+  if (!value || typeof value !== "object") return dataImageBytes(value);
+  return Object.values(value).reduce((sum, item) => sum + sumDataImageBytes(item), 0);
+}
+
 function buildPublicBuybackCatalogPayload(source) {
   const input = source && typeof source === "object" ? source : {};
   const buybackCatalog = Array.isArray(input.buybackCatalog) ? input.buybackCatalog : [];
   const buybackPhones = (Array.isArray(input.buybackPhones) ? input.buybackPhones : [])
-    .filter(phone => phone && typeof phone === "object" && phone.active !== false);
+    .filter(phone => phone && typeof phone === "object" && phone.active !== false)
+    .map(projectBuybackPhone);
   const sourceSalesPhones = Array.isArray(input.salesPhones) ? input.salesPhones : [];
 
   // The customer page only uses sales-catalog photos and public specifications
@@ -64,5 +113,7 @@ function buildPublicBuybackCatalogPayload(source) {
 module.exports = {
   normalizeBuybackModelName,
   matchesBuybackModel,
+  projectBuybackPhone,
+  sumDataImageBytes,
   buildPublicBuybackCatalogPayload
 };
