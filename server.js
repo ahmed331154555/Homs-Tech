@@ -301,7 +301,7 @@ app.get("/api/homepage/phone-image/:index", async (req, res) => {
   const phoneIndex = String(req.params.index || "");
   const imagePath = String(req.query.path || "");
   const segments = imagePath.split(".");
-  const allowedImagePath = /^(?:image|images\\.0|colorGalleryImages\\.[^.]+\\.0|colorImages\\.[^.]+(?:\\.0)?|colorOptions\\.\\d{1,3}\\.image)$/;
+  const allowedImagePath = /^(?:image|images\.0|colorGalleryImages\.[^.]+\.0|colorImages\.[^.]+(?:\.0)?|colorOptions\.\d{1,3}\.image)$/;
   if (!/^\d{1,5}$/.test(phoneIndex) || !allowedImagePath.test(imagePath) || imagePath.length > 240 ||
       segments.some(segment => !segment || ["__proto__", "prototype", "constructor"].includes(segment))) {
     return res.status(400).end();
