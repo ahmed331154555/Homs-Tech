@@ -1,5 +1,7 @@
 (() => {
   "use strict";
+  if (window.__homsSiteFooterLoaded) return;
+  window.__homsSiteFooterLoaded = true;
   const year = new Date().getFullYear();
   const clean = value => String(value ?? "").trim();
   const esc = value => clean(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
