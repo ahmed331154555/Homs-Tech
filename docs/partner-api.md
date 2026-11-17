@@ -51,7 +51,7 @@ Example response:
 }
 ```
 
-The `id` and the exact variant key are required when creating an order. Build `variantKey` as:
+The `id` field is the partner API `productId`; use it exactly as returned and do not replace it with a catalog row number. Products with an explicit catalog ID keep that ID. Legacy phone records without one receive a deterministic ID derived from their brand, name and SKU (duplicate identical records are distinguished by occurrence). Keep the returned ID with the partner product mapping. The exact variant key is also required when creating an order. Build `variantKey` as:
 
 `storage|color|condition`
 
