@@ -241,6 +241,61 @@ function getPublicBuybackCatalog() {
   return publicBuybackCatalogLoadPromise;
 }
 
+// Serve embedded phone photos separately so the model catalog stays lightweight.
+app.get("/api/buyback/image/:id", async (req, res) => {
+  const phoneId = String(req.params.id || "");
+  const imagePath = String(req.query.path || "");
+  const segments = imagePath.split(".");
+  if (!phoneId || !imagePath || imagePath.length > 240 ||
+      segments.some(segment => !segment || ["__proto__", "prototype", "constructor"].includes(segment))) {
+    return res.status(400).end();
+  }
+
+  try {
+    const result = await queryWithConnectionRetry(
+      `SELECT phone
+       FROM site_settings,
+       LATERAL jsonb_array_elements(COALESCE(data->'buybackPhones', '[]'::jsonb)) AS phone
+       WHERE phone->>'id' = $1
+         AND COALESCE(phone->>'active', 'true') <> 'false'
+       LIMIT 1`,
+      [phoneId],
+      4
+    );
+    if (!result.rows.length) return res.status(404).end();
+
+    let imageValue = result.rows[0].phone;
+    for (const segment of segments) {
+      const key = /^\d+$/.test(segment) ? Number(segment) : segment;
+      if (!imageValue || typeof imageValue !== "object" ||
+          !Object.prototype.hasOwnProperty.call(imageValue, key)) {
+        return res.status(404).end();
+      }
+      imageValue = imageValue[key];
+    }
+
+    const match = typeof imageValue === "string"
+      ? imageValue.match(/^data:image\/(jpeg|png|webp|gif);base64,([a-z0-9+/]+={0,2})$/i)
+      : null;
+    if (!match) return res.status(404).end();
+
+    const imageBuffer = Buffer.from(match[2], "base64");
+    if (!imageBuffer.length || imageBuffer.length > 5 * 1024 * 1024) {
+      return res.status(413).end();
+    }
+    res.set({
+      "Content-Type": "image/" + match[1].toLowerCase(),
+      "Content-Length": String(imageBuffer.length),
+      "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
+      "X-Content-Type-Options": "nosniff"
+    });
+    return res.send(imageBuffer);
+  } catch (error) {
+    console.error("[BUYBACK IMAGE] Load failed:", error);
+    return res.status(500).end();
+  }
+});
+
 app.get("/api/buyback/catalog", async (req, res) => {
   try {
     const payload = await getPublicBuybackCatalog();
