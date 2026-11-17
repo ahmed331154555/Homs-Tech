@@ -121,6 +121,9 @@ test("partner product feed requires an active matching API key and only returns 
   assert.equal(allowed.body.count, 1);
   assert.equal(allowed.body.products[0].wholesalePrice, 25);
   assert.equal(allowed.body.products[0].storage, "128GB");
+  const feedCatalogQuery = h.queries.find(q => q.sql.includes("data->'phones'"));
+  assert.match(feedCatalogQuery.sql, /jsonb_agg/);
+  assert.match(feedCatalogQuery.sql, /'images'/);
 });
 
 test("partner order uses database wholesale price and does not trust a submitted price", async () => {
@@ -174,6 +177,9 @@ test("admin price catalog joins active phone variants with the partner's saved w
   assert.equal(res.body.items[0].wholesalePrice, 25);
   assert.equal(res.body.items[0].variantKey, "128GB|Black|A");
   assert.equal(res.body.items[2].active, false);
+  const catalogQuery = h.queries.find(q => q.sql.includes("data->'phones'"));
+  assert.match(catalogQuery.sql, /jsonb_agg/);
+  assert.doesNotMatch(catalogQuery.sql, /'images'/);
 });
 
 test("admin price replacement validates product variants and saves only the submitted wholesale list", async () => {
