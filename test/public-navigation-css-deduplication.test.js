@@ -33,3 +33,15 @@ test("global navigation initialization is guarded against duplicate script execu
     /if\(window\.__homsGlobalNavigationLoaded\)return;\s*window\.__homsGlobalNavigationLoaded=true;/
   );
 });
+
+
+test("footer renderer initialization is guarded against duplicate script execution", () => {
+  const footer = fs.readFileSync(
+    path.resolve(__dirname, "../assets/homs-site-footer.js"),
+    "utf8"
+  );
+  assert.match(
+    footer,
+    /if \(window\.__homsSiteFooterLoaded\) return;\s*window\.__homsSiteFooterLoaded = true;/
+  );
+});
