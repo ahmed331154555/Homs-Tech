@@ -12,14 +12,16 @@ const navigation = fs.readFileSync(
 
 test("navigation drawer shared group selectors are defined once", () => {
   const selectors = [
-    "#homsMenuDrawer .homs-menu-label",
-    "#homsMenuDrawer .homs-menu-group",
-    "#homsMenuDrawer .homs-menu-group+.homs-menu-group"
+    "#homsMenuDrawer .homs-menu-label{",
+    "#homsMenuDrawer .homs-menu-group{",
+    "#homsMenuDrawer .homs-menu-group+.homs-menu-group{"
   ];
 
   for (const selector of selectors) {
-    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const matches = navigation.match(new RegExp(escaped + "\\s*\\{", "g")) || [];
-    assert.equal(matches.length, 1, selector + " should have one rule");
+    assert.equal(
+      navigation.split(selector).length - 1,
+      1,
+      selector + " should have one rule"
+    );
   }
 });
