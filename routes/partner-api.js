@@ -48,6 +48,11 @@ function partnerCatalogQuery({ includeImages = false } = {}) {
         'title', phone->'title',
         'brand', phone->'brand',
         'sku', phone->'sku',
+        'description', phone->'description',
+        'storage', phone->'storage',
+        'color', phone->'color',
+        'condition', phone->'condition',
+        'stockStatus', phone->'stockStatus',
         'stock', phone->'stock',
         'active', phone->'active',
         'available', phone->'available',
@@ -171,7 +176,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
             color: safeText(variant?.color || phone.color, 80),
             condition: safeText(variant?.condition || phone.condition, 80),
             stock: parseStock(variant ? variant.stock : phone.stock),
-            active: phone.active !== false && phone.available !== false && (!variant || (variant.active !== false && variant.available !== false)),
+            active: phone.active !== false && phone.available !== false && String(phone.stockStatus || "").toLowerCase() !== "sold" && (!variant || (variant.active !== false && variant.available !== false)),
             wholesalePrice: savedMap.has(key) ? savedMap.get(key) : null
           });
         }
@@ -284,7 +289,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
       const priceMap = new Map(prices.rows.map(row => [row.product_id + "::" + row.variant_key, Number(row.wholesale_price)]));
       const products = [];
       for (const [phoneIndex, phone] of phones.entries()) {
-        if (!phone || typeof phone !== "object" || phone.active === false || phone.available === false) continue;
+        if (!phone || typeof phone !== "object" || phone.active === false || phone.available === false || String(phone.stockStatus || "").toLowerCase() === "sold") continue;
         const productId = getPartnerProductId(phone, phoneIndex, phones);
         if (!productId) continue;
         const variants = hasVariantPricing(phone)
@@ -358,7 +363,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
         if (!productId || !Number.isInteger(quantity) || quantity < 1 || quantity > 20) {
           return res.status(400).json({ error: "Ongeldige productregel of hoeveelheid." });
         }
-        const phoneIndex = phones.findIndex((p, index) => p && getPartnerProductId(p, index, phones) === productId && p.active !== false && p.available !== false);
+        const phoneIndex = phones.findIndex((p, index) => p && getPartnerProductId(p, index, phones) === productId && p.active !== false && p.available !== false && String(p.stockStatus || "").toLowerCase() !== "sold");
         const phone = phoneIndex >= 0 ? phones[phoneIndex] : null;
         if (!phone) return res.status(409).json({ error: "Een geselecteerd product is niet meer beschikbaar." });
         const variant = hasVariantPricing(phone)
