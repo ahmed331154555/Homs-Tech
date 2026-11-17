@@ -75,8 +75,8 @@
     try{
       if(button){button.disabled=true;button.textContent="Opslaan…";}
       await request("/api/admin/partners/"+selectedPartnerId+"/prices",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({prices})});
-      status("partnerPriceStatus","✓ "+prices.length+" groothandelsprijzen opgeslagen.","success");
       await selectPartner(selectedPartnerId,true);
+      status("partnerPriceStatus","✓ "+prices.length+" groothandelsprijzen opgeslagen.","success");
     }catch(error){status("partnerPriceStatus",error.message,"error");}
     finally{if(button){button.disabled=false;button.textContent="💾 Prijzen opslaan";}}
   };
