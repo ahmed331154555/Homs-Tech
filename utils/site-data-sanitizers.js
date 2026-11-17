@@ -128,7 +128,7 @@ function sanitizeHomepageSiteData(input) {
       }
       // Replace embedded Base64 photos with small URLs while preserving the
       // original catalog index and nested color/gallery paths for the image route.
-      return replaceEmbeddedHomepageImages(compact, originalIndex);
+      return replaceEmbeddedHomepageImages(compact, preservedIndex);
     });
   }
 
