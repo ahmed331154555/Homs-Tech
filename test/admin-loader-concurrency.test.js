@@ -1,0 +1,20 @@
+"use strict";
+
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
+
+const adminJs = fs.readFileSync(path.resolve(__dirname, "../assets/homs-admin.js"), "utf8");
+
+test("inventory refreshes do not overlap", () => {
+  assert.match(adminJs, /let inventoryLoading=false;/);
+  assert.match(adminJs, /if\(!box\|\|inventoryLoading\)return;\s*inventoryLoading=true;/);
+  assert.match(adminJs, /finally\{inventoryLoading=false;\}/);
+});
+
+test("email inbox refreshes do not overlap", () => {
+  assert.match(adminJs, /let adminEmailsLoading=false;/);
+  assert.match(adminJs, /if\(!list\|\|adminEmailsLoading\)return;adminEmailsLoading=true;/);
+  assert.match(adminJs, /finally\{adminEmailsLoading=false;\}/);
+});
