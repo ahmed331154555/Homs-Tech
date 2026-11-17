@@ -34,3 +34,11 @@ test("contact and checkout pages request compact settings and stock payloads", (
   assert.match(checkout, /fetch\(["']\/api\/site\?view=cart["']/);
   assert.doesNotMatch(checkout, /fetch\(["']\/api\/site["']/);
 });
+
+test("live chat polling pauses in hidden tabs and avoids overlapping refreshes", () => {
+  const chat = fs.readFileSync(path.join(root, "assets", "homs-ai-chat.js"), "utf8");
+  assert.match(chat, /document\.addEventListener\(["']visibilitychange["']/);
+  assert.match(chat, /if \(document\.hidden\) stopPolling\(\);/);
+  assert.match(chat, /if \(!panel\.classList\.contains\("open"\) \|\| document\.hidden \|\| timer\) return;/);
+  assert.match(chat, /if \(!token \|\| refreshing\) return;/);
+});
