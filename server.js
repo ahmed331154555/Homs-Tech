@@ -71,7 +71,7 @@ const {
 } = require("./utils/catalog-photo-preservation");
 const { saveShopCatalog, validateShopCatalogIdentifiers, validateShopCatalogImages } = require("./utils/shop-catalog");
 const PORT = process.env.PORT || 3000;
-const SHOP_ENABLED_SQL = SHOP_ENABLED_SQL;
+const SHOP_ENABLED_SQL = "SELECT COALESCE((data->>'shopPageEnabled')::boolean, TRUE) AS enabled FROM site_settings WHERE id = 1";
 
 // Lightweight RSS/heap samples help correlate Render memory spikes with traffic.
 startMemoryMonitor();
