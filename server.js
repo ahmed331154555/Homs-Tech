@@ -309,6 +309,30 @@ app.put("/api/admin/site-data/:section", async (req, res) => {
 app.get("/api/site", async (req, res) => {
   try {
     const view=String(req.query.view||"").trim().toLowerCase();
+    if(view==="footer"){
+      // The shared footer needs only contact details and its own settings.
+      // Do not serialize the full site document/catalog for every public page.
+      const result = await queryWithConnectionRetry(
+        `SELECT
+          data->'homepage'->'footer' AS footer,
+          data->>'areas' AS areas,
+          data->>'phone' AS phone,
+          data->>'whatsapp' AS whatsapp
+        FROM site_settings
+        WHERE id = 1`,
+        [],
+        4
+      );
+      if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
+      const row=result.rows[0];
+      res.set("Cache-Control","public, max-age=0, must-revalidate");
+      return res.json(sanitizePublicSiteData({
+        homepage:{footer:row.footer && typeof row.footer === "object" ? row.footer : {}},
+        areas:row.areas,
+        phone:row.phone,
+        whatsapp:row.whatsapp
+      }));
+    }
     if(view==="repair"){
       const result = await queryWithConnectionRetry(
         `SELECT
