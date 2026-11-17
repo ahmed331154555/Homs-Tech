@@ -1,6 +1,6 @@
 "use strict";
 (function(){
-  let partners=[], selectedPartnerId=null, priceItems=[], partnerOrders=[];
+  let partners=[], selectedPartnerId=null, priceItems=[], partnerOrders=[], partnerDiscountPercent=10;
   const $=id=>document.getElementById(id);
   const esc=value=>String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   const money=value=>new Intl.NumberFormat("nl-NL",{style:"currency",currency:"EUR"}).format(Number(value)||0);
@@ -41,19 +41,45 @@
     try{
       const data=await request("/api/admin/partners/"+selectedPartnerId+"/prices");
       priceItems=Array.isArray(data.items)?data.items:[];
+      partnerDiscountPercent=Number(data.discountPercent??10);
       renderPartnerPrices();
     }catch(error){panel.textContent=error.message;if(!silent)status("partnerCreateStatus",error.message,"error");}
   };
   function renderPartnerPrices(){
     const panel=$("partnerPricePanel");
-    if(!priceItems.length){panel.innerHTML='<p class="ht-partner-empty">Geen actieve telefoonuitvoeringen gevonden in de catalogus.</p>';return;}
+    if(!priceItems.length){panel.innerHTML='<p class="ht-partner-empty">Geen telefoonuitvoeringen met een geldige verkoopprijs gevonden.</p>';return;}
     const rows=priceItems.map((item,index)=>{
       const variant=[item.storage,item.color,item.condition].filter(Boolean).join(" · ")||"Standaard uitvoering";
-      const assigned=item.wholesalePrice!==null&&item.wholesalePrice!==undefined;
-      return '<tr data-partner-price-row data-index="'+index+'"><td><label class="ht-partner-assignment"><input type="checkbox" data-assigned '+(assigned?"checked":"")+' aria-label="Uitvoering beschikbaar maken voor partner"><span><strong>'+esc(item.name)+'</strong><small>'+esc(variant)+(item.sku?" · "+esc(item.sku):"")+'</small>'+(item.active===false?'<em>Niet actief op website — prijs blijft bewaard</em>':'')+'</span></label></td><td>'+ (item.stock===null?"—":Number(item.stock)) +'</td><td><label class="ht-partner-price-input"><span>€</span><input type="number" min="0" max="100000" step="0.01" data-wholesale-price value="'+(assigned?esc(item.wholesalePrice):"")+'" placeholder="Niet ingesteld" aria-label="Groothandelsprijs"></label></td></tr>';
+      const assigned=item.assigned!==false;
+      const wholesale=calculateDisplayWholesale(item.retailPrice,partnerDiscountPercent);
+      return '<tr data-partner-price-row data-index="'+index+'"><td><label class="ht-partner-assignment"><input type="checkbox" data-assigned '+(assigned?"checked":"")+' aria-label="Uitvoering beschikbaar maken voor partner"><span><strong>'+esc(item.name)+'</strong><small>'+esc(variant)+(item.sku?" · "+esc(item.sku):"")+'</small>'+(item.active===false?'<em>Niet actief op website — prijs blijft bewaard</em>':'')+'</span></label></td><td>'+ (item.stock===null?"—":Number(item.stock)) +'</td><td>'+ (item.retailPrice===null?"—":money(item.retailPrice)) +'</td><td><strong data-wholesale-display>'+ (wholesale===null?"—":money(wholesale)) +'</strong><input type="hidden" data-wholesale-price value="'+(wholesale===null?"":wholesale.toFixed(2))+'"></td></tr>';
     }).join("");
-    panel.innerHTML='<div class="ht-partner-price-toolbar"><label>Zoeken <input id="partnerPriceSearch" type="search" placeholder="Model, kleur, opslag…" oninput="filterPartnerPriceRows()"></label><span>'+priceItems.length+' uitvoeringen</span></div><div class="ht-partner-table-wrap"><table class="ht-partner-table"><thead><tr><th>Telefoon / uitvoering</th><th>Voorraad</th><th>Groothandel</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="ht-partner-save-row"><span>Alleen aangevinkte regels worden aan deze partner aangeboden.</span><button class="btn btn-green" type="button" onclick="savePartnerPrices()">💾 Prijzen opslaan</button></div><p id="partnerPriceStatus" class="status" role="status"></p>';
+    panel.innerHTML='<div class="ht-partner-price-toolbar"><label>Zoeken <input id="partnerPriceSearch" type="search" placeholder="Model, kleur, opslag…" oninput="filterPartnerPriceRows()"></label><label class="ht-partner-discount">Korting voor deze partner (%) <input id="partnerDiscountPercent" type="number" min="0" max="100" step="0.5" value="'+esc(partnerDiscountPercent)+'" oninput="recalculatePartnerPrices()"></label><span>'+priceItems.length+' uitvoeringen</span></div><div class="ht-partner-table-wrap"><table class="ht-partner-table"><thead><tr><th>Telefoon / uitvoering</th><th>Voorraad</th><th>Jouw verkoopprijs</th><th>Partnerprijs</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="ht-partner-save-row"><span>De korting wordt toegepast op de bestaande verkoopprijs van HOMS TECH. Alleen aangevinkte regels worden aan deze partner aangeboden.</span><button class="btn btn-green" type="button" onclick="savePartnerPrices()">💾 Prijzen opslaan</button></div><p id="partnerPriceStatus" class="status" role="status"></p>';
   }
+  function calculateDisplayWholesale(retailPrice,discount){
+    const retail=Number(retailPrice), percent=Number(discount);
+    if(!Number.isFinite(retail)||retail<=0||!Number.isFinite(percent)||percent<0||percent>100)return null;
+    return Math.round((retail*(1-percent/100)+Number.EPSILON)*100)/100;
+  }
+  window.recalculatePartnerPrices=function(){
+    const input=$("partnerDiscountPercent");
+    if(!input)return;
+    const discount=Number(input.value);
+    if(input.value===""||!Number.isFinite(discount)||discount<0||discount>100){
+      document.querySelectorAll("[data-partner-price-row]").forEach(row=>{
+        row.querySelector("[data-wholesale-display]").textContent="—";
+        row.querySelector("[data-wholesale-price]").value="";
+      });
+      return;
+    }
+    partnerDiscountPercent=discount;
+    document.querySelectorAll("[data-partner-price-row]").forEach(row=>{
+      const item=priceItems[Number(row.dataset.index)];
+      const price=calculateDisplayWholesale(item?.retailPrice,discount);
+      row.querySelector("[data-wholesale-display]").textContent=price===null?"—":money(price);
+      row.querySelector("[data-wholesale-price]").value=price===null?"":price.toFixed(2);
+    });
+  };
   window.filterPartnerPriceRows=function(){
     const query=String($("partnerPriceSearch")?.value||"").trim().toLowerCase();
     document.querySelectorAll("[data-partner-price-row]").forEach(row=>{row.hidden=!row.textContent.toLowerCase().includes(query);});
@@ -61,22 +87,25 @@
   window.savePartnerPrices=async function(){
     if(!selectedPartnerId)return;
     const prices=[];
+    const discountInput=$("partnerDiscountPercent");
+    const discountPercent=Number(discountInput?.value);
+    if(!Number.isFinite(discountPercent)||discountPercent<0||discountPercent>100){status("partnerPriceStatus","Voer een kortingspercentage tussen 0 en 100 in.","error");return;}
     try{
       for(const row of document.querySelectorAll("[data-partner-price-row]")){
         const item=priceItems[Number(row.dataset.index)];
         if(!item||!row.querySelector("[data-assigned]")?.checked)continue;
-        const raw=row.querySelector("[data-wholesale-price]")?.value;
-        const value=Number(raw);
-        if(raw===""||!Number.isFinite(value)||value<0)throw new Error("Vul voor iedere aangevinkte uitvoering een geldige groothandelsprijs in.");
+        const value=calculateDisplayWholesale(item.retailPrice,discountPercent);
+        if(value===null)throw new Error("Een aangevinkte uitvoering heeft geen geldige bestaande verkoopprijs.");
         prices.push({productId:item.productId,variantKey:item.variantKey,wholesalePrice:value});
       }
     }catch(error){status("partnerPriceStatus",error.message,"error");return;}
     const button=document.querySelector("#partnerPricePanel .ht-partner-save-row button");
     try{
       if(button){button.disabled=true;button.textContent="Opslaan…";}
-      await request("/api/admin/partners/"+selectedPartnerId+"/prices",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({prices})});
+      await request("/api/admin/partners/"+selectedPartnerId+"/prices",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({prices,discountPercent})});
       await selectPartner(selectedPartnerId,true);
-      status("partnerPriceStatus","✓ "+prices.length+" groothandelsprijzen opgeslagen.","success");
+      partnerDiscountPercent=discountPercent;
+      status("partnerPriceStatus","✓ "+prices.length+" groothandelsprijzen opgeslagen met "+discountPercent+"% korting.","success");
     }catch(error){status("partnerPriceStatus",error.message,"error");}
     finally{if(button){button.disabled=false;button.textContent="💾 Prijzen opslaan";}}
   };
