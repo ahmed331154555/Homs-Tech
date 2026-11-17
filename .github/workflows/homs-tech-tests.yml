@@ -30,7 +30,7 @@ jobs:
   test:
     name: Format, validate and test
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -44,7 +44,7 @@ jobs:
 
       - name: Format maintained source files
         run: |
-          npx --yes prettier@3.6.2 --write --embedded-language-formatting off "**/*.{js,cjs,mjs,json,css,html,yml,yaml,md}" "!server.js" "!routes/**" "!assets/homs-admin.js" "!assets/homs-global-nav.js" "!assets/homs-site-footer.js"
+          npx --yes prettier@3.6.2 --write --embedded-language-formatting off "**/*.{js,cjs,mjs,json,css,html,yml,yaml,md}" "!server.js" "!routes/**" "!assets/homs-admin.js" "!assets/homs-admin.css" "!assets/homs-global-nav.js" "!assets/homs-site-footer.js" "!assets/homs-announcement-bars.js" "!assets/customer-reviews-widget.js" "!admin/index.html" "!devices.html" "!shop.html"
 
       - name: Check whitespace errors
         run: git diff --check
