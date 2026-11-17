@@ -296,6 +296,88 @@ app.get("/api/buyback/image/:id", async (req, res) => {
   }
 });
 
+// Serve homepage phone photos separately so large Base64 images never block the catalog JSON.
+app.get("/api/homepage/phone-image/:index", async (req, res) => {
+  const phoneIndex = String(req.params.index || "");
+  const imagePath = String(req.query.path || "");
+  const segments = imagePath.split(".");
+  if (!/^\\d{1,5}$/.test(phoneIndex) || !imagePath || imagePath.length > 240 ||
+      segments.some(segment => !segment || ["__proto__", "prototype", "constructor"].includes(segment))) {
+    return res.status(400).end();
+  }
+
+  try {
+    const result = await queryWithConnectionRetry(
+      "SELECT (data->'phones')->$1 AS phone FROM site_settings WHERE id = 1",
+      [phoneIndex],
+      4
+    );
+    if (!result.rows.length || !result.rows[0].phone) return res.status(404).end();
+
+    let imageValue = result.rows[0].phone;
+    for (const segment of segments) {
+      const key = /^\\d+$/.test(segment) ? Number(segment) : segment;
+      if (!imageValue || typeof imageValue !== "object" ||
+          !Object.prototype.hasOwnProperty.call(imageValue, key)) {
+        return res.status(404).end();
+      }
+      imageValue = imageValue[key];
+    }
+
+    const match = typeof imageValue === "string"
+      ? imageValue.match(/^data:image\\/(jpeg|png|webp|gif);base64,([a-z0-9+/]+={0,2})$/i)
+      : null;
+    if (!match) return res.status(404).end();
+
+    const imageBuffer = Buffer.from(match[2], "base64");
+    if (!imageBuffer.length || imageBuffer.length > 5 * 1024 * 1024) {
+      return res.status(413).end();
+    }
+    res.set({
+      "Content-Type": "image/" + match[1].toLowerCase(),
+      "Content-Length": String(imageBuffer.length),
+      "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
+      "X-Content-Type-Options": "nosniff"
+    });
+    return res.send(imageBuffer);
+  } catch (error) {
+    console.error("[HOMEPAGE PHONE IMAGE] Load failed:", error);
+    return res.status(500).end();
+  }
+});
+
+// Serve homepage repair-service photos separately from the settings payload.
+app.get("/api/homepage/service-image/:index", async (req, res) => {
+  const serviceIndex = String(req.params.index || "");
+  if (!/^\\d{1,3}$/.test(serviceIndex)) return res.status(400).end();
+
+  try {
+    const result = await queryWithConnectionRetry(
+      "SELECT (data->'services')->$1->>3 AS image FROM site_settings WHERE id = 1",
+      [serviceIndex],
+      4
+    );
+    const image = result.rows[0]?.image;
+    const match = typeof image === "string"
+      ? image.match(/^data:image\\/(jpeg|png|webp|gif);base64,([a-z0-9+/]+={0,2})$/i)
+      : null;
+    if (!match) return res.status(404).end();
+
+    const imageBuffer = Buffer.from(match[2], "base64");
+    if (!imageBuffer.length || imageBuffer.length > 5 * 1024 * 1024) return res.status(413).end();
+    res.set({
+      "Content-Type": "image/" + match[1].toLowerCase(),
+      "Content-Length": String(imageBuffer.length),
+      "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
+      "X-Content-Type-Options": "nosniff"
+    });
+    return res.send(imageBuffer);
+  } catch (error) {
+    console.error("[HOMEPAGE SERVICE IMAGE] Load failed:", error);
+    return res.status(500).end();
+  }
+});
+
 app.get("/api/buyback/catalog", async (req, res) => {
   try {
     const payload = await getPublicBuybackCatalog();
