@@ -98,6 +98,7 @@ function response() {
 const samplePhones = [
   {
     id: "iphone-13", name: "iPhone 13", pricingMode: "variant", active: true, available: true,
+    batteryOptions: [{ label: "Nieuw (100%)", description: "Minimaal 85% capaciteit", priceDelta: 30, image: "https://homs-tech.nl/uploads/battery-new.webp", active: true, available: true }, { label: "Niet beschikbaar", active: false, available: false }],
     variantPrices: [
       { storage: "128GB", color: "Black", condition: "A", stock: 3, price: 399, active: true, available: true },
       { storage: "256GB", color: "Blue", condition: "A", stock: 0, price: 449, active: true, available: true }
@@ -124,6 +125,7 @@ test("partner product feed requires an active matching API key and only returns 
   assert.equal(allowed.body.count, 1);
   assert.equal(allowed.body.products[0].wholesalePrice, 25);
   assert.equal(allowed.body.products[0].storage, "128GB");
+  assert.deepEqual(allowed.body.products[0].batteryOptions, [{ label: "Nieuw (100%)", description: "Minimaal 85% capaciteit", priceDelta: 30, image: "https://homs-tech.nl/uploads/battery-new.webp" }]);
   const feedCatalogQuery = h.queries.find(q => q.sql.includes("data->'phones'"));
   assert.match(feedCatalogQuery.sql, /jsonb_agg/);
   assert.match(feedCatalogQuery.sql, /'images'/);
