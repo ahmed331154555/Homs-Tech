@@ -168,15 +168,17 @@ function partnerImages(phone, color = "", variant = null) {
     if (/^https:\/\//i.test(value) || (value.startsWith("/") && !value.startsWith("//"))) return true;
     return value.length <= 300000 && /^data:image\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(value);
   };
-  const colorSpecific = [
-    ...toList(colorGallery),
-    ...toList(colorImage),
-    ...toList(variant?.images),
-    variant?.image,
-    variant?.imageUrl,
-    variant?.photo
-  ].filter(isSafeImage);
-  // Do not mix a generic/base phone photo into a selected color gallery.
+  const selectedColorGallery = toList(colorGallery).filter(isSafeImage);
+  const colorSpecific = selectedColorGallery.length
+    ? selectedColorGallery
+    : [
+        ...toList(colorImage),
+        ...toList(variant?.images),
+        variant?.image,
+        variant?.imageUrl,
+        variant?.photo
+      ].filter(isSafeImage);
+  // Prefer a configured gallery as a complete set; never mix other colors or base photos into it.
   const candidates = colorSpecific.length
     ? colorSpecific
     : [...(Array.isArray(phone?.images) ? phone.images : []), phone?.image];
