@@ -19,10 +19,13 @@ function parseStock(value) {
 function getPartnerProductId(phone, index, phones = []) {
   const explicitId = safeText(phone?.id, 120);
   if (explicitId) return explicitId;
+  const name = safeText(phone?.name || phone?.title, 180).toLocaleLowerCase();
+  const sku = safeText(phone?.sku, 100).toLocaleLowerCase();
+  if (!name && !sku) return "";
   const identity = [
     safeText(phone?.brand || "Apple", 80).toLocaleLowerCase(),
-    safeText(phone?.name || phone?.title, 180).toLocaleLowerCase(),
-    safeText(phone?.sku, 100).toLocaleLowerCase()
+    name,
+    sku
   ].join("|");
   const occurrence = phones.slice(0, Math.max(0, index)).filter(item => {
     const other = [
