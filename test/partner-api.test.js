@@ -227,3 +227,7 @@ test("legacy pricing mode does not expose leftover variant rows as separate part
 test("legacy product identifier is not generated for an empty draft phone", () => {
   assert.equal(getPartnerProductId({ name: "", brand: "Apple", sku: "" }, 0, [{ name: "", brand: "Apple", sku: "" }]), "");
 });
+
+test("variant pricing mode with no configured rows does not fall back to a legacy product", () => {
+  assert.equal(hasVariantPricing({ pricingMode: "variant", variantPrices: [] }), true);
+});
