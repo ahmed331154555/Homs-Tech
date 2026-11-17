@@ -16,3 +16,14 @@ test("buyback mobile option-row override is defined once", () => {
   const rule = "@media(max-width:700px){#page-buyback .buyback-option-row{grid-template-columns:1fr!important}#page-buyback .buyback-option-row label{margin-top:0!important}}";
   assert.equal(css.split(rule).length - 1, 1);
 });
+
+
+test("phone folder native disclosure marker reset is defined once", () => {
+  const rule = ".phone-folder>summary::-webkit-details-marker{display:none}";
+  assert.equal(css.split(rule).length - 1, 1);
+});
+
+test("phone order detail last-row border override is defined once", () => {
+  const rule = "#orderDetailsModal.phone-order-detail-overlay .ht-phone-info-line:last-child{border-bottom:0!important}";
+  assert.equal(css.split(rule).length - 1, 1);
+});
