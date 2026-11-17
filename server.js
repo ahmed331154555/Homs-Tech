@@ -57,7 +57,7 @@ const { priceProductFromCatalog } = require("./utils/cart-pricing");
 const { validateCartInventoryQuantities } = require("./utils/cart-inventory-validation");
 const { sanitizeProductCatalogData, sanitizeProductFamilyData } = require("./utils/product-catalog-sanitizer");
 const { getProductFamilyRecords } = require("./utils/product-family");
-const { buildPublicBuybackCatalogPayload } = require("./utils/buyback-public-catalog");
+const { buildPublicBuybackCatalogPayload, sumDataImageBytes } = require("./utils/buyback-public-catalog");
 const { createAdminAuth } = require("./utils/admin-auth");
 const { buildAdminSiteSectionSelect, getAdminSiteSection } = require("./utils/admin-site-sections");
 const { sanitizeStoredAdminPermissions, normalizeAdminPermissions } = require("./utils/admin-permissions");
@@ -221,8 +221,13 @@ async function loadPublicBuybackCatalog() {
   });
   const payloadBytes = Buffer.byteLength(JSON.stringify(payload));
   publicBuybackCatalogCache = payload;
+  const imageBytes = {
+    catalog: sumDataImageBytes(payload.buybackCatalog),
+    buybackPhones: sumDataImageBytes(payload.buybackPhones),
+    salesPhones: sumDataImageBytes(payload.salesPhones)
+  };
   console.info(
-    `[BUYBACK CATALOG] Warmed in ${Date.now() - startedAt}ms; ${payload.buybackPhones.length} active buyback phones, ${payload.salesPhones.length} matching sales records, ${payloadBytes} response bytes.`
+    `[BUYBACK CATALOG] Warmed in ${Date.now() - startedAt}ms; ${payload.buybackPhones.length} active buyback phones, ${payload.salesPhones.length} matching sales records, ${payloadBytes} response bytes; embedded image bytes: ${JSON.stringify(imageBytes)}.`
   );
   return payload;
 }
