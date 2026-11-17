@@ -22,17 +22,13 @@ function getPartnerProductId(phone, index, phones = []) {
   const name = safeText(phone?.name || phone?.title, 180).toLocaleLowerCase();
   const sku = safeText(phone?.sku, 100).toLocaleLowerCase();
   if (!name && !sku) return "";
-  const identity = [
-    safeText(phone?.brand || "Apple", 80).toLocaleLowerCase(),
-    name,
-    sku
-  ].join("|");
+  const brand = safeText(phone?.brand || "Apple", 80).toLocaleLowerCase();
+  const identity = sku ? "sku:" + sku : "legacy:" + brand + "|" + name;
   const occurrence = phones.slice(0, Math.max(0, index)).filter(item => {
-    const other = [
-      safeText(item?.brand || "Apple", 80).toLocaleLowerCase(),
-      safeText(item?.name || item?.title, 180).toLocaleLowerCase(),
-      safeText(item?.sku, 100).toLocaleLowerCase()
-    ].join("|");
+    const otherSku = safeText(item?.sku, 100).toLocaleLowerCase();
+    const otherName = safeText(item?.name || item?.title, 180).toLocaleLowerCase();
+    const otherBrand = safeText(item?.brand || "Apple", 80).toLocaleLowerCase();
+    const other = otherSku ? "sku:" + otherSku : "legacy:" + otherBrand + "|" + otherName;
     return other === identity;
   }).length;
   return "legacy-" + crypto.createHash("sha256").update(identity + "|" + occurrence).digest("hex").slice(0, 24);
