@@ -72,6 +72,46 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
     }
   });
 
+  app.get("/api/admin/partners/:id/prices", admin, async (req, res) => {
+    const partnerId = Number(req.params.id);
+    if (!Number.isSafeInteger(partnerId) || partnerId < 1) return res.status(400).json({ error: "Ongeldig partner-ID." });
+    try {
+      const [partner, catalog, saved] = await Promise.all([
+        pool.query("SELECT id FROM api_partners WHERE id=$1", [partnerId]),
+        pool.query("SELECT data->'phones' AS phones FROM site_settings WHERE id=1"),
+        pool.query("SELECT product_id,variant_key,wholesale_price FROM api_partner_prices WHERE partner_id=$1", [partnerId])
+      ]);
+      if (!partner.rows.length) return res.status(404).json({ error: "Partner niet gevonden." });
+      const phones = Array.isArray(catalog.rows[0]?.phones) ? catalog.rows[0].phones : [];
+      const savedMap = new Map(saved.rows.map(row => [row.product_id + "::" + row.variant_key, Number(row.wholesale_price)]));
+      const items = [];
+      for (const phone of phones) {
+        if (!phone || typeof phone !== "object" || phone.active === false || phone.available === false) continue;
+        const productId = safeText(phone.id, 120);
+        if (!productId) continue;
+        const variants = Array.isArray(phone.variantPrices) && phone.variantPrices.length ? phone.variantPrices.filter(v => v && v.active !== false && v.available !== false) : [null];
+        for (const variant of variants) {
+          const variantKey = variant ? [variant.storage, variant.color, variant.condition].map(v => safeText(v, 80)).join("|") : "";
+          const key = productId + "::" + variantKey;
+          items.push({
+            productId, variantKey, name: safeText(phone.name || phone.title, 180),
+            sku: safeText(variant?.sku || phone.sku, 100),
+            storage: safeText(variant?.storage || phone.storage, 40),
+            color: safeText(variant?.color || phone.color, 80),
+            condition: safeText(variant?.condition || phone.condition, 80),
+            stock: parseStock(variant ? variant.stock : phone.stock),
+            wholesalePrice: savedMap.has(key) ? savedMap.get(key) : null
+          });
+        }
+      }
+      res.set("Cache-Control", "no-store");
+      return res.json({ items });
+    } catch (error) {
+      console.error("[PARTNER API] Load wholesale prices failed:", error);
+      return res.status(500).json({ error: "Groothandelsprijzen konden niet worden geladen." });
+    }
+  });
+
   app.put("/api/admin/partners/:id/prices", admin, async (req, res) => {
     const partnerId = Number(req.params.id);
     const prices = req.body?.prices;
@@ -79,6 +119,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
       return res.status(400).json({ error: "Ongeldige partner of prijslijst." });
     }
     const normalized = [];
+    const seen = new Set();
     for (const item of prices) {
       const productId = safeText(item?.productId, 120);
       const variantKey = safeText(item?.variantKey || "", 180);
@@ -86,7 +127,28 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
       if (!productId || !Number.isFinite(wholesalePrice) || wholesalePrice < 0 || wholesalePrice > 100000) {
         return res.status(400).json({ error: "Elke prijsregel vereist een product-ID en geldige groothandelsprijs." });
       }
+      const key = productId + "::" + variantKey;
+      if (seen.has(key)) return res.status(400).json({ error: "Dubbele productuitvoering in de prijslijst." });
+      seen.add(key);
       normalized.push({ productId, variantKey, wholesalePrice: wholesalePrice.toFixed(2) });
+    }
+    let phones = [];
+    try {
+      const catalog = await pool.query("SELECT data->'phones' AS phones FROM site_settings WHERE id=1");
+      phones = Array.isArray(catalog.rows[0]?.phones) ? catalog.rows[0].phones : [];
+    } catch (error) {
+      console.error("[PARTNER API] Validate catalog prices failed:", error);
+      return res.status(503).json({ error: "Productcatalogus kon niet worden gecontroleerd." });
+    }
+    for (const item of normalized) {
+      const phone = phones.find(p => p && String(p.id) === item.productId && p.active !== false && p.available !== false);
+      if (!phone) return res.status(400).json({ error: "Een product in de prijslijst bestaat niet of is niet actief." });
+      const variants = Array.isArray(phone.variantPrices) && phone.variantPrices.length ? phone.variantPrices : [null];
+      const validVariant = variants.some(v => {
+        const key = v ? [v.storage, v.color, v.condition].map(x => safeText(x, 80)).join("|") : "";
+        return key === item.variantKey && (!v || (v.active !== false && v.available !== false));
+      });
+      if (!validVariant) return res.status(400).json({ error: "Een productuitvoering in de prijslijst bestaat niet of is niet actief." });
     }
     const client = await pool.connect();
     try {
@@ -96,6 +158,8 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
         await client.query("ROLLBACK");
         return res.status(404).json({ error: "Partner niet gevonden." });
       }
+      // PUT replaces the complete price list so removed assignments cannot remain active.
+      await client.query("DELETE FROM api_partner_prices WHERE partner_id=$1", [partnerId]);
       for (const item of normalized) {
         await client.query(
           `INSERT INTO api_partner_prices(partner_id,product_id,variant_key,wholesale_price)
