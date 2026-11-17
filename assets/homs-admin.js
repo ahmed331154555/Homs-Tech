@@ -5162,6 +5162,12 @@ async function save(isAuto=false){
       }
       phoneDraftCommitted=true;
       await clearPhoneDraft();
+      // Saving a product from the guided configurator returns directly to the catalog.
+      // Never fall through to the retired legacy product editor.
+      if(phoneEditOnly){
+        phoneEditOnly=false;
+        phoneWizardExistingEdit=false;
+      }
     }
 
     // The save belongs to the page where it started. Do not repaint a
