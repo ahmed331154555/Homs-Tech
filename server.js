@@ -352,7 +352,7 @@ app.get("/api/product/:id", async (req, res) => {
       return res.status(404).json({ error: "Product niet gevonden." });
     }
 
-    res.set("Cache-Control", "public, max-age=0, must-revalidate");
+    res.set("Cache-Control", "public, max-age=10, stale-while-revalidate=30");
     return res.json(payload);
   } catch (error) {
     console.error("[PUBLIC PRODUCT] Load failed:", error);
@@ -431,7 +431,7 @@ app.get("/api/site", async (req, res) => {
       );
       if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
       const row=result.rows[0];
-      res.set("Cache-Control","public, max-age=0, must-revalidate");
+      res.set("Cache-Control","public, max-age=10, stale-while-revalidate=30");
       return res.json(sanitizeDevicesCatalogData({phones:row.phones,devices:row.devices,phone:row.phone,whatsapp:row.whatsapp,businessName:row.business_name,siteName:row.site_name,tagline:row.tagline}));
     }
     if(view==="product"){
