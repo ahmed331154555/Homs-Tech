@@ -695,52 +695,50 @@ app.get("/api/site", async (req, res) => {
                  WHEN COALESCE(data->'homepage'->'popular'->>'limit', '') ~ '^[0-9]+$'
                    THEN GREATEST(1, LEAST(50, (data->'homepage'->'popular'->>'limit')::int))
                  ELSE 12
-               END AS phone_limit
+               END AS phone_limit,
+               CASE WHEN jsonb_typeof(data->'phones') = 'array'
+                 THEN jsonb_array_length(data->'phones') ELSE 0 END AS phone_count
              FROM site_settings
              WHERE id = 1
            ),
-           phone_rows AS (
-             SELECT p.phone, p.ordinality
-             FROM settings s
-             CROSS JOIN LATERAL jsonb_array_elements(
-               CASE WHEN jsonb_typeof(s.data->'phones') = 'array'
-                 THEN s.data->'phones' ELSE '[]'::jsonb END
-             ) WITH ORDINALITY AS p(phone, ordinality)
-           ),
-           requested AS (
+           configured_indices AS (
              SELECT
-               CASE WHEN r.value ~ '^[0-9]+$' THEN r.value::int ELSE -1 END AS phone_index,
+               r.value::int AS phone_index,
                r.ordinality AS position
              FROM settings s
              CROSS JOIN LATERAL jsonb_array_elements_text(
                CASE WHEN jsonb_typeof(s.data->'homepage'->'popular'->'indexes') = 'array'
                  THEN s.data->'homepage'->'popular'->'indexes' ELSE '[]'::jsonb END
              ) WITH ORDINALITY AS r(value, ordinality)
+             WHERE r.value ~ '^[0-9]+$'
+               AND r.value::int >= 0
+               AND r.value::int < s.phone_count
            ),
-           selected_rows AS (
-             SELECT DISTINCT ON (p.ordinality)
-               p.phone, p.ordinality, r.position
-             FROM requested r
-             JOIN phone_rows p ON p.ordinality = r.phone_index + 1
-             ORDER BY p.ordinality, r.position
+           fallback_indices AS (
+             SELECT
+               g.phone_index,
+               g.phone_index + 1 AS position
+             FROM settings s
+             CROSS JOIN LATERAL generate_series(
+               GREATEST(0, s.phone_count - s.phone_limit),
+               GREATEST(-1, s.phone_count - 1)
+             ) AS g(phone_index)
+             WHERE NOT EXISTS (SELECT 1 FROM configured_indices)
            ),
-           selected_limited AS (
-             SELECT sr.phone, sr.ordinality, sr.position
-             FROM selected_rows sr
-             ORDER BY sr.position
-             LIMIT (SELECT phone_limit FROM settings)
-           ),
-           fallback_rows AS (
-             SELECT p.phone, p.ordinality, p.ordinality AS position
-             FROM phone_rows p
-             WHERE NOT EXISTS (SELECT 1 FROM selected_limited)
-             ORDER BY p.ordinality DESC
-             LIMIT (SELECT phone_limit FROM settings)
+           selected_indices AS (
+             SELECT phone_index, position FROM configured_indices
+             UNION ALL
+             SELECT phone_index, position FROM fallback_indices
            ),
            chosen AS (
-             SELECT phone, ordinality, position FROM selected_limited
-             UNION ALL
-             SELECT phone, ordinality, position FROM fallback_rows
+             SELECT
+               (s.data->'phones')->i.phone_index AS phone,
+               i.phone_index,
+               i.position
+             FROM settings s
+             CROSS JOIN selected_indices i
+             ORDER BY i.position
+             LIMIT (SELECT phone_limit FROM settings)
            )
            SELECT
              s.data->'homepage' AS homepage,
@@ -751,9 +749,9 @@ app.get("/api/site", async (req, res) => {
              s.data->>'whatsapp' AS whatsapp,
              COALESCE(
                (SELECT jsonb_agg(
-                  jsonb_set(c.phone, '{_index}', to_jsonb((c.ordinality - 1)::int), true)
+                  jsonb_set(c.phone, '{_index}', to_jsonb(c.phone_index), true)
                   ORDER BY c.position
-                ) FROM chosen c),
+                ) FROM chosen c WHERE c.phone IS NOT NULL),
                '[]'::jsonb
              ) AS phones
            FROM settings s`,
