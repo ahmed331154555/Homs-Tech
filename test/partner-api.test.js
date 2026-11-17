@@ -249,3 +249,30 @@ test("partner image sanitizer includes small safe inline WebP and excludes overs
     "https://cdn.example.com/phone.webp"
   ]);
 });
+
+test("partner feed and order support legacy phones without explicit catalog IDs", async () => {
+  const key = "htp_" + "a".repeat(64);
+  const phone = {
+    name: "iPhone SE", brand: "Apple", sku: "HT-SE-001",
+    pricingMode: "legacy", stock: 2,
+    images: ["data:image/webp;base64,QUJD"]
+  };
+  const productId = getPartnerProductId(phone, 0, [phone]);
+  const h = makeRouteHarness({
+    phones: [phone],
+    prices: [{ product_id: productId, variant_key: "", wholesale_price: "100.00" }]
+  });
+  const feed = await h.invoke("GET", "/api/partner/v1/products", { authorization: "Bearer " + key });
+  assert.equal(feed.statusCode, 200);
+  assert.equal(feed.body.products[0].id, productId);
+  assert.equal(feed.body.products[0].images[0], "data:image/webp;base64,QUJD");
+
+  const order = await h.invoke("POST", "/api/partner/v1/orders", {
+    authorization: "Bearer " + key,
+    body: {
+      customer: { name: "Customer", email: "customer@example.com", phone: "+31612345678", street: "Main Street", houseNumber: "1", postcode: "3011AA", city: "Rotterdam" },
+      items: [{ productId, variantKey: "", quantity: 1 }]
+    }
+  });
+  assert.equal(order.statusCode, 201);
+});
