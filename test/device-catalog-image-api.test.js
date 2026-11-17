@@ -11,7 +11,10 @@ const serverSource = fs.readFileSync(path.join(root, "server.js"), "utf8");
 test("device image endpoint uses a parameterized active-phone lookup", () => {
   const start = serverSource.indexOf('app.get("/api/devices/image/:id"');
   const end = serverSource.indexOf('app.get("/api/shop/image/:id"', start);
-  assert.ok(start >= 0 && end > start, "device image route should be registered");
+  assert.ok(
+    start >= 0 && end > start,
+    "device image route should be registered",
+  );
   const route = serverSource.slice(start, end);
   assert.match(route, /jsonb_array_elements/);
   assert.match(route, /item\.phone->>'id'\s*=\s*\$1/);

@@ -11,9 +11,7 @@ function publicDeviceImageUrl(value, phoneId, color) {
   }
 
   const base = `/api/devices/image/${encodeURIComponent(String(phoneId))}`;
-  return color
-    ? `${base}?color=${encodeURIComponent(String(color))}`
-    : base;
+  return color ? `${base}?color=${encodeURIComponent(String(color))}` : base;
 }
 
 function sanitizeDevicesCatalogData(source) {
@@ -59,7 +57,8 @@ function sanitizeDevicesCatalogData(source) {
         (typeof phone.image === "string" && phone.image) ||
         (typeof phone.imageUrl === "string" && phone.imageUrl) ||
         "";
-      if (primaryImage) compact.image = publicDeviceImageUrl(primaryImage, phone.id);
+      if (primaryImage)
+        compact.image = publicDeviceImageUrl(primaryImage, phone.id);
       else if (Array.isArray(phone.images)) {
         const firstImage = phone.images.find(
           (image) => typeof image === "string" && image,
@@ -112,7 +111,10 @@ function sanitizeDevicesCatalogData(source) {
           const firstImage = Array.isArray(gallery)
             ? gallery.find((image) => typeof image === "string" && image)
             : "";
-          if (firstImage) galleryImages[color] = [publicDeviceImageUrl(firstImage, phone.id, color)];
+          if (firstImage)
+            galleryImages[color] = [
+              publicDeviceImageUrl(firstImage, phone.id, color),
+            ];
         }
       }
       const galleryColors = new Set(Object.keys(galleryImages));

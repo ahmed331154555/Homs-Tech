@@ -178,7 +178,6 @@ test("device catalog avoids duplicate color images and preserves condition label
   assert.equal(phone.conditionOptions[0].condition, "excellent");
 });
 
-
 test("device catalog image data is replaced by lazy same-origin image URLs", () => {
   const image = "data:image/webp;base64,QUJD";
   const output = sanitizeDevicesCatalogData({

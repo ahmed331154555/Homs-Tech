@@ -668,7 +668,7 @@ app.get("/api/devices/image/:id", async (req, res) => {
          AND item.phone->>'active' IS DISTINCT FROM 'false'
        LIMIT 1`,
       [phoneId],
-      4
+      4,
     );
 
     const phone = result.rows[0]?.phone;
@@ -683,12 +683,16 @@ app.get("/api/devices/image/:id", async (req, res) => {
         Object.prototype.hasOwnProperty.call(gallery, color) &&
         Array.isArray(gallery[color])
       ) {
-        imageValue = gallery[color].find(
-          (image) => typeof image === "string" && image,
-        ) || "";
+        imageValue =
+          gallery[color].find((image) => typeof image === "string" && image) ||
+          "";
       }
 
-      if (!imageValue && phone.colorImages && typeof phone.colorImages === "object") {
+      if (
+        !imageValue &&
+        phone.colorImages &&
+        typeof phone.colorImages === "object"
+      ) {
         if (Object.prototype.hasOwnProperty.call(phone.colorImages, color)) {
           imageValue = phone.colorImages[color];
         }
@@ -716,7 +720,7 @@ app.get("/api/devices/image/:id", async (req, res) => {
     const match =
       typeof imageValue === "string"
         ? imageValue.match(
-            /^data:image\/(jpeg|png|webp|gif);base64,([a-z0-9+/]+={0,2})$/i
+            /^data:image\/(jpeg|png|webp|gif);base64,([a-z0-9+/]+={0,2})$/i,
           )
         : null;
     if (!match) return res.status(404).end();
