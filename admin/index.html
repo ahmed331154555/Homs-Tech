@@ -1,728 +1,2665 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HOMS TECH - Admin</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HOMS TECH - Admin</title>
 
-  <link rel="stylesheet" href="../assets/homs-admin.css?v=20261115-compact-register1">
-  <link rel="stylesheet" href="../assets/partner-admin.css?v=20261117-api-guide1">
-</head>
+    <link
+      rel="stylesheet"
+      href="../assets/homs-admin.css?v=20261115-compact-register1"
+    />
+    <link
+      rel="stylesheet"
+      href="../assets/partner-admin.css?v=20261117-api-guide1"
+    />
+  </head>
 
-<body>
+  <body>
+    <a class="ht-admin-skip-link" href="#dashboard">Direct naar hoofdinhoud</a>
 
-<a class="ht-admin-skip-link" href="#dashboard">Direct naar hoofdinhoud</a>
-
-<div class="topbar">
-  <div class="logo">HOMS <span>TECH</span> — Admin</div>
-  <button class="btn btn-light" id="logoutBtn" onclick="logout()" style="display:none">
-    Uitloggen
-  </button>
-</div>
-
-<!-- ================= NAVIGATIE ================= -->
-<div id="adminNav" class="admin-nav">
-  <div class="admin-nav-inner">
-    <a class="nav-btn" data-permission="site.save" href="/admin/announcement-bars.html">📢 Announcement bars</a>
-  <a class="nav-btn" data-permission="site.save" href="/admin/benefits-strip.html">✓ Voordelenbalk</a>
-    <a class="nav-btn" data-permission="orders.view" href="/admin/reviews.html">⭐ Reviews & beoordelingen</a>
-    <button class="nav-btn active" data-page="general" data-permission="general.view" onclick="showPage('general')">🏠 Homepage</button>
-    <button class="nav-btn" data-page="services" data-permission="services.view" onclick="showPage('services')">🔧 Diensten</button>
-    <button class="nav-btn" data-page="repair" data-permission="site.save" onclick="showPage('repair')">🛠️ Reparatiepagina</button>
-    <button class="nav-btn" data-page="phones" data-permission="phones.view" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
-    <button class="nav-btn" data-page="shop" data-permission="site.save" onclick="showPage('shop')">🛍️ Shop producten</button>
-    <button class="nav-btn" data-page="inventory" data-permission="site.save" onclick="showPage('inventory')">📦 Voorraad & magazijn</button>
-    <button class="nav-btn" data-page="partners" data-permission="site.save" onclick="showPage('partners')">🤝 Partners</button>
-    <button class="nav-btn" data-page="device-register" data-permission="device_register.view" onclick="showPage('device-register')">📱 Toestelregister</button>
-    <button class="nav-btn" data-page="buyback" data-permission="site.save" onclick="showPage('buyback')">📥 Uw toestel verkopen</button>
-    <button class="nav-btn" data-page="why" data-permission="why.view" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
-    <button class="nav-btn" data-page="live-chat" data-permission="orders.view" onclick="showPage('live-chat')">💬 Live Chat</button>
-    <button class="nav-btn" data-page="customers" data-permission="customers.view" onclick="showPage('customers')">👥 Klanten</button>
-    <button class="nav-btn" data-page="emails" data-permission="site.save" onclick="showPage('emails')">✉️ E-mail inbox</button>
-    <button class="nav-btn" data-page="invoices" data-permission="site.save" onclick="showPage('invoices')">🧾 Facturen</button>
-    <button class="nav-btn nav-orders-parent" data-page="all-orders" aria-expanded="false" aria-controls="ordersSubmenu" onclick="toggleOrdersMenu()">📋 Alle bestellingen <span class="nav-orders-chevron" aria-hidden="true">⌄</span></button><div id="ordersSubmenu" class="nav-orders-submenu" hidden></div>
-    <button class="nav-btn" data-page="order-settings" data-permission="site.save" onclick="showPage('order-settings')">📦 Orderinstellingen</button>
-    <button class="nav-btn" data-page="search" data-permission="search" onclick="showPage('search')">🔎 Zoeken</button>
-    <button class="nav-btn" data-page="admins" data-permission="admins.manage" onclick="showPage('admins')">👤 Admins</button>
-  </div>
-</div>
-
-<!-- LOGIN -->
-<div id="loginBox" class="login">
-  <h1>Admin login</h1>
-  <p class="small">Log in om de website te beheren.</p>
-
-  <div class="field">
-    <label for="username">Gebruikersnaam</label>
-    <input id="username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false">
-  </div>
-
-  <div class="field">
-    <label for="password">Wachtwoord</label>
-    <input id="password" name="password" type="password" autocomplete="current-password">
-  </div>
-
-  <button class="btn btn-green" onclick="login()" style="width:100%">
-    Inloggen
-  </button>
-
-  <p id="loginStatus" class="status" role="status" aria-live="polite"></p>
-</div>
-
-<!-- DASHBOARD -->
-<div id="dashboard" class="dashboard" role="main" tabindex="-1">
-<div class="container">
-
-<!-- HOMEPAGE SETTINGS -->
-  <section class="section admin-page" id="page-live-chat" data-permission="orders.view">
-<div class="section-head"><div><h2>💬 Live Chat</h2><p>Beantwoord berichten van bezoekers rechtstreeks vanuit deze pagina.</p></div><button class="btn btn-light" type="button" onclick="loadLiveChat()">↻ Vernieuwen</button></div>
-<div class="live-chat-layout" style="display:grid;grid-template-columns:minmax(220px,320px) minmax(0,1fr);gap:14px;min-height:430px">
-<div id="liveChatList" style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:10px">Gesprekken laden…</div>
-<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;display:flex;flex-direction:column;min-height:420px"><strong id="liveChatTitle">Selecteer een gesprek</strong><div id="liveChatMessages" style="flex:1;overflow:auto;display:flex;flex-direction:column;gap:8px;min-height:300px;margin-top:12px"></div><form id="liveChatReplyForm" style="display:flex;gap:8px;margin-top:12px"><input id="liveChatReply" maxlength="2000" placeholder="Typ je antwoord…" style="flex:1;min-width:0;padding:11px;border:1px solid #cbd5e1;border-radius:10px" required><button class="btn btn-green" type="submit">Verstuur</button></form><button id="liveChatCloseBtn" class="btn btn-light" type="button" style="margin-top:8px;align-self:flex-start" disabled>Gesprek sluiten</button></div></div>
-</section>
-
-<section class="section admin-page" id="page-emails" data-permission="site.save">
-  <div class="ht-mail-head">
-    <div><div class="ht-mail-kicker">HOMS TECH · CUSTOMER SUPPORT</div><h2>✉️ E-mail Inbox</h2><p>Beheer klantberichten en verstuur professionele e-mails vanuit één plek.</p></div>
-    <button class="ht-mail-refresh" type="button" onclick="loadAdminEmails()">↻ Vernieuwen</button>
-  </div>
-  <div class="ht-mail-stats">
-    <div class="ht-mail-stat active"><span class="ht-mail-stat-icon">✉</span><div><strong>Inbox</strong><small id="emailStatInbox">0 ongelezen</small></div></div>
-    <div class="ht-mail-stat"><span class="ht-mail-stat-icon">➤</span><div><strong>Verzonden</strong><small id="emailStatSent">0 berichten</small></div></div>
-    <div class="ht-mail-stat"><span class="ht-mail-stat-icon">▤</span><div><strong>Bijlagen</strong><small>Foto's en documenten</small></div></div>
-    <div class="ht-mail-stat"><span class="ht-mail-stat-icon">◉</span><div><strong>Support</strong><small>HOMS TECH Inbox</small></div></div>
-  </div>
-  <div class="ht-mail-toolbar">
-    <label class="ht-mail-search"><span>⌕</span><input id="emailSearch" type="search" placeholder="Zoek op afzender of onderwerp…" oninput="renderAdminEmailList()"></label>
-    <div class="ht-mail-filters">
-      <button type="button" class="active" data-email-filter="all" onclick="setEmailFilter('all',this)">Alle berichten</button>
-      <button type="button" data-email-filter="inbound" onclick="setEmailFilter('inbound',this)">Inbox</button>
-      <button type="button" data-email-filter="outbound" onclick="setEmailFilter('outbound',this)">Verzonden</button>
-    </div>
-  </div>
-  <div class="ht-mail-workspace">
-    <aside class="ht-mail-list-panel">
-      <div class="ht-mail-panel-title"><strong>Berichten</strong><span id="emailInboxCount">Laden…</span></div>
-      <div id="emailInboxList" class="ht-mail-list"><div class="small">E-mails laden…</div></div>
-    </aside>
-    <div class="ht-mail-reader" id="adminEmailDetail"><div class="ht-mail-empty"><span>✉</span><strong>Selecteer een e-mail</strong><p>Kies een bericht uit de lijst om de inhoud te bekijken.</p></div></div>
-  </div>
-  <div class="ht-mail-compose">
-    <div class="ht-mail-compose-head"><div><span class="ht-mail-compose-icon">✎</span><div><strong id="emailComposeTitle">Nieuw bericht</strong><small>Schrijf een bericht aan je klant</small></div></div><button type="button" onclick="emailComposeNew()">＋ Nieuw bericht</button></div>
-    <form id="adminEmailComposeForm">
-      <div class="ht-mail-address-row"><label for="adminEmailTo">Aan</label><input id="adminEmailTo" type="email" required placeholder="klant@email.nl"><button type="button" class="ht-mail-cc" onclick="toggleEmailCc('cc')">Cc</button><button type="button" class="ht-mail-cc" onclick="toggleEmailCc('bcc')">Bcc</button></div>
-      <div id="emailCcRow" class="ht-mail-address-row" hidden><label for="adminEmailCc">Cc</label><input id="adminEmailCc" type="text" placeholder="extra@email.nl"></div>
-      <div id="emailBccRow" class="ht-mail-address-row" hidden><label for="adminEmailBcc">Bcc</label><input id="adminEmailBcc" type="text" placeholder="extra@email.nl"></div>
-      <div class="ht-mail-address-row"><label for="adminEmailSubject">Onderwerp</label><input id="adminEmailSubject" maxlength="240" required placeholder="Onderwerp van de e-mail"></div>
-      <div class="ht-mail-editor">
-        <div class="ht-mail-editor-tools"><button type="button" onclick="formatEmailText('bold')" title="Vet">B</button><button type="button" onclick="formatEmailText('italic')" title="Cursief"><i>I</i></button><button type="button" onclick="formatEmailText('underline')" title="Onderstrepen"><u>U</u></button><span></span><button type="button" onclick="insertEmailText('• ')" title="Opsomming">☷</button></div>
-        <textarea id="adminEmailBody" rows="7" required placeholder="Typ hier uw bericht…"></textarea>
-      </div>
-      <input id="adminEmailFiles" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/heic,application/pdf,.doc,.docx,.xls,.xlsx,.txt" hidden onchange="handleEmailFiles(this.files)">
-      <div id="emailAttachmentList" class="ht-mail-attachments"></div>
-      <div class="ht-mail-compose-bottom">
-        <div class="ht-mail-file-actions"><button type="button" class="ht-mail-attach-btn" onclick="document.getElementById('adminEmailFiles').click()">📎 Bijlage toevoegen</button><button type="button" class="ht-mail-attach-btn" onclick="document.getElementById('adminEmailFiles').click()">▧ Foto toevoegen</button><small>JPG, PNG, WEBP, PDF, DOC, DOCX, XLS, XLSX en TXT · max. 10 MB per bestand · 20 MB totaal</small></div>
-        <button id="adminEmailSendBtn" class="ht-mail-send" type="submit">➤ E-mail versturen</button>
-      </div>
-      <div id="adminEmailStatus" class="ht-mail-status">Antwoorden op mail@inbound.homs-tech.nl komen in deze inbox.</div>
-    </form>
-  </div>
-  
-</section>
-
-<section class="section admin-page active" id="page-general" data-permission="general.view">
-    <div class="section-head">
-      <div>
-        <h2>🏠 Homepage instellingen</h2>
-        <p>Beheer alle onderdelen die zichtbaar zijn op de HOMS TECH homepage. Elke groep opent apart.</p>
-      </div>
-    </div>
-
-    <div class="homepage-admin-intro">
-      <strong>Alles van de homepage op één plek</strong>
-      <div class="small">Klik op één onderdeel om het te openen. Er wordt niets automatisch aangepast: wijzigingen worden pas opgeslagen wanneer je onderaan op «Wijzigingen opslaan» drukt.</div>
-    </div>
-
-    <div id="homepageSettingsAccordion" class="homepage-accordion"></div>
-  </section>
-
-  <!-- SERVICES -->
-  <section class="section admin-page" id="page-services" data-permission="services.view">
-    <div class="section-head">
-      <div>
-        <h2>🔧 Diensten</h2>
-        <p>Beheer de reparatiediensten die op de website verschijnen.</p>
-      </div>
-
-      <button class="btn btn-green" onclick="addService()">
-        + Dienst toevoegen
+    <div class="topbar">
+      <div class="logo">HOMS <span>TECH</span> — Admin</div>
+      <button
+        class="btn btn-light"
+        id="logoutBtn"
+        onclick="logout()"
+        style="display:none"
+      >
+        Uitloggen
       </button>
     </div>
 
-    <div id="servicesList"></div>
-  </section>
-
-  <!-- REPARATIEPAGINA -->
-  <section class="section admin-page" id="page-repair" data-permission="site.save">
-    <div class="section-head">
-      <div>
-        <h2>🛠️ Reparatiepagina</h2>
-        <p>Beheer de volledige pagina Reparaties: teksten, knoppen, kaarten, stappen, voordelen en afbeeldingen.</p>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <a class="btn btn-light" href="../repair.html" target="_blank" rel="noopener">👁 Voorbeeld openen</a>
-        <button class="btn btn-green" type="button" onclick="addRepairOption()">＋ Optie toevoegen</button>
+    <!-- ================= NAVIGATIE ================= -->
+    <div id="adminNav" class="admin-nav">
+      <div class="admin-nav-inner">
+        <a
+          class="nav-btn"
+          data-permission="site.save"
+          href="/admin/announcement-bars.html"
+          >📢 Announcement bars</a
+        >
+        <a
+          class="nav-btn"
+          data-permission="site.save"
+          href="/admin/benefits-strip.html"
+          >✓ Voordelenbalk</a
+        >
+        <a
+          class="nav-btn"
+          data-permission="orders.view"
+          href="/admin/reviews.html"
+          >⭐ Reviews & beoordelingen</a
+        >
+        <button
+          class="nav-btn active"
+          data-page="general"
+          data-permission="general.view"
+          onclick="showPage('general')"
+        >
+          🏠 Homepage
+        </button>
+        <button
+          class="nav-btn"
+          data-page="services"
+          data-permission="services.view"
+          onclick="showPage('services')"
+        >
+          🔧 Diensten
+        </button>
+        <button
+          class="nav-btn"
+          data-page="repair"
+          data-permission="site.save"
+          onclick="showPage('repair')"
+        >
+          🛠️ Reparatiepagina
+        </button>
+        <button
+          class="nav-btn"
+          data-page="phones"
+          data-permission="phones.view"
+          onclick="showPage('phones')"
+        >
+          📱 Telefoons & prijzen
+        </button>
+        <button
+          class="nav-btn"
+          data-page="shop"
+          data-permission="site.save"
+          onclick="showPage('shop')"
+        >
+          🛍️ Shop producten
+        </button>
+        <button
+          class="nav-btn"
+          data-page="inventory"
+          data-permission="site.save"
+          onclick="showPage('inventory')"
+        >
+          📦 Voorraad & magazijn
+        </button>
+        <button
+          class="nav-btn"
+          data-page="partners"
+          data-permission="site.save"
+          onclick="showPage('partners')"
+        >
+          🤝 Partners
+        </button>
+        <button
+          class="nav-btn"
+          data-page="device-register"
+          data-permission="device_register.view"
+          onclick="showPage('device-register')"
+        >
+          📱 Toestelregister
+        </button>
+        <button
+          class="nav-btn"
+          data-page="buyback"
+          data-permission="site.save"
+          onclick="showPage('buyback')"
+        >
+          📥 Uw toestel verkopen
+        </button>
+        <button
+          class="nav-btn"
+          data-page="why"
+          data-permission="why.view"
+          onclick="showPage('why')"
+        >
+          ⭐ Waarom HOMS TECH
+        </button>
+        <button
+          class="nav-btn"
+          data-page="live-chat"
+          data-permission="orders.view"
+          onclick="showPage('live-chat')"
+        >
+          💬 Live Chat
+        </button>
+        <button
+          class="nav-btn"
+          data-page="customers"
+          data-permission="customers.view"
+          onclick="showPage('customers')"
+        >
+          👥 Klanten
+        </button>
+        <button
+          class="nav-btn"
+          data-page="emails"
+          data-permission="site.save"
+          onclick="showPage('emails')"
+        >
+          ✉️ E-mail inbox
+        </button>
+        <button
+          class="nav-btn"
+          data-page="invoices"
+          data-permission="site.save"
+          onclick="showPage('invoices')"
+        >
+          🧾 Facturen
+        </button>
+        <button
+          class="nav-btn nav-orders-parent"
+          data-page="all-orders"
+          aria-expanded="false"
+          aria-controls="ordersSubmenu"
+          onclick="toggleOrdersMenu()"
+        >
+          📋 Alle bestellingen
+          <span class="nav-orders-chevron" aria-hidden="true">⌄</span>
+        </button>
+        <div id="ordersSubmenu" class="nav-orders-submenu" hidden></div>
+        <button
+          class="nav-btn"
+          data-page="order-settings"
+          data-permission="site.save"
+          onclick="showPage('order-settings')"
+        >
+          📦 Orderinstellingen
+        </button>
+        <button
+          class="nav-btn"
+          data-page="search"
+          data-permission="search"
+          onclick="showPage('search')"
+        >
+          🔎 Zoeken
+        </button>
+        <button
+          class="nav-btn"
+          data-page="admins"
+          data-permission="admins.manage"
+          onclick="showPage('admins')"
+        >
+          👤 Admins
+        </button>
       </div>
     </div>
-    <div id="repairPageEditor" class="repair-admin-shell"></div>
-  </section>
 
-  <!-- TELEFOONS EN PRIJZEN -->
-  <section class="section admin-page" id="page-phones" data-permission="phones.view">
-    <div class="section-head">
-      <div>
-        <h2>📱 Telefoons te koop</h2>
-        <p>Beheer de telefoons die HOMS TECH verkoopt.</p>
+    <!-- LOGIN -->
+    <div id="loginBox" class="login">
+      <h1>Admin login</h1>
+      <p class="small">Log in om de website te beheren.</p>
+
+      <div class="field">
+        <label for="username">Gebruikersnaam</label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          autocomplete="username"
+          autocapitalize="none"
+          spellcheck="false"
+        />
       </div>
 
-      <button class="btn btn-green" onclick="addPhone()">
-        + Telefoon toevoegen
+      <div class="field">
+        <label for="password">Wachtwoord</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+        />
+      </div>
+
+      <button class="btn btn-green" onclick="login()" style="width:100%">
+        Inloggen
       </button>
+
+      <p id="loginStatus" class="status" role="status" aria-live="polite"></p>
     </div>
 
-    <div id="phonesList"></div>
-  </section>
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="dashboard" role="main" tabindex="-1">
+      <div class="container">
+        <!-- HOMEPAGE SETTINGS -->
+        <section
+          class="section admin-page"
+          id="page-live-chat"
+          data-permission="orders.view"
+        >
+          <div class="section-head">
+            <div>
+              <h2>💬 Live Chat</h2>
+              <p>
+                Beantwoord berichten van bezoekers rechtstreeks vanuit deze
+                pagina.
+              </p>
+            </div>
+            <button
+              class="btn btn-light"
+              type="button"
+              onclick="loadLiveChat()"
+            >
+              ↻ Vernieuwen
+            </button>
+          </div>
+          <div
+            class="live-chat-layout"
+            style="display:grid;grid-template-columns:minmax(220px,320px) minmax(0,1fr);gap:14px;min-height:430px"
+          >
+            <div
+              id="liveChatList"
+              style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:10px"
+            >
+              Gesprekken laden…
+            </div>
+            <div
+              style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;display:flex;flex-direction:column;min-height:420px"
+            >
+              <strong id="liveChatTitle">Selecteer een gesprek</strong>
+              <div
+                id="liveChatMessages"
+                style="flex:1;overflow:auto;display:flex;flex-direction:column;gap:8px;min-height:300px;margin-top:12px"
+              ></div>
+              <form
+                id="liveChatReplyForm"
+                style="display:flex;gap:8px;margin-top:12px"
+              >
+                <input
+                  id="liveChatReply"
+                  maxlength="2000"
+                  placeholder="Typ je antwoord…"
+                  style="flex:1;min-width:0;padding:11px;border:1px solid #cbd5e1;border-radius:10px"
+                  required
+                /><button class="btn btn-green" type="submit">Verstuur</button>
+              </form>
+              <button
+                id="liveChatCloseBtn"
+                class="btn btn-light"
+                type="button"
+                style="margin-top:8px;align-self:flex-start"
+                disabled
+              >
+                Gesprek sluiten
+              </button>
+            </div>
+          </div>
+        </section>
 
-  <!-- SHOP PRODUCTEN -->
-  <section class="section admin-page" id="page-shop" data-permission="site.save">
-    <div class="section-head"><div><h2>🛍️ Shop producten</h2><p>Beheer accessoires en onderdelen apart van de telefooncatalogus. Per product maximaal 4 foto's en optioneel een uitlegvideo.</p></div><div class="actions"><a class="btn btn-light" href="../shop.html" target="_blank" rel="noopener">👁 Shop bekijken</a><button class="btn btn-green" type="button" onclick="addShopProduct()">＋ Product toevoegen</button></div></div>
-    <div class="card" style="margin:0 0 16px;padding:16px;border:1px solid #dbe3ec;border-radius:12px;background:#fff">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap">
-        <div style="min-width:220px;flex:1">
-          <strong style="display:block;font-size:15px">🌐 Shop-pagina aan / uit</strong>
-          <span id="shopVisibilityStatus" class="small" style="display:block;margin-top:5px">Status laden...</span>
+        <section
+          class="section admin-page"
+          id="page-emails"
+          data-permission="site.save"
+        >
+          <div class="ht-mail-head">
+            <div>
+              <div class="ht-mail-kicker">HOMS TECH · CUSTOMER SUPPORT</div>
+              <h2>✉️ E-mail Inbox</h2>
+              <p>
+                Beheer klantberichten en verstuur professionele e-mails vanuit
+                één plek.
+              </p>
+            </div>
+            <button
+              class="ht-mail-refresh"
+              type="button"
+              onclick="loadAdminEmails()"
+            >
+              ↻ Vernieuwen
+            </button>
+          </div>
+          <div class="ht-mail-stats">
+            <div class="ht-mail-stat active">
+              <span class="ht-mail-stat-icon">✉</span>
+              <div>
+                <strong>Inbox</strong
+                ><small id="emailStatInbox">0 ongelezen</small>
+              </div>
+            </div>
+            <div class="ht-mail-stat">
+              <span class="ht-mail-stat-icon">➤</span>
+              <div>
+                <strong>Verzonden</strong
+                ><small id="emailStatSent">0 berichten</small>
+              </div>
+            </div>
+            <div class="ht-mail-stat">
+              <span class="ht-mail-stat-icon">▤</span>
+              <div>
+                <strong>Bijlagen</strong><small>Foto's en documenten</small>
+              </div>
+            </div>
+            <div class="ht-mail-stat">
+              <span class="ht-mail-stat-icon">◉</span>
+              <div><strong>Support</strong><small>HOMS TECH Inbox</small></div>
+            </div>
+          </div>
+          <div class="ht-mail-toolbar">
+            <label class="ht-mail-search"
+              ><span>⌕</span
+              ><input
+                id="emailSearch"
+                type="search"
+                placeholder="Zoek op afzender of onderwerp…"
+                oninput="renderAdminEmailList()"
+            /></label>
+            <div class="ht-mail-filters">
+              <button
+                type="button"
+                class="active"
+                data-email-filter="all"
+                onclick="setEmailFilter('all',this)"
+              >
+                Alle berichten
+              </button>
+              <button
+                type="button"
+                data-email-filter="inbound"
+                onclick="setEmailFilter('inbound',this)"
+              >
+                Inbox
+              </button>
+              <button
+                type="button"
+                data-email-filter="outbound"
+                onclick="setEmailFilter('outbound',this)"
+              >
+                Verzonden
+              </button>
+            </div>
+          </div>
+          <div class="ht-mail-workspace">
+            <aside class="ht-mail-list-panel">
+              <div class="ht-mail-panel-title">
+                <strong>Berichten</strong
+                ><span id="emailInboxCount">Laden…</span>
+              </div>
+              <div id="emailInboxList" class="ht-mail-list">
+                <div class="small">E-mails laden…</div>
+              </div>
+            </aside>
+            <div class="ht-mail-reader" id="adminEmailDetail">
+              <div class="ht-mail-empty">
+                <span>✉</span><strong>Selecteer een e-mail</strong>
+                <p>Kies een bericht uit de lijst om de inhoud te bekijken.</p>
+              </div>
+            </div>
+          </div>
+          <div class="ht-mail-compose">
+            <div class="ht-mail-compose-head">
+              <div>
+                <span class="ht-mail-compose-icon">✎</span>
+                <div>
+                  <strong id="emailComposeTitle">Nieuw bericht</strong
+                  ><small>Schrijf een bericht aan je klant</small>
+                </div>
+              </div>
+              <button type="button" onclick="emailComposeNew()">
+                ＋ Nieuw bericht
+              </button>
+            </div>
+            <form id="adminEmailComposeForm">
+              <div class="ht-mail-address-row">
+                <label for="adminEmailTo">Aan</label
+                ><input
+                  id="adminEmailTo"
+                  type="email"
+                  required
+                  placeholder="klant@email.nl"
+                /><button
+                  type="button"
+                  class="ht-mail-cc"
+                  onclick="toggleEmailCc('cc')"
+                >
+                  Cc</button
+                ><button
+                  type="button"
+                  class="ht-mail-cc"
+                  onclick="toggleEmailCc('bcc')"
+                >
+                  Bcc
+                </button>
+              </div>
+              <div id="emailCcRow" class="ht-mail-address-row" hidden>
+                <label for="adminEmailCc">Cc</label
+                ><input
+                  id="adminEmailCc"
+                  type="text"
+                  placeholder="extra@email.nl"
+                />
+              </div>
+              <div id="emailBccRow" class="ht-mail-address-row" hidden>
+                <label for="adminEmailBcc">Bcc</label
+                ><input
+                  id="adminEmailBcc"
+                  type="text"
+                  placeholder="extra@email.nl"
+                />
+              </div>
+              <div class="ht-mail-address-row">
+                <label for="adminEmailSubject">Onderwerp</label
+                ><input
+                  id="adminEmailSubject"
+                  maxlength="240"
+                  required
+                  placeholder="Onderwerp van de e-mail"
+                />
+              </div>
+              <div class="ht-mail-editor">
+                <div class="ht-mail-editor-tools">
+                  <button
+                    type="button"
+                    onclick="formatEmailText('bold')"
+                    title="Vet"
+                  >
+                    B</button
+                  ><button
+                    type="button"
+                    onclick="formatEmailText('italic')"
+                    title="Cursief"
+                  >
+                    <i>I</i></button
+                  ><button
+                    type="button"
+                    onclick="formatEmailText('underline')"
+                    title="Onderstrepen"
+                  >
+                    <u>U</u></button
+                  ><span></span
+                  ><button
+                    type="button"
+                    onclick="insertEmailText('• ')"
+                    title="Opsomming"
+                  >
+                    ☷
+                  </button>
+                </div>
+                <textarea
+                  id="adminEmailBody"
+                  rows="7"
+                  required
+                  placeholder="Typ hier uw bericht…"
+                ></textarea>
+              </div>
+              <input
+                id="adminEmailFiles"
+                type="file"
+                multiple
+                accept="image/jpeg,image/png,image/webp,image/gif,image/heic,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
+                hidden
+                onchange="handleEmailFiles(this.files)"
+              />
+              <div id="emailAttachmentList" class="ht-mail-attachments"></div>
+              <div class="ht-mail-compose-bottom">
+                <div class="ht-mail-file-actions">
+                  <button
+                    type="button"
+                    class="ht-mail-attach-btn"
+                    onclick="document.getElementById('adminEmailFiles').click()"
+                  >
+                    📎 Bijlage toevoegen</button
+                  ><button
+                    type="button"
+                    class="ht-mail-attach-btn"
+                    onclick="document.getElementById('adminEmailFiles').click()"
+                  >
+                    ▧ Foto toevoegen</button
+                  ><small
+                    >JPG, PNG, WEBP, PDF, DOC, DOCX, XLS, XLSX en TXT · max. 10
+                    MB per bestand · 20 MB totaal</small
+                  >
+                </div>
+                <button
+                  id="adminEmailSendBtn"
+                  class="ht-mail-send"
+                  type="submit"
+                >
+                  ➤ E-mail versturen
+                </button>
+              </div>
+              <div id="adminEmailStatus" class="ht-mail-status">
+                Antwoorden op mail@inbound.homs-tech.nl komen in deze inbox.
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section
+          class="section admin-page active"
+          id="page-general"
+          data-permission="general.view"
+        >
+          <div class="section-head">
+            <div>
+              <h2>🏠 Homepage instellingen</h2>
+              <p>
+                Beheer alle onderdelen die zichtbaar zijn op de HOMS TECH
+                homepage. Elke groep opent apart.
+              </p>
+            </div>
+          </div>
+
+          <div class="homepage-admin-intro">
+            <strong>Alles van de homepage op één plek</strong>
+            <div class="small">
+              Klik op één onderdeel om het te openen. Er wordt niets automatisch
+              aangepast: wijzigingen worden pas opgeslagen wanneer je onderaan
+              op «Wijzigingen opslaan» drukt.
+            </div>
+          </div>
+
+          <div id="homepageSettingsAccordion" class="homepage-accordion"></div>
+        </section>
+
+        <!-- SERVICES -->
+        <section
+          class="section admin-page"
+          id="page-services"
+          data-permission="services.view"
+        >
+          <div class="section-head">
+            <div>
+              <h2>🔧 Diensten</h2>
+              <p>Beheer de reparatiediensten die op de website verschijnen.</p>
+            </div>
+
+            <button class="btn btn-green" onclick="addService()">
+              + Dienst toevoegen
+            </button>
+          </div>
+
+          <div id="servicesList"></div>
+        </section>
+
+        <!-- REPARATIEPAGINA -->
+        <section
+          class="section admin-page"
+          id="page-repair"
+          data-permission="site.save"
+        >
+          <div class="section-head">
+            <div>
+              <h2>🛠️ Reparatiepagina</h2>
+              <p>
+                Beheer de volledige pagina Reparaties: teksten, knoppen,
+                kaarten, stappen, voordelen en afbeeldingen.
+              </p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <a
+                class="btn btn-light"
+                href="../repair.html"
+                target="_blank"
+                rel="noopener"
+                >👁 Voorbeeld openen</a
+              >
+              <button
+                class="btn btn-green"
+                type="button"
+                onclick="addRepairOption()"
+              >
+                ＋ Optie toevoegen
+              </button>
+            </div>
+          </div>
+          <div id="repairPageEditor" class="repair-admin-shell"></div>
+        </section>
+
+        <!-- TELEFOONS EN PRIJZEN -->
+        <section
+          class="section admin-page"
+          id="page-phones"
+          data-permission="phones.view"
+        >
+          <div class="section-head">
+            <div>
+              <h2>📱 Telefoons te koop</h2>
+              <p>Beheer de telefoons die HOMS TECH verkoopt.</p>
+            </div>
+
+            <button class="btn btn-green" onclick="addPhone()">
+              + Telefoon toevoegen
+            </button>
+          </div>
+
+          <div id="phonesList"></div>
+        </section>
+
+        <!-- SHOP PRODUCTEN -->
+        <section
+          class="section admin-page"
+          id="page-shop"
+          data-permission="site.save"
+        >
+          <div class="section-head">
+            <div>
+              <h2>🛍️ Shop producten</h2>
+              <p>
+                Beheer accessoires en onderdelen apart van de telefooncatalogus.
+                Per product maximaal 4 foto's en optioneel een uitlegvideo.
+              </p>
+            </div>
+            <div class="actions">
+              <a
+                class="btn btn-light"
+                href="../shop.html"
+                target="_blank"
+                rel="noopener"
+                >👁 Shop bekijken</a
+              ><button
+                class="btn btn-green"
+                type="button"
+                onclick="addShopProduct()"
+              >
+                ＋ Product toevoegen
+              </button>
+            </div>
+          </div>
+          <div
+            class="card"
+            style="margin:0 0 16px;padding:16px;border:1px solid #dbe3ec;border-radius:12px;background:#fff"
+          >
+            <div
+              style="display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap"
+            >
+              <div style="min-width:220px;flex:1">
+                <strong style="display:block;font-size:15px"
+                  >🌐 Shop-pagina aan / uit</strong
+                >
+                <span
+                  id="shopVisibilityStatus"
+                  class="small"
+                  style="display:block;margin-top:5px"
+                  >Status laden...</span
+                >
+              </div>
+              <div
+                style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"
+              >
+                <button
+                  id="shopVisibilitySwitch"
+                  type="button"
+                  role="switch"
+                  aria-checked="true"
+                  aria-label="Shop-pagina aan of uit"
+                  onclick="toggleShopVisibilityDraft()"
+                  disabled
+                  style="width:66px;height:36px;padding:4px;border:0;border-radius:99px;background:#94a3b8;cursor:pointer;display:inline-flex;align-items:center;justify-content:flex-start;transition:background .18s ease"
+                >
+                  <span
+                    id="shopVisibilityKnob"
+                    aria-hidden="true"
+                    style="display:block;width:28px;height:28px;border-radius:50%;background:#fff;box-shadow:0 1px 4px #0003;transition:transform .18s ease"
+                  ></span>
+                </button>
+                <strong
+                  id="shopVisibilityLabel"
+                  style="min-width:34px;font-size:13px;color:#64748b"
+                  >—</strong
+                >
+                <button
+                  id="shopVisibilitySave"
+                  class="btn btn-green"
+                  type="button"
+                  onclick="saveShopVisibility()"
+                  disabled
+                >
+                  Wijziging opslaan
+                </button>
+              </div>
+            </div>
+            <p class="small" style="margin:12px 0 0">
+              Zet de schakelaar op AAN of UIT en druk daarna op Wijziging
+              opslaan. Producten, foto's, prijzen en voorraad blijven altijd
+              bewaard.
+            </p>
+          </div>
+          <div
+            class="small"
+            style="padding:12px;background:#f4f8ff;border:1px solid #dce9ff;border-radius:10px;margin-bottom:16px"
+          >
+            Vul de productgegevens in en druk daarna bovenaan op
+            <strong>Wijzigingen opslaan</strong>. Foto's: maximaal 1,2 MB per
+            foto. Voor een video kun je de YouTube-link invullen en de
+            video-optie aanzetten.
+          </div>
+          <div id="shopProductsAdmin"></div>
+        </section>
+
+        <!-- INKOOP / UW TOESTEL VERKOPEN -->
+        <section
+          class="section admin-page"
+          id="page-buyback"
+          data-permission="site.save"
+        >
+          <div class="section-head">
+            <div>
+              <h2>📥 Uw toestel verkopen</h2>
+              <p>
+                Beheer je inkooptoestellen eenvoudig: Merk → Telefoon. Kies
+                eerst een merk en daarna direct het toestel.
+              </p>
+            </div>
+          </div>
+
+          <div class="buyback-hierarchy">
+            <div class="buyback-hierarchy-toolbar">
+              <div>
+                <strong>Apparaatstructuur</strong>
+                <div class="small">
+                  Bestaande toestellen blijven behouden. De nieuwe structuur
+                  wordt er veilig omheen gebouwd.
+                </div>
+              </div>
+              <div class="buyback-hierarchy-add">
+                <button
+                  class="btn btn-light"
+                  type="button"
+                  onclick="addBuybackBrand()"
+                >
+                  + Merk
+                </button>
+
+                <button
+                  class="btn btn-green"
+                  type="button"
+                  onclick="addBuybackModel()"
+                >
+                  + Model
+                </button>
+              </div>
+            </div>
+
+            <div id="buybackHierarchy"></div>
+            <div id="buybackModelEditor"></div>
+          </div>
+        </section>
+
+        <!-- APPARAATCATEGORIEËN -->
+        <section
+          class="section admin-page"
+          id="page-categories"
+          data-permission="categories.view"
+        >
+          <div class="section-head">
+            <div>
+              <h2>🖼️ Apparaten & categorieën</h2>
+              <p>
+                Beheer de blokken zoals iPhones, iPads, Mac, Watches, Samsung en
+                accessoires op de homepage.
+              </p>
+            </div>
+            <button class="btn btn-green" onclick="addDeviceCategory()">
+              + Categorie toevoegen
+            </button>
+          </div>
+          <div id="deviceCategoriesList"></div>
+
+          <div class="card" style="margin-top:18px">
+            <div class="card-head">
+              <div>
+                <div class="card-title">
+                  📋 Conditie-uitleg — één keer instellen
+                </div>
+                <div class="small">
+                  Deze uitleg hoort bij HOMS TECH als geheel en wordt gebruikt
+                  voor alle verkochte telefoons. Je hoeft de foto's dus niet
+                  opnieuw per telefoon toe te voegen.
+                </div>
+              </div>
+            </div>
+            <div
+              class="small"
+              style="margin-bottom:12px;padding:10px 12px;background:#f4f8ff;border:1px solid #dce9ff;border-radius:10px"
+            >
+              Stel hier één keer de uitleg in voor
+              <strong>Zo goed als nieuw</strong>,
+              <strong>Licht gebruikt</strong> en
+              <strong>Zichtbaar gebruikt</strong>. Deze instellingen gelden voor
+              alle telefoons.
+            </div>
+            <div id="globalConditionOverviewBox"></div>
+            <div id="globalConditionDetailsList"></div>
+          </div>
+        </section>
+
+        <!-- KLANTEN -->
+        <section
+          class="section admin-page"
+          id="page-customers"
+          data-permission="customers.view"
+        >
+          <div class="section-head">
+            <div>
+              <h2>👥 Klanten beheren</h2>
+              <p>
+                Klanten bekijken, aanpassen, aanmaken, wachtwoord wijzigen of
+                verwijderen.
+              </p>
+            </div>
+            <div class="actions">
+              <button
+                class="btn btn-green"
+                data-permission="customers.update"
+                onclick="showCustomerCreateForm()"
+              >
+                + Klant aanmaken
+              </button>
+              <button class="btn btn-light" onclick="loadCustomers()">
+                ↻ Vernieuwen
+              </button>
+            </div>
+          </div>
+          <div
+            id="customersStatus"
+            class="status info"
+            style="margin-bottom:15px"
+          ></div>
+          <div id="customersList"></div>
+        </section>
+
+        <div
+          id="customerModalBackdrop"
+          class="customer-modal-backdrop"
+          onclick="if(event.target===this)closeCustomerModal()"
+        >
+          <div
+            class="customer-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="customerModalTitle"
+          >
+            <button
+              type="button"
+              class="customer-modal-close"
+              aria-label="Sluiten"
+              onclick="closeCustomerModal()"
+            >
+              ×
+            </button>
+            <div
+              id="customerCreatePanel"
+              class="customer-form-panel"
+              style="display:none"
+            >
+              <h2 id="customerModalTitle">Nieuwe klant aanmaken</h2>
+              <div class="grid">
+                <div class="field">
+                  <label>Voornaam *</label
+                  ><input
+                    id="newCustomerFirstName"
+                    autocomplete="given-name"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label>Achternaam *</label
+                  ><input
+                    id="newCustomerLastName"
+                    autocomplete="family-name"
+                    required
+                  />
+                </div>
+                <div class="field" style="grid-column:1/-1">
+                  <label>E-mail *</label
+                  ><input
+                    id="newCustomerEmail"
+                    type="email"
+                    autocomplete="email"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label>Postcode *</label
+                  ><input
+                    id="newCustomerPostcode"
+                    autocomplete="postal-code"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label>Huisnummer *</label
+                  ><input
+                    id="newCustomerHouseNumber"
+                    autocomplete="address-line2"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label>Straatnaam *</label
+                  ><input
+                    id="newCustomerStreet"
+                    autocomplete="address-line1"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label>Plaatsnaam *</label
+                  ><input
+                    id="newCustomerCity"
+                    autocomplete="address-level2"
+                    required
+                  />
+                </div>
+                <div class="field" style="grid-column:1/-1">
+                  <label>Telefoon (optioneel)</label
+                  ><input id="newCustomerPhone" autocomplete="tel" />
+                </div>
+                <div class="field" style="grid-column:1/-1">
+                  <label>Tijdelijk wachtwoord (minimaal 8 tekens) *</label
+                  ><input
+                    id="newCustomerPassword"
+                    type="password"
+                    minlength="8"
+                    autocomplete="new-password"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="actions">
+                <button class="btn btn-green" onclick="createCustomer()">
+                  Account aanmaken</button
+                ><button class="btn btn-light" onclick="closeCustomerModal()">
+                  Annuleren
+                </button>
+              </div>
+            </div>
+            <div
+              id="customerEditPanel"
+              class="customer-form-panel"
+              style="display:none"
+            >
+              <h2 id="customerEditTitle">Klantgegevens wijzigen</h2>
+              <input id="editCustomerId" type="hidden" />
+              <div class="grid">
+                <div class="field">
+                  <label>Voornaam *</label
+                  ><input
+                    id="editCustomerFirstName"
+                    autocomplete="given-name"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label>Achternaam *</label
+                  ><input
+                    id="editCustomerLastName"
+                    autocomplete="family-name"
+                    required
+                  />
+                </div>
+                <div class="field" style="grid-column:1/-1">
+                  <label>E-mail *</label
+                  ><input
+                    id="editCustomerEmail"
+                    type="email"
+                    autocomplete="email"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label>Postcode</label
+                  ><input
+                    id="editCustomerPostcode"
+                    autocomplete="postal-code"
+                  />
+                </div>
+                <div class="field">
+                  <label>Huisnummer</label
+                  ><input
+                    id="editCustomerHouseNumber"
+                    autocomplete="address-line2"
+                  />
+                </div>
+                <div class="field">
+                  <label>Straatnaam</label
+                  ><input
+                    id="editCustomerStreet"
+                    autocomplete="address-line1"
+                  />
+                </div>
+                <div class="field">
+                  <label>Plaatsnaam</label
+                  ><input id="editCustomerCity" autocomplete="address-level2" />
+                </div>
+                <div class="field" style="grid-column:1/-1">
+                  <label>Telefoon</label
+                  ><input id="editCustomerPhone" autocomplete="tel" />
+                </div>
+              </div>
+              <div class="actions">
+                <button class="btn btn-green" onclick="saveCustomerEdit()">
+                  Wijzigingen opslaan</button
+                ><button
+                  class="btn btn-light"
+                  onclick="editCustomerPassword(Number(document.getElementById('editCustomerId').value))"
+                >
+                  🔑 Wachtwoord instellen</button
+                ><button
+                  class="btn btn-red"
+                  onclick="deleteCustomer(Number(document.getElementById('editCustomerId').value))"
+                >
+                  🗑 Verwijderen
+                </button>
+              </div>
+            </div>
+            <div
+              id="customerPasswordPanel"
+              class="customer-form-panel"
+              style="display:none"
+            >
+              <h2 id="customerPasswordTitle">Wachtwoord instellen</h2>
+              <input id="passwordCustomerId" type="hidden" />
+              <p class="small">
+                Stel een tijdelijk wachtwoord in en deel dit veilig met de
+                klant. Gebruik geen wachtwoord dat de klant elders gebruikt.
+              </p>
+              <div class="field">
+                <label>Nieuw tijdelijk wachtwoord (minimaal 8 tekens)</label
+                ><input
+                  id="adminCustomerPassword"
+                  type="password"
+                  minlength="8"
+                  autocomplete="new-password"
+                />
+              </div>
+              <div class="actions">
+                <button class="btn btn-green" onclick="saveCustomerPassword()">
+                  Wachtwoord opslaan</button
+                ><button
+                  class="btn btn-light"
+                  onclick="editCustomer(Number(document.getElementById('passwordCustomerId').value))"
+                >
+                  Terug naar klant
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-          <button id="shopVisibilitySwitch" type="button" role="switch" aria-checked="true" aria-label="Shop-pagina aan of uit" onclick="toggleShopVisibilityDraft()" disabled style="width:66px;height:36px;padding:4px;border:0;border-radius:99px;background:#94a3b8;cursor:pointer;display:inline-flex;align-items:center;justify-content:flex-start;transition:background .18s ease">
-            <span id="shopVisibilityKnob" aria-hidden="true" style="display:block;width:28px;height:28px;border-radius:50%;background:#fff;box-shadow:0 1px 4px #0003;transition:transform .18s ease"></span>
+
+        <!-- REPAIR REQUESTS — separate from Reparatieaanvragen -->
+        <section
+          class="section admin-page"
+          id="page-repair-requests"
+          data-permission="orders.view"
+        >
+          <div class="section-head">
+            <div>
+              <h2>🔧 Repair Requests</h2>
+              <p>
+                Prijsaanvragen voor toestelreparaties, apart van
+                Reparatieaanvragen.
+              </p>
+            </div>
+            <button class="btn btn-light" onclick="loadOrders()">
+              ↻ Vernieuwen
+            </button>
+          </div>
+          <div id="repairRequestSummary" class="order-summary"></div>
+          <div class="orders-toolbar">
+            <div class="orders-search">
+              <input
+                id="repairRequestSearch"
+                type="search"
+                placeholder="Zoeken op klant, e-mail, telefoon, toestel..."
+                oninput="renderRepairRequests()"
+              />
+            </div>
+            <select
+              id="repairRequestStatusFilter"
+              class="order-filter"
+              onchange="renderRepairRequests()"
+            >
+              <option value="">Alle statussen</option>
+              <option>Nieuw</option>
+              <option>In behandeling</option>
+              <option>Wacht op klant</option>
+              <option>Wacht op leverancier</option>
+              <option>Resultaat ontvangen</option>
+              <option>Mislukt</option>
+              <option>Voltooid</option>
+              <option>Geannuleerd</option></select
+            ><button
+              class="order-filter-btn"
+              onclick="clearRepairRequestFilters()"
+            >
+              ↻ Filters wissen
+            </button>
+          </div>
+          <div id="repairRequestsStatus" class="order-count"></div>
+          <div id="repairRequestsList" class="orders-list"></div>
+        </section>
+
+        <!-- WEBSHOP ORDERS -->
+        <section
+          class="section admin-page"
+          id="page-webshop-orders"
+          data-permission="webshop_orders.view"
+        >
+          <div class="section-head">
+            <div>
+              <h2>🛍️ Webshop Bestellingen</h2>
+              <p>
+                Bestellingen uit de webshop, met klantgegevens, producten en
+                status.
+              </p>
+            </div>
+            <button class="btn btn-light" onclick="loadWebshopOrders()">
+              ↻ Vernieuwen
+            </button>
+          </div>
+          <div id="webshopOrderSummary" class="order-summary"></div>
+          <div class="orders-toolbar">
+            <div class="orders-search">
+              <input
+                id="webshopOrderSearch"
+                type="search"
+                placeholder="Zoeken op klant, e-mail, telefoon, ordernummer, postcode..."
+                oninput="renderWebshopOrders()"
+              />
+            </div>
+            <select
+              id="webshopOrderStatusFilter"
+              class="order-filter"
+              onchange="renderWebshopOrders()"
+            >
+              <option value="">Alle bestelstatussen</option>
+              <option>Nieuw</option>
+              <option>In behandeling</option>
+              <option>Verzonden</option>
+              <option>Voltooid</option>
+              <option>Geannuleerd</option>
+            </select>
+            <select
+              id="webshopOrderPaymentFilter"
+              class="order-filter"
+              onchange="renderWebshopOrders()"
+            >
+              <option value="">Alle betaalstatussen</option>
+              <option value="paid">Betaald</option>
+              <option value="unpaid">Niet betaald</option>
+              <option value="processing">In behandeling</option>
+              <option value="failed">Mislukt</option>
+            </select>
+            <button
+              class="order-filter-btn"
+              onclick="clearWebshopOrderFilters()"
+            >
+              ↻ Filters wissen
+            </button>
+          </div>
+          <div
+            id="webshopOrdersStatus"
+            class="status info"
+            style="margin-bottom:10px"
+          ></div>
+          <div id="webshopOrdersList" class="orders-list"></div>
+        </section>
+
+        <section
+          class="section admin-page ht-invoices-page"
+          id="page-invoices"
+          data-permission="site.save"
+        >
+          <div class="section-head ht-invoices-head">
+            <div>
+              <h2>🧾 Facturen</h2>
+              <p>
+                Maak, bekijk en verstuur professionele facturen voor HOMS TECH.
+              </p>
+            </div>
+            <button
+              class="btn btn-light"
+              type="button"
+              onclick="loadInvoices()"
+            >
+              ↻ Vernieuwen
+            </button>
+          </div>
+          <div class="ht-invoice-intro">
+            <span class="ht-invoice-intro-icon" aria-hidden="true">✓</span>
+            <div>
+              <strong>Factuurbeheer</strong>
+              <p>
+                Controleer klantgegevens en factuurregels zorgvuldig. Het
+                definitieve factuurnummer wordt automatisch toegewezen na het
+                opslaan.
+              </p>
+            </div>
+          </div>
+          <div class="card ht-invoice-editor" style="margin-bottom:14px">
+            <div class="ht-invoice-card-head">
+              <div>
+                <span class="ht-invoice-eyebrow">EENMALIG INSTELLEN</span>
+                <h3>Gegevens van HOMS TECH</h3>
+                <p>
+                  Vul deze gegevens later aan zodra de bedrijfsregistratie rond
+                  is. Ze worden automatisch op nieuwe facturen geplaatst.
+                  Gebruik voorlopig alleen concepten totdat de officiële
+                  bedrijfsgegevens bekend zijn.
+                </p>
+              </div>
+              <span class="ht-invoice-draft-tag">Bedrijfsprofiel</span>
+            </div>
+            <div class="ht-invoice-form-grid">
+              <div class="field">
+                <label for="invSellerLegalName">Juridische bedrijfsnaam</label
+                ><input
+                  id="invSellerLegalName"
+                  maxlength="180"
+                  placeholder="Later invullen na KVK-registratie"
+                />
+              </div>
+              <div class="field">
+                <label for="invSellerTradeName">Handelsnaam</label
+                ><input
+                  id="invSellerTradeName"
+                  maxlength="180"
+                  value="HOMS TECH"
+                />
+              </div>
+              <div class="field ht-invoice-field-wide">
+                <label for="invSellerAddress">Vestigingsadres</label
+                ><input
+                  id="invSellerAddress"
+                  maxlength="300"
+                  placeholder="Straat en huisnummer"
+                />
+              </div>
+              <div class="field">
+                <label for="invSellerPostalCode">Postcode</label
+                ><input
+                  id="invSellerPostalCode"
+                  maxlength="20"
+                  placeholder="Postcode"
+                />
+              </div>
+              <div class="field">
+                <label for="invSellerCity">Plaats</label
+                ><input
+                  id="invSellerCity"
+                  maxlength="100"
+                  placeholder="Plaats"
+                />
+              </div>
+              <div class="field">
+                <label for="invSellerCountry">Land</label
+                ><input
+                  id="invSellerCountry"
+                  maxlength="80"
+                  value="Nederland"
+                />
+              </div>
+              <div class="field">
+                <label for="invSellerKvk">KVK-nummer</label
+                ><input
+                  id="invSellerKvk"
+                  maxlength="30"
+                  placeholder="Na registratie invullen"
+                />
+              </div>
+              <div class="field">
+                <label for="invSellerVat">BTW-identificatienummer</label
+                ><input
+                  id="invSellerVat"
+                  maxlength="40"
+                  placeholder="Na registratie invullen"
+                />
+              </div>
+              <div class="field">
+                <label for="invSellerIban">IBAN</label
+                ><input id="invSellerIban" maxlength="50" placeholder="NL…" />
+              </div>
+              <div class="field">
+                <label for="invSellerEmail">E-mailadres</label
+                ><input
+                  id="invSellerEmail"
+                  type="email"
+                  maxlength="180"
+                  placeholder="Factuur e-mailadres"
+                />
+              </div>
+              <div class="field">
+                <label for="invSellerPhone">Telefoon</label
+                ><input id="invSellerPhone" maxlength="40" placeholder="+31…" />
+              </div>
+              <div class="field">
+                <label for="invSellerWebsite">Website</label
+                ><input
+                  id="invSellerWebsite"
+                  maxlength="180"
+                  value="https://homs-tech.nl"
+                />
+              </div>
+            </div>
+            <div class="ht-invoice-editor-actions">
+              <button
+                class="btn btn-primary"
+                type="button"
+                onclick="saveInvoiceSettings()"
+              >
+                Bedrijfsgegevens opslaan</button
+              ><span
+                id="invoiceSettingsStatus"
+                class="status"
+                role="status"
+                aria-live="polite"
+              ></span>
+            </div>
+          </div>
+          <div class="card ht-invoice-editor">
+            <div class="ht-invoice-card-head">
+              <div>
+                <span class="ht-invoice-eyebrow">NIEUW DOCUMENT</span>
+                <h3>Nieuwe factuur</h3>
+                <p>
+                  Vul de klantgegevens en de geleverde producten of diensten in.
+                </p>
+              </div>
+              <span class="ht-invoice-draft-tag">Concept</span>
+            </div>
+            <div class="ht-invoice-form-grid">
+              <div class="field">
+                <label for="invCustomerType">Type klant *</label
+                ><select
+                  id="invCustomerType"
+                  class="form-control"
+                  onchange="invoiceToggleCustomerType()"
+                >
+                  <option value="individual">Particulier</option>
+                  <option value="business">Zakelijk / bedrijf</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="invCustomerEmail">E-mailadres klant</label
+                ><input
+                  id="invCustomerEmail"
+                  type="email"
+                  maxlength="254"
+                  autocomplete="email"
+                  placeholder="klant@voorbeeld.nl"
+                />
+              </div>
+              <div class="field">
+                <label for="invCustomerPhone">Telefoon klant</label
+                ><input
+                  id="invCustomerPhone"
+                  type="tel"
+                  maxlength="40"
+                  autocomplete="tel"
+                  placeholder="+31…"
+                />
+              </div>
+              <div class="field" id="invCustomerNameWrap">
+                <label for="invCustomerName">Volledige naam klant *</label
+                ><input
+                  id="invCustomerName"
+                  maxlength="160"
+                  autocomplete="name"
+                  placeholder="Voor- en achternaam"
+                />
+              </div>
+              <div class="field" id="invCustomerCompanyWrap" hidden>
+                <label for="invCustomerCompany">Bedrijfsnaam *</label
+                ><input
+                  id="invCustomerCompany"
+                  maxlength="180"
+                  placeholder="Naam van het bedrijf"
+                />
+              </div>
+              <div class="field" id="invCustomerContactWrap" hidden>
+                <label for="invCustomerContact">Contactpersoon</label
+                ><input
+                  id="invCustomerContact"
+                  maxlength="160"
+                  placeholder="Naam contactpersoon"
+                />
+              </div>
+              <div class="field ht-invoice-field-wide">
+                <label for="invCustomerAddress">Straat en huisnummer</label
+                ><input
+                  id="invCustomerAddress"
+                  maxlength="300"
+                  autocomplete="street-address"
+                  placeholder="Straat en huisnummer"
+                />
+              </div>
+              <div class="field">
+                <label for="invCustomerPostal">Postcode</label
+                ><input
+                  id="invCustomerPostal"
+                  maxlength="20"
+                  autocomplete="postal-code"
+                  placeholder="Postcode"
+                />
+              </div>
+              <div class="field">
+                <label for="invCustomerCity">Plaats</label
+                ><input
+                  id="invCustomerCity"
+                  maxlength="100"
+                  autocomplete="address-level2"
+                  placeholder="Plaats"
+                />
+              </div>
+              <div class="field">
+                <label for="invCustomerCountry">Land</label
+                ><input
+                  id="invCustomerCountry"
+                  maxlength="80"
+                  value="Nederland"
+                  autocomplete="country-name"
+                />
+              </div>
+              <div class="field" id="invCustomerKvkWrap" hidden>
+                <label for="invCustomerKvk">KVK-nummer klant</label
+                ><input
+                  id="invCustomerKvk"
+                  maxlength="30"
+                  placeholder="KVK-nummer bedrijf"
+                />
+              </div>
+              <div class="field" id="invCustomerVatWrap" hidden>
+                <label for="invCustomerVat">BTW-ID klant</label
+                ><input
+                  id="invCustomerVat"
+                  maxlength="40"
+                  placeholder="BTW-identificatienummer klant"
+                />
+              </div>
+              <div class="field">
+                <label for="invPaymentMethod">Betaalmethode</label
+                ><select id="invPaymentMethod" class="form-control">
+                  <option value="bank">Bankoverschrijving</option>
+                  <option value="pin">Pin</option>
+                  <option value="cash">Contant</option>
+                  <option value="online">Online betaling</option>
+                  <option value="other">Anders</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="invPaymentStatus">Betaalstatus</label
+                ><select id="invPaymentStatus" class="form-control">
+                  <option value="unpaid">Niet betaald</option>
+                  <option value="paid">Betaald</option>
+                  <option value="partial">Gedeeltelijk betaald</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="invDueDate">Vervaldatum</label
+                ><input id="invDueDate" type="date" />
+              </div>
+              <div class="field">
+                <label for="invDeliveryDate">Leverdatum / reparatiedatum</label
+                ><input id="invDeliveryDate" type="date" />
+              </div>
+              <div class="field ht-invoice-field-wide">
+                <label for="invReference">Referentie / ordernummer</label
+                ><input
+                  id="invReference"
+                  maxlength="120"
+                  placeholder="Bijv. reparatieorder of webshopbestelling"
+                />
+              </div>
+              <div class="field ht-invoice-field-wide">
+                <label for="invNotes">Opmerkingen</label
+                ><input
+                  id="invNotes"
+                  maxlength="1200"
+                  placeholder="Aanvullende informatie voor op de factuur"
+                />
+              </div>
+            </div>
+            <div class="ht-invoice-lines-head">
+              <div>
+                <h4>Factuurregels</h4>
+                <p>Bedragen in euro. BTW per regel instelbaar.</p>
+              </div>
+              <button
+                class="btn btn-light"
+                type="button"
+                onclick="addInvoiceLine()"
+              >
+                ＋ Regel toevoegen
+              </button>
+            </div>
+            <div class="ht-invoice-lines-wrap">
+              <table class="ht-invoice-lines-table">
+                <thead>
+                  <tr>
+                    <th>Omschrijving</th>
+                    <th>Aantal</th>
+                    <th>Prijs per stuk</th>
+                    <th>BTW</th>
+                    <th><span class="ht-sr-only">Verwijderen</span></th>
+                  </tr>
+                </thead>
+                <tbody id="invoiceLines"></tbody>
+              </table>
+            </div>
+            <div class="ht-invoice-total-panel">
+              <div>
+                <span>Subtotaal excl. BTW</span
+                ><strong id="invSubtotal">€ 0,00</strong>
+              </div>
+              <div>
+                <span>BTW</span><strong id="invVatTotal">€ 0,00</strong>
+              </div>
+              <div class="ht-invoice-grand-total">
+                <span>Totaal incl. BTW</span
+                ><strong id="invGrandTotal">€ 0,00</strong>
+              </div>
+            </div>
+            <div class="ht-invoice-editor-actions">
+              <button
+                class="btn btn-green"
+                type="button"
+                onclick="saveInvoice()"
+              >
+                Factuur opslaan als concept
+              </button>
+              <button
+                class="btn btn-light"
+                type="button"
+                onclick="previewInvoiceDraft()"
+              >
+                PDF-voorbeeld bekijken
+              </button>
+            </div>
+            <p
+              id="invoiceFormStatus"
+              class="status"
+              role="status"
+              aria-live="polite"
+            ></p>
+          </div>
+          <div class="card ht-invoice-list-card">
+            <div class="ht-invoice-card-head">
+              <div>
+                <span class="ht-invoice-eyebrow">ARCHIEF</span>
+                <h3>Opgeslagen facturen</h3>
+                <p>
+                  Bekijk PDF-bestanden of verstuur de factuur naar de klant.
+                </p>
+              </div>
+            </div>
+            <div id="invoiceList" aria-live="polite">
+              <div class="ht-invoice-loading" role="status">
+                Facturen laden…
+              </div>
+            </div>
+          </div>
+        </section>
+        <section
+          class="section admin-page"
+          id="page-device-register"
+          data-permission="device_register.view"
+        >
+          <div class="section-head">
+            <div>
+              <h2>📱 Toestelregister & Reparaties</h2>
+              <p>
+                Beheer HOMS TECH-voorraad en klanttoestellen gescheiden, met
+                eigen statussen, kosten en rapportages.
+              </p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button
+                class="btn btn-light"
+                type="button"
+                onclick="loadDeviceRegister()"
+              >
+                ↻ Vernieuwen
+              </button>
+              <button
+                class="btn btn-light"
+                type="button"
+                data-permission="device_register.update"
+                onclick="deviceExportExcel()"
+              >
+                Export Excel
+              </button>
+              <label
+                class="btn btn-light"
+                data-permission="device_register.update"
+                style="cursor:pointer"
+                >Import Excel<input
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onchange="deviceImportExcel(event)"
+                  hidden
+              /></label>
+              <button
+                class="btn btn-primary"
+                type="button"
+                data-permission="device_register.update"
+                onclick="deviceAddBlankRow()"
+              >
+                ＋ Nieuwe registratie
+              </button>
+            </div>
+          </div>
+          <div class="card" style="padding:14px;margin-bottom:14px">
+            <div
+              style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end"
+            >
+              <div style="min-width:260px">
+                <label style="display:block;margin-bottom:7px"
+                  >Registratietype</label
+                >
+                <div
+                  style="display:flex;gap:6px;flex-wrap:wrap"
+                  role="group"
+                  aria-label="Type registratie"
+                >
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    data-device-filter="commercial"
+                    aria-pressed="true"
+                    onclick="deviceSetTypeFilter('commercial')"
+                  >
+                    📦 Eigen voorraad</button
+                  ><button
+                    type="button"
+                    class="btn btn-light"
+                    data-device-filter="customer_repair"
+                    aria-pressed="false"
+                    onclick="deviceSetTypeFilter('customer_repair')"
+                  >
+                    🔧 Klantreparaties
+                  </button>
+                </div>
+                <select
+                  id="deviceTypeFilter"
+                  class="form-control"
+                  onchange="loadDeviceRegister()"
+                  style="display:none"
+                  aria-hidden="true"
+                >
+                  <option value="commercial">Eigen voorraad</option>
+                  <option value="customer_repair">Klantreparaties</option>
+                </select>
+              </div>
+              <label
+                >Zoeken<input
+                  id="deviceSearch"
+                  class="form-control"
+                  type="search"
+                  placeholder="Model, IMEI, HT-code, klant…"
+                  oninput="loadDeviceRegister()"
+              /></label>
+              <label
+                style="display:flex;align-items:center;gap:8px;padding:9px 0"
+                ><input
+                  id="deviceArchivedFilter"
+                  type="checkbox"
+                  onchange="loadDeviceRegister()"
+                />
+                Toon archief</label
+              >
+            </div>
+          </div>
+          <p
+            id="deviceRegisterStatus"
+            class="status"
+            role="status"
+            aria-live="polite"
+          ></p>
+          <div id="deviceRegisterTable" aria-live="polite">
+            <div class="ht-inventory-loading">Toestellen laden…</div>
+          </div>
+          <div id="deviceHistoryPanel" style="margin-top:16px"></div>
+        </section>
+        <section
+          class="section admin-page ht-inventory-page"
+          id="page-inventory"
+          data-permission="site.save"
+        >
+          <div class="section-head ht-inventory-head">
+            <div>
+              <h2>📦 Voorraad & magazijn</h2>
+              <p>
+                Centraal overzicht van telefoons, onderdelen en accessoires.
+                Elke wijziging wordt geregistreerd.
+              </p>
+            </div>
+            <button
+              class="btn btn-light"
+              type="button"
+              onclick="loadInventory()"
+            >
+              ↻ Vernieuwen
+            </button>
+          </div>
+          <div
+            class="ht-inventory-summary"
+            id="inventorySummary"
+            aria-live="polite"
+          >
+            <div class="ht-inventory-stat">
+              <span>Voorraadartikelen</span><strong>—</strong
+              ><small>Catalogus</small>
+            </div>
+            <div class="ht-inventory-stat">
+              <span>Totale stuks</span><strong>—</strong
+              ><small>Getelde voorraad</small>
+            </div>
+            <div class="ht-inventory-stat">
+              <span>Bijna op</span><strong>—</strong
+              ><small>Op of onder minimum</small>
+            </div>
+            <div class="ht-inventory-stat">
+              <span>Uitverkocht</span><strong>—</strong
+              ><small>Voorraad nul</small>
+            </div>
+          </div>
+          <div class="ht-inventory-layout">
+            <div class="card ht-inventory-main">
+              <div class="ht-inventory-card-head">
+                <div>
+                  <span class="ht-inventory-eyebrow">MAGAZIJNOVERZICHT</span>
+                  <h3>Productvoorraad</h3>
+                  <p>Zoek op product, uitvoering, categorie of SKU.</p>
+                </div>
+              </div>
+              <div class="ht-inventory-toolbar">
+                <label class="ht-inventory-search"
+                  ><span aria-hidden="true">⌕</span
+                  ><input
+                    id="inventorySearch"
+                    type="search"
+                    placeholder="Zoek product of SKU…"
+                    oninput="renderInventoryItems()"
+                    aria-label="Zoek voorraad"
+                /></label>
+                <select
+                  id="inventoryCategoryFilter"
+                  aria-label="Filter categorie"
+                  onchange="renderInventoryItems()"
+                >
+                  <option value="all">Alle categorieën</option>
+                  <option value="phone">Telefoons</option>
+                  <option value="shop">Shop / onderdelen</option>
+                </select>
+                <select
+                  id="inventoryStockFilter"
+                  aria-label="Filter voorraadstatus"
+                  onchange="renderInventoryItems()"
+                >
+                  <option value="all">Alle statussen</option>
+                  <option value="low">Lage voorraad</option>
+                  <option value="zero">Uitverkocht</option>
+                  <option value="untracked">Niet ingesteld</option>
+                </select>
+              </div>
+              <div
+                id="inventoryItems"
+                class="ht-inventory-table-wrap"
+                aria-live="polite"
+              >
+                <div class="ht-inventory-loading">Voorraad laden…</div>
+              </div>
+            </div>
+            <aside class="card ht-inventory-adjust">
+              <div class="ht-inventory-card-head">
+                <div>
+                  <span class="ht-inventory-eyebrow">VOORRAAD MUTEREN</span>
+                  <h3>Voorraad wijzigen</h3>
+                  <p>
+                    Kies een artikel en registreer de reden van de wijziging.
+                  </p>
+                </div>
+              </div>
+              <form
+                id="inventoryMovementForm"
+                onsubmit="saveInventoryMovement(event)"
+              >
+                <div class="field">
+                  <label for="inventoryItemSelect">Product / uitvoering *</label
+                  ><select
+                    id="inventoryItemSelect"
+                    required
+                    onchange="inventorySelectionChanged()"
+                  >
+                    <option value="">Selecteer een product</option>
+                  </select>
+                </div>
+                <div
+                  id="inventorySelectedInfo"
+                  class="ht-inventory-selected-info"
+                >
+                  Selecteer een product om de huidige voorraad te bekijken.
+                </div>
+                <div class="field">
+                  <label for="inventoryMovementType">Type mutatie *</label
+                  ><select
+                    id="inventoryMovementType"
+                    required
+                    onchange="inventoryMovementTypeChanged()"
+                  >
+                    <option value="purchase">Inkoop / levering (+)</option>
+                    <option value="sale">Verkoop / afboeking (−)</option>
+                    <option value="return">Retour ontvangen (+)</option>
+                    <option value="damage">Beschadigd / verlies (−)</option>
+                    <option value="correction">
+                      Voorraadcorrectie (+ / −)
+                    </option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="inventoryQuantity">Aantal stuks *</label
+                  ><input
+                    id="inventoryQuantity"
+                    type="number"
+                    min="1"
+                    max="100000"
+                    step="1"
+                    required
+                    placeholder="Bijv. 5"
+                  />
+                </div>
+                <div class="field">
+                  <label for="inventoryReference">Referentie (optioneel)</label
+                  ><input
+                    id="inventoryReference"
+                    maxlength="100"
+                    placeholder="Inkoopnummer, ordernummer…"
+                  />
+                </div>
+                <div class="field">
+                  <label for="inventoryNote">Opmerking / reden *</label
+                  ><textarea
+                    id="inventoryNote"
+                    rows="3"
+                    maxlength="500"
+                    placeholder="Bijv. Levering van leverancier"
+                    required
+                  ></textarea>
+                </div>
+                <button
+                  id="inventorySaveButton"
+                  class="btn btn-green"
+                  type="submit"
+                >
+                  Voorraadmutatie opslaan
+                </button>
+                <p
+                  id="inventoryFormStatus"
+                  class="status"
+                  role="status"
+                  aria-live="polite"
+                ></p>
+              </form>
+            </aside>
+          </div>
+          <div class="card ht-inventory-history">
+            <div class="ht-inventory-card-head">
+              <div>
+                <span class="ht-inventory-eyebrow">CONTROLE & AUDIT</span>
+                <h3>Voorraadgeschiedenis</h3>
+                <p>
+                  De laatste 100 voorraadmutaties, inclusief automatische
+                  webshopverkopen.
+                </p>
+              </div>
+            </div>
+            <div
+              id="inventoryMovements"
+              class="ht-inventory-history-wrap"
+              aria-live="polite"
+            >
+              <div class="ht-inventory-loading">Geschiedenis laden…</div>
+            </div>
+          </div>
+        </section>
+        <section
+          class="section admin-page ht-partners-page"
+          id="page-partners"
+          data-permission="site.save"
+        >
+          <div class="section-head">
+            <div>
+              <h2>🤝 Schakelpartners</h2>
+              <p>
+                Beheer verkooppartners, stel per telefoonuitvoering een
+                groothandelsprijs in en behandel partnerbestellingen.
+              </p>
+            </div>
+            <button
+              class="btn btn-light"
+              type="button"
+              onclick="loadPartnersAdmin()"
+            >
+              ↻ Vernieuwen
+            </button>
+          </div>
+          <div class="ht-partner-notice">
+            <strong>Prijsafspraak</strong
+            ><span
+              >HOMS TECH bepaalt de groothandelsprijs. De partner kiest zelf de
+              verkoopprijs en houdt het verschil. Partnerbestellingen zijn
+              aanvragen: voorraad wordt bij ontvangst niet automatisch
+              afgeboekt.</span
+            >
+          </div>
+          <details class="ht-partner-api-guide">
+            <summary>
+              <span
+                ><strong>📘 API & Partner Handleiding</strong
+                ><small
+                  >Zo geef je een andere winkel veilig toegang tot HOMS
+                  TECH-producten</small
+                ></span
+              ><span class="ht-partner-guide-toggle">Handleiding openen ▾</span>
+            </summary>
+            <div class="ht-partner-guide-body">
+              <div class="ht-partner-guide-intro">
+                <strong
+                  >Gebruik dit stappenplan telkens wanneer je een nieuwe webshop
+                  koppelt.</strong
+                ><span
+                  >Geef alleen de eigen API-sleutel van die partner. Deel nooit
+                  je HOMS TECH-adminlogin, databasegegevens of
+                  servergeheimen.</span
+                >
+              </div>
+              <div class="ht-partner-guide-grid">
+                <article>
+                  <span class="ht-partner-guide-step"
+                    >01 · PARTNER AANMAKEN</span
+                  >
+                  <h4>Maak eerst een aparte partner aan</h4>
+                  <p>
+                    Vul links de bedrijfsnaam en het e-mailadres in bij ‘Nieuwe
+                    partner’. Na het aanmaken verschijnt de API-sleutel één
+                    keer. Kopieer hem direct en bewaar hem veilig. De sleutel
+                    kan later niet opnieuw worden getoond.
+                  </p>
+                </article>
+                <article>
+                  <span class="ht-partner-guide-step"
+                    >02 · PRODUCTEN TOEKENNEN</span
+                  >
+                  <h4>Kies de toegestane uitvoeringen</h4>
+                  <p>
+                    Selecteer de telefoonvarianten en stel de
+                    groothandelsprijzen in. Alleen actieve, toegewezen varianten
+                    met een opgeslagen prijs komen in de productfeed. Varianten
+                    met expliciet voorraad 0 worden weggelaten.
+                  </p>
+                </article>
+                <article>
+                  <span class="ht-partner-guide-step"
+                    >03 · GEGEVENS AAN DE BOUWER</span
+                  >
+                  <h4>Stuur deze API-gegevens</h4>
+                  <p>
+                    <b>Base URL</b><code>https://homs-tech.nl</code
+                    ><b>Producten ophalen · GET</b
+                    ><code>/api/partner/v1/products</code
+                    ><b>Bestelaanvraag · POST</b
+                    ><code>/api/partner/v1/orders</code><b>Header</b
+                    ><code>Authorization: Bearer [PARTNER_API_KEY]</code
+                    ><code>Accept: application/json</code>
+                  </p>
+                  <p>
+                    Stuur de API-sleutel privé naar de verantwoordelijke bouwer.
+                    Laat die sleutel uitsluitend server-side opslaan als
+                    environment secret; nooit in browser-JavaScript, openbare
+                    pagina's of logs.
+                  </p>
+                </article>
+                <article>
+                  <span class="ht-partner-guide-step">04 · TESTEN</span>
+                  <h4>Controleer vóór livegang</h4>
+                  <p>
+                    Test eerst de GET-feed met de partnerkey. Controleer
+                    productnaam, kleur, opslag, conditie, wholesalePrice,
+                    currency, stock en images. Per variant kunnen maximaal vier
+                    afbeeldingen worden teruggegeven. Test daarna pas een
+                    bestelaanvraag.
+                  </p>
+                </article>
+              </div>
+              <div class="ht-partner-guide-endpoints">
+                <div>
+                  <strong>Variant herkennen</strong
+                  ><code>variantKey = opslag|kleur|conditie</code
+                  ><small
+                    >Gebruik de exacte waarden uit de productfeed, bijvoorbeeld
+                    <code>128GB|Black|A</code>. Gebruik de lege string voor een
+                    product zonder varianten.</small
+                  >
+                </div>
+                <div>
+                  <strong>Belangrijk over bestellingen</strong
+                  ><small
+                    >POST maakt een aanvraag aan. De prijs wordt door HOMS TECH
+                    berekend op basis van de opgeslagen partnerprijs; een
+                    ingestuurde prijs wordt genegeerd. De aanvraag reserveert of
+                    vermindert de voorraad niet automatisch. Controleer en keur
+                    de aanvraag goed in Partnerbestellingen.</small
+                  >
+                </div>
+              </div>
+              <div class="ht-partner-guide-security">
+                <strong>🔐 Toegang intrekken</strong
+                ><span
+                  >Ga naar ‘Bestaande partners’ en schakel de betreffende
+                  partner uit of verwijder deze wanneer nodig. Daarmee wordt de
+                  toegang met die sleutel ingetrokken. Gebruik voor iedere
+                  winkel een eigen partner en eigen sleutel; deel nooit één
+                  sleutel tussen meerdere winkels.</span
+                >
+              </div>
+              <p class="ht-partner-guide-doc">
+                <strong>Technische documentatie:</strong>
+                <code>docs/partner-api.md</code> in de HOMS TECH repository.
+                Deel met de bouwer alleen wat nodig is voor de koppeling.
+              </p>
+            </div>
+          </details>
+          <div class="ht-partner-grid">
+            <div class="card ht-partner-card">
+              <div class="ht-partner-card-head">
+                <div>
+                  <span class="ht-partner-eyebrow">PARTNERBEHEER</span>
+                  <h3>Nieuwe partner</h3>
+                </div>
+              </div>
+              <form id="partnerCreateForm" class="ht-partner-form">
+                <label
+                  >Bedrijfsnaam<input
+                    id="partnerNewName"
+                    maxlength="120"
+                    required
+                    placeholder="Naam van de winkel"
+                /></label>
+                <label
+                  >E-mailadres<input
+                    id="partnerNewEmail"
+                    type="email"
+                    maxlength="180"
+                    placeholder="partner@winkel.nl"
+                /></label>
+                <button class="btn btn-green" type="submit">
+                  ＋ Partner aanmaken
+                </button>
+              </form>
+              <div id="partnerCreateStatus" class="status" role="status"></div>
+              <div id="partnerKeyReveal" class="ht-partner-key" hidden>
+                <strong>Nieuwe API-sleutel — alleen nu zichtbaar</strong>
+                <p>
+                  Kopieer deze sleutel en bewaar hem veilig. Later kan HOMS TECH
+                  hem niet opnieuw tonen.
+                </p>
+                <code id="partnerNewApiKey"></code
+                ><button
+                  class="btn btn-light"
+                  type="button"
+                  onclick="copyPartnerApiKey()"
+                >
+                  Kopieer API-sleutel
+                </button>
+              </div>
+              <div class="ht-partner-list-head">
+                <h3>Bestaande partners</h3>
+                <span id="partnerCount">—</span>
+              </div>
+              <div id="partnerList" class="ht-partner-list" aria-live="polite">
+                Partners laden…
+              </div>
+            </div>
+            <div class="card ht-partner-card">
+              <div class="ht-partner-card-head">
+                <div>
+                  <span class="ht-partner-eyebrow">GROOTHANDEL</span>
+                  <h3 id="partnerPriceTitle">Selecteer een partner</h3>
+                  <p>
+                    Vink alleen uitvoeringen aan die deze partner mag inkopen.
+                  </p>
+                </div>
+              </div>
+              <div id="partnerPricePanel" class="ht-partner-empty">
+                Selecteer links een partner om de productprijzen te beheren.
+              </div>
+            </div>
+          </div>
+          <div class="card ht-partner-orders-card">
+            <div class="ht-partner-card-head">
+              <div>
+                <span class="ht-partner-eyebrow">ORDERBEHEER</span>
+                <h3>Partnerbestellingen</h3>
+                <p>
+                  Controleer klant- en verzendgegevens, bevestig of wijs
+                  aanvragen af en voeg interne notities toe.
+                </p>
+              </div>
+              <button
+                class="btn btn-light"
+                type="button"
+                onclick="loadPartnerOrders()"
+              >
+                ↻ Bestellingen
+              </button>
+            </div>
+            <div
+              id="partnerOrdersStatus"
+              class="status info"
+              role="status"
+            ></div>
+            <div id="partnerOrdersList" class="ht-partner-orders-list">
+              Bestellingen laden…
+            </div>
+          </div>
+        </section>
+        <section
+          class="section admin-page"
+          id="page-order-settings"
+          data-permission="site.save"
+        >
+          <div class="section-head">
+            <div>
+              <h2>📦 Orderinstellingen</h2>
+              <p>
+                Verzendinstellingen voor PostNL en DHL. API-sleutels worden
+                veilig als servervariabelen ingesteld.
+              </p>
+            </div>
+            <button class="btn" type="button" onclick="loadOrderSettings()">
+              ↻ Vernieuwen
+            </button>
+          </div>
+          <div
+            id="orderSettingsStatus"
+            class="status info"
+            style="margin-bottom:12px"
+          >
+            Instellingen laden...
+          </div>
+          <div class="card" style="padding:18px;margin-bottom:14px">
+            <h3 style="margin-top:0">Verzendbedrijven</h3>
+            <label
+              style="display:flex;gap:10px;align-items:flex-start;margin:14px 0"
+            >
+              <input
+                type="checkbox"
+                id="orderPostnlEnabled"
+                style="margin-top:4px"
+              />
+              <span
+                ><strong>PostNL</strong><br /><small id="orderPostnlApiStatus"
+                  >API-status controleren...</small
+                ></span
+              >
+            </label>
+            <label
+              style="display:flex;gap:10px;align-items:flex-start;margin:14px 0"
+            >
+              <input
+                type="checkbox"
+                id="orderDhlEnabled"
+                style="margin-top:4px"
+              />
+              <span
+                ><strong>DHL</strong><br /><small id="orderDhlApiStatus"
+                  >API-status controleren...</small
+                ></span
+              >
+            </label>
+            <div class="ht-cod-setting">
+              <div class="ht-cod-setting-copy">
+                <strong>Betalen bij ontvangst</strong>
+                <small
+                  >Sta contante betaling bij bezorging toe. Dit geldt ook voor
+                  bestellingen met inruil.</small
+                >
+                <span
+                  id="orderCashOnDeliveryStatus"
+                  class="ht-cod-status"
+                  aria-live="polite"
+                  >Instelling laden...</span
+                >
+              </div>
+              <label
+                class="ht-admin-switch"
+                for="orderCashOnDeliveryEnabled"
+                aria-label="Betalen bij ontvangst in- of uitschakelen"
+              >
+                <input
+                  type="checkbox"
+                  id="orderCashOnDeliveryEnabled"
+                  onchange="toggleCashOnDeliverySetting()"
+                />
+                <span class="ht-admin-switch-track" aria-hidden="true"></span>
+              </label>
+            </div>
+            <button
+              class="btn btn-primary"
+              type="button"
+              onclick="saveOrderSettings()"
+            >
+              Instellingen opslaan
+            </button>
+          </div>
+          <div
+            class="card"
+            style="padding:18px;margin-bottom:14px;border:1px solid #d6e2f0"
+          >
+            <div
+              style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px"
+            >
+              <div style="display:flex;align-items:center;gap:12px">
+                <div
+                  style="width:48px;height:48px;border-radius:14px;background:#f1f7ff;display:grid;place-items:center;font-weight:900;font-size:25px;color:#0756a8"
+                >
+                  P
+                </div>
+                <div>
+                  <h3 style="margin:0">PayPal betalingen</h3>
+                  <small style="color:var(--muted,#64748b)"
+                    >Ontvang online betalingen via je eigen PayPal
+                    Business-app.</small
+                  >
+                </div>
+              </div>
+              <label
+                style="display:flex;align-items:center;gap:9px;font-weight:700"
+                ><input type="checkbox" id="orderPaypalEnabled" /> PayPal
+                inschakelen</label
+              >
+            </div>
+            <div
+              style="padding:13px;border-radius:12px;background:var(--soft,#f8fafc);margin-bottom:14px"
+            >
+              <label
+                for="orderPaypalMode"
+                style="display:block;font-weight:700;margin-bottom:6px"
+                >Betaalmodus</label
+              >
+              <select
+                id="orderPaypalMode"
+                style="width:100%;max-width:360px;padding:11px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit"
+              >
+                <option value="sandbox">
+                  Sandbox — testen zonder echte betalingen
+                </option>
+                <option value="live">Live — echte betalingen ontvangen</option>
+              </select>
+              <small
+                style="display:block;margin-top:6px;color:var(--muted,#64748b)"
+                >Test eerst met Sandbox. Kies Live pas als je PayPal-app
+                klaarstaat voor echte betalingen.</small
+              >
+            </div>
+            <div
+              style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px"
+            >
+              <label style="display:block;font-weight:700"
+                >Client ID
+                <input
+                  id="orderPaypalClientId"
+                  type="text"
+                  autocomplete="off"
+                  spellcheck="false"
+                  placeholder="PayPal Client ID"
+                  style="display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit"
+                />
+              </label>
+              <label style="display:block;font-weight:700"
+                >Client Secret
+                <input
+                  id="orderPaypalClientSecret"
+                  type="password"
+                  autocomplete="new-password"
+                  placeholder="Plak je Client Secret hier"
+                  style="display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit"
+                />
+                <small
+                  style="display:block;margin-top:5px;color:var(--muted,#64748b)"
+                  >Wordt versleuteld opgeslagen. Laat leeg om de huidige sleutel
+                  te behouden.</small
+                >
+              </label>
+              <label style="display:block;font-weight:700"
+                >Merchant ID (optioneel)
+                <input
+                  id="orderPaypalMerchantId"
+                  type="text"
+                  autocomplete="off"
+                  placeholder="PayPal Merchant ID"
+                  style="display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit"
+                />
+              </label>
+            </div>
+            <div
+              id="orderPaypalStatus"
+              class="status info"
+              style="margin:14px 0"
+            >
+              PayPal-status controleren...
+            </div>
+            <div
+              style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"
+            >
+              <button
+                class="btn btn-primary"
+                type="button"
+                onclick="saveOrderSettings()"
+              >
+                PayPal-instellingen opslaan
+              </button>
+              <a
+                href="https://developer.paypal.com/dashboard/applications"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-light"
+                >PayPal Developer Dashboard ↗</a
+              >
+            </div>
+            <p
+              style="margin:12px 0 0;color:var(--muted,#64748b);font-size:13px"
+            >
+              Je geheime sleutel blijft op de server en wordt nooit aan de
+              winkelbezoeker getoond. Zet PayPal pas op Live nadat je een
+              succesvolle test hebt gedaan.
+            </p>
+          </div>
+          <div class="card" style="padding:18px;margin-top:16px">
+            <h3 style="margin-top:0">Mollie — iDEAL / Wero</h3>
+            <p>
+              Voeg hier later je Mollie API-key toe. De sleutel wordt
+              versleuteld op de server opgeslagen en nooit aan klanten getoond.
+            </p>
+            <label style="display:block;font-weight:700"
+              >Mollie API-key
+              <input
+                id="orderMollieApiKey"
+                type="password"
+                autocomplete="new-password"
+                placeholder="Nog niet ingesteld"
+                style="display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit"
+              />
+            </label>
+            <div
+              id="orderMollieStatus"
+              class="status info"
+              style="margin:14px 0"
+            >
+              Mollie is nog niet ingesteld.
+            </div>
+            <div
+              style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"
+            >
+              <button
+                class="btn btn-primary"
+                type="button"
+                onclick="saveOrderSettings()"
+              >
+                Mollie-instellingen opslaan
+              </button>
+              <a
+                href="https://my.mollie.com/dashboard/developers/api-keys"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-light"
+                >Mollie Dashboard ↗</a
+              >
+            </div>
+            <p
+              style="margin:12px 0 0;color:var(--muted,#64748b);font-size:13px"
+            >
+              Laat het veld leeg om een eerder opgeslagen sleutel te behouden.
+              Begin met een Test API-key; echte betalingen werken pas met een
+              actieve Live API-key.
+            </p>
+          </div>
+          <div class="card" style="padding:18px">
+            <h3 style="margin-top:0">API-koppeling instellen</h3>
+            <p>
+              Vraag de API-gegevens aan via je zakelijke account bij PostNL en
+              DHL. Plaats geheime sleutels niet in deze pagina, GitHub of de
+              browser.
+            </p>
+            <p><strong>Render Environment Variables:</strong></p>
+            <ul>
+              <li><strong>POSTNL_API_KEY</strong> — API-sleutel van PostNL</li>
+              <li>
+                <strong>DHL_API_KEY</strong> — API-token/sleutel van DHL Parcel
+              </li>
+              <li>
+                <strong>DHL_API_BASE_URL</strong> — optioneel, alleen als DHL
+                dit voor jouw account opgeeft
+              </li>
+            </ul>
+            <p id="orderSettingsApiNote">
+              Zolang de API-gegevens ontbreken, worden geen echte verzendlabels
+              of trackingcodes aangemaakt. Deze pagina schakelt alleen de
+              vervoerdersinstellingen in; de API-acties moeten na ontvangst van
+              de gegevens worden getest.
+            </p>
+          </div>
+        </section>
+
+        <!-- WAAROM HOMS TECH -->
+        <section
+          class="section admin-page"
+          id="page-why"
+          data-permission="why.view"
+        >
+          <div class="section-head">
+            <div>
+              <h2>⭐ Waarom HOMS TECH?</h2>
+              <p>Beheer de voordelen die op de homepage verschijnen.</p>
+            </div>
+
+            <button class="btn btn-green" onclick="addWhy()">
+              + Voordeel toevoegen
+            </button>
+          </div>
+
+          <div id="whyList"></div>
+        </section>
+
+        <section
+          class="section admin-page"
+          id="page-search"
+          data-permission="search"
+        >
+          <div class="section-head">
+            <div>
+              <h2>🔎 Zoeken</h2>
+              <p>Zoek klanten en bestellingen vanuit één plek.</p>
+            </div>
+          </div>
+          <div class="admin-search">
+            <input
+              id="adminSearchInput"
+              placeholder="Naam, e-mail, telefoon, IMEI, ordernummer..."
+              onkeydown="if(event.key==='Enter')adminSearch()"
+            />
+            <button class="btn btn-green" onclick="adminSearch()">
+              Zoeken
+            </button>
+          </div>
+          <div
+            id="searchStatus"
+            class="status info"
+            style="margin:15px 0"
+          ></div>
+          <div id="searchResults"></div>
+        </section>
+
+        <section
+          class="section admin-page"
+          id="page-admins"
+          data-permission="admins.manage"
+        >
+          <div class="section-head">
+            <div>
+              <h2>👤 Admins</h2>
+              <p>
+                Maak extra admins aan en bepaal exact wat iedere admin mag doen.
+              </p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Nieuwe admin</div>
+                <div class="small">Kies hieronder de rechten.</div>
+              </div>
+            </div>
+            <div class="grid">
+              <div class="field">
+                <label>Gebruikersnaam</label
+                ><input id="newAdminUsername" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label>Wachtwoord (minimaal 8 tekens)</label
+                ><input
+                  id="newAdminPassword"
+                  type="password"
+                  autocomplete="new-password"
+                />
+              </div>
+            </div>
+            <div class="field">
+              <label>Rechten</label>
+              <div id="newAdminPermissions" class="permission-grid"></div>
+            </div>
+            <button class="btn btn-green" onclick="createAdmin()">
+              + Admin aanmaken
+            </button>
+            <div
+              id="adminCreateStatus"
+              class="status"
+              style="margin-top:12px"
+            ></div>
+          </div>
+          <div class="section-head" style="margin-top:24px">
+            <div>
+              <h3 style="margin:0">Bestaande admins</h3>
+              <p>
+                Wijzig rechten, schakel accounts uit of verander een wachtwoord.
+              </p>
+            </div>
+            <button class="btn btn-light" onclick="loadAdmins()">
+              ↻ Vernieuwen
+            </button>
+          </div>
+          <div
+            id="adminsStatus"
+            class="status info"
+            style="margin-bottom:15px"
+          ></div>
+          <div id="adminsList"></div>
+        </section>
+
+        <!-- VERKOOPAANVRAGEN -->
+        <section
+          class="section admin-page"
+          id="page-buyback-orders"
+          data-permission="buyback_orders.view"
+        >
+          <div class="section-head">
+            <div>
+              <h2>📥 Inkoop</h2>
+              <p>
+                Alle telefoons die klanten aan HOMS TECH verkopen: losse verkoop
+                en inruil bij aankoop.
+              </p>
+            </div>
+            <div class="ht-inkoop-toolbar">
+              <select
+                id="buybackTypeFilter"
+                class="field"
+                aria-label="Filter inkoopaanvragen"
+                onchange="loadBuybackOrders()"
+              >
+                <option value="all">Alle aanvragen</option>
+                <option value="sale">Alleen verkoop</option>
+                <option value="tradein">Inruil</option></select
+              ><button class="btn btn-light" onclick="loadBuybackOrders()">
+                ↻ Vernieuwen
+              </button>
+            </div>
+          </div>
+          <div
+            id="buybackOrdersStatus"
+            class="status info"
+            style="margin-bottom:12px"
+          ></div>
+          <div id="buybackOrdersList" class="orders-list"></div>
+          <div
+            id="buybackOrdersDetail"
+            class="ht-inkoop-detail-host"
+            hidden
+          ></div>
+        </section>
+
+        <!-- SAVE -->
+        <div class="save-bar">
+          <div>
+            <div id="saveStatus" class="status">
+              Wijzigingen nog niet opgeslagen
+            </div>
+            <div class="small">
+              ✓ Wijzigingen worden opgeslagen wanneer jij op «Wijzigingen
+              opslaan» drukt.
+            </div>
+          </div>
+
+          <button
+            id="saveBtn"
+            class="btn btn-green"
+            onclick="save()"
+            style="font-size:16px;padding:13px 25px"
+          >
+            💾 Wijzigingen opslaan
           </button>
-          <strong id="shopVisibilityLabel" style="min-width:34px;font-size:13px;color:#64748b">—</strong>
-          <button id="shopVisibilitySave" class="btn btn-green" type="button" onclick="saveShopVisibility()" disabled>Wijziging opslaan</button>
         </div>
       </div>
-      <p class="small" style="margin:12px 0 0">Zet de schakelaar op AAN of UIT en druk daarna op Wijziging opslaan. Producten, foto's, prijzen en voorraad blijven altijd bewaard.</p>
-    </div>
-    <div class="small" style="padding:12px;background:#f4f8ff;border:1px solid #dce9ff;border-radius:10px;margin-bottom:16px">Vul de productgegevens in en druk daarna bovenaan op <strong>Wijzigingen opslaan</strong>. Foto's: maximaal 1,2 MB per foto. Voor een video kun je de YouTube-link invullen en de video-optie aanzetten.</div>
-    <div id="shopProductsAdmin"></div>
-  </section>
-
-  <!-- INKOOP / UW TOESTEL VERKOPEN -->
-  <section class="section admin-page" id="page-buyback" data-permission="site.save">
-    <div class="section-head">
-      <div>
-        <h2>📥 Uw toestel verkopen</h2>
-        <p>Beheer je inkooptoestellen eenvoudig: Merk → Telefoon. Kies eerst een merk en daarna direct het toestel.</p>
-      </div>
     </div>
 
-    <div class="buyback-hierarchy">
-      <div class="buyback-hierarchy-toolbar">
-        <div>
-          <strong>Apparaatstructuur</strong>
-          <div class="small">Bestaande toestellen blijven behouden. De nieuwe structuur wordt er veilig omheen gebouwd.</div>
-        </div>
-        <div class="buyback-hierarchy-add">
-          <button class="btn btn-light" type="button" onclick="addBuybackBrand()">+ Merk</button>
-          
-          <button class="btn btn-green" type="button" onclick="addBuybackModel()">+ Model</button>
-        </div>
-      </div>
+    <script src="../assets/homs-admin.js?v=20261117-partners1" defer></script>
+    <script
+      src="../assets/partner-admin.js?v=20261117-partners6"
+      defer
+    ></script>
 
-      <div id="buybackHierarchy"></div>
-      <div id="buybackModelEditor"></div>
-    </div>
-  </section>
-
-  <!-- APPARAATCATEGORIEËN -->
-  <section class="section admin-page" id="page-categories" data-permission="categories.view">
-    <div class="section-head">
-      <div>
-        <h2>🖼️ Apparaten & categorieën</h2>
-        <p>Beheer de blokken zoals iPhones, iPads, Mac, Watches, Samsung en accessoires op de homepage.</p>
-      </div>
-      <button class="btn btn-green" onclick="addDeviceCategory()">+ Categorie toevoegen</button>
-    </div>
-    <div id="deviceCategoriesList"></div>
-
-    <div class="card" style="margin-top:18px">
-      <div class="card-head">
-        <div>
-          <div class="card-title">📋 Conditie-uitleg — één keer instellen</div>
-          <div class="small">Deze uitleg hoort bij HOMS TECH als geheel en wordt gebruikt voor alle verkochte telefoons. Je hoeft de foto's dus niet opnieuw per telefoon toe te voegen.</div>
-        </div>
-      </div>
-      <div class="small" style="margin-bottom:12px;padding:10px 12px;background:#f4f8ff;border:1px solid #dce9ff;border-radius:10px">
-        Stel hier één keer de uitleg in voor <strong>Zo goed als nieuw</strong>, <strong>Licht gebruikt</strong> en <strong>Zichtbaar gebruikt</strong>. Deze instellingen gelden voor alle telefoons.
-      </div>
-      <div id="globalConditionOverviewBox"></div>
-      <div id="globalConditionDetailsList"></div>
-    </div>
-  </section>
-
-  <!-- KLANTEN -->
-  <section class="section admin-page" id="page-customers" data-permission="customers.view">
-    <div class="section-head">
-      <div>
-        <h2>👥 Klanten beheren</h2>
-        <p>Klanten bekijken, aanpassen, aanmaken, wachtwoord wijzigen of verwijderen.</p>
-      </div>
-      <div class="actions">
-        <button class="btn btn-green" data-permission="customers.update" onclick="showCustomerCreateForm()">+ Klant aanmaken</button>
-        <button class="btn btn-light" onclick="loadCustomers()">↻ Vernieuwen</button>
-      </div>
-    </div>
-    <div id="customersStatus" class="status info" style="margin-bottom:15px"></div>
-    <div id="customersList"></div>
-  </section>
-
-  <div id="customerModalBackdrop" class="customer-modal-backdrop" onclick="if(event.target===this)closeCustomerModal()">
-    <div class="customer-modal" role="dialog" aria-modal="true" aria-labelledby="customerModalTitle">
-      <button type="button" class="customer-modal-close" aria-label="Sluiten" onclick="closeCustomerModal()">×</button>
-      <div id="customerCreatePanel" class="customer-form-panel" style="display:none">
-        <h2 id="customerModalTitle">Nieuwe klant aanmaken</h2>
-        <div class="grid">
-          <div class="field"><label>Voornaam *</label><input id="newCustomerFirstName" autocomplete="given-name" required></div>
-          <div class="field"><label>Achternaam *</label><input id="newCustomerLastName" autocomplete="family-name" required></div>
-          <div class="field" style="grid-column:1/-1"><label>E-mail *</label><input id="newCustomerEmail" type="email" autocomplete="email" required></div>
-          <div class="field"><label>Postcode *</label><input id="newCustomerPostcode" autocomplete="postal-code"  required></div>
-          <div class="field"><label>Huisnummer *</label><input id="newCustomerHouseNumber" autocomplete="address-line2"  required></div>
-          <div class="field"><label>Straatnaam *</label><input id="newCustomerStreet" autocomplete="address-line1"  required></div>
-          <div class="field"><label>Plaatsnaam *</label><input id="newCustomerCity" autocomplete="address-level2"  required></div>
-          <div class="field" style="grid-column:1/-1"><label>Telefoon (optioneel)</label><input id="newCustomerPhone" autocomplete="tel"></div>
-          <div class="field" style="grid-column:1/-1"><label>Tijdelijk wachtwoord (minimaal 8 tekens) *</label><input id="newCustomerPassword" type="password" minlength="8" autocomplete="new-password" required></div>
-        </div>
-        <div class="actions"><button class="btn btn-green" onclick="createCustomer()">Account aanmaken</button><button class="btn btn-light" onclick="closeCustomerModal()">Annuleren</button></div>
-      </div>
-      <div id="customerEditPanel" class="customer-form-panel" style="display:none">
-        <h2 id="customerEditTitle">Klantgegevens wijzigen</h2>
-        <input id="editCustomerId" type="hidden">
-        <div class="grid">
-          <div class="field"><label>Voornaam *</label><input id="editCustomerFirstName" autocomplete="given-name" required></div>
-          <div class="field"><label>Achternaam *</label><input id="editCustomerLastName" autocomplete="family-name" required></div>
-          <div class="field" style="grid-column:1/-1"><label>E-mail *</label><input id="editCustomerEmail" type="email" autocomplete="email" required></div>
-          <div class="field"><label>Postcode</label><input id="editCustomerPostcode" autocomplete="postal-code" ></div>
-          <div class="field"><label>Huisnummer</label><input id="editCustomerHouseNumber" autocomplete="address-line2" ></div>
-          <div class="field"><label>Straatnaam</label><input id="editCustomerStreet" autocomplete="address-line1" ></div>
-          <div class="field"><label>Plaatsnaam</label><input id="editCustomerCity" autocomplete="address-level2" ></div>
-          <div class="field" style="grid-column:1/-1"><label>Telefoon</label><input id="editCustomerPhone" autocomplete="tel"></div>
-        </div>
-        <div class="actions"><button class="btn btn-green" onclick="saveCustomerEdit()">Wijzigingen opslaan</button><button class="btn btn-light" onclick="editCustomerPassword(Number(document.getElementById('editCustomerId').value))">🔑 Wachtwoord instellen</button><button class="btn btn-red" onclick="deleteCustomer(Number(document.getElementById('editCustomerId').value))">🗑 Verwijderen</button></div>
-      </div>
-      <div id="customerPasswordPanel" class="customer-form-panel" style="display:none">
-        <h2 id="customerPasswordTitle">Wachtwoord instellen</h2>
-        <input id="passwordCustomerId" type="hidden">
-        <p class="small">Stel een tijdelijk wachtwoord in en deel dit veilig met de klant. Gebruik geen wachtwoord dat de klant elders gebruikt.</p>
-        <div class="field"><label>Nieuw tijdelijk wachtwoord (minimaal 8 tekens)</label><input id="adminCustomerPassword" type="password" minlength="8" autocomplete="new-password"></div>
-        <div class="actions"><button class="btn btn-green" onclick="saveCustomerPassword()">Wachtwoord opslaan</button><button class="btn btn-light" onclick="editCustomer(Number(document.getElementById('passwordCustomerId').value))">Terug naar klant</button></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- REPAIR REQUESTS — separate from Reparatieaanvragen -->
-  <section class="section admin-page" id="page-repair-requests" data-permission="orders.view">
-    <div class="section-head"><div><h2>🔧 Repair Requests</h2><p>Prijsaanvragen voor toestelreparaties, apart van Reparatieaanvragen.</p></div><button class="btn btn-light" onclick="loadOrders()">↻ Vernieuwen</button></div>
-    <div id="repairRequestSummary" class="order-summary"></div>
-    <div class="orders-toolbar"><div class="orders-search"><input id="repairRequestSearch" type="search" placeholder="Zoeken op klant, e-mail, telefoon, toestel..." oninput="renderRepairRequests()"></div><select id="repairRequestStatusFilter" class="order-filter" onchange="renderRepairRequests()"><option value="">Alle statussen</option><option>Nieuw</option><option>In behandeling</option><option>Wacht op klant</option><option>Wacht op leverancier</option><option>Resultaat ontvangen</option><option>Mislukt</option><option>Voltooid</option><option>Geannuleerd</option></select><button class="order-filter-btn" onclick="clearRepairRequestFilters()">↻ Filters wissen</button></div>
-    <div id="repairRequestsStatus" class="order-count"></div><div id="repairRequestsList" class="orders-list"></div>
-  </section>
-
-  <!-- WEBSHOP ORDERS -->
-  <section class="section admin-page" id="page-webshop-orders" data-permission="webshop_orders.view">
-    <div class="section-head">
-      <div><h2>🛍️ Webshop Bestellingen</h2><p>Bestellingen uit de webshop, met klantgegevens, producten en status.</p></div>
-      <button class="btn btn-light" onclick="loadWebshopOrders()">↻ Vernieuwen</button>
-    </div>
-    <div id="webshopOrderSummary" class="order-summary"></div>
-    <div class="orders-toolbar">
-      <div class="orders-search"><input id="webshopOrderSearch" type="search" placeholder="Zoeken op klant, e-mail, telefoon, ordernummer, postcode..." oninput="renderWebshopOrders()"></div>
-      <select id="webshopOrderStatusFilter" class="order-filter" onchange="renderWebshopOrders()"><option value="">Alle bestelstatussen</option><option>Nieuw</option><option>In behandeling</option><option>Verzonden</option><option>Voltooid</option><option>Geannuleerd</option></select>
-      <select id="webshopOrderPaymentFilter" class="order-filter" onchange="renderWebshopOrders()"><option value="">Alle betaalstatussen</option><option value="paid">Betaald</option><option value="unpaid">Niet betaald</option><option value="processing">In behandeling</option><option value="failed">Mislukt</option></select>
-      <button class="order-filter-btn" onclick="clearWebshopOrderFilters()">↻ Filters wissen</button>
-    </div>
-    <div id="webshopOrdersStatus" class="status info" style="margin-bottom:10px"></div>
-    <div id="webshopOrdersList" class="orders-list"></div>
-  </section>
-
-  <section class="section admin-page ht-invoices-page" id="page-invoices" data-permission="site.save">
-  <div class="section-head ht-invoices-head">
-    <div><h2>🧾 Facturen</h2><p>Maak, bekijk en verstuur professionele facturen voor HOMS TECH.</p></div>
-    <button class="btn btn-light" type="button" onclick="loadInvoices()">↻ Vernieuwen</button>
-  </div>
-  <div class="ht-invoice-intro">
-    <span class="ht-invoice-intro-icon" aria-hidden="true">✓</span>
-    <div><strong>Factuurbeheer</strong><p>Controleer klantgegevens en factuurregels zorgvuldig. Het definitieve factuurnummer wordt automatisch toegewezen na het opslaan.</p></div>
-  </div>
-  <div class="card ht-invoice-editor" style="margin-bottom:14px">
-    <div class="ht-invoice-card-head"><div><span class="ht-invoice-eyebrow">EENMALIG INSTELLEN</span><h3>Gegevens van HOMS TECH</h3><p>Vul deze gegevens later aan zodra de bedrijfsregistratie rond is. Ze worden automatisch op nieuwe facturen geplaatst. Gebruik voorlopig alleen concepten totdat de officiële bedrijfsgegevens bekend zijn.</p></div><span class="ht-invoice-draft-tag">Bedrijfsprofiel</span></div>
-    <div class="ht-invoice-form-grid">
-      <div class="field"><label for="invSellerLegalName">Juridische bedrijfsnaam</label><input id="invSellerLegalName" maxlength="180" placeholder="Later invullen na KVK-registratie"></div>
-      <div class="field"><label for="invSellerTradeName">Handelsnaam</label><input id="invSellerTradeName" maxlength="180" value="HOMS TECH"></div>
-      <div class="field ht-invoice-field-wide"><label for="invSellerAddress">Vestigingsadres</label><input id="invSellerAddress" maxlength="300" placeholder="Straat en huisnummer"></div>
-      <div class="field"><label for="invSellerPostalCode">Postcode</label><input id="invSellerPostalCode" maxlength="20" placeholder="Postcode"></div>
-      <div class="field"><label for="invSellerCity">Plaats</label><input id="invSellerCity" maxlength="100" placeholder="Plaats"></div>
-      <div class="field"><label for="invSellerCountry">Land</label><input id="invSellerCountry" maxlength="80" value="Nederland"></div>
-      <div class="field"><label for="invSellerKvk">KVK-nummer</label><input id="invSellerKvk" maxlength="30" placeholder="Na registratie invullen"></div>
-      <div class="field"><label for="invSellerVat">BTW-identificatienummer</label><input id="invSellerVat" maxlength="40" placeholder="Na registratie invullen"></div>
-      <div class="field"><label for="invSellerIban">IBAN</label><input id="invSellerIban" maxlength="50" placeholder="NL…"></div>
-      <div class="field"><label for="invSellerEmail">E-mailadres</label><input id="invSellerEmail" type="email" maxlength="180" placeholder="Factuur e-mailadres"></div>
-      <div class="field"><label for="invSellerPhone">Telefoon</label><input id="invSellerPhone" maxlength="40" placeholder="+31…"></div>
-      <div class="field"><label for="invSellerWebsite">Website</label><input id="invSellerWebsite" maxlength="180" value="https://homs-tech.nl"></div>
-    </div>
-    <div class="ht-invoice-editor-actions"><button class="btn btn-primary" type="button" onclick="saveInvoiceSettings()">Bedrijfsgegevens opslaan</button><span id="invoiceSettingsStatus" class="status" role="status" aria-live="polite"></span></div>
-  </div>
-  <div class="card ht-invoice-editor">
-    <div class="ht-invoice-card-head"><div><span class="ht-invoice-eyebrow">NIEUW DOCUMENT</span><h3>Nieuwe factuur</h3><p>Vul de klantgegevens en de geleverde producten of diensten in.</p></div><span class="ht-invoice-draft-tag">Concept</span></div>
-    <div class="ht-invoice-form-grid">
-      <div class="field"><label for="invCustomerType">Type klant *</label><select id="invCustomerType" class="form-control" onchange="invoiceToggleCustomerType()"><option value="individual">Particulier</option><option value="business">Zakelijk / bedrijf</option></select></div>
-      <div class="field"><label for="invCustomerEmail">E-mailadres klant</label><input id="invCustomerEmail" type="email" maxlength="254" autocomplete="email" placeholder="klant@voorbeeld.nl"></div>
-      <div class="field"><label for="invCustomerPhone">Telefoon klant</label><input id="invCustomerPhone" type="tel" maxlength="40" autocomplete="tel" placeholder="+31…"></div>
-      <div class="field" id="invCustomerNameWrap"><label for="invCustomerName">Volledige naam klant *</label><input id="invCustomerName" maxlength="160" autocomplete="name" placeholder="Voor- en achternaam"></div>
-      <div class="field" id="invCustomerCompanyWrap" hidden><label for="invCustomerCompany">Bedrijfsnaam *</label><input id="invCustomerCompany" maxlength="180" placeholder="Naam van het bedrijf"></div>
-      <div class="field" id="invCustomerContactWrap" hidden><label for="invCustomerContact">Contactpersoon</label><input id="invCustomerContact" maxlength="160" placeholder="Naam contactpersoon"></div>
-      <div class="field ht-invoice-field-wide"><label for="invCustomerAddress">Straat en huisnummer</label><input id="invCustomerAddress" maxlength="300" autocomplete="street-address" placeholder="Straat en huisnummer"></div>
-      <div class="field"><label for="invCustomerPostal">Postcode</label><input id="invCustomerPostal" maxlength="20" autocomplete="postal-code" placeholder="Postcode"></div>
-      <div class="field"><label for="invCustomerCity">Plaats</label><input id="invCustomerCity" maxlength="100" autocomplete="address-level2" placeholder="Plaats"></div>
-      <div class="field"><label for="invCustomerCountry">Land</label><input id="invCustomerCountry" maxlength="80" value="Nederland" autocomplete="country-name"></div>
-      <div class="field" id="invCustomerKvkWrap" hidden><label for="invCustomerKvk">KVK-nummer klant</label><input id="invCustomerKvk" maxlength="30" placeholder="KVK-nummer bedrijf"></div>
-      <div class="field" id="invCustomerVatWrap" hidden><label for="invCustomerVat">BTW-ID klant</label><input id="invCustomerVat" maxlength="40" placeholder="BTW-identificatienummer klant"></div>
-      <div class="field"><label for="invPaymentMethod">Betaalmethode</label><select id="invPaymentMethod" class="form-control"><option value="bank">Bankoverschrijving</option><option value="pin">Pin</option><option value="cash">Contant</option><option value="online">Online betaling</option><option value="other">Anders</option></select></div>
-      <div class="field"><label for="invPaymentStatus">Betaalstatus</label><select id="invPaymentStatus" class="form-control"><option value="unpaid">Niet betaald</option><option value="paid">Betaald</option><option value="partial">Gedeeltelijk betaald</option></select></div>
-      <div class="field"><label for="invDueDate">Vervaldatum</label><input id="invDueDate" type="date"></div>
-      <div class="field"><label for="invDeliveryDate">Leverdatum / reparatiedatum</label><input id="invDeliveryDate" type="date"></div>
-      <div class="field ht-invoice-field-wide"><label for="invReference">Referentie / ordernummer</label><input id="invReference" maxlength="120" placeholder="Bijv. reparatieorder of webshopbestelling"></div>
-      <div class="field ht-invoice-field-wide"><label for="invNotes">Opmerkingen</label><input id="invNotes" maxlength="1200" placeholder="Aanvullende informatie voor op de factuur"></div>
-    </div>
-    <div class="ht-invoice-lines-head"><div><h4>Factuurregels</h4><p>Bedragen in euro. BTW per regel instelbaar.</p></div><button class="btn btn-light" type="button" onclick="addInvoiceLine()">＋ Regel toevoegen</button></div>
-    <div class="ht-invoice-lines-wrap">
-      <table class="ht-invoice-lines-table">
-        <thead><tr><th>Omschrijving</th><th>Aantal</th><th>Prijs per stuk</th><th>BTW</th><th><span class="ht-sr-only">Verwijderen</span></th></tr></thead>
-        <tbody id="invoiceLines"></tbody>
-      </table>
-    </div>
-    <div class="ht-invoice-total-panel">
-      <div><span>Subtotaal excl. BTW</span><strong id="invSubtotal">€ 0,00</strong></div>
-      <div><span>BTW</span><strong id="invVatTotal">€ 0,00</strong></div>
-      <div class="ht-invoice-grand-total"><span>Totaal incl. BTW</span><strong id="invGrandTotal">€ 0,00</strong></div>
-    </div>
-    <div class="ht-invoice-editor-actions">
-      <button class="btn btn-green" type="button" onclick="saveInvoice()">Factuur opslaan als concept</button>
-      <button class="btn btn-light" type="button" onclick="previewInvoiceDraft()">PDF-voorbeeld bekijken</button>
-    </div>
-    <p id="invoiceFormStatus" class="status" role="status" aria-live="polite"></p>
-  </div>
-  <div class="card ht-invoice-list-card">
-    <div class="ht-invoice-card-head"><div><span class="ht-invoice-eyebrow">ARCHIEF</span><h3>Opgeslagen facturen</h3><p>Bekijk PDF-bestanden of verstuur de factuur naar de klant.</p></div></div>
-    <div id="invoiceList" aria-live="polite"><div class="ht-invoice-loading" role="status">Facturen laden…</div></div>
-  </div>
-</section><section class="section admin-page" id="page-device-register" data-permission="device_register.view">
-  <div class="section-head">
-    <div><h2>📱 Toestelregister & Reparaties</h2><p>Beheer HOMS TECH-voorraad en klanttoestellen gescheiden, met eigen statussen, kosten en rapportages.</p></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-light" type="button" onclick="loadDeviceRegister()">↻ Vernieuwen</button>
-      <button class="btn btn-light" type="button" data-permission="device_register.update" onclick="deviceExportExcel()">Export Excel</button>
-      <label class="btn btn-light" data-permission="device_register.update" style="cursor:pointer">Import Excel<input type="file" accept=".xlsx,.xls,.csv" onchange="deviceImportExcel(event)" hidden></label>
-      <button class="btn btn-primary" type="button" data-permission="device_register.update" onclick="deviceAddBlankRow()">＋ Nieuwe registratie</button>
-    </div>
-  </div>
-  <div class="card" style="padding:14px;margin-bottom:14px">
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end">
-      <div style="min-width:260px"><label style="display:block;margin-bottom:7px">Registratietype</label><div style="display:flex;gap:6px;flex-wrap:wrap" role="group" aria-label="Type registratie"><button type="button" class="btn btn-primary" data-device-filter="commercial" aria-pressed="true" onclick="deviceSetTypeFilter('commercial')">📦 Eigen voorraad</button><button type="button" class="btn btn-light" data-device-filter="customer_repair" aria-pressed="false" onclick="deviceSetTypeFilter('customer_repair')">🔧 Klantreparaties</button></div><select id="deviceTypeFilter" class="form-control" onchange="loadDeviceRegister()" style="display:none" aria-hidden="true"><option value="commercial">Eigen voorraad</option><option value="customer_repair">Klantreparaties</option></select></div>
-      <label>Zoeken<input id="deviceSearch" class="form-control" type="search" placeholder="Model, IMEI, HT-code, klant…" oninput="loadDeviceRegister()"></label>
-      <label style="display:flex;align-items:center;gap:8px;padding:9px 0"><input id="deviceArchivedFilter" type="checkbox" onchange="loadDeviceRegister()"> Toon archief</label>
-    </div>
-  </div>
-  <p id="deviceRegisterStatus" class="status" role="status" aria-live="polite"></p>
-  <div id="deviceRegisterTable" aria-live="polite"><div class="ht-inventory-loading">Toestellen laden…</div></div>
-  <div id="deviceHistoryPanel" style="margin-top:16px"></div>
-</section>
-<section class="section admin-page ht-inventory-page" id="page-inventory" data-permission="site.save">
-  <div class="section-head ht-inventory-head">
-    <div><h2>📦 Voorraad & magazijn</h2><p>Centraal overzicht van telefoons, onderdelen en accessoires. Elke wijziging wordt geregistreerd.</p></div>
-    <button class="btn btn-light" type="button" onclick="loadInventory()">↻ Vernieuwen</button>
-  </div>
-  <div class="ht-inventory-summary" id="inventorySummary" aria-live="polite">
-    <div class="ht-inventory-stat"><span>Voorraadartikelen</span><strong>—</strong><small>Catalogus</small></div>
-    <div class="ht-inventory-stat"><span>Totale stuks</span><strong>—</strong><small>Getelde voorraad</small></div>
-    <div class="ht-inventory-stat"><span>Bijna op</span><strong>—</strong><small>Op of onder minimum</small></div>
-    <div class="ht-inventory-stat"><span>Uitverkocht</span><strong>—</strong><small>Voorraad nul</small></div>
-  </div>
-  <div class="ht-inventory-layout">
-    <div class="card ht-inventory-main">
-      <div class="ht-inventory-card-head"><div><span class="ht-inventory-eyebrow">MAGAZIJNOVERZICHT</span><h3>Productvoorraad</h3><p>Zoek op product, uitvoering, categorie of SKU.</p></div></div>
-      <div class="ht-inventory-toolbar">
-        <label class="ht-inventory-search"><span aria-hidden="true">⌕</span><input id="inventorySearch" type="search" placeholder="Zoek product of SKU…" oninput="renderInventoryItems()" aria-label="Zoek voorraad"></label>
-        <select id="inventoryCategoryFilter" aria-label="Filter categorie" onchange="renderInventoryItems()"><option value="all">Alle categorieën</option><option value="phone">Telefoons</option><option value="shop">Shop / onderdelen</option></select>
-        <select id="inventoryStockFilter" aria-label="Filter voorraadstatus" onchange="renderInventoryItems()"><option value="all">Alle statussen</option><option value="low">Lage voorraad</option><option value="zero">Uitverkocht</option><option value="untracked">Niet ingesteld</option></select>
-      </div>
-      <div id="inventoryItems" class="ht-inventory-table-wrap" aria-live="polite"><div class="ht-inventory-loading">Voorraad laden…</div></div>
-    </div>
-    <aside class="card ht-inventory-adjust">
-      <div class="ht-inventory-card-head"><div><span class="ht-inventory-eyebrow">VOORRAAD MUTEREN</span><h3>Voorraad wijzigen</h3><p>Kies een artikel en registreer de reden van de wijziging.</p></div></div>
-      <form id="inventoryMovementForm" onsubmit="saveInventoryMovement(event)">
-        <div class="field"><label for="inventoryItemSelect">Product / uitvoering *</label><select id="inventoryItemSelect" required onchange="inventorySelectionChanged()"><option value="">Selecteer een product</option></select></div>
-        <div id="inventorySelectedInfo" class="ht-inventory-selected-info">Selecteer een product om de huidige voorraad te bekijken.</div>
-        <div class="field"><label for="inventoryMovementType">Type mutatie *</label><select id="inventoryMovementType" required onchange="inventoryMovementTypeChanged()"><option value="purchase">Inkoop / levering (+)</option><option value="sale">Verkoop / afboeking (−)</option><option value="return">Retour ontvangen (+)</option><option value="damage">Beschadigd / verlies (−)</option><option value="correction">Voorraadcorrectie (+ / −)</option></select></div>
-        <div class="field"><label for="inventoryQuantity">Aantal stuks *</label><input id="inventoryQuantity" type="number" min="1" max="100000" step="1" required placeholder="Bijv. 5"></div>
-        <div class="field"><label for="inventoryReference">Referentie (optioneel)</label><input id="inventoryReference" maxlength="100" placeholder="Inkoopnummer, ordernummer…"></div>
-        <div class="field"><label for="inventoryNote">Opmerking / reden *</label><textarea id="inventoryNote" rows="3" maxlength="500" placeholder="Bijv. Levering van leverancier" required></textarea></div>
-        <button id="inventorySaveButton" class="btn btn-green" type="submit">Voorraadmutatie opslaan</button>
-        <p id="inventoryFormStatus" class="status" role="status" aria-live="polite"></p>
-      </form>
-    </aside>
-  </div>
-  <div class="card ht-inventory-history">
-    <div class="ht-inventory-card-head"><div><span class="ht-inventory-eyebrow">CONTROLE & AUDIT</span><h3>Voorraadgeschiedenis</h3><p>De laatste 100 voorraadmutaties, inclusief automatische webshopverkopen.</p></div></div>
-    <div id="inventoryMovements" class="ht-inventory-history-wrap" aria-live="polite"><div class="ht-inventory-loading">Geschiedenis laden…</div></div>
-  </div>
-</section>
-<section class="section admin-page ht-partners-page" id="page-partners" data-permission="site.save">
-  <div class="section-head"><div><h2>🤝 Schakelpartners</h2><p>Beheer verkooppartners, stel per telefoonuitvoering een groothandelsprijs in en behandel partnerbestellingen.</p></div><button class="btn btn-light" type="button" onclick="loadPartnersAdmin()">↻ Vernieuwen</button></div>
-  <div class="ht-partner-notice"><strong>Prijsafspraak</strong><span>HOMS TECH bepaalt de groothandelsprijs. De partner kiest zelf de verkoopprijs en houdt het verschil. Partnerbestellingen zijn aanvragen: voorraad wordt bij ontvangst niet automatisch afgeboekt.</span></div>
-  <details class="ht-partner-api-guide">
-    <summary><span><strong>📘 API & Partner Handleiding</strong><small>Zo geef je een andere winkel veilig toegang tot HOMS TECH-producten</small></span><span class="ht-partner-guide-toggle">Handleiding openen ▾</span></summary>
-    <div class="ht-partner-guide-body">
-      <div class="ht-partner-guide-intro"><strong>Gebruik dit stappenplan telkens wanneer je een nieuwe webshop koppelt.</strong><span>Geef alleen de eigen API-sleutel van die partner. Deel nooit je HOMS TECH-adminlogin, databasegegevens of servergeheimen.</span></div>
-      <div class="ht-partner-guide-grid">
-        <article><span class="ht-partner-guide-step">01 · PARTNER AANMAKEN</span><h4>Maak eerst een aparte partner aan</h4><p>Vul links de bedrijfsnaam en het e-mailadres in bij ‘Nieuwe partner’. Na het aanmaken verschijnt de API-sleutel één keer. Kopieer hem direct en bewaar hem veilig. De sleutel kan later niet opnieuw worden getoond.</p></article>
-        <article><span class="ht-partner-guide-step">02 · PRODUCTEN TOEKENNEN</span><h4>Kies de toegestane uitvoeringen</h4><p>Selecteer de telefoonvarianten en stel de groothandelsprijzen in. Alleen actieve, toegewezen varianten met een opgeslagen prijs komen in de productfeed. Varianten met expliciet voorraad 0 worden weggelaten.</p></article>
-        <article><span class="ht-partner-guide-step">03 · GEGEVENS AAN DE BOUWER</span><h4>Stuur deze API-gegevens</h4><p><b>Base URL</b><code>https://homs-tech.nl</code><b>Producten ophalen · GET</b><code>/api/partner/v1/products</code><b>Bestelaanvraag · POST</b><code>/api/partner/v1/orders</code><b>Header</b><code>Authorization: Bearer [PARTNER_API_KEY]</code><code>Accept: application/json</code></p><p>Stuur de API-sleutel privé naar de verantwoordelijke bouwer. Laat die sleutel uitsluitend server-side opslaan als environment secret; nooit in browser-JavaScript, openbare pagina's of logs.</p></article>
-        <article><span class="ht-partner-guide-step">04 · TESTEN</span><h4>Controleer vóór livegang</h4><p>Test eerst de GET-feed met de partnerkey. Controleer productnaam, kleur, opslag, conditie, wholesalePrice, currency, stock en images. Per variant kunnen maximaal vier afbeeldingen worden teruggegeven. Test daarna pas een bestelaanvraag.</p></article>
-      </div>
-      <div class="ht-partner-guide-endpoints">
-        <div><strong>Variant herkennen</strong><code>variantKey = opslag|kleur|conditie</code><small>Gebruik de exacte waarden uit de productfeed, bijvoorbeeld <code>128GB|Black|A</code>. Gebruik de lege string voor een product zonder varianten.</small></div>
-        <div><strong>Belangrijk over bestellingen</strong><small>POST maakt een aanvraag aan. De prijs wordt door HOMS TECH berekend op basis van de opgeslagen partnerprijs; een ingestuurde prijs wordt genegeerd. De aanvraag reserveert of vermindert de voorraad niet automatisch. Controleer en keur de aanvraag goed in Partnerbestellingen.</small></div>
-      </div>
-      <div class="ht-partner-guide-security"><strong>🔐 Toegang intrekken</strong><span>Ga naar ‘Bestaande partners’ en schakel de betreffende partner uit of verwijder deze wanneer nodig. Daarmee wordt de toegang met die sleutel ingetrokken. Gebruik voor iedere winkel een eigen partner en eigen sleutel; deel nooit één sleutel tussen meerdere winkels.</span></div>
-      <p class="ht-partner-guide-doc"><strong>Technische documentatie:</strong> <code>docs/partner-api.md</code> in de HOMS TECH repository. Deel met de bouwer alleen wat nodig is voor de koppeling.</p>
-    </div>
-  </details>
-  <div class="ht-partner-grid">
-    <div class="card ht-partner-card">
-      <div class="ht-partner-card-head"><div><span class="ht-partner-eyebrow">PARTNERBEHEER</span><h3>Nieuwe partner</h3></div></div>
-      <form id="partnerCreateForm" class="ht-partner-form">
-        <label>Bedrijfsnaam<input id="partnerNewName" maxlength="120" required placeholder="Naam van de winkel"></label>
-        <label>E-mailadres<input id="partnerNewEmail" type="email" maxlength="180" placeholder="partner@winkel.nl"></label>
-        <button class="btn btn-green" type="submit">＋ Partner aanmaken</button>
-      </form>
-      <div id="partnerCreateStatus" class="status" role="status"></div>
-      <div id="partnerKeyReveal" class="ht-partner-key" hidden><strong>Nieuwe API-sleutel — alleen nu zichtbaar</strong><p>Kopieer deze sleutel en bewaar hem veilig. Later kan HOMS TECH hem niet opnieuw tonen.</p><code id="partnerNewApiKey"></code><button class="btn btn-light" type="button" onclick="copyPartnerApiKey()">Kopieer API-sleutel</button></div>
-      <div class="ht-partner-list-head"><h3>Bestaande partners</h3><span id="partnerCount">—</span></div>
-      <div id="partnerList" class="ht-partner-list" aria-live="polite">Partners laden…</div>
-    </div>
-    <div class="card ht-partner-card">
-      <div class="ht-partner-card-head"><div><span class="ht-partner-eyebrow">GROOTHANDEL</span><h3 id="partnerPriceTitle">Selecteer een partner</h3><p>Vink alleen uitvoeringen aan die deze partner mag inkopen.</p></div></div>
-      <div id="partnerPricePanel" class="ht-partner-empty">Selecteer links een partner om de productprijzen te beheren.</div>
-    </div>
-  </div>
-  <div class="card ht-partner-orders-card">
-    <div class="ht-partner-card-head"><div><span class="ht-partner-eyebrow">ORDERBEHEER</span><h3>Partnerbestellingen</h3><p>Controleer klant- en verzendgegevens, bevestig of wijs aanvragen af en voeg interne notities toe.</p></div><button class="btn btn-light" type="button" onclick="loadPartnerOrders()">↻ Bestellingen</button></div>
-    <div id="partnerOrdersStatus" class="status info" role="status"></div>
-    <div id="partnerOrdersList" class="ht-partner-orders-list">Bestellingen laden…</div>
-  </div>
-</section>
-<section class="section admin-page" id="page-order-settings" data-permission="site.save">
-    <div class="section-head">
-      <div>
-        <h2>📦 Orderinstellingen</h2>
-        <p>Verzendinstellingen voor PostNL en DHL. API-sleutels worden veilig als servervariabelen ingesteld.</p>
-      </div>
-      <button class="btn" type="button" onclick="loadOrderSettings()">↻ Vernieuwen</button>
-    </div>
-    <div id="orderSettingsStatus" class="status info" style="margin-bottom:12px">Instellingen laden...</div>
-    <div class="card" style="padding:18px;margin-bottom:14px">
-      <h3 style="margin-top:0">Verzendbedrijven</h3>
-      <label style="display:flex;gap:10px;align-items:flex-start;margin:14px 0">
-        <input type="checkbox" id="orderPostnlEnabled" style="margin-top:4px">
-        <span><strong>PostNL</strong><br><small id="orderPostnlApiStatus">API-status controleren...</small></span>
-      </label>
-      <label style="display:flex;gap:10px;align-items:flex-start;margin:14px 0">
-        <input type="checkbox" id="orderDhlEnabled" style="margin-top:4px">
-        <span><strong>DHL</strong><br><small id="orderDhlApiStatus">API-status controleren...</small></span>
-      </label>
-      <div class="ht-cod-setting">
-        <div class="ht-cod-setting-copy">
-          <strong>Betalen bij ontvangst</strong>
-          <small>Sta contante betaling bij bezorging toe. Dit geldt ook voor bestellingen met inruil.</small>
-          <span id="orderCashOnDeliveryStatus" class="ht-cod-status" aria-live="polite">Instelling laden...</span>
-        </div>
-        <label class="ht-admin-switch" for="orderCashOnDeliveryEnabled" aria-label="Betalen bij ontvangst in- of uitschakelen">
-          <input type="checkbox" id="orderCashOnDeliveryEnabled" onchange="toggleCashOnDeliverySetting()">
-          <span class="ht-admin-switch-track" aria-hidden="true"></span>
-        </label>
-      </div>
-      <button class="btn btn-primary" type="button" onclick="saveOrderSettings()">Instellingen opslaan</button>
-    </div>
-    <div class="card" style="padding:18px;margin-bottom:14px;border:1px solid #d6e2f0">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:48px;height:48px;border-radius:14px;background:#f1f7ff;display:grid;place-items:center;font-weight:900;font-size:25px;color:#0756a8">P</div>
-          <div><h3 style="margin:0">PayPal betalingen</h3><small style="color:var(--muted,#64748b)">Ontvang online betalingen via je eigen PayPal Business-app.</small></div>
-        </div>
-        <label style="display:flex;align-items:center;gap:9px;font-weight:700"><input type="checkbox" id="orderPaypalEnabled"> PayPal inschakelen</label>
-      </div>
-      <div style="padding:13px;border-radius:12px;background:var(--soft,#f8fafc);margin-bottom:14px">
-        <label for="orderPaypalMode" style="display:block;font-weight:700;margin-bottom:6px">Betaalmodus</label>
-        <select id="orderPaypalMode" style="width:100%;max-width:360px;padding:11px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit">
-          <option value="sandbox">Sandbox — testen zonder echte betalingen</option>
-          <option value="live">Live — echte betalingen ontvangen</option>
-        </select>
-        <small style="display:block;margin-top:6px;color:var(--muted,#64748b)">Test eerst met Sandbox. Kies Live pas als je PayPal-app klaarstaat voor echte betalingen.</small>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
-        <label style="display:block;font-weight:700">Client ID
-          <input id="orderPaypalClientId" type="text" autocomplete="off" spellcheck="false" placeholder="PayPal Client ID" style="display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit">
-        </label>
-        <label style="display:block;font-weight:700">Client Secret
-          <input id="orderPaypalClientSecret" type="password" autocomplete="new-password" placeholder="Plak je Client Secret hier" style="display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit">
-          <small style="display:block;margin-top:5px;color:var(--muted,#64748b)">Wordt versleuteld opgeslagen. Laat leeg om de huidige sleutel te behouden.</small>
-        </label>
-        <label style="display:block;font-weight:700">Merchant ID (optioneel)
-          <input id="orderPaypalMerchantId" type="text" autocomplete="off" placeholder="PayPal Merchant ID" style="display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit">
-        </label>
-      </div>
-      <div id="orderPaypalStatus" class="status info" style="margin:14px 0">PayPal-status controleren...</div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <button class="btn btn-primary" type="button" onclick="saveOrderSettings()">PayPal-instellingen opslaan</button>
-        <a href="https://developer.paypal.com/dashboard/applications" target="_blank" rel="noopener noreferrer" class="btn btn-light">PayPal Developer Dashboard ↗</a>
-      </div>
-      <p style="margin:12px 0 0;color:var(--muted,#64748b);font-size:13px">Je geheime sleutel blijft op de server en wordt nooit aan de winkelbezoeker getoond. Zet PayPal pas op Live nadat je een succesvolle test hebt gedaan.</p>
-    </div>
-    <div class="card" style="padding:18px;margin-top:16px">
-      <h3 style="margin-top:0">Mollie — iDEAL / Wero</h3>
-      <p>Voeg hier later je Mollie API-key toe. De sleutel wordt versleuteld op de server opgeslagen en nooit aan klanten getoond.</p>
-      <label style="display:block;font-weight:700">Mollie API-key
-        <input id="orderMollieApiKey" type="password" autocomplete="new-password" placeholder="Nog niet ingesteld" style="display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit">
-      </label>
-      <div id="orderMollieStatus" class="status info" style="margin:14px 0">Mollie is nog niet ingesteld.</div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <button class="btn btn-primary" type="button" onclick="saveOrderSettings()">Mollie-instellingen opslaan</button>
-        <a href="https://my.mollie.com/dashboard/developers/api-keys" target="_blank" rel="noopener noreferrer" class="btn btn-light">Mollie Dashboard ↗</a>
-      </div>
-      <p style="margin:12px 0 0;color:var(--muted,#64748b);font-size:13px">Laat het veld leeg om een eerder opgeslagen sleutel te behouden. Begin met een Test API-key; echte betalingen werken pas met een actieve Live API-key.</p>
-    </div>
-    <div class="card" style="padding:18px">
-      <h3 style="margin-top:0">API-koppeling instellen</h3>
-      <p>Vraag de API-gegevens aan via je zakelijke account bij PostNL en DHL. Plaats geheime sleutels niet in deze pagina, GitHub of de browser.</p>
-      <p><strong>Render Environment Variables:</strong></p>
-      <ul>
-        <li><strong>POSTNL_API_KEY</strong> — API-sleutel van PostNL</li>
-        <li><strong>DHL_API_KEY</strong> — API-token/sleutel van DHL Parcel</li>
-        <li><strong>DHL_API_BASE_URL</strong> — optioneel, alleen als DHL dit voor jouw account opgeeft</li>
-      </ul>
-      <p id="orderSettingsApiNote">Zolang de API-gegevens ontbreken, worden geen echte verzendlabels of trackingcodes aangemaakt. Deze pagina schakelt alleen de vervoerdersinstellingen in; de API-acties moeten na ontvangst van de gegevens worden getest.</p>
-    </div>
-  </section>
-
-  <!-- WAAROM HOMS TECH -->
-  <section class="section admin-page" id="page-why" data-permission="why.view">
-    <div class="section-head">
-      <div>
-        <h2>⭐ Waarom HOMS TECH?</h2>
-        <p>Beheer de voordelen die op de homepage verschijnen.</p>
-      </div>
-
-      <button class="btn btn-green" onclick="addWhy()">
-        + Voordeel toevoegen
-      </button>
-    </div>
-
-    <div id="whyList"></div>
-  </section>
-
-  <section class="section admin-page" id="page-search" data-permission="search">
-    <div class="section-head"><div><h2>🔎 Zoeken</h2><p>Zoek klanten en bestellingen vanuit één plek.</p></div></div>
-    <div class="admin-search">
-      <input id="adminSearchInput" placeholder="Naam, e-mail, telefoon, IMEI, ordernummer..." onkeydown="if(event.key==='Enter')adminSearch()">
-      <button class="btn btn-green" onclick="adminSearch()">Zoeken</button>
-    </div>
-    <div id="searchStatus" class="status info" style="margin:15px 0"></div>
-    <div id="searchResults"></div>
-  </section>
-
-  <section class="section admin-page" id="page-admins" data-permission="admins.manage">
-    <div class="section-head"><div><h2>👤 Admins</h2><p>Maak extra admins aan en bepaal exact wat iedere admin mag doen.</p></div></div>
-    <div class="card">
-      <div class="card-head"><div><div class="card-title">Nieuwe admin</div><div class="small">Kies hieronder de rechten.</div></div></div>
-      <div class="grid">
-        <div class="field"><label>Gebruikersnaam</label><input id="newAdminUsername" autocomplete="off"></div>
-        <div class="field"><label>Wachtwoord (minimaal 8 tekens)</label><input id="newAdminPassword" type="password" autocomplete="new-password"></div>
-      </div>
-      <div class="field"><label>Rechten</label><div id="newAdminPermissions" class="permission-grid"></div></div>
-      <button class="btn btn-green" onclick="createAdmin()">+ Admin aanmaken</button>
-      <div id="adminCreateStatus" class="status" style="margin-top:12px"></div>
-    </div>
-    <div class="section-head" style="margin-top:24px"><div><h3 style="margin:0">Bestaande admins</h3><p>Wijzig rechten, schakel accounts uit of verander een wachtwoord.</p></div><button class="btn btn-light" onclick="loadAdmins()">↻ Vernieuwen</button></div>
-    <div id="adminsStatus" class="status info" style="margin-bottom:15px"></div>
-    <div id="adminsList"></div>
-  </section>
-
-  <!-- VERKOOPAANVRAGEN -->
-  <section class="section admin-page" id="page-buyback-orders" data-permission="buyback_orders.view">
-    <div class="section-head">
-      <div>
-        <h2>📥 Inkoop</h2>
-        <p>Alle telefoons die klanten aan HOMS TECH verkopen: losse verkoop en inruil bij aankoop.</p>
-      </div>
-      <div class="ht-inkoop-toolbar"><select id="buybackTypeFilter" class="field" aria-label="Filter inkoopaanvragen" onchange="loadBuybackOrders()"><option value="all">Alle aanvragen</option><option value="sale">Alleen verkoop</option><option value="tradein">Inruil</option></select><button class="btn btn-light" onclick="loadBuybackOrders()">↻ Vernieuwen</button></div>
-    </div>
-    <div id="buybackOrdersStatus" class="status info" style="margin-bottom:12px"></div>
-    <div id="buybackOrdersList" class="orders-list"></div>
-    <div id="buybackOrdersDetail" class="ht-inkoop-detail-host" hidden></div>
-  </section>
-
-  <!-- SAVE -->
-  <div class="save-bar">
-    <div>
-      <div id="saveStatus" class="status">Wijzigingen nog niet opgeslagen</div>
-      <div class="small">✓ Wijzigingen worden opgeslagen wanneer jij op «Wijzigingen opslaan» drukt.</div>
-    </div>
-
-    <button id="saveBtn" class="btn btn-green" onclick="save()" style="font-size:16px;padding:13px 25px">
-      💾 Wijzigingen opslaan
-    </button>
-  </div>
-
-</div>
-</div>
-
-<script src="../assets/homs-admin.js?v=20261117-partners1" defer></script>
-<script src="../assets/partner-admin.js?v=20261117-partners6" defer></script>
-
-<script>
-/* Remove the retired HOMS TECH admin PWA from browsers that previously installed it. */
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", async () => {
-    try {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(registrations
-        .filter(registration => new URL(registration.scope).pathname.startsWith("/admin/"))
-        .map(registration => registration.unregister()));
-    } catch (error) {
-      console.warn("[HOMS TECH] Could not unregister retired app worker:", error);
-    }
-  });
-}
-</script>
-
-
-
-
-
-
-
-
-
-
-
-</body>
+    <script>
+      /* Remove the retired HOMS TECH admin PWA from browsers that previously installed it. */
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", async () => {
+          try {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(registrations
+              .filter(registration => new URL(registration.scope).pathname.startsWith("/admin/"))
+              .map(registration => registration.unregister()));
+          } catch (error) {
+            console.warn("[HOMS TECH] Could not unregister retired app worker:", error);
+          }
+        });
+      }
+    </script>
+  </body>
 </html>
