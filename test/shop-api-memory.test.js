@@ -25,7 +25,7 @@ test("Shop catalog API selects only shopProducts from site settings", () => {
 });
 
 test("Public Shop page requests the dedicated Shop catalog view", () => {
-  assert.ok(shopSource.includes(String.raw`\/api\/shop\/image\/`));
+  assert.match(shopSource, /fetch\('\/api\/shop\/product\/'\s*\+/);
   assert.doesNotMatch(shopSource, /fetch\(['"]\/api\/site['"]/);
 });
 
@@ -64,5 +64,5 @@ test("Shop preview images are served lazily with validation and short caching", 
   assert.match(route, /5\s*\*\s*1024\s*\*\s*1024/);
   assert.match(route, /X-Content-Type-Options/);
   assert.match(route, /max-age=60/);
-  assert.match(shopSource, /\/api\/shop\/image\//);
+  assert.ok(shopSource.includes("\\/api\\/shop\\/image\\/"));
 });
