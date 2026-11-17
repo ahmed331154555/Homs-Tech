@@ -62,7 +62,7 @@ form{padding:22px 24px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:13
  const byId=id=>document.getElementById(id);
  const cleanDigits=v=>String(v||"").replace(/[^0-9]/g,"");
  try{
-  const response=await fetch("/api/site",{headers:{"Accept":"application/json"}});
+  const response=await fetch("/api/site?view=footer",{headers:{"Accept":"application/json"}});
   if(response.ok){
    const data=await response.json(),f=data.homepage?.footer||{};
    const email=String(f.email||"").trim(),phone=String(f.phone||data.phone||"+31684242359").trim(),wa=String(f.whatsapp||data.whatsapp||"+31684242359").trim();
