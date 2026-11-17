@@ -301,7 +301,8 @@ app.get("/api/homepage/phone-image/:index", async (req, res) => {
   const phoneIndex = String(req.params.index || "");
   const imagePath = String(req.query.path || "");
   const segments = imagePath.split(".");
-  if (!/^\d{1,5}$/.test(phoneIndex) || !imagePath || imagePath.length > 240 ||
+  const allowedImagePath = /^(?:image|images\\.0|colorGalleryImages\\.[^.]+\\.0|colorImages\\.[^.]+(?:\\.0)?|colorOptions\\.\\d{1,3}\\.image)$/;
+  if (!/^\d{1,5}$/.test(phoneIndex) || !allowedImagePath.test(imagePath) || imagePath.length > 240 ||
       segments.some(segment => !segment || ["__proto__", "prototype", "constructor"].includes(segment))) {
     return res.status(400).end();
   }
@@ -349,7 +350,7 @@ app.get("/api/homepage/phone-image/:index", async (req, res) => {
 // Serve homepage repair-service photos separately from the settings payload.
 app.get("/api/homepage/service-image/:index", async (req, res) => {
   const serviceIndex = String(req.params.index || "");
-  if (!/^\d{1,3}$/.test(serviceIndex)) return res.status(400).end();
+  if (!/^[0-7]$/.test(serviceIndex)) return res.status(400).end();
 
   try {
     const result = await queryWithConnectionRetry(
