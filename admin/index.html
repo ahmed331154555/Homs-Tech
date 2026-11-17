@@ -6,7 +6,7 @@
 <title>HOMS TECH - Admin</title>
 
   <link rel="stylesheet" href="../assets/homs-admin.css?v=20261115-compact-register1">
-  <link rel="stylesheet" href="../assets/partner-admin.css?v=20261117-partners6">
+  <link rel="stylesheet" href="../assets/partner-admin.css?v=20261117-api-guide1">
 </head>
 
 <body>
@@ -488,6 +488,24 @@
 <section class="section admin-page ht-partners-page" id="page-partners" data-permission="site.save">
   <div class="section-head"><div><h2>🤝 Schakelpartners</h2><p>Beheer verkooppartners, stel per telefoonuitvoering een groothandelsprijs in en behandel partnerbestellingen.</p></div><button class="btn btn-light" type="button" onclick="loadPartnersAdmin()">↻ Vernieuwen</button></div>
   <div class="ht-partner-notice"><strong>Prijsafspraak</strong><span>HOMS TECH bepaalt de groothandelsprijs. De partner kiest zelf de verkoopprijs en houdt het verschil. Partnerbestellingen zijn aanvragen: voorraad wordt bij ontvangst niet automatisch afgeboekt.</span></div>
+  <details class="ht-partner-api-guide">
+    <summary><span><strong>📘 API & Partner Handleiding</strong><small>Zo geef je een andere winkel veilig toegang tot HOMS TECH-producten</small></span><span class="ht-partner-guide-toggle">Handleiding openen ▾</span></summary>
+    <div class="ht-partner-guide-body">
+      <div class="ht-partner-guide-intro"><strong>Gebruik dit stappenplan telkens wanneer je een nieuwe webshop koppelt.</strong><span>Geef alleen de eigen API-sleutel van die partner. Deel nooit je HOMS TECH-adminlogin, databasegegevens of servergeheimen.</span></div>
+      <div class="ht-partner-guide-grid">
+        <article><span class="ht-partner-guide-step">01 · PARTNER AANMAKEN</span><h4>Maak eerst een aparte partner aan</h4><p>Vul links de bedrijfsnaam en het e-mailadres in bij ‘Nieuwe partner’. Na het aanmaken verschijnt de API-sleutel één keer. Kopieer hem direct en bewaar hem veilig. De sleutel kan later niet opnieuw worden getoond.</p></article>
+        <article><span class="ht-partner-guide-step">02 · PRODUCTEN TOEKENNEN</span><h4>Kies de toegestane uitvoeringen</h4><p>Selecteer de telefoonvarianten en stel de groothandelsprijzen in. Alleen actieve, toegewezen varianten met een opgeslagen prijs komen in de productfeed. Varianten met expliciet voorraad 0 worden weggelaten.</p></article>
+        <article><span class="ht-partner-guide-step">03 · GEGEVENS AAN DE BOUWER</span><h4>Stuur deze API-gegevens</h4><p><b>Base URL</b><code>https://homs-tech.nl</code><b>Producten ophalen · GET</b><code>/api/partner/v1/products</code><b>Bestelaanvraag · POST</b><code>/api/partner/v1/orders</code><b>Header</b><code>Authorization: Bearer [PARTNER_API_KEY]</code><code>Accept: application/json</code></p><p>Stuur de API-sleutel privé naar de verantwoordelijke bouwer. Laat die sleutel uitsluitend server-side opslaan als environment secret; nooit in browser-JavaScript, openbare pagina's of logs.</p></article>
+        <article><span class="ht-partner-guide-step">04 · TESTEN</span><h4>Controleer vóór livegang</h4><p>Test eerst de GET-feed met de partnerkey. Controleer productnaam, kleur, opslag, conditie, wholesalePrice, currency, stock en images. Per variant kunnen maximaal vier afbeeldingen worden teruggegeven. Test daarna pas een bestelaanvraag.</p></article>
+      </div>
+      <div class="ht-partner-guide-endpoints">
+        <div><strong>Variant herkennen</strong><code>variantKey = opslag|kleur|conditie</code><small>Gebruik de exacte waarden uit de productfeed, bijvoorbeeld <code>128GB|Black|A</code>. Gebruik de lege string voor een product zonder varianten.</small></div>
+        <div><strong>Belangrijk over bestellingen</strong><small>POST maakt een aanvraag aan. De prijs wordt door HOMS TECH berekend op basis van de opgeslagen partnerprijs; een ingestuurde prijs wordt genegeerd. De aanvraag reserveert of vermindert de voorraad niet automatisch. Controleer en keur de aanvraag goed in Partnerbestellingen.</small></div>
+      </div>
+      <div class="ht-partner-guide-security"><strong>🔐 Toegang intrekken</strong><span>Ga naar ‘Bestaande partners’ en schakel de betreffende partner uit of verwijder deze wanneer nodig. Daarmee wordt de toegang met die sleutel ingetrokken. Gebruik voor iedere winkel een eigen partner en eigen sleutel; deel nooit één sleutel tussen meerdere winkels.</span></div>
+      <p class="ht-partner-guide-doc"><strong>Technische documentatie:</strong> <code>docs/partner-api.md</code> in de HOMS TECH repository. Deel met de bouwer alleen wat nodig is voor de koppeling.</p>
+    </div>
+  </details>
   <div class="ht-partner-grid">
     <div class="card ht-partner-card">
       <div class="ht-partner-card-head"><div><span class="ht-partner-eyebrow">PARTNERBEHEER</span><h3>Nieuwe partner</h3></div></div>
