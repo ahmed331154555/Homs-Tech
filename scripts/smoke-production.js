@@ -1,6 +1,9 @@
 "use strict";
 
-const BASE_URL = (process.env.HOMS_BASE_URL || "https://homs-tech.nl").replace(/\/$/, "");
+const BASE_URL = (process.env.HOMS_BASE_URL || "https://homs-tech.nl").replace(
+  /\/$/,
+  "",
+);
 const TIMEOUT_MS = 20000;
 
 async function request(path, expectedType) {
@@ -88,14 +91,16 @@ async function main() {
       ...Object.values(phone.colorGalleryImages || {}).flat(),
     ];
     const imagePath = candidates.find(
-      (value) => typeof value === "string" && value.startsWith("/api/devices/image/"),
+      (value) =>
+        typeof value === "string" && value.startsWith("/api/devices/image/"),
     );
     if (imagePath) await verifyImage(imagePath, "/api/devices/image/");
   }
 
   const product = shop.shopProducts.find((item) => item && item.images?.length);
   const shopImage = product?.images?.find(
-    (value) => typeof value === "string" && value.startsWith("/api/shop/image/"),
+    (value) =>
+      typeof value === "string" && value.startsWith("/api/shop/image/"),
   );
   if (shopImage) await verifyImage(shopImage, "/api/shop/image/");
 
