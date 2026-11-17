@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { hashToken, parseStock } = require("../routes/partner-api");
+const { registerPartnerApiRoutes, hashToken, parseStock } = require("../routes/partner-api");
 
 test("partner API keys are stored as deterministic SHA-256 hashes, not plaintext", () => {
   const token = "htp_" + "a".repeat(64);
