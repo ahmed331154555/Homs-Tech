@@ -946,7 +946,7 @@ function renderProducts(){
  };
  const chosen=selectedPhones.flatMap((phone,index)=>expandPhone(phone,Number.isInteger(Number(phone?._index))?Number(phone._index):index)).slice(0,cardLimit);
  if(!chosen.length){box.innerHTML="<div style='padding:25px;color:#667784'>Geen apparaten beschikbaar.</div>";return;}
- chosen.forEach(({p,idx})=>{
+ chosen.forEach(({p,idx},productPosition)=>{
   const image=p.image||p.imageUrl||p.photo||firstImage(p.images)||firstImage(p.colorImages)||firstImage(Array.isArray(p.colorOptions)?p.colorOptions.map(option=>option?.image):[]);
   const card=document.createElement("article");
   card.className="product";
@@ -955,7 +955,7 @@ function renderProducts(){
   picture.className="product-img";
   picture.style.cssText="height:170px;min-height:170px;display:flex;align-items:center;justify-content:center;overflow:hidden;";
   if(image){
-   const img=document.createElement("img");img.src=image;img.alt=p.name||"";img.loading=box.querySelectorAll(":scope .product").length<4?"eager":"lazy";img.fetchPriority=box.querySelectorAll(":scope .product").length<4?"high":"auto";img.decoding="async";
+   const img=document.createElement("img");img.src=image;img.alt=p.name||"";img.loading=productPosition<4?"eager":"lazy";img.fetchPriority=productPosition<4?"high":"auto";img.decoding="async";
    img.style.cssText="display:block;width:160px;height:160px;max-width:100%;object-fit:contain;";
    picture.appendChild(img);
   }else picture.innerHTML='<div class="phone-placeholder"></div>';
