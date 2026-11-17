@@ -223,3 +223,7 @@ test("legacy pricing mode does not expose leftover variant rows as separate part
   const phone = { pricingMode: "legacy", variantPrices: [{ storage: "128GB", color: "Black", condition: "A" }] };
   assert.equal(hasVariantPricing(phone), false);
 });
+
+test("legacy product identifier is not generated for an empty draft phone", () => {
+  assert.equal(getPartnerProductId({ name: "", brand: "Apple", sku: "" }, 0, [{ name: "", brand: "Apple", sku: "" }]), "");
+});
