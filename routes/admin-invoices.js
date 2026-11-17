@@ -384,20 +384,16 @@ function registerAdminInvoiceRoutes(
             .json({ error: "Voor deze klant is geen e-mailadres opgeslagen." });
         const seller = invoice.seller_snapshot || {};
         if (!seller.legalName || !seller.address) {
-          return res
-            .status(409)
-            .json({
-              error:
-                "Vul eerst de juridische bedrijfsnaam en het vestigingsadres in bij de factuurinstellingen voordat u de factuur verstuurt.",
-            });
+          return res.status(409).json({
+            error:
+              "Vul eerst de juridische bedrijfsnaam en het vestigingsadres in bij de factuurinstellingen voordat u de factuur verstuurt.",
+          });
         }
         if (invoice.payment_method === "bank" && !seller.iban) {
-          return res
-            .status(409)
-            .json({
-              error:
-                "Vul eerst het IBAN in bij de factuurinstellingen of kies een andere betaalmethode.",
-            });
+          return res.status(409).json({
+            error:
+              "Vul eerst het IBAN in bij de factuurinstellingen of kies een andere betaalmethode.",
+          });
         }
         const pdf = buildInvoicePdf(invoice);
         const response = await fetchImpl("https://api.resend.com/emails", {

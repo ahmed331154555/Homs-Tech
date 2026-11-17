@@ -81,21 +81,17 @@ function registerPaymentRoutes(
           .json({ error: "Webshop bestelling niet gevonden." });
       const order = local.rows[0];
       if (order.payment_method !== "Mollie")
-        return res
-          .status(409)
-          .json({
-            error:
-              "Deze bestelling is niet aangemaakt met Mollie als betaalmethode.",
-          });
+        return res.status(409).json({
+          error:
+            "Deze bestelling is niet aangemaakt met Mollie als betaalmethode.",
+        });
       if (order.payment_status === "Paid") {
         const inventoryResult = await deductPaidOrderInventory(localOrderId);
         if (inventoryResult?.error) {
-          return res
-            .status(409)
-            .json({
-              error:
-                "Deze bestelling is betaald, maar de voorraad wacht op handmatige controle.",
-            });
+          return res.status(409).json({
+            error:
+              "Deze bestelling is betaald, maar de voorraad wacht op handmatige controle.",
+          });
         }
         return res
           .status(409)
@@ -117,12 +113,10 @@ function registerPaymentRoutes(
             const inventoryResult =
               await deductPaidOrderInventory(localOrderId);
             if (inventoryResult?.error) {
-              return res
-                .status(409)
-                .json({
-                  error:
-                    "De betaling is bevestigd, maar de voorraad kon niet worden bijgewerkt. HOMS TECH controleert dit handmatig.",
-                });
+              return res.status(409).json({
+                error:
+                  "De betaling is bevestigd, maar de voorraad kon niet worden bijgewerkt. HOMS TECH controleert dit handmatig.",
+              });
             }
             await notifyPaidTradeInOrder(localOrderId);
             return res
@@ -206,11 +200,9 @@ function registerPaymentRoutes(
       );
       const status =
         error.statusCode === 401 || error.statusCode === 403 ? 503 : 500;
-      res
-        .status(status)
-        .json({
-          error: error.message || "Mollie betaling kon niet worden gestart.",
-        });
+      res.status(status).json({
+        error: error.message || "Mollie betaling kon niet worden gestart.",
+      });
     }
   });
 
@@ -292,14 +284,12 @@ function registerPaymentRoutes(
       if (order.payment_status === "Paid") {
         const inventoryResult = await deductPaidOrderInventory(localOrderId);
         if (inventoryResult?.error) {
-          return res
-            .status(409)
-            .json({
-              error:
-                "De betaling is bevestigd, maar de voorraad wacht op handmatige controle.",
-              paid: true,
-              orderId: localOrderId,
-            });
+          return res.status(409).json({
+            error:
+              "De betaling is bevestigd, maar de voorraad wacht op handmatige controle.",
+            paid: true,
+            orderId: localOrderId,
+          });
         }
         await notifyPaidTradeInOrder(localOrderId);
         return res.json({
@@ -310,11 +300,9 @@ function registerPaymentRoutes(
         });
       }
       if (!order.mollie_payment_id || order.payment_method !== "Mollie")
-        return res
-          .status(409)
-          .json({
-            error: "Er is geen Mollie-betaling gekoppeld aan deze bestelling.",
-          });
+        return res.status(409).json({
+          error: "Er is geen Mollie-betaling gekoppeld aan deze bestelling.",
+        });
       const payment = await mollieRequest(
         "/payments/" + encodeURIComponent(order.mollie_payment_id),
       );
@@ -322,11 +310,9 @@ function registerPaymentRoutes(
         !molliePaymentMatchesOrder(payment, order) ||
         payment.id !== order.mollie_payment_id
       )
-        return res
-          .status(409)
-          .json({
-            error: "De betaling komt niet overeen met deze bestelling.",
-          });
+        return res.status(409).json({
+          error: "De betaling komt niet overeen met deze bestelling.",
+        });
       const status = resolveMolliePaymentStatus(
         order.payment_status,
         payment.status,
@@ -338,14 +324,12 @@ function registerPaymentRoutes(
       if (status === "Paid") {
         const inventoryResult = await deductPaidOrderInventory(localOrderId);
         if (inventoryResult?.error) {
-          return res
-            .status(409)
-            .json({
-              error:
-                "De betaling is bevestigd, maar de voorraad kon niet worden bijgewerkt. HOMS TECH controleert dit handmatig.",
-              paid: true,
-              orderId: localOrderId,
-            });
+          return res.status(409).json({
+            error:
+              "De betaling is bevestigd, maar de voorraad kon niet worden bijgewerkt. HOMS TECH controleert dit handmatig.",
+            paid: true,
+            orderId: localOrderId,
+          });
         }
         await notifyPaidTradeInOrder(localOrderId);
       }
@@ -356,12 +340,10 @@ function registerPaymentRoutes(
         "Mollie verify payment error:",
         error.statusCode || error.message,
       );
-      res
-        .status(500)
-        .json({
-          error:
-            "De betaalstatus kon niet worden gecontroleerd. Probeer het opnieuw.",
-        });
+      res.status(500).json({
+        error:
+          "De betaalstatus kon niet worden gecontroleerd. Probeer het opnieuw.",
+      });
     }
   });
 
@@ -370,12 +352,10 @@ function registerPaymentRoutes(
     try {
       const settings = await getPayPalSettings();
       if (!settings.enabled || !settings.clientId || !settings.clientSecret) {
-        return res
-          .status(503)
-          .json({
-            enabled: false,
-            error: "PayPal is nog niet geconfigureerd of uitgeschakeld.",
-          });
+        return res.status(503).json({
+          enabled: false,
+          error: "PayPal is nog niet geconfigureerd of uitgeschakeld.",
+        });
       }
       res.json({
         enabled: true,
@@ -384,12 +364,10 @@ function registerPaymentRoutes(
       });
     } catch (error) {
       console.error("PayPal config error:", error.message);
-      res
-        .status(503)
-        .json({
-          enabled: false,
-          error: "PayPal is momenteel niet beschikbaar.",
-        });
+      res.status(503).json({
+        enabled: false,
+        error: "PayPal is momenteel niet beschikbaar.",
+      });
     }
   });
 
@@ -424,12 +402,10 @@ function registerPaymentRoutes(
 
       const order = local.rows[0];
       if (order.payment_method !== "PayPal")
-        return res
-          .status(409)
-          .json({
-            error:
-              "Deze bestelling is niet aangemaakt met PayPal als betaalmethode.",
-          });
+        return res.status(409).json({
+          error:
+            "Deze bestelling is niet aangemaakt met PayPal als betaalmethode.",
+        });
       if (order.payment_status === "Paid") {
         return res
           .status(409)
@@ -512,30 +488,24 @@ function registerPaymentRoutes(
             });
           }
           await notifyPaidTradeInOrder(localOrderId);
-          return res
-            .status(409)
-            .json({
-              error: "Deze bestelling is al betaald.",
-              paid: true,
-              orderId: localOrderId,
-            });
-        }
-        return res
-          .status(409)
-          .json({
-            error:
-              "De bestelling is ondertussen gewijzigd. Probeer de betaling opnieuw.",
+          return res.status(409).json({
+            error: "Deze bestelling is al betaald.",
+            paid: true,
+            orderId: localOrderId,
           });
+        }
+        return res.status(409).json({
+          error:
+            "De bestelling is ondertussen gewijzigd. Probeer de betaling opnieuw.",
+        });
       }
 
       res.json({ success: true, id: data.id, orderId: localOrderId });
     } catch (error) {
       console.error("PayPal create order error:", error);
-      res
-        .status(500)
-        .json({
-          error: error.message || "PayPal betaling kon niet worden gestart.",
-        });
+      res.status(500).json({
+        error: error.message || "PayPal betaling kon niet worden gestart.",
+      });
     }
   });
 
@@ -576,31 +546,25 @@ function registerPaymentRoutes(
       const order = local.rows[0];
 
       if (order.payment_method !== "PayPal")
-        return res
-          .status(409)
-          .json({
-            error:
-              "Deze bestelling is niet aangemaakt met PayPal als betaalmethode.",
-          });
+        return res.status(409).json({
+          error:
+            "Deze bestelling is niet aangemaakt met PayPal als betaalmethode.",
+        });
       if (String(order.paypal_order_id || "") !== paypalOrderId) {
-        return res
-          .status(400)
-          .json({
-            error: "PayPal order komt niet overeen met de webshop bestelling.",
-          });
+        return res.status(400).json({
+          error: "PayPal order komt niet overeen met de webshop bestelling.",
+        });
       }
 
       if (order.payment_status === "Paid") {
         const inventoryResult = await deductPaidOrderInventory(localOrderId);
         if (inventoryResult?.error) {
-          return res
-            .status(409)
-            .json({
-              error:
-                "PayPal heeft de betaling bevestigd, maar de voorraad wacht op handmatige controle.",
-              paid: true,
-              orderId: localOrderId,
-            });
+          return res.status(409).json({
+            error:
+              "PayPal heeft de betaling bevestigd, maar de voorraad wacht op handmatige controle.",
+            paid: true,
+            orderId: localOrderId,
+          });
         }
         await notifyPaidTradeInOrder(localOrderId);
         return res.json({ success: true, paid: true, orderId: localOrderId });
@@ -658,12 +622,10 @@ function registerPaymentRoutes(
           `UPDATE webshop_orders SET payment_status = $1 WHERE id = $2 AND paypal_order_id = $3 AND payment_method = 'PayPal' AND payment_status <> 'Paid'`,
           ["Failed", localOrderId, paypalOrderId],
         );
-        return res
-          .status(402)
-          .json({
-            error: "PayPal betaling is niet voltooid.",
-            paypalStatus: captureStatus,
-          });
+        return res.status(402).json({
+          error: "PayPal betaling is niet voltooid.",
+          paypalStatus: captureStatus,
+        });
       }
 
       const paidUpdate = await pool.query(
@@ -699,23 +661,19 @@ function registerPaymentRoutes(
             captureId: capture?.id || null,
           });
         }
-        return res
-          .status(409)
-          .json({
-            error:
-              "De bestelling is ondertussen gewijzigd. Neem contact op met HOMS TECH.",
-          });
+        return res.status(409).json({
+          error:
+            "De bestelling is ondertussen gewijzigd. Neem contact op met HOMS TECH.",
+        });
       }
       const inventoryResult = await deductPaidOrderInventory(localOrderId);
       if (inventoryResult?.error) {
-        return res
-          .status(409)
-          .json({
-            error:
-              "PayPal heeft de betaling bevestigd, maar de voorraad kon niet worden bijgewerkt. HOMS TECH controleert dit handmatig.",
-            paid: true,
-            orderId: localOrderId,
-          });
+        return res.status(409).json({
+          error:
+            "PayPal heeft de betaling bevestigd, maar de voorraad kon niet worden bijgewerkt. HOMS TECH controleert dit handmatig.",
+          paid: true,
+          orderId: localOrderId,
+        });
       }
       await notifyPaidTradeInOrder(localOrderId);
 
@@ -728,11 +686,9 @@ function registerPaymentRoutes(
       });
     } catch (error) {
       console.error("PayPal capture error:", error);
-      res
-        .status(500)
-        .json({
-          error: error.message || "PayPal betaling kon niet worden bevestigd.",
-        });
+      res.status(500).json({
+        error: error.message || "PayPal betaling kon niet worden bevestigd.",
+      });
     }
   });
 
@@ -866,20 +822,16 @@ function registerPaymentRoutes(
         const dhlEnabled = req.body?.dhlEnabled === true;
         const cashOnDeliveryEnabled = req.body?.cashOnDeliveryEnabled === true;
         if (postnlEnabled && !getEnv().POSTNL_API_KEY) {
-          return res
-            .status(400)
-            .json({
-              error:
-                "Voeg eerst POSTNL_API_KEY toe bij Render Environment Variables.",
-            });
+          return res.status(400).json({
+            error:
+              "Voeg eerst POSTNL_API_KEY toe bij Render Environment Variables.",
+          });
         }
         if (dhlEnabled && !getEnv().DHL_API_KEY) {
-          return res
-            .status(400)
-            .json({
-              error:
-                "Voeg eerst DHL_API_KEY toe bij Render Environment Variables.",
-            });
+          return res.status(400).json({
+            error:
+              "Voeg eerst DHL_API_KEY toe bij Render Environment Variables.",
+          });
         }
         const currentResult = await pool.query(
           "SELECT data FROM order_settings WHERE id=1",
@@ -915,12 +867,10 @@ function registerPaymentRoutes(
         const hasServerSecret =
           !!clientSecretEncrypted || !!getEnv().PAYPAL_CLIENT_SECRET;
         if (paypalEnabled && (!clientId || !hasServerSecret)) {
-          return res
-            .status(400)
-            .json({
-              error:
-                "Vul zowel de PayPal Client ID als Client Secret in voordat je PayPal inschakelt.",
-            });
+          return res.status(400).json({
+            error:
+              "Vul zowel de PayPal Client ID als Client Secret in voordat je PayPal inschakelt.",
+          });
         }
         const paypal = {
           enabled: paypalEnabled,
@@ -966,13 +916,11 @@ function registerPaymentRoutes(
         });
       } catch (error) {
         console.error("Order settings save error:", error.message);
-        res
-          .status(500)
-          .json({
-            error: error.message.includes("JWT_SECRET")
-              ? error.message
-              : "Orderinstellingen konden niet worden opgeslagen.",
-          });
+        res.status(500).json({
+          error: error.message.includes("JWT_SECRET")
+            ? error.message
+            : "Orderinstellingen konden niet worden opgeslagen.",
+        });
       }
     },
   );

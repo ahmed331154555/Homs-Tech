@@ -435,17 +435,13 @@ test("buildShopCatalogList keeps only preview data for active products", () => {
   assert.equal("supplierCost" in result[0], false);
 });
 
-
 test("buildShopCatalogList converts embedded preview images to lazy image endpoints", () => {
   const result = buildShopCatalogList([
     {
       id: "phone/one",
       name: "Phone",
       active: true,
-      images: [
-        "data:image/webp;base64,QUJD",
-        "data:image/webp;base64,REVG",
-      ],
+      images: ["data:image/webp;base64,QUJD", "data:image/webp;base64,REVG"],
     },
   ]);
   assert.deepEqual(result[0].images, ["/api/shop/image/phone%2Fone"]);

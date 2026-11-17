@@ -20,12 +20,10 @@ function registerRepairQuoteRoutes(
 
       // 1. Honeypot check (anti-bot)
       if (b.website) {
-        return res
-          .status(201)
-          .json({
-            success: true,
-            requestNo: Math.floor(10000 + Math.random() * 90000),
-          });
+        return res.status(201).json({
+          success: true,
+          requestNo: Math.floor(10000 + Math.random() * 90000),
+        });
       }
 
       // 2. Rate limiting check (per IP)
@@ -33,12 +31,10 @@ function registerRepairQuoteRoutes(
         req.ip || req.socket.remoteAddress || "unknown",
       ).trim();
       if (!checkRepairRequestRateLimit(clientIp)) {
-        return res
-          .status(429)
-          .json({
-            error:
-              "Te veel aanvragen vanaf uw netwerk. Wacht 15 minuten en probeer het opnieuw.",
-          });
+        return res.status(429).json({
+          error:
+            "Te veel aanvragen vanaf uw netwerk. Wacht 15 minuten en probeer het opnieuw.",
+        });
       }
 
       let validated;
@@ -180,21 +176,17 @@ function registerRepairQuoteRoutes(
         }
       }
 
-      res
-        .status(201)
-        .json({
-          success: true,
-          requestNo: request.id,
-          createdAt: request.created_at,
-        });
+      res.status(201).json({
+        success: true,
+        requestNo: request.id,
+        createdAt: request.created_at,
+      });
     } catch (error) {
       console.error("Repair quote request error:", error);
-      res
-        .status(500)
-        .json({
-          error:
-            "De aanvraag kon niet worden opgeslagen. Probeer het later opnieuw.",
-        });
+      res.status(500).json({
+        error:
+          "De aanvraag kon niet worden opgeslagen. Probeer het later opnieuw.",
+      });
     }
   });
 }

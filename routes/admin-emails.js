@@ -97,12 +97,10 @@ function registerAdminEmailRoutes(
         const apiKey = getEnv().RESEND_API_KEY,
           from = getEnv().RESEND_FROM_EMAIL;
         if (!apiKey || !from || from === "onboarding@resend.dev")
-          return res
-            .status(503)
-            .json({
-              error:
-                "Stel RESEND_API_KEY en een geverifieerd RESEND_FROM_EMAIL in.",
-            });
+          return res.status(503).json({
+            error:
+              "Stel RESEND_API_KEY en een geverifieerd RESEND_FROM_EMAIL in.",
+          });
         const to = String(req.body?.to || "")
             .trim()
             .slice(0, 254),
@@ -123,11 +121,9 @@ function registerAdminEmailRoutes(
             ? req.body.attachments
             : [];
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to) || !subject || !textBody)
-          return res
-            .status(400)
-            .json({
-              error: "Vul een geldig e-mailadres, onderwerp en bericht in.",
-            });
+          return res.status(400).json({
+            error: "Vul een geldig e-mailadres, onderwerp en bericht in.",
+          });
         const recipients = [...cc, ...bcc];
         if (
           recipients.length > 20 ||
@@ -234,12 +230,10 @@ function registerAdminEmailRoutes(
           );
           const original = originalResult.rows[0];
           if (!original || original.direction !== "inbound")
-            return res
-              .status(400)
-              .json({
-                error:
-                  "Het oorspronkelijke inkomende bericht is niet gevonden. Verstuur dit bericht als nieuw e-mailbericht.",
-              });
+            return res.status(400).json({
+              error:
+                "Het oorspronkelijke inkomende bericht is niet gevonden. Verstuur dit bericht als nieuw e-mailbericht.",
+            });
           // Website contact-form entries are stored locally and have no RFC Message-ID.
           // Allow replying to them as a normal new email; only add threading headers when available.
           const messageId =

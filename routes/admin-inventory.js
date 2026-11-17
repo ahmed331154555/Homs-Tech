@@ -233,11 +233,9 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
         });
       } catch (error) {
         console.error("Admin inventory load failed:", error);
-        return res
-          .status(500)
-          .json({
-            error: "Voorraad en voorraadgeschiedenis laden is mislukt.",
-          });
+        return res.status(500).json({
+          error: "Voorraad en voorraadgeschiedenis laden is mislukt.",
+        });
       }
     },
   );
@@ -285,19 +283,15 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
           .json({ error: "Vul een geldig geheel aantal in." });
       }
       if (movementType === "correction" ? quantity === 0 : quantity < 1) {
-        return res
-          .status(400)
-          .json({
-            error:
-              "Gebruik een positief aantal. Bij correctie mag het aantal ook negatief zijn.",
-          });
+        return res.status(400).json({
+          error:
+            "Gebruik een positief aantal. Bij correctie mag het aantal ook negatief zijn.",
+        });
       }
       if (movementType === "correction" && !note) {
-        return res
-          .status(400)
-          .json({
-            error: "Vermeld bij een voorraadcorrectie altijd de reden.",
-          });
+        return res.status(400).json({
+          error: "Vermeld bij een voorraadcorrectie altijd de reden.",
+        });
       }
 
       const delta =
@@ -328,12 +322,10 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
             : findPhoneIndex(catalog, productId);
         if (productIndex < 0 || !catalog[productIndex]) {
           await client.query("ROLLBACK");
-          return res
-            .status(404)
-            .json({
-              error:
-                "Product niet gevonden. Vernieuw de voorraadpagina en probeer opnieuw.",
-            });
+          return res.status(404).json({
+            error:
+              "Product niet gevonden. Vernieuw de voorraadpagina en probeer opnieuw.",
+          });
         }
         const product = catalog[productIndex];
         let stockOwner = product;
@@ -350,32 +342,26 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
             );
             if (variantIndex < 0) {
               await client.query("ROLLBACK");
-              return res
-                .status(409)
-                .json({
-                  error:
-                    "Productoptie is gewijzigd. Vernieuw de voorraadpagina en selecteer de optie opnieuw.",
-                });
+              return res.status(409).json({
+                error:
+                  "Productoptie is gewijzigd. Vernieuw de voorraadpagina en selecteer de optie opnieuw.",
+              });
             }
             stockOwner = variants[variantIndex];
             variantLabel = String(stockOwner.quality || "Standaard");
             sku = String(stockOwner.sku || sku);
             if (stockOwner.active === false && delta < 0) {
               await client.query("ROLLBACK");
-              return res
-                .status(409)
-                .json({
-                  error:
-                    "Deze productoptie is uitgeschakeld en kan niet als verkoop worden afgeboekt.",
-                });
+              return res.status(409).json({
+                error:
+                  "Deze productoptie is uitgeschakeld en kan niet als verkoop worden afgeboekt.",
+              });
             }
           } else if (variantId) {
             await client.query("ROLLBACK");
-            return res
-              .status(409)
-              .json({
-                error: "Productoptie is gewijzigd. Vernieuw de voorraadpagina.",
-              });
+            return res.status(409).json({
+              error: "Productoptie is gewijzigd. Vernieuw de voorraadpagina.",
+            });
           }
         } else {
           const variants = Array.isArray(product.variantPrices)
@@ -390,12 +376,10 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
               phoneVariantKey(variants[variantIndex]) !== variantKey
             ) {
               await client.query("ROLLBACK");
-              return res
-                .status(409)
-                .json({
-                  error:
-                    "Telefoonuitvoering is gewijzigd. Vernieuw de voorraadpagina en selecteer de uitvoering opnieuw.",
-                });
+              return res.status(409).json({
+                error:
+                  "Telefoonuitvoering is gewijzigd. Vernieuw de voorraadpagina en selecteer de uitvoering opnieuw.",
+              });
             }
             stockOwner = variants[variantIndex];
             stockField = "stock";
@@ -406,12 +390,10 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
             sku = String(stockOwner.sku || sku);
             if (stockOwner.available === false && delta < 0) {
               await client.query("ROLLBACK");
-              return res
-                .status(409)
-                .json({
-                  error:
-                    "Deze telefoonuitvoering is niet beschikbaar voor verkoop.",
-                });
+              return res.status(409).json({
+                error:
+                  "Deze telefoonuitvoering is niet beschikbaar voor verkoop.",
+              });
             }
           } else if (
             (body.variantIndex !== undefined &&
@@ -419,12 +401,10 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
             variantKey
           ) {
             await client.query("ROLLBACK");
-            return res
-              .status(409)
-              .json({
-                error:
-                  "Telefoonproduct is gewijzigd. Vernieuw de voorraadpagina.",
-              });
+            return res.status(409).json({
+              error:
+                "Telefoonproduct is gewijzigd. Vernieuw de voorraadpagina.",
+            });
           }
         }
 
@@ -438,12 +418,10 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
             currentStockValue = 0;
           } else if (!match) {
             await client.query("ROLLBACK");
-            return res
-              .status(409)
-              .json({
-                error:
-                  "De bestaande Shop-voorraad is geen geldig getal. Corrigeer eerst de voorraadwaarde in het product.",
-              });
+            return res.status(409).json({
+              error:
+                "De bestaande Shop-voorraad is geen geldig getal. Corrigeer eerst de voorraadwaarde in het product.",
+            });
           } else {
             currentStockValue = match[1];
           }
@@ -509,23 +487,19 @@ function registerAdminInventoryRoutes(app, { pool, requirePermission }) {
           ],
         );
         await client.query("COMMIT");
-        return res
-          .status(201)
-          .json({
-            success: true,
-            stock: stockAfter,
-            movement: inserted.rows[0],
-          });
+        return res.status(201).json({
+          success: true,
+          stock: stockAfter,
+          movement: inserted.rows[0],
+        });
       } catch (error) {
         try {
           await client.query("ROLLBACK");
         } catch {}
         console.error("Admin inventory movement failed:", error);
-        return res
-          .status(500)
-          .json({
-            error: error.message || "Voorraadmutatie opslaan is mislukt.",
-          });
+        return res.status(500).json({
+          error: error.message || "Voorraadmutatie opslaan is mislukt.",
+        });
       } finally {
         client.release();
       }

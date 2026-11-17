@@ -40,11 +40,9 @@ function registerWebshopCheckoutRoutes(
           "SELECT data FROM order_settings WHERE id=1",
         );
         if (codSettings.rows[0]?.data?.cashOnDeliveryEnabled !== true)
-          return res
-            .status(400)
-            .json({
-              error: "Betalen bij ontvangst is momenteel niet beschikbaar.",
-            });
+          return res.status(400).json({
+            error: "Betalen bij ontvangst is momenteel niet beschikbaar.",
+          });
       }
 
       if (
@@ -57,12 +55,10 @@ function registerWebshopCheckoutRoutes(
         !city ||
         !items.length
       ) {
-        return res
-          .status(400)
-          .json({
-            error:
-              "Vul alle verplichte gegevens in en controleer uw winkelwagen.",
-          });
+        return res.status(400).json({
+          error:
+            "Vul alle verplichte gegevens in en controleer uw winkelwagen.",
+        });
       }
 
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -148,22 +144,17 @@ function registerWebshopCheckoutRoutes(
             quote.rows[0].trade_in_linked_order_id
           ) {
             await client.query("ROLLBACK");
-            return res
-              .status(409)
-              .json({
-                error:
-                  "De inruilaanvraag is verlopen of al gebruikt. Start de inruil opnieuw.",
-              });
+            return res.status(409).json({
+              error:
+                "De inruilaanvraag is verlopen of al gebruikt. Start de inruil opnieuw.",
+            });
           }
           tradeInOrder = quote.rows[0];
           if (String(tradeInOrder.email).toLowerCase() !== email) {
             await client.query("ROLLBACK");
-            return res
-              .status(403)
-              .json({
-                error:
-                  "Gebruik hetzelfde e-mailadres als bij uw inruilaanvraag.",
-              });
+            return res.status(403).json({
+              error: "Gebruik hetzelfde e-mailadres als bij uw inruilaanvraag.",
+            });
           }
           // Mobico-style trade-in: the estimated buyback value is shown separately.
           // The customer still pays the full new-device order total; inspection and payout happen later.
@@ -410,12 +401,10 @@ function registerWebshopCheckoutRoutes(
         );
       }
 
-      res
-        .status(201)
-        .json({
-          success: true,
-          order: { ...result.rows[0], checkout_token: checkoutToken },
-        });
+      res.status(201).json({
+        success: true,
+        order: { ...result.rows[0], checkout_token: checkoutToken },
+      });
     } catch (error) {
       console.error("Create webshop order error:", error);
       res

@@ -136,12 +136,10 @@ function registerDeviceRegisterRoutes(
           !Number.isFinite(salePrice) ||
           !Number.isFinite(repairValue)
         )
-          return res
-            .status(400)
-            .json({
-              error:
-                "Controleer het toesteltype, IMEI/identificatienummer, model en reparatiewaarde.",
-            });
+          return res.status(400).json({
+            error:
+              "Controleer het toesteltype, IMEI/identificatienummer, model en reparatiewaarde.",
+          });
         const allowed =
           type === "customer_repair"
             ? customerDeviceStatuses
@@ -177,11 +175,9 @@ function registerDeviceRegisterRoutes(
         res.status(201).json({ device: result.rows[0] });
       } catch (e) {
         if (e.code === "23505")
-          return res
-            .status(409)
-            .json({
-              error: "Dit identificatienummer bestaat al in het register.",
-            });
+          return res.status(409).json({
+            error: "Dit identificatienummer bestaat al in het register.",
+          });
         console.error("Device register create error:", e);
         res.status(500).json({ error: "Toestel kon niet worden opgeslagen." });
       }
@@ -214,12 +210,10 @@ function registerDeviceRegisterRoutes(
             ? deviceText(b.deviceCondition, 60)
             : "";
       if (status === "تم البيع")
-        return res
-          .status(409)
-          .json({
-            error:
-              "Gebruik de aparte verkoopregistratie om een toestel als verkocht te markeren.",
-          });
+        return res.status(409).json({
+          error:
+            "Gebruik de aparte verkoopregistratie om een toestel als verkocht te markeren.",
+        });
       if (
         !["imei", "serial", "barcode"].includes(identifierType) ||
         !identifierValue ||
@@ -245,12 +239,10 @@ function registerDeviceRegisterRoutes(
         const current = existing.rows[0];
         if (current.status === "تم البيع") {
           await client.query("ROLLBACK");
-          return res
-            .status(409)
-            .json({
-              error:
-                "Een verkocht toestel kan niet via de algemene bewerkfunctie worden aangepast.",
-            });
+          return res.status(409).json({
+            error:
+              "Een verkocht toestel kan niet via de algemene bewerkfunctie worden aangepast.",
+          });
         }
         const allowed =
           current.device_type === "commercial"
@@ -306,12 +298,9 @@ function registerDeviceRegisterRoutes(
           } catch {}
         }
         if (e.code === "23505")
-          return res
-            .status(409)
-            .json({
-              error:
-                "Dit IMEI-/identificatienummer bestaat al in het register.",
-            });
+          return res.status(409).json({
+            error: "Dit IMEI-/identificatienummer bestaat al in het register.",
+          });
         console.error("Device register update error:", e);
         return res
           .status(500)
@@ -362,12 +351,10 @@ function registerDeviceRegisterRoutes(
         const device = found.rows[0];
         if (device.device_type !== "commercial") {
           await client.query("ROLLBACK");
-          return res
-            .status(409)
-            .json({
-              error:
-                "Alleen eigen HOMS TECH-toestellen kunnen hier als verkocht worden geregistreerd.",
-            });
+          return res.status(409).json({
+            error:
+              "Alleen eigen HOMS TECH-toestellen kunnen hier als verkocht worden geregistreerd.",
+          });
         }
         if (device.status === "تم البيع") {
           await client.query("ROLLBACK");
@@ -377,12 +364,10 @@ function registerDeviceRegisterRoutes(
         }
         if (device.status !== "جاهز للبيع") {
           await client.query("ROLLBACK");
-          return res
-            .status(409)
-            .json({
-              error:
-                "Zet het toestel eerst op 'جاهز للبيع' nadat de inspectie en voorbereiding zijn afgerond.",
-            });
+          return res.status(409).json({
+            error:
+              "Zet het toestel eerst op 'جاهز للبيع' nadat de inspectie en voorbereiding zijn afgerond.",
+          });
         }
         let linkedOrder = null;
         if (webshopOrderId !== null) {
@@ -402,12 +387,10 @@ function registerDeviceRegisterRoutes(
             linkedOrder.status !== "Voltooid"
           ) {
             await client.query("ROLLBACK");
-            return res
-              .status(409)
-              .json({
-                error:
-                  "Koppel alleen een bestelling die betaald is en de status Voltooid heeft.",
-              });
+            return res.status(409).json({
+              error:
+                "Koppel alleen een bestelling die betaald is en de status Voltooid heeft.",
+            });
           }
           let orderItems = linkedOrder.items;
           if (typeof orderItems === "string") {
@@ -426,12 +409,10 @@ function registerDeviceRegisterRoutes(
             )
           ) {
             await client.query("ROLLBACK");
-            return res
-              .status(409)
-              .json({
-                error:
-                  "Het model van dit toestel komt niet voor in de gekoppelde webshopbestelling. Controleer het ordernummer en model.",
-              });
+            return res.status(409).json({
+              error:
+                "Het model van dit toestel komt niet voor in de gekoppelde webshopbestelling. Controleer het ordernummer en model.",
+            });
           }
         }
         let linkedInvoice = null;
@@ -442,21 +423,17 @@ function registerDeviceRegisterRoutes(
           );
           if (!invoiceResult.rows.length) {
             await client.query("ROLLBACK");
-            return res
-              .status(404)
-              .json({
-                error: "Factuur niet gevonden. Controleer het factuurnummer.",
-              });
+            return res.status(404).json({
+              error: "Factuur niet gevonden. Controleer het factuurnummer.",
+            });
           }
           linkedInvoice = invoiceResult.rows[0];
           if (Math.abs(Number(linkedInvoice.total) - salePrice) > 0.01) {
             await client.query("ROLLBACK");
-            return res
-              .status(409)
-              .json({
-                error:
-                  "Het factuurtotaal komt niet overeen met de verkoopprijs van dit toestel.",
-              });
+            return res.status(409).json({
+              error:
+                "Het factuurtotaal komt niet overeen met de verkoopprijs van dit toestel.",
+            });
           }
         }
         const existingSale = await client.query(
@@ -465,11 +442,9 @@ function registerDeviceRegisterRoutes(
         );
         if (existingSale.rows.length) {
           await client.query("ROLLBACK");
-          return res
-            .status(409)
-            .json({
-              error: "Voor dit toestel bestaat al een verkoopregistratie.",
-            });
+          return res.status(409).json({
+            error: "Voor dit toestel bestaat al een verkoopregistratie.",
+          });
         }
         const saleDescription =
           [
@@ -489,13 +464,11 @@ function registerDeviceRegisterRoutes(
           [id, salePrice, webshopOrderId, linkedInvoice?.id || null],
         );
         await client.query("COMMIT");
-        return res
-          .status(201)
-          .json({
-            success: true,
-            device: updated.rows[0],
-            sale: inserted.rows[0],
-          });
+        return res.status(201).json({
+          success: true,
+          device: updated.rows[0],
+          sale: inserted.rows[0],
+        });
       } catch (error) {
         try {
           await client.query("ROLLBACK");
@@ -564,16 +537,14 @@ function registerDeviceRegisterRoutes(
             .json({ error: "Controleer de handeling en bedragen." });
         }
         const parts = Array.isArray(b.parts)
-          ? b.parts
-              .slice(0, 100)
-              .map((p) => ({
-                name: deviceText(p?.name, 160),
-                quantity: Math.max(
-                  1,
-                  Math.min(999, Math.floor(Number(p?.quantity) || 1)),
-                ),
-                cost: deviceMoney(p?.cost),
-              }))
+          ? b.parts.slice(0, 100).map((p) => ({
+              name: deviceText(p?.name, 160),
+              quantity: Math.max(
+                1,
+                Math.min(999, Math.floor(Number(p?.quantity) || 1)),
+              ),
+              cost: deviceMoney(p?.cost),
+            }))
           : [];
         if (parts.some((p) => !p.name || !Number.isFinite(p.cost)))
           return res
@@ -595,12 +566,10 @@ function registerDeviceRegisterRoutes(
           const device = locked.rows[0];
           if (device.status === "تم البيع" && operationType !== "note") {
             await client.query("ROLLBACK");
-            return res
-              .status(409)
-              .json({
-                error:
-                  "Een verkocht toestel kan geen nieuwe inkoop-, reparatie- of refurbishhandeling krijgen.",
-              });
+            return res.status(409).json({
+              error:
+                "Een verkocht toestel kan geen nieuwe inkoop-, reparatie- of refurbishhandeling krijgen.",
+            });
           }
           const allowed =
             device.device_type === "customer_repair"
@@ -608,12 +577,10 @@ function registerDeviceRegisterRoutes(
               : commercialDeviceStatuses;
           if (status && (!allowed.has(status) || status === "تم البيع")) {
             await client.query("ROLLBACK");
-            return res
-              .status(400)
-              .json({
-                error:
-                  "Gebruik de aparte verkoopregistratie om een toestel als verkocht te markeren.",
-              });
+            return res.status(400).json({
+              error:
+                "Gebruik de aparte verkoopregistratie om een toestel als verkocht te markeren.",
+            });
           }
           const inserted = await client.query(
             `INSERT INTO device_register_operations(

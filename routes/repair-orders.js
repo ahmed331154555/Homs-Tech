@@ -32,12 +32,10 @@ function registerRepairOrderRoutes(
       });
     } catch (error) {
       console.error("Repair coverage check error:", error);
-      return res
-        .status(503)
-        .json({
-          error: "Werkgebied kon niet worden gecontroleerd.",
-          covered: false,
-        });
+      return res.status(503).json({
+        error: "Werkgebied kon niet worden gecontroleerd.",
+        covered: false,
+      });
     }
   });
 
@@ -140,12 +138,10 @@ function registerRepairOrderRoutes(
           !isLocationCovered(location, areas) &&
           !isPostcodeCovered(postcode, areas)
         ) {
-          return res
-            .status(403)
-            .json({
-              error:
-                "Reparatie aan huis is niet beschikbaar in uw postcodegebied. Kies Toestel opsturen om uw reparatie per post aan te melden.",
-            });
+          return res.status(403).json({
+            error:
+              "Reparatie aan huis is niet beschikbaar in uw postcodegebied. Kies Toestel opsturen om uw reparatie per post aan te melden.",
+          });
         }
         if (!/^\d{4}-\d{2}-\d{2}$/.test(clean.appointmentDate)) {
           return res

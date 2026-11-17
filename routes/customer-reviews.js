@@ -183,12 +183,10 @@ function registerCustomerReviewRoutes(
         !displayNameConsent ||
         !reviewConsent
       ) {
-        return res
-          .status(400)
-          .json({
-            error:
-              "Vul uw naam, beoordeling en toelichting in en geef expliciet toestemming voor publicatie.",
-          });
+        return res.status(400).json({
+          error:
+            "Vul uw naam, beoordeling en toelichting in en geef expliciet toestemming voor publicatie.",
+        });
       }
       await client.query("BEGIN");
       const found = await client.query(
@@ -229,11 +227,9 @@ function registerCustomerReviewRoutes(
       );
       if (!saved.rows.length) {
         await client.query("ROLLBACK");
-        return res
-          .status(409)
-          .json({
-            error: "Voor deze bestelling is al een beoordeling ontvangen.",
-          });
+        return res.status(409).json({
+          error: "Voor deze bestelling is al een beoordeling ontvangen.",
+        });
       }
       await client.query(
         "UPDATE customer_review_invites SET used_at=NOW() WHERE id=$1 AND used_at IS NULL",
@@ -346,11 +342,9 @@ function registerCustomerReviewRoutes(
           );
         }
         if (!result.rows.length)
-          return res
-            .status(404)
-            .json({
-              error: "Beoordeling niet gevonden of actie niet toegestaan.",
-            });
+          return res.status(404).json({
+            error: "Beoordeling niet gevonden of actie niet toegestaan.",
+          });
         return res.json({ success: true, review: result.rows[0] });
       } catch (error) {
         console.error("[REVIEWS] Admin update failed:", error);
@@ -377,12 +371,10 @@ function registerCustomerReviewRoutes(
         }
         const order = await loadEligibleOrder(pool, type, id);
         if (!order)
-          return res
-            .status(409)
-            .json({
-              error:
-                "Deze bestelling voldoet nog niet aan de voorwaarden voor een beoordeling.",
-            });
+          return res.status(409).json({
+            error:
+              "Deze bestelling voldoet nog niet aan de voorwaarden voor een beoordeling.",
+          });
         const token = crypto.randomBytes(32).toString("hex");
         const dueAt = new Date();
         const expiresAt = new Date(
@@ -406,12 +398,10 @@ function registerCustomerReviewRoutes(
           ],
         );
         if (!inserted.rows.length)
-          return res
-            .status(409)
-            .json({
-              error:
-                "Er bestaat al een beoordelingsuitnodiging voor deze bestelling.",
-            });
+          return res.status(409).json({
+            error:
+              "Er bestaat al een beoordelingsuitnodiging voor deze bestelling.",
+          });
         await sendDueInvites();
         const delivery = await pool.query(
           "SELECT sent_at,last_error FROM customer_review_invites WHERE id=$1",
@@ -429,11 +419,9 @@ function registerCustomerReviewRoutes(
         });
       } catch (error) {
         console.error("[REVIEWS] Invite creation failed:", error);
-        return res
-          .status(500)
-          .json({
-            error: "De beoordelingsuitnodiging kon niet worden aangemaakt.",
-          });
+        return res.status(500).json({
+          error: "De beoordelingsuitnodiging kon niet worden aangemaakt.",
+        });
       }
     },
   );
@@ -485,12 +473,10 @@ function registerCustomerReviewRoutes(
           );
         }
         if (!result.rows.length)
-          return res
-            .status(409)
-            .json({
-              error:
-                "Bestelling is niet voltooid of de betaling is niet bevestigd.",
-            });
+          return res.status(409).json({
+            error:
+              "Bestelling is niet voltooid of de betaling is niet bevestigd.",
+          });
         const order = await loadEligibleOrder(pool, type, id);
         const token = crypto.randomBytes(32).toString("hex");
         const dueAt = new Date();
@@ -514,11 +500,9 @@ function registerCustomerReviewRoutes(
           ],
         );
         if (!invite.rows.length)
-          return res
-            .status(409)
-            .json({
-              error: "Voor deze bestelling bestaat al een uitnodiging.",
-            });
+          return res.status(409).json({
+            error: "Voor deze bestelling bestaat al een uitnodiging.",
+          });
         await sendDueInvites();
         const delivery = await pool.query(
           "SELECT sent_at,last_error FROM customer_review_invites WHERE id=$1",

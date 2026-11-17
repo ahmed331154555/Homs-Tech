@@ -52,11 +52,13 @@ test("Shop listing payload contains only a preview image and compact variants", 
   );
 });
 
-
 test("Shop preview images are served lazily with validation and short caching", () => {
   const start = serverSource.indexOf('app.get("/api/shop/image/:id"');
   const end = serverSource.indexOf('app.get("/api/shop/product/:id"', start);
-  assert.ok(start >= 0 && end > start, "Shop image endpoint must exist before product details");
+  assert.ok(
+    start >= 0 && end > start,
+    "Shop image endpoint must exist before product details",
+  );
   const route = serverSource.slice(start, end);
   assert.match(route, /jsonb_array_elements/);
   assert.match(route, /item\.product->>'id'\s*=\s*\$1/);

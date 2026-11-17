@@ -556,12 +556,10 @@ function registerAdminOrderRoutes(
           if (parsed && typeof parsed === "object" && !Array.isArray(parsed))
             meta = parsed;
         } catch {
-          return res
-            .status(409)
-            .json({
-              error:
-                "De aanvraaggegevens zijn beschadigd en kunnen niet veilig worden bijgewerkt.",
-            });
+          return res.status(409).json({
+            error:
+              "De aanvraaggegevens zijn beschadigd en kunnen niet veilig worden bijgewerkt.",
+          });
         }
         // Accept both dedicated repair-quote form submissions and ordinary
         // repair bookings created from the repair page. The route is scoped to
@@ -572,12 +570,10 @@ function registerAdminOrderRoutes(
         const isRepairOrder =
           serviceCategory === "reparatie" || serviceCategory === "repair";
         if (!isRepairOrder) {
-          return res
-            .status(400)
-            .json({
-              error:
-                "Een offerte kan alleen voor een reparatieaanvraag worden verstuurd.",
-            });
+          return res.status(400).json({
+            error:
+              "Een offerte kan alleen voor een reparatieaanvraag worden verstuurd.",
+          });
         }
 
         const formattedPrice = price.toLocaleString("nl-NL", {
@@ -754,12 +750,10 @@ function registerAdminOrderRoutes(
         }
       } catch (error) {
         console.error("[REPAIR OFFER] Request failed:", error);
-        return res
-          .status(500)
-          .json({
-            error:
-              "De offerte kon niet worden verwerkt. Controleer de serverlogs.",
-          });
+        return res.status(500).json({
+          error:
+            "De offerte kon niet worden verwerkt. Controleer de serverlogs.",
+        });
       }
     },
   );

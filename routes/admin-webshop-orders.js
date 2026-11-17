@@ -320,22 +320,18 @@ function registerAdminWebshopOrderRoutes(
             existing.rows[0].payment_status === "Paid" &&
             paymentStatus !== "Paid"
           )
-            return res
-              .status(409)
-              .json({
-                error:
-                  "Een betaalde bestelling kan niet rechtstreeks worden teruggezet. Verwerk eerst een terugbetaling.",
-              });
+            return res.status(409).json({
+              error:
+                "Een betaalde bestelling kan niet rechtstreeks worden teruggezet. Verwerk eerst een terugbetaling.",
+            });
           if (
             existing.rows[0].inventory_deducted_at &&
             paymentStatus !== "Paid"
           )
-            return res
-              .status(409)
-              .json({
-                error:
-                  "De voorraad is al verwerkt; de betaalstatus kan niet worden teruggezet.",
-              });
+            return res.status(409).json({
+              error:
+                "De voorraad is al verwerkt; de betaalstatus kan niet worden teruggezet.",
+            });
           return res
             .status(409)
             .json({ error: "De betaalstatus kon niet worden opgeslagen." });
@@ -477,24 +473,20 @@ function registerAdminWebshopOrderRoutes(
           orderContainsPhone(order.items) &&
           !phoneInspectionIsComplete(order.checks)
         ) {
-          return res
-            .status(409)
-            .json({
-              error:
-                "Verzendgegevens kunnen pas worden opgeslagen nadat alle verplichte telefooncontrolepunten zijn afgerond.",
-            });
+          return res.status(409).json({
+            error:
+              "Verzendgegevens kunnen pas worden opgeslagen nadat alle verplichte telefooncontrolepunten zijn afgerond.",
+          });
         }
         if (
           order.has_valid_trade_in &&
           order.trade_in_status !== "Settled" &&
           (carrier || trackingNumber || trackingUrl)
         ) {
-          return res
-            .status(409)
-            .json({
-              error:
-                "Verzending is geblokkeerd totdat het inruiltoestel is gecontroleerd en het prijsverschil is afgehandeld.",
-            });
+          return res.status(409).json({
+            error:
+              "Verzending is geblokkeerd totdat het inruiltoestel is gecontroleerd en het prijsverschil is afgehandeld.",
+          });
         }
         const result = await pool.query(
           `UPDATE webshop_orders
@@ -512,33 +504,27 @@ function registerAdminWebshopOrderRoutes(
           );
           if (!existing.rows.length)
             return res.status(404).json({ error: "Bestelling niet gevonden." });
-          return res
-            .status(409)
-            .json({
-              error:
-                "Deze bestelling is al betaald of de voorraad is al verwerkt. De betaalstatus kan niet worden teruggezet.",
-            });
+          return res.status(409).json({
+            error:
+              "Deze bestelling is al betaald of de voorraad is al verwerkt. De betaalstatus kan niet worden teruggezet.",
+          });
         }
         if (paymentStatus === "Paid") {
           const inventoryResult = await deductPaidOrderInventory(id);
           if (inventoryResult?.error) {
-            return res
-              .status(409)
-              .json({
-                error:
-                  "De betaling staat op betaald, maar de voorraad kon niet worden bijgewerkt. Controleer de voorraadfout bij deze bestelling.",
-              });
+            return res.status(409).json({
+              error:
+                "De betaling staat op betaald, maar de voorraad kon niet worden bijgewerkt. Controleer de voorraadfout bij deze bestelling.",
+            });
           }
           await notifyPaidTradeInOrder(id);
         }
         res.json({ success: true, order: result.rows[0] });
       } catch (error) {
         console.error("Save webshop shipping details error:", error);
-        res
-          .status(500)
-          .json({
-            error: "Verzend- en betaalgegevens konden niet worden opgeslagen.",
-          });
+        res.status(500).json({
+          error: "Verzend- en betaalgegevens konden niet worden opgeslagen.",
+        });
       }
     },
   );
@@ -670,11 +656,9 @@ function registerAdminWebshopOrderRoutes(
         if (!Number.isInteger(id) || id < 1)
           return res.status(400).json({ error: "Ongeldig order-ID." });
         if (!note || note.length > 2000)
-          return res
-            .status(400)
-            .json({
-              error: "Een notitie moet tussen 1 en 2000 tekens bevatten.",
-            });
+          return res.status(400).json({
+            error: "Een notitie moet tussen 1 en 2000 tekens bevatten.",
+          });
         const result = await pool.query(
           `INSERT INTO webshop_order_notes (order_id, note, created_by)
          SELECT id, $2, 'HOMS TECH Admin'
@@ -713,12 +697,10 @@ function registerAdminWebshopOrderRoutes(
         !Number.isSafeInteger(amountCents) ||
         Math.abs(amount * 100 - amountCents) > 1e-7
       )
-        return res
-          .status(400)
-          .json({
-            error:
-              "Vul een geldig terug te betalen bedrag in hele eurocenten in.",
-          });
+        return res.status(400).json({
+          error:
+            "Vul een geldig terug te betalen bedrag in hele eurocenten in.",
+        });
       if (!["Mollie", "Manual"].includes(method))
         return res.status(400).json({ error: "Ongeldige terugbetaalmethode." });
       const client = await pool.connect();
@@ -737,23 +719,19 @@ function registerAdminWebshopOrderRoutes(
         order = found.rows[0];
         if (order.payment_status !== "Paid") {
           await client.query("ROLLBACK");
-          return res
-            .status(409)
-            .json({
-              error: "Alleen een betaalde bestelling kan worden terugbetaald.",
-            });
+          return res.status(409).json({
+            error: "Alleen een betaalde bestelling kan worden terugbetaald.",
+          });
         }
         if (
           method === "Mollie" &&
           (order.payment_method !== "Mollie" || !order.mollie_payment_id)
         ) {
           await client.query("ROLLBACK");
-          return res
-            .status(409)
-            .json({
-              error:
-                "Deze bestelling heeft geen Mollie-betaling om automatisch terug te betalen.",
-            });
+          return res.status(409).json({
+            error:
+              "Deze bestelling heeft geen Mollie-betaling om automatisch terug te betalen.",
+          });
         }
         const previous = await client.query(
           "SELECT COALESCE(SUM(amount),0) AS total FROM webshop_order_refunds WHERE order_id=$1 AND status IN ('Processing','Pending manual','Processed')",
@@ -765,14 +743,12 @@ function registerAdminWebshopOrderRoutes(
         );
         if (amount > remaining + 0.009) {
           await client.query("ROLLBACK");
-          return res
-            .status(409)
-            .json({
-              error:
-                "Het terug te betalen bedrag is hoger dan het resterende betaalde bedrag (€ " +
-                remaining.toFixed(2) +
-                ").",
-            });
+          return res.status(409).json({
+            error:
+              "Het terug te betalen bedrag is hoger dan het resterende betaalde bedrag (€ " +
+              remaining.toFixed(2) +
+              ").",
+          });
         }
         const inserted = await client.query(
           `INSERT INTO webshop_order_refunds(order_id,amount,method,status,reason)
@@ -800,13 +776,11 @@ function registerAdminWebshopOrderRoutes(
       }
 
       if (method === "Manual")
-        return res
-          .status(201)
-          .json({
-            success: true,
-            refund,
-            message: "Terugbetaling geregistreerd als handmatig uit te voeren.",
-          });
+        return res.status(201).json({
+          success: true,
+          refund,
+          message: "Terugbetaling geregistreerd als handmatig uit te voeren.",
+        });
       try {
         if (typeof mollieRequest !== "function")
           throw new Error("Mollie refund service is not configured.");
@@ -834,16 +808,14 @@ function registerAdminWebshopOrderRoutes(
           "UPDATE webshop_order_refunds SET status=$1,provider_refund_id=$2,processed_at=CASE WHEN $1='Processed' THEN NOW() ELSE NULL END WHERE id=$3 RETURNING id,amount,currency,method,status,reason,provider_refund_id,created_at,processed_at",
           [refundStatus, String(result.id || ""), refund.id],
         );
-        return res
-          .status(201)
-          .json({
-            success: true,
-            refund: saved.rows[0],
-            message:
-              refundStatus === "Processed"
-                ? "Mollie bevestigde de terugbetaling."
-                : "Mollie heeft de terugbetaling ontvangen en verwerkt deze verder.",
-          });
+        return res.status(201).json({
+          success: true,
+          refund: saved.rows[0],
+          message:
+            refundStatus === "Processed"
+              ? "Mollie bevestigde de terugbetaling."
+              : "Mollie heeft de terugbetaling ontvangen en verwerkt deze verder.",
+        });
       } catch (error) {
         // A provider/network error can happen after Mollie accepted the refund.
         // Keep the amount reserved as Processing until the provider status is checked;
@@ -858,12 +830,10 @@ function registerAdminWebshopOrderRoutes(
           "Mollie refund result requires reconciliation:",
           error.statusCode || error.message,
         );
-        return res
-          .status(502)
-          .json({
-            error:
-              "Mollie kon de terugbetaling niet bevestigen. De aanvraag blijft in controle; controleer eerst de status in Mollie voordat je een nieuwe terugbetaling uitvoert.",
-          });
+        return res.status(502).json({
+          error:
+            "Mollie kon de terugbetaling niet bevestigen. De aanvraag blijft in controle; controleer eerst de status in Mollie voordat je een nieuwe terugbetaling uitvoert.",
+        });
       }
     },
   );
@@ -896,20 +866,16 @@ function registerAdminWebshopOrderRoutes(
           [reference, refundId, orderId],
         );
         if (!result.rows.length)
-          return res
-            .status(409)
-            .json({
-              error:
-                "Deze handmatige terugbetaling bestaat niet meer of is al verwerkt.",
-            });
+          return res.status(409).json({
+            error:
+              "Deze handmatige terugbetaling bestaat niet meer of is al verwerkt.",
+          });
         return res.json({ success: true, refund: result.rows[0] });
       } catch (error) {
         console.error("Complete manual webshop refund error:", error);
-        return res
-          .status(500)
-          .json({
-            error: "Handmatige terugbetaling kon niet worden bevestigd.",
-          });
+        return res.status(500).json({
+          error: "Handmatige terugbetaling kon niet worden bevestigd.",
+        });
       }
     },
   );
@@ -959,20 +925,16 @@ function registerAdminWebshopOrderRoutes(
             orderContainsPhone(order.items) &&
             !phoneInspectionIsComplete(order.checks)
           ) {
-            return res
-              .status(409)
-              .json({
-                error:
-                  "Alle verplichte controlepunten moeten zijn afgerond voordat deze telefoonbestelling kan worden verzonden of voltooid.",
-              });
+            return res.status(409).json({
+              error:
+                "Alle verplichte controlepunten moeten zijn afgerond voordat deze telefoonbestelling kan worden verzonden of voltooid.",
+            });
           }
           if (order.has_valid_trade_in && order.trade_in_status !== "Settled") {
-            return res
-              .status(409)
-              .json({
-                error:
-                  "Deze bestelling kan pas worden verzonden of voltooid nadat de inruilcontrole en eventuele verrekening zijn afgerond.",
-              });
+            return res.status(409).json({
+              error:
+                "Deze bestelling kan pas worden verzonden of voltooid nadat de inruilcontrole en eventuele verrekening zijn afgerond.",
+            });
           }
         }
         const result = await pool.query(
@@ -1018,12 +980,10 @@ function registerAdminWebshopOrderRoutes(
             existing.rows[0].payment_status === "Paid" &&
             status === "Geannuleerd"
           ) {
-            return res
-              .status(409)
-              .json({
-                error:
-                  "Een betaalde bestelling kan pas worden geannuleerd nadat de volledige terugbetaling als verwerkt is bevestigd.",
-              });
+            return res.status(409).json({
+              error:
+                "Een betaalde bestelling kan pas worden geannuleerd nadat de volledige terugbetaling als verwerkt is bevestigd.",
+            });
           }
           return res
             .status(409)
@@ -1076,12 +1036,10 @@ function registerAdminWebshopOrderRoutes(
         const order = found.rows[0];
         if (order.payment_status !== "Paid") {
           await client.query("ROLLBACK");
-          return res
-            .status(409)
-            .json({
-              error:
-                "De inruilcontrole kan pas starten nadat de betaling van de nieuwe telefoon is bevestigd.",
-            });
+          return res.status(409).json({
+            error:
+              "De inruilcontrole kan pas starten nadat de betaling van de nieuwe telefoon is bevestigd.",
+          });
         }
         if (!order.trade_in_order_id) {
           await client.query("ROLLBACK");
@@ -1198,13 +1156,11 @@ function registerAdminWebshopOrderRoutes(
             "customer-email-missing":
               "Voeg eerst een geldig e-mailadres van de klant toe.",
           };
-          return res
-            .status(409)
-            .json({
-              error:
-                messages[result.reason] ||
-                "Het inruilvoorstel kan momenteel niet worden verzonden.",
-            });
+          return res.status(409).json({
+            error:
+              messages[result.reason] ||
+              "Het inruilvoorstel kan momenteel niet worden verzonden.",
+          });
         }
         return res.json({ success: true, customerEmail: result.email });
       } catch (error) {
@@ -1213,12 +1169,10 @@ function registerAdminWebshopOrderRoutes(
           id,
           error.message || error,
         );
-        return res
-          .status(502)
-          .json({
-            error:
-              "Het voorstel kon niet naar de klant worden verzonden. Controleer de e-mailinstellingen en probeer opnieuw.",
-          });
+        return res.status(502).json({
+          error:
+            "Het voorstel kon niet naar de klant worden verzonden. Controleer de e-mailinstellingen en probeer opnieuw.",
+        });
       }
     },
   );
@@ -1249,21 +1203,16 @@ function registerAdminWebshopOrderRoutes(
         snapshot = order.trade_in_snapshot || {};
       if (order.trade_in_status !== "AwaitingCustomerApproval") {
         await client.query("ROLLBACK");
-        return res
-          .status(409)
-          .json({
-            error:
-              "Uw keuze is al verwerkt of dit voorstel is niet meer actief.",
-          });
+        return res.status(409).json({
+          error: "Uw keuze is al verwerkt of dit voorstel is niet meer actief.",
+        });
       }
       if (order.payment_status !== "Paid") {
         await client.query("ROLLBACK");
-        return res
-          .status(409)
-          .json({
-            error:
-              "De bestelling is niet meer betaald. Neem contact met HOMS TECH op.",
-          });
+        return res.status(409).json({
+          error:
+            "De bestelling is niet meer betaald. Neem contact met HOMS TECH op.",
+        });
       }
       if (
         !Number.isSafeInteger(Number(order.trade_in_order_id)) ||
@@ -1289,12 +1238,10 @@ function registerAdminWebshopOrderRoutes(
         new Date(snapshot.customerApprovalExpiresAt).getTime() < Date.now()
       ) {
         await client.query("ROLLBACK");
-        return res
-          .status(410)
-          .json({
-            error:
-              "Deze bevestigingslink is verlopen. Neem contact met HOMS TECH op.",
-          });
+        return res.status(410).json({
+          error:
+            "Deze bevestigingslink is verlopen. Neem contact met HOMS TECH op.",
+        });
       }
       const nextStatus =
         decision === "accept" ? "CustomerAccepted" : "CustomerRejected";
@@ -1323,12 +1270,10 @@ function registerAdminWebshopOrderRoutes(
         await client.query("ROLLBACK");
       } catch {}
       console.error("Trade-in customer decision failed:", error);
-      return res
-        .status(500)
-        .json({
-          error:
-            "Uw keuze kon niet worden opgeslagen. Probeer het later opnieuw.",
-        });
+      return res.status(500).json({
+        error:
+          "Uw keuze kon niet worden opgeslagen. Probeer het later opnieuw.",
+      });
     } finally {
       client.release();
     }
@@ -1345,12 +1290,10 @@ function registerAdminWebshopOrderRoutes(
       if (!Number.isInteger(id) || id < 1)
         return res.status(400).json({ error: "Ongeldig order-ID." });
       if (note.length < 5)
-        return res
-          .status(400)
-          .json({
-            error:
-              "Vermeld wanneer en hoe de definitieve inruilwaarde is overgemaakt.",
-          });
+        return res.status(400).json({
+          error:
+            "Vermeld wanneer en hoe de definitieve inruilwaarde is overgemaakt.",
+        });
       const client = await pool.connect();
       try {
         await client.query("BEGIN");
@@ -1367,24 +1310,20 @@ function registerAdminWebshopOrderRoutes(
         const order = found.rows[0];
         if (order.payment_status !== "Paid") {
           await client.query("ROLLBACK");
-          return res
-            .status(409)
-            .json({
-              error:
-                "De webshop bestelling moet betaald zijn voordat de inruil kan worden afgerond.",
-            });
+          return res.status(409).json({
+            error:
+              "De webshop bestelling moet betaald zijn voordat de inruil kan worden afgerond.",
+          });
         }
         if (
           !order.trade_in_order_id ||
           order.trade_in_status !== "CustomerAccepted"
         ) {
           await client.query("ROLLBACK");
-          return res
-            .status(409)
-            .json({
-              error:
-                "De klant heeft nog niet akkoord gegeven op de definitieve inruilwaarde.",
-            });
+          return res.status(409).json({
+            error:
+              "De klant heeft nog niet akkoord gegeven op de definitieve inruilwaarde.",
+          });
         }
         const linkedBuyback = await client.query(
           "SELECT id FROM buyback_orders WHERE id=$1 FOR UPDATE",
@@ -1446,14 +1385,12 @@ function registerAdminWebshopOrderRoutes(
       try {
         const payoutEmail = await sendTradeInPayoutConfirmation(id);
         if (!payoutEmail.sent)
-          return res
-            .status(409)
-            .json({
-              error:
-                payoutEmail.reason === "email-not-configured"
-                  ? "E-mail is niet ingesteld. Controleer RESEND_API_KEY en RESEND_FROM_EMAIL."
-                  : "De bevestiging kon niet worden verzonden.",
-            });
+          return res.status(409).json({
+            error:
+              payoutEmail.reason === "email-not-configured"
+                ? "E-mail is niet ingesteld. Controleer RESEND_API_KEY en RESEND_FROM_EMAIL."
+                : "De bevestiging kon niet worden verzonden.",
+          });
         return res.json({ success: true, payoutEmail });
       } catch (error) {
         console.error(
@@ -1461,12 +1398,10 @@ function registerAdminWebshopOrderRoutes(
           id,
           error.message || error,
         );
-        return res
-          .status(502)
-          .json({
-            error:
-              "De bevestigingsmail kon niet worden verzonden. Controleer de e-mailinstellingen en probeer opnieuw.",
-          });
+        return res.status(502).json({
+          error:
+            "De bevestigingsmail kon niet worden verzonden. Controleer de e-mailinstellingen en probeer opnieuw.",
+        });
       }
     },
   );

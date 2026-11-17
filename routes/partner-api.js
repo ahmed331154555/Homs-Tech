@@ -560,12 +560,10 @@ function registerPartnerApiRoutes(
         wholesalePrice < 0 ||
         wholesalePrice > 100000
       ) {
-        return res
-          .status(400)
-          .json({
-            error:
-              "Elke prijsregel vereist een product-ID en geldige groothandelsprijs.",
-          });
+        return res.status(400).json({
+          error:
+            "Elke prijsregel vereist een product-ID en geldige groothandelsprijs.",
+        });
       }
       const key = productId + "::" + variantKey;
       if (seen.has(key))
@@ -598,23 +596,18 @@ function registerPartnerApiRoutes(
       );
       const phone = phoneIndex >= 0 ? phones[phoneIndex] : null;
       if (!phone)
-        return res
-          .status(400)
-          .json({
-            error:
-              "Een product in de prijslijst bestaat niet of is niet actief.",
-          });
+        return res.status(400).json({
+          error: "Een product in de prijslijst bestaat niet of is niet actief.",
+        });
       const validVariant = partnerVariantRows(phone).some(
         (row) =>
           [row.storage, row.color, row.condition].join("|") === item.variantKey,
       );
       if (!validVariant)
-        return res
-          .status(400)
-          .json({
-            error:
-              "Een productuitvoering in de prijslijst bestaat niet of is niet actief.",
-          });
+        return res.status(400).json({
+          error:
+            "Een productuitvoering in de prijslijst bestaat niet of is niet actief.",
+        });
     }
     const client = await pool.connect();
     try {
@@ -759,11 +752,9 @@ function registerPartnerApiRoutes(
   app.post("/api/partner/v1/orders", authenticatePartner, async (req, res) => {
     const items = req.body?.items;
     if (!Array.isArray(items) || !items.length || items.length > 50) {
-      return res
-        .status(400)
-        .json({
-          error: "Een bestelling moet 1 tot 50 productregels bevatten.",
-        });
+      return res.status(400).json({
+        error: "Een bestelling moet 1 tot 50 productregels bevatten.",
+      });
     }
     const customer =
       req.body?.customer && typeof req.body.customer === "object"
@@ -835,11 +826,9 @@ function registerPartnerApiRoutes(
         );
         const phone = phoneIndex >= 0 ? phones[phoneIndex] : null;
         if (!phone)
-          return res
-            .status(409)
-            .json({
-              error: "Een geselecteerd product is niet meer beschikbaar.",
-            });
+          return res.status(409).json({
+            error: "Een geselecteerd product is niet meer beschikbaar.",
+          });
         const catalogVariant = partnerVariantRows(phone).find(
           (row) =>
             [row.storage, row.color, row.condition].join("|") === variantKey,
@@ -849,30 +838,24 @@ function registerPartnerApiRoutes(
           !catalogVariant ||
           (variant && (variant.active === false || variant.available === false))
         ) {
-          return res
-            .status(409)
-            .json({
-              error:
-                "Een geselecteerde telefoonuitvoering is niet meer beschikbaar.",
-            });
+          return res.status(409).json({
+            error:
+              "Een geselecteerde telefoonuitvoering is niet meer beschikbaar.",
+          });
         }
         const key = productId + "::" + variantKey;
         if (!priceMap.has(key))
-          return res
-            .status(403)
-            .json({
-              error:
-                "Voor een product ontbreekt de afgesproken groothandelsprijs.",
-            });
+          return res.status(403).json({
+            error:
+              "Voor een product ontbreekt de afgesproken groothandelsprijs.",
+          });
         const stock = parseStock(variant ? variant.stock : phone.stock);
         const requestedTotal = (requestedQuantities.get(key) || 0) + quantity;
         if (stock != null && stock < requestedTotal)
-          return res
-            .status(409)
-            .json({
-              error:
-                "Onvoldoende voorraad voor " + safeText(phone.name, 120) + ".",
-            });
+          return res.status(409).json({
+            error:
+              "Onvoldoende voorraad voor " + safeText(phone.name, 120) + ".",
+          });
         requestedQuantities.set(key, requestedTotal);
         const unitPrice = priceMap.get(key);
         orderItems.push({

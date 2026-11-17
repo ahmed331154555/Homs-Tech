@@ -168,12 +168,10 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: false, limit: "10kb" }));
 app.use((err, req, res, next) => {
   if (err?.type === "entity.too.large" || err?.status === 413) {
-    return res
-      .status(413)
-      .json({
-        error:
-          "Het geüploade bestand is te groot. Verklein de foto's en probeer opnieuw.",
-      });
+    return res.status(413).json({
+      error:
+        "Het geüploade bestand is te groot. Verklein de foto's en probeer opnieuw.",
+    });
   }
   next(err);
 });
@@ -553,22 +551,18 @@ app.put("/api/admin/site-data/:section", async (req, res) => {
           : [];
         const body = req.body;
         if (!allowedFields.length) {
-          return res
-            .status(405)
-            .json({
-              error: "Deze pagina gebruikt een gespecialiseerde opslagroute.",
-            });
+          return res.status(405).json({
+            error: "Deze pagina gebruikt een gespecialiseerde opslagroute.",
+          });
         }
         if (!body || typeof body !== "object" || Array.isArray(body)) {
           return res.status(400).json({ error: "Ongeldige beheergegevens." });
         }
         const keys = Object.keys(body);
         if (!keys.length || keys.some((key) => !allowedFields.includes(key))) {
-          return res
-            .status(400)
-            .json({
-              error: "De opslag bevat velden die niet bij deze pagina horen.",
-            });
+          return res.status(400).json({
+            error: "De opslag bevat velden die niet bij deze pagina horen.",
+          });
         }
 
         const result = await queryWithConnectionRetry(
@@ -670,7 +664,7 @@ app.get("/api/shop/image/:id", async (req, res) => {
          AND item.product->>'id' = $1
        LIMIT 1`,
       [productId],
-      4
+      4,
     );
 
     const product = result.rows[0]?.product;
@@ -684,7 +678,7 @@ app.get("/api/shop/image/:id", async (req, res) => {
     const match =
       typeof imageValue === "string"
         ? imageValue.match(
-            /^data:image\/(jpeg|png|webp|gif);base64,([a-z0-9+/]+={0,2})$/i
+            /^data:image\/(jpeg|png|webp|gif);base64,([a-z0-9+/]+={0,2})$/i,
           )
         : null;
     if (!match) return res.status(404).end();
@@ -1141,12 +1135,10 @@ app.post("/api/login", async (req, res) => {
   try {
     const loginIp = String(req.ip || req.socket.remoteAddress || "").trim();
     if (!checkAuthLoginRateLimit("admin", loginIp)) {
-      return res
-        .status(429)
-        .json({
-          error:
-            "Te veel inlogpogingen. Wacht 15 minuten en probeer het opnieuw.",
-        });
+      return res.status(429).json({
+        error:
+          "Te veel inlogpogingen. Wacht 15 minuten en probeer het opnieuw.",
+      });
     }
     const username = String(req.body?.username || "").trim();
     const password = String(req.body?.password || "");
@@ -1511,12 +1503,10 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
           .json({ error: "Website-instellingen niet gevonden." });
       const phoneCount = Number(current.rows[0].phone_count || 0);
       if (phoneIndex < 0 || phoneIndex > phoneCount) {
-        return res
-          .status(409)
-          .json({
-            error:
-              "De productlijst is gewijzigd. Vernieuw de pagina en probeer opnieuw.",
-          });
+        return res.status(409).json({
+          error:
+            "De productlijst is gewijzigd. Vernieuw de pagina en probeer opnieuw.",
+        });
       }
 
       let saved;
@@ -1541,12 +1531,10 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
           String(expected.brand || "").trim() ===
             String(existingPhone?.brand || "").trim();
         if (!sameId && !sameLegacyIdentity) {
-          return res
-            .status(409)
-            .json({
-              error:
-                "Dit product is ondertussen gewijzigd of verplaatst. Vernieuw de pagina om overschrijven te voorkomen.",
-            });
+          return res.status(409).json({
+            error:
+              "Dit product is ondertussen gewijzigd of verplaatst. Vernieuw de pagina om overschrijven te voorkomen.",
+          });
         }
         // Load and preserve photos for this product only; unrelated product
         // images never enter the Node.js heap during a single-product save.
@@ -1739,11 +1727,9 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
       for (const key of keys) {
         if (key === "phones") continue;
         if (JSON.stringify(existing[key]) !== JSON.stringify(incoming[key])) {
-          return res
-            .status(403)
-            .json({
-              error: "Deze admin mag alleen Telefoons & prijzen wijzigen.",
-            });
+          return res.status(403).json({
+            error: "Deze admin mag alleen Telefoons & prijzen wijzigen.",
+          });
         }
       }
     }

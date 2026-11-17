@@ -180,11 +180,9 @@ function registerBuybackRoutes(
         requiresBankDetails &&
         (!accountHolderName || !/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(iban))
       ) {
-        return res
-          .status(400)
-          .json({
-            error: "Vul een geldige IBAN en de naam van de rekeninghouder in.",
-          });
+        return res.status(400).json({
+          error: "Vul een geldige IBAN en de naam van de rekeninghouder in.",
+        });
       }
 
       if (!name || !email || !String(b.device || "").trim()) {
@@ -334,13 +332,11 @@ function registerBuybackRoutes(
         );
       }
 
-      res
-        .status(201)
-        .json({
-          success: true,
-          order,
-          ...(isTradeIn ? { tradeInToken, tradeInCredit: offeredPrice } : {}),
-        });
+      res.status(201).json({
+        success: true,
+        order,
+        ...(isTradeIn ? { tradeInToken, tradeInCredit: offeredPrice } : {}),
+      });
     } catch (error) {
       console.error("BUYBACK ORDER ERROR:", error);
       res

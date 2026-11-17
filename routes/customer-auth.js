@@ -52,12 +52,10 @@ function registerCustomerAuthRoutes(
       );
       if (existing.rows.length > 0) {
         if (!existing.rows[0].email_verified)
-          return res
-            .status(409)
-            .json({
-              error:
-                "Voor dit e-mailadres is al een account aangemaakt maar nog niet bevestigd. Vraag een nieuwe code aan.",
-            });
+          return res.status(409).json({
+            error:
+              "Voor dit e-mailadres is al een account aangemaakt maar nog niet bevestigd. Vraag een nieuwe code aan.",
+          });
         return res
           .status(409)
           .json({ error: "Er bestaat al een account met dit e-mailadres." });
@@ -103,23 +101,18 @@ function registerCustomerAuthRoutes(
           "DELETE FROM customers WHERE id = $1 AND email_verified = FALSE",
           [customer.id],
         );
-        return res
-          .status(503)
-          .json({
-            error:
-              "De bevestigingsmail kon niet worden verstuurd. Controleer de e-mailinstellingen en probeer het opnieuw.",
-          });
+        return res.status(503).json({
+          error:
+            "De bevestigingsmail kon niet worden verstuurd. Controleer de e-mailinstellingen en probeer het opnieuw.",
+        });
       }
 
-      res
-        .status(201)
-        .json({
-          success: true,
-          verificationRequired: true,
-          email: customer.email,
-          message:
-            "We hebben een bevestigingscode naar je e-mailadres gestuurd.",
-        });
+      res.status(201).json({
+        success: true,
+        verificationRequired: true,
+        email: customer.email,
+        message: "We hebben een bevestigingscode naar je e-mailadres gestuurd.",
+      });
     } catch (error) {
       if (error.code === "23505")
         return res
@@ -160,11 +153,9 @@ function registerCustomerAuthRoutes(
             [email],
           )
           .catch(() => {});
-        return res
-          .status(400)
-          .json({
-            error: "De code is onjuist of verlopen. Vraag een nieuwe code aan.",
-          });
+        return res.status(400).json({
+          error: "De code is onjuist of verlopen. Vraag een nieuwe code aan.",
+        });
       }
       const customer = result.rows[0];
       sendWelcomeEmail(customer).catch((error) =>
@@ -188,11 +179,9 @@ function registerCustomerAuthRoutes(
       });
     } catch (error) {
       console.error("Customer email verification error:", error);
-      res
-        .status(500)
-        .json({
-          error: "E-mailadres bevestigen is mislukt. Probeer het opnieuw.",
-        });
+      res.status(500).json({
+        error: "E-mailadres bevestigen is mislukt. Probeer het opnieuw.",
+      });
     }
   });
 
@@ -221,12 +210,10 @@ function registerCustomerAuthRoutes(
         customer.email_verification_expires_at &&
         new Date(customer.email_verification_expires_at).getTime() > Date.now()
       ) {
-        return res
-          .status(429)
-          .json({
-            error:
-              "De huidige code is nog geldig. Controleer je e-mail of vraag een nieuwe code aan zodra deze is verlopen.",
-          });
+        return res.status(429).json({
+          error:
+            "De huidige code is nog geldig. Controleer je e-mail of vraag een nieuwe code aan zodra deze is verlopen.",
+        });
       }
       const code = String(crypto.randomInt(100000, 1000000));
       const codeHash = crypto.createHash("sha256").update(code).digest("hex");
@@ -238,12 +225,10 @@ function registerCustomerAuthRoutes(
         await sendCustomerVerificationEmail(customer, code);
       } catch (emailError) {
         console.error("Resend verification email failed:", emailError.message);
-        return res
-          .status(503)
-          .json({
-            error:
-              "De nieuwe code kon niet worden verstuurd. Probeer het later opnieuw.",
-          });
+        return res.status(503).json({
+          error:
+            "De nieuwe code kon niet worden verstuurd. Probeer het later opnieuw.",
+        });
       }
       res.json({
         success: true,
@@ -392,11 +377,9 @@ function registerCustomerAuthRoutes(
       });
     } catch (error) {
       console.error("Reset password error:", error.message);
-      res
-        .status(500)
-        .json({
-          error: "Wachtwoord wijzigen is niet gelukt. Probeer het opnieuw.",
-        });
+      res.status(500).json({
+        error: "Wachtwoord wijzigen is niet gelukt. Probeer het opnieuw.",
+      });
     }
   });
 
@@ -405,12 +388,10 @@ function registerCustomerAuthRoutes(
     try {
       const loginIp = String(req.ip || req.socket.remoteAddress || "").trim();
       if (!checkAuthLoginRateLimit("customer", loginIp)) {
-        return res
-          .status(429)
-          .json({
-            error:
-              "Te veel inlogpogingen. Wacht 15 minuten en probeer het opnieuw.",
-          });
+        return res.status(429).json({
+          error:
+            "Te veel inlogpogingen. Wacht 15 minuten en probeer het opnieuw.",
+        });
       }
       const { email, password } = req.body || {};
 
@@ -440,12 +421,10 @@ function registerCustomerAuthRoutes(
       const customer = result.rows[0];
 
       if (!customer.email_verified) {
-        return res
-          .status(403)
-          .json({
-            error:
-              "Bevestig eerst je e-mailadres met de code die we hebben gestuurd.",
-          });
+        return res.status(403).json({
+          error:
+            "Bevestig eerst je e-mailadres met de code die we hebben gestuurd.",
+        });
       }
 
       const valid = await verifyPassword(

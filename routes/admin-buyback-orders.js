@@ -257,11 +257,9 @@ function registerAdminBuybackOrderRoutes(
           .status(400)
           .json({ error: "Vul een geldige definitieve inkoopwaarde in." });
       if (reason.length < 5)
-        return res
-          .status(400)
-          .json({
-            error: "Geef een korte inspectienotitie van minimaal 5 tekens.",
-          });
+        return res.status(400).json({
+          error: "Geef een korte inspectienotitie van minimaal 5 tekens.",
+        });
       try {
         await ensureBuybackOrdersTable(pool);
         const updated = await pool.query(
@@ -357,12 +355,10 @@ function registerAdminBuybackOrderRoutes(
         new Date(order.sale_approval_expires_at).getTime() < Date.now()
       ) {
         await client.query("ROLLBACK");
-        return res
-          .status(410)
-          .json({
-            error:
-              "Deze bevestigingslink is verlopen. Neem contact op met HOMS TECH.",
-          });
+        return res.status(410).json({
+          error:
+            "Deze bevestigingslink is verlopen. Neem contact op met HOMS TECH.",
+        });
       }
       const nextStatus =
         decision === "accept" ? "Klant akkoord" : "Klant niet akkoord";
@@ -377,12 +373,10 @@ function registerAdminBuybackOrderRoutes(
         await client.query("ROLLBACK");
       } catch {}
       console.error("Buyback customer decision failed:", error);
-      return res
-        .status(500)
-        .json({
-          error:
-            "Uw keuze kon niet worden opgeslagen. Probeer het later opnieuw.",
-        });
+      return res.status(500).json({
+        error:
+          "Uw keuze kon niet worden opgeslagen. Probeer het later opnieuw.",
+      });
     } finally {
       client.release();
     }
@@ -399,12 +393,10 @@ function registerAdminBuybackOrderRoutes(
       if (!Number.isSafeInteger(id) || id < 1)
         return res.status(400).json({ error: "Ongeldig aanvraagnummer." });
       if (note.length < 5)
-        return res
-          .status(400)
-          .json({
-            error:
-              "Vermeld wanneer en hoe het bedrag aan de klant is overgemaakt.",
-          });
+        return res.status(400).json({
+          error:
+            "Vermeld wanneer en hoe het bedrag aan de klant is overgemaakt.",
+        });
       const client = await pool.connect();
       let inventoryDevice = null;
       try {
@@ -420,12 +412,10 @@ function registerAdminBuybackOrderRoutes(
           found.rows[0].status !== "Klant akkoord"
         ) {
           await client.query("ROLLBACK");
-          return res
-            .status(409)
-            .json({
-              error:
-                "De klant heeft nog niet akkoord gegeven of de aanvraag is al afgehandeld.",
-            });
+          return res.status(409).json({
+            error:
+              "De klant heeft nog niet akkoord gegeven of de aanvraag is al afgehandeld.",
+          });
         }
         const order = found.rows[0];
         if (
@@ -433,12 +423,10 @@ function registerAdminBuybackOrderRoutes(
           order.sale_inspected_value === undefined
         ) {
           await client.query("ROLLBACK");
-          return res
-            .status(409)
-            .json({
-              error:
-                "De definitieve inspectiewaarde ontbreekt. Sla eerst de inspectie op.",
-            });
+          return res.status(409).json({
+            error:
+              "De definitieve inspectiewaarde ontbreekt. Sla eerst de inspectie op.",
+          });
         }
         const registered = await client.query(
           `INSERT INTO device_register (
@@ -517,12 +505,10 @@ function registerAdminBuybackOrderRoutes(
           await client.query("ROLLBACK");
         } catch {}
         console.error("Buyback settlement error:", error);
-        return res
-          .status(500)
-          .json({
-            error:
-              "De uitbetaling en voorraadregistratie konden niet worden afgerond.",
-          });
+        return res.status(500).json({
+          error:
+            "De uitbetaling en voorraadregistratie konden niet worden afgerond.",
+        });
       } finally {
         client.release();
       }
@@ -579,11 +565,9 @@ function registerAdminBuybackOrderRoutes(
         encoded.length > 11_184_812 ||
         !/^[A-Za-z0-9+/]+={0,2}$/.test(encoded)
       ) {
-        return res
-          .status(400)
-          .json({
-            error: "Het PDF-bestand ontbreekt of is te groot (maximaal 8 MB).",
-          });
+        return res.status(400).json({
+          error: "Het PDF-bestand ontbreekt of is te groot (maximaal 8 MB).",
+        });
       }
       const pdf = Buffer.from(encoded, "base64");
       if (
@@ -591,12 +575,10 @@ function registerAdminBuybackOrderRoutes(
         pdf.length > 8 * 1024 * 1024 ||
         pdf.subarray(0, 5).toString("ascii") !== "%PDF-"
       ) {
-        return res
-          .status(400)
-          .json({
-            error:
-              "Het bestand is geen geldig PDF-verzendlabel of is groter dan 8 MB.",
-          });
+        return res.status(400).json({
+          error:
+            "Het bestand is geen geldig PDF-verzendlabel of is groter dan 8 MB.",
+        });
       }
       try {
         await ensureBuybackOrdersTable(pool);
@@ -611,11 +593,9 @@ function registerAdminBuybackOrderRoutes(
         return res.json({ success: true, shipping: updated.rows[0] });
       } catch (error) {
         console.error("PostNL shipping label upload failed:", error);
-        return res
-          .status(500)
-          .json({
-            error: "Het PostNL-verzendlabel kon niet worden opgeslagen.",
-          });
+        return res.status(500).json({
+          error: "Het PostNL-verzendlabel kon niet worden opgeslagen.",
+        });
       }
     },
   );
@@ -737,12 +717,10 @@ function registerAdminBuybackOrderRoutes(
         const allowed = ["Nieuw", "In behandeling"];
         const status = String(req.body?.status || "").trim();
         if (!allowed.includes(status))
-          return res
-            .status(400)
-            .json({
-              error:
-                "Deze status wordt automatisch bijgewerkt via de afhandelingsstappen.",
-            });
+          return res.status(400).json({
+            error:
+              "Deze status wordt automatisch bijgewerkt via de afhandelingsstappen.",
+          });
         const result = await pool.query(
           "UPDATE buyback_orders SET status=$1 WHERE id=$2 AND trade_in=FALSE AND status NOT IN ('Klant akkoord','Klant niet akkoord','Voltooid') RETURNING id,status",
           [status, req.params.id],

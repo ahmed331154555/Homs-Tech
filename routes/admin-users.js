@@ -79,11 +79,9 @@ function registerAdminUserRoutes(
             .trim()
             .toLowerCase()
         )
-          return res
-            .status(400)
-            .json({
-              error: "Deze gebruikersnaam is gereserveerd voor de hoofdadmin.",
-            });
+          return res.status(400).json({
+            error: "Deze gebruikersnaam is gereserveerd voor de hoofdadmin.",
+          });
         if (password.length < 8)
           return res
             .status(400)
@@ -133,11 +131,9 @@ function registerAdminUserRoutes(
         if (!Number.isInteger(id) || id < 1)
           return res.status(400).json({ error: "Ongeldig admin-ID." });
         if (req.admin?.id != null && Number(req.admin.id) === id && !active)
-          return res
-            .status(400)
-            .json({
-              error: "U kunt uw eigen admin-account niet uitschakelen.",
-            });
+          return res.status(400).json({
+            error: "U kunt uw eigen admin-account niet uitschakelen.",
+          });
         if (!username)
           return res
             .status(400)
@@ -148,12 +144,10 @@ function registerAdminUserRoutes(
             .trim()
             .toLowerCase()
         )
-          return res
-            .status(400)
-            .json({
-              error:
-                "De hoofdadmin wordt beheerd via Render Environment Variables.",
-            });
+          return res.status(400).json({
+            error:
+              "De hoofdadmin wordt beheerd via Render Environment Variables.",
+          });
         const dup = await pool.query(
           "SELECT id FROM admin_users WHERE LOWER(username)=LOWER($1) AND id<>$2",
           [username, id],
@@ -165,11 +159,9 @@ function registerAdminUserRoutes(
         let q;
         if (password) {
           if (password.length < 8)
-            return res
-              .status(400)
-              .json({
-                error: "Het wachtwoord moet minimaal 8 tekens bevatten.",
-              });
+            return res.status(400).json({
+              error: "Het wachtwoord moet minimaal 8 tekens bevatten.",
+            });
           const hash = await hashPassword(password);
           q = await pool.query(
             `UPDATE admin_users SET username=$1,password_hash=$2,permissions=$3::jsonb,active=$4
