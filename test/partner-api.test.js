@@ -170,9 +170,10 @@ test("admin price catalog joins active phone variants with the partner's saved w
   });
   const res = await h.invoke("GET", "/api/admin/partners/:id/prices", { params: { id: "7" } });
   assert.equal(res.statusCode, 200);
-  assert.equal(res.body.items.length, 2); // Include active variants even when stock is currently zero.
+  assert.equal(res.body.items.length, 3); // Include active variants, zero-stock variants and inactive catalog rows for price preservation.
   assert.equal(res.body.items[0].wholesalePrice, 25);
   assert.equal(res.body.items[0].variantKey, "128GB|Black|A");
+  assert.equal(res.body.items[2].active, false);
 });
 
 test("admin price replacement validates product variants and saves only the submitted wholesale list", async () => {
