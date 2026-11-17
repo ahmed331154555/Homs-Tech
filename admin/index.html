@@ -6,6 +6,7 @@
 <title>HOMS TECH - Admin</title>
 
   <link rel="stylesheet" href="../assets/homs-admin.css?v=20261115-compact-register1">
+  <link rel="stylesheet" href="../assets/partner-admin.css?v=20261117-partners6">
 </head>
 
 <body>
@@ -31,6 +32,7 @@
     <button class="nav-btn" data-page="phones" data-permission="phones.view" onclick="showPage('phones')">📱 Telefoons & prijzen</button>
     <button class="nav-btn" data-page="shop" data-permission="site.save" onclick="showPage('shop')">🛍️ Shop producten</button>
     <button class="nav-btn" data-page="inventory" data-permission="site.save" onclick="showPage('inventory')">📦 Voorraad & magazijn</button>
+    <button class="nav-btn" data-page="partners" data-permission="site.save" onclick="showPage('partners')">🤝 Partners</button>
     <button class="nav-btn" data-page="device-register" data-permission="device_register.view" onclick="showPage('device-register')">📱 Toestelregister</button>
     <button class="nav-btn" data-page="buyback" data-permission="site.save" onclick="showPage('buyback')">📥 Uw toestel verkopen</button>
     <button class="nav-btn" data-page="why" data-permission="why.view" onclick="showPage('why')">⭐ Waarom HOMS TECH</button>
@@ -483,6 +485,33 @@
     <div id="inventoryMovements" class="ht-inventory-history-wrap" aria-live="polite"><div class="ht-inventory-loading">Geschiedenis laden…</div></div>
   </div>
 </section>
+<section class="section admin-page ht-partners-page" id="page-partners" data-permission="site.save">
+  <div class="section-head"><div><h2>🤝 Schakelpartners</h2><p>Beheer verkooppartners, stel per telefoonuitvoering een groothandelsprijs in en behandel partnerbestellingen.</p></div><button class="btn btn-light" type="button" onclick="loadPartnersAdmin()">↻ Vernieuwen</button></div>
+  <div class="ht-partner-notice"><strong>Prijsafspraak</strong><span>HOMS TECH bepaalt de groothandelsprijs. De partner kiest zelf de verkoopprijs en houdt het verschil. Partnerbestellingen zijn aanvragen: voorraad wordt bij ontvangst niet automatisch afgeboekt.</span></div>
+  <div class="ht-partner-grid">
+    <div class="card ht-partner-card">
+      <div class="ht-partner-card-head"><div><span class="ht-partner-eyebrow">PARTNERBEHEER</span><h3>Nieuwe partner</h3></div></div>
+      <form id="partnerCreateForm" class="ht-partner-form">
+        <label>Bedrijfsnaam<input id="partnerNewName" maxlength="120" required placeholder="Naam van de winkel"></label>
+        <label>E-mailadres<input id="partnerNewEmail" type="email" maxlength="180" placeholder="partner@winkel.nl"></label>
+        <button class="btn btn-green" type="submit">＋ Partner aanmaken</button>
+      </form>
+      <div id="partnerCreateStatus" class="status" role="status"></div>
+      <div id="partnerKeyReveal" class="ht-partner-key" hidden><strong>Nieuwe API-sleutel — alleen nu zichtbaar</strong><p>Kopieer deze sleutel en bewaar hem veilig. Later kan HOMS TECH hem niet opnieuw tonen.</p><code id="partnerNewApiKey"></code><button class="btn btn-light" type="button" onclick="copyPartnerApiKey()">Kopieer API-sleutel</button></div>
+      <div class="ht-partner-list-head"><h3>Bestaande partners</h3><span id="partnerCount">—</span></div>
+      <div id="partnerList" class="ht-partner-list" aria-live="polite">Partners laden…</div>
+    </div>
+    <div class="card ht-partner-card">
+      <div class="ht-partner-card-head"><div><span class="ht-partner-eyebrow">GROOTHANDEL</span><h3 id="partnerPriceTitle">Selecteer een partner</h3><p>Vink alleen uitvoeringen aan die deze partner mag inkopen.</p></div></div>
+      <div id="partnerPricePanel" class="ht-partner-empty">Selecteer links een partner om de productprijzen te beheren.</div>
+    </div>
+  </div>
+  <div class="card ht-partner-orders-card">
+    <div class="ht-partner-card-head"><div><span class="ht-partner-eyebrow">ORDERBEHEER</span><h3>Partnerbestellingen</h3><p>Controleer klant- en verzendgegevens, bevestig of wijs aanvragen af en voeg interne notities toe.</p></div><button class="btn btn-light" type="button" onclick="loadPartnerOrders()">↻ Bestellingen</button></div>
+    <div id="partnerOrdersStatus" class="status info" role="status"></div>
+    <div id="partnerOrdersList" class="ht-partner-orders-list">Bestellingen laden…</div>
+  </div>
+</section>
 <section class="section admin-page" id="page-order-settings" data-permission="site.save">
     <div class="section-head">
       <div>
@@ -648,7 +677,8 @@
 </div>
 </div>
 
-<script src="../assets/homs-admin.js?v=20261115-repair-form-status3"></script>
+<script src="../assets/homs-admin.js?v=20261117-partners1"></script>
+<script src="../assets/partner-admin.js?v=20261117-partners6"></script>
 
 <script>
 /* Remove the retired HOMS TECH admin PWA from browsers that previously installed it. */

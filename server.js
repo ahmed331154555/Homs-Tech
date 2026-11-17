@@ -31,6 +31,7 @@ const { registerBenefitsStripRoutes } = require("./routes/benefits-strip");
 const { registerBuybackRoutes } = require("./routes/buyback");
 const { registerLiveChatRoutes } = require("./routes/live-chat");
 const { registerWebshopCheckoutRoutes } = require("./routes/webshop-checkout");
+const { registerPartnerApiRoutes } = require("./routes/partner-api");
 const { registerRepairQuoteRoutes } = require("./routes/repair-quote-requests");
 const { registerRepairOrderRoutes } = require("./routes/repair-orders");
 const { registerCustomerReviewRoutes } = require("./routes/customer-reviews");
@@ -633,6 +634,8 @@ registerRepairOrderRoutes(app, {
 // Inventory deduction is handled by the isolated transaction module.
 
 // ---------------- WEBSHOP ORDERS ----------------
+
+registerPartnerApiRoutes(app, { pool, cryptoImpl: crypto, requirePermission });
 
 registerWebshopCheckoutRoutes(app, {
   pool,

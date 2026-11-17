@@ -1,0 +1,25 @@
+name: Partner API tests
+
+on:
+  push:
+    branches:
+      - feature/partner-store-api
+  pull_request:
+    branches:
+      - main
+      - feature/repair-booking-v2-clean
+
+jobs:
+  partner-api-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run test suite
+        run: npm test
