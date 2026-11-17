@@ -240,7 +240,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
             retailPrice: Number.isFinite(row.retailPrice) ? Math.round(row.retailPrice * 100) / 100 : null,
             discountPercent,
             wholesalePrice: isSaved ? savedPrice : calculatedPrice,
-            assigned: isSaved || (calculatedPrice !== null && phone.active !== false && phone.available !== false)
+            assigned: isSaved || (calculatedPrice !== null && phone.active !== false && phone.available !== false && String(phone.stockStatus || "").toLowerCase() !== "sold" && (!variant || (variant.active !== false && variant.available !== false)))
           });
         }
       }
