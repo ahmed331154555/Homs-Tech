@@ -173,7 +173,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
             wholesalePrice: priceMap.get(key),
             currency: "EUR",
             stock: stock == null ? null : stock,
-            images: (Array.isArray(phone.images) ? phone.images : [phone.image]).filter(v => typeof v === "string" && /^https:\/\//i.test(v)).slice(0, 8)
+            images: (Array.isArray(phone.images) ? phone.images : [phone.image]).filter(v => typeof v === "string" && (/^https:\/\//i.test(v) || (v.startsWith("/") && !v.startsWith("//")))).slice(0, 8)
           });
         }
       }
