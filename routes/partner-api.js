@@ -277,11 +277,7 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
       const phoneIndex = phones.findIndex((p, index) => p && getPartnerProductId(p, index, phones) === item.productId);
       const phone = phoneIndex >= 0 ? phones[phoneIndex] : null;
       if (!phone) return res.status(400).json({ error: "Een product in de prijslijst bestaat niet of is niet actief." });
-      const variants = hasVariantPricing(phone) ? (Array.isArray(phone.variantPrices) ? phone.variantPrices : []) : [null];
-      const validVariant = variants.some(v => {
-        const key = v ? [v.storage, v.color, v.condition].map(x => safeText(x, 80)).join("|") : "";
-        return key === item.variantKey;
-      });
+      const validVariant = partnerVariantRows(phone).some(row => [row.storage, row.color, row.condition].join("|") === item.variantKey);
       if (!validVariant) return res.status(400).json({ error: "Een productuitvoering in de prijslijst bestaat niet of is niet actief." });
     }
     const client = await pool.connect();
@@ -349,13 +345,10 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
         if (!phone || typeof phone !== "object" || phone.active === false || phone.available === false || String(phone.stockStatus || "").toLowerCase() === "sold") continue;
         const productId = getPartnerProductId(phone, phoneIndex, phones);
         if (!productId) continue;
-        const variants = hasVariantPricing(phone)
-          ? (Array.isArray(phone.variantPrices) ? phone.variantPrices.filter(v => v && v.active !== false && v.available !== false) : [])
-          : [null];
-        for (const variant of variants) {
-          const variantKey = variant
-            ? [variant.storage, variant.color, variant.condition].map(v => safeText(v, 80)).join("|")
-            : "";
+        for (const row of partnerVariantRows(phone)) {
+          const variant = row.variant;
+          if (variant && (variant.active === false || variant.available === false)) continue;
+          const variantKey = [row.storage, row.color, row.condition].join("|");
           const key = productId + "::" + variantKey;
           if (!priceMap.has(key)) continue;
           const stock = parseStock(variant ? variant.stock : phone.stock);
@@ -366,9 +359,9 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
             name: safeText(phone.name || phone.title, 180),
             brand: safeText(phone.brand || "Apple", 80),
             description: safeText(phone.description, 1000),
-            storage: safeText(variant?.storage || phone.storage, 40),
-            color: safeText(variant?.color || phone.color, 80),
-            condition: safeText(variant?.condition || phone.condition, 80),
+            storage: row.storage,
+            color: row.color,
+            condition: row.condition,
             wholesalePrice: priceMap.get(key),
             currency: "EUR",
             stock: stock == null ? null : stock,
@@ -423,10 +416,9 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
         const phoneIndex = phones.findIndex((p, index) => p && getPartnerProductId(p, index, phones) === productId && p.active !== false && p.available !== false && String(p.stockStatus || "").toLowerCase() !== "sold");
         const phone = phoneIndex >= 0 ? phones[phoneIndex] : null;
         if (!phone) return res.status(409).json({ error: "Een geselecteerd product is niet meer beschikbaar." });
-        const variant = hasVariantPricing(phone)
-          ? (Array.isArray(phone.variantPrices) ? phone.variantPrices.find(v => v && [v.storage, v.color, v.condition].map(x => safeText(x, 80)).join("|") === variantKey && v.active !== false && v.available !== false) : null)
-          : null;
-        if (hasVariantPricing(phone) && !variant) {
+        const catalogVariant = partnerVariantRows(phone).find(row => [row.storage, row.color, row.condition].join("|") === variantKey);
+        const variant = catalogVariant?.variant || null;
+        if (!catalogVariant || (variant && (variant.active === false || variant.available === false))) {
           return res.status(409).json({ error: "Een geselecteerde telefoonuitvoering is niet meer beschikbaar." });
         }
         const key = productId + "::" + variantKey;
@@ -441,9 +433,9 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
           name: safeText(phone.name || phone.title, 180),
           sku: safeText(variant?.sku || phone.sku, 100),
           variantKey,
-          storage: safeText(variant?.storage || phone.storage, 40),
-          color: safeText(variant?.color || phone.color, 80),
-          condition: safeText(variant?.condition || phone.condition, 80),
+          storage: catalogVariant.storage,
+          color: catalogVariant.color,
+          condition: catalogVariant.condition,
           quantity,
           wholesaleUnitPrice: unitPrice,
           lineTotal: Number((unitPrice * quantity).toFixed(2))
