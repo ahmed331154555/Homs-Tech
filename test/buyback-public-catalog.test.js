@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const {
   normalizeBuybackModelName,
   matchesBuybackModel,
+  replaceEmbeddedBuybackImages,
   buildPublicBuybackCatalogPayload
 } = require("../utils/buyback-public-catalog");
 
@@ -48,4 +49,17 @@ test("public buyback payload safely handles missing catalogs", () => {
     buybackPhones: [],
     salesPhones: []
   });
+});
+
+test("embedded buyback images become lazy URLs while ordinary image URLs stay unchanged", () => {
+  const image = "data:image/webp;base64,QUJD";
+  const result = replaceEmbeddedBuybackImages({
+    image,
+    options: [{ image }],
+    external: "https://cdn.example.com/phone.webp"
+  }, "phone-1");
+
+  assert.equal(result.image, "/api/buyback/image/phone-1?path=image");
+  assert.equal(result.options[0].image, "/api/buyback/image/phone-1?path=options.0.image");
+  assert.equal(result.external, "https://cdn.example.com/phone.webp");
 });
