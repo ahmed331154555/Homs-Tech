@@ -2036,25 +2036,7 @@ function renderPhones(){
           <div class="field"><label>Categorie</label><input value="${esc(phone.category||'Smartphones')}" placeholder="Smartphones / Tablets / MacBook..." oninput="data.phones[${selectedPhoneIndex}].category=this.value;markChanged()"></div>
           <div class="field"><label>Standaardprijs / fallback (€)</label><input type="number" step="0.01" value="${esc(phone.price||'')}" oninput="data.phones[${selectedPhoneIndex}].price=Number(this.value||0);markChanged()"></div>
           <div class="field"><label>Voorraad</label><input type="number" min="0" step="1" value="${esc(phone.stock||0)}" oninput="data.phones[${selectedPhoneIndex}].stock=Number(this.value||0);markChanged()"></div>
-          <div class="field"><label>SKU</label><input value="${esc(phone.sku||'')}" placeholder="HT-IPH12-64" oninput="data.phones[${selectedPhoneIndex}].sku=this.value;markChanged()"></div>
-          <div class="field"><label>Garantie</label><input value="${esc(phone.warranty||'')}" placeholder="12 maanden" oninput="data.phones[${selectedPhoneIndex}].warranty=this.value;markChanged()"></div>
           <div class="field" style="grid-column:1/-1"><label>Korte beschrijving</label><textarea oninput="data.phones[${selectedPhoneIndex}].description=this.value;markChanged()">${esc(phone.description||'')}</textarea></div>
-        </div>
-
-        <div class="card" style="margin-top:16px">
-          <div class="card-title">⚙️ Productspecificaties</div>
-          <div class="small" style="margin:10px 0;padding:10px 12px;background:#f4f8ff;border:1px solid #dce9ff;border-radius:10px">
-            <strong>Prijsberekening:</strong> gekozen conditie = basisprijs. Daarna worden opslag, kleur, batterij, BTW en andere opties als +/- prijsverschil toegevoegd.
-          </div>
-          <div class="grid">
-            <div class="field"><label>Connectiviteit</label><input value="${esc(phone.connectivity||'')}" placeholder="Origineel / Wi-Fi / Wi-Fi + Cellular" oninput="data.phones[${selectedPhoneIndex}].connectivity=this.value;markChanged()"></div>
-            <div class="field"><label>Schermgrootte</label><input value="${esc(phone.screenSize||'')}" placeholder="6.1 inch" oninput="data.phones[${selectedPhoneIndex}].screenSize=this.value;markChanged()"></div>
-            <div class="field"><label>Processor</label><input value="${esc(phone.processor||'')}" placeholder="Apple A..." oninput="data.phones[${selectedPhoneIndex}].processor=this.value;markChanged()"></div>
-            <div class="field"><label>Geheugen / RAM</label><input value="${esc(phone.memory||'')}" placeholder="8GB RAM" oninput="data.phones[${selectedPhoneIndex}].memory=this.value;markChanged()"></div>
-            <div class="field"><label>Grafische kaart</label><input value="${esc(phone.gpu||'')}" placeholder="Built-in" oninput="data.phones[${selectedPhoneIndex}].gpu=this.value;markChanged()"></div>
-            <div class="field"><label>Jaar</label><input value="${esc(phone.releaseYear||'')}" placeholder="2025" oninput="data.phones[${selectedPhoneIndex}].releaseYear=this.value;markChanged()"></div>
-          </div>
-          <div style="margin-top:14px"><strong>Extra specificaties</strong>${specs}<button class="btn btn-light" type="button" onclick="data.phones[${selectedPhoneIndex}].specifications.push({label:'',value:''});renderPhones();markChanged()">+ Specificatie</button></div>
         </div>
 
         ${customOptionsEditor}
