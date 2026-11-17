@@ -90,7 +90,8 @@
 
     const first = buildGroup(settings.messages,settings);
     track.appendChild(first);
-    if (settings.mode === "scroll") {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (settings.mode === "scroll" && !reduceMotion) {
       const second = first.cloneNode(true);
       second.setAttribute("aria-hidden","true");
       track.appendChild(second);
@@ -110,7 +111,7 @@
     if (header && header.parentNode) header.parentNode.insertBefore(bar,header);
     else document.body.insertBefore(bar,document.body.firstChild);
 
-    if (settings.mode === "scroll") {
+    if (settings.mode === "scroll" && !reduceMotion) {
       requestAnimationFrame(function () {
         const width = first.getBoundingClientRect().width;
         if (!width) return;

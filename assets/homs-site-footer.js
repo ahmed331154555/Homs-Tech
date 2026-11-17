@@ -98,7 +98,7 @@
     help: [["Garantie & voorwaarden","about.html"],["Privacybeleid","privacybeleid.html"],["Cookie-instellingen","#cookie-settings"]]
   };
   const list = items => items.map(([label,url]) => '<li><a href="'+url+'"'+(url==="#cookie-settings"?' data-footer-cookie-settings':'')+'>'+label+'</a></li>').join("");
-  function render(host, settings, site) {
+  function render(host, settings, site, reviewWidgets = []) {
     const description = clean(settings.description) || "Refurbished apparaten · Telefoonreparatie · Service";
     const area = clean(settings.area || site.areas), hours = clean(settings.hours);
     const email = clean(settings.email), phone = clean(settings.phone || site.phone), whatsapp = clean(settings.whatsapp || site.whatsapp);
@@ -119,6 +119,8 @@
       '<nav aria-label="Service en contact"><h2>Service & contact</h2><ul>'+list(groups.help)+
       (contacts.length?contacts.join(""):'<li><a href="contact.html">Contactgegevens en openingstijden</a></li>')+
       '</ul></nav></div><div class="ht-footer-bottom"><span>© '+year+' HOMS TECH. Alle rechten voorbehouden.</span><span>Refurbished · Reparatie · Service</span></div>';
+    // Preserve existing review widget nodes across footer rebuilds.
+    reviewWidgets.forEach(widget => host.appendChild(widget));
     host.querySelector("[data-footer-cookie-settings]")?.addEventListener("click",event=>{
       event.preventDefault();
       const button=document.getElementById("homs-cookie-settings");
@@ -136,9 +138,10 @@
       host,
       html:host.innerHTML,
       className:host.className,
-      ariaLabel:host.getAttribute("aria-label")
+      ariaLabel:host.getAttribute("aria-label"),
+      reviewWidgets:[...host.querySelectorAll("[data-review-widget]")]
     }));
-    hosts.forEach(host=>render(host,{},{}));
+    originals.forEach(({host,reviewWidgets})=>render(host,{},{},reviewWidgets));
 
     try {
       const response=await fetch("/api/site?view=footer",{headers:{Accept:"application/json"},cache:"no-store"});
@@ -149,15 +152,20 @@
       if(settings.enabled===false){
         // Respect the administrator's disabled setting without leaving a
         // temporary generated footer behind.
-        originals.forEach(({host,html,className,ariaLabel})=>{
+        originals.forEach(({host,html,className,ariaLabel,reviewWidgets})=>{
           host.innerHTML=html;
+          const placeholders=[...host.querySelectorAll("[data-review-widget]")];
+          reviewWidgets.forEach((widget,index)=>{
+            if(placeholders[index])placeholders[index].replaceWith(widget);
+            else host.appendChild(widget);
+          });
           host.className=className;
           if(ariaLabel===null)host.removeAttribute("aria-label");
           else host.setAttribute("aria-label",ariaLabel);
         });
         return;
       }
-      hosts.forEach(host=>render(host,settings,site));
+      originals.forEach(({host,reviewWidgets})=>render(host,settings,site,reviewWidgets));
     } catch(error) {
       // The immediate, lightweight footer remains usable if the API is slow
       // or temporarily unavailable.
