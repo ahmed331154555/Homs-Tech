@@ -7359,14 +7359,16 @@ async function loadAdminEmails(){
  }catch(e){list.innerHTML='<div class="status error">'+emailEsc(e.message)+'</div>';}
  finally{adminEmailsLoading=false;}
 }
+let adminEmailOpenRequestId=0;
 async function openAdminEmail(id){
+ const requestId=++adminEmailOpenRequestId;
  const box=document.getElementById("adminEmailDetail");if(!box)return;adminEmailSelectedId=Number(id);renderAdminEmailList();box.innerHTML='<div class="ht-mail-empty"><strong>Bericht laden…</strong></div>';
  try{
-  const r=await fetch("/api/admin/emails/"+id,{credentials:"same-origin"}),d=await r.json();if(!r.ok)throw Error(d.error||"Bericht laden mislukt.");
+  const r=await fetch("/api/admin/emails/"+id,{credentials:"same-origin"}),d=await r.json();if(!r.ok)throw Error(d.error||"Bericht laden mislukt.");if(requestId!==adminEmailOpenRequestId||adminEmailSelectedId!==Number(id))return;
   const m=d.email,attachments=Array.isArray(m.attachments)?m.attachments:[];
   box.innerHTML='<div class="ht-mail-reader-head"><h3 class="ht-mail-reader-title">'+emailEsc(m.subject||"(geen onderwerp)")+'</h3><div class="ht-mail-meta"><span class="ht-mail-avatar">'+emailEsc(emailInitial(m.from_address))+'</span><div class="ht-mail-meta-main"><strong>'+emailEsc(m.from_address||"Onbekend")+'</strong><small>Aan: '+emailEsc((m.to_addresses||[]).join(", "))+' · '+emailDate(m.created_at)+'</small></div></div></div><div class="ht-mail-reader-body">'+emailEsc(m.text_body||emailPreview(m.html_body)||"Geen tekstinhoud beschikbaar.")+'</div>'+(attachments.length?'<div style="padding:0 20px 16px"><strong style="font-size:12px">📎 Bijlagen ('+attachments.length+')</strong><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:9px">'+attachments.map(x=>'<div class="ht-mail-attachment"><span class="ht-mail-attachment-icon">▤</span><div class="ht-mail-attachment-info"><strong>'+emailEsc(x.filename||x.name||"Bijlage")+'</strong><small>'+emailEsc(x.content_type||x.type||"Bestand")+'</small></div></div>').join("")+'</div></div>':'')+'<div class="ht-mail-reader-actions">'+(m.direction==="inbound"?'<button type="button" class="primary" onclick="emailReply('+Number(m.id)+')">↩ Beantwoorden</button>':'')+'<button type="button" onclick="emailComposeNew()">＋ Nieuw bericht</button><button type="button" onclick="deleteAdminEmail('+Number(m.id)+')">🗑 Verwijderen</button></div>';
   const cached=adminEmailCache.find(x=>Number(x.id)===Number(id));if(cached)cached.is_read=true;const unread=adminEmailCache.filter(x=>x.direction==="inbound"&&!x.is_read).length;const stat=document.getElementById("emailStatInbox");if(stat)stat.textContent=unread+" ongelezen";renderAdminEmailList();
- }catch(e){box.textContent=e.message;}
+ }catch(e){if(requestId===adminEmailOpenRequestId&&adminEmailSelectedId===Number(id))box.textContent=e.message;}
 }
 async function deleteAdminEmail(id){
  const m=adminEmailCache.find(x=>Number(x.id)===Number(id));if(!m||!confirm("Deze e-mail alleen uit de HOMS TECH inbox verwijderen?"))return;
