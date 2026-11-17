@@ -2609,7 +2609,7 @@ async function loadBuyback(){
   try{
     // This page needs only the buyback catalog. Do not download the full site
     // settings response, which also contains large unrelated product/repair images.
-    const r=await fetch('/api/buyback/catalog',{cache:'no-store'});
+    const r=await fetch('/api/buyback/catalog');
     if(!r.ok)throw new Error('De iPhone-modellen konden niet worden geladen (HTTP '+r.status+').');
     siteData=await r.json();
     if(!siteData || !Array.isArray(siteData.buybackCatalog) || !Array.isArray(siteData.buybackPhones)){
