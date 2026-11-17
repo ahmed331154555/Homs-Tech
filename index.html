@@ -955,7 +955,7 @@ function renderProducts(){
   picture.className="product-img";
   picture.style.cssText="height:170px;min-height:170px;display:flex;align-items:center;justify-content:center;overflow:hidden;";
   if(image){
-   const img=document.createElement("img");img.src=image;img.alt=p.name||"";img.loading="lazy";img.decoding="async";
+   const img=document.createElement("img");img.src=image;img.alt=p.name||"";img.loading=box.querySelectorAll(":scope .product").length<4?"eager":"lazy";img.fetchPriority=box.querySelectorAll(":scope .product").length<4?"high":"auto";img.decoding="async";
    img.style.cssText="display:block;width:160px;height:160px;max-width:100%;object-fit:contain;";
    picture.appendChild(img);
   }else picture.innerHTML='<div class="phone-placeholder"></div>';
