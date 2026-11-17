@@ -70,6 +70,11 @@ jobs:
       - name: Run full test suite
         run: npm test
 
+      - name: Smoke test deployed HOMS TECH website
+        env:
+          HOMS_BASE_URL: https://homs-tech.nl
+        run: node scripts/smoke-production.js
+
       - name: Commit verified formatting
         run: |
           git config user.name "github-actions[bot]"
