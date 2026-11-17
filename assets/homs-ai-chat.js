@@ -214,19 +214,29 @@
   } catch {}
 
   const seen = new Set();
+  const renderedMessageIds = [];
+  const MAX_RENDERED_MESSAGES = 300;
   let timer = null;
   let refreshing = false;
 
   function add(message) {
     const id = message.id == null ? null : String(message.id);
     if (id && seen.has(id)) return;
-    if (id) seen.add(id);
+    if (id) {
+      seen.add(id);
+      renderedMessageIds.push(id);
+    }
 
     const element = document.createElement("div");
     element.className = "homs-ai-msg " +
       (message.sender === "customer" ? "user" : "bot");
     element.textContent = message.message;
     messages.appendChild(element);
+    while (messages.children.length > MAX_RENDERED_MESSAGES) {
+      messages.firstElementChild?.remove();
+      const oldestId = renderedMessageIds.shift();
+      if (oldestId) seen.delete(oldestId);
+    }
     messages.scrollTop = messages.scrollHeight;
   }
 
