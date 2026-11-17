@@ -26,7 +26,7 @@ function makeRouteHarness({ phones = [], prices = [], partner = { id: 7, name: "
   const app = {
     get(path, ...handlers) { routes.set("GET " + path, handlers); },
     post(path, ...handlers) { routes.set("POST " + path, handlers); },
-    patch(path, ...handlers) { routes.set("PATCH " + path, handlers); },
+    patch(path, ...handlers) { routes.set("PATCH " + path, handlers); },\n    delete(path, ...handlers) { routes.set("DELETE " + path, handlers); },
     put(path, ...handlers) { routes.set("PUT " + path, handlers); }
   };
   const pool = {
@@ -35,7 +35,7 @@ function makeRouteHarness({ phones = [], prices = [], partner = { id: 7, name: "
       if (sql.includes("FROM api_partners WHERE token_hash")) {
         return { rows: params[0] === hashToken("htp_" + "a".repeat(64)) && partner.active !== false ? [partner] : [] };
       }
-      if (sql.includes("FROM api_partners WHERE id=$1")) return { rows: [partner] };
+      if (sql.includes("FROM api_partners WHERE id=$1")) return { rows: [partner] };\n      if (sql.includes("UPDATE api_partners SET") && sql.includes("RETURNING id,name,email")) return { rows: [{ ...partner, name: params[0], email: params[1] }] };
       if (sql.includes("data->'phones'")) return { rows: [{ phones }] };
       if (sql.includes("FROM api_partner_prices")) return { rows: prices };
       if (sql.includes("UPDATE api_partner_orders")) return { rows: [{ id: params[2], status: params[0], admin_note: params[1], updated_at: "2026-11-17T10:00:00.000Z" }] };
@@ -48,7 +48,7 @@ function makeRouteHarness({ phones = [], prices = [], partner = { id: 7, name: "
       return {
         async query(sql, params = []) {
           queries.push({ sql, params });
-          if (sql.includes("SELECT id FROM api_partners")) return { rows: [partner] };
+          if (sql.includes("SELECT id FROM api_partners")) return { rows: [partner] };\n          if (sql.includes("UPDATE api_partners SET active=FALSE")) return { rows: [{ id: partner.id }] };
           return { rows: [] };
         },
         release() {}
@@ -205,6 +205,25 @@ test("admin price replacement rejects unknown variants before changing saved pri
   });
   assert.equal(res.statusCode, 400);
   assert.equal(h.queries.some(q => q.sql.includes("DELETE FROM api_partner_prices")), false);
+});
+
+test("admin can edit partner name and email without changing API token", async () => {
+  const h = makeRouteHarness();
+  const res = await h.invoke("PATCH", "/api/admin/partners/:id", {
+    params: { id: "7" }, body: { name: "Updated Partner", email: "updated@example.com" }
+  });
+  assert.equal(res.statusCode, 200);
+  assert.ok(h.queries.some(q => q.sql.includes("UPDATE api_partners SET name=$1,email=$2")));
+});
+
+test("admin partner deletion revokes access and preserves historical orders", async () => {
+  const h = makeRouteHarness();
+  const res = await h.invoke("DELETE", "/api/admin/partners/:id", { params: { id: "7" } });
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.deleted, true);
+  assert.ok(h.queries.some(q => q.sql.includes("UPDATE api_partners SET active=FALSE,deleted_at=NOW()")));
+  assert.ok(h.queries.some(q => q.sql.includes("DELETE FROM api_partner_prices")));
+  assert.equal(h.queries.some(q => q.sql.includes("DELETE FROM api_partner_orders")), false);
 });
 
 test("admin partner order status updates accept only the defined statuses", async () => {
