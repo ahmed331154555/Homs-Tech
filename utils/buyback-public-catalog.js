@@ -27,6 +27,9 @@ function projectBuybackPhone(phone) {
   const output = {
     id: phone.id,
     name: phone.name || "",
+    brand: phone.brand || "",
+    deviceType: phone.deviceType || phone.type || "",
+    type: phone.type || "",
     price: phone.price,
     scrapPrice: phone.scrapPrice,
     image: phone.image || "",
