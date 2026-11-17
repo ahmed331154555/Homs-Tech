@@ -22,6 +22,25 @@ function matchesBuybackModel(buybackPhone, salesPhone) {
   ));
 }
 
+function replaceEmbeddedBuybackImages(value, phoneId, path = "") {
+  if (Array.isArray(value)) {
+    return value.map((item, index) =>
+      replaceEmbeddedBuybackImages(item, phoneId, path ? path + "." + index : String(index))
+    );
+  }
+  if (typeof value === "string" &&
+      /^data:image\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/]+={0,2}$/i.test(value)) {
+    return "/api/buyback/image/" + encodeURIComponent(String(phoneId)) +
+      "?path=" + encodeURIComponent(path);
+  }
+  if (!value || typeof value !== "object") return value;
+  const output = {};
+  for (const [key, nested] of Object.entries(value)) {
+    output[key] = replaceEmbeddedBuybackImages(nested, phoneId, path ? path + "." + key : key);
+  }
+  return output;
+}
+
 function projectBuybackPhone(phone) {
   const protocol = String(phone.buybackProtocol || phone.protocol || "1");
   const output = {
@@ -59,7 +78,7 @@ function projectBuybackPhone(phone) {
     output.buybackProtocolSettings = { [settingsKey]: settings[settingsKey] };
   }
 
-  return output;
+  return replaceEmbeddedBuybackImages(output, phone.id);
 }
 
 function dataImageBytes(value) {
@@ -117,6 +136,7 @@ module.exports = {
   normalizeBuybackModelName,
   matchesBuybackModel,
   projectBuybackPhone,
+  replaceEmbeddedBuybackImages,
   sumDataImageBytes,
   buildPublicBuybackCatalogPayload
 };
