@@ -81,6 +81,12 @@ function calculateWholesalePrice(retailPrice, discountPercent) {
   return Math.round((retail * (1 - discount / 100) + Number.EPSILON) * 100) / 100;
 }
 
+function partnerVariantKey(row) {
+  return row.storage || row.color || row.condition
+    ? partnerVariantKey(row)
+    : "";
+}
+
 function partnerCatalogQuery({ includeImages = false } = {}) {
   const imageFields = includeImages ? ", 'images', phone->'images', 'image', phone->'image'" : "";
   const sql = `
@@ -493,4 +499,4 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
 
 }
 
-module.exports = { registerPartnerApiRoutes, hashToken, parseStock, getPartnerProductId, hasVariantPricing, partnerImages, partnerVariantRows, calculateWholesalePrice, partnerCatalogQuery };
+module.exports = { registerPartnerApiRoutes, hashToken, parseStock, getPartnerProductId, hasVariantPricing, partnerImages, partnerVariantRows, calculateWholesalePrice, partnerVariantKey, partnerCatalogQuery };
