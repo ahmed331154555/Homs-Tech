@@ -40,6 +40,7 @@ test("Shop product details are fetched separately by stable product ID", () => {
   const route = serverSource.slice(start, end);
   assert.match(route, /jsonb_array_elements/);
   assert.match(route, /item\.product->>'id'\s*=\s*\$1/);
+  assert.doesNotMatch(route, /shopPageEnabled/);
   assert.match(route, /sanitizePublicSiteData\(product\)/);
   assert.ok(shopSource.includes(String.raw`\/api\/shop\/image\/`));
   assert.match(shopSource, /Promise\.all\(\[catalogRequest,detailRequest\]\)/);
