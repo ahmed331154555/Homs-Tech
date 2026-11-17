@@ -73,7 +73,7 @@ test("admin-created customer welcome email is injected and cannot fail account c
   );
   assert.match(
     routes,
-    /function registerAdminCustomerRoutes\(\s*app,\s*\{[\s\S]*?pool,[\s\S]*?requirePermission,[\s\S]*?hashPassword,[\s\S]*?sendWelcomeEmail,[\s\S]*?\}\s*\)/,
+    /function registerAdminCustomerRoutes\(\s*app,\s*\{[\s\S]*?pool,[\s\S]*?requirePermission,[\s\S]*?hashPassword,[\s\S]*?sendWelcomeEmail,[\s\S]*?\}\s*,?\s*\)/,
   );
   assert.ok(routes.includes("Promise.resolve()"));
   assert.ok(routes.includes("Admin-created customer welcome email failed"));

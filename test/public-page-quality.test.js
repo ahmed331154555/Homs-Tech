@@ -523,9 +523,9 @@ test("invoice payment details are HTML-escaped before being inserted into email 
   const source = readPage("routes/admin-invoices.js");
   assert.match(source, /const escapeEmailHtml\s*=\s*\(?value\)?\s*=>/);
   assert.match(source, /["']Naam: ["']\s*\+\s*escapeEmailHtml\s*\(\s*cleanSetting\s*\(/);
-  assert.match(source, /"<br>IBAN: "\s*\+\s*escapeEmailHtml\(cleanSetting\(/);
+  assert.match(source, /["']<br>IBAN: ["']\s*\+\s*escapeEmailHtml\s*\(\s*cleanSetting\s*\(/);
   assert.match(
     source,
-    /"<br>Omschrijving: "\s*\+\s*escapeEmailHtml\(cleanSetting\(/,
+    /["']<br>Omschrijving: ["']\s*\+\s*escapeEmailHtml\s*\(\s*cleanSetting\s*\(/,
   );
 });
