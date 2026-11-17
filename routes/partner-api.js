@@ -259,6 +259,43 @@ function registerPartnerApiRoutes(app, { pool, cryptoImpl = crypto, requirePermi
       return res.status(500).json({ error: "Partnerbestelling kon niet worden aangemaakt." });
     }
   });
+  app.get("/api/admin/partner-orders", admin, async (req, res) => {
+    try {
+      const result = await pool.query(
+        `SELECT o.id,o.partner_id,p.name AS partner_name,o.customer_name,o.customer_email,
+          o.customer_phone,o.shipping_address,o.items,o.wholesale_total,o.status,o.admin_note,o.created_at,o.updated_at
+         FROM api_partner_orders o JOIN api_partners p ON p.id=o.partner_id
+         ORDER BY o.created_at DESC LIMIT 250`
+      );
+      res.set("Cache-Control", "no-store");
+      return res.json({ orders: result.rows });
+    } catch (error) {
+      console.error("[PARTNER API] List partner orders failed:", error);
+      return res.status(500).json({ error: "Partnerbestellingen konden niet worden geladen." });
+    }
+  });
+
+  app.patch("/api/admin/partner-orders/:id", admin, async (req, res) => {
+    const id = Number(req.params.id);
+    const status = safeText(req.body?.status, 40);
+    const allowed = new Set(["Nieuw", "In behandeling", "Goedgekeurd", "Afgewezen", "Verzonden", "Afgerond"]);
+    if (!Number.isSafeInteger(id) || id < 1 || !allowed.has(status)) {
+      return res.status(400).json({ error: "Ongeldig order-ID of ongeldige status." });
+    }
+    try {
+      const note = safeText(req.body?.adminNote, 1000);
+      const result = await pool.query(
+        "UPDATE api_partner_orders SET status=$1,admin_note=$2,updated_at=NOW() WHERE id=$3 RETURNING id,status,admin_note,updated_at",
+        [status, note, id]
+      );
+      if (!result.rows.length) return res.status(404).json({ error: "Partnerbestelling niet gevonden." });
+      return res.json({ success: true, order: result.rows[0] });
+    } catch (error) {
+      console.error("[PARTNER API] Update partner order failed:", error);
+      return res.status(500).json({ error: "Partnerbestelling kon niet worden bijgewerkt." });
+    }
+  });
+
 }
 
 module.exports = { registerPartnerApiRoutes, hashToken, parseStock };
