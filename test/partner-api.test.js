@@ -175,6 +175,8 @@ test("admin price catalog joins active phone variants with the partner's saved w
   assert.equal(res.statusCode, 200);
   assert.equal(res.body.items.length, 3); // Include active variants, zero-stock variants and inactive catalog rows for price preservation.
   assert.equal(res.body.items[0].wholesalePrice, 25);
+  assert.equal(res.body.items[0].retailPrice, 399);
+  assert.equal(res.body.discountPercent, 10);
   assert.equal(res.body.items[0].variantKey, "128GB|Black|A");
   assert.equal(res.body.items[2].active, false);
   const catalogQuery = h.queries.find(q => q.sql.includes("data->'phones'"));
@@ -186,10 +188,11 @@ test("admin price replacement validates product variants and saves only the subm
   const h = makeRouteHarness({ phones: samplePhones });
   const res = await h.invoke("PUT", "/api/admin/partners/:id/prices", {
     params: { id: "7" },
-    body: { prices: [{ productId: "iphone-13", variantKey: "128GB|Black|A", wholesalePrice: 42.5 }] }
+    body: { discountPercent: 15, prices: [{ productId: "iphone-13", variantKey: "128GB|Black|A", wholesalePrice: 339.15 }] }
   });
   assert.equal(res.statusCode, 200);
   assert.ok(h.queries.some(q => q.sql.includes("DELETE FROM api_partner_prices")));
+  assert.ok(h.queries.some(q => q.sql.includes("UPDATE api_partners SET default_discount_percent") && q.params[0] === 15));
   const insert = h.queries.find(q => q.sql.includes("INSERT INTO api_partner_prices"));
   assert.deepEqual(insert.params, [7, "iphone-13", "128GB|Black|A", "42.50"]);
 });
@@ -341,4 +344,16 @@ test("simple legacy catalog phones retain an empty variant key and their origina
   assert.equal(rows.length, 1);
   assert.equal(rows[0].retailPrice, 180);
   assert.equal(partnerVariantKey(rows[0]), "");
+});
+
+test("standard option labels stored as strings are supported in retail-price calculation", () => {
+  const rows = partnerVariantRows({
+    price: "€250,00",
+    conditionOptions: ["A"],
+    storageOptions: ["128 GB"],
+    colorOptions: ["Black"]
+  });
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].retailPrice, 250);
+  assert.equal(partnerVariantKey(rows[0]), "128 GB|Black|A");
 });
