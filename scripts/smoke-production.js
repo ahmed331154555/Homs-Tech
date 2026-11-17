@@ -131,9 +131,7 @@ async function main() {
     }
   }
 
-  const shopProduct = shop.shopProducts.find(
-    (item) => item && item.id != null,
-  );
+  const shopProduct = shop.shopProducts.find((item) => item && item.id != null);
   if (shopProduct) {
     const detail = await requestJson(
       `/api/shop/product/${encodeURIComponent(String(shopProduct.id))}`,
