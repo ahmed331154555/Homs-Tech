@@ -283,3 +283,12 @@ test("partner feed and order support legacy phones without explicit catalog IDs"
   });
   assert.equal(order.statusCode, 201);
 });
+
+test("legacy product ID prefers SKU so product renames do not break partner mapping", () => {
+  const original = { name: "iPhone 13", brand: "Apple", sku: "HT-IPH13-128" };
+  const renamed = { name: "Apple iPhone 13 128GB", brand: "Apple", sku: "HT-IPH13-128" };
+  assert.equal(
+    getPartnerProductId(original, 0, [original]),
+    getPartnerProductId(renamed, 0, [renamed])
+  );
+});
