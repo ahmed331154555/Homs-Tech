@@ -10,8 +10,8 @@ const shopVisibilitySql = "SELECT COALESCE((data->>'shopPageEnabled')::boolean, 
 
 test("shop visibility routes share one valid SQL definition", () => {
   assert.equal((server.match(/const SHOP_ENABLED_SQL =/g) || []).length, 1);
-  assert.match(server, new RegExp("const SHOP_ENABLED_SQL = \"" + shopVisibilitySql.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\";"));
+  assert.ok(server.includes("const SHOP_ENABLED_SQL = \"" + shopVisibilitySql + "\";"));
   assert.equal((server.match(/SHOP_ENABLED_SQL,/g) || []).length, 3);
-  assert.equal((server.match(/SELECT COALESCE\\(\\(data->>'shopPageEnabled'\\)::boolean, TRUE\\) AS enabled FROM site_settings WHERE id = 1/g) || []).length, 1);
+  assert.equal(server.split(shopVisibilitySql).length - 1, 1);
   assert.doesNotMatch(server, /const SHOP_ENABLED_SQL = SHOP_ENABLED_SQL;/);
 });
