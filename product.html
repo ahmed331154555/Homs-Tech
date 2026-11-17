@@ -621,7 +621,7 @@ function productFamilyRecords(product){
   if(!currentData||!product)return [];
   const list=Array.isArray(currentData.phones)?currentData.phones:[];
   const base=productBaseModel(product);
-  const records=list.map((p,i)=>({p,i})).filter(x=>productBaseModel(x.p)===base);
+  const records=list.map((p,i)=>({p,i:Number.isSafeInteger(p?._catalogIndex)?p._catalogIndex:i})).filter(x=>productBaseModel(x.p)===base);
   return records.length?records:[{p:product,i:currentProductId}];
 }
 function findFamilyRecord(storage,color){
