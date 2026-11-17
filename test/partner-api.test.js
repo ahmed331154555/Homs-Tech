@@ -20,3 +20,152 @@ test("partner stock parser handles numeric and Dutch stock labels safely", () =>
   assert.equal(parseStock(null), null);
 });
 
+function makeRouteHarness({ phones = [], prices = [], partner = { id: 7, name: "Test Partner" } } = {}) {
+  const routes = new Map();
+  const queries = [];
+  const app = {
+    get(path, ...handlers) { routes.set("GET " + path, handlers); },
+    post(path, ...handlers) { routes.set("POST " + path, handlers); },
+    patch(path, ...handlers) { routes.set("PATCH " + path, handlers); },
+    put(path, ...handlers) { routes.set("PUT " + path, handlers); }
+  };
+  const pool = {
+    async query(sql, params = []) {
+      queries.push({ sql, params });
+      if (sql.includes("FROM api_partners WHERE token_hash")) {
+        return { rows: params[0] === hashToken("htp_" + "a".repeat(64)) ? [partner] : [] };
+      }
+      if (sql.includes("FROM api_partners WHERE id=$1")) return { rows: [partner] };
+      if (sql.includes("data->'phones'")) return { rows: [{ phones }] };
+      if (sql.includes("FROM api_partner_prices")) return { rows: prices };
+      if (sql.includes("INSERT INTO api_partner_orders")) {
+        return { rows: [{ id: 99, status: "Nieuw", wholesale_total: params[6], created_at: "2026-11-17T10:00:00.000Z" }] };
+      }
+      return { rows: [] };
+    },
+    async connect() {
+      return {
+        async query(sql, params = []) {
+          queries.push({ sql, params });
+          if (sql.includes("SELECT id FROM api_partners")) return { rows: [partner] };
+          return { rows: [] };
+        },
+        release() {}
+      };
+    }
+  };
+  registerPartnerApiRoutes(app, {
+    pool,
+    requirePermission: permission => {
+      assert.equal(permission, "site.save");
+      return (_req, _res, next) => next();
+    }
+  });
+  return {
+    routes, queries,
+    async invoke(method, path, req = {}, res = response()) {
+      req.params ||= {};
+      req.body ||= {};
+      req.get ||= name => name.toLowerCase() === "authorization" ? req.authorization || "" : "";
+      res.set = function() { return this; };
+      const handlers = routes.get(method + " " + path);
+      assert.ok(handlers, "route exists: " + method + " " + path);
+      async function run(index) {
+        if (index >= handlers.length) return;
+        let continued = false;
+        await handlers[index](req, res, () => { continued = true; return run(index + 1); });
+        if (!continued && index < handlers.length - 1) return;
+      }
+      await run(0);
+      return res;
+    }
+  };
+}
+
+function response() {
+  return {
+    statusCode: 200, body: undefined,
+    status(code) { this.statusCode = code; return this; },
+    set() { return this; },
+    json(value) { this.body = value; return this; }
+  };
+}
+
+const samplePhones = [
+  {
+    id: "iphone-13", name: "iPhone 13", active: true, available: true,
+    variantPrices: [
+      { storage: "128GB", color: "Black", condition: "A", stock: 3, active: true, available: true },
+      { storage: "256GB", color: "Blue", condition: "A", stock: 0, active: true, available: true }
+    ]
+  },
+  { id: "inactive", name: "Inactive phone", active: false, stock: 4 }
+];
+
+test("partner product feed requires an active matching API key and only returns assigned in-stock variants", async () => {
+  const key = "htp_" + "a".repeat(64);
+  const h = makeRouteHarness({
+    phones: samplePhones,
+    prices: [{ product_id: "iphone-13", variant_key: "128GB|Black|A", wholesale_price: "25.00" }]
+  });
+  const denied = await h.invoke("GET", "/api/partner/v1/products", { authorization: "Bearer htp_" + "b".repeat(64) });
+  assert.equal(denied.statusCode, 401);
+
+  const allowed = await h.invoke("GET", "/api/partner/v1/products", { authorization: "Bearer " + key });
+  assert.equal(allowed.statusCode, 200);
+  assert.equal(allowed.body.count, 1);
+  assert.equal(allowed.body.products[0].wholesalePrice, 25);
+  assert.equal(allowed.body.products[0].storage, "128GB");
+});
+
+test("partner order uses database wholesale price and does not trust a submitted price", async () => {
+  const key = "htp_" + "a".repeat(64);
+  const h = makeRouteHarness({
+    phones: samplePhones,
+    prices: [{ product_id: "iphone-13", variant_key: "128GB|Black|A", wholesale_price: "25.00" }]
+  });
+  const res = await h.invoke("POST", "/api/partner/v1/orders", {
+    authorization: "Bearer " + key,
+    body: {
+      customer: { name: "Customer", email: "customer@example.com", phone: "+31612345678", street: "Main Street", houseNumber: "1", postcode: "3011AA", city: "Rotterdam" },
+      items: [{ productId: "iphone-13", variantKey: "128GB|Black|A", quantity: 1, wholesaleUnitPrice: 0.01, price: 0.01 }]
+    }
+  });
+  assert.equal(res.statusCode, 201);
+  const insert = h.queries.find(q => q.sql.includes("INSERT INTO api_partner_orders"));
+  const storedItems = JSON.parse(insert.params[5]);
+  assert.equal(storedItems[0].wholesaleUnitPrice, 25);
+  assert.equal(res.body.order.status, "Nieuw");
+});
+
+test("partner order rejects repeated lines whose combined quantity exceeds stock", async () => {
+  const key = "htp_" + "a".repeat(64);
+  const h = makeRouteHarness({
+    phones: samplePhones,
+    prices: [{ product_id: "iphone-13", variant_key: "128GB|Black|A", wholesale_price: "25.00" }]
+  });
+  const res = await h.invoke("POST", "/api/partner/v1/orders", {
+    authorization: "Bearer " + key,
+    body: {
+      customer: { name: "Customer", email: "customer@example.com", phone: "+31612345678", street: "Main Street", houseNumber: "1", postcode: "3011AA", city: "Rotterdam" },
+      items: [
+        { productId: "iphone-13", variantKey: "128GB|Black|A", quantity: 2 },
+        { productId: "iphone-13", variantKey: "128GB|Black|A", quantity: 2 }
+      ]
+    }
+  });
+  assert.equal(res.statusCode, 409);
+  assert.equal(h.queries.some(q => q.sql.includes("INSERT INTO api_partner_orders")), false);
+});
+
+test("admin price catalog joins active phone variants with the partner's saved wholesale prices", async () => {
+  const h = makeRouteHarness({
+    phones: samplePhones,
+    prices: [{ product_id: "iphone-13", variant_key: "128GB|Black|A", wholesale_price: "25.00" }]
+  });
+  const res = await h.invoke("GET", "/api/admin/partners/:id/prices", { params: { id: "7" } });
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.items.length, 1);
+  assert.equal(res.body.items[0].wholesalePrice, 25);
+  assert.equal(res.body.items[0].variantKey, "128GB|Black|A");
+});
