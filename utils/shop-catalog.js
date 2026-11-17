@@ -19,6 +19,73 @@ async function saveShopCatalog(
   return result.rows.length > 0;
 }
 
+
+function buildShopCatalogList(products) {
+  if (!Array.isArray(products)) return [];
+
+  return products
+    .filter(
+      (product) =>
+        product &&
+        typeof product === "object" &&
+        !Array.isArray(product) &&
+        product.active !== false,
+    )
+    .map((product) => {
+      const output = {};
+      for (const key of [
+        "id",
+        "name",
+        "brand",
+        "category",
+        "description",
+        "deviceModel",
+        "active",
+        "price",
+        "stock",
+      ]) {
+        if (Object.prototype.hasOwnProperty.call(product, key)) {
+          output[key] = product[key];
+        }
+      }
+
+      const images = Array.isArray(product.images)
+        ? product.images.filter((image) => typeof image === "string" && image)
+        : [];
+      const previewImage =
+        images[0] ||
+        (typeof product.image === "string" ? product.image : "") ||
+        (typeof product.imageUrl === "string" ? product.imageUrl : "");
+      output.images = previewImage ? [previewImage] : [];
+
+      if (Array.isArray(product.variants)) {
+        output.variants = product.variants
+          .filter(
+            (variant) =>
+              variant && typeof variant === "object" && !Array.isArray(variant),
+          )
+          .map((variant) => {
+            const compact = {};
+            for (const key of [
+              "id",
+              "sku",
+              "quality",
+              "price",
+              "stock",
+              "active",
+            ]) {
+              if (Object.prototype.hasOwnProperty.call(variant, key)) {
+                compact[key] = variant[key];
+              }
+            }
+            return compact;
+          });
+      }
+
+      return output;
+    });
+}
+
 function validateShopCatalogImages(products) {
   if (!Array.isArray(products)) return "Shop catalog must be a product list.";
   const maxImageChars = 1_800_000;
@@ -263,6 +330,7 @@ function deductShopVariantInventory(product, item) {
 
 module.exports = {
   saveShopCatalog,
+  buildShopCatalogList,
   validateShopCatalogIdentifiers,
   validateShopCatalogImages,
   findShopProductIndex,

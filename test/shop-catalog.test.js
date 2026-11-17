@@ -4,6 +4,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const {
   saveShopCatalog,
+  buildShopCatalogList,
   validateShopCatalogIdentifiers,
   validateShopCatalogImages,
 } = require("../utils/shop-catalog");
@@ -387,4 +388,50 @@ test("stable Shop cart identity still prices and deducts the same product after 
   const deduction = deductShopVariantInventory(product, priced.item);
   assert.equal(deduction.remaining, 2);
   assert.equal(products[0].variants[0].stock, "10");
+});
+
+
+test("buildShopCatalogList keeps only preview data for active products", () => {
+  const products = [
+    {
+      id: "shop-1",
+      name: "iPhone display",
+      brand: "HOMS TECH",
+      category: "Schermen",
+      description: "OLED display",
+      price: "79.95",
+      images: ["preview.webp", "gallery-2.webp", "gallery-3.webp"],
+      videoEnabled: true,
+      videoUrl: "https://video.example.test/demo",
+      supplierCost: 25,
+      variants: [
+        {
+          id: "oled",
+          sku: "HT-OLED-1",
+          quality: "OLED",
+          price: "79.95",
+          stock: "4",
+          active: true,
+          supplierCost: 20,
+        },
+      ],
+    },
+    { id: "hidden", name: "Hidden product", active: false, price: "10" },
+  ];
+
+  const result = buildShopCatalogList(products);
+  assert.equal(result.length, 1);
+  assert.deepEqual(result[0].images, ["preview.webp"]);
+  assert.deepEqual(result[0].variants, [
+    {
+      id: "oled",
+      sku: "HT-OLED-1",
+      quality: "OLED",
+      price: "79.95",
+      stock: "4",
+      active: true,
+    },
+  ]);
+  assert.equal("videoUrl" in result[0], false);
+  assert.equal("supplierCost" in result[0], false);
 });

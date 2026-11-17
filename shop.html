@@ -223,7 +223,46 @@ document.addEventListener('click',function(event){
   if(button.disabled)return;
   addToCart(button.getAttribute('data-add'));
 });
-async function init(){updateCartCount();try{const r=await fetch('/api/site?view=shop',{cache:'no-store'});if(!r.ok)throw new Error('Shop kon niet worden geladen');const data=await r.json();products=Array.isArray(data.shopProducts)?data.shopProducts:[];renderCategories();renderList();['search','category','shopBrand','shopQuality','shopMinPrice','shopMaxPrice','shopInStock','shopSort'].forEach(id=>$(id)?.addEventListener('input',renderList));$('resetShopFilters').addEventListener('click',()=>{['search','category','shopBrand','shopQuality','shopMinPrice','shopMaxPrice'].forEach(id=>$(id).value='');$('shopInStock').checked=false;$('shopSort').value='recommended';renderList()});const id=new URLSearchParams(location.search).get('product');if(id){const p=visibleProducts().find(x=>String(x.id)===id);if(p)renderDetail(p)}}catch(e){console.error('HOMS TECH shop catalog error:',e);$('count').textContent='';$('products').innerHTML='<div class="error" style="grid-column:1/-1">De Shop kon niet worden geladen. Probeer het later opnieuw.</div>'}}
+async function init(){
+ updateCartCount();
+ const id=new URLSearchParams(location.search).get('product');
+ const catalogRequest=fetch('/api/site?view=shop',{cache:'no-store'});
+ const detailRequest=id
+  ?fetch('/api/shop/product/'+encodeURIComponent(id),{headers:{Accept:'application/json'}}).catch(()=>null)
+  :Promise.resolve(null);
+ try{
+  const [r,detailResponse]=await Promise.all([catalogRequest,detailRequest]);
+  if(!r.ok)throw new Error('Shop kon niet worden geladen');
+  const data=await r.json();
+  products=Array.isArray(data.shopProducts)?data.shopProducts:[];
+  renderCategories();
+  renderList();
+  ['search','category','shopBrand','shopQuality','shopMinPrice','shopMaxPrice','shopInStock','shopSort'].forEach(id=>$(id)?.addEventListener('input',renderList));
+  $('resetShopFilters').addEventListener('click',()=>{
+   ['search','category','shopBrand','shopQuality','shopMinPrice','shopMaxPrice'].forEach(id=>$(id).value='');
+   $('shopInStock').checked=false;
+   $('shopSort').value='recommended';
+   renderList();
+  });
+  if(id){
+   const summary=visibleProducts().find(x=>String(x.id)===id);
+   if(summary){
+    let detail=summary;
+    if(detailResponse?.ok){
+     try{
+      const payload=await detailResponse.json();
+      if(payload?.product&&String(payload.product.id)===id)detail=payload.product;
+     }catch(error){console.warn('HOMS TECH Shop product details unavailable:',error);}
+    }
+    renderDetail(detail);
+   }
+  }
+ }catch(e){
+  console.error('HOMS TECH shop catalog error:',e);
+  $('count').textContent='';
+  $('products').innerHTML='<div class="error" style="grid-column:1/-1">De Shop kon niet worden geladen. Probeer het later opnieuw.</div>';
+ }
+}
 init();
 })();
 </script>

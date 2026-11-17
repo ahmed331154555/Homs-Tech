@@ -72,7 +72,7 @@ const {
   preserveExistingCatalogPhotos,
   preserveExistingBuybackPhotos
 } = require("./utils/catalog-photo-preservation");
-const { saveShopCatalog, validateShopCatalogIdentifiers, validateShopCatalogImages } = require("./utils/shop-catalog");
+const { saveShopCatalog, buildShopCatalogList, validateShopCatalogIdentifiers, validateShopCatalogImages } = require("./utils/shop-catalog");
 const PORT = process.env.PORT || 3000;
 const SHOP_ENABLED_SQL = "SELECT COALESCE((data->>'shopPageEnabled')::boolean, TRUE) AS enabled FROM site_settings WHERE id = 1";
 
@@ -511,6 +511,46 @@ app.get("/api/product/:id", async (req, res) => {
   }
 });
 
+// Load full Shop details only for the product the visitor opens.
+// The listing endpoint intentionally returns one preview image per product.
+app.get("/api/shop/product/:id", async (req, res) => {
+  try {
+    const productId = String(req.params.id || "").trim();
+    if (!productId || productId.length > 160) {
+      return res.status(400).json({ error: "Ongeldig product." });
+    }
+
+    const result = await queryWithConnectionRetry(
+      `SELECT item.product
+       FROM site_settings AS settings
+       CROSS JOIN LATERAL jsonb_array_elements(
+         CASE
+           WHEN jsonb_typeof(settings.data->'shopProducts') = 'array'
+             THEN settings.data->'shopProducts'
+           ELSE '[]'::jsonb
+         END
+       ) AS item(product)
+       WHERE settings.id = 1
+         AND COALESCE((settings.data->>'shopPageEnabled')::boolean, TRUE) = TRUE
+         AND item.product->>'id' = $1
+       LIMIT 1`,
+      [productId],
+      4
+    );
+
+    const product = result.rows[0]?.product;
+    if (!product || product.active === false) {
+      return res.status(404).json({ error: "Product niet gevonden." });
+    }
+
+    res.set("Cache-Control", "public, max-age=0, must-revalidate");
+    return res.json({ product: sanitizePublicSiteData(product) });
+  } catch (error) {
+    console.error("[PUBLIC SHOP PRODUCT] Load failed:", error);
+    return res.status(500).json({ error: "Product kon niet worden geladen." });
+  }
+});
+
 // Get website settings
 app.get("/api/site", async (req, res) => {
   try {
@@ -621,7 +661,7 @@ app.get("/api/site", async (req, res) => {
       if(!result.rows.length)return res.status(404).json({error:"Settings not found"});
       res.set("Cache-Control","public, max-age=0, must-revalidate");
       return res.json(sanitizePublicSiteData({
-        shopProducts:Array.isArray(result.rows[0].shop_products)?result.rows[0].shop_products:[]
+        shopProducts:buildShopCatalogList(result.rows[0].shop_products)
       }));
     }
     if(view==="cart"){
