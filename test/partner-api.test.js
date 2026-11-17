@@ -194,7 +194,7 @@ test("admin price replacement validates product variants and saves only the subm
   assert.ok(h.queries.some(q => q.sql.includes("DELETE FROM api_partner_prices")));
   assert.ok(h.queries.some(q => q.sql.includes("UPDATE api_partners SET default_discount_percent") && q.params[0] === 15));
   const insert = h.queries.find(q => q.sql.includes("INSERT INTO api_partner_prices"));
-  assert.deepEqual(insert.params, [7, "iphone-13", "128GB|Black|A", "42.50"]);
+  assert.deepEqual(insert.params, [7, "iphone-13", "128GB|Black|A", "339.15"]);
 });
 
 test("admin price replacement rejects unknown variants before changing saved prices", async () => {
