@@ -260,29 +260,41 @@
     } catch {}
   }
 
+  function stopPolling() {
+    if (!timer) return;
+    clearInterval(timer);
+    timer = null;
+  }
+
+  function startPolling() {
+    if (!panel.classList.contains("open") || document.hidden || timer) return;
+    refresh();
+    timer = setInterval(refresh, 5000);
+  }
+
   launch.addEventListener("click", () => {
     const open = !panel.classList.contains("open");
     panel.classList.toggle("open", open);
     launch.setAttribute("aria-expanded", String(open));
 
     if (open) {
-      refresh();
-      if (!timer) timer = setInterval(refresh, 5000);
+      startPolling();
       input.focus();
-    } else if (timer) {
-      clearInterval(timer);
-      timer = null;
+    } else {
+      stopPolling();
     }
   });
 
   panel.querySelector(".homs-ai-close").addEventListener("click", () => {
     panel.classList.remove("open");
     launch.setAttribute("aria-expanded", "false");
+    stopPolling();
+  });
 
-    if (timer) {
-      clearInterval(timer);
-      timer = null;
-    }
+  // Avoid background polling while the customer has another tab or app open.
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stopPolling();
+    else startPolling();
   });
 
   form.addEventListener("submit", async (event) => {
