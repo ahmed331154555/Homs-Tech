@@ -454,6 +454,115 @@
       @keyframes htPhoneTicker{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
       @media(max-width:700px){#homePopularSection .products.auto-moving .home-motion-track{animation-duration:34s!important}}
       @media(prefers-reduced-motion:reduce){#homePopularSection .products.auto-moving{overflow-x:auto!important;scrollbar-width:thin!important}#homePopularSection .products.auto-moving .home-motion-track{animation:none!important;transform:none!important}#homePopularSection .home-motion-group[aria-hidden="true"]{display:none!important}}
+
+      /* Mobico-inspired product presentation — scoped only to the homepage phone strip. */
+      #homePopularSection .products.auto-moving .home-motion-group>.product{
+       flex:0 0 clamp(250px,72vw,310px)!important;
+       width:clamp(250px,72vw,310px)!important;
+       min-width:clamp(250px,72vw,310px)!important;
+       max-width:clamp(250px,72vw,310px)!important;
+       padding:0!important;
+       border:0!important;
+       border-radius:0!important;
+       background:transparent!important;
+       box-shadow:none!important;
+       overflow:visible!important;
+       position:relative!important;
+       color:var(--text)!important;
+      }
+      #homePopularSection .home-phone-image{
+       width:100%!important;
+       aspect-ratio:1/1!important;
+       height:auto!important;
+       min-height:0!important;
+       flex:0 0 auto!important;
+       display:flex!important;
+       align-items:center!important;
+       justify-content:center!important;
+       overflow:hidden!important;
+       box-sizing:border-box!important;
+       background:var(--bg)!important;
+       border:1px solid var(--line)!important;
+       border-radius:22px!important;
+       padding:12px!important;
+      }
+      #homePopularSection .home-phone-image img{
+       display:block!important;
+       width:100%!important;
+       height:100%!important;
+       max-width:100%!important;
+       max-height:100%!important;
+       object-fit:contain!important;
+       object-position:center!important;
+       padding:0!important;
+       border:0!important;
+       background:transparent!important;
+      }
+      #homePopularSection .home-phone-body{
+       padding:15px 0 4px!important;
+       white-space:normal!important;
+       text-align:left!important;
+      }
+      #homePopularSection .home-phone-title{
+       margin:0 0 7px!important;
+       color:var(--text)!important;
+       font-size:clamp(17px,4.5vw,21px)!important;
+       line-height:1.2!important;
+       font-weight:800!important;
+       overflow-wrap:anywhere!important;
+      }
+      #homePopularSection .home-phone-meta{
+       display:flex!important;
+       flex-wrap:wrap!important;
+       align-items:center!important;
+       gap:7px!important;
+       margin:0 0 12px!important;
+       color:var(--muted)!important;
+       font-size:clamp(13px,3.5vw,16px)!important;
+       line-height:1.35!important;
+      }
+      #homePopularSection .home-phone-meta-separator{color:#a4adb5!important}
+      #homePopularSection .home-phone-price{
+       margin:0 0 7px!important;
+       color:var(--text)!important;
+       font-size:clamp(21px,5.4vw,27px)!important;
+       line-height:1.15!important;
+       font-weight:900!important;
+      }
+      #homePopularSection .home-phone-stock{
+       display:flex!important;
+       align-items:center!important;
+       gap:9px!important;
+       margin:0!important;
+       color:#53616b!important;
+       font-size:clamp(13px,3.5vw,16px)!important;
+       line-height:1.3!important;
+       font-weight:500!important;
+      }
+      #homePopularSection .home-phone-stock-dot{
+       width:11px!important;
+       height:11px!important;
+       flex:0 0 11px!important;
+       border-radius:50%!important;
+       background:#16b66a!important;
+      }
+      #homePopularSection .home-phone-stock.is-sold-out .home-phone-stock-dot{background:#dc2626!important}
+      #homePopularSection .home-phone-stock.is-sold-out{color:#b42318!important}
+      #homePopularSection .home-phone-open-link{
+       position:absolute!important;
+       inset:0!important;
+       z-index:2!important;
+       display:block!important;
+       overflow:hidden!important;
+       text-indent:-9999px!important;
+       border-radius:22px!important;
+       outline-offset:4px!important;
+      }
+      @media(max-width:520px){
+       #homePopularSection .home-motion-group{gap:18px!important;padding-right:18px!important}
+       #homePopularSection .home-phone-image{border-radius:18px!important;padding:9px!important}
+       #homePopularSection .home-phone-open-link{border-radius:18px!important}
+      }
     </style>
     <link rel="stylesheet" href="assets/homs-global-nav.css" />
     <script
@@ -1218,80 +1327,207 @@
        const box=document.getElementById("products");
        if(!box)return;
        box.innerHTML="";
-       // Keep the catalog visible and scrollable while the moving ticker is disabled.
        box.classList.remove("auto-moving");
        box.style.display="flex";
        box.style.visibility="visible";
        box.style.overflowX="auto";
-       box.style.minHeight="240px";
+       box.style.minHeight="0";
+
        const sourcePhones=Array.isArray(data.phones)?data.phones:[];
        const popularSettings=data.homepage?.popular||{};
-       const selectedIndexes=Array.isArray(popularSettings.indexes)?popularSettings.indexes.map(Number).filter(Number.isInteger):[];
-       const matchedPhones=selectedIndexes.length?sourcePhones.filter((phone,index)=>selectedIndexes.includes(Number(phone?._index??index))):sourcePhones;
+       const selectedIndexes=Array.isArray(popularSettings.indexes)
+        ?popularSettings.indexes.map(Number).filter(Number.isInteger)
+        :[];
+       const matchedPhones=selectedIndexes.length
+        ?sourcePhones.filter((phone,index)=>selectedIndexes.includes(Number(phone?._index??index)))
+        :sourcePhones;
        const selectedPhones=matchedPhones.length?matchedPhones:sourcePhones;
        const configuredLimit=Number(popularSettings.limit);
-       const cardLimit=Number.isFinite(configuredLimit)?Math.max(1,Math.min(50,Math.floor(configuredLimit))):12;
+       const cardLimit=Number.isFinite(configuredLimit)
+        ?Math.max(1,Math.min(50,Math.floor(configuredLimit)))
+        :12;
+
        const firstImage=value=>{
         if(typeof value==="string"&&value.trim())return value.trim();
         if(Array.isArray(value))return value.find(item=>typeof item==="string"&&item.trim())||"";
-        if(value&&typeof value==="object")return Object.values(value).flatMap(item=>Array.isArray(item)?item:[item]).find(item=>typeof item==="string"&&item.trim())||"";
+        if(value&&typeof value==="object"){
+         return Object.values(value)
+          .flatMap(item=>Array.isArray(item)?item:[item])
+          .find(item=>typeof item==="string"&&item.trim())||"";
+        }
         return "";
+       };
+       const getStock=value=>{
+        const raw=value?.stock??value?.quantity??value?.stockQuantity;
+        if(raw!==undefined&&raw!==null&&raw!==""&&Number.isFinite(Number(raw))){
+         return Math.max(0,Number(raw));
+        }
+        return 0;
        };
        const expandPhone=(phone,index)=>{
         const p=phone&&typeof phone==="object"?phone:{name:String(phone||"Apparaat")};
-        const rows=Array.isArray(p.variantPrices)?p.variantPrices.filter(row=>row&&row.active!==false):[];
-        if(!rows.length)return [{p,idx:index}];
+        const rows=Array.isArray(p.variantPrices)
+         ?p.variantPrices.filter(row=>row&&row.active!==false)
+         :[];
+        if(!rows.length){
+         return [{
+          p:{
+           ...p,
+           storage:p.storage||p.geheugen||"",
+           color:p.color||p.kleur||"",
+           stock:getStock(p)
+          },
+          idx:index
+         }];
+        }
+
         const groups=new Map();
         rows.forEach(row=>{
-         const storage=String(row.storage||"").trim(),color=String(row.color||"").trim();
+         const storage=String(row.storage||"").trim();
+         const color=String(row.color||"").trim();
          if(!storage||!color)return;
          const key=storage.toLocaleLowerCase()+"|"+color.toLocaleLowerCase();
          if(!groups.has(key))groups.set(key,{storage,color,rows:[]});
          groups.get(key).rows.push(row);
         });
-        if(!groups.size)return [{p,idx:index}];
+        if(!groups.size)return [{p:{...p,stock:getStock(p)},idx:index}];
+
         return [...groups.values()].map(group=>{
          const gallery=firstImage(p.colorGalleryImages?.[group.color]);
          const colorImage=firstImage(p.colorImages?.[group.color]);
-         const optionImage=Array.isArray(p.colorOptions)?firstImage(p.colorOptions.find(option=>String(option?.label||"").toLowerCase()===group.color.toLowerCase())?.image):"";
-         const prices=group.rows.map(row=>Number(String(row.price??"").replace(/€/g,"").replace(",","."))).filter(value=>Number.isFinite(value)&&value>0);
-         return {p:{...p,name:String(p.name||"Smartphone")+" "+group.storage+" "+group.color,image:gallery||colorImage||optionImage||p.image||p.imageUrl||p.photo||firstImage(p.images),price:prices.length?Math.min(...prices):(p.price||"")},idx:index};
+         const optionImage=Array.isArray(p.colorOptions)
+          ?firstImage(p.colorOptions.find(option=>
+            String(option?.label||"").toLowerCase()===group.color.toLowerCase()
+           )?.image)
+          :"";
+         const prices=group.rows
+          .map(row=>Number(String(row.price??"").replace(/€/g,"").replace(",", ".")))
+          .filter(value=>Number.isFinite(value)&&value>0);
+         const stock=Math.max(0,...group.rows.map(row=>getStock(row)));
+         return {
+          p:{
+           ...p,
+           storage:group.storage,
+           color:group.color,
+           _variantStorage:group.storage,
+           _variantColor:group.color,
+           image:gallery||colorImage||optionImage||p.image||p.imageUrl||p.photo||firstImage(p.images),
+           price:prices.length?Math.min(...prices):(p.price||p.salePrice||""),
+           stock
+          },
+          idx:index
+         };
         });
        };
-       const chosen=selectedPhones.flatMap((phone,index)=>expandPhone(phone,Number.isInteger(Number(phone?._index))?Number(phone._index):index)).slice(0,cardLimit);
+
+       const chosen=selectedPhones
+        .flatMap((phone,index)=>expandPhone(
+         phone,
+         Number.isInteger(Number(phone?._index))?Number(phone._index):index
+        ))
+        .slice(0,cardLimit);
+
        if(!chosen.length){
         if(homepageCatalogLoading){box.innerHTML="";return;}
-        box.innerHTML="<div style='padding:25px;color:#667784'>Geen apparaten beschikbaar.</div>";return;
+        box.innerHTML="<div style='padding:25px;color:#667784'>Geen apparaten beschikbaar.</div>";
+        return;
        }
+
        chosen.forEach(({p,idx},productPosition)=>{
-        const image=p.image||p.imageUrl||p.photo||firstImage(p.images)||firstImage(p.colorImages)||firstImage(Array.isArray(p.colorOptions)?p.colorOptions.map(option=>option?.image):[]);
+        const image=p.image||p.imageUrl||p.photo||firstImage(p.images)||
+         firstImage(p.colorImages)||
+         firstImage(Array.isArray(p.colorOptions)?p.colorOptions.map(option=>option?.image):[]);
         const card=document.createElement("article");
         card.className="product";
-        card.style.cssText="flex:0 0 205px;width:205px;min-width:205px;max-width:205px;display:flex;flex-direction:column;box-sizing:border-box;";
         const picture=document.createElement("div");
-        picture.className="product-img";
-        picture.style.cssText="height:170px;min-height:170px;display:flex;align-items:center;justify-content:center;overflow:hidden;";
+        picture.className="home-phone-image";
+
         if(image){
-         const img=document.createElement("img");img.src=image;img.alt=p.name||"";img.loading=productPosition<4?"eager":"lazy";img.fetchPriority=productPosition<4?"high":"auto";img.decoding="async";
-         img.style.cssText="display:block;width:160px;height:160px;max-width:100%;object-fit:contain;";
+         const img=document.createElement("img");
+         img.src=image;
+         img.alt=p.name||"";
+         img.loading=productPosition<3?"eager":"lazy";
+         img.fetchPriority=productPosition<3?"high":"auto";
+         img.decoding="async";
          picture.appendChild(img);
-        }else picture.innerHTML='<div class="phone-placeholder"></div>';
-        const body=document.createElement("div");body.className="product-body";
-        const price=p.price||p.salePrice||p.sellPrice||p.verkoopprijs||"";
-        body.innerHTML="<h3>"+esc(p.name||"Apparaat")+"</h3><div class='meta'>"+esc(p.brand||"Refurbished")+"</div>"+(price?"<div class='price'>€ "+esc(String(price).replace(/^€\\s*/,""))+"</div>":"");
-        const link=document.createElement("a");link.className="buy";
+        }else{
+         const placeholder=document.createElement("div");
+         placeholder.className="phone-placeholder";
+         picture.appendChild(placeholder);
+        }
+
+        const body=document.createElement("div");
+        body.className="home-phone-body";
+
+        const title=document.createElement("h3");
+        title.className="home-phone-title";
+        title.textContent=p.name||"Apparaat";
+
+        const meta=document.createElement("div");
+        meta.className="home-phone-meta";
+        const color=String(p.color||p.kleur||"").trim();
+        const storage=String(p.storage||p.geheugen||"").trim();
+        if(color){
+         const colorText=document.createElement("span");
+         colorText.textContent=color;
+         meta.appendChild(colorText);
+        }
+        if(color&&storage){
+         const separator=document.createElement("span");
+         separator.className="home-phone-meta-separator";
+         separator.textContent="|";
+         meta.appendChild(separator);
+        }
+        if(storage){
+         const storageText=document.createElement("span");
+         storageText.textContent=storage;
+         meta.appendChild(storageText);
+        }
+
+        const priceValue=p.price||p.salePrice||p.sellPrice||p.verkoopprijs||"";
+        const price=document.createElement("div");
+        price.className="home-phone-price";
+        if(priceValue){
+         price.textContent="€ "+String(priceValue).replace(/^€\s*/,"");
+        }else{
+         price.textContent="Prijs op aanvraag";
+        }
+
+        const stock=getStock(p);
+        const stockStatus=document.createElement("div");
+        stockStatus.className="home-phone-stock"+(stock>0?"":" is-sold-out");
+        const dot=document.createElement("span");
+        dot.className="home-phone-stock-dot";
+        dot.setAttribute("aria-hidden","true");
+        const stockText=document.createElement("span");
+        stockText.textContent=stock>0?"Op voorraad":"Uitverkocht";
+        stockStatus.append(dot,stockText);
+
+        body.append(title,meta,price,stockStatus);
+
         const params=new URLSearchParams({type:"phone",id:String(p._index??idx)});
         if(p._variantStorage)params.set("storage",p._variantStorage);
         if(p._variantColor)params.set("color",p._variantColor);
-        link.href="product.html?"+params.toString();link.textContent="Bekijk apparaat";
-        body.appendChild(link);card.appendChild(picture);card.appendChild(body);box.appendChild(card);
+        const link=document.createElement("a");
+        link.className="home-phone-open-link";
+        link.href="product.html?"+params.toString();
+        link.setAttribute("aria-label","Bekijk "+String(p.name||"Apparaat"));
+        link.textContent="Bekijk apparaat";
+
+        card.append(picture,body,link);
+        box.appendChild(card);
        });
-       // Two identical groups create a seamless loop; cards remain intact and clickable.
+
+       // Keep the existing seamless ticker behaviour; only the card presentation changes.
        const cards=[...box.querySelectorAll(":scope > .product")];
        if(cards.length>1){
-        const track=document.createElement("div");track.className="home-motion-track";
-        const firstGroup=document.createElement("div");firstGroup.className="home-motion-group";
-        const secondGroup=document.createElement("div");secondGroup.className="home-motion-group";secondGroup.setAttribute("aria-hidden","true");
+        const track=document.createElement("div");
+        track.className="home-motion-track";
+        const firstGroup=document.createElement("div");
+        firstGroup.className="home-motion-group";
+        const secondGroup=document.createElement("div");
+        secondGroup.className="home-motion-group";
+        secondGroup.setAttribute("aria-hidden","true");
         cards.forEach(card=>firstGroup.appendChild(card));
         cards.forEach(card=>secondGroup.appendChild(card.cloneNode(true)));
         track.append(firstGroup,secondGroup);
