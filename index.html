@@ -1403,7 +1403,12 @@
          const prices=group.rows
           .map(row=>Number(String(row.price??"").replace(/€/g,"").replace(",", ".")))
           .filter(value=>Number.isFinite(value)&&value>0);
-         const stock=Math.max(0,...group.rows.map(row=>getStock(row)));
+         const stock=Math.max(0,...group.rows.map(row=>{
+          const raw=row.stock??row.quantity??row.stockQuantity??p.stock??p.quantity??p.stockQuantity;
+          return raw!==undefined&&raw!==null&&raw!==""&&Number.isFinite(Number(raw))
+           ?Math.max(0,Number(raw))
+           :0;
+         }));
          return {
           p:{
            ...p,
@@ -1433,6 +1438,17 @@
         return;
        }
 
+       const stripOptionSuffixes=(name,storage,color)=>{
+        let title=String(name||"Apparaat").trim();
+        [color,storage].filter(Boolean).forEach(option=>{
+         const suffix=" "+String(option).trim();
+         if(title.toLocaleLowerCase().endsWith(suffix.toLocaleLowerCase())){
+          title=title.slice(0,-suffix.length).trim();
+         }
+        });
+        return title||String(name||"Apparaat");
+       };
+
        chosen.forEach(({p,idx},productPosition)=>{
         const image=p.image||p.imageUrl||p.photo||firstImage(p.images)||
          firstImage(p.colorImages)||
@@ -1461,7 +1477,11 @@
 
         const title=document.createElement("h3");
         title.className="home-phone-title";
-        title.textContent=p.name||"Apparaat";
+        title.textContent=stripOptionSuffixes(
+         p.name||"Apparaat",
+         p.storage||p.geheugen||"",
+         p.color||p.kleur||""
+        );
 
         const meta=document.createElement("div");
         meta.className="home-phone-meta";
