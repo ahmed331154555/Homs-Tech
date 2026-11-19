@@ -200,12 +200,15 @@ async function checkLogin(){
   }
 }
 function showLogin(){
+  document.body.classList.remove("admin-authenticated");
+  if(typeof closeAdminMenu==="function")closeAdminMenu();
   document.getElementById("loginBox").style.display="block";
   document.getElementById("dashboard").style.display="none";
   document.getElementById("logoutBtn").style.display="none";
   document.getElementById("adminNav").style.display="none";
 }
 function showDashboard(){
+  document.body.classList.add("admin-authenticated");
   document.getElementById("loginBox").style.display="none";
   document.getElementById("dashboard").style.display="block";
   document.getElementById("logoutBtn").style.display="block";
