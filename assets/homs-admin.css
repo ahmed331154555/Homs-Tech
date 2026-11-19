@@ -4439,3 +4439,67 @@ body{
  #page-device-register .dr-form-grid input,
  #page-device-register .dr-form-grid select{height:35px;min-height:35px;font-size:11px}
 }
+
+
+/* HOMS TECH — final mobile usability layer (admin dashboard only) */
+@media(max-width:760px){
+  #dashboard,#dashboard .container,#dashboard .admin-page{min-width:0;max-width:100%}
+  #dashboard .grid,
+  #dashboard .order-grid,
+  #dashboard .order-summary,
+  #dashboard .ht-invoice-form-grid{min-width:0}
+  #dashboard .grid>*,
+  #dashboard .order-grid>*,
+  #dashboard .section>*,
+  #dashboard .card>*{min-width:0}
+  #dashboard .section-head,
+  #dashboard .card-head{
+    align-items:stretch;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  #dashboard .section-head h2{font-size:clamp(18px,4.8vw,22px);line-height:1.25}
+  #dashboard .section-head .btn,
+  #dashboard .card-head>.btn,
+  #dashboard .actions>.btn{min-height:42px}
+  #dashboard .field input,
+  #dashboard .field select,
+  #dashboard .field textarea,
+  #dashboard input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  #dashboard select,
+  #dashboard textarea{
+    box-sizing:border-box;
+    max-width:100%;
+    min-width:0;
+    min-height:44px;
+    font-size:16px;
+  }
+  #dashboard textarea{min-height:100px}
+  #dashboard .actions{align-items:stretch;gap:8px}
+  #dashboard .actions>.btn{flex:1 1 auto}
+  #dashboard .orders-toolbar{display:flex;flex-direction:column;align-items:stretch}
+  #dashboard .orders-search,
+  #dashboard .order-filter,
+  #dashboard .order-filter-btn{width:100%;max-width:100%;min-width:0}
+  #dashboard .ht-invoice-lines-wrap,
+  #dashboard .ht-invoice-table-wrap,
+  #dashboard .ht-inventory-table-wrap,
+  #dashboard .ht-inventory-history-wrap,
+  #dashboard .dr-sheet-wrap{max-width:100%;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+  #dashboard .ht-invoice-lines-wrap table,
+  #dashboard .ht-invoice-table-wrap table,
+  #dashboard .ht-inventory-table-wrap table,
+  #dashboard .ht-inventory-history-wrap table{min-width:620px}
+  #dashboard .status{overflow-wrap:anywhere}
+  #dashboard img{height:auto}
+}
+@media(max-width:420px){
+  #dashboard .section-head .btn,
+  #dashboard .card-head>.btn{width:100%}
+  #dashboard .actions>.btn{flex-basis:100%}
+  #dashboard .order-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  #dashboard .order-actions .btn,
+  #dashboard .order-actions .order-status-select{width:100%;min-width:0}
+  #dashboard .order-grid{grid-template-columns:minmax(0,1fr)}
+  #dashboard .section-head p{font-size:13px;line-height:1.5}
+}
