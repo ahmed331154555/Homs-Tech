@@ -4675,3 +4675,17 @@ body{
 #dashboard .webshop-order-list-card .webshop-status-pill.is-complete{background:#dcfce7;color:#15803d}
 #dashboard .webshop-order-list-card .webshop-status-pill.is-cancelled{background:#fee2e2;color:#b91c1c}
 #dashboard .webshop-order-list-card .webshop-status-pill.is-unknown{background:#f1f5f9;color:#475569}
+
+
+/* Payment state visible in the shop order list */
+#dashboard .webshop-order-list-card .webshop-payment-pill{
+  display:inline-flex;align-items:center;gap:5px;padding:6px 9px;
+  border:1px solid transparent;line-height:1.2;
+}
+#dashboard .webshop-order-list-card .webshop-payment-pill.is-paid{background:#e8f8ef;color:#167344;border-color:#c8efd8}
+#dashboard .webshop-order-list-card .webshop-payment-pill.is-pending{background:#fff7e6;color:#98620b;border-color:#f8e4b8}
+#dashboard .webshop-order-list-card .webshop-payment-pill.is-failed{background:#fff0f0;color:#b42318;border-color:#f8d0d0}
+@media(max-width:600px){
+  #dashboard .webshop-order-list-card .phone-order-state{row-gap:7px}
+  #dashboard .webshop-order-list-card .phone-order-state time{flex-basis:100%}
+}
