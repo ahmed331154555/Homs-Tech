@@ -4652,3 +4652,26 @@ body{
     grid-template-columns:minmax(0,1fr);
   }
 }
+
+
+/* Order status clarity — shared visual language for shop and phone orders */
+#dashboard .webshop-order-list-card.is-new{
+  border-color:#93c5fd!important;
+  box-shadow:0 3px 14px rgba(37,99,235,.09)!important;
+}
+#dashboard .webshop-order-list-card.is-new .phone-order-footer{
+  background:#f0f7ff;
+  border-top-color:#dbeafe;
+}
+#dashboard .webshop-order-list-card .webshop-status-pill{
+  gap:6px;
+  padding:6px 10px;
+  line-height:1.2;
+}
+#dashboard .webshop-order-list-card .webshop-status-pill.is-new{background:#e8f1ff;color:#1d4ed8}
+#dashboard .webshop-order-list-card .webshop-status-pill.is-accepted{background:#dcfce7;color:#15803d}
+#dashboard .webshop-order-list-card .webshop-status-pill.is-processing{background:#fff4d9;color:#a16207}
+#dashboard .webshop-order-list-card .webshop-status-pill.is-shipped{background:#e9edff;color:#4338ca}
+#dashboard .webshop-order-list-card .webshop-status-pill.is-complete{background:#dcfce7;color:#15803d}
+#dashboard .webshop-order-list-card .webshop-status-pill.is-cancelled{background:#fee2e2;color:#b91c1c}
+#dashboard .webshop-order-list-card .webshop-status-pill.is-unknown{background:#f1f5f9;color:#475569}
