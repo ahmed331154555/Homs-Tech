@@ -13,26 +13,80 @@
       rel="stylesheet"
       href="../assets/partner-admin.css?v=20261117-api-guide1"
     />
+      <style id="homs-admin-mobile-navigation">
+      .admin-menu-toggle{display:none;border:0;background:rgba(255,255,255,.12);color:#fff;width:44px;height:44px;border-radius:12px;font-size:25px;line-height:1;align-items:center;justify-content:center}
+      .admin-nav-heading{display:none}
+      .admin-logout-btn{background:#fff1f2!important;color:#be123c!important;border:1px solid #fecdd3!important}
+      .save-info{min-width:0;flex:1}
+      .save-info-row{display:flex;align-items:center;gap:9px;min-width:0}
+      .save-info-row #saveStatus{min-width:0;overflow:hidden;text-overflow:ellipsis}
+      .save-info-toggle{border:0;background:#edf4ff;color:#1d4ed8;width:30px;height:30px;flex:0 0 30px;border-radius:50%;font-weight:800}
+      .save-info-details{margin-top:8px;line-height:1.45}
+      @media(max-width:760px){
+        .topbar{min-height:66px;padding:10px 14px!important;gap:12px}
+        .admin-menu-toggle{display:inline-flex;flex:0 0 44px}
+        .topbar .logo{font-size:clamp(17px,4.8vw,21px);letter-spacing:0}
+        #adminNav{display:none!important;position:fixed!important;inset:0!important;z-index:3000!important;
+          width:100vw;height:100dvh;background:rgba(5,18,31,.58)!important;
+          padding:0!important;border:0!important;box-shadow:none!important;overflow:hidden!important}
+        #adminNav.is-open{display:flex!important;align-items:stretch!important}
+        #adminNav .admin-nav-inner{width:min(88vw,370px);height:100%;max-height:100dvh;margin:0;
+          padding:16px 14px calc(22px + env(safe-area-inset-bottom));display:flex;flex-direction:column;
+          align-items:stretch;gap:7px;overflow-y:auto;overscroll-behavior:contain;
+          background:#071d2d;color:#fff;box-shadow:18px 0 45px rgba(0,0,0,.24)}
+        #adminNav .admin-nav-heading{display:flex;align-items:center;justify-content:space-between;
+          padding:5px 4px 14px;margin-bottom:5px;border-bottom:1px solid rgba(255,255,255,.14);
+          color:#fff;font-size:18px;position:sticky;top:-16px;background:#071d2d;z-index:2}
+        #adminNav .admin-nav-close{width:38px;height:38px;border:0;border-radius:11px;
+          background:rgba(255,255,255,.12);color:#fff;font-size:20px}
+        #adminNav .nav-btn{display:flex;align-items:center;justify-content:flex-start;
+          width:100%;min-height:48px;padding:12px 14px;border-radius:11px;text-align:left;
+          white-space:normal;background:rgba(255,255,255,.08);color:#e8f1f8;font-size:14px}
+        #adminNav .nav-btn.active{background:#2563eb;color:#fff}
+        #adminNav .nav-orders-submenu{padding:4px 0 6px 13px}
+        #adminNav .nav-sub-btn{width:100%;min-height:42px;text-align:left;border:0;border-radius:9px;
+          padding:9px 12px;margin:3px 0;background:rgba(255,255,255,.06);color:#dbeafe}
+        #adminNav .admin-logout-btn{margin-top:12px;background:#7f1d1d!important;color:#fff!important;border-color:#b91c1c!important}
+        .save-bar{position:fixed!important;left:12px!important;right:12px!important;
+          bottom:calc(10px + env(safe-area-inset-bottom))!important;z-index:1200!important;
+          display:flex!important;flex-direction:row!important;align-items:center!important;
+          gap:10px!important;margin:0!important;padding:10px 12px!important;
+          border:1px solid #dce5ef!important;border-radius:16px!important;
+          background:rgba(255,255,255,.97)!important;backdrop-filter:blur(14px);
+          box-shadow:0 8px 28px rgba(15,35,61,.18)!important}
+        .save-info{min-width:0;flex:1}
+        .save-info-row #saveStatus{font-size:12px;line-height:1.35;white-space:nowrap}
+        .save-info-details:not([hidden]){display:block!important;font-size:12px;margin-top:8px}
+        .save-bar #saveBtn{flex:0 0 auto;min-height:44px!important;padding:10px 13px!important;
+          border-radius:11px!important;font-size:13px!important;white-space:nowrap}
+        #dashboard>.container{padding-bottom:94px!important}
+      }
+      @media(max-width:390px){
+        .topbar .logo{font-size:16px}
+        .save-bar{left:8px!important;right:8px!important;padding:8px!important;gap:7px!important}
+        .save-info-row #saveStatus{font-size:11px}
+        .save-bar #saveBtn{font-size:12px!important;padding:9px 10px!important}
+      }
+    </style>
   </head>
 
   <body>
     <a class="ht-admin-skip-link" href="#dashboard">Direct naar hoofdinhoud</a>
 
     <div class="topbar">
+      <button class="admin-menu-toggle" id="adminMenuToggle" type="button"
+        aria-label="Menu openen" aria-controls="adminNav" aria-expanded="false"
+        onclick="toggleAdminMenu()">☰</button>
       <div class="logo">HOMS <span>TECH</span> — Admin</div>
-      <button
-        class="btn btn-light"
-        id="logoutBtn"
-        onclick="logout()"
-        style="display:none"
-      >
-        Uitloggen
-      </button>
     </div>
 
     <!-- ================= NAVIGATIE ================= -->
     <div id="adminNav" class="admin-nav">
       <div class="admin-nav-inner">
+        <div class="admin-nav-heading">
+          <strong>HOMS TECH</strong>
+          <button type="button" class="admin-nav-close" aria-label="Menu sluiten" onclick="closeAdminMenu()">✕</button>
+        </div>
         <a
           class="nav-btn"
           data-permission="site.save"
@@ -197,6 +251,10 @@
           onclick="showPage('admins')"
         >
           👤 Admins
+        </button>
+        <button class="nav-btn admin-logout-btn" id="logoutBtn"
+          type="button" onclick="logout()" style="display:none">
+          ↪ Uitloggen
         </button>
       </div>
     </div>
@@ -2618,12 +2676,17 @@
 
         <!-- SAVE -->
         <div class="save-bar">
-          <div>
-            <div id="saveStatus" class="status">
-              Wijzigingen nog niet opgeslagen
+          <div class="save-info">
+            <div class="save-info-row">
+              <div id="saveStatus" class="status">
+                Wijzigingen nog niet opgeslagen
+              </div>
+              <button type="button" class="save-info-toggle" id="saveInfoToggle"
+                aria-expanded="false" aria-controls="saveInfoDetails"
+                onclick="toggleSaveInfo()">ⓘ</button>
             </div>
-            <div class="small">
-              ✓ Wijzigingen worden opgeslagen wanneer jij op «Wijzigingen
+            <div class="small save-info-details" id="saveInfoDetails" hidden>
+              ✓ Wijzigingen worden pas opgeslagen wanneer jij op «Wijzigingen
               opslaan» drukt.
             </div>
           </div>
@@ -2661,5 +2724,38 @@
         });
       }
     </script>
-  </body>
+      <script>
+      function toggleAdminMenu(){
+        const nav=document.getElementById("adminNav");
+        const toggle=document.getElementById("adminMenuToggle");
+        if(!nav||!toggle)return;
+        const open=!nav.classList.contains("is-open");
+        nav.classList.toggle("is-open",open);
+        toggle.setAttribute("aria-expanded",String(open));
+        toggle.setAttribute("aria-label",open?"Menu sluiten":"Menu openen");
+        document.body.classList.toggle("admin-menu-open",open);
+      }
+      function closeAdminMenu(){
+        const nav=document.getElementById("adminNav");
+        const toggle=document.getElementById("adminMenuToggle");
+        if(nav)nav.classList.remove("is-open");
+        if(toggle){toggle.setAttribute("aria-expanded","false");toggle.setAttribute("aria-label","Menu openen");}
+        document.body.classList.remove("admin-menu-open");
+      }
+      function toggleSaveInfo(){
+        const details=document.getElementById("saveInfoDetails");
+        const toggle=document.getElementById("saveInfoToggle");
+        if(!details||!toggle)return;
+        const open=details.hidden;
+        details.hidden=!open;
+        toggle.setAttribute("aria-expanded",String(open));
+        toggle.textContent=open?"×":"ⓘ";
+      }
+      document.getElementById("adminNav")?.addEventListener("click",event=>{
+        if(event.target===event.currentTarget)closeAdminMenu();
+        if(event.target.closest("button[data-page]")||event.target.closest("a.nav-btn"))closeAdminMenu();
+      });
+      document.addEventListener("keydown",event=>{if(event.key==="Escape")closeAdminMenu();});
+    </script>
+    </body>
 </html>
