@@ -4503,3 +4503,152 @@ body{
   #dashboard .order-grid{grid-template-columns:minmax(0,1fr)}
   #dashboard .section-head p{font-size:13px;line-height:1.5}
 }
+
+
+/* HOMS TECH — order cards and detail panels polish (visual only) */
+#dashboard .webshop-order-list-card{
+  padding:0!important;
+  overflow:hidden;
+  border:1px solid #e1e8f0!important;
+  border-radius:15px!important;
+  background:#fff!important;
+  box-shadow:0 3px 13px rgba(7,29,45,.055)!important;
+}
+#dashboard .webshop-order-list-card .phone-order-main{
+  gap:14px;
+  padding:15px 16px;
+}
+#dashboard .webshop-order-list-card .phone-order-product{
+  border-color:#e6edf5;
+  background:linear-gradient(145deg,#f8fafc,#eef3f8);
+}
+#dashboard .webshop-order-list-card .phone-order-title-line{
+  row-gap:6px;
+}
+#dashboard .webshop-order-list-card .webshop-order-title-link{
+  color:#102b43;
+  line-height:1.35;
+  text-decoration:none;
+}
+#dashboard .webshop-order-list-card .webshop-order-title-link:hover{
+  color:#1d4ed8;
+  text-decoration:underline;
+}
+#dashboard .webshop-order-list-card .phone-order-item-meta{
+  line-height:1.5;
+}
+#dashboard .webshop-order-list-card .phone-order-customer{
+  gap:7px 12px;
+  line-height:1.45;
+}
+#dashboard .webshop-order-list-card .phone-order-footer{
+  padding:11px 16px;
+  background:#f8fafc;
+}
+#dashboard .webshop-order-list-card .phone-order-state{
+  gap:8px;
+}
+#dashboard .ht-order-detail-overlay{
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+#dashboard .ht-order-detail-panel{
+  max-height:calc(100dvh - 36px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+#dashboard .ht-order-detail-top{
+  position:sticky;
+  top:-18px;
+  z-index:4;
+  margin:-3px -2px 12px;
+  padding:12px 2px 14px;
+  background:#f4f6f8;
+  border-bottom:1px solid #e2e8f0;
+}
+#dashboard .ht-order-detail-top button,
+#dashboard .ht-order-detail-footer .btn,
+#dashboard .ht-order-contact-actions .btn{
+  min-height:42px;
+}
+#dashboard .ht-order-detail-section{
+  border-color:#e3eaf2;
+  border-radius:13px;
+}
+#dashboard .ht-order-customer-grid>div{
+  min-width:0;
+}
+#dashboard .ht-order-customer-grid strong,
+#dashboard .ht-order-product-copy strong,
+#dashboard .ht-order-product-copy small{
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+@media(max-width:600px){
+  #dashboard .webshop-order-list-card .phone-order-main{
+    grid-template-columns:54px minmax(0,1fr);
+    gap:10px;
+    padding:12px;
+  }
+  #dashboard .webshop-order-list-card .phone-order-product{
+    width:54px;
+    height:60px;
+  }
+  #dashboard .webshop-order-list-card .phone-order-price{
+    grid-column:2;
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    text-align:left;
+  }
+  #dashboard .webshop-order-list-card .phone-order-price strong{
+    font-size:18px;
+  }
+  #dashboard .webshop-order-list-card .phone-order-footer{
+    align-items:flex-start;
+    padding:10px 12px;
+  }
+  #dashboard .ht-order-detail-overlay{
+    align-items:flex-start;
+    padding:6px;
+  }
+  #dashboard .ht-order-detail-panel{
+    width:100%;
+    max-height:calc(100dvh - 12px);
+    padding:10px;
+    border-radius:14px;
+  }
+  #dashboard .ht-order-detail-top{
+    top:-10px;
+    padding:10px 0 12px;
+    margin:0 0 10px;
+  }
+  #dashboard .ht-order-detail-top h2{
+    font-size:19px;
+    line-height:1.25;
+  }
+  #dashboard .ht-order-contact-actions{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  #dashboard .ht-order-contact-actions .btn{
+    min-width:0;
+    white-space:normal;
+  }
+  #dashboard .ht-order-detail-footer{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  #dashboard .ht-order-detail-footer .btn{
+    width:100%;
+    min-width:0;
+    white-space:normal;
+  }
+}
+@media(max-width:380px){
+  #dashboard .ht-order-contact-actions,
+  #dashboard .ht-order-detail-footer{
+    grid-template-columns:minmax(0,1fr);
+  }
+}
