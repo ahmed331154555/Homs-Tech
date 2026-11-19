@@ -564,6 +564,14 @@
        #homePopularSection .home-phone-open-link{border-radius:18px!important}
       }
     </style>
+    <style id="homepage-phone-image-background">
+      /* Blend white image canvases into the site background; scoped to homepage phone photos only. */
+      #homePopularSection .home-phone-image{background:var(--bg)!important}
+      #homePopularSection .home-phone-image img{
+        background:transparent!important;
+        mix-blend-mode:multiply;
+      }
+    </style>
     <link rel="stylesheet" href="assets/homs-global-nav.css" />
     <script
       async
