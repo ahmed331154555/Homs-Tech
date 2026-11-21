@@ -41,6 +41,8 @@ const ADMIN_PERMISSION_LABELS = {
 function hasPermission(p){return currentUser.role==="superadmin"||currentUser.permissions.includes("*")||currentUser.permissions.includes(p)||(["buyback_orders.delete","webshop_orders.delete"].includes(p)&&currentUser.permissions.includes("site.save"));}
 function canEditSite(){return hasPermission("site.save");}
 function canEditCurrentPage(){
+  // Discounts use their dedicated API and must never expose the global full-site save.
+  if(currentPage==="discounts") return false;
   if(currentPage==="phones") return hasPermission("phones.update") || canEditSite();
   if(currentPage==="shop") return canEditSite();
   if(currentPage==="repair") return hasPermission("repair_page.update") || canEditSite();
@@ -4868,6 +4870,8 @@ async function compressShopCatalogPhotos(products){
 
 async function save(isAuto=false){
   const savePage=currentPage;
+  // Never submit the full site-settings object from the discounts page.
+  if(savePage==="discounts"){setStatus("Kortingen worden apart opgeslagen.","info");return false;}
   if(!canEditCurrentPage()){setStatus("✕ Je hebt geen toestemming om wijzigingen op te slaan.","error");return false;}
   if(isAuto) autoSaveAgain=false;
   if(loading) return false;
