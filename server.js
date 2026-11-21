@@ -28,6 +28,7 @@ const {
 } = require("./routes/admin-buyback-orders");
 const { registerAdminInvoiceRoutes } = require("./routes/admin-invoices");
 const { registerAdminInventoryRoutes } = require("./routes/admin-inventory");
+const { registerAdminDiscountRoutes } = require("./routes/admin-discounts");
 const { registerAdminEmailRoutes } = require("./routes/admin-emails");
 const { registerContactRoutes } = require("./routes/contact");
 const { registerAnnouncementBarRoutes } = require("./routes/announcement-bars");
@@ -496,6 +497,10 @@ registerAnnouncementBarRoutes(app, {
   queryWithConnectionRetry,
 });
 registerBenefitsStripRoutes(app, {
+  requirePermission,
+  queryWithConnectionRetry,
+});
+registerAdminDiscountRoutes(app, {
   requirePermission,
   queryWithConnectionRetry,
 });
