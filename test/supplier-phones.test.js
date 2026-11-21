@@ -21,6 +21,13 @@ test("normalizes a supplier phone without inventing missing price or stock", () 
   assert.equal(product.inStock, null);
 });
 
+test("does not expose supplier purchase price as a customer price", () => {
+  const product = normalizeSupplierProduct({ id: "cost-1", name: "Phone", price: 210 }, "forza");
+  assert.equal(product.price, null);
+  const retail = normalizeSupplierProduct({ id: "retail-1", name: "Phone", price: 210, publicPrice: 349 }, "forza");
+  assert.equal(retail.price, 349);
+});
+
 test("rejects invalid products and non-http image URLs", () => {
   assert.equal(normalizeSupplierProduct({ title: "No ID" }, "mobico"), null);
   const product = normalizeSupplierProduct({ sku: "A1", name: "Phone", image: "javascript:alert(1)" }, "mobico");
