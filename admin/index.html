@@ -166,6 +166,14 @@
         </button>
         <button
           class="nav-btn"
+          data-page="discounts"
+          data-permission="site.save"
+          onclick="showPage('discounts')"
+        >
+          🏷️ Kortingen
+        </button>
+        <button
+          class="nav-btn"
           data-page="inventory"
           data-permission="site.save"
           onclick="showPage('inventory')"
@@ -820,6 +828,27 @@
             video-optie aanzetten.
           </div>
           <div id="shopProductsAdmin"></div>
+        </section>
+
+        <!-- KORTINGEN -->
+        <section class="section admin-page" id="page-discounts" data-permission="site.save">
+          <div class="section-head">
+            <div>
+              <h2>🏷️ Kortingen</h2>
+              <p>Beheer tijdelijke productkortingen voor de HOMS TECH-webshop.</p>
+            </div>
+            <button class="btn btn-green" type="button" onclick="discountAdd()">＋ Korting toevoegen</button>
+          </div>
+          <div class="card" style="padding:16px;border:1px solid #e2e8f0;border-radius:14px;background:#fff">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+              <button class="btn btn-light" type="button" onclick="discountSetFilter('all')">Alle kortingen</button>
+              <button class="btn btn-light" type="button" onclick="discountSetFilter('active')">Actief</button>
+              <button class="btn btn-light" type="button" onclick="discountSetFilter('expired')">Verlopen</button>
+            </div>
+            <div id="discountEditor" hidden></div>
+            <div id="discountList"><p class="small">Kortingen laden…</p></div>
+            <p id="discountStatus" class="small" role="status" aria-live="polite"></p>
+          </div>
         </section>
 
         <!-- INKOOP / UW TOESTEL VERKOPEN -->
