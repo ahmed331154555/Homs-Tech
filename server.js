@@ -1532,6 +1532,13 @@ app.put("/api/site", requireSiteOrPhoneUpdate, async (req, res) => {
     const section = String(req.headers["x-homs-admin-section"] || "")
       .trim()
       .toLowerCase();
+    // Discounts are saved through /api/admin/discounts only. Reject full-site
+    // payloads from that page so stale admin state can never replace the catalog.
+    if (section === "discounts") {
+      return res.status(400).json({
+        error: "Kortingen moeten via de aparte kortingsopslag worden bewaard.",
+      });
+    }
     const phoneSharedFields = [
       "phoneFolders",
       "globalConditionDetails",
