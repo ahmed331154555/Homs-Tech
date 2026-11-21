@@ -20,7 +20,7 @@ const deletingWebshopOrderIds = new Set();
 
 const PAGE_PERMISSIONS = {
   "all-orders":"orders.view","live-chat":"orders.view",
-  general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",shop:"site.save",categories:"categories.view",
+  general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",shop:"site.save",discounts:"site.save",categories:"categories.view",
 why:"why.view",customers:"customers.view",orders:"orders.view","repair-requests":"orders.view",
   "webshop-orders":"webshop_orders.view","invoices":"site.save","order-settings":"site.save",search:"search",admins:"admins.manage",
   buyback:"site.save", "buyback-orders":"buyback_orders.view", inventory:"site.save", partners:"site.save", "device-register":"device_register.view", emails:"site.save"
@@ -48,7 +48,7 @@ function canEditCurrentPage(){
   return canEditSite();
 }
 function firstAllowedPage(){
-  const pages=["general","services","repair","phones","shop","buyback","buyback-orders","categories","why","customers","orders","repair-requests","webshop-orders","emails","invoices","inventory","partners","device-register","search","admins"];
+  const pages=["general","services","repair","phones","shop","discounts","buyback","buyback-orders","categories","why","customers","orders","repair-requests","webshop-orders","emails","invoices","inventory","partners","device-register","search","admins"];
   return pages.find(p=>hasPermission(PAGE_PERMISSIONS[p]))||null;
 }
 function applyPermissionUI(){
@@ -153,6 +153,7 @@ function showPage(page){
     if(page==="webshop-orders")loadWebshopOrders();
     if(page==="order-settings")loadOrderSettings();
     if(page==="shop")loadShopVisibility();
+    if(page==="discounts")discountLoad();
     if(page==="buyback-orders")loadBuybackOrders();
     if(page==="admins")loadAdmins();
     if(page==="partners"&&typeof loadPartnersAdmin==="function")loadPartnersAdmin();
@@ -7669,6 +7670,68 @@ document.getElementById("drCameraOcr")?.addEventListener("click",deviceScannerRe
 document.getElementById("deviceScannerModal")?.addEventListener("click",e=>{if(e.target.id==="deviceScannerModal")deviceScannerStop()});
 window.addEventListener("pagehide",deviceScannerStop);
 deviceUpdateFields();
+
+
+/* ---------------- DISCOUNTS ---------------- */
+let discountRows=[],discountProducts=[],discountFilter="all";
+function discountStatus(message,isError=false){
+  const el=document.getElementById("discountStatus");
+  if(el){el.textContent=message||"";el.style.color=isError?"#dc2626":"#64748b";}
+}
+function discountSetFilter(filter){discountFilter=filter;discountRender();}
+async function discountLoad(){
+  const list=document.getElementById("discountList");if(!list)return;
+  list.innerHTML='<p class="small">Kortingen laden…</p>';
+  try{
+    const r=await fetch("/api/admin/discounts",{credentials:"same-origin",cache:"no-store"});
+    const d=await r.json();if(!r.ok)throw Error(d.error||"Kortingen laden mislukt.");
+    discountRows=Array.isArray(d.discounts)?d.discounts:[];
+    discountProducts=Array.isArray(d.products)?d.products:[];
+    discountRender();discountStatus("");
+  }catch(e){list.textContent=e.message;discountStatus(e.message,true);}
+}
+function discountRender(){
+  const box=document.getElementById("discountList");if(!box)return;
+  const now=Date.now();
+  const rows=discountRows.filter(x=>{
+    const active=x.active!==false&&now>=Date.parse(x.startsAt)&&now<Date.parse(x.endsAt)&&(x.usageLimit==null||Number(x.usageCount||0)<Number(x.usageLimit));
+    return discountFilter==="active"?active:discountFilter==="expired"?!active:true;
+  });
+  if(!rows.length){box.innerHTML='<div style="text-align:center;padding:38px 15px;color:#64748b"><div style="font-size:38px;color:#ea580c">％</div><h3 style="color:#111827">Geen kortingen</h3><p>Maak een korting aan voor één product of voor de hele shop.</p></div>';return;}
+  box.innerHTML=rows.map(x=>{
+    const product=discountProducts.find(p=>String(p.id)===String(x.productId));
+    const value=x.type==="percent"?Number(x.value)+"%":"€ "+Number(x.value).toFixed(2);
+    const active=x.active!==false&&now>=Date.parse(x.startsAt)&&now<Date.parse(x.endsAt)&&(x.usageLimit==null||Number(x.usageCount||0)<Number(x.usageLimit));
+    return '<article style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:14px 4px;border-bottom:1px solid #e5e7eb"><div><strong>'+esc(x.name||"Korting")+'</strong><div class="small" style="margin-top:4px">'+(x.scope==="all"?"Hele shop":esc(product?.name||"Product"))+' · '+value+' korting</div><div class="small">'+new Date(x.startsAt).toLocaleDateString("nl-NL")+' – '+new Date(x.endsAt).toLocaleDateString("nl-NL")+'</div></div><div style="display:flex;gap:8px;align-items:center"><span style="padding:5px 9px;border-radius:99px;background:'+(active?"#dcfce7":"#f1f5f9")+';color:'+(active?"#166534":"#64748b")+';font-size:12px;font-weight:700">'+(active?"Actief":"Inactief")+'</span><button class="btn btn-light" type="button" onclick="discountEdit(\''+esc(x.id)+'\')">Wijzigen</button><button class="btn btn-light" type="button" onclick="discountToggle(\''+esc(x.id)+'\')">'+(x.active===false?"Activeren":"Uitzetten")+'</button></div></article>';
+  }).join("");
+}
+function discountAdd(){discountEditor(null);}
+function discountEdit(id){discountEditor(discountRows.find(x=>String(x.id)===String(id))||null);}
+function discountEditor(item){
+  const box=document.getElementById("discountEditor");if(!box)return;
+  const d=item||{id:"discount-"+Date.now(),name:"",type:"percent",scope:"product",productId:"",value:10,startsAt:new Date().toISOString().slice(0,16),endsAt:new Date(Date.now()+30*86400000).toISOString().slice(0,16),usageLimit:"",active:true,usageCount:0};
+  box.hidden=false;
+  box.innerHTML='<div style="border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px;background:#f8fafc"><h3 style="margin-top:0">'+(item?"Korting wijzigen":"Nieuwe korting")+'</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px"><label>Naam<input id="discountName" class="form-control" maxlength="120" value="'+esc(d.name||"")+'" style="display:block;width:100%;padding:10px;margin-top:5px"></label><label>Toepassen op<select id="discountScope" class="form-control" style="display:block;width:100%;padding:10px;margin-top:5px"><option value="product" '+(d.scope==="product"?"selected":"")+'>Eén product</option><option value="all" '+(d.scope==="all"?"selected":"")+'>Hele shop</option></select></label><label id="discountProductWrap">Product<select id="discountProduct" class="form-control" style="display:block;width:100%;padding:10px;margin-top:5px">'+discountProducts.map(p=>'<option value="'+esc(p.id)+'" '+(String(p.id)===String(d.productId)?"selected":"")+'>'+esc(p.name)+'</option>').join("")+'</select></label><label>Soort korting<select id="discountType" class="form-control" style="display:block;width:100%;padding:10px;margin-top:5px"><option value="percent" '+(d.type==="percent"?"selected":"")+'>Percentage %</option><option value="fixed" '+(d.type==="fixed"?"selected":"")+'>Vast bedrag (€)</option></select></label><label>Waarde<input id="discountValue" type="number" min="0.01" step="0.01" max="'+(d.type==="percent"?"100":"99999")+'" value="'+Number(d.value||10)+'" style="display:block;width:100%;padding:10px;margin-top:5px"></label><label>Begint<input id="discountStart" type="datetime-local" value="'+new Date(d.startsAt).toISOString().slice(0,16)+'" style="display:block;width:100%;padding:10px;margin-top:5px"></label><label>Eindigt<input id="discountEnd" type="datetime-local" value="'+new Date(d.endsAt).toISOString().slice(0,16)+'" style="display:block;width:100%;padding:10px;margin-top:5px"></label><label>Maximaal gebruik (optioneel)<input id="discountLimit" type="number" min="1" step="1" value="'+(d.usageLimit??"")+'" placeholder="Geen limiet" style="display:block;width:100%;padding:10px;margin-top:5px"></label></div><div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn-green" type="button" onclick="discountSave(\''+esc(d.id)+'\')">Opslaan</button><button class="btn btn-light" type="button" onclick="document.getElementById(\'discountEditor\').hidden=true">Annuleren</button></div></div>';
+  const scope=document.getElementById("discountScope");
+  scope.addEventListener("change",()=>{document.getElementById("discountProductWrap").style.display=scope.value==="product"?"":"none";});
+  document.getElementById("discountProductWrap").style.display=d.scope==="product"?"":"none";
+}
+async function discountSave(id){
+  const name=document.getElementById("discountName").value.trim(),scope=document.getElementById("discountScope").value,type=document.getElementById("discountType").value,value=Number(document.getElementById("discountValue").value);
+  const start=document.getElementById("discountStart").value,end=document.getElementById("discountEnd").value,limit=document.getElementById("discountLimit").value;
+  const existing=discountRows.find(x=>String(x.id)===String(id));
+  const item={id,name,scope,type,value,productId:scope==="product"?document.getElementById("discountProduct").value:"",startsAt:new Date(start).toISOString(),endsAt:new Date(end).toISOString(),usageLimit:limit===""?null:Number(limit),usageCount:existing?.usageCount||0,active:existing?.active!==false};
+  const next=discountRows.filter(x=>String(x.id)!==String(id)).concat(item);
+  try{
+    const r=await fetch("/api/admin/discounts",{method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({discounts:next})});
+    const d=await r.json();if(!r.ok)throw Error(d.error||"Opslaan mislukt.");
+    discountRows=d.discounts||next;document.getElementById("discountEditor").hidden=true;discountRender();discountStatus("Korting opgeslagen.");
+  }catch(e){discountStatus(e.message,true);}
+}
+async function discountToggle(id){
+  const next=discountRows.map(x=>String(x.id)===String(id)?{...x,active:x.active===false}:x);
+  try{const r=await fetch("/api/admin/discounts",{method:"PUT",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({discounts:next})});const d=await r.json();if(!r.ok)throw Error(d.error||"Bijwerken mislukt.");discountRows=d.discounts||next;discountRender();discountStatus("Kortingsstatus bijgewerkt.");}catch(e){discountStatus(e.message,true);}
+}
 
 /* START */
 
