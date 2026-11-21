@@ -1,5 +1,7 @@
 "use strict";
 
+const { findProductDiscount, applyDiscount } = require("../utils/discounts");
+
 const {
   sendPaidWebshopOrderNotifications,
 } = require("../utils/webshop-paid-notifications");
@@ -83,7 +85,7 @@ function registerWebshopCheckoutRoutes(
           .status(400)
           .json({ error: "Te veel producten in één bestelling." });
       const catalogResult = await pool.query(
-        "SELECT data->'phones' AS phones, data->'devices' AS devices, data->'shopProducts' AS shop_products FROM site_settings WHERE id = 1",
+        "SELECT data->'phones' AS phones, data->'devices' AS devices, data->'shopProducts' AS shop_products, data->'shopDiscounts' AS shop_discounts FROM site_settings WHERE id = 1",
       );
       const catalogRow = catalogResult.rows[0] || {};
       const catalogData = {
@@ -92,12 +94,30 @@ function registerWebshopCheckoutRoutes(
         shopProducts: Array.isArray(catalogRow.shop_products)
           ? catalogRow.shop_products
           : [],
+        shopDiscounts: Array.isArray(catalogRow.shop_discounts)
+          ? catalogRow.shop_discounts
+          : [],
       };
       const safeItems = [];
       for (const item of items) {
         const priced = priceProductFromCatalog(catalogData, item);
         if (priced.error) return res.status(400).json({ error: priced.error });
-        safeItems.push(priced.item);
+        const safeItem = priced.item;
+        if (String(safeItem.type || "").toLowerCase() === "shop") {
+          const discount = findProductDiscount(catalogData.shopDiscounts, String(safeItem.id));
+          if (discount) {
+            const originalUnitPrice = Number(safeItem.unitPrice);
+            safeItem.unitPrice = applyDiscount(originalUnitPrice, discount);
+            safeItem.originalUnitPrice = originalUnitPrice;
+            safeItem.discount = {
+              id: discount.id,
+              name: discount.name || "",
+              type: discount.type,
+              value: discount.value
+            };
+          }
+        }
+        safeItems.push(safeItem);
       }
       const inventoryValidationError = validateCartInventoryQuantities(
         catalogData,
