@@ -604,6 +604,7 @@ app.get("/api/product/:id", async (req, res) => {
     const result = await queryWithConnectionRetry(
       `SELECT
         data->'phones' AS phones,
+        data->'shopDiscounts' AS shop_discounts,
         data->>'businessName' AS business_name,
         data->>'siteName' AS site_name,
         data->>'tagline' AS tagline
@@ -628,6 +629,7 @@ app.get("/api/product/:id", async (req, res) => {
         product: record.phone,
       })),
       productIndex,
+      shopDiscounts: Array.isArray(row.shop_discounts) ? row.shop_discounts : [],
       businessName: row.business_name,
       siteName: row.site_name,
       tagline: row.tagline,
