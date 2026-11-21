@@ -103,7 +103,7 @@ function registerWebshopCheckoutRoutes(
         const priced = priceProductFromCatalog(catalogData, item);
         if (priced.error) return res.status(400).json({ error: priced.error });
         const safeItem = priced.item;
-        if (String(safeItem.type || "").toLowerCase() === "shop") {
+        if (["shop", "phone"].includes(String(safeItem.type || "").toLowerCase())) {
           const discount = findProductDiscount(catalogData.shopDiscounts, String(safeItem.id));
           if (discount) {
             const originalUnitPrice = Number(safeItem.unitPrice);
