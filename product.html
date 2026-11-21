@@ -270,6 +270,42 @@
       }
     </style>
 
+    <style id="homs-product-professional-pricing">
+      /* Refined product detail pricing and option hierarchy */
+      .ht-price-panel{
+        margin:16px 0 22px;padding:17px 19px 15px;
+        border:1px solid #dce8f6;border-radius:15px;
+        background:linear-gradient(135deg,#f8fbff 0%,#f1f6fd 100%);
+      }
+      .ht-price-panel .price{margin:0 0 6px;font-size:0;line-height:1.2}
+      .price-discount{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+      .price-discount-old{font-size:17px;font-weight:650;color:#94a3b8;text-decoration:line-through;white-space:nowrap}
+      .price-discount-new{font-size:34px;line-height:1.12;font-weight:850;letter-spacing:-.8px;color:#15803d;white-space:nowrap}
+      .price-discount-label{font-size:12px;font-weight:800;letter-spacing:.1px;padding:6px 10px;border-radius:7px;background:#dcfce7;color:#166534;border:1px solid #bbf7d0;white-space:nowrap}
+      .ht-price-panel .price:not(:has(.price-discount)){font-size:32px;font-weight:850;letter-spacing:-.6px;color:#0f172a}
+      .price-caption{font-size:12px;line-height:1.5;color:#64748b;margin:3px 0 0}
+      .ht-price-condition{display:inline-flex;align-items:center;gap:5px;margin-top:10px;padding:6px 10px;border-radius:7px;background:#fff;border:1px solid #e2e8f0;color:#64748b;font-size:12px}
+      .ht-price-condition strong{color:#1e293b;font-weight:750}
+      .info h1{font-size:clamp(27px,2.4vw,36px);line-height:1.16;letter-spacing:-.8px;color:#111827;margin:0 0 4px}
+      .brand{font-size:12px;letter-spacing:1.1px;font-weight:800;color:#64748b;margin-bottom:9px}
+      .option-section{padding:14px 15px;margin:13px 0;border:1px solid #e8edf4;border-radius:13px;background:#fff}
+      .option-title{font-size:14px;font-weight:800;color:#1e293b;margin-bottom:11px}
+      .option-btn{border-radius:10px;transition:border-color .15s ease,background .15s ease,box-shadow .15s ease}
+      .option-btn.active{background:#eff6ff;border-color:#2563eb;box-shadow:inset 0 0 0 1px #2563eb}
+      .meta div{background:#fff;border-color:#e8edf4;color:#475569}
+      @media(max-width:800px){
+        .ht-price-panel{padding:14px 15px;margin:13px 0 18px}
+        .price-discount-new{font-size:30px}
+        .price-discount-old{font-size:15px}
+        .option-section{padding:12px}
+      }
+      @media(max-width:480px){
+        .price-discount{gap:8px}
+        .price-discount-new{font-size:27px}
+        .price-discount-label{font-size:11px;padding:5px 8px}
+      }
+    </style>
+
     <style id="homs-product-admin-specs">
       .spec-box{margin-top:28px}
       .spec-box h2{font-size:23px;margin-bottom:13px;color:#111827}
@@ -1355,9 +1391,11 @@
         area.innerHTML=`<div class="product"><div class="gallery">${gallery}</div><div class="info">
           <div class="brand">${esc(product.brand||"HOMS TECH")}</div>
           <h1>${esc(title)}</h1>
-          <div id="selectedConditionPrice" class="price">${productPriceMarkup(conditionDisplayPrice)}</div>
-          <div class="price-caption">Actuele prijs op basis van de gekozen opties</div>
-          ${selectedOptions.condition?`<div style="margin-top:-12px;margin-bottom:16px;color:#64748b;font-size:13px">Prijs voor staat: <strong style="color:#111827">${esc(selectedOptions.condition)}</strong></div>`:""}
+          <div class="ht-price-panel">
+            <div id="selectedConditionPrice" class="price">${productPriceMarkup(conditionDisplayPrice)}</div>
+            <div class="price-caption">Actuele prijs op basis van de gekozen opties</div>
+            ${selectedOptions.condition?`<div class="ht-price-condition">Conditie: <strong>${esc(selectedOptions.condition)}</strong></div>`:""}
+          </div>
           ${specs?`<div class="meta">${specs}</div>`:""}
           ${optionsHtml}
           ${renderTradeInSummary(total)}
