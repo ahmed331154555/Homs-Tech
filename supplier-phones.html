@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Leveranciersvoorraad | HOMS TECH</title>
+  <style>
+    :root{color-scheme:light;--ink:#071d2d;--blue:#2563eb;--muted:#64748b;--line:#e2e8f0;--bg:#f7f7f4}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px Arial,Helvetica,sans-serif}
+    main{max-width:1120px;margin:0 auto;padding:28px 18px 56px}
+    header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px}
+    h1{font-size:26px;margin:0 0 6px}p{color:var(--muted);margin:0}
+    .tools{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0}
+    input,select,button{font:inherit;border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff;color:var(--ink)}
+    input{flex:1;min-width:220px}button{background:var(--blue);color:white;border-color:var(--blue);cursor:pointer}
+    #status{padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:white;margin-bottom:16px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+    .product{background:white;border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0}
+    .product img{width:100%;height:160px;object-fit:contain;background:var(--bg);border-radius:9px}
+    .product h2{font-size:16px;margin:12px 0 8px}.meta{font-size:13px;color:var(--muted);line-height:1.7}
+    .price{font-size:18px;font-weight:700;margin-top:10px}.empty{color:var(--muted);padding:24px;text-align:center}
+    @media(max-width:600px){header{align-items:flex-start;flex-direction:column}h1{font-size:22px}}
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div><h1>Leveranciersvoorraad</h1><p>Afzonderlijke testweergave — bestaande winkelproducten blijven onaangeraakt.</p></div>
+  </header>
+  <div class="tools">
+    <input id="search" type="search" placeholder="Zoek op model, merk of SKU" autocomplete="off">
+    <select id="supplier"><option value="">Alle leveranciers</option><option value="forza">Forza</option><option value="mobico">Mobico</option></select>
+    <button id="refresh" type="button">Vernieuwen</button>
+  </div>
+  <div id="status" role="status" aria-live="polite">Voorraad wordt geladen…</div>
+  <section id="products" class="grid" aria-live="polite"></section>
+</main>
+<script>
+(() => {
+  const search = document.getElementById("search");
+  const supplier = document.getElementById("supplier");
+  const status = document.getElementById("status");
+  const grid = document.getElementById("products");
+  let timer;
+  const safe = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[char]);
+  async function load() {
+    status.textContent = "Voorraad wordt geladen…";
+    const params = new URLSearchParams();
+    if (search.value.trim()) params.set("q", search.value.trim());
+    if (supplier.value) params.set("supplier", supplier.value);
+    try {
+      const response = await fetch("/api/supplier-phones?" + params.toString(), { headers: { Accept: "application/json" } });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Feed niet beschikbaar");
+      const unavailable = (data.suppliers || []).filter((item) => !item.configured || item.error);
+      status.textContent = data.count + " producten" + (unavailable.length ? " · Niet gekoppeld: " + unavailable.map((x) => x.name).join(", ") : "");
+      grid.innerHTML = data.products.length ? data.products.map((p) => `
+        <article class="product">
+          ${p.image ? '<img loading="lazy" src="' + safe(p.image) + '" alt="' + safe(p.name) + '">' : '<div class="empty">Geen productfoto</div>'}
+          <h2>${safe(p.name)}</h2>
+          <div class="meta">Leverancier: ${safe(p.supplier)}<br>Merk: ${safe(p.brand || "—")}<br>SKU: ${safe(p.sku || p.id)}<br>Voorraad: ${p.stock === null ? "Onbekend" : safe(p.stock)}</div>
+          <div class="price">${p.price === null ? "Prijs op aanvraag" : safe(p.price.toFixed(2)) + " " + safe(p.currency)}</div>
+        </article>`).join("") : '<div class="empty">Geen leveranciersproducten gevonden. Controleer de API-koppeling.</div>';
+    } catch (error) {
+      status.textContent = "Kan leveranciersvoorraad niet laden: " + error.message;
+      grid.innerHTML = "";
+    }
+  }
+  search.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(load, 250); });
+  supplier.addEventListener("change", load);
+  document.getElementById("refresh").addEventListener("click", load);
+  load();
+})();
+</script>
+</body>
+</html>
