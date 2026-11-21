@@ -11,7 +11,7 @@ function registerAdminDiscountRoutes(app, { requirePermission, queryWithConnecti
       );
       const row = result.rows[0] || {};
       const products = [
-        ...(Array.isArray(row.shop_products) ? row.shop_products.map((p, i) => ({ id: String(p.id ?? i), name: p.name || "Product", type: "shop" })) : []),
+        ...(Array.isArray(row.shop_products) ? row.shop_products.map((p, i) => ({ id: String(i), name: p.name || "Product", type: "shop" })) : []),
         ...(Array.isArray(row.phones) ? row.phones.map((p, i) => ({ id: String(i), name: p.name || "Telefoon", type: "phone" })) : [])
       ];
       res.set("Cache-Control", "no-store");
