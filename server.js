@@ -45,6 +45,7 @@ const { registerAdminCustomerRoutes } = require("./routes/admin-customers");
 const { registerAdminUserRoutes } = require("./routes/admin-users");
 const { registerDeviceRegisterRoutes } = require("./routes/device-register");
 const { registerResendInboundWebhook } = require("./routes/resend-inbound");
+const { registerSupplierPhonesRoutes } = require("./routes/supplier-phones");
 const { validateRepairQuotePayload } = require("./utils/repair-quote");
 const { validateBuybackOfferedPrice } = require("./utils/buyback-order");
 const {
@@ -1905,6 +1906,8 @@ registerAdminUserRoutes(app, {
   hashPassword,
   getAdminUsername: () => String(process.env.ADMIN_USERNAME || ""),
 });
+
+registerSupplierPhonesRoutes(app);
 
 // Start server
 initializeDatabaseWithRetry(async () => {
