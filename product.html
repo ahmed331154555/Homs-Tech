@@ -51,6 +51,10 @@
       .info h1{font-size:38px;line-height:1.2;margin-bottom:8px}
       .brand{color:#2563eb;font-weight:700;font-size:18px;margin-bottom:20px}
       .price{font-size:34px;font-weight:800;margin:20px 0;color:#111827}
+      .price-discount{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap}
+      .price-discount-old{font-size:18px;font-weight:600;color:#94a3b8;text-decoration:line-through}
+      .price-discount-new{font-size:30px;font-weight:900;color:#15803d}
+      .price-discount-label{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:#dcfce7;color:#166534;font-size:12px;font-weight:800}
       .meta{display:grid;gap:10px;margin:20px 0}
       .meta div{padding:13px 15px;background:#f8fafc;border-radius:10px}
       .meta strong{display:inline-block;min-width:115px}
@@ -657,6 +661,33 @@
           '<div class="ht-product-tradein-math"><div class="ht-product-tradein-math-row"><span>Prijs nieuwe telefoon</span><strong>'+money(newPhoneTotal)+'</strong></div><div class="ht-product-tradein-math-row credit"><span>Geschatte inruilwaarde</span><strong>− '+money(credit)+'</strong></div><div class="ht-product-tradein-math-row net"><span>Effectieve prijs na uitbetaling</span><strong>'+money(net)+'</strong></div></div>'+
           '<p class="ht-product-tradein-note">Je betaalt nu de volledige prijs van je nieuwe telefoon ('+money(newPhoneTotal)+'). Nadat we je oude telefoon hebben ontvangen en gecontroleerd, bevestigen we de definitieve inruilwaarde en maken we dit bedrag aan je over. De uiteindelijke waarde kan na inspectie afwijken.</p></section>';
       }
+      function activeProductDiscount(){
+        const discounts=Array.isArray(currentData?.shopDiscounts)?currentData.shopDiscounts:[];
+        const now=Date.now();
+        return discounts.filter(discount=>{
+          if(!discount||discount.active===false)return false;
+          const start=Date.parse(discount.startsAt),end=Date.parse(discount.endsAt);
+          if(!Number.isFinite(start)||!Number.isFinite(end)||now<start||now>=end)return false;
+          if(discount.usageLimit!=null&&Number(discount.usageCount||0)>=Number(discount.usageLimit))return false;
+          return discount.scope==="all"||String(discount.productId)===String(currentProductId);
+        }).sort((a,b)=>{
+          const saving=x=>x.type==="percent"?100*Number(x.value||0)/100:Number(x.value||0);
+          return saving(b)-saving(a);
+        })[0]||null;
+      }
+      function applyCurrentProductDiscount(price){
+        const amount=Number(price)||0,discount=activeProductDiscount();
+        if(!discount||amount<=0)return {original:amount,price:amount,discount:null};
+        const reduction=discount.type==="percent"?amount*Number(discount.value)/100:Number(discount.value);
+        const discounted=Math.round(Math.max(0,amount-reduction)*100)/100;
+        return {original:amount,price:discounted,discount:discounted<amount?discount:null};
+      }
+      function productPriceMarkup(price){
+        const result=applyCurrentProductDiscount(price);
+        if(!result.discount)return money(result.price);
+        const label=result.discount.type==="percent"?Number(result.discount.value)+"% korting":"€ "+Number(result.discount.value).toFixed(2)+" korting";
+        return '<span class="price-discount"><span class="price-discount-old">'+money(result.original)+'</span><strong class="price-discount-new">'+money(result.price)+'</strong><span class="price-discount-label">'+esc(label)+'</span></span>';
+      }
       function calculateTotal(product){
         if(product && familyVariantRows(product).length){
           const found=findFamilyVariant(selectedOptions.storage,selectedOptions.color,selectedOptions.condition);
@@ -824,7 +855,7 @@
           }
           renderProductBody();
           const priceEl=document.getElementById("selectedConditionPrice");
-          if(priceEl&&currentProduct)priceEl.textContent=money(calculateTotal(currentProduct));
+          if(priceEl&&currentProduct)priceEl.innerHTML=productPriceMarkup(calculateTotal(currentProduct));
           if(key==="tradeIn" && /^ja$/i.test(String(label||"").trim()))openTradeInPage();
           return;
         }
@@ -847,7 +878,7 @@
         selectedOptions[key]=label;
         renderProductBody();
         const priceEl=document.getElementById("selectedConditionPrice");
-        if(priceEl&&currentProduct)priceEl.textContent=money(calculateTotal(currentProduct));
+        if(priceEl&&currentProduct)priceEl.innerHTML=productPriceMarkup(calculateTotal(currentProduct));
       }
       function colorVariantImage(label){
         const normalizedLabel=normalizeColorValue(label);
@@ -1268,9 +1299,10 @@
 
         const basePrice=num(product.price||product.salePrice||product.sellPrice||0);
         const hasOptions=true;
-        const total=calculateTotal(product);
-        // Main displayed price = selected condition base price + all selected +/- options.
-        const conditionDisplayPrice=calculateTotal(product);
+        const baseTotal=calculateTotal(product);
+        const total=applyCurrentProductDiscount(baseTotal).price;
+        // The visible price keeps the original amount crossed out when a discount is active.
+        const conditionDisplayPrice=baseTotal;
         const storage=selectedOptions.storage||productRecordStorage(product)||product.storage||product.geheugen||"";
         const color=selectedOptions.color||productRecordColor(product)||product.color||product.kleur||"";
         const condition=selectedOptions.condition||product.condition||product.conditie||"";
@@ -1323,7 +1355,7 @@
         area.innerHTML=`<div class="product"><div class="gallery">${gallery}</div><div class="info">
           <div class="brand">${esc(product.brand||"HOMS TECH")}</div>
           <h1>${esc(title)}</h1>
-          <div id="selectedConditionPrice" class="price">${money(conditionDisplayPrice)}</div>
+          <div id="selectedConditionPrice" class="price">${productPriceMarkup(conditionDisplayPrice)}</div>
           <div class="price-caption">Actuele prijs op basis van de gekozen opties</div>
           ${selectedOptions.condition?`<div style="margin-top:-12px;margin-bottom:16px;color:#64748b;font-size:13px">Prijs voor staat: <strong style="color:#111827">${esc(selectedOptions.condition)}</strong></div>`:""}
           ${specs?`<div class="meta">${specs}</div>`:""}
