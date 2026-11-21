@@ -629,11 +629,12 @@ app.get("/api/product/:id", async (req, res) => {
         product: record.phone,
       })),
       productIndex,
-      shopDiscounts: Array.isArray(row.shop_discounts) ? row.shop_discounts : [],
       businessName: row.business_name,
       siteName: row.site_name,
       tagline: row.tagline,
     });
+    // Discount rules are public pricing data; attach them after product sanitization.
+    payload.shopDiscounts = Array.isArray(row.shop_discounts) ? row.shop_discounts : [];
 
     if (!payload.product) {
       return res.status(404).json({ error: "Product niet gevonden." });
