@@ -1,0 +1,21 @@
+/* HOMS TECH — Premium Light UI / Blue Design System
+   Shared visual layer for standalone admin tools. */
+:root{color-scheme:light;--ht-blue:#2563eb;--ht-blue-hover:#1d4ed8;--ht-ink:#172b4d;--ht-muted:#64748b;--ht-page:#f5f8fc;--ht-line:#e2e8f0;--ht-shadow:0 8px 24px rgba(16,42,67,.06)}
+html{background:var(--ht-page);color-scheme:light}
+body{background:var(--ht-page)!important;color:var(--ht-ink)!important;font-family:Inter,"Segoe UI",Arial,sans-serif!important;-webkit-font-smoothing:antialiased}
+.top{background:#fff!important;color:var(--ht-ink)!important;border-bottom:1px solid var(--ht-line);box-shadow:0 3px 16px rgba(16,42,67,.05)}
+.top a{color:var(--ht-blue)!important}
+.brand{color:var(--ht-ink)!important}.brand span{color:var(--ht-blue)!important}
+.wrap{max-width:1200px}
+h1,h2,h3,h4{color:var(--ht-ink);letter-spacing:-.025em}
+.muted{color:var(--ht-muted)!important}
+.panel,.stat,.review{background:#fff!important;border:1px solid var(--ht-line)!important;border-radius:16px!important;box-shadow:var(--ht-shadow)!important}
+input:not([type=checkbox]):not([type=radio]):not([type=color]),select,textarea{border:1px solid #d5dfeb!important;border-radius:10px!important;background:#fff!important;color:var(--ht-ink)!important;min-height:42px}
+input:focus,select:focus,textarea:focus{outline:0!important;border-color:var(--ht-blue)!important;box-shadow:0 0 0 3px rgba(37,99,235,.14)!important}
+button,.btn,.action{border-radius:10px;transition:background .18s,border-color .18s,box-shadow .18s,transform .18s}
+.primary,.btn.primary,.btn.primary,.toolbar button.active,.btn:not(.secondary){background:var(--ht-blue);border-color:var(--ht-blue);color:#fff}
+.primary:hover,.btn.primary:hover,.toolbar button.active:hover,.btn:not(.secondary):hover{background:var(--ht-blue-hover);border-color:var(--ht-blue-hover);transform:translateY(-1px)}
+.secondary,.toolbar button,.action{background:#fff;color:var(--ht-ink);border:1px solid var(--ht-line)}
+.secondary:hover,.toolbar button:hover,.action:hover{background:#eff6ff;color:var(--ht-blue);border-color:#bfdbfe}
+.status{border-radius:10px}
+@media(max-width:720px){.wrap{margin:18px auto}.panel{padding:16px}.top{padding:14px 16px;flex-wrap:wrap;gap:10px}}
