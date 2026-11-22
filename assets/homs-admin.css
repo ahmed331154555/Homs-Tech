@@ -4853,3 +4853,57 @@ button:disabled,.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
  #adminNav .nav-btn.active{background:var(--ht-admin-primary);color:#fff}
  #adminNav .admin-nav-section{color:#8192a8;border-color:var(--ht-admin-line)}
 }
+
+
+/* Premium orders cards: keep the newer header/body layout isolated from
+   legacy order cards that share the .order-card class. */
+.order-card:has(> .order-main){
+  padding:0;
+  overflow:hidden;
+  border:1px solid #e2e8f0;
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 5px 18px rgba(16,42,67,.055);
+}
+.order-card:has(> .order-main) > .order-card-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin:0;
+  padding:15px 17px 13px;
+  border:0;
+  border-bottom:1px solid #edf2f7;
+  border-radius:0;
+  background:#fff;
+}
+.order-card:has(> .order-main) > .order-main{
+  min-width:0;
+  padding:14px 17px 16px;
+}
+.order-card:has(> .order-main) .order-grid{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+}
+.order-card:has(> .order-main) .order-info{
+  min-width:0;
+  border:1px solid #e8eef5;
+  border-radius:10px;
+  background:#f8fafc;
+  overflow-wrap:anywhere;
+}
+@media(max-width:900px){
+  .order-card:has(> .order-main) .order-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:550px){
+  .order-card:has(> .order-main) > .order-card-head{
+    flex-direction:column;
+    align-items:stretch;
+    padding:13px 12px;
+  }
+  .order-card:has(> .order-main) > .order-main{padding:12px}
+  .order-card:has(> .order-main) .order-grid{grid-template-columns:1fr}
+  .order-card:has(> .order-main) .order-actions{justify-content:flex-start}
+  .order-card:has(> .order-main) .order-actions .btn,
+  .order-card:has(> .order-main) .order-status-select{flex:1 1 auto;min-width:0}
+}
