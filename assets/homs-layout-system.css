@@ -289,3 +289,23 @@ body :where(footer a:hover,.site-footer a:hover){color:#93c5fd}
   body *,body *::before,body *::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 /* End HOMS TECH Premium Light UI */
+
+/* Header contrast fix: legacy dark navigation links must remain readable
+   after converting the shared header surface to Premium Light. */
+header nav a:not(.cart-link):not(.cart),
+header .navlinks a:not(.cart-link):not(.cart),
+header .header-actions a:not(.cart-link):not(.cart),
+header .nav a:not(.cart-link):not(.cart),
+header .navlinks a:not(.cart-link):not(.cart) {
+  color: #173b63;
+}
+header nav a:not(.cart-link):not(.cart):hover,
+header .navlinks a:not(.cart-link):not(.cart):hover,
+header .header-actions a:not(.cart-link):not(.cart):hover,
+header .nav a:not(.cart-link):not(.cart):hover {
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+body :where(.topbar,.announcement-bar) {
+  color: #315477;
+}
