@@ -1,0 +1,48 @@
+/* HOMS TECH — commerce surfaces polish
+   Presentation only. Cart and checkout data, payment and order scripts are untouched. */
+body:has(#cartArea){background:#f5f8fc;color:#172b4d}
+#cartArea .empty{border:1px solid #e2e8f0;border-radius:20px;background:#fff;box-shadow:0 10px 30px rgba(16,42,67,.06)}
+#cartArea .empty h2{color:#102a43}
+#cartArea .empty .btn.red{background:#2563eb;color:#fff;border:1px solid #2563eb;box-shadow:0 5px 14px rgba(37,99,235,.16)}
+#cartArea .empty .btn.red:hover{background:#1d4ed8;transform:translateY(-1px)}
+#cartArea .cart-item{border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 4px 16px rgba(16,42,67,.045);transition:border-color .18s,box-shadow .18s}
+#cartArea .cart-item:hover{border-color:#bfdbfe;box-shadow:0 8px 22px rgba(16,42,67,.07)}
+#cartArea .item-img{background:#f4f8fd}
+#cartArea .item-brand{color:#2563eb}
+#cartArea .qty button{border-color:#dbe5f0;color:#1d4ed8;transition:background .16s,border-color .16s}
+#cartArea .qty button:hover{background:#eff6ff;border-color:#93c5fd}
+#cartArea .remove{color:#dc2626}
+#cartArea .summary{background:linear-gradient(135deg,#fff 0%,#f1f6ff 100%);color:#172b4d;border:1px solid #dce7f5;box-shadow:0 8px 24px rgba(16,42,67,.07);flex-wrap:wrap}
+#cartArea .summary small{color:#64748b}
+#cartArea .summary-total{color:#102a43}
+#cartArea .actions .btn{min-height:46px;transition:transform .16s,box-shadow .16s,background .16s}
+#cartArea .actions .btn:hover{transform:translateY(-1px)}
+#cartArea .actions .btn.gray{background:#fff;color:#1d4ed8;border:1px solid #cbdcf1}
+#cartArea .actions .btn.blue{background:#2563eb;color:#fff;border:1px solid #2563eb}
+#cartArea .ht-cart-tradein{width:100%;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:14px 15px;border:1px solid #bfdbfe;border-radius:13px;background:#eff6ff}
+#cartArea .ht-cart-tradein-main{display:flex;align-items:flex-start;gap:11px;min-width:0}
+#cartArea .ht-cart-tradein-icon{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border-radius:11px;background:#dbeafe;color:#1d4ed8;font-size:20px}
+#cartArea .ht-cart-tradein-copy{min-width:0}
+#cartArea .ht-cart-tradein-copy strong{display:block;color:#173b63}
+#cartArea .ht-cart-tradein-copy small{display:block;margin:4px 0;color:#475569}
+#cartArea .ht-cart-tradein-copy p{margin:6px 0 0;color:#52677f;font-size:13px;line-height:1.55}
+#cartArea .ht-cart-tradein>button{flex:0 0 auto;border:1px solid #bfdbfe;border-radius:9px;padding:8px 11px;background:#fff;color:#1d4ed8;font-weight:750}
+#cartArea .ht-cart-tradein-cta{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border:1px solid #dbeafe;border-radius:12px;background:#f8fbff;color:#334155}
+#cartArea .ht-cart-tradein-cta a{color:#1d4ed8;font-weight:800}
+.checkout-wrap .card{border:1px solid #e2e8f0;box-shadow:0 8px 26px rgba(16,42,67,.055)}
+.checkout-wrap input:focus,.checkout-wrap select:focus,.checkout-wrap textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.13)}
+.checkout-wrap #submitBtn{transition:transform .16s,box-shadow .16s,background .16s}
+.checkout-wrap #submitBtn:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(37,99,235,.2)}
+@media(max-width:700px){
+ #cartArea .cart-item{gap:12px;padding:13px;grid-template-columns:76px minmax(0,1fr)}
+ #cartArea .item-img{width:76px;height:76px}
+ #cartArea .item-title{font-size:16px;overflow-wrap:anywhere}
+ #cartArea .item-price{grid-column:2;font-size:18px}
+ #cartArea .summary{padding:16px;gap:14px}
+ #cartArea .ht-cart-tradein{flex-direction:column}
+ #cartArea .ht-cart-tradein>button{width:100%}
+ #cartArea .ht-cart-tradein-cta{align-items:flex-start;flex-direction:column}
+}
+@media(prefers-reduced-motion:reduce){
+ #cartArea .cart-item,#cartArea .actions .btn,#cartArea .qty button,.checkout-wrap #submitBtn{transition:none}
+}
