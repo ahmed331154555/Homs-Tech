@@ -13,8 +13,8 @@ h1,h2,h3,h4{color:var(--ht-ink);letter-spacing:-.025em}
 input:not([type=checkbox]):not([type=radio]):not([type=color]),select,textarea{border:1px solid #d5dfeb!important;border-radius:10px!important;background:#fff!important;color:var(--ht-ink)!important;min-height:42px}
 input:focus,select:focus,textarea:focus{outline:0!important;border-color:var(--ht-blue)!important;box-shadow:0 0 0 3px rgba(37,99,235,.14)!important}
 button,.btn,.action{border-radius:10px;transition:background .18s,border-color .18s,box-shadow .18s,transform .18s}
-.primary,.btn.primary,.btn.primary,.toolbar button.active,.btn:not(.secondary){background:var(--ht-blue);border-color:var(--ht-blue);color:#fff}
-.primary:hover,.btn.primary:hover,.toolbar button.active:hover,.btn:not(.secondary):hover{background:var(--ht-blue-hover);border-color:var(--ht-blue-hover);transform:translateY(-1px)}
+.primary,.btn.primary,.toolbar button.active{background:var(--ht-blue);border-color:var(--ht-blue);color:#fff}
+.primary:hover,.btn.primary:hover,.toolbar button.active:hover{background:var(--ht-blue-hover);border-color:var(--ht-blue-hover);transform:translateY(-1px)}
 .secondary,.toolbar button,.action{background:#fff;color:var(--ht-ink);border:1px solid var(--ht-line)}
 .secondary:hover,.toolbar button:hover,.action:hover{background:#eff6ff;color:var(--ht-blue);border-color:#bfdbfe}
 .status{border-radius:10px}
