@@ -4796,3 +4796,60 @@ body{
     text-align:left!important;
   }
 }
+
+
+/* ==========================================================================
+   HOMS TECH — PREMIUM LIGHT UI / BLUE DESIGN SYSTEM
+   Shared admin presentation layer. CSS-only; preserves admin workflows.
+   ========================================================================== */
+:root{
+ --ht-admin-primary:#2563eb;--ht-admin-primary-hover:#1d4ed8;
+ --ht-admin-ink:#172b4d;--ht-admin-muted:#64748b;
+ --ht-admin-page:#f5f8fc;--ht-admin-surface:#fff;
+ --ht-admin-line:#e2e8f0;--ht-admin-focus:0 0 0 3px rgba(37,99,235,.17);
+}
+html{color-scheme:light;background:var(--ht-admin-page)}
+body,.dashboard{background:var(--ht-admin-page);color:var(--ht-admin-ink);font-family:Inter,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.topbar{background:#fff!important;color:var(--ht-admin-ink)!important;border-bottom:1px solid var(--ht-admin-line)!important;box-shadow:0 3px 16px rgba(16,42,67,.05)!important}
+.logo{color:var(--ht-admin-ink)!important}.logo span{color:var(--ht-admin-primary)!important}
+.admin-menu-toggle{background:#eff6ff!important;color:var(--ht-admin-primary)!important;border:1px solid #dbeafe!important}
+.admin-nav{background:#fff!important;border-color:var(--ht-admin-line)!important;box-shadow:8px 0 28px rgba(16,42,67,.05)!important}
+.admin-nav-inner{background:#fff}
+.admin-nav-section{color:#8192a8}
+.nav-btn{background:transparent;color:#42566f;border:1px solid transparent;box-shadow:none}
+.nav-btn:hover{background:#eff6ff;color:var(--ht-admin-primary)}
+.nav-btn.active,.nav-btn.active:hover{background:var(--ht-admin-primary);color:#fff;border-color:var(--ht-admin-primary);box-shadow:0 5px 14px rgba(37,99,235,.18)}
+.section{background:#fff;border:1px solid var(--ht-admin-line);border-radius:16px;box-shadow:0 8px 24px rgba(16,42,67,.06)}
+.card,.login{background:#fff;border:1px solid var(--ht-admin-line);border-radius:14px;box-shadow:0 4px 15px rgba(16,42,67,.045)}
+.section-head{border-color:var(--ht-admin-line)}
+.section-head h1,.section-head h2,.section-head h3,.section>h2,.section>h3,.card-title{color:var(--ht-admin-ink)}
+.section-head p,.small,.field small{color:var(--ht-admin-muted)}
+body :where(input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]),textarea,select){
+ border:1px solid #d5dfeb;border-radius:10px;background:#fff;color:var(--ht-admin-ink);box-shadow:none;transition:border-color .18s,box-shadow .18s
+}
+body :where(input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]),textarea,select):focus{border-color:var(--ht-admin-primary);outline:0;box-shadow:var(--ht-admin-focus)}
+body :where(button,a,input,select,textarea):focus-visible{outline:0;box-shadow:var(--ht-admin-focus)}
+.btn-green,#saveBtn,.login .btn-green{background:var(--ht-admin-primary);border-color:var(--ht-admin-primary);color:#fff;box-shadow:0 5px 13px rgba(37,99,235,.16)}
+.btn-green:hover,#saveBtn:hover,.login .btn-green:hover{background:var(--ht-admin-primary-hover);border-color:var(--ht-admin-primary-hover)}
+.btn-light{background:#fff;color:var(--ht-admin-ink);border:1px solid var(--ht-admin-line);box-shadow:none}
+.btn-light:hover{background:#eff6ff;color:var(--ht-admin-primary);border-color:#bfdbfe}
+.btn-dark{background:#173b63;color:#fff}
+.btn-red{background:#dc2626;color:#fff}
+#dashboard table{border-color:var(--ht-admin-line)}
+#dashboard thead th{background:#f1f5f9;color:#475569}
+#dashboard td,#dashboard th{border-color:var(--ht-admin-line)}
+#dashboard tr:hover td{background:#f8fbff}
+.order-card,.order-stat,.order-info{border-color:var(--ht-admin-line)}
+.save-bar{border:1px solid var(--ht-admin-line);border-radius:15px;box-shadow:0 8px 25px rgba(16,42,67,.12)}
+.admin-logout-btn{background:#fff1f2;color:#be123c;border:1px solid #fecdd3}
+button:disabled,.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+@media(max-width:760px){
+ #adminNav{background:rgba(15,35,60,.35)}
+ #adminNav .admin-nav-inner{background:#fff;box-shadow:12px 0 35px rgba(16,42,67,.12)}
+ #adminNav .admin-nav-heading{background:#fff;color:var(--ht-admin-ink);border-color:var(--ht-admin-line)}
+ #adminNav .admin-nav-heading strong{color:var(--ht-admin-ink)}
+ #adminNav .admin-nav-close{background:#eff6ff;color:var(--ht-admin-primary)}
+ #adminNav .nav-btn{background:#f8fafc;color:#42566f}
+ #adminNav .nav-btn.active{background:var(--ht-admin-primary);color:#fff}
+ #adminNav .admin-nav-section{color:#8192a8;border-color:var(--ht-admin-line)}
+}
