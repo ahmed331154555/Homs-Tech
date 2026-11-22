@@ -192,3 +192,100 @@ p {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* ==========================================================================
+   HOMS TECH — PREMIUM LIGHT UI / BLUE DESIGN SYSTEM
+   Shared public-site presentation layer.
+   CSS-only: does not change routes, forms, cart, checkout, inventory or scripts.
+   ========================================================================== */
+:root{
+  color-scheme:light;
+  --ht-blue-950:#102a43;
+  --ht-blue-900:#173b63;
+  --ht-blue-700:#1d4ed8;
+  --ht-blue-600:#2563eb;
+  --ht-blue-500:#3b82f6;
+  --ht-blue-100:#dbeafe;
+  --ht-blue-50:#eff6ff;
+  --ht-page:#f5f8fc;
+  --ht-surface:#fff;
+  --ht-surface-soft:#f8fafc;
+  --ht-ink:#172b4d;
+  --ht-muted:#64748b;
+  --ht-line:#e2e8f0;
+  --ht-line-strong:#cbd5e1;
+  --ht-radius-sm:10px;
+  --ht-radius-md:15px;
+  --ht-radius-lg:22px;
+  --ht-shadow-sm:0 3px 12px rgba(16,42,67,.045);
+  --ht-shadow-md:0 9px 26px rgba(16,42,67,.075);
+  --ht-shadow-lg:0 16px 40px rgba(16,42,67,.11);
+  --ht-focus:0 0 0 3px rgba(37,99,235,.17);
+}
+html{color-scheme:light;background:var(--ht-page);scroll-behavior:smooth}
+body{background:var(--ht-page);color:var(--ht-ink);font-family:Inter,"Segoe UI",Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+body :where(h1,h2,h3,h4,h5,h6){color:var(--ht-blue-950);letter-spacing:-.025em}
+body :where(p,.muted,.text-muted,.description,.meta,small){color:var(--ht-muted)}
+body :where(a){text-underline-offset:3px;text-decoration-thickness:1px}
+body :where(a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible){outline:0;box-shadow:var(--ht-focus)}
+body :where(input,select,textarea){border-color:var(--ht-line-strong);border-radius:var(--ht-radius-sm);background:#fff;color:var(--ht-ink);transition:border-color .18s,box-shadow .18s}
+body :where(input,select,textarea):focus{border-color:var(--ht-blue-600);outline:0;box-shadow:var(--ht-focus)}
+body :where(input::placeholder,textarea::placeholder){color:#94a3b8;opacity:1}
+body :where(header,.site-header,.main-header,.header,.navbar,.nav-wrap){background:#fff;border-color:var(--ht-line);box-shadow:0 3px 16px rgba(16,42,67,.045)}
+body :where(.topbar,.announcement-bar){background:#eff6ff;color:#315477;border-color:#dbeafe}
+body :where(.nav,.main-nav,.navbar-nav){color:var(--ht-ink)}
+body :where(.nav a,.main-nav a,.navbar-nav a){border-radius:9px;transition:background .18s,color .18s}
+body :where(.nav a:hover,.main-nav a:hover,.navbar-nav a:hover){background:var(--ht-blue-50);color:var(--ht-blue-700)}
+body :where(.container,.page-container,.content-wrap){color:var(--ht-ink)}
+body :where(.hero,.page-hero,.repair-hero,.devices-hero,.shop-hero){background:radial-gradient(ellipse at 82% 40%,rgba(191,219,254,.58),transparent 46%),linear-gradient(120deg,#fff 0%,#f4f8ff 58%,#eaf2ff 100%);color:var(--ht-ink);border-color:var(--ht-line)}
+body :where(.hero h1,.page-hero h1,.repair-hero h1,.devices-hero h1,.shop-hero h1){color:var(--ht-blue-950)}
+body :where(.hero p,.page-hero p,.repair-hero p,.devices-hero p,.shop-hero p){color:#52677f}
+body :where(.section-title,.page-title,.section-heading){color:var(--ht-blue-950);font-weight:850;letter-spacing:-.035em}
+body :where(.card,.panel,.product-card,.product,.device-card,.service-card,.price-card,.repair-card,.feature-card,.review-card,.info-card,.form-card,.faq-item,.accordion-item,.order-card,.category-card,.account-card,.cart-card,.checkout-card,.contact-card,.benefit-card){
+  border:1px solid var(--ht-line);
+  border-radius:var(--ht-radius-md);
+  box-shadow:var(--ht-shadow-sm);
+}
+body :where(.product-card,.product,.device-card,.service-card,.price-card,.repair-card,.feature-card,.review-card,.info-card,.form-card,.account-card,.cart-card,.checkout-card,.contact-card,.benefit-card){background:#fff;color:var(--ht-ink)}
+body :where(.product-card,.product,.device-card,.service-card,.price-card,.repair-card,.feature-card,.review-card):hover{border-color:#bfdbfe;box-shadow:var(--ht-shadow-md);transition:border-color .18s,box-shadow .18s,transform .18s}
+body :where(.product-card:hover,.device-card:hover,.service-card:hover){transform:translateY(-2px)}
+body :where(.product-image,.product-img,.device-image,.service-photo){background:#f6f9fe;border-radius:12px}
+body :where(.price,.product-price,.current-price,.sale-price){color:var(--ht-blue-950);font-weight:850}
+body :where(.old-price,.compare-at-price,.original-price){color:#94a3b8;text-decoration:line-through}
+body :where(.badge,.status-badge,.stock-badge,.tag){border-radius:999px;font-weight:750}
+body :where(.primary-btn,.btn-primary,.button-primary,.buy,.buy-button,.add-to-cart,.checkout-button,.submit-button,.search button,.hero .btn-blue){
+  border:1px solid var(--ht-blue-600);
+  border-radius:11px;
+  background:var(--ht-blue-600);
+  color:#fff;
+  font-weight:750;
+  box-shadow:0 5px 14px rgba(37,99,235,.15);
+  transition:background .18s,border-color .18s,box-shadow .18s,transform .18s;
+}
+body :where(.primary-btn,.btn-primary,.button-primary,.buy,.buy-button,.add-to-cart,.checkout-button,.submit-button,.search button,.hero .btn-blue):hover{
+  background:var(--ht-blue-700);border-color:var(--ht-blue-700);color:#fff;box-shadow:0 8px 18px rgba(37,99,235,.2);transform:translateY(-1px)
+}
+body :where(.secondary-btn,.btn-secondary,.button-secondary,.btn-light,.filter-btn,.sort-btn){
+  border:1px solid var(--ht-line-strong);border-radius:11px;background:#fff;color:var(--ht-blue-950);box-shadow:none
+}
+body :where(.secondary-btn,.btn-secondary,.button-secondary,.btn-light,.filter-btn,.sort-btn):hover{background:var(--ht-blue-50);border-color:#bfdbfe;color:var(--ht-blue-700)}
+body :where(.btn-danger,.btn-red,.delete-btn,.remove-btn,.danger-btn){background:#dc2626;border-color:#dc2626;color:#fff}
+body :where(.btn-success,.btn-green,.confirm-btn){background:#15803d;border-color:#15803d;color:#fff}
+body :where(button:disabled,input:disabled,select:disabled,textarea:disabled,[aria-disabled=true]){cursor:not-allowed;opacity:.58}
+body :where(table){background:#fff;color:var(--ht-ink);border-color:var(--ht-line)}
+body :where(th){background:#f1f5f9;color:#475569;font-weight:800}
+body :where(td,th){border-color:var(--ht-line)}
+body :where(tr:hover td){background:#f8fbff}
+body :where(footer,.site-footer){background:#102a43;color:#e2e8f0}
+body :where(footer h2,footer h3,footer h4,.site-footer h2,.site-footer h3){color:#fff}
+body :where(footer p,footer a,.site-footer p,.site-footer a){color:#cbd5e1}
+body :where(footer a:hover,.site-footer a:hover){color:#93c5fd}
+@media(max-width:760px){
+  body :where(.card,.panel,.product-card,.service-card,.price-card,.repair-card,.form-card){border-radius:13px}
+  body :where(button,.btn,.primary-btn,.btn-primary,.buy,.checkout-button){min-height:42px}
+}
+@media(prefers-reduced-motion:reduce){
+  body *,body *::before,body *::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+/* End HOMS TECH Premium Light UI */
