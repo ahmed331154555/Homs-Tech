@@ -837,59 +837,6 @@ body:has(.payment-choice) .account-note {
     grid-column: 1;
   }
 }
-/* Accessibility and small-screen finishing layer. No behavior or data hooks are changed. */
-:where(button, input, select, textarea, a, [role="button"], [tabindex]):focus-visible {
-  outline: 3px solid rgba(29, 91, 214, 0.42);
-  outline-offset: 2px;
-}
-:where(button, input, select, textarea) {
-  touch-action: manipulation;
-}
-:where(button, [role="button"])[disabled],
-:where(button, [role="button"])[aria-disabled="true"] {
-  cursor: not-allowed;
-  filter: saturate(0.65);
-  box-shadow: none;
-  transform: none;
-}
-:where(button, [role="button"])[disabled]:hover,
-:where(button, [role="button"])[aria-disabled="true"]:hover {
-  transform: none;
-  box-shadow: none;
-}
-:where(img, video) {
-  max-width: 100%;
-}
-:where(input, select, textarea) {
-  max-width: 100%;
-}
-:where(.admin-nav, .admin-tabs, .tabs, .nav-tabs) {
-  scrollbar-width: thin;
-  scrollbar-color: #b8c5d8 transparent;
-}
-@media (max-width: 640px) {
-  :where(.admin-nav, .admin-tabs, .tabs, .nav-tabs) {
-    max-width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  :where(.bento-grid, .tactile-grid) > * {
-    min-width: 0;
-  }
-  :where(.bento-card, .tactile-card, .section, .panel) {
-    overflow-wrap: anywhere;
-  }
-  :where(button, .btn, .button, .btn-primary, .btn-blue, .primary-action) {
-    min-height: 42px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  :where(button, a, input, select, textarea, [role="button"]) {
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
 
 /* Unified HOMS TECH button system — consistent sizing, typography and states. */
 :root {
@@ -902,18 +849,16 @@ body:has(.payment-choice) .account-note {
   --ht-button-x: 15px;
   --ht-button-y: 10px;
 }
-:is(
-  button:not(.icon-btn):not(.btn-icon):not(.admin-menu-toggle):not(.admin-nav-close):not(.save-info-toggle),
-  input[type="button"],
-  input[type="submit"],
-  input[type="reset"],
-  .btn:not(.icon-btn):not(.btn-icon),
-  .button:not(.icon-btn):not(.btn-icon),
-  .action:not(.icon-btn):not(.btn-icon),
-  .nav-btn,
-  .nav-sub-btn,
-  [role="button"]:not(.icon-btn):not(.btn-icon)
-) {
+button:not(.icon-btn):not(.btn-icon):not(.admin-menu-toggle):not(.admin-nav-close):not(.save-info-toggle),
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.btn:not(.icon-btn):not(.btn-icon),
+.button:not(.icon-btn):not(.btn-icon),
+.action:not(.icon-btn):not(.btn-icon),
+.nav-btn,
+.nav-sub-btn,
+[role="button"]:not(.icon-btn):not(.btn-icon) {
   box-sizing: border-box;
   min-height: var(--ht-button-height);
   padding: var(--ht-button-y) var(--ht-button-x);
@@ -928,46 +873,60 @@ body:has(.payment-choice) .account-note {
   vertical-align: middle;
   -webkit-tap-highlight-color: transparent;
 }
-:is(
-  button:not(.icon-btn):not(.btn-icon):not(.admin-menu-toggle):not(.admin-nav-close):not(.save-info-toggle),
-  input[type="button"],
-  input[type="submit"],
-  input[type="reset"],
-  .btn:not(.icon-btn):not(.btn-icon),
-  .button:not(.icon-btn):not(.btn-icon),
-  .action:not(.icon-btn):not(.btn-icon),
-  .nav-btn,
-  .nav-sub-btn,
-  [role="button"]:not(.icon-btn):not(.btn-icon)
-):not(.nav-btn):not(.nav-sub-btn) {
+button:not(.icon-btn):not(.btn-icon):not(.admin-menu-toggle):not(.admin-nav-close):not(.save-info-toggle),
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.btn:not(.icon-btn):not(.btn-icon),
+.button:not(.icon-btn):not(.btn-icon),
+.action:not(.icon-btn):not(.btn-icon),
+[role="button"]:not(.icon-btn):not(.btn-icon) {
   overflow-wrap: anywhere;
 }
-:is(button, input[type="button"], input[type="submit"], input[type="reset"], .btn, .button, .action, [role="button"]):disabled,
-:is(button, .btn, .button, .action, [role="button"])[aria-disabled="true"] {
+button:disabled,
+input[type="button"]:disabled,
+input[type="submit"]:disabled,
+input[type="reset"]:disabled,
+.btn:disabled,
+.button:disabled,
+.action:disabled,
+[role="button"][aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.62;
   transform: none;
   filter: none;
 }
-:is(button, .btn, .button, .action, [role="button"]):disabled:hover,
-:is(button, .btn, .button, .action, [role="button"])[aria-disabled="true"]:hover {
+button:disabled:hover,
+.btn:disabled:hover,
+.button:disabled:hover,
+.action:disabled:hover,
+[role="button"][aria-disabled="true"]:hover {
   transform: none;
 }
-:is(.btn-sm, .btn-small, .button-small) {
+.btn-sm,
+.btn-small,
+.button-small {
   --ht-button-size: 12px;
   --ht-button-height: 36px;
   --ht-button-x: 11px;
   --ht-button-y: 8px;
   --ht-button-radius: 9px;
 }
-:is(.btn-lg, .btn-large, .button-large) {
+.btn-lg,
+.btn-large,
+.button-large {
   --ht-button-size: 14px;
   --ht-button-height: 46px;
   --ht-button-x: 19px;
   --ht-button-y: 12px;
   --ht-button-radius: 12px;
 }
-:is(.btn-danger, .btn-delete, .btn-red, .danger, .delete, .remove) {
+.btn-danger,
+.btn-delete,
+.btn-red,
+.danger,
+.delete,
+.remove {
   border-color: #be123c;
 }
 @media (max-width: 640px) {
@@ -977,10 +936,24 @@ body:has(.payment-choice) .account-note {
     --ht-button-x: 14px;
     --ht-button-y: 11px;
   }
-  :is(.actions, .button-row, .toolbar, .form-actions) {
+  .actions,
+  .button-row,
+  .toolbar,
+  .form-actions {
     gap: 8px;
   }
-  :is(.actions, .button-row, .form-actions) > :is(button, .btn, .button, .action) {
+  .actions > button,
+  .actions > .btn,
+  .actions > .button,
+  .actions > .action,
+  .button-row > button,
+  .button-row > .btn,
+  .button-row > .button,
+  .button-row > .action,
+  .form-actions > button,
+  .form-actions > .btn,
+  .form-actions > .button,
+  .form-actions > .action {
     max-width: 100%;
   }
 }

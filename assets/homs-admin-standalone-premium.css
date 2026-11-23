@@ -128,6 +128,7 @@ button,
 }
 
 
+
 /* Unified HOMS TECH button system — consistent sizing, typography and states. */
 :root {
   --ht-button-font: Inter, Arial, sans-serif;
@@ -139,18 +140,16 @@ button,
   --ht-button-x: 15px;
   --ht-button-y: 10px;
 }
-:is(
-  button:not(.icon-btn):not(.btn-icon):not(.admin-menu-toggle):not(.admin-nav-close):not(.save-info-toggle),
-  input[type="button"],
-  input[type="submit"],
-  input[type="reset"],
-  .btn:not(.icon-btn):not(.btn-icon),
-  .button:not(.icon-btn):not(.btn-icon),
-  .action:not(.icon-btn):not(.btn-icon),
-  .nav-btn,
-  .nav-sub-btn,
-  [role="button"]:not(.icon-btn):not(.btn-icon)
-) {
+button:not(.icon-btn):not(.btn-icon):not(.admin-menu-toggle):not(.admin-nav-close):not(.save-info-toggle),
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.btn:not(.icon-btn):not(.btn-icon),
+.button:not(.icon-btn):not(.btn-icon),
+.action:not(.icon-btn):not(.btn-icon),
+.nav-btn,
+.nav-sub-btn,
+[role="button"]:not(.icon-btn):not(.btn-icon) {
   box-sizing: border-box;
   min-height: var(--ht-button-height);
   padding: var(--ht-button-y) var(--ht-button-x);
@@ -165,46 +164,60 @@ button,
   vertical-align: middle;
   -webkit-tap-highlight-color: transparent;
 }
-:is(
-  button:not(.icon-btn):not(.btn-icon):not(.admin-menu-toggle):not(.admin-nav-close):not(.save-info-toggle),
-  input[type="button"],
-  input[type="submit"],
-  input[type="reset"],
-  .btn:not(.icon-btn):not(.btn-icon),
-  .button:not(.icon-btn):not(.btn-icon),
-  .action:not(.icon-btn):not(.btn-icon),
-  .nav-btn,
-  .nav-sub-btn,
-  [role="button"]:not(.icon-btn):not(.btn-icon)
-):not(.nav-btn):not(.nav-sub-btn) {
+button:not(.icon-btn):not(.btn-icon):not(.admin-menu-toggle):not(.admin-nav-close):not(.save-info-toggle),
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.btn:not(.icon-btn):not(.btn-icon),
+.button:not(.icon-btn):not(.btn-icon),
+.action:not(.icon-btn):not(.btn-icon),
+[role="button"]:not(.icon-btn):not(.btn-icon) {
   overflow-wrap: anywhere;
 }
-:is(button, input[type="button"], input[type="submit"], input[type="reset"], .btn, .button, .action, [role="button"]):disabled,
-:is(button, .btn, .button, .action, [role="button"])[aria-disabled="true"] {
+button:disabled,
+input[type="button"]:disabled,
+input[type="submit"]:disabled,
+input[type="reset"]:disabled,
+.btn:disabled,
+.button:disabled,
+.action:disabled,
+[role="button"][aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.62;
   transform: none;
   filter: none;
 }
-:is(button, .btn, .button, .action, [role="button"]):disabled:hover,
-:is(button, .btn, .button, .action, [role="button"])[aria-disabled="true"]:hover {
+button:disabled:hover,
+.btn:disabled:hover,
+.button:disabled:hover,
+.action:disabled:hover,
+[role="button"][aria-disabled="true"]:hover {
   transform: none;
 }
-:is(.btn-sm, .btn-small, .button-small) {
+.btn-sm,
+.btn-small,
+.button-small {
   --ht-button-size: 12px;
   --ht-button-height: 36px;
   --ht-button-x: 11px;
   --ht-button-y: 8px;
   --ht-button-radius: 9px;
 }
-:is(.btn-lg, .btn-large, .button-large) {
+.btn-lg,
+.btn-large,
+.button-large {
   --ht-button-size: 14px;
   --ht-button-height: 46px;
   --ht-button-x: 19px;
   --ht-button-y: 12px;
   --ht-button-radius: 12px;
 }
-:is(.btn-danger, .btn-delete, .btn-red, .danger, .delete, .remove) {
+.btn-danger,
+.btn-delete,
+.btn-red,
+.danger,
+.delete,
+.remove {
   border-color: #be123c;
 }
 @media (max-width: 640px) {
@@ -214,10 +227,24 @@ button,
     --ht-button-x: 14px;
     --ht-button-y: 11px;
   }
-  :is(.actions, .button-row, .toolbar, .form-actions) {
+  .actions,
+  .button-row,
+  .toolbar,
+  .form-actions {
     gap: 8px;
   }
-  :is(.actions, .button-row, .form-actions) > :is(button, .btn, .button, .action) {
+  .actions > button,
+  .actions > .btn,
+  .actions > .button,
+  .actions > .action,
+  .button-row > button,
+  .button-row > .btn,
+  .button-row > .button,
+  .button-row > .action,
+  .form-actions > button,
+  .form-actions > .btn,
+  .form-actions > .button,
+  .form-actions > .action {
     max-width: 100%;
   }
 }
