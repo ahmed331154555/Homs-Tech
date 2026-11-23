@@ -130,6 +130,7 @@ button,
 
 
 
+
 /* Unified HOMS TECH button system. */
 :root {
   --ht-button-font: Inter, Arial, sans-serif;
@@ -158,12 +159,7 @@ input[type="reset"] {
   vertical-align: middle;
   touch-action: manipulation;
 }
-.btn,
-.button,
-.action,
-.nav-btn,
-.nav-sub-btn,
-[role="button"] {
+.btn, .button, .action, .nav-btn, .nav-sub-btn, [role="button"] {
   box-sizing: border-box;
   min-height: var(--ht-button-height);
   padding: var(--ht-button-y) var(--ht-button-x);
@@ -198,41 +194,28 @@ button:disabled:hover,
 [role="button"][aria-disabled="true"]:hover {
   transform: none;
 }
-.btn-sm,
-.btn-small,
-.button-small {
+.btn-sm, .btn-small, .button-small {
   --ht-button-size: 12px;
   --ht-button-height: 36px;
   --ht-button-x: 11px;
   --ht-button-y: 8px;
   --ht-button-radius: 9px;
 }
-.btn-lg,
-.btn-large,
-.button-large {
+.btn-lg, .btn-large, .button-large {
   --ht-button-size: 14px;
   --ht-button-height: 46px;
   --ht-button-x: 19px;
   --ht-button-y: 12px;
   --ht-button-radius: 12px;
 }
-.btn-danger,
-.btn-delete,
-.btn-red,
-.danger,
-.delete,
-.remove {
+.btn-danger, .btn-delete, .btn-red, .danger, .delete, .remove {
   border-color: #be123c;
 }
-.admin-nav,
-.admin-tabs,
-.tabs,
-.nav-tabs {
+.admin-nav, .admin-tabs, .tabs, .nav-tabs {
   scrollbar-width: thin;
   scrollbar-color: #b8c5d8 transparent;
 }
-img,
-video {
+img, video {
   max-width: 100%;
 }
 @media (max-width: 640px) {
@@ -242,18 +225,12 @@ video {
     --ht-button-x: 14px;
     --ht-button-y: 11px;
   }
-  .admin-nav,
-  .admin-tabs,
-  .tabs,
-  .nav-tabs {
+  .admin-nav, .admin-tabs, .tabs, .nav-tabs {
     max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-  .actions,
-  .button-row,
-  .toolbar,
-  .form-actions {
+  .actions, .button-row, .toolbar, .form-actions {
     gap: 8px;
   }
 }
