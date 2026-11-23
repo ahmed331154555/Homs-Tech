@@ -486,6 +486,10 @@ body:not(.admin-authenticated) .admin-menu-toggle {
     -webkit-overflow-scrolling: touch;
   }
 
+  .modal-backdrop .modal {
+    max-height: calc(100dvh - 24px);
+  }
+
   #orderDetailsModal.phone-order-detail-overlay {
     z-index: var(--ht-admin-layer-dialog) !important;
   }
