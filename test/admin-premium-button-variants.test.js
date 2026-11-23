@@ -17,5 +17,8 @@ test("standalone admin primary styling targets primary controls only", () => {
 
 test("standalone admin keeps secondary controls visually distinct", () => {
   assert.match(css, /\.secondary,\.toolbar button,\.action\{/);
-  assert.match(css, /\.secondary:hover,\.toolbar button:hover,\.action:hover\{/);
+  assert.match(
+    css,
+    /\.secondary:hover,\.toolbar button:hover,\.action:hover\{/,
+  );
 });

@@ -103,8 +103,13 @@ function registerWebshopCheckoutRoutes(
         const priced = priceProductFromCatalog(catalogData, item);
         if (priced.error) return res.status(400).json({ error: priced.error });
         const safeItem = priced.item;
-        if (["shop", "phone"].includes(String(safeItem.type || "").toLowerCase())) {
-          const discount = findProductDiscount(catalogData.shopDiscounts, String(safeItem.id));
+        if (
+          ["shop", "phone"].includes(String(safeItem.type || "").toLowerCase())
+        ) {
+          const discount = findProductDiscount(
+            catalogData.shopDiscounts,
+            String(safeItem.id),
+          );
           if (discount) {
             const originalUnitPrice = Number(safeItem.unitPrice);
             safeItem.unitPrice = applyDiscount(originalUnitPrice, discount);
@@ -113,7 +118,7 @@ function registerWebshopCheckoutRoutes(
               id: discount.id,
               name: discount.name || "",
               type: discount.type,
-              value: discount.value
+              value: discount.value,
             };
           }
         }

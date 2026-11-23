@@ -1,6 +1,9 @@
 "use strict";
 
-const { normalizeSupplierProduct, extractProductArray } = require("./normalize");
+const {
+  normalizeSupplierProduct,
+  extractProductArray,
+} = require("./normalize");
 
 const CACHE_TTL_MS = 60 * 1000;
 const REQUEST_TIMEOUT_MS = 12 * 1000;
@@ -29,18 +32,33 @@ function getSupplierConfig(name, env = process.env) {
 async function fetchSupplier(name, options = {}) {
   const config = getSupplierConfig(name, options.env || process.env);
   if (!config) {
-    return { supplier: name, configured: false, products: [], error: "not_configured" };
+    return {
+      supplier: name,
+      configured: false,
+      products: [],
+      error: "not_configured",
+    };
   }
 
   const now = Date.now();
   const cached = cache.get(name);
   if (!options.force && cached && cached.expiresAt > now) {
-    return { supplier: name, configured: true, products: cached.products, cached: true };
+    return {
+      supplier: name,
+      configured: true,
+      products: cached.products,
+      cached: true,
+    };
   }
 
   const fetchImpl = options.fetchImpl || globalThis.fetch;
   if (typeof fetchImpl !== "function") {
-    return { supplier: name, configured: true, products: [], error: "fetch_unavailable" };
+    return {
+      supplier: name,
+      configured: true,
+      products: [],
+      error: "fetch_unavailable",
+    };
   }
 
   const controller = new AbortController();
@@ -56,7 +74,12 @@ async function fetchSupplier(name, options = {}) {
       signal: controller.signal,
     });
     if (!response.ok) {
-      return { supplier: name, configured: true, products: [], error: `http_${response.status}` };
+      return {
+        supplier: name,
+        configured: true,
+        products: [],
+        error: `http_${response.status}`,
+      };
     }
     const payload = await response.json();
     const products = extractProductArray(payload)
@@ -69,7 +92,10 @@ async function fetchSupplier(name, options = {}) {
       supplier: name,
       configured: true,
       products: [],
-      error: error && error.name === "AbortError" ? "timeout" : "supplier_unavailable",
+      error:
+        error && error.name === "AbortError"
+          ? "timeout"
+          : "supplier_unavailable",
     };
   } finally {
     clearTimeout(timeout);
@@ -78,7 +104,9 @@ async function fetchSupplier(name, options = {}) {
 
 async function getSupplierProducts(options = {}) {
   const names = options.supplier ? [options.supplier] : Object.keys(SUPPLIERS);
-  const results = await Promise.all(names.map((name) => fetchSupplier(name, options)));
+  const results = await Promise.all(
+    names.map((name) => fetchSupplier(name, options)),
+  );
   const products = results.flatMap((result) => result.products);
   return { products, suppliers: results };
 }

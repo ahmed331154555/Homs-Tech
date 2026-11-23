@@ -13,7 +13,7 @@
       rel="stylesheet"
       href="../assets/partner-admin.css?v=20261117-api-guide1"
     />
-      <style id="homs-admin-mobile-navigation">
+    <style id="homs-admin-mobile-navigation">
       body:not(.admin-authenticated) .admin-menu-toggle{display:none!important}
       .admin-menu-toggle{display:none;border:0;background:rgba(255,255,255,.12);color:#fff;width:44px;height:44px;border-radius:12px;font-size:25px;line-height:1;align-items:center;justify-content:center}
       .admin-nav-heading{display:none}
@@ -84,17 +84,25 @@
         .save-bar #saveBtn{font-size:12px!important;padding:9px 10px!important}
       }
     </style>
-  
+
     <link rel="stylesheet" href="../assets/tactile-ui.css?v=20261123-v1" />
-</head>
+  </head>
 
   <body>
     <a class="ht-admin-skip-link" href="#dashboard">Direct naar hoofdinhoud</a>
 
     <div class="topbar">
-      <button class="admin-menu-toggle" id="adminMenuToggle" type="button"
-        aria-label="Menu openen" aria-controls="adminNav" aria-expanded="false"
-        onclick="toggleAdminMenu()">☰</button>
+      <button
+        class="admin-menu-toggle"
+        id="adminMenuToggle"
+        type="button"
+        aria-label="Menu openen"
+        aria-controls="adminNav"
+        aria-expanded="false"
+        onclick="toggleAdminMenu()"
+      >
+        ☰
+      </button>
       <div class="logo">HOMS <span>TECH</span> — Admin</div>
     </div>
 
@@ -103,7 +111,14 @@
       <div class="admin-nav-inner">
         <div class="admin-nav-heading">
           <strong>HOMS TECH</strong>
-          <button type="button" class="admin-nav-close" aria-label="Menu sluiten" onclick="closeAdminMenu()">✕</button>
+          <button
+            type="button"
+            class="admin-nav-close"
+            aria-label="Menu sluiten"
+            onclick="closeAdminMenu()"
+          >
+            ✕
+          </button>
         </div>
         <div class="admin-nav-section">Website & pagina's</div>
         <a
@@ -283,8 +298,13 @@
         >
           👤 Admins
         </button>
-        <button class="nav-btn admin-logout-btn" id="logoutBtn"
-          type="button" onclick="logout()" style="display:none">
+        <button
+          class="nav-btn admin-logout-btn"
+          id="logoutBtn"
+          type="button"
+          onclick="logout()"
+          style="display:none"
+        >
           ↪ Uitloggen
         </button>
       </div>
@@ -833,23 +853,57 @@
         </section>
 
         <!-- KORTINGEN -->
-        <section class="section admin-page" id="page-discounts" data-permission="site.save">
+        <section
+          class="section admin-page"
+          id="page-discounts"
+          data-permission="site.save"
+        >
           <div class="section-head">
             <div>
               <h2>🏷️ Kortingen</h2>
-              <p>Beheer tijdelijke productkortingen voor de HOMS TECH-webshop.</p>
+              <p>
+                Beheer tijdelijke productkortingen voor de HOMS TECH-webshop.
+              </p>
             </div>
-            <button class="btn btn-green" type="button" onclick="discountAdd()">＋ Korting toevoegen</button>
+            <button class="btn btn-green" type="button" onclick="discountAdd()">
+              ＋ Korting toevoegen
+            </button>
           </div>
-          <div class="card" style="padding:16px;border:1px solid #e2e8f0;border-radius:14px;background:#fff">
+          <div
+            class="card"
+            style="padding:16px;border:1px solid #e2e8f0;border-radius:14px;background:#fff"
+          >
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-              <button class="btn btn-light" type="button" onclick="discountSetFilter('all')">Alle kortingen</button>
-              <button class="btn btn-light" type="button" onclick="discountSetFilter('active')">Actief</button>
-              <button class="btn btn-light" type="button" onclick="discountSetFilter('expired')">Verlopen</button>
+              <button
+                class="btn btn-light"
+                type="button"
+                onclick="discountSetFilter('all')"
+              >
+                Alle kortingen
+              </button>
+              <button
+                class="btn btn-light"
+                type="button"
+                onclick="discountSetFilter('active')"
+              >
+                Actief
+              </button>
+              <button
+                class="btn btn-light"
+                type="button"
+                onclick="discountSetFilter('expired')"
+              >
+                Verlopen
+              </button>
             </div>
             <div id="discountEditor" hidden></div>
             <div id="discountList"><p class="small">Kortingen laden…</p></div>
-            <p id="discountStatus" class="small" role="status" aria-live="polite"></p>
+            <p
+              id="discountStatus"
+              class="small"
+              role="status"
+              aria-live="polite"
+            ></p>
           </div>
         </section>
 
@@ -2733,9 +2787,16 @@
               <div id="saveStatus" class="status">
                 Wijzigingen nog niet opgeslagen
               </div>
-              <button type="button" class="save-info-toggle" id="saveInfoToggle"
-                aria-expanded="false" aria-controls="saveInfoDetails"
-                onclick="toggleSaveInfo()">ⓘ</button>
+              <button
+                type="button"
+                class="save-info-toggle"
+                id="saveInfoToggle"
+                aria-expanded="false"
+                aria-controls="saveInfoDetails"
+                onclick="toggleSaveInfo()"
+              >
+                ⓘ
+              </button>
             </div>
             <div class="small save-info-details" id="saveInfoDetails" hidden>
               ✓ Wijzigingen worden pas opgeslagen wanneer jij op «Wijzigingen
@@ -2776,7 +2837,7 @@
         });
       }
     </script>
-      <script>
+    <script>
       function toggleAdminMenu(){
         const nav=document.getElementById("adminNav");
         const toggle=document.getElementById("adminMenuToggle");
@@ -2809,5 +2870,5 @@
       });
       document.addEventListener("keydown",event=>{if(event.key==="Escape")closeAdminMenu();});
     </script>
-    </body>
+  </body>
 </html>
