@@ -51,11 +51,9 @@ function registerSupplierPhonesRoutes(app, dependencies = {}) {
       });
     } catch (error) {
       console.error("[SUPPLIER PHONES] Feed failed:", error);
-      return res
-        .status(503)
-        .json({
-          error: "Leveranciersproducten zijn tijdelijk niet beschikbaar.",
-        });
+      return res.status(503).json({
+        error: "Leveranciersproducten zijn tijdelijk niet beschikbaar.",
+      });
     }
   });
 }
