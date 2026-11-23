@@ -13,6 +13,7 @@ on:
       - feature/repair-booking-v2-clean
       - fix/preserve-footer-review-widgets
       - backup/battery-configurator-cleanup-2026-11-17
+      - aboode-test-3-tactile-ui
   pull_request:
     branches:
       - HomsTech-Clean
