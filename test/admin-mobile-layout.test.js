@@ -85,6 +85,12 @@ test("mobile dialogs use a bounded viewport and their own scrolling layer", () =
   );
 });
 
+test("refund dialog uses the shared mobile modal layer and bounded scrolling", () => {
+  assert.match(layoutCss, /\.ht-refund-overlay\s*\{[^}]*--ht-admin-layer-dialog/s);
+  assert.match(layoutCss, /\.ht-refund-overlay > section\s*\{[^}]*max-height:\s*calc\(100dvh - 24px\)/s);
+  assert.match(layoutCss, /\.ht-refund-overlay > section\s*\{[^}]*overflow-y:\s*auto/s);
+});
+
 test("availability column keeps a readable minimum width", () => {
   assert.match(layoutCss, /#phonesList table th:last-child/);
 });
