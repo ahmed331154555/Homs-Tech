@@ -132,8 +132,9 @@ button,
 
 
 
-/* Unified HOMS TECH button system. */
 /* prettier-ignore */
+@media all {
+/* Unified HOMS TECH button system. */
 :root {
   --ht-button-font: Inter, Arial, sans-serif;
   --ht-button-size: 13px;
@@ -144,7 +145,6 @@ button,
   --ht-button-x: 15px;
   --ht-button-y: 10px;
 }
-/* prettier-ignore */
 button {
 
   box-sizing: border-box;
@@ -160,7 +160,6 @@ button {
   vertical-align: middle;
   touch-action: manipulation;
 }
-/* prettier-ignore */
 input[type="button"] {
 
   box-sizing: border-box;
@@ -176,7 +175,6 @@ input[type="button"] {
   vertical-align: middle;
   touch-action: manipulation;
 }
-/* prettier-ignore */
 input[type="submit"] {
 
   box-sizing: border-box;
@@ -192,7 +190,6 @@ input[type="submit"] {
   vertical-align: middle;
   touch-action: manipulation;
 }
-/* prettier-ignore */
 input[type="reset"] {
 
   box-sizing: border-box;
@@ -208,7 +205,6 @@ input[type="reset"] {
   vertical-align: middle;
   touch-action: manipulation;
 }
-/* prettier-ignore */
 .btn {
 
   box-sizing: border-box;
@@ -224,7 +220,6 @@ input[type="reset"] {
   vertical-align: middle;
   touch-action: manipulation;
 }
-/* prettier-ignore */
 .button {
 
   box-sizing: border-box;
@@ -240,7 +235,6 @@ input[type="reset"] {
   vertical-align: middle;
   touch-action: manipulation;
 }
-/* prettier-ignore */
 .action {
 
   box-sizing: border-box;
@@ -256,7 +250,6 @@ input[type="reset"] {
   vertical-align: middle;
   touch-action: manipulation;
 }
-/* prettier-ignore */
 .nav-btn {
 
   box-sizing: border-box;
@@ -272,7 +265,6 @@ input[type="reset"] {
   vertical-align: middle;
   touch-action: manipulation;
 }
-/* prettier-ignore */
 .nav-sub-btn {
 
   box-sizing: border-box;
@@ -288,7 +280,6 @@ input[type="reset"] {
   vertical-align: middle;
   touch-action: manipulation;
 }
-/* prettier-ignore */
 [role="button"] {
 
   box-sizing: border-box;
@@ -305,42 +296,36 @@ input[type="reset"] {
   touch-action: manipulation;
   text-decoration: none;
 }
-/* prettier-ignore */
 button:disabled {
   cursor: not-allowed;
   opacity: 0.62;
   transform: none;
   filter: none;
 }
-/* prettier-ignore */
 .btn:disabled {
   cursor: not-allowed;
   opacity: 0.62;
   transform: none;
   filter: none;
 }
-/* prettier-ignore */
 .button:disabled {
   cursor: not-allowed;
   opacity: 0.62;
   transform: none;
   filter: none;
 }
-/* prettier-ignore */
 .action:disabled {
   cursor: not-allowed;
   opacity: 0.62;
   transform: none;
   filter: none;
 }
-/* prettier-ignore */
 [role="button"][aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.62;
   transform: none;
   filter: none;
 }
-/* prettier-ignore */
 .btn-sm {
   --ht-button-size: 12px;
   --ht-button-height: 36px;
@@ -348,7 +333,6 @@ button:disabled {
   --ht-button-y: 8px;
   --ht-button-radius: 9px;
 }
-/* prettier-ignore */
 .btn-small {
   --ht-button-size: 12px;
   --ht-button-height: 36px;
@@ -356,7 +340,6 @@ button:disabled {
   --ht-button-y: 8px;
   --ht-button-radius: 9px;
 }
-/* prettier-ignore */
 .button-small {
   --ht-button-size: 12px;
   --ht-button-height: 36px;
@@ -364,7 +347,6 @@ button:disabled {
   --ht-button-y: 8px;
   --ht-button-radius: 9px;
 }
-/* prettier-ignore */
 .btn-lg {
   --ht-button-size: 14px;
   --ht-button-height: 46px;
@@ -372,7 +354,6 @@ button:disabled {
   --ht-button-y: 12px;
   --ht-button-radius: 12px;
 }
-/* prettier-ignore */
 .btn-large {
   --ht-button-size: 14px;
   --ht-button-height: 46px;
@@ -380,7 +361,6 @@ button:disabled {
   --ht-button-y: 12px;
   --ht-button-radius: 12px;
 }
-/* prettier-ignore */
 .button-large {
   --ht-button-size: 14px;
   --ht-button-height: 46px;
@@ -388,113 +368,90 @@ button:disabled {
   --ht-button-y: 12px;
   --ht-button-radius: 12px;
 }
-/* prettier-ignore */
 .btn-danger {
   border-color: #be123c;
 }
-/* prettier-ignore */
 .btn-delete {
   border-color: #be123c;
 }
-/* prettier-ignore */
 .btn-red {
   border-color: #be123c;
 }
-/* prettier-ignore */
 .danger {
   border-color: #be123c;
 }
-/* prettier-ignore */
 .delete {
   border-color: #be123c;
 }
-/* prettier-ignore */
 .remove {
   border-color: #be123c;
 }
-/* prettier-ignore */
 .admin-nav {
   scrollbar-width: thin;
   scrollbar-color: #b8c5d8 transparent;
 }
-/* prettier-ignore */
 .admin-tabs {
   scrollbar-width: thin;
   scrollbar-color: #b8c5d8 transparent;
 }
-/* prettier-ignore */
 .tabs {
   scrollbar-width: thin;
   scrollbar-color: #b8c5d8 transparent;
 }
-/* prettier-ignore */
 .nav-tabs {
   scrollbar-width: thin;
   scrollbar-color: #b8c5d8 transparent;
 }
-/* prettier-ignore */
 img {
   max-width: 100%;
 }
-/* prettier-ignore */
 video {
   max-width: 100%;
 }
-/* prettier-ignore */
 @media (max-width: 640px) {
-/* prettier-ignore */
   :root {
     --ht-button-size: 13px;
     --ht-button-height: 44px;
     --ht-button-x: 14px;
     --ht-button-y: 11px;
   }
-/* prettier-ignore */
   .admin-nav {
     max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-/* prettier-ignore */
   .admin-tabs {
     max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-/* prettier-ignore */
   .tabs {
     max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-/* prettier-ignore */
   .nav-tabs {
     max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-/* prettier-ignore */
   .actions {
     gap: 8px;
   }
-/* prettier-ignore */
   .button-row {
     gap: 8px;
   }
-/* prettier-ignore */
   .toolbar {
     gap: 8px;
   }
-/* prettier-ignore */
   .form-actions {
     gap: 8px;
   }
 }
-/* prettier-ignore */
 @media (max-width: 380px) {
-/* prettier-ignore */
   :root {
     --ht-button-size: 12px;
     --ht-button-x: 11px;
   }
+}
 }
