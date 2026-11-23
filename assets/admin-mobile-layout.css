@@ -489,6 +489,22 @@ body:not(.admin-authenticated) .admin-menu-toggle {
   #orderDetailsModal.phone-order-detail-overlay {
     z-index: var(--ht-admin-layer-dialog) !important;
   }
+
+  .ht-refund-overlay {
+    z-index: var(--ht-admin-layer-dialog) !important;
+    padding: 12px !important;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .ht-refund-overlay > section {
+    box-sizing: border-box;
+    max-height: calc(100dvh - 24px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 @media (max-width: 420px) {
