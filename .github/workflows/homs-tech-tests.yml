@@ -1,6 +1,5 @@
 name: HOMS TECH tests
 # Launch validation for the isolated tactile UI branch.
-# Format the maintained source tree, then validate the formatted working tree before committing it.
 
 on:
   push:
@@ -22,7 +21,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: homs-tech-tests-${{ github.ref }}
