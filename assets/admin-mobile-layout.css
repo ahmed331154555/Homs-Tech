@@ -414,6 +414,11 @@ body:not(.admin-authenticated) .admin-menu-toggle {
     min-width: 116px;
   }
 
+  #phonesList table th:last-child,
+  #phonesList table td:last-child {
+    min-width: 120px;
+  }
+
   #phonesList table input[type="number"] {
     box-sizing: border-box;
     width: 104px !important;
