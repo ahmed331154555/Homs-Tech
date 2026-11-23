@@ -26,8 +26,6 @@ test("standalone admin keeps secondary controls visually distinct", () => {
   );
 });
 
-
-
 test(
   "compact icon and switch controls are exempt from the standard action height",
   () => {
