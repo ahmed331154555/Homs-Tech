@@ -11,14 +11,14 @@ const css = fs.readFileSync(
 );
 
 test("standalone admin primary styling targets primary controls only", () => {
-  assert.match(css, /\.primary,\.btn\.primary,\.toolbar button\.active\{/);
+  assert.match(css, /\.primary,\s*\.btn\.primary,\s*\.toolbar button\.active\s*\{/);
   assert.doesNotMatch(css, /\.btn:not\(\.secondary\)/);
 });
 
 test("standalone admin keeps secondary controls visually distinct", () => {
-  assert.match(css, /\.secondary,\.toolbar button,\.action\{/);
+  assert.match(css, /\.secondary,\s*\.toolbar button,\s*\.action\s*\{/);
   assert.match(
     css,
-    /\.secondary:hover,\.toolbar button:hover,\.action:hover\{/,
+    /\.secondary:hover,\s*\.toolbar button:hover,\s*\.action:hover\s*\{/,
   );
 });
