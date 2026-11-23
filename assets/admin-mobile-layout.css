@@ -494,6 +494,16 @@ body:not(.admin-authenticated) .admin-menu-toggle {
     z-index: var(--ht-admin-layer-dialog) !important;
   }
 
+  #orderDetailsModal:not(.ht-order-detail-overlay) > div {
+    box-sizing: border-box;
+    width: min(760px, 100%) !important;
+    max-height: calc(100dvh - 24px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .ht-refund-overlay {
     z-index: var(--ht-admin-layer-dialog) !important;
     padding: 12px !important;
