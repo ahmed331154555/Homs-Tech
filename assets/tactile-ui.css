@@ -1153,4 +1153,34 @@ video {
     --ht-button-x: 11px;
   }
 }
+
+.btn-main,
+.btn-whatsapp,
+.submit-btn,
+.primary,
+.order-filter-btn,
+.ht-mail-attach-btn,
+.delete-cart-btn,
+.option-btn,
+.color-option-btn,
+.btn-blue,
+.btn-green,
+.btn-light,
+.btn-red,
+.btn-primary {
+  box-sizing: border-box;
+  min-height: var(--ht-button-height);
+  padding: var(--ht-button-y) var(--ht-button-x);
+  border-radius: var(--ht-button-radius);
+  font-family: var(--ht-button-font);
+  font-size: var(--ht-button-size);
+  font-weight: var(--ht-button-weight);
+  line-height: var(--ht-button-line);
+  letter-spacing: -0.01em;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  touch-action: manipulation;
+}
+
 }
