@@ -85,6 +85,10 @@ test("mobile dialogs use a bounded viewport and their own scrolling layer", () =
   );
 });
 
+test("availability column keeps a readable minimum width", () => {
+  assert.match(layoutCss, /#phonesList table th:last-child/);
+});
+
 test("desktop layout is not overridden by the mobile-only layout rules", () => {
   assert.match(layoutCss, /@media \(max-width: 760px\)/);
   assert.match(layoutCss, /@media \(max-width: 420px\)/);
