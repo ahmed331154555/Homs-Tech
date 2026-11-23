@@ -1431,7 +1431,8 @@ input:disabled,
 
 .admin-authenticated .btn-light,
 .admin-authenticated .btn-secondary,
-.admin-authenticated .btn:not(.btn-green):not(.btn-red):not(.btn-dark):not(.btn-primary):not(.btn-blue):not(.btn-main) {
+.admin-authenticated
+  .btn:not(.btn-green):not(.btn-red):not(.btn-dark):not(.btn-primary):not(.btn-blue):not(.btn-main) {
   border: 1px solid #d4deeb;
   background: linear-gradient(180deg, #fff 0%, #f2f6fb 100%);
   color: #24344c;
