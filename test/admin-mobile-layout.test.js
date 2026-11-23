@@ -21,6 +21,8 @@ test("admin page loads the centralized responsive layout after the design system
   assert.ok(tactileIndex >= 0);
   assert.ok(layoutIndex > tactileIndex);
   assert.doesNotMatch(adminHtml, /homs-admin-mobile-navigation/);
+  assert.match(adminHtml, /if\(event\.target===event\.currentTarget\)closeAdminMenu\(\)/);
+  assert.match(adminHtml, /event\.key===\"Escape\"/);
 });
 
 test("mobile navigation is a full-height overlay with an independently scrollable panel", () => {
