@@ -40,6 +40,8 @@ test("mobile navigation is a full-height overlay with an independently scrollabl
     /#adminNav \.admin-nav-inner\s*\{[^}]*overflow-y:\s*auto/s,
   );
   assert.match(layoutCss, /#adminNav \.admin-nav-heading strong/);
+  assert.match(layoutCss, /#adminNav \.admin-nav-inner\s*\{[^}]*touch-action:\s*pan-y/s);
+  assert.doesNotMatch(layoutCss.match(/body\.admin-menu-open\s*\{[^}]*\}/s)?.[0] || "", /touch-action:\s*none/);
 });
 
 test("mobile save bar reserves enough scroll space for the final dashboard content", () => {
