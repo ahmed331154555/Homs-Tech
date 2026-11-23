@@ -129,7 +129,8 @@ button,
 
 
 
-/* Unified HOMS TECH button system — consistent sizing, typography and states. */
+
+/* Unified HOMS TECH button system. */
 :root {
   --ht-button-font: Inter, Arial, sans-serif;
   --ht-button-size: 13px;
@@ -140,16 +141,29 @@ button,
   --ht-button-x: 15px;
   --ht-button-y: 10px;
 }
-button:not(.icon-btn):not(.btn-icon):not(.admin-menu-toggle):not(.admin-nav-close):not(.save-info-toggle),
+button,
 input[type="button"],
 input[type="submit"],
-input[type="reset"],
-.btn:not(.icon-btn):not(.btn-icon),
-.button:not(.icon-btn):not(.btn-icon),
-.action:not(.icon-btn):not(.btn-icon),
+input[type="reset"] {
+  box-sizing: border-box;
+  min-height: var(--ht-button-height);
+  padding: var(--ht-button-y) var(--ht-button-x);
+  border-radius: var(--ht-button-radius);
+  font-family: var(--ht-button-font);
+  font-size: var(--ht-button-size);
+  font-weight: var(--ht-button-weight);
+  line-height: var(--ht-button-line);
+  letter-spacing: -0.01em;
+  text-align: center;
+  vertical-align: middle;
+  touch-action: manipulation;
+}
+.btn,
+.button,
+.action,
 .nav-btn,
 .nav-sub-btn,
-[role="button"]:not(.icon-btn):not(.btn-icon) {
+[role="button"] {
   box-sizing: border-box;
   min-height: var(--ht-button-height);
   padding: var(--ht-button-y) var(--ht-button-x);
@@ -162,17 +176,7 @@ input[type="reset"],
   text-align: center;
   text-decoration: none;
   vertical-align: middle;
-  -webkit-tap-highlight-color: transparent;
-}
-button:not(.icon-btn):not(.btn-icon):not(.admin-menu-toggle):not(.admin-nav-close):not(.save-info-toggle),
-input[type="button"],
-input[type="submit"],
-input[type="reset"],
-.btn:not(.icon-btn):not(.btn-icon),
-.button:not(.icon-btn):not(.btn-icon),
-.action:not(.icon-btn):not(.btn-icon),
-[role="button"]:not(.icon-btn):not(.btn-icon) {
-  overflow-wrap: anywhere;
+  touch-action: manipulation;
 }
 button:disabled,
 input[type="button"]:disabled,
@@ -220,6 +224,17 @@ button:disabled:hover,
 .remove {
   border-color: #be123c;
 }
+.admin-nav,
+.admin-tabs,
+.tabs,
+.nav-tabs {
+  scrollbar-width: thin;
+  scrollbar-color: #b8c5d8 transparent;
+}
+img,
+video {
+  max-width: 100%;
+}
 @media (max-width: 640px) {
   :root {
     --ht-button-size: 13px;
@@ -227,25 +242,19 @@ button:disabled:hover,
     --ht-button-x: 14px;
     --ht-button-y: 11px;
   }
+  .admin-nav,
+  .admin-tabs,
+  .tabs,
+  .nav-tabs {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
   .actions,
   .button-row,
   .toolbar,
   .form-actions {
     gap: 8px;
-  }
-  .actions > button,
-  .actions > .btn,
-  .actions > .button,
-  .actions > .action,
-  .button-row > button,
-  .button-row > .btn,
-  .button-row > .button,
-  .button-row > .action,
-  .form-actions > button,
-  .form-actions > .btn,
-  .form-actions > .button,
-  .form-actions > .action {
-    max-width: 100%;
   }
 }
 @media (max-width: 380px) {
