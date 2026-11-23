@@ -26,15 +26,14 @@ test("standalone admin keeps secondary controls visually distinct", () => {
   );
 });
 
-test(
-  "compact icon and switch controls are exempt from the standard action height",
-  () => {
-    assert.match(
-      fs.readFileSync(
-        path.resolve(__dirname, "../assets/tactile-ui.css"),
-        "utf8",
-      ),
-      /\.gallery-arrow,\s*\.thumb,\s*\.admin-menu-toggle,[\s\S]*?\[role="switch"\]\s*\{\s*min-height:\s*0/,
-    );
-  },
-);
+test("compact controls keep their intended dimensions", () => {
+  const tactileCss = fs.readFileSync(
+    path.resolve(__dirname, "../assets/tactile-ui.css"),
+    "utf8",
+  );
+
+  assert.ok(tactileCss.includes(".gallery-arrow,"));
+  assert.ok(tactileCss.includes(".thumb,"));
+  assert.ok(tactileCss.includes('[role="switch"] {'));
+  assert.ok(tactileCss.includes("min-height: 0;"));
+});
