@@ -81,3 +81,31 @@ button,input,select,textarea{font:inherit}
 :where(table){border-color:var(--border-hairline)}
 :where(th){font-family:'JetBrains Mono',monospace;letter-spacing:.025em}
 :where(.status,.badge,.pill){font-variant-numeric:tabular-nums}
+
+/* Page-specific tactile treatment for the existing live configurators. */
+.buyback-step .panel,.buyback-main-column>.panel{
+ background:linear-gradient(180deg,#fff 0%,#F8FAFD 100%);border:1px solid var(--border-hairline);
+ border-radius:18px;box-shadow:var(--tactile-shadow)
+}
+#dynamicQuestions .dynamic-option{
+ min-height:64px;border:1px solid #CBD4E1;border-radius:12px;
+ background:linear-gradient(180deg,#fff 0%,#F1F4F8 100%);color:var(--navy-900);
+ box-shadow:inset 0 1px 0 #fff,0 2px 0 #CBD4E1,0 4px 8px rgba(11,21,40,.05);
+ transition:transform .08s ease,box-shadow .08s ease,border-color .15s ease,background .15s ease
+}
+#dynamicQuestions .dynamic-option:hover{border-color:#94A3B8}
+#dynamicQuestions .dynamic-option.selected{
+ border:1px solid var(--blue-primary);background:linear-gradient(180deg,#EFF5FF,#E1ECFF);
+ color:var(--blue-dark);box-shadow:inset 0 1px 2px rgba(29,91,214,.1),0 0 0 2px rgba(29,91,214,.07)
+}
+#dynamicQuestions .dynamic-option.selected .dynamic-option-radio{border-color:var(--blue-primary)}
+.quote-inline strong{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:var(--blue-primary)}
+.buyback-step .product-image,.option-card .option-img{border:1px solid #E0E6EF;border-radius:14px;box-shadow:inset 0 1px 0 #fff}
+.option-card{border:1px solid var(--border-hairline)!important;border-radius:18px!important;background:linear-gradient(180deg,#fff,#F8FAFC)!important;box-shadow:var(--tactile-shadow)!important;overflow:hidden}
+.option-card .option-icon{border:1px solid #D7E3F4;box-shadow:inset 0 1px 0 #fff,0 2px 4px rgba(11,21,40,.05)}
+.service,.promo-card,.home-banner{border:1px solid var(--border-hairline);box-shadow:var(--tactile-shadow);border-radius:16px}
+.service{background:linear-gradient(180deg,#fff,#F8FAFC)}
+.service-photo{border:1px solid #E5EAF1;border-radius:10px;background:#F3F6FA}
+#homeBuybackBanner{border-color:#D5E0EF;box-shadow:var(--tactile-shadow)}
+#homeBuybackBanner .btn,#homeBuybackBanner a.btn{border-radius:12px}
+@media(max-width:640px){#dynamicQuestions .dynamic-option-grid.condition-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
