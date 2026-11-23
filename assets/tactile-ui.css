@@ -197,7 +197,8 @@ textarea {
   content: "";
   width: 8px;
   height: 8px;
-  border-radius: 50%;  background: var(--orange-accent);
+  border-radius: 50%;
+  background: var(--orange-accent);
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.13);
 }
 .status-led.is-live:before {
@@ -396,7 +397,8 @@ textarea {
   box-shadow:
     inset 0 1px 0 #fff,
     0 2px 0 #cbd4e1,
-    0 4px 8px rgba(11, 21, 40, 0.05);  transition:
+    0 4px 8px rgba(11, 21, 40, 0.05);
+  transition:
     transform 0.08s ease,
     box-shadow 0.08s ease,
     border-color 0.15s ease,
@@ -595,7 +597,8 @@ textarea {
   color: var(--blue-dark) !important;
   box-shadow:
     inset 0 1px 2px rgba(29, 91, 214, 0.1),
-    0 0 0 2px rgba(29, 91, 214, 0.07) !important;}
+    0 0 0 2px rgba(29, 91, 214, 0.07) !important;
+}
 .battery-option-card {
   border-color: #cbd4e1 !important;
   border-radius: 13px !important;
@@ -837,9 +840,6 @@ body:has(.payment-choice) .account-note {
     grid-column: 1;
   }
 }
-
-
-
 
 /* prettier-ignore */
 @media all {
