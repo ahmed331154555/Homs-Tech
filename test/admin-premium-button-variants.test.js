@@ -34,7 +34,7 @@ test(
         path.resolve(__dirname, "../assets/tactile-ui.css"),
         "utf8",
       ),
-      /\.gallery-arrow[\s\S]*?\.admin-menu-toggle[\s\S]*?\[role="switch"\][\s\S]*?min-height:\s*0/,
+      /\.gallery-arrow,\s*\.thumb,\s*\.admin-menu-toggle,[\s\S]*?\[role="switch"\]\s*\{\s*min-height:\s*0/,
     );
   },
 );
