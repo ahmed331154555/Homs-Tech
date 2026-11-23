@@ -1236,7 +1236,7 @@ video {
   cursor: pointer;
 }
 
-/* HOMS TECH responsive control polish — visual-only, preserving all existing actions. */
+/* Responsive button polish: visual-only; existing actions and handlers are unchanged. */
 button,
 input[type="button"],
 input[type="submit"],
@@ -1259,15 +1259,6 @@ a.button,
   justify-content: center;
   gap: 0.45em;
   text-decoration: none;
-}
-
-button:not(.gallery-arrow):not(.admin-menu-toggle):not(.admin-nav-close):not(.customer-modal-close):not(.save-info-toggle),
-input[type="button"],
-input[type="submit"],
-input[type="reset"],
-.btn,
-.button {
-  vertical-align: middle;
 }
 
 button:focus-visible,
@@ -1368,6 +1359,17 @@ input:disabled,
     width: 100%;
     min-height: 46px;
   }
+
+  .gallery-arrow,
+  .thumb,
+  .thumb-button,
+  .admin-menu-toggle,
+  .admin-nav-close,
+  .customer-modal-close,
+  .save-info-toggle,
+  [role="switch"] {
+    flex-shrink: 0;
+  }
 }
 
 @media (max-width: 380px) {
@@ -1389,21 +1391,7 @@ input:disabled,
   }
 }
 
-/* Keep compact image, navigation and modal controls compact on touch screens. */
-@media (max-width: 640px) {
-  .gallery-arrow,
-  .thumb,
-  .thumb-button,
-  .admin-menu-toggle,
-  .admin-nav-close,
-  .customer-modal-close,
-  .save-info-toggle,
-  [role="switch"] {
-    flex-shrink: 0;
-  }
-}
-
-/* Admin action hierarchy: blue for primary work, neutral for secondary, red for destructive actions. */
+/* Admin button hierarchy: blue primary, neutral secondary, red destructive. */
 .admin-authenticated .btn-green,
 .admin-authenticated .btn-primary,
 .admin-authenticated .btn-blue,
@@ -1431,8 +1419,7 @@ input:disabled,
 
 .admin-authenticated .btn-light,
 .admin-authenticated .btn-secondary,
-.admin-authenticated
-  .btn:not(.btn-green):not(.btn-red):not(.btn-dark):not(.btn-primary):not(.btn-blue):not(.btn-main) {
+.admin-authenticated .btn:not(.btn-green):not(.btn-red):not(.btn-dark):not(.btn-primary):not(.btn-blue):not(.btn-main) {
   border: 1px solid #d4deeb;
   background: linear-gradient(180deg, #fff 0%, #f2f6fb 100%);
   color: #24344c;
