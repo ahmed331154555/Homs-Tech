@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+
+:root {
+  --bg-workbench:#ECEEF2;--surface-card:#FFFFFF;--surface-subtle:#F4F6F9;
+  --navy-900:#0B1528;--navy-800:#13223E;--blue-primary:#1D5BD6;
+  --blue-dark:#1442A3;--orange-accent:#F97316;--border-hairline:#D5DCE6;
+  --text-main:#0F172A;--text-muted:#526075;
+  --tactile-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 2px 4px rgba(11,21,40,.04),0 10px 24px -6px rgba(11,21,40,.08);
+  --tactile-radius:16px;--tactile-focus:0 0 0 3px rgba(29,91,214,.18);
+}
+html{scroll-behavior:smooth}
+body{background-color:var(--bg-workbench);color:var(--text-main);font-family:Inter,Arial,sans-serif}
+h1,h2,h3,h4,.font-display{font-family:'Plus Jakarta Sans',Inter,sans-serif;letter-spacing:-.025em}
+.font-mono-tech,.price,.order-id,.status-badge,.spec-value{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit}
+:where(button,a,input,select,textarea,[tabindex]):focus-visible{outline:0;box-shadow:var(--tactile-focus)}
+.bento-card,.tactile-card,.hardware-card,.spec-card,.quote-ticket,.valuation-slip{
+ background:linear-gradient(180deg,#fff 0%,#F9FAFC 100%);border:1px solid var(--border-hairline);
+ border-radius:var(--tactile-radius);box-shadow:var(--tactile-shadow)
+}
+.bento-grid,.tactile-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:20px}
+.bento-card,.tactile-card{padding:clamp(16px,2vw,24px);min-width:0}
+.btn-tactile,.tactile-switch,.selector-card{
+ background:linear-gradient(180deg,#fff 0%,#F1F4F8 100%);border:1px solid #CBD4E1;
+ border-radius:12px;color:var(--navy-900);font-weight:600;
+ box-shadow:inset 0 1px 0 #fff,0 3px 0 #CBD4E1,0 5px 10px rgba(11,21,40,.06);
+ transition:transform .08s ease,box-shadow .08s ease,border-color .15s ease,background .15s ease;cursor:pointer
+}
+.btn-tactile:hover,.tactile-switch:hover,.selector-card:hover{border-color:#94A3B8}
+.btn-tactile:active,.btn-tactile.is-active,.tactile-switch:active,.tactile-switch.is-active,.selector-card.is-active{
+ transform:translateY(2px);box-shadow:inset 0 1px 2px rgba(11,21,40,.08),0 1px 0 #CBD4E1
+}
+.btn-tactile.is-active,.tactile-switch.is-active,.selector-card.is-active{
+ background:linear-gradient(180deg,#EFF5FF 0%,#E1ECFF 100%);border-color:var(--blue-primary);color:var(--blue-primary);
+ box-shadow:inset 0 1px 2px rgba(29,91,214,.08),0 0 0 2px rgba(29,91,214,.08),0 1px 0 #CBD4E1
+}
+.btn-tactile-blue,.tactile-primary{
+ background:linear-gradient(180deg,#286EF2 0%,#1D5BD6 100%);border:1px solid #1649B0;border-radius:12px;color:#fff;font-weight:700;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 3px 0 #123B8F,0 8px 16px -4px rgba(29,91,214,.4);
+ transition:transform .08s ease,box-shadow .08s ease;cursor:pointer
+}
+.btn-tactile-blue:active,.tactile-primary:active{transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 1px 0 #123B8F,0 3px 6px rgba(29,91,214,.25)}
+.btn-tactile-navy,.tactile-secondary{
+ background:linear-gradient(180deg,#162644 0%,#0B1528 100%);border:1px solid #060C18;border-radius:12px;color:#fff;font-weight:600;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 3px 0 #050A14,0 8px 16px -4px rgba(11,21,40,.35);
+ transition:transform .08s ease,box-shadow .08s ease;cursor:pointer
+}
+.btn-tactile-navy:active,.tactile-secondary:active{transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 1px 0 #050A14}
+.tactile-input,.tactile-select,.tactile-textarea{width:100%;min-height:44px;border:1px solid #C9D3E0;border-radius:10px;background:linear-gradient(180deg,#fff,#F8FAFC);padding:11px 13px;color:var(--text-main);box-shadow:inset 0 1px 2px rgba(11,21,40,.04)}
+.tactile-input:focus,.tactile-select:focus,.tactile-textarea:focus{border-color:var(--blue-primary);outline:0;box-shadow:var(--tactile-focus)}
+.status-led{display:inline-flex;align-items:center;gap:8px;font:600 12px 'JetBrains Mono',monospace;letter-spacing:.02em}
+.status-led:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--orange-accent);box-shadow:0 0 0 3px rgba(249,115,22,.13)}
+.status-led.is-live:before{background:#16A36A;box-shadow:0 0 0 3px rgba(22,163,106,.13)}
+.status-badge,.grade-badge,.health-badge{display:inline-flex;align-items:center;border:1px solid #D7E0EC;border-radius:8px;padding:5px 8px;background:#F4F7FB;color:#24344C;font-size:11px;font-weight:700;letter-spacing:.04em}
+.health-badge{background:#EAF8F0;border-color:#B9E6CA;color:#167044}
+.grade-badge{background:#EEF4FF;border-color:#C9DAFF;color:#174AA8}
+.tactile-table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--border-hairline);border-radius:14px;overflow:hidden}
+.tactile-table th{background:#F3F6FA;color:#526075;font:600 11px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em}
+.tactile-table th,.tactile-table td{padding:12px 14px;border-bottom:1px solid #E8EDF3;text-align:left}
+.tactile-table tbody tr:hover{background:#F7FAFF}
+.quote-ticket,.valuation-slip{padding:20px;position:relative;overflow:hidden}
+.quote-ticket:before,.valuation-slip:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue-primary)}
+.quote-ticket .amount,.valuation-slip .amount{font:700 clamp(24px,4vw,36px) 'JetBrains Mono',monospace;letter-spacing:-.04em}
+.admin-authenticated .topbar,.admin-authenticated .admin-topbar{background:linear-gradient(180deg,#162644,#0B1528);border-bottom:1px solid rgba(255,255,255,.12)}
+.admin-authenticated .container,.admin-authenticated .admin-main{color:var(--text-main)}
+@media(max-width:800px){.bento-grid,.tactile-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}}
+@media(max-width:560px){.bento-grid,.tactile-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.bento-card,.tactile-card{padding:15px}.tactile-table{display:block;overflow-x:auto;white-space:nowrap}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
