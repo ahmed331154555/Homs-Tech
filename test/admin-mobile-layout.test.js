@@ -51,6 +51,8 @@ test("mobile dialogs use a bounded viewport and their own scrolling layer", () =
   assert.match(layoutCss, /\.modal-backdrop,\s*\.customer-modal-backdrop\s*\{[^}]*--ht-admin-layer-modal/s);
   assert.match(layoutCss, /max-height:\s*calc\(100dvh - 24px\)/);
   assert.match(layoutCss, /overflow-y:\s*auto/);
+  assert.match(layoutCss, /#page-buyback-orders \.ht-inkoop-detail-host:not\(\[hidden\]\),/);
+  assert.match(layoutCss, /body\.phone-orders-page-active \.save-bar\s*\{[^}]*--ht-admin-layer-save/s);
 });
 
 test("desktop layout is not overridden by the mobile-only layout rules", () => {
