@@ -109,3 +109,17 @@ button,input,select,textarea{font:inherit}
 #homeBuybackBanner{border-color:#D5E0EF;box-shadow:var(--tactile-shadow)}
 #homeBuybackBanner .btn,#homeBuybackBanner a.btn{border-radius:12px}
 @media(max-width:640px){#dynamicQuestions .dynamic-option-grid.condition-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Admin operations console skin. All selectors are presentation-only. */
+.topbar{background:linear-gradient(180deg,#162644 0%,#0B1528 100%);border-bottom:1px solid rgba(255,255,255,.12);box-shadow:0 5px 18px rgba(11,21,40,.18)}
+.admin-nav{background:linear-gradient(180deg,#fff,#F5F7FA);border-bottom:1px solid var(--border-hairline);box-shadow:0 4px 14px rgba(11,21,40,.05)}
+.nav-btn{border:1px solid #D5DCE6;background:linear-gradient(180deg,#fff,#F1F4F8);color:#24344C;box-shadow:inset 0 1px 0 #fff,0 2px 0 #CBD4E1;transition:all .12s ease}
+.nav-btn.active{background:linear-gradient(180deg,#286EF2,#1D5BD6);border-color:#1649B0;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 2px 0 #123B8F}
+.section{background:linear-gradient(180deg,#fff,#F9FAFC);border:1px solid var(--border-hairline);border-radius:18px;box-shadow:var(--tactile-shadow)}
+.card{background:linear-gradient(180deg,#fff,#F7F9FC);border:1px solid var(--border-hairline);border-radius:14px;box-shadow:inset 0 1px 0 #fff,0 3px 10px rgba(11,21,40,.04)}
+.btn-green{background:linear-gradient(180deg,#286EF2,#1D5BD6);border:1px solid #1649B0;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 3px 0 #123B8F,0 6px 12px rgba(29,91,214,.16)}
+.btn-dark{background:linear-gradient(180deg,#162644,#0B1528);border:1px solid #060C18;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 3px 0 #050A14}
+.btn-light{background:linear-gradient(180deg,#fff,#F1F4F8);border:1px solid #CBD4E1;color:var(--navy-900);box-shadow:inset 0 1px 0 #fff,0 2px 0 #CBD4E1}
+.btn-red{background:linear-gradient(180deg,#FB7185,#E11D48);border:1px solid #BE123C;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 3px 0 #9F1239}
+.section-head{border-bottom-color:#E5EAF1}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--blue-primary);box-shadow:var(--tactile-focus);outline:0}
