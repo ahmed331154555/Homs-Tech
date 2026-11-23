@@ -855,7 +855,6 @@ body:has(.payment-choice) .account-note {
   --ht-button-y: 10px;
 }
 button {
-
   box-sizing: border-box;
   min-height: var(--ht-button-height);
   padding: var(--ht-button-y) var(--ht-button-x);
@@ -870,7 +869,6 @@ button {
   touch-action: manipulation;
 }
 input[type="button"] {
-
   box-sizing: border-box;
   min-height: var(--ht-button-height);
   padding: var(--ht-button-y) var(--ht-button-x);
@@ -885,7 +883,6 @@ input[type="button"] {
   touch-action: manipulation;
 }
 input[type="submit"] {
-
   box-sizing: border-box;
   min-height: var(--ht-button-height);
   padding: var(--ht-button-y) var(--ht-button-x);
@@ -900,7 +897,6 @@ input[type="submit"] {
   touch-action: manipulation;
 }
 input[type="reset"] {
-
   box-sizing: border-box;
   min-height: var(--ht-button-height);
   padding: var(--ht-button-y) var(--ht-button-x);
@@ -915,7 +911,6 @@ input[type="reset"] {
   touch-action: manipulation;
 }
 .btn {
-
   box-sizing: border-box;
   min-height: var(--ht-button-height);
   padding: var(--ht-button-y) var(--ht-button-x);
@@ -930,7 +925,6 @@ input[type="reset"] {
   touch-action: manipulation;
 }
 .button {
-
   box-sizing: border-box;
   min-height: var(--ht-button-height);
   padding: var(--ht-button-y) var(--ht-button-x);
@@ -945,7 +939,6 @@ input[type="reset"] {
   touch-action: manipulation;
 }
 .action {
-
   box-sizing: border-box;
   min-height: var(--ht-button-height);
   padding: var(--ht-button-y) var(--ht-button-x);
@@ -960,7 +953,6 @@ input[type="reset"] {
   touch-action: manipulation;
 }
 .nav-btn {
-
   box-sizing: border-box;
   min-height: var(--ht-button-height);
   padding: var(--ht-button-y) var(--ht-button-x);
@@ -975,7 +967,6 @@ input[type="reset"] {
   touch-action: manipulation;
 }
 .nav-sub-btn {
-
   box-sizing: border-box;
   min-height: var(--ht-button-height);
   padding: var(--ht-button-y) var(--ht-button-x);
@@ -990,7 +981,6 @@ input[type="reset"] {
   touch-action: manipulation;
 }
 [role="button"] {
-
   box-sizing: border-box;
   min-height: var(--ht-button-height);
   padding: var(--ht-button-y) var(--ht-button-x);
