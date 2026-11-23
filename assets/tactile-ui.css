@@ -1184,3 +1184,57 @@ video {
 }
 
 }
+
+
+/* Compact controls keep their purpose-built dimensions instead of inheriting
+   the standard 42px action-button height. */
+:where(
+  .gallery-arrow,
+  .thumb,
+  .admin-menu-toggle,
+  .admin-nav-close,
+  .customer-modal-close,
+  .save-info-toggle,
+  [role="switch"]
+) {
+  min-height: 0;
+  padding: 0;
+  line-height: 1;
+}
+
+.gallery-arrow,
+.admin-menu-toggle,
+.admin-nav-close,
+.customer-modal-close,
+.save-info-toggle {
+  flex: 0 0 auto;
+}
+
+.admin-menu-toggle {
+  width: 44px;
+  height: 44px;
+  font-size: 25px;
+}
+
+.admin-nav-close {
+  width: 38px;
+  height: 38px;
+  font-size: 20px;
+}
+
+.save-info-toggle {
+  width: 30px;
+  height: 30px;
+  font-size: 14px;
+}
+
+.customer-modal-close {
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
+}
+
+[role="switch"] {
+  min-width: 0;
+  cursor: pointer;
+}
