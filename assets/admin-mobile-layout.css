@@ -35,7 +35,91 @@
   min-width: 640px;
 }
 
+.admin-menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 25px;
+  line-height: 1;
+}
+
+body:not(.admin-authenticated) .admin-menu-toggle {
+  display: none !important;
+}
+
+.admin-nav-heading,
+.admin-nav-section {
+  display: none;
+}
+
+.admin-logout-btn {
+  border: 1px solid #fecdd3;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.save-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.save-info-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.save-info-row #saveStatus {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.save-info-toggle {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: #edf4ff;
+  color: #1d4ed8;
+  font-weight: 800;
+}
+
+.save-info-details {
+  margin-top: 8px;
+  line-height: 1.45;
+}
+
 @media (max-width: 760px) {
+  .topbar {
+    min-height: 66px;
+    padding: 10px 14px !important;
+    gap: 12px;
+  }
+
+  .admin-menu-toggle {
+    display: inline-flex;
+    flex: 0 0 44px;
+  }
+
+  .topbar .logo {
+    font-size: clamp(17px, 4.8vw, 21px);
+    letter-spacing: 0;
+  }
+
+  .admin-logout-btn {
+    border-color: #b91c1c !important;
+    background: #7f1d1d !important;
+    color: #fff !important;
+  }
   html,
   body {
     max-width: 100%;
