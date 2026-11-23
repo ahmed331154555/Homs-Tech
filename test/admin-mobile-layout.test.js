@@ -25,7 +25,7 @@ test("admin page loads the centralized responsive layout after the design system
     adminHtml,
     /if\(event\.target===event\.currentTarget\)closeAdminMenu\(\)/,
   );
-  assert.match(adminHtml, /event\.key===\"Escape\"/);
+  assert.match(adminHtml, /event\.key==="Escape"/);
 });
 
 test("mobile navigation is a full-height overlay with an independently scrollable panel", () => {
@@ -40,8 +40,13 @@ test("mobile navigation is a full-height overlay with an independently scrollabl
     /#adminNav \.admin-nav-inner\s*\{[^}]*overflow-y:\s*auto/s,
   );
   assert.match(layoutCss, /#adminNav \.admin-nav-heading strong/);
-  assert.match(layoutCss, /#adminNav \.admin-nav-inner\s*\{[^}]*touch-action:\s*pan-y/s);
-  assert.doesNotMatch(layoutCss.match(/body\.admin-menu-open\s*\{[^}]*\}/s)?.[0] || "", /touch-action:\s*none/);
+  assert.match(
+    layoutCss,
+    /#adminNav \.admin-nav-inner\s*\{[^}]*touch-action:\s*pan-y/s,
+  );
+  const bodyLock =
+    layoutCss.match(/body\.admin-menu-open\s*\{[^}]*\}/s)?.[0] || "";
+  assert.doesNotMatch(bodyLock, /touch-action:\s*none/);
 });
 
 test("mobile save bar reserves enough scroll space for the final dashboard content", () => {
@@ -76,7 +81,10 @@ test("mobile dialogs use a bounded viewport and their own scrolling layer", () =
     /\.modal-backdrop,\s*\.customer-modal-backdrop\s*\{[^}]*--ht-admin-layer-modal/s,
   );
   assert.match(layoutCss, /max-height:\s*calc\(100dvh - 24px\)/);
-  assert.match(layoutCss, /\.modal-backdrop \.modal\s*\{[^}]*overflow-y:\s*auto/s);
+  assert.match(
+    layoutCss,
+    /\.modal-backdrop \.modal\s*\{[^}]*overflow-y:\s*auto/s,
+  );
   assert.match(layoutCss, /overflow-y:\s*auto/);
   assert.match(
     layoutCss,
@@ -89,14 +97,29 @@ test("mobile dialogs use a bounded viewport and their own scrolling layer", () =
 });
 
 test("legacy order detail dialog stays within the mobile viewport", () => {
-  assert.match(layoutCss, /#orderDetailsModal:not\(\.ht-order-detail-overlay\) > div\s*\{[^}]*max-height:\s*calc\(100dvh - 24px\)/s);
-  assert.match(layoutCss, /#orderDetailsModal:not\(\.ht-order-detail-overlay\) > div\s*\{[^}]*overflow-y:\s*auto/s);
+  assert.match(
+    layoutCss,
+    /#orderDetailsModal:not\(\.ht-order-detail-overlay\) > div\s*\{[^}]*max-height:\s*calc\(100dvh - 24px\)/s,
+  );
+  assert.match(
+    layoutCss,
+    /#orderDetailsModal:not\(\.ht-order-detail-overlay\) > div\s*\{[^}]*overflow-y:\s*auto/s,
+  );
 });
 
 test("refund dialog uses the shared mobile modal layer and bounded scrolling", () => {
-  assert.match(layoutCss, /\.ht-refund-overlay\s*\{[^}]*--ht-admin-layer-dialog/s);
-  assert.match(layoutCss, /\.ht-refund-overlay > section\s*\{[^}]*max-height:\s*calc\(100dvh - 24px\)/s);
-  assert.match(layoutCss, /\.ht-refund-overlay > section\s*\{[^}]*overflow-y:\s*auto/s);
+  assert.match(
+    layoutCss,
+    /\.ht-refund-overlay\s*\{[^}]*--ht-admin-layer-dialog/s,
+  );
+  assert.match(
+    layoutCss,
+    /\.ht-refund-overlay > section\s*\{[^}]*max-height:\s*calc\(100dvh - 24px\)/s,
+  );
+  assert.match(
+    layoutCss,
+    /\.ht-refund-overlay > section\s*\{[^}]*overflow-y:\s*auto/s,
+  );
 });
 
 test("availability column keeps a readable minimum width", () => {
