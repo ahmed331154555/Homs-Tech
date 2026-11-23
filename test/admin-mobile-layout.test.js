@@ -74,6 +74,7 @@ test("mobile dialogs use a bounded viewport and their own scrolling layer", () =
     /\.modal-backdrop,\s*\.customer-modal-backdrop\s*\{[^}]*--ht-admin-layer-modal/s,
   );
   assert.match(layoutCss, /max-height:\s*calc\(100dvh - 24px\)/);
+  assert.match(layoutCss, /\.modal-backdrop \.modal\s*\{[^}]*overflow-y:\s*auto/s);
   assert.match(layoutCss, /overflow-y:\s*auto/);
   assert.match(
     layoutCss,
