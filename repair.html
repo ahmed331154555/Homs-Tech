@@ -729,7 +729,9 @@
     />
     <script src="assets/homs-analytics-consent.js" defer></script>
     <link rel="stylesheet" href="/assets/customer-reviews-widget.css?v=1" />
-  \n    <link rel="stylesheet" href="assets/tactile-ui.css?v=20261123-v1" />\n</head>
+  
+    <link rel="stylesheet" href="assets/tactile-ui.css?v=20261123-v1" />
+</head>
 
   <body>
     <div class="ht-topbar">
@@ -1941,7 +1943,8 @@
           currentMethod === "home" && date ? `Gewenste datum: ${date}` : "",
           currentMethod === "home" && selectedTime ? `Gewenste tijd: ${selectedTime}` : "",
           notes ? `Probleem: ${notes}` : ""
-        ].filter(Boolean).join("\n");
+        ].filter(Boolean).join("
+");
 
         try{
           const response = await fetch("/api/orders",{
