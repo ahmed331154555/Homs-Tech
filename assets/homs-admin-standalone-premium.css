@@ -126,3 +126,104 @@ button,
     gap: 10px;
   }
 }
+
+
+/* Unified HOMS TECH button system — consistent sizing, typography and states. */
+:root {
+  --ht-button-font: Inter, Arial, sans-serif;
+  --ht-button-size: 13px;
+  --ht-button-weight: 650;
+  --ht-button-line: 1.2;
+  --ht-button-radius: 11px;
+  --ht-button-height: 42px;
+  --ht-button-x: 15px;
+  --ht-button-y: 10px;
+}
+:is(
+  button:not(.icon-btn):not(.btn-icon):not(.admin-menu-toggle):not(.admin-nav-close):not(.save-info-toggle),
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  .btn:not(.icon-btn):not(.btn-icon),
+  .button:not(.icon-btn):not(.btn-icon),
+  .action:not(.icon-btn):not(.btn-icon),
+  .nav-btn,
+  .nav-sub-btn,
+  [role="button"]:not(.icon-btn):not(.btn-icon)
+) {
+  box-sizing: border-box;
+  min-height: var(--ht-button-height);
+  padding: var(--ht-button-y) var(--ht-button-x);
+  border-radius: var(--ht-button-radius);
+  font-family: var(--ht-button-font);
+  font-size: var(--ht-button-size);
+  font-weight: var(--ht-button-weight);
+  line-height: var(--ht-button-line);
+  letter-spacing: -0.01em;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  -webkit-tap-highlight-color: transparent;
+}
+:is(
+  button:not(.icon-btn):not(.btn-icon):not(.admin-menu-toggle):not(.admin-nav-close):not(.save-info-toggle),
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  .btn:not(.icon-btn):not(.btn-icon),
+  .button:not(.icon-btn):not(.btn-icon),
+  .action:not(.icon-btn):not(.btn-icon),
+  .nav-btn,
+  .nav-sub-btn,
+  [role="button"]:not(.icon-btn):not(.btn-icon)
+):not(.nav-btn):not(.nav-sub-btn) {
+  overflow-wrap: anywhere;
+}
+:is(button, input[type="button"], input[type="submit"], input[type="reset"], .btn, .button, .action, [role="button"]):disabled,
+:is(button, .btn, .button, .action, [role="button"])[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.62;
+  transform: none;
+  filter: none;
+}
+:is(button, .btn, .button, .action, [role="button"]):disabled:hover,
+:is(button, .btn, .button, .action, [role="button"])[aria-disabled="true"]:hover {
+  transform: none;
+}
+:is(.btn-sm, .btn-small, .button-small) {
+  --ht-button-size: 12px;
+  --ht-button-height: 36px;
+  --ht-button-x: 11px;
+  --ht-button-y: 8px;
+  --ht-button-radius: 9px;
+}
+:is(.btn-lg, .btn-large, .button-large) {
+  --ht-button-size: 14px;
+  --ht-button-height: 46px;
+  --ht-button-x: 19px;
+  --ht-button-y: 12px;
+  --ht-button-radius: 12px;
+}
+:is(.btn-danger, .btn-delete, .btn-red, .danger, .delete, .remove) {
+  border-color: #be123c;
+}
+@media (max-width: 640px) {
+  :root {
+    --ht-button-size: 13px;
+    --ht-button-height: 44px;
+    --ht-button-x: 14px;
+    --ht-button-y: 11px;
+  }
+  :is(.actions, .button-row, .toolbar, .form-actions) {
+    gap: 8px;
+  }
+  :is(.actions, .button-row, .form-actions) > :is(button, .btn, .button, .action) {
+    max-width: 100%;
+  }
+}
+@media (max-width: 380px) {
+  :root {
+    --ht-button-size: 12px;
+    --ht-button-x: 11px;
+  }
+}
