@@ -1235,3 +1235,170 @@ video {
   min-width: 0;
   cursor: pointer;
 }
+
+/* HOMS TECH responsive control polish — visual-only, preserving all existing actions. */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.btn,
+.button,
+[role="button"] {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+a.btn,
+a.button,
+[role="button"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45em;
+  text-decoration: none;
+}
+
+button:not(.gallery-arrow):not(.admin-menu-toggle):not(.admin-nav-close):not(.customer-modal-close):not(.save-info-toggle),
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.btn,
+.button {
+  vertical-align: middle;
+}
+
+button:focus-visible,
+input[type="button"]:focus-visible,
+input[type="submit"]:focus-visible,
+input[type="reset"]:focus-visible,
+.btn:focus-visible,
+.button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 0;
+  box-shadow: var(--tactile-focus);
+}
+
+button:disabled,
+input:disabled,
+.btn[aria-disabled="true"],
+.button[aria-disabled="true"],
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.58;
+  transform: none;
+  filter: none;
+}
+
+.actions,
+.button-row,
+.toolbar,
+.form-actions,
+.buttons {
+  min-width: 0;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  button,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  .btn,
+  .button,
+  [role="button"] {
+    max-width: 100%;
+    font-size: 13px;
+    line-height: 1.25;
+  }
+
+  .actions,
+  .button-row,
+  .toolbar,
+  .form-actions,
+  .buttons {
+    gap: 8px;
+  }
+
+  .actions > .btn,
+  .actions > .button,
+  .actions > button,
+  .button-row > .btn,
+  .button-row > .button,
+  .button-row > button,
+  .form-actions > .btn,
+  .form-actions > .button,
+  .form-actions > button,
+  .buttons > .btn,
+  .buttons > .button,
+  .buttons > button {
+    flex: 1 1 132px;
+    min-width: 0;
+  }
+
+  .toolbar > .btn,
+  .toolbar > .button,
+  .toolbar > button {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  .nav-btn,
+  .nav-sub-btn {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  #cartArea .actions {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  #cartArea .actions > .btn {
+    flex: 1 1 100%;
+  }
+
+  .checkout-submit,
+  body:has(.payment-choice) .submit,
+  #repairForm button[type="submit"],
+  .repair-booking-layout button[type="submit"] {
+    width: 100%;
+    min-height: 46px;
+  }
+}
+
+@media (max-width: 380px) {
+  button,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  .btn,
+  .button {
+    font-size: 12px;
+    padding-inline: 10px;
+  }
+
+  .actions,
+  .button-row,
+  .form-actions,
+  .buttons {
+    gap: 7px;
+  }
+}
+
+/* Keep compact image, navigation and modal controls compact on touch screens. */
+@media (max-width: 640px) {
+  .gallery-arrow,
+  .thumb,
+  .thumb-button,
+  .admin-menu-toggle,
+  .admin-nav-close,
+  .customer-modal-close,
+  .save-info-toggle,
+  [role="switch"] {
+    flex-shrink: 0;
+  }
+}
