@@ -42,6 +42,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
+      - name: Format button styles for inspection
+        run: npx --yes prettier@3.6.2 --write assets/tactile-ui.css assets/homs-admin-standalone-premium.css
+
+      - name: Upload formatted button styles
+        uses: actions/upload-artifact@v4
+        with:
+          name: formatted-button-styles
+          path: |
+            assets/tactile-ui.css
+            assets/homs-admin-standalone-premium.css
 
       - name: Check formatting of maintained source files
         run: |
