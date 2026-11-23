@@ -1402,3 +1402,95 @@ input:disabled,
     flex-shrink: 0;
   }
 }
+
+/* Admin action hierarchy: blue for primary work, neutral for secondary, red for destructive actions. */
+.admin-authenticated .btn-green,
+.admin-authenticated .btn-primary,
+.admin-authenticated .btn-blue,
+.admin-authenticated .btn-main,
+.admin-authenticated button.primary,
+.admin-authenticated .save-bar #saveBtn {
+  background: linear-gradient(180deg, #286ef2 0%, #1d5bd6 100%) !important;
+  border: 1px solid #1649b0 !important;
+  color: #fff !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 3px 0 #123b8f,
+    0 6px 14px rgba(29, 91, 214, 0.16) !important;
+}
+
+.admin-authenticated .btn-green:hover,
+.admin-authenticated .btn-primary:hover,
+.admin-authenticated .btn-blue:hover,
+.admin-authenticated .btn-main:hover,
+.admin-authenticated button.primary:hover,
+.admin-authenticated .save-bar #saveBtn:hover {
+  background: linear-gradient(180deg, #3479f5 0%, #174fc4 100%) !important;
+  border-color: #123f9c !important;
+}
+
+.admin-authenticated .btn-light,
+.admin-authenticated .btn-secondary,
+.admin-authenticated .btn:not(.btn-green):not(.btn-red):not(.btn-dark):not(.btn-primary):not(.btn-blue):not(.btn-main) {
+  border: 1px solid #d4deeb;
+  background: linear-gradient(180deg, #fff 0%, #f2f6fb 100%);
+  color: #24344c;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 2px 0 #d5deea,
+    0 4px 9px rgba(11, 21, 40, 0.045);
+}
+
+.admin-authenticated .btn-light:hover,
+.admin-authenticated .btn-secondary:hover {
+  border-color: #a9c4ec;
+  background: #eff6ff;
+  color: #174aa8;
+}
+
+.admin-authenticated .btn-red,
+.admin-authenticated .btn-danger,
+.admin-authenticated .admin-logout-btn {
+  border: 1px solid #be123c;
+  background: linear-gradient(180deg, #f05270 0%, #d91f49 100%);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 3px 0 #9f1239,
+    0 5px 12px rgba(190, 18, 60, 0.12);
+}
+
+.admin-authenticated .nav-btn:not(.active):hover {
+  border-color: #b7c9e2;
+  background: #edf4ff;
+  color: #174aa8;
+}
+
+.admin-authenticated .nav-btn:focus-visible,
+.admin-authenticated .admin-nav-close:focus-visible,
+.admin-authenticated .admin-menu-toggle:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+}
+
+.admin-authenticated .btn-red:hover,
+.admin-authenticated .btn-danger:hover,
+.admin-authenticated .admin-logout-btn:hover {
+  filter: brightness(0.97);
+}
+
+@media (max-width: 640px) {
+  .admin-authenticated .section-head,
+  .admin-authenticated .toolbar,
+  .admin-authenticated .form-actions,
+  .admin-authenticated .button-row {
+    gap: 8px;
+  }
+
+  .admin-authenticated .section-head > .btn,
+  .admin-authenticated .section-head > button,
+  .admin-authenticated .form-actions > .btn,
+  .admin-authenticated .form-actions > button {
+    max-width: 100%;
+  }
+}
