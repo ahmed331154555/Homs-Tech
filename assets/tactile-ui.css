@@ -171,3 +171,34 @@ body:has(.payment-choice) .submit,.checkout-submit{width:100%;background:linear-
 body:has(.payment-choice) input:not([type=checkbox]):not([type=radio]){background:linear-gradient(180deg,#fff,#F8FAFC);border-color:#CBD4E1;border-radius:10px}
 body:has(.payment-choice) .account-note{background:#F1F5FA;border:1px solid #DDE5EF;color:#526075}
 @media(max-width:800px){body:has(.payment-choice) .layout{grid-template-columns:1fr}}
+
+/* Repair booking configurator: mail-in / doorstep method selector and work-order form. */
+.form-body{background:linear-gradient(145deg,#F8FAFC,#EEF3F8)!important}
+.method-switch{gap:12px!important}
+.method-switch button{
+ min-height:58px;border:1px solid #CBD4E1!important;border-radius:13px!important;
+ background:linear-gradient(180deg,#fff,#F1F4F8)!important;color:var(--navy-900)!important;
+ box-shadow:inset 0 1px 0 #fff,0 3px 0 #CBD4E1,0 5px 10px rgba(11,21,40,.05);
+ transition:transform .08s ease,box-shadow .08s ease,border-color .15s ease,background .15s ease
+}
+.method-switch button.active{
+ border-color:var(--blue-primary)!important;background:linear-gradient(180deg,#EFF5FF,#E1ECFF)!important;color:var(--blue-dark)!important;
+ box-shadow:inset 0 1px 2px rgba(29,91,214,.1),0 0 0 2px rgba(29,91,214,.07),0 2px 0 #C4D6F2
+}
+.form-grid{gap:18px!important}
+.form-body .field input,.form-body .field select,.form-body .field textarea{
+ min-height:46px;border:1px solid #CBD4E1!important;border-radius:10px!important;
+ background:linear-gradient(180deg,#fff,#F8FAFC)!important;color:var(--text-main)!important;
+ box-shadow:inset 0 1px 2px rgba(11,21,40,.035)
+}
+.form-body .field input:focus,.form-body .field select:focus,.form-body .field textarea:focus{
+ border-color:var(--blue-primary)!important;box-shadow:var(--tactile-focus)!important
+}
+.repair-map-card,.repair-location-fields{border-color:var(--border-hairline)!important;border-radius:15px!important;box-shadow:var(--tactile-shadow)!important}
+.repair-map-heading{background:linear-gradient(110deg,#EFF5FF,#fff)!important}
+.repair-map-icon{background:#E1ECFF!important;color:var(--blue-primary)!important}
+.repair-location-fields{background:linear-gradient(180deg,#fff,#F7F9FC)!important}
+.repair-booking-layout .btn,.repair-booking-layout button[type=submit],#repairForm button[type=submit]{
+ border-radius:11px;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 3px 0 #123B8F
+}
+@media(max-width:680px){.method-switch{grid-template-columns:1fr!important}.form-grid{grid-template-columns:1fr!important}.form-grid .field.full{grid-column:1}}
