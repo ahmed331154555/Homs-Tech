@@ -1187,15 +1187,13 @@ video {
 
 /* Compact controls keep their purpose-built dimensions instead of inheriting
    the standard 42px action-button height. */
-:where(
-  .gallery-arrow,
-  .thumb,
-  .admin-menu-toggle,
-  .admin-nav-close,
-  .customer-modal-close,
-  .save-info-toggle,
-  [role="switch"]
-) {
+.gallery-arrow,
+.thumb,
+.admin-menu-toggle,
+.admin-nav-close,
+.customer-modal-close,
+.save-info-toggle,
+[role="switch"] {
   min-height: 0;
   padding: 0;
   line-height: 1;
