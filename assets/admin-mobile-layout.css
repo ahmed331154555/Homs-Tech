@@ -129,7 +129,6 @@ body:not(.admin-authenticated) .admin-menu-toggle {
   body.admin-menu-open {
     overflow: hidden !important;
     overscroll-behavior: none;
-    touch-action: none;
   }
 
   .topbar {
@@ -179,6 +178,7 @@ body:not(.admin-authenticated) .admin-menu-toggle {
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     background: #0b1528 !important;
     color: #f8fbff !important;
