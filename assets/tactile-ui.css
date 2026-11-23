@@ -1185,7 +1185,6 @@ video {
 
 }
 
-
 /* Compact controls keep their purpose-built dimensions instead of inheriting
    the standard 42px action-button height. */
 :where(
