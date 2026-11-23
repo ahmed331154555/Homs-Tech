@@ -197,8 +197,7 @@ textarea {
   content: "";
   width: 8px;
   height: 8px;
-  border-radius: 50%;
-  background: var(--orange-accent);
+  border-radius: 50%;  background: var(--orange-accent);
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.13);
 }
 .status-led.is-live:before {
@@ -397,8 +396,7 @@ textarea {
   box-shadow:
     inset 0 1px 0 #fff,
     0 2px 0 #cbd4e1,
-    0 4px 8px rgba(11, 21, 40, 0.05);
-  transition:
+    0 4px 8px rgba(11, 21, 40, 0.05);  transition:
     transform 0.08s ease,
     box-shadow 0.08s ease,
     border-color 0.15s ease,
@@ -597,8 +595,7 @@ textarea {
   color: var(--blue-dark) !important;
   box-shadow:
     inset 0 1px 2px rgba(29, 91, 214, 0.1),
-    0 0 0 2px rgba(29, 91, 214, 0.07) !important;
-}
+    0 0 0 2px rgba(29, 91, 214, 0.07) !important;}
 .battery-option-card {
   border-color: #cbd4e1 !important;
   border-radius: 13px !important;
@@ -838,5 +835,57 @@ body:has(.payment-choice) .account-note {
   }
   .form-grid .field.full {
     grid-column: 1;
+  }
+}
+/* Accessibility and small-screen finishing layer. No behavior or data hooks are changed. */
+:where(button, input, select, textarea, a, [role="button"], [tabindex]):focus-visible {
+  outline: 3px solid rgba(29, 91, 214, 0.42);
+  outline-offset: 2px;
+}
+:where(button, input, select, textarea) {
+  touch-action: manipulation;
+}
+:where(button, [role="button"])[disabled],
+:where(button, [role="button"])[aria-disabled="true"] {
+  cursor: not-allowed;
+  filter: saturate(0.65);
+  box-shadow: none;
+  transform: none;
+}
+:where(button, [role="button"])[disabled]:hover,
+:where(button, [role="button"])[aria-disabled="true"]:hover {
+  transform: none;
+  box-shadow: none;
+}
+:where(img, video) {
+  max-width: 100%;
+}
+:where(input, select, textarea) {
+  max-width: 100%;
+}
+:where(.admin-nav, .admin-tabs, .tabs, .nav-tabs) {
+  scrollbar-width: thin;
+  scrollbar-color: #b8c5d8 transparent;
+}
+@media (max-width: 640px) {
+  :where(.admin-nav, .admin-tabs, .tabs, .nav-tabs) {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  :where(.bento-grid, .tactile-grid) > * {
+    min-width: 0;
+  }
+  :where(.bento-card, .tactile-card, .section, .panel) {
+    overflow-wrap: anywhere;
+  }
+  :where(button, .btn, .button, .btn-primary, .btn-blue, .primary-action) {
+    min-height: 42px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(button, a, input, select, textarea, [role="button"]) {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
