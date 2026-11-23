@@ -444,6 +444,19 @@ body:not(.admin-authenticated) .admin-menu-toggle {
     font-size: 14px;
   }
 
+  #page-buyback-orders .ht-inkoop-detail-host:not([hidden]),
+  .ht-order-detail-overlay,
+  #orderDetailsModal {
+    z-index: var(--ht-admin-layer-dialog) !important;
+  }
+
+  body.phone-orders-page-active .save-bar {
+    z-index: var(--ht-admin-layer-save) !important;
+    left: var(--ht-admin-mobile-gutter) !important;
+    right: var(--ht-admin-mobile-gutter) !important;
+    bottom: calc(10px + var(--ht-admin-safe-bottom)) !important;
+  }
+
   .modal-backdrop,
   .customer-modal-backdrop {
     box-sizing: border-box;
