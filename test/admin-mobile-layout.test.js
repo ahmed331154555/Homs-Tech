@@ -88,6 +88,11 @@ test("mobile dialogs use a bounded viewport and their own scrolling layer", () =
   );
 });
 
+test("legacy order detail dialog stays within the mobile viewport", () => {
+  assert.match(layoutCss, /#orderDetailsModal:not\(\.ht-order-detail-overlay\) > div\s*\{[^}]*max-height:\s*calc\(100dvh - 24px\)/s);
+  assert.match(layoutCss, /#orderDetailsModal:not\(\.ht-order-detail-overlay\) > div\s*\{[^}]*overflow-y:\s*auto/s);
+});
+
 test("refund dialog uses the shared mobile modal layer and bounded scrolling", () => {
   assert.match(layoutCss, /\.ht-refund-overlay\s*\{[^}]*--ht-admin-layer-dialog/s);
   assert.match(layoutCss, /\.ht-refund-overlay > section\s*\{[^}]*max-height:\s*calc\(100dvh - 24px\)/s);
