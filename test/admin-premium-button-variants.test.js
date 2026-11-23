@@ -37,3 +37,26 @@ test("compact controls keep their intended dimensions", () => {
   assert.ok(tactileCss.includes('[role="switch"] {'));
   assert.ok(tactileCss.includes("min-height: 0;"));
 });
+
+test("HOMS TECH responsive controls preserve mobile touch sizing and wrapping", () => {
+  const tactileCss = fs.readFileSync(
+    path.resolve(__dirname, "../assets/tactile-ui.css"),
+    "utf8",
+  );
+
+  assert.match(tactileCss, /@media \(max-width: 640px\)/);
+  assert.match(tactileCss, /--ht-button-height: 44px/);
+  assert.match(tactileCss, /flex: 1 1 132px/);
+  assert.match(tactileCss, /#cartArea \.actions > \.btn/);
+});
+
+test("admin action colors follow the HOMS TECH primary and destructive hierarchy", () => {
+  const tactileCss = fs.readFileSync(
+    path.resolve(__dirname, "../assets/tactile-ui.css"),
+    "utf8",
+  );
+
+  assert.match(tactileCss, /\.admin-authenticated \.btn-green/);
+  assert.match(tactileCss, /\.admin-authenticated \.btn-red/);
+  assert.match(tactileCss, /\.admin-authenticated \.btn-light/);
+});
