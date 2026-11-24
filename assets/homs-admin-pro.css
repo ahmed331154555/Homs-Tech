@@ -327,3 +327,17 @@ body,#dashboard{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:14px;lin
   #dashboard .phone-variant-row>div:last-child{flex:1 1 100%!important;width:100%}
   #dashboard .phone-variant-row>div:last-child>button{flex:1 1 0}
 }
+
+/* ===== 17. Catalogus header: title on top, compact actions in one row on mobile ===== */
+#dashboard .phone-catalog-actions .btn{min-height:32px;padding:4px 12px!important;font-size:12px!important;white-space:nowrap}
+#dashboard .phone-catalog-title{font-size:16px}
+#dashboard .phone-catalog-subtitle{font-size:12px}
+@media (max-width:760px){
+  #dashboard .phone-catalog-head,#dashboard .phone-catalog-head>div:first-child{flex-direction:column;align-items:flex-start}
+  #dashboard .phone-catalog-head{display:flex;gap:10px;padding:10px 0}
+  #dashboard .phone-catalog-actions{display:flex;flex-wrap:wrap;gap:6px;width:100%}
+  #dashboard .phone-catalog-actions .btn{flex:1 1 auto}
+  #dashboard .phone-folder-group-head{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+  #dashboard .phone-folder-group-title{font-size:15px!important}
+  #dashboard .phone-folder-group-count{font-size:12px!important;padding:4px 10px!important;border-radius:999px}
+}
