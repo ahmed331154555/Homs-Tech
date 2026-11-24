@@ -311,3 +311,19 @@ body,#dashboard{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:14px;lin
   #dashboard .ht-invoice-lines-table td:nth-child(5) .btn{width:100%;min-height:36px}
   #dashboard .ht-invoice-total-panel{width:100%;box-sizing:border-box}
 }
+
+/* ===== 16. Phone list rows: info on top, compact actions below on mobile ===== */
+#dashboard .phone-variant-row{padding:10px 12px!important;gap:10px!important}
+#dashboard .phone-variant-row strong{font-size:14px}
+#dashboard .phone-variant-row .phone-variant-main>span{font-size:12px!important;line-height:1.4}
+#dashboard .phone-variant-edit,#dashboard .phone-variant-row .phone-product-card-delete{min-height:32px;padding:4px 12px!important;font-size:12px!important;font-weight:600!important;border-radius:6px!important;box-shadow:none!important;white-space:nowrap}
+#dashboard .phone-variant-edit{background:#eff6ff!important;color:#1d4ed8!important;border:1px solid #bfdbfe!important}
+#dashboard .phone-variant-row .phone-product-card-delete{background:#fff!important;color:#b91c1c!important;border:1px solid #fecaca!important}
+#dashboard .phone-variant-edit:hover{background:#dbeafe!important}
+#dashboard .phone-variant-row .phone-product-card-delete:hover{background:#fef2f2!important}
+@media (max-width:760px){
+  #dashboard .phone-variant-row{flex-wrap:wrap!important;align-items:flex-start!important}
+  #dashboard .phone-variant-row .phone-variant-main{flex:1 1 100%!important}
+  #dashboard .phone-variant-row>div:last-child{flex:1 1 100%!important;width:100%}
+  #dashboard .phone-variant-row>div:last-child>button{flex:1 1 0}
+}
