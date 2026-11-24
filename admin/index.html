@@ -125,7 +125,7 @@
           >⭐ Reviews & beoordelingen</a
         >
         <div class="admin-nav-section">Inhoud beheren</div>
-        <button
+        <button type="button"
           class="nav-btn active"
           data-page="general"
           data-permission="general.view"
@@ -133,7 +133,7 @@
         >
           🏠 Homepage
         </button>
-        <button
+        <button type="button"
           class="nav-btn"
           data-page="services"
           data-permission="services.view"
@@ -141,7 +141,7 @@
         >
           🔧 Diensten
         </button>
-        <button
+        <button type="button"
           class="nav-btn"
           data-page="repair"
           data-permission="site.save"
@@ -150,7 +150,7 @@
           🛠️ Reparatiepagina
         </button>
         <div class="admin-nav-section">Producten & voorraad</div>
-        <button
+        <button type="button"
           class="nav-btn"
           data-page="phones"
           data-permission="phones.view"
@@ -158,7 +158,7 @@
         >
           📱 Telefoons & prijzen
         </button>
-        <button
+        <button type="button"
           class="nav-btn"
           data-page="shop"
           data-permission="site.save"
@@ -166,7 +166,7 @@
         >
           🛍️ Shop producten
         </button>
-        <button
+        <button type="button"
           class="nav-btn"
           data-page="discounts"
           data-permission="site.save"
@@ -174,7 +174,7 @@
         >
           🏷️ Kortingen
         </button>
-        <button
+        <button type="button"
           class="nav-btn"
           data-page="inventory"
           data-permission="site.save"
@@ -182,7 +182,7 @@
         >
           📦 Voorraad & magazijn
         </button>
-        <button
+        <button type="button"
           class="nav-btn"
           data-page="partners"
           data-permission="site.save"
@@ -190,7 +190,7 @@
         >
           🤝 Partners
         </button>
-        <button
+        <button type="button"
           class="nav-btn"
           data-page="device-register"
           data-permission="device_register.view"
@@ -198,7 +198,7 @@
         >
           📱 Toestelregister
         </button>
-        <button
+        <button type="button"
           class="nav-btn"
           data-page="buyback"
           data-permission="site.save"
@@ -206,7 +206,7 @@
         >
           📥 Uw toestel verkopen
         </button>
-        <button
+        <button type="button"
           class="nav-btn"
           data-page="why"
           data-permission="why.view"
@@ -215,7 +215,7 @@
           ⭐ Waarom HOMS TECH
         </button>
         <div class="admin-nav-section">Klanten & bestellingen</div>
-        <button
+        <button type="button"
           class="nav-btn"
           data-page="live-chat"
           data-permission="orders.view"
@@ -223,7 +223,7 @@
         >
           💬 Live Chat
         </button>
-        <button
+        <button type="button"
           class="nav-btn"
           data-page="customers"
           data-permission="customers.view"
@@ -231,7 +231,7 @@
         >
           👥 Klanten
         </button>
-        <button
+        <button type="button"
           class="nav-btn"
           data-page="emails"
           data-permission="site.save"
@@ -239,7 +239,7 @@
         >
           ✉️ E-mail inbox
         </button>
-        <button
+        <button type="button"
           class="nav-btn"
           data-page="invoices"
           data-permission="site.save"
@@ -247,7 +247,7 @@
         >
           🧾 Facturen
         </button>
-        <button
+        <button type="button"
           class="nav-btn nav-orders-parent"
           data-page="all-orders"
           aria-expanded="false"
@@ -258,7 +258,7 @@
           <span class="nav-orders-chevron" aria-hidden="true">⌄</span>
         </button>
         <div id="ordersSubmenu" class="nav-orders-submenu" hidden></div>
-        <button
+        <button type="button"
           class="nav-btn"
           data-page="order-settings"
           data-permission="site.save"
@@ -267,7 +267,7 @@
           📦 Orderinstellingen
         </button>
         <div class="admin-nav-section">Beheer & instellingen</div>
-        <button
+        <button type="button"
           class="nav-btn"
           data-page="search"
           data-permission="search"
@@ -275,7 +275,7 @@
         >
           🔎 Zoeken
         </button>
-        <button
+        <button type="button"
           class="nav-btn"
           data-page="admins"
           data-permission="admins.manage"
@@ -317,7 +317,7 @@
         />
       </div>
 
-      <button class="btn btn-green" onclick="login()" style="width:100%">
+      <button type="button" class="btn btn-green" onclick="login()" style="width:100%">
         Inloggen
       </button>
 
@@ -669,7 +669,7 @@
               <p>Beheer de reparatiediensten die op de website verschijnen.</p>
             </div>
 
-            <button class="btn btn-green" onclick="addService()">
+            <button type="button" class="btn btn-green" onclick="addService()">
               + Dienst toevoegen
             </button>
           </div>
@@ -723,7 +723,7 @@
               <p>Beheer de telefoons die HOMS TECH verkoopt.</p>
             </div>
 
-            <button class="btn btn-green" onclick="addPhone()">
+            <button type="button" class="btn btn-green" onclick="addPhone()">
               + Telefoon toevoegen
             </button>
           </div>
@@ -916,7 +916,7 @@
                 accessoires op de homepage.
               </p>
             </div>
-            <button class="btn btn-green" onclick="addDeviceCategory()">
+            <button type="button" class="btn btn-green" onclick="addDeviceCategory()">
               + Categorie toevoegen
             </button>
           </div>
@@ -965,14 +965,14 @@
               </p>
             </div>
             <div class="actions">
-              <button
+              <button type="button"
                 class="btn btn-green"
                 data-permission="customers.update"
                 onclick="showCustomerCreateForm()"
               >
                 + Klant aanmaken
               </button>
-              <button class="btn btn-light" onclick="loadCustomers()">
+              <button type="button" class="btn btn-light" onclick="loadCustomers()">
                 ↻ Vernieuwen
               </button>
             </div>
@@ -1084,9 +1084,9 @@
                 </div>
               </div>
               <div class="actions">
-                <button class="btn btn-green" onclick="createCustomer()">
+                <button type="button" class="btn btn-green" onclick="createCustomer()">
                   Account aanmaken</button
-                ><button class="btn btn-light" onclick="closeCustomerModal()">
+                ><button type="button" class="btn btn-light" onclick="closeCustomerModal()">
                   Annuleren
                 </button>
               </div>
@@ -1155,14 +1155,14 @@
                 </div>
               </div>
               <div class="actions">
-                <button class="btn btn-green" onclick="saveCustomerEdit()">
+                <button type="button" class="btn btn-green" onclick="saveCustomerEdit()">
                   Wijzigingen opslaan</button
-                ><button
+                ><button type="button"
                   class="btn btn-light"
                   onclick="editCustomerPassword(Number(document.getElementById('editCustomerId').value))"
                 >
                   🔑 Wachtwoord instellen</button
-                ><button
+                ><button type="button"
                   class="btn btn-red"
                   onclick="deleteCustomer(Number(document.getElementById('editCustomerId').value))"
                 >
@@ -1191,9 +1191,9 @@
                 />
               </div>
               <div class="actions">
-                <button class="btn btn-green" onclick="saveCustomerPassword()">
+                <button type="button" class="btn btn-green" onclick="saveCustomerPassword()">
                   Wachtwoord opslaan</button
-                ><button
+                ><button type="button"
                   class="btn btn-light"
                   onclick="editCustomer(Number(document.getElementById('passwordCustomerId').value))"
                 >
@@ -1218,7 +1218,7 @@
                 Reparatieaanvragen.
               </p>
             </div>
-            <button class="btn btn-light" onclick="loadOrders()">
+            <button type="button" class="btn btn-light" onclick="loadOrders()">
               ↻ Vernieuwen
             </button>
           </div>
@@ -1246,7 +1246,7 @@
               <option>Mislukt</option>
               <option>Voltooid</option>
               <option>Geannuleerd</option></select
-            ><button
+            ><button type="button"
               class="order-filter-btn"
               onclick="clearRepairRequestFilters()"
             >
@@ -1271,7 +1271,7 @@
                 status.
               </p>
             </div>
-            <button class="btn btn-light" onclick="loadWebshopOrders()">
+            <button type="button" class="btn btn-light" onclick="loadWebshopOrders()">
               ↻ Vernieuwen
             </button>
           </div>
@@ -1308,7 +1308,7 @@
               <option value="processing">In behandeling</option>
               <option value="failed">Mislukt</option>
             </select>
-            <button
+            <button type="button"
               class="order-filter-btn"
               onclick="clearWebshopOrderFilters()"
             >
@@ -2581,7 +2581,7 @@
               <p>Beheer de voordelen die op de homepage verschijnen.</p>
             </div>
 
-            <button class="btn btn-green" onclick="addWhy()">
+            <button type="button" class="btn btn-green" onclick="addWhy()">
               + Voordeel toevoegen
             </button>
           </div>
@@ -2606,7 +2606,7 @@
               placeholder="Naam, e-mail, telefoon, IMEI, ordernummer..."
               onkeydown="if(event.key==='Enter')adminSearch()"
             />
-            <button class="btn btn-green" onclick="adminSearch()">
+            <button type="button" class="btn btn-green" onclick="adminSearch()">
               Zoeken
             </button>
           </div>
@@ -2656,7 +2656,7 @@
               <label>Rechten</label>
               <div id="newAdminPermissions" class="permission-grid"></div>
             </div>
-            <button class="btn btn-green" onclick="createAdmin()">
+            <button type="button" class="btn btn-green" onclick="createAdmin()">
               + Admin aanmaken
             </button>
             <div
@@ -2672,7 +2672,7 @@
                 Wijzig rechten, schakel accounts uit of verander een wachtwoord.
               </p>
             </div>
-            <button class="btn btn-light" onclick="loadAdmins()">
+            <button type="button" class="btn btn-light" onclick="loadAdmins()">
               ↻ Vernieuwen
             </button>
           </div>
@@ -2708,7 +2708,7 @@
                 <option value="all">Alle aanvragen</option>
                 <option value="sale">Alleen verkoop</option>
                 <option value="tradein">Inruil</option></select
-              ><button class="btn btn-light" onclick="loadBuybackOrders()">
+              ><button type="button" class="btn btn-light" onclick="loadBuybackOrders()">
                 ↻ Vernieuwen
               </button>
             </div>
@@ -2743,7 +2743,7 @@
             </div>
           </div>
 
-          <button
+          <button type="button"
             id="saveBtn"
             class="btn btn-green"
             onclick="save()"
