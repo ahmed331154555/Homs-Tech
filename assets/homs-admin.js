@@ -4591,10 +4591,12 @@ let shopCatalogOriginalSnapshot=[];
 const SHOP_CATEGORIES=[
  {value:"Schermen",label:"Schermen"},{value:"Laadpoorten & Flexkabels",label:"Laadpoorten & Flexkabels"},
  {value:"Batterijen",label:"Batterijen"},{value:"Reparatiemachines & Gereedschap",label:"Reparatiemachines & Gereedschap"},
+ {value:"Opladers",label:"Opladers & Kabels"},{value:"Hoofdtelefoons",label:"Hoofdtelefoons & Audio"},
+ {value:"Hoesjes & Screenprotectors",label:"Hoesjes & Screenprotectors"},
  {value:"Overige Onderdelen",label:"Overige Onderdelen"},{value:"Accessoires",label:"Accessoires"}
 ];
 function nextShopSku(category){
- const codes={"Schermen":"SCH","Laadpoorten & Flexkabels":"FLEX","Batterijen":"BAT","Reparatiemachines & Gereedschap":"MAC","Overige Onderdelen":"PART","Accessoires":"ACC"};
+ const codes={"Schermen":"SCH","Laadpoorten & Flexkabels":"FLEX","Batterijen":"BAT","Reparatiemachines & Gereedschap":"MAC","Opladers":"CHG","Hoofdtelefoons":"AUD","Hoesjes & Screenprotectors":"CASE","Overige Onderdelen":"PART","Accessoires":"ACC"};
  let max=100000;
  (Array.isArray(data.shopProducts)?data.shopProducts:[]).forEach(p=>(Array.isArray(p.variants)?p.variants:[]).forEach(v=>{const m=String(v.sku||"").match(/-(\d+)$/);if(m)max=Math.max(max,Number(m[1])||0)}));
  return "HT-"+(codes[category]||"PART")+"-"+String(max+1).padStart(6,"0");

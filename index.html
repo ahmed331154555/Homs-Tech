@@ -743,7 +743,7 @@
 
     <link rel="stylesheet" href="/assets/customer-reviews-widget.css?v=2" />
 
-    <link rel="stylesheet" href="assets/tactile-ui.css?v=20261123-v1" />
+    <link rel="stylesheet" href="assets/tactile-ui.css?v=20261124-flat" />
   </head>
   <body>
     <div class="topbar" id="homeTopBar">
@@ -1310,9 +1310,11 @@
        set("homeServicesSection",s.enabled);document.getElementById("servicesTitle").textContent=s.title||"Onze reparatie diensten";
        set("homeWhySection",w.enabled);document.getElementById("whyTitle").textContent=w.title||"Waarom HOMS TECH";
        set("homeFooter",f.enabled);
-       document.getElementById("footerDescription").textContent=f.description||"";
-       document.getElementById("footerArea").textContent=f.area||"";
-       document.getElementById("footerContact").textContent=f.contact||"";
+       /* The unified footer may replace these nodes, so write only when they exist. */
+       const text=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+       text("footerDescription",f.description||"");
+       text("footerArea",f.area||"");
+       text("footerContact",f.contact||"");
       }
 
       function renderCategories(){

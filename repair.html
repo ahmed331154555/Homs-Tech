@@ -730,7 +730,7 @@
     <script src="assets/homs-analytics-consent.js" defer></script>
     <link rel="stylesheet" href="/assets/customer-reviews-widget.css?v=1" />
 
-    <link rel="stylesheet" href="assets/tactile-ui.css?v=20261123-v1" />
+    <link rel="stylesheet" href="assets/tactile-ui.css?v=20261124-flat" />
   </head>
 
   <body>
@@ -1943,8 +1943,7 @@
                 currentMethod === "home" && date ? `Gewenste datum: ${date}` : "",
                 currentMethod === "home" && selectedTime ? `Gewenste tijd: ${selectedTime}` : "",
                 notes ? `Probleem: ${notes}` : ""
-              ].filter(Boolean).join("
-      ");
+              ].filter(Boolean).join("\n");
 
               try{
                 const response = await fetch("/api/orders",{
