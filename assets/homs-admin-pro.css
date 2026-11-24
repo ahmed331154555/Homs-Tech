@@ -195,6 +195,62 @@ body,#dashboard{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:14px;lin
   #adminNav a.nav-btn{text-decoration:none}
   .save-bar #saveBtn{min-height:42px!important;padding:8px 14px!important;font-size:13px!important}
 }
+/* ===== 11. Rows, lists & cards (partners, brands, orders, areas, customers) ===== */
+/* destructive buttons: solid but calm, never oversized */
+#dashboard .btn-red{background:#dc2626!important;border-color:#dc2626!important;color:#fff!important;min-height:32px;padding:5px 12px!important;font-size:12px!important;font-weight:600!important;white-space:nowrap;box-shadow:none!important;background-image:none!important}
+#dashboard .btn-red:hover:not(:disabled){background:#b91c1c!important;border-color:#b91c1c!important}
+#dashboard .btn-red:disabled{background:#e2e8f0!important;border-color:#e2e8f0!important;color:#94a3b8!important}
+#dashboard .repair-admin-item .btn-red,#dashboard .repair-admin-summary-actions .btn-red,#dashboard .homepage-mini-actions .btn-red{background:#fff!important;color:#b91c1c!important;border:1px solid #fecaca!important}
+#dashboard .repair-admin-item .btn-red:hover:not(:disabled),#dashboard .repair-admin-summary-actions .btn-red:hover:not(:disabled),#dashboard .homepage-mini-actions .btn-red:hover:not(:disabled){background:#fef2f2!important;border-color:#fca5a5!important;color:#991b1b!important}
+/* partners */
+#dashboard .ht-partner-list{display:flex;flex-direction:column;gap:8px}
+#dashboard .ht-partner-row{flex-wrap:wrap;align-items:flex-start;padding:10px 12px;box-shadow:none;border:1px solid #e2e8f0;border-radius:8px}
+#dashboard .ht-partner-select{flex:1 1 100%;width:100%;min-width:0;padding:0;box-shadow:none!important;background:transparent!important;border:0!important;text-align:left;word-break:normal!important;overflow-wrap:anywhere;writing-mode:horizontal-tb!important}
+#dashboard .ht-partner-select strong,#dashboard .ht-partner-select span,#dashboard .ht-partner-select small{display:block;word-break:normal!important;white-space:normal}
+#dashboard .ht-partner-select strong{font-size:13px}
+#dashboard .ht-partner-actions{display:flex;flex-wrap:wrap;gap:6px;flex:1 1 100%}
+#dashboard .ht-partner-actions .btn{min-height:30px;padding:4px 10px!important;font-size:12px!important}
+/* order rows */
+#dashboard .repair-request-row{flex-wrap:wrap;gap:8px 12px;align-items:center}
+#dashboard .repair-request-toggle{flex:1 1 220px;min-width:0;display:flex;align-items:center;gap:10px;text-align:left;box-shadow:none!important}
+#dashboard .repair-request-row-actions{flex:0 1 auto;flex-wrap:wrap;justify-content:flex-end;gap:6px}
+#dashboard .repair-request-row-actions .btn,#dashboard .repair-request-row-actions select{min-height:32px;height:32px;padding:0 10px!important;font-size:12px!important;white-space:nowrap;word-break:normal!important}
+#dashboard .repair-request-row-actions .order-status-select{width:150px;max-width:100%}
+/* service areas / simple edit rows */
+#dashboard .repair-admin-item{box-shadow:none!important}
+/* brand cards */
+#dashboard .buyback-v1-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))!important;gap:12px!important}
+#dashboard .buyback-v1-card{display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:12px!important;border-radius:10px!important;box-shadow:none!important;transform:none!important;min-width:0}
+#dashboard .buyback-v1-card:hover{border-color:#93c5fd;transform:none!important}
+#dashboard .buyback-v1-image{height:96px!important;margin:0 0 4px!important}
+#dashboard .buyback-v1-name,#dashboard .buyback-v1-meta{word-break:normal!important;overflow-wrap:anywhere;text-align:center}
+#dashboard .buyback-v1-card-actions{margin-top:auto;display:flex;gap:6px;justify-content:center}
+#dashboard .buyback-v1-card-action{flex:1;min-height:28px;padding:4px 8px!important;font-size:11px!important;border-radius:6px!important;background:#fff!important;box-shadow:none!important;white-space:nowrap}
+#dashboard .buyback-v1-card-action.danger{color:#b91c1c!important;border:1px solid #fecaca!important}
+#dashboard .buyback-v1-add{min-height:150px;border:1.5px dashed #cbd5e1!important;background:#f8fafc!important;align-items:center;justify-content:center;text-align:center}
+#dashboard .buyback-v1-add strong,#dashboard .buyback-v1-add span{display:block;font-size:12px}
+#dashboard .buyback-v1-head{flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+#dashboard .buyback-v1-head .btn{min-height:32px;padding:5px 12px!important;font-size:12px!important}
+/* customers */
+#dashboard .customer-card{display:grid!important;grid-template-columns:minmax(0,1fr);gap:8px;padding:12px 14px!important;text-align:left!important;box-shadow:none!important}
+#dashboard .customer-card .card-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0}
+#dashboard .customer-card .card-title{font-size:14px!important}
+#dashboard .customer-card .grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px 16px!important;text-align:left!important}
+#dashboard .customer-card .grid>div{text-align:left!important;font-size:12.5px;overflow-wrap:anywhere}
+#dashboard .customer-card .grid>div br{display:none}
+#dashboard .customer-card .grid>div strong{margin-bottom:1px;display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#64748b;font-weight:700}
+#dashboard .customer-card .grid>div[style*="grid-column"]{grid-column:1/-1!important}
+#dashboard .customer-card-hint{font-size:12px;color:#2563eb;text-align:left!important}
+/* collapsible product rows */
+#dashboard details.card>summary{min-height:44px;padding:8px 14px!important;font-size:13px}
+@media (max-width:760px){
+  #dashboard .customer-card .grid{grid-template-columns:minmax(0,1fr)!important}
+  #dashboard .repair-request-row{flex-direction:row!important}
+  #dashboard .repair-request-toggle{flex:1 1 100%}
+  #dashboard .repair-request-row-actions{width:100%;justify-content:flex-start}
+  #dashboard .repair-request-row-actions .order-status-select{flex:1 1 140px}
+  #dashboard .buyback-v1-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important}
+}
 @media (prefers-reduced-motion:reduce){
   #dashboard .btn,#dashboard input,#dashboard select,#dashboard textarea{transition:none}
   #dashboard .btn.is-loading::before,#saveBtn.is-loading::before{animation-duration:1.6s}
