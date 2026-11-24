@@ -80,6 +80,11 @@ function applyPermissionUI(){
       if(!btn.classList.contains("nav-btn")&&!/Vernieuwen|↻/.test(btn.textContent||""))btn.disabled=sectionUnavailable||!canEditCurrentPage();
     });
   });
+  const shopPageEl=document.getElementById("page-shop");
+  if(shopPageEl){
+    const shopUnavailable=typeof ADMIN_SITE_DATA_PAGES!=="undefined"&&ADMIN_SITE_DATA_PAGES.has("shop")&&(typeof adminLoadedSections==="undefined"||!adminLoadedSections.has("shop")||(typeof adminSectionRequests!=="undefined"&&adminSectionRequests.has("shop"))||loading);
+    shopPageEl.querySelectorAll(".section-head .actions button").forEach(btn=>{btn.disabled=shopUnavailable||!canEditCurrentPage();});
+  }
   document.querySelectorAll(".order-status-select").forEach(el=>{const section=el.closest("[data-order-category]");const key=section?.dataset.orderCategory;const category=unifiedOrderCategories.find(item=>item.key===key);const permission=category?.updatePermission||(el.closest("#page-repair-requests")?"orders.update":"webshop_orders.update");el.disabled=!hasPermission(permission);});
 }
 let liveChatCurrentId=null,liveChatRefreshTimer=null,liveChatRefreshInFlight=false,liveChatMessagesSignature="",liveChatOpenRequestId=0;
@@ -4715,12 +4720,14 @@ function ensureShopProducts(){
   p.price=p.variants[0].price;p.stock=String(p.variants[0].stock??"")+" stuks";
  });
 }
-function addShopProduct(){
- ensureShopProducts();const category="Accessoires";
+function addShopProduct(preset){
+ ensureShopProducts();const category=typeof preset==="string"&&SHOP_CATEGORIES.some(c=>c.value===preset)?preset:"Accessoires";
  data.shopProducts.unshift({id:"shop-"+Date.now()+"-"+Math.random().toString(36).slice(2,8),name:"",description:"",category,brand:"",deviceModel:"",price:"",stock:"0 stuks",images:["","","",""],videoEnabled:false,videoUrl:"",active:true,variants:[{id:"var-"+Date.now()+"-"+Math.random().toString(36).slice(2,8),quality:"Standaard",sku:nextShopSku(category),price:"",stock:"0",active:true}]});
+ shopAdminView="edit";shopAdminIndex=0;shopAdminQuery="";shopAdminCategory="";shopAdminStatus="";
  renderShopProductsAdmin();markChanged();
+ const box=document.getElementById("shopProductsAdmin");if(box&&box.scrollIntoView)box.scrollIntoView({block:"start"});
 }
-function deleteShopProduct(index){if(!confirm("Dit Shop-product verwijderen?"))return;data.shopProducts.splice(index,1);renderShopProductsAdmin();markChanged();}
+function deleteShopProduct(index){const name=String(data.shopProducts[index]?.name||"").trim()||"dit product";if(!confirm("«"+name+"» verwijderen uit de Shop?"))return;data.shopProducts.splice(index,1);shopAdminView="list";shopAdminIndex=-1;renderShopProductsAdmin();markChanged();}
 function updateShopProduct(index,key,value){ensureShopProducts();if(!data.shopProducts[index])return;data.shopProducts[index][key]=value;if(key==="category")data.shopProducts[index].variants.forEach(v=>{if(!v.sku||v.sku==="")v.sku=nextShopSku(value)});markChanged();}
 function addShopVariant(index){ensureShopProducts();const p=data.shopProducts[index];if(!p)return;p.variants.push({id:"var-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),quality:"Nieuwe kwaliteit",sku:nextShopSku(p.category),price:"",stock:"0",active:true});renderShopProductsAdmin();markChanged();}
 function updateShopVariant(index,variantIndex,key,value){ensureShopProducts();const p=data.shopProducts[index],v=p&&p.variants[variantIndex];if(!v||!["quality","sku","price","stock","active"].includes(key))return;v[key]=value;if(variantIndex===0){p.price=v.price;p.stock=String(v.stock??"")+" stuks";}markChanged();}
@@ -4757,16 +4764,119 @@ function shopProductImageUpload(event,index,slot){
  reader.onerror=()=>{finish();alert("De foto kon niet worden gelezen. Probeer een andere afbeelding.");};
  try{reader.readAsDataURL(file);}catch(error){finish();alert("De foto kon niet worden gelezen. Probeer opnieuw.");}
 }
+/* ---- Shop products admin: list view + guided editor ---------------------
+   Data model and handlers (updateShopProduct, updateShopVariant, addShopVariant,
+   deleteShopVariant, shopProductImageUpload, save payload) are unchanged. */
+let shopAdminView="list",shopAdminIndex=-1,shopAdminQuery="",shopAdminCategory="",shopAdminStatus="";
+function shopEuro(n){return "€ "+Number(n).toFixed(2).replace(".",",");}
+function shopCategoryLabel(value){const c=SHOP_CATEGORIES.find(item=>item.value===value);return c?c.label:(value||"—");}
+function shopProductStats(p){
+ const variants=Array.isArray(p.variants)?p.variants:[];
+ const prices=variants.map(v=>Number(String(v.price??"").replace(",","."))).filter(n=>Number.isFinite(n)&&n>0);
+ const stock=variants.reduce((sum,v)=>{const n=Number(String(v.stock??"").trim());return sum+(Number.isInteger(n)&&n>0?n:0);},0);
+ return{min:prices.length?Math.min(...prices):null,max:prices.length?Math.max(...prices):null,stock,count:variants.length};
+}
+function shopStockBadge(stock,active){
+ if(active===false)return '<span class="stock-badge is-off">Verborgen</span>';
+ if(stock<=0)return '<span class="stock-badge is-out">Uitverkocht</span>';
+ if(stock<=5)return '<span class="stock-badge is-low">Laag · '+stock+'</span>';
+ return '<span class="stock-badge is-ok">Op voorraad · '+stock+'</span>';
+}
+function shopAdminMatches(p){
+ const stats=shopProductStats(p);
+ if(shopAdminCategory&&p.category!==shopAdminCategory)return false;
+ if(shopAdminStatus==="active"&&p.active===false)return false;
+ if(shopAdminStatus==="hidden"&&p.active!==false)return false;
+ if(shopAdminStatus==="low"&&!(p.active!==false&&stats.stock>0&&stats.stock<=5))return false;
+ if(shopAdminStatus==="out"&&!(p.active!==false&&stats.stock<=0))return false;
+ const q=shopAdminQuery.trim().toLowerCase();
+ if(!q)return true;
+ const hay=[p.name,p.brand,p.deviceModel,shopCategoryLabel(p.category)].concat((p.variants||[]).map(v=>v.sku+" "+v.quality)).join(" ").toLowerCase();
+ return q.split(/\s+/).every(part=>hay.includes(part));
+}
+function shopAdminStatsHtml(){
+ const all=data.shopProducts.map(shopProductStats);
+ const active=data.shopProducts.filter(p=>p.active!==false).length;
+ const low=data.shopProducts.filter((p,i)=>p.active!==false&&all[i].stock>0&&all[i].stock<=5).length;
+ const out=data.shopProducts.filter((p,i)=>p.active!==false&&all[i].stock<=0).length;
+ const tile=(label,value,cls,filter)=>'<button type="button" class="shop-stat '+cls+(filter&&shopAdminStatus===filter?' is-on':'')+'" onclick="shopAdminSetStatus(\''+filter+'\')"><span>'+label+'</span><strong>'+value+'</strong></button>';
+ return tile("Producten",data.shopProducts.length,"","")+tile("Actief op website",active,"is-ok","active")+tile("Lage voorraad",low,"is-low","low")+tile("Uitverkocht",out,"is-out","out");
+}
+function shopAdminRowHtml(p,i){
+ const stats=shopProductStats(p),img=(p.images||[]).find(Boolean);
+ const price=stats.min==null?'<span class="shop-muted">Geen prijs</span>':(stats.min===stats.max?shopEuro(stats.min):shopEuro(stats.min)+' – '+shopEuro(stats.max));
+ const sku=(p.variants||[]).map(v=>v.sku).filter(Boolean)[0]||"";
+ const meta=[p.brand,p.deviceModel,sku].filter(Boolean).map(esc).join(" · ");
+ const thumb=img?'<img src="'+esc(img)+'" alt="">':'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10"/></svg>';
+ return '<tr class="'+(p.active===false?'is-hidden':'')+'">'+
+  '<td data-label="Product"><div class="shop-p"><span class="shop-thumb">'+thumb+'</span><span class="shop-p-meta"><strong>'+(esc(p.name)||'<em>Nieuw product (zonder naam)</em>')+'</strong><small>'+(meta||'Geen merk of model')+'</small></span></div></td>'+
+  '<td data-label="Categorie">'+esc(shopCategoryLabel(p.category))+'</td>'+
+  '<td data-label="Prijs" class="shop-num">'+price+(stats.count>1?'<small>'+stats.count+' opties</small>':'')+'</td>'+
+  '<td data-label="Voorraad">'+shopStockBadge(stats.stock,true)+'</td>'+
+  '<td data-label="Website"><label class="shop-switch" title="Zichtbaar in de Shop"><input type="checkbox" '+(p.active===false?'':'checked')+' aria-label="Zichtbaar in de Shop" onchange="updateShopProduct('+i+',\'active\',this.checked);shopAdminRefreshList()"><span class="shop-switch-ui"></span><em>'+(p.active===false?'Verborgen':'Zichtbaar')+'</em></label></td>'+
+  '<td data-label="Acties"><div class="shop-actions"><button type="button" class="btn btn-light" onclick="shopAdminOpen('+i+')">Bewerken</button><button type="button" class="btn btn-red" onclick="deleteShopProduct('+i+')" aria-label="Product verwijderen">Verwijderen</button></div></td></tr>';
+}
+function shopAdminListBodyHtml(){
+ const rows=data.shopProducts.map((p,i)=>({p,i})).filter(x=>shopAdminMatches(x.p));
+ if(!rows.length)return '<div class="shop-empty"><strong>Geen producten gevonden</strong><p>Pas je zoekopdracht of filter aan, of voeg een nieuw product toe.</p><button type="button" class="btn btn-light" onclick="shopAdminResetFilters()">Filters wissen</button></div>';
+ return '<div class="shop-table-wrap"><table class="shop-table"><thead><tr><th>Product</th><th>Categorie</th><th>Prijs</th><th>Voorraad</th><th>Website</th><th><span class="ht-sr-only">Acties</span></th></tr></thead><tbody>'+rows.map(x=>shopAdminRowHtml(x.p,x.i)).join("")+'</tbody></table></div><div class="shop-count">'+rows.length+' van '+data.shopProducts.length+' producten</div>';
+}
+function shopAdminRefreshList(){
+ const body=document.getElementById("shopListBody"),stats=document.getElementById("shopStats");
+ if(body)body.innerHTML=shopAdminListBodyHtml();
+ if(stats)stats.innerHTML=shopAdminStatsHtml();
+}
+function shopAdminSetStatus(value){shopAdminStatus=shopAdminStatus===value?"":value;const sel=document.getElementById("shopFilterStatus");if(sel)sel.value=shopAdminStatus;shopAdminRefreshList();}
+function shopAdminResetFilters(){shopAdminQuery="";shopAdminCategory="";shopAdminStatus="";renderShopProductsAdmin();}
+function shopAdminOpen(index){
+ ensureShopProducts();if(!data.shopProducts[index])return;
+ shopAdminView="edit";shopAdminIndex=index;renderShopProductsAdmin();
+ const box=document.getElementById("shopProductsAdmin");if(box&&box.scrollIntoView)box.scrollIntoView({block:"start"});
+}
+function shopAdminBack(){shopAdminView="list";shopAdminIndex=-1;renderShopProductsAdmin();}
+function shopAdminListHtml(){
+ if(!data.shopProducts.length){
+  const quick=["Schermen","Batterijen","Opladers","Hoofdtelefoons"].map(c=>'<button type="button" class="btn btn-light" onclick="addShopProduct(\''+c+'\')">＋ '+esc(shopCategoryLabel(c))+'</button>').join("");
+  return '<div class="shop-empty shop-empty-big"><div class="shop-empty-ico"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/></svg></div><strong>Nog geen Shop-producten</strong><p>Voeg je eerste product toe. Kies een categorie om snel te starten:</p><div class="shop-quick">'+quick+'</div><button type="button" class="btn btn-green" onclick="addShopProduct()">＋ Ander product toevoegen</button></div>';
+ }
+ const catOptions='<option value="">Alle categorieën</option>'+SHOP_CATEGORIES.map(c=>'<option value="'+esc(c.value)+'" '+(shopAdminCategory===c.value?'selected':'')+'>'+esc(c.label)+'</option>').join("");
+ const statusOptions=[["","Alle statussen"],["active","Zichtbaar"],["hidden","Verborgen"],["low","Lage voorraad"],["out","Uitverkocht"]].map(o=>'<option value="'+o[0]+'" '+(shopAdminStatus===o[0]?'selected':'')+'>'+o[1]+'</option>').join("");
+ return '<div class="shop-stats" id="shopStats">'+shopAdminStatsHtml()+'</div>'+
+  '<div class="shop-toolbar"><label class="shop-search"><span aria-hidden="true">⌕</span><input type="search" data-no-dirty value="'+esc(shopAdminQuery)+'" placeholder="Zoek op naam, merk, model of SKU…" aria-label="Zoek producten" oninput="shopAdminQuery=this.value;shopAdminRefreshList()"></label>'+
+  '<select data-no-dirty aria-label="Categorie" onchange="shopAdminCategory=this.value;shopAdminRefreshList()">'+catOptions+'</select>'+
+  '<select data-no-dirty id="shopFilterStatus" aria-label="Status" onchange="shopAdminStatus=this.value;shopAdminRefreshList()">'+statusOptions+'</select></div>'+
+  '<div id="shopListBody">'+shopAdminListBodyHtml()+'</div>';
+}
+function shopAdminEditHtml(i){
+ const p=data.shopProducts[i];
+ const input=(label,key,placeholder,type,hint)=>'<label class="shop-field"><span>'+label+'</span><input type="'+(type||"text")+'" value="'+esc(p[key]??"")+'" placeholder="'+esc(placeholder)+'" oninput="updateShopProduct('+i+',\''+key+'\',this.value)">'+(hint?'<small>'+hint+'</small>':'')+'</label>';
+ const catOptions=SHOP_CATEGORIES.map(c=>'<option value="'+esc(c.value)+'" '+(p.category===c.value?'selected':'')+'>'+esc(c.label)+'</option>').join("");
+ const variants=p.variants.map((v,j)=>'<tr>'+
+  '<td data-label="Kwaliteit"><input value="'+esc(v.quality)+'" placeholder="Bijv. OLED, Original, 20W" aria-label="Kwaliteit optie '+(j+1)+'" oninput="updateShopVariant('+i+','+j+',\'quality\',this.value)"></td>'+
+  '<td data-label="SKU"><input class="shop-mono" value="'+esc(v.sku)+'" maxlength="64" aria-label="SKU optie '+(j+1)+'" oninput="updateShopVariant('+i+','+j+',\'sku\',this.value)"></td>'+
+  '<td data-label="Prijs (€)"><input type="number" min="0" step="0.01" inputmode="decimal" value="'+esc(v.price)+'" aria-label="Verkoopprijs optie '+(j+1)+'" oninput="updateShopVariant('+i+','+j+',\'price\',this.value)"></td>'+
+  '<td data-label="Voorraad"><input type="number" min="0" step="1" inputmode="numeric" value="'+esc(v.stock)+'" aria-label="Voorraad optie '+(j+1)+'" oninput="updateShopVariant('+i+','+j+',\'stock\',this.value)"></td>'+
+  '<td data-label="Actief" class="shop-center"><label class="shop-switch"><input type="checkbox" '+(v.active===false?'':'checked')+' aria-label="Optie '+(j+1)+' actief" onchange="updateShopVariant('+i+','+j+',\'active\',this.checked)"><span class="shop-switch-ui"></span></label></td>'+
+  '<td class="shop-center"><button type="button" class="btn btn-light shop-x" '+(p.variants.length<2?'disabled':'')+' onclick="deleteShopVariant('+i+','+j+')" aria-label="Optie '+(j+1)+' verwijderen" title="Optie verwijderen">✕</button></td></tr>').join("");
+ const photos=p.images.map((src,j)=>'<div class="shop-photo'+(src?' has-img':'')+'"><div class="shop-photo-box">'+(src?'<img src="'+esc(src)+'" alt="Productfoto '+(j+1)+'">':'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4M9 9h.01"/></svg>')+'<span class="shop-photo-tag">'+(j===0?'Hoofdfoto':'Foto '+(j+1))+'</span></div><div class="shop-photo-actions"><label class="btn btn-light shop-upload">'+(src?'Vervangen':'Uploaden')+'<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden aria-label="Foto '+(j+1)+' uploaden" onchange="shopProductImageUpload(event,'+i+','+j+')"></label>'+(src?'<button type="button" class="btn btn-light" onclick="data.shopProducts['+i+'].images['+j+']=\'\';renderShopProductsAdmin();markChanged()">Wissen</button>':'')+'</div></div>').join("");
+ const stats=shopProductStats(p);
+ return '<div class="shop-edit">'+
+  '<div class="shop-edit-head"><button type="button" class="btn btn-light" onclick="shopAdminBack()">← Alle producten</button><div class="shop-edit-title"><h3>'+(esc(p.name)||'Nieuw product')+'</h3><span>'+esc(shopCategoryLabel(p.category))+' · '+shopStockBadge(stats.stock,p.active)+'</span></div>'+
+  '<div class="shop-edit-tools"><label class="shop-switch"><input type="checkbox" '+(p.active===false?'':'checked')+' onchange="updateShopProduct('+i+',\'active\',this.checked);renderShopProductsAdmin()"><span class="shop-switch-ui"></span><em>'+(p.active===false?'Verborgen':'Zichtbaar in Shop')+'</em></label><button type="button" class="btn btn-red" onclick="deleteShopProduct('+i+')">Verwijderen</button></div></div>'+
+  '<section class="shop-card"><header><h4>1 · Basisgegevens</h4><p>Wat klanten in de Shop zien.</p></header><div class="shop-grid">'+
+  input("Productnaam *","name","Bijv. iPhone 11 scherm")+
+  '<label class="shop-field"><span>Categorie</span><select onchange="updateShopProduct('+i+',\'category\',this.value)">'+catOptions+'</select></label>'+
+  input("Merk","brand","Bijv. Apple")+input("Compatibel model","deviceModel","Bijv. iPhone 11")+
+  '<label class="shop-field shop-wide"><span>Beschrijving</span><textarea rows="4" placeholder="Compatibiliteit en belangrijkste eigenschappen…" oninput="updateShopProduct('+i+',\'description\',this.value)">'+esc(p.description||"")+'</textarea></label></div></section>'+
+  '<section class="shop-card"><header><div><h4>2 · Prijs & voorraad</h4><p>Eén regel per kwaliteit of uitvoering. Prijs moet hoger zijn dan € 0.</p></div><button type="button" class="btn btn-green" onclick="addShopVariant('+i+')">＋ Optie toevoegen</button></header><div class="shop-table-wrap"><table class="shop-table shop-var-table"><thead><tr><th>Kwaliteit</th><th>SKU</th><th>Prijs (€)</th><th>Voorraad</th><th>Actief</th><th><span class="ht-sr-only">Verwijderen</span></th></tr></thead><tbody>'+variants+'</tbody></table></div></section>'+
+  '<section class="shop-card"><header><h4>3 · Foto’s</h4><p>Maximaal 4 foto’s. De eerste foto is de hoofdfoto in de Shop.</p></header><div class="shop-photos">'+photos+'</div></section>'+
+  '<section class="shop-card"><header><h4>4 · Video (optioneel)</h4><p>Toon een uitlegvideo bij dit product.</p></header><label class="shop-switch shop-video-switch"><input type="checkbox" '+(p.videoEnabled?'checked':'')+' onchange="updateShopProduct('+i+',\'videoEnabled\',this.checked);renderShopProductsAdmin()"><span class="shop-switch-ui"></span><em>Video tonen</em></label>'+(p.videoEnabled?input("YouTube-video URL","videoUrl","https://www.youtube.com/watch?v=…","text","Alleen een geldige https-link."):'')+'</section>'+
+  '<div class="shop-edit-foot"><button type="button" class="btn btn-light" onclick="shopAdminBack()">← Terug naar lijst</button><span>Wijzigingen worden pas bewaard na «Wijzigingen opslaan».</span></div></div>';
+}
 function renderShopProductsAdmin(){
  const box=document.getElementById("shopProductsAdmin");if(!box)return;ensureShopProducts();
- if(!data.shopProducts.length){box.innerHTML='<div class="card"><strong>Nog geen Shop-producten</strong><p class="small">Voeg een onderdeel, accessoire of machine toe.</p></div>';return;}
- box.innerHTML=data.shopProducts.map((p,i)=>{
-  const field=(label,key,placeholder,type)=>'<label style="display:block;font-weight:700;font-size:13px;margin-bottom:10px">'+label+'<input type="'+(type||"text")+'" value="'+esc(p[key]??"")+'" placeholder="'+esc(placeholder)+'" oninput="updateShopProduct('+i+',\''+key+'\',this.value)" style="display:block;width:100%;margin-top:5px;padding:11px;border:1px solid #d8e0e9;border-radius:9px"></label>';
-  const categoryOptions=SHOP_CATEGORIES.map(c=>'<option value="'+esc(c.value)+'" '+(p.category===c.value?'selected':'')+'>'+esc(c.label)+'</option>').join("");
-  const photos=p.images.map((src,j)=>'<div style="border:1px solid #e2e8f0;border-radius:10px;padding:9px;min-width:0"><div style="height:100px;display:grid;place-items:center;background:#f8fafc;border-radius:7px;overflow:hidden;margin-bottom:8px">'+(src?'<img src="'+src+'" alt="Productfoto '+(j+1)+'" style="width:100%;height:100%;object-fit:contain">':'<span class="small">Foto '+(j+1)+'</span>')+'</div><input type="file" accept="image/*" aria-label="Foto '+(j+1)+' uploaden" onchange="shopProductImageUpload(event,'+i+','+j+')" style="width:100%;font-size:12px">'+(src?'<button class="btn btn-light" type="button" style="margin-top:6px" onclick="data.shopProducts['+i+'].images['+j+']=\'\';renderShopProductsAdmin();markChanged()">Foto wissen</button>':'')+'</div>').join("");
-  const variants=p.variants.map((v,j)=>'<div style="border:1px solid #dbe3ec;border-radius:10px;padding:12px;margin:10px 0;background:#fbfdff"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><strong>Kwaliteitsoptie '+(j+1)+'</strong><label class="small" style="display:flex;align-items:center;gap:6px">SKU <input value="'+esc(v.sku)+'" maxlength="64" oninput="updateShopVariant('+i+','+j+',\'sku\',this.value)" aria-label="SKU kwaliteitsoptie '+(j+1)+'" style="width:170px;max-width:100%;padding:6px;border:1px solid #d8e0e9;border-radius:7px;font-family:monospace"></label><button class="btn btn-red" type="button" '+(p.variants.length<2?'disabled':'')+' onclick="deleteShopVariant('+i+','+j+')">Verwijderen</button></div><div class="grid" style="margin-top:10px"><label style="display:block;font-weight:700;font-size:13px">Kwaliteit<input value="'+esc(v.quality)+'" oninput="updateShopVariant('+i+','+j+',\'quality\',this.value)" placeholder="LCD, OLED, Original" style="display:block;width:100%;margin-top:5px;padding:11px;border:1px solid #d8e0e9;border-radius:9px"></label><label style="display:block;font-weight:700;font-size:13px">Verkoopprijs (€)<input type="number" min="0" step="0.01" value="'+esc(v.price)+'" oninput="updateShopVariant('+i+','+j+',\'price\',this.value)" style="display:block;width:100%;margin-top:5px;padding:11px;border:1px solid #d8e0e9;border-radius:9px"></label><label style="display:block;font-weight:700;font-size:13px">Voorraad (stuks)<input type="number" min="0" step="1" value="'+esc(v.stock)+'" oninput="updateShopVariant('+i+','+j+',\'stock\',this.value)" style="display:block;width:100%;margin-top:5px;padding:11px;border:1px solid #d8e0e9;border-radius:9px"></label></div></div>').join("");
-  return '<details class="card" style="background:white;padding:0;margin-bottom:10px;border:1px solid #dbe3ec;border-radius:10px;overflow:hidden"><summary style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;cursor:pointer;list-style:none;font-weight:800;background:#f8fafc"><span>Product '+(i+1)+(p.name?' — '+esc(p.name):' — Nieuw product')+'</span><span style="color:#64748b;font-size:12px;font-weight:600">Bewerken ▾</span></summary><div style="padding:16px"><div class="card-head"><div class="card-title">Productgegevens</div><button class="btn btn-red" type="button" onclick="deleteShopProduct('+i+')">Verwijderen</button></div><div class="grid">'+field("Productnaam","name","Bijv. iPhone 11 Scherm")+'<label style="display:block;font-weight:700;font-size:13px;margin-bottom:10px">Categorie<select onchange="updateShopProduct('+i+',\'category\',this.value)" style="display:block;width:100%;margin-top:5px;padding:11px;border:1px solid #d8e0e9;border-radius:9px">'+categoryOptions+'</select></label>'+field("Merk","brand","Bijv. Apple")+field("Compatibel model","deviceModel","Bijv. iPhone 11")+'</div><label style="display:block;font-weight:700;font-size:13px;margin-bottom:12px">Productbeschrijving<textarea rows="4" placeholder="Compatibiliteit en belangrijkste eigenschappen..." oninput="updateShopProduct('+i+',\'description\',this.value)" style="display:block;width:100%;margin-top:5px;padding:11px;border:1px solid #d8e0e9;border-radius:9px">'+esc(p.description||"")+'</textarea></label><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:18px"><h3>Prijs en voorraad per kwaliteit</h3><button class="btn btn-green" type="button" onclick="addShopVariant('+i+')">＋ Kwaliteit toevoegen</button></div>'+variants+'<h3 style="margin-top:18px">Productfoto’s</h3><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0">'+photos+'</div><div class="card" style="margin-top:12px"><label style="display:flex;align-items:center;gap:8px;font-weight:700"><input type="checkbox" '+(p.videoEnabled?"checked":"")+' onchange="updateShopProduct('+i+',\'videoEnabled\',this.checked);renderShopProductsAdmin()"> Video uitleg toevoegen</label>'+(p.videoEnabled?field("YouTube-video URL","videoUrl","https://www.youtube.com/watch?v=..."):'<p class="small" style="margin:8px 0 0">Video is optioneel.</p>')+'</div><label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-weight:700"><input type="checkbox" '+(p.active?"checked":"")+' onchange="updateShopProduct('+i+',\'active\',this.checked)"> Actief — tonen in de Shop</label></div></details>';
- }).join("");
+ if(shopAdminView==="edit"&&!data.shopProducts[shopAdminIndex]){shopAdminView="list";shopAdminIndex=-1;}
+ box.innerHTML=shopAdminView==="edit"?shopAdminEditHtml(shopAdminIndex):shopAdminListHtml();
 }
 ensureShopProducts();
 
@@ -4886,19 +4996,19 @@ async function save(isAuto=false){
     if(!identifierCheck.valid){setStatus("✕ "+identifierCheck.error,"error");return false;}
     for(let i=0;i<data.shopProducts.length;i++){
       const product=data.shopProducts[i];
-      if(!String(product.name||"").trim()){setStatus("✕ Vul de productnaam in bij product "+(i+1)+".","error");return false;}
+      if(!String(product.name||"").trim()){shopAdminOpen(i);setStatus("✕ Vul de productnaam in bij product "+(i+1)+".","error");return false;}
       const variants=Array.isArray(product.variants)?product.variants:[];
-      if(!variants.length){setStatus("✕ Voeg minimaal één kwaliteitsoptie toe bij "+product.name+".","error");return false;}
+      if(!variants.length){shopAdminOpen(i);setStatus("✕ Voeg minimaal één kwaliteitsoptie toe bij "+product.name+".","error");return false;}
       for(let j=0;j<variants.length;j++){
         const variant=variants[j];
         const label=String(variant.quality||("optie "+(j+1))).trim();
         const price=Number(String(variant.price??"").replace(",","."));
         const stock=Number(String(variant.stock??"").trim());
-        if(!label){setStatus("✕ Vul de kwaliteit in bij "+product.name+" (optie "+(j+1)+").","error");return false;}
-        if(!Number.isFinite(price)||price<=0){setStatus("✕ Vul een geldige prijs groter dan € 0 in bij "+product.name+" — "+label+".","error");return false;}
-        if(!Number.isInteger(stock)||stock<0){setStatus("✕ Vul een geldig voorraadgetal van 0 of hoger in bij "+product.name+" — "+label+".","error");return false;}
+        if(!label){shopAdminOpen(i);setStatus("✕ Vul de kwaliteit in bij "+product.name+" (optie "+(j+1)+").","error");return false;}
+        if(!Number.isFinite(price)||price<=0){shopAdminOpen(i);setStatus("✕ Vul een geldige prijs groter dan € 0 in bij "+product.name+" — "+label+".","error");return false;}
+        if(!Number.isInteger(stock)||stock<0){shopAdminOpen(i);setStatus("✕ Vul een geldig voorraadgetal van 0 of hoger in bij "+product.name+" — "+label+".","error");return false;}
       }
-      if(product.videoEnabled&&product.videoUrl&&!/^https?:\/\//i.test(String(product.videoUrl).trim())){setStatus("✕ Vul een geldige https-video-URL in bij "+product.name+".","error");return false;}
+      if(product.videoEnabled&&product.videoUrl&&!/^https?:\/\//i.test(String(product.videoUrl).trim())){shopAdminOpen(i);setStatus("✕ Vul een geldige https-video-URL in bij "+product.name+".","error");return false;}
     }
   }
   if(savePage==="phones" && phoneEditOnly){
