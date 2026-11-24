@@ -251,7 +251,22 @@ body,#dashboard{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:14px;lin
   #dashboard .repair-request-row-actions .order-status-select{flex:1 1 140px}
   #dashboard .buyback-v1-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important}
 }
+/* ===== 12. Mobile: wide editing tables (JS-rendered, inline-styled) become cards ===== */
+@media (max-width:760px){
+  #dashboard div[style*="overflow:auto"]>table[style*="min-width"]{min-width:0!important;width:100%!important;display:block}
+  #dashboard div[style*="overflow:auto"]>table[style*="min-width"] thead{display:none}
+  #dashboard div[style*="overflow:auto"]>table[style*="min-width"] tbody{display:flex;flex-direction:column;gap:8px}
+  #dashboard div[style*="overflow:auto"]>table[style*="min-width"] tr{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:10px;border:1px solid #e2e8f0;border-radius:8px;background:#fff}
+  #dashboard div[style*="overflow:auto"]>table[style*="min-width"] td{display:block;padding:0!important;border:0!important;text-align:left!important;flex:1 1 40%;min-width:0;font-size:13px}
+  #dashboard div[style*="overflow:auto"]>table[style*="min-width"] td:has(>input[type="checkbox"]){flex:0 0 auto}
+  #dashboard div[style*="overflow:auto"]>table[style*="min-width"] td:nth-child(2):has(~td){flex:1 1 calc(100% - 44px);font-weight:600;overflow-wrap:anywhere}
+  #dashboard div[style*="overflow:auto"]>table[style*="min-width"] td input:not([type="checkbox"]),#dashboard div[style*="overflow:auto"]>table[style*="min-width"] td select{width:100%!important;max-width:100%!important;min-height:38px;box-sizing:border-box}
+  #dashboard div[style*="overflow:auto"]>table[style*="min-width"] td:last-child:has(>input[type="checkbox"]){flex:0 0 auto}
+}
 @media (prefers-reduced-motion:reduce){
   #dashboard .btn,#dashboard input,#dashboard select,#dashboard textarea{transition:none}
   #dashboard .btn.is-loading::before,#saveBtn.is-loading::before{animation-duration:1.6s}
 }
+
+/* ===== 13. Keep the fixed save bar from covering the last fields ===== */
+#dashboard{padding-bottom:88px}
