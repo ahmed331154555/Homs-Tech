@@ -37,3 +37,21 @@ test("critical admin navigation and save actions remain wired", () => {
   assert.match(html, /id="saveBtn"[^>]*onclick="save\(\)"/);
   assert.match(html, /id="logoutBtn"[^>]*onclick="logout\(\)"/);
 });
+
+
+test("generated admin action buttons also declare a non-submit type", () => {
+  const script = fs.readFileSync(
+    path.resolve(__dirname, "..", "assets/homs-admin.js"),
+    "utf8",
+  );
+  const buttons = [...script.matchAll(/<button\b([^>]*)>/gi)];
+
+  assert.ok(buttons.length > 0, "Expected generated admin button markup");
+  for (const [, attributes] of buttons) {
+    assert.match(
+      attributes,
+      /\btype\s*=\s*["']button["']/i,
+      "Generated admin button is missing type=\"button\": " + attributes.slice(0, 160),
+    );
+  }
+});
