@@ -474,7 +474,7 @@ textarea{
   }
 }
 
-.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:999;align-items:center;justify-content:center;padding:20px}
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:var(--z-modal);align-items:center;justify-content:center;padding:20px}
 .modal-backdrop.show{display:flex}
 .modal{width:min(650px,100%);background:#fff;border-radius:18px;padding:25px;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative}
 .modal-close{position:absolute;right:15px;top:12px;border:0;background:#eef2f7;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer}
@@ -778,7 +778,7 @@ textarea{
 @media(max-width:480px){.phone-folder-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.phone-model-folder-cover{height:105px}.phone-model-folder-count{font-size:9px;padding:5px 6px}.phone-model-folder-name{font-size:12px}.phone-folder-chip{font-size:9px;padding:4px 5px}.phone-model-folder-footer strong{font-size:12px}}
 
 /* Customer management modal */
-.customer-modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.68);z-index:1200;align-items:center;justify-content:center;padding:18px;overflow-y:auto}
+.customer-modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.68);z-index:var(--z-modal-nested);align-items:center;justify-content:center;padding:18px;overflow-y:auto}
 .customer-modal-backdrop.show{display:flex}
 .customer-modal{position:relative;width:min(720px,100%);max-height:calc(100vh - 36px);overflow-y:auto;background:#fff;border-radius:18px;padding:28px;box-shadow:0 24px 70px rgba(0,0,0,.3)}
 .customer-modal-close{position:absolute;right:14px;top:12px;border:0;background:#eef2f7;color:#172033;width:36px;height:36px;border-radius:50%;font-size:24px;line-height:1}
@@ -1358,7 +1358,7 @@ textarea{
 #page-buyback-orders .ht-inkoop-detail-host:not([hidden]){
   position:fixed!important;
   inset:0!important;
-  z-index:100000!important;
+  z-index:var(--z-fullscreen)!important;
   width:100vw!important;
   height:100vh!important;
   height:100dvh!important;
@@ -1757,7 +1757,7 @@ textarea{
 .webshop-list-bottom{justify-content:space-between;flex-wrap:wrap;margin-top:12px}
 .webshop-list-actions{flex-wrap:wrap;justify-content:flex-end}
 .webshop-list-actions .btn,.webshop-list-actions .order-status-select{min-height:38px;margin:0}
-.ht-order-detail-overlay{position:fixed;inset:0;z-index:10020;background:rgba(15,23,42,.58);display:flex;align-items:flex-start;justify-content:center;padding:18px;overflow:auto}
+.ht-order-detail-overlay{position:fixed;inset:0;z-index:var(--z-overlay);background:rgba(15,23,42,.58);display:flex;align-items:flex-start;justify-content:center;padding:18px;overflow:auto}
 .ht-order-detail-panel{width:min(820px,100%);margin:auto;background:#f4f6f8;color:#172033;border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.3);padding:18px;max-height:none}
 .ht-order-detail-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:3px 2px 16px}
 .ht-order-detail-top h2{margin:3px 0;font-size:24px}
@@ -1863,7 +1863,7 @@ textarea{
 #allOrdersSections .order-card{border:1px solid #e3eaf2!important;border-radius:13px!important;box-shadow:0 2px 9px rgba(15,23,42,.035)!important}
 #allOrdersSections .order-detail-btn{background:#eff6ff!important;color:#1d4ed8!important;border:1px solid #dbeafe!important}
 #allOrdersSections .order-status-select{max-width:175px}
-#orderDetailsModal{z-index:10050!important}
+#orderDetailsModal{z-index:var(--z-overlay-top)!important}
 #orderDetailsModal:not(.ht-order-detail-overlay)>div{max-width:760px!important;width:min(760px,100%)!important;max-height:90vh!important;overflow:auto!important;padding:0!important;border:1px solid #e3eaf2!important;box-shadow:0 24px 70px rgba(7,29,45,.25)!important}
 #orderDetailsModal:not(.ht-order-detail-overlay)>div>div:first-child{position:sticky;top:0;z-index:2;padding:17px 20px!important;background:#0b2033!important;color:#fff!important;border-radius:16px 16px 0 0}
 #orderDetailsModal:not(.ht-order-detail-overlay)>div>div:first-child h2{font-size:19px!important;color:#fff!important}
@@ -4050,7 +4050,7 @@ body{
   position:fixed;
   top:10px;
   left:10px;
-  z-index:100001;
+  z-index:var(--z-skip-link);
   transform:translateY(-160%);
   padding:11px 15px;
   border:2px solid #fff;
