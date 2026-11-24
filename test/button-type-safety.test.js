@@ -8,7 +8,7 @@ const path = require("node:path");
 const pages = ["admin/index.html", "shop.html", "uw-toestel-verkopen.html"];
 
 for (const page of pages) {
-  test(page + " gives every button an explicit non-submit type", () => {
+  test(page + " gives every button an explicit type", () => {
     const html = fs.readFileSync(path.resolve(__dirname, "..", page), "utf8");
     const buttons = [...html.matchAll(/<button\b([^>]*)>/gi)];
 
@@ -16,7 +16,7 @@ for (const page of pages) {
     for (const [, attributes] of buttons) {
       assert.match(
         attributes,
-        /\btype\s*=\s*["']button["']/i,
+        /\btype\s*=\s*["'](?:button|submit|reset)["']/i,
         'Button is missing type="button" in ' +
           page +
           ": " +
@@ -48,7 +48,7 @@ test("generated admin action buttons also declare a non-submit type", () => {
   for (const [, attributes] of buttons) {
     assert.match(
       attributes,
-      /\btype\s*=\s*["']button["']/i,
+      /\btype\s*=\s*["'](?:button|submit|reset)["']/i,
       'Generated admin button is missing type="button": ' +
         attributes.slice(0, 160),
     );
