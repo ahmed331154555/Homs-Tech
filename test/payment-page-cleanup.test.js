@@ -12,7 +12,7 @@ const html = fs.readFileSync(
 );
 
 test("payment page inline scripts have valid JavaScript syntax", () => {
-  const scripts = [...html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)];
+  const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)];
   assert.ok(scripts.length > 0, "Payment page must contain its payment script");
 
   for (const [, source] of scripts) {
@@ -45,7 +45,7 @@ test(
 
     assert.match(
       html,
-      /Bestelling #"\\+orderId/,
+      /Bestelling #"\+orderId/,
       "The customer should see the confirmed order number",
     );
   },
