@@ -354,3 +354,30 @@ body,#dashboard{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:14px;lin
 #dashboard .phone-tree-search button:hover{background:#e2e8f0;color:#0f172a}
 #dashboard .phone-tree-hint{font-size:12px;font-weight:400;line-height:1.5;padding:8px 12px;border-radius:8px;background:#f8fafc;color:#64748b}
 #dashboard .phone-tree-hint strong{font-weight:600;color:#334155}
+
+/* ===== 19. Sidebar line icons, stock badges, smart save bar ===== */
+#adminNav .nav-btn{display:flex;align-items:center;gap:9px}
+#adminNav .nav-ico{display:inline-flex;flex:0 0 auto;width:18px;height:18px;align-items:center;justify-content:center;color:#64748b}
+#adminNav .nav-btn:hover .nav-ico{color:#0f172a}
+#adminNav .nav-btn.active .nav-ico{color:#1d4ed8}
+#adminNav .nav-btn.active{position:relative;box-shadow:inset 3px 0 0 #2563eb!important}
+#adminNav .admin-logout-btn .nav-ico{color:#dc2626}
+#adminNav .nav-orders-chevron{margin-left:auto}
+#dashboard .stock-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;line-height:1.6;border:1px solid transparent;width:fit-content}
+#dashboard .stock-badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+#dashboard .stock-badge.is-ok{background:#ecfdf5;color:#047857;border-color:#a7f3d0}
+#dashboard .stock-badge.is-low{background:#fffbeb;color:#b45309;border-color:#fde68a}
+#dashboard .stock-badge.is-out{background:#fef2f2;color:#b91c1c;border-color:#fecaca}
+.save-bar{transition:transform .22s ease,opacity .22s ease}
+.save-bar.is-clean{transform:translateY(calc(100% + 24px));opacity:0;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.save-bar{transition:none}}
+#dashboard .btn:active:not(:disabled){transform:translateY(1px)}
+#dashboard .btn:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+@media (max-width:760px){
+  #adminNav .nav-btn{justify-content:flex-start;text-align:left}
+  #adminNav .nav-ico{color:#cbd5e1}
+  #adminNav .nav-btn:hover .nav-ico{color:#fff}
+  #adminNav .nav-btn.active .nav-ico{color:#fff}
+  #adminNav .nav-btn.active{box-shadow:none!important}
+  #adminNav .admin-logout-btn .nav-ico{color:#fca5a5}
+}

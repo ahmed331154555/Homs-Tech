@@ -1472,7 +1472,7 @@ function renderPhoneFolderTree(){
     return `<div class="phone-variant-row" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid #e5e7eb;background:${isSelected?'#eff6ff':'#fff'}">
       <div class="phone-variant-main" style="min-width:0;flex:1;display:flex;flex-direction:column;gap:4px">
         <strong style="overflow-wrap:anywhere">${esc(label)}</strong>
-        <span style="color:#64748b;font-size:13px">${esc(info.group||phone.brand||'Overige')}${phone.condition?' · '+esc(phone.condition):''}${stock!==''?' · Voorraad: '+esc(stock):''}${price>0?' · €'+price.toFixed(2).replace('.',','):''}</span>
+        <span style="color:#64748b;font-size:13px">${esc(info.group||phone.brand||'Overige')}${phone.condition?' · '+esc(phone.condition):''}${price>0?' · €'+price.toFixed(2).replace('.',','):''}</span>${stock!==''?`<span class="stock-badge ${Number(stock)<=0?'is-out':Number(stock)<=5?'is-low':'is-ok'}">${Number(stock)<=0?'Uitverkocht':Number(stock)<=5?'Laag · '+esc(stock):'Op voorraad · '+esc(stock)}</span>`:''}
       </div>
       <div style="display:flex;gap:6px;flex:0 0 auto;align-items:center">
         <button type="button" class="phone-variant-edit" onclick="openPhoneEditor(${index})">✎ Bewerken</button>
@@ -6767,7 +6767,7 @@ function markChanged(sharedField){
   if(ADMIN_SITE_DATA_PAGES.has(currentPage))adminDirtySections.add(currentPage);
   schedulePhoneDraftSave();
   setStatus(
-    "● Wijziging موجودة — اضغط «Wijzigingen opslaan» للحفظ.",
+    "● Niet-opgeslagen wijzigingen — druk op «Wijzigingen opslaan» om op te slaan.",
     "info"
   );
   // Geen autosave meer. De beheerder kan eerst meerdere velden aanpassen
