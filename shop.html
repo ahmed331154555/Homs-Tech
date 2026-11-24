@@ -135,7 +135,8 @@ function addToCart(id){
   const variant=activeProduct&&String(activeProduct.id)===String(p.id)&&activeVariant?activeVariant:variants[0];
   if(!variant){alert('Kies eerst een productkwaliteit.');return;}
   const stock=shopStockQuantity(variant);
-  if(stock===null){alert('De voorraad voor deze kwaliteit is niet bevestigd. Neem contact op met HOMS TECH voordat u bestelt.');return;}\n  if(stock===0){alert('Deze kwaliteit is helaas uitverkocht.');return;}
+  if(stock===null){alert('De voorraad voor deze kwaliteit is niet bevestigd. Neem contact op met HOMS TECH voordat u bestelt.');return;}
+  if(stock===0){alert('Deze kwaliteit is helaas uitverkocht.');return;}
   const quantityInput=document.getElementById('shopQuantity');
   const requestedQty=quantityInput?Math.max(1,Math.min(99,parseInt(quantityInput.value,10)||1)):1;
   let cart=[];try{cart=JSON.parse(localStorage.getItem(CART_KEY)||'[]');if(!Array.isArray(cart))cart=[]}catch(error){cart=[]}
