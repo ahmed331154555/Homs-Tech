@@ -1364,6 +1364,9 @@
                 localStorage.removeItem("homsTechTradeInEmail");
                 localStorage.removeItem("homsTechTradeInDetails");
               localStorage.removeItem("homsTechPendingWebshopOrderId");
+              sessionStorage.removeItem("homsTechMollieOrderId");
+              sessionStorage.removeItem("homsTechMollieCheckoutToken");
+              sessionStorage.removeItem("homsTechPaymentMethod");
               document.getElementById("checkoutContent").classList.add("hidden");
               markCheckoutConfirmed();
                 document.getElementById("success").classList.remove("hidden");
@@ -1474,6 +1477,7 @@
               localStorage.removeItem("homsTechPendingWebshopOrderId");
               sessionStorage.removeItem("homsTechMollieOrderId");
               sessionStorage.removeItem("homsTechMollieCheckoutToken");
+              sessionStorage.removeItem("homsTechPaymentMethod");
               document.getElementById("checkoutContent").classList.add("hidden");
               markCheckoutConfirmed();
                 document.getElementById("success").classList.remove("hidden");
