@@ -20,7 +20,9 @@ test("payment page inline scripts have valid JavaScript syntax", () => {
   }
 });
 
-test("successful PayPal payment clears cart, trade-in and checkout session data", () => {
+test(
+  "successful PayPal payment clears cart, trade-in and checkout session data",
+  () => {
   const requiredCleanup = [
     "homsTechCart",
     "homsTechPendingWebshopOrderId",
