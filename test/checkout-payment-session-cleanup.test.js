@@ -12,7 +12,7 @@ const html = fs.readFileSync(
 );
 
 test("checkout inline scripts have valid JavaScript syntax", () => {
-  const scripts = [...html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)];
+  const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)];
   assert.ok(scripts.length > 0, "Checkout page must contain its checkout script");
 
   for (const [, source] of scripts) {
@@ -22,9 +22,11 @@ test("checkout inline scripts have valid JavaScript syntax", () => {
 
 test("confirmed checkout clears stale payment session data", () => {
   const codStart = html.indexOf('if(selectedMethod === "CashOnDelivery"){');
-  const mollieStart = html.indexOf("if(result.paid){");
+  const verifyStart = html.indexOf("async function verifyMollieReturn");
+  const mollieStart = html.indexOf("if(result.paid){", verifyStart);
 
   assert.notEqual(codStart, -1, "Cash on delivery success branch must exist");
+  assert.notEqual(verifyStart, -1, "Mollie return verification must exist");
   assert.notEqual(mollieStart, -1, "Mollie paid branch must exist");
 
   const codSuccess = html.slice(codStart, codStart + 1800);
