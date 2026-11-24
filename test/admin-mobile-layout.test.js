@@ -21,6 +21,7 @@ test("admin page loads the centralized responsive layout after the design system
   assert.ok(tactileIndex >= 0);
   assert.ok(layoutIndex > tactileIndex);
   assert.doesNotMatch(adminHtml, /homs-admin-mobile-navigation/);
+  assert.doesNotMatch(adminHtml, /homs-admin-ui\.js/);
   assert.match(
     adminHtml,
     /if\(event\.target===event\.currentTarget\)closeAdminMenu\(\)/,
