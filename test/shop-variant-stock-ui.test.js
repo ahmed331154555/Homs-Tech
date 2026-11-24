@@ -12,7 +12,7 @@ const html = fs.readFileSync(
 );
 
 test("Shop inline scripts have valid JavaScript syntax", () => {
-  const scripts = [...html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)];
+  const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)];
   assert.ok(scripts.length > 0, "Shop page must contain its catalog script");
 
   for (const [, source] of scripts) {
@@ -22,7 +22,7 @@ test("Shop inline scripts have valid JavaScript syntax", () => {
 
 test("Shop does not offer variant purchase when stock is missing or malformed", () => {
   assert.ok(
-    html.includes("match=raw.match(/^(\\\\d+)$/)"),
+    html.includes("match=raw.match(/^(\\d+)$/)"),
     "Variant stock must be a whole-number value, matching server validation",
   );
   assert.ok(
