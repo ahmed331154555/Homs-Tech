@@ -12,7 +12,7 @@ const html = fs.readFileSync(
 );
 
 test("payment page inline scripts have valid JavaScript syntax", () => {
-  const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)];
+  const scripts = [...html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)];
   assert.ok(scripts.length > 0, "Payment page must contain its payment script");
 
   for (const [, source] of scripts) {
@@ -23,29 +23,30 @@ test("payment page inline scripts have valid JavaScript syntax", () => {
 test(
   "successful PayPal payment clears cart, trade-in and checkout session data",
   () => {
-  const requiredCleanup = [
-    "homsTechCart",
-    "homsTechPendingWebshopOrderId",
-    "homsTechTradeInToken",
-    "homsTechTradeInCredit",
-    "homsTechTradeInDevice",
-    "homsTechTradeInEmail",
-    "homsTechTradeInDetails",
-    "homsTechMollieOrderId",
-    "homsTechMollieCheckoutToken",
-    "homsTechPaymentMethod",
-  ];
+    const requiredCleanup = [
+      "homsTechCart",
+      "homsTechPendingWebshopOrderId",
+      "homsTechTradeInToken",
+      "homsTechTradeInCredit",
+      "homsTechTradeInDevice",
+      "homsTechTradeInEmail",
+      "homsTechTradeInDetails",
+      "homsTechMollieOrderId",
+      "homsTechMollieCheckoutToken",
+      "homsTechPaymentMethod",
+    ];
 
-  for (const key of requiredCleanup) {
-    assert.ok(
-      html.includes('"' + key + '"'),
-      "Payment success cleanup must include " + key,
+    for (const key of requiredCleanup) {
+      assert.ok(
+        html.includes('"' + key + '"'),
+        "Payment success cleanup must include " + key,
+      );
+    }
+
+    assert.match(
+      html,
+      /Bestelling #"\\+orderId/,
+      "The customer should see the confirmed order number",
     );
-  }
-
-  assert.match(
-    html,
-    /Bestelling #"\+orderId/,
-    "The customer should see the confirmed order number",
-  );
-});
+  },
+);
