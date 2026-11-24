@@ -1,5 +1,6 @@
 name: HOMS TECH tests
 # Launch validation for the isolated tactile UI branch.
+# Maintained source files are checked with Prettier before validation.
 
 on:
   push:
