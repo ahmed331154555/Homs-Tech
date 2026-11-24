@@ -2077,7 +2077,7 @@
                         passend bod.
                       </p>
                     </div>
-                    <button id="back1" class="back">← Terug</button>
+                    <button type="button" id="back1" class="back">← Terug</button>
                   </div>
                   <div class="product-card">
                     <div id="productImage" class="product-image"></div>
@@ -2154,7 +2154,7 @@
                       <small>Totaal geschatte waarde</small
                       ><strong id="bottomTotal">€ 0,00</strong>
                     </div>
-                    <button id="toCheckout" class="primary blue">
+                    <button type="button" id="toCheckout" class="primary blue">
                       Ga verder met verkopen →
                     </button>
                   </div>
@@ -2214,7 +2214,7 @@
               <h2>Uw gegevens</h2>
               <p>Vul uw gegevens in zodat we contact met u kunnen opnemen.</p>
             </div>
-            <button id="back2" class="back">← Terug</button>
+            <button type="button" id="back2" class="back">← Terug</button>
           </div>
           <div class="checkout">
             <div class="box">
@@ -2309,7 +2309,7 @@
                   </p>
                 </div>
               </div>
-              <button
+              <button type="button"
                 id="finish"
                 class="primary blue"
                 style="width:100%;margin-top:18px"
@@ -2844,7 +2844,7 @@
         const limit=window._modelLimit||12;
         const visible=arr.slice(0,limit);
         $('deviceGrid').innerHTML=visible.length
-          ?visible.map(d=>`<button class="device" data-i="${devices.indexOf(d)}"><div class="device-img">${imageFor(d)}</div><div class="device-name">${esc(d.name)}</div><div class="device-price">Bekijk waarde →</div></button>`).join('')
+          ?visible.map(d=>`<button type="button" class="device" data-i="${devices.indexOf(d)}"><div class="device-img">${imageFor(d)}</div><div class="device-name">${esc(d.name)}</div><div class="device-price">Bekijk waarde →</div></button>`).join('')
           :'<div style="grid-column:1/-1;padding:35px;text-align:center;color:#64748b">Geen modellen gevonden.</div>';
         $('loadMoreModels').style.display=arr.length>limit?'block':'none';
         document.querySelectorAll('#deviceGrid .device').forEach(el=>el.onclick=()=>chooseDevice(devices[+el.dataset.i]));
