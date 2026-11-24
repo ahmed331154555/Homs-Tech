@@ -12,16 +12,16 @@ const pages = [
 ];
 
 for (const page of pages) {
-  test(\`${page} gives every button an explicit non-submit type\`, () => {
+  test(page + " gives every button an explicit non-submit type", () => {
     const html = fs.readFileSync(path.resolve(__dirname, "..", page), "utf8");
     const buttons = [...html.matchAll(/<button\b([^>]*)>/gi)];
 
-    assert.ok(buttons.length > 0, \`Expected buttons in ${page}\`);
+    assert.ok(buttons.length > 0, "Expected buttons in " + page);
     for (const [, attributes] of buttons) {
       assert.match(
         attributes,
         /\btype\s*=\s*["']button["']/i,
-        \`Button is missing type="button" in ${page}: ${attributes.slice(0, 160)}\`,
+        "Button is missing type=\"button\" in " + page + ": " + attributes.slice(0, 160),
       );
     }
   });
