@@ -45,7 +45,7 @@ test(
 
   assert.match(
     html,
-    /Bestelling #["+]\s*orderId/,
+    /Bestelling #"\+orderId/,
     "The customer should see the confirmed order number",
   );
 });
