@@ -270,3 +270,13 @@ body,#dashboard{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:14px;lin
 
 /* ===== 13. Keep the fixed save bar from covering the last fields ===== */
 #dashboard{padding-bottom:88px}
+
+/* ===== 14. Mobile: data tables scroll cleanly instead of crushing columns ===== */
+@media (max-width:760px){
+  #dashboard .ht-invoice-table,#dashboard .ht-inventory-table,#dashboard .ht-inventory-history-table,#dashboard .dr-sheet{min-width:680px!important;width:100%!important;table-layout:auto}
+  #dashboard .ht-invoice-table th,#dashboard .ht-invoice-table td,#dashboard .ht-inventory-table th,#dashboard .ht-inventory-table td,#dashboard .ht-inventory-history-table th,#dashboard .ht-inventory-history-table td{white-space:nowrap!important;word-break:normal!important;overflow-wrap:normal!important;vertical-align:middle}
+  #dashboard .ht-invoice-table td:nth-child(2),#dashboard .ht-inventory-table td:first-child{min-width:170px}
+  #dashboard .ht-invoice-table td small,#dashboard .ht-inventory-table td small{white-space:nowrap}
+  #dashboard .ht-invoice-table td .btn,#dashboard .ht-invoice-table td button{min-height:30px;padding:4px 9px!important;font-size:12px!important;margin:2px 4px 2px 0}
+  #dashboard .ht-invoice-table-wrap,#dashboard .ht-inventory-table-wrap,#dashboard .ht-inventory-history-wrap{border:1px solid #e2e8f0;border-radius:8px;background:#fff}
+}
