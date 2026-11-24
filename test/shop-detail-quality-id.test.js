@@ -43,7 +43,7 @@ test("public pages have unique IDs and valid in-page anchor targets", () => {
     const ids = new Set(
       [...html.matchAll(/id=["']([^"']+)["']/g)].map(([, id]) => id),
     );
-    const anchors = [...html.matchAll(/<a\\b[^>]*href=["']#([^"']+)["']/gi)].map(
+    const anchors = [...html.matchAll(/<a\b[^>]*href=["']#([^"']+)["']/gi)].map(
       ([, id]) => id,
     );
     const missing = [...new Set(anchors.filter((id) => !ids.has(id)))];
