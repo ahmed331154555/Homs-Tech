@@ -7078,10 +7078,10 @@ function addInvoiceLine(description="",quantity=1,unitPrice=0,vatRate=21){
   if(!body)return;
   const row=document.createElement("tr");
   row.innerHTML=
-    '<td><input class="iv-desc" maxlength="240" placeholder="Product of reparatie" aria-label="Omschrijving factuurregel" value="'+esc(description)+'"></td>'+
-    '<td><input class="iv-qty" type="number" min="1" max="999" step="1" inputmode="numeric" aria-label="Aantal" value="'+esc(quantity)+'"></td>'+
-    '<td><input class="iv-price" type="number" min="0" max="1000000" step="0.01" inputmode="decimal" aria-label="Prijs per stuk in euro" value="'+esc(unitPrice)+'"></td>'+
-    '<td><select class="iv-vat" aria-label="BTW-tarief"><option value="0">0%</option><option value="9">9%</option><option value="21">21%</option></select></td>'+
+    '<td data-label="Omschrijving"><input class="iv-desc" maxlength="240" placeholder="Product of reparatie" aria-label="Omschrijving factuurregel" value="'+esc(description)+'"></td>'+
+    '<td data-label="Aantal"><input class="iv-qty" type="number" min="1" max="999" step="1" inputmode="numeric" aria-label="Aantal" value="'+esc(quantity)+'"></td>'+
+    '<td data-label="Prijs per stuk"><input class="iv-price" type="number" min="0" max="1000000" step="0.01" inputmode="decimal" aria-label="Prijs per stuk in euro" value="'+esc(unitPrice)+'"></td>'+
+    '<td data-label="BTW"><select class="iv-vat" aria-label="BTW-tarief"><option value="0">0%</option><option value="9">9%</option><option value="21">21%</option></select></td>'+
     '<td><button type="button" class="btn btn-light iv-remove" aria-label="Factuurregel verwijderen" title="Factuurregel verwijderen">✕</button></td>';
   row.querySelector(".iv-vat").value=String(vatRate);
   row.querySelectorAll("input,select").forEach(control=>{
@@ -7196,13 +7196,13 @@ async function loadInvoices(){
         const statusLabel=statusLabels[status]||status;
         const statusClass=status==="sent"||status==="paid"?"is-sent":status==="cancelled"?"is-cancelled":"is-draft";
         return '<tr>'+
-          '<td><strong class="ht-invoice-number">'+esc(invoice.invoice_number||"—")+'</strong></td>'+
-          '<td><strong>'+esc(invoice.customer_type==="business"?(invoice.customer_company_name||invoice.customer_name||"—"):(invoice.customer_name||"—"))+'</strong><small>'+esc(invoice.customer_email||"")+'</small></td>'+
-          '<td>'+invoiceDate(invoice.created_at)+'</td>'+
-          '<td class="ht-invoice-total">'+invoiceEuro(invoice.total)+'</td>'+
-          '<td><span class="ht-invoice-status '+statusClass+'">'+esc(statusLabel)+'</span></td>'+
-          '<td><span class="ht-invoice-status '+(invoice.payment_status==="paid"?"is-sent":"is-draft")+'">'+esc(invoice.payment_status==="paid"?"Betaald":invoice.payment_status==="partial"?"Gedeeltelijk":"Openstaand")+'</span></td>'+
-          '<td><div class="ht-invoice-actions"><button type="button" class="btn btn-light" onclick="previewSavedInvoice('+id+')">PDF bekijken</button>'+(invoice.customer_email?'<button type="button" class="btn btn-green" onclick="sendInvoiceTest('+id+',this)">E-mail versturen</button>':'<span class="small">Geen e-mailadres</span>')+'</div></td>'+
+          '<td data-label="Factuurnummer"><strong class="ht-invoice-number">'+esc(invoice.invoice_number||"—")+'</strong></td>'+
+          '<td data-label="Klant"><strong>'+esc(invoice.customer_type==="business"?(invoice.customer_company_name||invoice.customer_name||"—"):(invoice.customer_name||"—"))+'</strong><small>'+esc(invoice.customer_email||"")+'</small></td>'+
+          '<td data-label="Datum">'+invoiceDate(invoice.created_at)+'</td>'+
+          '<td class="ht-invoice-total" data-label="Totaal">'+invoiceEuro(invoice.total)+'</td>'+
+          '<td data-label="Factuurstatus"><span class="ht-invoice-status '+statusClass+'">'+esc(statusLabel)+'</span></td>'+
+          '<td data-label="Betaalstatus"><span class="ht-invoice-status '+(invoice.payment_status==="paid"?"is-sent":"is-draft")+'">'+esc(invoice.payment_status==="paid"?"Betaald":invoice.payment_status==="partial"?"Gedeeltelijk":"Openstaand")+'</span></td>'+
+          '<td data-label="Acties"><div class="ht-invoice-actions"><button type="button" class="btn btn-light" onclick="previewSavedInvoice('+id+')">PDF bekijken</button>'+(invoice.customer_email?'<button type="button" class="btn btn-green" onclick="sendInvoiceTest('+id+',this)">E-mail versturen</button>':'<span class="small">Geen e-mailadres</span>')+'</div></td>'+
           '</tr>';
       }).join("")+
       '</tbody></table></div>';

@@ -280,3 +280,34 @@ body,#dashboard{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:14px;lin
   #dashboard .ht-invoice-table td .btn,#dashboard .ht-invoice-table td button{min-height:30px;padding:4px 9px!important;font-size:12px!important;margin:2px 4px 2px 0}
   #dashboard .ht-invoice-table-wrap,#dashboard .ht-inventory-table-wrap,#dashboard .ht-inventory-history-wrap{border:1px solid #e2e8f0;border-radius:8px;background:#fff}
 }
+
+/* ===== 15. Invoices on mobile: stacked cards (list + lines), no crushed columns ===== */
+@media (max-width:760px){
+  #dashboard .ht-invoices-page{overflow-x:hidden}
+  #dashboard .ht-invoices-page .card,#dashboard .ht-invoices-page .ht-invoice-form-grid,#dashboard .ht-invoices-page .field{min-width:0;max-width:100%;box-sizing:border-box}
+  #dashboard .ht-invoice-form-grid{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+  #dashboard .ht-invoices-page input,#dashboard .ht-invoices-page select,#dashboard .ht-invoices-page textarea{width:100%;max-width:100%;box-sizing:border-box;min-height:40px;font-size:16px}
+  #dashboard .ht-invoices-page input[type="date"]{appearance:auto;-webkit-appearance:auto;min-height:40px}
+  #dashboard .ht-invoice-card-head{flex-direction:column;align-items:flex-start;gap:8px}
+  #dashboard .ht-invoice-editor-actions{display:flex;flex-direction:column;gap:8px}
+  #dashboard .ht-invoice-editor-actions .btn{width:100%}
+  /* shared: table -> cards, using data-label */
+  #dashboard .ht-invoice-table-wrap,#dashboard .ht-invoice-lines-wrap{overflow:visible!important;border:0!important;background:transparent!important}
+  #dashboard .ht-invoice-table,#dashboard .ht-invoice-lines-table{display:block;min-width:0!important;width:100%!important}
+  #dashboard .ht-invoice-table thead,#dashboard .ht-invoice-lines-table thead{display:none}
+  #dashboard .ht-invoice-table tbody,#dashboard .ht-invoice-lines-table tbody{display:flex;flex-direction:column;gap:10px}
+  #dashboard .ht-invoice-table tr,#dashboard .ht-invoice-lines-table tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 12px;padding:12px;border:1px solid #e2e8f0;border-radius:10px;background:#fff}
+  #dashboard .ht-invoice-table td,#dashboard .ht-invoice-lines-table td{display:block;padding:0!important;border:0!important;min-width:0!important;white-space:normal!important;word-break:normal!important;overflow-wrap:anywhere;text-align:left!important}
+  #dashboard .ht-invoice-table td[data-label]::before,#dashboard .ht-invoice-lines-table td[data-label]::before{content:attr(data-label);display:block;margin-bottom:3px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#64748b}
+  /* list cards */
+  #dashboard .ht-invoice-table td:nth-child(1),#dashboard .ht-invoice-table td:nth-child(2),#dashboard .ht-invoice-table td:nth-child(7){grid-column:1/-1}
+  #dashboard .ht-invoice-table td:nth-child(1)::before{display:none}
+  #dashboard .ht-invoice-table .ht-invoice-number{font-size:14px}
+  #dashboard .ht-invoice-actions{display:flex;flex-wrap:wrap;gap:8px}
+  #dashboard .ht-invoice-actions .btn{flex:1 1 140px;min-height:38px;white-space:nowrap;word-break:normal}
+  /* line cards */
+  #dashboard .ht-invoice-lines-table td:nth-child(1){grid-column:1/-1}
+  #dashboard .ht-invoice-lines-table td:nth-child(5){grid-column:1/-1}
+  #dashboard .ht-invoice-lines-table td:nth-child(5) .btn{width:100%;min-height:36px}
+  #dashboard .ht-invoice-total-panel{width:100%;box-sizing:border-box}
+}
