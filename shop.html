@@ -213,7 +213,7 @@ function selectVariant(value){
  if(price)price.textContent=money(activeVariant?.price??activeProduct.price);
  if(stockBox)stockBox.textContent=stock===0?'Uitverkocht':stock===null?'Beschikbaarheid controleren':stock+' stuks op voorraad';
  if(qty){qty.value='1';qty.max=String(stock===null?99:Math.max(1,stock));}
- if(button)button.disabled=stock===0;
+ if(button)button.disabled=stock===0||stock===null;
 }
 window.shopSelectVariant=selectVariant;
 function setPhoto(i){const box=$('detail');let photos=[];try{photos=JSON.parse(box.dataset.photos||'[]')}catch{}if(!photos.length)return;photoIndex=(i+photos.length)%photos.length;const main=$('mainPhoto');if(main&&photos[photoIndex])main.src=photos[photoIndex];box.querySelectorAll('.thumb').forEach((b,j)=>b.classList.toggle('active',j===photoIndex))}
