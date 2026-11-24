@@ -375,20 +375,54 @@
             let changed=false;
             const items=readCart().map(item=>{
               if(String(item.type||"").toLowerCase()!=="shop")return item;
-              const rawId=String(item.id??""),stableIndex=shopProducts.findIndex(p=>String(p?.id??"")===rawId),legacyIndex=/^\d+$/.test(rawId)?Number(rawId):-1,product=stableIndex>=0?shopProducts[stableIndex]:(Number.isInteger(legacyIndex)?shopProducts[legacyIndex]:null);
+
+              const rawId=String(item.id??"");
+              const stableIndex=shopProducts.findIndex(product=>String(product?.id??"")===rawId);
+              const legacyIndex=/^\\d+$/.test(rawId)?Number(rawId):-1;
+              const product=stableIndex>=0?shopProducts[stableIndex]:(Number.isInteger(legacyIndex)?shopProducts[legacyIndex]:null);
               if(!product)return item;
+
               const variants=Array.isArray(product.variants)?product.variants:[];
-              const variant=variants.find(v=>String(v.id||v.sku||v.quality||"")===String(item.variantId||item.sku||""));
-              const rawStock=variant?variant.stock:product.stock;
-              const match=String(rawStock??"").trim().match(/^(\d+)/);
+              const variantKey=String(item.variantId||item.sku||"");
+              const hasVariantReference=Boolean(variantKey);
+              const variant=hasVariantReference
+                ? variants.find(entry=>String(entry.id||entry.sku||entry.quality||"")===variantKey)
+                : null;
+
+              // A selected variant must never inherit the product's aggregate stock.
+              if(hasVariantReference && !variant){
+                changed=true;
+                return {...item,qty:0,unavailable:true};
+              }
+
+              const stockText=String((variant?variant.stock:product.stock)??"").trim();
+              const match=variant?stockText.match(/^(\\d+)$/):stockText.match(/^(\\d+)/);
               if(!match)return item;
-              const stock=Math.max(0,Number(match[1])),qty=Math.max(1,Number(item.qty||1));
-              if(stock===0){changed=true;return {...item,qty:0,unavailable:true};}
-              if(qty>stock){changed=true;return {...item,qty:stock};}
+
+              const stock=Math.max(0,Number(match[1]));
+              const qty=Math.max(1,Number(item.qty||1));
+              if(stock===0){
+                changed=true;
+                return {...item,qty:0,unavailable:true};
+              }
+              if(qty>stock){
+                changed=true;
+                return {...item,qty:stock,unavailable:false};
+              }
+              if(item.unavailable){
+                changed=true;
+                return {...item,unavailable:false};
+              }
               return item;
             }).filter(item=>!(item.unavailable&&Number(item.qty)===0));
-            if(changed){try{localStorage.setItem(CART_KEY,JSON.stringify(items));}catch(error){}paint(items);}
-          }catch(error){console.warn("Voorraadcontrole kon niet worden geladen:",error);}
+
+            if(changed){
+              try{localStorage.setItem(CART_KEY,JSON.stringify(items));}catch(error){}
+              paint(items);
+            }
+          }catch(error){
+            console.warn("Voorraadcontrole kon niet worden geladen:",error);
+          }
         }
 
         function start(){
