@@ -1413,7 +1413,7 @@ function phoneFolderInfo(phone){
 }
 
 function phoneTreeBrandIcon(group){
-  const icons={Apple:'',Samsung:'▣','iPad':'▱',Mac:'',Xiaomi:'◆',Google:'G',OnePlus:'＋',Overige:'•'};
+  const icons={Apple:'●',Samsung:'▣','iPad':'▱',Mac:'■',Xiaomi:'◆',Google:'G',OnePlus:'＋',Overige:'•'};
   return icons[group]||'•';
 }
 
