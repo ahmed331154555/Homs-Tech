@@ -575,7 +575,7 @@ function renderDeviceCategories(){
                     <div class="card-title">${esc(x.title||"Nieuwe categorie")}</div>
                     <div class="small">Beheer de categorie van de homepage.</div>
                   </div>
-                  <button class="btn btn-red" onclick="deleteDeviceCategory(${i})">Verwijderen</button>
+                  <button type="button" class="btn btn-red" onclick="deleteDeviceCategory(${i})">Verwijderen</button>
                 </div>
 
                 <div class="grid">
@@ -1109,7 +1109,7 @@ function renderServices(){
       <div class="editor-panel">
         <div class="card-head">
           <div><div class="card-title" style="font-size:20px">🔧 ${esc(service[1]||'Nieuwe dienst')}</div><div class="small">Bewerk hier de gegevens van deze dienst.</div></div>
-          <button class="btn btn-red" onclick="deleteService(${selectedServiceIndex})">Verwijderen</button>
+          <button type="button" class="btn btn-red" onclick="deleteService(${selectedServiceIndex})">Verwijderen</button>
         </div>
         <div class="grid">
           <div class="field"><label>Icoon / emoji</label><input value="${esc(service[0]||'🔧')}" oninput="data.services[${selectedServiceIndex}][0]=this.value;markChanged()"></div>
@@ -3408,7 +3408,7 @@ function renderBuybackModelEditor(){
     editor.innerHTML=`<div class="buyback-model-panel">
       <h3>${esc(m.name)}</h3>
       <div class="small">Dit model heeft nog geen gekoppeld inkooptoestel.</div>
-      <div class="panel-actions"><button class="btn btn-green" onclick="attachBuybackModel()">Koppelen aan inkooptoestel</button><button class="btn buyback-danger" onclick="deleteBuybackModel()">Model verwijderen</button></div>
+      <div class="panel-actions"><button type="button" class="btn btn-green" onclick="attachBuybackModel()">Koppelen aan inkooptoestel</button><button type="button" class="btn buyback-danger" onclick="deleteBuybackModel()">Model verwijderen</button></div>
     </div>`;
     return;
   }
@@ -3832,7 +3832,7 @@ function renderRepairRequests(){
   const photoHtml=photos.length?'<div class="order-notes"><strong>Foto\'s van het toestel ('+photos.length+')</strong><div class="repair-request-photos">'+photos.map((p,i)=>'<a href="'+esc(p.url||p.dataUrl||'')+'" target="_blank" rel="noopener noreferrer" title="Open foto '+(i+1)+'"><img src="'+esc(p.url||p.dataUrl||'')+'" alt="Toestelfoto '+(i+1)+'" loading="lazy" decoding="async"></a>').join('')+'</div></div>':'';
   const statuses=['Nieuw','In behandeling','Wacht op klant','Wacht op leverancier','Resultaat ontvangen','Mislukt','Voltooid','Geannuleerd'];
   const options=statuses.map(s=>'<option'+((order.status||'Nieuw')===s?' selected':'')+'>'+s+'</option>').join('');
-  const deleteBtn=hasPermission('orders.delete')?'<button class="btn btn-red order-delete-btn" onclick="deleteRepairRequest('+Number(order.id)+')">🗑️ Verwijderen</button>':'';
+  const deleteBtn=hasPermission('orders.delete')?'<button type="button" class="btn btn-red order-delete-btn" onclick="deleteRepairRequest('+Number(order.id)+')">🗑️ Verwijderen</button>':'';
   return '<article class="order-card repair-request-card '+(open?'is-open':'')+'"><div class="repair-request-row"><button type="button" class="repair-request-toggle" aria-expanded="'+(open?'true':'false')+'" aria-controls="repair-request-details-'+Number(order.id)+'" onclick="toggleRepairRequest('+Number(order.id)+')"><span class="repair-request-chevron" aria-hidden="true">'+(open?'▾':'▸')+'</span><span class="repair-request-heading"><strong>#'+esc(order.id)+' · '+esc((meta.brand?meta.brand+' ':'')+(meta.model||order.service_name||'Reparatie'))+'</strong><span>'+esc(order.name||'Onbekende klant')+'</span><span>'+esc(date)+'</span></span></button><div class="repair-request-row-actions"><span class="repair-request-summary-status">'+esc(order.status||'Nieuw')+'</span><button type="button" class="btn btn-light order-detail-btn" onclick="showRepairRequestDetails('+Number(order.id)+')">◉ Details</button><select aria-label="Status aanvraag '+esc(order.id)+'" class="order-status-select" data-order-id="'+esc(order.id)+'" onchange="updateOrderStatus('+Number(order.id)+',this.value)">'+options+'</select>'+deleteBtn+'</div></div><div id="repair-request-details-'+Number(order.id)+'" class="repair-request-details" '+(open?'':'hidden')+'><div class="order-grid repair-request-grid"><div class="order-info"><strong>Klant</strong><span>'+esc(order.name||'-')+'</span></div><div class="order-info"><strong>E-mail</strong><span>'+esc(order.email||'-')+'</span></div><div class="order-info"><strong>Telefoon</strong><span>'+esc(order.phone||'-')+'</span></div><div class="order-info"><strong>Status</strong><span>'+esc(order.status||'Nieuw')+'</span></div><div class="order-info"><strong>Toestel / service</strong><span>'+esc((meta.brand?meta.brand+' ':'')+(meta.model||order.service_name||'-'))+'</span></div><div class="order-info"><strong>Aangemaakt</strong><span>'+esc(date||'-')+'</span></div></div><div class="order-notes"><strong>Probleem / klacht</strong><div class="repair-request-problem">'+esc(order.notes||'-')+'</div></div>'+photoHtml+offerHtml+'</div></article>';
  }).join('');
 }
@@ -4558,7 +4558,7 @@ function renderWhy(){
     <div class="editor-layout">
       <div class="editor-list"><div class="editor-list-title">Waarom HOMS TECH</div>${list}</div>
       <div class="editor-panel">
-        <div class="card-head"><div><div class="card-title" style="font-size:20px">⭐ ${esc(item[1]||'Nieuw voordeel')}</div><div class="small">Bewerk hier het voordeel.</div></div><button class="btn btn-red" onclick="deleteWhy(${selectedWhyIndex})">Verwijderen</button></div>
+        <div class="card-head"><div><div class="card-title" style="font-size:20px">⭐ ${esc(item[1]||'Nieuw voordeel')}</div><div class="small">Bewerk hier het voordeel.</div></div><button type="button" class="btn btn-red" onclick="deleteWhy(${selectedWhyIndex})">Verwijderen</button></div>
         <div class="grid">
           <div class="field"><label>Icoon / emoji</label><input value="${esc(item[0]||'⭐')}" oninput="data.why[${selectedWhyIndex}][0]=this.value;markChanged()"></div>
           <div class="field"><label>Titel</label><input value="${esc(item[1]||'')}" oninput="data.why[${selectedWhyIndex}][1]=this.value;markChanged();renderWhy()"></div>
@@ -5139,7 +5139,7 @@ async function adminSearch(){
     const x=await r.json().catch(()=>({}));if(!r.ok)throw new Error(x.error||"Zoeken mislukt.");
     const parts=[];
     if((x.customers||[]).length)parts.push("<h3>👥 Klanten</h3>"+x.customers.map(c=>`<div class="search-result"><strong>${esc(c.name||"Klant")}</strong><br>${esc(c.email||"-")} · ${esc(c.phone||"-")}<br><span class="small">${esc(c.address||"")}</span></div>`).join(""));
-    if((x.webshopOrders||[]).length)parts.push("<h3>🛍️ Webshop Bestellingen</h3>"+x.webshopOrders.map(o=>`<div class="search-result"><strong>#${esc(o.id)} — ${esc(o.name||"Klant")}</strong><br>${esc(o.email||"-")} · ${esc(o.phone||"-")} · € ${esc(Number(o.total||0).toFixed(2))}<br><span class="small">${esc(o.postcode||"")} ${esc(o.city||"")} · ${esc(o.status||"-")}</span><div class="actions" style="margin-top:10px"><button class="btn btn-light" onclick="showWebshopOrderDetails(${Number(o.id)})">Details</button>${hasPermission("webshop_orders.delete")?`<button class="btn btn-red" onclick="deleteWebshopOrder(${Number(o.id)})">Verwijderen</button>`:""}</div></div>`).join(""));
+    if((x.webshopOrders||[]).length)parts.push("<h3>🛍️ Webshop Bestellingen</h3>"+x.webshopOrders.map(o=>`<div class="search-result"><strong>#${esc(o.id)} — ${esc(o.name||"Klant")}</strong><br>${esc(o.email||"-")} · ${esc(o.phone||"-")} · € ${esc(Number(o.total||0).toFixed(2))}<br><span class="small">${esc(o.postcode||"")} ${esc(o.city||"")} · ${esc(o.status||"-")}</span><div class="actions" style="margin-top:10px"><button type="button" class="btn btn-light" onclick="showWebshopOrderDetails(${Number(o.id)})">Details</button>${hasPermission("webshop_orders.delete")?`<button type="button" class="btn btn-red" onclick="deleteWebshopOrder(${Number(o.id)})">Verwijderen</button>`:""}</div></div>`).join(""));
     box.innerHTML=parts.join("")||'<div class="small">Geen resultaten gevonden.</div>';
     status.className="status success";status.textContent=parts.length?"Zoeken voltooid.":"Geen resultaten.";
   }catch(e){status.className="status error";status.textContent="✕ "+e.message;}
@@ -5174,14 +5174,14 @@ async function loadAdmins(){
     const users=x.users||[];
     box.innerHTML=users.length?users.map(u=>`<div class="admin-user-card">
       <div class="card-head"><div><div class="card-title">👤 ${esc(u.username)}</div><div class="small">${u.active?"Actief":"Uitgeschakeld"}</div></div>
-      <button class="btn btn-red" onclick="deleteAdmin(${Number(u.id)})">Verwijderen</button></div>
+      <button type="button" class="btn btn-red" onclick="deleteAdmin(${Number(u.id)})">Verwijderen</button></div>
       <div class="grid">
         <div class="field"><label>Gebruikersnaam</label><input id="an-${Number(u.id)}" value="${esc(u.username)}"></div>
         <div class="field"><label>Nieuw wachtwoord (leeg = behouden)</label><input id="ap-${Number(u.id)}" type="password"></div>
       </div>
       <label class="permission-item" style="max-width:300px"><input id="aa-${Number(u.id)}" type="checkbox" ${u.active?"checked":""}><span>Admin is actief</span></label>
       <div class="field"><label>Rechten</label><div id="ax-${Number(u.id)}" class="permission-grid"></div></div>
-      <button class="btn btn-green" onclick="updateAdmin(${Number(u.id)})">💾 Admin opslaan</button>
+      <button type="button" class="btn btn-green" onclick="updateAdmin(${Number(u.id)})">💾 Admin opslaan</button>
       <div id="as-${Number(u.id)}" class="status" style="margin-top:10px"></div>
     </div>`).join(""):'<div class="small">Nog geen extra admins aangemaakt.</div>';
     users.forEach(u=>renderPermissionCheckboxes("ax-"+Number(u.id),Array.isArray(u.permissions)?u.permissions:[]));
@@ -5244,7 +5244,7 @@ function showOrderDetails(title, data){
     <div style="background:#fff;border-radius:16px;max-width:760px;width:100%;max-height:90vh;overflow:auto;padding:22px">
       <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
         <h2 style="margin:0">${esc(title)}</h2>
-        <button class="btn btn-light" onclick="document.getElementById('orderDetailsModal').remove()">✕</button>
+        <button type="button" class="btn btn-light" onclick="document.getElementById('orderDetailsModal').remove()">✕</button>
       </div>
       <div style="margin-top:14px">${rows}</div>
     </div>`;
@@ -7138,7 +7138,7 @@ function previewInvoiceDraft(){
     '<table><thead><tr><th>Omschrijving</th><th>Aantal</th><th>Prijs</th><th>BTW</th><th>Regeltotaal</th></tr></thead><tbody>'+rows+'</tbody></table>'+
     '<div class="totals">Excl. BTW: '+invoiceEuro(totals.subtotal)+'<br>BTW: '+invoiceEuro(totals.vatTotal)+'<div class="grand">Totaal: '+invoiceEuro(totals.total)+'</div></div>'+
     '<p class="notice">Dit is een voorbeeld en nog geen definitieve factuur. Het officiële factuurnummer wordt toegewezen na het opslaan.</p>'+
-    '<div class="toolbar"><button onclick="window.print()">Afdrukken / Opslaan als PDF</button><button onclick="window.close()">Sluiten</button></div>'+
+    '<div class="toolbar"><button type="button" onclick="window.print()">Afdrukken / Opslaan als PDF</button><button type="button" onclick="window.close()">Sluiten</button></div>'+
     '</body></html>'
   );
   preview.document.close();
@@ -7416,7 +7416,7 @@ function deviceRenderTable(){
       const currentRepairStatus=x.status==="جاهز للتسليم"||x.status==="تم التسليم"?"جاهز للتسليم":x.status==="فيه مشاكل"?"فيه مشاكل":"قيد الإصلاح";
       const statusOptions=(isRepair?[["قيد الإصلاح","Niet klaar — bezig"],["جاهز للتسليم","Klaar voor ophalen"],["فيه مشاكل","Andere problemen"]]:DEVICE_STATUS_COMMERCIAL.map(v=>[v,v])).map(([v,label])=>'<option value="'+esc(v)+'" '+((isRepair?currentRepairStatus:x.status)===v?"selected":"")+'>'+esc(label)+'</option>').join('');
       const statusCell='<td><select class="dr-cell" data-field="status" data-id="'+rowId+'" '+(!hasPermission("device_register.update")?"disabled":"")+'>'+statusOptions+'</select></td>';
-      const actions='<td class="dr-actions"><button class="btn btn-green" data-permission="device_register.update" onclick="deviceSaveRow(&quot;'+rowId+'&quot;)">Opslaan</button>'+(x.id?'<button class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button class="btn btn-light" data-permission="device_register.update" onclick="deviceAddOperation('+Number(x.id)+')">＋ Handeling</button><button class="btn btn-red" data-permission="device_register.update" onclick="deviceArchive('+Number(x.id)+','+(archived?'false':'true')+')">'+(archived?'Herstellen':'Verwijderen')+'</button>':'<span class="small">Nieuwe registratie</span>')+'</td>';
+      const actions='<td class="dr-actions"><button type="button" class="btn btn-green" data-permission="device_register.update" onclick="deviceSaveRow(&quot;'+rowId+'&quot;)">Opslaan</button>'+(x.id?'<button type="button" class="btn btn-light" onclick="deviceShowHistory('+Number(x.id)+')">Historie</button><button type="button" class="btn btn-light" data-permission="device_register.update" onclick="deviceAddOperation('+Number(x.id)+')">＋ Handeling</button><button type="button" class="btn btn-red" data-permission="device_register.update" onclick="deviceArchive('+Number(x.id)+','+(archived?'false':'true')+')">'+(archived?'Herstellen':'Verwijderen')+'</button>':'<span class="small">Nieuwe registratie</span>')+'</td>';
       if(isRepair)return '<tr data-row-id="'+rowId+'">'+deviceCell(x.identifier_value,"identifierValue",rowId)+deviceCell(x.brand,"brand",rowId)+deviceCell(x.model,"model",rowId)+'<td class="dr-description-cell"><textarea class="dr-cell dr-description-input" data-field="repairIssue" data-id="'+rowId+'" rows="2" maxlength="1000" '+(!hasPermission("device_register.update")?"disabled":"")+'>'+esc(x.repair_issue||"")+'</textarea></td>'+deviceCell(x.repair_value,"repairValue",rowId,"number")+statusCell+actions+'</tr>';
       return '<tr data-row-id="'+rowId+'">'+deviceCell(x.identifier_value,"identifierValue",rowId)+deviceCell(x.brand,"brand",rowId)+deviceCell(x.model,"model",rowId)+deviceCell(x.storage,"storage",rowId)+deviceCell(x.color,"color",rowId)+deviceCell(x.device_condition,"deviceCondition",rowId)+statusCell+deviceCell(x.purchase_cost,"purchaseCost",rowId,"number")+deviceCell(x.sale_price,"salePrice",rowId,"number")+actions+'</tr>';
     }).join('')+'</tbody></table></div>':'<div class="dr-empty">لا توجد سجلات في هذا القسم بعد. أضف أول سجل من النموذج أعلاه.</div>';
@@ -7564,7 +7564,7 @@ async function deviceAddOperation(id){
 async function deviceShowHistory(id){
   const panel=document.getElementById("deviceHistoryPanel");if(!panel)return;panel.innerHTML="Historie laden…";
   try{const d=await deviceApi("/api/admin/device-register/"+id+"/operations"),device=deviceRegisterCache.find(x=>Number(x.id)===id);
-    panel.innerHTML='<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px"><div class="section-head"><div><h3 style="margin:0">Historie — '+esc(device?.model||"Toestel")+'</h3><p>'+esc(device?.identifier_value||"")+'</p></div><button class="btn btn-light" onclick="document.getElementById(\'deviceHistoryPanel\').innerHTML=\'\'">Sluiten</button></div>'+((d.operations||[]).length?'<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;min-width:620px"><thead><tr><th style="text-align:left;padding:8px">Datum</th><th style="text-align:left;padding:8px">Handeling</th><th style="text-align:left;padding:8px">Omschrijving</th><th style="text-align:left;padding:8px">Onderdelen</th><th style="text-align:left;padding:8px">Extra kosten</th><th style="text-align:left;padding:8px">Status</th></tr></thead><tbody>'+d.operations.map(o=>'<tr style="border-top:1px solid #e2e8f0"><td style="padding:8px">'+esc(new Date(o.created_at).toLocaleString("nl-NL"))+'</td><td style="padding:8px">'+esc(o.operation_type)+'</td><td style="padding:8px">'+esc(o.description)+'</td><td style="padding:8px">'+(Array.isArray(o.parts)?o.parts.map(p=>esc(p.name)+" × "+Number(p.quantity)+" ("+deviceEuro(p.cost)+")").join("<br>"):"")+'</td><td style="padding:8px">'+deviceEuro(o.additional_cost)+'</td><td style="padding:8px">'+esc(o.status||"—")+'</td></tr>').join("")+'</tbody></table></div>':'<p>Nog geen handelingen geregistreerd.</p>')+'</div>';
+    panel.innerHTML='<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px"><div class="section-head"><div><h3 style="margin:0">Historie — '+esc(device?.model||"Toestel")+'</h3><p>'+esc(device?.identifier_value||"")+'</p></div><button type="button" class="btn btn-light" onclick="document.getElementById(\'deviceHistoryPanel\').innerHTML=\'\'">Sluiten</button></div>'+((d.operations||[]).length?'<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;min-width:620px"><thead><tr><th style="text-align:left;padding:8px">Datum</th><th style="text-align:left;padding:8px">Handeling</th><th style="text-align:left;padding:8px">Omschrijving</th><th style="text-align:left;padding:8px">Onderdelen</th><th style="text-align:left;padding:8px">Extra kosten</th><th style="text-align:left;padding:8px">Status</th></tr></thead><tbody>'+d.operations.map(o=>'<tr style="border-top:1px solid #e2e8f0"><td style="padding:8px">'+esc(new Date(o.created_at).toLocaleString("nl-NL"))+'</td><td style="padding:8px">'+esc(o.operation_type)+'</td><td style="padding:8px">'+esc(o.description)+'</td><td style="padding:8px">'+(Array.isArray(o.parts)?o.parts.map(p=>esc(p.name)+" × "+Number(p.quantity)+" ("+deviceEuro(p.cost)+")").join("<br>"):"")+'</td><td style="padding:8px">'+deviceEuro(o.additional_cost)+'</td><td style="padding:8px">'+esc(o.status||"—")+'</td></tr>').join("")+'</tbody></table></div>':'<p>Nog geen handelingen geregistreerd.</p>')+'</div>';
   }catch(e){panel.innerHTML='<p class="status error">'+esc(e.message)+'</p>'}
 }
 function deviceExportCsv(){
