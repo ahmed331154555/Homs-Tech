@@ -30,10 +30,7 @@ test("admin page loads the centralized responsive layout after the design system
 });
 
 test("mobile navigation is a full-height overlay with an independently scrollable panel", () => {
-  assert.match(
-    layoutCss,
-    /#adminNav\s*\{[^}]*position:\s*fixed\s*!important/s,
-  );
+  assert.match(layoutCss, /#adminNav\s*\{[^}]*position:\s*fixed\s*!important/s);
   assert.match(layoutCss, /#adminNav\s*\{[^}]*inset:\s*0\s*!important/s);
   assert.match(layoutCss, /height:\s*100dvh\s*!important/);
   assert.match(
@@ -63,10 +60,7 @@ test("mobile save bar reserves enough scroll space for the final dashboard conte
 });
 
 test("phone bulk pricing table keeps mobile headers readable and numeric inputs tappable", () => {
-  assert.match(
-    layoutCss,
-    /#phonesList table\s*\{[^}]*min-width:\s*720px/s,
-  );
+  assert.match(layoutCss, /#phonesList table\s*\{[^}]*min-width:\s*720px/s);
   assert.match(layoutCss, /#phonesList table th:nth-child\(1\)/);
   assert.match(layoutCss, /#phonesList table th:nth-child\(5\)/);
   assert.match(

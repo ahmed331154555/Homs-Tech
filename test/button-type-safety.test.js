@@ -5,11 +5,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const pages = [
-  "admin/index.html",
-  "shop.html",
-  "uw-toestel-verkopen.html",
-];
+const pages = ["admin/index.html", "shop.html", "uw-toestel-verkopen.html"];
 
 for (const page of pages) {
   test(page + " gives every button an explicit non-submit type", () => {
@@ -21,7 +17,10 @@ for (const page of pages) {
       assert.match(
         attributes,
         /\btype\s*=\s*["']button["']/i,
-        "Button is missing type=\"button\" in " + page + ": " + attributes.slice(0, 160),
+        'Button is missing type="button" in ' +
+          page +
+          ": " +
+          attributes.slice(0, 160),
       );
     }
   });
@@ -38,7 +37,6 @@ test("critical admin navigation and save actions remain wired", () => {
   assert.match(html, /id="logoutBtn"[^>]*onclick="logout\(\)"/);
 });
 
-
 test("generated admin action buttons also declare a non-submit type", () => {
   const script = fs.readFileSync(
     path.resolve(__dirname, "..", "assets/homs-admin.js"),
@@ -51,7 +49,8 @@ test("generated admin action buttons also declare a non-submit type", () => {
     assert.match(
       attributes,
       /\btype\s*=\s*["']button["']/i,
-      "Generated admin button is missing type=\"button\": " + attributes.slice(0, 160),
+      'Generated admin button is missing type="button": ' +
+        attributes.slice(0, 160),
     );
   }
 });
