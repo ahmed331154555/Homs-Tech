@@ -714,6 +714,18 @@
         body .checkout-layout .item-price{font-size:14px!important;font-weight:800!important}
         body .checkout-layout .total{font-size:18px!important;padding:12px 0!important;margin-top:4px!important}
         body .checkout-layout>.card:last-child .btn{min-height:44px!important}
+        body .payment-option{grid-template-columns:20px 40px minmax(0,1fr)!important;align-items:center!important;gap:6px 10px!important;padding:12px!important}
+        body .payment-option:has(input:checked){padding:11px!important}
+        body .payment-option>.payment-logo.paypal,body .payment-option>.payment-cash-label{display:none!important}
+        body .payment-option-copy{min-width:0!important}
+        body .payment-option-copy strong{font-size:14.5px!important;line-height:1.25!important;display:block}
+        body .payment-option-copy small{font-size:12px!important;line-height:1.35!important;display:block;margin-top:2px}
+        body .payment-option-brands{flex-direction:row!important;grid-column:1/-1!important;grid-row:auto!important;display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:flex-start!important;justify-items:start!important;width:auto!important;gap:6px 8px!important;padding:8px 0 0 30px!important;border-top:1px dashed #dbe5f0}
+        body .payment-option-brands>*{flex:none!important}
+        body .payment-recommended{grid-column:auto!important;order:-1;flex-basis:100%!important;width:max-content!important;max-width:max-content!important;margin-right:2px;padding:4px 9px!important;font-size:11px!important;line-height:1.2!important}
+        body .payment-brand-row,body .payment-card-brands{display:flex!important;flex-direction:row!important;align-items:center!important;gap:6px!important;grid-column:auto!important;grid-row:auto!important}
+        body .payment-option-brands .payment-logo{flex:none!important;min-width:max-content!important;min-height:24px!important;padding:4px 8px!important;font-size:11px!important}
+        body .payment-option-brands .payment-card-brands{font-size:11px!important}
       }
     </style>
 </head>
