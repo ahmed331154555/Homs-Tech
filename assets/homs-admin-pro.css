@@ -843,3 +843,18 @@ body.ht-modal-open{overflow:hidden}
   #dashboard #page-phone-orders .ht-phone-sale-open{grid-template-columns:48px minmax(0,1fr) minmax(0,1.3fr) auto!important;grid-template-areas:"num cust device price" "badges badges badges date"!important;gap:8px 14px!important}
   #dashboard #page-phone-orders .ht-phone-sale-date{flex-direction:row;gap:6px}
 }
+
+/* 34. Telefoonbestellingen: verwijderknop als compact icoon binnen de kaart */
+@media(max-width:1399px){
+  #dashboard #page-phone-orders .ht-phone-sale-row{position:relative;grid-template-columns:minmax(0,1fr) auto!important;align-items:stretch!important;border:1px solid #e2e8f0!important;border-radius:12px!important;background:#fff!important;box-shadow:none!important;overflow:hidden;margin-bottom:8px!important}
+  #dashboard #page-phone-orders .ht-phone-sale-row .ht-phone-sale-open{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;margin:0!important}
+  #dashboard #page-phone-orders .ht-phone-sale-row .ht-phone-sale-delete{grid-column:2!important;grid-row:1!important;align-self:center!important;justify-self:center!important;display:inline-flex!important;align-items:center;justify-content:center;width:36px!important;height:36px!important;min-height:0!important;margin:0 10px 0 0!important;padding:0!important;font-size:0!important;line-height:0;border:1px solid #f1c0c0!important;border-radius:10px!important;background:#fff!important;color:#b42318!important}
+  #dashboard #page-phone-orders .ht-phone-sale-row .ht-phone-sale-delete::before{content:"";width:16px;height:16px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6'/%3E%3C/svg%3E") center/contain no-repeat}
+  #dashboard #page-phone-orders .ht-phone-sale-row .ht-phone-sale-delete:hover{background:#b42318!important;border-color:#b42318!important;color:#fff!important}
+  #dashboard #page-phone-orders .ht-phone-sale-row .unified-order-mixed-note{grid-column:1/-1}
+}
+@media(max-width:1399px){
+  #dashboard #page-phone-orders .ht-phone-sale-row{grid-template-columns:minmax(0,1fr)!important}
+  #dashboard #page-phone-orders .ht-phone-sale-row .ht-phone-sale-delete{position:absolute!important;top:7px;right:10px;grid-column:auto!important;grid-row:auto!important;width:32px!important;height:32px!important;margin:0!important;border-radius:9px!important}
+  #dashboard #page-phone-orders .ht-phone-sale-row .ht-phone-sale-price{margin-right:40px}
+}
