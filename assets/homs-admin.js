@@ -5449,6 +5449,13 @@ async function printWebshopShippingLabel(id){
   w.document.close();
 }
 
+function shopOrderDetailTab(name){
+  for(const key of ["overview","customer","shipping"]){
+    const pane=document.getElementById("sod-pane-"+key),tab=document.getElementById("sod-tab-"+key);
+    if(pane)pane.hidden=key!==name;
+    if(tab){tab.classList.toggle("is-active",key===name);tab.setAttribute("aria-selected",key===name?"true":"false");}
+  }
+}
 function closeWebshopOrderDetails(){
   const modal=document.getElementById("orderDetailsModal");
   if(modal)modal.remove();
@@ -5797,34 +5804,64 @@ async function showWebshopOrderDetails(id){
     const modal=document.createElement("div");
     modal.id="orderDetailsModal";
     const isPhoneOnlyOrder=hasPhoneItems&&!hasShopItems;
-    modal.className="ht-order-detail-overlay"+(isPhoneOnlyOrder?" phone-order-detail-overlay":"");
-    modal.innerHTML=isPhoneOnlyOrder?phoneDetailMarkup:`<div class="ht-order-detail-panel" role="dialog" aria-modal="true" aria-label="Bestelling #${Number(order.id)}">
-      <div class="ht-order-detail-top"><div><div class="ht-order-eyebrow">HOMS TECH · ${orderCategory}</div><h2>Bestelling #${Number(order.id)}</h2><p>${esc(date)}</p></div><button type="button" class="btn btn-light" aria-label="Sluiten" onclick="closeWebshopOrderDetails()">✕</button></div>
-      <section class="ht-order-detail-section ht-order-status-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">✓</span><strong>Status van de bestelling</strong></div><div class="ht-order-status-grid"><label>Status bestelling<select class="order-status-select" data-webshop-order-id="${Number(order.id)}" onchange="updateWebshopOrderStatus(${Number(order.id)},this.value)">${['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(x=>`<option value="${esc(x)}" ${status===x?'selected':''}>${esc(x)}</option>`).join('')}</select></label><div><span>Betaalstatus</span><strong><span class="ht-order-payment-state ${paymentClass}">${esc(paymentLabel)}</span></strong></div></div></section>
-      ${order.inventory_error?'<section class="ht-order-detail-section" style="border:1px solid #ef4444;background:#fff7f7"><div class="ht-order-section-heading"><span class="ht-order-section-icon">⚠</span><strong>Voorraadcontrole vereist</strong></div><p style="margin:8px 0 0;color:#991b1b;white-space:pre-wrap;overflow-wrap:anywhere">${esc(order.inventory_error)}</p></section>':''}
-      <div class="ht-order-note" style="margin:8px 0 12px">${order.inventory_deducted_at?'Voorraad verwerkt op: '+esc(new Date(order.inventory_deducted_at).toLocaleString('nl-NL')):'Voorraad nog niet als verwerkt geregistreerd.'}</div>
-      <section class="ht-order-total-banner"><div><span>Totaal van de bestelling</span><small>${items.length} product(en)</small></div><strong>${money(total)}</strong></section>
-      <section class="ht-order-detail-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">▣</span><strong>Bestelde producten</strong><span class="ht-order-section-count">${items.reduce((sum,item)=>sum+Math.max(0,Number(item.qty||item.quantity||1)),0)} stuks</span></div><div class="ht-order-product-list">${itemRows}</div><div class="ht-order-totals"><div><span>Subtotaal producten</span><strong>${money(subtotal)}</strong></div>${Math.abs(subtotal-total)>0.009?`<div><span>Verschil / overige kosten (niet uitgesplitst)</span><strong>${money(total-subtotal)}</strong></div>`:""}<div class="ht-order-grand-total"><span>Totaal</span><strong>${money(total)}</strong></div></div></section>
-      <section class="ht-order-detail-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">♙</span><strong>Klantgegevens</strong></div><div class="ht-order-customer-grid"><div><span>Naam</span><strong>${esc(order.name||"-")}</strong></div><div><span>E-mail</span><strong>${esc(order.email||"-")}</strong></div><div><span>Telefoon</span><strong>${esc(order.phone||"-")}</strong></div><div><span>Adres</span><strong>${esc(address.trim().replace(/^,\s*/,"")||"-")}</strong></div></div><div class="ht-order-contact-actions">${order.phone?`<a class="btn btn-light" href="tel:${esc(String(order.phone).replace(/[^+\d]/g,''))}">☎ Bellen</a>`:''}${order.email?`<a class="btn btn-light" href="mailto:${esc(order.email)}">✉ E-mail</a>`:''}${address.trim()?`<a class="btn btn-light" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address.trim())}">⌖ Kaart openen</a>`:''}</div></section>
-      <section class="ht-order-detail-section"><div class="ht-order-section-heading"><span class="ht-order-section-icon">▤</span><strong>Verzending en betaling</strong></div>
-        <div class="ht-order-status-grid">
-          <label>Verzendbedrijf<select id="webshopShippingCarrier"><option value="">Nog niet gekozen</option><option value="PostNL" ${order.shipping_method==="PostNL"?"selected":""}>PostNL</option><option value="DHL" ${order.shipping_method==="DHL"?"selected":""}>DHL</option></select></label>
-          <label>Betaalstatus<select id="webshopPaymentStatus"><option value="Unpaid" ${/^(unpaid|open)$/i.test(payment)?"selected":""}>Niet betaald</option><option value="Processing" ${/^processing$/i.test(payment)?"selected":""}>In behandeling</option><option value="Paid" ${/^(paid|betaald|completed)$/i.test(payment)?"selected":""}>Betaald</option><option value="Failed" ${/^(failed|mislukt)$/i.test(payment)?"selected":""}>Mislukt</option></select></label>
-        </div>
-        <div class="ht-order-customer-grid" style="margin-top:12px">
-          <label>Trackingnummer<input id="webshopTrackingNumber" type="text" maxlength="160" value="${esc(order.tracking_number||"")}" placeholder="Trackingnummer van de vervoerder"></label>
-          <label>Tracking-URL<input id="webshopTrackingUrl" type="url" maxlength="1000" value="${esc(order.tracking_url||"")}" placeholder="https://..."></label>
-        </div>
-        <div class="ht-order-customer-grid" style="margin-top:12px">
-          <div><span>Betaalmethode</span><strong>${esc(order.payment_method||"Niet geregistreerd")}</strong></div>
-          <div><span>Betaalreferentie</span><strong>${esc(order.mollie_payment_id||order.paypal_order_id||"Niet beschikbaar")}</strong></div>
-          <div><span>Vervoerder</span><strong>${esc(order.shipping_method||"Nog niet gekozen")}</strong></div>
-          <div><span>Tracking</span><strong>${order.tracking_number?esc(order.tracking_number):"Nog niet beschikbaar"}${order.tracking_url?` · <a href="${esc(order.tracking_url)}" target="_blank" rel="noopener noreferrer">Volg zending</a>`:""}</strong></div>
-        </div>
-        <div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn btn-primary" type="button" onclick="saveWebshopOrderShipping(${Number(order.id)})">Verzend- en betaalgegevens opslaan</button></div>
-        <p class="ht-order-note">De vervoerder en trackinggegevens worden alleen opgeslagen; een echt verzendlabel wordt pas beschikbaar nadat de API-koppeling met de vervoerder is geïmplementeerd en getest.</p>
-      </section>
-      <div class="ht-order-detail-footer"><button class="btn btn-light" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button><button class="btn btn-light" type="button" onclick="printWebshopShippingLabel(Number(order.id))">Verzendlabel afdrukken</button><button class="btn btn-dark" type="button" onclick="window.print()">Bestelling afdrukken</button></div>
+    modal.className="ht-order-detail-overlay"+(isPhoneOnlyOrder?" phone-order-detail-overlay":" sod-overlay");
+    modal.innerHTML=isPhoneOnlyOrder?phoneDetailMarkup:`<div class="sod-panel" role="dialog" aria-modal="true" aria-label="Bestelling #${Number(order.id)}">
+      <header class="sod-head">
+        <div class="sod-head-copy"><span class="sod-eyebrow">${esc(orderCategory)}</span><h2>Bestelling #${Number(order.id)}</h2><p>${esc(date)}</p></div>
+        <button type="button" class="sod-close" aria-label="Sluiten" onclick="closeWebshopOrderDetails()">✕</button>
+        <div class="sod-chips"><span class="sod-chip sod-status">${esc(status)}</span><span class="sod-chip sod-pay ${paymentClass}">${esc(paymentLabel)}</span></div>
+      </header>
+      <div class="sod-kpis">
+        <div><span>Totaal</span><strong>${money(total)}</strong></div>
+        <div><span>Producten</span><strong>${items.reduce((sum,item)=>sum+Math.max(0,Number(item.qty||item.quantity||1)),0)} stuks</strong></div>
+        <div><span>Betaalmethode</span><strong>${esc(order.payment_method||"Niet geregistreerd")}</strong></div>
+      </div>
+      <nav class="sod-tabs" role="tablist">
+        <button type="button" class="is-active" role="tab" id="sod-tab-overview" aria-selected="true" onclick="shopOrderDetailTab('overview')">Overzicht</button>
+        <button type="button" role="tab" id="sod-tab-customer" aria-selected="false" onclick="shopOrderDetailTab('customer')">Klant</button>
+        <button type="button" role="tab" id="sod-tab-shipping" aria-selected="false" onclick="shopOrderDetailTab('shipping')">Verzending</button>
+      </nav>
+      <div class="sod-body">
+        <section class="sod-pane" id="sod-pane-overview">
+          <div class="sod-card">
+            <label class="sod-field sod-status-field">Status bestelling<select class="order-status-select" data-webshop-order-id="${Number(order.id)}" ${hasPermission("webshop_orders.update")?"":"disabled"} onchange="updateWebshopOrderStatus(${Number(order.id)},this.value,this)">${['Nieuw','In behandeling','Verzonden','Voltooid','Geannuleerd'].map(x=>`<option value="${esc(x)}" ${status===x?'selected':''}>${esc(x)}</option>`).join('')}</select></label>
+            <p class="sod-hint">${order.inventory_deducted_at?'Voorraad verwerkt op '+esc(new Date(order.inventory_deducted_at).toLocaleString('nl-NL')):'Voorraad nog niet als verwerkt geregistreerd.'}</p>
+          </div>
+          ${order.inventory_error?'<div class="sod-alert"><strong>⚠ Voorraadcontrole vereist</strong><p>'+esc(order.inventory_error)+'</p></div>':''}
+          <div class="sod-card sod-card-flush">
+            <h3 class="sod-card-title">Bestelde producten</h3>
+            <div class="sod-items">${itemRows}</div>
+            <div class="sod-totals"><div><span>Subtotaal producten</span><strong>${money(subtotal)}</strong></div>${Math.abs(subtotal-total)>0.009?'<div><span>Overige kosten (niet uitgesplitst)</span><strong>'+money(total-subtotal)+'</strong></div>':""}<div class="sod-grand"><span>Totaal</span><strong>${money(total)}</strong></div></div>
+          </div>
+        </section>
+        <section class="sod-pane" id="sod-pane-customer" hidden>
+          <div class="sod-card">
+            <dl class="sod-dl"><div><dt>Naam</dt><dd>${esc(order.name||"-")}</dd></div><div><dt>E-mail</dt><dd>${esc(order.email||"-")}</dd></div><div><dt>Telefoon</dt><dd>${esc(order.phone||"-")}</dd></div><div><dt>Adres</dt><dd>${esc(address.trim().replace(/^,\s*/,"")||"-")}</dd></div></dl>
+            <div class="sod-actions">${order.phone?`<a class="sod-btn" href="tel:${esc(String(order.phone).replace(/[^+\d]/g,''))}">☎ Bellen</a>`:''}${order.email?`<a class="sod-btn" href="mailto:${esc(order.email)}">✉ E-mail</a>`:''}${address.trim()?`<a class="sod-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address.trim())}">⌖ Kaart</a>`:''}</div>
+          </div>
+        </section>
+        <section class="sod-pane" id="sod-pane-shipping" hidden>
+          <div class="sod-card">
+            <div class="sod-form">
+              <label class="sod-field">Verzendbedrijf<select id="webshopShippingCarrier"><option value="">Nog niet gekozen</option><option value="PostNL" ${order.shipping_method==="PostNL"?"selected":""}>PostNL</option><option value="DHL" ${order.shipping_method==="DHL"?"selected":""}>DHL</option></select></label>
+              <label class="sod-field">Betaalstatus<select id="webshopPaymentStatus"><option value="Unpaid" ${/^(unpaid|open)$/i.test(payment)?"selected":""}>Niet betaald</option><option value="Processing" ${/^(processing|pending)$/i.test(payment)?"selected":""}>In behandeling</option><option value="Paid" ${/^(paid|betaald|completed)$/i.test(payment)?"selected":""}>Betaald</option><option value="Failed" ${/^(failed|mislukt)$/i.test(payment)?"selected":""}>Mislukt</option></select></label>
+              <label class="sod-field">Trackingnummer<input id="webshopTrackingNumber" type="text" maxlength="160" value="${esc(order.tracking_number||"")}" placeholder="Nummer van de vervoerder"></label>
+              <label class="sod-field">Tracking-URL<input id="webshopTrackingUrl" type="url" maxlength="1000" value="${esc(order.tracking_url||"")}" placeholder="https://..."></label>
+            </div>
+            <div class="sod-actions sod-actions-end"><button class="sod-btn sod-btn-primary" type="button" ${hasPermission("webshop_orders.update")?"":"disabled"} onclick="saveWebshopOrderShipping(${Number(order.id)})">Opslaan</button></div>
+          </div>
+          <div class="sod-card">
+            <dl class="sod-dl sod-dl-2"><div><dt>Betaalmethode</dt><dd>${esc(order.payment_method||"Niet geregistreerd")}</dd></div><div><dt>Betaalreferentie</dt><dd>${esc(order.mollie_payment_id||order.paypal_order_id||"Niet beschikbaar")}</dd></div><div><dt>Vervoerder</dt><dd>${esc(order.shipping_method||"Nog niet gekozen")}</dd></div><div><dt>Tracking</dt><dd>${order.tracking_number?esc(order.tracking_number):"Nog niet beschikbaar"}${order.tracking_url&&/^https?:\/\//i.test(order.tracking_url)?` · <a href="${esc(order.tracking_url)}" target="_blank" rel="noopener noreferrer">Volg zending</a>`:""}</dd></div></dl>
+            <p class="sod-hint">Vervoerder en tracking worden alleen opgeslagen; het label bevat het afleveradres voor handmatig gebruik.</p>
+          </div>
+        </section>
+      </div>
+      <footer class="sod-foot">
+        ${hasPermission("webshop_orders.delete")?'<button class="sod-btn sod-btn-danger" type="button" onclick="deleteWebshopOrder('+Number(order.id)+')">Verwijderen</button>':""}
+        <button class="sod-btn" type="button" onclick="printWebshopShippingLabel(${Number(order.id)})">Label</button>
+        <button class="sod-btn" type="button" onclick="window.print()">Afdrukken</button>
+        <button class="sod-btn sod-btn-dark" type="button" onclick="closeWebshopOrderDetails()">Sluiten</button>
+      </footer>
     </div>`;
     // Mount the dialog before optional dashboard enhancements run. If a tab or
     // accordion enhancement fails, the customer order details remain accessible.

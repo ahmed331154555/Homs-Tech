@@ -697,3 +697,86 @@ body.ht-modal-open{overflow:hidden}
   #dashboard .ht-shop-main .ht-shop-cust{white-space:nowrap}
 }
 #dashboard #page-webshop-orders .section-head{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important}
+
+/* 30. Webshop-bestelling (detailvenster): koptekst, tabs, kaarten, vaste actiebalk */
+#orderDetailsModal.sod-overlay{position:fixed!important;inset:0!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:16px!important;background:rgba(15,23,42,.55)!important;overflow:hidden!important}
+#orderDetailsModal.sod-overlay .sod-panel{display:flex;flex-direction:column;width:min(760px,100%)!important;max-width:760px!important;max-height:calc(100dvh - 32px)!important;margin:0!important;padding:0!important;border-radius:16px!important;background:#fff!important;color:#12263a;box-shadow:0 24px 60px rgba(15,23,42,.3)!important;overflow:hidden!important}
+#orderDetailsModal .sod-head{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;padding:14px 16px 10px;border-bottom:1px solid #e8eef5}
+#orderDetailsModal .sod-eyebrow{font-size:10px;font-weight:800;letter-spacing:.1em;color:#64748b}
+#orderDetailsModal .sod-head h2{margin:2px 0 0!important;font-size:19px!important;line-height:1.2!important;color:#12263a!important}
+#orderDetailsModal .sod-head p{margin:2px 0 0!important;font-size:12px!important;color:#64748b!important}
+#orderDetailsModal .sod-close{grid-column:2;grid-row:1;align-self:start;width:32px;height:32px;padding:0;border:1px solid #d8e1eb;border-radius:8px;background:#fff;color:#12263a;font-size:14px;cursor:pointer}
+#orderDetailsModal .sod-close:hover{background:#f1f5f9}
+#orderDetailsModal .sod-chips{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}
+#orderDetailsModal .sod-chip{display:inline-flex;align-items:center;padding:2px 10px;border:1px solid #cfe0fb;border-radius:99px;background:#eef4ff;color:#1d4ed8;font-size:11.5px;font-weight:800}
+#orderDetailsModal .sod-pay{border-color:#fde3a7;background:#fff8e6;color:#8a5a00}
+#orderDetailsModal .sod-pay.is-paid{border-color:#bfe3cc;background:#f0faf4;color:#166534}
+#orderDetailsModal .sod-pay.is-failed{border-color:#f5c2c2;background:#fff1f1;color:#b42318}
+#orderDetailsModal .sod-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px 16px 0}
+#orderDetailsModal .sod-kpis div{min-width:0;padding:8px 10px;border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc}
+#orderDetailsModal .sod-kpis span{display:block;font-size:10.5px;font-weight:700;color:#64748b}
+#orderDetailsModal .sod-kpis strong{display:block;font-size:14px;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#orderDetailsModal .sod-tabs{display:flex;gap:4px;margin:10px 16px 0;padding:4px;border-radius:10px;background:#eef2f7}
+#orderDetailsModal .sod-tabs button{flex:1 1 0;min-height:32px;padding:4px 8px;border:0;border-radius:8px;background:transparent;color:#475569;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+#orderDetailsModal .sod-tabs button.is-active{background:#fff;color:#1d4ed8;box-shadow:0 1px 3px rgba(15,23,42,.12)}
+#orderDetailsModal .sod-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:10px 16px 12px;-webkit-overflow-scrolling:touch}
+#orderDetailsModal .sod-pane[hidden]{display:none}
+#orderDetailsModal .sod-card{margin-bottom:10px;padding:12px;border:1px solid #e2e8f0;border-radius:12px;background:#fff}
+#orderDetailsModal .sod-card-flush{padding:0;overflow:hidden}
+#orderDetailsModal .sod-card-title{margin:0;padding:10px 12px;border-bottom:1px solid #eef2f7;font-size:13px;font-weight:800}
+#orderDetailsModal .sod-field{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.03em}
+#orderDetailsModal .sod-field select,#orderDetailsModal .sod-field input{width:100%;min-height:38px;padding:0 10px;border:1px solid #d8e1eb;border-radius:9px;background:#fff;color:#12263a;font:inherit;font-size:13px;font-weight:600;text-transform:none;letter-spacing:0;box-shadow:none}
+#orderDetailsModal .sod-field select:focus,#orderDetailsModal .sod-field input:focus{outline:0;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+#orderDetailsModal .sod-hint{margin:8px 0 0!important;font-size:12px!important;color:#64748b!important;line-height:1.4}
+#orderDetailsModal .sod-alert{margin-bottom:10px;padding:10px 12px;border:1px solid #f5b5b5;border-radius:12px;background:#fff5f5;color:#991b1b;font-size:12.5px}
+#orderDetailsModal .sod-alert p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+#orderDetailsModal .sod-items{display:grid}
+#orderDetailsModal .sod-items .ht-order-product-row{display:grid!important;grid-template-columns:48px minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important;padding:10px 12px!important;border:0!important;border-bottom:1px solid #eef2f7!important;border-radius:0!important;background:#fff!important}
+#orderDetailsModal .sod-items .ht-order-product-row img,#orderDetailsModal .sod-items .ht-order-product-placeholder{width:48px!important;height:48px!important;border-radius:9px!important;object-fit:contain;background:#f4f7fb;display:flex;align-items:center;justify-content:center;font-size:18px;color:#94a3b8}
+#orderDetailsModal .sod-items .ht-order-product-copy strong{display:block;font-size:13px;line-height:1.3}
+#orderDetailsModal .sod-items .ht-order-product-copy small{display:block;font-size:11.5px;color:#64748b;line-height:1.35}
+#orderDetailsModal .sod-items .ht-order-product-price{font-size:13.5px;white-space:nowrap}
+#orderDetailsModal .sod-totals{padding:8px 12px 10px;display:grid;gap:4px}
+#orderDetailsModal .sod-totals div{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:#475569}
+#orderDetailsModal .sod-totals .sod-grand{padding-top:6px;border-top:1px solid #e2e8f0;font-size:15px;font-weight:800;color:#12263a}
+#orderDetailsModal .sod-dl{display:grid;gap:8px;margin:0}
+#orderDetailsModal .sod-dl>div{padding:8px 10px;border-radius:9px;background:#f6f8fb}
+#orderDetailsModal .sod-dl-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+#orderDetailsModal .sod-dl dt{font-size:10.5px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.03em}
+#orderDetailsModal .sod-dl dd{margin:1px 0 0;font-size:13px;font-weight:700;overflow-wrap:anywhere}
+#orderDetailsModal .sod-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#orderDetailsModal .sod-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+#orderDetailsModal .sod-actions-end{justify-content:flex-end}
+#orderDetailsModal .sod-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:34px;padding:0 14px;border:1px solid #d3dce8;border-radius:9px;background:#fff;color:#12263a;font:inherit;font-size:12.5px;font-weight:700;text-decoration:none;white-space:nowrap;cursor:pointer;box-shadow:none}
+#orderDetailsModal .sod-btn:hover{background:#f1f5f9}
+#orderDetailsModal .sod-btn:active{transform:scale(.97)}
+#orderDetailsModal .sod-btn:disabled{opacity:.5;cursor:not-allowed}
+#orderDetailsModal .sod-btn-primary{border-color:#2563eb;background:#2563eb;color:#fff}
+#orderDetailsModal .sod-btn-primary:hover{background:#1d4ed8}
+#orderDetailsModal .sod-btn-dark{border-color:#12263a;background:#12263a;color:#fff}
+#orderDetailsModal .sod-btn-dark:hover{background:#0b1a2a}
+#orderDetailsModal .sod-btn-danger{margin-right:auto;border-color:#f1c0c0;color:#b42318}
+#orderDetailsModal .sod-btn-danger:hover{background:#b42318;border-color:#b42318;color:#fff}
+#orderDetailsModal .sod-foot{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));border-top:1px solid #e8eef5;background:#fafcff}
+@media(max-width:650px){
+  #orderDetailsModal.sod-overlay{padding:0!important;align-items:flex-end!important}
+  #orderDetailsModal.sod-overlay .sod-panel{width:100%!important;max-width:none!important;max-height:100dvh!important;height:100dvh;border-radius:0!important}
+  #orderDetailsModal .sod-form,#orderDetailsModal .sod-dl-2{grid-template-columns:1fr}
+  #orderDetailsModal .sod-kpis{gap:6px;padding:8px 12px 0}
+  #orderDetailsModal .sod-kpis div{padding:7px 8px}
+  #orderDetailsModal .sod-kpis strong{font-size:12.5px}
+  #orderDetailsModal .sod-head,#orderDetailsModal .sod-body{padding-left:12px;padding-right:12px}
+  #orderDetailsModal .sod-tabs{margin:8px 12px 0}
+  #orderDetailsModal .sod-foot{padding:8px 12px calc(8px + env(safe-area-inset-bottom));gap:6px}
+  #orderDetailsModal .sod-foot .sod-btn{flex:1 1 0;min-width:0;padding:0 6px;font-size:12px}
+  #orderDetailsModal .sod-btn-danger{margin-right:0}
+}
+@media print{
+  #orderDetailsModal.sod-overlay{position:static!important;display:block!important;padding:0!important;background:#fff!important;overflow:visible!important}
+  #orderDetailsModal.sod-overlay .sod-panel{max-height:none!important;height:auto!important;box-shadow:none!important;overflow:visible!important}
+  #orderDetailsModal .sod-pane[hidden]{display:block!important}
+  #orderDetailsModal .sod-tabs,#orderDetailsModal .sod-foot,#orderDetailsModal .sod-close,#orderDetailsModal .sod-actions{display:none!important}
+  #orderDetailsModal .sod-body{overflow:visible!important}
+}
+#orderDetailsModal .sod-tabs button{box-shadow:none!important;min-width:0}
+#orderDetailsModal .sod-tabs button.is-active{box-shadow:0 1px 3px rgba(15,23,42,.12)!important}
