@@ -242,7 +242,7 @@
 // Shared footer renderer: one consistent, functional footer across the site.
 (function(){
  var script=document.createElement("script");
- script.src="/assets/homs-site-footer.js?v=20261125-tap";
+ script.src="/assets/homs-site-footer.js?v=20261125-foot2";
  script.defer=true;
  document.head.appendChild(script);
 })();

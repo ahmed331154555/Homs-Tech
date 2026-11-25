@@ -70,21 +70,27 @@
         color:#cbd5e1!important;font-size:13px!important;line-height:1.5!important;
       }
       @media(max-width:900px) {
-        footer.ht-site-footer--unified .ht-footer-grid--unified li a {min-height:36px!important}
         footer.ht-site-footer--unified .ht-footer-grid--unified {
-          grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:28px 24px!important;
+          grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:22px 20px!important;
         }
         footer.ht-site-footer--unified .ht-footer-brand {grid-column:1/-1!important}
       }
       @media(max-width:520px) {
-        footer.ht-site-footer.ht-site-footer--unified {padding:30px 20px 16px!important}
+        footer.ht-site-footer.ht-site-footer--unified {padding:26px 18px 84px!important;margin-top:28px!important}
         footer.ht-site-footer--unified .ht-footer-grid--unified {
-          grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:24px 16px!important;
+          grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:20px 16px!important;
         }
-        footer.ht-site-footer--unified .ht-footer-grid--unified h2 {font-size:15px!important;margin-bottom:12px!important}
+        footer.ht-site-footer--unified .ht-footer-grid--unified h2 {font-size:14px!important;margin:0 0 6px!important;letter-spacing:.01em!important}
+        footer.ht-site-footer--unified .ht-footer-grid--unified ul {gap:0!important}
         footer.ht-site-footer--unified .ht-footer-grid--unified li,
-        footer.ht-site-footer--unified .ht-footer-grid--unified li a {font-size:12px!important}
-        footer.ht-site-footer--unified .ht-footer-bottom {flex-direction:column!important;gap:5px!important;margin-top:24px!important}
+        footer.ht-site-footer--unified .ht-footer-grid--unified li a {font-size:13px!important;line-height:1.35!important}
+        footer.ht-site-footer--unified .ht-footer-grid--unified li a {min-height:34px!important}
+        footer.ht-site-footer--unified .ht-footer-logo {font-size:22px!important;margin:0 0 2px!important}
+        footer.ht-site-footer--unified .ht-footer-brand p {margin:4px 0!important;font-size:13px!important;line-height:1.45!important}
+        footer.ht-site-footer--unified .ht-footer-cta {margin-top:10px!important;padding:10px 14px!important;font-size:14px!important}
+        footer.ht-site-footer--unified .ht-footer-grid--unified nav:last-child {grid-column:1/-1!important;padding-top:14px!important;border-top:1px solid #1e3347!important}
+        footer.ht-site-footer--unified .ht-footer-grid--unified nav:last-child ul {display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;column-gap:16px!important}
+        footer.ht-site-footer--unified .ht-footer-bottom {flex-direction:column!important;gap:3px!important;margin-top:18px!important;padding-top:12px!important;font-size:12px!important}
       }
       @media(max-width:350px) {
         footer.ht-site-footer--unified .ht-footer-grid--unified {grid-template-columns:minmax(0,1fr)!important}
