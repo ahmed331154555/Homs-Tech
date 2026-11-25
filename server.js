@@ -34,6 +34,10 @@ const {
   registerAdminEasyUnlockerRoutes,
   ensureEasyUnlockerSchema,
 } = require("./routes/admin-easy-unlocker");
+const {
+  registerEasyUnlockerPublicRoutes,
+  ensureEasyUnlockerRequestSchema,
+} = require("./routes/easy-unlocker-public");
 const { registerContactRoutes } = require("./routes/contact");
 const { registerAnnouncementBarRoutes } = require("./routes/announcement-bars");
 const { registerBenefitsStripRoutes } = require("./routes/benefits-strip");
@@ -542,6 +546,11 @@ registerAdminEasyUnlockerRoutes(app, {
   requirePermission,
   queryWithConnectionRetry,
   pool,
+});
+
+registerEasyUnlockerPublicRoutes(app, {
+  requirePermission,
+  queryWithConnectionRetry,
 });
 
 // Load only the allowlisted JSONB fields needed by the requested admin editor.
@@ -1970,6 +1979,7 @@ initializeDatabaseWithRetry(async () => {
   await initializeDatabaseSchema(pool);
   await customerReviewRoutes.ensureCustomerReviewSchema(pool);
   await ensureEasyUnlockerSchema(pool);
+  await ensureEasyUnlockerRequestSchema(pool);
   try {
     await getPublicBuybackCatalog();
   } catch (error) {

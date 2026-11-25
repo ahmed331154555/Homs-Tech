@@ -16,3 +16,10 @@
 .eu-pick{display:flex;align-items:center;gap:6px;font-weight:700;font-size:13px;cursor:pointer}
 .eu-pick input{width:20px;height:20px}
 @media(max-width:760px){.eu-row{grid-template-columns:48px minmax(0,1fr);}.eu-price{text-align:left}.eu-price,.eu-margin,.eu-pick{grid-column:2}}
+
+.eu-rate{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.eu-rate input{width:90px;padding:8px 10px;border:1px solid #d6e0ea;border-radius:10px;font:inherit}
+.eu-h3{margin:26px 0 10px;font-size:16px}
+.eu-req{display:flex;gap:12px;justify-content:space-between;align-items:flex-start;padding:12px 14px;border:1px solid #e6edf4;border-radius:12px;margin-bottom:8px;background:#fff}
+.eu-req select{padding:8px 10px;border:1px solid #d6e0ea;border-radius:10px;font:inherit}
+@media(max-width:640px){.eu-req{flex-direction:column}}

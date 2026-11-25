@@ -905,6 +905,13 @@
               <button class="btn btn-light" type="button" id="euSync">🔄 Synchroniseren</button>
               <button class="btn btn-light" type="button" id="euTest">🔌 Verbinding testen</button>
             </div>
+            <div class="eu-rate">
+              <label for="euRate">Wisselkoers: 1 USD =</label>
+              <input type="text" id="euRate" inputmode="decimal" placeholder="0,86" aria-label="Wisselkoers USD naar EUR" />
+              <span>EUR</span>
+              <button class="btn btn-light" type="button" id="euRateSave">Opslaan</button>
+              <span class="small">Zonder koers toont de website "Prijs op aanvraag".</span>
+            </div>
             <p class="small" id="euSummary" role="status" aria-live="polite"></p>
             <p class="small" id="euStatus" role="status" aria-live="polite"></p>
             <div class="eu-filters">
@@ -922,6 +929,8 @@
               <span id="euPage" class="small"></span>
               <button class="btn btn-light" type="button" id="euNext">Volgende →</button>
             </div>
+            <h3 class="eu-h3">Aanvragen van klanten</h3>
+            <div id="euRequests"></div>
           </div>
         </section>
 
@@ -2672,8 +2681,8 @@
     </div>
 
     <script src="../assets/homs-admin.js?v=20261125-pay5" defer></script>
-    <script src="../assets/homs-admin-easy-unlocker.js?v=20261125-eu1" defer></script>
-    <link rel="stylesheet" href="../assets/homs-admin-easy-unlocker.css?v=20261125-eu1" />
+    <script src="../assets/homs-admin-easy-unlocker.js?v=20261125-eu2" defer></script>
+    <link rel="stylesheet" href="../assets/homs-admin-easy-unlocker.css?v=20261125-eu2" />
     <script src="../assets/admin-button-states.js?v=20261124-ui2" defer></script>
     <script src="../assets/admin-editor-focus.js?v=20261125-focus3" defer></script>
     <script
