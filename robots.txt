@@ -9,7 +9,6 @@ Disallow: /cart.html
 Disallow: /payment.html
 Disallow: /buyback-response.html
 Disallow: /trade-in-response.html
-Disallow: /design-preview.html
 Allow: /ads.txt
 
 Sitemap: https://homs-tech.nl/sitemap.xml

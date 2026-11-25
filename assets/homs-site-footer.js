@@ -70,6 +70,7 @@
         color:#cbd5e1!important;font-size:13px!important;line-height:1.5!important;
       }
       @media(max-width:900px) {
+        footer.ht-site-footer--unified .ht-footer-grid--unified li a {min-height:36px!important}
         footer.ht-site-footer--unified .ht-footer-grid--unified {
           grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:28px 24px!important;
         }
