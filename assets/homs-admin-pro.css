@@ -436,7 +436,9 @@ body.ht-modal-open{overflow:hidden}
 #dashboard .ht-partner-price-toolbar>span{grid-column:1/-1;font-size:11px;color:#64748b}
 @media(max-width:720px){
   #dashboard .ht-partner-price-toolbar{grid-template-columns:minmax(0,1fr) 96px}
-  #dashboard .ht-partner-table-wrap{overflow:visible!important;border:0!important}
+  #dashboard .ht-partner-table-wrap{overflow-y:auto!important;overflow-x:hidden!important;max-height:68vh!important;height:auto!important;border:0!important;-webkit-overflow-scrolling:touch}
+  #dashboard .ht-partner-price-toolbar .ht-partner-discount{min-width:0!important;max-width:none!important}
+  #dashboard .ht-partner-table tr{position:static!important;height:auto!important}
   #dashboard .ht-partner-table,#dashboard .ht-partner-table tbody,#dashboard .ht-partner-table tr,#dashboard .ht-partner-table td{display:block!important;min-width:0!important;width:100%!important;box-sizing:border-box}
   #dashboard .ht-partner-table thead{display:none!important}
   #dashboard .ht-partner-table tr{margin:0 0 8px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;background:#fff}
