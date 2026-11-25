@@ -19,7 +19,22 @@
 
 .eu-rate{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
 .eu-rate input{width:90px;padding:8px 10px;border:1px solid #d6e0ea;border-radius:10px;font:inherit}
-.eu-h3{margin:26px 0 10px;font-size:16px}
-.eu-req{display:flex;gap:12px;justify-content:space-between;align-items:flex-start;padding:12px 14px;border:1px solid #e6edf4;border-radius:12px;margin-bottom:8px;background:#fff}
-.eu-req select{padding:8px 10px;border:1px solid #d6e0ea;border-radius:10px;font:inherit}
-@media(max-width:640px){.eu-req{flex-direction:column}}
+.eu-badge{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;margin-left:6px;border-radius:999px;background:#dc2626;color:#fff;font-size:11.5px;font-weight:800;line-height:1}
+.eu-badge[hidden]{display:none}
+.eu-tabs{display:flex;flex-wrap:wrap;gap:8px}
+.eu-tab{border:1px solid #d6e0ea;background:#fff;border-radius:999px;padding:8px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;color:#334155}
+.eu-tab b{margin-left:4px;padding:1px 7px;border-radius:999px;background:#eef2f7;font-size:12px}
+.eu-tab.is-on{background:#0b2c43;border-color:#0b2c43;color:#fff}.eu-tab.is-on b{background:#ffffff26;color:#fff}
+.eu-reqlist{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
+.eu-req{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border:1px solid #e3e9f2;border-left:4px solid #2563eb;border-radius:14px;background:#fff}
+.eu-req.is-paid{border-left-color:#f59e0b}.eu-req.is-done{border-left-color:#16a34a}.eu-req.is-cancelled{border-left-color:#94a3b8;opacity:.75}
+.eu-req header{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.eu-req header strong{font-size:14px;line-height:1.35;word-break:break-word}
+.eu-req-price{white-space:nowrap;font-weight:800;color:#0b2c43}
+.eu-req-who{font-size:13px;color:#475569;line-height:1.5;word-break:break-word}.eu-req-who small{display:block;color:#94a3b8;font-size:11.5px}
+.eu-req-fields{display:grid;gap:4px;padding:10px 12px;border-radius:10px;background:#f6f9fc;font-size:13px}
+.eu-req-fields div{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap}.eu-req-fields span{color:#64748b}.eu-req-fields b{word-break:break-all;user-select:all}
+.eu-req footer{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.eu-req footer select{flex:1 1 130px;min-width:0;width:auto!important;min-height:38px;padding:0 10px;border:1px solid #cfd8e3;border-radius:10px;font:inherit}
+.eu-req footer .btn{min-height:38px;padding:0 12px;text-decoration:none;display:inline-flex;align-items:center}
+@media(max-width:640px){.eu-reqlist{grid-template-columns:1fr}}

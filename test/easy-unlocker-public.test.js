@@ -102,3 +102,23 @@ test("request status update rejects invalid values", async () => {
   assert.equal((await run(patch, { params: { id: "1" }, body: { status: "hack" } })).status, 400);
   assert.equal((await run(patch, { params: { id: "1" }, body: { status: "paid" } })).status, 200);
 });
+
+test("admin request list is paged, filtered and summarised", async () => {
+  const row = { id: 5, service_name: "S", price_eur: "9.5", customer_name: "A", email: "a@b.nl", phone: "", fields: {}, status: "new", created_at: new Date() };
+  const { routes, calls } = setup((sql) => {
+    if (sql.includes("GROUP BY")) return { rows: [{ status: "new", n: 3 }, { status: "done", n: 1 }] };
+    if (sql.includes("COUNT(*)")) return { rows: [{ n: 51 }] };
+    return { rows: [row] };
+  });
+  const summary = await run(routes["get /api/admin/easy-unlocker/requests/summary"], {});
+  assert.deepEqual(summary.body.counts, { new: 3, paid: 0, done: 1, cancelled: 0 });
+  const list = await run(routes["get /api/admin/easy-unlocker/requests"], { query: { status: "new", page: "2" } });
+  assert.equal(list.body.total, 51);
+  assert.equal(list.body.requests[0].priceEur, 9.5);
+  const q = calls[calls.length - 1];
+  assert.match(q.sql, /OFFSET 25/);
+  assert.deepEqual(q.params, ["new"]);
+  const bad = await run(routes["get /api/admin/easy-unlocker/requests"], { query: { status: "x'; drop" } });
+  assert.equal(bad.status, 200);
+  assert.deepEqual(calls[calls.length - 1].params, []);
+});

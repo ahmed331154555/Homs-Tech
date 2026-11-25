@@ -8,6 +8,7 @@ const { createBoundedRateLimiter } = require("../utils/bounded-rate-limit");
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const STATUSES = ["new", "paid", "done", "cancelled"];
+const REQUESTS_PAGE_SIZE = 25;
 
 async function ensureEasyUnlockerRequestSchema(pool) {
   await pool.query(`
@@ -195,14 +196,46 @@ function registerEasyUnlockerPublicRoutes(
     }
   });
 
-  app.get("/api/admin/easy-unlocker/requests", permission, async (_req, res) => {
+  app.get("/api/admin/easy-unlocker/requests/summary", permission, async (_req, res) => {
     try {
       const result = await queryWithConnectionRetry(
-        "SELECT * FROM eu_requests ORDER BY created_at DESC LIMIT 200",
+        "SELECT status, COUNT(*)::int AS n FROM eu_requests GROUP BY status",
         [],
         3,
       );
+      const counts = { new: 0, paid: 0, done: 0, cancelled: 0 };
+      for (const row of result.rows) {
+        if (row.status in counts) counts[row.status] = row.n;
+      }
+      return res.json({ counts });
+    } catch (error) {
+      console.error("[EASY UNLOCKER] summary failed:", error);
+      return res.status(500).json({ error: "Aanvragen laden mislukt." });
+    }
+  });
+
+  app.get("/api/admin/easy-unlocker/requests", permission, async (req, res) => {
+    try {
+      const status = STATUSES.includes(String(req.query.status)) ? String(req.query.status) : "";
+      const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+      const params = status ? [status] : [];
+      const where = status ? "WHERE status = $1" : "";
+      const total = await queryWithConnectionRetry(
+        `SELECT COUNT(*)::int AS n FROM eu_requests ${where}`,
+        params,
+        3,
+      );
+      const result = await queryWithConnectionRetry(
+        `SELECT * FROM eu_requests ${where}
+          ORDER BY created_at DESC
+          LIMIT ${REQUESTS_PAGE_SIZE} OFFSET ${(page - 1) * REQUESTS_PAGE_SIZE}`,
+        params,
+        3,
+      );
       return res.json({
+        page,
+        pageSize: REQUESTS_PAGE_SIZE,
+        total: total.rows[0].n,
         requests: result.rows.map((r) => ({
           id: String(r.id),
           serviceName: r.service_name,

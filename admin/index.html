@@ -138,6 +138,15 @@
         <button
           type="button"
           class="nav-btn"
+          data-page="eu-requests"
+          data-permission="site.save"
+          onclick="showPage('eu-requests')"
+        >
+          📨 Aanvragen <span class="eu-badge" id="euReqBadge" hidden></span>
+        </button>
+        <button
+          type="button"
+          class="nav-btn"
           data-page="easy-unlocker"
           data-permission="site.save"
           onclick="showPage('easy-unlocker')"
@@ -929,8 +938,32 @@
               <span id="euPage" class="small"></span>
               <button class="btn btn-light" type="button" id="euNext">Volgende →</button>
             </div>
-            <h3 class="eu-h3">Aanvragen van klanten</h3>
-            <div id="euRequests"></div>
+          </div>
+        </section>
+
+        <section
+          class="section admin-page"
+          id="page-eu-requests"
+          data-permission="site.save"
+        >
+          <div class="section-head">
+            <div>
+              <h2>📨 Aanvragen van klanten</h2>
+              <p>
+                Aanvragen via de pagina Digitale diensten. Neem contact op met
+                de klant, ontvang de betaling en voer de dienst zelf uit.
+              </p>
+            </div>
+          </div>
+          <div class="eu-wrap">
+            <div class="eu-tabs" id="euReqTabs" role="tablist"></div>
+            <p class="small" id="euReqStatus" role="status" aria-live="polite"></p>
+            <div id="euReqList" class="eu-reqlist"></div>
+            <div class="eu-pager">
+              <button class="btn btn-light" type="button" id="euReqPrev">← Vorige</button>
+              <span id="euReqPage" class="small"></span>
+              <button class="btn btn-light" type="button" id="euReqNext">Volgende →</button>
+            </div>
           </div>
         </section>
 
@@ -2681,8 +2714,8 @@
     </div>
 
     <script src="../assets/homs-admin.js?v=20261125-pay5" defer></script>
-    <script src="../assets/homs-admin-easy-unlocker.js?v=20261125-eu2" defer></script>
-    <link rel="stylesheet" href="../assets/homs-admin-easy-unlocker.css?v=20261125-eu2" />
+    <script src="../assets/homs-admin-easy-unlocker.js?v=20261125-eu3" defer></script>
+    <link rel="stylesheet" href="../assets/homs-admin-easy-unlocker.css?v=20261125-eu3" />
     <script src="../assets/admin-button-states.js?v=20261124-ui2" defer></script>
     <script src="../assets/admin-editor-focus.js?v=20261125-focus3" defer></script>
     <script

@@ -142,30 +142,10 @@
     });
   }
 
-  var STATUS_LABELS = { new: "Nieuw", paid: "Betaald", done: "Uitgevoerd", cancelled: "Geannuleerd" };
-
   function loadRate() {
     return api("/api/admin/easy-unlocker/rate").then(function (d) {
       $("euRate").value = d.rate ? String(d.rate).replace(".", ",") : "";
     }).catch(function () {});
-  }
-
-  function loadRequests() {
-    return api("/api/admin/easy-unlocker/requests").then(function (d) {
-      var box = $("euRequests");
-      if (!d.requests.length) { box.innerHTML = '<p class="small">Nog geen aanvragen.</p>'; return; }
-      box.innerHTML = d.requests.map(function (r) {
-        var fields = Object.keys(r.fields).map(function (k) { return esc(k) + ": <b>" + esc(r.fields[k]) + "</b>"; }).join("<br>");
-        var opts = Object.keys(STATUS_LABELS).map(function (k) {
-          return '<option value="' + k + '"' + (k === r.status ? " selected" : "") + ">" + STATUS_LABELS[k] + "</option>";
-        }).join("");
-        return '<div class="eu-req" data-id="' + esc(r.id) + '"><div><strong>' + esc(r.serviceName) + "</strong>" +
-          (r.priceEur == null ? "" : " · € " + r.priceEur.toFixed(2).replace(".", ",")) +
-          '<div class="small">' + esc(r.name) + " · " + esc(r.email) + (r.phone ? " · " + esc(r.phone) : "") +
-          " · " + new Date(r.createdAt).toLocaleString("nl-NL") + "</div>" +
-          (fields ? '<div class="small">' + fields + "</div>" : "") + '</div><select data-act="status" aria-label="Status">' + opts + "</select></div>";
-      }).join("");
-    }).catch(function (e) { status(e.message, true); });
   }
 
   function bindExtras() {
@@ -174,19 +154,123 @@
         .then(function (d) { $("euRate").value = String(d.rate).replace(".", ","); status("Koers opgeslagen."); })
         .catch(function (e) { status(e.message, true); });
     });
-    $("euRequests").addEventListener("change", function (e) {
-      var row = e.target.closest(".eu-req");
-      if (!row || e.target.dataset.act !== "status") return;
-      api("/api/admin/easy-unlocker/requests/" + encodeURIComponent(row.dataset.id), { method: "PATCH", body: JSON.stringify({ status: e.target.value }) })
-        .then(function () { status("Opgeslagen."); })
-        .catch(function (err) { status(err.message, true); loadRequests(); });
+  }
+
+  /* ---------- Aanvragen (klantaanvragen) ---------- */
+  var STATUS_LABELS = { new: "Nieuw", paid: "Betaald", done: "Uitgevoerd", cancelled: "Geannuleerd" };
+  var reqState = { status: "new", page: 1, pages: 1, bound: false, counts: {} };
+
+  function waLink(phone) {
+    var digits = String(phone || "").replace(/[^0-9]/g, "");
+    if (!digits) return "";
+    if (digits.indexOf("00") === 0) digits = digits.slice(2);
+    else if (digits.charAt(0) === "0") digits = "31" + digits.slice(1);
+    return "https://wa.me/" + digits;
+  }
+
+  function reqStatus(text, isError) {
+    var el = $("euReqStatus");
+    if (!el) return;
+    el.textContent = text || "";
+    el.style.color = isError ? "#b42318" : "";
+  }
+
+  function renderBadge() {
+    var badge = $("euReqBadge");
+    if (!badge) return;
+    var n = Number(reqState.counts.new || 0);
+    badge.hidden = n < 1;
+    badge.textContent = n > 99 ? "99+" : String(n);
+  }
+
+  function loadCounts() {
+    return api("/api/admin/easy-unlocker/requests/summary").then(function (d) {
+      reqState.counts = d.counts || {};
+      renderBadge();
+      var tabs = $("euReqTabs");
+      if (tabs) {
+        var total = 0;
+        Object.keys(reqState.counts).forEach(function (k) { total += reqState.counts[k]; });
+        tabs.innerHTML = ["new", "paid", "done", "cancelled", ""].map(function (k) {
+          var n = k ? reqState.counts[k] || 0 : total;
+          return '<button type="button" role="tab" class="eu-tab' + (k === reqState.status ? " is-on" : "") +
+            '" data-status="' + k + '">' + (k ? STATUS_LABELS[k] : "Alle") + ' <b>' + n + "</b></button>";
+        }).join("");
+      }
+    }).catch(function () {});
+  }
+
+  function reqCard(r) {
+    var fields = Object.keys(r.fields).map(function (k) {
+      return "<div><span>" + esc(k) + "</span><b>" + esc(r.fields[k]) + "</b></div>";
+    }).join("");
+    var wa = waLink(r.phone);
+    var opts = Object.keys(STATUS_LABELS).map(function (k) {
+      return '<option value="' + k + '"' + (k === r.status ? " selected" : "") + ">" + STATUS_LABELS[k] + "</option>";
+    }).join("");
+    return '<article class="eu-req is-' + esc(r.status) + '" data-id="' + esc(r.id) + '">' +
+      '<header><strong>' + esc(r.serviceName) + "</strong>" +
+      '<span class="eu-req-price">' + (r.priceEur == null ? "Prijs op aanvraag" : "€ " + r.priceEur.toFixed(2).replace(".", ",")) + "</span></header>" +
+      '<div class="eu-req-who">' + esc(r.name) + " · " + esc(r.email) + (r.phone ? " · " + esc(r.phone) : "") +
+      '<small>' + new Date(r.createdAt).toLocaleString("nl-NL") + "</small></div>" +
+      (fields ? '<div class="eu-req-fields">' + fields + "</div>" : "") +
+      '<footer><select data-act="status" aria-label="Status">' + opts + "</select>" +
+      (wa ? '<a class="btn btn-light" target="_blank" rel="noopener" href="' + wa + '">WhatsApp</a>' : "") +
+      '<a class="btn btn-light" href="mailto:' + esc(r.email) + '">E-mail</a></footer></article>';
+  }
+
+  function loadRequestList() {
+    var q = "?page=" + reqState.page + (reqState.status ? "&status=" + reqState.status : "");
+    return api("/api/admin/easy-unlocker/requests" + q).then(function (d) {
+      reqState.pages = Math.max(1, Math.ceil(d.total / d.pageSize));
+      $("euReqList").innerHTML = d.requests.length ? d.requests.map(reqCard).join("") : '<p class="small">Geen aanvragen.</p>';
+      $("euReqPage").textContent = "Pagina " + d.page + " van " + reqState.pages + " · " + d.total + " aanvragen";
+      $("euReqPrev").disabled = d.page <= 1;
+      $("euReqNext").disabled = d.page >= reqState.pages;
+      reqStatus("");
+    }).catch(function (e) { reqStatus(e.message, true); });
+  }
+
+  function bindRequests() {
+    $("euReqTabs").addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-status]");
+      if (!b) return;
+      reqState.status = b.dataset.status;
+      reqState.page = 1;
+      loadCounts();
+      loadRequestList();
+    });
+    $("euReqPrev").addEventListener("click", function () { if (reqState.page > 1) { reqState.page--; loadRequestList(); } });
+    $("euReqNext").addEventListener("click", function () { if (reqState.page < reqState.pages) { reqState.page++; loadRequestList(); } });
+    $("euReqList").addEventListener("change", function (e) {
+      var card = e.target.closest(".eu-req");
+      if (!card || e.target.dataset.act !== "status") return;
+      api("/api/admin/easy-unlocker/requests/" + encodeURIComponent(card.dataset.id), { method: "PATCH", body: JSON.stringify({ status: e.target.value }) })
+        .then(function () { reqStatus("Opgeslagen."); return loadCounts(); })
+        .then(loadRequestList)
+        .catch(function (err) { reqStatus(err.message, true); loadRequestList(); });
     });
   }
+
+  window.euRequestsLoad = function () {
+    if (!reqState.bound && $("euReqList")) { bindRequests(); reqState.bound = true; }
+    loadCounts();
+    return loadRequestList();
+  };
+
+  // Keep the "new requests" badge fresh while the admin is open.
+  function pollBadge() {
+    if (document.hidden || !$("euReqBadge") || !document.querySelector(".nav-btn[data-page='eu-requests']")) return;
+    var btn = document.querySelector(".nav-btn[data-page='eu-requests']");
+    if (btn.style.display === "none") return;
+    loadCounts();
+  }
+  setTimeout(pollBadge, 4000);
+  setInterval(pollBadge, 60000);
 
   window.euLoad = function () {
     if (!state.loaded && $("euList")) { bind(); bindExtras(); state.loaded = true; }
     loadRate();
-    loadRequests();
     return load();
   };
 })();
