@@ -397,3 +397,17 @@ body,#dashboard{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:14px;lin
   #dashboard .ht-inventory-table .ht-inventory-row-action{width:100%;min-height:38px;white-space:nowrap!important;word-break:normal!important}
   #dashboard .ht-inventory-table-wrap,#dashboard #inventoryList{overflow:visible!important;border:0!important;background:transparent!important}
 }
+
+/* ===== 21. Editors: header with the close button stays reachable ===== */
+#phonesList>.card[style*="max-width:1150px"]>div:first-child,
+#shopProductsAdmin .shop-edit-head{position:sticky;top:0;z-index:30;background:#fff;padding:10px 0;margin-top:-10px;border-bottom:1px solid #eef2f6}
+@media (max-width:760px){
+  #phonesList>.card[style*="max-width:1150px"]>div:first-child,
+  #shopProductsAdmin .shop-edit-head{top:66px}
+}
+@media (max-width:760px){
+  #phonesList>.card[style*="max-width:1150px"]>div:first-child{align-items:center!important;flex-wrap:nowrap!important;padding:6px 0}
+  #phonesList>.card[style*="max-width:1150px"]>div:first-child .small,#phonesList>.card[style*="max-width:1150px"]>div:first-child p{display:none}
+  #phonesList>.card[style*="max-width:1150px"]>div:first-child h2{margin:0!important;font-size:15px!important;line-height:1.3!important}
+  #phonesList>.card[style*="max-width:1150px"]>div:first-child .btn{min-height:34px;padding:4px 10px!important;font-size:12px!important;white-space:nowrap;flex:0 0 auto}
+}

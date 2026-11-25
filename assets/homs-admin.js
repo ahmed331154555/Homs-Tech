@@ -4725,7 +4725,7 @@ function addShopProduct(preset){
  data.shopProducts.unshift({id:"shop-"+Date.now()+"-"+Math.random().toString(36).slice(2,8),name:"",description:"",category,brand:"",deviceModel:"",price:"",stock:"0 stuks",images:["","","",""],videoEnabled:false,videoUrl:"",active:true,variants:[{id:"var-"+Date.now()+"-"+Math.random().toString(36).slice(2,8),quality:"Standaard",sku:nextShopSku(category),price:"",stock:"0",active:true}]});
  shopAdminView="edit";shopAdminIndex=0;shopAdminQuery="";shopAdminCategory="";shopAdminStatus="";
  renderShopProductsAdmin();markChanged();
- const box=document.getElementById("shopProductsAdmin");if(box&&box.scrollIntoView)box.scrollIntoView({block:"start"});
+
 }
 function deleteShopProduct(index){const name=String(data.shopProducts[index]?.name||"").trim()||"dit product";if(!confirm("«"+name+"» verwijderen uit de Shop?"))return;data.shopProducts.splice(index,1);shopAdminView="list";shopAdminIndex=-1;renderShopProductsAdmin();markChanged();}
 function updateShopProduct(index,key,value){ensureShopProducts();if(!data.shopProducts[index])return;data.shopProducts[index][key]=value;if(key==="category")data.shopProducts[index].variants.forEach(v=>{if(!v.sku||v.sku==="")v.sku=nextShopSku(value)});markChanged();}
@@ -4831,7 +4831,7 @@ function shopAdminResetFilters(){shopAdminQuery="";shopAdminCategory="";shopAdmi
 function shopAdminOpen(index){
  ensureShopProducts();if(!data.shopProducts[index])return;
  shopAdminView="edit";shopAdminIndex=index;renderShopProductsAdmin();
- const box=document.getElementById("shopProductsAdmin");if(box&&box.scrollIntoView)box.scrollIntoView({block:"start"});
+
 }
 function shopAdminBack(){shopAdminView="list";shopAdminIndex=-1;renderShopProductsAdmin();}
 function shopAdminListHtml(){
@@ -4860,7 +4860,7 @@ function shopAdminEditHtml(i){
   '<td class="shop-center"><button type="button" class="btn btn-light shop-x" '+(p.variants.length<2?'disabled':'')+' onclick="deleteShopVariant('+i+','+j+')" aria-label="Optie '+(j+1)+' verwijderen" title="Optie verwijderen">✕</button></td></tr>').join("");
  const photos=p.images.map((src,j)=>'<div class="shop-photo'+(src?' has-img':'')+'"><div class="shop-photo-box">'+(src?'<img src="'+esc(src)+'" alt="Productfoto '+(j+1)+'">':'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4M9 9h.01"/></svg>')+'<span class="shop-photo-tag">'+(j===0?'Hoofdfoto':'Foto '+(j+1))+'</span></div><div class="shop-photo-actions"><label class="btn btn-light shop-upload">'+(src?'Vervangen':'Uploaden')+'<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden aria-label="Foto '+(j+1)+' uploaden" onchange="shopProductImageUpload(event,'+i+','+j+')"></label>'+(src?'<button type="button" class="btn btn-light" onclick="data.shopProducts['+i+'].images['+j+']=\'\';renderShopProductsAdmin();markChanged()">Wissen</button>':'')+'</div></div>').join("");
  const stats=shopProductStats(p);
- return '<div class="shop-edit">'+
+ return '<div class="shop-edit" data-key="'+esc(p.id||i)+'">'+
   '<div class="shop-edit-head"><button type="button" class="btn btn-light" onclick="shopAdminBack()">← Alle producten</button><div class="shop-edit-title"><h3>'+(esc(p.name)||'Nieuw product')+'</h3><span>'+esc(shopCategoryLabel(p.category))+' · '+shopStockBadge(stats.stock,p.active)+'</span></div>'+
   '<div class="shop-edit-tools"><label class="shop-switch"><input type="checkbox" '+(p.active===false?'':'checked')+' onchange="updateShopProduct('+i+',\'active\',this.checked);renderShopProductsAdmin()"><span class="shop-switch-ui"></span><em>'+(p.active===false?'Verborgen':'Zichtbaar in Shop')+'</em></label><button type="button" class="btn btn-red" onclick="deleteShopProduct('+i+')">Verwijderen</button></div></div>'+
   '<section class="shop-card"><header><h4>1 · Basisgegevens</h4><p>Wat klanten in de Shop zien.</p></header><div class="shop-grid">'+
