@@ -23,7 +23,7 @@
     />
     <link
       rel="stylesheet"
-      href="../assets/homs-admin-pro.css?v=20261125-pro18"
+      href="../assets/homs-admin-pro.css?v=20261125-pro19"
     />
     <link rel="stylesheet" href="../assets/homs-admin-shop.css?v=20261124-shop4" />
   </head>
@@ -1395,31 +1395,14 @@
               ↻ Vernieuwen
             </button>
           </div>
-          <div class="ht-invoice-intro">
-            <span class="ht-invoice-intro-icon" aria-hidden="true">✓</span>
-            <div>
-              <strong>Factuurbeheer</strong>
-              <p>
-                Controleer klantgegevens en factuurregels zorgvuldig. Het
-                definitieve factuurnummer wordt automatisch toegewezen na het
-                opslaan.
-              </p>
-            </div>
-          </div>
-          <div class="card ht-invoice-editor" style="margin-bottom:14px">
-            <div class="ht-invoice-card-head">
-              <div>
-                <span class="ht-invoice-eyebrow">EENMALIG INSTELLEN</span>
-                <h3>Gegevens van HOMS TECH</h3>
-                <p>
-                  Vul deze gegevens later aan zodra de bedrijfsregistratie rond
-                  is. Ze worden automatisch op nieuwe facturen geplaatst.
-                  Gebruik voorlopig alleen concepten totdat de officiële
-                  bedrijfsgegevens bekend zijn.
-                </p>
-              </div>
-              <span class="ht-invoice-draft-tag">Bedrijfsprofiel</span>
-            </div>
+          <details class="card ht-invoice-seller" id="invSellerDetails">
+            <summary>
+              <span class="ht-invoice-seller-title">
+                <strong>Gegevens van HOMS TECH</strong>
+                <small id="invSellerSummary">Bedrijfsprofiel voor op de factuur</small>
+              </span>
+              <span class="ht-invoice-seller-edit">Bewerken ▾</span>
+            </summary>
             <div class="ht-invoice-form-grid">
               <div class="field">
                 <label for="invSellerLegalName">Juridische bedrijfsnaam</label
@@ -1525,170 +1508,112 @@
                 aria-live="polite"
               ></span>
             </div>
-          </div>
-          <div class="card ht-invoice-editor">
+          </details>
+          <div class="card ht-invoice-editor ht-invoice-new">
             <div class="ht-invoice-card-head">
               <div>
-                <span class="ht-invoice-eyebrow">NIEUW DOCUMENT</span>
                 <h3>Nieuwe factuur</h3>
-                <p>
-                  Vul de klantgegevens en de geleverde producten of diensten in.
-                </p>
+                <p>Kies het type klant en vul de gegevens in.</p>
               </div>
-              <span class="ht-invoice-draft-tag">Concept</span>
             </div>
+            <div class="ht-invoice-seg" role="group" aria-label="Type klant">
+              <button type="button" class="is-active" data-type="individual" aria-pressed="true" onclick="invoiceSetCustomerType('individual')">Particulier</button>
+              <button type="button" data-type="business" aria-pressed="false" onclick="invoiceSetCustomerType('business')">Zakelijk / bedrijf</button>
+            </div>
+            <select id="invCustomerType" hidden onchange="invoiceToggleCustomerType()">
+              <option value="individual">Particulier</option>
+              <option value="business">Zakelijk / bedrijf</option>
+            </select>
             <div class="ht-invoice-form-grid">
-              <div class="field">
-                <label for="invCustomerType">Type klant *</label
-                ><select
-                  id="invCustomerType"
-                  class="form-control"
-                  onchange="invoiceToggleCustomerType()"
-                >
-                  <option value="individual">Particulier</option>
-                  <option value="business">Zakelijk / bedrijf</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="invCustomerEmail">E-mailadres klant</label
-                ><input
-                  id="invCustomerEmail"
-                  type="email"
-                  maxlength="254"
-                  autocomplete="email"
-                  placeholder="klant@voorbeeld.nl"
-                />
-              </div>
-              <div class="field">
-                <label for="invCustomerPhone">Telefoon klant</label
-                ><input
-                  id="invCustomerPhone"
-                  type="tel"
-                  maxlength="40"
-                  autocomplete="tel"
-                  placeholder="+31…"
-                />
-              </div>
               <div class="field" id="invCustomerNameWrap">
-                <label for="invCustomerName">Volledige naam klant *</label
-                ><input
-                  id="invCustomerName"
-                  maxlength="160"
-                  autocomplete="name"
-                  placeholder="Voor- en achternaam"
-                />
+                <label for="invCustomerName">Naam klant</label>
+                <input id="invCustomerName" maxlength="180" autocomplete="name" placeholder="Naam (optioneel bij e-mail of telefoon)" />
               </div>
               <div class="field" id="invCustomerCompanyWrap" hidden>
-                <label for="invCustomerCompany">Bedrijfsnaam *</label
-                ><input
-                  id="invCustomerCompany"
-                  maxlength="180"
-                  placeholder="Naam van het bedrijf"
-                />
+                <label for="invCustomerCompany">Bedrijfsnaam *</label>
+                <input id="invCustomerCompany" maxlength="180" autocomplete="organization" placeholder="Bedrijfsnaam" />
               </div>
               <div class="field" id="invCustomerContactWrap" hidden>
-                <label for="invCustomerContact">Contactpersoon</label
-                ><input
-                  id="invCustomerContact"
-                  maxlength="160"
-                  placeholder="Naam contactpersoon"
-                />
-              </div>
-              <div class="field ht-invoice-field-wide">
-                <label for="invCustomerAddress">Straat en huisnummer</label
-                ><input
-                  id="invCustomerAddress"
-                  maxlength="300"
-                  autocomplete="street-address"
-                  placeholder="Straat en huisnummer"
-                />
+                <label for="invCustomerContact">Contactpersoon</label>
+                <input id="invCustomerContact" maxlength="180" placeholder="Naam contactpersoon" />
               </div>
               <div class="field">
-                <label for="invCustomerPostal">Postcode</label
-                ><input
-                  id="invCustomerPostal"
-                  maxlength="20"
-                  autocomplete="postal-code"
-                  placeholder="Postcode"
-                />
+                <label for="invCustomerEmail">E-mailadres</label>
+                <input id="invCustomerEmail" type="email" maxlength="254" autocomplete="email" placeholder="klant@voorbeeld.nl" />
               </div>
               <div class="field">
-                <label for="invCustomerCity">Plaats</label
-                ><input
-                  id="invCustomerCity"
-                  maxlength="100"
-                  autocomplete="address-level2"
-                  placeholder="Plaats"
-                />
-              </div>
-              <div class="field">
-                <label for="invCustomerCountry">Land</label
-                ><input
-                  id="invCustomerCountry"
-                  maxlength="80"
-                  value="Nederland"
-                  autocomplete="country-name"
-                />
+                <label for="invCustomerPhone">Telefoon</label>
+                <input id="invCustomerPhone" type="tel" maxlength="40" autocomplete="tel" placeholder="+31…" />
               </div>
               <div class="field" id="invCustomerKvkWrap" hidden>
-                <label for="invCustomerKvk">KVK-nummer klant</label
-                ><input
-                  id="invCustomerKvk"
-                  maxlength="30"
-                  placeholder="KVK-nummer bedrijf"
-                />
+                <label for="invCustomerKvk">KVK-nummer</label>
+                <input id="invCustomerKvk" maxlength="30" placeholder="KVK-nummer bedrijf" />
               </div>
               <div class="field" id="invCustomerVatWrap" hidden>
-                <label for="invCustomerVat">BTW-ID klant</label
-                ><input
-                  id="invCustomerVat"
-                  maxlength="40"
-                  placeholder="BTW-identificatienummer klant"
-                />
-              </div>
-              <div class="field">
-                <label for="invPaymentMethod">Betaalmethode</label
-                ><select id="invPaymentMethod" class="form-control">
-                  <option value="bank">Bankoverschrijving</option>
-                  <option value="pin">Pin</option>
-                  <option value="cash">Contant</option>
-                  <option value="online">Online betaling</option>
-                  <option value="other">Anders</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="invPaymentStatus">Betaalstatus</label
-                ><select id="invPaymentStatus" class="form-control">
-                  <option value="unpaid">Niet betaald</option>
-                  <option value="paid">Betaald</option>
-                  <option value="partial">Gedeeltelijk betaald</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="invDueDate">Vervaldatum</label
-                ><input id="invDueDate" type="date" />
-              </div>
-              <div class="field">
-                <label for="invDeliveryDate">Leverdatum / reparatiedatum</label
-                ><input id="invDeliveryDate" type="date" />
-              </div>
-              <div class="field ht-invoice-field-wide">
-                <label for="invReference">Referentie / ordernummer</label
-                ><input
-                  id="invReference"
-                  maxlength="120"
-                  placeholder="Bijv. reparatieorder of webshopbestelling"
-                />
-              </div>
-              <div class="field ht-invoice-field-wide">
-                <label for="invNotes">Opmerkingen</label
-                ><input
-                  id="invNotes"
-                  maxlength="1200"
-                  placeholder="Aanvullende informatie voor op de factuur"
-                />
+                <label for="invCustomerVat">BTW-ID</label>
+                <input id="invCustomerVat" maxlength="40" placeholder="NL…B01" />
               </div>
             </div>
+            <details class="ht-invoice-more" id="invAddressDetails">
+              <summary>Adresgegevens <small>(optioneel voor particulier)</small></summary>
+              <div class="ht-invoice-form-grid">
+              <div class="field ht-invoice-field-wide">
+                <label for="invCustomerAddress">Straat en huisnummer</label>
+                <input id="invCustomerAddress" maxlength="300" autocomplete="street-address" placeholder="Straat en huisnummer" />
+              </div>
+              <div class="field">
+                <label for="invCustomerPostal">Postcode</label>
+                <input id="invCustomerPostal" maxlength="20" autocomplete="postal-code" placeholder="1234 AB" />
+              </div>
+              <div class="field">
+                <label for="invCustomerCity">Plaats</label>
+                <input id="invCustomerCity" maxlength="100" autocomplete="address-level2" placeholder="Plaats" />
+              </div>
+              <div class="field">
+                <label for="invCustomerCountry">Land</label>
+                <input id="invCustomerCountry" maxlength="80" value="Nederland" autocomplete="country-name" />
+              </div>
+              </div>
+            </details>
+            <details class="ht-invoice-more">
+              <summary>Betaling &amp; extra <small>(optioneel)</small></summary>
+              <div class="ht-invoice-form-grid">
+                <div class="field">
+                  <label for="invPaymentMethod">Betaalmethode</label>
+                  <select id="invPaymentMethod" class="form-control">
+                    <option value="bank">Bankoverschrijving</option>
+                    <option value="pin">Pin</option>
+                    <option value="cash">Contant</option>
+                    <option value="online">Online betaling</option>
+                    <option value="other">Anders</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="invPaymentStatus">Betaalstatus</label>
+                  <select id="invPaymentStatus" class="form-control">
+                    <option value="unpaid">Niet betaald</option>
+                    <option value="paid">Betaald</option>
+                    <option value="partial">Gedeeltelijk betaald</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="invDueDate">Vervaldatum</label>
+                  <input id="invDueDate" type="date" />
+                </div>
+                <div class="field">
+                  <label for="invDeliveryDate">Leverdatum / reparatiedatum</label>
+                  <input id="invDeliveryDate" type="date" />
+                </div>
+                <div class="field ht-invoice-field-wide">
+                <label for="invReference">Referentie / ordernummer</label>
+                <input id="invReference" maxlength="120" placeholder="Bijv. reparatieorder of webshopbestelling" />
+              </div>
+              <div class="field ht-invoice-field-wide">
+                <label for="invNotes">Opmerkingen</label>
+                <input id="invNotes" maxlength="1200" placeholder="Aanvullende informatie voor op de factuur" />
+              </div>
+              </div>
+            </details>
             <div class="ht-invoice-lines-head">
               <div>
                 <h4>Factuurregels</h4>
@@ -2821,7 +2746,7 @@
       </div>
     </div>
 
-    <script src="../assets/homs-admin.js?v=20261125-inv1" defer></script>
+    <script src="../assets/homs-admin.js?v=20261125-inv2" defer></script>
     <script src="../assets/admin-button-states.js?v=20261124-ui2" defer></script>
     <script src="../assets/admin-editor-focus.js?v=20261125-focus3" defer></script>
     <script

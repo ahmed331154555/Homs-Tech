@@ -473,3 +473,31 @@ body.ht-modal-open{overflow:hidden}
   #dashboard .editor-layout{grid-template-columns:minmax(0,1fr)!important}
   #dashboard .editor-list{max-height:280px;overflow-y:auto}
 }
+
+/* 25. Facturen: bedrijfsprofiel ingeklapt, klanttype-keuze, optionele blokken */
+#dashboard .ht-invoice-seller{padding:0!important;margin-bottom:12px!important}
+#dashboard .ht-invoice-seller>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;cursor:pointer;list-style:none}
+#dashboard .ht-invoice-seller>summary::-webkit-details-marker{display:none}
+#dashboard .ht-invoice-seller-title{display:grid;gap:2px;min-width:0}
+#dashboard .ht-invoice-seller-title strong{font-size:14px;color:#12263a}
+#dashboard .ht-invoice-seller-title small{font-size:12px;color:#64748b;overflow-wrap:anywhere}
+#dashboard .ht-invoice-seller-edit{flex:0 0 auto;padding:5px 11px;border:1px solid #d8e1eb;border-radius:8px;background:#fff;color:#1d4ed8;font-size:12px;font-weight:700}
+#dashboard .ht-invoice-seller[open]>summary{border-bottom:1px solid #e8eef5}
+#dashboard .ht-invoice-seller[open] .ht-invoice-seller-edit{background:#eaf1ff}
+#dashboard .ht-invoice-seller>.ht-invoice-form-grid,#dashboard .ht-invoice-seller>.ht-invoice-editor-actions{padding:12px 14px 0}
+#dashboard .ht-invoice-seller>.ht-invoice-editor-actions{padding-bottom:14px}
+#dashboard .ht-invoice-seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:4px 0 12px;padding:4px;border:1px solid #d8e1eb;border-radius:10px;background:#f1f5f9}
+#dashboard .ht-invoice-seg button{min-height:38px;padding:6px 10px;border:0;border-radius:7px;background:transparent;color:#475569;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s,color .15s,box-shadow .15s}
+#dashboard .ht-invoice-seg button:hover{background:#e5ebf3}
+#dashboard .ht-invoice-seg button:active{transform:scale(.98)}
+#dashboard .ht-invoice-seg button.is-active{background:#fff;color:#1d4ed8;box-shadow:0 1px 3px rgba(15,23,42,.18)}
+#dashboard .ht-invoice-seg button:focus-visible{outline:2px solid #2563eb;outline-offset:1px}
+#dashboard .ht-invoice-more{margin:12px 0;border:1px solid #e2e8f0;border-radius:10px;background:#fff}
+#dashboard .ht-invoice-more>summary{padding:10px 12px;cursor:pointer;font-size:13px;font-weight:700;color:#12263a;list-style:none;display:flex;align-items:center;gap:6px}
+#dashboard .ht-invoice-more>summary::-webkit-details-marker{display:none}
+#dashboard .ht-invoice-more>summary::after{content:"▾";margin-left:auto;color:#64748b}
+#dashboard .ht-invoice-more[open]>summary::after{content:"▴"}
+#dashboard .ht-invoice-more>summary small{font-weight:500;color:#64748b}
+#dashboard .ht-invoice-more>.ht-invoice-form-grid{padding:0 12px 12px}
+#dashboard .ht-invoice-new .ht-invoice-card-head{margin-bottom:6px}
+#dashboard .ht-invoice-new .ht-invoice-form-grid{gap:10px 12px}#dashboard .ht-invoice-new .ht-invoice-form-grid .field{margin:0!important}

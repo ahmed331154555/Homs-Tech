@@ -7133,6 +7133,25 @@ function invoiceToggleCustomerType(){
   }
   const personalName=document.getElementById("invCustomerNameWrap");
   if(personalName)personalName.hidden=business;
+  document.querySelectorAll("#page-invoices .ht-invoice-seg button").forEach(btn=>{
+    const active=(btn.dataset.type==="business")===business;
+    btn.classList.toggle("is-active",active);btn.setAttribute("aria-pressed",active?"true":"false");
+  });
+  const address=document.getElementById("invAddressDetails");
+  if(address)address.open=business;
+}
+function invoiceSetCustomerType(type){
+  const select=document.getElementById("invCustomerType");
+  if(!select)return;
+  select.value=type==="business"?"business":"individual";
+  invoiceToggleCustomerType();
+}
+function invoiceSellerSummaryUpdate(){
+  const el=document.getElementById("invSellerSummary");
+  if(!el)return;
+  const s=invoiceSellerSettings||{};
+  const parts=[s.legalName||s.tradeName||"HOMS TECH",s.kvkNumber?"KVK "+s.kvkNumber:"",s.vatId?"BTW "+s.vatId:""].filter(Boolean);
+  el.textContent=parts.length?parts.join(" · "):"Nog niet ingevuld — klik op Bewerken";
 }
 async function loadInvoiceSettings(){
   try{
@@ -7140,6 +7159,7 @@ async function loadInvoiceSettings(){
     const result=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(result.error||"Factuurinstellingen laden is mislukt.");
     invoiceSellerSettings=result.settings||{};
+    invoiceSellerSummaryUpdate();
     const map={legalName:"invSellerLegalName",tradeName:"invSellerTradeName",address:"invSellerAddress",postalCode:"invSellerPostalCode",city:"invSellerCity",country:"invSellerCountry",kvkNumber:"invSellerKvk",vatId:"invSellerVat",iban:"invSellerIban",email:"invSellerEmail",phone:"invSellerPhone",website:"invSellerWebsite"};
     for(const [key,id] of Object.entries(map))invoiceSetValue(id,invoiceSellerSettings[key]||(key==="tradeName"?"HOMS TECH":key==="country"?"Nederland":key==="website"?"https://homs-tech.nl":""));
   }catch(error){
@@ -7160,6 +7180,8 @@ async function saveInvoiceSettings(){
     const result=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(result.error||"Factuurinstellingen opslaan is mislukt.");
     invoiceSellerSettings=result.settings||data;
+    invoiceSellerSummaryUpdate();
+    document.getElementById("invSellerDetails")?.removeAttribute("open");
     if(status){status.className="status success";status.textContent="Bedrijfsgegevens veilig opgeslagen. Nieuwe facturen gebruiken deze gegevens.";}
   }catch(error){if(status){status.className="status error";status.textContent=error.message;}}
   finally{if(button){button.disabled=false;button.textContent=button.dataset.originalText||"Bedrijfsgegevens opslaan";delete button.dataset.originalText;}}
@@ -7241,7 +7263,7 @@ function invoiceFormMessage(message,type="info"){
 function invoiceDraftPayload(){
   const totals=invoiceCalc(),customerType=invoiceFieldValue("invCustomerType")||"individual";
   return {
-    customerType,customerName:customerType==="business"?"":invoiceFieldValue("invCustomerName"),customerCompanyName:customerType==="business"?invoiceFieldValue("invCustomerCompany"):"",
+    customerType,customerName:customerType==="business"?"":(invoiceFieldValue("invCustomerName")||invoiceFieldValue("invCustomerEmail")||invoiceFieldValue("invCustomerPhone")),customerCompanyName:customerType==="business"?invoiceFieldValue("invCustomerCompany"):"",
     customerContactPerson:customerType==="business"?invoiceFieldValue("invCustomerContact"):"",customerPhone:invoiceFieldValue("invCustomerPhone"),customerEmail:invoiceFieldValue("invCustomerEmail"),
     customerAddress:invoiceFieldValue("invCustomerAddress"),customerPostalCode:invoiceFieldValue("invCustomerPostal"),
     customerCity:invoiceFieldValue("invCustomerCity"),customerCountry:invoiceFieldValue("invCustomerCountry")||"Nederland",
@@ -7253,7 +7275,7 @@ function invoiceDraftPayload(){
 }
 function invoiceValidateDraft(payload){
   if(payload.customerType==="business"&&!payload.customerCompanyName)return "Vul de bedrijfsnaam van de zakelijke klant in.";
-  if(payload.customerType==="individual"&&!payload.customerName)return "Vul de volledige naam van de klant in.";
+  if(payload.customerType==="individual"&&!payload.customerName)return "Vul een naam, e-mailadres of telefoonnummer van de klant in.";
   if(payload.customerEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.customerEmail))return "Controleer het e-mailadres van de klant.";
   return invoiceValidateLines(payload.lines);
 }
