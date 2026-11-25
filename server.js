@@ -199,6 +199,24 @@ app.use((req, res, next) => {
     "render.yaml",
     "admin-index.html",
   ]);
+  // Server-side folders and developer notes are never public (top-level only,
+  // so API paths such as /api/mollie/config keep working).
+  const privateTopLevel = new Set([
+    "routes",
+    "services",
+    "utils",
+    "scripts",
+    "test",
+    "config",
+    "docs",
+    "node_modules",
+  ]);
+  if (
+    privateTopLevel.has(segments[0] || "") ||
+    /^(?:homs-tech-.*|readme-.*)\.txt$/i.test(segments[0] || "") ||
+    /\.md$/i.test(segments[segments.length - 1] || "")
+  )
+    return res.sendStatus(404);
   if (
     segments.some(
       (segment) =>
