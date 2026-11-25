@@ -69,7 +69,7 @@ test("admin bundles are deferred and retain dependency order", () => {
     /<script\b(?=[^>]*src=["']\.\.\/assets\/homs-admin\.js\?v=20261125-inv1["'])(?=[^>]*\bdefer(?:\s|>|=))[^>]*>/i,
   );
   const partnerScript = adminHtml.match(
-    /<script\b(?=[^>]*src=["']\.\.\/assets\/partner-admin\.js\?v=20261117-partners6["'])(?=[^>]*\bdefer(?:\s|>|=))[^>]*>/i,
+    /<script\b(?=[^>]*src=["']\.\.\/assets\/partner-admin\.js\?v=20261117-partners7["'])(?=[^>]*\bdefer(?:\s|>|=))[^>]*>/i,
   );
 
   assert.ok(mainScript, "main admin bundle should use defer");
