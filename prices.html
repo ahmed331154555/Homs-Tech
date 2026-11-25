@@ -437,7 +437,30 @@
 
     <link rel="stylesheet" href="assets/tactile-ui.css?v=20261124-flat" />
       <style>/* Hero-koppen blijven wit op de donkere hero (de globale kopkleur is donker) */.hero h1{color:#fff}.quote-intro h3,.quote-intro .quote-kicker{color:#fff}</style>
-  </head>
+      <style id="ht-prices-polish">
+      .btn .ht-ico{flex:0 0 auto;vertical-align:-3px;margin-right:6px}
+      .banner h2,.contact h2{color:#fff}
+      .btn.green[data-wa]{background:#25d366!important;border-color:#25d366!important;color:#06361c!important}
+      .quote-full:has(input[type=file]){position:relative}
+      .quote-full input[type=file]{position:absolute;inset:auto auto 0 0;width:1px;height:1px;opacity:0;pointer-events:none}
+      .ht-file-ui{display:flex;align-items:center;gap:12px;margin-top:6px;padding:8px;border:1.5px dashed #b9cbe0;border-radius:12px;background:#f8fbff;cursor:pointer}
+      .ht-file-btn{flex:0 0 auto;padding:10px 16px;border-radius:10px;background:#1d63e8;color:#fff;font-weight:800;font-size:14px}
+      .ht-file-name{min-width:0;color:#64748b;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      input[type=file]:focus-visible+.ht-file-ui{outline:3px solid rgba(37,99,235,.35);outline-offset:2px}
+      @media(max-width:700px){
+        .section:has(>.banner),.section:has(>.contact){padding:0!important;background:none!important;border:0!important;box-shadow:none!important}
+        .banner,.contact{padding:20px 18px!important;border-radius:16px!important}
+        .banner h2,.contact h2{font-size:21px!important;line-height:1.2!important;margin:0 0 6px!important}
+        .banner p,.contact p{font-size:14px!important;line-height:1.5!important;margin:0 0 14px!important}
+        .banner .btn,.contact .btn{min-height:46px;display:inline-flex;align-items:center;justify-content:center}
+        .banner{display:block!important}
+        .banner .btn{width:100%}
+        .contact .buttons{display:grid!important;grid-template-columns:1fr 1fr;gap:10px}
+        .contact .buttons .btn{width:100%;padding:0 10px}
+        .quote-submit{width:100%!important;min-height:52px;font-size:16px;border-radius:14px}
+      }
+    </style>
+</head>
 
   <body>
     <div class="ht-topbar">
@@ -491,10 +514,10 @@
 
         <div class="buttons">
           <a class="btn green" data-wa href="contact.html" target="_blank">
-            💬 WhatsApp
+            <svg class="ht-ico" viewBox="0 0 32 32" width="18" height="18" aria-hidden="true" focusable="false"><path fill="currentColor" d="M16.04 3C9.4 3 4.02 8.37 4.02 15c0 2.12.55 4.19 1.6 6.01L4 28l7.17-1.88A12 12 0 0 0 16.04 27C22.67 27 28.05 21.63 28.05 15S22.67 3 16.04 3Zm0 21.98c-1.8 0-3.56-.48-5.1-1.4l-.37-.22-4.25 1.11 1.14-4.14-.24-.38A9.94 9.94 0 0 1 6.05 15c0-5.5 4.49-9.98 9.99-9.98S26.03 9.5 26.03 15s-4.49 9.98-9.99 9.98Zm5.48-7.47c-.3-.15-1.78-.88-2.05-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.95 1.18-.18.2-.35.22-.65.08-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.49-.5-.68-.51h-.58c-.2 0-.53.08-.8.38-.28.3-1.05 1.03-1.05 2.5s1.08 2.9 1.23 3.1c.15.2 2.12 3.23 5.13 4.53.72.31 1.28.5 1.71.64.72.23 1.38.2 1.9.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.08-.13-.28-.2-.58-.35Z"/></svg> WhatsApp
           </a>
 
-          <a class="btn white" data-phone href="contact.html"> 📞 Bel ons </a>
+          <a class="btn white" data-phone href="contact.html"> <svg class="ht-ico" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.34 1.78.65 2.62a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.46-1.22a2 2 0 0 1 2.11-.45c.84.31 1.72.53 2.62.65A2 2 0 0 1 22 16.92Z"/></svg> Bel ons </a>
         </div>
       </div>
     </section>
@@ -555,7 +578,7 @@
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/heic"
                 multiple
-              /><small
+              /><span class="ht-file-ui" aria-hidden="true"><span class="ht-file-btn">Foto's kiezen</span><span class="ht-file-name" id="repairPhotoName">Geen foto's gekozen</span></span><small
                 >Voeg foto's toe van de schade of het probleem. Foto's zijn
                 optioneel.</small
               ></label
@@ -617,7 +640,7 @@
         </div>
 
         <a class="btn green" data-wa href="contact.html" target="_blank">
-          💬 Vraag de prijs
+          <svg class="ht-ico" viewBox="0 0 32 32" width="18" height="18" aria-hidden="true" focusable="false"><path fill="currentColor" d="M16.04 3C9.4 3 4.02 8.37 4.02 15c0 2.12.55 4.19 1.6 6.01L4 28l7.17-1.88A12 12 0 0 0 16.04 27C22.67 27 28.05 21.63 28.05 15S22.67 3 16.04 3Zm0 21.98c-1.8 0-3.56-.48-5.1-1.4l-.37-.22-4.25 1.11 1.14-4.14-.24-.38A9.94 9.94 0 0 1 6.05 15c0-5.5 4.49-9.98 9.99-9.98S26.03 9.5 26.03 15s-4.49 9.98-9.99 9.98Zm5.48-7.47c-.3-.15-1.78-.88-2.05-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.95 1.18-.18.2-.35.22-.65.08-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.49-.5-.68-.51h-.58c-.2 0-.53.08-.8.38-.28.3-1.05 1.03-1.05 2.5s1.08 2.9 1.23 3.1c.15.2 2.12 3.23 5.13 4.53.72.31 1.28.5 1.71.64.72.23 1.38.2 1.9.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.08-.13-.28-.2-.58-.35Z"/></svg> Vraag de prijs
         </a>
       </div>
     </section>
@@ -630,10 +653,10 @@
 
         <div class="buttons" style="justify-content:center;">
           <a class="btn green" data-wa href="contact.html" target="_blank">
-            💬 WhatsApp
+            <svg class="ht-ico" viewBox="0 0 32 32" width="18" height="18" aria-hidden="true" focusable="false"><path fill="currentColor" d="M16.04 3C9.4 3 4.02 8.37 4.02 15c0 2.12.55 4.19 1.6 6.01L4 28l7.17-1.88A12 12 0 0 0 16.04 27C22.67 27 28.05 21.63 28.05 15S22.67 3 16.04 3Zm0 21.98c-1.8 0-3.56-.48-5.1-1.4l-.37-.22-4.25 1.11 1.14-4.14-.24-.38A9.94 9.94 0 0 1 6.05 15c0-5.5 4.49-9.98 9.99-9.98S26.03 9.5 26.03 15s-4.49 9.98-9.99 9.98Zm5.48-7.47c-.3-.15-1.78-.88-2.05-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.95 1.18-.18.2-.35.22-.65.08-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.49-.5-.68-.51h-.58c-.2 0-.53.08-.8.38-.28.3-1.05 1.03-1.05 2.5s1.08 2.9 1.23 3.1c.15.2 2.12 3.23 5.13 4.53.72.31 1.28.5 1.71.64.72.23 1.38.2 1.9.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.08-.13-.28-.2-.58-.35Z"/></svg> WhatsApp
           </a>
 
-          <a class="btn white" data-phone href="contact.html"> 📞 Bel nu </a>
+          <a class="btn white" data-phone href="contact.html"> <svg class="ht-ico" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.34 1.78.65 2.62a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.46-1.22a2 2 0 0 1 2.11-.45c.84.31 1.72.53 2.62.65A2 2 0 0 1 22 16.92Z"/></svg> Bel nu </a>
         </div>
       </div>
     </section>
@@ -818,12 +841,16 @@
       fileInput.addEventListener("change", () => {
         try {
           const files = selectedFiles();
+          const nameEl = document.getElementById("repairPhotoName");
+          if (nameEl) nameEl.textContent = files.length ? (files.length === 1 ? "1 foto gekozen" : files.length + " foto's gekozen") : "Geen foto's gekozen";
           preview.innerHTML = files.map(f => '<span>📷 ' + String(f.name).replace(/[&<>"]/g, '') + '</span>').join("");
           status.textContent = "";
         } catch (e) {
           preview.textContent = "";
           status.textContent = e.message;
           fileInput.value = "";
+          const nameEl2 = document.getElementById("repairPhotoName");
+          if (nameEl2) nameEl2.textContent = "Geen foto's gekozen";
         }
       });
 
