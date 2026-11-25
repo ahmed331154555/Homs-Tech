@@ -1,0 +1,67 @@
+/* HOMS TECH — compacte opmaak voor losse admin-pagina's (reviews, announcement bars, voordelenbalk).
+   Laadt na homs-admin-standalone-premium.css. */
+.top{padding:10px max(14px,calc((100% - 1180px)/2))!important;gap:10px}
+.brand{font-size:13px!important;letter-spacing:.05em}
+.top a.btn{display:inline-flex;align-items:center;min-height:34px;padding:0 14px!important;border:1px solid #d5dfeb!important;background:#fff!important;color:#172b4d!important;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap}
+.top a.btn:hover{background:#eff6ff!important;color:#2563eb!important;border-color:#bfdbfe!important}
+.wrap{margin:16px auto!important;padding:0 14px!important}
+.head{gap:10px!important;margin-bottom:10px}
+h1{font-size:20px!important;line-height:1.2;letter-spacing:-.02em}
+h2{font-size:15px!important;margin:0 0 4px!important}
+h3{font-size:14px}
+.muted,.head p{font-size:13px!important;line-height:1.45}
+.head p{margin:3px 0 0!important}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:0 14px!important;border-radius:9px!important;font-size:13px!important;font-weight:700;line-height:1;white-space:nowrap;box-shadow:none}
+.btn.secondary{background:#fff!important;color:#172b4d!important;border:1px solid #d5dfeb!important}
+.btn.secondary:hover{background:#eff6ff!important;color:#2563eb!important}
+.btn:active,.action:active,.toolbar button:active{transform:scale(.97)}
+.panel,.stat,.review{padding:14px!important;border-radius:12px!important;box-shadow:none!important}
+.panel{margin-bottom:10px}
+input:not([type=checkbox]):not([type=radio]):not([type=color]),select,textarea{min-height:36px!important;padding:0 10px!important;font-size:13px!important}
+textarea{padding:8px 10px!important;min-height:72px!important}
+label,.field{font-size:12px;font-weight:700;color:#475569}
+.field{display:grid;gap:4px}
+.grid{gap:10px!important}
+.actions{gap:8px!important}
+.actions .btn{flex:0 0 auto}
+.status{margin:8px 0!important;padding:8px 12px!important;font-size:13px}
+/* Reviews */
+#completionForm{gap:10px!important}
+#completionForm label{flex:1 1 170px;gap:4px!important;font-size:12px!important}
+#completionForm select,#completionForm input{width:100%;padding:0 10px!important}
+#completionForm .btn{flex:0 0 auto}
+.stats{gap:8px!important;margin:12px 0!important}
+.stat{display:grid;gap:1px}
+.stat span{font-size:11.5px!important;font-weight:700}
+.stat strong{font-size:20px!important;line-height:1.15}
+.stat small{font-size:11px!important}
+.toolbar{gap:6px!important;margin:10px 0!important;flex-wrap:nowrap!important;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+.toolbar button{flex:0 0 auto;min-height:32px;padding:0 12px!important;font-size:12.5px!important;white-space:nowrap}
+.list{gap:8px!important}
+.review{display:block}
+.review-head h3{margin:3px 0 !important;font-size:14px}
+.stars{font-size:15px!important}
+.meta{font-size:12px!important;margin:3px 0!important}
+.review p{margin:6px 0!important;line-height:1.5!important;font-size:13px}
+.review-head>strong{font-size:11px;padding:2px 9px;border-radius:99px;background:#eef2f7;color:#475569;white-space:nowrap}
+.action{min-height:32px;padding:0 12px!important;border-radius:8px!important;font-size:12.5px!important}
+.reply{gap:6px!important;margin-top:10px!important}
+.reply input{min-height:36px!important;padding:0 10px!important}
+@media(max-width:720px){
+  .head{flex-direction:row!important;align-items:center}
+  .head .btn{flex:0 0 auto}
+  .head p{display:none}
+  .reply{display:flex!important}
+  .review-head{display:flex!important}
+  #completionForm .btn{width:100%}
+  .stat{padding:10px!important}
+}
+.action.primary{background:#2563eb!important;border-color:#2563eb!important;color:#fff!important}
+.action.primary:hover{background:#1d4ed8!important}
+.action.danger{color:#b42318!important;border-color:#f1c0c0!important}
+.action.danger:hover{background:#b42318!important;color:#fff!important}
+input[type=color]{height:34px!important;min-height:34px!important;width:100%;padding:2px!important;border-radius:9px!important;cursor:pointer}
+input[type=range]{min-height:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;accent-color:#2563eb}
+.color-row,.colors{gap:10px!important}
+.color-row .field,.colors .field,.color-row label,.colors label{padding:0!important;border:0!important;background:transparent!important}
+input[type=color]{background:#fff!important;border:1px solid #d5dfeb!important}
