@@ -568,3 +568,16 @@ body.ht-modal-open{overflow:hidden}
 #orderDetailsModal.phone-order-detail-overlay .ht-shipping-heading-icon{width:30px!important;height:30px!important;font-size:15px!important}
 #orderDetailsModal.phone-order-detail-overlay .ht-phone-inspection-intro{display:grid!important;gap:3px!important;font-size:12px!important}
 #orderDetailsModal.phone-order-detail-overlay .ht-phone-inspection-intro strong{display:block;font-size:13px}
+#dashboard #page-phone-orders .ht-phone-orders-filter{border:0!important;background:transparent!important;box-shadow:none!important;padding:0!important}
+@media(max-width:850px){
+  #dashboard #page-phone-orders .ht-phone-sale-open{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"num price" "cust cust" "device device" "badges date"!important;gap:6px 10px!important;align-items:center!important;padding:11px 12px!important;min-height:0!important}
+  #dashboard #page-phone-orders .ht-phone-sale-number{grid-area:num;font-size:12px!important}
+  #dashboard #page-phone-orders .ht-phone-sale-price{grid-area:price;justify-self:end;font-size:15px!important}
+  #dashboard #page-phone-orders .ht-phone-sale-customer{grid-area:cust;min-width:0}
+  #dashboard #page-phone-orders .ht-phone-sale-device{grid-area:device;min-width:0}
+  #dashboard #page-phone-orders .ht-phone-sale-badges{grid-area:badges;justify-self:start}
+  #dashboard #page-phone-orders .ht-phone-sale-date{grid-area:date;justify-self:end;display:flex;gap:6px;align-items:baseline;font-size:12px!important}
+  #dashboard #page-phone-orders .ht-phone-sale-chevron{display:none!important}
+  #dashboard #page-phone-orders .ht-phone-sale-customer strong{font-size:13px!important}
+  #dashboard #page-phone-orders .ht-phone-product-thumb{width:40px!important;height:40px!important}
+}
