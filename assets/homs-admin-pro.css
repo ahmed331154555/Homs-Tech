@@ -824,3 +824,22 @@ body.ht-modal-open{overflow:hidden}
 #dashboard #page-buyback-orders>.section-head .ht-inkoop-toolbar{width:100%;justify-content:flex-end}
 #dashboard #page-buyback-orders .ht-inkoop-toolbar select{flex:1 1 auto}
 #dashboard #allOrdersSections.unified-orders-panel{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
+
+/* 33. Telefoonbestellingen: kaartweergave ook op smalle desktops/tablets (<1400px) */
+@media(max-width:1399px){
+  #dashboard #page-phone-orders .ht-phone-sale-head{display:none!important}
+  #dashboard #page-phone-orders .ht-phone-sale-row{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:0!important;padding:0!important}
+  #dashboard #page-phone-orders .ht-phone-sale-row .ht-phone-sale-delete{justify-self:end;margin:0 12px 10px!important}
+  #dashboard #page-phone-orders .ht-phone-sale-open{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"num price" "cust cust" "device device" "badges date"!important;gap:6px 10px!important;align-items:center!important;padding:11px 14px!important}
+  #dashboard #page-phone-orders .ht-phone-sale-number{grid-area:num}
+  #dashboard #page-phone-orders .ht-phone-sale-price{grid-area:price;justify-self:end}
+  #dashboard #page-phone-orders .ht-phone-sale-customer{grid-area:cust;min-width:0}
+  #dashboard #page-phone-orders .ht-phone-sale-device{grid-area:device;min-width:0}
+  #dashboard #page-phone-orders .ht-phone-sale-badges{grid-area:badges;justify-self:start}
+  #dashboard #page-phone-orders .ht-phone-sale-date{grid-area:date;justify-self:end;display:flex;gap:6px;align-items:baseline}
+  #dashboard #page-phone-orders .ht-phone-sale-chevron{display:none!important}
+}
+@media(min-width:700px) and (max-width:1399px){
+  #dashboard #page-phone-orders .ht-phone-sale-open{grid-template-columns:48px minmax(0,1fr) minmax(0,1.3fr) auto!important;grid-template-areas:"num cust device price" "badges badges badges date"!important;gap:8px 14px!important}
+  #dashboard #page-phone-orders .ht-phone-sale-date{flex-direction:row;gap:6px}
+}
