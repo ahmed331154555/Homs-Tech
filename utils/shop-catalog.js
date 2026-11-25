@@ -42,6 +42,8 @@ function buildShopCatalogList(products) {
         "active",
         "price",
         "stock",
+        "shippingCost",
+        "deliveryTime",
       ]) {
         if (Object.prototype.hasOwnProperty.call(product, key)) {
           output[key] = product[key];
