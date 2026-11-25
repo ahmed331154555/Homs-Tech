@@ -1098,14 +1098,13 @@ button:disabled,
   filter: none;
 }
 
-/* The HOMS logo has silver letters made for dark backgrounds: give it a navy plate on the white header. */
+/* Header logo: navy/blue version made for the white header (assets/homs-tech-logo-light.webp), no plate needed. */
 header img[src*="homs-tech-logo"] {
-  box-sizing: content-box;
-  height: 38px;
+  display: block;
+  height: 40px;
   width: auto;
-  padding: 6px 14px;
-  background: #071d2d;
-  border-radius: 12px;
+  max-width: 100%;
+  object-fit: contain;
 }
 a.nav-btn,
 a.nav-btn:hover {

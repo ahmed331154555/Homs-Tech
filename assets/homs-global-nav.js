@@ -117,7 +117,7 @@
  var button=document.createElement('button');button.id='homsMenuButton';button.type='button';button.setAttribute('aria-label','Menu openen');button.setAttribute('aria-expanded','false');button.setAttribute('aria-controls','homsMenuDrawer');button.innerHTML='<span></span><span></span><span></span>';
  var backdrop=document.createElement('div');backdrop.id='homsMenuBackdrop';
  var drawer=document.createElement('aside');drawer.id='homsMenuDrawer';drawer.setAttribute('role','dialog');drawer.setAttribute('aria-modal','true');drawer.setAttribute('aria-label','Hoofdnavigatie');drawer.setAttribute('aria-hidden','true');
- var head=document.createElement('div');head.className='homs-menu-head';head.innerHTML='<img class="homs-menu-logo" src="/assets/homs-tech-logo.webp" alt="HOMS TECH">';
+ var head=document.createElement('div');head.className='homs-menu-head';head.innerHTML='<img class="homs-menu-logo" src="/assets/homs-tech-logo-light.webp" alt="HOMS TECH">';
  var close=document.createElement('button');close.className='homs-menu-close';close.type='button';close.setAttribute('aria-label','Menu sluiten');close.textContent='×';head.appendChild(close);drawer.appendChild(head);
  linkGroups.forEach(function(group){
   var section=document.createElement('section');section.className='homs-menu-group';section.setAttribute('aria-label',group.label);
