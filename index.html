@@ -758,6 +758,19 @@
       .product.is-skeleton .sk-line:last-child{margin-bottom:16px}
       @keyframes ht-sk{0%{background-position:100% 50%}100%{background-position:0 50%}}
       @media(prefers-reduced-motion:reduce){.product.is-skeleton .sk{animation:none}}
+      @media(max-width:720px){
+        #homeCategoriesSection .iphone-feature{border-radius:20px}
+        #homeCategoriesSection .iphone-feature-visual{order:-1;min-height:0;height:210px;background:radial-gradient(ellipse at 50% 60%,rgba(119,174,255,.28),transparent 68%),linear-gradient(180deg,#f4f7ff,#e9f0ff)}
+        #homeCategoriesSection .iphone-feature-real-image{min-height:0;max-height:none;height:100%;padding:12px 10px 8px;mix-blend-mode:multiply}
+        #homeCategoriesSection .iphone-feature-copy{padding:18px 18px 20px}
+        #homeCategoriesSection .iphone-feature-kicker{padding:6px 11px;font-size:10px}
+        #homeCategoriesSection .iphone-feature-copy h3{font-size:26px;line-height:1.08;margin:12px 0 8px}
+        #homeCategoriesSection .iphone-feature-copy p{font-size:14px;line-height:1.5;margin:0 0 14px}
+        #homeCategoriesSection .iphone-feature-copy ul{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+        #homeCategoriesSection .iphone-feature-copy li{gap:6px;padding:6px 10px 6px 7px;border-radius:999px;background:#fff;border:1px solid #dfe8f5;font-size:12px;line-height:1.2}
+        #homeCategoriesSection .iphone-feature-copy li span{width:17px;height:17px;font-size:10px;flex:0 0 17px}
+        #homeCategoriesSection .iphone-feature-cta{display:flex;justify-content:space-between;gap:12px;width:100%;padding:13px 20px;font-size:15px}
+      }
       @media(max-width:600px){
         .why{gap:8px}
         .why-card{padding:14px 12px;border-radius:12px}
