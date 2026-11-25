@@ -26,9 +26,10 @@
 .tab-btn.on{color:#0f172a;border-bottom-color:#2563eb}
 .tab-panel{padding:20px}.tab-panel[hidden]{display:none}
 .detail-tabs .description{margin:0!important;display:block;white-space:pre-wrap;font-size:15px;line-height:1.65;color:#475569}
-.spec-table{width:100%;border-collapse:collapse;font-size:14.5px}
+.spec-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:14.5px}
 .spec-table th,.spec-table td{padding:11px 0;border-bottom:1px solid #eef2f7;text-align:left}
-.spec-table th{width:38%;color:#64748b;font-weight:600}.spec-table td{color:#0f172a;font-weight:700}
+html body .spec-table th,html body .spec-table td{font-family:inherit!important;font-size:14.5px!important;letter-spacing:0!important;text-transform:none!important;vertical-align:middle;background:none!important}
+html body .spec-table th{width:40%;color:#64748b;font-weight:600}html body .spec-table td{color:#0f172a;font-weight:700}
 .spec-table tr:last-child th,.spec-table tr:last-child td{border-bottom:0}
 .detail-tabs .video{margin:0}.detail-tabs .video iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:12px}
 .related{margin-top:34px}.related h2{font-size:20px;margin:0 0 14px}
