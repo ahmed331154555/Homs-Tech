@@ -101,6 +101,7 @@
           var sale = row.querySelector(".eu-sale");
           if (sale) sale.textContent = saleLabel(d.service.price, d.service.marginPercent);
           status("Opgeslagen.");
+          if (act === "pick") load().then(function () { status("Opgeslagen."); });
         })
         .catch(function (err) {
           status(err.message, true);
