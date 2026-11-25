@@ -425,3 +425,27 @@ body,#dashboard{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:14px;lin
 body.ht-modal-open{overflow:hidden}
 .ht-inventory-toast{position:fixed;left:50%;bottom:24px;z-index:1300;transform:translate(-50%,20px);opacity:0;pointer-events:none;max-width:calc(100vw - 24px);padding:10px 16px;border-radius:10px;background:#0f7a3d;color:#fff;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:opacity .2s,transform .2s}
 .ht-inventory-toast.is-show{opacity:1;transform:translate(-50%,0)}
+
+/* 23. Partners: koppen, sleutelvak, prijstabel als kaarten op mobiel */
+#dashboard .ht-partner-key[hidden],#dashboard .status:empty{display:none!important}
+#dashboard .ht-partner-card-head,#dashboard .ht-partner-orders-card .ht-partner-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
+#dashboard .ht-partner-card-head>.btn{flex:0 0 auto;width:auto!important;min-width:0;white-space:nowrap;word-break:keep-all!important;padding:6px 12px!important;min-height:32px;font-size:12px!important}
+#dashboard .ht-partner-price-toolbar{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:10px;align-items:end;text-align:left}
+#dashboard .ht-partner-price-toolbar label{display:grid;gap:5px;text-align:left;font-size:11px;font-weight:800;color:#334b61}
+#dashboard .ht-partner-price-toolbar input{width:100%;min-width:0;min-height:36px;box-sizing:border-box;font-size:12px}
+#dashboard .ht-partner-price-toolbar>span{grid-column:1/-1;font-size:11px;color:#64748b}
+@media(max-width:720px){
+  #dashboard .ht-partner-price-toolbar{grid-template-columns:minmax(0,1fr) 96px}
+  #dashboard .ht-partner-table-wrap{overflow:visible!important;border:0!important}
+  #dashboard .ht-partner-table,#dashboard .ht-partner-table tbody,#dashboard .ht-partner-table tr,#dashboard .ht-partner-table td{display:block!important;min-width:0!important;width:100%!important;box-sizing:border-box}
+  #dashboard .ht-partner-table thead{display:none!important}
+  #dashboard .ht-partner-table tr{margin:0 0 8px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;background:#fff}
+  #dashboard .ht-partner-table td{display:flex!important;justify-content:space-between;align-items:center;gap:10px;padding:4px 0!important;border:0!important;font-size:12px}
+  #dashboard .ht-partner-table td:first-child{display:block!important;padding-bottom:6px!important;border-bottom:1px solid #eef2f7!important;margin-bottom:4px}
+  #dashboard .ht-partner-table td[data-label]::before{content:attr(data-label);color:#64748b;font-size:11px;font-weight:700}
+  #dashboard .ht-partner-assignment{display:flex!important;align-items:flex-start;gap:10px}
+  #dashboard .ht-partner-assignment input{flex:0 0 auto;width:18px;height:18px;margin-top:2px}
+  #dashboard .ht-partner-save-row{flex-direction:column;align-items:stretch;gap:8px}
+  #dashboard .ht-partner-save-row .btn,#dashboard .ht-partner-save-row button{width:100%}
+}
+#dashboard .ht-partner-actions{justify-content:flex-start!important}

@@ -148,11 +148,11 @@
           (item.active === false
             ? "<em>Niet actief op website — prijs blijft bewaard</em>"
             : "") +
-          "</span></label></td><td>" +
+          "</span></label></td><td data-label=\"Voorraad\">" +
           (item.stock === null ? "—" : Number(item.stock)) +
-          "</td><td>" +
+          "</td><td data-label=\"Jouw verkoopprijs\">" +
           (item.retailPrice === null ? "—" : money(item.retailPrice)) +
-          "</td><td><strong data-wholesale-display>" +
+          "</td><td data-label=\"Partnerprijs\"><strong data-wholesale-display>" +
           (wholesale === null ? "—" : money(wholesale)) +
           '</strong><input type="hidden" data-wholesale-price value="' +
           (wholesale === null ? "" : wholesale.toFixed(2)) +
