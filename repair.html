@@ -833,7 +833,9 @@
               <a
                 class="btn-main btn-whatsapp"
                 id="repairWhatsAppButton"
-                href="https://wa.me/31684242359?text=Hallo%2C%20ik%20wil%20graag%20informatie%20over%20een%20telefoonreparatie%20bij%20HOMS%20TECH."
+                data-wa
+                data-wa-text="Hallo, ik wil graag informatie over een telefoonreparatie bij HOMS TECH."
+                href="contact.html"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -1398,26 +1400,6 @@
               select.innerHTML = services.map((s,i)=>`<option value="${i}">${esc(s[1])}</option>`).join("");
             }
 
-            function applyWhatsApp(){
-              const rawWhatsApp = String(siteData.whatsapp || "+31684242359").trim();
-              let whatsappNumber = rawWhatsApp.replace(/\D/g, "");
-              if (whatsappNumber.startsWith("00")) whatsappNumber = whatsappNumber.slice(2);
-              if (whatsappNumber.startsWith("31") && whatsappNumber.charAt(2) === "0") {
-                whatsappNumber = "31" + whatsappNumber.slice(3);
-              } else if (whatsappNumber.startsWith("0")) {
-                whatsappNumber = "31" + whatsappNumber.slice(1);
-              }
-              const whatsappButton = document.getElementById("repairWhatsAppButton");
-              if (!whatsappButton) return;
-              if (whatsappNumber.length >= 8) {
-                const message = "Hallo, ik wil graag informatie over een telefoonreparatie bij HOMS TECH.";
-                whatsappButton.href = "https://wa.me/" + whatsappNumber + "?text=" + encodeURIComponent(message);
-                whatsappButton.hidden = false;
-              } else {
-                whatsappButton.hidden = true;
-              }
-            }
-
             async function loadSite(){
               // Toon direct de laatst bekende gegevens (cache) of de ingebouwde inhoud;
               // ververs daarna op de achtergrond zodat de pagina niet op de server wacht.
@@ -1431,7 +1413,6 @@
               }catch(e){ cachedRaw = ""; siteData = {}; }
               renderRepairPage();
               renderServices();
-              applyWhatsApp();
 
               try{
                 const response = (await window.__repairReq) || await fetch("/api/site?view=repair", {
@@ -1445,8 +1426,7 @@
                 siteData = freshData;
                 try{ if(freshRaw.length < 1500000) localStorage.setItem("homsRepairCache", freshRaw); }catch(e){}
 
-                applyWhatsApp();
-                document.querySelectorAll("[data-name]").forEach(el=>{
+                  document.querySelectorAll("[data-name]").forEach(el=>{
                   el.textContent = siteData.businessName || siteData.siteName || "HOMS TECH";
                 });
                 document.querySelectorAll("[data-tag]").forEach(el=>{
@@ -2016,7 +1996,7 @@
             loadSite();
     </script>
 
-    <script src="assets/homs-global-nav.js?v=20261125-foot2"></script>
+    <script src="assets/homs-global-nav.js?v=20261125-contact1"></script>
     <script src="assets/homs-ai-chat.js" defer></script>
   </body>
 </html>

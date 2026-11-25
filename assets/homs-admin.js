@@ -875,7 +875,7 @@ const HOMEPAGE_DEFAULTS={
     description:"Refurbished apparaten · Telefoonreparatie · Service",
     area:"Rotterdam",
     contact:"WhatsApp · Telefoon · E-mail",
-    email:"mail@inbound.homs-tech.nl", phone:"+31684242359", whatsapp:"+31684242359", hours:"09:00–19:00", address:"", mapUrl:""
+    email:"mail@inbound.homs-tech.nl", phone:"", whatsapp:"", hours:"09:00–19:00", address:"", mapUrl:""
   }
 };
 

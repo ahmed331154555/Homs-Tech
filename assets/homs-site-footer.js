@@ -151,9 +151,15 @@
     originals.forEach(({host,reviewWidgets})=>render(host,{},{},reviewWidgets));
 
     try {
-      const response=await fetch("/api/site?view=footer",{headers:{Accept:"application/json"},cache:"no-store"});
-      if(!response.ok)throw new Error("HTTP "+response.status);
-      const data=await response.json();
+      let data;
+      if(window.HomsContact){
+        data=await window.HomsContact.load();
+        if(!data||!data.homepage)throw new Error("Footer settings unavailable");
+      }else{
+        const response=await fetch("/api/site?view=footer",{headers:{Accept:"application/json"},cache:"no-store"});
+        if(!response.ok)throw new Error("HTTP "+response.status);
+        data=await response.json();
+      }
       const site={...data,homepage:data.homepage||{}};
       const settings=site.homepage?.footer||{};
       if(settings.enabled===false){

@@ -865,32 +865,6 @@ return String(value ?? "")
 }
 
 
-function whatsappLink(number){
-
-const n = String(number || "+31684242359").replace(/\D/g,"");
-
-if(!n){
-return "#";
-}
-
-return "https://wa.me/" + n;
-
-}
-
-
-function phoneLink(number){
-
-const n = String(number || "+31684242359").trim();
-
-if(!n){
-return "#";
-}
-
-return "tel:" + n.replace(/[^\d+]/g,"");
-
-}
-
-
 function startingConditionPrice(device){
 const options = Array.isArray(device.conditionOptions) ? device.conditionOptions.filter(x=>x && x.active!==false && x.available!==false) : [];
 const prices = options.map(x=>{
@@ -1111,19 +1085,6 @@ data.tagline ||
 });
 
 
-document.querySelectorAll("[data-wa]").forEach(el => {
-
-el.href = whatsappLink(data.whatsapp);
-
-});
-
-
-document.querySelectorAll("[data-phone]").forEach(el => {
-
-el.href = phoneLink(data.phone);
-
-});
-
 
 let devices = [];
 
@@ -1211,13 +1172,6 @@ document.querySelectorAll("[data-tag]").forEach(el => {
 el.textContent = "Telefoonreparatie aan huis";
 });
 
-document.querySelectorAll("[data-wa]").forEach(el => {
-el.href = "#";
-});
-
-document.querySelectorAll("[data-phone]").forEach(el => {
-el.href = "#";
-});
 
 // Keep the catalog empty on load errors instead of showing fake sample products.
 renderDevices([]);
@@ -1232,7 +1186,7 @@ loadSite();
 </script>
 
 
-  <script src="assets/homs-global-nav.js?v=20261125-foot2"></script>
+  <script src="assets/homs-global-nav.js?v=20261125-contact1"></script>
   <script src="assets/homs-ai-chat.js" defer></script>
 </body>
 </html>

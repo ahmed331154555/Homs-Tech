@@ -655,26 +655,8 @@
       }
 
 
-      function whatsappLink(number){
-
-        let n = String(number || "+31684242359").replace(/\D/g,"");
-
-        if(!n) return "#";
-
-        return "https://wa.me/" + n;
-
-      }
 
 
-      function phoneLink(number){
-
-        let n = String(number || "+31684242359").trim();
-
-        if(!n) return "#";
-
-        return "tel:" + n.replace(/[^\d+]/g,"");
-
-      }
 
 
       async function loadSite(){
@@ -721,22 +703,12 @@
             WhatsApp
           */
 
-          document.querySelectorAll("[data-wa]").forEach(el=>{
-
-            el.href = whatsappLink(data.whatsapp);
-
-          });
 
 
           /*
             Telefoon
           */
 
-          document.querySelectorAll("[data-phone]").forEach(el=>{
-
-            el.href = phoneLink(data.phone);
-
-          });
 
 
           /*
@@ -847,7 +819,7 @@
       loadSite();
     </script>
 
-    <script src="assets/homs-global-nav.js?v=20261125-foot2"></script>
+    <script src="assets/homs-global-nav.js?v=20261125-contact1"></script>
     <script src="assets/homs-ai-chat.js" defer></script>
   </body>
 </html>

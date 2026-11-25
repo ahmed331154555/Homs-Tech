@@ -569,10 +569,6 @@
       return s.includes("€") ? s : "€"+s;
       }
 
-      function wa(number){
-      const n=String(number||"").replace(/\D/g,"");
-      return n ? "https://wa.me/"+n : "#";
-      }
 
       let selectedOptions={};
       let customSelectedOptions={};
@@ -1348,7 +1344,6 @@
         const condition=selectedOptions.condition||product.condition||product.conditie||"";
         const warranty=product.warranty||product.garantie||"";
         const description=product.description||product.beschrijving||"";
-        const whatsapp=wa(data.whatsapp);
         let titleBase=String(product.name||"Smartphone")
           .replace(/(?:^|[\s_-])(?:32|64|128|256|512)\s*GB\b|(?:^|[\s_-])1\s*TB\b/ig," ")
           .replace(/\s+/g," ").trim();
@@ -1583,7 +1578,7 @@
       document.addEventListener("keydown",function(event){if(event.key==="Escape")closeTradeInModal();});
     </script>
 
-    <script src="assets/homs-global-nav.js?v=20261125-foot2"></script>
+    <script src="assets/homs-global-nav.js?v=20261125-contact1"></script>
     <script src="assets/homs-ai-chat.js" defer></script>
   </body>
 </html>

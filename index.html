@@ -1146,7 +1146,7 @@
             Rotterdam en omgeving · Professionele reparatie aan huis
           </p>
         </div>
-        <a class="btn btn-blue" id="homeVisitButton" data-wa>💬 WhatsApp</a>
+        <a class="btn btn-blue" id="homeVisitButton" data-wa data-wa-text="Hallo, ik wil graag informeren over HOMS TECH." href="contact.html">💬 WhatsApp</a>
       </div>
 
       <section class="section" id="homeServicesSection">
@@ -1236,14 +1236,7 @@
 
       function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 
-      function wa(){
-       const n=String(data.whatsapp||"+31684242359").replace(/\D/g,"");
-       return n?"https://wa.me/"+n+"?text="+encodeURIComponent("Hallo, ik wil graag informeren over HOMS TECH."):"#";
-      }
-      function common(){
-       document.querySelectorAll("[data-wa]").forEach(a=>a.href=wa());
-       document.querySelectorAll("[data-phone]").forEach(a=>a.href="tel:"+String(data.phone||"+31684242359").replace(/[^\d+]/g,""));
-      }
+      function common(){/* WhatsApp- en belknoppen worden centraal gevuld door assets/homs-contact.js */}
       function isUsableHeroText(value, fallback){
        const v=String(value||"").replace(/\\s+/g," ").trim();
        if(!v) return fallback;
@@ -1340,8 +1333,7 @@
        set("homePopularSection",p.enabled);document.getElementById("popularTitle").textContent=p.title||"Populaire apparaten";
        set("homeVisitBanner",v.enabled);document.getElementById("homeVisitTitle").textContent=v.title||"";
        document.getElementById("homeVisitButton").textContent=v.buttonText||"";
-       document.getElementById("homeVisitButton").href=wa();
-       document.getElementById("areas").textContent=isUsableHeroText(v.text,defaults.homepage.homeVisit.text);
+              document.getElementById("areas").textContent=isUsableHeroText(v.text,defaults.homepage.homeVisit.text);
        set("homeServicesSection",s.enabled);document.getElementById("servicesTitle").textContent=s.title||"Onze reparatie diensten";
        set("homeWhySection",w.enabled);document.getElementById("whyTitle").textContent=w.title||"Waarom HOMS TECH";
        set("homeFooter",f.enabled);
@@ -1785,7 +1777,7 @@
       loadSite();
     </script>
 
-    <script src="assets/homs-global-nav.js?v=20261125-foot2" defer></script>
+    <script src="assets/homs-global-nav.js?v=20261125-contact1" defer></script>
     <script src="assets/homs-ai-chat.js" defer></script>
   </body>
 </html>
