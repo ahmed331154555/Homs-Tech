@@ -6977,7 +6977,7 @@ function renderInventoryItems(){
       const low=!untracked&&!zero&&item.stock<=Number(inventoryData.summary?.threshold??2);
       const status=untracked?"Niet ingesteld":zero?"Uitverkocht":low?"Lage voorraad":item.active?"Op voorraad":"Niet actief";
       const badge=untracked?"is-untracked":zero?"is-zero":low?"is-low":item.active?"is-available":"is-inactive";
-      return '<tr><td><strong>'+esc(item.name)+'</strong><small>'+esc(item.variantLabel)+' · '+esc(item.category)+'</small></td><td><span class="ht-inventory-sku">'+esc(item.sku||"—")+'</span></td><td><strong class="ht-inventory-quantity">'+(untracked?"Niet ingesteld":inventoryEuroCount(item.stock)+" st.")+'</strong></td><td><span class="ht-inventory-badge '+badge+'">'+status+'</span></td><td><button type="button" class="btn btn-light ht-inventory-row-action" onclick="selectInventoryItem('+index+')">Muteren</button></td></tr>';
+      return '<tr><td data-label="Product"><strong>'+esc(item.name)+'</strong><small>'+esc(item.variantLabel)+' · '+esc(item.category)+'</small></td><td data-label="SKU"><span class="ht-inventory-sku">'+esc(item.sku||"—")+'</span></td><td data-label="Voorraad"><strong class="ht-inventory-quantity">'+(untracked?"Niet ingesteld":inventoryEuroCount(item.stock)+" st.")+'</strong></td><td data-label="Status"><span class="ht-inventory-badge '+badge+'">'+status+'</span></td><td class="ht-inventory-action-cell"><button type="button" class="btn btn-light ht-inventory-row-action" onclick="selectInventoryItem('+index+')">Muteren</button></td></tr>';
     }).join("")+'</tbody></table>';
 }
 function renderInventoryMovements(){

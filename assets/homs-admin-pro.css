@@ -381,3 +381,19 @@ body,#dashboard{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:14px;lin
   #adminNav .nav-btn.active{box-shadow:none!important}
   #adminNav .admin-logout-btn .nav-ico{color:#fca5a5}
 }
+
+/* ===== 20. Inventory list on mobile: stacked cards ===== */
+@media (max-width:760px){
+  #dashboard .ht-inventory-table{display:block;min-width:0!important;width:100%!important}
+  #dashboard .ht-inventory-table thead{display:none}
+  #dashboard .ht-inventory-table tbody{display:flex;flex-direction:column;gap:10px}
+  #dashboard .ht-inventory-table tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 12px;padding:12px;border:1px solid #e2e8f0;border-radius:10px;background:#fff}
+  #dashboard .ht-inventory-table td{display:block;padding:0!important;border:0!important;min-width:0!important;white-space:normal!important;overflow-wrap:anywhere;text-align:left!important}
+  #dashboard .ht-inventory-table td[data-label]::before{content:attr(data-label);display:block;margin-bottom:3px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#64748b}
+  #dashboard .ht-inventory-table td:first-child{grid-column:1/-1}
+  #dashboard .ht-inventory-table td:first-child::before{display:none}
+  #dashboard .ht-inventory-table td:first-child small{display:block;white-space:normal!important}
+  #dashboard .ht-inventory-table .ht-inventory-action-cell{grid-column:1/-1}
+  #dashboard .ht-inventory-table .ht-inventory-row-action{width:100%;min-height:38px;white-space:nowrap!important;word-break:normal!important}
+  #dashboard .ht-inventory-table-wrap,#dashboard #inventoryList{overflow:visible!important;border:0!important;background:transparent!important}
+}
