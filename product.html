@@ -375,7 +375,37 @@
     />
     <script src="assets/homs-analytics-consent.js" defer></script>
     <link rel="stylesheet" href="assets/tactile-ui.css?v=20261125-logo" />
-  </head>
+  <style id="ht-product-order">
+body #productArea .product .info{border:0!important;background:none!important;box-shadow:none!important;border-radius:0!important;padding:0!important}
+body .ht-order{margin-top:22px;background:#fff;border:1px solid #e3e9f2;border-radius:16px;padding:18px;box-shadow:0 6px 18px rgba(15,23,42,.06);color:#111827}
+.ht-order-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-bottom:12px;border-bottom:1px solid #eef2f7}
+.ht-order-head h3{margin:0;font-size:17px;font-weight:800;color:#111827}
+.ht-order-price{text-align:right}.ht-order-price strong{display:block;font-size:26px;line-height:1.1;font-weight:900;color:#111827}
+.ht-order-discount{margin-top:3px;font-size:12px;font-weight:700;color:#15803d}.ht-order-discount s{color:#94a3b8;font-weight:600}
+.ht-order-lines{list-style:none;margin:12px 0 0;padding:0}
+.ht-order-lines li{display:flex;gap:9px;align-items:baseline;padding:5px 0;font-size:13.5px;color:#475569}
+.ht-order-lines li:before{content:"✓";color:#16a34a;font-weight:900;flex:none}
+.ht-order-lines li span{flex:1}.ht-order-lines li strong{color:#111827;font-weight:700;text-align:right}
+.ht-order-stock{display:flex;align-items:center;gap:8px;margin:12px 0 14px;font-size:13px;font-weight:700}
+.ht-order-stock i{width:9px;height:9px;border-radius:50%;background:currentColor}
+.ht-order-stock.ok{color:#15803d}.ht-order-stock.no{color:#b45309}
+.ht-order-actions{display:flex;gap:10px;align-items:stretch}
+.ht-qty{display:flex;align-items:center;border:1px solid #d5dce6;border-radius:12px;background:#fff;overflow:hidden;flex:none}
+.ht-qty button{width:40px;height:48px;border:0;background:#f5f8fc;font-size:20px;font-weight:700;color:#1e293b;cursor:pointer}
+.ht-qty button:disabled{opacity:.35;cursor:not-allowed}
+.ht-qty input{width:42px;height:48px;border:0;text-align:center;font-size:16px;font-weight:800;color:#111827;background:#fff;-moz-appearance:textfield;padding:0}
+.ht-qty input::-webkit-outer-spin-button,.ht-qty input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.ht-order-add{flex:1;min-height:48px;border:0;border-radius:12px;background:#2563eb;color:#fff;font-size:15.5px;font-weight:800;cursor:pointer;transition:background .15s}
+.ht-order-add:hover{background:#1d4ed8}.ht-order-add:disabled{background:#cbd5e1;cursor:not-allowed}
+.ht-order-perks{list-style:none;display:flex;flex-wrap:wrap;gap:6px 16px;margin:14px 0 0;padding:0;font-size:12.5px;color:#475569}
+.ht-order-perks li:before{content:"✓ ";color:#16a34a;font-weight:900}
+.ht-order-pay{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.ht-order-pay span{padding:5px 10px;border:1px solid #e3e9f2;border-radius:7px;background:#f8fafc;font-size:11.5px;font-weight:800;color:#334155}
+.ht-order-back{display:inline-block;margin-top:12px;font-size:13px;font-weight:700;color:#2563eb;text-decoration:none}
+body .ht-order .cart-added{margin-top:10px}
+@media(max-width:560px){.ht-order{padding:14px}.ht-order-price strong{font-size:23px}}
+</style>
+</head>
   <body>
     <div class="ht-topbar">
       <div class="ht-container">
@@ -1175,8 +1205,8 @@
         const found=items.find(x=>x.key===key);
         const selectedGallery=selectedOptions.color&&currentProduct.colorGalleryImages&&Array.isArray(currentProduct.colorGalleryImages[selectedOptions.color])?currentProduct.colorGalleryImages[selectedOptions.color].filter(Boolean):[];
         const selectedImage=selectedGallery[0]||colorVariantImage(selectedOptions.color)||((Array.isArray(currentProduct.images)&&currentProduct.images[0])||currentProduct.image||currentProduct.imageUrl||"");
-        if(found){found.qty=Number(found.qty||1)+1;if(!found.image&&selectedImage)found.image=selectedImage;}
-        else items.push({key,type,id:currentProductId,name:currentProduct.name||"Smartphone",brand:currentProduct.brand||"",image:selectedImage,options,unitPrice:total,qty:1});
+        if(found){found.qty=Math.min(10,Number(found.qty||1)+orderQty);if(!found.image&&selectedImage)found.image=selectedImage;}
+        else items.push({key,type,id:currentProductId,name:currentProduct.name||"Smartphone",brand:currentProduct.brand||"",image:selectedImage,options,unitPrice:total,qty:orderQty});
         // Save the selected phone and its exact variant before navigating to the cart.
         writeCart(items);
 
@@ -1280,6 +1310,46 @@
           return {available,known,stock:{known,count:known?Number(raw):null},alternatives};
         }
         return {available:true,known:false,stock:{known:false,count:null},alternatives:[]};
+      }
+      let orderQty=1;
+      function orderMaxQty(){
+        try{const st=inventoryAvailability(currentProduct);const c=st&&st.stock&&st.stock.known?Number(st.stock.count):0;return c>0?Math.min(c,10):10;}catch(e){return 10;}
+      }
+      function setOrderQty(v){
+        const max=orderMaxQty();
+        orderQty=Math.max(1,Math.min(max,Math.floor(Number(v))||1));
+        const i=document.getElementById("orderQtyInput");if(i)i.value=orderQty;
+        const m=document.getElementById("orderQtyMinus"),p=document.getElementById("orderQtyPlus");
+        if(m)m.disabled=orderQty<=1;if(p)p.disabled=orderQty>=max;
+        const t=document.getElementById("orderTotalValue");
+        if(t&&t.dataset.unit)t.textContent=money(Number(t.dataset.unit)*orderQty);
+      }
+      function renderOrderCard(product,total,hasOptions){
+        const status=inventoryAvailability(product);
+        const available=!!status.available;
+        const count=status.stock&&status.stock.known&&status.stock.count>0?status.stock.count:0;
+        if(orderQty>orderMaxQty())orderQty=orderMaxQty();
+        const labels={storage:"Geheugen",color:"Kleur",condition:"Conditie",battery:"Batterij",vat:"BTW",tradeIn:"Inruil"};
+        const lines=["storage","color","condition","battery","vat","tradeIn"].filter(k=>selectedOptions[k]).map(k=>`<li><span>${labels[k]}</span><strong>${esc(selectedOptions[k])}</strong></li>`);
+        Object.entries(customSelectedOptions).filter(([k,v])=>v).forEach(([k,v])=>{const [type,index]=k.split(":");const group=currentProduct?.[type]?.[Number(index)];lines.push(`<li><span>${esc(group?.name||"Extra")}</span><strong>${esc(v)}</strong></li>`);});
+        const priced=applyCurrentProductDiscount(total);
+        const unit=priced.price;
+        const disc=priced.discount?`<div class="ht-order-discount">${priced.discount.type==="percent"?Number(priced.discount.value)+"% korting":"€ "+Number(priced.discount.value).toFixed(2).replace(".",",")+" korting"} · <s>${money(priced.original)}</s></div>`:"";
+        const stock=available
+          ?`<div class="ht-order-stock ok"><i></i>Op voorraad${count?` · nog ${esc(count)} stuks`:""}</div>`
+          :`<div class="ht-order-stock no"><i></i>Niet op voorraad</div>`;
+        const canBuy=available&&unit>0;
+        const qty=canBuy?`<div class="ht-qty" role="group" aria-label="Aantal"><button type="button" id="orderQtyMinus" aria-label="Minder" onclick="setOrderQty(orderQty-1)"${orderQty<=1?" disabled":""}>−</button><input id="orderQtyInput" type="number" inputmode="numeric" min="1" max="${orderMaxQty()}" value="${orderQty}" aria-label="Aantal" onchange="setOrderQty(this.value)"><button type="button" id="orderQtyPlus" aria-label="Meer" onclick="setOrderQty(orderQty+1)"${orderQty>=orderMaxQty()?" disabled":""}>+</button></div>`:"";
+        return `<section class="ht-order" aria-label="Jouw bestelling">
+          <div class="ht-order-head"><h3>Jouw bestelling</h3><div class="ht-order-price"><strong id="orderTotalValue" data-unit="${esc(unit)}">${money(unit*orderQty)}</strong>${disc}</div></div>
+          ${hasOptions&&lines.length?`<ul class="ht-order-lines">${lines.join("")}</ul>`:""}
+          ${stock}
+          <div class="ht-order-actions">${qty}<button type="button" class="ht-order-add" onclick="addCurrentProductToCart()"${canBuy?"":" disabled"}>${canBuy?"In winkelwagen":"Niet beschikbaar"}</button></div>
+          <div id="cartAdded" class="cart-added">✓ Toegevoegd aan winkelwagen</div>
+          <ul class="ht-order-perks"><li>${esc((product.warranty||product.garantie)?("Garantie: "+(product.warranty||product.garantie)):"1 jaar garantie")}</li><li>Snel geleverd</li><li>Veilig betalen</li></ul>
+          <div class="ht-order-pay" aria-label="Betaalmethoden"><span>iDEAL</span><span>PayPal</span><span>Visa</span><span>Mastercard</span></div>
+          <a class="ht-order-back" href="devices.html">← Alle apparaten</a>
+        </section>`;
       }
       function renderInventoryNotice(product){
         const status=inventoryAvailability(product);
@@ -1398,13 +1468,13 @@
           ${specs?`<div class="meta">${specs}</div>`:""}
           ${optionsHtml}
           ${renderTradeInSummary(total)}
-          ${hasOptions?`<div class="order-summary"><h3>Jouw bestelling</h3>${renderInventoryNotice(product)}${["storage","color","condition","battery","vat","tradeIn"].filter(k=>selectedOptions[k]).map(k=>`<div class="summary-row"><span>${esc(k==="storage"?"Geheugen":k==="color"?"Kleur":k==="condition"?"Conditie":k==="battery"?"Batterij":k==="vat"?"BTW":"Inruil")}</span><strong>${esc(selectedOptions[k])}</strong></div>`).join("")}${Object.entries(customSelectedOptions).filter(([k,v])=>v).map(([k,v])=>{const [type,index]=k.split(":");const group=currentProduct?.[type]?.[Number(index)];return `<div class="summary-row"><span>${esc(group?.name||"Extra")}</span><strong>${esc(v)}</strong></div>`}).join("")}<div class="summary-total">Totaal: ${money(total)}</div></div>`:""}
+          ${renderOrderCard(product,total,hasOptions)}
           ${description?`<div class="description">${esc(description)}</div>`:""}
           ${(adminSpecs.length || specsList.length)?`<div class="spec-box"><h2>Productspecificaties</h2><div class="spec-list">
             ${adminSpecs.map(([label,value])=>`<div><strong>${esc(label)}:</strong> ${esc(value)}</div>`).join("")}
             ${specsList.map(x=>`<div><strong>${esc(x.label)}:</strong> ${esc(x.value||"")}</div>`).join("")}
           </div></div>`:""}
-          <div class="buttons"><button type="button" class="btn blue" onclick="addCurrentProductToCart()">🛒 In winkelwagen</button><a class="btn gray" href="devices.html">← Apparaten</a></div><div id="cartAdded" class="cart-added">✓ Toegevoegd aan winkelwagen</div>
+          
           ${!basePrice&&!hasOptions?`<div class="status">Neem contact met ons op voor de actuele prijs.</div>`:""}
         </div></div>`;
       }
