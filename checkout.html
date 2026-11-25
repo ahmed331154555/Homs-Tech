@@ -659,7 +659,64 @@
       href="assets/homs-commerce-premium.css?v=20261122-commerce-premium-v1"
     />
     <link rel="stylesheet" href="assets/tactile-ui.css?v=20261124-flat" />
-  </head>
+      <style id="ht-checkout-mobile-pro">
+      /* Mobile polish for checkout (loaded last) */
+      body .checkout-layout .total,body .checkout-layout .total span,body .checkout-layout .item-price{font-family:Inter,Arial,Helvetica,sans-serif!important}
+      @media(max-width:600px){
+        body .checkout-wrap{padding:12px 12px 36px!important}
+        body .checkout-hero{border-radius:16px!important;margin-bottom:14px!important}
+        body .checkout-brandline{padding:12px 14px!important;gap:10px!important}
+        body .checkout-brandmark strong,body .checkout-brandmark b{font-size:20px!important}
+        body .checkout-brandmark small,body .checkout-brandmark span:last-child{font-size:11px!important;line-height:1.35!important}
+        body .checkout-secure{padding:7px 11px!important;font-size:12px!important;border-radius:999px!important}
+        body .checkout-progress{padding:10px 8px 12px!important}
+        body .checkout-progress-step small{font-size:9.5px!important}
+        body .checkout-page-heading{margin:0 0 12px!important;gap:10px!important}
+        body .checkout-heading-lock{display:none!important}
+        body .checkout-eyebrow{font-size:11px!important;letter-spacing:.1em!important}
+        body .checkout-wrap .title{font-size:24px!important;line-height:1.15!important;margin:2px 0 4px!important}
+        body .checkout-wrap .subtitle{font-size:13.5px!important;line-height:1.45!important;margin:0!important}
+        body .checkout-layout{gap:14px!important}
+        body .checkout-layout>.card{padding:16px 14px!important;border-radius:16px!important}
+        body .checkout-layout>.card h2{font-size:19px!important;margin:0 0 12px!important}
+        body .account-note{padding:10px 12px!important;font-size:13px!important;line-height:1.4!important;border-radius:10px!important;margin:0 0 12px!important}
+        body .checkout-layout .grid{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:10px 10px!important}
+        body .checkout-layout .grid>.field{grid-column:1/-1;margin:0!important}
+        body .checkout-layout .grid>.field:nth-child(4){grid-column:1;order:4}
+        body .checkout-layout .grid>.field:nth-child(6){grid-column:2;order:5}
+        body .checkout-layout .grid>.field:nth-child(5){order:6}
+        body .checkout-layout .grid>.field:nth-child(7){order:7}
+        body .checkout-layout .field{display:flex!important;flex-direction:column!important;gap:5px!important}
+        body .checkout-layout .field label{font-size:12.5px!important;margin:0!important;line-height:1.2!important}
+        body .checkout-layout .field input,body .checkout-layout .field select{height:44px!important;min-height:44px!important;padding:0 12px!important;font-size:16px!important;border-radius:10px!important}
+        body .payment-choice{margin-top:16px!important;border-radius:14px!important}
+        body .payment-choice-heading{padding:12px 14px!important;gap:10px!important}
+        body .payment-choice-heading h3,body .payment-choice-heading strong{font-size:17px!important;margin:0!important}
+        body .payment-choice-heading p,body .payment-choice-heading small{font-size:12.5px!important;margin:2px 0 0!important}
+        body .payment-heading-icon{width:40px!important;height:40px!important;flex:0 0 40px!important;border-radius:12px!important}
+        body .payment-heading-icon svg{width:22px!important;height:22px!important}
+        body .payment-options{padding:12px!important;gap:8px!important}
+        body .payment-option{min-height:0!important;padding:10px 12px!important;gap:10px!important;border-radius:12px!important}
+        body .payment-option-symbol{width:38px!important;height:38px!important;flex:0 0 38px!important}
+        body .payment-option-copy strong,body .payment-option-copy b{font-size:14px!important;line-height:1.25!important}
+        body .payment-option-copy small,body .payment-option-copy span{font-size:12px!important;line-height:1.35!important}
+        body .payment-option-brands{gap:5px!important}
+        body .payment-trust-strip{margin:4px 12px 0!important;padding:8px 0!important}
+        body .payment-trust-strip>*{font-size:11.5px!important;gap:4px!important}
+        body .payment-config-note{margin:10px 12px 12px!important;padding:9px 12px!important;font-size:12.5px!important;border-radius:10px!important}
+        body #submitBtn{min-height:52px!important;font-size:16px!important;border-radius:14px!important;margin-top:4px!important}
+        body .checkout-layout .item{grid-template-columns:52px minmax(0,1fr) auto!important;gap:10px!important;padding:10px 0!important;align-items:start!important}
+        body .checkout-layout .item>img,body .checkout-layout .item>div:first-child:not(:only-child){width:52px!important;height:52px!important}
+        body .checkout-layout .item-title{font-size:13.5px!important;line-height:1.3!important}
+        body .checkout-layout .item-meta{font-size:12px!important;line-height:1.3!important}
+        body .checkout-layout .item-meta br{display:none}
+        body .checkout-layout .item-meta .ht-option-list{margin:4px 0!important}
+        body .checkout-layout .item-price{font-size:14px!important;font-weight:800!important}
+        body .checkout-layout .total{font-size:18px!important;padding:12px 0!important;margin-top:4px!important}
+        body .checkout-layout>.card:last-child .btn{min-height:44px!important}
+      }
+    </style>
+</head>
   <body>
     <div class="ht-topbar">
       <div class="ht-container">
