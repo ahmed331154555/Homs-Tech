@@ -20,7 +20,7 @@ const deletingWebshopOrderIds = new Set();
 
 const PAGE_PERMISSIONS = {
   "all-orders":"orders.view","live-chat":"orders.view",
-  general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",shop:"site.save",discounts:"site.save",categories:"categories.view",
+  general:"general.view",services:"services.view",repair:"site.save",phones:"phones.view",shop:"site.save",discounts:"site.save","easy-unlocker":"site.save",categories:"categories.view",
 why:"why.view",customers:"customers.view",orders:"orders.view","repair-requests":"orders.view",
   "webshop-orders":"webshop_orders.view","invoices":"site.save","order-settings":"site.save",search:"search",admins:"admins.manage",
   buyback:"site.save", "buyback-orders":"buyback_orders.view", inventory:"site.save", partners:"site.save", "device-register":"device_register.view", emails:"site.save"
@@ -42,7 +42,7 @@ function hasPermission(p){return currentUser.role==="superadmin"||currentUser.pe
 function canEditSite(){return hasPermission("site.save");}
 function canEditCurrentPage(){
   // Discounts use their dedicated API and must never expose the global full-site save.
-  if(currentPage==="discounts") return false;
+  if(currentPage==="discounts"||currentPage==="easy-unlocker") return false;
   if(currentPage==="phones") return hasPermission("phones.update") || canEditSite();
   if(currentPage==="shop") return canEditSite();
   if(currentPage==="repair") return hasPermission("repair_page.update") || canEditSite();
@@ -161,6 +161,7 @@ function showPage(page){
     if(page==="order-settings")loadOrderSettings();
     if(page==="shop")loadShopVisibility();
     if(page==="discounts")discountLoad();
+    if(page==="easy-unlocker"&&window.euLoad)window.euLoad();
     if(page==="buyback-orders")loadBuybackOrders();
     if(page==="admins")loadAdmins();
     if(page==="partners"&&typeof loadPartnersAdmin==="function")loadPartnersAdmin();

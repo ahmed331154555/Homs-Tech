@@ -138,6 +138,15 @@
         <button
           type="button"
           class="nav-btn"
+          data-page="easy-unlocker"
+          data-permission="site.save"
+          onclick="showPage('easy-unlocker')"
+        >
+          🔓 Easy Unlocker
+        </button>
+        <button
+          type="button"
+          class="nav-btn"
           data-page="inventory"
           data-permission="site.save"
           onclick="showPage('inventory')"
@@ -868,6 +877,51 @@
               role="status"
               aria-live="polite"
             ></p>
+          </div>
+        </section>
+
+        <!-- EASY UNLOCKER -->
+        <section
+          class="section admin-page"
+          id="page-easy-unlocker"
+          data-permission="site.save"
+        >
+          <div class="section-head">
+            <div>
+              <h2>🔓 Easy Unlocker</h2>
+              <p>
+                Diensten van de leverancier. Alles staat standaard verborgen:
+                jij kiest wat je wilt aanbieden. Er wordt niets besteld of
+                betaald via deze pagina.
+              </p>
+            </div>
+          </div>
+          <div class="eu-wrap">
+            <div class="eu-toolbar">
+              <label class="btn btn-light eu-file">
+                ⬆️ Catalogus uploaden (products.json)
+                <input type="file" id="euFile" accept="application/json,.json" hidden />
+              </label>
+              <button class="btn btn-light" type="button" id="euSync">🔄 Synchroniseren</button>
+              <button class="btn btn-light" type="button" id="euTest">🔌 Verbinding testen</button>
+            </div>
+            <p class="small" id="euSummary" role="status" aria-live="polite"></p>
+            <p class="small" id="euStatus" role="status" aria-live="polite"></p>
+            <div class="eu-filters">
+              <input type="search" id="euQuery" placeholder="Zoek dienst…" aria-label="Zoek dienst" />
+              <select id="euCategory" aria-label="Categorie"><option value="">Alle categorieën</option></select>
+              <select id="euPublished" aria-label="Status">
+                <option value="">Alle</option>
+                <option value="1">Gekozen</option>
+                <option value="0">Niet gekozen</option>
+              </select>
+            </div>
+            <div id="euList"></div>
+            <div class="eu-pager">
+              <button class="btn btn-light" type="button" id="euPrev">← Vorige</button>
+              <span id="euPage" class="small"></span>
+              <button class="btn btn-light" type="button" id="euNext">Volgende →</button>
+            </div>
           </div>
         </section>
 
@@ -2618,6 +2672,8 @@
     </div>
 
     <script src="../assets/homs-admin.js?v=20261125-pay5" defer></script>
+    <script src="../assets/homs-admin-easy-unlocker.js?v=20261125-eu1" defer></script>
+    <link rel="stylesheet" href="../assets/homs-admin-easy-unlocker.css?v=20261125-eu1" />
     <script src="../assets/admin-button-states.js?v=20261124-ui2" defer></script>
     <script src="../assets/admin-editor-focus.js?v=20261125-focus3" defer></script>
     <script

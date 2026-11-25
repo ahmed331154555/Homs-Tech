@@ -30,6 +30,10 @@ const { registerAdminInvoiceRoutes } = require("./routes/admin-invoices");
 const { registerAdminInventoryRoutes } = require("./routes/admin-inventory");
 const { registerAdminDiscountRoutes } = require("./routes/admin-discounts");
 const { registerAdminEmailRoutes } = require("./routes/admin-emails");
+const {
+  registerAdminEasyUnlockerRoutes,
+  ensureEasyUnlockerSchema,
+} = require("./routes/admin-easy-unlocker");
 const { registerContactRoutes } = require("./routes/contact");
 const { registerAnnouncementBarRoutes } = require("./routes/announcement-bars");
 const { registerBenefitsStripRoutes } = require("./routes/benefits-strip");
@@ -532,6 +536,12 @@ registerBenefitsStripRoutes(app, {
 registerAdminDiscountRoutes(app, {
   requirePermission,
   queryWithConnectionRetry,
+});
+
+registerAdminEasyUnlockerRoutes(app, {
+  requirePermission,
+  queryWithConnectionRetry,
+  pool,
 });
 
 // Load only the allowlisted JSONB fields needed by the requested admin editor.
@@ -1959,6 +1969,7 @@ registerSupplierPhonesRoutes(app);
 initializeDatabaseWithRetry(async () => {
   await initializeDatabaseSchema(pool);
   await customerReviewRoutes.ensureCustomerReviewSchema(pool);
+  await ensureEasyUnlockerSchema(pool);
   try {
     await getPublicBuybackCatalog();
   } catch (error) {
