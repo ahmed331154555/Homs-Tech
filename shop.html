@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20261109-shop-theme">
 
 <link rel="stylesheet" href="assets/tactile-ui.css?v=20261124-flat" />
-<link rel="stylesheet" href="assets/homs-shop.css?v=20261125-shop2" />
+<link rel="stylesheet" href="assets/homs-shop.css?v=20261125-shop3" />
 </head>
 <body class="shop-page">
 <div class="top">HOMS TECH · Accessoires en onderdelen</div>
@@ -147,8 +147,13 @@ function renderCategoryChips(){
  list.forEach(p=>{const c=String(p.category||'Accessoires');counts[c]=(counts[c]||0)+1});
  const names=Object.keys(counts).sort((a,b)=>a.localeCompare(b,'nl',{sensitivity:'base'}));
  const current=$('category').value;
- const chip=(value,label,icon,count)=>'<button type="button" class="shop-chip'+(value===current?' is-active':'')+'" data-cat="'+esc(value)+'" aria-pressed="'+(value===current)+'"><span class="shop-chip-icon" aria-hidden="true">'+icon+'</span>'+esc(label)+'<span class="shop-chip-count">'+count+'</span></button>';
- box.innerHTML=chip('','Alles','🛍️',list.length)+names.map(n=>chip(n,n,catIcon(n),counts[n])).join('');
+ const thumbs={};
+ list.forEach(p=>{const c=String(p.category||'Accessoires');if(!thumbs[c]){const src=imgFor(p);if(src)thumbs[c]=src}});
+ const ALL_ICON='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>';
+ const BOX_ICON='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>';
+ const chip=(value,label,icon,count)=>'<button type="button" class="shop-chip'+(value===current?' is-active':'')+'" data-cat="'+esc(value)+'" aria-pressed="'+(value===current)+'"><span class="shop-chip-icon" aria-hidden="true">'+icon+'</span><span class="shop-chip-label">'+esc(label)+'</span><span class="shop-chip-count">'+count+'</span></button>';
+ const thumb=n=>thumbs[n]?'<img src="'+esc(thumbs[n])+'" alt="" width="28" height="28" loading="lazy" decoding="async">':BOX_ICON;
+ box.innerHTML=chip('','Alles',ALL_ICON,list.length)+names.map(n=>chip(n,n,thumb(n),counts[n])).join('');
 }
 function renderCategories(){
  const old=$('category').value;
