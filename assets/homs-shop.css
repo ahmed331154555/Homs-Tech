@@ -238,3 +238,26 @@ main{max-width:1200px;margin:auto;padding:22px 20px 70px}
   .shop-chip{min-height:38px;padding:4px 12px 4px 6px;gap:7px}
   .shop-chip-icon{flex-basis:26px;width:26px;height:26px;border-radius:7px}
 }
+
+/* ---------- Category tiles: rectangular, two per row (same pattern as the Server page) ---------- */
+#shopCats.shop-cats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow:visible;padding:0;margin:0 0 14px;scroll-snap-type:none}
+#shopCats .shop-chip{display:flex;align-items:center;justify-content:flex-start;gap:10px;min-width:0;min-height:50px;padding:6px 12px 6px 8px;border-radius:10px;text-align:left}
+#shopCats .shop-chip-label{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#shopCats .shop-chip-count{flex:0 0 auto;margin-left:auto;border-radius:6px}
+#shopCats .shop-chip-icon{border-radius:8px}
+@media(min-width:760px){#shopCats.shop-cats{display:flex;flex-wrap:wrap}#shopCats .shop-chip{min-width:190px}}
+
+/* ---------- Filters toggle: clear button with icon and a proper chevron ---------- */
+.shop-filters{padding:0;overflow:hidden}
+.shop-filters summary{justify-content:flex-start;min-height:52px;padding:0 12px 0 14px;gap:12px;font-size:15px;transition:background .15s ease;-webkit-tap-highlight-color:transparent}
+.shop-filters summary:hover{background:#f7faff}
+.shop-filters summary:active{background:#eef4ff}
+.shop-filters summary:focus-visible{outline:3px solid #93c5fd;outline-offset:-3px}
+.shop-filters summary:before{content:"";flex:0 0 22px;width:22px;height:22px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b2c43' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0'/%3E%3Ccircle cx='16' cy='6' r='2'/%3E%3Ccircle cx='10' cy='12' r='2'/%3E%3Ccircle cx='18' cy='18' r='2'/%3E%3C/svg%3E") center/22px no-repeat}
+.shop-filters summary:after{content:"";flex:0 0 32px;width:32px;height:32px;margin-left:auto;border-radius:9px;background:#eaf2ff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") center/18px no-repeat;font-size:0;transition:transform .2s ease,background-color .15s ease}
+.shop-filters summary:hover:after{background-color:#dbe9ff}
+.shop-filters[open] summary:after{transform:rotate(180deg)}
+.shop-filters[open] summary{margin-bottom:0;border-bottom:1px solid var(--line)}
+.shop-filters .shop-filter-grid,.shop-filters .shop-filter-actions{padding:14px 14px 0}
+.shop-filters .shop-filter-actions{padding-bottom:14px;margin-top:0}
+@media(max-width:560px){.shop-filters{padding:0}.shop-filters summary{min-height:50px;font-size:15px}}
