@@ -22,17 +22,19 @@
       .svc small{color:var(--muted);font-size:12.5px;display:block;line-height:1.3}
       .svc-foot{display:grid;grid-template-columns:1fr 160px;align-items:center;gap:12px;padding-top:14px;border-top:1px solid #edf2f7}
       .price{font-family:inherit!important;font-size:21px;font-weight:900;color:var(--navy);letter-spacing:-.2px}.price.ask{font-size:14px;color:var(--muted);font-weight:700}
-      .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 20px;border:1px solid #1d4ed8;border-radius:11px;background:#2563eb;color:#fff;font:inherit;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 7px 14px -4px #1d5bd666;transition:transform .08s ease,box-shadow .15s ease,background .15s ease}
-      .btn:hover{background:#1d4ed8;box-shadow:0 10px 18px -4px #1d5bd68c}
-      .btn:active{transform:translateY(2px);box-shadow:0 3px 6px #1d5bd640}
+      .btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 20px;border:0;border-radius:10px;background:#2563eb;color:#fff;font:inherit;font-size:14px;font-weight:700;letter-spacing:.2px;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;transition:background .18s ease,transform .12s ease,box-shadow .18s ease}
+      .btn:hover{background:#1d4ed8}
+      .btn:active{transform:scale(.97)}
       .btn:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
-      .btn .arr{display:inline-block;transition:transform .15s ease}.btn:hover .arr{transform:translateX(3px)}
+      .btn .rip{position:absolute;border-radius:50%;background:#ffffff59;transform:scale(0);animation:rip .55s ease-out forwards;pointer-events:none}
+      @keyframes rip{to{transform:scale(1);opacity:0}}
+      @media(prefers-reduced-motion:reduce){.btn,.btn .rip{transition:none;animation:none}}
       .btn:disabled{opacity:.65;cursor:wait;transform:none}
       .empty{padding:40px 10px;text-align:center;color:var(--muted)}
       dialog{border:0;border-radius:20px;padding:0;width:min(520px,calc(100vw - 24px));max-height:92vh;box-shadow:0 30px 80px #0b2c4355}dialog::backdrop{background:#071d2d99}
       form{padding:22px;display:grid;gap:13px}form h2{margin:0;font-size:20px;color:var(--navy)}.sum{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
       label{font-size:13px;font-weight:800;color:#263b50;display:flex;flex-direction:column;gap:6px}label input{border:1px solid #d6e0ea;border-radius:11px;padding:12px 13px;font:inherit;width:100%}label input:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px #2563eb18}
-      .row{display:flex;gap:10px}.row .btn{flex:1}.btn.light{background:#edf4ff;color:#1758bd;border-color:#cfe0fb;box-shadow:none}.btn.light:hover{background:#dbe9ff;box-shadow:none}
+      .row{display:flex;gap:10px}.row .btn{flex:1}.btn.light{background:#edf4ff;color:#1758bd}.btn.light:hover{background:#dbe9ff}.btn.light .rip{background:#2563eb26}
       .status{font-size:14px;line-height:1.5;min-height:1em}.status.ok{color:#087443}.status.error{color:#b42318}
       .consent{flex-direction:row!important;align-items:flex-start;gap:10px!important;font-weight:600;font-size:13px;line-height:1.45;color:#334155;cursor:pointer}.consent input{width:20px;height:20px;flex:0 0 20px;margin-top:1px;padding:0}.consent a{color:var(--blue)}
       .hp{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important}
@@ -103,7 +105,7 @@
               (s.imageUrl ? '<img src="' + esc(s.imageUrl) + '" alt="" loading="lazy" referrerpolicy="no-referrer" />' : '<span class="ph"></span>') +
               "<div><h3>" + esc(s.name) + "</h3>" + (s.categoryName ? "<small>" + esc(s.categoryName) + "</small>" : "") + "</div></div>" +
               '<div class="svc-foot"><div class="price' + (p ? "" : " ask") + '">' + (p || "Prijs op aanvraag") + "</div>" +
-              '<button class="btn" type="button" data-id="' + esc(s.id) + '">Aanvragen <span class="arr" aria-hidden="true">→</span></button></div></article>';
+              '<button class="btn" type="button" data-id="' + esc(s.id) + '">Aanvragen</button></div></article>';
           }).join("");
         }
         function open(id) {
@@ -117,6 +119,16 @@
           $("svcStatus").textContent = ""; $("svcStatus").className = "status";
           $("svcDialog").showModal();
         }
+        document.addEventListener("pointerdown", function (e) {
+          var b = e.target.closest && e.target.closest(".btn");
+          if (!b || b.disabled) return;
+          var r = b.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2;
+          var dot = document.createElement("span");
+          dot.className = "rip";
+          dot.style.cssText = "width:" + d + "px;height:" + d + "px;left:" + (e.clientX - r.left - d / 2) + "px;top:" + (e.clientY - r.top - d / 2) + "px";
+          b.appendChild(dot);
+          setTimeout(function () { dot.remove(); }, 600);
+        });
         $("svcGrid").addEventListener("click", function (e) { var b = e.target.closest("button[data-id]"); if (b) open(b.dataset.id); });
         $("svcQuery").addEventListener("input", render);
         $("svcCategory").addEventListener("change", render);
