@@ -4127,12 +4127,17 @@ function renderWebshopOrderList(type){
       '</article>';
     }
 
-    const imageMarkup=image?'<img class="phone-order-product-image" src="'+esc(image)+'" alt="" loading="lazy" onerror="this.style.display=\'none\'">':'<span class="phone-order-product-placeholder">📱</span>';
-    const phoneContact=order.phone?'<span>☎ '+esc(order.phone)+'</span>':"";
-    const paymentValue=String(order.payment_status||"Onbekend");
-    const paymentLabel=/paid|betaald|completed/i.test(paymentValue)?"Betaald":(/failed|mislukt|cancel/i.test(paymentValue)?"Mislukt":(/pending|unpaid|open|wacht|processing|in behandeling/i.test(paymentValue)?"Openstaand":paymentValue));
-    const paymentClass=/paid|betaald|completed/i.test(paymentValue)?"is-paid":(/failed|mislukt|cancel/i.test(paymentValue)?"is-failed":"is-pending");
-    return '<article class="order-card webshop-order-card webshop-order-list-card '+status.className+'"><div class="phone-order-main"><div class="phone-order-product">'+imageMarkup+'</div><div class="phone-order-info"><div class="phone-order-title-line"><button class="webshop-order-title-link" type="button" onclick="showWebshopOrderDetails('+Number(order.id)+')">'+esc(itemName)+'</button><span class="phone-order-number">#'+esc(order.id)+'</span></div><div class="phone-order-item-meta">'+esc(itemMeta||"Bestelling")+esc(extraItems)+'</div><div class="phone-order-customer"><strong>'+esc(customer)+'</strong>'+phoneContact+'</div></div><div class="phone-order-price"><strong>'+esc(total)+'</strong><small>'+items.length+' product(en)</small></div></div><div class="phone-order-footer"><div class="phone-order-state"><span class="webshop-status-pill '+status.className+'"><span aria-hidden="true">'+status.icon+'</span> '+esc(statusLabel)+'</span><span class="webshop-payment-pill '+paymentClass+'">'+esc(paymentLabel)+'</span><time>'+esc(date)+'</time></div><div class="webshop-list-actions"><button class="btn btn-light order-detail-btn" type="button" onclick="showWebshopOrderDetails('+Number(order.id)+')">Details bekijken →</button></div></div></article>';
+    const thumb=image?'<img src="'+esc(image)+'" alt="" loading="lazy" onerror="this.style.display=\'none\'">':'<span aria-hidden="true">📦</span>';
+    const paymentValue=String(order.payment_status||"").trim().toLowerCase();
+    const paymentLabel=/^(paid|betaald|completed)$/.test(paymentValue)?"Betaald":(/^(failed|mislukt|cancelled|canceled|geannuleerd)$/.test(paymentValue)?"Mislukt":(/^(processing|pending|in behandeling|in afwachting)$/.test(paymentValue)?"In behandeling":"Niet betaald"));
+    const paymentClass=paymentLabel==="Betaald"?"is-paid":(paymentLabel==="Mislukt"?"is-failed":"is-pending");
+    const contact=[order.phone,order.email].filter(Boolean).join(" · ");
+    return '<article class="ht-shop-row '+status.className+'" data-order-id="'+Number(order.id)+'"><button type="button" class="ht-shop-row-open" onclick="showWebshopOrderDetails('+Number(order.id)+')" aria-label="Open bestelling #'+Number(order.id)+'">'+
+      '<span class="ht-shop-thumb">'+thumb+'</span>'+
+      '<span class="ht-shop-main"><strong class="ht-shop-title">'+esc(itemName)+'</strong><small>'+esc(itemMeta||"Bestelling")+esc(extraItems)+'</small><small class="ht-shop-cust">'+esc(customer)+(contact?' · '+esc(contact):'')+'</small></span>'+
+      '<span class="ht-shop-price"><strong>'+esc(total)+'</strong><small>#'+esc(order.id)+' · '+esc(date)+'</small></span>'+
+      '<span class="ht-shop-chips"><span class="ht-phone-status-chip '+status.className+'"><span aria-hidden="true">'+status.icon+'</span>'+esc(statusLabel)+'</span><span class="ht-phone-pay-chip '+paymentClass+'">'+esc(paymentLabel)+'</span></span>'+
+      '<span class="ht-shop-go" aria-hidden="true">›</span></button></article>';
   }).join("");
 
   if(phone){

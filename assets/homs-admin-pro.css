@@ -640,3 +640,60 @@ body.ht-modal-open{overflow:hidden}
 #dashboard .ht-phone-pay-chip{display:inline-flex;align-items:center;padding:2px 9px;border:1px solid #fde3a7;border-radius:99px;background:#fff8e6;color:#8a5a00;font-size:11px;font-weight:800;white-space:nowrap}
 #dashboard .ht-phone-pay-chip.is-paid{border-color:#bfe3cc;background:#f0faf4;color:#166534}
 #dashboard .ht-phone-pay-chip.is-failed{border-color:#f5c2c2;background:#fff1f1;color:#b42318}
+
+/* 29. Webshop-bestellingen: compacte kop, statistieken, filters en rijen */
+#dashboard #page-webshop-orders .section-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;margin-bottom:10px!important;padding:0!important;background:transparent!important}
+#dashboard #page-webshop-orders .section-head h2{margin:0!important;font-size:18px!important;line-height:1.2!important}
+#dashboard #page-webshop-orders .section-head p{margin:2px 0 0!important;font-size:12px!important;color:#64748b!important}
+#dashboard #page-webshop-orders .section-head .btn{min-height:32px!important;width:auto!important;padding:4px 12px!important;font-size:12px!important;border-radius:8px!important;white-space:nowrap}
+#dashboard #page-webshop-orders .order-summary{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;margin:0 0 10px!important}
+#dashboard #page-webshop-orders .order-stat{display:flex!important;align-items:center!important;gap:8px!important;min-height:0!important;padding:8px 10px!important;border-radius:10px!important;box-shadow:none!important}
+#dashboard #page-webshop-orders .order-stat .stat-icon{width:26px!important;height:26px!important;min-width:26px!important;font-size:12px!important}
+#dashboard #page-webshop-orders .order-stat b{display:block;font-size:17px!important;line-height:1.1!important}
+#dashboard #page-webshop-orders .order-stat span:not(.stat-icon){display:block;font-size:10.5px!important;letter-spacing:0!important;text-transform:none!important;font-family:inherit!important;font-weight:700!important;color:#64748b!important;line-height:1.15!important;word-break:normal!important;overflow-wrap:normal!important}
+#dashboard #page-webshop-orders .orders-toolbar{display:grid!important;grid-template-columns:minmax(0,1.6fr) repeat(2,minmax(0,1fr)) auto!important;gap:8px!important;margin:0 0 8px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+#dashboard #page-webshop-orders .orders-search{margin:0!important;padding:0!important;border:0!important;background:transparent!important}
+#dashboard #page-webshop-orders .orders-toolbar input,#dashboard #page-webshop-orders .orders-toolbar select{width:100%!important;min-height:36px!important;padding:0 10px!important;border:1px solid #d8e1eb!important;border-radius:9px!important;background:#fff!important;font-size:13px!important;box-shadow:none!important}
+#dashboard #page-webshop-orders .orders-toolbar .order-filter-btn{min-height:36px!important;width:auto!important;padding:0 12px!important;border-radius:9px!important;font-size:12px!important;white-space:nowrap}
+#dashboard #page-webshop-orders #webshopOrdersStatus{margin:0 0 8px!important;padding:0!important;background:transparent!important;border:0!important;font-size:12px!important;font-weight:700;color:#64748b!important}
+#dashboard #page-webshop-orders .orders-list{display:grid!important;gap:6px!important}
+#dashboard .ht-shop-row{margin:0!important;padding:0!important;border:1px solid #e2e8f0!important;border-radius:11px!important;background:#fff!important;box-shadow:none!important;overflow:hidden}
+#dashboard .ht-shop-row:hover{border-color:#bcd0ee!important;background:#fafcff!important}
+#dashboard .ht-shop-row-open{display:grid!important;grid-template-columns:44px minmax(0,1fr) auto auto 14px!important;align-items:center!important;gap:12px!important;width:100%!important;min-height:0!important;padding:9px 12px!important;border:0!important;background:transparent!important;box-shadow:none!important;text-align:left!important;font:inherit;color:#12263a;cursor:pointer}
+#dashboard .ht-shop-thumb{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid #e2e8f0;border-radius:9px;background:#f4f7fb;overflow:hidden;font-size:20px}
+#dashboard .ht-shop-thumb img{width:100%;height:100%;object-fit:contain}
+#dashboard .ht-shop-main{display:flex;flex-direction:column;gap:1px;min-width:0}
+#dashboard .ht-shop-main strong{font-size:13.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#dashboard .ht-shop-main small{font-size:11.5px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#dashboard .ht-shop-main .ht-shop-cust{color:#334155;font-weight:600}
+#dashboard .ht-shop-price{display:flex;flex-direction:column;align-items:flex-end;gap:1px;white-space:nowrap}
+#dashboard .ht-shop-price strong{font-size:14.5px;color:#12263a}
+#dashboard .ht-shop-price small{font-size:11px;color:#64748b}
+#dashboard .ht-shop-chips{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+#dashboard .ht-shop-chips .ht-phone-status-chip,#dashboard .ht-shop-chips .ht-phone-pay-chip{font-size:11px!important;padding:2px 9px!important;white-space:nowrap}
+#dashboard .ht-shop-go{color:#94a3b8;font-size:20px;line-height:1}
+@media(max-width:850px){
+  #dashboard #page-webshop-orders .order-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #dashboard #page-webshop-orders .orders-toolbar{grid-template-columns:1fr 1fr!important}
+  #dashboard #page-webshop-orders .orders-search,#dashboard #page-webshop-orders .orders-toolbar .order-filter-btn{grid-column:1/-1}
+  #dashboard #page-webshop-orders .section-head p{display:none!important}
+  #dashboard .ht-shop-row-open{grid-template-columns:44px minmax(0,1fr) auto!important;grid-template-areas:"thumb main price" "chips chips chips"!important;gap:6px 10px!important;padding:10px!important}
+  #dashboard .ht-shop-thumb{grid-area:thumb}
+  #dashboard .ht-shop-main{grid-area:main}
+  #dashboard .ht-shop-price{grid-area:price}
+  #dashboard .ht-shop-chips{grid-area:chips;flex-direction:row;flex-wrap:wrap}
+  #dashboard .ht-shop-go{display:none}
+}
+#dashboard #page-webshop-orders .orders-toolbar input[type=search]{padding-left:34px!important;background-position:10px center!important}
+#dashboard #page-webshop-orders .orders-search{position:relative}
+#dashboard .ht-shop-chips .ht-phone-status-chip{display:inline-flex;align-items:center;gap:4px;border:1px solid #cfe0fb;border-radius:99px;background:#eef4ff;color:#1d4ed8;font-weight:800}
+#dashboard .ht-shop-chips .ht-phone-status-chip.is-complete{border-color:#bfe3cc;background:#f0faf4;color:#166534}
+#dashboard .ht-shop-chips .ht-phone-status-chip.is-processing,#dashboard .ht-shop-chips .ht-phone-status-chip.is-shipped{border-color:#fde3a7;background:#fff8e6;color:#8a5a00}
+#dashboard .ht-shop-chips .ht-phone-status-chip.is-cancelled{border-color:#f5c2c2;background:#fff1f1;color:#b42318}
+#dashboard #page-webshop-orders .section-head{flex-wrap:nowrap!important}
+@media(max-width:850px){
+  #dashboard #page-webshop-orders .section-head h2{font-size:15px!important}
+  #dashboard .ht-shop-main strong{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  #dashboard .ht-shop-main .ht-shop-cust{white-space:nowrap}
+}
+#dashboard #page-webshop-orders .section-head{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important}
