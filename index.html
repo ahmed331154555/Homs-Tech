@@ -744,6 +744,28 @@
     <link rel="stylesheet" href="/assets/customer-reviews-widget.css?v=2" />
 
     <link rel="stylesheet" href="assets/tactile-ui.css?v=20261124-flat" />
+    <script>
+      /* Start het ophalen van de homepage-data meteen (niet pas aan het einde van de pagina). */
+      window.__homeReq=fetch("/api/site?view=home",{headers:{Accept:"application/json"},cache:"no-store"}).catch(function(){return null});
+    </script>
+    <style id="ht-home-polish">
+      .home-banner h2{color:#fff}
+      .product.is-skeleton{pointer-events:none;overflow:hidden}
+      .product.is-skeleton .sk{background:linear-gradient(90deg,#eef2f7 25%,#f7f9fc 37%,#eef2f7 63%);background-size:400% 100%;animation:ht-sk 1.3s ease infinite;border-radius:10px}
+      .product.is-skeleton .sk-img{aspect-ratio:1/1;margin:12px}
+      .product.is-skeleton .sk-line{height:14px;margin:10px 14px 0}
+      .product.is-skeleton .sk-line.short{width:55%}
+      .product.is-skeleton .sk-line:last-child{margin-bottom:16px}
+      @keyframes ht-sk{0%{background-position:100% 50%}100%{background-position:0 50%}}
+      @media(prefers-reduced-motion:reduce){.product.is-skeleton .sk{animation:none}}
+      @media(max-width:600px){
+        .why{gap:8px}
+        .why-card{padding:14px 12px;border-radius:12px}
+        .why-card b{font-size:22px;line-height:1.1}
+        .why-card strong{font-size:14px;line-height:1.25;margin:6px 0 4px}
+        .why-card small{display:block;font-size:12.5px;line-height:1.45}
+      }
+    </style>
   </head>
   <body>
     <div class="topbar" id="homeTopBar">
@@ -1445,7 +1467,7 @@
         .slice(0,cardLimit);
 
        if(!chosen.length){
-        if(homepageCatalogLoading){box.innerHTML="";return;}
+        if(homepageCatalogLoading){box.innerHTML=Array(4).fill('<div class="product is-skeleton" aria-hidden="true"><div class="sk sk-img"></div><div class="sk sk-line"></div><div class="sk sk-line short"></div><div class="sk sk-line"></div></div>').join("");return;}
         box.innerHTML="<div style='padding:25px;color:#667784'>Geen apparaten beschikbaar.</div>";
         return;
        }
@@ -1655,6 +1677,14 @@
       let homepageCatalogLoading=true;
       async function loadSite(){
        // Render immediately, then hydrate the homepage with fresh server data.
+       // Toon bij een herhaalbezoek direct de laatst bekende gegevens en ververs daarna.
+       try{
+        const cached=JSON.parse(localStorage.getItem("homsHomeCache")||"null");
+        if(cached&&typeof cached==="object"&&!Array.isArray(cached)&&Array.isArray(cached.phones)&&cached.phones.length){
+         data={...defaults,...cached};
+         homepageCatalogLoading=false;
+        }
+       }catch(e){}
        renderHomepage();
 
        // Keep catalog recovery independent from homepage-settings loading. If the
@@ -1662,12 +1692,16 @@
        // still supply the phone cards instead of leaving the homepage empty.
        let homepageLoaded=false;
        try{
-        const response=await fetch("/api/site?view=home",{headers:{Accept:"application/json"},cache:"no-store"});
+        const response=(await window.__homeReq)||await fetch("/api/site?view=home",{headers:{Accept:"application/json"},cache:"no-store"});
         if(!response.ok) throw new Error("Homepage data could not be loaded (HTTP "+response.status+")");
         const settings=await response.json();
         if(!settings||typeof settings!=="object"||Array.isArray(settings)) throw new Error("Invalid homepage response");
         data={...defaults,...settings};
         homepageLoaded=true;
+        try{
+         const raw=JSON.stringify(settings);
+         if(Array.isArray(settings.phones)&&settings.phones.length&&raw.length<1500000)localStorage.setItem("homsHomeCache",raw);
+        }catch(e){}
        }catch(error){
         console.warn("Homepage settings unavailable; trying the public phone catalog.",error);
        }
