@@ -254,10 +254,17 @@ app.use(
     lastModified: true,
     setHeaders(res, filePath) {
       // Cache versionless static assets briefly; HTML remains revalidated.
-      if (/\\.(?:css|js|png|jpe?g|webp|svg|gif|ico|woff2?)$/i.test(filePath)) {
+      // Images and fonts rarely change: cache a week. CSS/JS carry ?v= cache
+      // busters in the HTML, so a day plus revalidation is safe.
+      if (/\.(?:png|jpe?g|webp|svg|gif|ico|woff2?)$/i.test(filePath)) {
         res.setHeader(
           "Cache-Control",
-          "public, max-age=3600, stale-while-revalidate=86400",
+          "public, max-age=604800, stale-while-revalidate=86400",
+        );
+      } else if (/\.(?:css|js)$/i.test(filePath)) {
+        res.setHeader(
+          "Cache-Control",
+          "public, max-age=86400, stale-while-revalidate=86400",
         );
       }
     },

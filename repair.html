@@ -749,7 +749,7 @@
       <div class="ht-container">
         <div class="ht-header-main">
           <a class="ht-brand" href="index.html"
-            ><img src="assets/homs-tech-logo.png" alt="HOMS TECH"
+            ><img src="assets/homs-tech-logo.webp" alt="HOMS TECH"
           /></a>
           <form class="ht-search" action="devices.html" method="get">
             <span>⌕</span
@@ -782,11 +782,11 @@
 
     <main>
       <section class="repair-hero">
-        <!-- Upload the real van image to assets/repair-van-hero.png -->
+        <!-- Upload the real van image to assets/repair-van-hero.webp -->
         <div class="hero-photo" aria-hidden="true">
           <img
             id="repairHeroImage"
-            src="assets/repair-van-hero.png"
+            src="assets/repair-van-hero.webp"
             alt=""
             loading="eager"
             fetchpriority="high"
@@ -1143,7 +1143,7 @@
                       </div>
                       <img
                         class="repair-home-service-art"
-                        src="/assets/file_00000000ed4881f48a9b5722ffc8c953.png"
+                        src="/assets/file_00000000ed4881f48a9b5722ffc8c953.webp"
                         alt="HOMS TECH mobiele telefoonreparatie in de volledig uitgeruste servicewagen"
                         loading="lazy"
                         decoding="async"
@@ -1292,7 +1292,7 @@
             }
 
             const defaultRepairPage = {
-              hero:{eyebrow:"Snel / Betrouwbaar / Professioneel",title:"Uw telefoon kapot?",accent:"voor u op.",subtitle:"Kies de reparatieservice die bij u past. Aan huis of stuur uw toestel veilig naar HOMS TECH.",checks:["Originele en hoogwaardige onderdelen","Ervaren monteurs","Snelle en betrouwbare service","Door heel Nederland"],image:"assets/repair-van-hero.png"},
+              hero:{eyebrow:"Snel / Betrouwbaar / Professioneel",title:"Uw telefoon kapot?",accent:"voor u op.",subtitle:"Kies de reparatieservice die bij u past. Aan huis of stuur uw toestel veilig naar HOMS TECH.",checks:["Originele en hoogwaardige onderdelen","Ervaren monteurs","Snelle en betrouwbare service","Door heel Nederland"],image:"assets/repair-van-hero.webp"},
               options:[
                 {icon:"⌂",title:"Reparatie aan huis",description:"Onze monteur komt bij u thuis of op locatie om uw telefoon te repareren. Snel, makkelijk en zonder dat u de deur uit hoeft.",ticks:["Bij u thuis of op werk","Vaak dezelfde dag nog","Geen verzendkosten","Veilig en betrouwbaar"],button:"Afspraak aan huis maken →",method:"home",image:""},
                 {icon:"▣",title:"Stuur uw toestel naar ons",description:"Liever uw telefoon opsturen? Geen probleem. U meldt uw reparatie online aan en wij houden u op de hoogte.",ticks:["Eenvoudig en veilig aanmelden","Snelle reparatie","U ontvangt uw toestel terug","Status wordt in het systeem opgeslagen"],button:"Reparatie aanmelden →",method:"send",image:""}
@@ -1339,7 +1339,7 @@
               document.getElementById("repairHeroAccent").textContent=p.hero.accent;
               document.getElementById("repairHeroSubtitle").textContent=p.hero.subtitle;
               const heroImg=document.getElementById("repairHeroImage");
-              if(heroImg) heroImg.src=p.hero.image||"assets/repair-van-hero.png";
+              if(heroImg) heroImg.src=p.hero.image||"assets/repair-van-hero.webp";
               document.getElementById("repairHeroChecks").innerHTML=p.hero.checks.map(x=>`<div class="hero-check"><b>✓</b>${esc(x)}</div>`).join("");
 
               document.getElementById("repairOptionsList").innerHTML=p.options.map((o,i)=>{
@@ -1999,7 +1999,7 @@
             loadSite();
     </script>
 
-    <script src="assets/homs-global-nav.js?v=20261108-loopfix2"></script>
+    <script src="assets/homs-global-nav.js?v=20261125-webp"></script>
     <script src="assets/homs-ai-chat.js" defer></script>
   </body>
 </html>
