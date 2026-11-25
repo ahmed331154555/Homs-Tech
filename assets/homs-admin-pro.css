@@ -816,3 +816,11 @@ body.ht-modal-open{overflow:hidden}
 #dashboard #page-buyback-orders .ht-inkoop-row .ht-inkoop-main,#dashboard #page-buyback-orders .ht-inkoop-row .ht-inkoop-main *{text-align:left!important}
 #dashboard #page-buyback-orders .ht-inkoop-row .ht-inkoop-main .ht-inkoop-main-top{display:flex!important;justify-content:flex-start!important;align-items:center!important;flex-direction:row!important}
 #dashboard #page-buyback-orders .ht-inkoop-row .ht-inkoop-main{justify-content:flex-start!important;align-items:center!important}
+
+/* 32. Bestelpagina's in de gedeelde kaart: geen dubbele titel of grijs binnenvak */
+#dashboard #page-buyback-orders,#dashboard #page-webshop-orders,#dashboard #page-repair-requests{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0!important}
+#dashboard #page-buyback-orders>.section-head>div:first-child,#dashboard #page-webshop-orders>.section-head>div:first-child,#dashboard #page-repair-requests>.section-head>div:first-child{display:none!important}
+#dashboard #page-buyback-orders>.section-head,#dashboard #page-webshop-orders>.section-head,#dashboard #page-repair-requests>.section-head{grid-template-columns:1fr!important;justify-items:end}
+#dashboard #page-buyback-orders>.section-head .ht-inkoop-toolbar{width:100%;justify-content:flex-end}
+#dashboard #page-buyback-orders .ht-inkoop-toolbar select{flex:1 1 auto}
+#dashboard #allOrdersSections.unified-orders-panel{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
