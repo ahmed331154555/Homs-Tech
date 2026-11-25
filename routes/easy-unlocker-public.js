@@ -65,6 +65,7 @@ function publicService(row, rate) {
   return {
     id: row.product_id,
     name: row.name,
+    type: row.type,
     categoryName: row.category_name,
     imageUrl: row.image_url,
     priceEur: salePriceEur(row.price, row.margin_percent, rate),
