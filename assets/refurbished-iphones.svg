@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 440" role="img" aria-label="Refurbished iPhones bij HOMS TECH">
+  <defs>
+    <linearGradient id="scr1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#1d4ed8"/></linearGradient>
+    <linearGradient id="scr2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a78bfa"/><stop offset="1" stop-color="#4338ca"/></linearGradient>
+    <linearGradient id="scr3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset="1" stop-color="#0f766e"/></linearGradient>
+    <filter id="sh" x="-20%" y="-10%" width="140%" height="130%"><feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="#0b2a5b" flood-opacity=".25"/></filter>
+    <g id="phone">
+      <rect width="150" height="300" rx="28" fill="#0f172a"/>
+      <rect x="5" y="5" width="140" height="290" rx="24" fill="#1e293b"/>
+      <rect x="9" y="9" width="132" height="282" rx="21" fill="currentColor"/>
+      <rect x="52" y="15" width="46" height="13" rx="6.5" fill="#0f172a"/>
+    </g>
+  </defs>
+  <ellipse cx="300" cy="388" rx="215" ry="22" fill="#1d4ed8" opacity=".14"/>
+  <g transform="translate(88 78) rotate(-9 75 150)" filter="url(#sh)"><use href="#phone" style="color:url(#scr3)" /><rect x="9" y="9" width="132" height="282" rx="21" fill="url(#scr3)"/><rect x="52" y="15" width="46" height="13" rx="6.5" fill="#0f172a"/><circle cx="75" cy="150" r="30" fill="#fff" opacity=".18"/><circle cx="75" cy="150" r="16" fill="#fff" opacity=".22"/></g>
+  <g transform="translate(362 78) rotate(9 75 150)" filter="url(#sh)"><use href="#phone"/><rect x="9" y="9" width="132" height="282" rx="21" fill="url(#scr2)"/><rect x="52" y="15" width="46" height="13" rx="6.5" fill="#0f172a"/><circle cx="75" cy="150" r="30" fill="#fff" opacity=".18"/><circle cx="75" cy="150" r="16" fill="#fff" opacity=".22"/></g>
+  <g transform="translate(225 42)" filter="url(#sh)"><use href="#phone"/><rect x="9" y="9" width="132" height="282" rx="21" fill="url(#scr1)"/><rect x="52" y="15" width="46" height="13" rx="6.5" fill="#0f172a"/><circle cx="75" cy="150" r="34" fill="#fff" opacity=".2"/><circle cx="75" cy="150" r="18" fill="#fff" opacity=".25"/><rect x="38" y="236" width="74" height="26" rx="13" fill="#fff" opacity=".92"/><text x="75" y="254" font-family="Arial,Helvetica,sans-serif" font-size="12" font-weight="800" fill="#1d4ed8" text-anchor="middle">HOMS TECH</text></g>
+  <g font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="800">
+    <g transform="translate(34 330)"><rect width="150" height="38" rx="19" fill="#fff"/><circle cx="21" cy="19" r="10" fill="#dcfce7"/><path d="M16 19l4 4 7-8" fill="none" stroke="#16a34a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><text x="40" y="24" fill="#172330">Gecontroleerd</text></g>
+    <g transform="translate(418 330)"><rect width="150" height="38" rx="19" fill="#fff"/><circle cx="21" cy="19" r="10" fill="#dbeafe"/><path d="M16 19l4 4 7-8" fill="none" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><text x="40" y="24" fill="#172330">Met garantie</text></g>
+    <g transform="translate(226 366)"><rect width="148" height="38" rx="19" fill="#2563eb"/><text x="74" y="24" fill="#fff" text-anchor="middle">Eerlijke prijzen</text></g>
+  </g>
+</svg>
