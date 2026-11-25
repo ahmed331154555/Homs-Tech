@@ -4172,9 +4172,10 @@ async function loadOrderSettings(){
     document.getElementById("orderPaypalClientSecret").placeholder=data.paypal?.configured?"Ingesteld — leeg laten om te behouden":"Vul je PayPal Client Secret in";
     document.getElementById("orderMollieApiKey").value="";
     document.getElementById("orderMollieApiKey").placeholder=data.mollie?.configured?"Ingesteld — leeg laten om te behouden":"Nog niet ingesteld";
+    document.getElementById("orderMollieEnabled").checked=!!data.mollie?.configured&&data.mollie?.enabled!==false;
     const mollieStatus=document.getElementById("orderMollieStatus");
     mollieStatus.className="status "+(data.mollie?.configured?"success":"info");
-    mollieStatus.textContent=data.mollie?.configured?"Mollie API-key veilig opgeslagen.":"Mollie is nog niet ingesteld; iDEAL / Wero is nog niet beschikbaar.";
+    mollieStatus.textContent=data.mollie?.configured?(data.mollie?.enabled===false?"Mollie API-key opgeslagen, maar iDEAL / Wero staat uit.":"Mollie API-key veilig opgeslagen."):"Mollie is nog niet ingesteld; iDEAL / Wero is nog niet beschikbaar.";
     const paypalStatus=document.getElementById("orderPaypalStatus");
     paypalStatus.className="status "+(data.paypal?.configured?"success":"info");
     paypalStatus.textContent=data.paypal?.configured?"PayPal API-gegevens opgeslagen. Client Secret wordt niet getoond.":"PayPal is nog niet volledig ingesteld.";
@@ -4196,7 +4197,7 @@ function orderSettingsOverview(){
   const box=document.getElementById("orderSettingsOverview");
   if(!box)return;
   const on=id=>!!document.getElementById(id)?.checked;
-  const mollie=/opgeslagen/i.test(document.getElementById("orderMollieStatus")?.textContent||"");
+  const mollie=on("orderMollieEnabled");
   const items=[["Contant bij ontvangst",on("orderCashOnDeliveryEnabled")],["PayPal",on("orderPaypalEnabled")],["iDEAL / Wero",mollie],["PostNL",on("orderPostnlEnabled")],["DHL",on("orderDhlEnabled")]];
   box.innerHTML=items.map(([label,active])=>'<span class="os-chip '+(active?"is-on":"is-off")+'"><i aria-hidden="true"></i>'+esc(label)+'</span>').join("");
 }
@@ -4234,6 +4235,10 @@ async function toggleCashOnDeliverySetting(){
 }
 async function saveOrderSettings(){
   try{
+    const mollieSwitch=document.getElementById("orderMollieEnabled");
+    const mollieKeyInput=document.getElementById("orderMollieApiKey");
+    // A first key on a not-yet-configured account switches iDEAL / Wero on.
+    if(mollieSwitch&&mollieKeyInput&&mollieKeyInput.value.trim()&&!mollieSwitch.checked&&/^Nog niet/i.test(mollieKeyInput.placeholder||""))mollieSwitch.checked=true;
     const data=await orderSettingsRequest("PUT",{
       postnlEnabled:document.getElementById("orderPostnlEnabled").checked,
       dhlEnabled:document.getElementById("orderDhlEnabled").checked,
@@ -4243,7 +4248,8 @@ async function saveOrderSettings(){
       paypalClientId:document.getElementById("orderPaypalClientId").value.trim(),
       paypalClientSecret:document.getElementById("orderPaypalClientSecret").value,
       paypalMerchantId:document.getElementById("orderPaypalMerchantId").value.trim(),
-      mollieApiKey:document.getElementById("orderMollieApiKey").value.trim()
+      mollieApiKey:document.getElementById("orderMollieApiKey").value.trim(),
+      mollieEnabled:document.getElementById("orderMollieEnabled").checked
     });
     document.getElementById("orderPostnlEnabled").checked=!!data.settings?.postnlEnabled;
     document.getElementById("orderDhlEnabled").checked=!!data.settings?.dhlEnabled;
@@ -4254,9 +4260,10 @@ async function saveOrderSettings(){
     document.getElementById("orderPaypalClientSecret").placeholder=data.paypal?.configured?"Ingesteld — leeg laten om te behouden":"Vul je PayPal Client Secret in";
     document.getElementById("orderMollieApiKey").value="";
     document.getElementById("orderMollieApiKey").placeholder=data.mollie?.configured?"Ingesteld — leeg laten om te behouden":"Nog niet ingesteld";
+    document.getElementById("orderMollieEnabled").checked=!!data.mollie?.configured&&data.mollie?.enabled!==false;
     const mollieStatus=document.getElementById("orderMollieStatus");
     mollieStatus.className="status "+(data.mollie?.configured?"success":"info");
-    mollieStatus.textContent=data.mollie?.configured?"Mollie-instellingen opgeslagen.":"Mollie is nog niet ingesteld.";
+    mollieStatus.textContent=data.mollie?.configured?(data.mollie?.enabled===false?"Mollie API-key opgeslagen, maar iDEAL / Wero staat uit.":"Mollie-instellingen opgeslagen."):"Mollie is nog niet ingesteld.";
     const paypalStatus=document.getElementById("orderPaypalStatus");
     paypalStatus.className="status "+(data.paypal?.configured?"success":"info");
     paypalStatus.textContent=data.paypal?.configured?"PayPal-instellingen opgeslagen. Client Secret is veilig versleuteld.":"PayPal is nog niet volledig ingesteld.";

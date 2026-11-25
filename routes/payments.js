@@ -45,10 +45,21 @@ function registerPaymentRoutes(
   }
 
   // ---------------- MOLLIE PAYMENTS ----------------
+  // Mollie stays on when a key exists, unless an admin switched it off.
+  async function isMollieSwitchedOff() {
+    const result = await pool.query(
+      "SELECT data FROM order_settings WHERE id=1",
+    );
+    return result.rows[0]?.data?.mollie?.enabled === false;
+  }
+
   app.get("/api/mollie/config", async (req, res) => {
     res.set("Cache-Control", "no-store");
     try {
-      res.json({ enabled: !!(await getMollieApiKey()), provider: "Mollie" });
+      res.json({
+        enabled: !!(await getMollieApiKey()) && !(await isMollieSwitchedOff()),
+        provider: "Mollie",
+      });
     } catch (error) {
       res.json({ enabled: false, provider: "Mollie" });
     }
@@ -66,6 +77,11 @@ function registerPaymentRoutes(
         !/^[a-f0-9]{64}$/.test(checkoutToken)
       ) {
         return res.status(400).json({ error: "Ongeldige checkoutgegevens." });
+      }
+      if (await isMollieSwitchedOff()) {
+        return res
+          .status(503)
+          .json({ error: "iDEAL / Wero is momenteel niet beschikbaar." });
       }
       const checkoutTokenHash = crypto
         .createHash("sha256")
@@ -798,6 +814,7 @@ function registerPaymentRoutes(
               result.rows[0]?.data?.mollie?.apiKeyEncrypted ||
               getEnv().MOLLIE_API_KEY
             ),
+            enabled: result.rows[0]?.data?.mollie?.enabled !== false,
           },
           api: {
             postnl: !!getEnv().POSTNL_API_KEY,
@@ -884,13 +901,28 @@ function registerPaymentRoutes(
         const mollieApiKeyEncrypted = newMollieKey
           ? encryptPayPalSecret(newMollieKey)
           : oldMollie.apiKeyEncrypted || null;
+        const mollieEnabled =
+          typeof req.body?.mollieEnabled === "boolean"
+            ? req.body.mollieEnabled
+            : oldMollie.enabled !== false;
+        if (
+          typeof req.body?.mollieEnabled === "boolean" &&
+          mollieEnabled &&
+          !mollieApiKeyEncrypted &&
+          !getEnv().MOLLIE_API_KEY
+        ) {
+          return res.status(400).json({
+            error:
+              "Vul eerst een Mollie API-key in voordat je iDEAL / Wero inschakelt.",
+          });
+        }
         const settings = {
           ...current,
           postnlEnabled,
           dhlEnabled,
           cashOnDeliveryEnabled,
           paypal,
-          mollie: { apiKeyEncrypted: mollieApiKeyEncrypted },
+          mollie: { apiKeyEncrypted: mollieApiKeyEncrypted, enabled: mollieEnabled },
         };
         await pool.query(
           "INSERT INTO order_settings (id,data,updated_at) VALUES (1,$1::jsonb,NOW()) ON CONFLICT (id) DO UPDATE SET data=EXCLUDED.data,updated_at=NOW()",
@@ -908,6 +940,7 @@ function registerPaymentRoutes(
           },
           mollie: {
             configured: !!(mollieApiKeyEncrypted || getEnv().MOLLIE_API_KEY),
+            enabled: mollieEnabled,
           },
           api: {
             postnl: !!getEnv().POSTNL_API_KEY,

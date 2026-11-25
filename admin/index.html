@@ -23,7 +23,7 @@
     />
     <link
       rel="stylesheet"
-      href="../assets/homs-admin-pro.css?v=20261125-pro22"
+      href="../assets/homs-admin-pro.css?v=20261125-pro23"
     />
     <link rel="stylesheet" href="../assets/homs-admin-shop.css?v=20261124-shop4" />
   </head>
@@ -2336,6 +2336,7 @@
                 </div>
               </div>
               <div id="orderPaypalStatus" class="status info" role="status">PayPal-status controleren...</div>
+              <small class="os-note os-note-save">Schakelaar omzetten en daarna op "PayPal opslaan" klikken.</small>
               <div class="os-actions">
                 <button class="btn btn-primary" type="button" onclick="saveOrderSettings()">PayPal opslaan</button>
                 <a href="https://developer.paypal.com/dashboard/applications" target="_blank" rel="noopener noreferrer" class="btn btn-light">PayPal Dashboard ↗</a>
@@ -2349,6 +2350,10 @@
                   <h3>iDEAL / Wero (Mollie)</h3>
                   <p>Nederlandse betaalmethodes via je Mollie-account.</p>
                 </div>
+                <label class="ht-admin-switch" for="orderMollieEnabled" aria-label="iDEAL / Wero in- of uitschakelen">
+                  <input type="checkbox" id="orderMollieEnabled" />
+                  <span class="ht-admin-switch-track" aria-hidden="true"></span>
+                </label>
               </header>
               <div class="os-grid">
                 <div class="os-field os-field-wide">
@@ -2358,6 +2363,7 @@
                 </div>
               </div>
               <div id="orderMollieStatus" class="status info" role="status">Mollie is nog niet ingesteld.</div>
+              <small class="os-note os-note-save">Schakelaar omzetten en daarna op "Mollie opslaan" klikken.</small>
               <div class="os-actions">
                 <button class="btn btn-primary" type="button" onclick="saveOrderSettings()">Mollie opslaan</button>
                 <a href="https://my.mollie.com/dashboard/developers/api-keys" target="_blank" rel="noopener noreferrer" class="btn btn-light">Mollie Dashboard ↗</a>
@@ -2611,7 +2617,7 @@
       </div>
     </div>
 
-    <script src="../assets/homs-admin.js?v=20261125-pay1" defer></script>
+    <script src="../assets/homs-admin.js?v=20261125-pay2" defer></script>
     <script src="../assets/admin-button-states.js?v=20261124-ui2" defer></script>
     <script src="../assets/admin-editor-focus.js?v=20261125-focus3" defer></script>
     <script
