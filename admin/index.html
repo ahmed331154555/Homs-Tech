@@ -23,7 +23,7 @@
     />
     <link
       rel="stylesheet"
-      href="../assets/homs-admin-pro.css?v=20261125-pro21"
+      href="../assets/homs-admin-pro.css?v=20261125-pro22"
     />
     <link rel="stylesheet" href="../assets/homs-admin-shop.css?v=20261124-shop4" />
   </head>
@@ -2261,293 +2261,158 @@
           </div>
         </section>
         <section
-          class="section admin-page"
+          class="section admin-page os-page"
           id="page-order-settings"
           data-permission="site.save"
         >
           <div class="section-head">
             <div>
               <h2>📦 Orderinstellingen</h2>
-              <p>
-                Verzendinstellingen voor PostNL en DHL. API-sleutels worden
-                veilig als servervariabelen ingesteld.
-              </p>
+              <p>Beheer hier verzending en betaalmethodes van de webshop.</p>
             </div>
-            <button class="btn" type="button" onclick="loadOrderSettings()">
+            <button class="btn btn-light" type="button" onclick="loadOrderSettings()">
               ↻ Vernieuwen
             </button>
           </div>
-          <div
-            id="orderSettingsStatus"
-            class="status info"
-            style="margin-bottom:12px"
-          >
-            Instellingen laden...
+          <div id="orderSettingsStatus" class="status info" role="status">Instellingen laden...</div>
+
+          <div id="orderSettingsOverview" class="os-overview" aria-label="Overzicht actieve methodes"></div>
+
+          <div class="os-tabs" role="tablist" aria-label="Orderinstellingen">
+            <button type="button" class="os-tab is-active" role="tab" id="os-tab-pay" aria-selected="true" aria-controls="os-panel-pay" onclick="orderSettingsTab('pay')">Betaling</button>
+            <button type="button" class="os-tab" role="tab" id="os-tab-ship" aria-selected="false" aria-controls="os-panel-ship" onclick="orderSettingsTab('ship')">Verzending</button>
           </div>
-          <div class="card" style="padding:18px;margin-bottom:14px">
-            <h3 style="margin-top:0">Verzendbedrijven</h3>
-            <label
-              style="display:flex;gap:10px;align-items:flex-start;margin:14px 0"
-            >
-              <input
-                type="checkbox"
-                id="orderPostnlEnabled"
-                style="margin-top:4px"
-              />
-              <span
-                ><strong>PostNL</strong><br /><small id="orderPostnlApiStatus"
-                  >API-status controleren...</small
-                ></span
-              >
-            </label>
-            <label
-              style="display:flex;gap:10px;align-items:flex-start;margin:14px 0"
-            >
-              <input
-                type="checkbox"
-                id="orderDhlEnabled"
-                style="margin-top:4px"
-              />
-              <span
-                ><strong>DHL</strong><br /><small id="orderDhlApiStatus"
-                  >API-status controleren...</small
-                ></span
-              >
-            </label>
-            <div class="ht-cod-setting">
-              <div class="ht-cod-setting-copy">
-                <strong>Betalen bij ontvangst</strong>
-                <small
-                  >Sta contante betaling bij bezorging toe. Dit geldt ook voor
-                  bestellingen met inruil.</small
-                >
-                <span
-                  id="orderCashOnDeliveryStatus"
-                  class="ht-cod-status"
-                  aria-live="polite"
-                  >Instelling laden...</span
-                >
-              </div>
-              <label
-                class="ht-admin-switch"
-                for="orderCashOnDeliveryEnabled"
-                aria-label="Betalen bij ontvangst in- of uitschakelen"
-              >
-                <input
-                  type="checkbox"
-                  id="orderCashOnDeliveryEnabled"
-                  onchange="toggleCashOnDeliverySetting()"
-                />
-                <span class="ht-admin-switch-track" aria-hidden="true"></span>
-              </label>
-            </div>
-            <button
-              class="btn btn-primary"
-              type="button"
-              onclick="saveOrderSettings()"
-            >
-              Instellingen opslaan
-            </button>
-          </div>
-          <div
-            class="card"
-            style="padding:18px;margin-bottom:14px;border:1px solid #d6e2f0"
-          >
-            <div
-              style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px"
-            >
-              <div style="display:flex;align-items:center;gap:12px">
-                <div
-                  style="width:48px;height:48px;border-radius:14px;background:#f1f7ff;display:grid;place-items:center;font-weight:900;font-size:25px;color:#0756a8"
-                >
-                  P
+
+          <div class="os-panel" id="os-panel-pay" role="tabpanel" aria-labelledby="os-tab-pay">
+            <article class="os-card">
+              <header class="os-card-head">
+                <span class="os-logo os-logo-cod" aria-hidden="true">€</span>
+                <div class="os-card-title">
+                  <h3>Betalen bij ontvangst</h3>
+                  <p>Contante betaling bij bezorging. Geldt ook voor bestellingen met inruil.</p>
                 </div>
-                <div>
-                  <h3 style="margin:0">PayPal betalingen</h3>
-                  <small style="color:var(--muted,#64748b)"
-                    >Ontvang online betalingen via je eigen PayPal
-                    Business-app.</small
-                  >
+                <label class="ht-admin-switch" for="orderCashOnDeliveryEnabled" aria-label="Betalen bij ontvangst in- of uitschakelen">
+                  <input type="checkbox" id="orderCashOnDeliveryEnabled" onchange="toggleCashOnDeliverySetting()" />
+                  <span class="ht-admin-switch-track" aria-hidden="true"></span>
+                </label>
+              </header>
+              <p id="orderCashOnDeliveryStatus" class="ht-cod-status" aria-live="polite">Instelling laden...</p>
+              <small class="os-note">Wordt direct opgeslagen zodra je de schakelaar omzet.</small>
+            </article>
+
+            <article class="os-card">
+              <header class="os-card-head">
+                <span class="os-logo os-logo-paypal" aria-hidden="true">P</span>
+                <div class="os-card-title">
+                  <h3>PayPal</h3>
+                  <p>Online betalingen via je eigen PayPal Business-app.</p>
+                </div>
+                <label class="ht-admin-switch" for="orderPaypalEnabled" aria-label="PayPal in- of uitschakelen">
+                  <input type="checkbox" id="orderPaypalEnabled" />
+                  <span class="ht-admin-switch-track" aria-hidden="true"></span>
+                </label>
+              </header>
+              <div class="os-grid">
+                <div class="os-field">
+                  <label for="orderPaypalMode">Betaalmodus</label>
+                  <select id="orderPaypalMode">
+                    <option value="sandbox">Sandbox — testen zonder echte betalingen</option>
+                    <option value="live">Live — echte betalingen ontvangen</option>
+                  </select>
+                  <small>Test eerst met Sandbox. Kies Live pas na een geslaagde test.</small>
+                </div>
+                <div class="os-field">
+                  <label for="orderPaypalClientId">Client ID</label>
+                  <input id="orderPaypalClientId" type="text" autocomplete="off" spellcheck="false" placeholder="PayPal Client ID" />
+                </div>
+                <div class="os-field">
+                  <label for="orderPaypalClientSecret">Client Secret</label>
+                  <input id="orderPaypalClientSecret" type="password" autocomplete="new-password" placeholder="Plak je Client Secret hier" />
+                  <small>Wordt versleuteld opgeslagen. Leeg laten om de huidige sleutel te behouden.</small>
+                </div>
+                <div class="os-field">
+                  <label for="orderPaypalMerchantId">Merchant ID <em>(optioneel)</em></label>
+                  <input id="orderPaypalMerchantId" type="text" autocomplete="off" placeholder="PayPal Merchant ID" />
                 </div>
               </div>
-              <label
-                style="display:flex;align-items:center;gap:9px;font-weight:700"
-                ><input type="checkbox" id="orderPaypalEnabled" /> PayPal
-                inschakelen</label
-              >
-            </div>
-            <div
-              style="padding:13px;border-radius:12px;background:var(--soft,#f8fafc);margin-bottom:14px"
-            >
-              <label
-                for="orderPaypalMode"
-                style="display:block;font-weight:700;margin-bottom:6px"
-                >Betaalmodus</label
-              >
-              <select
-                id="orderPaypalMode"
-                style="width:100%;max-width:360px;padding:11px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit"
-              >
-                <option value="sandbox">
-                  Sandbox — testen zonder echte betalingen
-                </option>
-                <option value="live">Live — echte betalingen ontvangen</option>
-              </select>
-              <small
-                style="display:block;margin-top:6px;color:var(--muted,#64748b)"
-                >Test eerst met Sandbox. Kies Live pas als je PayPal-app
-                klaarstaat voor echte betalingen.</small
-              >
-            </div>
-            <div
-              style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px"
-            >
-              <label style="display:block;font-weight:700"
-                >Client ID
-                <input
-                  id="orderPaypalClientId"
-                  type="text"
-                  autocomplete="off"
-                  spellcheck="false"
-                  placeholder="PayPal Client ID"
-                  style="display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit"
-                />
-              </label>
-              <label style="display:block;font-weight:700"
-                >Client Secret
-                <input
-                  id="orderPaypalClientSecret"
-                  type="password"
-                  autocomplete="new-password"
-                  placeholder="Plak je Client Secret hier"
-                  style="display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit"
-                />
-                <small
-                  style="display:block;margin-top:5px;color:var(--muted,#64748b)"
-                  >Wordt versleuteld opgeslagen. Laat leeg om de huidige sleutel
-                  te behouden.</small
-                >
-              </label>
-              <label style="display:block;font-weight:700"
-                >Merchant ID (optioneel)
-                <input
-                  id="orderPaypalMerchantId"
-                  type="text"
-                  autocomplete="off"
-                  placeholder="PayPal Merchant ID"
-                  style="display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit"
-                />
-              </label>
-            </div>
-            <div
-              id="orderPaypalStatus"
-              class="status info"
-              style="margin:14px 0"
-            >
-              PayPal-status controleren...
-            </div>
-            <div
-              style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"
-            >
-              <button
-                class="btn btn-primary"
-                type="button"
-                onclick="saveOrderSettings()"
-              >
-                PayPal-instellingen opslaan
-              </button>
-              <a
-                href="https://developer.paypal.com/dashboard/applications"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn btn-light"
-                >PayPal Developer Dashboard ↗</a
-              >
-            </div>
-            <p
-              style="margin:12px 0 0;color:var(--muted,#64748b);font-size:13px"
-            >
-              Je geheime sleutel blijft op de server en wordt nooit aan de
-              winkelbezoeker getoond. Zet PayPal pas op Live nadat je een
-              succesvolle test hebt gedaan.
-            </p>
+              <div id="orderPaypalStatus" class="status info" role="status">PayPal-status controleren...</div>
+              <div class="os-actions">
+                <button class="btn btn-primary" type="button" onclick="saveOrderSettings()">PayPal opslaan</button>
+                <a href="https://developer.paypal.com/dashboard/applications" target="_blank" rel="noopener noreferrer" class="btn btn-light">PayPal Dashboard ↗</a>
+              </div>
+            </article>
+
+            <article class="os-card">
+              <header class="os-card-head">
+                <span class="os-logo os-logo-mollie" aria-hidden="true">M</span>
+                <div class="os-card-title">
+                  <h3>iDEAL / Wero (Mollie)</h3>
+                  <p>Nederlandse betaalmethodes via je Mollie-account.</p>
+                </div>
+              </header>
+              <div class="os-grid">
+                <div class="os-field os-field-wide">
+                  <label for="orderMollieApiKey">Mollie API-key</label>
+                  <input id="orderMollieApiKey" type="password" autocomplete="new-password" placeholder="Nog niet ingesteld" />
+                  <small>Begin met een Test API-key; echte betalingen werken pas met een actieve Live API-key. Leeg laten om een opgeslagen sleutel te behouden.</small>
+                </div>
+              </div>
+              <div id="orderMollieStatus" class="status info" role="status">Mollie is nog niet ingesteld.</div>
+              <div class="os-actions">
+                <button class="btn btn-primary" type="button" onclick="saveOrderSettings()">Mollie opslaan</button>
+                <a href="https://my.mollie.com/dashboard/developers/api-keys" target="_blank" rel="noopener noreferrer" class="btn btn-light">Mollie Dashboard ↗</a>
+              </div>
+            </article>
           </div>
-          <div class="card" style="padding:18px;margin-top:16px">
-            <h3 style="margin-top:0">Mollie — iDEAL / Wero</h3>
-            <p>
-              Voeg hier later je Mollie API-key toe. De sleutel wordt
-              versleuteld op de server opgeslagen en nooit aan klanten getoond.
-            </p>
-            <label style="display:block;font-weight:700"
-              >Mollie API-key
-              <input
-                id="orderMollieApiKey"
-                type="password"
-                autocomplete="new-password"
-                placeholder="Nog niet ingesteld"
-                style="display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:var(--card,#fff);color:inherit"
-              />
-            </label>
-            <div
-              id="orderMollieStatus"
-              class="status info"
-              style="margin:14px 0"
-            >
-              Mollie is nog niet ingesteld.
+
+          <div class="os-panel" id="os-panel-ship" role="tabpanel" aria-labelledby="os-tab-ship" hidden>
+            <article class="os-card">
+              <header class="os-card-head">
+                <span class="os-logo os-logo-postnl" aria-hidden="true">P</span>
+                <div class="os-card-title">
+                  <h3>PostNL</h3>
+                  <p id="orderPostnlApiStatus">API-status controleren...</p>
+                </div>
+                <label class="ht-admin-switch" for="orderPostnlEnabled" aria-label="PostNL in- of uitschakelen">
+                  <input type="checkbox" id="orderPostnlEnabled" />
+                  <span class="ht-admin-switch-track" aria-hidden="true"></span>
+                </label>
+              </header>
+            </article>
+            <article class="os-card">
+              <header class="os-card-head">
+                <span class="os-logo os-logo-dhl" aria-hidden="true">D</span>
+                <div class="os-card-title">
+                  <h3>DHL</h3>
+                  <p id="orderDhlApiStatus">API-status controleren...</p>
+                </div>
+                <label class="ht-admin-switch" for="orderDhlEnabled" aria-label="DHL in- of uitschakelen">
+                  <input type="checkbox" id="orderDhlEnabled" />
+                  <span class="ht-admin-switch-track" aria-hidden="true"></span>
+                </label>
+              </header>
+            </article>
+            <div class="os-actions os-actions-solo">
+              <button class="btn btn-primary" type="button" onclick="saveOrderSettings()">Verzending opslaan</button>
             </div>
-            <div
-              style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"
-            >
-              <button
-                class="btn btn-primary"
-                type="button"
-                onclick="saveOrderSettings()"
-              >
-                Mollie-instellingen opslaan
-              </button>
-              <a
-                href="https://my.mollie.com/dashboard/developers/api-keys"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn btn-light"
-                >Mollie Dashboard ↗</a
-              >
-            </div>
-            <p
-              style="margin:12px 0 0;color:var(--muted,#64748b);font-size:13px"
-            >
-              Laat het veld leeg om een eerder opgeslagen sleutel te behouden.
-              Begin met een Test API-key; echte betalingen werken pas met een
-              actieve Live API-key.
-            </p>
-          </div>
-          <div class="card" style="padding:18px">
-            <h3 style="margin-top:0">API-koppeling instellen</h3>
-            <p>
-              Vraag de API-gegevens aan via je zakelijke account bij PostNL en
-              DHL. Plaats geheime sleutels niet in deze pagina, GitHub of de
-              browser.
-            </p>
-            <p><strong>Render Environment Variables:</strong></p>
-            <ul>
-              <li><strong>POSTNL_API_KEY</strong> — API-sleutel van PostNL</li>
-              <li>
-                <strong>DHL_API_KEY</strong> — API-token/sleutel van DHL Parcel
-              </li>
-              <li>
-                <strong>DHL_API_BASE_URL</strong> — optioneel, alleen als DHL
-                dit voor jouw account opgeeft
-              </li>
-            </ul>
-            <p id="orderSettingsApiNote">
-              Zolang de API-gegevens ontbreken, worden geen echte verzendlabels
-              of trackingcodes aangemaakt. Deze pagina schakelt alleen de
-              vervoerdersinstellingen in; de API-acties moeten na ontvangst van
-              de gegevens worden getest.
-            </p>
+            <details class="os-card os-help">
+              <summary>API-koppeling instellen <span>▾</span></summary>
+              <p>Vraag de API-gegevens aan via je zakelijke account bij PostNL en DHL. Plaats geheime sleutels niet in deze pagina, GitHub of de browser.</p>
+              <p><strong>Render Environment Variables:</strong></p>
+              <ul>
+                <li><strong>POSTNL_API_KEY</strong> — API-sleutel van PostNL</li>
+                <li><strong>DHL_API_KEY</strong> — API-token/sleutel van DHL Parcel</li>
+                <li><strong>DHL_API_BASE_URL</strong> — optioneel, alleen als DHL dit voor jouw account opgeeft</li>
+              </ul>
+              <p id="orderSettingsApiNote">
+                Let op: de sleutels worden nu alleen gebruikt om PostNL of DHL
+                te kunnen kiezen bij een bestelling. Verzendlabels en
+                trackingnummers worden nog niet automatisch aangemaakt; die
+                voeg je zelf toe in de bestelling.
+              </p>
+            </details>
           </div>
         </section>
-
         <!-- WAAROM HOMS TECH -->
         <section
           class="section admin-page"
@@ -2746,7 +2611,7 @@
       </div>
     </div>
 
-    <script src="../assets/homs-admin.js?v=20261125-ord1" defer></script>
+    <script src="../assets/homs-admin.js?v=20261125-pay1" defer></script>
     <script src="../assets/admin-button-states.js?v=20261124-ui2" defer></script>
     <script src="../assets/admin-editor-focus.js?v=20261125-focus3" defer></script>
     <script

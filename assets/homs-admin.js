@@ -4180,9 +4180,27 @@ async function loadOrderSettings(){
     paypalStatus.textContent=data.paypal?.configured?"PayPal API-gegevens opgeslagen. Client Secret wordt niet getoond.":"PayPal is nog niet volledig ingesteld.";
     document.getElementById("orderPostnlApiStatus").textContent=data.api?.postnl?"API-sleutel gevonden op de server":"API-sleutel ontbreekt op de server";
     document.getElementById("orderDhlApiStatus").textContent=data.api?.dhl?"API-sleutel gevonden op de server":"API-sleutel ontbreekt op de server";
+    orderSettingsOverview();
     orderSettingsStatus("Instellingen geladen.");
   }catch(error){orderSettingsStatus(error.message,true);}
 }
+function orderSettingsTab(name){
+  const target=name==="ship"?"ship":"pay";
+  for(const key of ["pay","ship"]){
+    const panel=document.getElementById("os-panel-"+key),tab=document.getElementById("os-tab-"+key);
+    if(panel)panel.hidden=key!==target;
+    if(tab){tab.classList.toggle("is-active",key===target);tab.setAttribute("aria-selected",key===target?"true":"false");}
+  }
+}
+function orderSettingsOverview(){
+  const box=document.getElementById("orderSettingsOverview");
+  if(!box)return;
+  const on=id=>!!document.getElementById(id)?.checked;
+  const mollie=/opgeslagen/i.test(document.getElementById("orderMollieStatus")?.textContent||"");
+  const items=[["Contant bij ontvangst",on("orderCashOnDeliveryEnabled")],["PayPal",on("orderPaypalEnabled")],["iDEAL / Wero",mollie],["PostNL",on("orderPostnlEnabled")],["DHL",on("orderDhlEnabled")]];
+  box.innerHTML=items.map(([label,active])=>'<span class="os-chip '+(active?"is-on":"is-off")+'"><i aria-hidden="true"></i>'+esc(label)+'</span>').join("");
+}
+document.addEventListener("change",event=>{if(event.target?.closest?.("#page-order-settings"))orderSettingsOverview();});
 function updateCashOnDeliveryStatus(enabled){
   const status=document.getElementById("orderCashOnDeliveryStatus");
   if(!status)return;
@@ -4212,7 +4230,7 @@ async function toggleCashOnDeliverySetting(){
     input.checked=!nextValue;
     updateCashOnDeliveryStatus(input.checked);
     orderSettingsStatus(error.message,true);
-  }finally{input.disabled=false;}
+  }finally{input.disabled=false;orderSettingsOverview();}
 }
 async function saveOrderSettings(){
   try{
@@ -4242,6 +4260,7 @@ async function saveOrderSettings(){
     const paypalStatus=document.getElementById("orderPaypalStatus");
     paypalStatus.className="status "+(data.paypal?.configured?"success":"info");
     paypalStatus.textContent=data.paypal?.configured?"PayPal-instellingen opgeslagen. Client Secret is veilig versleuteld.":"PayPal is nog niet volledig ingesteld.";
+    orderSettingsOverview();
     orderSettingsStatus("Instellingen opgeslagen.");
   }catch(error){orderSettingsStatus(error.message,true);}
 }
