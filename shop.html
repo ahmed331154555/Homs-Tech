@@ -11,6 +11,35 @@
 
 <link rel="stylesheet" href="assets/tactile-ui.css?v=20261125-logo" />
 <link rel="stylesheet" href="assets/homs-shop.css?v=20261125-shop3" />
+<style id="ht-shop-detail">
+.crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 16px;font-size:13px;color:#64748b}
+.crumbs a{color:#2563eb;font-weight:600}.crumbs span{color:#cbd5e1}.crumbs b{color:#0f172a;font-weight:700}
+.sku-line{margin:-4px 0 10px;font-size:13px;color:#64748b}.sku-line[hidden]{display:none}.sku-line b{color:#334155}
+.delivery-box{list-style:none;margin:14px 0 0;padding:12px 14px;display:grid;gap:6px;background:#f8fafc;border:1px solid #e3e9f2;border-radius:12px;font-size:13.5px;color:#475569}
+.delivery-box li{display:flex;gap:8px;align-items:center}.delivery-box li:before{content:"✓";color:#16a34a;font-weight:900}.delivery-box b{color:#0f172a}
+.pay-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.pay-row span{padding:5px 10px;border:1px solid #e3e9f2;border-radius:7px;background:#f8fafc;font-size:11.5px;font-weight:800;color:#334155}
+.ask-link{display:inline-block;margin-top:14px;font-size:13.5px;font-weight:700;color:#15803d}
+.detail-tabs{margin-top:34px;background:#fff;border:1px solid #e3e9f2;border-radius:16px;overflow:hidden}
+.tab-bar{display:flex;gap:4px;padding:0 10px;border-bottom:1px solid #eef2f7;overflow-x:auto;scrollbar-width:none}
+.tab-btn{flex:none;padding:15px 16px;border:0;border-radius:0!important;box-shadow:none!important;min-height:0!important;border-bottom:3px solid transparent;background:none!important;font:800 14.5px/1 inherit;color:#64748b;cursor:pointer}
+.tab-btn.on{color:#0f172a;border-bottom-color:#2563eb}
+.tab-panel{padding:20px}.tab-panel[hidden]{display:none}
+.detail-tabs .description{margin:0!important;display:block;white-space:pre-wrap;font-size:15px;line-height:1.65;color:#475569}
+.spec-table{width:100%;border-collapse:collapse;font-size:14.5px}
+.spec-table th,.spec-table td{padding:11px 0;border-bottom:1px solid #eef2f7;text-align:left}
+.spec-table th{width:38%;color:#64748b;font-weight:600}.spec-table td{color:#0f172a;font-weight:700}
+.spec-table tr:last-child th,.spec-table tr:last-child td{border-bottom:0}
+.detail-tabs .video{margin:0}.detail-tabs .video iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:12px}
+.related{margin-top:34px}.related h2{font-size:20px;margin:0 0 14px}
+.related-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.related-card{display:flex;flex-direction:column;gap:6px;padding:12px;background:#fff;border:1px solid #e3e9f2;border-radius:14px;color:#0f172a}
+.related-img{display:grid;place-items:center;aspect-ratio:1/1;background:#f6f8fb;border-radius:10px;overflow:hidden}
+.related-img img{width:100%;height:100%;object-fit:contain;padding:8px}
+.related-name{font-size:14px;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.related-card b{font-size:16px}
+@media(max-width:760px){.related-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tab-panel{padding:16px}.detail-tabs{margin-top:24px}}
+</style>
 </head>
 <body class="shop-page">
 <div class="top">HOMS TECH · Accessoires en onderdelen</div>
@@ -201,6 +230,28 @@ function renderList(){
  renderCategoryChips();
 }
 function videoEmbed(url){try{const u=new URL(url);if(u.hostname==='youtu.be')return 'https://www.youtube-nocookie.com/embed/'+encodeURIComponent(u.pathname.slice(1));if(/youtube\.com$/.test(u.hostname)||/youtube-nocookie\.com$/.test(u.hostname)){const id=u.searchParams.get('v');if(id)return 'https://www.youtube-nocookie.com/embed/'+encodeURIComponent(id);const m=u.pathname.match(/\/embed\/([\w-]+)/);if(m)return 'https://www.youtube-nocookie.com/embed/'+encodeURIComponent(m[1])}}catch{}return ''}
+function detailTabs(p,video){
+ const v=activeVariant||{};
+ const rows=[['Categorie',p.category],['Merk',p.brand],['Model',p.deviceModel],['Kwaliteit',v.quality&&v.quality!=='Standaard'?v.quality:''],['Artikelnummer',v.sku],['Garantie',p.warranty]].filter(r=>String(r[1]||'').trim());
+ const desc=String(p.description||'').trim();
+ const tabs=[];
+ if(desc)tabs.push(['desc','Omschrijving','<p class="description">'+esc(desc)+'</p>']);
+ if(rows.length)tabs.push(['spec','Specificaties','<table class="spec-table"><tbody>'+rows.map(r=>'<tr><th>'+esc(r[0])+'</th><td>'+esc(r[1])+'</td></tr>').join('')+'</tbody></table>']);
+ if(video)tabs.push(['video','Uitlegvideo','<div class="video"><iframe src="'+video+'" title="Uitlegvideo '+esc(p.name)+'" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>']);
+ if(!tabs.length)return '';
+ return '<section class="detail-tabs"><div class="tab-bar" role="tablist">'+tabs.map((t,i)=>'<button type="button" role="tab" class="tab-btn'+(i?'':' on')+'" data-tab="'+t[0]+'" aria-selected="'+(i?'false':'true')+'">'+t[1]+'</button>').join('')+'</div>'+tabs.map((t,i)=>'<div class="tab-panel" role="tabpanel" data-panel="'+t[0]+'"'+(i?' hidden':'')+'>'+t[2]+'</div>').join('')+'</section>';
+}
+function relatedProducts(p){
+ const list=products.filter(x=>String(x.id)!==String(p.id)&&x.active!==false&&String(x.category||'Accessoires')===String(p.category||'Accessoires')).slice(0,4);
+ if(!list.length)return '';
+ return '<section class="related"><h2>Anderen bekeken ook</h2><div class="related-grid">'+list.map(x=>{const img=imgFor(x),id=encodeURIComponent(x.id);return '<a class="related-card" href="shop.html?product='+id+'"><span class="related-img">'+(img?'<img src="'+esc(img)+'" alt="'+esc(x.name)+'" loading="lazy" decoding="async">':'<span class="no-image">📦</span>')+'</span><span class="related-name">'+esc(x.name)+'</span><b>'+money(displayPrice(x))+'</b></a>';}).join('')+'</div></section>';
+}
+document.addEventListener('click',function(e){
+ const b=e.target.closest('.tab-btn');if(!b)return;
+ const root=b.closest('.detail-tabs');
+ root.querySelectorAll('.tab-btn').forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-selected',on?'true':'false')});
+ root.querySelectorAll('.tab-panel').forEach(x=>{x.hidden=x.dataset.panel!==b.dataset.tab});
+});
 function renderDetail(p){
  activeProduct=p;photoIndex=0;const variants=variantsFor(p);activeVariant=variants[0]||null;
  $('listing').classList.add('hidden');const box=$('detail');box.classList.remove('hidden');
@@ -209,7 +260,7 @@ function renderDetail(p){
  const options=variants.map((v,i)=>'<option value="'+esc(v.id||v.sku||v.quality||i)+'" '+(i===0?'selected':'')+'>'+esc(v.quality||'Standaard')+(v.sku?' · '+esc(v.sku):'')+'</option>').join('');
  const selectedPrice=activeVariant?Number(activeVariant.price??p.price)||0:Number(p.price)||0;
  const stock=activeVariant?stockForVariant(activeVariant):null;
- box.innerHTML='<a class="back" href="shop.html">← Terug naar Shop</a><div class="detail-grid"><div><div class="gallery-main" id="galleryMain">'+(photos[0]?'<img id="mainPhoto" src="'+esc(photos[0])+'" alt="'+esc(p.name)+'">':'<div class="no-image">📦</div>')+(photos.length>1?'<button type="button" class="gallery-arrow prev" onclick="shopPhoto(-1)" aria-label="Vorige foto">‹</button><button type="button" class="gallery-arrow next" onclick="shopPhoto(1)" aria-label="Volgende foto">›</button>':'')+'</div><div class="thumbs">'+photos.map((src,i)=>'<button type="button" class="thumb '+(i===0?'active':'')+'" onclick="shopSetPhoto('+i+')" aria-label="Foto '+(i+1)+'">'+(src?'<img src="'+esc(src)+'" alt="" loading="lazy" decoding="async">':'📦')+'</button>').join('')+'</div></div><div class="detail-info"><div class="category">'+esc(p.category||'Accessoires')+'</div><h1>'+esc(p.name)+'</h1>'+(variants.length>1||variants[0]?.quality!=='Standaard'?'<label for="shopDetailQuality" style="display:block;font-weight:700;margin:14px 0 6px">Kies kwaliteit</label><select id="shopDetailQuality" onchange="shopSelectVariant(this.value)" style="width:100%;padding:12px;border:1px solid #d8e0e9;border-radius:10px;background:#fff">'+options+'</select>':'')+'<div class="price" id="shopVariantPrice">'+money(selectedPrice)+'</div><div class="vat">Incl. BTW</div><div class="stock" id="shopVariantStock">'+(stock===0?'Uitverkocht':stock===null?'Beschikbaarheid controleren':stock+' stuks op voorraad')+'</div><p class="description">'+esc(p.description||'')+'</p><div class="quantity-row"><label for="shopQuantity">Aantal</label><div class="quantity-control"><button type="button" onclick="shopChangeQuantity(-1)" aria-label="Minder">−</button><input id="shopQuantity" type="number" min="1" max="'+(stock===null?99:Math.max(1,stock))+'" value="1" inputmode="numeric" aria-label="Aantal producten"><button type="button" onclick="shopChangeQuantity(1)" aria-label="Meer">+</button></div></div><button type="button" class="btn detail-add" data-add="'+esc(p.id)+'" '+(stock===0||stock===null?'disabled':'')+'>🛒 In winkelwagen</button><div class="trust-row"><div class="trust-item">✓ Veilig afrekenen</div><div class="trust-item">✓ Incl. BTW</div><div class="trust-item">✓ Hulp van HOMS TECH</div></div>'+(video?'<div class="video"><h3>Uitlegvideo</h3><iframe src="'+video+'" title="Uitlegvideo '+esc(p.name)+'" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>':'')+'</div></div>';
+ box.innerHTML='<nav class="crumbs" aria-label="Kruimelpad"><a href="index.html">Home</a><span>/</span><a href="shop.html">Shop</a><span>/</span><span>'+esc(p.category||'Accessoires')+'</span><span>/</span><b>'+esc(p.name)+'</b></nav><div class="detail-grid"><div><div class="gallery-main" id="galleryMain">'+(photos[0]?'<img id="mainPhoto" src="'+esc(photos[0])+'" alt="'+esc(p.name)+'">':'<div class="no-image">📦</div>')+(photos.length>1?'<button type="button" class="gallery-arrow prev" onclick="shopPhoto(-1)" aria-label="Vorige foto">‹</button><button type="button" class="gallery-arrow next" onclick="shopPhoto(1)" aria-label="Volgende foto">›</button>':'')+'</div><div class="thumbs">'+photos.map((src,i)=>'<button type="button" class="thumb '+(i===0?'active':'')+'" onclick="shopSetPhoto('+i+')" aria-label="Foto '+(i+1)+'">'+(src?'<img src="'+esc(src)+'" alt="" loading="lazy" decoding="async">':'📦')+'</button>').join('')+'</div></div><div class="detail-info"><div class="category">'+esc(p.category||'Accessoires')+'</div><h1>'+esc(p.name)+'</h1><div class="sku-line" id="shopSkuLine"'+(activeVariant&&activeVariant.sku?'':' hidden')+'>Artikelnummer: <b id="shopSku">'+esc(activeVariant?.sku||'')+'</b></div>'+(variants.length>1||variants[0]?.quality!=='Standaard'?'<label for="shopDetailQuality" style="display:block;font-weight:700;margin:14px 0 6px">Kies kwaliteit</label><select id="shopDetailQuality" onchange="shopSelectVariant(this.value)" style="width:100%;padding:12px;border:1px solid #d8e0e9;border-radius:10px;background:#fff">'+options+'</select>':'')+'<div class="price" id="shopVariantPrice">'+money(selectedPrice)+'</div><div class="vat">Incl. BTW</div><div class="stock" id="shopVariantStock">'+(stock===0?'Uitverkocht':stock===null?'Beschikbaarheid controleren':stock+' stuks op voorraad')+'</div><ul class="delivery-box"><li><b>Levering binnen 2 dagen</b></li><li>Verzendkosten € 4,50</li></ul><div class="quantity-row"><label for="shopQuantity">Aantal</label><div class="quantity-control"><button type="button" onclick="shopChangeQuantity(-1)" aria-label="Minder">−</button><input id="shopQuantity" type="number" min="1" max="'+(stock===null?99:Math.max(1,stock))+'" value="1" inputmode="numeric" aria-label="Aantal producten"><button type="button" onclick="shopChangeQuantity(1)" aria-label="Meer">+</button></div></div><button type="button" class="btn detail-add" data-add="'+esc(p.id)+'" '+(stock===0||stock===null?'disabled':'')+'>🛒 In winkelwagen</button><div class="trust-row"><div class="trust-item">✓ Veilig afrekenen</div><div class="trust-item">✓ Incl. BTW</div><div class="trust-item">✓ Hulp van HOMS TECH</div></div><div class="pay-row" aria-label="Betaalmethoden"><span>iDEAL</span><span>PayPal</span><span>Visa</span><span>Mastercard</span></div><a class="ask-link" data-wa data-wa-text="Hallo, ik heb een vraag over '+esc(p.name)+'." href="contact.html">Vraag over dit product? Stel hem via WhatsApp</a></div></div>'+detailTabs(p,video)+relatedProducts(p);
  box.dataset.photoCount=String(photos.length);box.dataset.photos=JSON.stringify(photos);history.replaceState(null,'','shop.html?product='+encodeURIComponent(p.id));window.scrollTo({top:0,behavior:'instant'});
 }
 function selectVariant(value){
@@ -218,6 +269,7 @@ function selectVariant(value){
  const price=document.getElementById('shopVariantPrice'),stockBox=document.getElementById('shopVariantStock'),qty=document.getElementById('shopQuantity'),button=document.querySelector('.detail-add');
  const stock=activeVariant?stockForVariant(activeVariant):null;
  if(price)price.textContent=money(activeVariant?.price??activeProduct.price);
+ const skuLine=document.getElementById('shopSkuLine'),skuEl=document.getElementById('shopSku');if(skuLine&&skuEl){skuEl.textContent=activeVariant?.sku||'';skuLine.hidden=!activeVariant?.sku;}
  if(stockBox)stockBox.textContent=stock===0?'Uitverkocht':stock===null?'Beschikbaarheid controleren':stock+' stuks op voorraad';
  if(qty){qty.value='1';qty.max=String(stock===null?99:Math.max(1,stock));}
  if(button)button.disabled=stock===0||stock===null;
