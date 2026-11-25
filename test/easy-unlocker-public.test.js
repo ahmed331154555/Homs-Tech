@@ -77,9 +77,11 @@ test("request validates fields and stores a row", async () => {
   const post = routes["post /api/easy-unlocker/requests"];
   const bad = await run(post, { body: { serviceId: "7", name: "Ali", email: "x", fields: {} } });
   assert.equal(bad.status, 400);
-  const missing = await run(post, { body: { serviceId: "7", name: "Ali", email: "a@b.nl", fields: {} } });
+  const noConsent = await run(post, { body: { serviceId: "7", name: "Ali", email: "a@b.nl", fields: { username: "ali" } } });
+  assert.equal(noConsent.status, 400);
+  const missing = await run(post, { body: { serviceId: "7", name: "Ali", email: "a@b.nl", consent: true, fields: {} } });
   assert.equal(missing.status, 400);
-  const ok = await run(post, { body: { serviceId: "7", name: "Ali", email: "A@B.nl", fields: { username: "ali" } } });
+  const ok = await run(post, { body: { serviceId: "7", name: "Ali", email: "A@B.nl", consent: true, fields: { username: "ali" } } });
   assert.equal(ok.status, 201);
   const insert = calls.find((c) => c.sql.includes("INSERT INTO eu_requests"));
   assert.equal(insert.params[2], 99);
@@ -92,7 +94,7 @@ test("honeypot and unknown service are handled", async () => {
   const post = routes["post /api/easy-unlocker/requests"];
   const bot = await run(post, { body: { website: "spam" } });
   assert.equal(bot.status, 200);
-  const none = await run(post, { body: { serviceId: "9", name: "Ali", email: "a@b.nl" } });
+  const none = await run(post, { body: { serviceId: "9", name: "Ali", email: "a@b.nl", consent: true } });
   assert.equal(none.status, 404);
 });
 

@@ -13,19 +13,25 @@
       .hero{background:linear-gradient(115deg,var(--navy),#0a3554 68%,#12618b);color:#fff;padding:42px 22px}.hero-inner{max-width:1120px;margin:auto}.hero h1{font-size:clamp(28px,5vw,44px);margin:0 0 12px;line-height:1.1;color:#fff}.hero p{max-width:650px;color:#d4e6f3;line-height:1.7;margin:0}
       main{max-width:1120px;margin:26px auto 60px;padding:0 22px}
       .tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}.tools input,.tools select{border:1px solid #d6e0ea;border-radius:11px;padding:12px 13px;font:inherit;background:#fff;min-width:0}.tools input{flex:1 1 240px}.tools select{flex:0 1 240px}
-      .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
-      .svc{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 26px #0b2c4310}
-      .svc-head{display:flex;gap:12px;align-items:flex-start}.svc img{width:48px;height:48px;border-radius:12px;object-fit:cover;flex:0 0 48px;background:#eef4fa}.svc h3{margin:0;font-size:16px;line-height:1.35;color:var(--navy)}.svc small{color:var(--muted)}
-      .price{font-size:22px;font-weight:900;color:var(--navy)}.price.ask{font-size:15px;color:var(--muted);font-weight:700}
-      .btn{border:0;border-radius:12px;padding:13px 18px;background:linear-gradient(90deg,var(--blue),#1684dc);color:#fff;font:inherit;font-weight:800;cursor:pointer;margin-top:auto}.btn:disabled{opacity:.6;cursor:wait}
+      .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+      .svc{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;display:grid;grid-template-rows:1fr auto;gap:16px;box-shadow:0 10px 26px #0b2c4310;transition:box-shadow .18s,transform .18s}
+      .svc:hover{box-shadow:0 14px 34px #0b2c4322;transform:translateY(-2px)}
+      .svc-head{display:grid;grid-template-columns:56px minmax(0,1fr);gap:14px;align-items:start}
+      .svc img,.svc .ph{width:56px;height:56px;border-radius:14px;object-fit:cover;background:#eef4fa;display:block}
+      .svc h3{margin:0 0 4px;font-size:15px;line-height:1.35;color:var(--navy);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+      .svc small{color:var(--muted);font-size:12.5px;display:block;line-height:1.3}
+      .svc-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:14px;border-top:1px solid #edf2f7}
+      .price{font-family:inherit!important;font-size:21px;font-weight:900;color:var(--navy);letter-spacing:-.2px}.price.ask{font-size:14px;color:var(--muted);font-weight:700}
+      .btn{border:0;border-radius:12px;padding:12px 20px;background:linear-gradient(90deg,var(--blue),#1684dc);color:#fff;font:inherit;font-weight:800;cursor:pointer;white-space:nowrap}.btn:disabled{opacity:.6;cursor:wait}
       .empty{padding:40px 10px;text-align:center;color:var(--muted)}
       dialog{border:0;border-radius:20px;padding:0;width:min(520px,calc(100vw - 24px));max-height:92vh;box-shadow:0 30px 80px #0b2c4355}dialog::backdrop{background:#071d2d99}
       form{padding:22px;display:grid;gap:13px}form h2{margin:0;font-size:20px;color:var(--navy)}.sum{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
       label{font-size:13px;font-weight:800;color:#263b50;display:flex;flex-direction:column;gap:6px}label input{border:1px solid #d6e0ea;border-radius:11px;padding:12px 13px;font:inherit;width:100%}label input:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px #2563eb18}
       .row{display:flex;gap:10px}.row .btn{flex:1;margin-top:0}.btn.light{background:#edf4ff;color:#1758bd}
       .status{font-size:14px;line-height:1.5;min-height:1em}.status.ok{color:#087443}.status.error{color:#b42318}
+      .consent{flex-direction:row!important;align-items:flex-start;gap:10px!important;font-weight:600;font-size:13px;line-height:1.45;color:#334155;cursor:pointer}.consent input{width:20px;height:20px;flex:0 0 20px;margin-top:1px;padding:0}.consent a{color:var(--blue)}
       .hp{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important}
-      @media(max-width:760px){.top-inner{padding:15px 18px}.hero{padding:30px 18px}main{padding:0 14px}.grid{grid-template-columns:1fr}}
+      @media(max-width:760px){.top-inner{padding:15px 18px}.hero{padding:30px 18px}main{padding:0 14px}.grid{grid-template-columns:1fr}.svc-foot{flex-wrap:wrap}.svc-foot .btn{flex:1 1 140px}}
     </style>
     <script src="assets/homs-analytics-consent.js" defer></script>
     <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20261109-shared-footer" />
@@ -63,6 +69,8 @@
         <label>Naam<input name="name" required maxlength="120" autocomplete="name" /></label>
         <label>E-mail<input name="email" type="email" required maxlength="254" autocomplete="email" /></label>
         <label>Telefoon / WhatsApp<input name="phone" maxlength="60" autocomplete="tel" /></label>
+        <label class="consent"><input type="checkbox" name="consent" required /><span>Ik bevestig dat het toestel van mij is, of dat ik toestemming heb van de eigenaar, en dat het niet als gestolen of verloren is opgegeven.</span></label>
+        <label class="consent"><input type="checkbox" name="privacy" required /><span>Ik ga akkoord met het <a href="privacybeleid.html" target="_blank" rel="noopener">privacybeleid</a>.</span></label>
         <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
         <p class="status" id="svcStatus" role="status"></p>
         <div class="row">
@@ -88,10 +96,10 @@
           $("svcGrid").innerHTML = list.map(function (s) {
             var p = price(s);
             return '<article class="svc"><div class="svc-head">' +
-              (s.imageUrl ? '<img src="' + esc(s.imageUrl) + '" alt="" loading="lazy" referrerpolicy="no-referrer" />' : "") +
+              (s.imageUrl ? '<img src="' + esc(s.imageUrl) + '" alt="" loading="lazy" referrerpolicy="no-referrer" />' : '<span class="ph"></span>') +
               "<div><h3>" + esc(s.name) + "</h3>" + (s.categoryName ? "<small>" + esc(s.categoryName) + "</small>" : "") + "</div></div>" +
-              '<div class="price' + (p ? "" : " ask") + '">' + (p || "Prijs op aanvraag") + "</div>" +
-              '<button class="btn" type="button" data-id="' + esc(s.id) + '">Aanvragen</button></article>';
+              '<div class="svc-foot"><div class="price' + (p ? "" : " ask") + '">' + (p || "Prijs op aanvraag") + "</div>" +
+              '<button class="btn" type="button" data-id="' + esc(s.id) + '">Aanvragen</button></div></article>';
           }).join("");
         }
         function open(id) {
@@ -115,6 +123,7 @@
           var form = e.currentTarget, btn = $("svcSend"), st = $("svcStatus");
           var payload = { serviceId: current.id, fields: {} };
           new FormData(form).forEach(function (v, k) { payload[k] = v; });
+          payload.consent = form.elements.consent.checked && form.elements.privacy.checked;
           current.fields.forEach(function (f, i) { payload.fields[f.name] = form.querySelector('[data-field="' + i + '"]').value; });
           btn.disabled = true; st.className = "status"; st.textContent = "Versturen…";
           fetch("/api/easy-unlocker/requests", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(payload) })

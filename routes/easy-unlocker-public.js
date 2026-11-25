@@ -32,6 +32,9 @@ async function ensureEasyUnlockerRequestSchema(pool) {
     )
   `);
   await pool.query(
+    "ALTER TABLE eu_requests ADD COLUMN IF NOT EXISTS consent_at TIMESTAMPTZ",
+  );
+  await pool.query(
     "CREATE INDEX IF NOT EXISTS eu_requests_created_idx ON eu_requests (created_at DESC)",
   );
 }
@@ -128,6 +131,11 @@ function registerEasyUnlockerPublicRoutes(
       if (!EMAIL_PATTERN.test(email)) {
         return res.status(400).json({ error: "Vul een geldig e-mailadres in." });
       }
+      if (body.consent !== true) {
+        return res.status(400).json({
+          error: "Bevestig dat het toestel van u is of dat u toestemming van de eigenaar heeft.",
+        });
+      }
       const serviceId = cleanText(body.serviceId, 40);
       const found = await queryWithConnectionRetry(
         "SELECT * FROM eu_services WHERE product_id = $1 AND published = TRUE AND in_catalog = TRUE",
@@ -153,8 +161,8 @@ function registerEasyUnlockerPublicRoutes(
       const price = salePriceEur(service.price, service.margin_percent, rate);
       await queryWithConnectionRetry(
         `INSERT INTO eu_requests
-           (product_id, service_name, price_eur, customer_name, email, phone, fields)
-         VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb)`,
+           (product_id, service_name, price_eur, customer_name, email, phone, fields, consent_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb, NOW())`,
         [service.product_id, service.name, price, name, email, phone, JSON.stringify(fields)],
         3,
       );
@@ -246,6 +254,7 @@ function registerEasyUnlockerPublicRoutes(
           fields: r.fields || {},
           status: r.status,
           createdAt: r.created_at,
+          consentAt: r.consent_at || null,
         })),
       });
     } catch (error) {

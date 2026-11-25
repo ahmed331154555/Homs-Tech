@@ -212,7 +212,7 @@
       '<header><strong>' + esc(r.serviceName) + "</strong>" +
       '<span class="eu-req-price">' + (r.priceEur == null ? "Prijs op aanvraag" : "€ " + r.priceEur.toFixed(2).replace(".", ",")) + "</span></header>" +
       '<div class="eu-req-who">' + esc(r.name) + " · " + esc(r.email) + (r.phone ? " · " + esc(r.phone) : "") +
-      '<small>' + new Date(r.createdAt).toLocaleString("nl-NL") + "</small></div>" +
+      '<small>' + new Date(r.createdAt).toLocaleString("nl-NL") + (r.consentAt ? " · ✓ eigendom bevestigd" : "") + "</small></div>" +
       (fields ? '<div class="eu-req-fields">' + fields + "</div>" : "") +
       '<footer><select data-act="status" aria-label="Status">' + opts + "</select>" +
       (wa ? '<a class="btn btn-light" target="_blank" rel="noopener" href="' + wa + '">WhatsApp</a>' : "") +
