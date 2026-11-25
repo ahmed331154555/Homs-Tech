@@ -732,7 +732,9 @@
     <link rel="stylesheet" href="/assets/customer-reviews-widget.css?v=1" />
 
     <link rel="stylesheet" href="assets/tactile-ui.css?v=20261124-flat" />
-  </head>
+  <style>.btn-whatsapp{display:inline-flex;align-items:center;justify-content:center;gap:8px}.btn-whatsapp .wa-logo{flex:0 0 20px}</style>
+<script>window.__repairReq=fetch("/api/site?view=repair",{headers:{Accept:"application/json"},credentials:"same-origin"}).catch(function(){return null});</script>
+</head>
 
   <body>
     <div class="ht-topbar">
@@ -831,12 +833,11 @@
               <a
                 class="btn-main btn-whatsapp"
                 id="repairWhatsAppButton"
-                href="#"
+                href="https://wa.me/31684242359?text=Hallo%2C%20ik%20wil%20graag%20informatie%20over%20een%20telefoonreparatie%20bij%20HOMS%20TECH."
                 target="_blank"
                 rel="noopener noreferrer"
-                hidden
               >
-                <span aria-hidden="true">◉</span> WhatsApp
+                <svg class="wa-logo" viewBox="0 0 32 32" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M16.04 3C9.4 3 4.02 8.37 4.02 15c0 2.12.55 4.19 1.6 6.01L4 28l7.17-1.88A12 12 0 0 0 16.04 27C22.67 27 28.05 21.63 28.05 15S22.67 3 16.04 3Zm0 21.98c-1.8 0-3.56-.48-5.1-1.4l-.37-.22-4.25 1.11 1.14-4.14-.24-.38A9.94 9.94 0 0 1 6.05 15c0-5.5 4.49-9.98 9.99-9.98S26.03 9.5 26.03 15s-4.49 9.98-9.99 9.98Zm5.48-7.47c-.3-.15-1.78-.88-2.05-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.95 1.18-.18.2-.35.22-.65.08-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.49-.5-.68-.51h-.58c-.2 0-.53.08-.8.38-.28.3-1.05 1.03-1.05 2.5s1.08 2.9 1.23 3.1c.15.2 2.12 3.23 5.13 4.53.72.31 1.28.5 1.71.64.72.23 1.38.2 1.9.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.08-.13-.28-.2-.58-.35Z"/></svg> WhatsApp
               </a>
             </div>
           </div>
@@ -1397,42 +1398,54 @@
               select.innerHTML = services.map((s,i)=>`<option value="${i}">${esc(s[1])}</option>`).join("");
             }
 
+            function applyWhatsApp(){
+              const rawWhatsApp = String(siteData.whatsapp || "+31684242359").trim();
+              let whatsappNumber = rawWhatsApp.replace(/\D/g, "");
+              if (whatsappNumber.startsWith("00")) whatsappNumber = whatsappNumber.slice(2);
+              if (whatsappNumber.startsWith("31") && whatsappNumber.charAt(2) === "0") {
+                whatsappNumber = "31" + whatsappNumber.slice(3);
+              } else if (whatsappNumber.startsWith("0")) {
+                whatsappNumber = "31" + whatsappNumber.slice(1);
+              }
+              const whatsappButton = document.getElementById("repairWhatsAppButton");
+              if (!whatsappButton) return;
+              if (whatsappNumber.length >= 8) {
+                const message = "Hallo, ik wil graag informatie over een telefoonreparatie bij HOMS TECH.";
+                whatsappButton.href = "https://wa.me/" + whatsappNumber + "?text=" + encodeURIComponent(message);
+                whatsappButton.hidden = false;
+              } else {
+                whatsappButton.hidden = true;
+              }
+            }
+
             async function loadSite(){
-              // Render the lightweight built-in content immediately; do not make the
-              // first visible page wait for the full website settings document.
+              // Toon direct de laatst bekende gegevens (cache) of de ingebouwde inhoud;
+              // ververs daarna op de achtergrond zodat de pagina niet op de server wacht.
+              let cachedRaw = "";
               siteData = {};
+              try{
+                cachedRaw = localStorage.getItem("homsRepairCache") || "";
+                const cached = cachedRaw ? JSON.parse(cachedRaw) : null;
+                if(cached && typeof cached === "object" && !Array.isArray(cached)) siteData = cached;
+                else cachedRaw = "";
+              }catch(e){ cachedRaw = ""; siteData = {}; }
               renderRepairPage();
               renderServices();
+              applyWhatsApp();
 
               try{
-                const response = await fetch("/api/site?view=repair", {
+                const response = (await window.__repairReq) || await fetch("/api/site?view=repair", {
                   headers:{Accept:"application/json"},
                   credentials:"same-origin"
                 });
                 if(!response.ok) throw new Error("Repair page data could not be loaded");
                 const freshData = await response.json();
                 if(!freshData || typeof freshData !== "object") throw new Error("Invalid repair page data");
+                const freshRaw = JSON.stringify(freshData);
                 siteData = freshData;
+                try{ if(freshRaw.length < 1500000) localStorage.setItem("homsRepairCache", freshRaw); }catch(e){}
 
-                const rawWhatsApp = String(siteData.whatsapp || "+31684242359").trim();
-                let whatsappNumber = rawWhatsApp.replace(/\D/g, "");
-                if (whatsappNumber.startsWith("00")) whatsappNumber = whatsappNumber.slice(2);
-                if (whatsappNumber.startsWith("31") && whatsappNumber.charAt(2) === "0") {
-                  whatsappNumber = "31" + whatsappNumber.slice(3);
-                } else if (whatsappNumber.startsWith("0")) {
-                  whatsappNumber = "31" + whatsappNumber.slice(1);
-                }
-                const whatsappButton = document.getElementById("repairWhatsAppButton");
-                if (whatsappButton) {
-                  if (whatsappNumber.length >= 8) {
-                    const message = "Hallo, ik wil graag informatie over een telefoonreparatie bij HOMS TECH.";
-                    whatsappButton.href = "https://wa.me/" + whatsappNumber + "?text=" + encodeURIComponent(message);
-                    whatsappButton.hidden = false;
-                  } else {
-                    whatsappButton.hidden = true;
-                  }
-                }
-
+                applyWhatsApp();
                 document.querySelectorAll("[data-name]").forEach(el=>{
                   el.textContent = siteData.businessName || siteData.siteName || "HOMS TECH";
                 });
@@ -1440,8 +1453,11 @@
                   el.textContent = siteData.tagline || "Telefoonreparatie aan huis";
                 });
 
-                renderRepairPage();
-                renderServices();
+                // Alleen opnieuw tekenen als er echt iets veranderd is (voorkomt flikkeren).
+                if(freshRaw !== cachedRaw){
+                  renderRepairPage();
+                  renderServices();
+                }
               }catch(error){
                 console.warn("HOMS TECH repair page: using built-in content.", error);
               }
