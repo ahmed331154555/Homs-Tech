@@ -279,6 +279,10 @@ app.use(
           "Cache-Control",
           "public, max-age=604800, stale-while-revalidate=86400",
         );
+      } else if (/\.html?$/i.test(filePath)) {
+        // Always revalidate pages (cheap 304 via ETag) so a new deploy shows up
+        // immediately instead of waiting on the browser's heuristic cache.
+        res.setHeader("Cache-Control", "no-cache");
       } else if (/\.(?:css|js)$/i.test(filePath)) {
         res.setHeader(
           "Cache-Control",
