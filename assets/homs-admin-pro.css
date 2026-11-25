@@ -634,3 +634,9 @@ body.ht-modal-open{overflow:hidden}
   #dashboard .os-actions .btn{flex:1 1 140px;justify-content:center;text-align:center}
 }
 #dashboard .os-note-save{display:block;margin:-4px 0 10px}
+
+/* 28. Betaalstatus-chip in de bestellijst */
+#dashboard .ht-phone-sale-badges{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+#dashboard .ht-phone-pay-chip{display:inline-flex;align-items:center;padding:2px 9px;border:1px solid #fde3a7;border-radius:99px;background:#fff8e6;color:#8a5a00;font-size:11px;font-weight:800;white-space:nowrap}
+#dashboard .ht-phone-pay-chip.is-paid{border-color:#bfe3cc;background:#f0faf4;color:#166534}
+#dashboard .ht-phone-pay-chip.is-failed{border-color:#f5c2c2;background:#fff1f1;color:#b42318}

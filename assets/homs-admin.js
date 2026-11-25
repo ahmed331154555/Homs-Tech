@@ -4107,8 +4107,10 @@ function renderWebshopOrderList(type){
         ?'<span class="ht-phone-product-thumb"><img src="'+esc(image)+'" data-fallback-sources="'+fallbackSources+'" data-fallback-index="0" alt="'+esc(itemName)+'" loading="lazy" onerror="handlePhoneOrderImageError(this)"><span class="ht-phone-product-fallback" hidden>📱</span></span>'
         :'<span class="ht-phone-product-thumb"><span class="ht-phone-product-fallback">📱</span></span>';
       const payment=String(order.payment_status||"Onbekend");
-      const paymentLabel=/paid|betaald|completed/i.test(payment)?"Betaald":(/pending|unpaid|open|wacht/i.test(payment)?"Openstaand":payment);
-      const paymentClass=paymentLabel==="Betaald"?"is-paid":(/failed|mislukt|cancel/i.test(paymentLabel)?"is-failed":"is-pending");
+      // Exact match: "Unpaid" must not count as paid.
+      const payKey=payment.trim().toLowerCase();
+      const paymentLabel=/^(paid|betaald|completed)$/.test(payKey)?"Betaald":(/^(failed|mislukt|cancelled|canceled|geannuleerd)$/.test(payKey)?"Mislukt":(/^(processing|pending|in behandeling|in afwachting)$/.test(payKey)?"In behandeling":"Niet betaald"));
+      const paymentClass=paymentLabel==="Betaald"?"is-paid":(paymentLabel==="Mislukt"?"is-failed":"is-pending");
       const mixed=items.some(item=>String(item?.type||"phone").toLowerCase()==="shop")&&items.some(item=>String(item?.type||"phone").toLowerCase()!=="shop");
       return '<article class="ht-phone-sale-row '+status.className+'" data-order-id="'+Number(order.id)+'">'+
         '<button type="button" class="ht-phone-sale-open" onclick="showWebshopOrderDetails('+Number(order.id)+')" aria-label="Open bestelling '+esc("#"+order.id)+'">'+
@@ -4116,7 +4118,7 @@ function renderWebshopOrderList(type){
           '<span class="ht-phone-sale-customer"><strong><span class="ht-phone-customer-icon">👤</span>'+esc(customer)+'</strong><small>'+(phoneNumber?'<span class="ht-whatsapp-mark">◉</span> '+esc(phoneNumber):esc(order.email||"Geen telefoonnummer"))+'</small></span>'+
           '<span class="ht-phone-sale-device">'+imageHtml+'<span class="ht-phone-product-copy"><strong>'+esc(itemName)+'</strong><small>'+esc(itemMeta||"Gegevens niet opgegeven")+esc(extraItems)+'</small></span></span>'+
           '<strong class="ht-phone-sale-price">'+esc(total)+'</strong>'+
-          '<span class="ht-phone-sale-badges"><span class="ht-phone-status-chip '+status.className+'"><span aria-hidden="true">'+status.icon+'</span>'+esc(statusLabel)+'</span></span>'+
+          '<span class="ht-phone-sale-badges"><span class="ht-phone-status-chip '+status.className+'"><span aria-hidden="true">'+status.icon+'</span>'+esc(statusLabel)+'</span><span class="ht-phone-pay-chip '+paymentClass+'">'+esc(paymentLabel)+'</span></span>'+
           '<span class="ht-phone-sale-date"><strong>'+esc(date)+'</strong><small>'+esc(time)+'</small></span>'+
           '<span class="ht-phone-sale-chevron" aria-hidden="true">›</span>'+
         '</button>'+
