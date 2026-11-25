@@ -7010,9 +7010,34 @@ function selectInventoryItem(index){
   inventorySelectionChanged();
   document.getElementById("inventoryMovementType").value="purchase";
   inventoryMovementTypeChanged();
-  document.getElementById("inventoryQuantity").focus();
-  document.getElementById("inventoryMovementForm")?.scrollIntoView({behavior:"smooth",block:"center"});
+  openInventoryModal();
 }
+function openInventoryModal(){
+  const modal=document.getElementById("inventoryModal");
+  if(!modal)return;
+  const backdrop=document.getElementById("inventoryBackdrop");
+  /* naar body verplaatsen: een transform op een ouder breekt position:fixed */
+  if(backdrop&&backdrop.parentNode!==document.body)document.body.appendChild(backdrop);
+  if(modal.parentNode!==document.body)document.body.appendChild(modal);
+  modal.hidden=false;
+  backdrop?.classList.add("is-open");
+  document.body.classList.add("ht-modal-open");
+  setTimeout(()=>document.getElementById("inventoryQuantity")?.focus({preventScroll:true}),30);
+}
+function inventoryToast(text){
+  let t=document.getElementById("inventoryToast");
+  if(!t){t=document.createElement("div");t.id="inventoryToast";t.className="ht-inventory-toast";t.setAttribute("role","status");document.body.appendChild(t);}
+  t.textContent=text;t.classList.add("is-show");
+  clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("is-show"),3200);
+}
+function closeInventoryModal(){
+  const modal=document.getElementById("inventoryModal");
+  if(!modal||modal.hidden)return;
+  modal.hidden=true;
+  document.getElementById("inventoryBackdrop")?.classList.remove("is-open");
+  document.body.classList.remove("ht-modal-open");
+}
+document.addEventListener("keydown",event=>{if(event.key==="Escape")closeInventoryModal();});
 function inventoryMovementTypeChanged(){
   const type=document.getElementById("inventoryMovementType")?.value;
   const quantity=document.getElementById("inventoryQuantity");
@@ -7087,6 +7112,8 @@ async function saveInventoryMovement(event){
     document.getElementById("inventoryQuantity").value="";
     document.getElementById("inventoryNote").value="";
     inventorySetStatus("Voorraad bijgewerkt. Nieuwe voorraad: "+inventoryEuroCount(result.stock)+" stuks.","success");
+    closeInventoryModal();
+    inventoryToast("Voorraad bijgewerkt · nieuwe voorraad: "+inventoryEuroCount(result.stock)+" stuks");
     await loadInventory();
   }catch(error){
     inventorySetStatus(error.message||"Voorraadmutatie opslaan is mislukt.","error");

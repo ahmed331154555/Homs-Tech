@@ -23,7 +23,7 @@
     />
     <link
       rel="stylesheet"
-      href="../assets/homs-admin-pro.css?v=20261125-pro14"
+      href="../assets/homs-admin-pro.css?v=20261125-pro15"
     />
     <link rel="stylesheet" href="../assets/homs-admin-shop.css?v=20261124-shop4" />
   </head>
@@ -1980,15 +1980,17 @@
                 <div class="ht-inventory-loading">Voorraad laden…</div>
               </div>
             </div>
-            <aside class="card ht-inventory-adjust">
+            <div class="ht-inventory-backdrop" id="inventoryBackdrop" onclick="closeInventoryModal()"></div>
+            <aside class="card ht-inventory-adjust" id="inventoryModal" role="dialog" aria-modal="true" aria-labelledby="inventoryModalTitle" hidden>
               <div class="ht-inventory-card-head">
                 <div>
                   <span class="ht-inventory-eyebrow">VOORRAAD MUTEREN</span>
-                  <h3>Voorraad wijzigen</h3>
+                  <h3 id="inventoryModalTitle">Voorraad wijzigen</h3>
                   <p>
                     Kies een artikel en registreer de reden van de wijziging.
                   </p>
                 </div>
+                <button type="button" class="ht-inventory-close" aria-label="Sluiten" onclick="closeInventoryModal()">✕</button>
               </div>
               <form
                 id="inventoryMovementForm"
@@ -2819,7 +2821,7 @@
       </div>
     </div>
 
-    <script src="../assets/homs-admin.js?v=20261125-focus1" defer></script>
+    <script src="../assets/homs-admin.js?v=20261125-inv1" defer></script>
     <script src="../assets/admin-button-states.js?v=20261124-ui2" defer></script>
     <script src="../assets/admin-editor-focus.js?v=20261125-focus3" defer></script>
     <script
