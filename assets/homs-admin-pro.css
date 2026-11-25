@@ -501,3 +501,70 @@ body.ht-modal-open{overflow:hidden}
 #dashboard .ht-invoice-more>.ht-invoice-form-grid{padding:0 12px 12px}
 #dashboard .ht-invoice-new .ht-invoice-card-head{margin-bottom:6px}
 #dashboard .ht-invoice-new .ht-invoice-form-grid{gap:10px 12px}#dashboard .ht-invoice-new .ht-invoice-form-grid .field{margin:0!important}
+
+/* 26. Bestellingen: compacte lijst en detailvenster (telefoonbestellingen) */
+#dashboard .phone-orders-search,#dashboard .ht-phone-orders-searchbar label{display:flex;align-items:center;gap:8px;min-height:38px;padding:0 10px;border:1px solid #d8e1eb!important;border-radius:9px!important;background:#fff!important;box-shadow:none!important}
+#dashboard .phone-orders-search input,#dashboard .ht-phone-orders-searchbar input{flex:1;min-width:0;min-height:34px!important;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;font-size:13px!important;padding:0!important}
+#dashboard .phone-orders-search:focus-within{border-color:#2563eb!important;box-shadow:0 0 0 3px rgba(37,99,235,.12)!important}
+#dashboard .ht-phone-orders-filters select,#dashboard #phoneOrderStatusFilter,#dashboard #phoneOrderPeriodFilter{min-height:38px!important;padding:0 10px!important;border:1px solid #d8e1eb!important;border-radius:9px!important;background:#fff!important;font-size:12.5px!important;font-weight:600!important;box-shadow:none!important}
+#dashboard .ht-phone-sale-delete{min-height:30px!important;width:auto!important;padding:4px 12px!important;border:1px solid #f1c0c0!important;border-radius:8px!important;background:#fff!important;color:#b42318!important;font-size:12px!important;font-weight:700!important;box-shadow:none!important;transition:background .15s,color .15s,border-color .15s}
+#dashboard .ht-phone-sale-delete:hover{background:#b42318!important;border-color:#b42318!important;color:#fff!important}
+#dashboard .ht-phone-sale-delete:active{transform:scale(.97)}
+#dashboard .ht-phone-sale-row .ht-phone-sale-delete{align-self:center}
+@media(max-width:850px){
+  #dashboard .ht-phone-sale-row{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:0!important;padding:0!important}
+  #dashboard .ht-phone-sale-row .ht-phone-sale-delete{justify-self:end;margin:0 12px 10px!important}
+}
+
+#orderDetailsModal.phone-order-detail-overlay .ht-order-detail-top{padding:12px 14px!important;border-radius:12px!important;margin-bottom:10px!important;gap:10px!important;min-height:0!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-order-detail-top .ht-order-eyebrow{font-size:10px!important;letter-spacing:.1em!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-order-detail-top h2{margin:2px 0!important;font-size:18px!important;line-height:1.2!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-order-detail-top p{margin:0!important;font-size:12px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-head-status{padding:3px 10px!important;font-size:11px!important;min-height:0!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-close{width:32px!important;height:32px!important;min-height:32px!important;padding:0!important;border-radius:8px!important;font-size:14px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-card-head,#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-card-head{padding:9px 12px!important;font-size:13px!important;font-weight:800!important;min-height:0!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-card-body{padding:10px 12px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-info-line{padding:7px 0!important;font-size:12.5px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-product-title{font-size:16px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-product-price{font-size:20px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-product-tags span{padding:2px 8px!important;font-size:11px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-tabs{padding:4px!important;gap:4px!important;border-radius:10px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-dashboard-tab{min-height:34px!important;padding:5px 11px!important;border-radius:8px!important;font-size:12px!important;gap:6px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-field{font-size:11px!important;font-weight:800!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-field select,#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-field input,#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-field textarea{min-height:36px!important;padding:6px 10px!important;font-size:13px!important;border-radius:8px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-field textarea{min-height:76px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-muted{font-size:11px!important;padding:7px 9px!important}
+#orderDetailsModal.phone-order-detail-overlay .btn{min-height:34px!important;padding:6px 12px!important;border-radius:8px!important;font-size:12.5px!important;font-weight:700!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-payment-save,#orderDetailsModal.phone-order-detail-overlay .ht-shipping-save-button,#orderDetailsModal.phone-order-detail-overlay .ht-phone-note-form .btn,#orderDetailsModal.phone-order-detail-overlay .ht-phone-inspection-footer .btn{width:auto!important;min-width:150px}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-actions{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-actions .btn{flex:0 0 auto;width:auto!important;min-height:34px!important;padding:6px 14px!important;font-weight:700!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-actions .btn:last-child{background:#fff!important;color:#12263a!important;border:1px solid #cfd9e5!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-actions .btn-red{margin-right:auto;background:#fff!important;color:#b42318!important;border:1px solid #f1c0c0!important;box-shadow:none!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-actions .btn-red:hover{background:#b42318!important;color:#fff!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-actions .btn:active{transform:scale(.97)}
+@media(max-width:850px){
+  #orderDetailsModal.phone-order-detail-overlay .phone-order-detail-panel{padding:8px!important}
+  #orderDetailsModal.phone-order-detail-overlay .ht-order-detail-top{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:start!important}
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-head-status{grid-column:1;justify-self:start}
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-close{grid-column:2;grid-row:1}
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-actions{position:sticky!important;bottom:-8px!important;margin:10px -8px -8px!important;padding:8px 10px calc(8px + env(safe-area-inset-bottom))!important;gap:6px!important;border-top:1px solid #e2e8f0!important;background:#fff!important}
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-actions .btn{padding:6px 10px!important;font-size:12px!important}
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-payment-save,#orderDetailsModal.phone-order-detail-overlay .ht-shipping-save-button,#orderDetailsModal.phone-order-detail-overlay .ht-phone-note-form .btn,#orderDetailsModal.phone-order-detail-overlay .ht-phone-inspection-footer .btn{width:100%!important}
+}
+#dashboard .ht-phone-orders-filter{display:block;min-width:0;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+#dashboard .ht-phone-orders-filter select{width:100%}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-actions .btn{white-space:nowrap!important;word-break:keep-all!important}
+@media(max-width:850px){
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-actions{justify-content:space-between!important}
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-actions .btn{flex:1 1 0!important;min-width:0;padding:6px 4px!important;font-size:11.5px!important}
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-detail-actions .btn-red{margin-right:0!important}
+  #orderDetailsModal.phone-order-detail-overlay .ht-phone-product-visual{min-height:96px!important;max-height:180px}
+}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-heading{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px 10px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-heading-copy{flex:1 1 140px;min-width:0}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-heading-copy h3{margin:0!important;font-size:14px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-heading-copy p{display:none!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-eyebrow{font-size:10px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-shipping-heading-icon{width:30px!important;height:30px!important;font-size:15px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-inspection-intro{display:grid!important;gap:3px!important;font-size:12px!important}
+#orderDetailsModal.phone-order-detail-overlay .ht-phone-inspection-intro strong{display:block;font-size:13px}
