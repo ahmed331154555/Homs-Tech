@@ -16,7 +16,7 @@ test("shop visibility routes share one valid SQL definition", () => {
   );
   assert.ok(definition, "shared Shop visibility SQL should be defined");
   assert.equal(definition[2], shopVisibilitySql);
-  assert.equal((server.match(/\bSHOP_ENABLED_SQL\b/g) || []).length - 1, 3);
+  assert.equal((server.match(/\bSHOP_ENABLED_SQL\b/g) || []).length - 1, 4);
   assert.equal(server.split(shopVisibilitySql).length - 1, 1);
   assert.doesNotMatch(
     server,

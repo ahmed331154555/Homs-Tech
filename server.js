@@ -34,6 +34,7 @@ const {
   registerAdminEasyUnlockerRoutes,
   ensureEasyUnlockerSchema,
 } = require("./routes/admin-easy-unlocker");
+const { buildSitemapXml } = require("./utils/sitemap");
 const {
   registerEasyUnlockerPublicRoutes,
   ensureEasyUnlockerRequestSchema,
@@ -262,6 +263,39 @@ app.get("/shop.html", async (req, res) => {
   } catch (error) {
     console.error("[SHOP PAGE] Availability check failed:", error);
     return res.redirect(302, "/");
+  }
+});
+
+// Dynamic sitemap: static pages plus public phones and shop products.
+// Falls back to the static file when the database cannot be read.
+app.get("/sitemap.xml", async (req, res) => {
+  try {
+    const [settings, shop, services] = await Promise.all([
+      queryWithConnectionRetry(
+        "SELECT data->'phones' AS phones, data->'shopProducts' AS shop_products FROM site_settings WHERE id = 1",
+        [],
+        3,
+      ),
+      queryWithConnectionRetry(SHOP_ENABLED_SQL, [], 3),
+      queryWithConnectionRetry(
+        "SELECT 1 FROM eu_services WHERE published = TRUE AND in_catalog = TRUE LIMIT 1",
+        [],
+        3,
+      ).catch(() => ({ rows: [] })),
+    ]);
+    const row = settings.rows[0] || {};
+    res.set("Cache-Control", "public, max-age=3600");
+    return res.type("application/xml").send(
+      buildSitemapXml({
+        phones: row.phones,
+        shopProducts: row.shop_products,
+        shopEnabled: !shop.rows.length || shop.rows[0].enabled !== false,
+        hasServices: services.rows.length > 0,
+      }),
+    );
+  } catch (error) {
+    console.error("[SITEMAP] Dynamic build failed:", error);
+    return res.type("application/xml").sendFile(path.join(__dirname, "sitemap.xml"));
   }
 });
 
