@@ -266,6 +266,22 @@ app.get("/shop.html", async (req, res) => {
   }
 });
 
+// Pages that were removed on purpose. 410 Gone tells search engines to drop
+// them faster than a plain 404.
+const REMOVED_PAGES = new Set([
+  "/firmware.html",
+  "/gsm-home.html",
+  "/gsm-services.html",
+  "/used.html",
+]);
+app.use((req, res, next) => {
+  if (REMOVED_PAGES.has(req.path.toLowerCase())) {
+    res.set("Cache-Control", "public, max-age=3600");
+    return res.status(410).type("text/plain").send("Deze pagina bestaat niet meer.");
+  }
+  return next();
+});
+
 // Dynamic sitemap: static pages plus public phones and shop products.
 // Falls back to the static file when the database cannot be read.
 app.get("/sitemap.xml", async (req, res) => {
