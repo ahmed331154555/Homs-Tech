@@ -44,3 +44,22 @@
 .eu-req.is-cancelled footer select{border-color:#fca5a5;color:#b91c1c;font-weight:700}
 .eu-req footer .btn{min-height:36px;padding:0 12px;text-decoration:none;display:inline-flex;align-items:center}
 @media(max-width:900px){.eu-req{grid-template-columns:1fr;grid-template-areas:"head" "who" "fields" "foot"}.eu-req footer{justify-content:flex-start}.eu-req footer select{flex:1 1 130px}}
+
+/* ---------- Mobile safety: nothing may push the page wider than the screen ---------- */
+.eu-wrap{grid-template-columns:minmax(0,1fr);min-width:0}
+.eu-wrap>*{min-width:0;max-width:100%}
+.eu-filters select,.eu-filters input[type=search]{min-width:0;max-width:100%}
+.eu-filters select option{max-width:100%}
+.eu-rate input{width:90px!important;flex:0 0 90px}
+.eu-rate .small{flex:1 1 220px;min-width:0}
+.eu-toolbar .btn{white-space:normal;text-align:center}
+#page-easy-unlocker,#page-eu-requests{min-width:0;overflow-x:hidden}
+@media(max-width:640px){
+  .eu-toolbar .btn{flex:1 1 100%;justify-content:center}
+  .eu-rate{display:grid;grid-template-columns:90px auto 1fr;gap:8px;align-items:center}
+  .eu-rate label{grid-column:1/-1}
+  .eu-rate .btn{grid-column:3;justify-self:start}
+  .eu-rate .small{grid-column:1/-1}
+  .eu-filters select,.eu-filters input[type=search]{flex:1 1 100%;width:100%!important}
+  .eu-pager{justify-content:center}.eu-pager .small{order:3;flex:1 1 100%;text-align:center}
+}
