@@ -211,3 +211,51 @@ html body #homeBuybackBanner #buybackBannerButton .buyback-swap {
     font-size: 13px !important;
   }
 }
+
+/* Repair services: every uploaded photo fills the same 4:3 frame, so mixed
+ * image sizes from the admin always look uniform. */
+html body #services.services {
+  gap: 14px !important;
+}
+html body #services .service {
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid #e1e8f0 !important;
+  border-radius: 16px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  text-align: left !important;
+  transition: border-color 0.15s, box-shadow 0.15s !important;
+}
+html body #services .service:hover {
+  border-color: #b9cfe8 !important;
+  box-shadow: 0 8px 22px rgba(15, 37, 64, 0.08) !important;
+}
+html body #services .service-photo {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 4 / 3 !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #eef2f7 !important;
+}
+html body #services .service strong {
+  display: block !important;
+  min-height: 0 !important;
+  padding: 12px 14px 14px !important;
+  color: #0f2540 !important;
+  font-size: 15px !important;
+  font-weight: 650 !important;
+  line-height: 1.35 !important;
+}
+@media (max-width: 520px) {
+  html body #services .service strong {
+    padding: 10px 12px 12px !important;
+    font-size: 14px !important;
+  }
+}
