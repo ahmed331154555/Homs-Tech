@@ -105,6 +105,8 @@ function registerRepairQuoteRoutes(
               <p>Beste ${escapeHtml(name)},</p>
               <p>We hebben uw reparatieaanvraag voor <b>${escapeHtml(brand)} ${escapeHtml(model)}</b> goed ontvangen.</p>
               <p>Ons team bekijkt uw aanvraag en neemt zo snel mogelijk contact met u op over de reparatiemogelijkheden en de prijs.</p>
+              <p>Uw aanvraagnummer is <b>#${request.id}</b>. Met dit nummer en uw e-mailadres kunt u de voortgang volgen op
+              <a href="https://homs-tech.nl/reparatie-volgen.html?no=${request.id}">homs-tech.nl/reparatie-volgen.html</a>.</p>
               <p>Dit bericht is een automatische ontvangstbevestiging; er is nog geen reparatieprijs bevestigd.</p>
               <p>Met vriendelijke groet,<br>
               <b>HOMS TECH</b>

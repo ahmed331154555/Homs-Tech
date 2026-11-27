@@ -39,6 +39,10 @@ const {
   registerEasyUnlockerPublicRoutes,
   ensureEasyUnlockerRequestSchema,
 } = require("./routes/easy-unlocker-public");
+const {
+  registerRepairTrackingRoutes,
+  ensureRepairTrackingSchema,
+} = require("./routes/repair-tracking");
 const { registerContactRoutes } = require("./routes/contact");
 const { registerAnnouncementBarRoutes } = require("./routes/announcement-bars");
 const { registerBenefitsStripRoutes } = require("./routes/benefits-strip");
@@ -1554,6 +1558,13 @@ registerAdminOrderRoutes(app, {
   fetchImpl: fetch,
   getEnv: () => process.env,
 });
+registerRepairTrackingRoutes(app, {
+  pool,
+  requirePermission,
+  escapeHtml,
+  fetchImpl: fetch,
+  getEnv: () => process.env,
+});
 registerAdminBuybackOrderRoutes(app, {
   pool,
   requirePermission,
@@ -2030,6 +2041,7 @@ initializeDatabaseWithRetry(async () => {
   await customerReviewRoutes.ensureCustomerReviewSchema(pool);
   await ensureEasyUnlockerSchema(pool);
   await ensureEasyUnlockerRequestSchema(pool);
+  await ensureRepairTrackingSchema(pool);
   try {
     await getPublicBuybackCatalog();
   } catch (error) {

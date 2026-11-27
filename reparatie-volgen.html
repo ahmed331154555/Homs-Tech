@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="nl" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,follow" />
+    <title>Reparatie volgen | HOMS TECH</title>
+    <meta name="description" content="Volg de status van uw reparatie bij HOMS TECH met uw aanvraagnummer en e-mailadres." />
+    <link rel="canonical" href="https://homs-tech.nl/reparatie-volgen.html" />
+    <style>
+      :root{--navy:#071d2d;--blue:#0b63ce;--ink:#15283a;--muted:#64748b;--line:#dce5ee}
+      *{box-sizing:border-box}body{margin:0;background:#f3f6fa;font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+      a{color:inherit}.top{background:#fff;border-bottom:1px solid var(--line)}.top-inner{max-width:760px;margin:auto;padding:18px 22px}.logo{font-weight:900;font-size:22px;text-decoration:none;color:var(--navy)}.logo span{color:var(--blue)}
+      main{max-width:760px;margin:28px auto 64px;padding:0 18px}
+      h1{margin:0 0 8px;font-size:clamp(28px,5vw,38px);letter-spacing:-.02em;color:var(--navy)}
+      .lead{margin:0 0 22px;color:var(--muted);line-height:1.6}
+      .card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px}
+      form{display:grid;gap:14px}
+      label{display:grid;gap:6px;font-size:14px;font-weight:700;color:#263b50}
+      input{min-height:48px;border:1.5px solid #c9d4e1;border-radius:12px;padding:0 14px;font:inherit;font-size:16px;background:#fff}
+      input:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px #0b63ce29}
+      .btn{min-height:50px;border:0;border-radius:999px;background:var(--blue);color:#fff;font:inherit;font-weight:700;font-size:16px;cursor:pointer}
+      .btn:hover{background:#0a54ae}.btn:disabled{opacity:.65;cursor:wait}
+      .error{margin:0;color:#b42318;font-size:14px;line-height:1.5;min-height:1em}
+      .hp{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+      #result{margin-top:18px}
+      .head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:6px}
+      .head h2{margin:0;font-size:22px;color:var(--navy)}
+      .pill{display:inline-block;padding:7px 14px;border-radius:999px;background:#e6f0fd;color:#0a4a99;font-weight:700;font-size:14px}
+      .pill.done{background:#e4f3e8;color:#14532d}.pill.bad{background:#fde8e6;color:#8f1d12}.pill.wait{background:#fff4dc;color:#7a4b00}
+      .meta{margin:6px 0 0;color:var(--muted);font-size:14px;line-height:1.6}
+      .tl{list-style:none;margin:22px 0 0;padding:0;border-left:2px solid #dbe5f0;margin-left:7px}
+      .tl li{position:relative;padding:0 0 22px 24px}.tl li:last-child{padding-bottom:0}
+      .tl li::before{content:"";position:absolute;left:-8px;top:3px;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid #b5c6da}
+      .tl li.now::before{border-color:var(--blue);background:var(--blue)}
+      .tl b{display:block;font-size:15px;color:var(--navy)}.tl time{display:block;margin-top:2px;font-size:13px;color:var(--muted)}
+      .tl .msg{margin-top:6px;padding:10px 12px;background:#f3f6fa;border-radius:10px;font-size:14px;line-height:1.5}
+      .help{margin-top:18px;color:var(--muted);font-size:14px;line-height:1.6}
+    </style>
+    <script src="assets/homs-analytics-consent.js" defer></script>
+    <link rel="stylesheet" href="assets/homs-tech-modern-true-theme.css?v=20261109-shared-footer" />
+    <link rel="stylesheet" href="assets/homs-layout-system.css?v=20261122-premium-light-v2" />
+    <link rel="stylesheet" href="assets/tactile-ui.css?v=20261125-logo" />
+  </head>
+  <body>
+    <header class="top"><div class="top-inner"><a class="logo" href="index.html">HOMS <span>TECH</span></a></div></header>
+    <main>
+      <h1>Reparatie volgen</h1>
+      <p class="lead">Vul uw aanvraagnummer en het e-mailadres in waarmee u de aanvraag heeft gedaan. U vindt het nummer in de bevestigingsmail.</p>
+      <div class="card">
+        <form id="trackForm" novalidate>
+          <label for="requestNo">Aanvraagnummer
+            <input id="requestNo" name="requestNo" inputmode="numeric" autocomplete="off" placeholder="bijv. 128" required />
+          </label>
+          <label for="email">E-mailadres
+            <input id="email" name="email" type="email" autocomplete="email" placeholder="naam@voorbeeld.nl" required />
+          </label>
+          <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          <p class="error" id="trackError" role="alert"></p>
+          <button class="btn" id="trackBtn" type="submit">Status bekijken</button>
+        </form>
+      </div>
+      <div id="result" class="card" hidden aria-live="polite"></div>
+      <p class="help">Geen aanvraagnummer of komt u er niet uit? <a href="contact.html">Neem contact met ons op</a>.</p>
+    </main>
+    <script>
+      (function () {
+        var form = document.getElementById("trackForm"),
+          err = document.getElementById("trackError"),
+          btn = document.getElementById("trackBtn"),
+          box = document.getElementById("result");
+        var params = new URLSearchParams(location.search);
+        var pre = (params.get("no") || "").replace(/\D/g, "").slice(0, 12);
+        if (pre) form.requestNo.value = pre;
+        function el(tag, cls, text) {
+          var n = document.createElement(tag);
+          if (cls) n.className = cls;
+          if (text !== undefined) n.textContent = text;
+          return n;
+        }
+        function when(v) {
+          var d = new Date(v);
+          return isNaN(d) ? "" : d.toLocaleString("nl-NL", { dateStyle: "medium", timeStyle: "short" });
+        }
+        function pillClass(status) {
+          if (status === "Voltooid") return "pill done";
+          if (status === "Mislukt" || status === "Geannuleerd") return "pill bad";
+          if (status === "Wacht op klant") return "pill wait";
+          return "pill";
+        }
+        function render(d) {
+          box.textContent = "";
+          var head = el("div", "head");
+          head.appendChild(el("h2", "", "Aanvraag #" + d.requestNo));
+          head.appendChild(el("span", pillClass(d.status), d.label));
+          box.appendChild(head);
+          box.appendChild(el("p", "meta", d.device + " · aangevraagd op " + when(d.createdAt)));
+          if (d.price) box.appendChild(el("p", "meta", "Prijs: \u20ac " + d.price));
+          var list = el("ul", "tl");
+          var lastStatus = -1;
+          d.timeline.forEach(function (t, i) { if (t.type === "status") lastStatus = i; });
+          d.timeline.forEach(function (t, i) {
+            var li = el("li", i === lastStatus ? "now" : "");
+            if (t.type === "message") {
+              li.appendChild(el("b", "", "Bericht van HOMS TECH"));
+              li.appendChild(el("time", "", when(t.at)));
+              li.appendChild(el("div", "msg", t.text));
+            } else {
+              li.appendChild(el("b", "", t.label));
+              li.appendChild(el("time", "", when(t.at)));
+            }
+            list.appendChild(li);
+          });
+          box.appendChild(list);
+          box.hidden = false;
+        }
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          err.textContent = "";
+          box.hidden = true;
+          if (form.website.value) return;
+          var no = form.requestNo.value.replace(/\D/g, "");
+          var mail = form.email.value.trim();
+          if (!no) { err.textContent = "Vul uw aanvraagnummer in."; form.requestNo.focus(); return; }
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { err.textContent = "Vul een geldig e-mailadres in."; form.email.focus(); return; }
+          btn.disabled = true;
+          btn.textContent = "Even zoeken...";
+          fetch("/api/repair/track", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({ requestNo: no, email: mail })
+          })
+            .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { return { ok: r.ok, body: b }; }); })
+            .then(function (res) {
+              if (!res.ok) throw new Error(res.body.error || "Opzoeken is niet gelukt.");
+              render(res.body);
+              box.scrollIntoView({ behavior: "smooth", block: "start" });
+            })
+            .catch(function (e2) { err.textContent = e2.message; })
+            .then(function () { btn.disabled = false; btn.textContent = "Status bekijken"; });
+        });
+      })();
+    </script>
+    <footer class="ht-site-footer" aria-label="Footer HOMS TECH">
+      <div class="ht-footer-grid">
+        <div>
+          <div class="ht-footer-logo">HOMS <span>TECH</span></div>
+          <p>Refurbished apparaten · Reparatie aan huis · GSM Services</p>
+        </div>
+        <div>
+          <h2>Snelle links</h2>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="devices.html">Apparaten</a></li>
+            <li><a href="shop.html">Shop</a></li>
+            <li><a href="prices.html">Prijzen</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Service</h2>
+          <ul>
+            <li><a href="about.html">Over ons</a></li>
+            <li><a href="repair.html">Reparaties</a></li>
+            <li><a href="uw-toestel-verkopen.html">Uw toestel verkopen</a></li>
+            <li><a href="services.html">Server</a></li>
+            <li><a href="reparatie-volgen.html">Reparatie volgen</a></li>
+            <li><a href="account.html">Mijn account</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Hulp nodig?</h2>
+          <p>Heeft u een vraag over een product, bestelling of reparatie?</p>
+          <a class="ht-footer-cta" href="contact.html">Neem contact op</a>
+        </div>
+      </div>
+      <div class="ht-footer-bottom">
+        <span>© 2026 HOMS TECH</span
+        ><span>Refurbished · Reparatie · Service</span>
+      </div>
+      <div class="homs-legal-link">
+        <a href="privacybeleid.html">Privacybeleid</a>
+      </div>
+    </footer>
+    <script src="assets/homs-ai-chat.js?v=20261127-chat" defer></script>
+    <script src="assets/homs-global-nav.js?v=20261127-suggest" defer></script>
+  </body>
+</html>
