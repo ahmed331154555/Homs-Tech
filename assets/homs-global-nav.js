@@ -255,3 +255,118 @@
 })();
 // HOMS TECH configurable announcement bar on every page.
 (function(){var script=document.createElement("script");script.src="/assets/homs-announcement-bars.js?v=20261108-loopfix2";script.onload=function(){var benefits=document.createElement("script");benefits.src="/assets/homs-benefits-strip.js?v=1";document.head.appendChild(benefits)};document.head.appendChild(script)})();
+
+/* Live search suggestions for the shared header search box. */
+(function(){
+  "use strict";
+  if(window.__homsSuggestLoaded)return;
+  window.__homsSuggestLoaded=true;
+  var MAX_PHONES=4,MAX_SHOP=4,cache=null,loading=null;
+  var css='.homs-suggest{position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:10000;background:#fff;border:1px solid #d5dde8;border-radius:16px;box-shadow:0 18px 44px rgba(15,37,64,.18);padding:6px;max-height:min(420px,70vh);overflow:auto;text-align:left}'
+    +'.homs-suggest[hidden]{display:none}'
+    +'.homs-suggest a{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:11px;color:#0f2540;text-decoration:none;min-height:48px}'
+    +'.homs-suggest a:hover,.homs-suggest a[aria-selected=true]{background:#eef4fb}'
+    +'.homs-suggest .hs-img{flex:0 0 40px;width:40px;height:40px;border-radius:9px;background:#eef2f7 center/cover no-repeat}'
+    +'.homs-suggest .hs-text{display:flex;flex-direction:column;min-width:0;flex:1}'
+    +'.homs-suggest .hs-name{font-size:15px;font-weight:650;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+    +'.homs-suggest .hs-meta{font-size:12.5px;color:#64748b;line-height:1.3}'
+    +'.homs-suggest .hs-all{border-top:1px solid #e6ecf3;border-radius:0 0 11px 11px;margin-top:4px;color:#0b63ce;font-weight:650;font-size:14px}'
+    +'.homs-suggest .hs-empty{padding:12px 12px;color:#64748b;font-size:14px}';
+  function load(){
+    if(cache)return Promise.resolve(cache);
+    if(loading)return loading;
+    var opts={headers:{Accept:"application/json"}};
+    function get(url){return fetch(url,opts).then(function(r){return r.ok?r.json():{}}).catch(function(){return {}})}
+    loading=Promise.all([get("/api/site?view=devices"),get("/api/site?view=shop")]).then(function(res){
+      var phones=Array.isArray(res[0].phones)?res[0].phones:[];
+      var shop=Array.isArray(res[1].shopProducts)?res[1].shopProducts:[];
+      var seen={};
+      cache={
+        phones:phones.filter(function(p){return p&&p.active!==false&&String(p.name||"").trim()}).map(function(p){
+          return {name:String(p.name).trim(),brand:String(p.brand||"").trim(),img:pickImg(p)}
+        }).filter(function(p){var k=p.name.toLowerCase();if(seen[k])return false;seen[k]=1;return true}),
+        shop:shop.filter(function(p){return p&&p.active!==false&&String(p.name||"").trim()&&p.id!=null}).map(function(p){
+          return {id:String(p.id),name:String(p.name).trim(),brand:String(p.brand||"").trim(),category:String(p.category||"").trim(),img:pickImg(p)}
+        })
+      };
+      return cache;
+    });
+    return loading;
+  }
+  function pickImg(p){
+    var c=[p.image,p.imageUrl,Array.isArray(p.images)?p.images[0]:"",Array.isArray(p.photos)?p.photos[0]:""];
+    for(var i=0;i<c.length;i++){
+      var v=typeof c[i]==="string"?c[i]:(c[i]&&typeof c[i].url==="string"?c[i].url:"");
+      if(v&&!/^data:/i.test(v)&&/^(https?:\/\/|\/)/.test(v))return v;
+    }
+    return "";
+  }
+  function match(list,tokens,hay){
+    return list.map(function(item){
+      var h=hay(item).toLowerCase(),ok=tokens.every(function(t){return h.indexOf(t)!==-1});
+      if(!ok)return null;
+      return {item:item,rank:item.name.toLowerCase().indexOf(tokens[0])===0?0:1};
+    }).filter(Boolean).sort(function(a,b){return a.rank-b.rank}).map(function(x){return x.item});
+  }
+  function row(href,name,meta,img){
+    var a=document.createElement("a");a.href=href;a.setAttribute("role","option");a.tabIndex=-1;
+    var im=document.createElement("span");im.className="hs-img";if(img)im.style.backgroundImage='url("'+img.replace(/"/g,"%22")+'")';
+    var t=document.createElement("span");t.className="hs-text";
+    var n=document.createElement("span");n.className="hs-name";n.textContent=name;
+    var m=document.createElement("span");m.className="hs-meta";m.textContent=meta;
+    t.appendChild(n);t.appendChild(m);a.appendChild(im);a.appendChild(t);return a;
+  }
+  function init(form){
+    if(form.__homsSuggest)return;
+    var input=form.querySelector("input[name=search],input[type=search],input");
+    if(!input)return;
+    form.__homsSuggest=true;
+    if(getComputedStyle(form).position==="static")form.style.position="relative";
+    var box=document.createElement("div");box.className="homs-suggest";box.id="homsSuggest"+Math.floor(Math.random()*1e6);box.hidden=true;box.setAttribute("role","listbox");box.setAttribute("aria-label","Zoeksuggesties");
+    form.appendChild(box);
+    input.setAttribute("autocomplete","off");input.setAttribute("aria-controls",box.id);input.setAttribute("aria-expanded","false");
+    var timer=null,active=-1,seq=0;
+    function items(){return Array.prototype.slice.call(box.querySelectorAll("a"))}
+    function hide(){box.hidden=true;active=-1;input.setAttribute("aria-expanded","false");input.removeAttribute("aria-activedescendant")}
+    function setActive(i){
+      var list=items();if(!list.length)return;
+      active=(i+list.length)%list.length;
+      list.forEach(function(a,k){a.setAttribute("aria-selected",k===active?"true":"false");a.id=box.id+"-"+k});
+      input.setAttribute("aria-activedescendant",list[active].id);list[active].scrollIntoView({block:"nearest"});
+    }
+    function render(q,data){
+      var tokens=q.toLowerCase().split(/\s+/).filter(Boolean);
+      var phones=match(data.phones,tokens,function(p){return p.name+" "+p.brand}).slice(0,MAX_PHONES);
+      var shop=match(data.shop,tokens,function(p){return p.name+" "+p.brand+" "+p.category}).slice(0,MAX_SHOP);
+      box.textContent="";
+      phones.forEach(function(p){box.appendChild(row("devices.html?search="+encodeURIComponent(p.name),p.name,"Toestel"+(p.brand?" · "+p.brand:""),p.img))});
+      shop.forEach(function(p){box.appendChild(row("shop.html?product="+encodeURIComponent(p.id),p.name,"Onderdeel"+(p.category?" · "+p.category:""),p.img))});
+      if(!phones.length&&!shop.length){var e=document.createElement("div");e.className="hs-empty";e.textContent="Geen directe resultaten. Druk op Zoek om verder te zoeken.";box.appendChild(e)}
+      var all=document.createElement("a");all.className="hs-all";all.href="devices.html?search="+encodeURIComponent(q);all.setAttribute("role","option");all.tabIndex=-1;
+      all.textContent="Alle resultaten voor “"+q+"”";box.appendChild(all);
+      box.hidden=false;active=-1;input.setAttribute("aria-expanded","true");
+    }
+    function update(){
+      var q=input.value.trim();
+      if(q.length<2){hide();return}
+      var my=++seq;
+      load().then(function(data){if(my===seq&&input.value.trim()===q)render(q,data)});
+    }
+    input.addEventListener("input",function(){clearTimeout(timer);timer=setTimeout(update,120)});
+    input.addEventListener("focus",function(){if(input.value.trim().length>=2)update();else load()});
+    input.addEventListener("keydown",function(e){
+      if(box.hidden)return;
+      if(e.key==="ArrowDown"){e.preventDefault();setActive(active+1)}
+      else if(e.key==="ArrowUp"){e.preventDefault();setActive(active-1)}
+      else if(e.key==="Escape"){hide()}
+      else if(e.key==="Enter"&&active>=0){e.preventDefault();var a=items()[active];if(a)location.href=a.href}
+    });
+    document.addEventListener("click",function(e){if(!form.contains(e.target))hide()});
+  }
+  function boot(){
+    if(!document.getElementById("homs-suggest-style")){var s=document.createElement("style");s.id="homs-suggest-style";s.textContent=css;document.head.appendChild(s)}
+    Array.prototype.forEach.call(document.querySelectorAll("form.ht-search,form.search"),init);
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot);else boot();
+  window.addEventListener("load",boot);
+})();
