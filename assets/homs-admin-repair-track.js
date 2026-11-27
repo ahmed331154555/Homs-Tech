@@ -42,7 +42,7 @@
     s.textContent =
       ".rt-box{margin-top:14px;padding-top:14px;border-top:1px solid #e3eaf2}" +
       ".rt-toggle{min-height:44px}" +
-      ".rt-panel{margin-top:12px;display:grid;gap:12px}" +
+      ".rt-panel{margin-top:12px;display:grid;gap:12px}.rt-panel[hidden]{display:none}" +
       ".rt-form{display:grid;gap:8px}.rt-form textarea{width:100%;min-height:76px;border:1px solid #cdd8e4;border-radius:10px;padding:10px 12px;font:inherit;box-sizing:border-box;resize:vertical}" +
       ".rt-form label{display:flex;align-items:center;gap:8px;font-size:13px;color:#334155}" +
       ".rt-actions{display:flex;gap:8px;flex-wrap:wrap}" +

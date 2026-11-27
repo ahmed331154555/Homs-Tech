@@ -18,6 +18,8 @@ const PUBLIC_LABELS = {
   Nieuw: "Aanvraag ontvangen",
   "In behandeling": "In behandeling",
   "Wacht op klant": "Wacht op uw reactie",
+  "Akkoord door klant": "U bent akkoord gegaan met de offerte",
+  "Afgewezen door klant": "Offerte afgewezen",
   "Wacht op leverancier": "Onderdeel wordt geleverd",
   "Resultaat ontvangen": "Resultaat beschikbaar",
   Mislukt: "Reparatie niet gelukt, we nemen contact op",
