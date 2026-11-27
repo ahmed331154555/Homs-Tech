@@ -259,3 +259,42 @@ html body #services .service strong {
     font-size: 14px !important;
   }
 }
+
+/* One level of borders only: sections are plain page areas, and the cards
+ * inside them carry the border. No box-in-a-box lines. */
+html body main > .section,
+html body main .section#homeCategoriesSection,
+html body main .section#homePopularSection,
+html body main .section#homeServicesSection,
+html body main .section#homeWhySection {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+html body main .section .section-title {
+  margin-bottom: 20px !important;
+}
+html body #homeWhySection .why-card,
+html body #homeWhySection .why-item,
+html body #homeWhySection [class*="why"] > div {
+  border-color: #e1e8f0 !important;
+  box-shadow: none !important;
+  background: #fff !important;
+}
+html body #why .why-card {
+  padding: 22px 18px !important;
+  border-radius: 16px !important;
+}
+html body #why .why-card strong {
+  font-size: 16px !important;
+  margin: 8px 0 6px !important;
+  color: #0f2540 !important;
+}
+html body #why .why-card small {
+  font-size: 14px !important;
+  line-height: 1.55 !important;
+  color: #64748b !important;
+}
