@@ -3796,10 +3796,16 @@ function isRepairQuoteOrder(order){
 function clearRepairRequestFilters(){const q=document.getElementById('repairRequestSearch'),f=document.getElementById('repairRequestStatusFilter');if(q)q.value='';if(f)f.value='';renderRepairRequests();}
 let expandedRepairRequestIds = new Set();
 function toggleRepairRequest(id){
+  // Accordion: opening a request closes every other one, so the list stays compact.
   const key=String(id);
-  if(expandedRepairRequestIds.has(key)) expandedRepairRequestIds.delete(key);
-  else expandedRepairRequestIds.add(key);
+  const wasOpen=expandedRepairRequestIds.has(key);
+  expandedRepairRequestIds.clear();
+  if(!wasOpen)expandedRepairRequestIds.add(key);
   renderRepairRequests();
+  if(!wasOpen){
+    const card=document.querySelector('#repairRequestsList .repair-request-card.is-open');
+    if(card&&card.scrollIntoView)card.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }
 }
 function renderRepairRequests(){
  const box=document.getElementById('repairRequestsList');if(!box)return;
