@@ -11,18 +11,18 @@
       right: 18px;
       bottom: 18px;
       z-index: 9998;
-      width: 64px;
-      height: 64px;
+      width: 52px;
+      height: 52px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       padding: 0;
-      border: 2px solid rgba(255,255,255,.9);
+      border: 0;
       border-radius: 50%;
-      background: linear-gradient(145deg, #3b82f6, #1d4ed8);
+      background: #0b63ce;
       color: #fff;
-      box-shadow: 0 6px 20px rgba(7,29,45,.24);
-      font: 700 15px/1 Arial, sans-serif;
+      box-shadow: 0 6px 18px rgba(7,29,45,.28);
+      font: 700 13px/1 Arial, sans-serif;
       cursor: pointer;
       transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
       -webkit-tap-highlight-color: transparent;
@@ -158,9 +158,9 @@
       #homs-ai-launch {
         right: 14px;
         bottom: 14px;
-        width: 60px;
-        height: 60px;
-        font-size: 14px;
+        width: 48px;
+        height: 48px;
+        font-size: 12px;
       }
       #homs-ai-panel {
         right: 8px;
