@@ -858,3 +858,21 @@ body.ht-modal-open{overflow:hidden}
   #dashboard #page-phone-orders .ht-phone-sale-row .ht-phone-sale-delete{position:absolute!important;top:7px;right:10px;grid-column:auto!important;grid-row:auto!important;width:32px!important;height:32px!important;margin:0!important;border-radius:9px!important}
   #dashboard #page-phone-orders .ht-phone-sale-row .ht-phone-sale-price{margin-right:40px}
 }
+
+/* Repair requests: compact list rows, details open in a modal (one at a time) */
+#dashboard .repair-request-card{cursor:default}
+#dashboard .repair-request-row{flex-wrap:nowrap!important;flex-direction:row!important;align-items:center}
+#dashboard .repair-request-toggle{flex:1 1 auto;min-width:0}
+#dashboard .repair-request-row .repair-request-summary-status{flex:0 0 auto;max-width:42%;text-align:center}
+#dashboard .rr-open-hint{flex:0 0 auto;font-size:22px;line-height:1;color:#94a3b8}
+#dashboard .repair-request-chevron{display:none}
+#dashboard .rr-modal-head,#dashboard .rr-modal-actions{display:none}
+.rr-backdrop{position:fixed;inset:0;z-index:9997;border:0;padding:0;background:rgba(15,23,42,.55);cursor:default}
+body.rr-modal-open{overflow:hidden}
+#dashboard .repair-request-card.is-open .repair-request-details{position:fixed;z-index:9998;top:max(12px,2vh);bottom:max(12px,2vh);left:50%;transform:translateX(-50%);width:min(760px,calc(100vw - 24px));overflow:auto;background:#fff;border:0;border-radius:18px;padding:0 18px 22px;box-shadow:0 24px 64px rgba(15,23,42,.35)}
+#dashboard .repair-request-card.is-open .rr-modal-head{display:flex;position:sticky;top:0;z-index:2;align-items:center;justify-content:space-between;gap:12px;margin:0 -18px 14px;padding:14px 18px;background:#fff;border-bottom:1px solid #e3eaf2}
+#dashboard .repair-request-card.is-open .rr-modal-head strong{min-width:0;overflow-wrap:anywhere}
+#dashboard .repair-request-card.is-open .rr-close{min-height:40px;white-space:nowrap}
+#dashboard .repair-request-card.is-open .rr-modal-actions{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px;margin-bottom:14px}
+#dashboard .rr-status-label{font-size:12px;font-weight:700;color:#64748b;flex:1 1 180px}
+#dashboard .rr-modal-actions .order-status-select{width:100%;max-width:none;margin-top:4px;min-height:42px}

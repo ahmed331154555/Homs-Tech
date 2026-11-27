@@ -66,7 +66,7 @@ const adminHtml = fs.readFileSync(
 
 test("admin bundles are deferred and retain dependency order", () => {
   const mainScript = adminHtml.match(
-    /<script\b(?=[^>]*src=["']\.\.\/assets\/homs-admin\.js\?v=20261127-acc2["'])(?=[^>]*\bdefer(?:\s|>|=))[^>]*>/i,
+    /<script\b(?=[^>]*src=["']\.\.\/assets\/homs-admin\.js\?v=20261127-acc3["'])(?=[^>]*\bdefer(?:\s|>|=))[^>]*>/i,
   );
   const partnerScript = adminHtml.match(
     /<script\b(?=[^>]*src=["']\.\.\/assets\/partner-admin\.js\?v=20261117-partners7["'])(?=[^>]*\bdefer(?:\s|>|=))[^>]*>/i,
